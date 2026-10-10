@@ -1840,6 +1840,10 @@ describe('OmahaHiLoPage', () => {
     const badge = screen.getByTestId('omahahilo-scoop-badge');
     // The badge must state the combined take, not just that a scoop happened.
     expect(badge).toHaveTextContent('300');
+    const announcement = screen.getAllByRole('status').find((status) => status.classList.contains('sr-only'));
+    expect(announcement).toHaveTextContent(/ハイ: あなた が 200 チップ獲得/);
+    expect(announcement).toHaveTextContent(/ロー: あなた が 100 チップ獲得/);
+    expect(announcement).toHaveTextContent(/スクープ: あなた が両方を取り 300 チップ獲得/);
   });
 
   it('shows no scoop badge when the two halves go to different players', async () => {
@@ -1854,6 +1858,24 @@ describe('OmahaHiLoPage', () => {
     renderWithProviders(<OmahaHiLoPage />);
     await waitFor(() => expect(screen.getByTestId('omahahilo-split')).toBeInTheDocument());
     expect(screen.queryByTestId('omahahilo-scoop-badge')).not.toBeInTheDocument();
+    const announcement = screen.getAllByRole('status').find((status) => status.classList.contains('sr-only'));
+    expect(announcement).toHaveTextContent(/ハイ: あなた が 200 チップ獲得/);
+    expect(announcement).toHaveTextContent(/ロー: CPU 1 が 100 チップ獲得/);
+  });
+
+  it('announces when no low qualifies and the high winner takes all', async () => {
+    const highOnlyState: OmahaResponse = {
+      ...showdownState,
+      roundResults: [
+        { ...showdownState.roundResults[0], hiWonAmount: 300, lowWonAmount: 0 },
+        { ...showdownState.roundResults[1], wonAmount: 0, hiWonAmount: 0, lowWonAmount: 0 },
+      ],
+    };
+    mockExec.mockResolvedValue(highOnlyState);
+    renderWithProviders(<OmahaHiLoPage />);
+    await waitFor(() => expect(screen.getByTestId('omahahilo-hi-takes-all')).toBeInTheDocument());
+    const announcement = screen.getAllByRole('status').find((status) => status.classList.contains('sr-only'));
+    expect(announcement).toHaveTextContent('ロー該当者なし — ハイが総取り');
   });
 
   it('names the CPU when a CPU scoops, without the human-only emphasis', async () => {

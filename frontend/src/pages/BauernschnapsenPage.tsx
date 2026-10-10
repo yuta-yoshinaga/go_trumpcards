@@ -356,6 +356,11 @@ function BauernschnapsenPageContent() {
         {isHumanContractTurn && (
           <div className="mb-2" data-testid="bauernschnapsen-contract-controls">
             <div className="text-ds-text-muted text-sm mb-1">{t('declareContract')}</div>
+            <section aria-label={t('declareContract')} className="mb-2 space-y-1 text-ds-text-muted text-sm">
+              <p id="bauernschnapsen-contract-rufer-help">{t('contractRuferHelp')}</p>
+              <p id="bauernschnapsen-contract-farbenzwang-help">{t('contractFarbenzwangHelp')}</p>
+              <p id="bauernschnapsen-contract-bettel-help">{t('contractBettelHelp')}</p>
+            </section>
             <div className="flex gap-2 items-center flex-wrap">
               <button
                 type="button"
@@ -375,6 +380,9 @@ function BauernschnapsenPageContent() {
                     onClick={() => handleContract(c, suit)}
                     disabled={loading}
                     title={t(`${CONTRACT_LABEL_KEYS[c]}Help`)}
+                    aria-describedby={
+                      c === 1 ? 'bauernschnapsen-contract-rufer-help' : 'bauernschnapsen-contract-farbenzwang-help'
+                    }
                   >
                     {`${t(CONTRACT_LABEL_KEYS[c])} ${t(SUIT_LABEL_KEYS[suit])}`}
                   </button>
@@ -386,6 +394,7 @@ function BauernschnapsenPageContent() {
                 onClick={() => handleContract(3, 1)}
                 disabled={loading}
                 title={t('contractBettelHelp')}
+                aria-describedby="bauernschnapsen-contract-bettel-help"
               >
                 {t('contractBettel')}
               </button>

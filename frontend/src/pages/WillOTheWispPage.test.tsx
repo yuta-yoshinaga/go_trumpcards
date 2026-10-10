@@ -159,9 +159,15 @@ describe('WillOTheWispPage', () => {
   });
 
   it('moves a selected tableau card to an empty column', async () => {
-    mockSend.mockResolvedValue({ ...playingState, tableau: makeTableau([[], ...playingState.tableau.slice(1)]) });
+    const initialState = { ...playingState, tableau: makeTableau([[], ...playingState.tableau.slice(1)]) };
+    const movedState = {
+      ...playingState,
+      tableau: makeTableau([[{ card: card('HEART', 5), faceUp: true }], ...playingState.tableau.slice(1)]),
+    };
+    mockSend.mockResolvedValue(initialState);
     renderWithProviders(<WillOTheWispPage />);
     const source = await screen.findByTestId('willothewisp-card-1-1');
+    mockSend.mockResolvedValue(movedState);
     fireEvent.click(source);
     await waitFor(() => expect(source).toHaveAttribute('aria-pressed', 'true'));
     const target = screen.getByTestId('willothewisp-empty-col-0');
@@ -177,6 +183,115 @@ describe('WillOTheWispPage', () => {
         'move',
         { zone: 'tableau', col: 1, cardIndex: 1 },
         { zone: 'tableau', col: 0 },
+      ),
+    );
+    const movedCard = await screen.findByTestId('willothewisp-card-0-0');
+    await waitFor(() => expect(movedCard).toHaveFocus());
+  });
+
+  it('keeps focus on the empty target when a move is rejected', async () => {
+    const initialState = { ...playingState, tableau: makeTableau([[], ...playingState.tableau.slice(1)]) };
+    mockSend.mockResolvedValue(initialState);
+    renderWithProviders(<WillOTheWispPage />);
+    const source = await screen.findByTestId('willothewisp-card-1-1');
+    mockSend.mockResolvedValue(initialState);
+    fireEvent.click(source);
+    await waitFor(() => expect(source).toHaveAttribute('aria-pressed', 'true'));
+    const target = screen.getByTestId('willothewisp-empty-col-0');
+    target.focus();
+    mockSend.mockClear();
+    fireEvent.click(target);
+
+    await waitFor(() =>
+      expect(mockSend).toHaveBeenCalledWith(
+        'move',
+        { zone: 'tableau', col: 1, cardIndex: 1 },
+        { zone: 'tableau', col: 0 },
+      ),
+    );
+    await waitFor(() => expect(target).toHaveFocus());
+    expect(screen.getByTestId('willothewisp-empty-col-0')).toHaveFocus();
+  });
+
+  it('does not schedule empty-column focus for a move to a populated column', async () => {
+    mockSend.mockResolvedValue(playingState);
+    renderWithProviders(<WillOTheWispPage />);
+    const source = await screen.findByTestId('willothewisp-card-1-1');
+    fireEvent.click(source);
+    await waitFor(() => expect(source).toHaveAttribute('aria-pressed', 'true'));
+    const target = screen.getByTestId('willothewisp-card-0-0');
+    mockSend.mockClear();
+    fireEvent.click(target);
+
+    await waitFor(() =>
+      expect(mockSend).toHaveBeenCalledWith(
+        'move',
+        { zone: 'tableau', col: 1, cardIndex: 1 },
+        { zone: 'tableau', col: 0 },
+      ),
+    );
+  });
+
+  it('restores focus to the card placed by a drag onto an empty column', async () => {
+    const initialState = { ...playingState, tableau: makeTableau([[], ...playingState.tableau.slice(1)]) };
+    const movedState = {
+      ...playingState,
+      tableau: makeTableau([[{ card: card('HEART', 5), faceUp: true }], ...playingState.tableau.slice(1)]),
+    };
+    mockSend.mockResolvedValue(initialState);
+    renderWithProviders(<WillOTheWispPage />);
+    const source = await screen.findByTestId('willothewisp-card-1-1');
+    mockSend.mockResolvedValue(movedState);
+    const target = screen.getByTestId('willothewisp-col-0');
+    const data = new Map<string, string>();
+    const dataTransfer = {
+      setData: (type: string, value: string) => data.set(type, value),
+      getData: (type: string) => data.get(type) ?? '',
+      effectAllowed: 'none',
+      dropEffect: 'none',
+    };
+    const dragStartEvent = new Event('dragstart', { bubbles: true });
+    Object.defineProperty(dragStartEvent, 'dataTransfer', { value: dataTransfer });
+    source.dispatchEvent(dragStartEvent);
+    const dropEvent = new Event('drop', { bubbles: true });
+    Object.defineProperty(dropEvent, 'dataTransfer', { value: dataTransfer });
+    target.querySelector('[role="presentation"]')?.dispatchEvent(dropEvent);
+    await waitFor(() =>
+      expect(mockSend).toHaveBeenCalledWith(
+        'move',
+        { zone: 'tableau', col: 1, cardIndex: 1 },
+        { zone: 'tableau', col: 0 },
+      ),
+    );
+
+    const movedCard = await screen.findByTestId('willothewisp-card-0-0');
+    await waitFor(() => expect(movedCard).toHaveFocus());
+  });
+
+  it('does not schedule empty-column focus for a drag onto a populated column', async () => {
+    mockSend.mockResolvedValue(playingState);
+    renderWithProviders(<WillOTheWispPage />);
+    const source = await screen.findByTestId('willothewisp-card-0-0');
+    const target = screen.getByTestId('willothewisp-col-1');
+    const data = new Map<string, string>();
+    const dataTransfer = {
+      setData: (type: string, value: string) => data.set(type, value),
+      getData: (type: string) => data.get(type) ?? '',
+      effectAllowed: 'none',
+      dropEffect: 'none',
+    };
+    const dragStartEvent = new Event('dragstart', { bubbles: true });
+    Object.defineProperty(dragStartEvent, 'dataTransfer', { value: dataTransfer });
+    source.dispatchEvent(dragStartEvent);
+    const dropEvent = new Event('drop', { bubbles: true });
+    Object.defineProperty(dropEvent, 'dataTransfer', { value: dataTransfer });
+    target.querySelector('[role="presentation"]')?.dispatchEvent(dropEvent);
+
+    await waitFor(() =>
+      expect(mockSend).toHaveBeenCalledWith(
+        'move',
+        { zone: 'tableau', col: 0, cardIndex: 0 },
+        { zone: 'tableau', col: 1 },
       ),
     );
   });

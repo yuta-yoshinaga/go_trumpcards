@@ -76,10 +76,7 @@ func pyramidDispatch(bc *baseController, w http.ResponseWriter, pi usecase.Pyram
 	case "u", "undo":
 		bc.writePresenterResponse(w, pi.Undo())
 	case "undo_n":
-		if !requireParam(bc, w, newDefault, param.N == nil, "param error: n is required.") {
-			return true
-		}
-		bc.writePresenterResponse(w, pi.UndoN(*param.N))
+		dispatchUndoN(bc, w, newDefault, param.N, pi.UndoN)
 	default:
 		return dispatchResetHintAndLog(param.Command, bc, w, pi.Reset, pi.Hint, pi.ActionLog)
 	}

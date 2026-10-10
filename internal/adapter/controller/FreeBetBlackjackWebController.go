@@ -53,6 +53,7 @@ type FreeBetBlackjackWebOutput struct {
 	CanFreeSplit   bool `json:"canFreeSplit"`
 	AnteBet        int  `json:"anteBet"`
 	Payout         int  `json:"payout"`
+	NetChange      int  `json:"netChange"`
 	Chips          int  `json:"chips"`
 	RoundNumber    int  `json:"roundNumber"`
 	RemainingCards int  `json:"remainingCards"`

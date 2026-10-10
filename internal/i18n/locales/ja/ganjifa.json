@@ -34,7 +34,6 @@
   "helpHint": "  h                    助言を表示",
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
   "errCardMissing": "カードがありません",
-  "errFollowLeadSuit": "リードスートに従ってください",
   "log.deal": "ラウンド {{round}} 開始 (切り札 {{trump}})",
   "log.gameEnd": "マッチ終了",
   "log.play": "",

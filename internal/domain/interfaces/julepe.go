@@ -43,6 +43,7 @@ type JulepeGame interface {
 	GetRequiredTricks() int
 	// GetBeast 次ラウンドのアンティが倍になる席を取得する
 	GetBeast() []bool
+	GetRoundAntes() []int
 	// GetTrumpSuit 切り札のスートを取得する
 	GetTrumpSuit() int
 	// GetUpCard 切り札を決めた表向きの1枚を取得する

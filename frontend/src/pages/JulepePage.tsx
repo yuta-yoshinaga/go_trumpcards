@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { julepeApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -18,6 +18,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useMountReset } from '../hooks/useMountReset';
 import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnDanger, btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -90,9 +91,7 @@ function JulepePageContent() {
   );
   const { handleCommand } = useCliGame(dispatch, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  useEffect(() => {
-    void dispatch('reset');
-  }, [dispatch]);
+  useMountReset(dispatch);
 
   const handleReset = useCallback(() => {
     hideActionLog();
@@ -262,6 +261,11 @@ function JulepePageContent() {
                   )}
                   {': '}
                   {t('header.seat', { chips: String(p.chips), tricks: String(p.roundTricks) })} [{statusStr(p)}]
+                  {isDecide && state.roundAntes[p.id] !== undefined && (
+                    <span className="ml-1" data-testid={`rm-ante-${p.id.toString()}`}>
+                      {t('ante', { amount: String(state.roundAntes[p.id]) })}
+                    </span>
+                  )}
                   {isRoundEnd && (p.roundPayout > 0 || p.roundPenalty > 0) && (
                     <span className="ml-2 text-ds-text-primary" data-testid={`rm-chip-change-${p.id.toString()}`}>
                       {p.roundPayout > 0 && t('roundResult.payout', { amount: String(p.roundPayout) })}

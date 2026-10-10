@@ -285,13 +285,13 @@ func TestWhitehead_MoveWasteToFoundation(t *testing.T) {
 }
 
 // twoColWH puts one card in column 0 and one in column 1, everything else empty.
-func twoColWH(t *testing.T, fromD, fromV, toD, toV int) *domain.Whitehead {
+func twoColWH(t *testing.T, fromD, fromV, toD int) *domain.Whitehead {
 	t.Helper()
 	k := newTestWhitehead()
 	k.Reset()
 	var tab [domain.WhiteheadTableauCnt][]*domain.WhiteheadTableauCard
 	tab[0] = []*domain.WhiteheadTableauCard{makeTableauCardWH(fromD, fromV, true)}
-	tab[1] = []*domain.WhiteheadTableauCard{makeTableauCardWH(toD, toV, true)}
+	tab[1] = []*domain.WhiteheadTableauCard{makeTableauCardWH(toD, 7, true)}
 	k.SetTableau(tab)
 	return k
 }
@@ -332,7 +332,7 @@ func whiteheadDeadTableau() [domain.WhiteheadTableauCnt][]*domain.WhiteheadTable
 // including moving a card into an empty column -- was reported as stuck.
 func TestWhitehead_HintFindsTableauMoves(t *testing.T) {
 	t.Run("same-colour move between occupied columns", func(t *testing.T) {
-		k := twoColWH(t, domain.CardDesignSpade, 6, domain.CardDesignClover, 7)
+		k := twoColWH(t, domain.CardDesignSpade, 6, domain.CardDesignClover)
 		k.SetStock(nil)
 		k.SetWaste(nil)
 		hint := k.GetHint()
@@ -359,23 +359,23 @@ func TestWhitehead_HintFindsTableauMoves(t *testing.T) {
 
 func TestWhitehead_TableauRule(t *testing.T) {
 	t.Run("same colour descending is legal", func(t *testing.T) {
-		k := twoColWH(t, domain.CardDesignSpade, 6, domain.CardDesignClover, 7)
+		k := twoColWH(t, domain.CardDesignSpade, 6, domain.CardDesignClover)
 		assert.NoError(t, k.MoveTableauToTableau(0, 0, 1))
 		assert.Equal(t, 2, len(k.GetTableau()[1]))
 	})
 
 	t.Run("alternating colour is REJECTED", func(t *testing.T) {
-		k := twoColWH(t, domain.CardDesignHeart, 6, domain.CardDesignSpade, 7)
+		k := twoColWH(t, domain.CardDesignHeart, 6, domain.CardDesignSpade)
 		assert.Error(t, k.MoveTableauToTableau(0, 0, 1))
 	})
 
 	t.Run("same colour but not adjacent is rejected", func(t *testing.T) {
-		k := twoColWH(t, domain.CardDesignSpade, 5, domain.CardDesignClover, 7)
+		k := twoColWH(t, domain.CardDesignSpade, 5, domain.CardDesignClover)
 		assert.Error(t, k.MoveTableauToTableau(0, 0, 1))
 	})
 
 	t.Run("ascending is rejected", func(t *testing.T) {
-		k := twoColWH(t, domain.CardDesignSpade, 8, domain.CardDesignClover, 7)
+		k := twoColWH(t, domain.CardDesignSpade, 8, domain.CardDesignClover)
 		assert.Error(t, k.MoveTableauToTableau(0, 0, 1))
 	})
 

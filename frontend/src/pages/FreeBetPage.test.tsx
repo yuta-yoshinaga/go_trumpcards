@@ -59,6 +59,7 @@ const base: FreeBetResponse = {
   canFreeSplit: false,
   anteBet: 0,
   payout: 0,
+  netChange: 0,
   chips: 1000,
   roundNumber: 1,
   remainingCards: 312,
@@ -119,6 +120,25 @@ describe('FreeBetPage', () => {
     expect(firstHand).not.toHaveAttribute('aria-current');
     expect(secondHand).not.toHaveAttribute('aria-current');
     expect(screen.queryByText('操作対象の手札')).not.toBeInTheDocument();
+  });
+
+  it('結果フェーズでサーバの収支を常設ライブ領域から読み上げ、結果外は空にする', async () => {
+    mockApi.mockResolvedValueOnce(withState({ phase: FreeBetPhase.BET }));
+    mockApi.mockResolvedValueOnce(
+      withState({
+        phase: FreeBetPhase.RESULT,
+        payout: 150,
+        netChange: 100,
+        hands: [hand({ result: FREE_BET_RESULT.win, payout: 150 })],
+      }),
+    );
+    renderWithProviders(<FreeBetPage />);
+    const status = await screen.findByTestId('fb-result-announcement');
+    expect(status).toBeInTheDocument();
+    expect(status).toBeEmptyDOMElement();
+    fireEvent.click(await screen.findByRole('button', { name: '配る' }));
+    await waitFor(() => expect(status).toHaveTextContent('収支: 100'));
+    expect(status).toHaveClass('sr-only');
   });
 
   it('プレイ中はディーラーの点数を隠し、伏せ札を表示する', async () => {
@@ -336,6 +356,7 @@ describe('FreeBetPage', () => {
         // 賭け 50 + ハウス 50 で勝つと払い戻しは 150。自腹は 50 なので収支は +100。
         hands: [hand({ bet: 50, freeBet: 50, doubled: true, result: FREE_BET_RESULT.win, payout: 150 })],
         payout: 150,
+        netChange: 100,
       }),
     );
     renderWithProviders(<FreeBetPage />);

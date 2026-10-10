@@ -192,6 +192,11 @@ function TexasHoldemBonusPageContent() {
   // the button labels so the player sees the cost before committing.
   const playCost = texasHoldemBonusBetCost(state.anteBet, TEXASHOLDEMBONUS_FLOP_MULTIPLIER);
   const raiseCost = texasHoldemBonusBetCost(state.anteBet, TEXASHOLDEMBONUS_RAISE_MULTIPLIER);
+  const maximumInvestment =
+    anteAmount +
+    bonusAmount +
+    texasHoldemBonusBetCost(anteAmount, TEXASHOLDEMBONUS_FLOP_MULTIPLIER) +
+    2 * texasHoldemBonusBetCost(anteAmount, TEXASHOLDEMBONUS_RAISE_MULTIPLIER);
 
   const phaseName = isBetPhase
     ? t('phase.bet')
@@ -503,6 +508,11 @@ function TexasHoldemBonusPageContent() {
                     total: anteAmount + bonusAmount,
                     remaining: state.chips - anteAmount - bonusAmount,
                   })}
+                </p>
+                <p className="text-ds-text-muted text-sm tabular-nums" data-testid="thb-maximum-investment">
+                  {state.chips >= maximumInvestment
+                    ? t('maximumInvestment', { total: maximumInvestment, remaining: state.chips - maximumInvestment })
+                    : t('maximumInvestmentShort', { total: maximumInvestment, short: maximumInvestment - state.chips })}
                 </p>
                 <ChipBetInput
                   id="texasholdembonus-ante-amount"

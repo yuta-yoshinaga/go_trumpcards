@@ -200,6 +200,31 @@ describe('PinochlePage', () => {
     });
   });
 
+  it('marks only passed players during the bid phase', async () => {
+    mockExec.mockResolvedValue({
+      ...bidPhaseState,
+      players: makePlayers([{ hasPassed: true }, { bid: 25 }, {}, {}]),
+    });
+    const { container } = renderWithProviders(<PinochlePage />);
+    const playerInfo = () => container.querySelector('[data-tutorial="pn-player-info"]') as HTMLElement;
+
+    await waitFor(() => expect(within(playerInfo()).getByText(/パス済み/)).toBeInTheDocument());
+    expect(within(playerInfo()).getAllByText(/パス済み/)).toHaveLength(1);
+    expect(within(playerInfo()).getByText(/ビッド: 25/)).toBeInTheDocument();
+  });
+
+  it('does not show passed status outside the bid phase', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      players: makePlayers([{ hasPassed: true }, {}, {}, {}]),
+    });
+    const { container } = renderWithProviders(<PinochlePage />);
+    const playerInfo = () => container.querySelector('[data-tutorial="pn-player-info"]') as HTMLElement;
+
+    await waitFor(() => expect(within(playerInfo()).getByText('CPU 1')).toBeInTheDocument());
+    expect(within(playerInfo()).queryByText(/パス済み/)).not.toBeInTheDocument();
+  });
+
   it('shows the dealer label on the human or CPU dealer row only', async () => {
     mockExec.mockResolvedValue({ ...bidPhaseState, dealerIdx: 0 });
     const { container, unmount } = renderWithProviders(<PinochlePage />);

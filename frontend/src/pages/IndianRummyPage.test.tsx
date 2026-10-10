@@ -756,6 +756,28 @@ describe('IndianRummyPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.queryByTestId('indianrummy-hand-status')).not.toBeInTheDocument();
   });
+
+  it('marks declarable discard candidates in the hand and accessible name', async () => {
+    mockExec.mockResolvedValue({ ...discardPhaseState, declarableDiscards: [0] });
+    renderWithProviders(<IndianRummyPage />);
+
+    const candidate = await screen.findByRole('button', { name: /♠ A.*上がり候補/ });
+    expect(candidate).toHaveClass('ring-ds-success');
+    expect(screen.getByRole('button', { name: '♥ J' })).not.toHaveClass('ring-ds-success');
+  });
+
+  it('does not mark cards when there are no declarable discard candidates', async () => {
+    mockExec.mockResolvedValue(discardPhaseState);
+    renderWithProviders(<IndianRummyPage />);
+    const card = await screen.findByRole('button', { name: '♠ A' });
+    expect(card).not.toHaveClass('ring-ds-success');
+  });
+
+  it('does not mark candidate indices outside the discard phase', async () => {
+    mockExec.mockResolvedValue(drawPhaseState);
+    renderWithProviders(<IndianRummyPage />);
+    expect(await screen.findByRole('button', { name: '♠ A' })).not.toHaveClass('ring-ds-success');
+  });
 });
 
 // #5501: 表示されるのは合計の未メルド点数だけで、なぜその数字になるのかを

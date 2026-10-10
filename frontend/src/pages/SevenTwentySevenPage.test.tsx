@@ -56,6 +56,7 @@ const baseState: SevenTwentySevenResponse = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  localStorage.removeItem('cli-mode-seventwentyseven');
   mockExec.mockResolvedValue(baseState);
 });
 
@@ -104,6 +105,15 @@ describe('SevenTwentySevenPage', () => {
     expect(await screen.findByRole('button', { name: 'カードを引く' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '止まる' })).toBeInTheDocument();
     expect(screen.queryByTestId('s27-deck-empty')).not.toBeInTheDocument();
+  });
+
+  it('keeps the result status region mounted in CLI mode', async () => {
+    localStorage.setItem('cli-mode-seventwentyseven', 'true');
+    mockExec.mockResolvedValue({ ...baseState, phase: SevenTwentySevenPhase.RESULT, lowWinner: 0, highWinner: 2 });
+    renderWithProviders(<SevenTwentySevenPage />);
+    expect(await screen.findByTestId('s27-result-announcement')).toHaveTextContent('7側: あなた');
+    expect(screen.getByRole('textbox')).toBeInTheDocument();
+    localStorage.removeItem('cli-mode-seventwentyseven');
   });
 
   // **2 つの目標を常に書く。** 7 と 27 のどちらに寄せるかがこのゲームそのもの。
@@ -171,7 +181,36 @@ describe('SevenTwentySevenPage', () => {
     renderWithProviders(<SevenTwentySevenPage />);
     await waitFor(() => expect(screen.getByTestId('s27-low-result')).toHaveTextContent('6'));
     expect(screen.getByTestId('s27-high-result')).toHaveTextContent('27');
+    expect(screen.getByTestId('s27-result-announcement')).toHaveTextContent('7側: あなた（6）、27側: CPU 2（27）');
     expect(screen.queryByTestId('s27-scoop-result')).not.toBeInTheDocument();
+  });
+
+  it('announces an empty low side when only the high side has a winner', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      phase: SevenTwentySevenPhase.RESULT,
+      lowWinner: -1,
+      highWinner: 1,
+      players: [player(0), player(1, { highScore: '27' }), player(2), player(3)],
+    });
+    renderWithProviders(<SevenTwentySevenPage />);
+    expect(await screen.findByTestId('s27-result-announcement')).toHaveTextContent(
+      '7側: 生存者なし（27側が総取り）、27側: CPU 1（27）',
+    );
+  });
+
+  it('announces an empty high side when only the low side has a winner', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      phase: SevenTwentySevenPhase.RESULT,
+      lowWinner: 1,
+      highWinner: -1,
+      players: [player(0), player(1, { lowScore: '7' }), player(2), player(3)],
+    });
+    renderWithProviders(<SevenTwentySevenPage />);
+    expect(await screen.findByTestId('s27-result-announcement')).toHaveTextContent(
+      '7側: CPU 1（7）、27側: 生存者なし（7側が総取り）',
+    );
   });
 
   // 総取りは専用の表示。半分ずつの表記だと誤解する。
@@ -189,6 +228,7 @@ describe('SevenTwentySevenPage', () => {
     renderWithProviders(<SevenTwentySevenPage />);
     const banner = await screen.findByTestId('s27-scoop-result');
     expect(screen.queryByTestId('s27-low-result')).not.toBeInTheDocument();
+    expect(screen.getByTestId('s27-result-announcement')).toHaveTextContent('あなた が両側を制して総取りしました');
 
     // **金額を書かない。** ドメインは結果フェーズへ移る前に pot を 0 にするので、
     // `{{pot}}` を入れると必ず「0 を総取り」になる。プレースホルダが残るのも不可。
@@ -208,6 +248,9 @@ describe('SevenTwentySevenPage', () => {
     });
     renderWithProviders(<SevenTwentySevenPage />);
     await waitFor(() => expect(screen.getByTestId('s27-carry-result')).toBeInTheDocument());
+    expect(screen.getByTestId('s27-result-announcement')).toHaveTextContent(
+      '全員が両側とも超えました。ポット 40 は次のラウンドへ持ち越し（1 回目）',
+    );
   });
 
   it('advances to the next round', async () => {

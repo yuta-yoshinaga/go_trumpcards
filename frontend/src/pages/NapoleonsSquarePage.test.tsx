@@ -182,6 +182,55 @@ describe('NapoleonsSquarePage', () => {
     }
   });
 
+  it('keeps all twelve tableau columns in a horizontally scrollable, touch-sized layout', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<NapoleonsSquarePage />);
+    const scrollArea = await screen.findByTestId('ns-tableau-scroll');
+    expect(scrollArea.className).toContain('overflow-x-auto');
+    const columns = screen.getAllByText(/^#\d+$/).map((label) => label.parentElement);
+    expect(columns).toHaveLength(12);
+    for (const column of columns) {
+      expect(column?.className).toContain('w-11');
+      expect(column?.className).toContain('flex-none');
+    }
+    const cardButtons = screen.getAllByRole('button', { name: /列\d+・上から\d+枚目/ });
+    expect(cardButtons.length).toBeGreaterThan(0);
+    for (const button of cardButtons) {
+      expect(button.className).toContain('min-h-11');
+    }
+    fireEvent.dragStart(cardButtons[0]!, { dataTransfer: { setData: vi.fn(), effectAllowed: 'none' } });
+    expect(cardButtons[0]).toHaveClass('opacity-50');
+    expect(screen.getByRole('button', { name: '空のタブロー列 2' }).className).toContain('min-h-11');
+  });
+
+  it('reserves touch height for overlapping mobile cards and keeps desktop columns flexible', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 320 });
+    try {
+      mockExec.mockResolvedValue(playingState);
+      const { unmount } = renderWithProviders(<NapoleonsSquarePage />);
+      const secondCard = await screen.findByRole('button', { name: /列0・上から2枚目/ });
+      expect(Number.parseFloat(secondCard.parentElement?.style.top ?? '0')).toBeGreaterThanOrEqual(44);
+      const spacer = screen.getAllByTestId('ns-tableau-spacer')[0];
+      const secondCardTop = Number.parseFloat(secondCard.parentElement?.style.top ?? '0');
+      expect(Number.parseFloat(spacer.style.height)).toBeGreaterThanOrEqual(secondCardTop + 44);
+      const emptyColumn = screen.getByRole('button', { name: '空のタブロー列 2' });
+      expect(Number.parseFloat(emptyColumn.parentElement?.style.minHeight ?? '0')).toBeGreaterThanOrEqual(44);
+      unmount();
+
+      Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 768 });
+      mockExec.mockResolvedValue(playingState);
+      renderWithProviders(<NapoleonsSquarePage />);
+      const desktopSecondCard = await screen.findByRole('button', { name: /列0・上から2枚目/ });
+      expect(Number.parseFloat(desktopSecondCard.parentElement?.style.top ?? '0')).toBe(22);
+      expect(desktopSecondCard.closest('.w-11')).toHaveClass('sm:flex-1');
+      const desktopSpacer = screen.getAllByTestId('ns-tableau-spacer')[0];
+      expect(Number.parseFloat(desktopSpacer.style.height)).toBe(106);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: originalWidth });
+    }
+  });
+
   it('shows the stock count and lets the player draw', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<NapoleonsSquarePage />);

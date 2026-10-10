@@ -61,6 +61,7 @@
   "cards": "{{count}} cards",
   "cumulativeScore": "Total: {{score}}",
   "roundScore": "Round: {{score}}",
+  "scoreUpdateAnnouncement": "{{name}} scored {{roundScore}} points this round and {{cumulativeScore}} points total",
   "pegBoard": "Peg Board",
   "score": "Score",
   "scoreDetail": {

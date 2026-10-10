@@ -220,13 +220,14 @@ describe('MarriagePage', () => {
 
   it('calls reset on mount with default config', async () => {
     renderWithProviders(<MarriagePage />);
-    await waitFor(() =>
+    await waitFor(() => {
+      expect(mockExec).toHaveBeenCalledTimes(1);
       expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
         playerCount: 5,
         cpuDifficulty: 1,
         targetRounds: 3,
-      }),
-    );
+      });
+    });
   });
 
   it('renders draw phase with human cards', async () => {

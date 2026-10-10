@@ -61,7 +61,7 @@ func (p *KarnoffelWebPresenter) Output(g interfaces.KarnoffelGame, lastErr error
 	}
 
 	resObj.Players = p.buildPlayersOutput(g)
-	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(g, lastErr)
+	resObj.Message, resObj.MessageCode = p.buildMessage(g, lastErr)
 
 	return marshalOrError(resObj)
 }
@@ -108,27 +108,27 @@ func (p *KarnoffelWebPresenter) buildPlayersOutput(g interfaces.KarnoffelGame) [
 }
 
 // buildMessage ゲーム結果メッセージを構築
-func (p *KarnoffelWebPresenter) buildMessage(g interfaces.KarnoffelGame, lastErr error) (string, string, map[string]string) {
+func (p *KarnoffelWebPresenter) buildMessage(g interfaces.KarnoffelGame, lastErr error) (string, string) {
 	if lastErr != nil {
-		return lastErr.Error(), "", nil
+		return lastErr.Error(), ""
 	}
 	if g.GetGameEndFlag() {
 		// **チーム戦なので勝敗は席ではなくチームで見る。**人間は席 0 = チーム 0。
 		if g.GetWinnerTeam() == domain.KarnoffelTeamOf(0) {
-			return "your team wins", "karnoffel.result.humanWin", nil
+			return "your team wins", "karnoffel.result.humanWin"
 		}
-		return "the other team wins", "karnoffel.result.cpuWin", nil
+		return "the other team wins", "karnoffel.result.cpuWin"
 	}
 	switch g.GetPhase() {
 	case domain.KarnoffelPhasePlay:
-		return "", "karnoffel.playPhase", nil
+		return "", "karnoffel.playPhase"
 	case domain.KarnoffelPhaseHandEnd:
 		if r := g.GetLastResult(); r != nil && r.WinnerTeam < 0 {
-			return "", "karnoffel.handDrawn", nil
+			return "", "karnoffel.handDrawn"
 		}
-		return "", "karnoffel.handEnd", nil
+		return "", "karnoffel.handEnd"
 	}
-	return "", "", nil
+	return "", ""
 }
 
 // ActionLogOutput 棋譜をJSON出力

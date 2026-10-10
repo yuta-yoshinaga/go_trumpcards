@@ -14,6 +14,8 @@
   "score": "スコア",
   "playerHand": "プレイヤー手札",
   "hitAnnouncement": "{{card}}を引きました。現在のスコアは{{score}}です。",
+  "countAnnouncement": "ランニングカウントは{{runningCount}}、トゥルーカウントは{{trueCount}}です。",
+  "runningCountAnnouncement": "ランニングカウントは{{runningCount}}です。",
   "dealerFinalScore": "ディーラーの最終スコアは{{score}}です。",
   "dealerBust": "ディーラーはバストしました。",
   "hand": "ハンド {{idx}}",
@@ -155,5 +157,6 @@
     "push": "引き分け",
     "chips": "チップ",
     "roundNetChange": "ラウンド収支: {{amount}} チップ"
-  }
+  },
+  "betBonusGuide": "5枚で21は3:2、6枚で21は2:1、7枚以上で21は3:1。6-7-8と7-7-7にもボーナスがあります。詳しい条件と配当は「配当表」を開いて確認できます。"
 }

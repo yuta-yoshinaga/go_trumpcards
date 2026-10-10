@@ -57,7 +57,8 @@ func TestGolfCuiPresenterOutput_Playing(t *testing.T) {
 	assert.Contains(t, result, "手数: 0")
 }
 
-func golfComboGame(moveCount, stockCount, chainCombo int, phase domain.GolfPhase) *interfaces.MockGolfGame {
+func golfComboGame(moveCount, stockCount, chainCombo int) *interfaces.MockGolfGame {
+	phase := domain.GolfPhasePlaying
 	gg := new(interfaces.MockGolfGame)
 	gg.On("GetPhase").Return(phase).Maybe()
 	gg.On("GetMoveCount").Return(moveCount).Maybe()
@@ -75,10 +76,10 @@ func golfComboGame(moveCount, stockCount, chainCombo int, phase domain.GolfPhase
 func TestGolfCuiPresenterOutput_ChainCombo(t *testing.T) {
 	p := &GolfCuiPresenter{}
 
-	assert.NotContains(t, p.Output(golfComboGame(0, 16, 0, domain.GolfPhasePlaying), nil), "コンボ ×")
-	assert.NotContains(t, p.Output(golfComboGame(1, 16, 1, domain.GolfPhasePlaying), nil), "コンボ ×")
-	assert.Contains(t, p.Output(golfComboGame(2, 16, 2, domain.GolfPhasePlaying), nil), "コンボ ×2")
-	assert.NotContains(t, p.Output(golfComboGame(3, 15, 0, domain.GolfPhasePlaying), nil), "コンボ ×")
+	assert.NotContains(t, p.Output(golfComboGame(0, 16, 0), nil), "コンボ ×")
+	assert.NotContains(t, p.Output(golfComboGame(1, 16, 1), nil), "コンボ ×")
+	assert.Contains(t, p.Output(golfComboGame(2, 16, 2), nil), "コンボ ×2")
+	assert.NotContains(t, p.Output(golfComboGame(3, 15, 0), nil), "コンボ ×")
 }
 
 func TestGolfCuiPresenterOutput_PlayableMarker(t *testing.T) {

@@ -44,7 +44,7 @@ func TestLooDomainErrorsHaveMessageCodes(t *testing.T) {
 				}, []*domain.TrickCard{{PlayerIdx: 1, Card: looCard(domain.CardDesignHeart, 9)}})
 			},
 			play:     1,
-			code:     "loo.errFollowLeadSuit",
+			code:     "shared.errFollowLeadSuit",
 			sentinel: domain.ErrInvalidPlay,
 		},
 		{

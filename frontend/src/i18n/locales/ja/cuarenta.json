@@ -7,6 +7,17 @@
   "teamScore": "{{name}}: {{score}} / {{target}}点",
   "teamCaptured": "獲得 {{count}}枚",
   "teamUpdateAnnouncement": "{{name}}の得点は{{score}}点、捕獲枚数は{{captured}}枚",
+  "roundBreakdown": {
+    "title": "今回のラウンド得点",
+    "gained": "今回の獲得点: {{points}}点",
+    "caida": "カイーダ: {{points}}点",
+    "ronda": "ロンダ: {{points}}点",
+    "limpia": "リンピア: {{points}}点",
+    "mostCards": "最多捕獲ボーナス",
+    "awarded": "獲得 (+6点)",
+    "none": "なし",
+    "unavailable": "このラウンドの得点内訳はありません。"
+  },
   "captured": "捕獲 {{count}}枚",
   "table": "場",
   "tableCount": "{{count}}枚",

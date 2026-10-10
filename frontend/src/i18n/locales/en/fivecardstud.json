@@ -13,6 +13,10 @@
   "latestDoorCard": "{{card}}, latest",
   "holeCards": "Hole Cards",
   "bestHandCard": "part of the best hand",
+  "mainPot": "Main pot: {{amount}} chips (eligible: {{eligiblePlayers}})",
+  "sidePot": "Side pot {{index}}: {{amount}} chips (eligible: {{eligiblePlayers}})",
+  "awarded": " (won: {{winners}})",
+  "listSeparator": ", ",
   "yourHand": "Your Hand",
   "anteBringIn": "Ante/Bring-in",
   "betting": {

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { karnoffelApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -18,6 +18,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnSuccess } from '../styles/buttonStyles';
@@ -83,12 +84,9 @@ function KarnoffelPageContent() {
   const { state, loading, error, exec, retry } = useGameApi(karnoffelApi.exec);
 
   const [selected, setSelected] = useState<number | null>(null);
+  const [targetHands, setTargetHands] = useState(3);
 
-  // Fetch a fresh game on mount.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
-  useEffect(() => {
-    exec('reset');
-  }, []);
+  useMountReset(exec);
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('karnoffel');
@@ -143,7 +141,7 @@ function KarnoffelPageContent() {
   const handleManualReset = () => {
     hideActionLog();
     setSelected(null);
-    exec('reset');
+    exec('reset', { config: { targetHands } });
   };
 
   const result = state.lastResult;
@@ -173,6 +171,24 @@ function KarnoffelPageContent() {
               <span className="mr-4" data-testid="karnoffel-chosen">
                 {t('chosenSuit')}: {suitLabel(state.chosenSuit)}
               </span>
+            </div>
+
+            <div className="mb-2 flex justify-center">
+              <label className="flex min-h-[44px] items-center gap-2 text-sm text-ds-text-primary">
+                <span>{t('targetHandsLabel')}</span>
+                <select
+                  aria-label={t('targetHandsLabel')}
+                  className="min-h-[44px] rounded border border-ds-border bg-ds-surface px-3 text-ds-text-primary"
+                  value={targetHands}
+                  onChange={(event) => setTargetHands(Number(event.target.value))}
+                >
+                  {Array.from({ length: 10 }, (_, index) => index + 1).map((count) => (
+                    <option key={count} value={count}>
+                      {count}
+                    </option>
+                  ))}
+                </select>
+              </label>
             </div>
 
             {/* The lowest face-up card decides the suit — not a turn-up. */}

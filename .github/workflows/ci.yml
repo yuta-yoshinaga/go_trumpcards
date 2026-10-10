@@ -94,6 +94,14 @@ jobs:
           # 走らせるほうが、緑の意味が保てる。
           skip-cache: true
 
+      # **CI で回さない試験ファイルもコンパイルだけは確かめる。** ビデオポーカーの
+      # 期待値検証器 (internal/domain/VideoPokerEV_vpev_test.go、#10969) は全ドロー
+      # 列挙で数分かかるので `vpev` タグの裏に置いている。go test も golangci-lint も
+      # このタグを渡さないため、ドメインの関数名が変わると誰にも気づかれずに
+      # 壊れる。vet は数秒で、走らせはしない。
+      - name: Vet offline-only test files (vpev)
+        run: go vet -tags "test vpev" ./internal/domain
+
   test-backend:
     name: Backend Tests
     runs-on: ubuntu-latest

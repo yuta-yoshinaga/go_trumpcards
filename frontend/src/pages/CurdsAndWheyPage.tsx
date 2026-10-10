@@ -19,6 +19,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
+import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -135,10 +136,17 @@ function CurdsAndWheyPageContent() {
   // Transient notice shown when a double-click auto-move finds no destination.
   const [autoMoveNotice, setAutoMoveNotice] = useState<string | null>(null);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
-  useEffect(() => {
-    exec('reset');
-  }, []);
+  // Escape drops the chosen source without moving (same binding shape as CanfieldPage).
+  const escapeBindings = useMemo(
+    () => [{ key: 'Escape', action: () => setSelected(null), enabled: selected !== null }],
+    [selected],
+  );
+  useActionKeyboardNav({
+    bindings: escapeBindings,
+    enabled: !loading && !confirmOpen && !giveUpConfirmOpen && actionLog === null,
+  });
+
+  useMountReset(exec);
 
   // Clear a stale selection and any auto-move notice whenever the board changes
   // (move, undo).

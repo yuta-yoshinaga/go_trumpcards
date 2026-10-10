@@ -539,7 +539,27 @@ describe('SomersetPage destination preview', () => {
 
     // **同じ要素**の中身が変わる (別の要素が現れるのではない) ことが読み上げの条件。
     await waitFor(() => expect(region).toHaveTextContent(/→/));
-    expect(region.textContent).toBe('ヒントがあります: タブロー列1 → 組札');
+    expect(region.textContent).toBe('♥ 6を移動: タブロー列1 → 組札');
+  });
+
+  it('does not announce a stale hint when its card is no longer on the tableau', async () => {
+    mockExec.mockResolvedValue({ ...playingState, tableau: makeTableau([]) });
+    renderWithProviders(<SomersetPage />);
+    await waitFor(() => expect(screen.getByText(/サマセット/)).toBeInTheDocument());
+
+    const region = screen.getByTestId('somerset-hint-live');
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau([]),
+      hint: { fromCol: 1, cardIndex: 0, toZone: 'foundation', toCol: 2 },
+    });
+    const hintButton = screen.getByRole('button', { name: 'ヒント' });
+    await waitFor(() => expect(hintButton).toBeEnabled());
+    fireEvent.click(hintButton);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+    await waitFor(() => expect(region).toBeInTheDocument());
+    expect(region).toBeEmptyDOMElement();
   });
 
   // hover と選択で同じ集合を指す ── プレビューが嘘をつかないことの検証。

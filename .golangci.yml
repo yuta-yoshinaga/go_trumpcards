@@ -7,6 +7,19 @@ run:
 
 linters:
   default: standard
+  # unparam: unused parameters and constant results hide whether logic is
+  # missing (#10911). The two justified exceptions carry a //nolint:unparam.
+  enable:
+    - unparam
+  exclusions:
+    rules:
+      # Every game's action-log helper keeps the shared
+      # (playerIdx, actionType, detailCode, detailParams, cards) shape, even
+      # where one game always passes nil. The action-log guards in
+      # frontend/scripts read the arguments by position, so trimming one
+      # game's helper breaks them.
+      - linters: [unparam]
+        source: '^func (\([^)]*\) )?(appendLog|addLog)\w*\('
 
 formatters:
   enable:

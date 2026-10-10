@@ -286,6 +286,51 @@ describe('CongressPage', () => {
     expect(screen.getByText('#0').parentElement).not.toHaveAttribute('data-legal-target');
   });
 
+  it('highlights legal destinations while dragging and clears them when the drag ends', async () => {
+    const previewState: CongressResponse = {
+      ...playingState,
+      tableau: makeTableau([[card('SPADE', 5)], [card('HEART', 6)], [card('CLOVER', 1)]]),
+      foundation: [[card('SPADE', 4)], [], [], [], [], [], [], []],
+    };
+    mockExec.mockResolvedValue(previewState);
+    renderWithProviders(<CongressPage />);
+    const source = await screen.findByRole('button', { name: /^♠ 5/ });
+    const dataTransfer = { setData: vi.fn(), getData: vi.fn(() => ''), effectAllowed: '', dropEffect: '' };
+
+    fireEvent.dragStart(source, { dataTransfer });
+
+    await waitFor(() => expect(document.querySelectorAll('[data-legal-target="true"]')).toHaveLength(2));
+    expect(screen.getByText('#1').parentElement).toHaveAttribute('data-legal-target', 'true');
+    expect(screen.getAllByText('♠')[0]?.parentElement).toHaveAttribute('data-legal-target', 'true');
+
+    fireEvent.dragEnd(source);
+    await waitFor(() => expect(document.querySelectorAll('[data-legal-target="true"]')).toHaveLength(0));
+  });
+
+  it('does not dispatch a dragged card to an illegal destination', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<CongressPage />);
+    const source = await screen.findByRole('button', { name: /^♠ 9/ });
+    const dataTransferStore: Record<string, string> = {};
+    const dataTransfer = {
+      setData: (type: string, value: string) => {
+        dataTransferStore[type] = value;
+      },
+      getData: (type: string) => dataTransferStore[type] ?? '',
+      effectAllowed: '',
+      dropEffect: '',
+    };
+
+    mockExec.mockClear();
+    fireEvent.dragStart(source, { dataTransfer });
+    const illegal = screen.getByRole('button', { name: /空の組札0/ });
+    fireEvent.dragOver(illegal, { dataTransfer });
+    fireEvent.drop(illegal, { dataTransfer });
+
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('shows an empty waste slot when nothing has been turned', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<CongressPage />);

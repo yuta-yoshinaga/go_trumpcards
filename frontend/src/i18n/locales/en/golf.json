@@ -10,6 +10,7 @@
   "wasteCount_one": "{{count}} card",
   "wasteCount_other": "{{count}} cards",
   "playableAria": "{{card}}. Playable card",
+  "unplayableCardReason": "Cannot play because it is not adjacent to the waste pile",
   "moveCount": "Moves",
   "combo": "Combo ×{{count}}",
   "draw": "Draw",

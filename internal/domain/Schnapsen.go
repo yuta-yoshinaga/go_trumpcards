@@ -263,7 +263,7 @@ func (s *Schnapsen) NextTrick() {
 
 	s.drawReplenish()
 
-	if s.allHandsEmpty() {
+	if allHandsEmpty(s.players) {
 		s.finishGame()
 		return
 	}
@@ -668,11 +668,6 @@ func (s *Schnapsen) drawReplenish() {
 // drawOne 山札または切り札表示カードから 1 枚引く。優先順位は山札 → 切り札表示カード。
 func (s *Schnapsen) drawOne() *Card {
 	return drawOrTakeTrump(s.trumpCards, &s.trumpCard)
-}
-
-// allHandsEmpty 全プレイヤーの手札が空かを返す
-func (s *Schnapsen) allHandsEmpty() bool {
-	return allHandsEmpty(s.players)
 }
 
 // finishGame ゲームを終了させ、勝者を決定する

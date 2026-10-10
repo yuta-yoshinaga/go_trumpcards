@@ -1,6 +1,11 @@
 {
   "table": "Table",
   "title": "Binokel",
+  "difficulty": {
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
   "phase": {
     "bid": "Bid",
     "dabb": "Dabb",

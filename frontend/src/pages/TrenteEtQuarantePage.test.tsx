@@ -156,6 +156,25 @@ describe('TrenteEtQuarantePage', () => {
     expect(screen.getByTestId(`teq-bet-${TrenteEtQuaranteBetType.INVERSE}`)).toBeInTheDocument();
   });
 
+  it.each([
+    ['bet', betState],
+    ['result', endState],
+  ])('shows remaining shoe cards during the %s phase', async (_phase, phaseState) => {
+    mockApi.mockResolvedValue(makeTrenteEtQuaranteState({ ...phaseState, remainingDeck: 51 }));
+    renderWithProviders(<TrenteEtQuarantePage />);
+    expect(await screen.findByTestId('teq-remaining-deck')).toHaveTextContent('シューの残り枚数: 51');
+    expect(screen.getByTestId('teq-remaining-deck')).toHaveTextContent('次のラウンド開始時に自動でシャッフルされます');
+  });
+
+  it('does not announce a shuffle while 52 or more cards remain', async () => {
+    mockApi.mockResolvedValue(makeTrenteEtQuaranteState({ remainingDeck: 52 }));
+    renderWithProviders(<TrenteEtQuarantePage />);
+    expect(await screen.findByTestId('teq-remaining-deck')).toHaveTextContent('シューの残り枚数: 52');
+    expect(screen.getByTestId('teq-remaining-deck')).not.toHaveTextContent(
+      '次のラウンド開始時に自動でシャッフルされます',
+    );
+  });
+
   it('renders the default bet setting', async () => {
     mockApi.mockResolvedValue(betState);
     renderWithProviders(<TrenteEtQuarantePage />);

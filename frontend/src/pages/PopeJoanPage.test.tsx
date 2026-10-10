@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { popejoanApi } from '../api/gameApi';
+import { ApiError } from '../api/gameExec';
 import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -73,6 +74,24 @@ describe('PopeJoanPage', () => {
     renderWithProviders(<PopeJoanPage />);
     expect(screen.getByTestId('popejoan-live')).toHaveAttribute('aria-live', 'polite');
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('shows an initial request error and retries into the game', async () => {
+    mockExec.mockRejectedValueOnce(new Error('network error')).mockResolvedValueOnce(makeState());
+    renderWithProviders(<PopeJoanPage />);
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('通信エラーが発生しました。もう一度お試しください。');
+    fireEvent.click(screen.getByRole('button', { name: '再試行' }));
+    expect(await screen.findAllByTestId('popejoan-compartment')).toHaveLength(8);
+    expect(mockExec).toHaveBeenLastCalledWith('reset');
+  });
+
+  it('does not offer retry for a non-retryable initial request error', async () => {
+    mockExec.mockRejectedValueOnce(new ApiError(400));
+    renderWithProviders(<PopeJoanPage />);
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('この操作は受け付けられませんでした。');
+    expect(screen.queryByRole('button', { name: '再試行' })).not.toBeInTheDocument();
   });
 
   it('shows opponent hand counts only while the deal is in play', async () => {

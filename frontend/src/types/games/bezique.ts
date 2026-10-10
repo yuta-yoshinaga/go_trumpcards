@@ -35,6 +35,8 @@ export interface BeziqueMeld {
   type: number;
   suit: number;
   points: number;
+  /** Hand positions of the cards that form this meld. */
+  cardIndices: number[];
 }
 
 /** Bezique game configuration. */

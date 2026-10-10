@@ -24,6 +24,7 @@
     "tieDiscard": "流す",
     "tieCarry": "持ち越す",
     "tieRuleTip": "流すと同点の賞札は失われます。持ち越すと同点の賞札が次の賞に上乗せされます。",
+    "pendingReset": "設定の変更は次のリセットから適用されます。",
     "reset": "リセット",
     "giveUp": "投了",
     "bidAria": "{{card}} で入札する"

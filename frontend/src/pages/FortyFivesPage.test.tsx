@@ -67,6 +67,24 @@ beforeEach(() => {
 });
 
 describe('FortyFivesPage', () => {
+  it('keeps an empty polite status region without a decorative box', async () => {
+    mockExec.mockResolvedValue(makeFortyFivesState({ message: undefined }));
+    renderWithProviders(<FortyFivesPage />);
+    const status = await screen.findByTestId('forty-fives-game-message');
+    expect(status).toHaveAttribute('role', 'status');
+    expect(status).toHaveAttribute('aria-live', 'polite');
+    expect(status).toBeEmptyDOMElement();
+  });
+
+  it('shows a game message inside the persistent status region', async () => {
+    mockExec.mockResolvedValue(makeFortyFivesState({ message: '入札してください。' }));
+    renderWithProviders(<FortyFivesPage />);
+    const status = await screen.findByTestId('forty-fives-game-message');
+    expect(status).toHaveAttribute('role', 'status');
+    expect(status).toHaveAttribute('aria-live', 'polite');
+    expect(status).toHaveTextContent('入札してください。');
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<FortyFivesPage />);

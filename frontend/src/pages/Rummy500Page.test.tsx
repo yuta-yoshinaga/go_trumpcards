@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { rummy500Api } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -497,6 +497,10 @@ describe('Rummy500Page', () => {
     expect(comparison).toHaveTextContent('-11');
     expect(comparison).toHaveTextContent('CPU 1');
     expect(comparison).toHaveTextContent('-19');
+    expect(within(comparison).getByText('♠ A: -1点')).toBeInTheDocument();
+    expect(within(comparison).getByText('♥ Q: -10点')).toBeInTheDocument();
+    expect(within(comparison).getByText('♣ 9: -9点')).toBeInTheDocument();
+    expect(within(comparison).getByText('♦ K: -10点')).toBeInTheDocument();
   });
 
   it('shows every player hand penalty when the game ends', async () => {
@@ -514,6 +518,26 @@ describe('Rummy500Page', () => {
     expect(comparison).toHaveTextContent('-11');
     expect(comparison).toHaveTextContent('CPU 1');
     expect(comparison).toHaveTextContent('-19');
+    expect(within(comparison).getByText('♠ A: -1点')).toBeInTheDocument();
+    expect(within(comparison).getByText('♥ Q: -10点')).toBeInTheDocument();
+    expect(within(comparison).getByText('♣ 9: -9点')).toBeInTheDocument();
+    expect(within(comparison).getByText('♦ K: -10点')).toBeInTheDocument();
+  });
+
+  it('does not show CPU card penalties during normal play', async () => {
+    mockExec.mockResolvedValue({
+      ...roundEndState,
+      phase: 1,
+      players: roundEndState.players,
+    });
+    renderWithProviders(<Rummy500Page />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('phase-indicator')).toHaveTextContent('プレイ');
+    });
+    expect(screen.queryByTestId('round-hand-penalties')).not.toBeInTheDocument();
+    expect(screen.queryByText('♣ 9: -9点')).not.toBeInTheDocument();
+    expect(screen.queryByText('♦ K: -10点')).not.toBeInTheDocument();
   });
 
   it('does not retain the previous round hand penalties in the next round', async () => {

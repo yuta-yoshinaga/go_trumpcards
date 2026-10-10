@@ -7,12 +7,12 @@ import "testing"
 func sjiCard(suit, value int) *Card { return NewCard(suit, value, true) }
 
 // sjiFresh は空の手札で始まる卓を返す。
-func sjiFresh(t *testing.T, level, trump int) *ShengJi {
+func sjiFresh(t *testing.T) *ShengJi {
 	t.Helper()
 	s := NewDefaultShengJi()
 	s.Reset()
-	s.SetLevelForTest(level)
-	s.SetTrumpForTest(trump)
+	s.SetLevelForTest(5)
+	s.SetTrumpForTest(1)
 	for i := range ShengJiPlayerCnt {
 		s.SetHandForTest(i, nil)
 	}
@@ -20,6 +20,18 @@ func sjiFresh(t *testing.T, level, trump int) *ShengJi {
 	s.SetPhaseForTest(ShengJiPhasePlay)
 	s.SetCurrentPlayerForTest(0)
 	return s
+}
+
+func TestShengJi_GetCurrentTrickWinner(t *testing.T) {
+	s := sjiFresh(t)
+	if got := s.GetCurrentTrickWinner(); got != -1 {
+		t.Fatalf("empty trick winner = %d, want -1", got)
+	}
+	s.trickLeader = 2
+	s.trick = [][]*Card{{sjiCard(CardDesignSpade, 4)}, {sjiCard(CardDesignSpade, 7)}}
+	if got := s.GetCurrentTrickWinner(); got != 3 {
+		t.Fatalf("current trick winner = %d, want 3", got)
+	}
 }
 
 // **108 は 4 で割り切れる。**それでも 27 枚ずつ配ってはいけない。
@@ -308,8 +320,7 @@ func TestShengJiEqualCombosDoNotBeat(t *testing.T) {
 
 // **リードされたスートを持っているなら、そこから出さなければならない。**
 func TestShengJiMustFollowTheLedSuit(t *testing.T) {
-	const level, trump = 5, CardDesignSpade
-	s := sjiFresh(t, level, trump)
+	s := sjiFresh(t)
 	s.SetHandForTest(0, []*Card{sjiCard(CardDesignHeart, 7)})
 	s.SetHandForTest(1, []*Card{sjiCard(CardDesignHeart, 9), sjiCard(CardDesignDiamond, 3)})
 
@@ -327,8 +338,7 @@ func TestShengJiMustFollowTheLedSuit(t *testing.T) {
 // **対子がリードされたら、そのスートの対子を先に出さなければならない。**
 // 枚数だけ合わせて対子を温存できると、拖拉機を出す意味が無くなる。
 func TestShengJiMustPlayPairsWhenAPairIsLed(t *testing.T) {
-	const level, trump = 5, CardDesignSpade
-	s := sjiFresh(t, level, trump)
+	s := sjiFresh(t)
 	s.SetHandForTest(0, []*Card{sjiCard(CardDesignHeart, 7), sjiCard(CardDesignHeart, 7)})
 	// 席 1 は ♥ の対子と、ばらの ♥ を 2 枚持つ。
 	s.SetHandForTest(1, []*Card{
@@ -350,8 +360,7 @@ func TestShengJiMustPlayPairsWhenAPairIsLed(t *testing.T) {
 
 // 対子を持っていなければ、そのスートのばら札で構わない。
 func TestShengJiOddCardsAreFineWithoutAPair(t *testing.T) {
-	const level, trump = 5, CardDesignSpade
-	s := sjiFresh(t, level, trump)
+	s := sjiFresh(t)
 	s.SetHandForTest(0, []*Card{sjiCard(CardDesignHeart, 7), sjiCard(CardDesignHeart, 7)})
 	s.SetHandForTest(1, []*Card{sjiCard(CardDesignHeart, 3), sjiCard(CardDesignHeart, 4)})
 
@@ -365,8 +374,7 @@ func TestShengJiOddCardsAreFineWithoutAPair(t *testing.T) {
 
 // スートを持っていなければ何を出してもよい。
 func TestShengJiVoidPlayerMayDiscard(t *testing.T) {
-	const level, trump = 5, CardDesignSpade
-	s := sjiFresh(t, level, trump)
+	s := sjiFresh(t)
 	s.SetHandForTest(0, []*Card{sjiCard(CardDesignHeart, 7)})
 	s.SetHandForTest(1, []*Card{sjiCard(CardDesignDiamond, 3)})
 
@@ -379,8 +387,7 @@ func TestShengJiVoidPlayerMayDiscard(t *testing.T) {
 }
 
 func TestShengJiPlayGuards(t *testing.T) {
-	const level, trump = 5, CardDesignSpade
-	s := sjiFresh(t, level, trump)
+	s := sjiFresh(t)
 	s.SetHandForTest(0, []*Card{sjiCard(CardDesignHeart, 7), sjiCard(CardDesignDiamond, 8)})
 
 	if err := s.Play(1, []int{0}); err == nil {
@@ -400,8 +407,7 @@ func TestShengJiPlayGuards(t *testing.T) {
 
 // **点を集めるのは守備側。**宣言側が取った点はどこにも積まれない。
 func TestShengJiOnlyDefendersCollectPoints(t *testing.T) {
-	const level, trump = 5, CardDesignSpade
-	s := sjiFresh(t, level, trump)
+	s := sjiFresh(t)
 	declarers := s.GetDeclarerTeam()
 	defenders := 1 - declarers
 
@@ -441,10 +447,9 @@ func TestShengJiDeclarerAdvanceTable(t *testing.T) {
 }
 
 func TestShengJiSettlement(t *testing.T) {
-	const level, trump = 5, CardDesignSpade
 
 	t.Run("the declarers hold and climb", func(t *testing.T) {
-		s := sjiFresh(t, level, trump)
+		s := sjiFresh(t)
 		declarers := s.GetDeclarerTeam()
 		before := s.GetTeamLevel(declarers)
 		s.FinishHandForTest()
@@ -467,7 +472,7 @@ func TestShengJiSettlement(t *testing.T) {
 
 	// **80 点で宣言側が交代する。**そこは昇級 0。
 	t.Run("eighty points takes the deal without a climb", func(t *testing.T) {
-		s := sjiFresh(t, level, trump)
+		s := sjiFresh(t)
 		declarers := s.GetDeclarerTeam()
 		defenders := 1 - declarers
 		beforeDef := s.GetTeamLevel(defenders)
@@ -491,7 +496,7 @@ func TestShengJiSettlement(t *testing.T) {
 
 	// 80 を超えてから **40 点ごとに 1 段階。**
 	t.Run("every forty above eighty is one level", func(t *testing.T) {
-		s := sjiFresh(t, level, trump)
+		s := sjiFresh(t)
 		defenders := 1 - s.GetDeclarerTeam()
 		before := s.GetTeamLevel(defenders)
 		s.teamPoints[defenders] = ShengJiDefenderTarget + 2*ShengJiAdvanceStep
@@ -509,10 +514,9 @@ func TestShengJiSettlement(t *testing.T) {
 // **A は飛び越えられない。**K から 3 段階でも A で止まり、A の局を守りきって
 // 初めて勝ちになる (打A)。
 func TestShengJiCannotSkipPastTheAce(t *testing.T) {
-	const level, trump = 5, CardDesignSpade
 
 	t.Run("a big climb stops at the ace", func(t *testing.T) {
-		s := sjiFresh(t, level, trump)
+		s := sjiFresh(t)
 		declarers := s.GetDeclarerTeam()
 		s.SetTeamLevelForTest(declarers, 13) // K
 		s.FinishHandForTest()
@@ -526,7 +530,7 @@ func TestShengJiCannotSkipPastTheAce(t *testing.T) {
 	})
 
 	t.Run("holding the deal at the ace wins", func(t *testing.T) {
-		s := sjiFresh(t, level, trump)
+		s := sjiFresh(t)
 		declarers := s.GetDeclarerTeam()
 		s.SetTeamLevelForTest(declarers, ShengJiMaxLevel)
 		s.FinishHandForTest()
@@ -544,7 +548,7 @@ func TestShengJiCannotSkipPastTheAce(t *testing.T) {
 
 	// 交代しただけ (80 点ちょうど) では誰も上がらないので終わらない。
 	t.Run("taking the deal at the ace does not win", func(t *testing.T) {
-		s := sjiFresh(t, level, trump)
+		s := sjiFresh(t)
 		defenders := 1 - s.GetDeclarerTeam()
 		s.SetTeamLevelForTest(defenders, ShengJiMaxLevel)
 		s.teamPoints[defenders] = ShengJiDefenderTarget
@@ -558,8 +562,7 @@ func TestShengJiCannotSkipPastTheAce(t *testing.T) {
 
 // **守備側が最終トリックを取ると、底牌が倍率つきで守備側に入る。**
 func TestShengJiKittyGoesToTheDefendersWithAMultiplier(t *testing.T) {
-	const level, trump = 5, CardDesignSpade
-	s := sjiFresh(t, level, trump)
+	s := sjiFresh(t)
 	declarers := s.GetDeclarerTeam()
 	defenders := 1 - declarers
 
@@ -598,8 +601,7 @@ func TestShengJiKittyGoesToTheDefendersWithAMultiplier(t *testing.T) {
 
 // 宣言側が最終トリックを取れば底牌は動かない。
 func TestShengJiKittyStaysWhenTheDeclarersTakeTheLastTrick(t *testing.T) {
-	const level, trump = 5, CardDesignSpade
-	s := sjiFresh(t, level, trump)
+	s := sjiFresh(t)
 
 	s.SetKittyForTest([]*Card{sjiCard(CardDesignDiamond, 13)})
 	s.SetHandForTest(0, []*Card{sjiCard(CardDesignHeart, 9)})
@@ -626,7 +628,7 @@ func TestShengJiDeclare(t *testing.T) {
 	newTable := func() *ShengJi {
 		s := NewDefaultShengJi()
 		s.Reset()
-		s.SetLevelForTest(level)
+		s.SetLevelForTest(5)
 		for i := range ShengJiPlayerCnt {
 			s.SetHandForTest(i, nil)
 		}
@@ -782,8 +784,7 @@ func TestShengJiCpuDrivesAFullHand(t *testing.T) {
 // 温存を禁じるので、CPU が弱い単札から拾うと自分の対子を割って弾かれる。
 // 単札 1 枚のフォールバックも枚数が合わずに弾かれ、手番が進まなくなる。
 func TestShengJiCpuFollowsAPairWithoutStalling(t *testing.T) {
-	const level, trump = 5, CardDesignSpade
-	s := sjiFresh(t, level, trump)
+	s := sjiFresh(t)
 
 	// 人間が ♥9 の対子をリードする。
 	s.SetHandForTest(0, []*Card{sjiCard(CardDesignHeart, 9), sjiCard(CardDesignHeart, 9)})
@@ -813,8 +814,7 @@ func TestShengJiCpuFollowsAPairWithoutStalling(t *testing.T) {
 
 // 対子リードに対しては、CPU が持っている対子を割らずに出すこと。
 func TestShengJiCpuKeepsItsPairIntact(t *testing.T) {
-	const level, trump = 5, CardDesignSpade
-	s := sjiFresh(t, level, trump)
+	s := sjiFresh(t)
 	s.SetHandForTest(0, []*Card{sjiCard(CardDesignHeart, 9), sjiCard(CardDesignHeart, 9)})
 	s.SetHandForTest(1, []*Card{
 		sjiCard(CardDesignHeart, 3), sjiCard(CardDesignHeart, 6), sjiCard(CardDesignHeart, 6),
@@ -931,7 +931,7 @@ func TestShengJiHandlesNilAndOutOfRange(t *testing.T) {
 		t.Error("an ace ranks 14")
 	}
 
-	s := sjiFresh(t, level, trump)
+	s := sjiFresh(t)
 	s.SetTeamLevelForTest(-1, 9)
 	s.SetTeamLevelForTest(ShengJiTeamCnt, 9)
 	for i := range ShengJiTeamCnt {
@@ -950,7 +950,7 @@ func TestShengJiHandlesNilAndOutOfRange(t *testing.T) {
 
 // **局が終わったら手番は人間に戻らない。**戻ると精算画面から抜けられる。
 func TestShengJiIsHumanTurnStopsAtTheEnd(t *testing.T) {
-	s := sjiFresh(t, 5, CardDesignSpade)
+	s := sjiFresh(t)
 	if !s.IsHumanTurn() {
 		t.Fatal("seat 0 is the human and holds the turn")
 	}
@@ -976,8 +976,7 @@ func TestShengJiIsHumanTurnStopsAtTheEnd(t *testing.T) {
 
 // **切札で切れば非切札のトリックを取れる。**
 func TestShengJiTrumpTakesThePlainTrick(t *testing.T) {
-	const level, trump = 5, CardDesignSpade
-	s := sjiFresh(t, level, trump)
+	s := sjiFresh(t)
 	s.SetHandForTest(0, []*Card{sjiCard(CardDesignHeart, 1)})
 	s.SetHandForTest(1, []*Card{sjiCard(CardDesignSpade, 2)})
 	s.SetHandForTest(2, []*Card{sjiCard(CardDesignHeart, 3)})
@@ -994,8 +993,7 @@ func TestShengJiTrumpTakesThePlainTrick(t *testing.T) {
 
 // 内部ヘルパーの縮退ケース。**壊れた状態でも落ちずに何かを返すこと。**
 func TestShengJiHelperDegenerateCases(t *testing.T) {
-	const level, trump = 5, CardDesignSpade
-	s := sjiFresh(t, level, trump)
+	s := sjiFresh(t)
 
 	if got := s.trickWinnerOffset(); got != 0 {
 		t.Errorf("an empty trick resolves to %d, want 0", got)

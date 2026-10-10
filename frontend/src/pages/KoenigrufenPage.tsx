@@ -391,6 +391,14 @@ function KoenigrufenPageContent() {
                         <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
                           {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
                           {t('tricks', { count: p.trickCount })} | {t('points', { points: p.cardPoints })}
+                          {p.id === state.dealerIdx && (
+                            <span
+                              className="ml-1 rounded-sm bg-ds-surface px-1 text-ds-accent"
+                              data-testid="koenigrufen-dealer-badge"
+                            >
+                              {t('dealerBadge')}
+                            </span>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -401,6 +409,14 @@ function KoenigrufenPageContent() {
                       <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
                         {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
                         {t('tricks', { count: p.trickCount })} | {t('points', { points: p.cardPoints })}
+                        {p.id === state.dealerIdx && (
+                          <span
+                            className="ml-1 rounded-sm bg-ds-surface px-1 text-ds-accent"
+                            data-testid="koenigrufen-dealer-badge"
+                          >
+                            {t('dealerBadge')}
+                          </span>
+                        )}
                       </div>
                     ))}
                   </div>

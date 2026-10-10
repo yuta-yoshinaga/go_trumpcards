@@ -7192,7 +7192,7 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/SevenCardStudResponse'
+                  - $ref: '#/components/schemas/FiveCardStudResponse'
                   - $ref: '#/components/schemas/ActionLogResponse'
                 description: |
                   The shape depends on the command. Ordinary commands return the game
@@ -7202,7 +7202,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SevenCardStudResponse'
+                $ref: '#/components/schemas/FiveCardStudResponse'
               examples:
                 paramError:
                   value:
@@ -7281,7 +7281,7 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/SevenCardStudResponse'
+                  - $ref: '#/components/schemas/FiveCardStudResponse'
                   - $ref: '#/components/schemas/ActionLogResponse'
                 description: |
                   The shape depends on the command. Ordinary commands return the game
@@ -7291,7 +7291,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SevenCardStudResponse'
+                $ref: '#/components/schemas/FiveCardStudResponse'
 
 
   /fourseasons/exec:
@@ -11170,6 +11170,16 @@ paths:
                   description: Stake for bet and raise. Ignored by the other actions.
                 sessionId:
                   type: string
+                config:
+                  type: object
+                  description: Table settings applied when command is reset.
+                  properties:
+                    seats:
+                      type: integer
+                    initialChips:
+                      type: integer
+                    ante:
+                      type: integer
               example:
                 command: pay
                 sessionId: my-session-001
@@ -31855,6 +31865,12 @@ paths:
                     type: integer
                 sessionId:
                   type: string
+                config:
+                  type: object
+                  properties:
+                    rounds:
+                      type: integer
+                      description: "Rounds in the game (1-20, default 5). Read by `reset`."
               example:
                 command: meld
                 indexes: [0, 3, 6]
@@ -38292,6 +38308,9 @@ components:
           type: integer
         lastTrickWinner:
           type: integer
+        currentTrickWinner:
+          type: integer
+          description: "Seat currently winning the trick; -1 when no cards have been played"
         lastResult:
           type: object
           nullable: true
@@ -41276,6 +41295,7 @@ components:
         - landlordIdx
         - baseBid
         - highestBid
+        - highestBidder
         - bombCount
         - scores
         - gameEndFlag
@@ -41321,6 +41341,9 @@ components:
           type: integer
         highestBid:
           type: integer
+        highestBidder:
+          type: integer
+          description: Seat index of the player with the highest bid (-1 if none)
         bombCount:
           type: integer
         scores:
@@ -47103,6 +47126,18 @@ components:
                   $ref: '#/components/schemas/Card'
               deadwood:
                 type: integer
+              melds:
+                type: array
+                description: Meld groups represented by indexes into the player's cards array.
+                items:
+                  type: array
+                  items:
+                    type: integer
+              deadwoodIndices:
+                type: array
+                description: Indexes into the player's cards array that are deadwood.
+                items:
+                  type: integer
               roundScore:
                 type: integer
               cumulativeScore:
@@ -47910,6 +47945,11 @@ components:
           items:
             type: integer
           description: Hand indices the human may legally play (must-follow filtered)
+        handCardThirds:
+          type: array
+          description: Point values of the human player's hand cards, in thirds of a point and in hand order.
+          items:
+            type: integer
         gameEndFlag:
           type: boolean
         winnerTeam:
@@ -48750,6 +48790,15 @@ components:
                 type: array
                 items: {$ref: '#/components/schemas/Card'}
               roundScore: {type: integer}
+              scoreBreakdown:
+                type: object
+                description: Components of the most recently completed Biriba round score
+                properties:
+                  meldCards: {type: integer, description: Points from melded cards}
+                  canastaBonus: {type: integer, description: Biriba bonus points}
+                  red3Bonus: {type: integer, description: Red three bonus points}
+                  goOutBonus: {type: integer, description: Going out bonus points}
+                  handPenalty: {type: integer, description: Points deducted for cards remaining in hand}
               cumulativeScore: {type: integer}
               hasBiriba: {type: boolean}
               hasInitMeld: {type: boolean}
@@ -50074,6 +50123,16 @@ components:
           items:
             type: integer
           example: []
+        recommendedHold:
+          type: array
+          description: Indices recommended by the strategy table; empty outside the draw phase.
+          items:
+            type: integer
+          example: []
+        recommendedHoldRule:
+          type: string
+          description: Strategy table row key supporting the recommended hold; empty outside the draw phase.
+          example: ""
         message:
           type: string
           description: Game status message
@@ -52369,6 +52428,11 @@ components:
       type: object
       description: Current state of the Contract Bridge game
       properties:
+        legalPlayIndices:
+          type: array
+          description: Legal card indices for the human-controlled hand during a play turn.
+          items:
+            type: integer
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -53988,6 +54052,17 @@ components:
           items:
             type: integer
           example: [0, 1, 2]
+        winners:
+          type: array
+          description: Players who won the pot at showdown and the amount received.
+          items:
+            type: object
+            required: [playerIdx, amount]
+            properties:
+              playerIdx:
+                type: integer
+              amount:
+                type: integer
 
     FollowTheQueenResponse:
       description: |
@@ -54016,7 +54091,23 @@ components:
               minimum: -1
               maximum: 10
               example: 3
+            players:
+              type: array
+              items:
+                $ref: '#/components/schemas/FollowTheQueenPlayerData'
         - $ref: '#/components/schemas/SevenCardStudResponse'
+
+    FollowTheQueenPlayerData:
+      description: Follow the Queen player data, including source cards selected for the live best hand.
+      allOf:
+        - $ref: '#/components/schemas/SevenCardStudPlayer'
+        - type: object
+          properties:
+            bestHandSource:
+              type: array
+              description: Original physical cards selected for the human's live best five before showdown; empty for other players or after showdown.
+              items:
+                $ref: '#/components/schemas/Card'
 
     FollowTheQueenSidePot:
       type: object
@@ -54031,6 +54122,36 @@ components:
         winners:
           type: array
           description: Players who won each pot at showdown and the amount received. Empty array outside showdown.
+          items:
+            type: object
+            required: [playerIdx, amount]
+            properties:
+              playerIdx:
+                type: integer
+              amount:
+                type: integer
+    FiveCardStudResponse:
+      allOf:
+        - $ref: '#/components/schemas/SevenCardStudResponse'
+        - type: object
+          properties:
+            sidePots:
+              type: array
+              items:
+                $ref: '#/components/schemas/FiveCardStudSidePot'
+    FiveCardStudSidePot:
+      type: object
+      required: [amount, eligiblePlayers, winners]
+      properties:
+        amount:
+          type: integer
+        eligiblePlayers:
+          type: array
+          items:
+            type: integer
+        winners:
+          type: array
+          description: Players who won the pot at showdown and the amount received. Empty outside showdown.
           items:
             type: object
             required: [playerIdx, amount]
@@ -54789,6 +54910,10 @@ components:
         totalPayout:
           type: integer
           description: Total payout returned to the player.
+          example: 0
+        netChange:
+          type: integer
+          description: Net profit or loss for the settled round after subtracting the ante and any raise.
           example: 0
         appliedMultiplier:
           type: integer
@@ -55636,6 +55761,9 @@ components:
               totalScore:
                 type: integer
                 description: Cumulative match score for this player
+              dealPoints:
+                type: integer
+                description: Card points captured during the current deal
         phase:
           type: integer
           description: "Game phase: 0=Bid, 1=NameTrump, 2=Play, 3=TrickEnd, 4=RoundEnd, 5=GameEnd"
@@ -56833,6 +56961,10 @@ components:
                 items:
                   $ref: '#/components/schemas/Card'
               capturedCount: { type: integer }
+              capturedCards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
               scopaCount: { type: integer }
               totalScore: { type: integer }
         currentTurn:
@@ -57001,6 +57133,11 @@ components:
                 items:
                   $ref: '#/components/schemas/Card'
               capturedCount: { type: integer }
+              capturedCards:
+                type: array
+                description: Captured cards for the human's team; empty for opponents to preserve hidden information.
+                items:
+                  $ref: '#/components/schemas/Card'
               scopaCount: { type: integer }
         currentTurn:
           type: integer
@@ -58431,6 +58568,14 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/HokmTrickCard'
+        lastTrick:
+          type: array
+          description: Most recently completed trick, retained during the next trick.
+          items:
+            $ref: '#/components/schemas/HokmTrickCard'
+        lastTrickWinner:
+          type: integer
+          description: Winning seat of lastTrick, or -1 before the first trick.
         validPlays:
           type: array
           description: Hand indices you may legally play. Following suit is compulsory.
@@ -59329,6 +59474,14 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SergeantMajorTrickCard'
+        lastTrick:
+          type: array
+          description: Most recently completed trick; cleared when a new round starts.
+          items:
+            $ref: '#/components/schemas/SergeantMajorTrickCard'
+        lastTrickWinner:
+          type: integer
+          description: Winning seat of the most recently completed trick, or -1 when none.
         validPlays:
           type: array
           description: Hand indices you may legally play. Following suit is compulsory.
@@ -59646,6 +59799,17 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/MinibridgeTrickCard'
+        lastTrick:
+          type: array
+          description: Most recently resolved trick, kept visible until the user continues.
+          items:
+            $ref: '#/components/schemas/MinibridgeTrickCard'
+        lastTrickWinner:
+          type: integer
+          description: Seat that won lastTrick, or -1 when no trick has resolved.
+        trickPaused:
+          type: boolean
+          description: Whether play awaits user confirmation after resolving a trick.
         validPlays:
           type: array
           description: >-
@@ -59850,6 +60014,8 @@ components:
         centerPileSize:
           type: integer
         topCard:
+          $ref: '#/components/schemas/Card'
+        previousCard:
           $ref: '#/components/schemas/Card'
         players:
           type: array
@@ -60581,6 +60747,12 @@ components:
             the called trump is played.
         partnerRevealed:
           type: boolean
+        declarerTeamPoints:
+          type: integer
+          description: Present only after the partner is revealed in a Rufer contract.
+        defenderTeamPoints:
+          type: integer
+          description: Present only after the partner is revealed in a Rufer contract.
         talonCount:
           type: integer
         currentTrick:
@@ -60953,6 +61125,18 @@ components:
         maxBetAmount:
           type: integer
           description: Maximum allowed bet/raise amount for Pot Limit mode. 0 means no limit (Fixed or No Limit mode).
+        smallBlind:
+          type: integer
+          description: Current small blind, or zero when the discipline does not use blinds.
+        bigBlind:
+          type: integer
+          description: Current big blind, or zero when the discipline does not use blinds.
+        ante:
+          type: integer
+          description: Current ante, or zero when the discipline does not use an ante.
+        bringIn:
+          type: integer
+          description: Current stud bring-in, or zero when the discipline does not use one.
         tablePhase:
           type: integer
           description: Phase number reported by the running discipline.
@@ -61923,6 +62107,9 @@ components:
           type: integer
         payout:
           type: integer
+        netChange:
+          type: integer
+          description: Player chip change settled for this round, excluding house-funded free bets.
         chips:
           type: integer
         roundNumber:
@@ -62970,6 +63157,9 @@ components:
         hasChosenPass:
           type: boolean
           description: Whether this seat has chosen its card. Everyone passes at once.
+        chosenPassCard:
+          $ref: '#/components/schemas/Card'
+          description: The human's selected card while waiting. Never present for CPU seats.
     PigResponse:
       type: object
       description: Response payload for /pig/exec
@@ -63347,6 +63537,11 @@ components:
         - type: object
           description: Response payload for /julepe/exec
           properties:
+            roundAntes:
+              type: array
+              description: Ante paid by each seat at the start of this round.
+              items:
+                type: integer
             lastTrick:
               type: array
               description: Cards in the most recently completed trick; empty before the first trick.
@@ -63790,6 +63985,14 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/GermanWhistTrickCard'
+        lastTrick:
+          type: array
+          description: Most recently resolved trick; empty before the first resolution.
+          items:
+            $ref: '#/components/schemas/GermanWhistTrickCard'
+        lastTrickWinner:
+          type: integer
+          description: Winner of lastTrick, or -1 when no trick has resolved.
         trumpSuit:
           type: integer
           description: Suit of the first face-up card; trump for the whole hand.
@@ -66705,6 +66908,7 @@ components:
         - playPayout
         - jackpotPayout
         - totalPayout
+        - netChange
         - dealerQualified
         - playerHandRank
         - dealerHandRank
@@ -66777,6 +66981,10 @@ components:
         totalPayout:
           type: integer
           description: Total payout for the current round (sum of all payouts)
+          example: 0
+        netChange:
+          type: integer
+          description: Net chip change for the current round after bets and exchange fees
           example: 0
         dealerQualified:
           type: boolean
@@ -70805,6 +71013,11 @@ components:
                 description: Meld name (e.g. Marriage, Royal Marriage, Bezique, Four Aces)
               points:
                 type: integer
+              cardIndices:
+                type: array
+                description: Hand indices of the cards that form this meld.
+                items:
+                  type: integer
               cards:
                 type: array
                 items:
@@ -71128,6 +71341,22 @@ components:
               defendingContract:
                 type: integer
                 description: Points awarded to defenders when the declarer fails.
+        scoreHistory:
+          type: array
+          description: Per completed round scores and cumulative totals in player seat order.
+          items:
+            type: object
+            properties:
+              roundNumber:
+                type: integer
+              roundScores:
+                type: array
+                items:
+                  type: integer
+              cumulativeScores:
+                type: array
+                items:
+                  type: integer
         roundTricks:
           type: array
           items:
@@ -74299,6 +74528,20 @@ components:
           maxItems: 2
           items:
             type: integer
+        drawTiePercent:
+          type: array
+          description: Chance that the next card ties each tableau; index 0 = right, 1 = left.
+          minItems: 2
+          maxItems: 2
+          items:
+            type: integer
+        drawLosePercent:
+          type: array
+          description: Chance that the next card falls below each tableau; index 0 = right, 1 = left.
+          minItems: 2
+          maxItems: 2
+          items:
+            type: integer
         lastResult:
           type: object
           properties:
@@ -77347,6 +77590,11 @@ components:
           type: integer
         currentTrick:
           type: array
+        validPlayIndices:
+          type: array
+          description: "Hand indices the human player may legally play during their play turn."
+          items:
+            type: integer
         teamScores:
           type: array
           items:
@@ -77649,6 +77897,9 @@ components:
                   $ref: '#/components/schemas/Card'
               trickCount:
                 type: integer
+              bouts:
+                type: integer
+                description: Bouts captured in this player's completed tricks this deal.
               cardPoints:
                 type: integer
               score:
@@ -79298,6 +79549,14 @@ components:
         scartoCount:
           type: integer
           description: "Cards the dealer has buried so far this deal."
+        playedTrumps:
+          type: array
+          description: "Trumps played this round, ordered by rank."
+          items:
+            $ref: '#/components/schemas/Card'
+        remainingTrumps:
+          type: integer
+          description: "Trumps not yet played this round."
         isHumanScarto:
           type: boolean
           description: "True while the human seat is the dealer and owes the scarto."
@@ -80741,6 +81000,9 @@ components:
         openPiles:
           type: integer
           description: How many columns have had their base king dealt
+        canAutoComplete:
+          type: boolean
+          description: Whether any tableau card can currently move to a foundation
         phase:
           type: integer
           description: Current game phase (0=Playing, 1=GameClear, 2=GameOver)
@@ -81182,6 +81444,13 @@ components:
           type: integer
         roundNumber:
           type: integer
+        roundScoreHistory:
+          type: array
+          description: Completed round scores indexed by round and player.
+          items:
+            type: array
+            items:
+              type: integer
         totalRounds:
           type: integer
         currentPlayerIdx:
@@ -83378,6 +83647,9 @@ components:
             type: integer
         pussiCount:
           type: integer
+        pussiPoints:
+          type: integer
+          description: Total card points in the pussi, using Marjapussi card scoring rules.
         pussi:
           type: array
           items:

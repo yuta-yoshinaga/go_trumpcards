@@ -3,6 +3,7 @@
   "cpu": "CPU {{id}}",
   "deck": "山札: {{count}}枚",
   "playersTitle": "プレイヤー",
+  "handCount": "手札 {{count}}枚",
   "captured": "捕獲 {{count}}枚",
   "finalScore": "{{score}}枚",
   "provisional": "暫定 {{score}}枚",

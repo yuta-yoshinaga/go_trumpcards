@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { bakersDozenApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BakersDozenResponse, BakersDozenTableauCard, Card, CardDesign } from '../types/card';
@@ -100,7 +101,8 @@ describe('BakersDozenPage', () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BakersDozenPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
-    const target = screen.getByRole('button', { name: '空の組札 (♠)' });
+    const target = screen.getByRole('button', { name: '空の組札 (スペード)' });
+    expect(target).not.toHaveAccessibleName(/♠/);
     expect(target).not.toBeDisabled();
     expect(target).toHaveAttribute('aria-disabled', 'true');
     const hintId = target.getAttribute('aria-describedby');
@@ -182,6 +184,31 @@ describe('BakersDozenPage', () => {
     await waitFor(() => expect(screen.getAllByText('A').length).toBeGreaterThanOrEqual(4));
   });
 
+  it('names the foundation suit in Japanese and English for empty and filled piles', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [[card('SPADE', 1)], [], [], []],
+    });
+    renderWithProviders(<BakersDozenPage />);
+    const filledSpade = await screen.findByRole('button', { name: /スペード.*組札/ });
+    const emptyClub = screen.getByRole('button', { name: '空の組札 (クラブ)' });
+    expect(filledSpade).toBeInTheDocument();
+    expect(filledSpade).not.toHaveAccessibleName(/♠/);
+    expect(emptyClub).not.toHaveAccessibleName(/♣/);
+
+    try {
+      await i18n.changeLanguage('en');
+      await waitFor(() => {
+        const filledSpadeEn = screen.getByRole('button', { name: /spade.*foundation/i });
+        const emptyClubEn = screen.getByRole('button', { name: 'Empty foundation (Club)' });
+        expect(filledSpadeEn).not.toHaveAccessibleName(/♠/);
+        expect(emptyClubEn).not.toHaveAccessibleName(/♣/);
+      });
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
+  });
+
   it('renders giveup button when playing', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BakersDozenPage />);
@@ -247,7 +274,9 @@ describe('BakersDozenPage', () => {
     renderWithProviders(<BakersDozenPage />);
     await waitFor(() => {
       // Foundation top card aria-label uses suit + count (見出しは "♠ 組札 2枚")
-      expect(screen.getByLabelText(/♠ 組札 2枚/)).toBeInTheDocument();
+      const foundation = screen.getByLabelText(/スペード 組札 2枚/);
+      expect(foundation).toBeInTheDocument();
+      expect(foundation).not.toHaveAccessibleName(/♠/);
     });
   });
 
@@ -460,7 +489,9 @@ describe('BakersDozenPage legal targets', () => {
     fireEvent.click(await screen.findByRole('button', { name: '♠ A、列0' }));
 
     await waitFor(() =>
-      expect(screen.getByRole('button', { name: '空の組札 (♠)' }).closest('[data-legal-target="true"]')).not.toBeNull(),
+      expect(
+        screen.getByRole('button', { name: '空の組札 (スペード)' }).closest('[data-legal-target="true"]'),
+      ).not.toBeNull(),
     );
     // A はどの組札にも置ける。4 つとも光る。
     expect(document.querySelectorAll('[data-legal-target="true"]').length).toBe(4);
@@ -480,7 +511,8 @@ describe('BakersDozenPage legal targets', () => {
     // **合法な移動先を選んではいけない。**♥6 は ♠5 の合法な置き先なので、
     // 「押せなくしない」ことの検証にならない。空の組札は ♠5 では絶対に
     // 合法にならない (A しか置けない) illegal target。
-    const emptyFoundation = screen.getByRole('button', { name: '空の組札 (♠)' });
+    const emptyFoundation = screen.getByRole('button', { name: '空の組札 (スペード)' });
+    expect(emptyFoundation).not.toHaveAccessibleName(/♠/);
     expect(emptyFoundation.closest('[data-legal-target="true"]')).toBeNull();
     expect(emptyFoundation).toBeEnabled();
   });

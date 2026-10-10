@@ -66,6 +66,8 @@ type HokmWebOutput struct {
 	CurrentPlayerIdx     int                   `json:"currentPlayerIdx"`
 	LeadPlayerIdx        int                   `json:"leadPlayerIdx"`
 	CurrentTrick         []*WebOutputTrickCard `json:"currentTrick"`
+	LastTrick            []*WebOutputTrickCard `json:"lastTrick"`
+	LastTrickWinner      int                   `json:"lastTrickWinner"`
 	ValidPlays           []int                 `json:"validPlays"`
 	GameEndFlag          bool                  `json:"gameEndFlag"`
 	WinnerTeam           int                   `json:"winnerTeam"`
@@ -103,15 +105,17 @@ var NewHokmWebController, NewHokmWebControllerWithProvider = webControllerPair[u
 
 func newHokmDefaultOutput(msg string) *HokmWebOutput {
 	return &HokmWebOutput{
-		Players:        make([]*HokmWebOutputPlayer, 0),
-		CurrentTrick:   make([]*WebOutputTrickCard, 0),
-		ValidPlays:     make([]int, 0),
-		Scores:         make([]int, 0),
-		TeamTricks:     make([]int, 0),
-		TricksToWin:    domain.HokmTricksToWin,
-		LastHandWinner: -1,
-		WinnerTeam:     -1,
-		WebOutputBase:  WebOutputBase{Message: msg},
+		Players:         make([]*HokmWebOutputPlayer, 0),
+		CurrentTrick:    make([]*WebOutputTrickCard, 0),
+		LastTrick:       make([]*WebOutputTrickCard, 0),
+		LastTrickWinner: -1,
+		ValidPlays:      make([]int, 0),
+		Scores:          make([]int, 0),
+		TeamTricks:      make([]int, 0),
+		TricksToWin:     domain.HokmTricksToWin,
+		LastHandWinner:  -1,
+		WinnerTeam:      -1,
+		WebOutputBase:   WebOutputBase{Message: msg},
 	}
 }
 

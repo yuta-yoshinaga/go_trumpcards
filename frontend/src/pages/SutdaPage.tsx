@@ -217,6 +217,11 @@ function SutdaPageContent() {
               },
             ]}
           />
+          {(sutdaConfig.cpuDifficulty !== state.config.cpuDifficulty ||
+            sutdaConfig.seats !== state.config.seats ||
+            sutdaConfig.startChips !== state.config.startChips) && (
+            <p className="px-4 pt-1 text-sm text-ds-warning">{t('settings.pendingReset')}</p>
+          )}
 
           <details className="px-4 pt-2" data-testid="sutda-hand-ranking">
             <summary className="text-ds-text-primary text-sm cursor-pointer select-none hover:text-ds-accent">

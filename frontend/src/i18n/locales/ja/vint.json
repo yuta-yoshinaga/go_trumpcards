@@ -31,6 +31,7 @@
   "levelLabel": "レベル",
   "denomLabel": "スート",
   "bidButton": "宣言する",
+  "selectedTrickValue": "選択中の宣言のトリック単価: {{n}}点",
   "passButton": "パス",
   "playButton": "出す",
   "nextHand": "次の局へ",

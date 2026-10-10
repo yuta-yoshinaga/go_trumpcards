@@ -202,11 +202,11 @@ func TestOmiWebPresenter_Output(t *testing.T) {
 
 	t.Run("coded error uses message code", func(t *testing.T) {
 		m, _ := setupOmiWebMockWithPlayers()
-		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "omi.errFollowLeadSuit", nil)
+		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "shared.errFollowLeadSuit", nil)
 		var resObj controller.OmiWebOutput
 		require.NoError(t, json.Unmarshal([]byte(p.Output(m, err)), &resObj))
 		assert.Empty(t, resObj.Message)
-		assert.Equal(t, "omi.errFollowLeadSuit", resObj.MessageCode)
+		assert.Equal(t, "shared.errFollowLeadSuit", resObj.MessageCode)
 	})
 
 	t.Run("game end team 0 wins", func(t *testing.T) {

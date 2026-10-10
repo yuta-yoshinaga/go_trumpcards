@@ -20,6 +20,8 @@
   "autoCompleteProgress_other": "Auto-complete in progress. {{count}} moves",
   "autoCompleteCompleted": "Auto-complete completed",
   "autoCompleteNotReady": "Available once the stock is empty and all cards are face up",
+  "autoCompleteReady": "Auto-complete is ready",
+  "autoCompleteBusy": "Auto-complete is in progress",
   "stalemate": "No moves left. Undo a move or give up.",
   "stalemateUndo": "Undo to escape",
   "empty": "empty",

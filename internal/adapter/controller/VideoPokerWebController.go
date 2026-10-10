@@ -17,20 +17,22 @@ type VideoPokerWebInput struct {
 
 // VideoPokerWebOutput ビデオポーカーWebアウトプット
 type VideoPokerWebOutput struct {
-	Hand        []*WebOutputCard `json:"hand"`
-	Phase       int              `json:"phase"`
-	Chips       int              `json:"chips"`
-	BetAmount   int              `json:"betAmount"`
-	Result      int              `json:"result"`
-	Payout      int              `json:"payout"`
-	HandRank    int              `json:"handRank"`
-	HandName    string           `json:"handName"`
-	HandKey     string           `json:"handKey"`
-	HeldIndices [5]bool          `json:"heldIndices"`
-	VariantName string           `json:"variantName"`
-	Hands       int              `json:"hands"`
-	WinRate     int              `json:"winRate"`
-	Net         int              `json:"net"`
+	Hand                []*WebOutputCard `json:"hand"`
+	Phase               int              `json:"phase"`
+	Chips               int              `json:"chips"`
+	BetAmount           int              `json:"betAmount"`
+	Result              int              `json:"result"`
+	Payout              int              `json:"payout"`
+	HandRank            int              `json:"handRank"`
+	HandName            string           `json:"handName"`
+	HandKey             string           `json:"handKey"`
+	HeldIndices         [5]bool          `json:"heldIndices"`
+	RecommendedHold     []int            `json:"recommendedHold"`
+	RecommendedHoldRule string           `json:"recommendedHoldRule"`
+	VariantName         string           `json:"variantName"`
+	Hands               int              `json:"hands"`
+	WinRate             int              `json:"winRate"`
+	Net                 int              `json:"net"`
 	WebOutputBase
 }
 
@@ -45,8 +47,9 @@ var NewVideoPokerWebController, NewVideoPokerWebControllerWithProvider = webCont
 
 func newVideoPokerDefaultOutput(msg string) *VideoPokerWebOutput {
 	return &VideoPokerWebOutput{
-		Hand:          make([]*WebOutputCard, 0),
-		WebOutputBase: WebOutputBase{Message: msg},
+		Hand:            make([]*WebOutputCard, 0),
+		RecommendedHold: make([]int, 0),
+		WebOutputBase:   WebOutputBase{Message: msg},
 	}
 }
 

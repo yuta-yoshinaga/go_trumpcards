@@ -16,6 +16,7 @@ func TestCinchWebPresenter_Output(t *testing.T) {
 	g := domain.NewDefaultCinch()
 	g.Reset()
 	g.SetTrumpSuit(domain.CardDesignHeart)
+	g.GetPlayer(0).AddTrick([]*domain.Card{bcard(domain.CardDesignHeart, 1)})
 	g.SetBidWinnerIdx(0)
 	g.SetCurrentBid(3)
 	g.SetPhase(domain.CinchPhasePlay)
@@ -35,6 +36,7 @@ func TestCinchWebPresenter_Output(t *testing.T) {
 	players, ok := decoded["players"].([]any)
 	require.True(t, ok)
 	assert.Len(t, players, domain.CinchPlayerCnt)
+	assert.Equal(t, float64(1), players[0].(map[string]any)["dealPoints"])
 	assert.Contains(t, decoded, "currentTrick")
 }
 

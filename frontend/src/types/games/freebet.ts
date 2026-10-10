@@ -3,9 +3,6 @@
 
 import type { BaseGameResponse, Card } from '../common';
 
-/** Phases, matching the Go domain. */
-export const FREE_BET_PHASE = { bet: 0, play: 1, result: 2 } as const;
-
 /** Per-hand outcomes, matching the Go domain. */
 export const FREE_BET_RESULT = {
   none: 0,
@@ -78,6 +75,8 @@ export interface FreeBetResponse extends BaseGameResponse {
   canFreeSplit: boolean;
   anteBet: number;
   payout: number;
+  /** Player chip change settled by the server for this round. */
+  netChange: number;
   chips: number;
   roundNumber: number;
   remainingCards: number;

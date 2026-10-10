@@ -139,7 +139,7 @@ func TestBlackJack_PlayerStandViaHand(t *testing.T) {
 		domain.NewCard(domain.CardDesignClover, 10, false),
 		domain.NewCard(domain.CardDesignClover, 11, false),
 	}
-	bj, _, _ := setupDeterministicBJ(1000, playerCards, dealerCards, 100)
+	bj, _ := setupDeterministicBJ(1000, playerCards, dealerCards)
 	err := bj.PlayerStand()
 	assert.NoError(t, err)
 	// Player score 17, dealer score 22 (bust) → player wins
@@ -177,7 +177,7 @@ func TestBlackJack_ActionsOnFinishedHand(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			bj, _, _ := setupDeterministicBJ(1000, tc.playerCards, dealerCards, 100)
+			bj, _ := setupDeterministicBJ(1000, tc.playerCards, dealerCards)
 			// Stand to finish the hand
 			err := bj.PlayerStand()
 			assert.NoError(t, err)
@@ -202,7 +202,7 @@ func TestBlackJack_GameJudgmentCases(t *testing.T) {
 			domain.NewCard(domain.CardDesignClover, 10, false),
 			domain.NewCard(domain.CardDesignClover, 11, false),
 		}
-		bj, _, _ := setupDeterministicBJ(1000, playerCards, dealerCards, 100)
+		bj, _ := setupDeterministicBJ(1000, playerCards, dealerCards)
 		assert.Equal(t, domain.GameResultLose, bj.GameJudgment())
 	})
 	t.Run("player lose dealer higher", func(t *testing.T) {
@@ -216,7 +216,7 @@ func TestBlackJack_GameJudgmentCases(t *testing.T) {
 			domain.NewCard(domain.CardDesignClover, 10, false),
 			domain.NewCard(domain.CardDesignClover, 11, false),
 		}
-		bj, _, _ := setupDeterministicBJ(1000, playerCards, dealerCards, 100)
+		bj, _ := setupDeterministicBJ(1000, playerCards, dealerCards)
 		assert.Equal(t, domain.GameResultLose, bj.GameJudgment())
 	})
 	t.Run("player win dealer bust", func(t *testing.T) {
@@ -230,7 +230,7 @@ func TestBlackJack_GameJudgmentCases(t *testing.T) {
 			domain.NewCard(domain.CardDesignClover, 10, false),
 			domain.NewCard(domain.CardDesignClover, 11, false),
 		}
-		bj, _, _ := setupDeterministicBJ(1000, playerCards, dealerCards, 100)
+		bj, _ := setupDeterministicBJ(1000, playerCards, dealerCards)
 		assert.Equal(t, domain.GameResultWin, bj.GameJudgment())
 	})
 	t.Run("draw", func(t *testing.T) {
@@ -242,7 +242,7 @@ func TestBlackJack_GameJudgmentCases(t *testing.T) {
 			domain.NewCard(domain.CardDesignClover, 1, false),
 			domain.NewCard(domain.CardDesignClover, 10, false),
 		}
-		bj, _, _ := setupDeterministicBJ(1000, playerCards, dealerCards, 100)
+		bj, _ := setupDeterministicBJ(1000, playerCards, dealerCards)
 		assert.Equal(t, domain.GameResultDraw, bj.GameJudgment())
 	})
 	t.Run("player win natural BJ vs dealer 3 cards", func(t *testing.T) {
@@ -255,7 +255,7 @@ func TestBlackJack_GameJudgmentCases(t *testing.T) {
 			domain.NewCard(domain.CardDesignClover, 10, false),
 			domain.NewCard(domain.CardDesignClover, 11, false),
 		}
-		bj, _, _ := setupDeterministicBJ(1000, playerCards, dealerCards, 100)
+		bj, _ := setupDeterministicBJ(1000, playerCards, dealerCards)
 		assert.Equal(t, domain.GameResultWin, bj.GameJudgment())
 	})
 	t.Run("player win higher score", func(t *testing.T) {
@@ -267,7 +267,7 @@ func TestBlackJack_GameJudgmentCases(t *testing.T) {
 			domain.NewCard(domain.CardDesignClover, 9, false),
 			domain.NewCard(domain.CardDesignClover, 10, false),
 		}
-		bj, _, _ := setupDeterministicBJ(1000, playerCards, dealerCards, 100)
+		bj, _ := setupDeterministicBJ(1000, playerCards, dealerCards)
 		assert.Equal(t, domain.GameResultWin, bj.GameJudgment())
 	})
 	t.Run("player lose dealer higher score", func(t *testing.T) {
@@ -279,7 +279,7 @@ func TestBlackJack_GameJudgmentCases(t *testing.T) {
 			domain.NewCard(domain.CardDesignClover, 1, false),
 			domain.NewCard(domain.CardDesignClover, 10, false),
 		}
-		bj, _, _ := setupDeterministicBJ(1000, playerCards, dealerCards, 100)
+		bj, _ := setupDeterministicBJ(1000, playerCards, dealerCards)
 		assert.Equal(t, domain.GameResultLose, bj.GameJudgment())
 	})
 }
@@ -590,8 +590,7 @@ func setupDeterministicBJ(
 	playerChips int,
 	playerCards []*domain.Card,
 	dealerCards []*domain.Card,
-	bet int,
-) (*domain.BlackJack, *domain.BlackJackPlayer, *domain.BlackJackPlayer) {
+) (*domain.BlackJack, *domain.BlackJackPlayer) {
 	tc := domain.NewTrumpCards(0)
 	player := domain.NewBlackJackPlayer()
 	dealer := domain.NewBlackJackPlayer()
@@ -602,7 +601,7 @@ func setupDeterministicBJ(
 
 	// Set up hand
 	hand := bj.GetPlayerHands()[0]
-	hand.SetBet(bet)
+	hand.SetBet(100)
 	for _, c := range playerCards {
 		hand.AddCard(c)
 	}
@@ -615,12 +614,12 @@ func setupDeterministicBJ(
 	}
 	bj.SetPhase(domain.BJPhaseAction)
 
-	return bj, player, dealer
+	return bj, player
 }
 
 func TestBlackJack_FullBettingFlow(t *testing.T) {
 	t.Run("normal win payout", func(t *testing.T) {
-		bj, player, _ := setupDeterministicBJ(
+		bj, player := setupDeterministicBJ(
 			900, // after 100 bet
 			[]*domain.Card{
 				domain.NewCard(domain.CardDesignSpade, 10, false),
@@ -630,7 +629,6 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 				domain.NewCard(domain.CardDesignClover, 9, false),
 				domain.NewCard(domain.CardDesignDiamond, 10, false),
 			},
-			100,
 		)
 		assert.NoError(t, bj.PlayerStand())
 		assert.True(t, bj.GetGameEndFlag())
@@ -641,7 +639,7 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 	})
 
 	t.Run("natural BJ 3:2 payout", func(t *testing.T) {
-		bj, player, _ := setupDeterministicBJ(
+		bj, player := setupDeterministicBJ(
 			900,
 			[]*domain.Card{
 				domain.NewCard(domain.CardDesignSpade, 1, false),
@@ -651,7 +649,6 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 				domain.NewCard(domain.CardDesignClover, 9, false),
 				domain.NewCard(domain.CardDesignDiamond, 10, false),
 			},
-			100,
 		)
 		assert.NoError(t, bj.PlayerStand())
 		assert.True(t, bj.GetGameEndFlag())
@@ -661,7 +658,7 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 	})
 
 	t.Run("draw payout", func(t *testing.T) {
-		bj, player, _ := setupDeterministicBJ(
+		bj, player := setupDeterministicBJ(
 			900,
 			[]*domain.Card{
 				domain.NewCard(domain.CardDesignSpade, 10, false),
@@ -671,7 +668,6 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 				domain.NewCard(domain.CardDesignClover, 9, false),
 				domain.NewCard(domain.CardDesignDiamond, 10, false),
 			},
-			100,
 		)
 		assert.NoError(t, bj.PlayerStand())
 		assert.True(t, bj.GetGameEndFlag())
@@ -681,7 +677,7 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 	})
 
 	t.Run("lose payout", func(t *testing.T) {
-		bj, player, _ := setupDeterministicBJ(
+		bj, player := setupDeterministicBJ(
 			900,
 			[]*domain.Card{
 				domain.NewCard(domain.CardDesignSpade, 8, false),
@@ -691,7 +687,6 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 				domain.NewCard(domain.CardDesignClover, 10, false),
 				domain.NewCard(domain.CardDesignDiamond, 10, false),
 			},
-			100,
 		)
 		assert.NoError(t, bj.PlayerStand())
 		assert.True(t, bj.GetGameEndFlag())
@@ -701,7 +696,7 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 	})
 
 	t.Run("double down", func(t *testing.T) {
-		bj, _, _ := setupDeterministicBJ(
+		bj, _ := setupDeterministicBJ(
 			900,
 			[]*domain.Card{
 				domain.NewCard(domain.CardDesignSpade, 5, false),
@@ -711,7 +706,6 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 				domain.NewCard(domain.CardDesignClover, 10, false),
 				domain.NewCard(domain.CardDesignDiamond, 7, false),
 			},
-			100,
 		)
 		err := bj.PlayerDoubleDown()
 		assert.NoError(t, err)
@@ -724,7 +718,7 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 	})
 
 	t.Run("double down insufficient chips", func(t *testing.T) {
-		bj, _, _ := setupDeterministicBJ(
+		bj, _ := setupDeterministicBJ(
 			50,
 			[]*domain.Card{
 				domain.NewCard(domain.CardDesignSpade, 5, false),
@@ -734,7 +728,6 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 				domain.NewCard(domain.CardDesignClover, 10, false),
 				domain.NewCard(domain.CardDesignDiamond, 7, false),
 			},
-			100,
 		)
 		err := bj.PlayerDoubleDown()
 		assert.Error(t, err)
@@ -742,7 +735,7 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 	})
 
 	t.Run("double down with 3 cards", func(t *testing.T) {
-		bj, _, _ := setupDeterministicBJ(
+		bj, _ := setupDeterministicBJ(
 			900,
 			[]*domain.Card{
 				domain.NewCard(domain.CardDesignSpade, 2, false),
@@ -753,7 +746,6 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 				domain.NewCard(domain.CardDesignDiamond, 10, false),
 				domain.NewCard(domain.CardDesignDiamond, 7, false),
 			},
-			100,
 		)
 		err := bj.PlayerDoubleDown()
 		assert.Error(t, err)
@@ -761,7 +753,7 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 	})
 
 	t.Run("double down on finished hand", func(t *testing.T) {
-		bj, _, _ := setupDeterministicBJ(
+		bj, _ := setupDeterministicBJ(
 			900,
 			[]*domain.Card{
 				domain.NewCard(domain.CardDesignSpade, 5, false),
@@ -771,7 +763,6 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 				domain.NewCard(domain.CardDesignClover, 10, false),
 				domain.NewCard(domain.CardDesignDiamond, 7, false),
 			},
-			100,
 		)
 		bj.GetPlayerHands()[0].SetStood(true)
 		err := bj.PlayerDoubleDown()
@@ -780,7 +771,7 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 	})
 
 	t.Run("split pair", func(t *testing.T) {
-		bj, player, _ := setupDeterministicBJ(
+		bj, player := setupDeterministicBJ(
 			900,
 			[]*domain.Card{
 				domain.NewCard(domain.CardDesignSpade, 8, false),
@@ -790,7 +781,6 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 				domain.NewCard(domain.CardDesignClover, 10, false),
 				domain.NewCard(domain.CardDesignDiamond, 7, false),
 			},
-			100,
 		)
 		err := bj.PlayerSplit()
 		assert.NoError(t, err)
@@ -804,7 +794,7 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 	})
 
 	t.Run("split aces auto-stand", func(t *testing.T) {
-		bj, _, _ := setupDeterministicBJ(
+		bj, _ := setupDeterministicBJ(
 			900,
 			[]*domain.Card{
 				domain.NewCard(domain.CardDesignSpade, 1, false),
@@ -814,7 +804,6 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 				domain.NewCard(domain.CardDesignClover, 10, false),
 				domain.NewCard(domain.CardDesignDiamond, 7, false),
 			},
-			100,
 		)
 		err := bj.PlayerSplit()
 		assert.NoError(t, err)
@@ -824,7 +813,7 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 	})
 
 	t.Run("split insufficient chips", func(t *testing.T) {
-		bj, _, _ := setupDeterministicBJ(
+		bj, _ := setupDeterministicBJ(
 			50,
 			[]*domain.Card{
 				domain.NewCard(domain.CardDesignSpade, 8, false),
@@ -834,7 +823,6 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 				domain.NewCard(domain.CardDesignClover, 10, false),
 				domain.NewCard(domain.CardDesignDiamond, 7, false),
 			},
-			100,
 		)
 		err := bj.PlayerSplit()
 		assert.Error(t, err)
@@ -842,7 +830,7 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 	})
 
 	t.Run("split non-pair", func(t *testing.T) {
-		bj, _, _ := setupDeterministicBJ(
+		bj, _ := setupDeterministicBJ(
 			900,
 			[]*domain.Card{
 				domain.NewCard(domain.CardDesignSpade, 5, false),
@@ -852,7 +840,6 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 				domain.NewCard(domain.CardDesignClover, 10, false),
 				domain.NewCard(domain.CardDesignDiamond, 7, false),
 			},
-			100,
 		)
 		err := bj.PlayerSplit()
 		assert.Error(t, err)
@@ -867,7 +854,7 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 	})
 
 	t.Run("hit then stand flow", func(t *testing.T) {
-		bj, _, _ := setupDeterministicBJ(
+		bj, _ := setupDeterministicBJ(
 			900,
 			[]*domain.Card{
 				domain.NewCard(domain.CardDesignSpade, 5, false),
@@ -877,7 +864,6 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 				domain.NewCard(domain.CardDesignClover, 10, false),
 				domain.NewCard(domain.CardDesignDiamond, 7, false),
 			},
-			100,
 		)
 		_ = bj.PlayerHit()
 		_ = bj.PlayerStand()
@@ -2951,7 +2937,7 @@ func TestPlayerSurrender_NoSurrenderMode(t *testing.T) {
 		domain.NewCard(domain.CardDesignClover, 10, false),
 		domain.NewCard(domain.CardDesignDiamond, 7, false),
 	}
-	bj, _, _ := setupDeterministicBJ(1000, playerCards, dealerCards, 100)
+	bj, _ := setupDeterministicBJ(1000, playerCards, dealerCards)
 
 	// Set SurrenderRule to None
 	bj.SetPhase(domain.BJPhaseBet)
@@ -2974,7 +2960,7 @@ func TestCanSurrenderHand(t *testing.T) {
 			domain.NewCard(domain.CardDesignClover, 10, false),
 			domain.NewCard(domain.CardDesignDiamond, 7, false),
 		}
-		bj, _, _ := setupDeterministicBJ(1000, playerCards, dealerCards, 100)
+		bj, _ := setupDeterministicBJ(1000, playerCards, dealerCards)
 		// Default SurrenderRule is Late (0)
 		assert.True(t, bj.CanSurrenderHand(0))
 	})
@@ -2987,7 +2973,7 @@ func TestCanSurrenderHand(t *testing.T) {
 			domain.NewCard(domain.CardDesignClover, 10, false),
 			domain.NewCard(domain.CardDesignDiamond, 7, false),
 		}
-		bj, _, _ := setupDeterministicBJ(1000, playerCards, dealerCards, 100)
+		bj, _ := setupDeterministicBJ(1000, playerCards, dealerCards)
 		bj.SetPhase(domain.BJPhaseBet)
 		err := bj.SetConfig(domain.BlackJackConfig{SurrenderRule: domain.BJSurrenderNone})
 		require.NoError(t, err)
@@ -3066,7 +3052,7 @@ func TestPlayerEarlySurrender(t *testing.T) {
 		domain.NewCard(domain.CardDesignClover, 10, false),
 		domain.NewCard(domain.CardDesignDiamond, 7, false),
 	}
-	bj, player, _ := setupDeterministicBJ(1000, playerCards, dealerCards, 100)
+	bj, player := setupDeterministicBJ(1000, playerCards, dealerCards)
 
 	// Set early surrender config
 	bj.SetPhase(domain.BJPhaseBet)
@@ -3092,7 +3078,7 @@ func TestPlayerEarlySurrender_CannotSurrender(t *testing.T) {
 		domain.NewCard(domain.CardDesignClover, 10, false),
 		domain.NewCard(domain.CardDesignDiamond, 7, false),
 	}
-	bj, _, _ := setupDeterministicBJ(1000, playerCards, dealerCards, 100)
+	bj, _ := setupDeterministicBJ(1000, playerCards, dealerCards)
 
 	bj.SetPhase(domain.BJPhaseBet)
 	err := bj.SetConfig(domain.BlackJackConfig{SurrenderRule: domain.BJSurrenderEarly})
@@ -3124,7 +3110,7 @@ func TestPlayerDeclineEarlySurrender(t *testing.T) {
 		domain.NewCard(domain.CardDesignClover, 10, false),
 		domain.NewCard(domain.CardDesignDiamond, 7, false),
 	}
-	bj, _, _ := setupDeterministicBJ(1000, playerCards, dealerCards, 100)
+	bj, _ := setupDeterministicBJ(1000, playerCards, dealerCards)
 
 	bj.SetPhase(domain.BJPhaseBet)
 	err := bj.SetConfig(domain.BlackJackConfig{SurrenderRule: domain.BJSurrenderEarly})
@@ -3176,7 +3162,7 @@ func TestEarlySurrender_DealerBJAfterDecline(t *testing.T) {
 		domain.NewCard(domain.CardDesignClover, 1, false),   // Ace
 		domain.NewCard(domain.CardDesignDiamond, 10, false), // 10 -> BJ
 	}
-	bj, _, _ := setupDeterministicBJ(1000, playerCards, dealerCards, 100)
+	bj, _ := setupDeterministicBJ(1000, playerCards, dealerCards)
 
 	bj.SetPhase(domain.BJPhaseBet)
 	err := bj.SetConfig(domain.BlackJackConfig{SurrenderRule: domain.BJSurrenderEarly})

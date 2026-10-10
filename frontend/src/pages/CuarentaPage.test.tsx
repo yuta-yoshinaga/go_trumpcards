@@ -451,6 +451,43 @@ describe('CuarentaPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('next'));
   });
 
+  it('shows each team’s round points and bonus breakdown separately from cumulative scores', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 1,
+        currentTurn: -1,
+        lastRoundDetail: {
+          capturedCount: { '0': 23, '1': 17 },
+          caida: { '0': 2, '1': 0 },
+          ronda: { '0': 4, '1': 0 },
+          limpia: { '0': 1, '1': 0 },
+          mostCards: 0,
+          gained: { '0': 7, '1': 0 },
+        },
+      }),
+    );
+    renderWithProviders(<CuarentaPage />);
+
+    const summary = await screen.findByRole('region', { name: '今回のラウンド得点' });
+    expect(within(summary).getByText('チームA')).toBeInTheDocument();
+    expect(within(summary).getByText('チームB')).toBeInTheDocument();
+    expect(within(summary).getByText('今回の獲得点: 7点')).toBeInTheDocument();
+    expect(within(summary).getByText('今回の獲得点: 0点')).toBeInTheDocument();
+    expect(within(summary).getByText('カイーダ: 2点')).toBeInTheDocument();
+    expect(within(summary).getByText('ロンダ: 4点')).toBeInTheDocument();
+    expect(within(summary).getByText('リンピア: 1点')).toBeInTheDocument();
+    expect(summary).toHaveTextContent('最多捕獲ボーナス: 獲得 (+6点)');
+    expect(summary).toHaveTextContent('最多捕獲ボーナス: なし');
+    expect(screen.getByText('チームA: 12 / 40点')).toBeInTheDocument();
+  });
+
+  it('explains when round score details are unavailable', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<CuarentaPage />);
+
+    expect(await screen.findByText('このラウンドの得点内訳はありません。')).toBeInTheDocument();
+  });
+
   it('changes CPU difficulty via the settings panel and resets', async () => {
     renderWithProviders(<CuarentaPage />);
     await waitFor(() => expect(screen.getByText('プレイヤー')).toBeInTheDocument());

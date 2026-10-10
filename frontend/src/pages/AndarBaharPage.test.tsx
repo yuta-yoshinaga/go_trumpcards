@@ -98,6 +98,16 @@ describe('AndarBaharPage', () => {
     );
   });
 
+  it('exposes each card column as a named region with its dealing order and payout', async () => {
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<AndarBaharPage />);
+
+    expect(
+      await screen.findByRole('region', { name: 'アンダー、先に配る列、配当 0.9:1（51.50%）' }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'バハール、後に配る列' })).toBeInTheDocument();
+  });
+
   it('shows settled round history in response order with original values', async () => {
     mockApi.mockResolvedValue({
       ...betState,

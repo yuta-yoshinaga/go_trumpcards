@@ -31,11 +31,11 @@ func setupWizardBidPhase(o *domain.Wizard, bidPlayerIdx int) {
 	o.SetBidPlayerIdx(bidPlayerIdx)
 }
 
-func setupWizardPlayPhase(o *domain.Wizard, currentIdx, leadIdx, trickNum int) {
+func setupWizardPlayPhase(o *domain.Wizard, currentIdx, leadIdx int) {
 	o.SetPhase(domain.WizardPhasePlay)
 	o.SetCurrentPlayerIdx(currentIdx)
 	o.SetLeadPlayerIdx(leadIdx)
-	o.SetTrickNumber(trickNum)
+	o.SetTrickNumber(1)
 }
 
 // --- Config tests ---
@@ -390,7 +390,7 @@ func TestWizard_PlayerPlay_Valid(t *testing.T) {
 	p.Reset()
 	p.AddCard(wizardCard(domain.CardDesignHeart, 5))
 	p.AddCard(wizardCard(domain.CardDesignSpade, 10))
-	setupWizardPlayPhase(o, 0, 0, 1)
+	setupWizardPlayPhase(o, 0, 0)
 	o.SetCurrentTrick(nil)
 
 	err := o.PlayerPlay(0)
@@ -401,7 +401,7 @@ func TestWizard_PlayerPlay_Valid(t *testing.T) {
 func TestWizard_PlayerPlay_InvalidIndex(t *testing.T) {
 	o := newTestWizard()
 	o.Reset()
-	setupWizardPlayPhase(o, 0, 0, 1)
+	setupWizardPlayPhase(o, 0, 0)
 
 	assert.Error(t, o.PlayerPlay(-1))
 	assert.Error(t, o.PlayerPlay(999))
@@ -431,7 +431,7 @@ func TestWizard_PlayerPlay_FollowSuit(t *testing.T) {
 	p.AddCard(wizardCard(domain.CardDesignHeart, 5))
 	p.AddCard(wizardCard(domain.CardDesignSpade, 10))
 
-	setupWizardPlayPhase(o, 0, 1, 1)
+	setupWizardPlayPhase(o, 0, 1)
 	o.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: wizardCard(domain.CardDesignHeart, 8)},
 	})
@@ -450,7 +450,7 @@ func TestWizard_PlayerPlay_NoFollowSuitWhenVoid(t *testing.T) {
 	p.Reset()
 	p.AddCard(wizardCard(domain.CardDesignSpade, 10))
 
-	setupWizardPlayPhase(o, 0, 1, 1)
+	setupWizardPlayPhase(o, 0, 1)
 	o.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: wizardCard(domain.CardDesignHeart, 8)},
 	})
@@ -469,7 +469,7 @@ func TestWizard_WizardAndJesterAlwaysPlayable(t *testing.T) {
 	p.AddCard(wizardCard(domain.WizardDesignJester, 1)) // index 2
 	p.AddCard(wizardCard(domain.CardDesignSpade, 10))   // off-suit (index 3)
 
-	setupWizardPlayPhase(o, 0, 1, 1)
+	setupWizardPlayPhase(o, 0, 1)
 	o.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: wizardCard(domain.CardDesignHeart, 8)},
 	})
@@ -488,7 +488,7 @@ func TestWizard_WizardLed_NoFollowObligation(t *testing.T) {
 	p.AddCard(wizardCard(domain.CardDesignHeart, 5))
 	p.AddCard(wizardCard(domain.CardDesignSpade, 10))
 
-	setupWizardPlayPhase(o, 0, 1, 1)
+	setupWizardPlayPhase(o, 0, 1)
 	// A Wizard was led → no lead suit → anything legal
 	o.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: wizardCard(domain.WizardDesignWizard, 1)},
@@ -507,7 +507,7 @@ func TestWizard_JesterLed_SuitSetByLaterCard(t *testing.T) {
 	p.AddCard(wizardCard(domain.CardDesignHeart, 5))
 	p.AddCard(wizardCard(domain.CardDesignSpade, 10))
 
-	setupWizardPlayPhase(o, 0, 1, 1)
+	setupWizardPlayPhase(o, 0, 1)
 	// Jester led then a heart → lead suit is heart, must follow
 	o.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: wizardCard(domain.WizardDesignJester, 1)},
@@ -526,7 +526,7 @@ func TestWizard_CpuPlay(t *testing.T) {
 	p.Reset()
 	p.AddCard(wizardCard(domain.CardDesignHeart, 5))
 	p.SetBid(1)
-	setupWizardPlayPhase(o, 1, 1, 1)
+	setupWizardPlayPhase(o, 1, 1)
 	o.SetCurrentTrick(nil)
 
 	o.CpuPlay()
@@ -552,7 +552,7 @@ func TestWizard_CpuPlay_AllDifficulties(t *testing.T) {
 			p.AddCard(wizardCard(domain.WizardDesignWizard, 1))
 			p.AddCard(wizardCard(domain.WizardDesignJester, 1))
 			p.SetBid(1)
-			setupWizardPlayPhase(o, 1, 1, 1)
+			setupWizardPlayPhase(o, 1, 1)
 			o.SetCurrentTrick(nil)
 
 			o.CpuPlay()
@@ -575,7 +575,7 @@ func TestWizard_CpuPlay_NeedTrickPlaysWizard(t *testing.T) {
 	p.AddCard(wizardCard(domain.WizardDesignWizard, 1))
 	p.SetBid(1) // needs a trick
 
-	setupWizardPlayPhase(o, 1, 0, 1)
+	setupWizardPlayPhase(o, 1, 0)
 	o.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: wizardCard(domain.CardDesignHeart, 13)},
 	})
@@ -590,7 +590,7 @@ func TestWizard_CpuPlay_NeedTrickPlaysWizard(t *testing.T) {
 func TestWizard_CpuPlay_HumanTurn(t *testing.T) {
 	o := newTestWizard()
 	o.Reset()
-	setupWizardPlayPhase(o, 0, 0, 1)
+	setupWizardPlayPhase(o, 0, 0)
 	o.CpuPlay() // should do nothing (human's turn)
 }
 
@@ -611,7 +611,7 @@ func TestWizard_CpuPlay_FollowSuit(t *testing.T) {
 	p.AddCard(wizardCard(domain.CardDesignSpade, 10))
 	p.SetBid(1)
 
-	setupWizardPlayPhase(o, 1, 0, 1)
+	setupWizardPlayPhase(o, 1, 0)
 	o.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 0, Card: wizardCard(domain.CardDesignHeart, 8)},
 	})
@@ -900,7 +900,7 @@ func TestWizard_GetHint_PlayPhase(t *testing.T) {
 	p.AddCard(wizardCard(domain.CardDesignHeart, 5))
 	p.AddCard(wizardCard(domain.CardDesignSpade, 10))
 	p.SetBid(1)
-	setupWizardPlayPhase(o, 0, 0, 1)
+	setupWizardPlayPhase(o, 0, 0)
 	o.SetCurrentTrick(nil)
 
 	hint := o.GetHint()
@@ -917,7 +917,7 @@ func TestWizard_GetHint_PlayPhase_WizardCard(t *testing.T) {
 	p.Reset()
 	p.AddCard(wizardCard(domain.WizardDesignWizard, 1))
 	p.SetBid(1)
-	setupWizardPlayPhase(o, 0, 0, 1)
+	setupWizardPlayPhase(o, 0, 0)
 	o.SetCurrentTrick(nil)
 
 	hint := o.GetHint()
@@ -1081,7 +1081,7 @@ func TestWizard_GetValidPlayIndices_FollowSuit(t *testing.T) {
 	p.AddCard(wizardCard(domain.CardDesignSpade, 10))
 	p.AddCard(wizardCard(domain.CardDesignHeart, 8))
 
-	setupWizardPlayPhase(o, 0, 1, 1)
+	setupWizardPlayPhase(o, 0, 1)
 	o.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: wizardCard(domain.CardDesignHeart, 3)},
 	})
@@ -1099,7 +1099,7 @@ func TestWizard_GetValidPlayIndices_Lead(t *testing.T) {
 	p.AddCard(wizardCard(domain.CardDesignHeart, 5))
 	p.AddCard(wizardCard(domain.CardDesignSpade, 10))
 
-	setupWizardPlayPhase(o, 0, 0, 1)
+	setupWizardPlayPhase(o, 0, 0)
 	o.SetCurrentTrick(nil)
 
 	valid := o.GetValidPlayIndices(0)

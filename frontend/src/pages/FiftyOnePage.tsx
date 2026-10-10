@@ -389,6 +389,8 @@ function FiftyOnePageContent() {
                     id: 'cpuDifficulty',
                     label: t('settings.cpuDifficulty'),
                     value: String(cpuDifficulty),
+                    // Only the difficulty waits for the next reset; the hint toggle applies at once.
+                    description: cpuDifficulty !== state.config.cpuDifficulty ? t('settings.pendingReset') : undefined,
                     options: DIFFICULTY_OPTIONS.map((opt) => ({ value: opt.value, label: t(opt.labelKey) })),
                     onSelect: (v: string) => setCpuDifficulty(Number.parseInt(v, 10)),
                   },

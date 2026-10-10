@@ -140,6 +140,7 @@ function DilotiPageContent() {
       />
     );
 
+  const lastCapturer = state.players.find((player) => player.id === state.lastCapturer);
   const humanPlayer = state.players.find((p) => p.isHuman);
   const isPlayPhase = state.phase === DilotiPhase.PLAY;
   const isRoundEnd = state.phase === DilotiPhase.ROUND_END;
@@ -396,6 +397,9 @@ function DilotiPageContent() {
                     <div className="text-ds-text-primary">
                       {t('roundTotal', { a: state.lastResult.totals[0], b: state.lastResult.totals[1] })}
                     </div>
+                    {lastCapturer && (
+                      <div>{t('lastCapturer', { name: playerName(lastCapturer.id, lastCapturer.isHuman) })}</div>
+                    )}
                     {state.players.map((player, idx) => (
                       <div key={player.id}>
                         {t('roundScoreSummary', {

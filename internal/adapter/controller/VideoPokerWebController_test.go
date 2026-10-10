@@ -16,8 +16,9 @@ import (
 
 func mustVideoPokerOutputJSON(msg string) string {
 	out := &controller.VideoPokerWebOutput{
-		Hand:          make([]*controller.WebOutputCard, 0),
-		WebOutputBase: controller.WebOutputBase{Message: msg},
+		Hand:            make([]*controller.WebOutputCard, 0),
+		RecommendedHold: make([]int, 0),
+		WebOutputBase:   controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {

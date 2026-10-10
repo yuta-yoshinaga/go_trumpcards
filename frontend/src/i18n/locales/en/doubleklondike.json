@@ -18,6 +18,7 @@
   "stockEmptyAriaLabel": "Draw from stock, empty",
   "moveCount": "Moves: {{count}}",
   "progress": "Foundations: {{count}}/{{total}}",
+  "progressAnnouncement": "Moves: {{moves}}. Foundations: {{count}} of {{total}} cards.",
   "draw": "Draw",
   "auto": "Auto-complete",
   "giveup": "Give up",

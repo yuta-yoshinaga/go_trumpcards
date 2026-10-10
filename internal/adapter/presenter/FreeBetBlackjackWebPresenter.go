@@ -35,6 +35,7 @@ func (cp *FreeBetBlackjackWebPresenter) Output(c interfaces.FreeBetBlackjackGame
 	resObj.CanFreeSplit = c.CanFreeSplit()
 	resObj.AnteBet = c.GetAnteBet()
 	resObj.Payout = c.GetPayout()
+	resObj.NetChange = c.GetNetChange()
 	resObj.Chips = c.GetChips()
 	resObj.RoundNumber = c.GetRoundNumber()
 	resObj.RemainingCards = c.GetRemainingCards()

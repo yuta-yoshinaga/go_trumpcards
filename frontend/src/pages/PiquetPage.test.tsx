@@ -209,12 +209,97 @@ describe('PiquetPage', () => {
             scoredBy: 5, // neither elder (0) nor younger (1) → "?" fallback label
             score: 3,
           },
+          {
+            kind: PiquetDeclarationKind.SET,
+            elderClaim: claim,
+            youngerClaim: claim,
+            winner: -1,
+            scoredBy: -1,
+            score: 0,
+          },
         ],
       }),
     );
     renderWithProviders(<PiquetPage />);
-    await waitFor(() => expect(screen.getByText(/引き分け/)).toBeInTheDocument()); // declTied
+    await waitFor(() => expect(screen.getAllByText(/引き分け/)).toHaveLength(2)); // declTied
     expect(screen.getByText(/\? \+3/)).toBeInTheDocument(); // declScored with "?" scorer
+  });
+
+  it('shows both players’ comparison values and distinguishes a missing claim from a tie', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: PiquetPhase.DECLARATION,
+        declResults: [
+          {
+            kind: PiquetDeclarationKind.POINT,
+            elderClaim: { length: 4, topRank: 0, pipTotal: 42, suit: 1, cards: [] },
+            winner: 0,
+            scoredBy: 0,
+            score: 4,
+          },
+          {
+            kind: PiquetDeclarationKind.SEQUENCE,
+            elderClaim: {
+              length: 5,
+              topRank: 8,
+              pipTotal: 0,
+              suit: 3,
+              cards: [10, 11, 12, 13, 1].map((value) => ({ design: 'HEART' as const, value })),
+            },
+            youngerClaim: {
+              length: 4,
+              topRank: 7,
+              pipTotal: 0,
+              suit: 2,
+              cards: [7, 8, 9, 10].map((value) => ({ design: 'CLOVER' as const, value })),
+            },
+            winner: 0,
+            scoredBy: 0,
+            score: 15,
+          },
+          {
+            kind: PiquetDeclarationKind.SET,
+            elderClaim: {
+              length: 4,
+              topRank: 7,
+              pipTotal: 0,
+              suit: 0,
+              cards: [13, 13, 13, 13].map((value) => ({ design: 'HEART' as const, value })),
+            },
+            youngerClaim: {
+              length: 3,
+              topRank: 6,
+              pipTotal: 0,
+              suit: 0,
+              cards: [12, 12, 12].map((value) => ({ design: 'CLOVER' as const, value })),
+            },
+            winner: -1,
+            scoredBy: -1,
+            score: 0,
+          },
+          {
+            kind: 99,
+            elderClaim: { length: 1, topRank: 1, pipTotal: 1, suit: 1, cards: [] },
+            winner: -1,
+            scoredBy: -1,
+            score: 0,
+          },
+        ],
+      }),
+    );
+    renderWithProviders(<PiquetPage />);
+    const list = await screen.findByTestId('piquet-declaration-list');
+    expect(list).toHaveTextContent('エルダー: 4枚・合計42点');
+    expect(list).toHaveTextContent('ヤンガー: 申告なし');
+    expect(list).toHaveTextContent('エルダー: ハート・5枚・最高位A');
+    expect(list).not.toHaveTextContent('最高位8');
+    expect(list).toHaveTextContent('ヤンガー: クラブ・4枚・最高位10');
+    expect(list).toHaveTextContent('エルダー: ランクK・4枚組');
+    expect(list).toHaveTextContent('ヤンガー: ランクQ・3枚組');
+    expect(list).toHaveTextContent('?: 引き分け');
+    expect(list).toHaveTextContent('ヤンガー: 申告なし');
+    expect(list).toHaveTextContent('引き分け');
+    expect(list).toHaveTextContent('エルダー +4');
   });
 
   it('exposes the declaration list as an additions-only live log for screen readers', async () => {

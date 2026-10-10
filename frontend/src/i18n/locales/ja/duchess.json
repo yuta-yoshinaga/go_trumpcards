@@ -15,7 +15,7 @@
   "emptyWasteAriaLabel": "捨て札は空です",
   "fanTopAriaLabel": "{{card}}（扇{{idx}}の一番上・残り{{count}}枚）",
   "foundation": "組札",
-  "foundationAriaLabel": "{{suit}} 組札{{idx}} {{count}}枚",
+  "foundationAriaLabel": "{{suit}} 組札{{idx}} {{count}}枚、最上位の札 {{card}}",
   "frontendHint": {
     "tableau": "タブロー列{{col}}",
     "foundation": "組札{{idx}}",

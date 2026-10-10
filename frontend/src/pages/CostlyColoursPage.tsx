@@ -304,6 +304,22 @@ function CostlyColoursPageContent() {
                           </span>
                         )}
                       </span>
+                      {(isShow || isGameEnd) && (
+                        <div
+                          className={`mt-1 p-2 rounded ${p.isHuman ? 'bg-ds-surface' : 'bg-ds-surface-elevated'}`}
+                          data-testid={`costlycolours-show-hand-${p.id}`}
+                        >
+                          <div className="mb-1 text-ds-text-primary">
+                            {t('showHand', { name: playerName(p.id, p.isHuman) })}
+                          </div>
+                          <div className="flex gap-1 items-center">
+                            {p.cards.map((card, index) => (
+                              <CardImage key={`${card.design}-${card.value}-${index}`} card={card} width={cardWidth} />
+                            ))}
+                            {state.turnUp && <CardImage card={state.turnUp} width={cardWidth} />}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

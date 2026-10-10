@@ -70,12 +70,12 @@ func TestSpades_playerHasCard(t *testing.T) {
 	assert.False(t, s.playerHasCard(0, CardDesignSpade, 6))
 }
 
-func TestSpades_playerHasSuit(t *testing.T) {
+func TestSpadesHandHasSuit(t *testing.T) {
 	s := newInternalTestSpades()
 	s.players[0].Reset()
 	s.players[0].AddCard(NewCard(CardDesignSpade, 5, false))
-	assert.True(t, s.playerHasSuit(0, CardDesignSpade))
-	assert.False(t, s.playerHasSuit(0, CardDesignHeart))
+	assert.True(t, handHasSuit(s.players[0], CardDesignSpade))
+	assert.False(t, handHasSuit(s.players[0], CardDesignHeart))
 }
 
 func TestSpades_playerHasNonSpade(t *testing.T) {

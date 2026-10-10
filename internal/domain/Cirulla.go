@@ -286,7 +286,7 @@ func (c *Cirulla) removeFromTable(idxs []int) []*Card {
 // advance は次の手番へ進める。手札が尽きたら配り直し、山も尽きたら集計する。
 func (c *Cirulla) advance() {
 	c.currentPlayer = (c.currentPlayer + 1) % CirullaPlayerCnt
-	if c.handsEmpty() {
+	if allHandsEmpty(c.players) {
 		if c.drawIdx < len(c.deck) {
 			c.dealHands()
 			c.currentPlayer = (c.dealerIdx + 1) % CirullaPlayerCnt
@@ -294,16 +294,6 @@ func (c *Cirulla) advance() {
 		}
 		c.finishRound()
 	}
-}
-
-// handsEmpty は全員の手札が空かを返す。
-func (c *Cirulla) handsEmpty() bool {
-	for _, p := range c.players {
-		if p.GetCardsSize() > 0 {
-			return false
-		}
-	}
-	return true
 }
 
 // finishRound はラウンドを締めて集計する。

@@ -316,6 +316,20 @@ function ScartoPageContent() {
                   ))}
                 </div>
 
+                <section
+                  className="glass-panel mb-2 p-2 rounded text-ds-text-muted text-sm"
+                  aria-label={t('pointReference.title')}
+                  data-testid="scarto-point-reference"
+                >
+                  <div className="mb-1 text-ds-text-primary">{t('pointReference.title')}</div>
+                  <div>{t('pointReference.king')}</div>
+                  <div>{t('pointReference.queen')}</div>
+                  <div>{t('pointReference.knight')}</div>
+                  <div>{t('pointReference.jack')}</div>
+                  <div>{t('pointReference.bouts')}</div>
+                  <div>{t('pointReference.other')}</div>
+                </section>
+
                 {/* Players: cards / tricks / captured points */}
                 {isMobile ? (
                   <details className="mb-2 p-2 rounded bg-black/30">

@@ -18,6 +18,7 @@
   "drawPile": "Stock: {{count}}",
   "direction": "Direction: {{dir}}",
   "discardTop": "Discard",
+  "handLabel": "Your hand",
   "chosenSuit": "Chosen suit",
   "cards": "{{count}} cards",
   "cumulativeScore": "Total: {{score}}",

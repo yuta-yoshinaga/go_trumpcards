@@ -124,19 +124,27 @@ function AcesUpPageContent() {
     isRemovingAll,
   } = useAcesUpGame();
   const { cardHeight, cardWidth, isMobile } = useCardDimensions();
-  const previousProgress = useRef<{ moveCount: number; discardCount: number } | null>(null);
+  const previousProgress = useRef<{ moveCount: number; discardCount: number; stockCount: number } | null>(null);
   const [progressAnnouncement, setProgressAnnouncement] = useState('');
 
   useEffect(() => {
     if (!state) return;
-    const currentProgress = { moveCount: state.moveCount, discardCount: state.discardCount };
+    const currentProgress = {
+      moveCount: state.moveCount,
+      discardCount: state.discardCount,
+      stockCount: state.stockCount,
+    };
     const previous = previousProgress.current;
     previousProgress.current = currentProgress;
     if (
       previous &&
-      (previous.moveCount !== currentProgress.moveCount || previous.discardCount !== currentProgress.discardCount)
+      (previous.moveCount !== currentProgress.moveCount ||
+        previous.discardCount !== currentProgress.discardCount ||
+        previous.stockCount !== currentProgress.stockCount)
     ) {
-      setProgressAnnouncement(t('progressUpdate', currentProgress));
+      setProgressAnnouncement(
+        currentProgress.stockCount === 0 ? t('stockDepleted', currentProgress) : t('progressUpdate', currentProgress),
+      );
     }
   }, [state, t]);
 

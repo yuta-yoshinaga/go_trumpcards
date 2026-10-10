@@ -30,6 +30,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { SchafkopfResponse } from '../types/card';
 import { SchafkopfPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { parseSchafkopfCommand, SCHAFKOPF_HELP } from '../utils/cli/commands/schafkopfCommands';
 import { formatSchafkopfState } from '../utils/cli/formatters/schafkopfFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -292,8 +293,28 @@ function SchafkopfPageContent() {
                   players={state.players}
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
+                  winnerIdx={isTrickEnd && state.winnerIdx >= 0 ? state.winnerIdx : undefined}
+                  winnerLabel={
+                    isTrickEnd && state.winnerIdx >= 0
+                      ? t('trickWinner', { name: playerName(state.winnerIdx, state.players[state.winnerIdx].isHuman) })
+                      : undefined
+                  }
+                  cardAriaLabelFor={(player, card) =>
+                    t('trickCardByPlayer', { name: playerName(player.id, player.isHuman), card: cardAlt(card) })
+                  }
                   dataTutorial="sh-trick-display"
                 />
+                <div className="sr-only" aria-live="polite" aria-atomic="true">
+                  {isTrickEnd && state.winnerIdx >= 0
+                    ? t('trickWinner', {
+                        name: playerName(state.winnerIdx, state.players[state.winnerIdx].isHuman),
+                      })
+                    : isPlayPhase
+                      ? t('leadSeat', {
+                          name: playerName(state.leadPlayerIdx, state.players[state.leadPlayerIdx].isHuman),
+                        })
+                      : ''}
+                </div>
               </div>
 
               {/* Right: info sidebar */}

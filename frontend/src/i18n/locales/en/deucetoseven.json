@@ -15,6 +15,7 @@
   "standLabel": "Stand pat",
   "madePatLowBanner": "✨ Made an 8-or-better low — stand pat recommended",
   "cpuExchange": "CPU draws:",
+  "listSeparator": ", ",
   "cpuExchangeEntry": "Player {{idx}} (draw {{draw}}): exchanged {{count}}",
   "exchangeCount": "Drew: {{count}}",
   "cardSelected": "(selected to exchange)",

@@ -172,6 +172,29 @@ describe('LaughAndLieDownPage', () => {
     expect(screen.getByText(/取り札9枚 · 降りた/)).toBeInTheDocument();
   });
 
+  it('keeps CPU cards face down during play even if cards are present in the response', async () => {
+    const cpuWithCards = cpu(1, { cardCount: 2, cards: [card('SPADE', 2), card('HEART', 4)] });
+    mockExec.mockResolvedValueOnce(makeState({ players: [human(), cpuWithCards] }));
+    renderWithProviders(<LaughAndLieDownPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.getByRole('img', { name: /CPU1.*2/ })).toBeInTheDocument();
+    expect(screen.queryByAltText('♠ 2')).not.toBeInTheDocument();
+  });
+
+  it('shows CPU cards face up with their card alt text after the game ends', async () => {
+    const cpuWithCards = cpu(1, { cardCount: 2, cards: [card('SPADE', 2), card('HEART', 4)] });
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: LaughAndLieDownPhase.GAME_END,
+        gameEndFlag: true,
+        players: [human(), cpuWithCards],
+      }),
+    );
+    renderWithProviders(<LaughAndLieDownPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ 2')).toBeInTheDocument());
+    expect(screen.getByAltText('♥ 4')).toBeInTheDocument();
+  });
+
   it('marks the human as laid down when the server reports it', async () => {
     mockExec.mockResolvedValue(makeState({ players: [human({ laidDown: true, cards: [] }), cpu(1)] }));
     renderWithProviders(<LaughAndLieDownPage />);

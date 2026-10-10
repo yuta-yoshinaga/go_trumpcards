@@ -23,6 +23,7 @@
   "foundationAriaProgress": ", {{progress}}",
   "foundationEligibleSuffix": ", can accept the selected card",
   "emptyTableauAriaLabel": "Column {{col}}, empty column",
+  "tableauCardAriaLabel": "{{card}}, column {{col}}, position {{position}}",
   "tableauEligibleSuffix": ", a legal destination for the selected card",
   "landscapeBanner": "Landscape mode recommended",
   "hint": "Hint",

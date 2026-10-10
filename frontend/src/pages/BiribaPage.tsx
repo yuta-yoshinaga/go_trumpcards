@@ -21,6 +21,7 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
 import { badgeInfoColors } from '../styles/badgeStyles';
@@ -240,9 +241,7 @@ function BiribaPageContent() {
 
   // useGameApi intentionally does not fetch on mount. Start Biriba explicitly
   // so the page can leave its skeleton state.
-  useEffect(() => {
-    void gameExec('reset');
-  }, [gameExec]);
+  useMountReset(gameExec);
 
   const kbdConfirmAction = useCallback(() => {
     if (isDiscardPhase) handleDiscard();
@@ -451,6 +450,29 @@ function BiribaPageContent() {
                             data-testid={`bu-round-score-${p.id.toString()}`}
                           >
                             {p.roundScore}
+                            {isRoundEnd && (
+                              <ul className="mt-2 space-y-1 text-left text-xs text-ds-text-muted">
+                                <li>{t('score.breakdown')}</li>
+                                <li>
+                                  {t('score.meldCards')}: {p.scoreBreakdown.meldCards || t('score.noPoints')}
+                                </li>
+                                <li>
+                                  {t('score.biribaBonus')}: {p.scoreBreakdown.canastaBonus || t('score.noPoints')}
+                                </li>
+                                <li>
+                                  {t('score.red3Bonus')}: {p.scoreBreakdown.red3Bonus || t('score.noPoints')}
+                                </li>
+                                <li>
+                                  {t('score.goingOutBonus')}: {p.scoreBreakdown.goOutBonus || t('score.noPoints')}
+                                </li>
+                                <li>
+                                  {t('score.handPenalty')}:{' '}
+                                  {p.scoreBreakdown.handPenalty
+                                    ? `−${p.scoreBreakdown.handPenalty}`
+                                    : t('score.noPoints')}
+                                </li>
+                              </ul>
+                            )}
                           </td>
                           <td className="text-center">{p.cumulativeScore}</td>
                         </tr>

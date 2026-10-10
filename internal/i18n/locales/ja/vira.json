@@ -12,7 +12,6 @@
   "errBidMustOutrank": "{{bid}} を上回る宣言が必要です",
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
   "errCardMissing": "カードがありません",
-  "errFollowLeadSuit": "リードスートに従ってください",
   "errPlayerIndexOutOfRange": "席が範囲外です",
   "gameEnd": "ゲーム終了！{{name}}がマッチ勝利！",
   "helpTitle": "ヴィーラ (Vira)",

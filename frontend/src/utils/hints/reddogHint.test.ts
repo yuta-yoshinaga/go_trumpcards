@@ -13,6 +13,7 @@ function state(overrides: Partial<RedDogResponse> = {}): RedDogResponse {
     spread: 1,
     result: 0,
     totalPayout: 0,
+    netChange: 0,
     appliedMultiplier: 0,
     message: '',
     ...overrides,

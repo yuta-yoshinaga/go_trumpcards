@@ -71,6 +71,8 @@ type CinchGame interface {
 	GetRoundWinners() []int
 	// GetPlayerCnt プレイヤー数を取得する
 	GetPlayerCnt() int
+	// GetDealPoints 指定プレイヤーが現ディールで獲得したカード点を取得する
+	GetDealPoints(idx int) int
 	// GetPlayer 指定インデックスのプレイヤーを取得する
 	GetPlayer(i int) *domain.CinchPlayer
 	// GetPlayableIndices プレイ可能なカードのインデックスを取得する

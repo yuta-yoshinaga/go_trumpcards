@@ -14,7 +14,13 @@
     "columnNumber": "列{{col}}",
     "empty": "空",
     "cellEmptyAria": "空、行 {{row}}、列 {{col}}",
-    "cellCardAria": "{{card}}、行 {{row}}、列 {{col}}"
+    "cellCardAria": "{{card}}、行 {{row}}、列 {{col}}",
+    "rowScoreAria": "行{{row}}、{{score}}点",
+    "colScoreAria": "列{{col}}、{{score}}点",
+    "rowScorePreviewAria": "行{{row}}、現在{{score}}点、配置すると{{projected}}点 ({{hand}})",
+    "colScorePreviewAria": "列{{col}}、現在{{score}}点、配置すると{{projected}}点 ({{hand}})",
+    "rowScorePartialAria": "行{{row}}、{{score}}点、見込み{{hand}}",
+    "colScorePartialAria": "列{{col}}、{{score}}点、見込み{{hand}}"
   },
   "button": {
     "reset": "リセット",

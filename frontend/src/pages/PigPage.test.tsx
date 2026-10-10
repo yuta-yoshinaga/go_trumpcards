@@ -155,14 +155,80 @@ describe('PigPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('pass', 1));
   });
 
+  it('does not send another pass while the first pass request is pending', async () => {
+    renderWithProviders(<PigPage />);
+    const cards = await screen.findAllByRole('button', { name: /へ渡す$/ });
+    let resolvePass!: (response: PigResponse) => void;
+    const pendingPass = new Promise<PigResponse>((resolve) => {
+      resolvePass = resolve;
+    });
+    mockExec.mockClear();
+    mockExec.mockReturnValue(pendingPass);
+
+    fireEvent.click(cards[0]);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledTimes(1));
+    fireEvent.click(cards[1]);
+    expect(mockExec).toHaveBeenCalledTimes(1);
+
+    resolvePass(makePigState());
+    await waitFor(() => expect(cards[0]).toHaveAttribute('aria-disabled', 'false'));
+  });
+
+  it('does not pass a card outside the pass phase', async () => {
+    mockExec.mockResolvedValue(liveSignal());
+    renderWithProviders(<PigPage />);
+    const cards = await screen.findAllByRole('button', { name: /へ渡す$/ });
+    mockExec.mockClear();
+    fireEvent.click(cards[0]);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('does not pass a card when the human is eliminated', async () => {
+    mockExec.mockResolvedValue(
+      makePigState({
+        players: [seat(0, { eliminated: true, letters: 3, letterWord: 'PIG' }), seat(1), seat(2), seat(3)],
+      }),
+    );
+    renderWithProviders(<PigPage />);
+    const cards = await screen.findAllByRole('button', { name: /へ渡す$/ });
+    mockExec.mockClear();
+    fireEvent.click(cards[0]);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
   // **同時に渡すので、選んだあとは待ちになる。**
   it('locks the hand once you have chosen', async () => {
     mockExec.mockResolvedValue(
-      makePigState({ players: [seat(0, { hasChosenPass: true }), seat(1), seat(2), seat(3)] }),
+      makePigState({
+        players: [
+          seat(0, { hasChosenPass: true, chosenPassCard: { design: 'HEART', value: 13 } }),
+          seat(1),
+          seat(2),
+          seat(3),
+        ],
+      }),
     );
     renderWithProviders(<PigPage />);
     expect(await screen.findByTestId('pig-waiting')).toHaveTextContent(/全員が選ぶまで待ちます/);
-    expect(screen.getAllByRole('button', { name: /へ渡す$/ })[0]).toBeDisabled();
+    const selected = screen.getAllByRole('button', { name: /へ渡す$/ })[0];
+    expect(selected).toHaveAttribute('aria-disabled', 'true');
+    expect(selected).not.toHaveAttribute('aria-pressed');
+    expect(screen.getByTestId('pig-chosen-pass-card')).toHaveTextContent('渡す札:');
+    expect(screen.getByRole('img', { name: /左隣へ渡す（選択済み）/ })).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: /へ渡す$/ })[0]).toHaveAttribute('aria-disabled', 'true');
+    mockExec.mockClear();
+    fireEvent.click(selected);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('does not show a chosen pass card before selection', async () => {
+    mockExec.mockResolvedValue(makePigState());
+    renderWithProviders(<PigPage />);
+    await screen.findAllByRole('button', { name: /へ渡す$/ });
+    expect(screen.queryByTestId('pig-chosen-pass-card')).not.toBeInTheDocument();
   });
 
   // **合図が出ている場面は、押すべきボタンが1つだけ。**
@@ -174,7 +240,7 @@ describe('PigPage', () => {
     const btn = screen.getByTestId('pig-signal-btn');
     expect(btn).toBeEnabled();
     // 合図の場面では札を渡せない。
-    expect(screen.getAllByRole('button', { name: /へ渡す$/ })[0]).toBeDisabled();
+    expect(screen.getAllByRole('button', { name: /へ渡す$/ })[0]).toHaveAttribute('aria-disabled', 'true');
 
     mockExec.mockClear();
     fireEvent.click(btn);

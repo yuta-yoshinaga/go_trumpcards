@@ -39,8 +39,9 @@ type SalicLawWebOutput struct {
 	// Queens 場から抜いたクイーン 8 枚。飾りとして表示するだけで動かせない。
 	Queens []*WebOutputCard `json:"queens"`
 	// OpenPiles 土台の K が据わって使えるようになった列の数。
-	OpenPiles int                    `json:"openPiles"`
-	Hint      *SalicLawWebOutputHint `json:"hint,omitempty"`
+	OpenPiles       int                    `json:"openPiles"`
+	CanAutoComplete bool                   `json:"canAutoComplete"`
+	Hint            *SalicLawWebOutputHint `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase
 }
@@ -76,10 +77,7 @@ func salicLawDispatch(bc *baseController, w http.ResponseWriter, ci usecase.Sali
 	case "u", "undo":
 		bc.writePresenterResponse(w, ci.Undo())
 	case "undo_n":
-		if !requireParam(bc, w, newDefault, param.N == nil, "param error: n is required.") {
-			return true
-		}
-		bc.writePresenterResponse(w, ci.UndoN(*param.N))
+		dispatchUndoN(bc, w, newDefault, param.N, ci.UndoN)
 	default:
 		return dispatchResetHintAndLog(param.Command, bc, w, ci.Reset, ci.Hint, ci.ActionLog)
 	}

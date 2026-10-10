@@ -121,10 +121,8 @@ func (g *Samba) Reset() {
 
 	for i, p := range g.players {
 		p.team = i % SambaTeamCnt
-		p.SetRoundScore(0)
 		p.SetCumulativeScore(0)
-		p.Reset()
-		p.SetIsFinished(false)
+		resetRoundScored(p)
 		p.melds = make([]*SambaMeld, 0)
 		p.red3s = make([]*Card, 0)
 		p.hasInitMeld = false

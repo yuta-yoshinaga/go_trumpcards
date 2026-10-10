@@ -10,6 +10,8 @@ export interface ThreeThirteenPlayerData {
   cardCount: number;
   cards: Card[];
   deadwood: number;
+  melds: number[][];
+  deadwoodIndices: number[];
   roundScore: number;
   cumulativeScore: number;
 }

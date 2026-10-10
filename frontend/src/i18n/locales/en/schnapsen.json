@@ -1,6 +1,12 @@
 {
   "currentTrick": "Current trick",
   "trickCardByPlayer": "{{card}} played by {{name}}",
+  "cardGuide": {
+    "title": "Card points and strength",
+    "points": "Card points: A=11, 10=10, K=4, Q=3, J=2.",
+    "strength": "Within a suit, strength is A > 10 > K > Q > J.",
+    "trump": "A trump beats cards of other suits. Card points are scored from tricks won."
+  },
   "endgameRuleGuide": "Phase 2: must follow suit (win the trick if you can), else trump. Cards with a green ring are legal to play.",
   "title": "Schnapsen / Sixty-Six",
   "subtitle": "Austrian 2-player trick-taking — 20-card deck, marriages, first to 66",

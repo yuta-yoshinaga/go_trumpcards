@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { schnapsenApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -19,6 +19,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useMountReset } from '../hooks/useMountReset';
 import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { SchnapsenResponse } from '../types/card';
@@ -91,9 +92,7 @@ function SchnapsenPageContent() {
   const { handleCommand } = useCliGame(dispatch, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   // Initial reset on mount.
-  useEffect(() => {
-    void dispatch('reset');
-  }, [dispatch]);
+  useMountReset(dispatch);
 
   const handleReset = useCallback(() => {
     hideActionLog();
@@ -184,6 +183,18 @@ function SchnapsenPageContent() {
                 {state.isEndgame ? t('header.phase2') : t('header.phase1')}
               </span>
             </div>
+
+            <details
+              className="mb-3 rounded bg-ds-surface px-3 py-2 text-sm text-ds-text-primary"
+              data-testid="schnapsen-card-guide"
+            >
+              <summary className="cursor-pointer font-medium">{t('cardGuide.title')}</summary>
+              <ul className="mt-2 space-y-1 text-ds-text-muted">
+                <li>{t('cardGuide.points')}</li>
+                <li>{t('cardGuide.strength')}</li>
+                <li>{t('cardGuide.trump')}</li>
+              </ul>
+            </details>
 
             {/* CPU info + trump upcard */}
             <div className="flex flex-wrap items-start gap-4 mb-4">

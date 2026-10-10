@@ -625,7 +625,7 @@ func TestDramahaWebPresenter_Output_DramahaHandNames(t *testing.T) {
 func TestDramahaWebPresenter_Output_RebuyAddonFields(t *testing.T) {
 	p := new(presenter.DramahaWebPresenter)
 
-	setup := func() (*domain.Dramaha, []*domain.DramahaPlayer) {
+	setup := func() *domain.Dramaha {
 		tc := domain.NewTrumpCards(0)
 		players := []*domain.DramahaPlayer{
 			domain.NewDramahaPlayer(true, domain.HoldemStyleTAG),
@@ -634,11 +634,11 @@ func TestDramahaWebPresenter_Output_RebuyAddonFields(t *testing.T) {
 			domain.NewDramahaPlayer(false, domain.HoldemStyleGTO),
 		}
 		h := domain.NewDramaha(tc, players, domain.DefaultDramahaConfig())
-		return h, players
+		return h
 	}
 
 	t.Run("default values when rebuy/addon disabled", func(t *testing.T) {
-		h, _ := setup()
+		h := setup()
 		h.SetPhase(domain.DramahaPhasePreFlop)
 
 		result := p.Output(h, nil)
@@ -660,7 +660,7 @@ func TestDramahaWebPresenter_Output_RebuyAddonFields(t *testing.T) {
 	})
 
 	t.Run("values when rebuy/addon enabled with config", func(t *testing.T) {
-		h, _ := setup()
+		h := setup()
 		h.SetPhase(domain.DramahaPhaseRebuy)
 		cfg := domain.DramahaConfig{
 			SmallBlind:       10,
@@ -766,7 +766,7 @@ func TestDramahaWebPresenter_Output_BettingLimitFields(t *testing.T) {
 func TestDramahaWebPresenter_Output_MuckFields(t *testing.T) {
 	p := new(presenter.DramahaWebPresenter)
 
-	setup := func() (*domain.Dramaha, []*domain.DramahaPlayer) {
+	setup := func() *domain.Dramaha {
 		tc := domain.NewTrumpCards(0)
 		players := []*domain.DramahaPlayer{
 			domain.NewDramahaPlayer(true, domain.HoldemStyleTAG),
@@ -775,11 +775,11 @@ func TestDramahaWebPresenter_Output_MuckFields(t *testing.T) {
 			domain.NewDramahaPlayer(false, domain.HoldemStyleGTO),
 		}
 		h := domain.NewDramaha(tc, players, domain.DefaultDramahaConfig())
-		return h, players
+		return h
 	}
 
 	t.Run("muckAvailable true when showdown and human lost", func(t *testing.T) {
-		h, _ := setup()
+		h := setup()
 		h.SetPhase(domain.DramahaPhaseShowdown)
 		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", WonAmount: 0, BestHand: nil},
@@ -794,7 +794,7 @@ func TestDramahaWebPresenter_Output_MuckFields(t *testing.T) {
 	})
 
 	t.Run("muckAvailable false when not showdown", func(t *testing.T) {
-		h, _ := setup()
+		h := setup()
 		h.SetPhase(domain.DramahaPhaseEnd)
 		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
@@ -808,7 +808,7 @@ func TestDramahaWebPresenter_Output_MuckFields(t *testing.T) {
 	})
 
 	t.Run("mucked result: handRank=0 handName empty bestHand empty mucked=true", func(t *testing.T) {
-		h, _ := setup()
+		h := setup()
 		h.SetPhase(domain.DramahaPhaseEnd)
 		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", Kickers: []int{14, 13}, WonAmount: 0, Mucked: true, BestHand: []*domain.Card{
@@ -832,7 +832,7 @@ func TestDramahaWebPresenter_Output_MuckFields(t *testing.T) {
 	})
 
 	t.Run("muck prompt message when IsMuckAvailable", func(t *testing.T) {
-		h, _ := setup()
+		h := setup()
 		h.SetPhase(domain.DramahaPhaseShowdown)
 		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", WonAmount: 0, BestHand: nil},
@@ -848,7 +848,7 @@ func TestDramahaWebPresenter_Output_MuckFields(t *testing.T) {
 	})
 
 	t.Run("error takes priority over muck prompt", func(t *testing.T) {
-		h, _ := setup()
+		h := setup()
 		h.SetPhase(domain.DramahaPhaseShowdown)
 		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", WonAmount: 0, BestHand: nil},
@@ -863,7 +863,7 @@ func TestDramahaWebPresenter_Output_MuckFields(t *testing.T) {
 	})
 
 	t.Run("You mucked message in buildResultMessage", func(t *testing.T) {
-		h, _ := setup()
+		h := setup()
 		h.SetPhase(domain.DramahaPhaseEnd)
 		h.SetGameEndFlag(true)
 		h.SetRoundResults([]domain.HoldemResult{

@@ -181,16 +181,16 @@ func TestDoubleAttack_AttackMayBeDeclined(t *testing.T) {
 // --- 配当 ---
 
 // daStaged は指定の手を積んで決着直前まで進めた卓を返す。
-func daStaged(t *testing.T, ante, bustIt int, player, dealer []*Card) *DoubleAttackBlackjack {
+func daStaged(t *testing.T, bustIt int, player, dealer []*Card) *DoubleAttackBlackjack {
 	t.Helper()
 	g := newDoubleAttackForTest(t)
-	require.NoError(t, g.PlaceBet(ante, bustIt))
+	require.NoError(t, g.PlaceBet(100, bustIt))
 
 	h := NewBlackJackHand()
 	for _, c := range player {
 		h.AddCard(c)
 	}
-	h.SetBet(ante)
+	h.SetBet(100)
 	g.hands = []*BlackJackHand{h}
 	g.results = []DoubleAttackResult{DoubleAttackResultNone}
 
@@ -211,7 +211,7 @@ func daStaged(t *testing.T, ante, bustIt int, player, dealer []*Card) *DoubleAtt
 func TestDoubleAttack_BlackjackPaysEven(t *testing.T) {
 	bj := []*Card{daCard(CardDesignSpade, 1), daCard(CardDesignHeart, 13)}
 	dealer := []*Card{daCard(CardDesignClover, 9), daCard(CardDesignDiamond, 8)}
-	g := daStaged(t, 100, 0, bj, dealer)
+	g := daStaged(t, 0, bj, dealer)
 	before := g.GetChips()
 
 	g.dealerPlay()
@@ -249,7 +249,7 @@ func TestDoubleAttack_WinLosePush(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			g := daStaged(t, 100, 0, tt.player, tt.dealer)
+			g := daStaged(t, 0, tt.player, tt.dealer)
 			before := g.GetChips()
 			g.dealerPlay()
 			assert.Equal(t, tt.want, g.GetResults()[0])
@@ -260,7 +260,7 @@ func TestDoubleAttack_WinLosePush(t *testing.T) {
 
 // **プレイヤーがバストしたら、ディーラーがバストしても負け。**
 func TestDoubleAttack_PlayerBustLosesEvenIfDealerBusts(t *testing.T) {
-	g := daStaged(t, 100, 0,
+	g := daStaged(t, 0,
 		[]*Card{daCard(CardDesignSpade, 13), daCard(CardDesignHeart, 12), daCard(CardDesignClover, 5)},
 		[]*Card{daCard(CardDesignDiamond, 13), daCard(CardDesignSpade, 12), daCard(CardDesignHeart, 5)})
 	g.hands[0].SetBusted(true)
@@ -273,7 +273,7 @@ func TestDoubleAttack_PlayerBustLosesEvenIfDealerBusts(t *testing.T) {
 
 // **全部バストしてもディーラーは引き切る。** Bust It が生きているため。
 func TestDoubleAttack_DealerPlaysOutForTheBustItBet(t *testing.T) {
-	g := daStaged(t, 100, 50,
+	g := daStaged(t, 50,
 		[]*Card{daCard(CardDesignSpade, 13), daCard(CardDesignHeart, 12), daCard(CardDesignClover, 5)},
 		[]*Card{daCard(CardDesignDiamond, 6), daCard(CardDesignSpade, 6)})
 	g.hands[0].SetBusted(true)
@@ -292,7 +292,7 @@ func TestDoubleAttack_DealerPlaysOutForTheBustItBet(t *testing.T) {
 
 // Bust It はディーラーがバストしなければ没収。
 func TestDoubleAttack_BustItLosesWhenDealerStands(t *testing.T) {
-	g := daStaged(t, 100, 50,
+	g := daStaged(t, 50,
 		[]*Card{daCard(CardDesignSpade, 13), daCard(CardDesignHeart, 9)},
 		[]*Card{daCard(CardDesignClover, 13), daCard(CardDesignDiamond, 9)})
 	g.dealerPlay()
@@ -302,7 +302,7 @@ func TestDoubleAttack_BustItLosesWhenDealerStands(t *testing.T) {
 
 // **ディーラーはソフト 17 でヒットする。**
 func TestDoubleAttack_DealerHitsSoft17(t *testing.T) {
-	g := daStaged(t, 100, 0,
+	g := daStaged(t, 0,
 		[]*Card{daCard(CardDesignSpade, 13), daCard(CardDesignHeart, 9)},
 		[]*Card{daCard(CardDesignClover, 1), daCard(CardDesignDiamond, 6)}) // A+6 = soft 17
 	g.dealerPlay()
@@ -311,7 +311,7 @@ func TestDoubleAttack_DealerHitsSoft17(t *testing.T) {
 
 // ハード 17 では止まる。
 func TestDoubleAttack_DealerStandsOnHard17(t *testing.T) {
-	g := daStaged(t, 100, 0,
+	g := daStaged(t, 0,
 		[]*Card{daCard(CardDesignSpade, 13), daCard(CardDesignHeart, 9)},
 		[]*Card{daCard(CardDesignClover, 13), daCard(CardDesignDiamond, 7)}) // 10+7 = hard 17
 	g.dealerPlay()
@@ -321,7 +321,7 @@ func TestDoubleAttack_DealerStandsOnHard17(t *testing.T) {
 // --- スプリットとダブル ---
 
 func TestDoubleAttack_SplitCreatesTwoHands(t *testing.T) {
-	g := daStaged(t, 100, 0,
+	g := daStaged(t, 0,
 		[]*Card{daCard(CardDesignSpade, 8), daCard(CardDesignHeart, 8)},
 		[]*Card{daCard(CardDesignClover, 13), daCard(CardDesignDiamond, 6)})
 	require.True(t, g.CanSplit())
@@ -337,7 +337,7 @@ func TestDoubleAttack_SplitCreatesTwoHands(t *testing.T) {
 
 // **エースを割ったら 1 枚ずつで打ち止め。**
 func TestDoubleAttack_SplitAcesGetOneCardEach(t *testing.T) {
-	g := daStaged(t, 100, 0,
+	g := daStaged(t, 0,
 		[]*Card{daCard(CardDesignSpade, 1), daCard(CardDesignHeart, 1)},
 		[]*Card{daCard(CardDesignClover, 13), daCard(CardDesignDiamond, 6)})
 	require.NoError(t, g.Split())
@@ -350,7 +350,7 @@ func TestDoubleAttack_SplitAcesGetOneCardEach(t *testing.T) {
 }
 
 func TestDoubleAttack_SplitRejectedWhenNotAPair(t *testing.T) {
-	g := daStaged(t, 100, 0,
+	g := daStaged(t, 0,
 		[]*Card{daCard(CardDesignSpade, 8), daCard(CardDesignHeart, 9)},
 		[]*Card{daCard(CardDesignClover, 13), daCard(CardDesignDiamond, 6)})
 	assert.False(t, g.CanSplit())
@@ -358,7 +358,7 @@ func TestDoubleAttack_SplitRejectedWhenNotAPair(t *testing.T) {
 }
 
 func TestDoubleAttack_DoubleTakesOneCardAndEndsTheHand(t *testing.T) {
-	g := daStaged(t, 100, 0,
+	g := daStaged(t, 0,
 		[]*Card{daCard(CardDesignSpade, 6), daCard(CardDesignHeart, 5)},
 		[]*Card{daCard(CardDesignClover, 13), daCard(CardDesignDiamond, 6)})
 	require.True(t, g.CanDouble())
@@ -372,7 +372,7 @@ func TestDoubleAttack_DoubleTakesOneCardAndEndsTheHand(t *testing.T) {
 }
 
 func TestDoubleAttack_DoubleRejectedAfterHitting(t *testing.T) {
-	g := daStaged(t, 100, 0,
+	g := daStaged(t, 0,
 		[]*Card{daCard(CardDesignSpade, 4), daCard(CardDesignHeart, 3)},
 		[]*Card{daCard(CardDesignClover, 13), daCard(CardDesignDiamond, 6)})
 	require.NoError(t, g.Hit())
@@ -488,7 +488,7 @@ func TestDoubleAttack_GetHint(t *testing.T) {
 	})
 
 	t.Run("11 以下は引く", func(t *testing.T) {
-		g := daStaged(t, 100, 0,
+		g := daStaged(t, 0,
 			[]*Card{daCard(CardDesignSpade, 4), daCard(CardDesignHeart, 5)},
 			[]*Card{daCard(CardDesignClover, 13), daCard(CardDesignDiamond, 6)})
 		h := g.GetHint()

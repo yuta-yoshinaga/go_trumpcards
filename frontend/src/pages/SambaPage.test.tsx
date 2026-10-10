@@ -104,6 +104,89 @@ describe('SambaPage', () => {
     expect(screen.getByRole('button', { name: 'スキップ' })).toBeInTheDocument();
   });
 
+  it('keeps unavailable meld actions focusable and ignores activation', async () => {
+    mockExec.mockResolvedValue(meldPhaseState);
+    renderWithProviders(<SambaPage />);
+    const addGroup = await screen.findByRole('button', { name: '選択カードをグループに追加' });
+    const meld = screen.getByRole('button', { name: 'メルドする' });
+    expect(addGroup).toHaveAttribute('aria-disabled', 'true');
+    expect(meld).toHaveAttribute('aria-disabled', 'true');
+    mockExec.mockClear();
+    fireEvent.click(addGroup);
+    fireEvent.click(meld);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+    expect(screen.queryByRole('region', { name: 'メルドグループ' })).not.toBeInTheDocument();
+  });
+
+  it('stages multiple selected groups and sends their card indices together', async () => {
+    const sixCardMeldState = makeSambaState({
+      phase: 1,
+      messageCode: 'samba.meldPhase',
+      players: [
+        {
+          ...meldPhaseState.players[0],
+          cards: [
+            { design: 'SPADE', value: 7 },
+            { design: 'CLOVER', value: 7 },
+            { design: 'HEART', value: 7 },
+            { design: 'SPADE', value: 10 },
+            { design: 'CLOVER', value: 10 },
+            { design: 'HEART', value: 10 },
+          ],
+        },
+        ...meldPhaseState.players.slice(1),
+      ],
+    });
+    mockExec.mockResolvedValue(sixCardMeldState);
+    renderWithProviders(<SambaPage />);
+    const hand = await screen.findByRole('button', { name: 'メルドする' });
+    const getCards = () => document.querySelectorAll('[data-tutorial="sa-player-hand"] button');
+    for (const index of [0, 1, 2]) fireEvent.click(getCards()[index]);
+    fireEvent.click(screen.getByRole('button', { name: '選択カードをグループに追加' }));
+    fireEvent.click(getCards()[0]);
+    expect(getCards()[0]).toHaveAttribute('aria-pressed', 'true');
+    for (const index of [3, 4, 5]) fireEvent.click(getCards()[index]);
+    fireEvent.click(screen.getByRole('button', { name: '選択カードをグループに追加' }));
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(discardPhaseState);
+    fireEvent.click(hand);
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('meld', undefined, undefined, undefined, [
+        [0, 1, 2],
+        [3, 4, 5],
+      ]),
+    );
+  });
+
+  it('removes a staged meld group', async () => {
+    mockExec.mockResolvedValue(meldPhaseState);
+    renderWithProviders(<SambaPage />);
+    const getCards = () => document.querySelectorAll('[data-tutorial="sa-player-hand"] button');
+    await screen.findByRole('button', { name: 'メルドする' });
+    for (const index of [0, 1, 2]) fireEvent.click(getCards()[index]);
+    fireEvent.click(screen.getByRole('button', { name: '選択カードをグループに追加' }));
+    expect(screen.getByRole('region', { name: 'メルドグループ' })).toHaveTextContent('グループ1');
+    fireEvent.click(screen.getByRole('button', { name: 'グループを取り消す' }));
+    expect(screen.queryByRole('region', { name: 'メルドグループ' })).not.toBeInTheDocument();
+  });
+
+  it('does not remove a staged group while an API action is loading', async () => {
+    mockExec.mockResolvedValue(meldPhaseState);
+    renderWithProviders(<SambaPage />);
+    const getCards = () => document.querySelectorAll('[data-tutorial="sa-player-hand"] button');
+    await screen.findByRole('button', { name: 'メルドする' });
+    for (const index of [0, 1, 2]) fireEvent.click(getCards()[index]);
+    fireEvent.click(screen.getByRole('button', { name: '選択カードをグループに追加' }));
+    mockExec.mockReturnValue(new Promise(() => undefined));
+    fireEvent.click(screen.getByRole('button', { name: 'メルドする' }));
+    const remove = await screen.findByRole('button', { name: 'グループを取り消す' });
+    await waitFor(() => expect(remove).toHaveAttribute('aria-disabled', 'true'));
+    fireEvent.click(remove);
+    expect(screen.getByRole('region', { name: 'メルドグループ' })).toHaveTextContent('グループ1');
+  });
+
   it('shows the initial-meld minimum and selected total in the meld phase', async () => {
     mockExec.mockResolvedValue({ ...meldPhaseState, minMeld: 90 }); // the server's minimum wins; hasInitMeld false
     renderWithProviders(<SambaPage />);

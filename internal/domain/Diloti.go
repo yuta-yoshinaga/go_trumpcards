@@ -484,7 +484,7 @@ func dilotiRemoveDeclsAt(decls []*DilotiDeclaration, idxs []int) []*DilotiDeclar
 
 // advance は手番を進め、必要なら配り直し・局の終了を行う。
 func (d *Diloti) advance() {
-	if d.handsEmpty() {
+	if allHandsEmpty(d.players) {
 		if d.drawIdx < len(d.deck) {
 			// **配り直しでは場札を足さない。** 場は打ち手が積んだものだけ。
 			d.dealHands()
@@ -495,16 +495,6 @@ func (d *Diloti) advance() {
 		return
 	}
 	d.currentIdx = (d.currentIdx + 1) % DilotiPlayerCnt
-}
-
-// handsEmpty は全席の手札が尽きたかを返す。
-func (d *Diloti) handsEmpty() bool {
-	for _, p := range d.players {
-		if p.GetCardsSize() > 0 {
-			return false
-		}
-	}
-	return true
 }
 
 // finishRound は取り残しを回収して集計する。

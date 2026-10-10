@@ -222,8 +222,11 @@ func TestEstimationSuitName(t *testing.T) {
 func TestEstimationCuiPresenterActionLogOutput(t *testing.T) {
 	p := new(EstimationCuiPresenter)
 	e := newEstimationForCui(t)
+	during := p.ActionLogOutput(e)
+	assert.Contains(t, during, "deal: ラウンド1 を開始")
 	e.GiveUp()
-	require.NotEmpty(t, p.ActionLogOutput(e))
+	// The give-up is a seated entry (seat 0), named the way the rest of the CUI names that seat.
+	assert.Contains(t, p.ActionLogOutput(e), cuiPlayerName(e.GetPlayer(0), 0))
 }
 
 // **累計だけでは、そのラウンドで何点動いたのかが読めない** (#5751)。

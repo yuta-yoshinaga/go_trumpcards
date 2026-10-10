@@ -16,7 +16,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
-func setupChinchonWebMock(phase domain.ChinchonPhase, ended bool, winner, knocker int) (*interfaces.MockChinchonGame, []*domain.ChinchonPlayer) {
+func setupChinchonWebMock(phase domain.ChinchonPhase, ended bool, winner int) (*interfaces.MockChinchonGame, []*domain.ChinchonPlayer) {
 	m := new(interfaces.MockChinchonGame)
 	players := makeChinchonPlayers()
 	m.On("GetRoundNumber").Return(1)
@@ -27,7 +27,7 @@ func setupChinchonWebMock(phase domain.ChinchonPhase, ended bool, winner, knocke
 	m.On("GetPhase").Return(phase)
 	m.On("GetCurrentPlayerIdx").Return(0)
 	m.On("GetWinnerIdx").Return(winner)
-	m.On("GetKnockerIdx").Return(knocker)
+	m.On("GetKnockerIdx").Return(-1)
 	m.On("GetKnockerMelds").Return(([][]*domain.Card)(nil))
 	m.On("GetRoundDeadwood").Return([][]*domain.Card{{domain.NewCard(domain.CardDesignHeart, 2, false)}, nil})
 	m.On("GetWonByChinchon").Return(ended && winner == 0)
@@ -43,7 +43,7 @@ func TestChinchonWebPresenter_Output(t *testing.T) {
 	p := new(presenter.ChinchonWebPresenter)
 
 	t.Run("initial state serialises", func(t *testing.T) {
-		m, players := setupChinchonWebMock(domain.ChinchonPhaseDraw, false, -1, -1)
+		m, players := setupChinchonWebMock(domain.ChinchonPhaseDraw, false, -1)
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
 		players[1].AddCard(domain.NewCard(domain.CardDesignClover, 7, false))
 		out := p.Output(m, nil)
@@ -93,7 +93,7 @@ func TestChinchonWebPresenter_Output(t *testing.T) {
 	})
 
 	t.Run("game end with human winner", func(t *testing.T) {
-		m, _ := setupChinchonWebMock(domain.ChinchonPhaseGameEnd, true, 0, -1)
+		m, _ := setupChinchonWebMock(domain.ChinchonPhaseGameEnd, true, 0)
 		out := p.Output(m, nil)
 		var parsed controller.ChinchonWebOutput
 		require.NoError(t, json.Unmarshal([]byte(out), &parsed))
@@ -103,7 +103,7 @@ func TestChinchonWebPresenter_Output(t *testing.T) {
 	})
 
 	t.Run("game end no winner", func(t *testing.T) {
-		m, _ := setupChinchonWebMock(domain.ChinchonPhaseGameEnd, true, -1, -1)
+		m, _ := setupChinchonWebMock(domain.ChinchonPhaseGameEnd, true, -1)
 		out := p.Output(m, nil)
 		var parsed controller.ChinchonWebOutput
 		require.NoError(t, json.Unmarshal([]byte(out), &parsed))
@@ -111,7 +111,7 @@ func TestChinchonWebPresenter_Output(t *testing.T) {
 	})
 
 	t.Run("discard phase message", func(t *testing.T) {
-		m, _ := setupChinchonWebMock(domain.ChinchonPhaseDiscard, false, -1, -1)
+		m, _ := setupChinchonWebMock(domain.ChinchonPhaseDiscard, false, -1)
 		out := p.Output(m, nil)
 		var parsed controller.ChinchonWebOutput
 		require.NoError(t, json.Unmarshal([]byte(out), &parsed))
@@ -120,7 +120,7 @@ func TestChinchonWebPresenter_Output(t *testing.T) {
 	})
 
 	t.Run("round end message", func(t *testing.T) {
-		m, _ := setupChinchonWebMock(domain.ChinchonPhaseRoundEnd, false, -1, -1)
+		m, _ := setupChinchonWebMock(domain.ChinchonPhaseRoundEnd, false, -1)
 		out := p.Output(m, nil)
 		var parsed controller.ChinchonWebOutput
 		require.NoError(t, json.Unmarshal([]byte(out), &parsed))
@@ -128,7 +128,7 @@ func TestChinchonWebPresenter_Output(t *testing.T) {
 	})
 
 	t.Run("error is surfaced", func(t *testing.T) {
-		m, _ := setupChinchonWebMock(domain.ChinchonPhaseDraw, false, -1, -1)
+		m, _ := setupChinchonWebMock(domain.ChinchonPhaseDraw, false, -1)
 		out := p.Output(m, errors.New("boom"))
 		var parsed controller.ChinchonWebOutput
 		require.NoError(t, json.Unmarshal([]byte(out), &parsed))
@@ -136,7 +136,7 @@ func TestChinchonWebPresenter_Output(t *testing.T) {
 	})
 
 	t.Run("coded error sets code and clears message", func(t *testing.T) {
-		m, _ := setupChinchonWebMock(domain.ChinchonPhaseDraw, false, -1, -1)
+		m, _ := setupChinchonWebMock(domain.ChinchonPhaseDraw, false, -1)
 		out := p.Output(m, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "chinchon.errDiscardPileEmpty", nil))
 		var parsed controller.ChinchonWebOutput
 		require.NoError(t, json.Unmarshal([]byte(out), &parsed))
@@ -146,7 +146,11 @@ func TestChinchonWebPresenter_Output(t *testing.T) {
 }
 
 func TestChinchonWebPresenter_ActionLogOutput(t *testing.T) {
-	m, _ := setupChinchonWebMock(domain.ChinchonPhaseDraw, false, -1, -1)
+	m, _ := setupChinchonWebMock(domain.ChinchonPhaseDraw, false, -1)
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetActionLog")
+	m.On("GetActionLog").Return([]*domain.ActionLogEntry{{TurnNumber: 1, PlayerIdx: 0, ActionType: "draw_stock"}})
 	p := new(presenter.ChinchonWebPresenter)
-	assert.NotPanics(t, func() { p.ActionLogOutput(m) })
+	var parsed controller.ActionLogWebOutput
+	require.NoError(t, json.Unmarshal([]byte(p.ActionLogOutput(m)), &parsed))
+	assert.Len(t, parsed.Entries, 1)
 }

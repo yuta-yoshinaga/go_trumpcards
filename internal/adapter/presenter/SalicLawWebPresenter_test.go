@@ -56,10 +56,21 @@ func parseSalicLawOutput(t *testing.T, jsonStr string) *controller.SalicLawWebOu
 // この期待が HintOutput テストの「ヒントあり」を食ってしまう。
 func setupSalicLawOutputMock(g *interfaces.MockSalicLawGame) {
 	setupSalicLawWebMockDefaults(g)
+	g.On("CanAutoComplete").Return(false).Maybe()
 	g.On("GetHint").Return(nil).Maybe()
 }
 
 func TestSalicLawWebPresenter_Output(t *testing.T) {
+	t.Run("reports auto-complete availability", func(t *testing.T) {
+		g := new(interfaces.MockSalicLawGame)
+		setupSalicLawWebMockDefaults(g)
+		g.On("GetHint").Return(nil).Maybe()
+		g.On("CanAutoComplete").Return(true)
+
+		result := parseSalicLawOutput(t, new(SalicLawWebPresenter).Output(g, nil))
+		assert.True(t, result.CanAutoComplete)
+	})
+
 	t.Run("initial state", func(t *testing.T) {
 		g := new(interfaces.MockSalicLawGame)
 		setupSalicLawOutputMock(g)
@@ -123,6 +134,7 @@ func TestSalicLawWebPresenter_OutputCarriesTheHint(t *testing.T) {
 	t.Run("while the game is playable", func(t *testing.T) {
 		g := new(interfaces.MockSalicLawGame)
 		setupSalicLawWebMockDefaults(g)
+		g.On("CanAutoComplete").Return(false).Maybe()
 		g.On("GetHint").Return(hint).Maybe()
 
 		result := parseSalicLawOutput(t, new(SalicLawWebPresenter).Output(g, nil))

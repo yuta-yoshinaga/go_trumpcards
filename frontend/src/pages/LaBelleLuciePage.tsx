@@ -16,6 +16,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
+import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -87,10 +88,7 @@ function LaBelleLuciePageContent() {
   const [showHint, setShowHint] = useState(false);
   const hintTimerRef = useRef<number | null>(null);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
-  useEffect(() => {
-    exec('reset');
-  }, []);
+  useMountReset(exec);
 
   // Clear a stale source selection (and any hint highlight) whenever the board
   // changes (move, redeal, undo, auto-complete) so a selected/hinted index can't
@@ -120,6 +118,7 @@ function LaBelleLuciePageContent() {
   const isOver = state.phase === LaBelleLuciePhase.GAME_OVER;
   const isEnd = isClear || isOver;
   const canAct = !isEnd;
+  const canOperateBoard = canAct && !loading;
   const foundationCardCount = state.foundation.reduce((total, pile) => total + pile.length, 0);
   const remainingCardCount = 52 - foundationCardCount;
 
@@ -179,7 +178,7 @@ function LaBelleLuciePageContent() {
   };
 
   const sendToFoundation = () => {
-    if (selected === null) return;
+    if (!canOperateBoard || selected === null) return;
     exec('ff', selected);
     setSelected(null);
   };
@@ -222,10 +221,11 @@ function LaBelleLuciePageContent() {
       <button
         type="button"
         key={`fan-${idx}`}
-        className={`relative flex flex-col items-center rounded p-1${ring} ${canAct ? 'cursor-pointer' : ''}`}
+        className={`relative flex flex-col items-center rounded p-1${ring} ${canOperateBoard ? 'cursor-pointer' : ''}`}
         style={{ minHeight: Math.round(w * 1.4) }}
-        onClick={canAct ? () => pickFan(idx) : undefined}
+        onClick={canOperateBoard ? () => pickFan(idx) : undefined}
         disabled={!canAct}
+        aria-disabled={(canAct && loading) || undefined}
         aria-label={ariaLabel}
         data-testid={`fan-${idx}`}
         data-movable={movableFans[idx] === true ? 'true' : undefined}
@@ -289,9 +289,9 @@ function LaBelleLuciePageContent() {
                       })
                     : t('emptyFoundationAriaLabel', { index: i + 1 })
                 }
-                className={`rounded ${selected !== null ? 'ring-1 ring-ds-success' : ''} ${canAct ? 'cursor-pointer' : ''}`}
-                onClick={selected !== null ? sendToFoundation : undefined}
-                aria-disabled={selected === null || undefined}
+                className={`rounded ${selected !== null ? 'ring-1 ring-ds-success' : ''} ${canOperateBoard ? 'cursor-pointer' : ''}`}
+                onClick={sendToFoundation}
+                aria-disabled={selected === null || !canOperateBoard || undefined}
                 aria-describedby={selected === null ? selectSourceHintId : undefined}
                 data-testid={`foundation-${i}`}
               >

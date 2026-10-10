@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { pigApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -17,6 +17,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useMountReset } from '../hooks/useMountReset';
 import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnDanger, btnPrimary, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -74,9 +75,7 @@ function PigPageContent() {
   );
   const { handleCommand } = useCliGame(dispatch, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  useEffect(() => {
-    void dispatch('reset');
-  }, [dispatch]);
+  useMountReset(dispatch);
 
   const handleReset = useCallback(() => {
     hideActionLog();
@@ -85,9 +84,12 @@ function PigPageContent() {
 
   const handlePass = useCallback(
     (idx: number) => {
+      if (loading || !state || state.phase !== PigPhase.PASS) return;
+      const player = state.players.find((p) => p.isHuman);
+      if (!player || player.eliminated || player.hasChosenPass) return;
       void dispatch('pass', idx);
     },
-    [dispatch],
+    [dispatch, loading, state],
   );
 
   const handleSignal = useCallback(() => {
@@ -261,6 +263,16 @@ function PigPageContent() {
 
             {human && human.cards.length > 0 && (
               <div className="mt-4" data-tutorial="pig-hand">
+                {human.chosenPassCard && (
+                  <div className="mb-2 flex items-center gap-2" data-testid="pig-chosen-pass-card">
+                    <h3 className="text-ds-text-primary text-sm font-medium">{t('status.chosenPass')}</h3>
+                    <CardImage
+                      card={human.chosenPassCard}
+                      width={cardWidth}
+                      ariaLabel={t('actions.passSelectedAria', { card: cardAlt(human.chosenPassCard) })}
+                    />
+                  </div>
+                )}
                 <div className="text-ds-text-muted text-sm mb-1">
                   {t('header.you')}: {human.cardCount}
                 </div>
@@ -270,9 +282,9 @@ function PigPageContent() {
                       key={`${card.design}-${card.value}-${idx}`}
                       type="button"
                       onClick={() => handlePass(idx)}
-                      disabled={loading || !canPass}
+                      aria-disabled={loading || !canPass}
                       aria-label={t('actions.passAria', { card: cardAlt(card) })}
-                      className={`disabled:opacity-50 ${canPass ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
+                      className={`${loading || !canPass ? 'opacity-50 cursor-not-allowed' : ''} ${canPass ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
                     >
                       <CardImage card={card} width={cardWidth} />
                     </button>

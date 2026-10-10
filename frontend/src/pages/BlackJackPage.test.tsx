@@ -396,6 +396,59 @@ describe('BlackJackPage', () => {
     );
   });
 
+  it('announces changed running and true counts when counting is enabled', async () => {
+    mockExec.mockResolvedValueOnce({ ...actionPhaseState, countingEnabled: true, runningCount: 2, trueCount: 0.5 });
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockResolvedValue({ ...actionPhaseState, countingEnabled: true, runningCount: 3, trueCount: 0.8 });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒット' }));
+    expect(await screen.findByTestId('bj-count-announcement')).toHaveTextContent(
+      'ランニングカウントは3、トゥルーカウントは0.8です。',
+    );
+  });
+
+  it('announces only the running count for KO', async () => {
+    mockExec.mockResolvedValueOnce({ ...actionPhaseState, countingEnabled: true, countingSystem: 1, runningCount: 2 });
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockResolvedValue({
+      ...actionPhaseState,
+      countingEnabled: true,
+      countingSystem: 1,
+      runningCount: 3,
+      trueCount: 0.8,
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒット' }));
+    const announcement = await screen.findByTestId('bj-count-announcement');
+    expect(announcement).toHaveTextContent('ランニングカウントは3です。');
+    expect(announcement).not.toHaveTextContent('トゥルーカウント');
+  });
+
+  it.each([
+    ['spanish21', mockSpanish21Exec],
+    ['doubleexposure', mockDoubleExposureExec],
+  ] as const)('uses translated count announcements for the %s namespace', async (variant, execMock) => {
+    execMock.mockResolvedValueOnce({ ...actionPhaseState, countingEnabled: true, runningCount: 2, trueCount: 0.5 });
+    renderWithProviders(<BlackJackPage variant={variant} />);
+    await waitFor(() => expect(execMock).toHaveBeenCalledWith('reset'));
+    execMock.mockResolvedValue({ ...actionPhaseState, countingEnabled: true, runningCount: 3, trueCount: 0.8 });
+
+    fireEvent.click(screen.getByRole('button', { name: 'ヒット' }));
+
+    const announcement = await screen.findByTestId('bj-count-announcement');
+    expect(announcement).toHaveTextContent('ランニングカウントは3、トゥルーカウントは0.8です。');
+    expect(announcement).not.toHaveTextContent('countAnnouncement');
+  });
+
+  it('does not announce count changes when counting is disabled', async () => {
+    mockExec.mockResolvedValueOnce({ ...actionPhaseState, countingEnabled: false, runningCount: 2, trueCount: 0.5 });
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockResolvedValue({ ...actionPhaseState, countingEnabled: false, runningCount: 3, trueCount: 0.8 });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒット' }));
+    expect(await screen.findByTestId('bj-count-announcement')).toBeEmptyDOMElement();
+  });
+
   it('calls stand command when Stand button is clicked', async () => {
     mockExec.mockResolvedValue(actionPhaseState);
     renderWithProviders(<BlackJackPage />);
@@ -1887,6 +1940,25 @@ describe('BlackJackPage', () => {
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
 
+  it('Double Exposure tutorial opens the payout table before the bet button step', async () => {
+    mockDoubleExposureExec.mockResolvedValue(betPhaseState);
+    const { container } = renderWithProviders(<BlackJackPage variant="doubleexposure" />);
+    fireEvent.click(await screen.findByRole('button', { name: 'チュートリアル' }));
+    fireEvent.click(await screen.findByRole('button', { name: '次へ' }));
+
+    expect(
+      await screen.findByText(
+        'ベットを始める前に配当表を開き、ダブルエクスポージャーのルールを確認しましょう。ブラックジャックの配当は1:1で、同点はディーラーの勝ちです (ナチュラルブラックジャック同士のときだけプレイヤーの勝ち)。',
+      ),
+    ).toBeInTheDocument();
+    const details = container.querySelector('details[data-tutorial="bj-payout-ref"]');
+    expect(details).not.toBeNull();
+    fireEvent.click(details?.querySelector('summary') as HTMLElement);
+
+    await waitFor(() => expect(details).toHaveAttribute('open'));
+    expect(await screen.findByText('ベット額を決めたら、このボタンを押してゲームを開始します。')).toBeInTheDocument();
+  });
+
   it('renders accessible h1 heading', async () => {
     mockExec.mockResolvedValue(betPhaseState);
     renderWithProviders(<BlackJackPage />);
@@ -1894,6 +1966,15 @@ describe('BlackJackPage', () => {
   });
 
   // --- Payout table collapsible tests ---
+
+  it('shows Spanish 21 bonus payouts and a clear payout table prompt before betting', async () => {
+    mockSpanish21Exec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<BlackJackPage variant="spanish21" />);
+
+    expect(await screen.findByText(/5枚で21.*3:2.*6枚で21.*2:1.*7枚以上で21.*3:1/)).toBeInTheDocument();
+    expect(screen.getByText(/6-7-8.*7-7-7/)).toBeInTheDocument();
+    expect(screen.getByText('配当表 (Spanish 21 ボーナス)')).toBeInTheDocument();
+  });
 
   it('payout table is rendered as a collapsible details element in bet phase', async () => {
     mockExec.mockResolvedValue(betPhaseState);

@@ -29,6 +29,62 @@ grep -qF '[ -f "$t.test.ts" ] || [ -f "$t.test.tsx" ]' "$SCRIPTS/receipt.sh" || 
 grep -qP '(?<!\\)`' "$SCRIPTS/mkprompt.sh" && fail "mkprompt.sh has an unescaped backtick: its heredoc is unquoted, so bash runs the quoted text as a command and drops it from every lane prompt"
 sed -n '/^cat <<P$/,/^P$/p' "$SCRIPTS/mkprompt.sh" | grep -qP '(?<!\\)\$(?!n\b|body\b)' && fail "mkprompt.sh has a bare dollar in its unquoted heredoc; bash expands it to empty and removes a word from the instructions"
 grep -q 'dele' "$ROOT/.claude/skills/batch-lanes/SKILL.md" || fail "SKILL.md does not document dele"
+# repeattests.sh: lists added, edited and untracked Go tests per package, and warns when a
+# rerun of them fails (a shuffle-dependent test would otherwise fail on develop).
+(
+  rt="$tmp/rt"; mkdir -p "$rt/internal/x" && cd "$rt" || exit 1
+  git init -q && git config user.email t@t && git config user.name t
+  printf 'module rt\n\ngo 1.21\n' > go.mod
+  printf 'package x\n\nimport "testing"\n\nfunc TestKept(t *testing.T) {\n\t_ = 1\n}\n\nfunc TestEdited(t *testing.T) {\n\t_ = 1\n}\n' > internal/x/a_test.go
+  git add go.mod internal/x/a_test.go && git commit -qm init
+  python3 - <<'PY'
+p = 'internal/x/a_test.go'
+s = open(p).read()
+s = s.replace('func TestEdited(t *testing.T) {\n\t_ = 1\n}', 'func TestEdited(t *testing.T) {\n\t_ = 2\n}')
+s += '\nfunc TestAdded(t *testing.T) {}\n'
+open(p, 'w').write(s)
+PY
+  printf 'package x\n\nimport (\n\t"math/rand"\n\t"testing"\n)\n\nfunc TestFlaky(t *testing.T) {\n\tif rand.Intn(2) == 0 {\n\t\tt.Fatal("unlucky deal")\n\t}\n}\n' > internal/x/b_test.go
+  listed=$(bash "$SCRIPTS/repeattests.sh" --list "$rt")
+  [ "$listed" = $'internal/x TestAdded\ninternal/x TestEdited\ninternal/x TestFlaky' ] || fail "repeattests.sh listed the wrong tests: $listed"
+  if command -v go >/dev/null 2>&1; then
+    out=$(REPEAT_TESTS_COUNT=20 bash "$SCRIPTS/repeattests.sh" "$rt")
+    grep -q '^WARN DEAL_DEPENDENT internal/x ' <<<"$out" || fail "repeattests.sh did not flag a test that fails half the time: $out"
+    rm internal/x/b_test.go
+    out=$(REPEAT_TESTS_COUNT=20 bash "$SCRIPTS/repeattests.sh" "$rt")
+    [ -z "$out" ] || fail "repeattests.sh warned on stable tests: $out"
+    printf 'package x\n\nimport "testing"\n\nfunc TestBroken(t *testing.T) { undefinedName() }\n' > internal/x/c_test.go
+    out=$(REPEAT_TESTS_COUNT=2 bash "$SCRIPTS/repeattests.sh" "$rt")
+    grep -q '^WARN REPEAT_TESTS_ERROR internal/x ' <<<"$out" && ! grep -q DEAL_DEPENDENT <<<"$out" \
+      || fail "repeattests.sh labelled a compile error as deal-dependent: $out"
+    rm internal/x/c_test.go
+  fi
+  git rm -qf internal/x/a_test.go
+  listed=$(bash "$SCRIPTS/repeattests.sh" --list "$rt")
+  [ -z "$listed" ] || fail "repeattests.sh listed tests from a deleted file: $listed"
+) || exit 1
+# ship_pr_body: a full body (own "## " headings) must not get a second Summary,
+# Closes line or footer; plain summary lines still get the standard wrapper.
+(
+  source "$SCRIPTS/prbody.sh"
+  export CLAUDE_SESSION_URL=https://example.test/session
+  count() { grep -cF -- "$1" <<<"$2" || true; }
+  full=$(ship_pr_body 42 $'Closes #42\n\n## Summary\n- did it\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nhttps://example.test/session' '' '')
+  [ "$(count '## Summary' "$full")" = 1 ] || fail "full body got a second ## Summary: $full"
+  [ "$(count 'Closes #42' "$full")" = 1 ] || fail "full body got a second Closes line: $full"
+  [ "$(count 'Generated with [Claude Code]' "$full")" = 1 ] || fail "full body got a second footer: $full"
+  noref=$(ship_pr_body 42 $'## Summary\n- did it' '' '')
+  [ "$(head -1 <<<"$noref")" = 'Closes #42' ] || fail "full body without a reference did not get Closes first: $noref"
+  [ "$(count 'Generated with [Claude Code]' "$noref")" = 1 ] || fail "full body without a footer did not get one: $noref"
+  partof=$(ship_pr_body 42 $'Part of #42\n\n## Summary\n- slice' '' '')
+  [ "$(count 'Closes #42' "$partof")" = 0 ] || fail "Part of body was given a Closes line: $partof"
+  other=$(ship_pr_body 42 $'Closes #420\n\n## Summary' '' '')
+  grep -qx 'Closes #42' <<<"$other" || fail "Closes #420 was taken as a reference to #42: $other"
+  plainref=$(ship_pr_body 42 $'- did it\n\nPart of #42' '' '')
+  [ "$(count 'Closes #42' "$plainref")" = 0 ] || fail "summary lines that already reference the issue got a Closes line: $plainref"
+  plain=$(ship_pr_body 42 '- did it' '- [x] vitest' '')
+  [ "$(count '## Summary' "$plain")" = 1 ] && [ "$(count 'Closes #42' "$plain")" = 1 ] && [ "$(count '## Test plan' "$plain")" = 1 ] || fail "summary lines lost the standard wrapper: $plain"
+) || exit 1
 set +e
 grep -rnE '/tmp/claude-1000|/home/yuta|session_0' "$SCRIPTS" >"$tmp/paths.out" 2>&1
 grep_rc=$?
@@ -118,6 +174,29 @@ echo changed > "$tmp/other/file"
 if PATH="$PATH" BATCH_REPO="$tmp/repo" BATCH_WT_ROOT="$tmp" \
   bash "$SCRIPTS/fx.sh" fix target >"$tmp/fx-dirty.out" 2>&1; then fail "fx.sh accepted a dirty worktree on target"; fi
 grep -q "$tmp/other" "$tmp/fx-dirty.out" || fail "fx.sh did not report the dirty worktree path"
+
+# e2echeck should ignore removed locale text found only on comment lines.
+for case_name in comment locator; do
+  repo="$tmp/e2echeck-$case_name"
+  git init -q "$repo"
+  git -C "$repo" config user.email test@example.com
+  git -C "$repo" config user.name test
+  mkdir -p "$repo/frontend/src/i18n/locales/ja" "$repo/frontend/e2e"
+  printf '{\n  "message": "削除対象の文言です"\n}\n' > "$repo/frontend/src/i18n/locales/ja/bura.json"
+  if [ "$case_name" = comment ]; then
+    printf '// 削除対象の文言です\n' > "$repo/frontend/e2e/bura.spec.ts"
+  else
+    printf 'getByText("削除対象の文言です");\n' > "$repo/frontend/e2e/bura.spec.ts"
+  fi
+  git -C "$repo" add .
+  printf '{\n}\n' > "$repo/frontend/src/i18n/locales/ja/bura.json"
+  output="$(python3 "$SCRIPTS/e2echeck.py" "$repo")" || fail "e2echeck failed for $case_name case"
+  if [ "$case_name" = comment ]; then
+    [ -z "$output" ] || fail "e2echeck warned for comment-only hit: $output"
+  else
+    [[ "$output" == *"E2ECHECK WARN"* ]] || fail "e2echeck missed locator hit"
+  fi
+done
 
 BATCH_TESTING=1 source "$SCRIPTS/receipt.sh"
 BATCH_STATE="$tmp/testing-state" BATCH_TESTING=1 bash "$SCRIPTS/receipt.sh" 1 || fail "receipt.sh testing mode failed when executed directly"

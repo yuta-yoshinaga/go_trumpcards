@@ -29,7 +29,6 @@ func NewDoubtCuiController(di usecase.DoubtInteractorIF) *DoubtCuiController {
 //	d <idx...>       → ダウト (idx=ダウトするプレイヤーインデックス)
 //	doubt <idx...>   (同上)
 //	s / skip         → ダウトをスキップ
-//	sw / setwindow   → ダウト待機秒数設定 (1-60)
 //	sm / setmemory   → CPU記憶力設定 (0=Easy, 1=Normal, 2=Hard)
 //	sp / setpenalty  → ペナルティドロー上限設定 (0=無制限, >0=上限)
 //	sh / sethesitation → CPU の迷い時間演出 (0=OFF, 1=ON)
@@ -41,7 +40,7 @@ func (c *DoubtCuiController) Exec(command string) string {
 			return c.di.ResetWithConfig(cfg, nil)
 		},
 		[]string{
-			"p", "play", "d", "doubt", "s", "skip", "sw", "setwindow",
+			"p", "play", "d", "doubt", "s", "skip",
 			"sm", "setmemory", "smetaai", "smai", "rp", "resetprofile", "sp", "setpenalty",
 			"sh", "sethesitation",
 			"log", "l",
@@ -76,12 +75,6 @@ func (c *DoubtCuiController) Exec(command string) string {
 				return c.di.ResolveDoubt(indices), true
 			case "s", "skip":
 				return c.di.SkipDoubt(), true
-			case "sw", "setwindow":
-				return cuiutil.WithParsedIntKeys(args, "doubtWindowSecondsRequired160", "invalidDoubtWindow160", 1, 60, func(v int) string {
-					cfg := c.di.GetConfig()
-					cfg.DoubtWindowSec = v
-					return c.di.ResetWithConfig(cfg, nil)
-				})
 			case "sm", "setmemory":
 				return cuiutil.WithParsedIntKeys(args, "cpuMemoryLevelRequired0Easy1Normal2Hard", "invalidCpuMemoryLevel02", 0, 2, func(v int) string {
 					cfg := c.di.GetConfig()

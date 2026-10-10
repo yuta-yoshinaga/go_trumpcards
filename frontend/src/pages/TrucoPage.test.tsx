@@ -121,6 +121,19 @@ describe('TrucoPage', () => {
     expect(await screen.findByTestId('truco-mano')).toHaveTextContent('先手: CPU');
   });
 
+  it('shows the dealer badge independently from mano', async () => {
+    mockExec.mockResolvedValue(makeState({ manoIdx: 1, dealerIdx: 0 }));
+    const { unmount } = renderWithProviders(<TrucoPage />);
+    expect(await screen.findByTestId('truco-mano')).toHaveTextContent('先手: CPU');
+    expect(screen.getByTestId('truco-dealer')).toHaveTextContent('ディーラー: あなた');
+    unmount();
+
+    mockExec.mockResolvedValue(makeState({ manoIdx: 0, dealerIdx: 1 }));
+    renderWithProviders(<TrucoPage />);
+    expect(await screen.findByTestId('truco-mano')).toHaveTextContent('先手: あなた');
+    expect(screen.getByTestId('truco-dealer')).toHaveTextContent('ディーラー: CPU');
+  });
+
   it('shows baza winners and distinguishes parda in the trick history', async () => {
     mockExec.mockResolvedValue(makeState({ trickResults: [0, -1, 1] }));
     renderWithProviders(<TrucoPage />);

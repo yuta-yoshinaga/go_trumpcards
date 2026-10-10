@@ -1,4 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
+import i18n from 'i18next';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fortressApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
@@ -93,15 +94,41 @@ describe('FortressPage', () => {
     await waitFor(() => expect(screen.getAllByLabelText(/組札 1枚/).length).toBe(4));
   });
 
-  it('includes the top card in a non-empty foundation label and keeps suit on empty foundations', async () => {
+  it('uses translated suit names in empty and non-empty foundation labels', async () => {
     mockExec.mockResolvedValueOnce(playingState);
     const { unmount } = renderWithProviders(<FortressPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '♠ 組札 1枚、最上位の札 ♠ A' })).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'スペード 組札 1枚、最上位の札 ♠ A' })).toBeInTheDocument(),
+    );
 
     mockExec.mockResolvedValueOnce({ ...playingState, foundation: [[], [], [], []] });
     unmount();
     renderWithProviders(<FortressPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '空の組札 (♠)' })).toBeInTheDocument());
+    const japaneseSuits = ['スペード', 'クラブ', 'ハート', 'ダイヤ'];
+    await waitFor(() => {
+      for (const suit of japaneseSuits) {
+        expect(screen.getByRole('button', { name: `空の組札 (${suit})` })).toBeInTheDocument();
+      }
+    });
+
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    unmount();
+    mockExec.mockResolvedValueOnce({ ...playingState, foundation: [[], [], [], []] });
+    const english = renderWithProviders(<FortressPage />);
+    const englishSuits = ['Spade', 'Club', 'Heart', 'Diamond'];
+    await waitFor(() => {
+      for (const suit of englishSuits) {
+        expect(screen.getByRole('button', { name: `Empty foundation (${suit})` })).toBeInTheDocument();
+      }
+    });
+    english.unmount();
+    mockExec.mockResolvedValueOnce(playingState);
+    renderWithProviders(<FortressPage />);
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Spade foundation 1 cards, top card ♠ A' })).toBeInTheDocument(),
+    );
+    await i18n.changeLanguage(previousLanguage);
   });
 
   it('labels all ten tableau columns with their 0-based index (matching hint text)', async () => {
@@ -143,7 +170,7 @@ describe('FortressPage', () => {
     expect(screen.getByRole('button', { name: '♠ 5、列0・位置1' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '♠ 6、列1・位置0' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '空のタブロー列 2' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '♠ 組札 1枚、最上位の札 ♠ A' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'スペード 組札 1枚、最上位の札 ♠ A' })).toBeInTheDocument();
   });
 
   it('uses the same 0-based number for a tableau card and its column when empty', async () => {
@@ -317,7 +344,7 @@ describe('FortressPage', () => {
 
       await waitFor(() =>
         expect(
-          screen.getByRole('button', { name: '空の組札 (♠)' }).closest('[data-legal-target="true"]'),
+          screen.getByRole('button', { name: '空の組札 (スペード)' }).closest('[data-legal-target="true"]'),
         ).not.toBeNull(),
       );
       // 組札 4 つ + 空き列 9 つ。組札側が 0 なら 9 で止まる。

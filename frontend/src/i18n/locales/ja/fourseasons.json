@@ -25,6 +25,8 @@
   "nextRankBadge": "次:{{rank}}",
   "nextRankAria": "次に置くべきカード {{rank}}",
   "foundationCompleteAria": "完成",
+  "foundationTopAria": "組札 {{idx}}: {{top}}。{{next}}",
+  "foundationTopCompleteAria": "組札 {{idx}}: {{top}}。{{complete}}",
   "acceptsTooltip": "置けるのは {{rank}}",
   "crossCardAria": "十字 {{col}}: {{card}}。{{accepts}}",
   "acceptsAny": "どのカードでも置けます",

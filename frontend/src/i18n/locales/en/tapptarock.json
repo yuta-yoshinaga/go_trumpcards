@@ -34,6 +34,7 @@
   "previousTrick": "Previous trick",
   "previousTrickWinner": "Winner: {{name}}",
   "restricted": "You must follow the led suit",
+  "restrictedTalon": "Kings and trull cards cannot be buried",
   "bidDreier": "Dreier",
   "bidSolo": "Solo",
   "pass": "Pass",

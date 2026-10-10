@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import type { gostopApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -18,6 +18,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, TARGET_SCORE_OPTIONS, useGoStopGame } from '../hooks/useGoStopGame';
+import { useMountReset } from '../hooks/useMountReset';
 import { badgeInfoColors, badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -74,11 +75,7 @@ function GoStopPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('gostop', state);
 
-  // Fetch a fresh game on mount.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
-  useEffect(() => {
-    callApi('reset');
-  }, []);
+  useMountReset(callApi);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('gostop');
   const cliConfig: CliGameConfig<GoStopResponse, Parameters<typeof gostopApi.exec>> = useMemo(
@@ -110,6 +107,8 @@ function GoStopPageContent() {
   const isHumanTurn = state.isHumanTurn && !isGameEnd;
   const isHumanWinner = (winnerId: number) => winnerId === (human?.id ?? 0);
   const humanWon = isGameEnd && isHumanWinner(state.winner);
+  const hasPendingSettings =
+    configInput.cpuDifficulty !== state.config.cpuDifficulty || configInput.targetScore !== state.config.targetScore;
   const phaseName = isGameEnd
     ? t('phase.gameEnd')
     : isRoundEnd
@@ -468,6 +467,7 @@ function GoStopPageContent() {
               },
             ]}
           />
+          {hasPendingSettings && <p className="px-4 text-xs text-ds-text-muted">{t('settings.pendingReset')}</p>}
 
           <GameFooter className={`${gameTheme.gostop.footer} px-4 py-2.5`}>
             <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="gostop-actions">

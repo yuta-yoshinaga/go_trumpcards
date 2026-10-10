@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
+import { CardImage } from '../components/CardImage';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -381,9 +382,21 @@ function CassinoPageContent() {
                         data-testid={`build-${i}`}
                         data-take-candidate={isCandidate || undefined}
                         aria-pressed={buildIndices.includes(i)}
-                        aria-label={`${buildLabel}${isCandidate ? ` ${t('label.takeCandidate')}` : ''}`}
+                        aria-label={`${buildLabel}: ${b.groups.map((group) => group.map(cardAlt).join(t('listSeparator'))).join(t('build.groupSeparator'))}${isCandidate ? ` ${t('label.takeCandidate')}` : ''}`}
                       >
                         {buildLabel}
+                        <span className="mt-1 flex flex-wrap items-center justify-center gap-1">
+                          {b.groups.map((group, groupIdx) => (
+                            <span
+                              key={groupIdx}
+                              className="flex items-center gap-1 rounded border border-ds-border bg-ds-surface/70 p-1"
+                            >
+                              {group.map((card, cardIdx) => (
+                                <CardImage key={cardIdx} card={card} width={32} />
+                              ))}
+                            </span>
+                          ))}
+                        </span>
                       </button>
                     );
                   })}

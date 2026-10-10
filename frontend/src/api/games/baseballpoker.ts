@@ -1,7 +1,7 @@
 // API client for baseballpoker. Split out of gameApi.ts (issue #4434);
 // gameApi.ts re-exports this file, so existing imports keep working.
 
-import type { BaseballPokerResponse } from '../../types/card';
+import type { BaseballConfig, BaseballPokerResponse } from '../../types/card';
 import { gameExec } from '../gameExec';
 
 /**
@@ -14,6 +14,6 @@ import { gameExec } from '../gameExec';
 export const baseballpokerApi = {
   exec: (
     command: 'reset' | 'fold' | 'check' | 'call' | 'bet' | 'raise' | 'pay' | 'buyfold' | 'next' | 'hint' | 'log',
-    params?: { amount?: number },
+    params?: { amount?: number; config?: BaseballConfig },
   ) => gameExec<BaseballPokerResponse>('baseballpoker', { command, ...params }),
 };

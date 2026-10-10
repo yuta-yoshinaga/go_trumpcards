@@ -16,6 +16,7 @@
   },
   "round": "Round {{n}}",
   "trick": "Trick {{n}}",
+  "declarer": "Declarer: {{name}} ({{team}})",
   "trump": "Trump",
   "trumpUndeclared": "Trump undeclared",
   "cards": "{{count}} cards",

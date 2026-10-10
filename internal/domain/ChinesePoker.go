@@ -131,7 +131,7 @@ func (cp *ChinesePoker) Bet(amount int) error {
 		return NewDomainError(ErrInsufficientChips, "Insufficient chips.")
 	}
 	cp.bet = amount
-	cp.cpAppendLog(0, "bet", "chinesepoker.log.bet", map[string]string{"amount": fmt.Sprintf("%d", amount)}, nil)
+	cp.cpAppendLog(0, "bet", "chinesepoker.log.bet", map[string]string{"amount": fmt.Sprintf("%d", amount)})
 
 	cp.cpDeal()
 	cp.phase = ChinesePokerPhaseSetHands
@@ -196,7 +196,7 @@ func (cp *ChinesePoker) SetHands(frontIndices []int, middleIndices []int) error 
 	cp.playerMiddle = middle
 	cp.playerBack = back
 
-	cp.cpAppendLog(0, "set", "chinesepoker.log.set", map[string]string{"front": fmt.Sprintf("%v", frontIndices), "middle": fmt.Sprintf("%v", middleIndices)}, nil)
+	cp.cpAppendLog(0, "set", "chinesepoker.log.set", map[string]string{"front": fmt.Sprintf("%v", frontIndices), "middle": fmt.Sprintf("%v", middleIndices)})
 
 	cp.dealerFront, cp.dealerMiddle, cp.dealerBack = cpHouseWay(cp.dealerCards)
 
@@ -212,7 +212,7 @@ func (cp *ChinesePoker) cpDeal() {
 		cp.playerCards = append(cp.playerCards, cp.trumpCards.DrawCard())
 		cp.dealerCards = append(cp.dealerCards, cp.trumpCards.DrawCard())
 	}
-	cp.cpAppendLog(-1, "deal", "chinesepoker.log.deal", nil, nil)
+	cp.cpAppendLog(-1, "deal", "chinesepoker.log.deal", nil)
 }
 
 // cpResolve ゲーム解決
@@ -312,7 +312,7 @@ func (cp *ChinesePoker) cpResolve() {
 	} else if cp.scoop {
 		resultCode = "chinesepoker.log.resultDealerScoop"
 	}
-	cp.cpAppendLog(-1, "result", resultCode, nil, nil)
+	cp.cpAppendLog(-1, "result", resultCode, nil)
 }
 
 // --- ハンド比較 ---
@@ -664,8 +664,8 @@ func cpHouseWayScore(front, middle, back []*Card) int {
 }
 
 // cpAppendLog 棋譜にエントリを追加する
-func (cp *ChinesePoker) cpAppendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
-	cp.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
+func (cp *ChinesePoker) cpAppendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string) {
+	cp.appendLogCode(playerIdx, actionType, detailCode, detailParams, nil)
 }
 
 // --- Getters ---

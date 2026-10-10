@@ -274,6 +274,14 @@ describe('HasenpfefferPage', () => {
     expect(rows[1]).toHaveTextContent('獲得1');
   });
 
+  it('shows tricks taken by each team during the hand', async () => {
+    mockExec.mockResolvedValue(playing({ teamTricks: [3, 1] }));
+    renderWithProviders(<HasenpfefferPage />);
+
+    expect(await screen.findByTestId('hpf-team-tricks')).toHaveTextContent('T0 獲得3トリック');
+    expect(screen.getByTestId('hpf-team-tricks')).toHaveTextContent('T1 獲得1トリック');
+  });
+
   // 伏せ札・未宣言・確定の 3 状態を踏む。
   it('shows the blind, then trump', async () => {
     const { unmount } = renderWithProviders(<HasenpfefferPage />);

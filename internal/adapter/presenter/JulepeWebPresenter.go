@@ -33,6 +33,10 @@ func (p *JulepeWebPresenter) buildBase(r interfaces.JulepeGame) *controller.Jule
 	resObj.Pot = r.GetPot()
 	resObj.RequiredTricks = r.GetRequiredTricks()
 	resObj.Beast = r.GetBeast()
+	resObj.RoundAntes = r.GetRoundAntes()
+	if resObj.RoundAntes == nil {
+		resObj.RoundAntes = make([]int, 0)
+	}
 	if resObj.Beast == nil {
 		resObj.Beast = make([]bool, 0)
 	}

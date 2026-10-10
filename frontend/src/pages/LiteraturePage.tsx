@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { literatureApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -19,6 +19,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
@@ -108,10 +109,7 @@ function LiteraturePageContent() {
   });
 
   // Fetch a fresh game on mount.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
-  useEffect(() => {
-    exec('reset');
-  }, []);
+  useMountReset(exec);
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('literature');
@@ -171,10 +169,20 @@ function LiteraturePageContent() {
 
   // **要求できるのは相手チームのみ。**人間は席 0 = チーム 0。
   const opponents = state.players.filter((p) => p.team !== 0 && p.cardCount > 0).map((p) => p.id);
+  const selectedTarget = opponents.includes(askTarget) ? askTarget : (opponents[0] ?? 1);
 
-  // 未決の組の札だけを選択肢にする。
+  // 未決の組のうち、選択した相手への過去の失敗札を除いて候補にする。
+  const missedCards = new Set(
+    state.asks
+      .filter((ask) => ask.from === 0 && ask.to === selectedTarget && !ask.success && ask.card !== null)
+      .map((ask) => `${ask.card?.design}-${ask.card?.value}`),
+  );
   const askableCards = state.halfSuits.flatMap((st, half) =>
-    st === STATE_OPEN ? (state.halfSuitCards[half] ?? []).map((c, i) => ({ key: `${half}-${i}`, half, card: c })) : [],
+    st === STATE_OPEN
+      ? state.halfSuitCards[half]
+          .map((c, i) => ({ key: `${half}-${i}`, half, card: c }))
+          .filter(({ card }) => !missedCards.has(`${card.design}-${card.value}`))
+      : [],
   );
 
   const openHalfSuits = state.halfSuits.flatMap((st, half) => (st === STATE_OPEN ? [half] : []));
@@ -182,7 +190,6 @@ function LiteraturePageContent() {
   const selectedHalf = openHalfSuits.includes(claim.half) ? claim.half : (openHalfSuits[0] ?? 0);
   // **寄せた先の組には、まだ何も申告していない。**前の組の配置を持ち越さない。
   const claimHolders = claim.half === selectedHalf ? claim.holders : [0, 0, 0, 0, 0, 0];
-  const selectedTarget = opponents.includes(askTarget) ? askTarget : (opponents[0] ?? 1);
   const selectedCardKey = askableCards.some((a) => a.key === askCard) ? askCard : (askableCards[0]?.key ?? '');
   const selectedCard = askableCards.find((a) => a.key === selectedCardKey);
 

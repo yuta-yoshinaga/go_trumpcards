@@ -9,6 +9,7 @@
   "completed": "完成",
   "tableau": "場札",
   "cardPosAria": "{{card}}（列{{col}}・上から{{pos}}枚目）",
+  "cardPosAriaWithMovableCount": "{{card}}（列{{col}}・上から{{pos}}枚目・移動可能な連続札{{count}}枚）",
   "moveCount": "手数",
   "deal": "配る",
   "giveup": "ギブアップ",

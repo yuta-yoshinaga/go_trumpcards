@@ -78,9 +78,9 @@ func (c *CrescentCuiController) handleMove(args []string) string {
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("crescent.promptFromColumn"), "m t {0}")
 	}
-	fromCol, err := strconv.Atoi(args[1])
-	if err != nil {
-		return invalidArg("invalidColumn", "val", args[1])
+	fromCol, msg, ok := cuiutil.ParseIntArgKeys(args[1:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	if !ok {
+		return msg
 	}
 	if len(args) < 3 {
 		return cuiutil.PromptRequest(i18n.T("crescent.promptToZone"), fmt.Sprintf("m t %s {0}", args[1]))
@@ -90,18 +90,18 @@ func (c *CrescentCuiController) handleMove(args []string) string {
 		if len(args) < 4 {
 			return cuiutil.PromptRequest(i18n.T("promptToColumn"), fmt.Sprintf("m t %s t {0}", args[1]))
 		}
-		toCol, err := strconv.Atoi(args[3])
-		if err != nil {
-			return invalidArg("invalidColumn", "val", args[3])
+		toCol, msg, ok := cuiutil.ParseIntArgKeys(args[3:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+		if !ok {
+			return msg
 		}
 		return c.ci.MoveTableauToTableau(fromCol, toCol)
 	case "f":
 		if len(args) < 4 {
 			return cuiutil.PromptRequest(i18n.T("crescent.promptFoundationId"), fmt.Sprintf("m t %s f {0}", args[1]))
 		}
-		fIdx, err := strconv.Atoi(args[3])
-		if err != nil {
-			return invalidArg("crescent.invalidFoundationId", "val", args[3])
+		fIdx, msg, ok := cuiutil.ParseIntArgKeys(args[3:], "", "crescent.invalidFoundationId", cuiutil.NoMin, cuiutil.NoMax)
+		if !ok {
+			return msg
 		}
 		return c.ci.MoveTableauToFoundation(fromCol, fIdx)
 	default:
@@ -114,9 +114,9 @@ func (c *CrescentCuiController) handleMoveShorthand(args []string) string {
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("promptToColumn"), fmt.Sprintf("m %s {0}", args[0]))
 	}
-	toCol, err := strconv.Atoi(args[1])
-	if err != nil {
-		return invalidArg("invalidColumn", "val", args[1])
+	toCol, msg, ok := cuiutil.ParseIntArgKeys(args[1:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	if !ok {
+		return msg
 	}
 	return c.ci.MoveTableauToTableau(fromCol, toCol)
 }

@@ -587,7 +587,7 @@ func GuandanEvaluate(cards []*Card, level int) *GuandanCombo {
 	if c := guandanFullHouse(counts, wilds, len(cards)); c != nil {
 		return c
 	}
-	if c := guandanStraight(fixed, wilds, len(cards), level); c != nil {
+	if c := guandanStraight(fixed, wilds, len(cards)); c != nil {
 		return c
 	}
 	if c := guandanRepeatedRun(naturalCounts, wilds, len(cards)); c != nil {
@@ -626,7 +626,7 @@ func guandanFullHouse(counts map[int]int, wilds, total int) *GuandanCombo {
 // guandanStraight は 5 枚の連続を判定する。
 //
 // **A は上にも下にも使える** (A-2-3-4-5 と 10-J-Q-K-A)。
-func guandanStraight(fixed []*Card, wilds, total, level int) *GuandanCombo {
+func guandanStraight(fixed []*Card, wilds, total int) *GuandanCombo {
 	if total != 5 {
 		return nil
 	}

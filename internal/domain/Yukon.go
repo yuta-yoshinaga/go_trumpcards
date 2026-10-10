@@ -339,7 +339,7 @@ func (y *Yukon) autoFlipTableau(col int) {
 
 // checkGameClear ゲームクリア判定
 func (y *Yukon) checkGameClear() {
-	yukonFamilyCheckGameClear(y.foundation[:], CardValueMax, func() { y.phase = YukonPhaseGameClear })
+	yukonFamilyCheckGameClear(y.foundation[:], func() { y.phase = YukonPhaseGameClear })
 }
 
 // checkYukonStalemate 手詰まり判定

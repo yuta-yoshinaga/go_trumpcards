@@ -510,6 +510,7 @@ function AlaskaPageContent() {
                                         }
                                       }}
                                       disabled={!isPlaying}
+                                      aria-pressed={isSelected}
                                       // 上に乗る札は全部まとめて動く。画面はリングで
                                       // 示していたが、読み上げには枚数が乗っていな
                                       // かった (#5534)。末尾の1枚だけのときは言わない

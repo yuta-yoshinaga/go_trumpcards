@@ -38,6 +38,7 @@
   },
   "dealerPolicy": {
     "label": "Banker draw rule",
+    "drawRule": "The banker draws a third card on a rank of 6 or lower.",
     "drew": "Banker drew a third card (draws on rank {{threshold}} or below)",
     "stood": "Banker stood on rank {{rank}} (draws on rank {{threshold}} or below)"
   },

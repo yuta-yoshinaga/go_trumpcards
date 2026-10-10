@@ -127,10 +127,8 @@ func (g *Tongits) Reset() {
 	g.roundEndReason, g.roundWinner = TongitsRoundEndReasonNone, -1
 
 	for _, p := range g.players {
-		p.SetRoundScore(0)
 		p.SetCumulativeScore(0)
-		p.Reset()
-		p.SetIsFinished(false)
+		resetRoundScored(p)
 	}
 
 	g.dealInitialCards()

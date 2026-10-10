@@ -38,6 +38,8 @@ type RedDogGame interface {
 	GetResult() domain.GameResult
 	// GetTotalPayout 合計配当
 	GetTotalPayout() int
+	// GetNetChange 純損益
+	GetNetChange() int
 	// GetAppliedMultiplier returns the multiplier used for the settled payout.
 	GetAppliedMultiplier() int
 	// GetChips チップ

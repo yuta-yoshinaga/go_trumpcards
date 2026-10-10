@@ -93,8 +93,5 @@ func (p *RamschPlayer) IncRoundsLost() { p.roundsLost++ }
 // ResetRound resets per-round player state (points, hand, tricks)
 func (p *RamschPlayer) ResetRound() {
 	p.cardPoints = 0
-	p.SetRoundScore(0)
-	p.ResetTricks()
-	p.Reset()
-	p.SetIsFinished(false)
+	resetRoundWithTricks(p)
 }

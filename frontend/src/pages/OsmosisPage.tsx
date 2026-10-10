@@ -104,6 +104,7 @@ function OsmosisPageContent() {
   } = useGameApi(osmosisApi.exec, {
     onSuccess: (response, args) => {
       if (args[0] !== 'move' || isRejectedAction(response)) return;
+      setSelected(null);
       const source = args[1];
       const target = args[2];
       if (!source || !target) return;
@@ -159,7 +160,6 @@ function OsmosisPageContent() {
     (fIdx: number) => {
       if (!selected) return;
       execApi('move', selected, { zone: 'foundation', col: fIdx });
-      setSelected(null);
     },
     [execApi, selected],
   );

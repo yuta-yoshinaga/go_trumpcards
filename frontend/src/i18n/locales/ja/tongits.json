@@ -21,6 +21,7 @@
   "cumulativeScore": "累計: {{score}}",
   "roundScore": "ラウンド: {{score}}",
   "scores": "スコア",
+  "scoresCaption": "現在のスコア表",
   "scoresPlayer": "プレイヤー",
   "scoresRound": "ラウンド",
   "scoresTotal": "累計",

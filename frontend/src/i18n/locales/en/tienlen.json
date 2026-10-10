@@ -23,6 +23,12 @@
   "selectedPlayLabel": "Selected",
   "comboBadge": "{{type}} ({{count}} cards)",
   "bombLabel": "Bomb",
+  "rules": {
+    "title": "Combo strength and plays",
+    "strength": "Compare rank (3 is lowest, 2 is highest). Three-pair runs and four of a kind are chops; they beat a single 2 or a weaker chop.",
+    "follow": "When cards are on the table, play a stronger combo of the same type and count.",
+    "lead": "When the table is empty, play any valid combo. You cannot pass."
+  },
   "phase": {
     "play": "Play",
     "end": "End"

@@ -70,6 +70,11 @@
   "you": "You",
   "cpu": "CPU {{id}}",
   "score": "Score: {{score}}",
+  "listSeparator": ", ",
+  "finalResult": {
+    "winner": "Winner: {{name}}",
+    "tie": "Tie: {{names}}"
+  },
   "dealerBadge": "Dealer",
   "playButton": "Play",
   "playPrompt": "Your turn — pick a card to play.",

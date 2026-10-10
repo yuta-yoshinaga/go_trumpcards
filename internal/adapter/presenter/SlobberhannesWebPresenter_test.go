@@ -193,10 +193,12 @@ func TestSlobberhannesWebPresenterActionLogOutput(t *testing.T) {
 	p := new(SlobberhannesWebPresenter)
 	s := newSlobberhannesForWeb(t)
 
-	// 棋譜は終局するまで出さない（進行中に手を明かさないための共通仕様）。
+	// 公開済みのプレイは対局中も確認できる。
 	var during map[string]any
 	require.NoError(t, json.Unmarshal([]byte(p.ActionLogOutput(s)), &during))
-	assert.Empty(t, during["entries"], "進行中は空")
+	duringEntries, ok := during["entries"].([]any)
+	require.True(t, ok)
+	assert.NotEmpty(t, duringEntries, "進行中も配札イベントを含む")
 
 	s.GiveUp()
 	var after map[string]any

@@ -62,6 +62,15 @@ func (m *MockHokmGame) GetCurrentTrick() []*domain.TrickCard {
 	return args.Get(0).([]*domain.TrickCard)
 }
 
+func (m *MockHokmGame) GetLastTrick() ([]*domain.TrickCard, int) {
+	args := m.Called()
+	var cards []*domain.TrickCard
+	if args.Get(0) != nil {
+		cards = args.Get(0).([]*domain.TrickCard)
+	}
+	return cards, args.Int(1)
+}
+
 func (m *MockHokmGame) GetValidPlayIndices(playerIdx int) []int {
 	args := m.Called(playerIdx)
 	if args.Get(0) == nil {

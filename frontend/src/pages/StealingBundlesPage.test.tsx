@@ -272,6 +272,27 @@ describe('StealingBundlesPage', () => {
     expect(screen.queryByTestId('sb-trail-btn')).not.toBeInTheDocument();
   });
 
+  it('prevents selecting cards with no legal action while a capture is compulsory', async () => {
+    mockExec.mockResolvedValue(makeState({ tableMatches: { '0': [0] }, stealTargets: { '1': [2] } }));
+    renderWithProviders(<StealingBundlesPage />);
+    const cards = await screen.findAllByRole('button', { name: /を選ぶ$/ });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+
+    expect(cards[0]).not.toHaveAttribute('aria-disabled', 'true');
+    expect(cards[1]).not.toHaveAttribute('aria-disabled', 'true');
+    expect(cards[2]).toHaveAttribute('aria-disabled', 'true');
+    expect(cards[2]).toHaveAttribute('aria-describedby', 'sb-status');
+
+    fireEvent.click(cards[2]);
+    expect(screen.queryByTestId('sb-actions')).not.toBeInTheDocument();
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+
+    fireEvent.click(cards[0]);
+    expect(screen.getByTestId('sb-actions')).toBeInTheDocument();
+  });
+
   it('captures from the table with the selected card', async () => {
     renderWithProviders(<StealingBundlesPage />);
     await screen.findByTestId('sb-table');

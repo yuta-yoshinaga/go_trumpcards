@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { balootApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -18,6 +18,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useMountReset } from '../hooks/useMountReset';
 import { btnDanger, btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { BalootResponse } from '../types/card';
@@ -81,9 +82,7 @@ function BalootPageContent() {
   );
   const { handleCommand } = useCliGame(dispatch, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  useEffect(() => {
-    void dispatch('reset');
-  }, [dispatch]);
+  useMountReset(dispatch);
 
   const handleReset = useCallback(() => {
     hideActionLog();
@@ -303,11 +302,23 @@ function BalootPageContent() {
                       }}
                       disabled={loading || !isHumanTurn}
                       aria-label={
-                        canAnnotatePlays
-                          ? t(legalRing.has(idx) ? 'actions.playableAria' : 'actions.notPlayableAria', {
-                              card: cardAlt(card),
-                            })
-                          : t('actions.playAria', { card: cardAlt(card) })
+                        state.mode !== BalootMode.NONE
+                          ? canAnnotatePlays
+                            ? t(
+                                legalRing.has(idx)
+                                  ? 'actions.playableAriaWithPoints'
+                                  : 'actions.notPlayableAriaWithPoints',
+                                { card: cardAlt(card), points: balootCardPoints(card, state.mode, state.trumpSuit) },
+                              )
+                            : t('actions.playAriaWithPoints', {
+                                card: cardAlt(card),
+                                points: balootCardPoints(card, state.mode, state.trumpSuit),
+                              })
+                          : canAnnotatePlays
+                            ? t(legalRing.has(idx) ? 'actions.playableAria' : 'actions.notPlayableAria', {
+                                card: cardAlt(card),
+                              })
+                            : t('actions.playAria', { card: cardAlt(card) })
                       }
                       aria-disabled={canAnnotatePlays && !legalRing.has(idx) ? true : undefined}
                       aria-describedby={

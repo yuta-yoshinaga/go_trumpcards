@@ -27,6 +27,7 @@
   "trickUnplayed": "No cards have been played yet",
   "trickComplete": "Trick complete",
   "trickCard": "{{player}}: {{card}}",
+  "scoresCaption": "Player scores",
   "scoresPlayer": "Player",
   "scoresTricks": "Tricks",
   "scoresRound": "Deal",

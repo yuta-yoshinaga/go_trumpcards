@@ -31,6 +31,8 @@
   "cards": "{{count}} cards",
   "tricks": "{{count}} tricks",
   "currentTrick": "Current trick",
+  "trickPlay": "{{player}}: {{card}}",
+  "listSeparator": ", ",
   "trickWinnerBadge": "Winner",
   "players": "Players",
   "you": "You",

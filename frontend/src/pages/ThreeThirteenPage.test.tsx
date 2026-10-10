@@ -26,10 +26,22 @@ const drawPhaseState: ThreeThirteenResponse = {
         { design: 'HEART', value: 11 },
       ],
       deadwood: 11,
+      melds: [],
+      deadwoodIndices: [],
       roundScore: 0,
       cumulativeScore: 0,
     },
-    { id: 1, isHuman: false, cardCount: 4, cards: [], deadwood: 0, roundScore: 3, cumulativeScore: 10 },
+    {
+      id: 1,
+      isHuman: false,
+      cardCount: 4,
+      cards: [],
+      deadwood: 0,
+      melds: [],
+      deadwoodIndices: [],
+      roundScore: 3,
+      cumulativeScore: 10,
+    },
   ],
   phase: 0,
   round: 2,
@@ -127,6 +139,39 @@ describe('ThreeThirteenPage', () => {
     await waitFor(() => expect(screen.getByTestId('threethirteen-deadwood-indicator')).toBeInTheDocument());
   });
 
+  it.each([
+    ['round end', roundEndState],
+    ['game end', gameEndState],
+  ] as const)('separates CPU meld and deadwood cards at %s', async (_name, state) => {
+    mockExec.mockResolvedValue({
+      ...state,
+      players: [
+        state.players[0],
+        {
+          ...state.players[1],
+          cardCount: 4,
+          cards: [
+            { design: 'SPADE', value: 5 },
+            { design: 'SPADE', value: 6 },
+            { design: 'SPADE', value: 7 },
+            { design: 'HEART', value: 13 },
+          ],
+          melds: [[0, 1, 2]],
+          deadwoodIndices: [3],
+        },
+      ],
+    });
+    renderWithProviders(<ThreeThirteenPage />);
+
+    expect(await screen.findAllByText('メルド')).toHaveLength(1);
+    expect(screen.getByText('デッドウッド', { selector: 'span' })).toBeInTheDocument();
+    const meldLabel = screen.getByText('メルド');
+    expect(meldLabel.parentElement?.querySelectorAll('img')).toHaveLength(3);
+    expect(screen.getByText('デッドウッド', { selector: 'span' }).parentElement?.querySelectorAll('img')).toHaveLength(
+      1,
+    );
+  });
+
   it('shows every player deadwood in the score table only after the round ends', async () => {
     mockExec.mockResolvedValue({
       ...roundEndState,
@@ -182,6 +227,8 @@ describe('ThreeThirteenPage', () => {
             { design: 'HEART', value: 13 },
           ],
           deadwood: 10,
+          melds: [],
+          deadwoodIndices: [],
           roundScore: 0,
           cumulativeScore: 0,
         },
@@ -220,6 +267,8 @@ describe('ThreeThirteenPage', () => {
             { design: 'HEART', value: 13 },
           ],
           deadwood: 10,
+          melds: [],
+          deadwoodIndices: [],
           roundScore: 0,
           cumulativeScore: 0,
         },
@@ -462,9 +511,39 @@ describe('ThreeThirteenPage', () => {
       ...drawPhaseState,
       players: [
         drawPhaseState.players[0],
-        { id: 1, isHuman: false, cardCount: 4, cards: [], deadwood: 0, roundScore: 0, cumulativeScore: 0 },
-        { id: 2, isHuman: false, cardCount: 4, cards: [], deadwood: 0, roundScore: 0, cumulativeScore: 0 },
-        { id: 3, isHuman: false, cardCount: 4, cards: [], deadwood: 0, roundScore: 0, cumulativeScore: 0 },
+        {
+          id: 1,
+          isHuman: false,
+          cardCount: 4,
+          cards: [],
+          deadwood: 0,
+          melds: [],
+          deadwoodIndices: [],
+          roundScore: 0,
+          cumulativeScore: 0,
+        },
+        {
+          id: 2,
+          isHuman: false,
+          cardCount: 4,
+          cards: [],
+          deadwood: 0,
+          melds: [],
+          deadwoodIndices: [],
+          roundScore: 0,
+          cumulativeScore: 0,
+        },
+        {
+          id: 3,
+          isHuman: false,
+          cardCount: 4,
+          cards: [],
+          deadwood: 0,
+          melds: [],
+          deadwoodIndices: [],
+          roundScore: 0,
+          cumulativeScore: 0,
+        },
       ],
       config: { ...drawPhaseState.config, playerCount: 4 },
     };

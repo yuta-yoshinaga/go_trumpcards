@@ -598,7 +598,7 @@ func TestShortDeckWebPresenter_Output(t *testing.T) {
 func TestShortDeckWebPresenter_Output_RebuyAddonFields(t *testing.T) {
 	p := new(presenter.ShortDeckWebPresenter)
 
-	setup := func() (*domain.ShortDeck, []*domain.ShortDeckPlayer) {
+	setup := func() *domain.ShortDeck {
 		tc := domain.NewTrumpCards(0)
 		players := []*domain.ShortDeckPlayer{
 			domain.NewShortDeckPlayer(true, domain.HoldemStyleTAG),
@@ -607,11 +607,11 @@ func TestShortDeckWebPresenter_Output_RebuyAddonFields(t *testing.T) {
 			domain.NewShortDeckPlayer(false, domain.HoldemStyleGTO),
 		}
 		h := domain.NewShortDeck(tc, players, domain.DefaultShortDeckConfig())
-		return h, players
+		return h
 	}
 
 	t.Run("default values when rebuy/addon disabled", func(t *testing.T) {
-		h, _ := setup()
+		h := setup()
 		h.SetPhase(domain.ShortDeckPhasePreFlop)
 
 		result := p.Output(h, nil)
@@ -633,7 +633,7 @@ func TestShortDeckWebPresenter_Output_RebuyAddonFields(t *testing.T) {
 	})
 
 	t.Run("values when rebuy/addon enabled with config", func(t *testing.T) {
-		h, _ := setup()
+		h := setup()
 		h.SetPhase(domain.ShortDeckPhaseRebuy)
 		cfg := domain.ShortDeckConfig{
 			SmallBlind:       10,
@@ -739,7 +739,7 @@ func TestShortDeckWebPresenter_Output_BettingLimitFields(t *testing.T) {
 func TestShortDeckWebPresenter_Output_MuckFields(t *testing.T) {
 	p := new(presenter.ShortDeckWebPresenter)
 
-	setup := func() (*domain.ShortDeck, []*domain.ShortDeckPlayer) {
+	setup := func() *domain.ShortDeck {
 		tc := domain.NewTrumpCards(0)
 		players := []*domain.ShortDeckPlayer{
 			domain.NewShortDeckPlayer(true, domain.HoldemStyleTAG),
@@ -748,11 +748,11 @@ func TestShortDeckWebPresenter_Output_MuckFields(t *testing.T) {
 			domain.NewShortDeckPlayer(false, domain.HoldemStyleGTO),
 		}
 		h := domain.NewShortDeck(tc, players, domain.DefaultShortDeckConfig())
-		return h, players
+		return h
 	}
 
 	t.Run("muckAvailable true when showdown and human lost", func(t *testing.T) {
-		h, _ := setup()
+		h := setup()
 		h.SetPhase(domain.ShortDeckPhaseShowdown)
 		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", WonAmount: 0, BestHand: nil},
@@ -767,7 +767,7 @@ func TestShortDeckWebPresenter_Output_MuckFields(t *testing.T) {
 	})
 
 	t.Run("muckAvailable false when not showdown", func(t *testing.T) {
-		h, _ := setup()
+		h := setup()
 		h.SetPhase(domain.ShortDeckPhaseEnd)
 		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, HandRank: domain.ShortDeckHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
@@ -781,7 +781,7 @@ func TestShortDeckWebPresenter_Output_MuckFields(t *testing.T) {
 	})
 
 	t.Run("mucked result: handRank=0 handName empty bestHand empty mucked=true", func(t *testing.T) {
-		h, _ := setup()
+		h := setup()
 		h.SetPhase(domain.ShortDeckPhaseEnd)
 		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", Kickers: []int{14, 13}, WonAmount: 0, Mucked: true, BestHand: []*domain.Card{
@@ -805,7 +805,7 @@ func TestShortDeckWebPresenter_Output_MuckFields(t *testing.T) {
 	})
 
 	t.Run("muck prompt message when IsMuckAvailable", func(t *testing.T) {
-		h, _ := setup()
+		h := setup()
 		h.SetPhase(domain.ShortDeckPhaseShowdown)
 		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", WonAmount: 0, BestHand: nil},
@@ -821,7 +821,7 @@ func TestShortDeckWebPresenter_Output_MuckFields(t *testing.T) {
 	})
 
 	t.Run("error takes priority over muck prompt", func(t *testing.T) {
-		h, _ := setup()
+		h := setup()
 		h.SetPhase(domain.ShortDeckPhaseShowdown)
 		h.SetRoundResults([]domain.HoldemResult{
 			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", WonAmount: 0, BestHand: nil},
@@ -836,7 +836,7 @@ func TestShortDeckWebPresenter_Output_MuckFields(t *testing.T) {
 	})
 
 	t.Run("You mucked message in buildResultMessage", func(t *testing.T) {
-		h, _ := setup()
+		h := setup()
 		h.SetPhase(domain.ShortDeckPhaseEnd)
 		h.SetGameEndFlag(true)
 		h.SetRoundResults([]domain.HoldemResult{

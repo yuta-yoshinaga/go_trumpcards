@@ -29,5 +29,5 @@ func TestWhistDomainErrorsHaveMessageCodes(t *testing.T) {
 	g.GetPlayer(0).AddCard(NewCard(CardDesignSpade, 9, false))
 	g.GetPlayer(0).AddCard(NewCard(CardDesignHeart, 7, false))
 	g.SetCurrentTrick([]*TrickCard{{PlayerIdx: 1, Card: NewCard(CardDesignSpade, 2, false)}})
-	assertWhistCodedError(t, g.PlayerPlay(1), ErrInvalidPlay, "whist.errFollowLeadSuit")
+	assertWhistCodedError(t, g.PlayerPlay(1), ErrInvalidPlay, "shared.errFollowLeadSuit")
 }

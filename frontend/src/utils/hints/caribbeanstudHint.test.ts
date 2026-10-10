@@ -8,7 +8,13 @@ const card = (design: Card['design'], value: number): Card => ({ design, value }
 function makeState(overrides: Partial<CaribbeanStudResponse> = {}): CaribbeanStudResponse {
   return {
     playerHand: [card('SPADE', 2), card('HEART', 5), card('DIAMOND', 8), card('CLOVER', 10), card('SPADE', 12)],
-    dealerHand: [],
+    dealerHand: [
+      card('HEART', 12),
+      { design: '', value: 0 },
+      { design: '', value: 0 },
+      { design: '', value: 0 },
+      { design: '', value: 0 },
+    ],
     phase: CaribbeanStudPhase.ACTION,
     chips: 1000,
     anteBet: 100,
@@ -40,7 +46,7 @@ describe('getCaribbeanStudHint', () => {
     expect(hint?.reason).toBe('hint.pairOrBetter');
   });
 
-  it('recommends play with Ace-King high (moderate)', () => {
+  it('uses the dealer upcard when recommending with Ace-King high', () => {
     const state = makeState({
       playerHand: [card('SPADE', 1), card('HEART', 13), card('DIAMOND', 8), card('CLOVER', 5), card('SPADE', 3)],
       playerHandRank: 0,
@@ -48,7 +54,10 @@ describe('getCaribbeanStudHint', () => {
     const hint = getCaribbeanStudHint(state);
     expect(hint?.targetAction).toBe('play');
     expect(hint?.confidence).toBe('moderate');
-    expect(hint?.reason).toBe('hint.aceKingHigh');
+    expect(hint?.reason).toBe('hint.aceKingHighDealerLower');
+    const dealerAce = getCaribbeanStudHint({ ...state, dealerHand: [card('SPADE', 1), ...state.dealerHand.slice(1)] });
+    expect(dealerAce?.targetAction).toBe('fold');
+    expect(dealerAce?.reason).toBe('hint.aceKingHighDealerHigh');
   });
 
   it('recommends fold with weak high-card hand', () => {

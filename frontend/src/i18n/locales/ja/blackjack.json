@@ -13,6 +13,8 @@
   "dealerHand": "ディーラー手札",
   "score": "スコア",
   "hitAnnouncement": "{{card}}を引きました。現在のスコアは{{score}}です。",
+  "countAnnouncement": "ランニングカウントは{{runningCount}}、トゥルーカウントは{{trueCount}}です。",
+  "runningCountAnnouncement": "ランニングカウントは{{runningCount}}です。",
   "dealerFinalScore": "ディーラーの最終スコアは{{score}}です。",
   "dealerBust": "ディーラーはバストしました。",
   "playerHand": "プレイヤー手札",

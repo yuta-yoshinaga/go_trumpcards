@@ -1,6 +1,9 @@
 {
   "title": "ベースボールポーカー",
   "wildNotice": "{{wilds}} はワイルド。表向きの {{bonus}} は追加札、表向きの {{buyIn}} は買い増し",
+  "settings.seats": "席数",
+  "settings.initialChips": "初期チップ",
+  "settings.ante": "アンティ",
   "label.chips": "チップ",
   "label.bet": "賭け",
   "label.pot": "ポット",

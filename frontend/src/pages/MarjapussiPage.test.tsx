@@ -24,6 +24,7 @@ const roundEndState = makeMarjapussiState({
   roundCardPoints: [55, 35],
   roundMarriage: [40, 0],
   pussiCount: 4,
+  pussiPoints: 25,
   pussiWinnerTeam: 0,
   pussi: [
     { design: 'SPADE', value: 1 }, // A = 11
@@ -107,6 +108,27 @@ describe('MarjapussiPage', () => {
       expect(screen.getByAltText('♥ Q')).toBeInTheDocument();
       expect(screen.getByAltText('♠ A')).toBeInTheDocument();
     });
+  });
+
+  it('uses the server pussi points for both round result displays, including zero', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    const { unmount } = renderWithProviders(<MarjapussiPage />);
+    expect(await screen.findByTestId('marjapussi-pussi-result')).toHaveTextContent('ベリー袋（+25点）');
+    expect(screen.getByText('チーム 0 ベリー袋: 25点')).toBeInTheDocument();
+    unmount();
+
+    mockExec.mockResolvedValue(
+      makeMarjapussiState({
+        phase: 2,
+        pussi: [],
+        pussiCount: 0,
+        pussiPoints: 0,
+        pussiWinnerTeam: 0,
+      }),
+    );
+    renderWithProviders(<MarjapussiPage />);
+    expect(await screen.findByTestId('marjapussi-pussi-result')).toHaveTextContent('ベリー袋（+0点）');
+    expect(screen.queryByText(/チーム 0 ベリー袋:/)).not.toBeInTheDocument();
   });
 
   it('clamps team progress values to the target while preserving scores below it', async () => {

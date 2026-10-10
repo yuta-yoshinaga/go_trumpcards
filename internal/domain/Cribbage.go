@@ -117,9 +117,7 @@ func (g *Cribbage) Reset() {
 
 	for _, p := range g.players {
 		p.SetCumulativeScore(0)
-		p.SetRoundScore(0)
-		p.Reset()
-		p.SetIsFinished(false)
+		resetRoundScored(p)
 	}
 
 	g.startRound()

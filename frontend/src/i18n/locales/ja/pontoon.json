@@ -40,6 +40,8 @@
     "cpuStick": "親は合計 {{cpuMin}} 以上になるまで引きます。CPU 席は {{min}} 以上で止まります（4枚のときだけ {{cpuMin}} 未満でももう1枚引きます）"
   },
   "betLabel": "賭け金を選んでください",
+  "outOfChips": "チップが足りません。リセットすると初期チップで再開できます。",
+  "restart": "再開する",
   "betAmount": "{{amount}}",
   "dealAsBanker": "あなたが親です。配ってください",
   "placeBet": "賭け金を選んでください",

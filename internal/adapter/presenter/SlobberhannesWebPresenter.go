@@ -109,5 +109,5 @@ func (p *SlobberhannesWebPresenter) HintOutput(s interfaces.SlobberhannesGame) s
 
 // ActionLogOutput 棋譜をJSON出力
 func (p *SlobberhannesWebPresenter) ActionLogOutput(s interfaces.SlobberhannesGame) string {
-	return actionLogOutputJSON(s)
+	return actionLogToJSON(s.GetActionLog())
 }

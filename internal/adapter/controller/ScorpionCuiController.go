@@ -92,9 +92,9 @@ func (c *ScorpionCuiController) handleMove(args []string) string {
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("scorpion.promptFromColumn"), "m t {0}")
 	}
-	fromCol, err := strconv.Atoi(args[1])
-	if err != nil {
-		return invalidArg("invalidColumn", "val", args[1])
+	fromCol, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[1:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	if len(args) < 3 {
 		return cuiutil.PromptRequest(i18n.T("scorpion.promptCardIndex"), fmt.Sprintf("m t %d {0} t", fromCol))
@@ -105,13 +105,13 @@ func (c *ScorpionCuiController) handleMove(args []string) string {
 		}
 		return i18n.MarkError(i18n.T("scorpion.moveUsage"))
 	}
-	cardIdx, err := strconv.Atoi(args[2])
-	if err != nil {
-		return invalidArg("invalidCardIndex", "val", args[2])
+	cardIdx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[2:], "", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
-	toCol, err := strconv.Atoi(args[4])
-	if err != nil {
-		return invalidArg("invalidColumn", "val", args[4])
+	toCol, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[4:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	return c.si.MoveTableauToTableau(fromCol, cardIdx, toCol)
 }
@@ -123,9 +123,9 @@ func (c *ScorpionCuiController) handleLegal(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("scorpion.promptFromColumn"), "legal {0}")
 	}
-	col, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("invalidColumn", "val", args[0])
+	col, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	return c.si.LegalMoves(col)
 }
@@ -136,19 +136,19 @@ func (c *ScorpionCuiController) handleMoveShorthand(args []string) string {
 		return cuiutil.PromptRequest(i18n.T("scorpion.promptToColumn"), fmt.Sprintf("m %s {0}", args[0]))
 	}
 	if len(args) == 2 {
-		toCol, err := strconv.Atoi(args[1])
-		if err != nil {
-			return invalidArg("invalidColumn", "val", args[1])
+		toCol, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[1:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+		if !parseOK {
+			return parseMsg
 		}
 		return c.si.MoveTableauToTableau(fromCol, -1, toCol)
 	}
-	cardIdx, err := strconv.Atoi(args[1])
-	if err != nil {
-		return invalidArg("invalidCardIndex", "val", args[1])
+	cardIdx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[1:], "", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
-	toCol, err := strconv.Atoi(args[2])
-	if err != nil {
-		return invalidArg("invalidColumn", "val", args[2])
+	toCol, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[2:], "", "invalidColumn", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg
 	}
 	return c.si.MoveTableauToTableau(fromCol, cardIdx, toCol)
 }

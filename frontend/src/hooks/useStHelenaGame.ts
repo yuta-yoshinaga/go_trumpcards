@@ -1,71 +1,46 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { type StHelenaMoveZone, stHelenaApi } from '../api/gameApi';
 import type { StHelenaHint } from '../types/card';
-import { useAutoCompleteState } from './useAutoCompleteState';
-import { useGameApi } from './useGameApi';
-import { useHintRequest } from './useHintRequest';
+import { useSolitaireGameBase } from './useSolitaireGameBase';
 
 /** Hook that manages StHelena Solitaire state, source selection, hints, and moves. */
 export function useStHelenaGame() {
-  const { state, loading, error, exec: rawExec, retry } = useGameApi(stHelenaApi.exec);
   const [selectedSource, setSelectedSource] = useState<StHelenaMoveZone | null>(null);
-  const [hint, setHint] = useState<StHelenaHint | null>(null);
-  const [hintError, setHintError] = useState<string | null>(null);
-  const { isAutoCompleting, startAutoComplete } = useAutoCompleteState();
-
-  const exec = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);
-
-  useEffect(() => {
-    exec('reset');
-  }, [exec]);
-
-  const handleReset = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    exec('reset');
-  }, [exec]);
+  const onClearSelection = useCallback(() => setSelectedSource(null), []);
+  const {
+    apiCall: exec,
+    runAction,
+    state,
+    loading,
+    error,
+    retry,
+    hint,
+    hintError,
+    isAutoCompleting,
+    setHint,
+    handleReset,
+    handleGiveUp,
+    handleHint,
+    handleAutoComplete,
+    handleUndo,
+  } = useSolitaireGameBase<
+    Awaited<ReturnType<typeof stHelenaApi.exec>>,
+    Parameters<typeof stHelenaApi.exec>,
+    StHelenaHint
+  >(stHelenaApi.exec, {
+    onClearSelection,
+    hintApi: () => stHelenaApi.exec('hint'),
+    selectHint: (res) => res.hint,
+  });
 
   const handleRedeal = useCallback(() => {
     setSelectedSource(null);
     setHint(null);
     exec('redeal');
-  }, [exec]);
-
-  const handleGiveUp = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    exec('giveup');
-  }, [exec]);
-
-  const handleHint = useHintRequest({
-    fetchHint: () => stHelenaApi.exec('hint'),
-    selectHint: (res) => res.hint,
-    setHint,
-    setHintError,
-  });
-
-  const handleAutoComplete = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    startAutoComplete();
-    exec('autocomplete');
-  }, [exec, startAutoComplete]);
-
-  const handleUndo = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    exec('undo');
-  }, [exec]);
+  }, [exec, setHint]);
 
   /** Undo N moves at once to escape a stalemate. */
-  const handleUndoEscape = useCallback(
-    (n: number) => {
-      setSelectedSource(null);
-      setHint(null);
-      exec('undo_n', undefined, undefined, n);
-    },
-    [exec],
-  );
+  const handleUndoEscape = useCallback((n: number) => runAction('undo_n', undefined, undefined, n), [runAction]);
 
   const handleSelectSource = useCallback((zone: StHelenaMoveZone) => {
     setSelectedSource((prev) => {
@@ -83,7 +58,7 @@ export function useStHelenaGame() {
       exec('move', selectedSource, zone);
       setSelectedSource(null);
     },
-    [selectedSource, exec],
+    [selectedSource, exec, setHint],
   );
 
   return {

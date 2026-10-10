@@ -39,6 +39,8 @@
   "tutorial.banker": "Only the banker is forced to draw below 15. Every other seat may stand at any total",
   "result.gameEnd": "All rounds are finished",
   "result.comparison": "Against banker {{banker}}: {{playerScore}} pts / {{bankerScore}} pts — {{outcome}}",
+  "result.seatAnnouncement": "{{name}}, {{rank}}, net {{delta}}",
+  "listSeparator": ", ",
   "frontendHint.banLuckBankerMustHit": "the banker cannot stand below 15",
   "frontendHint.banLuckHandFull": "five cards is the limit",
   "frontendHint.banLuckChaseFiveDragon": "one more card makes a Five Dragon",

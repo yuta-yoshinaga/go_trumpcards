@@ -216,7 +216,7 @@ func TestMarjapussi_FollowRules_MustFollowAndMustTrump(t *testing.T) {
 	heartAceIdx := 1
 	err := g.PlayerPlay(heartAceIdx)
 	assert.ErrorIs(t, err, domain.ErrInvalidPlay)
-	assert.Equal(t, "marjapussi.errFollowLeadSuit", err.(*domain.DomainError).MessageCode())
+	assert.Equal(t, "shared.errFollowLeadSuit", err.(*domain.DomainError).MessageCode())
 
 	// Legal to play Spade 7
 	spade7Idx := 0
@@ -321,6 +321,19 @@ func TestMarjapussi_Pussi_AwardedToFinalTrickWinner(t *testing.T) {
 	assert.Equal(t, 0, g.GetRoundCardPoints()[0])
 	assert.Equal(t, 32, g.GetRoundCardPoints()[1], "trick 8 winner team receives trick cards + pussi")
 	assert.Equal(t, domain.MarjapussiPhaseRoundEnd, g.GetPhase(), "trick 8 transitions to RoundEnd")
+}
+
+func TestMarjapussi_GetPussiPoints(t *testing.T) {
+	g := newTestMarjapussi()
+	g.SetPussi([]*domain.Card{
+		marjapussiCard(domain.CardDesignSpade, 1),
+		marjapussiCard(domain.CardDesignHeart, 10),
+		marjapussiCard(domain.CardDesignClover, 13),
+		marjapussiCard(domain.CardDesignDiamond, 7),
+	})
+	assert.Equal(t, 25, g.GetPussiPoints())
+	g.SetPussi(nil)
+	assert.Zero(t, g.GetPussiPoints())
 }
 
 func TestMarjapussi_TrickResolution_TrumpBeatsNonTrump(t *testing.T) {

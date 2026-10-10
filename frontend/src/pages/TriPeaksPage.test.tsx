@@ -175,6 +175,33 @@ describe('TriPeaksPage', () => {
     expect(screen.getByLabelText(/♠ 5/)).not.toHaveClass('ring-ds-success/70');
   });
 
+  it('announces the hinted card and its zero-based coordinates in the live region', async () => {
+    renderWithProviders(<TriPeaksPage />);
+    await waitFor(() => expect(screen.getByTestId('tp-hint-live')).toBeEmptyDOMElement());
+
+    mockExec.mockResolvedValueOnce({ ...playingState, hint: { type: 'remove', row: 3, col: 0 } });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    const live = await screen.findByTestId('tp-hint-live');
+    await waitFor(() => expect(live).toHaveTextContent('ヒントがあります: 行3・列0の♠ 5を除去できます'));
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+
+    await i18n.changeLanguage('en');
+    await waitFor(() => expect(live).toHaveTextContent('Hint available: Remove ♠ 5 at row 3, column 0'));
+    await i18n.changeLanguage('ja');
+  });
+
+  it('keeps the draw hint wording and leaves the live region empty when no hint exists', async () => {
+    renderWithProviders(<TriPeaksPage />);
+    const live = await screen.findByTestId('tp-hint-live');
+    expect(live).toBeEmptyDOMElement();
+
+    mockExec.mockResolvedValueOnce({ ...playingState, hint: { type: 'draw', row: 0, col: 0 } });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(live).toHaveTextContent('ヒントがあります: ストックからカードを引いてください'));
+  });
+
   it('shows no playable ring when the waste is empty', async () => {
     mockExec.mockResolvedValue({ ...playingState, waste: [] });
     renderWithProviders(<TriPeaksPage />);

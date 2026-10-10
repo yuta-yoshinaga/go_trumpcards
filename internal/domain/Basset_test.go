@@ -18,16 +18,16 @@ func newBassetDeterministic(values ...int) *Basset {
 	b.SetDeckForTest(bassetTestCards(values...))
 	return b
 }
-func placeBassetBet(t *testing.T, b *Basset, rank int) {
+func placeBassetBet(t *testing.T, b *Basset) {
 	t.Helper()
-	if err := b.PlayerPlaceBet(rank, 10); err != nil {
+	if err := b.PlayerPlaceBet(7, 10); err != nil {
 		t.Fatalf("place bet: %v", err)
 	}
 }
 
 func TestBasset_FirstCardMatchLosesAndSecondCardMatchWins(t *testing.T) {
 	losing := newBassetDeterministic(7, 4, 3, 2)
-	placeBassetBet(t, losing, 7)
+	placeBassetBet(t, losing)
 	entry := losing.GetActionLog()[0]
 	if entry.DetailCode != "basset.log.bet" || entry.DetailParams["rank"] != "7" {
 		t.Fatalf("bet log = %#v, want code and params", entry)
@@ -45,7 +45,7 @@ func TestBasset_FirstCardMatchLosesAndSecondCardMatchWins(t *testing.T) {
 		t.Fatalf("first-card match retained bet: %#v/%d", bet, rank)
 	}
 	winning := newBassetDeterministic(4, 7, 3, 2)
-	placeBassetBet(t, winning, 7)
+	placeBassetBet(t, winning)
 	if err := winning.PlayerDealTurn(); err != nil {
 		t.Fatal(err)
 	}
@@ -62,7 +62,7 @@ func TestBasset_FirstCardMatchLosesAndSecondCardMatchWins(t *testing.T) {
 
 func TestBasset_ParoliAdvancesNamedMultipliers(t *testing.T) {
 	b := newBassetDeterministic(4, 7, 4, 7, 4, 7, 4, 7, 4, 7)
-	placeBassetBet(t, b, 7)
+	placeBassetBet(t, b)
 	for stage := range BassetPayoutMultipliers[:len(BassetPayoutMultipliers)-1] {
 		if err := b.PlayerDealTurn(); err != nil {
 			t.Fatalf("stage %d deal: %v", stage, err)
@@ -96,7 +96,7 @@ func TestBasset_ParoliAdvancesNamedMultipliers(t *testing.T) {
 
 func TestBasset_FinalStageCannotIncreaseFurther(t *testing.T) {
 	b := newBassetDeterministic(4, 7, 4, 7, 4, 7, 4, 7, 4, 7)
-	placeBassetBet(t, b, 7)
+	placeBassetBet(t, b)
 	for range BassetPayoutMultipliers[:len(BassetPayoutMultipliers)-1] {
 		if err := b.PlayerDealTurn(); err != nil {
 			t.Fatal(err)
@@ -112,7 +112,7 @@ func TestBasset_FinalStageCannotIncreaseFurther(t *testing.T) {
 
 func TestBasset_ParoliLossLosesAccumulatedWager(t *testing.T) {
 	b := newBassetDeterministic(4, 7, 7, 4)
-	placeBassetBet(t, b, 7)
+	placeBassetBet(t, b)
 	if err := b.PlayerDealTurn(); err != nil {
 		t.Fatal(err)
 	}
@@ -132,7 +132,7 @@ func TestBasset_ParoliLossLosesAccumulatedWager(t *testing.T) {
 
 func TestBasset_TakeWinningsResetsStage(t *testing.T) {
 	b := newBassetDeterministic(4, 7, 3, 2)
-	placeBassetBet(t, b, 7)
+	placeBassetBet(t, b)
 	if err := b.PlayerDealTurn(); err != nil {
 		t.Fatal(err)
 	}
@@ -148,7 +148,7 @@ func TestBasset_TakeWinningsResetsStage(t *testing.T) {
 	if b.GetChips() != BassetDefaultStartChips+10 {
 		t.Fatalf("cash-out chips=%d", b.GetChips())
 	}
-	placeBassetBet(t, b, 7)
+	placeBassetBet(t, b)
 	if bet, _ := b.GetBet(); bet.Stage != 0 {
 		t.Fatalf("new bet stage=%d, want 0", bet.Stage)
 	}
@@ -156,7 +156,7 @@ func TestBasset_TakeWinningsResetsStage(t *testing.T) {
 
 func TestBasset_DeckExhaustionEndsRound(t *testing.T) {
 	b := newBassetDeterministic(4, 7)
-	placeBassetBet(t, b, 7)
+	placeBassetBet(t, b)
 	if err := b.PlayerDealTurn(); err != nil {
 		t.Fatal(err)
 	}
@@ -300,7 +300,7 @@ func TestBasset_DealAndActionErrors(t *testing.T) {
 		t.Fatal("deal in game-end phase unexpectedly succeeded")
 	}
 	b.SetPhase(BassetPhaseBetting)
-	placeBassetBet(t, b, 7)
+	placeBassetBet(t, b)
 	b.SetDeckForTest(bassetTestCards(4))
 	if err := b.PlayerDealTurn(); err == nil {
 		t.Fatal("deal with exhausted deck unexpectedly succeeded")
@@ -360,7 +360,7 @@ func TestBasset_NextRoundAndGameEnd(t *testing.T) {
 
 func TestBasset_JSONRoundTripAndHardening(t *testing.T) {
 	b := newBassetDeterministic(4, 7)
-	placeBassetBet(t, b, 7)
+	placeBassetBet(t, b)
 	if err := b.PlayerDealTurn(); err != nil {
 		t.Fatal(err)
 	}
@@ -397,7 +397,7 @@ func TestBasset_JSONRoundTripAndHardening(t *testing.T) {
 
 func TestBasset_ParoliFinalStageCashOut(t *testing.T) {
 	b := newBassetDeterministic(4, 7, 4, 7, 4, 7, 4, 7, 4, 7)
-	placeBassetBet(t, b, 7)
+	placeBassetBet(t, b)
 	if err := b.PlayerDealTurn(); err != nil {
 		t.Fatal(err)
 	}

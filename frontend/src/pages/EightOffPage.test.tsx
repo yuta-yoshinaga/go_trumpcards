@@ -448,10 +448,12 @@ describe('EightOffPage', () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<EightOffPage />);
     const btn = await screen.findByTestId('autocomplete-button');
-    expect(btn).toBeDisabled();
+    expect(btn).toHaveAttribute('aria-disabled', 'true');
+    expect(btn).toHaveAttribute('aria-describedby', 'autocomplete-unavailable-reason');
+    expect(screen.getByText('組札へ送れるカードができると有効になります')).toBeInTheDocument();
     expect(btn.className).not.toContain('animate-pulse');
     expect(btn.className).not.toContain('ring-ds-success');
-    expect(btn).toHaveAttribute('title', '掃き出せるカードができると有効になります');
+    expect(btn).toHaveAttribute('title', '組札へ送れるカードができると有効になります');
 
     mockExec.mockClear();
     fireEvent.click(btn);
@@ -463,10 +465,12 @@ describe('EightOffPage', () => {
     mockExec.mockResolvedValue(foundationWithAcesOnlyState);
     renderWithProviders(<EightOffPage />);
     const btn = await screen.findByTestId('autocomplete-button');
-    expect(btn).toBeDisabled();
+    expect(btn).toHaveAttribute('aria-disabled', 'true');
+    expect(btn).toHaveAttribute('aria-describedby', 'autocomplete-unavailable-reason');
+    expect(screen.getByText('組札へ送れるカードができると有効になります')).toBeInTheDocument();
     expect(btn.className).not.toContain('animate-pulse');
     expect(btn.className).not.toContain('ring-ds-success');
-    expect(btn).toHaveAttribute('title', '掃き出せるカードができると有効になります');
+    expect(btn).toHaveAttribute('title', '組札へ送れるカードができると有効になります');
 
     mockExec.mockClear();
     fireEvent.click(btn);
@@ -478,6 +482,9 @@ describe('EightOffPage', () => {
     mockExec.mockResolvedValue(sweepableState);
     renderWithProviders(<EightOffPage />);
     const btn = await screen.findByTestId('autocomplete-button');
+    expect(btn).not.toHaveAttribute('aria-disabled');
+    expect(btn).not.toHaveAttribute('aria-describedby');
+    expect(screen.queryByText('組札へ送れるカードができると有効になります')).not.toBeInTheDocument();
     expect(btn).toBeEnabled();
     expect(btn.className).toContain('animate-pulse');
     expect(btn.className).toContain('ring-ds-success');
@@ -495,6 +502,9 @@ describe('EightOffPage', () => {
     mockExec.mockResolvedValue(aceInFreeCellState);
     renderWithProviders(<EightOffPage />);
     const btn = await screen.findByTestId('autocomplete-button');
+    expect(btn).not.toHaveAttribute('aria-disabled');
+    expect(btn).not.toHaveAttribute('aria-describedby');
+    expect(screen.queryByText('組札へ送れるカードができると有効になります')).not.toBeInTheDocument();
     expect(btn).toBeEnabled();
     expect(btn.className).toContain('animate-pulse');
     expect(btn).not.toHaveAttribute('title');

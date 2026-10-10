@@ -382,14 +382,16 @@ describe('NinetyNinePage', () => {
     });
   });
 
-  it('score table shows all players', async () => {
+  it('score table shows each player name as a row header', async () => {
     renderWithProviders(<NinetyNinePage />);
-    await waitFor(() => {
-      expect(screen.getByText('スコア')).toBeInTheDocument();
-      expect(screen.getByText('あなた')).toBeInTheDocument();
-      expect(screen.getByText('CPU 1')).toBeInTheDocument();
-      expect(screen.getByText('CPU 2')).toBeInTheDocument();
-    });
+
+    expect(await screen.findByRole('rowheader', { name: 'あなた' })).toHaveAttribute('scope', 'row');
+    expect(screen.getByRole('rowheader', { name: 'CPU 1' })).toHaveAttribute('scope', 'row');
+    expect(screen.getByRole('rowheader', { name: 'CPU 2' })).toHaveAttribute('scope', 'row');
+    expect(screen.getByRole('columnheader', { name: 'ビッド' })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'トリック' })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'ラウンド' })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: '累計' })).toBeInTheDocument();
   });
 
   it('settings panel changes cpuDifficulty and applies on reset', async () => {

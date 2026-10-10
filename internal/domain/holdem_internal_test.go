@@ -287,9 +287,9 @@ func TestResolveLastPlayer(t *testing.T) {
 }
 
 func TestClamp(t *testing.T) {
-	assert.Equal(t, 5, clamp(5, 0, 10))
-	assert.Equal(t, 0, clamp(-5, 0, 10))
-	assert.Equal(t, 10, clamp(15, 0, 10))
+	assert.Equal(t, 5, clamp(5, 10))
+	assert.Equal(t, 0, clamp(-5, 10))
+	assert.Equal(t, 10, clamp(15, 10))
 }
 
 func TestEvalPreFlopStrength(t *testing.T) {

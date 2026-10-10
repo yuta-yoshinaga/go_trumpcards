@@ -197,7 +197,7 @@ func TestKaiserCuiPresenter_ActionLogOutput(t *testing.T) {
 }
 
 // kaiserHintMock は指定の手札・局面でヒントだけを取るためのモック。
-func kaiserHintMock(phase domain.KaiserPhase, trump int, contract domain.KaiserContract,
+func kaiserHintMock(phase domain.KaiserPhase, trump int,
 	hand []*domain.Card, plays []int, score int,
 ) *interfaces.MockKaiserGame {
 	m := new(interfaces.MockKaiserGame)
@@ -208,7 +208,7 @@ func kaiserHintMock(phase domain.KaiserPhase, trump int, contract domain.KaiserC
 	m.On("GetBidPlayerIdx").Return(0)
 	m.On("GetDeclarerIdx").Return(0)
 	m.On("GetTrumpSuit").Return(trump)
-	m.On("GetContract").Return(contract)
+	m.On("GetContract").Return(domain.KaiserContractTrump)
 	m.On("GetPlayers").Return(players)
 	m.On("KaiserValidPlays", 0).Return(plays)
 	for i := range players {
@@ -231,7 +231,7 @@ func TestKaiserCuiPresenter_HintOutput(t *testing.T) {
 			kzTestCard(domain.CardDesignClover, 10), kzTestCard(domain.CardDesignClover, 12),
 			kzTestCard(domain.CardDesignSpade, 2),
 		}
-		out := p.HintOutput(kaiserHintMock(domain.KaiserPhaseBid, 0, domain.KaiserContractTrump, hand, nil, 0))
+		out := p.HintOutput(kaiserHintMock(domain.KaiserPhaseBid, 0, hand, nil, 0))
 		assert.Contains(t, out, "ビッドを検討")
 	})
 
@@ -240,14 +240,14 @@ func TestKaiserCuiPresenter_HintOutput(t *testing.T) {
 			kzTestCard(domain.CardDesignClover, 2), kzTestCard(domain.CardDesignSpade, 4),
 			kzTestCard(domain.CardDesignDiamond, 6), kzTestCard(domain.CardDesignHeart, 8),
 		}
-		out := p.HintOutput(kaiserHintMock(domain.KaiserPhaseBid, 0, domain.KaiserContractTrump, hand, nil, 0))
+		out := p.HintOutput(kaiserHintMock(domain.KaiserPhaseBid, 0, hand, nil, 0))
 		assert.Contains(t, out, "パス")
 	})
 
 	// **45 点以上ではビッドしないと加点できない。**弱くても降りる選択が無い。
 	t.Run("bid: past the threshold there is no passing", func(t *testing.T) {
 		hand := []*domain.Card{kzTestCard(domain.CardDesignClover, 2), kzTestCard(domain.CardDesignSpade, 4)}
-		out := p.HintOutput(kaiserHintMock(domain.KaiserPhaseBid, 0, domain.KaiserContractTrump, hand,
+		out := p.HintOutput(kaiserHintMock(domain.KaiserPhaseBid, 0, hand,
 			nil, domain.KaiserMustBidThreshold))
 		assert.Contains(t, out, "45 点以上")
 		assert.NotContains(t, out, "パス")
@@ -258,7 +258,7 @@ func TestKaiserCuiPresenter_HintOutput(t *testing.T) {
 			kzTestCard(domain.CardDesignDiamond, 2), kzTestCard(domain.CardDesignDiamond, 4),
 			kzTestCard(domain.CardDesignDiamond, 9), kzTestCard(domain.CardDesignSpade, 4),
 		}
-		out := p.HintOutput(kaiserHintMock(domain.KaiserPhaseDiscard, 0, domain.KaiserContractTrump, hand, nil, 0))
+		out := p.HintOutput(kaiserHintMock(domain.KaiserPhaseDiscard, 0, hand, nil, 0))
 		assert.Contains(t, out, "切札")
 		assert.Contains(t, out, "♦")
 	})
@@ -271,7 +271,7 @@ func TestKaiserCuiPresenter_HintOutput(t *testing.T) {
 			kzTestCard(domain.CardDesignHeart, 13),
 		}
 		out := p.HintOutput(kaiserHintMock(domain.KaiserPhaseDiscard, domain.CardDesignHeart,
-			domain.KaiserContractTrump, hand, nil, 0))
+			hand, nil, 0))
 		assert.Contains(t, out, "捨てられません")
 		// ♣2 (idx 2) と ♦4 (idx 3) が最も低い。♥ は切札なので残す。
 		assert.Contains(t, out, "[2], [3]")
@@ -282,7 +282,7 @@ func TestKaiserCuiPresenter_HintOutput(t *testing.T) {
 	t.Run("play: a single legal card is forced", func(t *testing.T) {
 		hand := []*domain.Card{kzTestCard(domain.CardDesignClover, 2), kzTestCard(domain.CardDesignSpade, 4)}
 		out := p.HintOutput(kaiserHintMock(domain.KaiserPhasePlay, domain.CardDesignHeart,
-			domain.KaiserContractTrump, hand, []int{1}, 0))
+			hand, []int{1}, 0))
 		assert.Contains(t, out, "1 枚しかありません")
 		assert.Contains(t, out, "[1]")
 	})
@@ -290,7 +290,7 @@ func TestKaiserCuiPresenter_HintOutput(t *testing.T) {
 	t.Run("play: sheds the three of spades while it still can", func(t *testing.T) {
 		hand := []*domain.Card{kzTestCard(domain.CardDesignClover, 2), kzTestCard(domain.CardDesignSpade, 3)}
 		out := p.HintOutput(kaiserHintMock(domain.KaiserPhasePlay, domain.CardDesignHeart,
-			domain.KaiserContractTrump, hand, []int{0, 1}, 0))
+			hand, []int{0, 1}, 0))
 		assert.Contains(t, out, "♠3")
 		assert.Contains(t, out, "[1]")
 	})
@@ -298,14 +298,14 @@ func TestKaiserCuiPresenter_HintOutput(t *testing.T) {
 	t.Run("play: keeps the five of hearts back when something else will do", func(t *testing.T) {
 		hand := []*domain.Card{kzTestCard(domain.CardDesignHeart, 5), kzTestCard(domain.CardDesignClover, 2)}
 		out := p.HintOutput(kaiserHintMock(domain.KaiserPhasePlay, domain.CardDesignHeart,
-			domain.KaiserContractTrump, hand, []int{0, 1}, 0))
+			hand, []int{0, 1}, 0))
 		assert.Contains(t, out, "♥5")
 		assert.Contains(t, out, "[1]")
 	})
 
 	t.Run("not your turn", func(t *testing.T) {
 		hand := []*domain.Card{kzTestCard(domain.CardDesignClover, 2)}
-		m := kaiserHintMock(domain.KaiserPhasePlay, domain.CardDesignHeart, domain.KaiserContractTrump,
+		m := kaiserHintMock(domain.KaiserPhasePlay, domain.CardDesignHeart,
 			hand, []int{0}, 0)
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentPlayerIdx")
 		m.On("GetCurrentPlayerIdx").Return(2)
@@ -314,7 +314,7 @@ func TestKaiserCuiPresenter_HintOutput(t *testing.T) {
 
 	t.Run("game over", func(t *testing.T) {
 		hand := []*domain.Card{kzTestCard(domain.CardDesignClover, 2)}
-		m := kaiserHintMock(domain.KaiserPhasePlay, domain.CardDesignHeart, domain.KaiserContractTrump,
+		m := kaiserHintMock(domain.KaiserPhasePlay, domain.CardDesignHeart,
 			hand, []int{0}, 0)
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
 		m.On("GetGameEndFlag").Return(true)

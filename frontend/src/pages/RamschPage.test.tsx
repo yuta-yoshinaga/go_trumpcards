@@ -154,6 +154,42 @@ describe('RamschPage', () => {
     await waitFor(() => expect(screen.queryByTestId('ramsch-round-score-1')).not.toBeInTheDocument());
   });
 
+  it('marks every player with the best cumulative score only when the game ends', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      phase: RamschPhase.GAME_END,
+      gameEndFlag: true,
+      players: [
+        player(0, { cumulativeScore: -5 }),
+        player(1, { cumulativeScore: -5 }),
+        player(2, { cumulativeScore: -32 }),
+      ],
+    });
+    renderWithProviders(<RamschPage />);
+
+    await waitFor(() => expect(screen.getByTestId('ramsch-winner-0')).toHaveTextContent('勝者'));
+    expect(screen.getByTestId('ramsch-winner-1')).toHaveTextContent('勝者');
+    expect(screen.queryByTestId('ramsch-winner-2')).not.toBeInTheDocument();
+  });
+
+  it('does not mark a winner during play or at round end', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      phase: RamschPhase.ROUND_END,
+      players: [
+        player(0, { cumulativeScore: -5 }),
+        player(1, { cumulativeScore: -15 }),
+        player(2, { cumulativeScore: -32 }),
+      ],
+    });
+    renderWithProviders(<RamschPage />);
+
+    await waitFor(() => expect(screen.getByTestId('ramsch-round-score-0')).toBeInTheDocument());
+    expect(screen.queryByTestId('ramsch-winner-0')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('ramsch-winner-1')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('ramsch-winner-2')).not.toBeInTheDocument();
+  });
+
   // Durchmarsch は別の印。敗者の印を出すと、総取りした人が負けたように読める。
   it('marks a Durchmarsch instead of a loser', async () => {
     mockExec.mockResolvedValue({

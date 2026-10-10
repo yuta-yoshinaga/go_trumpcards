@@ -8,6 +8,8 @@
     "you": "You",
     "cpu": "CPU",
     "points": "Points",
+    "scoreProgress": "Score progress",
+    "scoreProgressLabel": "{{player}} score: {{points}} points, target {{target}} points",
     "trump": "Trump (briscola): {{suit}}",
     "trumpNone": "No trump",
     "tricks": "Tricks"

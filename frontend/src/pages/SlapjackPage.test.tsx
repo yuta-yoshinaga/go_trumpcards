@@ -362,7 +362,7 @@ describe('SlapjackPage', () => {
     });
     renderWithProviders(<SlapjackPage />);
     const burst = await screen.findByTestId('slap-burst');
-    expect(burst).toHaveTextContent('ジャック！4枚獲得');
+    expect(burst).toHaveTextContent('あなた：ジャック！4枚獲得');
     expect(await screen.findByTestId('sj-slap-announce')).toHaveTextContent('スラップ成功（あなた、4枚獲得）');
   });
 
@@ -386,7 +386,7 @@ describe('SlapjackPage', () => {
     });
     renderWithProviders(<SlapjackPage />);
     const burst = await screen.findByTestId('slap-burst');
-    expect(burst).toHaveTextContent('ミス！');
+    expect(burst).toHaveTextContent('あなた：ミス！');
     expect(burst).not.toHaveTextContent('枚獲得');
     expect(await screen.findByTestId('sj-slap-announce')).toHaveTextContent('お手つき（あなた）');
   });
@@ -398,6 +398,8 @@ describe('SlapjackPage', () => {
       lastEventPlayerIdx: 1,
     });
     renderWithProviders(<SlapjackPage />);
+    const burst = await screen.findByTestId('slap-burst');
+    expect(burst).toHaveTextContent('CPU 1：ミス！');
     const announce = await screen.findByTestId('sj-slap-announce');
     await waitFor(() => expect(announce).toHaveTextContent('お手つき（CPU 1）'));
   });

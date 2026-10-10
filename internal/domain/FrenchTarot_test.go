@@ -343,13 +343,23 @@ func TestFrenchTarotFinalizePetiteEntersChien(t *testing.T) {
 }
 
 func TestFrenchTarotFinalizePetiteLogsRevealedChienCards(t *testing.T) {
-	g := frenchTarotNewReset()
-	g.SetBidPlayerIdx(0)
-	require.NoError(t, g.PlayerBid(domain.FrenchTarotBidPetite))
-	chien := append([]*domain.Card(nil), g.GetChien()...)
-	for g.GetPhase() == domain.FrenchTarotPhaseBid {
-		g.CpuBid()
+	// CPU がガルド・サン/コントルで競り上げるとシアンは公開されない (約 1/2000)。
+	// 公開される契約 (プチット/ガルド) になる配りが出るまで配り直す。
+	var g *domain.FrenchTarot
+	var chien []*domain.Card
+	for attempt := 0; attempt < 1000; attempt++ {
+		g = frenchTarotNewReset()
+		g.SetBidPlayerIdx(0)
+		require.NoError(t, g.PlayerBid(domain.FrenchTarotBidPetite))
+		chien = append([]*domain.Card(nil), g.GetChien()...)
+		for g.GetPhase() == domain.FrenchTarotPhaseBid {
+			g.CpuBid()
+		}
+		if c := g.GetContract(); c == domain.FrenchTarotBidPetite || c == domain.FrenchTarotBidGarde {
+			break
+		}
 	}
+	require.Contains(t, []domain.FrenchTarotBid{domain.FrenchTarotBidPetite, domain.FrenchTarotBidGarde}, g.GetContract())
 
 	var reveal *domain.ActionLogEntry
 	for _, entry := range g.GetActionLog() {
@@ -819,6 +829,14 @@ func TestFrenchTarotAccessors(t *testing.T) {
 	assert.Nil(t, g.GetPlayer(99))
 	assert.Nil(t, g.GetPlayableIndices(99))
 	assert.Equal(t, 0, g.GetCardPoints(99))
+	g.GetPlayer(1).AddTrick([]*domain.Card{
+		domain.NewCard(domain.FrenchTarotTrumpDesign, 1, false),
+		domain.NewCard(domain.FrenchTarotTrumpDesign, 21, false),
+		domain.NewCard(domain.FrenchTarotExcuseDesign, domain.FrenchTarotExcuseValue, false),
+	})
+	assert.Equal(t, 3, g.GetBouts(1))
+	assert.Equal(t, 0, g.GetBouts(0))
+	assert.Equal(t, 0, g.GetBouts(99))
 	assert.NotNil(t, g.GetActionLog())
 }
 

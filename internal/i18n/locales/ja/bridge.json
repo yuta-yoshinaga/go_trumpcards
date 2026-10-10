@@ -61,7 +61,6 @@
   "errCannotRedoubleWithoutDouble": "ダブルされていない状態ではリダブルできません",
   "errCannotRedoubleOwnTeam": "相手チームのダブルにのみリダブルできます",
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
-  "errFollowLeadSuit": "リードスートに従ってください",
   "log.pass": "{{name}}がパスしました",
   "log.redeal": "全員パス — リディールします",
   "log.bid": "{{name}}が{{level}}{{suit}}をビッドしました",

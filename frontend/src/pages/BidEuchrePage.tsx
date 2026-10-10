@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { bidEuchreApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -19,6 +19,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
@@ -95,11 +96,7 @@ function BidEuchrePageContent() {
   const [trumpChoice, setTrumpChoice] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
 
-  // Fetch a fresh game on mount.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
-  useEffect(() => {
-    exec('reset');
-  }, []);
+  useMountReset(exec);
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('bideuchre');
@@ -345,6 +342,7 @@ function BidEuchrePageContent() {
                     key={`hand-${c.design}-${c.value}-${i}`}
                     type="button"
                     data-hint-action="play"
+                    aria-pressed={selected === i}
                     onClick={() => setSelected(i)}
                     disabled={loading || (isPlay && !canPlay(i))}
                     className={`rounded ${selected === i ? 'ring-2 ring-ds-accent' : ''} ${

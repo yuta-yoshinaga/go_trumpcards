@@ -46,7 +46,7 @@ func (p *SpoonsWebPresenter) Output(g interfaces.SpoonsGame, lastErr error) stri
 		})
 	}
 
-	resObj.Message, resObj.MessageCode, resObj.MessageParams = buildSpoonsMessage(g, lastErr)
+	resObj.Message, resObj.MessageCode = buildSpoonsMessage(g, lastErr)
 	return marshalOrError(resObj)
 }
 
@@ -56,15 +56,15 @@ func (p *SpoonsWebPresenter) ActionLogOutput(g interfaces.SpoonsGame) string {
 }
 
 // buildSpoonsMessage はゲーム状態に応じたメッセージを生成する。
-func buildSpoonsMessage(g interfaces.SpoonsGame, lastErr error) (string, string, map[string]string) {
+func buildSpoonsMessage(g interfaces.SpoonsGame, lastErr error) (string, string) {
 	if lastErr != nil {
-		return lastErr.Error(), "error", nil
+		return lastErr.Error(), "error"
 	}
 	if g.GetGameEndFlag() {
 		if g.GetWinnerIdx() == 0 {
-			return "", "spoons.result.humanWin", nil
+			return "", "spoons.result.humanWin"
 		}
-		return "", "spoons.result.cpuWin", nil
+		return "", "spoons.result.cpuWin"
 	}
-	return "", "", nil
+	return "", ""
 }

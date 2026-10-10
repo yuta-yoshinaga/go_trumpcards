@@ -14,6 +14,8 @@
     "currentRisk": "Current Risk",
     "community": "Community Cards"
   },
+  "listSeparator": ", ",
+  "communityCardsRevealed": "Community card revealed: {{cards}}",
   "outcomePreview": {
     "betAmount": "Bet per wager: {{amount}}",
     "maxBet": "Maximum bet: {{amount}}",

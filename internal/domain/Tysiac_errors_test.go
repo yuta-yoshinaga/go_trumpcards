@@ -37,7 +37,7 @@ func TestTysiacDomainErrorsHaveMessageCodes(t *testing.T) {
 		g.SetTrumpSuit(domain.CardDesignHeart)
 		g.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 1, Card: tysCard(domain.CardDesignSpade, 12)}})
 		setTysiacHand(g, 0, tysCard(domain.CardDesignSpade, 1), tysCard(domain.CardDesignHeart, 9))
-		assertTysiacCodedError(t, g.PlayerPlay(1), domain.ErrInvalidPlay, "tysiac.errFollowLeadSuit")
+		assertTysiacCodedError(t, g.PlayerPlay(1), domain.ErrInvalidPlay, "shared.errFollowLeadSuit")
 	})
 
 	t.Run("must play trump when void", func(t *testing.T) {

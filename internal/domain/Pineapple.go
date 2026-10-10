@@ -660,7 +660,7 @@ func (p *Pineapple) IsDiscardPhase() bool {
 
 // dealRemainingCommunity 残りのコミュニティカードを全て配る
 func (p *Pineapple) dealRemainingCommunity() {
-	dealUpTo(&p.communityCards, p.trumpCards, 5)
+	dealUpTo(&p.communityCards, p.trumpCards)
 }
 
 // findNextActive 指定インデックスの次のアクティブプレイヤーを探す

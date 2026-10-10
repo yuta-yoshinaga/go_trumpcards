@@ -19,6 +19,7 @@ import {
   BJ_SUGGEST_SPLIT,
   BJ_SUGGEST_STAND,
   BJ_SUGGEST_SURRENDER,
+  BJ_SURRENDER_LATE,
 } from '../components/blackjack/bjConstants';
 import { HandStatusBadges } from '../components/blackjack/HandStatusBadges';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -161,6 +162,23 @@ const SPANISH21_TUTORIAL_STEPS: TutorialStep[] = [
   BJ_TUTORIAL_STEPS[6], // reset button
 ];
 
+/** Double Exposure tutorial: review its house rules before starting a bet. */
+const DOUBLEEXPOSURE_TUTORIAL_STEPS: TutorialStep[] = [
+  BJ_TUTORIAL_STEPS[0], // bet controls
+  {
+    target: '[data-tutorial="bj-payout-ref"]',
+    messageKey: 'tutorial.payoutRef',
+    placement: 'bottom',
+    advanceOn: 'click',
+  },
+  BJ_TUTORIAL_STEPS[1], // bet button
+  BJ_TUTORIAL_STEPS[2], // dealer hand
+  BJ_TUTORIAL_STEPS[3], // player hand
+  BJ_TUTORIAL_STEPS[4], // action buttons
+  BJ_TUTORIAL_STEPS[5], // result message
+  BJ_TUTORIAL_STEPS[6], // reset button
+];
+
 /** Variant identifier shared by BlackJack and its registered variants. */
 export type BlackJackVariant = 'blackjack' | 'spanish21' | 'doubleexposure';
 
@@ -172,7 +190,12 @@ export interface BlackJackPageProps {
 
 /** Renders the BlackJack game page with betting, action, and end phases. */
 export function BlackJackPage({ variant = 'blackjack' }: BlackJackPageProps) {
-  const steps = variant === 'spanish21' ? SPANISH21_TUTORIAL_STEPS : BJ_TUTORIAL_STEPS;
+  const steps =
+    variant === 'spanish21'
+      ? SPANISH21_TUTORIAL_STEPS
+      : variant === 'doubleexposure'
+        ? DOUBLEEXPOSURE_TUTORIAL_STEPS
+        : BJ_TUTORIAL_STEPS;
   return (
     <TutorialWrapper gameName={variant} steps={steps}>
       <BlackJackPageContent variant={variant} />
@@ -197,6 +220,7 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
   const { cardWidth, isMobile } = useCardDimensions();
   const [message, setMessage] = useState('');
   const [hitAnnouncement, setHitAnnouncement] = useState('');
+  const [countAnnouncement, setCountAnnouncement] = useState('');
   const [endAnnouncement, setEndAnnouncement] = useState('');
   const previousStateRef = useRef<BlackJackResponse | null>(null);
   const [betAmount, setBetAmount] = useState(10);
@@ -209,13 +233,29 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
   const [doubleAfterSplit, setDoubleAfterSplit] = useState(true);
   const [countingSystem, setCountingSystem] = useState(0);
   const [deckPenetration, setDeckPenetration] = useState(75);
-  const [surrenderRule, setSurrenderRule] = useState(0);
+  const [surrenderRule, setSurrenderRule] = useState(BJ_SURRENDER_LATE);
   const [autoAdvance, setAutoAdvance] = useState(0);
 
   const onSuccess = useCallback(
     (res: BlackJackResponse, args: Parameters<typeof apiClient.exec>) => {
       setMessage(res.message);
       const previous = previousStateRef.current;
+      if (
+        res.countingEnabled &&
+        previous &&
+        (res.runningCount !== previous.runningCount || res.trueCount !== previous.trueCount)
+      ) {
+        setCountAnnouncement(
+          res.countingSystem === BJ_COUNTING_KO
+            ? t('runningCountAnnouncement', { runningCount: res.runningCount })
+            : t('countAnnouncement', {
+                runningCount: res.runningCount,
+                trueCount: res.trueCount.toFixed(1),
+              }),
+        );
+      } else {
+        setCountAnnouncement('');
+      }
       if (res.phase === BjPhase.END && previous?.phase !== BjPhase.END) {
         const dealerFinalScore = res.dealer.score ?? 0;
         const dealerScoreAnnouncement = t('dealerFinalScore', { score: dealerFinalScore });
@@ -429,6 +469,9 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
             {phase === BjPhase.BET && (
               <div className="flex flex-col items-center justify-center py-6 gap-4">
                 <p className="text-ds-text-muted text-lg">{t('betGuide')}</p>
+                {variant === 'spanish21' && (
+                  <p className="text-ds-text-muted text-sm text-center">{t('betBonusGuide')}</p>
+                )}
                 <details className="bg-black/30 rounded-lg w-full max-w-sm" data-tutorial="bj-payout-ref">
                   <summary className="cursor-pointer select-none px-4 py-2 text-ds-text-primary font-bold text-sm">
                     {t('payoutRef.title')}
@@ -685,6 +728,16 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
               aria-atomic="true"
             >
               {hitAnnouncement}
+            </div>
+
+            <div
+              className="sr-only"
+              data-testid="bj-count-announcement"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+            >
+              {countAnnouncement}
             </div>
 
             <div

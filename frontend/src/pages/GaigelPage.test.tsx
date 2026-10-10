@@ -101,6 +101,27 @@ describe('GaigelPage', () => {
     expect(screen.getByText('山札: 28')).toBeInTheDocument();
   });
 
+  it('shows the active target score and non-negative points remaining for each team', async () => {
+    mockExec.mockResolvedValue(makeState({ teamScores: [201, 80], config: { cpuDifficulty: 2, targetScore: 201 } }));
+    renderWithProviders(<GaigelPage />);
+
+    await screen.findByRole('table');
+    expect(screen.getByText('目標: 201点')).toBeInTheDocument();
+    expect(screen.getByText('チーム0の残り: 0点')).toBeInTheDocument();
+    expect(screen.getByText('チーム1の残り: 121点')).toBeInTheDocument();
+
+    const i18n = (await import('../i18n')).default;
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      expect(await screen.findByText('Target: 201 pts')).toBeInTheDocument();
+      expect(screen.getByText('Team 0 remaining: 0 pts')).toBeInTheDocument();
+      expect(screen.getByText('Team 1 remaining: 121 pts')).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
+  });
+
   it('highlights only the trick winner at trick end and clears the highlight on the next trick', async () => {
     const completedTrick = makeState({
       phase: GaigelPhase.TRICK_END,

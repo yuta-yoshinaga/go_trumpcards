@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { zwanzigerrufenApi as ZwanzigerrufenApi } from '../api/gameApi';
 import { zwanzigerrufenApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
@@ -22,6 +22,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useMountReset } from '../hooks/useMountReset';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { ZwanzigerrufenResponse } from '../types/card';
@@ -95,9 +96,7 @@ function ZwanzigerrufenPageContent() {
 
   // Fetch a fresh game on mount.
   // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
-  useEffect(() => {
-    callApi('reset');
-  }, []);
+  useMountReset(callApi);
 
   const resetWithConfig = useCallback(() => {
     callApi('reset', { config: { cpuDifficulty, targetDeals } });
@@ -218,6 +217,19 @@ function ZwanzigerrufenPageContent() {
                   : t('calledSecret', { trump: state.calledTrump })}
               </div>
             )}
+
+            {state.contractName === 'rufer' &&
+              state.partnerRevealed &&
+              state.declarerTeamPoints !== undefined &&
+              state.defenderTeamPoints !== undefined && (
+                <div
+                  className="flex justify-center gap-3 text-center text-xs text-ds-text-primary"
+                  data-testid="zw-team-points"
+                >
+                  <span>{t('declarerTeamPoints', { points: state.declarerTeamPoints })}</span>
+                  <span>{t('defenderTeamPoints', { points: state.defenderTeamPoints })}</span>
+                </div>
+              )}
 
             <div className="flex flex-wrap justify-center gap-3" data-testid="zw-seats">
               {state.players.map((p) => {

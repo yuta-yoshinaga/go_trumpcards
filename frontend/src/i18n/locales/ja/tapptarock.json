@@ -34,6 +34,7 @@
   "previousTrick": "前のトリック",
   "previousTrickWinner": "勝者: {{name}}",
   "restricted": "リードスートに従う必要があります",
+  "restrictedTalon": "キングとトゥルルは伏せられません",
   "bidDreier": "ドライヤー",
   "bidSolo": "ソロ",
   "pass": "パス",

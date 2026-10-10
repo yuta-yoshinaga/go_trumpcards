@@ -499,12 +499,8 @@ func (s *Spades) validatePlay(playerIdx int, card *Card) error {
 		return nil
 	}
 
-	// フォロースート
-	leadSuit := s.currentTrick[0].Card.GetDesign()
-	if card.GetDesign() != leadSuit {
-		if s.playerHasSuit(playerIdx, leadSuit) {
-			return NewDomainErrorCode(ErrInvalidPlay, "spades.errFollowLeadSuit", nil)
-		}
+	if err := validateFollowSuit(s.currentTrick, s.players, playerIdx, card); err != nil {
+		return err
 	}
 
 	return nil
@@ -520,11 +516,6 @@ func (s *Spades) playerHasCard(playerIdx int, design, value int) bool {
 		}
 	}
 	return false
-}
-
-// playerHasSuit プレイヤーが特定のスートを持っているか
-func (s *Spades) playerHasSuit(playerIdx int, design int) bool {
-	return handHasSuit(s.players[playerIdx], design)
 }
 
 // playerHasNonSpade プレイヤーがスペード以外のカードを持っているか
@@ -653,12 +644,12 @@ func (s *Spades) cpuSelectBid(playerIdx int) int {
 	case SpadesCpuDifficultyNormal:
 		return s.cpuBidNormal(playerIdx)
 	default:
-		return s.cpuBidEasy(playerIdx)
+		return s.cpuBidEasy()
 	}
 }
 
 // cpuBidEasy ランダムに1〜5のビッド
-func (s *Spades) cpuBidEasy(playerIdx int) int {
+func (s *Spades) cpuBidEasy() int {
 	return rand.Intn(5) + 1
 }
 

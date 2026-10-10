@@ -14,6 +14,7 @@
   "holeCards": "ホールカード",
   "yourHand": "あなたの手札",
   "currentLow": "現在のロー: {{low}}",
+  "bestLowCards": "枠で囲まれたカードがベストローの構成カードです",
   "currentLowIncomplete": "ロー未完成（5枚揃わず）",
   "callPotOdds": "コール必要額 {{amount}} · ポットオッズ {{odds}}%",
   "anteBringIn": "アンティ/ブリングイン",

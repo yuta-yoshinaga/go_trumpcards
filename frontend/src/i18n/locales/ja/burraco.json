@@ -73,7 +73,7 @@
   "score": {
     "cumulative": "累積",
     "round": "ラウンド",
-    "update": "{{player}}のラウンド得点は{{score}}点"
+    "update": "{{player}}のラウンド得点は{{score}}点、累積得点は{{cumulativeScore}}点"
   },
   "tutorial": {
     "drawArea": "山札と捨て札エリアです。ここからカードを引きます。",

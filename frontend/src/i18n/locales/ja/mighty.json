@@ -95,7 +95,7 @@
     "declarerWins": "与党 (宣言者 & パートナー) の勝利！",
     "oppositionWins": "野党の勝利！"
   },
-  "highestBid": "最高ビッド: {{bid}}",
+  "highestBid": "最高ビッド: {{bid}}（{{name}}）",
   "highestBidder": "最高ビッダー",
   "demandSuit": "要求スート",
   "hintBid": "推奨ビッド",

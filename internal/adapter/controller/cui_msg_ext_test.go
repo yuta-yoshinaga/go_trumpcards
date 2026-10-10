@@ -77,8 +77,8 @@ func msgInvalidBetAmountPrefix() string {
 
 func msgTargetScoreRequired() string { return i18n.MarkError(i18n.T("targetScoreRequired")) }
 
-func msgInvalidTargetScore(val string) string {
-	return i18n.MarkError(i18n.Tf("invalidTargetScore", "val", val))
+func msgInvalidTargetScore() string {
+	return i18n.MarkError(i18n.Tf("invalidTargetScore", "val", "0"))
 }
 
 func msgAnteAmountRequired() string { return i18n.MarkError(i18n.T("anteAmountRequired")) }

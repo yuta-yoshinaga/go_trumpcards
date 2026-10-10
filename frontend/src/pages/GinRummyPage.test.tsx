@@ -55,6 +55,7 @@ const discardPhaseState: GinRummyResponse = {
 const layoffPhaseState: GinRummyResponse = {
   ...drawPhaseState,
   phase: 2,
+  layoffTargets: [[0], []],
   knockerMelds: [
     {
       cards: [
@@ -1122,6 +1123,38 @@ describe('GinRummyPage', () => {
     expect(document.querySelectorAll('[data-layoff="no"]').length).toBeGreaterThan(0);
     expect(screen.getByTestId('gr-hand-card-0')).toHaveAttribute('aria-label', '♠ A、レイオフ可能');
     expect(screen.getByTestId('gr-hand-card-1')).toHaveAttribute('aria-label', '♥ J、レイオフ不可');
+  });
+
+  it('prevents selecting non-layoffable cards while preserving multi-card layoff', async () => {
+    mockExec.mockResolvedValue({
+      ...layoffPhaseState,
+      players: [
+        {
+          ...layoffPhaseState.players[0],
+          cards: [...layoffPhaseState.players[0].cards, { design: 'CLOVER', value: 4 }],
+        },
+        layoffPhaseState.players[1],
+      ],
+      layoffTargets: [[0], [0], []],
+    });
+    renderWithProviders(<GinRummyPage />);
+    await waitFor(() => expect(screen.getByTestId('gr-hand-card-0')).not.toHaveAttribute('aria-disabled'));
+
+    const unavailable = screen.getByTestId('gr-hand-card-2');
+    expect(unavailable).toHaveAttribute('aria-disabled', 'true');
+    expect(unavailable).toHaveAttribute('aria-describedby', 'ginrummy-layoff-unavailable');
+    fireEvent.click(unavailable);
+    expect(unavailable).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByRole('button', { name: 'レイオフ' })).toBeDisabled();
+
+    fireEvent.click(screen.getByTestId('gr-hand-card-0'));
+    fireEvent.click(screen.getByTestId('gr-hand-card-1'));
+    expect(screen.getByTestId('gr-hand-card-0')).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('gr-hand-card-1')).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'レイオフ' })).toBeEnabled();
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'レイオフ' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('layoff', undefined, undefined, [0, 1]));
   });
 
   it('does not mark layoffable cards outside the layoff phase', async () => {

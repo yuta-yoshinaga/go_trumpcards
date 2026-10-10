@@ -16,6 +16,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
+import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useShamrocksStats } from '../hooks/useShamrocksStats';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
@@ -101,9 +102,7 @@ function ShamrocksPageContent() {
   }, [state, stats.clearRecorded, recordClear, markPlaying]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
-  useEffect(() => {
-    exec('reset');
-  }, []);
+  useMountReset(exec);
 
   // Clear a stale source selection (and any hint highlight) whenever the board
   // changes (move, undo, auto-complete) so a selected/hinted index can't
@@ -216,8 +215,8 @@ function ShamrocksPageContent() {
       <button
         type="button"
         key={`fan-${idx}`}
-        className={`relative flex flex-col items-center rounded p-1${ring} ${canAct ? 'cursor-pointer' : ''}`}
-        style={{ minHeight: Math.round(w * 1.4) }}
+        className={`relative flex min-h-[44px] min-w-[44px] flex-col items-center justify-center rounded p-1${ring} ${canAct ? 'cursor-pointer' : ''}`}
+        style={{ minHeight: Math.max(44, Math.round(w * 1.4)) }}
         onClick={canAct ? () => pickFan(idx) : undefined}
         disabled={!canAct}
         aria-label={
@@ -277,7 +276,7 @@ function ShamrocksPageContent() {
                 <button
                   type="button"
                   key={`fnd-${i}`}
-                  className={`rounded ${foundationAcceptsSelected(pile) ? 'ring-1 ring-ds-success cursor-pointer' : ''}`}
+                  className={`flex min-h-[44px] min-w-[44px] items-center justify-center rounded ${foundationAcceptsSelected(pile) ? 'ring-1 ring-ds-success cursor-pointer' : ''}`}
                   onClick={foundationAcceptsSelected(pile) ? sendToFoundation : undefined}
                   disabled={!canAct || !foundationAcceptsSelected(pile)}
                   aria-label={
@@ -302,8 +301,14 @@ function ShamrocksPageContent() {
         </div>
 
         {/* Fans */}
-        <div className="grid grid-cols-6 sm:grid-cols-9 gap-1" data-tutorial="ll-fans">
-          {state.fans.map((fan, i) => renderFan(fan, i))}
+        <div className="overflow-x-auto">
+          <div
+            className="grid w-max grid-cols-[repeat(9,max-content)] gap-1"
+            data-tutorial="ll-fans"
+            data-testid="ll-fans"
+          >
+            {state.fans.map((fan, i) => renderFan(fan, i))}
+          </div>
         </div>
 
         <div className="mt-2 text-ds-text-muted text-xs">{t('moveCount', { count: state.moveCount })}</div>

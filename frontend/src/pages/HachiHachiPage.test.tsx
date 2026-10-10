@@ -49,6 +49,7 @@ describe('HachiHachiPage', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<HachiHachiPage />);
     expect(screen.getByText('読み込み中…')).toBeInTheDocument();
+    expect(screen.getByTestId('hachihachi-result-live')).toBeEmptyDOMElement();
   });
 
   it('calls reset on mount', async () => {
@@ -149,6 +150,32 @@ describe('HachiHachiPage', () => {
     expect(screen.getByTestId('hachihachi-score-row-2')).toBeInTheDocument();
   });
 
+  it('announces the round settlement in the always-mounted live region without reading the table', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<HachiHachiPage />);
+    const live = screen.getByTestId('hachihachi-result-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toHaveClass('sr-only');
+    await waitFor(() => expect(live).toHaveTextContent('ラウンド精算。あなた 52点獲得、CPU1 8点失点、CPU2 44点失点'));
+    expect(screen.getByTestId('hachihachi-result-live')).toBe(live);
+    expect(screen.getByTestId('hachihachi-round-result')).toBeInTheDocument();
+  });
+
+  it('uses the player index when a settlement entry has no matching player', async () => {
+    mockExec.mockResolvedValue(
+      makeHachiHachiState({
+        phase: 1,
+        lastRoundResult: {
+          best: 0,
+          scores: [{ playerIdx: 7, rawScore: 0, yaku: [], bonus: 0, delta: 0 }],
+        },
+      }),
+    );
+    renderWithProviders(<HachiHachiPage />);
+    expect(await screen.findByTestId('hachihachi-result-live')).toHaveTextContent('ラウンド精算。P7 0点獲得');
+  });
+
   it('conveys the best row and delta signs without relying on colour', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<HachiHachiPage />);
@@ -171,6 +198,15 @@ describe('HachiHachiPage', () => {
     expect(screen.getByText('勝者: あなた')).toBeInTheDocument();
     expect(screen.getByText('あなた: 52')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '新しいゲーム' })).toBeInTheDocument();
+    expect(await screen.findByTestId('hachihachi-result-live')).toHaveTextContent(
+      '勝者: あなた 最終得点: あなた: 52、CPU1: -8、CPU2: -44',
+    );
+  });
+
+  it('announces a CPU winner by seat name', async () => {
+    mockExec.mockResolvedValue({ ...gameEndState, winner: 1 });
+    renderWithProviders(<HachiHachiPage />);
+    expect(await screen.findByTestId('hachihachi-result-live')).toHaveTextContent('勝者: CPU1 最終得点:');
   });
 
   it('identifies a tied game in Japanese when there is no winner', async () => {
@@ -179,6 +215,7 @@ describe('HachiHachiPage', () => {
     const result = await screen.findByTestId('hachihachi-result');
     expect(result).toHaveTextContent('引き分け');
     expect(result).toHaveTextContent('あなた:');
+    expect(await screen.findByTestId('hachihachi-result-live')).toHaveTextContent('引き分けです。 最終得点:');
   });
 
   it('identifies a tied game in English when there is no winner', async () => {

@@ -538,10 +538,14 @@ function BeggarMyNeighbourPageContent() {
               </button>
               <button
                 type="button"
-                onClick={handleAutoPlay}
+                onClick={() => {
+                  if (!autoPlaying && loading) return;
+                  handleAutoPlay();
+                }}
                 disabled={isGameEnd}
+                aria-disabled={!autoPlaying && loading}
                 aria-pressed={autoPlaying}
-                className="px-6 py-2 rounded-lg bg-ds-success hover:bg-ds-success-hover text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-6 py-2 rounded-lg bg-ds-success hover:bg-ds-success-hover text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed aria-disabled:opacity-40 aria-disabled:cursor-not-allowed"
                 data-testid="autoplay-button"
                 data-tutorial="bmn-autoplay-button"
               >

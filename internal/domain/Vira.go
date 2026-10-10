@@ -556,16 +556,7 @@ func (g *Vira) validatePlay(playerIdx int, card *Card) error {
 	if len(g.currentTrick) == 0 {
 		return nil
 	}
-	leadSuit := g.currentTrick[0].Card.GetDesign()
-	if g.playerHasSuit(playerIdx, leadSuit) && card.GetDesign() != leadSuit {
-		return NewDomainErrorCode(ErrInvalidPlay, "vira.errFollowLeadSuit", nil)
-	}
-	return nil
-}
-
-// playerHasSuit プレイヤーが指定スートを持っているか。
-func (g *Vira) playerHasSuit(playerIdx, design int) bool {
-	return handHasSuit(g.players[playerIdx], design)
+	return validateFollowSuit(g.currentTrick, g.players, playerIdx, card)
 }
 
 // GetValidPlayIndices 出せる手札の位置を返す。

@@ -39,7 +39,7 @@ import { OMAHA_HELP, parseOmahaCommand } from '../utils/cli/commands/omahaComman
 import { formatOmahaState } from '../utils/cli/formatters/omahaFormatter';
 import { omahaLivePreviewKey } from '../utils/livePokerPreview';
 import { hiLoRingStyle } from '../utils/omahaHiLoRing';
-import { lowCardIndexSets } from '../utils/omahaLowCards';
+import { lowCardIndexSets, omahaLowCandidate } from '../utils/omahaLowCards';
 import { findPlayerName } from '../utils/playerUtils';
 
 /** 5 Card Omaha Hi-Lo (Big O) tutorial step definitions. */
@@ -172,7 +172,19 @@ function BigOHiLoPageContent() {
   const humanLowBestHand = isShowdown
     ? state?.roundResults?.find((r) => r.playerIdx === humanPlayer?.id)?.lowBestHand
     : undefined;
-  const lowSets = lowCardIndexSets(humanLowBestHand, humanPlayer?.cards ?? [], state?.communityCards ?? []);
+  const liveLowCandidate = useMemo(() => {
+    if (!isActive || !humanPlayer || humanPlayer.folded || !state) return null;
+    return omahaLowCandidate(humanPlayer.cards, state.communityCards);
+  }, [isActive, humanPlayer, state]);
+  const lowSets = { loHoleSet: new Set<number>(), loBoardSet: new Set<number>() };
+  if (isShowdown && humanPlayer && state) {
+    const showdownLowSets = lowCardIndexSets(humanLowBestHand, humanPlayer.cards, state.communityCards);
+    for (const idx of showdownLowSets.loHoleSet) lowSets.loHoleSet.add(idx);
+    for (const idx of showdownLowSets.loBoardSet) lowSets.loBoardSet.add(idx);
+  } else if (liveLowCandidate) {
+    for (const idx of liveLowCandidate.holeIdx) lowSets.loHoleSet.add(idx);
+    for (const idx of liveLowCandidate.boardIdx) lowSets.loBoardSet.add(idx);
+  }
   // Preview the Hi hand the player currently holds under the must-use-exactly-2
   // rule. Big O deals five hole cards — ten pairings to weigh by eye — and Hi-Lo
   // asks for a second read of the same ten, so this is the variant where the
@@ -265,6 +277,11 @@ function BigOHiLoPageContent() {
                                 style={inBest ? highlightCardStyle() : placeholderCardStyle}
                               />
                               {inBest && <span className="sr-only">{t('cardUsedAria', { card: cardAlt(card) })}</span>}
+                              {inLo && (
+                                <span className="sr-only" data-low-aria>
+                                  {t('lowBoardCardUsedAria', { card: cardAlt(card) })}
+                                </span>
+                              )}
                               {category !== 'none' && (
                                 <span
                                   data-hilo-usage={category}
@@ -477,6 +494,17 @@ function BigOHiLoPageContent() {
                     </span>
                   </div>
                 )}
+                <div className="mb-1" data-testid="bigohilo-live-low">
+                  {isActive && !humanPlayer.folded && state?.communityCards && state.communityCards.length >= 3 && (
+                    <span className={`inline-block text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
+                      {liveLowCandidate
+                        ? t('liveLow', {
+                            ranks: liveLowCandidate.ranks.map((rank) => (rank === 1 ? 'A' : rank)).join('-'),
+                          })
+                        : t('noLiveLow')}
+                    </span>
+                  )}
+                </div>
                 <div className="flex flex-wrap gap-1.5 mb-2" data-tutorial="bohl-combination-rule">
                   {humanPlayer.cards?.length
                     ? humanPlayer.cards.map((card, idx) => {
@@ -498,6 +526,11 @@ function BigOHiLoPageContent() {
                               style={inBest ? highlightCardStyle() : placeholderCardStyle}
                             />
                             {inBest && <span className="sr-only">{t('cardUsedAria', { card: cardAlt(card) })}</span>}
+                            {inLo && (
+                              <span className="sr-only" data-low-aria>
+                                {t('lowHoleCardUsedAria', { card: cardAlt(card) })}
+                              </span>
+                            )}
                             {category !== 'none' && (
                               <span
                                 data-hilo-usage={category}

@@ -33,6 +33,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { UnsunKarutaResponse } from '../types/card';
 import { UnsunKarutaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { parseUnsunKarutaCommand, UNSUN_KARUTA_HELP } from '../utils/cli/commands/unsunKarutaCommands';
 import { formatUnsunKarutaState } from '../utils/cli/formatters/unsunKarutaFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -186,6 +187,14 @@ function UnsunKarutaPageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
+      <span aria-live="polite" aria-atomic="true" className="sr-only" data-testid="unsunkaruta-trick-announcement">
+        {state.currentTrick
+          .map((trickCard) => {
+            const player = state.players[trickCard.playerIdx];
+            return t('trickPlay', { player: playerName(player.id, player.isHuman), card: cardAlt(trickCard.card) });
+          })
+          .join(t('listSeparator'))}
+      </span>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (

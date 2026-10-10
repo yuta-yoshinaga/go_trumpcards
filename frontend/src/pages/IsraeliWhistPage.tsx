@@ -18,6 +18,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useMountReset } from '../hooks/useMountReset';
 import { btnDanger, btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { IsraeliWhistPlayer, IsraeliWhistResponse } from '../types/card';
@@ -146,9 +147,7 @@ function IsraeliWhistPageContent() {
   );
   const { handleCommand } = useCliGame(dispatch, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  useEffect(() => {
-    void dispatch('reset');
-  }, [dispatch]);
+  useMountReset(dispatch);
 
   const handleReset = useCallback(() => {
     hideActionLog();
@@ -284,7 +283,7 @@ function IsraeliWhistPageContent() {
 
             {/* **2段階ぶんの状態を同時に出す。** 片方を消すとどちらの段か読めない。 */}
             <div className="flex flex-wrap justify-center gap-2 mb-4" data-tutorial="iw-seats">
-              {state.players.map((p) => (
+              {state.players.map((p, playerIdx) => (
                 <div
                   key={p.id}
                   className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
@@ -293,6 +292,7 @@ function IsraeliWhistPageContent() {
                   <span className="text-ds-text-primary">
                     {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
                   </span>
+                  {playerIdx === state.dealerIdx && <span className="ml-1 text-ds-accent">[{t('dealerBadge')}]</span>}
                   <span className="ml-1 text-ds-accent">[{roleStr(p)}]</span>
                   {': '}
                   {p.bid < 0 ? t('bid.none') : t('bid.value', { n: String(p.bid) })}

@@ -445,23 +445,13 @@ func (p *Pasur) capture(playerIdx int, card *Card, tableIndices []int) {
 func (p *Pasur) advanceTurn() {
 	p.currentPlayerIdx = (p.currentPlayerIdx + 1) % p.config.PlayerCnt
 
-	if p.handsEmpty() {
+	if allHandsEmpty(p.players) {
 		if p.trumpCards.GetRemainingCount() > 0 {
 			p.dealPack()
 			return
 		}
 		p.finishGame()
 	}
-}
-
-// handsEmpty は全員の手札が尽きたかを返す。
-func (p *Pasur) handsEmpty() bool {
-	for _, pl := range p.players {
-		if pl.GetCardsSize() > 0 {
-			return false
-		}
-	}
-	return true
 }
 
 // finishGame は残り札を処理して得点を確定する。

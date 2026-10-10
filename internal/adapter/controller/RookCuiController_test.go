@@ -11,7 +11,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
 
-func newRookCui() (*controller.RookCuiController, *usecase.MockRookInteractor) {
+func newRookCui() *controller.RookCuiController {
 	fiMock := new(usecase.MockRookInteractor)
 	fiMock.On("GetConfig").Return(domain.DefaultRookConfig())
 	fiMock.On("ResetWithConfig", domain.DefaultRookConfig()).Return("reset")
@@ -23,11 +23,11 @@ func newRookCui() (*controller.RookCuiController, *usecase.MockRookInteractor) {
 	fiMock.On("NextRound").Return("nextround")
 	fiMock.On("Hint").Return("hint")
 	fiMock.On("ActionLog").Return("log")
-	return controller.NewRookCuiController(fiMock), fiMock
+	return controller.NewRookCuiController(fiMock)
 }
 
 func TestRookCuiController_Exec(t *testing.T) {
-	c, _ := newRookCui()
+	c := newRookCui()
 	cases := []struct {
 		cmd  string
 		want string
@@ -54,14 +54,14 @@ func TestRookCuiController_Exec(t *testing.T) {
 }
 
 func TestRookCuiController_Quit(t *testing.T) {
-	c, _ := newRookCui()
+	c := newRookCui()
 	if got := c.Exec("q"); !strings.Contains(got, "bye") {
 		t.Errorf("quit = %q, want bye", got)
 	}
 }
 
 func TestRookCuiController_Usage(t *testing.T) {
-	c, _ := newRookCui()
+	c := newRookCui()
 	if got := c.Exec("b"); !strings.Contains(got, msgStem("bidRequired70120")) {
 		t.Errorf("bid without args should require, got %q", got)
 	}

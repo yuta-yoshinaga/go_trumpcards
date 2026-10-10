@@ -45,6 +45,8 @@
   "setLine": "{{bid}} 失敗（{{points}}点 / 目標 {{need}}点）",
   "widowCredit": "ウィドウ加算: {{n}}点",
   "valueLine": "受け払い: 1人あたり {{n}}",
+  "deltasTitle": "各プレイヤーの得点増減",
+  "deltaLine": "{{player}}: {{delta}}",
   "settings": {
     "title": "設定"
   },

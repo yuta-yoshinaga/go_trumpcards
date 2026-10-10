@@ -39,6 +39,8 @@
   "tricks_one": "{{count}} trick won",
   "tricks_other": "{{count}} tricks won",
   "points": "{{points}} pts this deal",
+  "declarerTeamPoints": "Declarer side {{points}} pts",
+  "defenderTeamPoints": "Defenders {{points}} pts",
   "score": "total {{score}}",
   "currentTrick": "Current trick",
   "leadSuit": "Led suit",

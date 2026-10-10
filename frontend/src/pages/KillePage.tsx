@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { killeApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -21,6 +21,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
@@ -47,24 +48,24 @@ const KILLE_MAX_REENTRIES = 3;
  * cards is clear at a glance.
  */
 const KILLE_LADDER = [
-  { label: 'Harlequin', color: 'text-ds-accent' },
-  { label: 'Cuckoo', color: 'text-ds-info' },
-  { label: 'Hussar', color: 'text-ds-error-text' },
-  { label: 'Pig', color: 'text-ds-warning' },
-  { label: 'Cavalier', color: 'text-ds-success' },
-  { label: 'Inn', color: 'text-ds-success' },
-  ...Array.from({ length: 12 }, (_, index) => ({ label: String(12 - index), color: 'text-ds-text-muted' })),
-  { label: 'Wreath', color: 'text-ds-text-muted' },
-  { label: 'Flowerpot', color: 'text-ds-text-muted' },
-  { label: 'Mask', color: 'text-ds-text-muted' },
+  { key: 'harlequin', color: 'text-ds-accent' },
+  { key: 'cuckoo', color: 'text-ds-info' },
+  { key: 'hussar', color: 'text-ds-error-text' },
+  { key: 'pig', color: 'text-ds-warning' },
+  { key: 'cavalier', color: 'text-ds-success' },
+  { key: 'inn', color: 'text-ds-success' },
+  ...Array.from({ length: 12 }, (_, index) => ({ key: String(12 - index), color: 'text-ds-text-muted' })),
+  { key: 'wreath', color: 'text-ds-text-muted' },
+  { key: 'flowerpot', color: 'text-ds-text-muted' },
+  { key: 'mask', color: 'text-ds-text-muted' },
 ];
 
 const KILLE_EFFECTS = [
-  { glyph: '🐦', name: 'Cuckoo', descriptionKey: 'effect.cuckoo' },
-  { glyph: '⚔', name: 'Hussar', descriptionKey: 'effect.hussar' },
-  { glyph: '🐖', name: 'Pig', descriptionKey: 'effect.pig' },
-  { glyph: '🐎', name: 'Cavalier', descriptionKey: 'effect.cavalier' },
-  { glyph: '🏠', name: 'Inn', descriptionKey: 'effect.inn' },
+  { glyph: '🐦', nameKey: 'cards.cuckoo', descriptionKey: 'effect.cuckoo' },
+  { glyph: '⚔', nameKey: 'cards.hussar', descriptionKey: 'effect.hussar' },
+  { glyph: '🐖', nameKey: 'cards.pig', descriptionKey: 'effect.pig' },
+  { glyph: '🐎', nameKey: 'cards.cavalier', descriptionKey: 'effect.cavalier' },
+  { glyph: '🏠', nameKey: 'cards.inn', descriptionKey: 'effect.inn' },
 ] as const;
 
 /** Kille tutorial step definitions. */
@@ -118,11 +119,7 @@ function KillePageContent() {
 
   const [stake, setStake] = useState(1);
 
-  // Fetch a fresh game on mount.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
-  useEffect(() => {
-    exec('reset');
-  }, []);
+  useMountReset(exec);
 
   const handleStakeChange = (value: string) => {
     const next = Number(value);
@@ -343,8 +340,8 @@ function KillePageContent() {
               <div className="mb-1 text-ds-text-primary">{t('deckTitle')}</div>
               <div className="flex flex-wrap gap-x-2 gap-y-1">
                 {KILLE_LADDER.map((r) => (
-                  <span key={r.label} className={r.color}>
-                    {r.label}
+                  <span key={r.key} className={r.color}>
+                    {t(`cards.${r.key}`)}
                   </span>
                 ))}
               </div>
@@ -352,9 +349,9 @@ function KillePageContent() {
               <div className="mt-2 grid gap-1" data-testid="kille-effect-legend">
                 <div className="text-ds-text-primary">{t('effectLegendTitle')}</div>
                 {KILLE_EFFECTS.map((effect) => (
-                  <div key={effect.name}>
-                    <span aria-hidden="true">{effect.glyph}</span> <span className="font-semibold">{effect.name}</span>:{' '}
-                    {t(effect.descriptionKey)}
+                  <div key={effect.nameKey}>
+                    <span aria-hidden="true">{effect.glyph}</span>{' '}
+                    <span className="font-semibold">{t(effect.nameKey)}</span>: {t(effect.descriptionKey)}
                   </div>
                 ))}
               </div>

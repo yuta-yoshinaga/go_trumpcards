@@ -180,6 +180,29 @@ describe('BauernschnapsenPage', () => {
     expect(mockExec).toHaveBeenCalledWith('contract', 3, undefined, undefined, 1);
   });
 
+  it('shows each contract condition and associates it with its contract buttons', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: BauernschnapsenPhase.CONTRACT, contract: 0, declarerIdx: -1 }));
+    renderWithProviders(<BauernschnapsenPage />);
+
+    const controls = await screen.findByTestId('bauernschnapsen-contract-controls');
+    expect(controls).toHaveTextContent('切り札を決めて、自チームでカード点の過半 (61点以上) を取る');
+    expect(controls).toHaveTextContent('切り札を決めて、相手に1トリックも渡さない');
+    expect(controls).toHaveTextContent('切り札なしで、自分は1トリックも取らない');
+
+    for (const button of screen.getAllByRole('button', { name: /^(通常|同スート縛り) / })) {
+      expect(button).toHaveAttribute(
+        'aria-describedby',
+        button.textContent?.startsWith('通常')
+          ? 'bauernschnapsen-contract-rufer-help'
+          : 'bauernschnapsen-contract-farbenzwang-help',
+      );
+    }
+    expect(screen.getByRole('button', { name: 'ベテル' })).toHaveAttribute(
+      'aria-describedby',
+      'bauernschnapsen-contract-bettel-help',
+    );
+  });
+
   it('hides the contract controls once play has started', async () => {
     renderWithProviders(<BauernschnapsenPage />);
     await waitFor(() => expect(screen.getByText('チームスコア')).toBeInTheDocument());

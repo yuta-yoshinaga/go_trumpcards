@@ -30,7 +30,6 @@
   "helpExampleDecide": "  d 1                       降りずにこの手に参加する",
   "helpHint": "  h                         助言を表示",
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
-  "errFollowLeadSuit": "リードスートに従ってください",
   "errMustHead": "勝てる札を出す必要があります (マストヘッド)",
   "errPlayTrump": "切り札を出してください",
   "errMustHeadTrump": "勝てる切り札を出す必要があります (マストヘッド)",

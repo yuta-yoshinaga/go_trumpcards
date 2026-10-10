@@ -72,6 +72,29 @@ describe('StreetsAndAlleysPage', () => {
     vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
   });
 
+  it('keeps all nine board columns accessible in a horizontal scroll area on narrow screens', async () => {
+    window.innerWidth = 320;
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<StreetsAndAlleysPage />);
+
+    const boardScroll = await screen.findByTestId('sa-board-scroll');
+    expect(boardScroll).toHaveClass('overflow-x-auto');
+    expect(screen.getByTestId('sa-board-content')).toHaveStyle({ minWidth: '310px' });
+    window.innerWidth = 1024;
+    window.dispatchEvent(new Event('resize'));
+  });
+
+  it('keeps the existing board sizing when the viewport is wide', async () => {
+    window.innerWidth = 1024;
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<StreetsAndAlleysPage />);
+
+    expect(await screen.findByTestId('sa-board-scroll')).toHaveClass('overflow-x-auto');
+    expect(screen.getByTestId('sa-board-content')).not.toHaveStyle({ minWidth: '310px' });
+  });
+
   it('calls reset on initial render', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<StreetsAndAlleysPage />);

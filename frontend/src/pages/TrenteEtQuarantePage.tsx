@@ -173,6 +173,11 @@ function TrenteEtQuarantePageContent() {
               messageParams={state.messageParams}
             />
 
+            <div className="mb-3 text-center text-sm text-ds-text-muted" data-testid="teq-remaining-deck">
+              <p>{t('label.remainingDeck', { count: state.remainingDeck })}</p>
+              {state.remainingDeck < 52 && <p>{t('label.reshuffleNotice')}</p>}
+            </div>
+
             <section className="mb-3 rounded-lg bg-ds-surface p-3 text-sm" data-testid="teq-session-stats">
               <h2 className="mb-2 font-semibold">{t('session.title')}</h2>
               <dl className="grid grid-cols-2 gap-x-4 gap-y-1">

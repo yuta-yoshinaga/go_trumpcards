@@ -27,12 +27,12 @@ func setupTTJDeclarePhase(ttj *domain.TwoTenJack, declarerIdx int) {
 	ttj.SetDeclarerIdx(declarerIdx)
 }
 
-func setupTTJPlayPhase(ttj *domain.TwoTenJack, currentIdx, leadIdx, trickNum, trumpSuit int) {
+func setupTTJPlayPhase(ttj *domain.TwoTenJack, currentIdx, leadIdx, trickNum int) {
 	ttj.SetPhase(domain.TwoTenJackPhasePlay)
 	ttj.SetCurrentPlayerIdx(currentIdx)
 	ttj.SetLeadPlayerIdx(leadIdx)
 	ttj.SetTrickNumber(trickNum)
-	ttj.SetTrumpSuit(trumpSuit)
+	ttj.SetTrumpSuit(domain.CardDesignSpade)
 }
 
 func TestNewTwoTenJack(t *testing.T) {
@@ -147,7 +147,7 @@ func TestTwoTenJack_PlayerPlay_Errors(t *testing.T) {
 	t.Run("not human turn", func(t *testing.T) {
 		ttj := newTestTwoTenJack()
 		ttj.Reset()
-		setupTTJPlayPhase(ttj, 1, 1, 1, domain.CardDesignSpade)
+		setupTTJPlayPhase(ttj, 1, 1, 1)
 		err := ttj.PlayerPlay(0)
 		assert.ErrorIs(t, err, domain.ErrNotHumanTurn)
 	})
@@ -155,7 +155,7 @@ func TestTwoTenJack_PlayerPlay_Errors(t *testing.T) {
 	t.Run("card index out of range", func(t *testing.T) {
 		ttj := newTestTwoTenJack()
 		ttj.Reset()
-		setupTTJPlayPhase(ttj, 0, 0, 1, domain.CardDesignSpade)
+		setupTTJPlayPhase(ttj, 0, 0, 1)
 		err := ttj.PlayerPlay(-1)
 		assert.Error(t, err)
 		err = ttj.PlayerPlay(100)
@@ -172,7 +172,7 @@ func TestTwoTenJack_ValidatePlay_FollowSuit(t *testing.T) {
 	p.AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
 	p.AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
 
-	setupTTJPlayPhase(ttj, 0, 1, 2, domain.CardDesignSpade)
+	setupTTJPlayPhase(ttj, 0, 1, 2)
 	ttj.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 7, false)},
 	})
@@ -192,7 +192,7 @@ func TestTwoTenJack_ValidatePlay_NoLeadSuit(t *testing.T) {
 	p.AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
 	p.AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
 
-	setupTTJPlayPhase(ttj, 0, 1, 2, domain.CardDesignSpade)
+	setupTTJPlayPhase(ttj, 0, 1, 2)
 	ttj.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 7, false)},
 	})
@@ -205,7 +205,7 @@ func TestTwoTenJack_CpuPlay(t *testing.T) {
 	t.Run("cpu plays when its turn", func(t *testing.T) {
 		ttj := newTestTwoTenJack()
 		ttj.Reset()
-		setupTTJPlayPhase(ttj, 1, 1, 1, domain.CardDesignSpade)
+		setupTTJPlayPhase(ttj, 1, 1, 1)
 		before := ttj.GetPlayer(1).GetCardsSize()
 		ttj.CpuPlay()
 		assert.Equal(t, before-1, ttj.GetPlayer(1).GetCardsSize())
@@ -213,7 +213,7 @@ func TestTwoTenJack_CpuPlay(t *testing.T) {
 	t.Run("cpu does not play on human turn", func(t *testing.T) {
 		ttj := newTestTwoTenJack()
 		ttj.Reset()
-		setupTTJPlayPhase(ttj, 0, 0, 1, domain.CardDesignSpade)
+		setupTTJPlayPhase(ttj, 0, 0, 1)
 		before := ttj.GetPlayer(0).GetCardsSize()
 		ttj.CpuPlay()
 		assert.Equal(t, before, ttj.GetPlayer(0).GetCardsSize())
@@ -233,7 +233,7 @@ func TestTwoTenJack_TrickWinner(t *testing.T) {
 	t.Run("highest of lead suit when no trump", func(t *testing.T) {
 		ttj := newTestTwoTenJack()
 		ttj.Reset()
-		setupTTJPlayPhase(ttj, 0, 0, 2, domain.CardDesignSpade)
+		setupTTJPlayPhase(ttj, 0, 0, 2)
 		ttj.SetPhase(domain.TwoTenJackPhaseTrickEnd)
 		ttj.SetCurrentTrick([]*domain.TrickCard{
 			{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 5, false)},
@@ -248,7 +248,7 @@ func TestTwoTenJack_TrickWinner(t *testing.T) {
 	t.Run("trump beats lead suit", func(t *testing.T) {
 		ttj := newTestTwoTenJack()
 		ttj.Reset()
-		setupTTJPlayPhase(ttj, 0, 0, 2, domain.CardDesignSpade)
+		setupTTJPlayPhase(ttj, 0, 0, 2)
 		ttj.SetPhase(domain.TwoTenJackPhaseTrickEnd)
 		ttj.SetCurrentTrick([]*domain.TrickCard{
 			{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 13, false)},
@@ -263,7 +263,7 @@ func TestTwoTenJack_TrickWinner(t *testing.T) {
 	t.Run("highest trump wins", func(t *testing.T) {
 		ttj := newTestTwoTenJack()
 		ttj.Reset()
-		setupTTJPlayPhase(ttj, 0, 0, 2, domain.CardDesignSpade)
+		setupTTJPlayPhase(ttj, 0, 0, 2)
 		ttj.SetPhase(domain.TwoTenJackPhaseTrickEnd)
 		ttj.SetCurrentTrick([]*domain.TrickCard{
 			{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 13, false)},
@@ -467,7 +467,7 @@ func TestTwoTenJack_GetHint_Declare(t *testing.T) {
 func TestTwoTenJack_GetHint_Play(t *testing.T) {
 	ttj := newTestTwoTenJack()
 	ttj.Reset()
-	setupTTJPlayPhase(ttj, 0, 0, 1, domain.CardDesignSpade)
+	setupTTJPlayPhase(ttj, 0, 0, 1)
 	hint := ttj.GetHint()
 	assert.NotNil(t, hint)
 	assert.NotNil(t, hint.CardIndex)
@@ -476,7 +476,7 @@ func TestTwoTenJack_GetHint_Play(t *testing.T) {
 func TestTwoTenJack_GetHint_NotHumanTurn(t *testing.T) {
 	ttj := newTestTwoTenJack()
 	ttj.Reset()
-	setupTTJPlayPhase(ttj, 1, 1, 1, domain.CardDesignSpade)
+	setupTTJPlayPhase(ttj, 1, 1, 1)
 	assert.Nil(t, ttj.GetHint())
 }
 
@@ -487,7 +487,7 @@ func TestTwoTenJack_GetValidPlayIndices(t *testing.T) {
 	p.Reset()
 	p.AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
 	p.AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
-	setupTTJPlayPhase(ttj, 0, 1, 2, domain.CardDesignSpade)
+	setupTTJPlayPhase(ttj, 0, 1, 2)
 	ttj.SetCurrentTrick([]*domain.TrickCard{
 		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 7, false)},
 	})
@@ -504,7 +504,7 @@ func TestTwoTenJack_PlayerPlay_FullTrick(t *testing.T) {
 		p.Reset()
 		p.AddCard(domain.NewCard(domain.CardDesignHeart, 2+i, false))
 	}
-	setupTTJPlayPhase(ttj, 0, 0, 1, domain.CardDesignSpade)
+	setupTTJPlayPhase(ttj, 0, 0, 1)
 
 	err := ttj.PlayerPlay(0)
 	assert.NoError(t, err)

@@ -31,6 +31,7 @@
   "papiNote": "The four papi rank equal -- if more than one lands in a trick, the later-played wins",
   "scartoPrompt": "{{count}}/{{total}} cards selected. Choose cards to bury (trumps and the Matto cannot be chosen)",
   "scartoButton": "Bury",
+  "scartoRestricted": "Trumps and the Matto cannot be buried",
   "scartoDone": "Buried: {{count}} cards",
   "playButton": "Play",
   "nextTrick": "Next Trick",

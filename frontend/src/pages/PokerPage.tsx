@@ -130,6 +130,14 @@ function PokerPageContent() {
   const [isLowball, setIsLowball] = useState(false);
   const [cpuMetaAI, setCpuMetaAI] = useState(false);
   const [exchangeAnnouncement, setExchangeAnnouncement] = useState('');
+  const cpuExchangeAnnouncement = state?.cpuExchanges?.length
+    ? state.cpuExchanges
+        .map((exchange) => t('cpuExchangeEntry', { idx: exchange.playerIdx, count: exchange.exchangeCount }))
+        .join(t('listSeparator'))
+    : '';
+  const exchangeLiveAnnouncement = [cpuExchangeAnnouncement, exchangeAnnouncement]
+    .filter(Boolean)
+    .join(t('listSeparator'));
   const pendingExchangeRef = useRef<number[] | null>(null);
   const previousStateRef = useRef(state);
   const turnStartRef = useRef(0);
@@ -280,7 +288,7 @@ function PokerPageContent() {
         aria-atomic="true"
         data-testid="pk-exchanged-cards-live"
       >
-        {exchangeAnnouncement}
+        {exchangeLiveAnnouncement}
       </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />

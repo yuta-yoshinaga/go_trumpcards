@@ -84,6 +84,38 @@ describe('SchafkopfPage', () => {
     });
   });
 
+  it('announces the lead seat and identifies each played card by player', async () => {
+    mockExec.mockResolvedValue(
+      makeSchafkopfState({
+        leadPlayerIdx: 1,
+        currentTrick: [
+          { playerIdx: 1, card: { design: 'SPADE', value: 1 } },
+          { playerIdx: 2, card: { design: 'HEART', value: 13 } },
+        ],
+      }),
+    );
+    renderWithProviders(<SchafkopfPage />);
+    expect(await screen.findByRole('img', { name: 'CPU 1が出した♠ A' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'CPU 2が出した♥ K' })).toBeInTheDocument();
+    expect(screen.getByText('リード席: CPU 1')).toBeInTheDocument();
+  });
+
+  it('announces and marks the server provided trick winner', async () => {
+    mockExec.mockResolvedValue(
+      makeSchafkopfState({
+        phase: 3,
+        winnerIdx: 1,
+        currentTrick: [
+          { playerIdx: 0, card: { design: 'SPADE', value: 1 } },
+          { playerIdx: 1, card: { design: 'HEART', value: 13 } },
+        ],
+      }),
+    );
+    renderWithProviders(<SchafkopfPage />);
+    expect(await screen.findByTestId('trick-winner-badge')).toHaveTextContent('トリックの勝者: CPU 1');
+    expect(screen.getAllByText('トリックの勝者: CPU 1')).toHaveLength(2);
+  });
+
   it.each([false, true])("shows each player's remaining cards in the %s layout", async (isMobile) => {
     mobileFlag.value = isMobile;
     mockExec.mockResolvedValue(

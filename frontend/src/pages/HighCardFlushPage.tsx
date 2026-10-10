@@ -349,12 +349,12 @@ function HighCardFlushPageContent() {
                     {t('payout.raise')}: {state.raisePayout}
                   </div>
                 )}
-                {state.flushBonusPayout !== 0 && (
+                {(state.flushBonusBet > 0 || state.flushBonusPayout !== 0) && (
                   <div>
                     {t('payout.flushBonus')}: {state.flushBonusPayout}
                   </div>
                 )}
-                {state.straightFlushPayout !== 0 && (
+                {(state.straightFlushBet > 0 || state.straightFlushPayout !== 0) && (
                   <div>
                     {t('payout.straightFlush')}: {state.straightFlushPayout}
                   </div>

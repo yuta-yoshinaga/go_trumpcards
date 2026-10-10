@@ -3,6 +3,8 @@
   "cpu": "CPU {{id}}",
   "deck": "Stock: {{count}}",
   "playersTitle": "Players",
+  "handCount_one": "Hand: {{count}} card",
+  "handCount_other": "Hand: {{count}} cards",
   "captured": "captured {{count}}",
   "finalScore": "{{score}} cards",
   "provisional": "Provisional {{score}} cards",

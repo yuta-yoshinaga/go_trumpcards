@@ -37,7 +37,7 @@ func (p *WarWebPresenter) Output(w interfaces.WarGame, lastErr error) string {
 		})
 	}
 
-	resObj.Message, resObj.MessageCode, resObj.MessageParams = buildWarMessage(w, lastErr)
+	resObj.Message, resObj.MessageCode = buildWarMessage(w, lastErr)
 	return marshalOrError(resObj)
 }
 
@@ -47,15 +47,15 @@ func (p *WarWebPresenter) ActionLogOutput(w interfaces.WarGame) string {
 }
 
 // buildWarMessage ゲーム状態に応じたメッセージを生成する
-func buildWarMessage(w interfaces.WarGame, lastErr error) (string, string, map[string]string) {
+func buildWarMessage(w interfaces.WarGame, lastErr error) (string, string) {
 	if lastErr != nil {
-		return lastErr.Error(), "error", nil
+		return lastErr.Error(), "error"
 	}
 	if w.GetGameEndFlag() {
 		if w.GetWinnerIdx() == 0 {
-			return "", "war.result.humanWin", nil
+			return "", "war.result.humanWin"
 		}
-		return "", "war.result.cpuWin", nil
+		return "", "war.result.cpuWin"
 	}
 	// **各ラウンドの決着も伝える。** 以前は最終勝敗のときしかコードを返さず、
 	// 盤面の変化はリング色と不透明度だけだった。読み上げ利用者はどのラウンドで
@@ -64,11 +64,11 @@ func buildWarMessage(w interfaces.WarGame, lastErr error) (string, string, map[s
 	switch w.GetPhase() {
 	case domain.WarPhaseResolved:
 		if w.GetLastWinnerIdx() == 0 {
-			return "", "war.round.humanWin", nil
+			return "", "war.round.humanWin"
 		}
-		return "", "war.round.cpuWin", nil
+		return "", "war.round.cpuWin"
 	case domain.WarPhaseWarBury:
-		return "", "war.round.warBury", nil
+		return "", "war.round.warBury"
 	}
-	return "", "", nil
+	return "", ""
 }

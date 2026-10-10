@@ -320,6 +320,15 @@ function KlaverjasPageContent() {
                   </div>
                 </div>
 
+                <div role="status" aria-live="polite" data-testid="klaverjas-round-card-points" aria-atomic="true">
+                  {!(isRoundEnd || isGameEnd) && (
+                    <div className="mb-2 p-2 rounded bg-ds-surface text-ds-text-muted text-sm">
+                      <div>{t('roundResult.teamA', { points: state.roundCardPoints[0] })}</div>
+                      <div>{t('roundResult.teamB', { points: state.roundCardPoints[1] })}</div>
+                    </div>
+                  )}
+                </div>
+
                 {/* Live Roem (bonus) per team, shown throughout the hand to match the CUI's
                     Roem readout; the round-result block below repeats it once the round ends. */}
                 {!(isRoundEnd || isGameEnd) && (

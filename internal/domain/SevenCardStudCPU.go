@@ -230,7 +230,7 @@ func (s *SevenCardStud) evalThirdStreetStrength(idx int) int {
 		score += 10
 	}
 
-	return clamp(score, 0, 100)
+	return clamp(score, 100)
 }
 
 // evalThirdStreetStrengthRazz Razz用サードストリート強度評価 (0-100)
@@ -289,7 +289,7 @@ func (s *SevenCardStud) evalThirdStreetStrengthRazz(idx int) int {
 		}
 	}
 
-	return clamp(score, 0, 100)
+	return clamp(score, 100)
 }
 
 // cpuDecideThirdStreet サードストリートのCPU意思決定

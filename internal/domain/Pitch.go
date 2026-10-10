@@ -999,7 +999,7 @@ func (p *Pitch) cpuPlayNormal(playerIdx int, validIndices []int) int {
 			return idx
 		}
 	}
-	return pickLowestNonTrumpFollow(pl, validIndices, leadSuit, p.trumpSuit)
+	return pickLowestNonTrumpFollow(pl, validIndices, p.trumpSuit)
 }
 
 // cpuPlayHard: cpuPlayNormal とほぼ同じだが Low トランプを温存し J of trump を最後まで残す
@@ -1021,7 +1021,7 @@ func (p *Pitch) cpuPlayHard(playerIdx int, validIndices []int) int {
 			return idx
 		}
 	}
-	return pickLowestNonTrumpFollow(pl, validIndices, leadSuit, p.trumpSuit)
+	return pickLowestNonTrumpFollow(pl, validIndices, p.trumpSuit)
 }
 
 // cpuWantsWin このプレイヤーがトリックを取りに行くべきか
@@ -1125,7 +1125,7 @@ func pickWinningCard(pl *PitchPlayer, validIndices []int, leadSuit, trumpSuit, b
 }
 
 // pickLowestNonTrumpFollow フォロー時の最弱カード (トランプは温存)
-func pickLowestNonTrumpFollow(pl *PitchPlayer, validIndices []int, leadSuit, trumpSuit int) int {
+func pickLowestNonTrumpFollow(pl *PitchPlayer, validIndices []int, trumpSuit int) int {
 	bestIdx := validIndices[0]
 	bestScore := 1 << 30
 	for _, idx := range validIndices {

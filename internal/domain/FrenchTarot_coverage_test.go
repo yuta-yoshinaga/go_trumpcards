@@ -145,7 +145,7 @@ func TestFrenchTarotHintDiscardTrumpFallback(t *testing.T) {
 
 // --- CPU play selection via GetHint (cpuPlaySmart branches + playHintReason) ---
 
-func frenchTarotPlayHint(t *testing.T, declarer, current int, trick []*domain.TrickCard, hand ...*domain.Card) *domain.FrenchTarotHint {
+func frenchTarotPlayHint(t *testing.T, declarer int, trick []*domain.TrickCard, hand ...*domain.Card) *domain.FrenchTarotHint {
 	t.Helper()
 	g := frenchTarotNewReset()
 	g.SetPhase(domain.FrenchTarotPhasePlay)
@@ -153,7 +153,7 @@ func frenchTarotPlayHint(t *testing.T, declarer, current int, trick []*domain.Tr
 	g.SetDeclarerIdx(declarer)
 	frenchTarotSetHand(g, 0, hand...)
 	g.SetCurrentTrick(trick)
-	g.SetCurrentPlayerIdx(current)
+	g.SetCurrentPlayerIdx(0)
 	h := g.GetHint()
 	require.NotNil(t, h)
 	require.Len(t, h.CardIndices, 1)
@@ -161,14 +161,14 @@ func frenchTarotPlayHint(t *testing.T, declarer, current int, trick []*domain.Tr
 }
 
 func TestFrenchTarotHintPlayLeadHigh(t *testing.T) {
-	h := frenchTarotPlayHint(t, 0, 0, nil,
+	h := frenchTarotPlayHint(t, 0, nil,
 		frenchTarotSuitCard(domain.CardDesignHeart, 5), frenchTarotTrumpCard(10),
 		frenchTarotSuitCard(domain.CardDesignSpade, 3))
 	assert.Equal(t, "lead_high", h.Reason)
 }
 
 func TestFrenchTarotHintPlayLeadLow(t *testing.T) {
-	h := frenchTarotPlayHint(t, 1, 0, nil,
+	h := frenchTarotPlayHint(t, 1, nil,
 		frenchTarotSuitCard(domain.CardDesignHeart, 5), frenchTarotTrumpCard(10),
 		frenchTarotSuitCard(domain.CardDesignSpade, 3))
 	assert.Equal(t, "lead_low", h.Reason)
@@ -177,7 +177,7 @@ func TestFrenchTarotHintPlayLeadLow(t *testing.T) {
 func TestFrenchTarotHintPlayFollowWin(t *testing.T) {
 	// Declarer (seat 1) is winning; the human defender can overtake with a higher heart.
 	trick := frenchTarotTrickCards(&domain.TrickCard{PlayerIdx: 1, Card: frenchTarotSuitCard(domain.CardDesignHeart, 7)})
-	h := frenchTarotPlayHint(t, 1, 0, trick,
+	h := frenchTarotPlayHint(t, 1, trick,
 		frenchTarotSuitCard(domain.CardDesignHeart, 10), frenchTarotSuitCard(domain.CardDesignHeart, 5))
 	assert.Equal(t, "follow_win", h.Reason)
 }
@@ -188,7 +188,7 @@ func TestFrenchTarotHintPlayFollowDuck(t *testing.T) {
 		&domain.TrickCard{PlayerIdx: 2, Card: frenchTarotSuitCard(domain.CardDesignHeart, 7)},
 		&domain.TrickCard{PlayerIdx: 1, Card: frenchTarotTrumpCard(21)},
 	)
-	h := frenchTarotPlayHint(t, 1, 0, trick,
+	h := frenchTarotPlayHint(t, 1, trick,
 		frenchTarotSuitCard(domain.CardDesignHeart, 5), frenchTarotSuitCard(domain.CardDesignHeart, 9))
 	assert.Equal(t, "follow_duck", h.Reason)
 }
@@ -196,7 +196,7 @@ func TestFrenchTarotHintPlayFollowDuck(t *testing.T) {
 func TestFrenchTarotHintPlaySameSideWinning(t *testing.T) {
 	// A fellow defender (seat 2) is already winning; the human defender feeds points.
 	trick := frenchTarotTrickCards(&domain.TrickCard{PlayerIdx: 2, Card: frenchTarotSuitCard(domain.CardDesignHeart, 14)})
-	h := frenchTarotPlayHint(t, 1, 0, trick,
+	h := frenchTarotPlayHint(t, 1, trick,
 		frenchTarotSuitCard(domain.CardDesignHeart, 2), frenchTarotSuitCard(domain.CardDesignHeart, 5))
 	assert.NotEmpty(t, h.Reason)
 }
@@ -204,7 +204,7 @@ func TestFrenchTarotHintPlaySameSideWinning(t *testing.T) {
 func TestFrenchTarotHintPlayExcuse(t *testing.T) {
 	// The human is void of the led suit and holds only the Excuse.
 	trick := frenchTarotTrickCards(&domain.TrickCard{PlayerIdx: 1, Card: frenchTarotSuitCard(domain.CardDesignHeart, 7)})
-	h := frenchTarotPlayHint(t, 1, 0, trick, frenchTarotExcuseCard())
+	h := frenchTarotPlayHint(t, 1, trick, frenchTarotExcuseCard())
 	assert.Equal(t, "play_excuse", h.Reason)
 }
 

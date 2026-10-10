@@ -187,6 +187,12 @@ func (_m *MockCinchGame) GetPlayerCnt() int {
 	return ret.Get(0).(int)
 }
 
+// GetDealPoints モック
+func (_m *MockCinchGame) GetDealPoints(idx int) int {
+	ret := _m.Called(idx)
+	return ret.Int(0)
+}
+
 // GetPlayer モック
 func (_m *MockCinchGame) GetPlayer(i int) *domain.CinchPlayer {
 	ret := _m.Called(i)

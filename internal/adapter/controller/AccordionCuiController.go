@@ -4,7 +4,6 @@ package controller
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
@@ -50,16 +49,16 @@ func (c *AccordionCuiController) handleMove(args []string) string {
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("accordion.promptFromIndex"), "m {0}")
 	}
-	fromIdx, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("invalidIndex", "val", args[0])
+	fromIdx, msg, ok := cuiutil.ParseIntArgKeys(args, "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	if !ok {
+		return msg
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("accordion.promptToIndex"), fmt.Sprintf("m %d {0}", fromIdx))
 	}
-	toIdx, err := strconv.Atoi(args[1])
-	if err != nil {
-		return invalidArg("invalidIndex", "val", args[1])
+	toIdx, msg, ok := cuiutil.ParseIntArgKeys(args[1:], "", "invalidIndex", cuiutil.NoMin, cuiutil.NoMax)
+	if !ok {
+		return msg
 	}
 	return c.ai.Move(fromIdx, toIdx)
 }

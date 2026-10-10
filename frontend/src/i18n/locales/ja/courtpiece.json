@@ -22,6 +22,7 @@
   "cards": "{{count}}枚",
   "tricks": "{{count}}トリック",
   "currentTrick": "現在のトリック",
+  "leadSuit": "リードスート",
   "trickWinnerBadge": "勝ち",
   "trickWinnerAnnouncement": "{{name}}が{{team}}のトリックを獲得",
   "trickEmpty": "(まだカードがありません)",

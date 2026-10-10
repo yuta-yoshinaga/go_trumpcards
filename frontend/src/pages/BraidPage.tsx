@@ -215,7 +215,7 @@ function BraidPageContent() {
             type="button"
             onClick={() => game.handleSelectSource(zone)}
             disabled={!isPlaying || loading}
-            aria-label={cardAlt(card)}
+            aria-label={t(kind === 'field' ? 'fieldAriaLabel' : 'helperAriaLabel', { idx, card: cardAlt(card) })}
             aria-pressed={isSourceSelected(kind, idx)}
             draggable={isPlaying && !loading}
             onDragStart={dnd.handleDragStart(zone)}

@@ -1105,25 +1105,11 @@ func (b *Bridge) validatePlay(playerIdx int, card *Card) error {
 	}
 
 	// フォロースート
-	leadSuit := b.currentTrick[0].Card.GetDesign()
-	if card.GetDesign() != leadSuit {
-		if b.playerHasSuit(playerIdx, leadSuit) {
-			return NewDomainErrorCode(ErrInvalidPlay, "bridge.errFollowLeadSuit", nil)
-		}
+	if err := validateFollowSuit(b.currentTrick, b.players, playerIdx, card); err != nil {
+		return err
 	}
 
 	return nil
-}
-
-// playerHasSuit プレイヤーが指定スートのカードを持っているか
-func (b *Bridge) playerHasSuit(playerIdx int, suit int) bool {
-	p := b.players[playerIdx]
-	for i := 0; i < p.GetCardsSize(); i++ {
-		if p.GetCard(i).GetDesign() == suit {
-			return true
-		}
-	}
-	return false
 }
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す
@@ -1285,12 +1271,12 @@ func (b *Bridge) cpuSelectBid(playerIdx int) (BridgeBidType, int, int) {
 	case BridgeCpuDifficultyNormal:
 		return b.cpuBidNormal(playerIdx)
 	default:
-		return b.cpuBidEasy(playerIdx)
+		return b.cpuBidEasy()
 	}
 }
 
 // cpuBidEasy ランダムにビッド (50%パス、50%最低ビッド)
-func (b *Bridge) cpuBidEasy(playerIdx int) (BridgeBidType, int, int) {
+func (b *Bridge) cpuBidEasy() (BridgeBidType, int, int) {
 	if rand.Intn(2) == 0 || b.contractLevel >= 4 {
 		return BridgeBidPass, 0, 0
 	}

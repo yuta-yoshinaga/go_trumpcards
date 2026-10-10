@@ -150,6 +150,10 @@ func TestHorseWebPresenter_Output(t *testing.T) {
 		Pot                int    `json:"pot"`
 		MinRaise           int    `json:"minRaise"`
 		MaxBetAmount       int    `json:"maxBetAmount"`
+		SmallBlind         int    `json:"smallBlind"`
+		BigBlind           int    `json:"bigBlind"`
+		Ante               int    `json:"ante"`
+		BringIn            int    `json:"bringIn"`
 		TablePhase         int    `json:"tablePhase"`
 		GameEndFlag        bool   `json:"gameEndFlag"`
 		WinnerSeat         int    `json:"winnerSeat"`
@@ -182,6 +186,10 @@ func TestHorseWebPresenter_Output(t *testing.T) {
 	assert.Equal(t, g.GetPot(), out.Pot)
 	assert.Equal(t, g.GetMinRaise(), out.MinRaise)
 	assert.Equal(t, g.GetMaxBetAmount(), out.MaxBetAmount)
+	assert.Equal(t, g.GetForcedBets().SmallBlind, out.SmallBlind)
+	assert.Equal(t, g.GetForcedBets().BigBlind, out.BigBlind)
+	assert.Equal(t, g.GetForcedBets().Ante, out.Ante)
+	assert.Equal(t, g.GetForcedBets().BringIn, out.BringIn)
 	assert.False(t, out.GameEndFlag)
 	// **決着していないうちは勝者を書かない。** 0 を出すと席 0 の勝ちに見える。
 	assert.Equal(t, -1, out.WinnerSeat)
@@ -218,6 +226,7 @@ func TestHorseWebPresenter_HandNameOmitsEmptyAndIncludesValue(t *testing.T) {
 			m.On("GetToCall").Return(0)
 			m.On("GetMinRaise").Return(0)
 			m.On("GetMaxBetAmount").Return(0)
+			m.On("GetForcedBets").Return(domain.HorseForcedBets{})
 			m.On("GetTablePhase").Return(0)
 			m.On("IsDrawPhase").Return(false)
 			m.On("GetDrawIndex").Return(0)
@@ -580,6 +589,7 @@ func TestHorseWebPresenter_OutputMaxBetAmount(t *testing.T) {
 		m.On("GetToCall").Return(20)
 		m.On("GetMinRaise").Return(20)
 		m.On("GetMaxBetAmount").Return(maxBet)
+		m.On("GetForcedBets").Return(domain.HorseForcedBets{})
 		m.On("GetTablePhase").Return(0)
 		m.On("GetVariant").Return(domain.HorseVariantEightGame)
 		m.On("GetRotation").Return([]domain.HorseDiscipline{domain.HorsePLOmaha})

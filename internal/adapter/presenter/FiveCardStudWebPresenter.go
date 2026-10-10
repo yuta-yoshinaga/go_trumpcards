@@ -61,7 +61,7 @@ func (p *FiveCardStudWebPresenter) buildOutput(s interfaces.FiveCardStudGame, la
 	resObj.CpuActions = p.buildCpuActionsOutput(s)
 	resObj.RoundResults = p.buildRoundResultsOutput(s)
 
-	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(s, lastErr)
+	resObj.Message, resObj.MessageCode = p.buildMessage(s, lastErr)
 
 	// メタAI情報
 	if profile := s.GetHumanProfile(); profile != nil {
@@ -82,11 +82,20 @@ func (p *FiveCardStudWebPresenter) buildOutput(s interfaces.FiveCardStudGame, la
 // buildSidePotsOutput サイドポット情報を構築
 func (p *FiveCardStudWebPresenter) buildSidePotsOutput(s interfaces.FiveCardStudGame) []*controller.FiveCardStudWebOutputSidePot {
 	out := make([]*controller.FiveCardStudWebOutputSidePot, 0)
-	for _, sp := range s.GetSidePots() {
-		out = append(out, &controller.FiveCardStudWebOutputSidePot{
+	isShowdown := s.GetPhase() == domain.FiveCardStudPhaseEnd || s.GetPhase() == domain.FiveCardStudPhaseShowdown
+	awards := s.GetPotAwards()
+	for i, sp := range s.GetSidePots() {
+		pot := &controller.FiveCardStudWebOutputSidePot{
 			Amount:          sp.Amount,
 			EligiblePlayers: sp.EligiblePlayers,
-		})
+			Winners:         make([]*controller.FiveCardStudWebOutputPotAward, 0),
+		}
+		if isShowdown && i < len(awards) {
+			for _, award := range awards[i] {
+				pot.Winners = append(pot.Winners, &controller.FiveCardStudWebOutputPotAward{PlayerIdx: award.PlayerIdx, Amount: award.Amount})
+			}
+		}
+		out = append(out, pot)
 	}
 	return out
 }
@@ -178,31 +187,30 @@ func (p *FiveCardStudWebPresenter) buildRoundResultsOutput(s interfaces.FiveCard
 }
 
 // buildMessage ゲーム結果メッセージを構築
-func (p *FiveCardStudWebPresenter) buildMessage(s interfaces.FiveCardStudGame, lastErr error) (string, string, map[string]string) {
+func (p *FiveCardStudWebPresenter) buildMessage(s interfaces.FiveCardStudGame, lastErr error) (string, string) {
 	if lastErr != nil {
-		return lastErr.Error(), "", nil
+		return lastErr.Error(), ""
 	}
 	if s.IsMuckAvailable() {
-		return "", "fivecardstud.muck.prompt", nil
+		return "", "fivecardstud.muck.prompt"
 	}
 	if s.GetGameEndFlag() {
-		msg, code := p.buildResultMessage(s)
-		return msg, code, nil
+		return "", p.buildResultMessage(s)
 	}
-	return "", "", nil
+	return "", ""
 }
 
 // buildResultMessage builds the end-of-round message and its i18n code
-func (p *FiveCardStudWebPresenter) buildResultMessage(s interfaces.FiveCardStudGame) (string, string) {
+func (p *FiveCardStudWebPresenter) buildResultMessage(s interfaces.FiveCardStudGame) string {
 	results := s.GetRoundResults()
 	if len(results) == 0 {
-		return "", "fivecardstud.result.gameOver"
+		return "fivecardstud.result.gameOver"
 	}
 
 	for _, r := range results {
 		if s.GetPlayer(r.PlayerIdx).GetIsHuman() {
 			if r.WonAmount > 0 {
-				return "", "fivecardstud.result.win"
+				return "fivecardstud.result.win"
 			}
 		}
 	}
@@ -210,18 +218,18 @@ func (p *FiveCardStudWebPresenter) buildResultMessage(s interfaces.FiveCardStudG
 	// Human not in results (folded)
 	for i := 0; i < s.GetPlayerCnt(); i++ {
 		if s.GetPlayer(i).GetIsHuman() && s.GetPlayer(i).GetFolded() {
-			return "", "fivecardstud.result.folded"
+			return "fivecardstud.result.folded"
 		}
 	}
 
 	// Human mucked
 	for _, r := range results {
 		if s.GetPlayer(r.PlayerIdx).GetIsHuman() && r.Mucked {
-			return "", "fivecardstud.result.mucked"
+			return "fivecardstud.result.mucked"
 		}
 	}
 
-	return "", "fivecardstud.result.lose"
+	return "fivecardstud.result.lose"
 }
 
 // ActionLogOutput 棋譜をJSON出力

@@ -300,6 +300,10 @@ describe('DesmochePage', () => {
     mockExec.mockResolvedValue(makeState({ phase: DesmochePhase.ROUND_END, roundWinner: 2 }));
     renderWithProviders(<DesmochePage />);
     await waitFor(() => expect(screen.getByTestId('desmoche-round-result')).toHaveTextContent('席2'));
+    expect(screen.getByTestId('desmoche-round-announcement')).toHaveAttribute('role', 'status');
+    expect(screen.getByTestId('desmoche-round-announcement')).toHaveAttribute('aria-live', 'polite');
+    expect(screen.getByTestId('desmoche-round-announcement')).toHaveClass('sr-only');
+    expect(screen.getByTestId('desmoche-round-announcement')).toHaveTextContent('席2');
 
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: '次のラウンドへ' }));
@@ -314,6 +318,8 @@ describe('DesmochePage', () => {
     renderWithProviders(<DesmochePage />);
     await waitFor(() => expect(screen.getByTestId('desmoche-round-result')).toHaveTextContent('80'));
     expect(screen.getByTestId('desmoche-round-result')).toHaveTextContent('持ち越し');
+    expect(screen.getByTestId('desmoche-round-announcement')).toHaveTextContent('誰も10枚を組めませんでした');
+    expect(screen.getByTestId('desmoche-round-announcement')).toHaveTextContent('80');
   });
 
   it('reports each outcome', async () => {

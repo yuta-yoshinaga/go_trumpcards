@@ -287,6 +287,19 @@ function PontoonPageContent() {
           <GameFooter className={`${gameTheme.pontoon.footer} px-4 py-2.5`}>
             <ErrorAlert message={error} onRetry={retry} />
             <div className="flex gap-2 items-center flex-wrap" data-tutorial="pt-controls">
+              {isBetting && state.chips < PONTOON_MIN_BET && (
+                <div className="w-full flex flex-wrap items-center justify-center gap-2 text-sm text-ds-text-primary">
+                  <p>{t('outOfChips')}</p>
+                  <button
+                    type="button"
+                    className={btnDanger}
+                    onClick={() => requestConfirm(game.handleReset)}
+                    disabled={loading}
+                  >
+                    {t('restart')}
+                  </button>
+                </div>
+              )}
               {isBetting && !state.isHumanBanker && (
                 <>
                   <span className="text-sm text-ds-text-muted">{t('betLabel')}</span>

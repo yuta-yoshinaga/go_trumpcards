@@ -211,6 +211,7 @@ function SoloWhistPageContent() {
   const isPlayPhase = state.phase === SoloWhistPhase.PLAY;
   const isTrickEnd = state.phase === SoloWhistPhase.TRICK_END;
   const isRoundEnd = state.phase === SoloWhistPhase.ROUND_END;
+  const isResolvedTrick = isTrickEnd || isRoundEnd;
   const isGameEnd = state.phase === SoloWhistPhase.GAME_END || state.gameEndFlag;
 
   const canPlay = isPlayPhase && isHumanTurn;
@@ -260,6 +261,13 @@ function SoloWhistPageContent() {
               player: highestBidderName,
             })
           : t('bidNone')}
+      </span>
+      <span data-testid="solowhist-trick-winner-status" className="sr-only" role="status" aria-live="polite">
+        {isResolvedTrick
+          ? t('trickWinnerAnnouncement', {
+              name: playerName(state.players[state.leadPlayerIdx].id, state.players[state.leadPlayerIdx].isHuman),
+            })
+          : ''}
       </span>
       {isBidPhase && (
         <section
@@ -373,6 +381,8 @@ function SoloWhistPageContent() {
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
                   dataTutorial="solowhist-trick-display"
+                  winnerIdx={isResolvedTrick ? state.leadPlayerIdx : undefined}
+                  winnerLabel={t('trickWinnerBadge')}
                 />
               </div>
 

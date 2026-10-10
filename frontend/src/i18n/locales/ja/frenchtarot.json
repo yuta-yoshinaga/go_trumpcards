@@ -28,6 +28,7 @@
   "cards": "{{count}}枚",
   "tricks": "{{count}}トリック",
   "points": "{{points}}点",
+  "boutsWon": "獲得ブー: {{count}}",
   "score": "得点: {{score}}",
   "trickSummary": "このトリック: {{points}}点・ブー {{count}}枚",
   "currentTrick": "現在のトリック",

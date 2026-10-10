@@ -149,6 +149,33 @@ describe('CrazyFourPokerPage', () => {
     expect(summary).toHaveTextContent('合計: 230');
   });
 
+  it('アンティの上限を必須ベット込みで制限し、少額残高でも合計を超えない', async () => {
+    mockApi.mockResolvedValue(withState({ chips: 1050 }));
+    renderWithProviders(<CrazyFourPokerPage />);
+
+    const anteInput = await screen.findByLabelText('アンティ');
+    expect(anteInput).toHaveAttribute('max', '520');
+    fireEvent.change(anteInput, { target: { value: '1050' } });
+    expect(anteInput).toHaveValue('520');
+    expect(screen.getByLabelText('Queens Up')).toHaveAttribute('max', '10');
+    expect(screen.getByTestId('c4p-wager-summary')).toHaveTextContent('合計: 1040');
+  });
+
+  it('残高がアンティの最小単位未満なら賭け額を0にする', async () => {
+    mockApi.mockResolvedValue(withState({ chips: 15 }));
+    renderWithProviders(<CrazyFourPokerPage />);
+    const lowBalanceAnte = await screen.findByLabelText('アンティ');
+    expect(lowBalanceAnte).toHaveAttribute('max', '0');
+    expect(lowBalanceAnte).toHaveValue('0');
+    const queensUpInput = screen.getByLabelText('Queens Up');
+    expect(queensUpInput).toHaveAttribute('max', '0');
+    fireEvent.change(queensUpInput, { target: { value: '10' } });
+    mockApi.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: '配る' }));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', { ante: 0, queensUp: 0 }));
+    expect(screen.getByTestId('c4p-wager-summary')).toHaveTextContent('合計: 0');
+  });
+
   // **アンティを送ると同額の Super Bonus が付く**ので、送るのはアンティだけ。
   it('配るはアンティと Queens Up を送る', async () => {
     mockApi.mockResolvedValue(base);

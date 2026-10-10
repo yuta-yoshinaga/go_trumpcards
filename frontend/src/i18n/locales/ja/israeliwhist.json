@@ -28,6 +28,7 @@
     "value": "宣言{{n}}"
   },
   "currentTrick": "現在のトリック",
+  "dealerBadge": "ディーラー",
   "listSeparator": "、",
   "announcements": {
     "cpuAuctionBid": "{{player}}が{{n}}で入札しました",

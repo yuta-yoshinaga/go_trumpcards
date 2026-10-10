@@ -27,6 +27,7 @@
   "gameOver": "Game Over",
   "gameOverSummary": "Reached {{count}}/{{total}} cards on the foundations ({{percent}}%)",
   "hintAvailable": "Hint available",
+  "hintMove": "Move {{card}}: {{from}} → {{to}}",
   "noHint": "No hint available",
   "tutorial": {
     "foundation": "The four foundations start EMPTY. Build each up by suit from Ace to King.",

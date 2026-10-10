@@ -41,9 +41,9 @@ func newMockPlayer(chips int) *mockBettingPlayer {
 }
 
 // newBettingState テスト用BettingState生成ヘルパー
-func newBettingState(n int) *BettingState {
+func newBettingState() *BettingState {
 	return &BettingState{
-		ActedFlags: make([]bool, n),
+		ActedFlags: make([]bool, 2),
 		MinRaise:   10,
 	}
 }
@@ -52,7 +52,7 @@ func newBettingState(n int) *BettingState {
 
 func TestExecuteBettingAction_Fold(t *testing.T) {
 	players := []BettingPlayer{newMockPlayer(100), newMockPlayer(100)}
-	state := newBettingState(2)
+	state := newBettingState()
 
 	err := ExecuteBettingAction(players, state, 0, bettingActionFold, 0, 10, bettingMaxRaisesPerRound, 0)
 	assert.NoError(t, err)
@@ -62,7 +62,7 @@ func TestExecuteBettingAction_Fold(t *testing.T) {
 
 func TestExecuteBettingAction_Check_Success(t *testing.T) {
 	players := []BettingPlayer{newMockPlayer(100), newMockPlayer(100)}
-	state := newBettingState(2)
+	state := newBettingState()
 
 	err := ExecuteBettingAction(players, state, 0, bettingActionCheck, 0, 10, bettingMaxRaisesPerRound, 0)
 	assert.NoError(t, err)
@@ -71,7 +71,7 @@ func TestExecuteBettingAction_Check_Success(t *testing.T) {
 
 func TestExecuteBettingAction_Check_OutstandingBet(t *testing.T) {
 	players := []BettingPlayer{newMockPlayer(100), newMockPlayer(100)}
-	state := newBettingState(2)
+	state := newBettingState()
 	state.LastBet = 20
 
 	err := ExecuteBettingAction(players, state, 0, bettingActionCheck, 0, 10, bettingMaxRaisesPerRound, 0)
@@ -81,7 +81,7 @@ func TestExecuteBettingAction_Check_OutstandingBet(t *testing.T) {
 
 func TestExecuteBettingAction_Call_Success(t *testing.T) {
 	players := []BettingPlayer{newMockPlayer(100), newMockPlayer(100)}
-	state := newBettingState(2)
+	state := newBettingState()
 	state.LastBet = 20
 
 	err := ExecuteBettingAction(players, state, 0, bettingActionCall, 0, 10, bettingMaxRaisesPerRound, 0)
@@ -94,7 +94,7 @@ func TestExecuteBettingAction_Call_Success(t *testing.T) {
 
 func TestExecuteBettingAction_Call_NothingToCall(t *testing.T) {
 	players := []BettingPlayer{newMockPlayer(100), newMockPlayer(100)}
-	state := newBettingState(2)
+	state := newBettingState()
 
 	err := ExecuteBettingAction(players, state, 0, bettingActionCall, 0, 10, bettingMaxRaisesPerRound, 0)
 	assert.ErrorIs(t, err, ErrInvalidPlay)
@@ -103,7 +103,7 @@ func TestExecuteBettingAction_Call_NothingToCall(t *testing.T) {
 
 func TestExecuteBettingAction_Call_ShortAllIn(t *testing.T) {
 	players := []BettingPlayer{newMockPlayer(10), newMockPlayer(100)}
-	state := newBettingState(2)
+	state := newBettingState()
 	state.LastBet = 50
 
 	err := ExecuteBettingAction(players, state, 0, bettingActionCall, 0, 10, bettingMaxRaisesPerRound, 0)
@@ -117,7 +117,7 @@ func TestExecuteBettingAction_Call_ShortAllIn(t *testing.T) {
 
 func TestExecuteBettingAction_Bet_Success(t *testing.T) {
 	players := []BettingPlayer{newMockPlayer(100), newMockPlayer(100)}
-	state := newBettingState(2)
+	state := newBettingState()
 
 	err := ExecuteBettingAction(players, state, 0, bettingActionBet, 20, 10, bettingMaxRaisesPerRound, 0)
 	assert.NoError(t, err)
@@ -134,7 +134,7 @@ func TestExecuteBettingAction_Bet_Success(t *testing.T) {
 
 func TestExecuteBettingAction_Bet_AllInOnExact(t *testing.T) {
 	players := []BettingPlayer{newMockPlayer(20), newMockPlayer(100)}
-	state := newBettingState(2)
+	state := newBettingState()
 
 	err := ExecuteBettingAction(players, state, 0, bettingActionBet, 20, 10, bettingMaxRaisesPerRound, 0)
 	assert.NoError(t, err)
@@ -144,7 +144,7 @@ func TestExecuteBettingAction_Bet_AllInOnExact(t *testing.T) {
 
 func TestExecuteBettingAction_Bet_MaxRaisesReached(t *testing.T) {
 	players := []BettingPlayer{newMockPlayer(100), newMockPlayer(100)}
-	state := newBettingState(2)
+	state := newBettingState()
 	state.RaiseCount = bettingMaxRaisesPerRound
 
 	err := ExecuteBettingAction(players, state, 0, bettingActionBet, 20, 10, bettingMaxRaisesPerRound, 0)
@@ -154,7 +154,7 @@ func TestExecuteBettingAction_Bet_MaxRaisesReached(t *testing.T) {
 
 func TestExecuteBettingAction_Bet_OutstandingBet(t *testing.T) {
 	players := []BettingPlayer{newMockPlayer(100), newMockPlayer(100)}
-	state := newBettingState(2)
+	state := newBettingState()
 	state.LastBet = 10
 
 	err := ExecuteBettingAction(players, state, 0, bettingActionBet, 20, 10, bettingMaxRaisesPerRound, 0)
@@ -164,7 +164,7 @@ func TestExecuteBettingAction_Bet_OutstandingBet(t *testing.T) {
 
 func TestExecuteBettingAction_Bet_TooSmall(t *testing.T) {
 	players := []BettingPlayer{newMockPlayer(100), newMockPlayer(100)}
-	state := newBettingState(2)
+	state := newBettingState()
 
 	err := ExecuteBettingAction(players, state, 0, bettingActionBet, 5, 10, bettingMaxRaisesPerRound, 0)
 	assert.ErrorIs(t, err, ErrInvalidAmount)
@@ -173,7 +173,7 @@ func TestExecuteBettingAction_Bet_TooSmall(t *testing.T) {
 
 func TestExecuteBettingAction_Bet_InsufficientChips(t *testing.T) {
 	players := []BettingPlayer{newMockPlayer(5), newMockPlayer(100)}
-	state := newBettingState(2)
+	state := newBettingState()
 
 	err := ExecuteBettingAction(players, state, 0, bettingActionBet, 10, 10, bettingMaxRaisesPerRound, 0)
 	assert.ErrorIs(t, err, ErrInsufficientChips)
@@ -181,7 +181,7 @@ func TestExecuteBettingAction_Bet_InsufficientChips(t *testing.T) {
 
 func TestExecuteBettingAction_Raise_Success(t *testing.T) {
 	players := []BettingPlayer{newMockPlayer(100), newMockPlayer(100)}
-	state := newBettingState(2)
+	state := newBettingState()
 	state.LastBet = 20
 	state.MinRaise = 10
 
@@ -198,7 +198,7 @@ func TestExecuteBettingAction_Raise_Success(t *testing.T) {
 
 func TestExecuteBettingAction_Raise_MaxRaisesReached(t *testing.T) {
 	players := []BettingPlayer{newMockPlayer(100), newMockPlayer(100)}
-	state := newBettingState(2)
+	state := newBettingState()
 	state.LastBet = 20
 	state.MinRaise = 10
 	state.RaiseCount = bettingMaxRaisesPerRound
@@ -209,7 +209,7 @@ func TestExecuteBettingAction_Raise_MaxRaisesReached(t *testing.T) {
 
 func TestExecuteBettingAction_Raise_TooSmall(t *testing.T) {
 	players := []BettingPlayer{newMockPlayer(100), newMockPlayer(100)}
-	state := newBettingState(2)
+	state := newBettingState()
 	state.LastBet = 20
 	state.MinRaise = 20
 
@@ -221,7 +221,7 @@ func TestExecuteBettingAction_Raise_TooSmall(t *testing.T) {
 func TestExecuteBettingAction_Raise_RedirectToAllIn(t *testing.T) {
 	// totalNeeded (20+20=40) >= chips (30) → AllIn redirect
 	players := []BettingPlayer{newMockPlayer(30), newMockPlayer(100)}
-	state := newBettingState(2)
+	state := newBettingState()
 	state.LastBet = 20
 	state.MinRaise = 20
 
@@ -238,7 +238,7 @@ func TestExecuteBettingAction_Raise_NegativeDiff(t *testing.T) {
 	p := newMockPlayer(100)
 	p.currentBet = 30
 	players := []BettingPlayer{p, newMockPlayer(100)}
-	state := newBettingState(2)
+	state := newBettingState()
 	state.LastBet = 20
 	state.MinRaise = 10
 
@@ -251,7 +251,7 @@ func TestExecuteBettingAction_Raise_NegativeDiff(t *testing.T) {
 
 func TestExecuteBettingAction_AllIn_Success(t *testing.T) {
 	players := []BettingPlayer{newMockPlayer(50), newMockPlayer(100)}
-	state := newBettingState(2)
+	state := newBettingState()
 	state.LastBet = 20
 	state.MinRaise = 10
 
@@ -270,7 +270,7 @@ func TestExecuteBettingAction_AllIn_Success(t *testing.T) {
 func TestExecuteBettingAction_AllIn_ShortAllIn(t *testing.T) {
 	// newBet > lastBet but raiseAmount < minRaise → short all-in
 	players := []BettingPlayer{newMockPlayer(5), newMockPlayer(100)}
-	state := newBettingState(2)
+	state := newBettingState()
 	state.LastBet = 20
 	state.MinRaise = 20
 
@@ -288,7 +288,7 @@ func TestExecuteBettingAction_AllIn_NewBetAboveLastBet_ShortRaise(t *testing.T) 
 	p := newMockPlayer(25)
 	p.currentBet = 10
 	players := []BettingPlayer{p, newMockPlayer(100)}
-	state := newBettingState(2)
+	state := newBettingState()
 	state.LastBet = 20
 	state.MinRaise = 20
 	state.ActedFlags[1] = true
@@ -306,7 +306,7 @@ func TestExecuteBettingAction_AllIn_NewBetAboveLastBet_FullRaise(t *testing.T) {
 	p := newMockPlayer(50)
 	p.currentBet = 10
 	players := []BettingPlayer{p, newMockPlayer(100)}
-	state := newBettingState(2)
+	state := newBettingState()
 	state.LastBet = 20
 	state.MinRaise = 20
 	state.ActedFlags[1] = true
@@ -322,7 +322,7 @@ func TestExecuteBettingAction_AllIn_NewBetAboveLastBet_FullRaise(t *testing.T) {
 
 func TestExecuteBettingAction_AllIn_NoChips(t *testing.T) {
 	players := []BettingPlayer{newMockPlayer(0), newMockPlayer(100)}
-	state := newBettingState(2)
+	state := newBettingState()
 
 	err := ExecuteBettingAction(players, state, 0, bettingActionAllIn, 0, 10, bettingMaxRaisesPerRound, 0)
 	assert.ErrorIs(t, err, ErrInsufficientChips)
@@ -331,7 +331,7 @@ func TestExecuteBettingAction_AllIn_NoChips(t *testing.T) {
 
 func TestExecuteBettingAction_UnknownAction(t *testing.T) {
 	players := []BettingPlayer{newMockPlayer(100), newMockPlayer(100)}
-	state := newBettingState(2)
+	state := newBettingState()
 
 	err := ExecuteBettingAction(players, state, 0, 99, 0, 10, bettingMaxRaisesPerRound, 0)
 	assert.ErrorIs(t, err, ErrInvalidPlay)
@@ -342,7 +342,7 @@ func TestExecuteBettingAction_UnknownAction(t *testing.T) {
 
 func TestExecuteBettingAction_Bet_NoLimit_UnlimitedRaises(t *testing.T) {
 	players := []BettingPlayer{newMockPlayer(100), newMockPlayer(100)}
-	state := newBettingState(2)
+	state := newBettingState()
 	state.RaiseCount = 10 // well past the Fixed limit of 4
 
 	// maxRaises=0 → no raise cap (NoLimit)
@@ -353,7 +353,7 @@ func TestExecuteBettingAction_Bet_NoLimit_UnlimitedRaises(t *testing.T) {
 
 func TestExecuteBettingAction_Raise_NoLimit_UnlimitedRaises(t *testing.T) {
 	players := []BettingPlayer{newMockPlayer(200), newMockPlayer(100)}
-	state := newBettingState(2)
+	state := newBettingState()
 	state.LastBet = 20
 	state.MinRaise = 10
 	state.RaiseCount = 10
@@ -367,7 +367,7 @@ func TestExecuteBettingAction_Raise_NoLimit_UnlimitedRaises(t *testing.T) {
 
 func TestExecuteBettingAction_Bet_PotLimit_ExceedsMax(t *testing.T) {
 	players := []BettingPlayer{newMockPlayer(200), newMockPlayer(200)}
-	state := newBettingState(2)
+	state := newBettingState()
 
 	// maxBetAmount=50, bet=60 → error
 	err := ExecuteBettingAction(players, state, 0, bettingActionBet, 60, 10, bettingMaxRaisesPerRound, 50)
@@ -377,7 +377,7 @@ func TestExecuteBettingAction_Bet_PotLimit_ExceedsMax(t *testing.T) {
 
 func TestExecuteBettingAction_Bet_PotLimit_WithinMax(t *testing.T) {
 	players := []BettingPlayer{newMockPlayer(200), newMockPlayer(200)}
-	state := newBettingState(2)
+	state := newBettingState()
 
 	// maxBetAmount=50, bet=50 → success
 	err := ExecuteBettingAction(players, state, 0, bettingActionBet, 50, 10, bettingMaxRaisesPerRound, 50)
@@ -387,7 +387,7 @@ func TestExecuteBettingAction_Bet_PotLimit_WithinMax(t *testing.T) {
 
 func TestExecuteBettingAction_Raise_PotLimit_ExceedsMax(t *testing.T) {
 	players := []BettingPlayer{newMockPlayer(200), newMockPlayer(200)}
-	state := newBettingState(2)
+	state := newBettingState()
 	state.LastBet = 20
 	state.MinRaise = 10
 
@@ -399,7 +399,7 @@ func TestExecuteBettingAction_Raise_PotLimit_ExceedsMax(t *testing.T) {
 
 func TestExecuteBettingAction_Raise_PotLimit_WithinMax(t *testing.T) {
 	players := []BettingPlayer{newMockPlayer(200), newMockPlayer(200)}
-	state := newBettingState(2)
+	state := newBettingState()
 	state.LastBet = 20
 	state.MinRaise = 10
 

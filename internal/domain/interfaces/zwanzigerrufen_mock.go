@@ -220,6 +220,12 @@ func (_m *MockZwanzigerrufenGame) GetCardPoints(i int) int {
 	return ret.Int(0)
 }
 
+// GetLiveTeamPoints mock.
+func (_m *MockZwanzigerrufenGame) GetLiveTeamPoints() int { return _m.Called().Int(0) }
+
+// GetLiveDefenderPoints mock.
+func (_m *MockZwanzigerrufenGame) GetLiveDefenderPoints() int { return _m.Called().Int(0) }
+
 // GetDiscardableIndices モック
 func (_m *MockZwanzigerrufenGame) GetDiscardableIndices() []int {
 	ret := _m.Called()

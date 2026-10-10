@@ -199,7 +199,10 @@ describe('RussianBankPage', () => {
     expect(screen.getByTestId('tableau-0').className).toContain('ring-ds-success');
     expect(screen.getByTestId('tableau-2').className).toContain('ring-ds-success');
     expect(screen.getByTestId('tableau-0')).toHaveTextContent('置ける');
+    expect(screen.getByTestId('tableau-0')).toHaveAttribute('aria-label', '♠ 8（タブロー1）、移動先として選択可能');
+    expect(screen.getByTestId('tableau-2')).toHaveAttribute('aria-label', 'タブロー3（空き）、移動先として選択可能');
     expect(screen.getByTestId('tableau-1').className).not.toContain('ring-ds-success');
+    expect(screen.getByTestId('tableau-1')).toHaveAttribute('aria-label', '♥ 8（タブロー2）');
     expect(screen.getByTestId('tableau-3').className).not.toContain('ring-ds-success');
     fireEvent.click(screen.getByTestId('cancel-select'));
     expect(screen.getByTestId('tableau-0').className).not.toContain('ring-ds-success');

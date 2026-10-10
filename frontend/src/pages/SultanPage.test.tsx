@@ -129,6 +129,7 @@ describe('SultanPage', () => {
     expect(screen.getByAltText('♣ 2').closest('button')).not.toHaveClass('ring-ds-success');
     expect(screen.getByAltText('♥ A').closest('button')).toHaveAccessibleName(/配置できます/);
     expect(screen.getByAltText('♣ 2').closest('button')).toHaveAccessibleName(/配置できません/);
+    expect(screen.getByAltText('♠ 2').closest('button')).toHaveAccessibleName(/配置できます/);
   });
 
   it('renders skeleton when no state', () => {
@@ -173,6 +174,7 @@ describe('SultanPage', () => {
   it('renders waste card', async () => {
     renderWithProviders(<SultanPage />);
     await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+    expect(screen.getByAltText('♣ 9').closest('button')).toHaveAccessibleName(/配置できません/);
     const images = screen.getAllByRole('img');
     expect(images.length).toBeGreaterThanOrEqual(1);
   });

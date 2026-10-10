@@ -2,6 +2,14 @@ package controller
 
 import "net/http"
 
+// dispatchUndoN handles the Web "undo_n" command, including its required n parameter.
+func dispatchUndoN[O any](bc *baseController, w http.ResponseWriter, newDefault func(string) O, n *int, undoN func(int) string) {
+	if !requireParam(bc, w, newDefault, n == nil, "param error: n is required.") {
+		return
+	}
+	bc.writePresenterResponse(w, undoN(*n))
+}
+
 // dispatchLog は "log"/"l" コマンドを処理する。処理した場合 true を返す。
 func dispatchLog(cmd string, bc *baseController, w http.ResponseWriter, actionLogFn func() string) bool {
 	switch cmd {

@@ -17,6 +17,7 @@
   },
   "bid": "ビッド",
   "pass": "パス",
+  "passed": "パス済み",
   "declareTrump": "トランプ宣言",
   "confirmMelds": "メルド確認",
   "play": "プレイ",

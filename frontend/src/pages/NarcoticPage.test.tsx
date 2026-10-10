@@ -103,6 +103,20 @@ describe('NarcoticPage', () => {
     expect(colDivs.length).toBe(4);
   });
 
+  it('shows the discard rule immediately after the columns tutorial step', async () => {
+    renderWithProviders(<NarcoticPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'チュートリアル' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'チュートリアル' }));
+
+    await screen.findByText('4つの山です。各山の一番手前のカードだけが操作できます。');
+    fireEvent.click(screen.getByRole('button', { name: '次へ' }));
+    expect(
+      await screen.findByText(
+        '露出している4枚のランクが揃ったら、その4枚をまとめて捨てられます。スートは関係ありません。',
+      ),
+    ).toBeInTheDocument();
+  });
+
   it('shows a text indicator for each top card movable state and updates it after a move', async () => {
     mockExec.mockResolvedValueOnce(playingState).mockResolvedValueOnce({
       ...playingState,

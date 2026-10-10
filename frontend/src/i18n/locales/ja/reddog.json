@@ -31,6 +31,7 @@
   },
   "payout": {
     "total": "合計配当",
+    "netChange": "損益",
     "winningRank": "当たりランク",
     "multiplier": "倍率",
     "none": "配当なし",

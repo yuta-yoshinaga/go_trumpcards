@@ -153,5 +153,5 @@ func (p *RamsWebPresenter) HintOutput(r interfaces.RamsGame) string {
 
 // ActionLogOutput 棋譜をJSON出力
 func (p *RamsWebPresenter) ActionLogOutput(r interfaces.RamsGame) string {
-	return actionLogOutputJSON(r)
+	return actionLogToJSON(r.GetActionLog())
 }

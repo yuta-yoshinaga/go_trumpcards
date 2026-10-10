@@ -19,6 +19,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
@@ -93,9 +94,7 @@ function VintPageContent() {
 
   // Fetch a fresh game on mount.
   // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
-  useEffect(() => {
-    exec('reset');
-  }, []);
+  useMountReset(exec);
 
   // **選択が下から追い越されたら前に送る。**他家が上を宣言すると、選んだままの
   // 組が不正になってボタンが無効のまま固まる。押せないだけで次に何を選べばよいか
@@ -448,6 +447,9 @@ function VintPageContent() {
                   >
                     {t('bidButton')}
                   </button>
+                  <span className="text-ds-text-primary text-sm" data-testid="vint-selected-trick-value">
+                    {t('selectedTrickValue', { n: state.trickValues[bidDenom] + (bidLevel - 1) * 10 })}
+                  </span>
                   {!bidIsLegal && (
                     <span className="text-ds-warning text-xs" data-testid="vint-bid-too-low">
                       {t('bidMustBeat')}

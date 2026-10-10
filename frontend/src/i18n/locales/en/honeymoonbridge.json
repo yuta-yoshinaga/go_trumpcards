@@ -47,7 +47,8 @@
     "nextRound": "Next deal",
     "reset": "Reset",
     "giveUp": "Give up",
-    "playAria": "Play {{card}}"
+    "playAria": "Play {{card}}",
+    "illegalPlayReason": "This card cannot be played under the current rules."
   },
   "result": {
     "you": "You win! You reached the target first.",

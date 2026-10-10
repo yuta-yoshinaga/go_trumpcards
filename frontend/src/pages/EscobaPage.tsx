@@ -215,6 +215,11 @@ function EscobaPageContent() {
   const canTake = isHumanTurn && handIndex !== null && tableIndices.length > 0 && matchedCandidate !== null;
   const phaseName = isGameEnd ? t('phase.gameEnd') : t(`phase.${state.phase}`, t('phase.play'));
   const detail = state.lastRoundDetail;
+  const specialCardWinnerName = (playerId: number) => {
+    const player = state.players.find((p) => p.id === playerId);
+    if (!player) return t('roundDetail.unclaimed');
+    return player.isHuman ? tc('player.you') : tc('player.cpu', { id: player.id });
+  };
   const lastCapturer = isRoundEnd ? state.players[state.lastCaptureIdx] : undefined;
   const lastCapturerName = lastCapturer
     ? lastCapturer.isHuman
@@ -461,13 +466,13 @@ function EscobaPageContent() {
                     <tr>
                       <td className="pr-3 text-ds-text-muted">{t('roundDetail.aceEspada')}</td>
                       <td className="px-2 text-center" colSpan={state.players.length}>
-                        {t('label.player', { id: detail.aceEspada })}
+                        {specialCardWinnerName(detail.aceEspada)}
                       </td>
                     </tr>
                     <tr>
                       <td className="pr-3 text-ds-text-muted">{t('roundDetail.seteEspada')}</td>
                       <td className="px-2 text-center" colSpan={state.players.length}>
-                        {t('label.player', { id: detail.seteEspada })}
+                        {specialCardWinnerName(detail.seteEspada)}
                       </td>
                     </tr>
                   </tbody>

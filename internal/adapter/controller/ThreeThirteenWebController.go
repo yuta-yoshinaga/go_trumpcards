@@ -30,6 +30,8 @@ type ThreeThirteenWebOutputPlayer struct {
 	CardCount       int              `json:"cardCount"`
 	Cards           []*WebOutputCard `json:"cards"`
 	Deadwood        int              `json:"deadwood"`
+	Melds           [][]int          `json:"melds"`
+	DeadwoodIndices []int            `json:"deadwoodIndices"`
 	RoundScore      int              `json:"roundScore"`
 	CumulativeScore int              `json:"cumulativeScore"`
 }

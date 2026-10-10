@@ -1,4 +1,4 @@
-import { type KeyboardEvent as ReactKeyboardEvent, useCallback, useEffect, useId, useMemo, useState } from 'react';
+import { type KeyboardEvent as ReactKeyboardEvent, useCallback, useId, useMemo, useState } from 'react';
 import { type GapsMoveZone, gapsApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ConfirmDialog } from '../components/ConfirmDialog';
@@ -22,6 +22,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
+import { useMountReset } from '../hooks/useMountReset';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -85,9 +86,7 @@ function GapsPageContent() {
   const apiRun = gapsApi.exec;
   const { state, loading, error, exec: run, retry } = useGameApi(apiRun);
 
-  useEffect(() => {
-    void run('reset');
-  }, [run]);
+  useMountReset(run);
 
   const {
     hint: frontendHint,
@@ -265,7 +264,10 @@ function GapsPageContent() {
         <span id={selectSourceHintId} className="sr-only">
           {tc('label.selectSourceFirst')}
         </span>
-        <div data-tutorial="gaps-grid" className="flex flex-col items-center gap-1 mb-3">
+        <div
+          data-tutorial="gaps-grid"
+          className="mx-auto mb-3 flex w-fit max-w-full flex-col items-start gap-1 overflow-x-auto p-1"
+        >
           {state.grid.map((row, rIdx) => {
             const lockedCount = lockedPrefixLengths[rIdx] ?? 0;
             return (

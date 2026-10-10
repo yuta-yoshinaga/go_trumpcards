@@ -20,6 +20,7 @@
   "teamScore": "チーム{{team}}: {{points}}点 (今R {{thirds}}/3)",
   "scoreAnnouncement": "チーム{{team}}に{{gained}}点加点。合計{{points}}点、今ラウンド{{thirds}}/3点",
   "listSeparator": "、",
+  "cardAccessibleStatus": "カード自体は{{points}}",
   "yourTeam": "あなたのチーム",
   "partner": "味方",
   "opponent": "相手",

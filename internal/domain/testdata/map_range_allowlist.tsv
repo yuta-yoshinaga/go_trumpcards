@@ -150,3 +150,4 @@ map_order.go	sortedIntKeys	m	independent	キーを集めてから sort.Ints で�
 poker_hand_helpers.go	tieBreakValues	freq	independent	スライスに追加された直後に出現回数と値の大きさでソートされるため反復順に依存しない。
 shortdeck_hand_eval.go	evalShortDeckFiveCardHand	valueCounts	independent	出現回数の配列に追加された直後に降順ソートされるため反復順に依存しない。
 soko_hand_eval.go	hasFourCardFlush	counts	independent	4枚が同スートかどうかの判定であり、条件を満たすスートは最大1つしかないため反復順は無関係。
+VideoPokerStrategy.go	vpAllCountsAre	counts	independent	枚数がすべて指定値か確認するだけで、走査順に依存しない。

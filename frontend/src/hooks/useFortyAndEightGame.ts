@@ -1,76 +1,58 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { type FortyAndEightMoveZone, fortyAndEightApi } from '../api/gameApi';
 import type { FortyAndEightHint } from '../types/card';
-import { useAutoCompleteState } from './useAutoCompleteState';
-import { useGameApi } from './useGameApi';
-import { useHintRequest } from './useHintRequest';
+
+import { useSolitaireGameBase } from './useSolitaireGameBase';
 
 /** Hook that manages Forty and Eight game state, source selection, hints, redeal, and moves. */
 export function useFortyAndEightGame() {
-  const { state, loading, error, exec: rawExec, retry } = useGameApi(fortyAndEightApi.exec);
   const [selectedSource, setSelectedSource] = useState<FortyAndEightMoveZone | null>(null);
-  const [hint, setHint] = useState<FortyAndEightHint | null>(null);
-  const [hintError, setHintError] = useState<string | null>(null);
-  const { isAutoCompleting, startAutoComplete } = useAutoCompleteState();
 
-  const exec = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);
-
-  useEffect(() => {
-    exec('reset');
-  }, [exec]);
+  const onClearSelection = useCallback(() => setSelectedSource(null), []);
+  const {
+    state,
+    loading,
+    error,
+    retry,
+    apiCall: exec,
+    hint,
+    hintError,
+    isAutoCompleting,
+    setHint,
+    handleReset,
+    handleGiveUp,
+    handleHint,
+    handleAutoComplete,
+    handleUndo,
+  } = useSolitaireGameBase<
+    Awaited<ReturnType<typeof fortyAndEightApi.exec>>,
+    Parameters<typeof fortyAndEightApi.exec>,
+    FortyAndEightHint
+  >(fortyAndEightApi.exec, {
+    onClearSelection,
+    hintApi: () => fortyAndEightApi.exec('hint'),
+    selectHint: (res) => res.hint,
+  });
 
   const handleDraw = useCallback(() => {
     setSelectedSource(null);
     setHint(null);
     exec('draw');
-  }, [exec]);
+  }, [exec, setHint]);
 
   const handleRedeal = useCallback(() => {
     setSelectedSource(null);
     setHint(null);
     exec('redeal');
-  }, [exec]);
+  }, [exec, setHint]);
 
-  const handleReset = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    exec('reset');
-  }, [exec]);
-
-  const handleGiveUp = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    exec('giveup');
-  }, [exec]);
-
-  const handleHint = useHintRequest({
-    fetchHint: () => fortyAndEightApi.exec('hint'),
-    selectHint: (res) => res.hint,
-    setHint,
-    setHintError,
-  });
-
-  const handleAutoComplete = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    startAutoComplete();
-    exec('autocomplete');
-  }, [exec, startAutoComplete]);
-
-  const handleUndo = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    exec('undo');
-  }, [exec]);
-
-  /** Undo N moves at once to escape a stalemate. */
   const handleUndoEscape = useCallback(
     (n: number) => {
       setSelectedSource(null);
       setHint(null);
       exec('undo_n', undefined, undefined, n);
     },
-    [exec],
+    [exec, setHint],
   );
 
   const handleSelectSource = useCallback((zone: FortyAndEightMoveZone) => {
@@ -89,7 +71,7 @@ export function useFortyAndEightGame() {
       exec('move', selectedSource, zone);
       setSelectedSource(null);
     },
-    [selectedSource, exec],
+    [selectedSource, exec, setHint],
   );
 
   return {

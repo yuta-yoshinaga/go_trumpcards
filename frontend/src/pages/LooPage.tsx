@@ -73,6 +73,13 @@ const LOO_PHASE_KEYS: Readonly<Record<number, string>> = {
   [LooPhase.ROUND_END]: 'roundEnd',
 };
 
+const SUIT_I18N_KEYS: Readonly<Record<string, string>> = {
+  SPADE: 'common.suit.spade',
+  CLOVER: 'common.suit.club',
+  HEART: 'common.suit.heart',
+  DIAMOND: 'common.suit.diamond',
+};
+
 /** Renders the Loo (Lanterloo) game page: a 4-player 52-card pot-based gambling trick-taker. */
 export const LooPage = withTutorial(LooPageContent, 'loo', LOO_TUTORIAL_STEPS);
 
@@ -154,6 +161,9 @@ function LooPageContent() {
   );
 
   const trumpSymbol = state.trumpSuit >= 1 ? suitSymbolAt(state.trumpSuit, '-') : '-';
+  const leadSuitKey = state.currentTrick[0]?.card.design
+    ? SUIT_I18N_KEYS[state.currentTrick[0].card.design]
+    : undefined;
 
   const handleManualReset = () => {
     hideActionLog();
@@ -231,6 +241,8 @@ function LooPageContent() {
                   players={state.players}
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
+                  leadSuit={leadSuitKey ? tc(leadSuitKey) : undefined}
+                  leadSuitLabel={t('leadSuit')}
                   dataTutorial="loo-trick-display"
                 />
               </div>

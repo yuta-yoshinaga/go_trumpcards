@@ -68,6 +68,8 @@ export interface JulepeResponse extends BaseGameResponse {
   requiredTricks: number;
   /** 次ラウンドのアンティが倍になる席。 */
   beast: boolean[];
+  /** Ante each seat paid at the start of this round. */
+  roundAntes: number[];
   /** Suit of the card turned after the deal. */
   trumpSuit: number;
   /** The card turned to fix trump. */

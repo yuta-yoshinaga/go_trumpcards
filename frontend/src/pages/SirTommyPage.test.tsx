@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { sirtommyApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, SirTommyResponse } from '../types/card';
@@ -51,6 +52,36 @@ beforeEach(() => {
 });
 
 describe('SirTommyPage', () => {
+  it('announces each foundation top card, empty state, next rank, and completion in Japanese and English', async () => {
+    const previousLanguage = i18n.language;
+    try {
+      mockExec.mockResolvedValue({
+        ...playingState,
+        foundations: [
+          [],
+          [card('SPADE', 1)],
+          [card('HEART', 1), card('DIAMOND', 2)],
+          Array.from({ length: 13 }, (_, i) => card('CLOVER', i + 1)),
+        ],
+      });
+      await i18n.changeLanguage('ja');
+      const { unmount } = renderWithProviders(<SirTommyPage />);
+      expect(await screen.findByLabelText('組札 0: 空。次に置くべきカード A')).toBeInTheDocument();
+      expect(screen.getByLabelText('組札 1: ♠ A。次に置くべきカード 2')).toBeInTheDocument();
+      expect(screen.getByLabelText('組札 2: ♦ 2。次に置くべきカード 3')).toBeInTheDocument();
+      expect(screen.getByLabelText('組札 3: ♣ K。完成')).toBeInTheDocument();
+      unmount();
+
+      await i18n.changeLanguage('en');
+      renderWithProviders(<SirTommyPage />);
+      expect(await screen.findByLabelText('Foundation 0: empty. Next required card A')).toBeInTheDocument();
+      expect(screen.getByLabelText('Foundation 1: ♠ A. Next required card 2')).toBeInTheDocument();
+      expect(screen.getByLabelText('Foundation 3: ♣ K. Complete')).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
+  });
+
   it('renders heading', async () => {
     renderWithProviders(<SirTommyPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -239,7 +270,7 @@ describe('SirTommyPage', () => {
     renderWithProviders(<SirTommyPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
-    const f0 = screen.getByLabelText(/組札 0 /);
+    const f0 = screen.getByLabelText(/組札 0:/);
     fireEvent.click(f0);
     await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
@@ -251,7 +282,7 @@ describe('SirTommyPage', () => {
     mockExec.mockClear();
 
     fireEvent.click(screen.getByTestId('calc-stock-button'));
-    fireEvent.click(screen.getByLabelText(/組札 2 /));
+    fireEvent.click(screen.getByLabelText(/組札 2:/));
 
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'stock' }, { zone: 'foundation', idx: 2 }),
@@ -288,7 +319,7 @@ describe('SirTommyPage', () => {
     mockExec.mockClear();
 
     fireEvent.click(screen.getByTestId('calc-waste-button-1'));
-    fireEvent.click(screen.getByLabelText(/組札 1 /));
+    fireEvent.click(screen.getByLabelText(/組札 1:/));
 
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'waste', idx: 1 }, { zone: 'foundation', idx: 1 }),

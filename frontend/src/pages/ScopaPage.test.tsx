@@ -24,10 +24,20 @@ function makeState(overrides: Partial<ScopaResponse> = {}): ScopaResponse {
         cardCount: 3,
         cards: [card('SPADE', 3), card('HEART', 5), card('DIAMOND', 7)],
         capturedCount: 0,
+        capturedCards: [],
         scopaCount: 0,
         totalScore: 0,
       },
-      { id: 1, isHuman: false, cardCount: 3, cards: [], capturedCount: 0, scopaCount: 0, totalScore: 0 },
+      {
+        id: 1,
+        isHuman: false,
+        cardCount: 3,
+        cards: [],
+        capturedCount: 0,
+        capturedCards: [],
+        scopaCount: 0,
+        totalScore: 0,
+      },
     ],
     currentTurn: 0,
     tableCards: [card('SPADE', 2), card('HEART', 5)],
@@ -62,6 +72,21 @@ describe('ScopaPage', () => {
     await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
     expect(screen.getByTestId('hand-card-1')).toBeInTheDocument();
     expect(screen.getByTestId('hand-card-2')).toBeInTheDocument();
+  });
+
+  it('shows captured cards for the human and CPU while preserving capture counts', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          { ...makeState().players[0], capturedCount: 1, capturedCards: [card('DIAMOND', 7)] },
+          { ...makeState().players[1], capturedCount: 1, capturedCards: [card('HEART', 2)] },
+        ],
+      }),
+    );
+    renderWithProviders(<ScopaPage />);
+    await waitFor(() => expect(screen.getByTestId('sc-captured-card-0-0')).toBeInTheDocument());
+    expect(screen.getByTestId('sc-captured-card-1-0')).toBeInTheDocument();
+    expect(screen.getAllByText(/捕獲1枚/)).toHaveLength(2);
   });
 
   it('renders table cards', async () => {
@@ -380,7 +405,18 @@ describe('ScopaPage', () => {
   it('shows loading state when state has fewer than 2 players', async () => {
     mockExec.mockResolvedValue(
       makeState({
-        players: [{ id: 0, isHuman: true, cardCount: 0, cards: [], capturedCount: 0, scopaCount: 0, totalScore: 0 }],
+        players: [
+          {
+            id: 0,
+            isHuman: true,
+            cardCount: 0,
+            cards: [],
+            capturedCount: 0,
+            capturedCards: [],
+            scopaCount: 0,
+            totalScore: 0,
+          },
+        ],
       }),
     );
     renderWithProviders(<ScopaPage />);

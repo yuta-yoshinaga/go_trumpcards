@@ -159,14 +159,14 @@ func sokoShowdown(t *testing.T, humanHole *Card, humanDoor []*Card, cpuHole *Car
 	return s.GetRoundResults()
 }
 
-func sokoResultFor(t *testing.T, results []FiveCardStudResult, idx int) FiveCardStudResult {
+func sokoResultFor(t *testing.T, results []FiveCardStudResult) FiveCardStudResult {
 	t.Helper()
 	for _, r := range results {
-		if r.PlayerIdx == idx {
+		if r.PlayerIdx == 0 {
 			return r
 		}
 	}
-	t.Fatalf("no result for player %d", idx)
+	t.Fatalf("no result for player 0")
 	return FiveCardStudResult{}
 }
 
@@ -177,7 +177,7 @@ func TestSoko_Showdown_TwoPairKeepsItsKicker(t *testing.T) {
 		sp(5), []*Card{he(5), di(9), cl(9), sp(13)}, // two pair, K kicker
 		sp(2), []*Card{he(4), di(6), cl(8), sp(10)}, // nothing
 	)
-	r := sokoResultFor(t, results, 0)
+	r := sokoResultFor(t, results)
 	assert.Equal(t, SokoHandTwoPair, r.HandRank)
 	assert.Equal(t, "Two Pair", r.HandName)
 	assert.Equal(t, []int{13}, r.Kickers, "the unpaired king is the kicker")
@@ -189,7 +189,7 @@ func TestSoko_Showdown_ThreeOfAKindKeepsItsKickers(t *testing.T) {
 		sp(5), []*Card{he(5), di(5), cl(9), sp(13)}, // trips, K+9 kickers
 		sp(2), []*Card{he(4), di(6), cl(8), sp(10)},
 	)
-	r := sokoResultFor(t, results, 0)
+	r := sokoResultFor(t, results)
 	assert.Equal(t, SokoHandThreeOfAKind, r.HandRank)
 	assert.Equal(t, []int{13, 9}, r.Kickers)
 }
@@ -201,7 +201,7 @@ func TestSoko_Showdown_FourOfAKindKeepsItsKicker(t *testing.T) {
 		sp(5), []*Card{he(5), di(5), cl(5), sp(13)}, // quads, K kicker
 		sp(2), []*Card{he(4), di(6), cl(8), sp(10)},
 	)
-	r := sokoResultFor(t, results, 0)
+	r := sokoResultFor(t, results)
 	assert.Equal(t, SokoHandFourOfAKind, r.HandRank)
 	assert.Equal(t, []int{13}, r.Kickers)
 }
@@ -215,7 +215,7 @@ func TestSoko_Showdown_FourCardHandsHaveNoKickers(t *testing.T) {
 			sp(2), []*Card{sp(5), sp(9), sp(12), he(7)},
 			cl(2), []*Card{he(4), di(6), cl(8), di(10)},
 		)
-		r := sokoResultFor(t, results, 0)
+		r := sokoResultFor(t, results)
 		assert.Equal(t, SokoHandFourFlush, r.HandRank)
 		assert.Equal(t, "Four-Card Flush", r.HandName)
 		assert.Nil(t, r.Kickers, "a four-card flush has no pair group, so no kickers")
@@ -225,7 +225,7 @@ func TestSoko_Showdown_FourCardHandsHaveNoKickers(t *testing.T) {
 			sp(5), []*Card{he(6), di(7), cl(8), he(13)},
 			cl(2), []*Card{he(4), di(9), cl(11), di(3)},
 		)
-		r := sokoResultFor(t, results, 0)
+		r := sokoResultFor(t, results)
 		assert.Equal(t, SokoHandFourStraight, r.HandRank)
 		assert.Nil(t, r.Kickers)
 	})
@@ -256,7 +256,7 @@ func TestFiveCardStud_Showdown_KickersUnchangedWithoutSoko(t *testing.T) {
 	s.SetActedFlags([]bool{true, true})
 	s.resolveShowdown()
 
-	r := sokoResultFor(t, s.GetRoundResults(), 0)
+	r := sokoResultFor(t, s.GetRoundResults())
 	assert.Equal(t, PokerHandTwoPair, r.HandRank)
 	assert.Equal(t, []int{13}, r.Kickers)
 }
@@ -271,7 +271,7 @@ func TestSoko_Showdown_FourCardHandWithCoexistingPairHasNoKickers(t *testing.T) 
 			sp(2), []*Card{sp(5), sp(9), sp(13), he(13)}, // ♠2 ♠5 ♠9 ♠K ♥K
 			cl(3), []*Card{he(4), di(6), cl(8), di(10)},
 		)
-		r := sokoResultFor(t, results, 0)
+		r := sokoResultFor(t, results)
 		assert.Equal(t, SokoHandFourFlush, r.HandRank)
 		assert.Equal(t, "Four-Card Flush", r.HandName)
 		assert.Nil(t, r.Kickers, "the coexisting pair must not leak kickers into a four-card hand")
@@ -281,7 +281,7 @@ func TestSoko_Showdown_FourCardHandWithCoexistingPairHasNoKickers(t *testing.T) 
 			sp(5), []*Card{he(6), di(7), cl(8), he(8)}, // 5-6-7-8 plus a paired 8
 			cl(3), []*Card{he(4), di(9), cl(11), di(2)},
 		)
-		r := sokoResultFor(t, results, 0)
+		r := sokoResultFor(t, results)
 		assert.Equal(t, SokoHandFourStraight, r.HandRank)
 		assert.Nil(t, r.Kickers)
 	})
@@ -294,7 +294,7 @@ func TestSoko_Showdown_PairBasedHandsStillHaveKickers(t *testing.T) {
 		sp(5), []*Card{he(5), di(9), cl(12), sp(13)}, // one pair, no four-card hand
 		cl(3), []*Card{he(4), di(6), cl(8), di(10)},
 	)
-	r := sokoResultFor(t, results, 0)
+	r := sokoResultFor(t, results)
 	assert.Equal(t, SokoHandOnePair, r.HandRank)
 	assert.Equal(t, []int{13, 12, 9}, r.Kickers)
 }

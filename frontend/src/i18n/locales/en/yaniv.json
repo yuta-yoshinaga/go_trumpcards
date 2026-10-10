@@ -63,5 +63,6 @@
     "actionButtons": "Discard, then draw. When your hand total is 5 or less, call Yaniv to end the round.",
     "resetButton": "Start a new game."
   },
-  "nearOut": "Near elimination"
+  "nearOut": "Near elimination",
+  "pointsRemaining": "{{points}} points left before the limit (exceeding it eliminates)"
 }

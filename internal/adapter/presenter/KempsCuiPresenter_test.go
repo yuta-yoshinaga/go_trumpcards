@@ -45,6 +45,19 @@ func TestKempsCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, out, "k で Kemps")
 	})
 
+	t.Run("human four of a kind is not a partner signal", func(t *testing.T) {
+		g := setupKempsTest()
+		kempsSetField(g, map[string]any{"ph": domain.KempsPhaseDeclare, "fh": 0})
+		human := g.GetPlayer(0)
+		human.Reset()
+		for design := 1; design <= 4; design++ {
+			human.AddCard(domain.NewCard(design, 7, true))
+		}
+		out := p.Output(g, nil)
+		assert.NotContains(t, out, "パートナーがシグナルを送っています")
+		assert.Contains(t, out, "4枚が同ランクです")
+	})
+
 	t.Run("opponent signal prompt", func(t *testing.T) {
 		g := setupKempsTest()
 		kempsSetField(g, map[string]any{"ph": domain.KempsPhaseDeclare, "fh": 1})

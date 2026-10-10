@@ -73,6 +73,15 @@ func TestDoudizhu_PlayerBid_Success(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestDoudizhu_GetHighestBidder_AfterBid(t *testing.T) {
+	d := newTestDoudizhu()
+	d.SetPhase(DoudizhuPhaseBid)
+	d.SetCurrentTurn(0)
+
+	require.NoError(t, d.PlayerBid(1))
+	assert.Equal(t, 0, d.GetHighestBidder())
+}
+
 func TestDoudizhu_PlayerBid_ErrorWhenNotBidPhase(t *testing.T) {
 	d := newTestDoudizhu()
 	dzSetupPlayPhase(d)

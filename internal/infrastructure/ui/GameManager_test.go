@@ -44,7 +44,7 @@ func newGameManagerWithControllers(games map[string]CuiExecer, helpLines map[str
 }
 
 // newTestManager creates a GameManager with two mock games ("a" and "b") for testing.
-func newTestManager(startGame string) (*GameManager, *mockExecer, *mockExecer) {
+func newTestManager() (*GameManager, *mockExecer, *mockExecer) {
 	ma := &mockExecer{result: "result-a"}
 	mb := &mockExecer{result: "result-b"}
 	games := map[string]CuiExecer{"a": ma, "b": mb}
@@ -52,31 +52,31 @@ func newTestManager(startGame string) (*GameManager, *mockExecer, *mockExecer) {
 		"a": {"help-a1", "help-a2"},
 		"b": {"help-b1"},
 	}
-	mgr := newGameManagerWithControllers(games, helpLines, startGame)
+	mgr := newGameManagerWithControllers(games, helpLines, "a")
 	return mgr, ma, mb
 }
 
 func TestGameManager_CurrentGame(t *testing.T) {
-	mgr, _, _ := newTestManager("a")
+	mgr, _, _ := newTestManager()
 	assert.Equal(t, "a", mgr.CurrentGame())
 }
 
 func TestGameManager_ExecDelegate(t *testing.T) {
-	mgr, ma, _ := newTestManager("a")
+	mgr, ma, _ := newTestManager()
 	res := mgr.Exec("hit")
 	assert.Equal(t, "result-a", res)
 	assert.Equal(t, "hit", ma.lastCmd)
 }
 
 func TestGameManager_ExecEmpty(t *testing.T) {
-	mgr, ma, _ := newTestManager("a")
+	mgr, ma, _ := newTestManager()
 	res := mgr.Exec("")
 	assert.Equal(t, "result-a", res)
 	assert.Equal(t, "", ma.lastCmd)
 }
 
 func TestGameManager_ExecSwitch(t *testing.T) {
-	mgr, _, mb := newTestManager("a")
+	mgr, _, mb := newTestManager()
 	mb.result = "reset-b"
 	res := mgr.Exec("switch b")
 	assert.Equal(t, "b", mgr.CurrentGame())
@@ -86,21 +86,21 @@ func TestGameManager_ExecSwitch(t *testing.T) {
 }
 
 func TestGameManager_ExecSwitchCaseInsensitive(t *testing.T) {
-	mgr, _, _ := newTestManager("a")
+	mgr, _, _ := newTestManager()
 	res := mgr.Exec("switch B")
 	assert.Equal(t, "b", mgr.CurrentGame())
 	assert.Contains(t, res, "Switched to b.")
 }
 
 func TestGameManager_ExecSwitchSameGame(t *testing.T) {
-	mgr, _, _ := newTestManager("a")
+	mgr, _, _ := newTestManager()
 	res := mgr.Exec("switch a")
 	assert.Equal(t, "a", mgr.CurrentGame())
 	assert.Contains(t, res, "Already playing a.")
 }
 
 func TestGameManager_ExecSwitchUnknown(t *testing.T) {
-	mgr, _, _ := newTestManager("a")
+	mgr, _, _ := newTestManager()
 	res := mgr.Exec("switch unknown")
 	assert.Equal(t, "a", mgr.CurrentGame())
 	assert.Contains(t, res, "Unknown game")
@@ -117,14 +117,14 @@ func TestGameManager_ExecSwitchUnknownWithSuggestion(t *testing.T) {
 }
 
 func TestGameManager_ExecSwitchNoName(t *testing.T) {
-	mgr, _, _ := newTestManager("a")
+	mgr, _, _ := newTestManager()
 	res := mgr.Exec("switch")
 	assert.Contains(t, res, "Usage:")
 	assert.Equal(t, "a", mgr.CurrentGame())
 }
 
 func TestGameManager_ExecGames(t *testing.T) {
-	mgr, _, _ := newTestManager("a")
+	mgr, _, _ := newTestManager()
 	res := mgr.Exec("games")
 	assert.Contains(t, res, "a")
 	assert.Contains(t, res, "b")
@@ -133,7 +133,7 @@ func TestGameManager_ExecGames(t *testing.T) {
 }
 
 func TestGameManager_HelpLines(t *testing.T) {
-	mgr, _, _ := newTestManager("a")
+	mgr, _, _ := newTestManager()
 	lines := mgr.HelpLines()
 	// should contain base help lines
 	assert.Contains(t, lines, "help-a1")
@@ -162,7 +162,7 @@ func TestGameManager_HelpLines(t *testing.T) {
 }
 
 func TestGameManager_ExecHelp(t *testing.T) {
-	mgr, _, _ := newTestManager("a")
+	mgr, _, _ := newTestManager()
 	res := mgr.Exec("help")
 	assert.Contains(t, res, "help-a1")
 	assert.Contains(t, res, "help-a2")
@@ -171,14 +171,14 @@ func TestGameManager_ExecHelp(t *testing.T) {
 }
 
 func TestGameManager_ExecHelpQuestion(t *testing.T) {
-	mgr, _, _ := newTestManager("a")
+	mgr, _, _ := newTestManager()
 	res := mgr.Exec("?")
 	assert.Contains(t, res, "help-a1")
 	assert.Contains(t, res, "current: a")
 }
 
 func TestGameManager_HelpLinesChangeOnSwitch(t *testing.T) {
-	mgr, _, _ := newTestManager("a")
+	mgr, _, _ := newTestManager()
 	mgr.Exec("switch b")
 	lines := mgr.HelpLines()
 	assert.Contains(t, lines, "help-b1")
@@ -193,7 +193,7 @@ func TestGameManager_HelpLinesChangeOnSwitch(t *testing.T) {
 }
 
 func TestGameManager_InitCurrentGame(t *testing.T) {
-	mgr, ma, _ := newTestManager("a")
+	mgr, ma, _ := newTestManager()
 	ma.result = "init-a"
 	res := mgr.InitCurrentGame()
 	assert.Equal(t, "init-a", res)
@@ -201,7 +201,7 @@ func TestGameManager_InitCurrentGame(t *testing.T) {
 }
 
 func TestGameManager_InitCurrentGame_OnlyOnce(t *testing.T) {
-	mgr, ma, _ := newTestManager("a")
+	mgr, ma, _ := newTestManager()
 	ma.result = "init-a"
 	mgr.InitCurrentGame()
 	ma.result = "second"
@@ -211,7 +211,7 @@ func TestGameManager_InitCurrentGame_OnlyOnce(t *testing.T) {
 }
 
 func TestGameManager_SwitchPreservesState(t *testing.T) {
-	mgr, ma, mb := newTestManager("a")
+	mgr, ma, mb := newTestManager()
 	// init game a
 	mgr.InitCurrentGame()
 	ma.lastCmd = ""
@@ -316,6 +316,18 @@ func TestGameManager_SwitchAliasTypoSuggestion(t *testing.T) {
 			assert.Contains(t, res, "Did you mean")
 			assert.Contains(t, res, tt.want)
 		})
+	}
+}
+
+// TestGameManager_SwitchSuggestionIsDeterministic pins the tie-break between
+// aliases at the same edit distance (issue #10910). "7tud" is distance 1 from
+// both "7stud" (sevencardstud) and "stud" (caribbeanstud); ranging over the
+// GameAliases map made the winner change from run to run.
+func TestGameManager_SwitchSuggestionIsDeterministic(t *testing.T) {
+	for range 50 {
+		mgr := NewGameManager("blackjack")
+		res := mgr.Exec("switch 7tud")
+		assert.Contains(t, res, `Did you mean "7stud"`)
 	}
 }
 

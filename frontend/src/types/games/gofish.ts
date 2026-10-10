@@ -62,7 +62,7 @@ export interface GoFishResponse extends BaseGameResponse {
   turnNumber: number;
   deckRemaining: number;
   lastAsk: GoFishLastAsk | null;
-  cpuActions: GoFishCpuAction[];
+  cpuActions?: GoFishCpuAction[];
   humanAction: GoFishCpuAction | null;
   config: GoFishConfig;
 }

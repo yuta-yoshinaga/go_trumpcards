@@ -4,6 +4,7 @@ import { ombreApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeOmbreState } from '../test/stateFactories';
+import { OmbrePhase } from '../types/phases';
 import { OmbrePage } from './OmbrePage';
 
 vi.mock('../api/gameApi', () => ({
@@ -74,6 +75,29 @@ describe('OmbrePage', () => {
     expect(auction).toHaveTextContent('あなた：パス');
     expect(auction).toHaveTextContent('CPU 1：エントラール（スペード）');
     expect(auction).toHaveTextContent('CPU 2：ソロ（ダイヤ）（最高入札）');
+  });
+  it.each([
+    ['play', OmbrePhase.PLAY],
+    ['trick end', OmbrePhase.TRICK_END],
+  ])('keeps the completed bid history visible during %s', async (_phaseName, phase) => {
+    mockExec.mockResolvedValue(
+      makeOmbreState({
+        phase,
+        bids: [1, 0, 2],
+        bidActed: [true, true, true],
+        bidTrump: [1, -1, 4],
+        highestBid: 2,
+        highestBidderIdx: 2,
+      }),
+    );
+
+    renderWithProviders(<OmbrePage />);
+
+    const auction = await screen.findByRole('region', { name: '入札状況' });
+    expect(auction).toHaveTextContent('あなた：エントラール（スペード）');
+    expect(auction).toHaveTextContent('CPU 1：パス');
+    expect(auction).toHaveTextContent('CPU 2：ソロ（ダイヤ）（最高入札）');
+    expect(auction).not.toHaveTextContent('現在の最高入札');
   });
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));

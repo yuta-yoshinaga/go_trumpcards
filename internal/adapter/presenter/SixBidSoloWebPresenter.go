@@ -98,7 +98,7 @@ func (p *SixBidSoloWebPresenter) Output(g interfaces.SixBidSoloGame, lastErr err
 	}
 
 	resObj.Players = p.buildPlayersOutput(g)
-	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(g, lastErr)
+	resObj.Message, resObj.MessageCode = p.buildMessage(g, lastErr)
 
 	return marshalOrError(resObj)
 }
@@ -151,30 +151,30 @@ func (p *SixBidSoloWebPresenter) buildPlayersOutput(g interfaces.SixBidSoloGame)
 }
 
 // buildMessage ゲーム結果メッセージを構築
-func (p *SixBidSoloWebPresenter) buildMessage(g interfaces.SixBidSoloGame, lastErr error) (string, string, map[string]string) {
+func (p *SixBidSoloWebPresenter) buildMessage(g interfaces.SixBidSoloGame, lastErr error) (string, string) {
 	if lastErr != nil {
-		return lastErr.Error(), "", nil
+		return lastErr.Error(), ""
 	}
 	if g.GetGameEndFlag() {
 		if g.GetWinnerIdx() == 0 {
-			return "you win", "sixbidsolo.result.humanWin", nil
+			return "you win", "sixbidsolo.result.humanWin"
 		}
-		return "a cpu wins", "sixbidsolo.result.cpuWin", nil
+		return "a cpu wins", "sixbidsolo.result.cpuWin"
 	}
 	switch g.GetPhase() {
 	case domain.SixBidSoloPhaseBid:
-		return "", "sixbidsolo.bidPhase", nil
+		return "", "sixbidsolo.bidPhase"
 	case domain.SixBidSoloPhaseDeclare:
-		return "", "sixbidsolo.declarePhase", nil
+		return "", "sixbidsolo.declarePhase"
 	case domain.SixBidSoloPhasePlay:
-		return "", "sixbidsolo.playPhase", nil
+		return "", "sixbidsolo.playPhase"
 	case domain.SixBidSoloPhaseHandEnd:
 		if r := g.GetLastResult(); r != nil && !r.Made {
-			return "", "sixbidsolo.handSet", nil
+			return "", "sixbidsolo.handSet"
 		}
-		return "", "sixbidsolo.handMade", nil
+		return "", "sixbidsolo.handMade"
 	}
-	return "", "", nil
+	return "", ""
 }
 
 // ActionLogOutput 棋譜をJSON出力

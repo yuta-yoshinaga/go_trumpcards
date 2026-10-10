@@ -203,6 +203,24 @@ describe('HighCardFlushPage', () => {
     expect(screen.getByTestId('result-balance')).toHaveTextContent('差引収支: +200');
   });
 
+  it('shows zero payouts for side bets that were placed', async () => {
+    const endPhaseWithLosingSideBets: HighCardFlushResponse = {
+      ...endPhasePlayerWins,
+      flushBonusBet: 10,
+      straightFlushBet: 20,
+      flushBonusPayout: 0,
+      straightFlushPayout: 0,
+    };
+    mockExec.mockResolvedValueOnce(actionPhase5Flush).mockResolvedValueOnce(endPhaseWithLosingSideBets);
+    renderWithProviders(<HighCardFlushPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /レイズ x1/ })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: /レイズ x1/ }));
+    const breakdown = await screen.findByTestId('payout-breakdown');
+    expect(within(breakdown).getByText('フラッシュボーナス: 0')).toBeInTheDocument();
+    expect(within(breakdown).getByText('ストレートフラッシュ: 0')).toBeInTheDocument();
+  });
+
   it('shows end phase with fold', async () => {
     mockExec.mockResolvedValueOnce(actionPhase5Flush).mockResolvedValueOnce(endPhaseFold);
     renderWithProviders(<HighCardFlushPage />);

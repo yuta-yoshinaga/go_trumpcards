@@ -3,8 +3,6 @@
 package controller
 
 import (
-	"strconv"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
@@ -59,9 +57,9 @@ func (c *BlackHoleCuiController) handleMove(args []string) string {
 	if len(args) < 1 {
 		return invalidArg("usageMFan")
 	}
-	fan, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("invalidFanIndexDot", "val", args[0])
+	fan, msg, parseOK := cuiutil.ParseIntArgKeys(args, "", "invalidFanIndexDot", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return msg
 	}
 	return c.li.MoveFanToBlackHole(fan)
 }

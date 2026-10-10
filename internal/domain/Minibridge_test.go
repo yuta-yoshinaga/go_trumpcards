@@ -225,6 +225,40 @@ func TestMinibridge_TrickWinner(t *testing.T) {
 	assert.Equal(t, 3, m.TrickWinnerForTest(), "切り札の ♥K")
 }
 
+func TestMinibridgeResolvedTrickWaitsForContinueAndSurvivesSnapshot(t *testing.T) {
+	m := newTestMinibridge(t)
+	m.SetContractForTest(0, 1, 0)
+	m.SetPhaseForTest(MinibridgePhasePlay)
+	m.currentPlayerIdx = 0
+	m.currentTrick = []*TrickCard{
+		{PlayerIdx: 1, Card: NewCard(CardDesignSpade, 5, false)},
+		{PlayerIdx: 2, Card: NewCard(CardDesignSpade, 1, false)},
+		{PlayerIdx: 3, Card: NewCard(CardDesignSpade, 7, false)},
+	}
+	// 配られた手札を捨て、出す札を ♠3 だけにする (配り依存を除く。申告 HCP は保存の検証に要るので残す)
+	for m.players[0].GetCardsSize() > 0 {
+		m.players[0].RemoveCard(0)
+	}
+	m.players[0].AddCard(NewCard(CardDesignSpade, 3, false))
+	require.NoError(t, m.PlayerPlay(0))
+	assert.True(t, m.IsTrickPaused())
+	trick, winner := m.GetLastTrick()
+	assert.Len(t, trick, MinibridgePlayerCnt)
+	assert.Equal(t, 2, winner)
+	assert.Empty(t, m.GetCurrentTrick())
+
+	data, err := json.Marshal(m)
+	require.NoError(t, err)
+	var restored Minibridge
+	require.NoError(t, json.Unmarshal(data, &restored))
+	got, gotWinner := restored.GetLastTrick()
+	assert.True(t, restored.IsTrickPaused())
+	assert.Len(t, got, MinibridgePlayerCnt)
+	assert.Equal(t, winner, gotWinner)
+	restored.ContinueTrick()
+	assert.False(t, restored.IsTrickPaused())
+}
+
 func TestMinibridge_FollowSuitIsCompulsory(t *testing.T) {
 	m := newTestMinibridge(t)
 	m.SetContractForTest(0, 1, CardDesignHeart)
@@ -736,6 +770,8 @@ func TestMinibridge_UnmarshalRejectsBrokenSnapshots(t *testing.T) {
 		{"round number below one", true, func(m map[string]any) { m["rn"] = 0 }},
 		{"round number above the configured rounds", true, func(m map[string]any) { m["rn"] = 99 }},
 		{"negative trick number", true, func(m map[string]any) { m["tn"] = -1 }},
+		{"last trick winner out of range", true, func(m map[string]any) { m["ltw"] = 4 }},
+		{"paused trick without a complete last trick", true, func(m map[string]any) { m["tp"] = true }},
 		{"winner before the game ended", true, func(m map[string]any) { m["wt"] = 1 }},
 		// **終了フラグとフェーズは対。** 片方だけ立つと投了でも復旧できない
 		// 恒久デッドロックになる（レビュー指摘 PR #5313）。

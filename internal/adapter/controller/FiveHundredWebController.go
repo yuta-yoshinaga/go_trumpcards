@@ -82,6 +82,7 @@ type FiveHundredWebOutput struct {
 	JokerLeadSuit    int                           `json:"jokerLeadSuit"`
 	KittyCount       int                           `json:"kittyCount"`
 	CurrentTrick     []*WebOutputTrickCard         `json:"currentTrick"`
+	ValidPlayIndices []int                         `json:"validPlayIndices"`
 	TeamScores       [2]int                        `json:"teamScores"`
 	// RoundResult はラウンド終了フェーズでの得点内訳 (それ以外は null)。
 	// 定型文の「ラウンド終了」しか出ていなかった (#4809)。

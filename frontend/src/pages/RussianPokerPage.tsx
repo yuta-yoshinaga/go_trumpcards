@@ -601,6 +601,9 @@ function RussianPokerPageContent() {
                 <p className="text-ds-warning text-sm font-bold" data-testid="russian-buy6th-fee-line">
                   {t('buy6thFeeInfo', { fee: state.anteBet })}
                 </p>
+                <p className="text-ds-text-muted text-sm font-semibold" data-testid="russian-play-bet-required">
+                  {t('playBetRequired', { amount: state.anteBet * 2 })}
+                </p>
                 {foldCostLine}
                 <div className="flex gap-2 flex-wrap justify-center">
                   <button type="button" className={btnSuccess} onClick={handlePlay} disabled={loading}>
@@ -630,6 +633,9 @@ function RussianPokerPageContent() {
             )}
             {isPostActionPhase && (
               <div className="flex flex-col items-center gap-2 pb-2">
+                <p className="text-ds-text-muted text-sm font-semibold" data-testid="russian-play-bet-required">
+                  {t('playBetRequired', { amount: state.anteBet * 2 })}
+                </p>
                 {foldCostLine}
                 <div className="flex justify-center gap-2">
                   <button type="button" className={btnSuccess} onClick={handlePlay} disabled={loading}>

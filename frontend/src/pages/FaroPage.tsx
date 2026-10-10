@@ -18,6 +18,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
@@ -105,7 +106,7 @@ function FaroPageContent() {
     useGamePageSetup('faro');
   const { state, loading, error, exec, retry } = useGameApi(faroApi.exec);
 
-  const [chipAmount, setChipAmount] = useState<number>(CHIP_AMOUNTS[0]);
+  const [chipAmount, setChipAmount] = useState<number | null>(CHIP_AMOUNTS[0]);
   const [copper, setCopper] = useState(false);
   const [callOrder, setCallOrder] = useState<number[]>([]);
   const [dealResultAnnouncement, setDealResultAnnouncement] = useState('');
@@ -126,11 +127,7 @@ function FaroPageContent() {
     }
   }, [state, t]);
 
-  // Fetch a fresh game on mount.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
-  useEffect(() => {
-    exec('reset');
-  }, []);
+  useMountReset(exec);
 
   // **ケースキーパーはサーバが数える (#6471)。**以前は公開札をローカルの Set に
   // 溜めて残数を組み立てていたが、ラウンド途中でページを再読み込みするとその Set が
@@ -143,6 +140,22 @@ function FaroPageContent() {
     for (const rank of FARO_RANKS) byRank[rank] = state?.remainingByRank?.[rank] ?? FARO_RANK_COUNT;
     return byRank;
   }, [state]);
+
+  const affordableChipAmounts = useMemo(() => {
+    if (!state) return [];
+    return CHIP_AMOUNTS.filter((amount) =>
+      FARO_RANKS.some((rank) => {
+        const bet = state.bets.find((item) => item.rank === rank);
+        return (remaining[rank] > 0 || bet !== undefined) && state.chips + (bet?.amount ?? 0) >= amount;
+      }),
+    );
+  }, [remaining, state]);
+
+  useEffect(() => {
+    if (chipAmount === null || !affordableChipAmounts.some((amount) => amount === chipAmount)) {
+      setChipAmount(chipAmount === null ? (affordableChipAmounts[0] ?? null) : (affordableChipAmounts.at(-1) ?? null));
+    }
+  }, [affordableChipAmounts, chipAmount]);
 
   const phaseNames = usePhaseNames('faro', FARO_PHASE_KEYS);
 
@@ -283,16 +296,15 @@ function FaroPageContent() {
                   // 既にベットがあるランクは、途中で 0 枚になっても額や copper を
                   // 調整できる。ここで一律に無効化すると、クリアして掛け直す道が
                   // 新規扱いで拒まれるため、そのチップは取り戻せなくなる。
-                  const canBet = remaining[rank] > 0 || bet !== undefined;
+                  const canBet =
+                    (remaining[rank] > 0 || bet !== undefined) &&
+                    chipAmount !== null &&
+                    state.chips + (bet?.amount ?? 0) >= chipAmount;
                   return (
                     <button
                       key={`rank-${rank}`}
                       type="button"
-                      onClick={() => {
-                        if (isBetting && !loading && canBet) {
-                          void exec('bet', { rank, amount: chipAmount, copper });
-                        }
-                      }}
+                      onClick={() => void exec('bet', { rank, amount: chipAmount as number, copper })}
                       disabled={!isBetting || loading || !canBet}
                       className={`relative w-12 h-14 rounded border text-lg font-bold transition-all ${
                         bet?.copper
@@ -333,7 +345,7 @@ function FaroPageContent() {
                   const depleted = left === 0;
                   const bet = state.bets.find((item) => item.rank === rank);
                   const canBet = left > 0 || bet !== undefined;
-                  const canAfford = state.chips + (bet?.amount ?? 0) >= chipAmount;
+                  const canAfford = chipAmount !== null && state.chips + (bet?.amount ?? 0) >= chipAmount;
                   const statusKey = !canBet
                     ? 'caseKeeperDepleted'
                     : canAfford
@@ -506,15 +518,23 @@ function FaroPageContent() {
                   <button
                     key={`chip-${amt}`}
                     type="button"
-                    onClick={() => setChipAmount(amt)}
+                    onClick={() => {
+                      if (affordableChipAmounts.includes(amt)) setChipAmount(amt);
+                    }}
+                    aria-disabled={!affordableChipAmounts.includes(amt) ? 'true' : undefined}
+                    aria-describedby={!affordableChipAmounts.includes(amt) ? 'faro-chip-unavailable' : undefined}
                     className={`px-3 py-1 rounded text-sm font-semibold transition-all ${
                       chipAmount === amt ? 'bg-ds-warning text-black' : 'bg-black/30 text-ds-text-primary'
-                    }`}
+                    } ${!affordableChipAmounts.includes(amt) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    aria-pressed={chipAmount === amt}
                     data-testid={`chip-${amt}`}
                   >
                     {amt}
                   </button>
                 ))}
+                <span id="faro-chip-unavailable" className="sr-only">
+                  {t('chipAmountUnavailable')}
+                </span>
                 <button
                   type="button"
                   onClick={() => setCopper((c) => !c)}

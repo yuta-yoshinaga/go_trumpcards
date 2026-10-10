@@ -1,81 +1,55 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { duchessApi } from '../api/gameApi';
 import type { DuchessHint, DuchessMoveZone } from '../types/card';
-import { useAutoCompleteState } from './useAutoCompleteState';
-import { useGameApi } from './useGameApi';
-import { useHintRequest } from './useHintRequest';
+import { useSolitaireGameBase } from './useSolitaireGameBase';
 
 /** Hook that manages Duchess game state, source selection, hints, and moves. */
 export function useDuchessGame() {
-  const { state, loading, error, exec: rawExec, retry } = useGameApi(duchessApi.exec);
   const [selectedSource, setSelectedSource] = useState<DuchessMoveZone | null>(null);
-  const [hint, setHint] = useState<DuchessHint | null>(null);
-  const [hintError, setHintError] = useState<string | null>(null);
-  const { isAutoCompleting, startAutoComplete } = useAutoCompleteState();
-
-  const runApi = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);
-
-  useEffect(() => {
-    runApi('reset');
-  }, [runApi]);
-
-  const handleReset = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    runApi('reset');
-  }, [runApi]);
-
+  const onClearSelection = useCallback(() => setSelectedSource(null), []);
+  const {
+    apiCall,
+    runAction,
+    state,
+    loading,
+    error,
+    retry,
+    hint,
+    hintError,
+    isAutoCompleting,
+    setHint,
+    handleReset,
+    handleGiveUp,
+    handleHint,
+    handleAutoComplete,
+    handleUndo,
+  } = useSolitaireGameBase<
+    Awaited<ReturnType<typeof duchessApi.exec>>,
+    Parameters<typeof duchessApi.exec>,
+    DuchessHint
+  >(duchessApi.exec, {
+    onClearSelection,
+    hintApi: () => duchessApi.exec('hint'),
+    selectHint: (res) => res.hint,
+  });
   /** Fix the rank all four foundations start from, taken off a reserve fan. */
   const handleChooseBase = useCallback(
     (fanIdx: number) => {
       setSelectedSource(null);
       setHint(null);
-      runApi('base', { zone: 'reserve', col: fanIdx });
+      apiCall('base', { zone: 'reserve', col: fanIdx });
     },
-    [runApi],
+    [apiCall, setHint],
   );
 
   const handleDraw = useCallback(() => {
     setSelectedSource(null);
     setHint(null);
-    runApi('draw');
-  }, [runApi]);
-
-  const handleGiveUp = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    runApi('giveup');
-  }, [runApi]);
-
-  const handleHint = useHintRequest({
-    fetchHint: () => duchessApi.exec('hint'),
-    selectHint: (res) => res.hint,
-    setHint,
-    setHintError,
-  });
-
-  const handleAutoComplete = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    startAutoComplete();
-    runApi('autocomplete');
-  }, [runApi, startAutoComplete]);
-
-  const handleUndo = useCallback(() => {
-    setSelectedSource(null);
-    setHint(null);
-    runApi('undo');
-  }, [runApi]);
+    apiCall('draw');
+  }, [apiCall, setHint]);
 
   /** Undo N moves at once to escape a stalemate. */
-  const handleUndoEscape = useCallback(
-    (n: number) => {
-      setSelectedSource(null);
-      setHint(null);
-      runApi('undo_n', undefined, undefined, n);
-    },
-    [runApi],
-  );
+  const handleUndoEscape = useCallback((n: number) => runAction('undo_n', undefined, undefined, n), [runAction]);
 
   const handleSelectSource = useCallback((zone: DuchessMoveZone) => {
     setSelectedSource((prev) => {
@@ -90,10 +64,10 @@ export function useDuchessGame() {
     (zone: DuchessMoveZone) => {
       if (!selectedSource) return;
       setHint(null);
-      runApi('move', selectedSource, zone);
+      apiCall('move', selectedSource, zone);
       setSelectedSource(null);
     },
-    [selectedSource, runApi],
+    [selectedSource, apiCall, setHint],
   );
 
   return {
@@ -101,7 +75,7 @@ export function useDuchessGame() {
     loading,
     error,
     hintError,
-    exec: runApi,
+    exec: apiCall,
     selectedSource,
     hint,
     handleReset,

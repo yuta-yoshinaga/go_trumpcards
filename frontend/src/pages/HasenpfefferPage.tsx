@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { hasenpfefferApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -19,6 +19,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useMountReset } from '../hooks/useMountReset';
 import { btnDanger, btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { HasenpfefferResponse } from '../types/card';
@@ -84,9 +85,7 @@ function HasenpfefferPageContent() {
   );
   const { handleCommand } = useCliGame(dispatch, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  useEffect(() => {
-    void dispatch('reset');
-  }, [dispatch]);
+  useMountReset(dispatch);
 
   const handleReset = useCallback(() => {
     hideActionLog();
@@ -216,6 +215,18 @@ function HasenpfefferPageContent() {
             <div className="text-ds-text-muted text-sm text-center mb-3" data-testid="hpf-score">
               {t('header.score', { t0: String(state.scores[0] ?? 0), t1: String(state.scores[1] ?? 0) })}
             </div>
+
+            <section
+              className="text-ds-text-muted text-sm text-center mb-3"
+              aria-label={t('header.teamTricksLabel')}
+              data-testid="hpf-team-tricks"
+            >
+              {[0, 1].map((team) => (
+                <span key={team} className={team === 0 ? 'mr-4' : undefined}>
+                  {t('header.teamTricks', { team: String(team), count: state.teamTricks[team] })}
+                </span>
+              ))}
+            </section>
 
             {/* **上限に達すると宣言ボタンが 1 つも出ない** (#5758)。理由が
                 書かれていないと、ボタンが急に消えたようにしか見えない。

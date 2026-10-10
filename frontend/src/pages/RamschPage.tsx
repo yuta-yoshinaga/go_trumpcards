@@ -122,6 +122,7 @@ function RamschPageContent() {
   const isTrickEnd = state.phase === RamschPhase.TRICK_END;
   const isRoundEnd = state.phase === RamschPhase.ROUND_END;
   const isGameEnd = state.phase === RamschPhase.GAME_END || state.gameEndFlag;
+  const bestCumulativeScore = Math.max(...state.players.map((player) => player.cumulativeScore));
 
   const humanPlayer = state.players.find((p) => p.isHuman);
   const dealerPlayer = state.players[state.dealerIdx];
@@ -253,6 +254,11 @@ function RamschPageContent() {
                     <tr key={p.id}>
                       <td>
                         {p.isHuman ? t('you') : `CPU ${p.id}`}
+                        {isGameEnd && p.cumulativeScore === bestCumulativeScore && (
+                          <span className="ml-1 text-ds-success" data-testid={`ramsch-winner-${p.id}`}>
+                            ({t('winnerBadge')})
+                          </span>
+                        )}
                         {/* **誰が負けたかを表の中で言う。** 罰点なので「点が多い＝負け」で、
                             数字だけ並べると多い人が勝っているように読める。 */}
                         {isRoundEnd && state.durchmarsch && state.durchmarschIdx === p.id && (

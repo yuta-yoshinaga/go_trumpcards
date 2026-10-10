@@ -14,6 +14,8 @@
   "deal": "配る",
   "autoComplete": "自動完成",
   "undo": "元に戻す",
+  "undoCount": "戻す回数",
+  "undoN": "まとめて戻す",
   "empty": "空",
   "cardPositionAriaLabel": "{{card}}、列{{col}}・位置{{pos}}",
   "cardSelected": "選択中",

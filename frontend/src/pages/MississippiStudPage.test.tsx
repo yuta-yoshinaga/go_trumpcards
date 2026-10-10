@@ -204,6 +204,53 @@ describe('MississippiStudPage', () => {
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
   });
 
+  it('disables only multipliers that cost more chips than the current balance', async () => {
+    mockApi.mockResolvedValue({ ...thirdStreetState, chips: 200 });
+    renderWithProviders(<MississippiStudPage />);
+    const one = await screen.findByTestId('ms-play-1x');
+    const two = screen.getByTestId('ms-play-2x');
+    const three = screen.getByTestId('ms-play-3x');
+    const fold = screen.getByRole('button', { name: 'フォールド' });
+
+    expect(one).not.toHaveAttribute('aria-disabled', 'true');
+    expect(two).not.toHaveAttribute('aria-disabled', 'true');
+    expect(three).toHaveAttribute('aria-disabled', 'true');
+    expect(three).toHaveAttribute('aria-describedby', 'ms-play-disabled-reason-3');
+    const insufficientReason = screen.getByText('所持チップが不足しています');
+    expect(insufficientReason).toHaveClass('block', 'text-xs', 'font-normal');
+    expect(insufficientReason).not.toHaveClass('sr-only');
+    expect(fold).not.toHaveAttribute('aria-disabled', 'true');
+
+    fireEvent.click(three);
+    await flushPendingDispatch();
+    expect(mockApi).toHaveBeenCalledTimes(1); // mount reset only
+
+    mockApi.mockResolvedValue(thirdStreetState);
+    fireEvent.click(two);
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('play', undefined, 2));
+  });
+
+  it('keeps affordable multipliers and fold selectable when the balance is below 1x', async () => {
+    mockApi.mockResolvedValue({ ...thirdStreetState, chips: 50 });
+    renderWithProviders(<MississippiStudPage />);
+    const one = await screen.findByTestId('ms-play-1x');
+
+    for (const multiplier of [1, 2, 3]) {
+      expect(screen.getByTestId(`ms-play-${multiplier}x`)).toHaveAttribute('aria-disabled', 'true');
+    }
+    expect(one).toHaveAttribute('aria-describedby', 'ms-play-disabled-reason-1');
+    const fold = screen.getByRole('button', { name: 'フォールド' });
+    expect(fold).not.toHaveAttribute('aria-disabled', 'true');
+
+    fireEvent.click(one);
+    await flushPendingDispatch();
+    expect(mockApi).toHaveBeenCalledTimes(1); // mount reset only
+
+    mockApi.mockResolvedValue(endPhaseFold);
+    fireEvent.click(fold);
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('fold'));
+  });
+
   it('shows the current street multiplier and cumulative bet beside the betting actions', async () => {
     mockApi.mockResolvedValue(fourthStreetState);
     renderWithProviders(<MississippiStudPage />);

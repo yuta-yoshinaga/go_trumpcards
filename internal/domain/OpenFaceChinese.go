@@ -296,7 +296,7 @@ func (g *OpenFaceChinese) cpuChooseRow(playerIdx int) int {
 	}
 	// Normal と Hard はどちらも cpuPlaceSmart を用いる (意図的に同一)。
 	// 段のファウル回避を優先する貪欲戦略で、現状この 1 種類で両難易度を兼ねる。
-	return g.cpuPlaceSmart(p, card, open)
+	return g.cpuPlaceSmart(card, open)
 }
 
 // openRows まだ満杯でない段のリストを下段→中段→上段の順で返す。
@@ -312,7 +312,7 @@ func (g *OpenFaceChinese) openRows(p *OpenFaceChinesePlayer) []int {
 
 // cpuPlaceSmart 強い札は下段優先、弱い札は埋まり具合を見て上段へ振るヒューリスティック。
 // 下段 ≥ 中段 ≥ 上段 を崩しにくいよう、強い札ほど下の段に置く。
-func (g *OpenFaceChinese) cpuPlaceSmart(p *OpenFaceChinesePlayer, card *Card, open []int) int {
+func (g *OpenFaceChinese) cpuPlaceSmart(card *Card, open []int) int {
 	v := ofcRankValue(card)
 	// 強い札（J 以上）は空きがあれば下段、次に中段。
 	if v >= 11 {
@@ -673,7 +673,7 @@ func (g *OpenFaceChinese) GetHint() *OpenFaceChineseHint {
 	if len(open) == 0 || card == nil {
 		return nil
 	}
-	row := g.cpuPlaceSmart(p, card, open)
+	row := g.cpuPlaceSmart(card, open)
 	return &OpenFaceChineseHint{Row: row, Reason: ofcHintReason(card, row)}
 }
 

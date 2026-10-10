@@ -28,6 +28,14 @@ func (vpp *VideoPokerWebPresenter) Output(vp interfaces.VideoPokerGame, lastErr 
 	resObj.HandName = vp.GetHandName()
 	resObj.HandKey = vp.GetHandKey()
 	resObj.HeldIndices = vp.GetHeldIndices()
+	resObj.RecommendedHold = make([]int, 0)
+	advice := vp.RecommendedHold()
+	resObj.RecommendedHoldRule = advice.RuleKey
+	for i, held := range advice.Hold {
+		if held {
+			resObj.RecommendedHold = append(resObj.RecommendedHold, i)
+		}
+	}
 	resObj.VariantName = vp.GetVariantName()
 	stats := videoPokerSessionStats(vp)
 	resObj.Hands = stats.hands

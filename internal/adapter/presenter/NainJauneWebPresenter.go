@@ -42,7 +42,7 @@ func nainJauneBoxCard(box domain.NainJauneBox) *domain.Card {
 // Output ゲーム状態をJSON出力
 func (p *NainJauneWebPresenter) Output(c interfaces.NainJauneGame, lastErr error) string {
 	resObj := p.buildBase(c)
-	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(c, lastErr)
+	resObj.Message, resObj.MessageCode = p.buildMessage(c, lastErr)
 	return marshalOrError(resObj)
 }
 
@@ -105,16 +105,17 @@ func (p *NainJauneWebPresenter) buildBase(c interfaces.NainJauneGame) *controlle
 
 // buildPlayersOutput プレイヤー情報を構築する。
 //
-// CPU の手札は伏せるが、**枚数と失点は公開**する。支払いは枚数ではなく点数な
-// ので、枚数だけでは相手がいくら抱えているのか読めない。
+// CPU の手札はディール終了まで伏せる。**枚数と失点は公開**する。支払いは枚数
+// ではなく点数なので、枚数だけでは相手がいくら抱えているのか読めない。
 func (p *NainJauneWebPresenter) buildPlayersOutput(c interfaces.NainJauneGame) []*controller.NainJauneWebOutputPlayer {
 	players := c.GetPlayers()
 	out := make([]*controller.NainJauneWebOutputPlayer, 0, len(players))
+	revealCPUHands := c.GetPhase() == domain.NainJaunePhaseDealEnd || c.GetGameEndFlag()
 	for i, player := range players {
 		if player == nil {
 			continue
 		}
-		reveal := player.GetIsHuman() || c.GetGameEndFlag()
+		reveal := player.GetIsHuman() || revealCPUHands
 		cards := make([]*controller.WebOutputCard, 0, player.GetCardsSize())
 		points := 0
 		for j := range player.GetCardsSize() {
@@ -141,17 +142,17 @@ func (p *NainJauneWebPresenter) buildPlayersOutput(c interfaces.NainJauneGame) [
 }
 
 // buildMessage ゲーム結果メッセージを構築
-func (p *NainJauneWebPresenter) buildMessage(c interfaces.NainJauneGame, lastErr error) (string, string, map[string]string) {
+func (p *NainJauneWebPresenter) buildMessage(c interfaces.NainJauneGame, lastErr error) (string, string) {
 	if lastErr != nil {
-		return lastErr.Error(), "", nil
+		return lastErr.Error(), ""
 	}
 	if !c.GetGameEndFlag() {
-		return "", "", nil
+		return "", ""
 	}
 	if c.GetWinnerIdx() == 0 {
-		return "you finish with the most chips", "nainjaune.win", nil
+		return "you finish with the most chips", "nainjaune.win"
 	}
-	return "you finish behind", "nainjaune.lose", nil
+	return "you finish behind", "nainjaune.lose"
 }
 
 // HintOutput ヒント情報を出力する

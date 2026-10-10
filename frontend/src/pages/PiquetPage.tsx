@@ -17,10 +17,11 @@ import { usePiquetGame } from '../hooks/usePiquetGame';
 import { badgeErrorColors, badgeSuccessColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { PiquetDeclaration, PiquetPlayerData, PiquetResponse } from '../types/card';
+import type { PiquetClaim, PiquetDeclaration, PiquetPlayerData, PiquetResponse } from '../types/card';
 import { PiquetDeclarationKind, PiquetExchangeTurn, PiquetPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { valueName } from '../utils/cardUtils';
 import { isRequestedHint } from '../utils/hintRequest';
 import { type DeclarationHighlight, declarationHighlight } from '../utils/piquetDeclarationHighlight';
 
@@ -46,6 +47,14 @@ const DECL_KIND_KEYS: Record<number, string> = {
   [PiquetDeclarationKind.POINT]: 'declKindPoint',
   [PiquetDeclarationKind.SEQUENCE]: 'declKindSequence',
   [PiquetDeclarationKind.SET]: 'declKindSet',
+};
+
+/** i18n keys for the four card suits used by Sequence claims. */
+const SUIT_I18N_KEYS: Record<number, string> = {
+  1: 'common.suit.spade',
+  2: 'common.suit.club',
+  3: 'common.suit.heart',
+  4: 'common.suit.diamond',
 };
 
 function declKindLabel(kind: number, t: TFunction): string {
@@ -308,7 +317,9 @@ function PiquetPageContent() {
         </p>
       ) : null}
 
-      {state.declResults.length > 0 ? <DeclarationList results={state.declResults} elderIdx={elderIdx} /> : null}
+      {state.declResults.length > 0 ? (
+        <DeclarationList results={state.declResults} elderIdx={elderIdx} tc={tc} />
+      ) : null}
 
       {inPlayPhase && state.currentTrick.length > 0 ? (
         <TrickView trick={state.currentTrick} elderIdx={elderIdx} />
@@ -377,7 +388,7 @@ function PlayerCard({ label, player, carteBlanche }: PlayerCardProps) {
   );
 }
 
-function DeclarationList({ results, elderIdx }: { results: PiquetDeclaration[]; elderIdx: number }) {
+function DeclarationList({ results, elderIdx, tc }: { results: PiquetDeclaration[]; elderIdx: number; tc: TFunction }) {
   const { t } = useTranslation('piquet');
   const youngerIdx = elderIdx === 0 ? 1 : 0;
   return (
@@ -399,10 +410,44 @@ function DeclarationList({ results, elderIdx }: { results: PiquetDeclaration[]; 
           <div key={`decl-${r.kind}-${r.winner}-${r.score}`} className="text-xs">
             {declKindLabel(r.kind, t)}:{' '}
             {r.score === 0 ? t('declTied') : t('declScored', { player: playerLabel, score: r.score })}
+            <div className="text-ds-text-muted">
+              {t('claimForPlayer', { player: t('roleElder'), claim: formatPiquetClaim(r.kind, r.elderClaim, tc, t) })}
+              {' · '}
+              {t('claimForPlayer', {
+                player: t('roleYounger'),
+                claim: formatPiquetClaim(r.kind, r.youngerClaim, tc, t),
+              })}
+            </div>
           </div>
         );
       })}
     </div>
+  );
+}
+
+function formatPiquetClaim(kind: number, claim: PiquetClaim | undefined, tc: TFunction, t: TFunction): string {
+  if (!claim) return t('noClaim');
+  if (kind === PiquetDeclarationKind.POINT) return t('pointClaim', { count: claim.length, total: claim.pipTotal });
+  if (kind === PiquetDeclarationKind.SEQUENCE) {
+    const rankValue = claim.cards.length === 0 ? 0 : strongestPiquetClaimValue(claim);
+    return t('sequenceClaim', {
+      suit: tc(SUIT_I18N_KEYS[claim.suit]),
+      length: claim.length,
+      rank: valueName(rankValue),
+    });
+  }
+  if (kind === PiquetDeclarationKind.SET) {
+    const rankValue = claim.cards.length === 0 ? 0 : claim.cards[0].value;
+    return t('setClaim', { rank: valueName(rankValue), count: claim.length });
+  }
+  return t('noClaim');
+}
+
+function strongestPiquetClaimValue(claim: PiquetClaim): number {
+  const rankOrder = [7, 8, 9, 10, 11, 12, 13, 1];
+  return claim.cards.reduce(
+    (strongest, card) => (rankOrder.indexOf(card.value) > rankOrder.indexOf(strongest) ? card.value : strongest),
+    claim.cards[0].value,
   );
 }
 

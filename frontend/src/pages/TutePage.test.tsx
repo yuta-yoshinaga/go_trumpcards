@@ -17,6 +17,7 @@ const marriageState = makeTuteState({ canDeclareMarriage: true });
 const tuteDeclState = makeTuteState({ canDeclareTute: true });
 const trickEndState = makeTuteState({
   phase: 1,
+  leadPlayerIdx: 1,
   currentTrick: [
     { playerIdx: 0, card: { design: 'HEART', value: 12 } },
     { playerIdx: 1, card: { design: 'CLOVER', value: 13 } },
@@ -24,6 +25,10 @@ const trickEndState = makeTuteState({
 });
 const roundEndState = makeTuteState({
   phase: 2,
+  currentTrick: [
+    { playerIdx: 0, card: { design: 'HEART', value: 12 } },
+    { playerIdx: 1, card: { design: 'CLOVER', value: 13 } },
+  ],
   roundTeamPoints: [70, 60],
   lastTrickBonusTeam: 0,
   lastTrickBonusPoints: 10,
@@ -64,6 +69,7 @@ describe('TutePage', () => {
       expect(screen.getByAltText('♥ Q')).toBeInTheDocument();
       expect(screen.getByAltText('♠ A')).toBeInTheDocument();
     });
+    expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument();
   });
 
   it('shows each player team and marks allies and opponents in the trick', async () => {
@@ -181,6 +187,11 @@ describe('TutePage', () => {
     mockExec.mockResolvedValue(trickEndState);
     renderWithProviders(<TutePage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
+    expect(screen.getByTestId('trick-winner-badge')).toHaveTextContent('勝者');
+    expect(document.querySelector('[data-testid="trick-display-cards"] [data-player-idx="1"]')).toHaveAttribute(
+      'data-trick-winner',
+      'true',
+    );
   });
 
   it('renders round end with the next round button and the round result including last trick bonus', async () => {
@@ -191,6 +202,7 @@ describe('TutePage', () => {
     const bonus = screen.getByTestId('tute-last-trick-bonus');
     expect(bonus).toHaveTextContent('最終トリックボーナス: チームA +10点');
     expect(bonus.textContent).not.toContain('{{');
+    expect(screen.getByTestId('trick-winner-badge')).toHaveTextContent('勝者');
   });
 
   it('renders the game end message', async () => {

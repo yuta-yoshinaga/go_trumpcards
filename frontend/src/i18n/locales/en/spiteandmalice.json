@@ -21,6 +21,7 @@
     "completed": "Completed",
     "wild": "wild"
   },
+  "stockRefillInfo": "When the stock is empty, completed cards are shuffled back into it.",
   "moveCount": "Moves",
   "endTurn": "End turn",
   "discard": "Discard",

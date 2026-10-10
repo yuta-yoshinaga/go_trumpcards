@@ -16,7 +16,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
-func setupCuckooWebMock() (*interfaces.MockCuckooGame, []*domain.CuckooPlayer) {
+func setupCuckooWebMock() *interfaces.MockCuckooGame {
 	m := new(interfaces.MockCuckooGame)
 	players := makeCuckooPlayers()
 	players[0].SetCard(domain.NewCard(domain.CardDesignSpade, 5, false))
@@ -41,7 +41,7 @@ func setupCuckooWebMock() (*interfaces.MockCuckooGame, []*domain.CuckooPlayer) {
 		m.On("GetPlayer", i).Return(players[i])
 		m.On("IsKingRevealed", i).Return(false)
 	}
-	return m, players
+	return m
 }
 
 func parseCuckooOutput(t *testing.T, s string) *controller.CuckooWebOutput {
@@ -55,7 +55,7 @@ func TestCuckooWebPresenter_Output(t *testing.T) {
 	p := new(presenter.CuckooWebPresenter)
 
 	t.Run("turn phase hides opponents", func(t *testing.T) {
-		m, _ := setupCuckooWebMock()
+		m := setupCuckooWebMock()
 		out := parseCuckooOutput(t, p.Output(m, nil))
 		assert.Equal(t, int(domain.CuckooPhaseTurn), out.Phase)
 		assert.Len(t, out.Players, 4)
@@ -67,13 +67,13 @@ func TestCuckooWebPresenter_Output(t *testing.T) {
 	})
 
 	t.Run("error message", func(t *testing.T) {
-		m, _ := setupCuckooWebMock()
+		m := setupCuckooWebMock()
 		out := parseCuckooOutput(t, p.Output(m, errors.New("boom")))
 		assert.Equal(t, "boom", out.Message)
 	})
 
 	t.Run("round end reveals all and lowest value", func(t *testing.T) {
-		m, _ := setupCuckooWebMock()
+		m := setupCuckooWebMock()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.On("GetPhase").Return(domain.CuckooPhaseRoundEnd)
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundLowest")
@@ -88,7 +88,7 @@ func TestCuckooWebPresenter_Output(t *testing.T) {
 	})
 
 	t.Run("game end human win", func(t *testing.T) {
-		m, _ := setupCuckooWebMock()
+		m := setupCuckooWebMock()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetWinnerIdx")
 		m.On("GetGameEndFlag").Return(true)
@@ -99,7 +99,7 @@ func TestCuckooWebPresenter_Output(t *testing.T) {
 	})
 
 	t.Run("game end cpu win", func(t *testing.T) {
-		m, _ := setupCuckooWebMock()
+		m := setupCuckooWebMock()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetWinnerIdx")
 		m.On("GetGameEndFlag").Return(true)
@@ -127,7 +127,7 @@ func TestCuckooWebPresenter_ServesTheSwapTarget(t *testing.T) {
 	p := new(presenter.CuckooWebPresenter)
 
 	t.Run("carries the domain's answer for the seat to act", func(t *testing.T) {
-		m, _ := setupCuckooWebMock()
+		m := setupCuckooWebMock()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetSwapTargetIdx")
 		// 現在の手番 (0) について訊いていること。他の席の答えを載せると、
 		// 画面が別の人の相手を名指しする。
@@ -139,7 +139,7 @@ func TestCuckooWebPresenter_ServesTheSwapTarget(t *testing.T) {
 
 	// -1 = 相手なし。ゼロ値の 0 と取り違えると、席 0 を名指ししてしまう。
 	t.Run("passes through the no-target answer", func(t *testing.T) {
-		m, _ := setupCuckooWebMock()
+		m := setupCuckooWebMock()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetSwapTargetIdx")
 		m.On("GetSwapTargetIdx", 0).Return(-1)
 

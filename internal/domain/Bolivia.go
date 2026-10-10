@@ -136,10 +136,8 @@ func (g *Bolivia) Reset() {
 
 	for i, p := range g.players {
 		p.team = i % BoliviaTeamCnt
-		p.SetRoundScore(0)
 		p.SetCumulativeScore(0)
-		p.Reset()
-		p.SetIsFinished(false)
+		resetRoundScored(p)
 		p.melds = make([]*BoliviaMeld, 0)
 		p.red3s = make([]*Card, 0)
 		p.hasInitMeld = false

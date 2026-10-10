@@ -22,6 +22,7 @@
   "you": "You",
   "cpu": "CPU {{id}}",
   "players": "Players",
+  "mano": "Mano",
   "cards": "{{count}} cards",
   "yourTeam": "Your team",
   "partner": "Partner",

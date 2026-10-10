@@ -84,12 +84,12 @@ func TestSpadesWebPresenter_Output(t *testing.T) {
 
 	t.Run("coded error", func(t *testing.T) {
 		m, _ := setupSpadesWebMockWithPlayers()
-		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "spades.errFollowLeadSuit", nil)
+		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "shared.errFollowLeadSuit", nil)
 		result := p.Output(m, err)
 		var resObj controller.SpadesWebOutput
 		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
 		assert.Empty(t, resObj.Message)
-		assert.Equal(t, "spades.errFollowLeadSuit", resObj.MessageCode)
+		assert.Equal(t, "shared.errFollowLeadSuit", resObj.MessageCode)
 	})
 
 	t.Run("human cards shown, CPU cards hidden", func(t *testing.T) {

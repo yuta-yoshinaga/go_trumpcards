@@ -266,7 +266,7 @@ func (b *Brusquembille) NextTrick() {
 
 	b.drawReplenish()
 
-	if b.allHandsEmpty() {
+	if allHandsEmpty(b.players) {
 		b.finishGame()
 		return
 	}
@@ -613,11 +613,6 @@ func (b *Brusquembille) drawReplenish() {
 // drawOne 山札またはトランプカードから 1 枚引く。優先順位は山札 → トランプカード。
 func (b *Brusquembille) drawOne() *Card {
 	return drawOrTakeTrump(b.trumpCards, &b.trumpCard)
-}
-
-// allHandsEmpty 全プレイヤーの手札が空かを返す
-func (b *Brusquembille) allHandsEmpty() bool {
-	return allHandsEmpty(b.players)
 }
 
 // finishGame ゲームを終了させ、勝者を決定する

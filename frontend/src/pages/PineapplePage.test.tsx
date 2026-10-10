@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { crazyPineappleApi, irishPokerApi, pineappleApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { PineappleResponse } from '../types/card';
@@ -330,6 +331,52 @@ describe('PineapplePage', () => {
     expect(screen.queryByTestId('cp-cpu-discard-log')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'チェック' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
+  });
+
+  it('shows only the outstanding bet difference as the call amount', async () => {
+    mockCrazyExec.mockResolvedValue({
+      ...preFlopState,
+      lastBet: 35,
+      players: [humanPlayer({ currentBet: 15 }), cpuPlayer(1), cpuPlayer(2), cpuPlayer(3)],
+    });
+    renderWithProviders(<PineapplePage variant="crazypineapple" />);
+
+    const callButton = await screen.findByRole('button', { name: /コール.*20チップ/ });
+    expect(callButton).toHaveTextContent(/コール\s+（20チップ）/);
+  });
+
+  it('does not show a call amount when there is no outstanding bet', async () => {
+    mockCrazyExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<PineapplePage variant="crazypineapple" />);
+
+    expect(await screen.findByRole('button', { name: 'チェック' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /コール/ })).not.toBeInTheDocument();
+  });
+
+  it('shows only currently usable betting shortcuts on the human turn', async () => {
+    mockExec.mockResolvedValue({ ...preFlopState, lastBet: 10 });
+    renderWithProviders(<PineapplePage />);
+    const panel = await screen.findByTestId('pineapple-kbd-shortcuts');
+    fireEvent.click(screen.getByText('キーボードショートカット'));
+    expect(panel).toHaveTextContent('コール');
+    expect(panel).toHaveTextContent('レイズ / ベット');
+    expect(panel).not.toHaveTextContent('チェック');
+    expect(panel).toHaveTextContent('フォールド');
+    expect(panel).toHaveTextContent('オールイン');
+  });
+
+  it.each([
+    ['opponent turn', { ...preFlopState, currentTurn: 1 }],
+    ['discard phase', discardState],
+  ])('hides betting shortcuts during %s', async (_name, response) => {
+    mockExec.mockResolvedValue(response);
+    renderWithProviders(<PineapplePage />);
+    const panel = await screen.findByTestId('pineapple-kbd-shortcuts');
+    fireEvent.click(screen.getByText('キーボードショートカット'));
+    expect(panel).not.toHaveTextContent('コール');
+    expect(panel).not.toHaveTextContent('チェック');
+    expect(panel).not.toHaveTextContent('フォールド');
+    expect(panel).not.toHaveTextContent('オールイン');
   });
 
   it('renders discard controls during discard phase', async () => {
@@ -754,7 +801,27 @@ describe('PineapplePage', () => {
     // **残す2枚と役の両方を読ませる。** どちらが欠けても選択を確認できない。
     expect(live.textContent).toContain('♠ A');
     expect(live.textContent).toContain('♥ A');
+    expect(live.textContent).toContain('♠ A、♥ A');
     expect(live.textContent).toContain('ワンペア');
+    const previousLanguage = i18n.language;
+    try {
+      await i18n.changeLanguage('en');
+      expect(live.textContent).toContain('♠ A, ♥ A');
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
+  });
+
+  it('separates kept cards in the Pineapple discard announcement', async () => {
+    mockExec.mockResolvedValue(discardState);
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByAltText('♦ 7').closest('button') as HTMLButtonElement);
+
+    const live = await screen.findByTestId('cp-discard-preview-announce');
+    expect(live.textContent).toContain('♠ A、♥ K');
+    expect(live.textContent).not.toContain('listSeparator');
   });
 
   // 1枚しか選んでいない間は出さない。確定した選択だけを読み上げる。

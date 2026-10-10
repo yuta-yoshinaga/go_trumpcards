@@ -42,6 +42,9 @@ func (p *HokmWebPresenter) buildBase(h interfaces.HokmGame) *controller.HokmWebO
 	resObj.GameEndFlag = h.GetGameEndFlag()
 	resObj.WinnerTeam = h.GetWinnerTeam()
 	resObj.CurrentTrick = trickCardsToOutput(h.GetCurrentTrick())
+	lastTrick, lastWinner := h.GetLastTrick()
+	resObj.LastTrick = trickCardsToOutput(lastTrick)
+	resObj.LastTrickWinner = lastWinner
 	resObj.Players = p.buildPlayersOutput(h)
 
 	scores := make([]int, 0, domain.HokmTeamCnt)

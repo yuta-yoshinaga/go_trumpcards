@@ -22,6 +22,8 @@ export interface PigPlayer {
   noticedOrder: number;
   /** Whether this seat has chosen its card to pass. Everyone passes at once. */
   hasChosenPass: boolean;
+  /** The human's chosen card while waiting; CPU cards are never exposed. */
+  chosenPassCard?: Card;
 }
 
 /** A suggestion. Carries no card index while a signal is out. */

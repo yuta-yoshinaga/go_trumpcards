@@ -80,6 +80,20 @@ beforeEach(() => {
 });
 
 describe('StalactitesPage', () => {
+  it('explains that giving up ends the game after confirmation in Japanese and English', async () => {
+    const originalLanguage = i18n.language;
+    try {
+      await i18n.changeLanguage('ja');
+      expect(i18n.t('tutorial.controls', { ns: 'stalactites' })).toContain('ギブアップ');
+      expect(i18n.t('tutorial.controls', { ns: 'stalactites' })).toContain('確認後');
+
+      await i18n.changeLanguage('en');
+      expect(i18n.t('tutorial.controls', { ns: 'stalactites' })).toContain('Give Up');
+      expect(i18n.t('tutorial.controls', { ns: 'stalactites' })).toContain('after confirmation');
+    } finally {
+      await i18n.changeLanguage(originalLanguage);
+    }
+  });
   it('keeps an unselected empty tableau target focusable and explains the required source', async () => {
     renderWithProviders(<StalactitesPage />);
     const btn = await screen.findByTestId('fc-empty-col-2');

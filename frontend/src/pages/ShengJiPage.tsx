@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { shengjiApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -19,6 +19,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
@@ -95,9 +96,7 @@ function ShengJiPageContent() {
 
   // Fetch a fresh game on mount.
   // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
-  useEffect(() => {
-    exec('reset');
-  }, []);
+  useMountReset(exec);
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('shengji');
@@ -170,9 +169,13 @@ function ShengJiPageContent() {
               }),
             )
             .join(t('listSeparator'));
+  const trickAnnouncementWithWinner =
+    state && state.currentTrickWinner >= 0
+      ? `${trickAnnouncement} ${t('trickWinnerAnnouncement', { seat: t('seat', { n: state.currentTrickWinner }) })}`
+      : trickAnnouncement;
   const trickStatus = (
     <div role="status" aria-live="polite" className="sr-only" data-testid="shengji-trick-status">
-      {trickAnnouncement}
+      {trickAnnouncementWithWinner}
     </div>
   );
 
@@ -325,7 +328,14 @@ function ShengJiPageContent() {
                     )}
                     {state.trick.map((play) => (
                       <div key={`play-${play.seat}`} className="flex items-center gap-1 flex-wrap">
-                        <span className="text-xs text-ds-text-muted">{t('seat', { n: play.seat })}</span>
+                        <span className="text-xs text-ds-text-muted">
+                          {t('seat', { n: play.seat })}
+                          {play.seat === state.currentTrickWinner && (
+                            <span className="ml-1 rounded px-1 py-0.5 bg-ds-accent text-ds-surface font-semibold">
+                              {t('provisionalWinner')}
+                            </span>
+                          )}
+                        </span>
                         {play.cards.map((c, i) => (
                           <CardImage
                             key={`trick-${play.seat}-${c.design}-${c.value}-${i}`}

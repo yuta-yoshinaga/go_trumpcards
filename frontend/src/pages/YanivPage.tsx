@@ -254,6 +254,11 @@ function YanivPageContent() {
                     </div>
                     <div className="text-[10px] text-ds-text-muted mb-1">
                       {t('label.score')}: {p.score} · {t('label.hand')}: {reveal ? p.handTotal : '?'}
+                      {!p.isEliminated && (
+                        <span className="ml-1" data-testid={`yv-points-remaining-${p.id.toString()}`}>
+                          {t('pointsRemaining', { points: state.config.scoreLimit - p.score })}
+                        </span>
+                      )}
                       {/* CUI と同じ閾値で「脱落間近」を出す。値はレスポンスの
                           scoreLimit を読む (#5629)。脱落済みには出さない。 */}
                       {!p.isEliminated && yanivIsNearOut(p.score, state.config.scoreLimit) && (
@@ -337,6 +342,11 @@ function YanivPageContent() {
             <div className="text-center" data-tutorial="y-player-hand">
               <div className="text-xs text-ds-text-muted mb-1">
                 {tc('player.you')} · {t('label.score')}: {human.score}
+                {!human.isEliminated && (
+                  <span className="ml-1" data-testid={`yv-points-remaining-${human.id.toString()}`}>
+                    {t('pointsRemaining', { points: state.config.scoreLimit - human.score })}
+                  </span>
+                )}
                 {!human.isEliminated && yanivIsNearOut(human.score, state.config.scoreLimit) && (
                   <span className="ml-1 text-ds-warning font-bold" data-testid={`yv-near-out-${human.id.toString()}`}>
                     ⚠{t('nearOut')}

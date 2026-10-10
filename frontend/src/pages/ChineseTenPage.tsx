@@ -94,7 +94,7 @@ function ChineseTenPageContent() {
       enabled: isHumanTurn && !choosing,
     }));
   }, [choosing, game.handlePlay, game.handleSelect, isHumanTurn, state]);
-  useActionKeyboardNav({ bindings: actionBindings, enabled: !!state && !loading });
+  useActionKeyboardNav({ bindings: actionBindings, enabled: !!state && !loading && actionLog === null });
 
   if (!state) {
     return <GameSkeleton gameKey="chineseten" layout={{ kind: 'tableau', topRow: 4, tableau: 4 }} />;
@@ -319,6 +319,7 @@ function ChineseTenPageContent() {
 
             <ActionLogSection
               isEndPhase={ended}
+              availableDuringPlay
               actionLog={actionLog}
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}

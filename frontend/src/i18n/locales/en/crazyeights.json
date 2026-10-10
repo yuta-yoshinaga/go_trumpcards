@@ -72,6 +72,7 @@
   },
   "illegalHint": "Can't play this card (no matching suit, rank, or 8)",
   "cardSelectionUnavailable": "You can select cards only during your play turn",
+  "handLabel": "Your hand",
   "sort": {
     "label": "Sort hand",
     "original": "Original",

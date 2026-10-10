@@ -327,7 +327,9 @@ func (c *SalicLaw) AutoComplete() error {
 	if c.phase != SalicLawPhasePlaying {
 		return NewDomainErrorCode(ErrWrongPhase, "saliclaw.errNotPlaying", nil)
 	}
-	moved := false
+	if !c.CanAutoComplete() {
+		return NewDomainErrorCode(ErrInvalidPlay, "saliclaw.errNothingToAutoComplete", nil)
+	}
 	for {
 		h := c.foundationHint()
 		if h == nil {
@@ -336,12 +338,13 @@ func (c *SalicLaw) AutoComplete() error {
 		if err := c.MoveTableauToFoundation(h.FromIdx); err != nil {
 			return err
 		}
-		moved = true
-	}
-	if !moved {
-		return NewDomainErrorCode(ErrInvalidPlay, "saliclaw.errNothingToAutoComplete", nil)
 	}
 	return nil
+}
+
+// CanAutoComplete reports whether a tableau card can currently be sent to a foundation.
+func (c *SalicLaw) CanAutoComplete() bool {
+	return c.phase == SalicLawPhasePlaying && c.foundationHint() != nil
 }
 
 // Undo 直前の 1 手を取り消す

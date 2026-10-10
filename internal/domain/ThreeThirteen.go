@@ -162,9 +162,7 @@ func (g *ThreeThirteen) NextRound() {
 	g.knockerIdx = -1
 	g.finalTurnsLeft = 0
 	for _, p := range g.players {
-		p.SetRoundScore(0)
-		p.Reset()
-		p.SetIsFinished(false)
+		resetRoundScored(p)
 	}
 	g.dealRound()
 	g.phase = ThreeThirteenPhaseDraw
@@ -591,6 +589,33 @@ func (g *ThreeThirteen) GetPlayerDeadwoodValue(i int) int {
 	cards := collectThreeThirteenCards(p)
 	_, dead := threeThirteenBestMelds(cards, g.WildRank())
 	return threeThirteenDeadwoodValue(dead, g.WildRank())
+}
+
+// GetPlayerMeldSplit returns the best melds and deadwood as hand indexes.
+func (g *ThreeThirteen) GetPlayerMeldSplit(i int) ([][]int, []int) {
+	p := g.GetPlayer(i)
+	if p == nil {
+		return [][]int{}, []int{}
+	}
+	cards := collectThreeThirteenCards(p)
+	melds, deadwood := threeThirteenBestMelds(cards, g.WildRank())
+	indices := make(map[*Card]int, len(cards))
+	for idx, card := range cards {
+		indices[card] = idx
+	}
+	meldIndices := make([][]int, 0, len(melds))
+	for _, meld := range melds {
+		group := make([]int, 0, len(meld))
+		for _, card := range meld {
+			group = append(group, indices[card])
+		}
+		meldIndices = append(meldIndices, group)
+	}
+	deadwoodIndices := make([]int, 0, len(deadwood))
+	for _, card := range deadwood {
+		deadwoodIndices = append(deadwoodIndices, indices[card])
+	}
+	return meldIndices, deadwoodIndices
 }
 
 // GetDeadwoodAfterDiscard returns the deadwood the player would be left with if

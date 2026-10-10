@@ -24,6 +24,7 @@
   "points": "{{points}}点",
   "score": "得点: {{score}}",
   "currentTrick": "現在のトリック",
+  "trickWinnerAnnouncement": "トリックの勝者: {{name}}",
   "trickHistory": {
     "title": "トリック履歴",
     "empty": "完了したトリックはありません",

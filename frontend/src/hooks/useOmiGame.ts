@@ -1,10 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback } from 'react';
 import { omiApi } from '../api/gameApi';
-import type { OmiConfig, OmiHint } from '../types/card';
-import { useCardSelection } from './useCardSelection';
-import { useGameApi } from './useGameApi';
-import { useGameConfig } from './useGameConfig';
-import { useHintRequest } from './useHintRequest';
+import type { OmiConfig } from '../types/card';
+import { useTrickGameBase } from './useTrickGameBase';
 
 /** Default Omi game configuration. */
 export const DEFAULT_OMI_CONFIG: OmiConfig = {
@@ -24,23 +21,16 @@ export const POINT_LIMIT_OPTIONS = [5, 7, 10, 15, 21] as const;
 
 /** Hook that manages Omi game state, trump calling, and trick play. */
 export function useOmiGame() {
-  const { selected: selectedCardIndices, toggle: toggleCard, clear: clearSelection } = useCardSelection();
-  const { config: omiConfig, handleConfigChange } = useGameConfig<OmiConfig>(DEFAULT_OMI_CONFIG);
-  const [hint, setHint] = useState<OmiHint | null>(null);
-  const [hintError, setHintError] = useState<string | null>(null);
-  const [hintLoading, setHintLoading] = useState(false);
-
-  const onSuccess = useCallback(() => {
-    clearSelection();
-    setHint(null);
-  }, [clearSelection]);
-  const { state, loading, error, exec: rawExec, retry } = useGameApi(omiApi.exec, { onSuccess });
-
-  const apiExec = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);
-
-  useEffect(() => {
-    apiExec('reset', undefined, undefined, DEFAULT_OMI_CONFIG);
-  }, [apiExec]);
+  const {
+    exec: apiExec,
+    config: omiConfig,
+    selectedCardIndices,
+    ...base
+  } = useTrickGameBase({
+    apiFn: omiApi.exec,
+    defaultConfig: DEFAULT_OMI_CONFIG,
+    getHint: (state) => state.hint ?? null,
+  });
 
   const handleCallTrump = useCallback(
     (suit: number) => {
@@ -49,45 +39,19 @@ export function useOmiGame() {
     [apiExec],
   );
 
+  // Not the base hook's handlePlay: Omi's API takes the card index in slot 2,
+  // where useTrickGameBase sends it in slot 3.
   const handlePlay = useCallback(() => {
     if (selectedCardIndices.length !== 1) return;
     apiExec('play', selectedCardIndices[0]);
   }, [apiExec, selectedCardIndices]);
 
-  const handleNextTrick = useCallback(() => {
-    apiExec('next');
-  }, [apiExec]);
-
-  const handleNextRound = useCallback(() => {
-    apiExec('nextround');
-  }, [apiExec]);
-
-  const handleHint = useHintRequest({
-    fetchHint: () => omiApi.exec('hint'),
-    selectHint: (res) => res.hint,
-    setHint,
-    setHintError,
-    setHintLoading,
-  });
-
   return {
-    state,
-    loading,
-    error,
-    hint,
-    hintError,
-    hintLoading,
+    ...base,
     apiExec,
     omiConfig,
     selectedCardIndices,
-    toggleCard,
-    clearSelection,
-    handleConfigChange,
-    handleCallTrump,
     handlePlay,
-    handleNextTrick,
-    handleNextRound,
-    handleHint,
-    retry,
+    handleCallTrump,
   };
 }

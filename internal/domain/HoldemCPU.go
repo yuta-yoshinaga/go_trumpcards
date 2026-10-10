@@ -484,7 +484,7 @@ func (h *Holdem) evalPreFlopStrength(idx int) int {
 		if v1 >= 10 {
 			score += 15
 		}
-		return clamp(score, 0, 100)
+		return clamp(score, 100)
 	}
 
 	// ハイカード値
@@ -514,5 +514,5 @@ func (h *Holdem) evalPreFlopStrength(idx int) int {
 		score += 10
 	}
 
-	return clamp(score, 0, 100)
+	return clamp(score, 100)
 }

@@ -15,11 +15,13 @@ import (
 
 func mustGermanWhistOutputJSON(msg string) string {
 	out := &controller.GermanWhistWebOutput{
-		Players:       []*controller.GermanWhistWebOutputPlayer{},
-		CurrentTrick:  []*controller.WebOutputTrickCard{},
-		ValidPlays:    []int{},
-		WinnerIdx:     -1,
-		WebOutputBase: controller.WebOutputBase{Message: msg},
+		Players:         []*controller.GermanWhistWebOutputPlayer{},
+		CurrentTrick:    []*controller.WebOutputTrickCard{},
+		LastTrick:       []*controller.WebOutputTrickCard{},
+		LastTrickWinner: -1,
+		ValidPlays:      []int{},
+		WinnerIdx:       -1,
+		WebOutputBase:   controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {

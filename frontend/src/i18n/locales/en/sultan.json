@@ -18,6 +18,8 @@
   "divanCard": "Divan slot {{idx}}, {{card}}",
   "divanPlayableCard": "{{label}}, playable",
   "divanUnplayableCard": "{{label}}, not playable",
+  "wastePlayableCard": "{{label}}, playable",
+  "wasteUnplayableCard": "{{label}}, not playable",
   "foundationSlot": "Foundation {{idx}}, top {{top}}",
   "foundationSlotComplete": "Foundation {{idx}}, top {{top}} (complete)",
   "emptyFoundationSlot": "Foundation {{idx}}, empty (build from K)",

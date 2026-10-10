@@ -396,10 +396,16 @@ function DurakPageContent() {
                   >
                     {[
                       tc('label.cpuActions'),
-                      ...state.cpuActions.map(
-                        (a) =>
-                          `${playerName(state.players[a.playerIdx]?.id ?? a.playerIdx, false)}: ${t(`action.${['attack', 'defend', 'pass', 'take', 'transfer'][a.actionType] ?? 'pass'}`)}`,
-                      ),
+                      ...state.cpuActions.map((a) => {
+                        const action = t(`action.${['attack', 'defend', 'pass', 'take', 'transfer'][a.actionType]}`);
+                        const actionDetail =
+                          a.card === null
+                            ? action
+                            : a.actionType === 1
+                              ? t('cpuDefendAction', { action, card: cardAlt(a.card), attackIdx: a.attackIdx })
+                              : t('cpuCardAction', { action, card: cardAlt(a.card) });
+                        return `${playerName(state.players[a.playerIdx].id, false)}: ${actionDetail}`;
+                      }),
                     ].join('\n')}
                   </div>
                 )}

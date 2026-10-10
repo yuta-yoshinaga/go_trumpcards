@@ -408,7 +408,9 @@ function NinetyNinePageContent() {
                       <tbody>
                         {state.players.map((p) => (
                           <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
-                            <td>{playerName(p.id, p.isHuman)}</td>
+                            <th scope="row" className="text-left">
+                              {playerName(p.id, p.isHuman)}
+                            </th>
                             <td className="text-center">{p.bid >= 0 ? p.bid : '-'}</td>
                             <td className="text-center">{p.trickCount}</td>
                             <td className="text-center">{p.roundScore}</td>

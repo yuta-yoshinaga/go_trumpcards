@@ -159,13 +159,24 @@ func (p *FollowTheQueenPlayer) GetComparisonCards() []*Card {
 // 書き換えてしまう。CUI の途中経過表示はこちらを使う (#4695)。5 枚未満のときは
 // ハイカード扱いで、確定した組は返さない。
 func (p *FollowTheQueenPlayer) PeekBestHand() (rank int, best []*Card) {
+	rank, _, best = p.peekBestHand()
+	return rank, best
+}
+
+// PeekBestHandSource returns the original cards in the best five-card combination without changing player state.
+func (p *FollowTheQueenPlayer) PeekBestHandSource() (rank int, source []*Card) {
+	rank, source, _ = p.peekBestHand()
+	return rank, source
+}
+
+func (p *FollowTheQueenPlayer) peekBestHand() (rank int, source, best []*Card) {
 	all := p.GetAllCards()
 	if len(all) < 5 {
-		return PokerHandHighCard, nil
+		return PokerHandHighCard, nil, nil
 	}
 
 	bestRank := -1
-	var bestCards []*Card
+	var bestCards, bestSource []*Card
 	for _, combo := range combinations(all, 5) {
 		// **置換後の 5 枚を持ち回る。** 元の combo を bestHand にすると、
 		// 同位の比較がワイルドの印刷された額面を読み、ワイルドで作った
@@ -174,9 +185,10 @@ func (p *FollowTheQueenPlayer) PeekBestHand() (rank int, best []*Card) {
 		if r > bestRank || (r == bestRank && compareHighCardsSlice(hand, bestCards) > 0) {
 			bestRank = r
 			bestCards = hand
+			bestSource = combo
 		}
 	}
-	return bestRank, bestCards
+	return bestRank, copyOf(bestSource), bestCards
 }
 
 // SetWildRank は第2ワイルドのランクを設定する（0 で解除）。ゲーム側が表向きの

@@ -12,7 +12,8 @@
     "easy": "Easy",
     "normal": "Normal",
     "hard": "Hard",
-    "targetScore": "Target Score"
+    "targetScore": "Target Score",
+    "pendingReset": "Setting changes will apply from the next reset."
   },
   "round": "Round {{n}}",
   "deck": "Stock: {{count}}",

@@ -38,7 +38,7 @@ func (dp *DragonTigerWebPresenter) Output(dt interfaces.DragonTigerGame, lastErr
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else if dt.GetGameEndFlag() {
-		resObj.Message, resObj.MessageCode = dragonTigerEndMessage(dt)
+		resObj.MessageCode = dragonTigerEndMessage(dt)
 	} else if dt.GetPhase() == domain.DragonTigerPhaseBet && dt.GetChipsRefilled() {
 		resObj.MessageCode = "dragontiger.result.bankrollRefilled"
 		resObj.MessageParams = map[string]string{"chips": strconv.Itoa(domain.DragonTigerDefaultChips)}
@@ -53,18 +53,18 @@ func (dp *DragonTigerWebPresenter) ActionLogOutput(dt interfaces.DragonTigerGame
 }
 
 // dragonTigerEndMessage は終了時の表示メッセージと i18n キーを返す。
-func dragonTigerEndMessage(dt interfaces.DragonTigerGame) (string, string) {
+func dragonTigerEndMessage(dt interfaces.DragonTigerGame) string {
 	switch dt.GetResult() {
 	case domain.GameResultWin: // dragon wins
-		return "", "dragontiger.result.dragonWins"
+		return "dragontiger.result.dragonWins"
 	case domain.GameResultLose: // tiger wins
-		return "", "dragontiger.result.tigerWins"
+		return "dragontiger.result.tigerWins"
 	case domain.GameResultDraw:
 		if dt.GetBetType() == domain.DragonTigerBetTie {
-			return "", "dragontiger.result.tieWin"
+			return "dragontiger.result.tieWin"
 		}
-		return "", "dragontiger.result.tieRefund"
+		return "dragontiger.result.tieRefund"
 	default:
-		return "", ""
+		return ""
 	}
 }

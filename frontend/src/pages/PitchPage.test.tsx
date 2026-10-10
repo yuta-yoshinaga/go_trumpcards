@@ -108,6 +108,18 @@ beforeEach(() => {
 });
 
 describe('PitchPage', () => {
+  it.each([
+    [1, '♠', 'スペード'],
+    [2, '♣', 'クラブ'],
+    [3, '♥', 'ハート'],
+    [4, '♦', 'ダイヤ'],
+  ])('announces the trump suit name for suit %i', async (trumpSuit, symbol, name) => {
+    mockApi.mockResolvedValue({ ...playState, trumpSuit });
+    renderWithProviders(<PitchPage />);
+
+    expect(await screen.findByTestId('pt-trump-indicator')).toHaveTextContent(`${symbol}（${name}）`);
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<PitchPage />);
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('reset'));

@@ -14,7 +14,7 @@ type BuraWebPresenter struct{}
 // Output ゲーム状態をJSON出力
 func (p *BuraWebPresenter) Output(b interfaces.BuraGame, lastErr error) string {
 	resObj := p.buildBase(b)
-	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(b, lastErr)
+	resObj.Message, resObj.MessageCode = p.buildMessage(b, lastErr)
 	return marshalOrError(resObj)
 }
 
@@ -91,23 +91,23 @@ func (p *BuraWebPresenter) buildPlayersOutput(b interfaces.BuraGame) []*controll
 }
 
 // buildMessage ゲーム結果メッセージを構築
-func (p *BuraWebPresenter) buildMessage(b interfaces.BuraGame, lastErr error) (string, string, map[string]string) {
+func (p *BuraWebPresenter) buildMessage(b interfaces.BuraGame, lastErr error) (string, string) {
 	if lastErr != nil {
-		return lastErr.Error(), "", nil
+		return lastErr.Error(), ""
 	}
 	if !b.GetGameEndFlag() {
-		return "", "", nil
+		return "", ""
 	}
 	if b.IsDraw() {
-		return "draw", "bura.draw", nil
+		return "draw", "bura.draw"
 	}
 	switch b.GetWinnerIdx() {
 	case 0:
-		return "you win", "bura.win", nil
+		return "you win", "bura.win"
 	case -1:
-		return "draw", "bura.draw", nil
+		return "draw", "bura.draw"
 	default:
-		return "you lose", "bura.lose", nil
+		return "you lose", "bura.lose"
 	}
 }
 

@@ -3,8 +3,6 @@
 package controller
 
 import (
-	"strconv"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
@@ -61,16 +59,16 @@ func (c *StealingBundlesCuiController) execSteal(args []string) (string, bool) {
 	if len(args) < 1 {
 		return invalidArg("cardIndexRequired"), true
 	}
-	cardIdx, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("invalidCardIndex", "val", args[0]), true
+	cardIdx, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args, "", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg, true
 	}
 	if len(args) < 2 {
 		return invalidArg("victimIndexRequired"), true
 	}
-	victim, err := strconv.Atoi(args[1])
-	if err != nil {
-		return invalidArg("invalidVictimIndexDot", "val", args[1]), true
+	victim, parseMsg, parseOK := cuiutil.ParseIntArgKeys(args[1:], "", "invalidVictimIndexDot", cuiutil.NoMin, cuiutil.NoMax)
+	if !parseOK {
+		return parseMsg, true
 	}
 	return c.si.Steal(cardIdx, victim), true
 }

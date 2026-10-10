@@ -208,11 +208,6 @@ func (g *Pishti) pileTop() *Card {
 	return g.state.pile[len(g.state.pile)-1]
 }
 
-// allHandsEmpty は全員の手札が空かどうか。
-func (g *Pishti) allHandsEmpty() bool {
-	return allHandsEmpty(g.players)
-}
-
 // PlayerPlay は人間プレイヤーが手札 cardIndex を場へ出す。
 func (g *Pishti) PlayerPlay(cardIndex int) error {
 	if g.state.gameEndFlag {
@@ -298,7 +293,7 @@ func (g *Pishti) isCapture(card, top *Card) bool {
 // advanceTurn は手番を次に進め、必要なら配り直し・終局処理を行う。
 func (g *Pishti) advanceTurn() {
 	g.state.currentTurn = (g.state.currentTurn + 1) % len(g.players)
-	if !g.allHandsEmpty() {
+	if !allHandsEmpty(g.players) {
 		return
 	}
 	if g.trumpCards.GetRemainingCount() > 0 {

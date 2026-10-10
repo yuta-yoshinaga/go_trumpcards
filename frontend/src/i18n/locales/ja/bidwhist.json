@@ -36,6 +36,7 @@
   "bidTooLow": "現在の最高ビッド ({{tricks}} {{dir}}) を上回る必要があります",
   "passButton": "パス",
   "declareTrumpPrompt": "切り札スートを選択:",
+  "trumpSuitButtonAriaLabel": "{{glyph}} {{suit}}",
   "exchangeButton": "交換 ({{count}}/6)",
   "kittyProgress": "選択済み: {{count}} / 6",
   "kittyProgressLabel": "キティ交換の進捗",

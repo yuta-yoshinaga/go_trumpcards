@@ -154,8 +154,40 @@ describe('CallBreakPage', () => {
     });
     // 13 selectable bid options, defaulting to 1 pressed.
     expect(screen.getByTestId('bid-option-1')).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('cb-bid-selected')).toHaveTextContent('1');
     expect(screen.getByTestId('bid-option-13')).toBeInTheDocument();
     expect(screen.queryByLabelText('bid-input')).not.toBeInTheDocument();
+  });
+
+  it('resets the selected bid when a new round starts', async () => {
+    const nextRoundBidState = makeCallBreakState({
+      ...bidPhaseState,
+      roundNumber: 2,
+    });
+    mockExec.mockImplementation((command) =>
+      Promise.resolve(
+        command === 'reset' || command === 'bid'
+          ? bidPhaseState
+          : command === 'nextround'
+            ? nextRoundBidState
+            : roundEndState,
+      ),
+    );
+
+    renderWithProviders(<CallBreakPage />);
+    await waitFor(() => expect(screen.getByTestId('bid-option-1')).toHaveAttribute('aria-pressed', 'true'));
+    fireEvent.click(screen.getByTestId('bid-option-5'));
+    expect(screen.getByTestId('cb-bid-selected')).toHaveTextContent('5');
+
+    mockExec.mockImplementation((command) =>
+      Promise.resolve(command === 'nextround' ? nextRoundBidState : roundEndState),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'ビッド' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: '次のラウンド' }));
+    await waitFor(() => expect(screen.getByTestId('bid-option-1')).toHaveAttribute('aria-pressed', 'true'));
+    expect(screen.getByTestId('bid-option-5')).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByTestId('cb-bid-selected')).toHaveTextContent('1');
   });
 
   it('shows bid phase instruction when human bid turn', async () => {

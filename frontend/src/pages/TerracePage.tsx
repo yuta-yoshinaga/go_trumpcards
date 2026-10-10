@@ -339,7 +339,11 @@ function TerracePageContent() {
                             disabled={!isPlaying || loading || isAutoCompleting}
                             aria-disabled={!selectedSource || undefined}
                             aria-describedby={!selectedSource ? selectSourceHintId : undefined}
-                            aria-label={t('foundationAriaLabel', { idx, count: pile.length })}
+                            aria-label={t('foundationAriaLabel', {
+                              idx,
+                              count: pile.length,
+                              card: cardAlt(pile[pile.length - 1]),
+                            })}
                             className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
                           >
                             <AnimatedCard

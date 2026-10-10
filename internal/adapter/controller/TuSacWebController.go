@@ -12,10 +12,25 @@ import (
 // TuSacWebInput 四色牌Webインプット
 type TuSacWebInput struct {
 	BaseWebInput
+	Config *TuSacWebConfig `json:"config,omitempty"`
 	// Index は捨てる札の位置 (0 始まり)。
 	Index *int `json:"index,omitempty"`
 	// Indexes は場に出す札の位置 (0 始まり)。
 	Indexes []int `json:"indexes,omitempty"`
+}
+
+// TuSacWebConfig は四色牌の設定入力。
+type TuSacWebConfig struct {
+	Rounds *int `json:"rounds,omitempty"`
+}
+
+// ToConfig はドメイン設定に変換する。範囲検証はドメインに委ねる。
+func (c *TuSacWebConfig) ToConfig() domain.TuSacConfig {
+	cfg := domain.DefaultTuSacConfig()
+	if c != nil && c.Rounds != nil {
+		cfg.Rounds = *c.Rounds
+	}
+	return cfg
 }
 
 // TuSacWebOutCfg は四色牌の設定
@@ -116,6 +131,8 @@ func tuSacMeldPointsByKind() []int {
 
 func tuSacDispatch(bc *baseController, w http.ResponseWriter, ci usecase.TuSacInteractorIF, param TuSacWebInput, newOut func(string) *TuSacWebOutput) bool {
 	switch param.Command {
+	case "reset", "r":
+		bc.writePresenterResponse(w, ci.ResetWithConfig(param.Config.ToConfig()))
 	// **山と捨て札は別のコマンド。** 引き先を本文の真偽値にすると、
 	// 送り忘れが「山から」に化けて、狙って拾った札が黙って流れる。
 	case "draw", "d":

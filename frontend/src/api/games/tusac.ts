@@ -16,6 +16,6 @@ import { gameExec } from '../gameExec';
 export const tusacApi = {
   exec: (
     command: 'reset' | 'draw' | 'take' | 'meld' | 'discard' | 'next' | 'hint' | 'log',
-    params?: { index?: number; indexes?: number[] },
+    params?: { index?: number; indexes?: number[]; config?: { rounds: number } },
   ) => gameExec<TuSacResponse>('tusac', { command, ...params }),
 };

@@ -5,6 +5,8 @@
   "playGuide": "出せる札だけが選べます（勝てるなら勝つ義務があります）",
   "previousTrick": "前のトリック",
   "previousTrickWinner": "→ {{name}} が獲得",
+  "trickCardPlayed": "{{role}}が{{card}}を出しました",
+  "listSeparator": "、",
   "label": {
     "you": "あなた",
     "partner": "相方",

@@ -53,7 +53,7 @@ func (ap *AndarBaharWebPresenter) Output(ab interfaces.AndarBaharGame, lastErr e
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else if ab.GetGameEndFlag() {
-		resObj.Message, resObj.MessageCode = andarBaharEndMessage(ab)
+		resObj.MessageCode = andarBaharEndMessage(ab)
 	}
 
 	return marshalOrError(resObj)
@@ -70,9 +70,9 @@ func (ap *AndarBaharWebPresenter) HintOutput(ab interfaces.AndarBaharGame) strin
 }
 
 // andarBaharEndMessage は決着時の表示メッセージと i18n キーを返す。
-func andarBaharEndMessage(ab interfaces.AndarBaharGame) (string, string) {
+func andarBaharEndMessage(ab interfaces.AndarBaharGame) string {
 	if ab.GetResult() == domain.GameResultWin {
-		return "", "andarbahar.result.win"
+		return "andarbahar.result.win"
 	}
-	return "", "andarbahar.result.lose"
+	return "andarbahar.result.lose"
 }

@@ -33,7 +33,7 @@ import type { BatakResponse } from '../types/card';
 import { BatakPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { type BatakIllegalReason, batakIllegalReason } from '../utils/batakIllegalReason';
-import { cardAlt } from '../utils/cardAlt';
+import { cardAlt, isSuitDesign } from '../utils/cardAlt';
 import { BATAK_HELP, parseBatakCommand } from '../utils/cli/commands/batakCommands';
 import { formatBatakState } from '../utils/cli/formatters/batakFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -86,6 +86,14 @@ const BATAK_PHASE_KEYS: Readonly<Record<number, string>> = {
   [BatakPhase.TRICK_END]: 'trickEnd',
   [BatakPhase.ROUND_END]: 'roundEnd',
   [BatakPhase.GAME_END]: 'gameEnd',
+};
+
+/** Shared suit translation keys indexed by card design. */
+const SUIT_I18N_KEYS: Readonly<Record<'SPADE' | 'CLOVER' | 'HEART' | 'DIAMOND', string>> = {
+  SPADE: 'common.suit.spade',
+  CLOVER: 'common.suit.club',
+  HEART: 'common.suit.heart',
+  DIAMOND: 'common.suit.diamond',
 };
 
 function getRoundScorePresentation(roundScore: number) {
@@ -311,6 +319,12 @@ function BatakPageContent() {
 
                 <TrickDisplay
                   currentTrick={state.currentTrick}
+                  leadSuit={
+                    state.currentTrick.length > 0 && isSuitDesign(state.currentTrick[0].card.design)
+                      ? tc(SUIT_I18N_KEYS[state.currentTrick[0].card.design as keyof typeof SUIT_I18N_KEYS])
+                      : undefined
+                  }
+                  leadSuitLabel={t('leadSuit')}
                   players={state.players}
                   cardWidth={cardWidth}
                   label={t('currentTrick')}

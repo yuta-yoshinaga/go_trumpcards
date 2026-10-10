@@ -234,6 +234,12 @@ describe('WattenPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'K' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'A' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'ハート' })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'Schlag ランク' })).toContainElement(
+      screen.getByRole('button', { name: 'K' }),
+    );
+    expect(screen.getByRole('group', { name: '切り札スート' })).toContainElement(
+      screen.getByRole('button', { name: 'ハート' }),
+    );
     expect(screen.getByRole('button', { name: '宣言' })).toBeInTheDocument();
   });
 

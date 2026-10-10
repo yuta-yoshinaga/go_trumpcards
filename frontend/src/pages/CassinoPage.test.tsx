@@ -120,7 +120,7 @@ describe('CassinoPage', () => {
 
   it('exposes pressed state for selectable hand, table, and build cards', async () => {
     mockExec.mockResolvedValue(
-      makeState({ builds: [{ cards: [card('SPADE', 2)], value: 5, ownerIdx: 0, isMulti: false }] as never }),
+      makeState({ builds: [{ groups: [[card('SPADE', 2)]], value: 5, ownerIdx: 0, isMulti: false }] }),
     );
     renderWithProviders(<CassinoPage />);
     const handCard = await screen.findByTestId('hand-card-0');
@@ -195,7 +195,7 @@ describe('CassinoPage', () => {
 
   it('keeps selected build button name and exposes selection as pressed state', async () => {
     mockExec.mockResolvedValue(
-      makeState({ builds: [{ cards: [card('SPADE', 2)], value: 5, ownerIdx: 0, isMulti: false }] as never }),
+      makeState({ builds: [{ groups: [[card('SPADE', 2)]], value: 5, ownerIdx: 0, isMulti: false }] }),
     );
     renderWithProviders(<CassinoPage />);
     const build = await screen.findByTestId('build-0');
@@ -384,6 +384,31 @@ describe('CassinoPage', () => {
     );
     renderWithProviders(<CassinoPage />);
     await waitFor(() => expect(screen.getByTestId('build-0')).toBeInTheDocument());
+  });
+
+  it('shows every build card and separates cards by group', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        builds: [
+          {
+            ownerIdx: 1,
+            value: 8,
+            groups: [[card('SPADE', 3), card('HEART', 5)], [card('DIAMOND', 8)]],
+            isMulti: true,
+          },
+        ],
+      }),
+    );
+    renderWithProviders(<CassinoPage />);
+
+    const build = await screen.findByTestId('build-0');
+    expect(within(build).getByAltText('♠ 3')).toBeInTheDocument();
+    expect(within(build).getByAltText('♥ 5')).toBeInTheDocument();
+    expect(within(build).getByAltText('♦ 8')).toBeInTheDocument();
+    const firstCardGroup = within(build).getByAltText('♠ 3').parentElement;
+    const secondCardGroup = within(build).getByAltText('♦ 8').parentElement;
+    expect(firstCardGroup).not.toBe(secondCardGroup);
+    expect(build).toHaveAccessibleName(/♠ 3.*♥ 5.*♦ 8/);
   });
 
   it('renders the build label fully localized (no mixed English literals)', async () => {

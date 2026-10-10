@@ -31,6 +31,7 @@
   "levelLabel": "Level",
   "denomLabel": "Denomination",
   "bidButton": "Bid",
+  "selectedTrickValue": "Selected bid trick value: {{n}} points",
   "passButton": "Pass",
   "playButton": "Play",
   "nextHand": "Next hand",

@@ -26,13 +26,13 @@ func chSetHand(p *domain.ChinchonPlayer, cards ...*domain.Card) {
 }
 
 // newTestChinchon は全員人間の Chinchon を返す (CPU 自動進行を避けて決定的にテストするため)。
-func newTestChinchon(n int) *domain.Chinchon {
-	players := make([]*domain.ChinchonPlayer, 0, n)
-	for i := 0; i < n; i++ {
+func newTestChinchon() *domain.Chinchon {
+	players := make([]*domain.ChinchonPlayer, 0, 2)
+	for i := 0; i < 2; i++ {
 		players = append(players, domain.NewChinchonPlayer(true))
 	}
 	cfg := domain.DefaultChinchonConfig()
-	cfg.PlayerCount = n
+	cfg.PlayerCount = 2
 	return domain.NewChinchon(players, cfg)
 }
 
@@ -43,6 +43,24 @@ func chClearState(g *domain.Chinchon) {
 	}
 	g.SetStock(nil)
 	g.SetDiscardPile(nil)
+	g.SetGameEndFlag(false)
+	g.SetWinnerIdx(-1)
+}
+
+func TestChinchon_ClearStateRecoversFromDealtChinchon(t *testing.T) {
+	g := newTestChinchon()
+	g.Reset()
+	g.SetGameEndFlag(true)
+	g.SetWinnerIdx(1)
+
+	chClearState(g)
+	g.SetCurrentPlayerIdx(0)
+	g.SetPhase(domain.ChinchonPhaseDraw)
+	g.SetStock([]*domain.Card{chCard(domain.CardDesignHeart, 7)})
+
+	require.NoError(t, g.PlayerDrawFromStock())
+	assert.False(t, g.GetGameEndFlag())
+	assert.Equal(t, -1, g.GetWinnerIdx())
 }
 
 func TestChinchonConfig_Validate(t *testing.T) {
@@ -121,7 +139,7 @@ func TestChinchon_PlayerCountConfigurable(t *testing.T) {
 
 func TestChinchon_RankPositionAdjacency(t *testing.T) {
 	// 7 (pos 7) と J (pos 8) は隣接し、有効なランを構成する。
-	g := newTestChinchon(2)
+	g := newTestChinchon()
 	g.Reset()
 	chClearState(g)
 	// 手札: ♠5 ♠6 ♠7 ♠J(11) ♠Q(12) (5-6-7-J-Q は連続) + デッドウッド2枚
@@ -145,7 +163,7 @@ func TestChinchon_RankPositionAdjacency(t *testing.T) {
 
 func TestChinchon_ChinchonInstantWinOnDiscard(t *testing.T) {
 	// ドローで8枚にし、余分札を捨てて7枚同スート連続を残すとチンチョン (即時ゲーム勝利)。
-	g := newTestChinchon(2)
+	g := newTestChinchon()
 	g.Reset()
 	chClearState(g)
 	p := g.GetPlayer(0)
@@ -181,7 +199,7 @@ func TestChinchon_ChinchonInstantWinOnDiscard(t *testing.T) {
 
 func TestChinchon_ChinchonSevenJAdjacency(t *testing.T) {
 	// 7とJは隣接: ♦4-5-6-7-J-Q-K の7連続もチンチョン。
-	g := newTestChinchon(2)
+	g := newTestChinchon()
 	g.Reset()
 	chClearState(g)
 	p := g.GetPlayer(0)
@@ -211,7 +229,7 @@ func TestChinchon_ChinchonSevenJAdjacency(t *testing.T) {
 }
 
 func TestChinchon_KnockZeroDeadwood(t *testing.T) {
-	g := newTestChinchon(2)
+	g := newTestChinchon()
 	g.Reset()
 	chClearState(g)
 	g.GetPlayer(1).AddCard(chCard(domain.CardDesignClover, 13)) // 相手にダミー
@@ -231,7 +249,7 @@ func TestChinchon_KnockZeroDeadwood(t *testing.T) {
 }
 
 func TestChinchon_GetPlayerDeadwoodValue(t *testing.T) {
-	g := newTestChinchon(2)
+	g := newTestChinchon()
 	g.Reset()
 	chClearState(g)
 	// A full 7-card heart run melds completely → deadwood 0.
@@ -251,7 +269,7 @@ func TestChinchon_GetPlayerDeadwoodValue(t *testing.T) {
 }
 
 func TestChinchon_DrawFromStock(t *testing.T) {
-	g := newTestChinchon(2)
+	g := newTestChinchon()
 	g.Reset()
 	before := g.GetPlayer(0).GetCardsSize()
 	stockBefore := g.GetDrawPileCount()
@@ -271,14 +289,14 @@ func TestChinchon_DrawFromStock(t *testing.T) {
 }
 
 func TestChinchon_DrawFromStock_WrongPhase(t *testing.T) {
-	g := newTestChinchon(2)
+	g := newTestChinchon()
 	g.Reset()
 	g.SetPhase(domain.ChinchonPhaseDiscard)
 	assert.ErrorIs(t, g.PlayerDrawFromStock(), domain.ErrWrongPhase)
 }
 
 func TestChinchon_DrawFromStock_EmptyEndsRound(t *testing.T) {
-	g := newTestChinchon(2)
+	g := newTestChinchon()
 	g.Reset()
 	g.SetStock(nil)
 	require.NoError(t, g.PlayerDrawFromStock())
@@ -287,7 +305,7 @@ func TestChinchon_DrawFromStock_EmptyEndsRound(t *testing.T) {
 }
 
 func TestChinchon_DrawFromDiscard(t *testing.T) {
-	g := newTestChinchon(2)
+	g := newTestChinchon()
 	g.Reset()
 	chClearState(g)
 	chSetHand(g.GetPlayer(0), chCard(domain.CardDesignSpade, 1))
@@ -300,14 +318,14 @@ func TestChinchon_DrawFromDiscard(t *testing.T) {
 }
 
 func TestChinchon_DrawFromDiscard_Empty(t *testing.T) {
-	g := newTestChinchon(2)
+	g := newTestChinchon()
 	g.Reset()
 	g.SetDiscardPile(nil)
 	assert.Error(t, g.PlayerDrawFromDiscard())
 }
 
 func TestChinchon_Discard(t *testing.T) {
-	g := newTestChinchon(2)
+	g := newTestChinchon()
 	g.Reset()
 	chClearState(g)
 	chSetHand(g.GetPlayer(0), chCard(domain.CardDesignSpade, 1), chCard(domain.CardDesignSpade, 2))
@@ -320,14 +338,14 @@ func TestChinchon_Discard(t *testing.T) {
 }
 
 func TestChinchon_Discard_OutOfRange(t *testing.T) {
-	g := newTestChinchon(2)
+	g := newTestChinchon()
 	g.Reset()
 	g.SetPhase(domain.ChinchonPhaseDiscard)
 	assert.Error(t, g.PlayerDiscard(999))
 }
 
 func TestChinchon_Knock_TooHighDeadwood(t *testing.T) {
-	g := newTestChinchon(2)
+	g := newTestChinchon()
 	g.Reset()
 	chClearState(g)
 	// 全てバラバラの高デッドウッド手札 (7枚)。
@@ -346,7 +364,7 @@ func TestChinchon_Knock_TooHighDeadwood(t *testing.T) {
 }
 
 func TestChinchon_KnockAndScore(t *testing.T) {
-	g := newTestChinchon(2)
+	g := newTestChinchon()
 	g.Reset()
 	chClearState(g)
 	// プレイヤー0: ♠A-2-3 ラン + 低いデッドウッド3枚 + 捨てる1枚 → 4点でノック。
@@ -385,7 +403,7 @@ func TestChinchon_KnockAndScore(t *testing.T) {
 }
 
 func TestChinchon_Layoff(t *testing.T) {
-	g := newTestChinchon(2)
+	g := newTestChinchon()
 	g.Reset()
 	chClearState(g)
 	// ノッカーのメルド ♠A-2-3 を設定し、レイオフ可能な ♠4 を相手に持たせる。
@@ -404,7 +422,7 @@ func TestChinchon_Layoff(t *testing.T) {
 }
 
 func TestChinchon_Layoff_Invalid(t *testing.T) {
-	g := newTestChinchon(2)
+	g := newTestChinchon()
 	g.Reset()
 	chClearState(g)
 	g.SetKnockerIdx(0)
@@ -423,7 +441,7 @@ func TestChinchon_Layoff_Invalid(t *testing.T) {
 
 func TestChinchon_GetLayoffableIndices(t *testing.T) {
 	t.Run("returns indices accepted by the knocker melds", func(t *testing.T) {
-		g := newTestChinchon(2)
+		g := newTestChinchon()
 		g.Reset()
 		chClearState(g)
 		g.SetKnockerMelds([][]*domain.Card{{
@@ -438,7 +456,7 @@ func TestChinchon_GetLayoffableIndices(t *testing.T) {
 	})
 
 	t.Run("uses the current hand indices for a different hand", func(t *testing.T) {
-		g := newTestChinchon(2)
+		g := newTestChinchon()
 		g.Reset()
 		chClearState(g)
 		g.SetKnockerMelds([][]*domain.Card{{
@@ -453,7 +471,7 @@ func TestChinchon_GetLayoffableIndices(t *testing.T) {
 	})
 
 	t.Run("returns an empty slice outside layoff", func(t *testing.T) {
-		g := newTestChinchon(2)
+		g := newTestChinchon()
 		g.SetPhase(domain.ChinchonPhaseDiscard)
 		assert.NotNil(t, g.GetLayoffableIndices())
 		assert.Empty(t, g.GetLayoffableIndices())
@@ -461,7 +479,7 @@ func TestChinchon_GetLayoffableIndices(t *testing.T) {
 }
 
 func TestChinchon_Elimination(t *testing.T) {
-	g := newTestChinchon(2)
+	g := newTestChinchon()
 	cfg := g.GetConfig()
 	cfg.EliminationLimit = 5
 	g.SetConfig(cfg)
@@ -499,7 +517,7 @@ func TestChinchon_Elimination(t *testing.T) {
 }
 
 func TestChinchon_NextRound(t *testing.T) {
-	g := newTestChinchon(2)
+	g := newTestChinchon()
 	g.Reset()
 	// Restore prior-round values through the persisted session format.
 	data, err := g.MarshalJSON()
@@ -522,7 +540,7 @@ func TestChinchon_NextRound(t *testing.T) {
 }
 
 func TestChinchon_RoundScoreHistoryPersistsAcrossRoundsAndResets(t *testing.T) {
-	g := newTestChinchon(2)
+	g := newTestChinchon()
 	g.Reset()
 	g.SetStock(nil)
 	require.NoError(t, g.PlayerDrawFromStock())
@@ -543,7 +561,7 @@ func TestChinchon_RoundScoreHistoryPersistsAcrossRoundsAndResets(t *testing.T) {
 }
 
 func TestChinchon_NextRound_WrongPhase(t *testing.T) {
-	g := newTestChinchon(2)
+	g := newTestChinchon()
 	g.Reset()
 	g.NextRound() // Draw フェーズなので no-op
 	assert.Equal(t, 1, g.GetRoundNumber())
@@ -656,7 +674,7 @@ func TestChinchonPlayer_JSONRoundTrip(t *testing.T) {
 }
 
 func TestChinchon_GameEndedGuards(t *testing.T) {
-	g := newTestChinchon(2)
+	g := newTestChinchon()
 	g.Reset()
 	g.SetPhase(domain.ChinchonPhaseGameEnd)
 	// gameEndFlag は SetPhase では立たないので、JSON 経由で立てる代わりに各アクションのフェーズガードを検証。

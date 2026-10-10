@@ -342,6 +342,13 @@ describe('PanPage', () => {
     });
   });
 
+  it('marks the player at dealerIdx in the score table', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, dealerIdx: 1 });
+    renderWithProviders(<PanPage />);
+    const dealerBadge = await screen.findByText('ディーラー');
+    expect(dealerBadge.closest('tr')).toHaveTextContent('CPU 1');
+  });
+
   it('shows each player hand points in the score table at round end', async () => {
     mockExec.mockResolvedValue({
       ...roundEndState,

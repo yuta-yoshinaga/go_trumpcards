@@ -50,6 +50,7 @@ type SnapWebOutput struct {
 	SnapAvailable      bool               `json:"snapAvailable"`
 	CenterPileSize     int                `json:"centerPileSize"`
 	TopCard            *WebOutputCard     `json:"topCard,omitempty"`
+	PreviousCard       *WebOutputCard     `json:"previousCard,omitempty"`
 	Players            []*SnapWebPlayer   `json:"players"`
 	PlayerCnt          int                `json:"playerCnt"`
 	CpuDifficulty      int                `json:"cpuDifficulty"`

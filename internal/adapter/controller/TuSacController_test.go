@@ -37,6 +37,7 @@ func newTuSacMock() *usecase.MockTuSacInteractor {
 	m := new(usecase.MockTuSacInteractor)
 	out := `{"phase":0,"seats":[],"message":""}`
 	m.On("Reset").Return(out)
+	m.On("ResetWithConfig", domain.DefaultTuSacConfig()).Return(out)
 	m.On("Draw", false).Return(out)
 	m.On("Draw", true).Return(out)
 	m.On("Meld", []int{0, 3, 6}).Return(out)
@@ -46,6 +47,17 @@ func newTuSacMock() *usecase.MockTuSacInteractor {
 	m.On("Hint").Return(out)
 	m.On("ActionLog").Return(out)
 	return m
+}
+
+func TestTuSacWebController_ResetWithRoundsConfig(t *testing.T) {
+	m := newTuSacMock()
+	rounds := 9
+	m.On("ResetWithConfig", domain.TuSacConfig{Seats: domain.TuSacDefaultSeats, Rounds: rounds}).Return(`{"rounds":9}`)
+	ctrl := controller.NewTuSacWebController(func() uc.TuSacInteractorIF { return m })
+	defer ctrl.Stop()
+	input := controller.TuSacWebInput{BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "reset-rounds"}, Config: &controller.TuSacWebConfig{Rounds: &rounds}}
+	execRequest(t, ctrl.Exec, &input).CodeIs(http.StatusOK)
+	m.AssertCalled(t, "ResetWithConfig", domain.TuSacConfig{Seats: domain.TuSacDefaultSeats, Rounds: rounds})
 }
 
 // **山と捨て札は別のコマンド。** 引き先を本文にすると、送り忘れが

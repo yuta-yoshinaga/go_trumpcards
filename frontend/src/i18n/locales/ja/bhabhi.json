@@ -16,6 +16,7 @@
     "cpu": "CPU{{idx}}"
   },
   "pile": "場札",
+  "pileChanged": "場札は{{count}}枚です。",
   "trickCardByPlayer": "{{name}}が出した{{card}}",
   "lastPickup": "直前に {{name}} が {{n}} 枚引き取りました。",
   "lastFinished": "直前に {{name}} が {{rank}}番目に上がりました。",

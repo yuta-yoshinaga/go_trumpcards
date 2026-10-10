@@ -165,6 +165,73 @@ describe('ZhengPage', () => {
     await waitFor(() => expect(screen.getByTestId('zheng-turn-announce')).toHaveTextContent('あがりました'));
   });
 
+  it('announces the human and CPU finishing in the same response, human first', async () => {
+    renderWithProviders(<ZhengPage />);
+    await screen.findByTestId('play-button');
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          player(0, true, [], { isFinished: true, rank: 1 }),
+          player(1, false, [], { isFinished: true, rank: 2 }),
+          player(2, false, []),
+          player(3, false, []),
+        ],
+      }),
+    );
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    fireEvent.click(screen.getByTestId('play-button'));
+
+    const announce = await screen.findByTestId('zheng-turn-announce');
+    await waitFor(() => expect(announce).toHaveTextContent('あがりました（1位）、CPU 1 が 2位であがりました'));
+  });
+
+  it('announces a newly finished CPU by name and rank only once', async () => {
+    renderWithProviders(<ZhengPage />);
+    await screen.findByTestId('play-button');
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          player(0, true, [card('SPADE', 3)]),
+          player(1, false, [], { isFinished: true, rank: 2 }),
+          player(2, false, []),
+          player(3, false, []),
+        ],
+      }),
+    );
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    fireEvent.click(screen.getByTestId('play-button'));
+
+    const announce = await screen.findByTestId('zheng-turn-announce');
+    await waitFor(() => expect(announce).toHaveTextContent('CPU 1 が 2位であがりました'));
+    expect(announce).toHaveTextContent('CPU 1');
+  });
+
+  it('announces a newly finished CPU in English', async () => {
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      renderWithProviders(<ZhengPage />);
+      await screen.findByTestId('play-button');
+      mockExec.mockResolvedValue(
+        makeState({
+          players: [
+            player(0, true, [card('SPADE', 3)]),
+            player(1, false, [], { isFinished: true, rank: 2 }),
+            player(2, false, []),
+            player(3, false, []),
+          ],
+        }),
+      );
+      fireEvent.click(screen.getByTestId('hand-card-0'));
+      fireEvent.click(screen.getByTestId('play-button'));
+      await waitFor(() =>
+        expect(screen.getByTestId('zheng-turn-announce')).toHaveTextContent('CPU 1 finished in 2nd place'),
+      );
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
+  });
+
   it('disables play and shows a reason for an invalid combination', async () => {
     renderWithProviders(<ZhengPage />);
     // Select ♠3 + ♥5 (two different ranks) → not a legal combo.

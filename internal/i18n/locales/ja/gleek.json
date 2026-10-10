@@ -60,7 +60,6 @@
   "errDiscardCardCount": "捨てる札をちょうど {{count}} 枚選んでください",
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
   "errDuplicateDiscard": "同じ札を二度選べません",
-  "errFollowLeadSuit": "リードスートに従ってください",
   "log.bidOpen": "{{name}} は {{amount}} から競りを開始します",
   "log.turnUp": "表向きの {{card}} により切り札は {{suit}} です",
   "log.tiddyTurnUp": "ティディが表になり、{{name}} が各対戦相手から {{amount}} を受け取ります",

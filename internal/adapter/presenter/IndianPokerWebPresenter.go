@@ -54,7 +54,7 @@ func (iwp *IndianPokerWebPresenter) buildOutput(ip interfaces.IndianPokerGame, l
 	resObj.CpuActions = iwp.buildCpuActionsOutput(ip)
 	resObj.RoundResults = iwp.buildRoundResultsOutput(ip)
 
-	resObj.Message, resObj.MessageCode, resObj.MessageParams = iwp.buildMessage(ip, lastErr)
+	resObj.Message, resObj.MessageCode = iwp.buildMessage(ip, lastErr)
 
 	// メタAI情報
 	if profile := ip.GetHumanProfile(); profile != nil {
@@ -150,28 +150,27 @@ func (iwp *IndianPokerWebPresenter) buildRoundResultsOutput(ip interfaces.Indian
 }
 
 // buildMessage ゲーム結果メッセージを構築
-func (iwp *IndianPokerWebPresenter) buildMessage(ip interfaces.IndianPokerGame, lastErr error) (string, string, map[string]string) {
+func (iwp *IndianPokerWebPresenter) buildMessage(ip interfaces.IndianPokerGame, lastErr error) (string, string) {
 	if lastErr != nil {
-		return lastErr.Error(), "", nil
+		return lastErr.Error(), ""
 	}
 	if ip.GetGameEndFlag() {
-		msg, code := iwp.buildResultMessage(ip)
-		return msg, code, nil
+		return "", iwp.buildResultMessage(ip)
 	}
-	return "", "", nil
+	return "", ""
 }
 
 // buildResultMessage builds the end-of-round message and its i18n code
-func (iwp *IndianPokerWebPresenter) buildResultMessage(ip interfaces.IndianPokerGame) (string, string) {
+func (iwp *IndianPokerWebPresenter) buildResultMessage(ip interfaces.IndianPokerGame) string {
 	results := ip.GetRoundResults()
 	if len(results) == 0 {
-		return "", "indianpoker.result.gameOver"
+		return "indianpoker.result.gameOver"
 	}
 
 	for _, r := range results {
 		if ip.GetPlayer(r.PlayerIdx).GetIsHuman() {
 			if r.WonAmount > 0 {
-				return "", "indianpoker.result.win"
+				return "indianpoker.result.win"
 			}
 		}
 	}
@@ -179,11 +178,11 @@ func (iwp *IndianPokerWebPresenter) buildResultMessage(ip interfaces.IndianPoker
 	// Human not in results (folded)
 	for i := 0; i < ip.GetPlayerCnt(); i++ {
 		if ip.GetPlayer(i).GetIsHuman() && ip.GetPlayer(i).GetFolded() {
-			return "", "indianpoker.result.folded"
+			return "indianpoker.result.folded"
 		}
 	}
 
-	return "", "indianpoker.result.lose"
+	return "indianpoker.result.lose"
 }
 
 // ActionLogOutput 棋譜をJSON出力

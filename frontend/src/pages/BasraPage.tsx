@@ -19,6 +19,7 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useMountReset } from '../hooks/useMountReset';
 import { useSound } from '../providers/SoundProvider';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -126,11 +127,7 @@ function BasraPageContent() {
     }
   }, [state, playSound]);
 
-  // Fetch a fresh game on mount.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
-  useEffect(() => {
-    callApi('reset');
-  }, []);
+  useMountReset(callApi);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('basra');
   const cliConfig: CliGameConfig<BasraResponse, Parameters<typeof basraApi.exec>> = useMemo(
@@ -423,6 +420,7 @@ function BasraPageContent() {
                       <div key={p.id} data-testid={`basra-breakdown-${p.id}`}>
                         {t('result.breakdownRow', {
                           name: seatName(p.id),
+                          gained: detail.gained[p.id],
                           aces: detail.aces[p.id],
                           basras: detail.basras[p.id],
                           cards: detail.cards[p.id],

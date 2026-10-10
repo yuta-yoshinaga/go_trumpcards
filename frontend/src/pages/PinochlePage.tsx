@@ -334,6 +334,7 @@ function PinochlePageContent() {
                     <div>
                       {t('team')} {p.team} | {t('bid')}: {p.bid} | {t('meldScore')}: {p.meldScore} | {t('trickPoints')}:{' '}
                       {p.trickPoints} | {t('trickCount')}: {p.trickCount}
+                      {phase === PinochlePhase.BID && p.hasPassed && <span> | {t('passed')}</span>}
                     </div>
                   </div>
                 );

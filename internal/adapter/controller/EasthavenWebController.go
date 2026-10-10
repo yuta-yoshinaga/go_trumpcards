@@ -70,10 +70,7 @@ func easthavenDispatch(bc *baseController, w http.ResponseWriter, ei usecase.Eas
 	case "u", "undo":
 		bc.writePresenterResponse(w, ei.Undo())
 	case "undo_n":
-		if !requireParam(bc, w, newDefault, param.N == nil, "param error: n is required.") {
-			return true
-		}
-		bc.writePresenterResponse(w, ei.UndoN(*param.N))
+		dispatchUndoN(bc, w, newDefault, param.N, ei.UndoN)
 	default:
 		return dispatchResetHintAndLog(param.Command, bc, w, ei.Reset, ei.Hint, ei.ActionLog)
 	}

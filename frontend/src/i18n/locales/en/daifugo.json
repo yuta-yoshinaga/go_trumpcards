@@ -30,6 +30,8 @@
   "queenBomberBanner": "[Queen Bomber] Select a card value to remove from all players",
   "actionPlayed": "{{name}} played: {{cards}}",
   "actionPassed": "{{name}} passed",
+  "cpuActionsAnnouncement": "CPU actions: {{actions}}",
+  "listSeparator": ", ",
   "badge": {
     "revolution": "Revolution",
     "elevenBack": "11-Back",

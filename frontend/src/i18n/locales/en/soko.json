@@ -55,7 +55,7 @@
     "cpuArea": "CPU opponent information. Cards are revealed at showdown.",
     "resetButton": "Press the reset button to start a new game.",
     "fourCard": "A four-card straight (exactly four in sequence) and a four-card flush (exactly four of one suit) count as hands. When one coexists with a pair, the hand plays as the higher four-card hand.",
-    "ranking": "The order is high card < one pair < four-card straight < four-card flush < two pair < three of a kind … A four-card hand loses to two pair, so fold when an opponent shows a pair."
+    "ranking": "The order is high card < one pair < four-card straight < four-card flush < two pair < three of a kind … Four-card hands beat one pair but lose to two pair, so an opponent showing two pair is a cue to consider folding."
   },
   "hint": {
     "strongHandRank": "Strong hand — raise recommended",

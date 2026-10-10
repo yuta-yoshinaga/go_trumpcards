@@ -99,6 +99,17 @@ describe('DuchessPage', () => {
     }
   });
 
+  it('includes the top card in a non-empty foundation name and keeps empty names', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [[card('SPADE', 5)], [], [], []],
+    });
+    renderWithProviders(<DuchessPage />);
+
+    expect(await screen.findByRole('button', { name: /♠ 5/ })).toHaveAccessibleName(/♠ 5/);
+    expect(screen.getByRole('button', { name: /空の組札1/ })).toBeInTheDocument();
+  });
+
   it('explains and ignores a move target before a source is selected', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<DuchessPage />);

@@ -69,26 +69,20 @@ beforeEach(() => {
 });
 
 describe('useMarriageGame', () => {
-  it('calls reset on mount with default config', async () => {
+  it('does not initialize the game on mount', async () => {
     renderHook(() => useMarriageGame(), { wrapper: createWrapper() });
-    await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
-        playerCount: 5,
-        cpuDifficulty: 1,
-        targetRounds: 3,
-      }),
-    );
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
   });
 
-  it('returns initial state after mount', async () => {
+  it('has no state until a command is executed', async () => {
     const { result } = renderHook(() => useMarriageGame(), { wrapper: createWrapper() });
-    await waitFor(() => expect(result.current.state).toEqual(defaultState));
+    await flushPendingDispatch();
+    expect(result.current.state).toBeNull();
   });
 
   it('handleDrawStock dispatches drawstock command', async () => {
     const { result } = renderHook(() => useMarriageGame(), { wrapper: createWrapper() });
-    await waitFor(() => expect(result.current.state).not.toBeNull());
-
     mockExec.mockClear();
     mockExec.mockResolvedValue(defaultState);
     act(() => {
@@ -99,8 +93,6 @@ describe('useMarriageGame', () => {
 
   it('handleDrawDiscard dispatches drawdiscard command', async () => {
     const { result } = renderHook(() => useMarriageGame(), { wrapper: createWrapper() });
-    await waitFor(() => expect(result.current.state).not.toBeNull());
-
     mockExec.mockClear();
     mockExec.mockResolvedValue(defaultState);
     act(() => {
@@ -111,8 +103,6 @@ describe('useMarriageGame', () => {
 
   it('handleDiscard dispatches discard with the single selected card', async () => {
     const { result } = renderHook(() => useMarriageGame(), { wrapper: createWrapper() });
-    await waitFor(() => expect(result.current.state).not.toBeNull());
-
     act(() => {
       result.current.toggleCard(2);
     });
@@ -126,7 +116,6 @@ describe('useMarriageGame', () => {
 
   it('handleDiscard does nothing when no card selected', async () => {
     const { result } = renderHook(() => useMarriageGame(), { wrapper: createWrapper() });
-    await waitFor(() => expect(result.current.state).not.toBeNull());
 
     mockExec.mockClear();
     act(() => {
@@ -138,8 +127,6 @@ describe('useMarriageGame', () => {
 
   it('handleDiscard does nothing when multiple cards selected', async () => {
     const { result } = renderHook(() => useMarriageGame(), { wrapper: createWrapper() });
-    await waitFor(() => expect(result.current.state).not.toBeNull());
-
     act(() => {
       result.current.toggleCard(0);
       result.current.toggleCard(1);
@@ -154,8 +141,6 @@ describe('useMarriageGame', () => {
 
   it('handleDeclare dispatches declare with the single selected card', async () => {
     const { result } = renderHook(() => useMarriageGame(), { wrapper: createWrapper() });
-    await waitFor(() => expect(result.current.state).not.toBeNull());
-
     act(() => {
       result.current.toggleCard(3);
     });
@@ -169,7 +154,6 @@ describe('useMarriageGame', () => {
 
   it('handleDeclare does nothing when no card selected', async () => {
     const { result } = renderHook(() => useMarriageGame(), { wrapper: createWrapper() });
-    await waitFor(() => expect(result.current.state).not.toBeNull());
 
     mockExec.mockClear();
     act(() => {
@@ -181,7 +165,6 @@ describe('useMarriageGame', () => {
 
   it('handleNextRound dispatches nextround command', async () => {
     const { result } = renderHook(() => useMarriageGame(), { wrapper: createWrapper() });
-    await waitFor(() => expect(result.current.state).not.toBeNull());
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(defaultState);
@@ -193,7 +176,6 @@ describe('useMarriageGame', () => {
 
   it('handleConfigChange updates config with a valid number', async () => {
     const { result } = renderHook(() => useMarriageGame(), { wrapper: createWrapper() });
-    await waitFor(() => expect(result.current.state).not.toBeNull());
 
     act(() => {
       result.current.handleConfigChange('playerCount', '3');
@@ -203,7 +185,6 @@ describe('useMarriageGame', () => {
 
   it('handleConfigChange ignores NaN values', async () => {
     const { result } = renderHook(() => useMarriageGame(), { wrapper: createWrapper() });
-    await waitFor(() => expect(result.current.state).not.toBeNull());
 
     act(() => {
       result.current.handleConfigChange('playerCount', 'abc');
@@ -213,7 +194,6 @@ describe('useMarriageGame', () => {
 
   it('clears selection on success', async () => {
     const { result } = renderHook(() => useMarriageGame(), { wrapper: createWrapper() });
-    await waitFor(() => expect(result.current.state).not.toBeNull());
 
     act(() => {
       result.current.toggleCard(0);

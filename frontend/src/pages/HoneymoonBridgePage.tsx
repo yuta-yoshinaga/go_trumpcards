@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { honeymoonbridgeApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -18,6 +18,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useMountReset } from '../hooks/useMountReset';
 import { badgeInfoColors } from '../styles/badgeStyles';
 import { btnDanger, btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -99,9 +100,7 @@ function HoneymoonBridgePageContent() {
   );
   const { handleCommand } = useCliGame(dispatch, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  useEffect(() => {
-    void dispatch('reset');
-  }, [dispatch]);
+  useMountReset(dispatch);
 
   const handleReset = useCallback(() => {
     hideActionLog();
@@ -169,7 +168,7 @@ function HoneymoonBridgePageContent() {
           ? t('phase.draw')
           : t('phase.play');
 
-  // 出せる札に緑の枠を足すだけで、押せなくはしない（サーバが必ず検証する）。
+  // 人間の手番では、0始まりの validPlays に含まれる札だけを選べる。
   const legalRing = new Set(isHumanTurn ? state.validPlays : []);
   const drawnIndices = new Set(state.drawnIndices ?? []);
 
@@ -356,27 +355,39 @@ function HoneymoonBridgePageContent() {
                   {t('header.you')}: {human.cardCount}
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {human.cards.map((card, idx) => (
-                    <button
-                      key={`${card.design}-${card.value}-${idx}`}
-                      type="button"
-                      onClick={() => handlePlay(idx)}
-                      disabled={loading || !isHumanTurn}
-                      aria-label={t('actions.playAria', { card: cardAlt(card) })}
-                      className={`relative disabled:opacity-50 ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
-                    >
-                      <CardImage card={card} width={cardWidth} />
-                      {drawnIndices.has(idx) && (
-                        <span
-                          data-testid={`hb-drawn-${idx.toString()}`}
-                          className={`absolute top-0 left-0 rounded-br px-1 text-[10px] leading-tight ${badgeInfoColors}`}
-                        >
-                          <span aria-hidden="true">{t('header.drawnBadge')}</span>
-                          <span className="sr-only">{t('header.drawnAria')}</span>
-                        </span>
-                      )}
-                    </button>
-                  ))}
+                  {isHumanTurn && legalRing.size < human.cards.length && (
+                    <span id="hb-illegal-play-reason" className="sr-only">
+                      {t('actions.illegalPlayReason')}
+                    </span>
+                  )}
+                  {human.cards.map((card, idx) => {
+                    const illegalPlay = isHumanTurn && !legalRing.has(idx);
+                    return (
+                      <button
+                        key={`${card.design}-${card.value}-${idx}`}
+                        type="button"
+                        onClick={() => {
+                          if (!illegalPlay) handlePlay(idx);
+                        }}
+                        disabled={loading || !isHumanTurn}
+                        aria-disabled={illegalPlay ? 'true' : undefined}
+                        aria-describedby={illegalPlay ? 'hb-illegal-play-reason' : undefined}
+                        aria-label={t('actions.playAria', { card: cardAlt(card) })}
+                        className={`relative disabled:opacity-50 aria-disabled:opacity-50 aria-disabled:cursor-not-allowed ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
+                      >
+                        <CardImage card={card} width={cardWidth} />
+                        {drawnIndices.has(idx) && (
+                          <span
+                            data-testid={`hb-drawn-${idx.toString()}`}
+                            className={`absolute top-0 left-0 rounded-br px-1 text-[10px] leading-tight ${badgeInfoColors}`}
+                          >
+                            <span aria-hidden="true">{t('header.drawnBadge')}</span>
+                            <span className="sr-only">{t('header.drawnAria')}</span>
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}

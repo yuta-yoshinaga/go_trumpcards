@@ -139,6 +139,36 @@ describe('SlyFoxPage', () => {
     expect(screen.getByTestId('co-foundation-next-5')).toHaveTextContent('K');
   });
 
+  it('includes the foundation top card in localized names and keeps empty and complete states', async () => {
+    const fullAscending = Array.from({ length: 13 }, (_, index) => card('SPADE', index + 1));
+    mockExec.mockResolvedValue(
+      makeState({
+        foundation: [[card('HEART', 1), card('SPADE', 2)], [], [], fullAscending, [card('SPADE', 13)], [], [], []],
+      }),
+    );
+    renderWithProviders(<SlyFoxPage />);
+
+    const populated = await screen.findByTestId('co-foundation-0');
+    expect(populated).toHaveAccessibleName(`組札 0 昇順、最上札 ${cardAlt(card('SPADE', 2))}、次に置くべきカード 3`);
+    expect(screen.getByTestId('co-foundation-1')).toHaveAccessibleName('組札 1 昇順、次に置くべきカード A');
+    expect(screen.getByTestId('co-foundation-3')).toHaveAccessibleName(
+      `組札 3 昇順、最上札 ${cardAlt(card('SPADE', 13))}、完成`,
+    );
+
+    try {
+      await i18n.changeLanguage('en');
+      expect(populated).toHaveAccessibleName(
+        `Foundation 0 ascending, top card ${cardAlt(card('SPADE', 2))}, needs 3 next`,
+      );
+      expect(screen.getByTestId('co-foundation-1')).toHaveAccessibleName('Foundation 1 ascending, needs A next');
+      expect(screen.getByTestId('co-foundation-3')).toHaveAccessibleName(
+        `Foundation 3 ascending, top card ${cardAlt(card('SPADE', 13))}, complete`,
+      );
+    } finally {
+      await i18n.changeLanguage(originalLanguage);
+    }
+  });
+
   it('renders every tableau pile', async () => {
     renderWithProviders(<SlyFoxPage />);
     await waitFor(() => expect(screen.getByTestId('co-tableau-0')).toBeInTheDocument());

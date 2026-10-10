@@ -385,6 +385,59 @@ func TestOasisPoker_Payouts_PlayerLoses(t *testing.T) {
 	assert.Equal(t, 0, op.GetPlayPayout())
 }
 
+func TestOasisPoker_GetNetChange_MatchesChipDifference(t *testing.T) {
+	winningHand := makeHand(
+		cd{domain.CardDesignSpade, 2}, cd{domain.CardDesignClover, 2},
+		cd{domain.CardDesignHeart, 7}, cd{domain.CardDesignDiamond, 9},
+		cd{domain.CardDesignSpade, 11})
+	qualifiedDealer := makeHand(
+		cd{domain.CardDesignDiamond, 3}, cd{domain.CardDesignHeart, 3},
+		cd{domain.CardDesignClover, 6}, cd{domain.CardDesignSpade, 8},
+		cd{domain.CardDesignDiamond, 10})
+	weakDealer := makeHand(
+		cd{domain.CardDesignDiamond, 12}, cd{domain.CardDesignHeart, 5},
+		cd{domain.CardDesignClover, 3}, cd{domain.CardDesignSpade, 7},
+		cd{domain.CardDesignDiamond, 9})
+	tests := []struct {
+		name       string
+		exchange   bool
+		fold       bool
+		playerHand []*domain.Card
+		dealerHand []*domain.Card
+	}{
+		{name: "WinWithoutExchange", playerHand: winningHand, dealerHand: qualifiedDealer},
+		{name: "WinWithExchange", exchange: true, playerHand: winningHand, dealerHand: qualifiedDealer},
+		{name: "Fold", fold: true, playerHand: winningHand, dealerHand: qualifiedDealer},
+		{name: "DealerNotQualified", playerHand: makeHand(
+			cd{domain.CardDesignSpade, 1}, cd{domain.CardDesignClover, 4},
+			cd{domain.CardDesignHeart, 6}, cd{domain.CardDesignDiamond, 8},
+			cd{domain.CardDesignSpade, 10}), dealerHand: weakDealer},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			op := domain.NewDefaultOasisPoker()
+			chipsBefore := op.GetChips()
+			require.NoError(t, op.Bet(100, 0))
+			op.SetPlayerHand(tt.playerHand)
+			op.SetDealerHand(tt.dealerHand)
+			if tt.exchange {
+				require.NoError(t, op.Exchange([]int{0}))
+				// Keep the final hand deterministic after exercising the fee deduction.
+				op.SetPlayerHand(tt.playerHand)
+			} else {
+				require.NoError(t, op.Stand())
+			}
+			if tt.fold {
+				require.NoError(t, op.Fold())
+			} else {
+				require.NoError(t, op.Play())
+			}
+			assert.Equal(t, op.GetChips()-chipsBefore, op.GetNetChange())
+		})
+	}
+}
+
 func TestOasisPoker_Payouts_Push(t *testing.T) {
 	op := domain.NewDefaultOasisPoker()
 	require.NoError(t, op.Bet(100, 0))

@@ -28,7 +28,7 @@
   "tutorial": {
     "foundation": "Build 4 foundation piles by suit from Ace to King.",
     "tableau": "13 tableau columns of 4 cards each. Kings are automatically moved to the bottom at deal time.",
-    "moves": "Move single cards onto any card one rank lower (suit doesn't matter). Empty columns cannot be filled.",
+    "moves": "Move a single card or a descending sequence of cards in the same suit together. A card goes only onto the card one rank higher in the same suit (for example ♠8 onto ♠9). Empty columns cannot be filled.",
     "controls": "Use hint, undo, and auto-complete buttons."
   },
   "frontendHint": {

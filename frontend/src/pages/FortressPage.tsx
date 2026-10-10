@@ -39,6 +39,7 @@ import { fortressLegalTargets } from '../utils/fortressLegalTargets';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
+const SUIT_I18N_KEYS = ['common.suit.spade', 'common.suit.club', 'common.suit.heart', 'common.suit.diamond'] as const;
 
 const BC_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -393,7 +394,7 @@ function FortressPageContent() {
                             aria-disabled={!selectedSource || undefined}
                             aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('foundationAriaLabel', {
-                              suit: FOUNDATION_SUITS[idx],
+                              suit: tc(SUIT_I18N_KEYS[idx]),
                               count: pile.length,
                               topCard: cardAlt(pile[pile.length - 1]),
                             })}
@@ -419,7 +420,7 @@ function FortressPageContent() {
                             disabled={!isPlaying || loading}
                             aria-disabled={!selectedSource || undefined}
                             aria-describedby={!selectedSource ? selectSourceHintId : undefined}
-                            aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
+                            aria-label={t('emptyFoundationAriaLabel', { suit: tc(SUIT_I18N_KEYS[idx]) })}
                             style={{ width: dims.cw, height: dims.ch }}
                             className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}${
                               isFoundationHintTarget ? ' ring-2 ring-ds-success motion-safe:animate-pulse' : ''

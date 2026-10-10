@@ -129,21 +129,22 @@ func (c SixCardGolfConfig) Validate() error {
 
 // SixCardGolf シックスカードゴルフゲーム
 type SixCardGolf struct {
-	trumpCards       *TrumpCards
-	players          []*SixCardGolfPlayer
-	config           SixCardGolfConfig
-	phase            SixCardGolfPhase
-	currentPlayerIdx int
-	drawPile         []*Card
-	discardPile      []*Card
-	drawnCard        *Card
-	drawnFromDiscard bool
-	canFlip          bool
-	roundNumber      int
-	finalTurnTrigger int
-	finalTurnDone    []bool
-	gameEndFlag      bool
-	winnerIdx        int
+	trumpCards        *TrumpCards
+	players           []*SixCardGolfPlayer
+	config            SixCardGolfConfig
+	phase             SixCardGolfPhase
+	currentPlayerIdx  int
+	drawPile          []*Card
+	discardPile       []*Card
+	drawnCard         *Card
+	drawnFromDiscard  bool
+	canFlip           bool
+	roundNumber       int
+	finalTurnTrigger  int
+	finalTurnDone     []bool
+	roundScoreHistory [][]int
+	gameEndFlag       bool
+	winnerIdx         int
 	actionLogBase
 	rng *rand.Rand
 }
@@ -156,12 +157,13 @@ func NewSixCardGolf(trumpCards *TrumpCards, config SixCardGolfConfig) *SixCardGo
 		players[i] = &SixCardGolfPlayer{IsCpu: true}
 	}
 	return &SixCardGolf{
-		trumpCards:       trumpCards,
-		players:          players,
-		config:           config,
-		winnerIdx:        -1,
-		finalTurnTrigger: -1,
-		rng:              rand.New(rand.NewSource(rand.Int63())),
+		trumpCards:        trumpCards,
+		players:           players,
+		config:            config,
+		winnerIdx:         -1,
+		finalTurnTrigger:  -1,
+		roundScoreHistory: make([][]int, 0),
+		rng:               rand.New(rand.NewSource(rand.Int63())),
 	}
 }
 
@@ -178,6 +180,7 @@ func (g *SixCardGolf) Reset() {
 	g.gameEndFlag = false
 	g.winnerIdx = -1
 	g.roundNumber = 1
+	g.roundScoreHistory = make([][]int, 0)
 	g.actionLog = nil
 
 	pc := g.config.PlayerCount
@@ -635,10 +638,13 @@ func (g *SixCardGolf) scoreRound() {
 		}
 	}
 
+	roundScores := make([]int, len(g.players))
 	for i, p := range g.players {
 		p.RoundScore = g.ScorePlayer(i)
+		roundScores[i] = p.RoundScore
 		p.CumulativeScore += p.RoundScore
 	}
+	g.roundScoreHistory = append(g.roundScoreHistory, roundScores)
 
 	if g.roundNumber >= g.config.Rounds {
 		g.gameEndFlag = true
@@ -826,6 +832,15 @@ func (g *SixCardGolf) IsHumanTurn() bool {
 // GetRoundNumber ラウンド番号
 func (g *SixCardGolf) GetRoundNumber() int { return g.roundNumber }
 
+// GetRoundScoreHistory returns a copy of each completed round's player scores.
+func (g *SixCardGolf) GetRoundScoreHistory() [][]int {
+	history := make([][]int, len(g.roundScoreHistory))
+	for i, scores := range g.roundScoreHistory {
+		history[i] = append([]int(nil), scores...)
+	}
+	return history
+}
+
 // GetCurrentPlayerIdx 現在プレイヤー
 func (g *SixCardGolf) GetCurrentPlayerIdx() int { return g.currentPlayerIdx }
 
@@ -911,22 +926,23 @@ func (g *SixCardGolf) SetPlayerGrid(idx int, grid [SixCardGolfGridSize]SixCardGo
 // --- JSON ---
 
 type sixCardGolfJSON struct {
-	TrumpCards       *TrumpCards            `json:"tc"`
-	Players          []*sixCardGolfPlayerJS `json:"pl"`
-	Config           SixCardGolfConfig      `json:"cf"`
-	Phase            SixCardGolfPhase       `json:"ph"`
-	CurrentPlayerIdx int                    `json:"ci"`
-	DrawPile         []*Card                `json:"dp"`
-	DiscardPile      []*Card                `json:"di"`
-	DrawnCard        *Card                  `json:"dc"`
-	DrawnFromDiscard bool                   `json:"df"`
-	CanFlip          bool                   `json:"fl"`
-	RoundNumber      int                    `json:"rn"`
-	FinalTurnTrigger int                    `json:"ft"`
-	FinalTurnDone    []bool                 `json:"fd"`
-	GameEndFlag      bool                   `json:"ge"`
-	WinnerIdx        int                    `json:"wi"`
-	ActionLog        []*ActionLogEntry      `json:"al"`
+	TrumpCards        *TrumpCards            `json:"tc"`
+	Players           []*sixCardGolfPlayerJS `json:"pl"`
+	Config            SixCardGolfConfig      `json:"cf"`
+	Phase             SixCardGolfPhase       `json:"ph"`
+	CurrentPlayerIdx  int                    `json:"ci"`
+	DrawPile          []*Card                `json:"dp"`
+	DiscardPile       []*Card                `json:"di"`
+	DrawnCard         *Card                  `json:"dc"`
+	DrawnFromDiscard  bool                   `json:"df"`
+	CanFlip           bool                   `json:"fl"`
+	RoundNumber       int                    `json:"rn"`
+	FinalTurnTrigger  int                    `json:"ft"`
+	FinalTurnDone     []bool                 `json:"fd"`
+	GameEndFlag       bool                   `json:"ge"`
+	WinnerIdx         int                    `json:"wi"`
+	ActionLog         []*ActionLogEntry      `json:"al"`
+	RoundScoreHistory [][]int                `json:"rh"`
 }
 
 type sixCardGolfPlayerJS struct {
@@ -946,21 +962,22 @@ const sixCardGolfMaxSliceLen = 200
 // MarshalJSON implements json.Marshaler.
 func (g *SixCardGolf) MarshalJSON() ([]byte, error) {
 	j := sixCardGolfJSON{
-		TrumpCards:       g.trumpCards,
-		Config:           g.config,
-		Phase:            g.phase,
-		CurrentPlayerIdx: g.currentPlayerIdx,
-		DrawPile:         g.drawPile,
-		DiscardPile:      g.discardPile,
-		DrawnCard:        g.drawnCard,
-		DrawnFromDiscard: g.drawnFromDiscard,
-		CanFlip:          g.canFlip,
-		RoundNumber:      g.roundNumber,
-		FinalTurnTrigger: g.finalTurnTrigger,
-		FinalTurnDone:    g.finalTurnDone,
-		GameEndFlag:      g.gameEndFlag,
-		WinnerIdx:        g.winnerIdx,
-		ActionLog:        g.actionLog,
+		TrumpCards:        g.trumpCards,
+		Config:            g.config,
+		Phase:             g.phase,
+		CurrentPlayerIdx:  g.currentPlayerIdx,
+		DrawPile:          g.drawPile,
+		DiscardPile:       g.discardPile,
+		DrawnCard:         g.drawnCard,
+		DrawnFromDiscard:  g.drawnFromDiscard,
+		CanFlip:           g.canFlip,
+		RoundNumber:       g.roundNumber,
+		FinalTurnTrigger:  g.finalTurnTrigger,
+		FinalTurnDone:     g.finalTurnDone,
+		GameEndFlag:       g.gameEndFlag,
+		WinnerIdx:         g.winnerIdx,
+		ActionLog:         g.actionLog,
+		RoundScoreHistory: g.roundScoreHistory,
 	}
 	j.Players = make([]*sixCardGolfPlayerJS, len(g.players))
 	for i, p := range g.players {
@@ -988,6 +1005,16 @@ func (g *SixCardGolf) UnmarshalJSON(data []byte) error {
 	}
 	if len(j.Players) < SixCardGolfPlayerMin || len(j.Players) > SixCardGolfPlayerMax {
 		return fmt.Errorf("sixcardgolf: invalid player count")
+	}
+	for _, scores := range j.RoundScoreHistory {
+		if len(scores) != len(j.Players) {
+			return fmt.Errorf("sixcardgolf: invalid round score history")
+		}
+		for _, score := range scores {
+			if score < 0 {
+				return fmt.Errorf("sixcardgolf: invalid round score")
+			}
+		}
 	}
 
 	g.trumpCards = j.TrumpCards
@@ -1020,6 +1047,10 @@ func (g *SixCardGolf) UnmarshalJSON(data []byte) error {
 		g.winnerIdx = -1
 	}
 	g.actionLog = j.ActionLog
+	g.roundScoreHistory = j.RoundScoreHistory
+	if g.roundScoreHistory == nil {
+		g.roundScoreHistory = make([][]int, 0)
+	}
 	if g.actionLog == nil {
 		g.actionLog = make([]*ActionLogEntry, 0)
 	}

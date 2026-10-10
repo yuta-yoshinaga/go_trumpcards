@@ -992,8 +992,8 @@ func (b *Coinche) validatePlay(playerIdx int, card *Card) error {
 
 	// リードが非トランプ
 	if hasLead {
-		if cardSuit != leadSuit {
-			return NewDomainErrorCode(ErrInvalidPlay, "coinche.errFollowLeadSuit", nil)
+		if err := validateFollowSuit(b.currentTrick, b.players, playerIdx, card); err != nil {
+			return err
 		}
 		return nil
 	}
@@ -1002,7 +1002,7 @@ func (b *Coinche) validatePlay(playerIdx int, card *Card) error {
 	hasTrump := b.playerHasSuit(player, b.trumpSuit)
 	trickHasTrump := b.trickContainsTrump()
 	partnerIdx := (playerIdx + 2) % CoinchePlayerCnt
-	partnerWinning := b.partnerIsCurrentlyWinning(playerIdx, partnerIdx)
+	partnerWinning := b.partnerIsCurrentlyWinning(partnerIdx)
 
 	if hasTrump && !partnerWinning {
 		// トランプ義務
@@ -1070,7 +1070,7 @@ func (b *Coinche) trickContainsTrump() bool {
 }
 
 // partnerIsCurrentlyWinning 現トリックでパートナーが現勝者か
-func (b *Coinche) partnerIsCurrentlyWinning(playerIdx, partnerIdx int) bool {
+func (b *Coinche) partnerIsCurrentlyWinning(partnerIdx int) bool {
 	if len(b.currentTrick) == 0 {
 		return false
 	}

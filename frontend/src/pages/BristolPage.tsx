@@ -428,7 +428,15 @@ function BristolPageContent() {
                         }}
                         disabled={!isPlaying || loading}
                         aria-disabled={(col.length === 0 && !selected) || undefined}
-                        aria-label={t('tableauColAria', { num: colIdx + 1, count: col.length })}
+                        aria-label={
+                          col.length === 0
+                            ? t('tableauColAriaEmpty', { num: colIdx + 1 })
+                            : t('tableauColAria', {
+                                num: colIdx + 1,
+                                card: cardAlt(col[col.length - 1]),
+                                count: col.length,
+                              })
+                        }
                         aria-describedby={
                           [
                             !selected && col.length === 0 ? selectSourceHintId : undefined,

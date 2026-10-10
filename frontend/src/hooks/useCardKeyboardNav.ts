@@ -29,6 +29,8 @@ export function useCardKeyboardNav({
   arrowSelection = false,
   onFocusIndexChange,
 }: UseCardKeyboardNavOptions): void {
+  const enabledRef = useRef(enabled);
+  enabledRef.current = enabled;
   const focusedIndexRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -47,6 +49,7 @@ export function useCardKeyboardNav({
     if (!enabled) return;
 
     const handler = (e: KeyboardEvent) => {
+      if (!enabledRef.current) return;
       if (isModalOpen()) return;
       const tag = (e.target as HTMLElement)?.tagName;
       if (tag && IGNORED_TAGS.has(tag)) return;

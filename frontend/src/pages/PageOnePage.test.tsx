@@ -93,6 +93,16 @@ describe('PageOnePage', () => {
     );
   });
 
+  it('shows the pending reset notice only after a setting differs from the active game', async () => {
+    renderWithProviders(<PageOnePage />);
+
+    await screen.findByRole('heading', { level: 1 });
+    expect(screen.queryByText('設定の変更は次のリセットから適用されます。')).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText('CPU難易度'), { target: { value: '2' } });
+    expect(await screen.findByText('設定の変更は次のリセットから適用されます。')).toBeInTheDocument();
+  });
+
   it('exposes the CPU last-card badge to assistive tech via a polite live region', async () => {
     mockExec.mockResolvedValue(cpuAtOneCardState);
     renderWithProviders(<PageOnePage />);

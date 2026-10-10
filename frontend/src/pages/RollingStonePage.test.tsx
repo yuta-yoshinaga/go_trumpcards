@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { rollingstoneApi } from '../api/gameApi';
+import { actionLogApi, rollingstoneApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, RollingStoneResponse } from '../types/card';
@@ -16,6 +16,7 @@ vi.mock('../hooks/useGameHint', () => ({
 }));
 
 const mockExec = vi.mocked(rollingstoneApi.exec);
+const mockActionLog = vi.mocked(actionLogApi.rollingstone);
 
 const card = (design: string, value: number): Card => ({ design, value }) as unknown as Card;
 
@@ -71,6 +72,15 @@ beforeEach(() => {
 });
 
 describe('RollingStonePage', () => {
+  it('opens the action log during play', async () => {
+    mockActionLog.mockResolvedValue({
+      entries: [{ turnNumber: 1, playerIdx: 0, actionType: 'play', detail: '♠ 8 を出しました', cards: [] }],
+    });
+    renderWithProviders(<RollingStonePage />);
+    fireEvent.click(await screen.findByRole('button', { name: '棋譜を見る' }));
+    expect(await screen.findByRole('region', { name: '棋譜' })).toHaveTextContent('♠ 8 を出しました');
+  });
+
   it('resets on mount', async () => {
     renderWithProviders(<RollingStonePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

@@ -20,6 +20,8 @@
   "foundationAriaLabel": "{{suit}} Foundation ({{cardCount}} cards)",
   "emptyFoundationAriaLabel": "{{suit}} Foundation (empty)",
   "emptyFreecellAriaLabel": "Free Cell {{idx}} (empty)",
+  "tableauCardAriaLabel": "{{card}}, column {{col}}, position {{pos}}",
+  "tableauCardAriaLabelWithLimit": "{{card}}, column {{col}}, position {{pos}}. {{limit}}",
   "supermoveLimitTooltip": "Only {{limit}} card(s) can be moved at once",
   "supermoveLimitLabel": "Max bulk move: {{limit}} cards",
   "supermoveToEmpty": "(to an empty column: {{limit}})",

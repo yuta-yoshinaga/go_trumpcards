@@ -31,6 +31,7 @@
   "tricksWon": "獲得 {{n}}",
   "bidProgressAria": "{{name}} のビッド達成状況",
   "currentTrick": "現在のトリック",
+  "leadSuit": "リードスート",
   "trickWinnerBadge": "勝者",
   "scores": "スコア",
   "scoresPlayer": "プレイヤー",

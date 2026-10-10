@@ -508,7 +508,7 @@ func TestDaifugoCuiPresenter_MarksPlayableCards(t *testing.T) {
 	defer color.SetNoColor(origNoColor)
 	tdp := new(presenter.DaifugoCuiPresenter)
 
-	newGame := func(hand ...*domain.Card) (*domain.Daifugo, []*domain.DaifugoPlayer) {
+	newGame := func(hand ...*domain.Card) *domain.Daifugo {
 		players := makeDaifugoPlayersForPresenter()
 		dg := domain.NewDaifugo(domain.NewTrumpCards(0), players, domain.DefaultDaifugoConfig())
 		dg.SetCurrentTurn(0)
@@ -518,12 +518,12 @@ func TestDaifugoCuiPresenter_MarksPlayableCards(t *testing.T) {
 		for i := 1; i < len(players); i++ {
 			players[i].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
 		}
-		return dg, players
+		return dg
 	}
 	card := func(design, value int) *domain.Card { return domain.NewCard(design, value, false) }
 
 	t.Run("stars the card that beats the table and leaves the other bare", func(t *testing.T) {
-		dg, _ := newGame(card(domain.CardDesignSpade, 5), card(domain.CardDesignHeart, 12))
+		dg := newGame(card(domain.CardDesignSpade, 5), card(domain.CardDesignHeart, 12))
 		dg.SetTableCards([]*domain.Card{card(domain.CardDesignClover, 9)})
 
 		result := tdp.Output(dg, nil)
@@ -533,7 +533,7 @@ func TestDaifugoCuiPresenter_MarksPlayableCards(t *testing.T) {
 	})
 
 	t.Run("stars every card when the table is empty", func(t *testing.T) {
-		dg, _ := newGame(card(domain.CardDesignSpade, 5), card(domain.CardDesignHeart, 12))
+		dg := newGame(card(domain.CardDesignSpade, 5), card(domain.CardDesignHeart, 12))
 
 		result := tdp.Output(dg, nil)
 		assert.Contains(t, result, "[0]♠5*")
@@ -541,7 +541,7 @@ func TestDaifugoCuiPresenter_MarksPlayableCards(t *testing.T) {
 	})
 
 	t.Run("stars nothing when no card can be played", func(t *testing.T) {
-		dg, _ := newGame(card(domain.CardDesignSpade, 4), card(domain.CardDesignHeart, 5))
+		dg := newGame(card(domain.CardDesignSpade, 4), card(domain.CardDesignHeart, 5))
 		dg.SetTableCards([]*domain.Card{card(domain.CardDesignClover, 13)})
 
 		assert.NotContains(t, tdp.Output(dg, nil), "*")
@@ -551,7 +551,7 @@ func TestDaifugoCuiPresenter_MarksPlayableCards(t *testing.T) {
 	// 計算したインデックスをそのまま人間の手札に当てると、出せない札に
 	// 印が付く。
 	t.Run("stars nothing while a CPU is to act", func(t *testing.T) {
-		dg, _ := newGame(card(domain.CardDesignSpade, 4), card(domain.CardDesignHeart, 5))
+		dg := newGame(card(domain.CardDesignSpade, 4), card(domain.CardDesignHeart, 5))
 		dg.SetTableCards([]*domain.Card{card(domain.CardDesignClover, 13)})
 		dg.SetCurrentTurn(1)
 
@@ -561,7 +561,7 @@ func TestDaifugoCuiPresenter_MarksPlayableCards(t *testing.T) {
 	// **革命中は印の付く札が入れ替わる。**場の状態を見ていない実装だと
 	// ここで通らない。
 	t.Run("a revolution moves the star to the weaker card", func(t *testing.T) {
-		dg, _ := newGame(card(domain.CardDesignSpade, 5), card(domain.CardDesignHeart, 12))
+		dg := newGame(card(domain.CardDesignSpade, 5), card(domain.CardDesignHeart, 12))
 		dg.SetTableCards([]*domain.Card{card(domain.CardDesignClover, 9)})
 		dg.SetRevolutionActive(true)
 

@@ -60,6 +60,12 @@
     "declarerContract": "宣言者契約",
     "defendingContract": "防御側契約"
   },
+  "scoreHistory": {
+    "title": "得点履歴",
+    "player": "プレイヤー",
+    "round": "{{n}}ラウンド",
+    "points": "{{round}}（累計 {{total}}）"
+  },
   "progress": {
     "line": "宣言者の進捗: {{won}} / {{needed}} トリック",
     "misere": "宣言者の進捗: {{won}} トリック（ミゼール・目標0）",

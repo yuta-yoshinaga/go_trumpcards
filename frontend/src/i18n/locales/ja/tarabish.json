@@ -17,6 +17,7 @@
     "cpu": "CPU{{idx}}",
     "team": "T{{team}}",
     "tricksTaken": "獲得{{count}}",
+    "cardsLeft": "残り手札{{count}}枚",
     "suitCounts": "宣言前の手札のスート別枚数: {{counts}}",
     "suitCount": "{{suit}} {{count}}枚",
     "suits": {

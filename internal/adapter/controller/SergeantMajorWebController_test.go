@@ -20,6 +20,8 @@ func mustSergeantMajorOutputJSON(msg string) string {
 	out := &controller.SergeantMajorWebOutput{
 		Players:              []*controller.SergeantMajorWebOutputPlayer{},
 		CurrentTrick:         []*controller.WebOutputTrickCard{},
+		LastTrick:            []*controller.WebOutputTrickCard{},
+		LastTrickWinner:      -1,
 		ValidPlays:           []int{},
 		LastExchangeLost:     []*controller.WebOutputCard{},
 		LastExchangeReceived: []*controller.WebOutputCard{},

@@ -175,7 +175,7 @@ func embeddedName(expr ast.Expr) string {
 // parseGoSurface walks root and records every named type, its methods, its
 // embedded types, and its constructors. Test files are skipped: the document
 // describes production code.
-func parseGoSurface(t *testing.T, root string) *goSurface {
+func parseGoSurface(t *testing.T) *goSurface {
 	t.Helper()
 	s := &goSurface{
 		types:    map[string]bool{},
@@ -191,7 +191,7 @@ func parseGoSurface(t *testing.T, root string) *goSurface {
 	}
 
 	fset := token.NewFileSet()
-	walkErr := filepath.Walk(filepath.Join(repoRoot, root), func(path string, info os.FileInfo, err error) error {
+	walkErr := filepath.Walk(filepath.Join(repoRoot, goSourceRoot), func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -260,7 +260,7 @@ func parseGoSurface(t *testing.T, root string) *goSurface {
 		return nil
 	})
 	if walkErr != nil {
-		t.Fatalf("walk %s: %v", root, walkErr)
+		t.Fatalf("walk %s: %v", goSourceRoot, walkErr)
 	}
 	return s
 }
@@ -277,7 +277,7 @@ func TestDesignDocClassesExistInGo(t *testing.T) {
 	if len(classes) < 50 {
 		t.Fatalf("only %d classes parsed from %s -- the diagram format changed; update the regexes", len(classes), designDocPath)
 	}
-	surface := parseGoSurface(t, goSourceRoot)
+	surface := parseGoSurface(t)
 	if len(surface.types) < 500 {
 		t.Fatalf("only %d Go types parsed from %s/ -- the walk is broken", len(surface.types), goSourceRoot)
 	}
@@ -307,7 +307,7 @@ func TestDesignDocClassesExistInGo(t *testing.T) {
 // the code moved on.
 func TestDesignDocMethodsExistInGo(t *testing.T) {
 	classes := parseDesignDocClasses(t, designDocPath)
-	surface := parseGoSurface(t, goSourceRoot)
+	surface := parseGoSurface(t)
 
 	checked := 0
 	var missing []string

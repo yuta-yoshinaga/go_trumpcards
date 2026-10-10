@@ -78,6 +78,13 @@
     "cpuWin": "CPU {{cpuId}} wins!"
   },
   "score": {
+    "breakdown": "Round score breakdown",
+    "meldCards": "Meld card points",
+    "biribaBonus": "Biriba bonus",
+    "red3Bonus": "Red 3 bonus",
+    "goingOutBonus": "Going out bonus",
+    "handPenalty": "Hand penalty",
+    "noPoints": "No points",
     "cumulative": "Total",
     "round": "Round"
   },

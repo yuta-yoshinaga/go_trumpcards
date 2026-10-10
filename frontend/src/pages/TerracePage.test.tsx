@@ -178,7 +178,7 @@ describe('TerracePage', () => {
     const terrace = await screen.findByRole('button', { name: /^テラス .+ 残り2枚（組札にのみ出せます）$/ });
     fireEvent.click(terrace);
     await waitFor(() => expect(terrace).toHaveAttribute('aria-pressed', 'true'));
-    const target = screen.getByRole('button', { name: '組札0 1枚' });
+    const target = screen.getByRole('button', { name: '組札0 1枚、一番上は♥ 4' });
     expect(target).not.toHaveAttribute('aria-disabled');
     expect(target).not.toHaveAttribute('aria-describedby');
     mockExec.mockClear();
@@ -186,6 +186,17 @@ describe('TerracePage', () => {
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'reserve' }, { zone: 'foundation', col: 0 }),
     );
+  });
+
+  it('includes the top card in a filled foundation label while keeping empty labels', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [[card('SPADE', 5)], ...playingState.foundation.slice(1)],
+    });
+    renderWithProviders(<TerracePage />);
+
+    expect(await screen.findByRole('button', { name: '組札0 1枚、一番上は♠ 5' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '空の組札1' })).toBeInTheDocument();
   });
 
   it('disables tableau cards while the terrace is selected', async () => {

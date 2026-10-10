@@ -357,6 +357,26 @@ describe('PiedmonteseTarotPage', () => {
       expect(container.querySelectorAll('[data-trick-winner="true"]')).toHaveLength(1);
     });
 
+    it('announces the server-reported winner only while the trick is over', async () => {
+      mockExec.mockResolvedValueOnce(
+        makePiedmonteseTarotState({
+          phase: PiedmonteseTarotPhase.TRICK_END,
+          lastTrickWinner: 2,
+        }),
+      );
+      renderWithProviders(<PiedmonteseTarotPage />);
+      const live = await screen.findByTestId('piedmontesetarot-trick-winner-live');
+      expect(live).toHaveAttribute('role', 'status');
+      expect(live).toHaveAttribute('aria-live', 'polite');
+      expect(live).toHaveTextContent('勝者: CPU 2');
+
+      mockExec.mockResolvedValueOnce(
+        makePiedmonteseTarotState({ phase: PiedmonteseTarotPhase.PLAY, lastTrickWinner: 2 }),
+      );
+      fireEvent.click(screen.getByRole('button', { name: '次のトリック' }));
+      await waitFor(() => expect(screen.getByTestId('piedmontesetarot-trick-winner-live')).toBeEmptyDOMElement());
+    });
+
     // **プレイ中は光らせない。** 最後の1枚で覆る答えを先に見せない。
     it('marks nothing while the trick is still being played', async () => {
       mockExec.mockResolvedValue(

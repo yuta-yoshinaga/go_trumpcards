@@ -21,6 +21,7 @@ function makeState(overrides: Partial<OasisPokerResponse> = {}): OasisPokerRespo
     playPayout: 0,
     jackpotPayout: 0,
     totalPayout: 0,
+    netChange: 0,
     dealerQualified: false,
     playerHandRank: 0,
     dealerHandRank: 0,

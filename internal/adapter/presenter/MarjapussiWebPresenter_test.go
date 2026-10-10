@@ -40,6 +40,7 @@ func setupMarjapussiWebMock() *interfaces.MockMarjapussiGame {
 	m.On("GetRoundCardPoints").Return([domain.MarjapussiTeamCnt]int{0, 0})
 	m.On("GetRoundMarriage").Return([domain.MarjapussiTeamCnt]int{0, 0})
 	m.On("GetPussi").Return(([]*domain.Card)(nil))
+	m.On("GetPussiPoints").Return(0)
 	m.On("GetWinnerPlayer").Return(-1)
 	m.On("GetWinnerTeam").Return(-1)
 	m.On("GetPlayableIndices", 0).Return([]int{0})
@@ -134,6 +135,8 @@ func TestMarjapussiWebPresenter_Output(t *testing.T) {
 			domain.NewCard(domain.CardDesignHeart, 10, false),
 		}
 		m.On("GetPussi").Return(pussi)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPussiPoints")
+		m.On("GetPussiPoints").Return(21)
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetActionLog")
 		m.On("GetActionLog").Return([]*domain.ActionLogEntry{
 			{ActionType: "pussi_win", PlayerIdx: 2, DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
@@ -144,6 +147,7 @@ func TestMarjapussiWebPresenter_Output(t *testing.T) {
 		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
 		assert.Equal(t, "marjapussi.roundEnd", resObj.MessageCode)
 		assert.Equal(t, 2, resObj.PussiCount)
+		assert.Equal(t, 21, resObj.PussiPoints)
 		assert.Len(t, resObj.Pussi, 2)
 		assert.Equal(t, 2, resObj.LastTrickWinner)
 		assert.Equal(t, 0, resObj.PussiWinnerTeam)
@@ -160,11 +164,11 @@ func TestMarjapussiWebPresenter_Output(t *testing.T) {
 
 	t.Run("coded error returns message code without message", func(t *testing.T) {
 		m, _ := setupMarjapussiWebMockWithPlayers()
-		result := p.Output(m, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "marjapussi.errFollowLeadSuit", nil))
+		result := p.Output(m, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "shared.errFollowLeadSuit", nil))
 		var resObj controller.MarjapussiWebOutput
 		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
 		assert.Empty(t, resObj.Message)
-		assert.Equal(t, "marjapussi.errFollowLeadSuit", resObj.MessageCode)
+		assert.Equal(t, "shared.errFollowLeadSuit", resObj.MessageCode)
 	})
 
 	t.Run("game end human wins", func(t *testing.T) {

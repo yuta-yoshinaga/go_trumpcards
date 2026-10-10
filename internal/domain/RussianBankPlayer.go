@@ -58,7 +58,7 @@ func (p *RussianBankPlayer) GetReserve() []*Card { return p.reserve }
 
 func (p *RussianBankPlayer) pushReserve(c *Card) { p.reserve = append(p.reserve, c) }
 
-func (p *RussianBankPlayer) popReserve() *Card { return rbPopCard(&p.reserve) }
+func (p *RussianBankPlayer) popReserve() { rbPopCard(&p.reserve) }
 
 // --- hand ---
 

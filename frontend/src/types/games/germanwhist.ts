@@ -45,6 +45,10 @@ export interface GermanWhistResponse extends BaseGameResponse {
   currentPlayerIdx: number;
   leadPlayerIdx: number;
   currentTrick: GermanWhistTrickCard[];
+  /** Most recently resolved trick, shown while no new trick is in progress. */
+  lastTrick: GermanWhistTrickCard[];
+  /** Winner of lastTrick, or -1 when no trick has resolved. */
+  lastTrickWinner: number;
   /** Suit of the first face-up card; trump for the whole hand. */
   trumpSuit: number;
   /** The card the first half is played for. Absent once the stock is exhausted. */

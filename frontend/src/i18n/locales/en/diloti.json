@@ -34,6 +34,7 @@
   "xeri": "xeri {{n}}",
   "dealerBadge": "Dealer",
   "roundResult": "Round score (you - CPU)",
+  "lastCapturer": "Last capturer: {{name}}",
   "score.cards": "Most cards",
   "score.aces": "Aces",
   "score.tenOfDiamonds": "10 of diamonds",

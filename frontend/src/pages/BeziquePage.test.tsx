@@ -20,9 +20,26 @@ const cpuTurnState = makeBeziqueState({ phase: 0, currentPlayerIdx: 1 });
 const meldPhaseState = makeBeziqueState({
   phase: 1,
   currentPlayerIdx: 0,
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 4,
+      cards: [
+        { design: 'SPADE', value: 13 },
+        { design: 'SPADE', value: 12 },
+        { design: 'DIAMOND', value: 11 },
+        { design: 'HEART', value: 1 },
+      ],
+      roundScore: 0,
+      cumulativeScore: 0,
+      trickCount: 0,
+    },
+    { id: 1, isHuman: false, cardCount: 9, cards: [], roundScore: 0, cumulativeScore: 0, trickCount: 0 },
+  ],
   availableMelds: [
-    { type: 0, suit: 1, points: 20 },
-    { type: 1, suit: -1, points: 40 },
+    { type: 0, suit: 1, points: 20, cardIndices: [0, 1] },
+    { type: 1, suit: -1, points: 40, cardIndices: [1, 2] },
   ],
 });
 const roundEndState = makeBeziqueState({
@@ -196,9 +213,9 @@ describe('BeziquePage', () => {
     renderWithProviders(<BeziquePage />);
     // Marriage of ♠ (type 0, suit 1) reads the suit by name, not the glyph.
     const marriage = await screen.findByTestId('meld-0');
-    expect(marriage).toHaveAttribute('aria-label', 'スペードの結婚 (K+Q)を宣言 +20点');
+    expect(marriage).toHaveAttribute('aria-label', 'スペードの結婚 (K+Q)を選択 +20点');
     // A non-suited meld (bezique) omits the suit.
-    expect(screen.getByTestId('meld-1')).toHaveAttribute('aria-label', 'ベジーク (♠Q+♦J)を宣言 +40点');
+    expect(screen.getByTestId('meld-1')).toHaveAttribute('aria-label', 'ベジーク (♠Q+♦J)を選択 +40点');
     // The melds are bundled in a labelled group.
     const group = screen.getByRole('group', { name: '宣言するメルドを選んでください:' });
     expect(group).toBeInTheDocument();
@@ -209,10 +226,39 @@ describe('BeziquePage', () => {
     mockExec.mockResolvedValue(meldPhaseState);
     renderWithProviders(<BeziquePage />);
     const meld1 = await screen.findByTestId('meld-1');
+    fireEvent.click(meld1);
+    fireEvent.click(await screen.findByTestId('meld-declare-selected'));
     mockExec.mockClear();
     mockExec.mockResolvedValue(meldPhaseState);
-    fireEvent.click(meld1);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('meld', { meldIndex: 1 }));
+  });
+
+  it('highlights and describes only the selected meld cards, updating on selection', async () => {
+    mockExec.mockResolvedValue(meldPhaseState);
+    renderWithProviders(<BeziquePage />);
+    const marriage = await screen.findByTestId('meld-0');
+    const bezique = screen.getByTestId('meld-1');
+    fireEvent.click(marriage);
+    expect(marriage).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: /♠ Q.*選択中のメルドの構成札/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /♥ A/ })).not.toHaveAccessibleName(/選択中のメルド/);
+    fireEvent.click(bezique);
+    expect(bezique).toHaveAttribute('aria-pressed', 'true');
+    expect(marriage).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByRole('button', { name: /♦ J.*選択中のメルドの構成札/ })).toBeInTheDocument();
+  });
+
+  it('clears the selected meld when the available meld list changes', async () => {
+    mockExec.mockResolvedValueOnce(meldPhaseState);
+    renderWithProviders(<BeziquePage />);
+    const marriage = await screen.findByTestId('meld-0');
+    fireEvent.click(marriage);
+    expect(marriage).toHaveAttribute('aria-pressed', 'true');
+    mockExec.mockResolvedValueOnce(makeBeziqueState({ ...meldPhaseState, availableMelds: [] }));
+    fireEvent.click(screen.getByTestId('meld-skip'));
+    await waitFor(() => expect(marriage).not.toHaveAttribute('aria-pressed', 'true'));
+    expect(screen.queryByRole('button', { name: /選択中のメルドの構成札/ })).not.toBeInTheDocument();
+    expect(screen.queryByTestId('meld-declare-selected')).not.toBeInTheDocument();
   });
 
   it('dispatches skip when the skip-meld button is clicked', async () => {

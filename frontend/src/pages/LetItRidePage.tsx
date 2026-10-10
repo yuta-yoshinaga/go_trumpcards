@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { letitrideApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -33,6 +33,7 @@ import type { LetItRideResponse } from '../types/card';
 import { isMaskedCard } from '../types/card';
 import { LetItRidePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { LETITRIDE_HELP, parseLetitrideCommand } from '../utils/cli/commands/letitrideCommands';
 import { formatLetitrideState } from '../utils/cli/formatters/letitrideFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
@@ -90,6 +91,8 @@ function LetItRidePageContent() {
   } = useConfirmDialog();
 
   const [betAmount, setBetAmount] = useState(100);
+  const [revealedCardsAnnouncement, setRevealedCardsAnnouncement] = useState('');
+  const previouslyRevealedCards = useRef<Set<number>>(new Set());
 
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec: execApi, retry } = useGameApi(letitrideApi.exec);
@@ -113,6 +116,22 @@ function LetItRidePageContent() {
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   useMountReset(execApi);
+
+  useEffect(() => {
+    if (!state) return;
+    const newlyRevealedCards = state.communityCards.flatMap((card, index) => {
+      if (isMaskedCard(card)) {
+        previouslyRevealedCards.current.delete(index);
+        return [];
+      }
+      if (previouslyRevealedCards.current.has(index)) return [];
+      previouslyRevealedCards.current.add(index);
+      return [cardAlt(card)];
+    });
+    if (newlyRevealedCards.length > 0) {
+      setRevealedCardsAnnouncement(t('communityCardsRevealed', { cards: newlyRevealedCards.join(t('listSeparator')) }));
+    }
+  }, [state, t]);
 
   const isBetPhase = state?.phase === LetItRidePhase.BET;
   const isFirstDecision = state?.phase === LetItRidePhase.FIRST_DECISION;
@@ -195,6 +214,15 @@ function LetItRidePageContent() {
         </>
       }
     >
+      <div
+        className="sr-only"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        data-testid="community-card-revealed-live"
+      >
+        {revealedCardsAnnouncement}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (

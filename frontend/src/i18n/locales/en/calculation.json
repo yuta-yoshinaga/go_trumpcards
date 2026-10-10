@@ -31,6 +31,7 @@
   "upcomingRanksToggle": "Upcoming ranks",
   "upcomingRanksDetailAria": "Upcoming ranks for foundation {{idx}}: {{sequence}}",
   "wasteRanksTooltip": "Waste {{idx}} (top 3): {{ranks}}",
+  "wasteAria": "Waste {{idx}}: top card {{card}}. Top 3 ranks: {{ranks}}",
   "wasteEmptyAria": "Waste {{idx}}: empty",
   "stockTopAria_one": "Stock top: {{card}}, {{count}} card remaining",
   "stockTopAria_other": "Stock top: {{card}}, {{count}} cards remaining",

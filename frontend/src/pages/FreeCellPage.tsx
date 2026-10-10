@@ -540,8 +540,17 @@ function FreeCellPageContent() {
                                       // いるのに、動かせない理由が読み上げに出ない (#5820)。
                                       aria-label={
                                         exceedsSupermove
-                                          ? `${cardAlt(card)} — ${t('supermoveLimitTooltip', { limit: supermoveLimit })}`
-                                          : cardAlt(card)
+                                          ? t('tableauCardAriaLabelWithLimit', {
+                                              card: cardAlt(card),
+                                              col: colIdx,
+                                              pos: cardIdx + 1,
+                                              limit: t('supermoveLimitTooltip', { limit: supermoveLimit }),
+                                            })
+                                          : t('tableauCardAriaLabel', {
+                                              card: cardAlt(card),
+                                              col: colIdx,
+                                              pos: cardIdx + 1,
+                                            })
                                       }
                                       aria-pressed={isSourceSelected('tableau', colIdx, undefined, cardIdx)}
                                       draggable={isPlaying && !loading && !exceedsSupermove}

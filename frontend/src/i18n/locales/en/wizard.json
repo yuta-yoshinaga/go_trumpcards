@@ -32,7 +32,8 @@
     "values": "Bid {{bid}} / Confirmed {{won}}",
     "reachable": "Still possible",
     "unreachable": "Unreachable",
-    "remaining": "{{count}} tricks left"
+    "remaining_one": "{{count}} trick left",
+    "remaining_other": "{{count}} tricks left"
   },
   "bidTotal": "Total bids {{total}} / hand {{handSize}}",
   "bidOverUnder": {

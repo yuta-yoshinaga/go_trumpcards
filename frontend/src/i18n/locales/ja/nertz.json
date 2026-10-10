@@ -10,6 +10,7 @@
     "cpu": "CPU",
     "nertz": "ナッツ",
     "tableau": "タブロー",
+    "tableauCardAria": "タブローのカード{{card}}、列{{col}}・位置{{position}}",
     "waste": "ウェイスト",
     "stock": "ストック",
     "stockDrawAria": "ストックを引く、残り{{count}}枚",

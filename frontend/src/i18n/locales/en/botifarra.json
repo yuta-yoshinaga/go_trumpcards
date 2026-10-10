@@ -5,6 +5,8 @@
   "playGuide": "Only legal cards can be chosen (you must win the trick if you can)",
   "previousTrick": "Previous trick",
   "previousTrickWinner": "-> Taken by {{name}}",
+  "trickCardPlayed": "{{role}} played {{card}}",
+  "listSeparator": ", ",
   "label": {
     "you": "You",
     "partner": "Partner",

@@ -38,7 +38,8 @@
     "play": "プレイ",
     "jackpot": "ジャックポット",
     "exchange": "交換手数料",
-    "total": "合計"
+    "total": "合計配当",
+    "netChange": "ラウンド収支"
   },
   "handRank": {
     "0": "ハイカード",

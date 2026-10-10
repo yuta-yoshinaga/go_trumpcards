@@ -19,6 +19,7 @@
   "ante": "アンティ {{amount}}",
   "chips": "チップ {{amount}}",
   "roundBet": "賭け {{amount}}",
+  "listSeparator": "、",
   "playersTitle": "プレイヤー",
   "targetsNote": "目標は 7 と 27 の2つ。超えたらその側は失格です。絵札=0.5点、A=1点または11点。",
   "handLabel": "あなたの手札",

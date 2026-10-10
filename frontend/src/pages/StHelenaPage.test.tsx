@@ -115,6 +115,25 @@ afterEach(async () => {
 });
 
 describe('StHelenaPage', () => {
+  it('announces the first-deal destinations with zero-based column numbers', async () => {
+    renderWithProviders(<StHelenaPage />);
+    const status = await screen.findByTestId('sthelena-restriction-status');
+    expect(status).toHaveTextContent(
+      '初回の配り: 上の列 (0、1、2、3) は K 段のみ、下の列 (6、7、8、9) は A 段のみ、横の列 (11、4、10、5) はどちらの段へも送れます',
+    );
+  });
+
+  it('announces that the first redeal lifts the destination restriction', async () => {
+    mockExec.mockImplementation((cmd: string) =>
+      Promise.resolve(
+        cmd === 'redeal' ? { ...playingState, restrictionsActive: false, redealsRemaining: 2 } : playingState,
+      ),
+    );
+    renderWithProviders(<StHelenaPage />);
+    fireEvent.click(await screen.findByRole('button', { name: /再配り \(3\)/ }));
+    expect(await screen.findByTestId('sthelena-restriction-status')).toHaveTextContent('送り先の制限は解けています');
+  });
+
   it('keeps an unselected foundation target focusable and explains the required source', async () => {
     renderWithProviders(<StHelenaPage />);
     const btn = (await screen.findByAltText('♠ A')).closest('button') as HTMLButtonElement;

@@ -69,6 +69,7 @@ function ZwickerPageContent() {
   // 利用者に伝わらない (Zheng / NainJaune で確立した liveMsg と同じ形、#6518)。
   const [liveMsg, setLiveMsg] = useState('');
   const prevTurnRef = useRef<boolean | null>(null);
+  const [roundLiveMsg, setRoundLiveMsg] = useState('');
   // biome-ignore lint/correctness/useExhaustiveDependencies: react to each state update; reads the t snapshot deliberately.
   useEffect(() => {
     if (!state) return;
@@ -79,6 +80,31 @@ function ZwickerPageContent() {
     // 変化として扱われず読まれないことがある。
     if ((prev === null || prev === false) && turn) setLiveMsg(t('announceYourTurn'));
   }, [state]);
+
+  // Announce deal scoring while the phase is ROUND_END; clear it on leaving so the next deal's result is announced even if the text repeats.
+  useEffect(() => {
+    if (!state) return;
+    // Re-setting the same text while ROUND_END lasts changes nothing in the DOM, so it is read once.
+    if (state.phase !== ZwickerPhase.ROUND_END || !state.lastRound) {
+      setRoundLiveMsg('');
+      return;
+    }
+    const lr = state.lastRound;
+    const breakdown = (team: 0 | 1) =>
+      t(team === 0 ? 'teamBreakdownUs' : 'teamBreakdownThem', {
+        cardPoints: lr.cardPoints[team],
+        cards: lr.cards[team],
+        zwicks: lr.zwicks[team],
+        total: lr.total[team],
+      });
+    setRoundLiveMsg(
+      t('roundAnnouncement', {
+        roundResult: t('roundResult', { us: lr.total[0], them: lr.total[1] }),
+        usBreakdown: breakdown(0),
+        themBreakdown: breakdown(1),
+      }),
+    );
+  }, [state, t]);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('zwicker');
   const cliConfig: CliGameConfig<ZwickerResponse, Parameters<typeof zwickerApi.exec>> = useMemo(
@@ -438,6 +464,9 @@ function ZwickerPageContent() {
             {/* 常設のライブ領域。中身だけが変わる ── 領域ごと現れると読み上げられない。 */}
             <span className="sr-only" role="status" aria-live="polite" data-testid="zwicker-turn-announce">
               {liveMsg}
+            </span>
+            <span className="sr-only" role="status" aria-live="polite" data-testid="zwicker-round-announce">
+              {roundLiveMsg}
             </span>
             <ErrorAlert message={error} onRetry={retry} />
             <div className="flex gap-2 items-center flex-wrap">

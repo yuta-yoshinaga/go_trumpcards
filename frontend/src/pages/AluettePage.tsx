@@ -170,6 +170,7 @@ function AluettePageContent() {
       gamePath="/aluette"
       gameEndFlag={isGameEnd}
       winShow={isGameEnd && state.winnerTeam === humanTeam}
+      lossShow={isGameEnd && state.winnerTeam >= 0 && state.winnerTeam !== humanTeam}
       loading={loading}
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}

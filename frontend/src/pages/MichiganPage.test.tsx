@@ -146,6 +146,42 @@ describe('MichiganPage', () => {
     expect(await screen.findByTestId('michigan-sequence-live')).toHaveTextContent('シーケンス: ハート 3 まで');
   });
 
+  it('announces the round winner and boodle payouts in a permanent live region', async () => {
+    mockExec.mockResolvedValue(
+      makeMichiganState({
+        ...resultState,
+        roundBoodleWins: [{ card: { design: 'HEART', value: 1 }, seat: 0, amount: 12 }],
+      }),
+    );
+    renderWithProviders(<MichiganPage />);
+
+    const liveRegion = await screen.findByTestId('michigan-round-result-live');
+    expect(liveRegion).toHaveAttribute('role', 'status');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toHaveClass('sr-only');
+    expect(liveRegion).toHaveTextContent(
+      'あなた が手札を出し切ってラウンドを終えました。、♥ A: あなた が 12 チップ獲得',
+    );
+  });
+
+  it('announces boodle results when the round has no winner', async () => {
+    mockExec.mockResolvedValue(makeMichiganState({ ...resultState, winnerIdx: -1, roundBoodleWins: [] }));
+    renderWithProviders(<MichiganPage />);
+
+    const liveRegion = await screen.findByTestId('michigan-round-result-live');
+    expect(liveRegion).toHaveTextContent('今回獲得されたブードルはありません。');
+    expect(liveRegion).not.toHaveTextContent('手札を出し切って');
+  });
+
+  it('keeps the round result live region mounted and empty outside the result phase', async () => {
+    mockExec.mockResolvedValue(betState);
+    renderWithProviders(<MichiganPage />);
+
+    const liveRegion = await screen.findByTestId('michigan-round-result-live');
+    expect(liveRegion).toHaveAttribute('role', 'status');
+    expect(liveRegion).toBeEmptyDOMElement();
+  });
+
   it('shows each boodle collected and its chip amount in the round result', async () => {
     mockExec.mockResolvedValue(
       makeMichiganState({
@@ -157,8 +193,13 @@ describe('MichiganPage', () => {
       }),
     );
     renderWithProviders(<MichiganPage />);
-    expect(await screen.findByText(/♥ A: あなた が 12 チップ獲得/)).toBeInTheDocument();
-    expect(screen.getByText(/♣ K: CPU 1 が 0 チップ獲得/)).toBeInTheDocument();
+    await screen.findByTestId('michigan-round-result-live');
+    expect(
+      screen.getAllByText(/♥ A: あなた が 12 チップ獲得/).some((element) => !element.classList.contains('sr-only')),
+    ).toBe(true);
+    expect(
+      screen.getAllByText(/♣ K: CPU 1 が 0 チップ獲得/).some((element) => !element.classList.contains('sr-only')),
+    ).toBe(true);
   });
 
   it('says clearly when no boodles were collected', async () => {

@@ -66,5 +66,5 @@ func TestBridgePlayErrorsHaveMessageCodes(t *testing.T) {
 	g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
 	g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
 	g.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 7, false)}})
-	assertBridgeDomainError(t, g.PlayerPlay(0), domain.ErrInvalidPlay, "bridge.errFollowLeadSuit")
+	assertBridgeDomainError(t, g.PlayerPlay(0), domain.ErrInvalidPlay, "shared.errFollowLeadSuit")
 }

@@ -1046,13 +1046,13 @@ func trailingFlag(arg, name string) (inlineVal string, hasInline, bare, matched 
 
 // trailingFlagAny is trailingFlag against several alias spellings of the same
 // flag (e.g. the long "quiet" and short "q"), returning the first match.
-func trailingFlagAny(arg string, names ...string) (inlineVal string, hasInline, bare, matched bool) {
+func trailingFlagAny(arg string, names ...string) (inlineVal string, hasInline, matched bool) {
 	for _, n := range names {
-		if v, hi, b, ok := trailingFlag(arg, n); ok {
-			return v, hi, b, true
+		if v, hi, _, ok := trailingFlag(arg, n); ok {
+			return v, hi, true
 		}
 	}
-	return "", false, false, false
+	return "", false, false
 }
 
 // applyTrailingGlobalFlags scans args for global flags (`--lang`,
@@ -1155,7 +1155,7 @@ func applyTrailingGlobalFlags(args []string, quietPtr *bool, stderr io.Writer) (
 		// --quiet / -quiet / --q / -q [=bool]: value already folded into
 		// `quiet` by resolveTrailingQuiet; here we only consume the token.
 		// An invalid `=value` is left for the caller.
-		if v, hasInline, _, ok := trailingFlagAny(a, "quiet", "q"); ok {
+		if v, hasInline, ok := trailingFlagAny(a, "quiet", "q"); ok {
 			if !hasInline {
 				continue
 			}
@@ -1199,7 +1199,7 @@ func resolveTrailingQuiet(args []string, start bool) bool {
 		if a == "--" {
 			break
 		}
-		v, hasInline, _, ok := trailingFlagAny(a, "quiet", "q")
+		v, hasInline, ok := trailingFlagAny(a, "quiet", "q")
 		switch {
 		case !ok:
 			// not a quiet flag

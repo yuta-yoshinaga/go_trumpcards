@@ -210,6 +210,7 @@ function CitadelPageContent() {
       ? state.tableau[selectedSource.col]?.[selectedSource.cardIndex]?.card
       : undefined;
   const selectedCardName = selectedCard ? cardAlt(selectedCard) : '';
+  const hintedCard = hint ? state.tableau[hint.fromCol]?.[hint.cardIndex]?.card : null;
   const selectionSource =
     selectedSource?.zone === 'tableau' && selectedSource.col !== undefined
       ? t('selectionTableauSource', { col: selectedSource.col })
@@ -437,10 +438,13 @@ function CitadelPageContent() {
               ことがある (#5596)。
             */}
             <div data-tutorial="bc-hint-display" data-testid="bc-hint-live" role="status" aria-live="polite">
-              {hint && (
+              {hint && hintedCard && (
                 <div className="text-ds-warning text-sm mb-2 mt-3">
-                  {t('hintAvailable')}: {formatHintZone(t, 'tableau', hint.fromCol)} →{' '}
-                  {formatHintZone(t, hint.toZone, hint.toCol)}
+                  {t('hintAnnouncement', {
+                    card: cardAlt(hintedCard),
+                    from: formatHintZone(t, 'tableau', hint.fromCol),
+                    to: formatHintZone(t, hint.toZone, hint.toCol),
+                  })}
                 </div>
               )}
             </div>

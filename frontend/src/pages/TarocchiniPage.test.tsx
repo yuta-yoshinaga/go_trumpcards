@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { tarocchiniApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeTarocchiniState } from '../test/stateFactories';
 import { TarocchiniPage } from './TarocchiniPage';
@@ -170,8 +171,79 @@ describe('TarocchiniPage', () => {
   });
 
   describe('scarto phase', () => {
+    it('disables trumps and the Matto with a reason while allowing ordinary cards', async () => {
+      const scartoHand = makeTarocchiniState({
+        ...scartoState,
+        players: scartoState.players.map((player) =>
+          player.isHuman
+            ? {
+                ...player,
+                cards: [
+                  ...player.cards,
+                  {
+                    design: 'JOKER' as const,
+                    value: 0,
+                    glyph: '★',
+                    label: 'Matto',
+                    color: 'gold',
+                    deck: 'tarot' as const,
+                  },
+                  {
+                    design: 'HEART' as const,
+                    value: 14,
+                    glyph: '♥',
+                    label: 'Re',
+                    color: 'red',
+                    deck: 'tarot' as const,
+                  },
+                ],
+              }
+            : player,
+        ),
+      });
+      mockExec.mockResolvedValue(scartoHand);
+      renderWithProviders(<TarocchiniPage />);
+
+      const cards = await screen.findAllByRole('button', { name: /^(Re ♠|20 ✦|Papa ✦|Matto ★|Re ♥)$/ });
+      expect(cards[0]).not.toHaveAttribute('aria-disabled');
+      expect(cards[1]).toHaveAttribute('aria-disabled', 'true');
+      expect(cards[1]).toHaveAttribute('title', '切札とマットはスカルトできません');
+      expect(cards[2]).toHaveAttribute('aria-disabled', 'true');
+      expect(cards[3]).toHaveAttribute('aria-disabled', 'true');
+      expect(cards[4]).not.toHaveAttribute('aria-disabled');
+
+      fireEvent.click(cards[1]);
+      fireEvent.click(cards[2]);
+      fireEvent.click(cards[3]);
+      fireEvent.click(cards[0]);
+      fireEvent.click(cards[4]);
+      expect(screen.getByTestId('tarocchini-scarto-prompt')).toHaveTextContent('2/2');
+      await flushPendingDispatch();
+      expect(mockExec).not.toHaveBeenCalledWith('scarto', expect.anything());
+
+      fireEvent.click(screen.getByRole('button', { name: '捨てる' }));
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('scarto', { cardIndices: [0, 4] }));
+    });
+
     it('prompts for exactly two cards and dispatches both', async () => {
-      mockExec.mockResolvedValue(scartoState);
+      // Keep this interaction test's two selected indices legal ordinary cards.
+      // The fixture's JOKER cards model Tarocchini trumps and cannot be buried.
+      const ordinaryScartoState = makeTarocchiniState({
+        ...scartoState,
+        players: scartoState.players.map((player) =>
+          player.isHuman
+            ? {
+                ...player,
+                cards: player.cards.map((card, index) =>
+                  index === 1
+                    ? { design: 'HEART' as const, value: 13, glyph: '✦', label: '20', color: 'red', deck: 'tarot' }
+                    : card,
+                ),
+              }
+            : player,
+        ),
+      });
+      mockExec.mockResolvedValue(ordinaryScartoState);
       renderWithProviders(<TarocchiniPage />);
       expect(await screen.findByTestId('tarocchini-scarto-prompt')).toHaveTextContent('2');
       expect(screen.getByTestId('tarocchini-scarto-prompt')).toHaveTextContent('0/2');
@@ -186,7 +258,7 @@ describe('TarocchiniPage', () => {
 
       fireEvent.click(screen.getByRole('button', { name: '20 ✦' }));
       mockExec.mockClear();
-      mockExec.mockResolvedValue(scartoState);
+      mockExec.mockResolvedValue(ordinaryScartoState);
       fireEvent.click(screen.getByRole('button', { name: '捨てる' }));
       await waitFor(() => expect(mockExec).toHaveBeenCalledWith('scarto', { cardIndices: [0, 1] }));
     });

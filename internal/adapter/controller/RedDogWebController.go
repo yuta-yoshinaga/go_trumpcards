@@ -25,6 +25,7 @@ type RedDogWebOutput struct {
 	Spread            int              `json:"spread"`
 	Result            int              `json:"result"`
 	TotalPayout       int              `json:"totalPayout"`
+	NetChange         int              `json:"netChange"`
 	AppliedMultiplier int              `json:"appliedMultiplier"`
 	WebOutputBase
 }

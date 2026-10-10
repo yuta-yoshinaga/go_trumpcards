@@ -83,6 +83,7 @@ function PrsiPageContent() {
     retry,
     prsiConfig,
     selectedCardIndices,
+    canPlay,
     toggleCard,
     clearSelection,
     handleConfigChange,
@@ -398,9 +399,9 @@ function PrsiPageContent() {
                 <div className="flex gap-2" data-tutorial="prsi-play-draw">
                   <button
                     type="button"
-                    className={btnPrimary}
+                    className={`${btnPrimary} aria-disabled:opacity-50 aria-disabled:cursor-not-allowed`}
                     onClick={handlePlay}
-                    disabled={loading || selectedCardIndices.length !== 1}
+                    aria-disabled={!canPlay}
                   >
                     {t('playButton')}
                   </button>

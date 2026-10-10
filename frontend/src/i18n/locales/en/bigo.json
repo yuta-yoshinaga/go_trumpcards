@@ -16,6 +16,7 @@
   "cardUsed": "Used",
   "cardUsedAria": "Card used in your best hand: {{card}}",
   "cardUnused": "Unused",
+  "cardUnusedAria": "Card unused in your best hand: {{card}}",
   "handNumber": "Hand #{{count}} (Level up: every {{level}} hands)",
   "rebuy": {
     "prompt": "Rebuy? ({{chips}} chips, {{used}}/{{max}} used)",

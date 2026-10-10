@@ -31,6 +31,7 @@
   "papiNote": "パパ4枚は同格 —— 同じトリックに複数出たら、後から出した方が勝ちます",
   "scartoPrompt": "{{count}}/{{total}} 枚選択中。捨てるカードを選んでください（切札とマットは選べません）",
   "scartoButton": "捨てる",
+  "scartoRestricted": "切札とマットはスカルトできません",
   "scartoDone": "スカルト済み: {{count}}枚",
   "playButton": "出す",
   "nextTrick": "次のトリック",

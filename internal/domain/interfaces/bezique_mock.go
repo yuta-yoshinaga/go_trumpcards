@@ -179,6 +179,14 @@ func (m *MockBeziqueGame) GetAvailableMelds(playerIdx int) []domain.BeziqueMeld 
 	return nil
 }
 
+func (m *MockBeziqueGame) MeldCardIndices(playerIdx int, meld domain.BeziqueMeld) []int {
+	args := m.Called(playerIdx, meld)
+	if v := args.Get(0); v != nil {
+		return v.([]int)
+	}
+	return nil
+}
+
 func (m *MockBeziqueGame) GetHint() *domain.BeziqueHint {
 	args := m.Called()
 	if v := args.Get(0); v != nil {

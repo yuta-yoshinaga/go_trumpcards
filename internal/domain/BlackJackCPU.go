@@ -127,7 +127,7 @@ func (b *BlackJack) cpuPlaySeat(cpu *BlackJackCpuSeat, dealerUpcard *Card) {
 				}
 			case BJSuggestSplit:
 				if hand.CanSplit() && len(cpu.GetHands()) < BJMaxHands && cpu.GetPlayer().GetChips() >= hand.GetBet() {
-					b.cpuSplit(cpu, hand, handIdx, dealerUpcard)
+					b.cpuSplit(cpu, hand, handIdx)
 					continue // cpuSplit may add hands, re-check current index
 				}
 				b.cpuHit(hand)
@@ -184,7 +184,7 @@ func (b *BlackJack) cpuDoubleDown(cpu *BlackJackCpuSeat, hand *BlackJackHand) {
 }
 
 // cpuSplit CPUスプリット
-func (b *BlackJack) cpuSplit(cpu *BlackJackCpuSeat, hand *BlackJackHand, handIdx int, dealerUpcard *Card) {
+func (b *BlackJack) cpuSplit(cpu *BlackJackCpuSeat, hand *BlackJackHand, handIdx int) {
 	bet := hand.GetBet()
 	cpu.GetPlayer().SubtractChips(bet)
 

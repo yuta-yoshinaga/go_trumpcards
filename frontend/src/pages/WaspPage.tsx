@@ -1,4 +1,4 @@
-import { useCallback, useId, useMemo, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { type WaspMoveZone, waspApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -272,9 +272,28 @@ function WaspPageContent() {
     disabled: loading,
   });
 
+  const dealBlockAnnouncementTimer = useRef<number | null>(null);
+  useEffect(
+    () => () => {
+      if (dealBlockAnnouncementTimer.current !== null) {
+        window.clearTimeout(dealBlockAnnouncementTimer.current);
+      }
+    },
+    [],
+  );
+
+  const clearDealBlockAnnouncement = useCallback(() => {
+    if (dealBlockAnnouncementTimer.current !== null) {
+      window.clearTimeout(dealBlockAnnouncementTimer.current);
+      dealBlockAnnouncementTimer.current = null;
+    }
+    setDealBlockAnnouncement('');
+  }, []);
+
   const handleManualReset = useCallback(() => {
+    clearDealBlockAnnouncement();
     void apiCall('reset');
-  }, [apiCall]);
+  }, [apiCall, clearDealBlockAnnouncement]);
 
   const handleDeal = useCallback(() => {
     void apiCall('deal');
@@ -282,6 +301,7 @@ function WaspPageContent() {
 
   // Empty-column deal guard: surfaces a shake animation + tooltip instead of failing silently.
   const [emptyDealAttemptKey, setEmptyDealAttemptKey] = useState(0);
+  const [dealBlockAnnouncement, setDealBlockAnnouncement] = useState('');
   const hasEmptyColumn = useMemo(() => state?.tableau.some((col) => col.length === 0) ?? false, [state?.tableau]);
   // Columns the selected card may legally move onto (same suit, one rank higher).
   // **選ぶ前に行き先が見える (#4454)。** hover / フォーカス中の札にも、選択後と
@@ -297,13 +317,19 @@ function WaspPageContent() {
   // "not all cards are face up" で弾かれる — #5545 が直したはずの形に戻る。
   const handleDealGuarded = useCallback(() => {
     if (dealBlockedByEmpty) {
+      clearDealBlockAnnouncement();
       setEmptyDealAttemptKey((k) => k + 1);
+      dealBlockAnnouncementTimer.current = window.setTimeout(() => {
+        dealBlockAnnouncementTimer.current = null;
+        setDealBlockAnnouncement(t('cannotDealEmptyColExists'));
+      }, 100);
       return;
     }
     // Reset on a successful deal so a future empty-column attempt can re-trigger the shake.
+    clearDealBlockAnnouncement();
     setEmptyDealAttemptKey(0);
     handleDeal();
-  }, [dealBlockedByEmpty, handleDeal]);
+  }, [clearDealBlockAnnouncement, dealBlockedByEmpty, handleDeal, t]);
 
   const handleGiveUp = useCallback(() => {
     void apiCall('giveup');
@@ -570,6 +596,9 @@ function WaspPageContent() {
           </div>
 
           <div data-tutorial="sc-controls">
+            <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+              {dealBlockAnnouncement}
+            </div>
             <GameMessageBox
               message={state.message}
               messageCode={state.messageCode}

@@ -650,7 +650,7 @@ func TestDesmocheCpuDecideEmptyHand(t *testing.T) {
 }
 
 func TestDesmocheCpuHardPrioritizesMeldAndLayoff(t *testing.T) {
-	setup := func(difficulty DesmocheCpuDifficulty) (*Desmoche, DesmocheCpuAction) {
+	setup := func(difficulty DesmocheCpuDifficulty) DesmocheCpuAction {
 		g := NewDefaultDesmoche()
 		g.SetConfig(DesmocheConfig{CpuDifficulty: difficulty})
 		setDesmocheHand(g, 1, desmocheCards(
@@ -658,11 +658,11 @@ func TestDesmocheCpuHardPrioritizesMeldAndLayoff(t *testing.T) {
 			[2]int{CardDesignClover, 7}, [2]int{CardDesignDiamond, 7},
 		))
 		startDesmocheAct(g, 1)
-		return g, g.DesmocheCpuDecide(1)
+		return g.DesmocheCpuDecide(1)
 	}
 
-	_, easy := setup(DesmocheCpuDifficultyEasy)
-	_, hard := setup(DesmocheCpuDifficultyHard)
+	easy := setup(DesmocheCpuDifficultyEasy)
+	hard := setup(DesmocheCpuDifficultyHard)
 	// Hard keeps the stronger four-card meld, while Easy stops at the first meld it finds.
 	if len(easy.MeldIdxs) != 3 || !equalInts(easy.MeldIdxs, []int{0, 1, 2}) {
 		t.Fatalf("Easy should choose the first three-card meld, got %+v", easy)

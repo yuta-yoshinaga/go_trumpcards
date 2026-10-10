@@ -45,6 +45,8 @@
   "setLine": "{{bid}} set ({{points}} points, needed {{need}})",
   "widowCredit": "Widow credited: {{n}}",
   "valueLine": "Settlement: {{n}} per opponent",
+  "deltasTitle": "Each player's score change",
+  "deltaLine": "{{player}}: {{delta}}",
   "settings": {
     "title": "Settings"
   },

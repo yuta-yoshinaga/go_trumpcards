@@ -91,6 +91,15 @@ function DesmochePageContent() {
   const drawing = state.phase === DesmochePhase.DRAW;
   const acting = state.phase === DesmochePhase.ACT;
   const roundOver = state.phase === DesmochePhase.ROUND_END;
+  // **同じ画面で呼び方を変えない。**数行上のメルドは席 0 を「あなたの」と呼ぶのに、
+  // 勝者だけ「席0が」と出ていた (#6517)。
+  const roundResult = roundOver
+    ? state.roundWinner === 0
+      ? t('roundWinnerYou')
+      : state.roundWinner > 0
+        ? t('roundWinner', { n: state.roundWinner })
+        : t('roundNoWinner', { n: state.pot })
+    : '';
   const stockEmpty = state.stockCount === 0;
   const discardEmpty = !state.discardTop;
   const human = state.players.find((p) => p.isHuman);
@@ -274,15 +283,12 @@ function DesmochePageContent() {
               </div>
             )}
 
+            <div role="status" aria-live="polite" className="sr-only" data-testid="desmoche-round-announcement">
+              {roundResult}
+            </div>
             {roundOver && (
               <div className="text-center text-sm mb-3" data-testid="desmoche-round-result">
-                {/* **同じ画面で呼び方を変えない。**数行上のメルドは席 0 を「あなたの」と
-                    呼ぶのに、勝者だけ「席0が」と出ていた (#6517)。 */}
-                {state.roundWinner === 0
-                  ? t('roundWinnerYou')
-                  : state.roundWinner > 0
-                    ? t('roundWinner', { n: state.roundWinner })
-                    : t('roundNoWinner', { n: state.pot })}
+                {roundResult}
               </div>
             )}
 

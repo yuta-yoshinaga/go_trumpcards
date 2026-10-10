@@ -43,13 +43,23 @@ func (swp *ScoponeWebPresenter) Output(sg interfaces.ScoponeGame, lastErr error)
 	resObj.TableCards = cardsToOutputOrEmpty(sg.GetTableCards())
 
 	humanIdx := -1
+	humanTeam := -1
+	for i := 0; i < sg.GetPlayerCnt(); i++ {
+		player := sg.GetPlayer(i)
+		if player != nil && player.GetIsHuman() {
+			humanIdx = i
+			humanTeam = domain.ScoponeTeamOf(i)
+			break
+		}
+	}
 	for i := 0; i < sg.GetPlayerCnt(); i++ {
 		player := sg.GetPlayer(i)
 		if player == nil {
 			continue
 		}
-		if player.GetIsHuman() {
-			humanIdx = i
+		capturedCards := make([]*controller.WebOutputCard, 0)
+		if domain.ScoponeTeamOf(i) == humanTeam {
+			capturedCards = cardsToOutputOrEmpty(player.GetCapturedCards())
 		}
 		resObj.Players = append(resObj.Players, &controller.ScoponeWebOutputPlayer{
 			ID:            i,
@@ -58,6 +68,7 @@ func (swp *ScoponeWebPresenter) Output(sg interfaces.ScoponeGame, lastErr error)
 			HandCount:     player.GetCardsSize(),
 			Cards:         playerCardsToOutput(player, player.GetIsHuman()),
 			CapturedCount: player.CapturedCount(),
+			CapturedCards: capturedCards,
 			ScopaCount:    player.GetScopaCount(),
 		})
 	}

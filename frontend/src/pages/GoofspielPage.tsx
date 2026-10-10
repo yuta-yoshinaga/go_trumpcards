@@ -17,6 +17,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useMountReset } from '../hooks/useMountReset';
 import { btnDanger, btnPrimary } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, GoofspielResponse } from '../types/card';
@@ -132,9 +133,7 @@ function GoofspielPageContent() {
   );
   const { handleCommand } = useCliGame(dispatch, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  useEffect(() => {
-    void dispatch('reset');
-  }, [dispatch]);
+  useMountReset(dispatch);
 
   const handleReset = useCallback(() => {
     hideActionLog();
@@ -167,6 +166,7 @@ function GoofspielPageContent() {
   const isGameEnd = state.phase === GoofspielPhase.GAME_END || state.gameEndFlag;
   const isReveal = state.phase === GoofspielPhase.REVEAL && !isGameEnd;
   const canBid = state.phase === GoofspielPhase.BID && !isGameEnd && human?.hasBid === false;
+  const hasPendingSettings = playerCnt !== state.config.playerCnt || tieRule !== state.config.tieRule;
 
   const seatName = (idx: number) => (idx === 0 ? t('header.you') : t('header.cpu', { idx: String(idx) }));
 
@@ -426,6 +426,7 @@ function GoofspielPageContent() {
                       id: 'goofspiel-tie',
                       label: t('actions.tieRule'),
                       value: String(tieRule),
+                      description: hasPendingSettings ? t('actions.pendingReset') : undefined,
                       options: [
                         { value: '0', label: t('actions.tieDiscard') },
                         { value: '1', label: t('actions.tieCarry') },

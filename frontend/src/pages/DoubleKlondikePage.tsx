@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { doubleklondikeApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardBack, CardImage } from '../components/CardImage';
@@ -16,6 +16,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
+import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -86,11 +87,33 @@ function DoubleKlondikePageContent() {
   }, [exec]);
   const confirmGiveUpAction = useGiveUpConfirm(handleGiveUp, requestGiveUpConfirm);
   const [selected, setSelected] = useState<Selection | null>(null);
+  const [progressAnnouncementText, setProgressAnnouncementText] = useState('');
+  const progressAnnouncement = useRef<{ moveCount: number; foundationCount: number; initialized: boolean }>({
+    moveCount: 0,
+    foundationCount: 0,
+    initialized: false,
+  });
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
+  useMountReset(exec);
+
   useEffect(() => {
-    exec('reset');
-  }, []);
+    if (!state) return;
+    const foundationCount = state.foundation.reduce((sum, pile) => sum + pile.length, 0);
+    const previous = progressAnnouncement.current;
+    if (
+      previous.initialized &&
+      (previous.moveCount !== state.moveCount || previous.foundationCount !== foundationCount)
+    ) {
+      setProgressAnnouncementText(
+        t('progressAnnouncement', {
+          moves: state.moveCount,
+          count: foundationCount,
+          total: DOUBLE_KLONDIKE_TOTAL_CARDS,
+        }),
+      );
+    }
+    progressAnnouncement.current = { moveCount: state.moveCount, foundationCount, initialized: true };
+  }, [state, t]);
 
   // Clear a stale selection whenever the board changes (move, draw, undo).
   // biome-ignore lint/correctness/useExhaustiveDependencies: deps are the change-trigger, not read in the body.
@@ -278,6 +301,9 @@ function DoubleKlondikePageContent() {
       <div className="flex-1 overflow-y-auto pt-3 px-2 lg:px-6">
         <div role="status" aria-live="polite" className="sr-only">
           {state.isStalemate ? t('stalemateGuidance') : ''}
+        </div>
+        <div aria-live="polite" className="sr-only" data-testid="progress-announcement">
+          {progressAnnouncementText}
         </div>
         {state.isStalemate && (
           <div className="mb-3 rounded border border-ds-border bg-ds-surface p-3 text-ds-text-primary">

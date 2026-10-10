@@ -34,6 +34,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { PAIGOW_HELP, parsePaigowCommand } from '../utils/cli/commands/paigowCommands';
 import { formatPaigowState } from '../utils/cli/formatters/paigowFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { type HandSortMode, sortedHandForDisplay } from '../utils/handDisplaySort';
 import { paiGowFoulCheck } from '../utils/paiGowFoul';
 import { paiGowHouseWaySplit } from '../utils/paiGowHouseWay';
 
@@ -42,6 +43,12 @@ const PAIGOW_MAX_BET = 10000;
 
 /** Number of cards dealt to each Pai Gow hand. */
 const PAI_GOW_HAND_SIZE = 7;
+
+const PAI_GOW_SORT_MODES: ReadonlyArray<{ mode: HandSortMode; labelKey: string }> = [
+  { mode: 'original', labelKey: 'sort.original' },
+  { mode: 'rank', labelKey: 'sort.rank' },
+  { mode: 'suit', labelKey: 'sort.suit' },
+];
 
 /** High hand rank display name lookup. */
 const HIGH_HAND_RANK_KEYS: Record<number, string> = {
@@ -100,6 +107,7 @@ function PaiGowPageContent() {
 
   const [betAmount, setBetAmount] = useState(100);
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
+  const [sortMode, setSortMode] = useState<HandSortMode>('original');
 
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec: execApi, retry } = useGameApi(paigowApi.exec);
@@ -287,14 +295,28 @@ function PaiGowPageContent() {
                 <p className="text-ds-text-muted text-center text-sm mb-2">
                   {t('selectLowHand')} ({t('selectedCount', { count: selectedIndices.length })})
                 </p>
-                <div className="flex justify-center gap-2 flex-wrap">
-                  {state.playerCards.map((card, i) => (
+                <fieldset className="mb-2 flex flex-wrap justify-center gap-1 border-0 p-0 m-0 min-w-0">
+                  <legend className="sr-only">{t('sort.label')}</legend>
+                  {PAI_GOW_SORT_MODES.map(({ mode, labelKey }) => (
                     <button
-                      key={`p-${card.design}-${card.value}-${i}`}
+                      key={mode}
                       type="button"
-                      onClick={() => toggleCardSelection(i)}
-                      className={`relative transition-transform ${selectedIndices.includes(i) ? '-translate-y-3 ring-2 ring-ds-warning rounded' : ''}`}
-                      aria-pressed={selectedIndices.includes(i)}
+                      onClick={() => setSortMode(mode)}
+                      className={sortMode === mode ? `${btnPrimary} min-w-[64px]` : `${btnSecondary} min-w-[64px]`}
+                      aria-pressed={sortMode === mode}
+                    >
+                      {t(labelKey)}
+                    </button>
+                  ))}
+                </fieldset>
+                <div className="flex justify-center gap-2 flex-wrap">
+                  {sortedHandForDisplay(state.playerCards, sortMode).map(({ card, index }) => (
+                    <button
+                      key={`p-${card.design}-${card.value}-${index}`}
+                      type="button"
+                      onClick={() => toggleCardSelection(index)}
+                      className={`relative transition-transform ${selectedIndices.includes(index) ? '-translate-y-3 ring-2 ring-ds-warning rounded' : ''}`}
+                      aria-pressed={selectedIndices.includes(index)}
                       aria-label={cardAlt(card)}
                     >
                       <AnimatedCard card={card} width={cardWidth} />

@@ -240,6 +240,7 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
   const humanAllIn = humanPlayer?.allIn ?? false;
   const canAct = isActive && !humanFolded && !humanAllIn && !isDiscardPhase && state?.currentTurn === humanPlayer?.id;
   const hasOutstandingBet = (state?.lastBet ?? 0) > (humanPlayer?.currentBet ?? 0);
+  const callAmount = (state?.lastBet ?? 0) - (humanPlayer?.currentBet ?? 0);
   // Best-5 highlight at showdown: after the discard, the hand is Hold'em-style
   // (2 hole + 5 board), so holdemBestFive marks the winning five cards. Indices
   // 0..1 map to the hole cards, 2..6 to the board.
@@ -368,10 +369,11 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
     ],
     [apiExec, hasOutstandingBet, betAmount, getElapsed],
   );
+  const availableActionBindings = canAct && !loading ? actionBindings : [];
 
   useActionKeyboardNav({
-    bindings: actionBindings,
-    enabled: canAct && !loading,
+    bindings: availableActionBindings,
+    enabled: true,
   });
 
   // Discard phase control shared by mouse and keyboard: toggle a hole card into
@@ -804,12 +806,12 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                     >
                       {discardPreview.handKey
                         ? t('discard.previewAriaWithHand', {
-                            cards: discardPreview.kept.map((c) => cardAlt(c)).join(', '),
+                            cards: discardPreview.kept.map((c) => cardAlt(c)).join(t('listSeparator')),
                             hand: t(`hand.${discardPreview.handKey}`),
                             strength: discardPreview.strengthCards.map(cardAlt).join(t('listSeparator')),
                           })
                         : t('discard.previewAria', {
-                            cards: discardPreview.kept.map((c) => cardAlt(c)).join(', '),
+                            cards: discardPreview.kept.map((c) => cardAlt(c)).join(t('listSeparator')),
                           })}
                     </div>
                     <span className="text-ds-text-muted">{`${t('discard.keepLabel')}: `}</span>
@@ -965,6 +967,7 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                   maxBetAmount={state?.maxBetAmount}
                   potSize={state?.pot}
                   hasOutstandingBet={hasOutstandingBet}
+                  callAmountLabel={hasOutstandingBet ? t('callAmount', { amount: callAmount }) : undefined}
                   loading={loading}
                   onCall={() => apiExec('call', undefined, undefined, getElapsed())}
                   onRaise={() => apiExec('raise', betAmount, undefined, getElapsed())}
@@ -1036,7 +1039,11 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
               dataTutorial="pn-reset-button"
               className="min-w-[90px]"
             />
-            <ActionShortcutsPanel bindings={actionBindings} includeCardNav data-testid="pineapple-kbd-shortcuts" />
+            <ActionShortcutsPanel
+              bindings={availableActionBindings}
+              includeCardNav
+              data-testid="pineapple-kbd-shortcuts"
+            />
           </GameFooter>
         </>
       )}

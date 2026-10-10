@@ -22,6 +22,7 @@
   "you": "あなた",
   "cpu": "CPU {{id}}",
   "players": "プレイヤー",
+  "mano": "親（マノ）",
   "cards": "{{count}}枚",
   "yourTeam": "あなたのチーム",
   "partner": "味方",

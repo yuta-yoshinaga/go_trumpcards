@@ -78,6 +78,14 @@ const CALABRESELLA_PHASE_KEYS: Readonly<Record<number, string>> = {
 /** Bid labels indexed by bid value (0=pass/none, 1=chiamo, 2=solo). */
 const BID_KEYS = ['bidNone', 'bidChiamo', 'bidSolo'] as const;
 
+/** Shared suit translation keys indexed by card design. */
+const SUIT_I18N_KEYS: Readonly<Record<'SPADE' | 'CLOVER' | 'HEART' | 'DIAMOND', string>> = {
+  SPADE: 'common.suit.spade',
+  CLOVER: 'common.suit.club',
+  HEART: 'common.suit.heart',
+  DIAMOND: 'common.suit.diamond',
+};
+
 /** Renders the Calabresella (Terziglio) game page: a Calabrian/Italian 3-player 40-card Tressette-family trick-taker with bidding and a monte exchange. */
 export const CalabresellaPage = withTutorial(CalabresellaPageContent, 'calabresella', CALABRESELLA_TUTORIAL_STEPS);
 
@@ -145,6 +153,10 @@ function CalabresellaPageContent() {
   const isTrickEnd = state.phase === CalabresellaPhase.TRICK_END;
   const isRoundEnd = state.phase === CalabresellaPhase.ROUND_END;
   const isGameEnd = state.phase === CalabresellaPhase.GAME_END || state.gameEndFlag;
+  const firstTrickCard = state.currentTrick[0]?.card;
+  const leadSuit = firstTrickCard
+    ? tc(SUIT_I18N_KEYS[firstTrickCard.design as keyof typeof SUIT_I18N_KEYS])
+    : undefined;
 
   const canBid = isBidPhase && state.currentBidderIdx === humanIdx;
   const canSubmitBid = (bid: number) => bid > state.highestBid;
@@ -246,6 +258,8 @@ function CalabresellaPageContent() {
 
                 <TrickDisplay
                   currentTrick={state.currentTrick}
+                  leadSuit={leadSuit}
+                  leadSuitLabel={t('leadSuit')}
                   players={state.players}
                   cardWidth={cardWidth}
                   label={t('currentTrick')}

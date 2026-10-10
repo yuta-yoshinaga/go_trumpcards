@@ -139,6 +139,17 @@ describe('useAmericanToadGame', () => {
     expect(result.current.selectedSource).toEqual({ zone: 'waste' });
   });
 
+  it('clears the selected source when a shared reset action runs', async () => {
+    const { result } = renderHook(() => useAmericanToadGame(), { wrapper: makeWrapper() });
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    act(() => result.current.handleSelectSource({ zone: 'reserve' }));
+    act(() => result.current.handleReset());
+
+    expect(result.current.selectedSource).toBeNull();
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
   it('handleSelectTarget no-ops without a selected source', async () => {
     const { result } = renderHook(() => useAmericanToadGame(), { wrapper: makeWrapper() });
     await waitFor(() => expect(mockExec).toHaveBeenCalled());

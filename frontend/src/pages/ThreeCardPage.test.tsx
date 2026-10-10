@@ -468,6 +468,12 @@ describe('ThreeCardPage', () => {
     await waitFor(() => expect(screen.getAllByText(/ハイカード/).length).toBeGreaterThanOrEqual(1));
   });
 
+  it('shows the player hand rank during action phase', async () => {
+    mockExec.mockResolvedValue({ ...actionPhaseState, playerHandRank: 1 });
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByText(/ハイカード/)).toBeInTheDocument());
+  });
+
   it('shows dealer qualification status', async () => {
     mockExec.mockResolvedValue(endPhasePlayerWins);
     renderWithProviders(<ThreeCardPage />);

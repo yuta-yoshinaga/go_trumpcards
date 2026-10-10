@@ -67,6 +67,28 @@ beforeEach(() => {
 });
 
 describe('BourrePage', () => {
+  it('guides the tutorial through the hand exchange target', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [player({ id: 0, isHuman: true, cards: [{ design: 'SPADE', value: 1 }] })],
+      }),
+    );
+    const { container } = renderWithProviders(<BourrePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'チュートリアル' })).toBeInTheDocument());
+    expect(container.querySelector('[data-tutorial="bourre-draw"]')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'チュートリアル' }));
+    await screen.findByText(
+      'ブーレはポーカーの賭けとトリックテイキングを融合したルイジアナの古典。全員がアンティをポットに入れ、ディーラーの最後の1枚が切り札スートを決めます。',
+    );
+    fireEvent.click(screen.getByRole('button', { name: '次へ' }));
+    await screen.findByText(/5枚の手札と切り札を見て/);
+    fireEvent.click(screen.getByRole('button', { name: '次へ' }));
+    expect(
+      await screen.findByText('参加する場合、不要なカードを捨てて山札から同数を引けます（ドローポーカーと同様）。'),
+    ).toBeInTheDocument();
+  });
+
   it('explains each payment, the winner, and the carried pot at round end', async () => {
     mockExec.mockResolvedValue(
       makeState({

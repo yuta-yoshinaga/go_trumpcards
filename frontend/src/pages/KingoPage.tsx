@@ -109,9 +109,12 @@ function KingoPageContent() {
   const minBet = state.config?.minBet ?? 10;
   const chipBalance = human?.chips ?? 0;
   const canBet = chipBalance >= minBet;
+  const firstValidBet = Math.ceil(minBet / 10) * 10;
+  const maxValidBet = Math.floor(chipBalance / 10) * 10;
   // **初期値も卓の最低額に合わせる。** 下限を入力欄に渡しても、一度も触らずに
   // 「賭ける」を押した人は既定の 10 を送ってしまい、サーバに弾かれる。
-  const betAmount = canBet ? Math.min(Math.max(amount, minBet), chipBalance) : minBet;
+  const betAmount = canBet ? Math.min(Math.max(amount, firstValidBet), maxValidBet) : firstValidBet;
+  const hasValidBetStep = betAmount % 10 === 0 && betAmount >= minBet;
 
   return (
     <GamePageShell
@@ -291,10 +294,12 @@ function KingoPageContent() {
                       type="button"
                       data-testid="kingo-bet"
                       data-hint-action="bet"
-                      aria-disabled={!canBet || undefined}
-                      aria-describedby={!canBet ? 'kingo-bet-unavailable' : undefined}
+                      aria-disabled={!canBet || !hasValidBetStep || undefined}
+                      aria-describedby={
+                        !canBet ? 'kingo-bet-unavailable' : !hasValidBetStep ? 'kingo-bet-step-error' : undefined
+                      }
                       onClick={() => {
-                        if (canBet) handleBet(betAmount);
+                        if (canBet && hasValidBetStep) handleBet(betAmount);
                       }}
                       disabled={loading}
                       className={`${btnSuccess} aria-disabled:opacity-40 aria-disabled:cursor-not-allowed`}
@@ -309,11 +314,22 @@ function KingoPageContent() {
                       label={t('label.bet')}
                       value={betAmount}
                       onChange={setAmount}
-                      min={minBet}
-                      max={chipBalance}
+                      min={firstValidBet}
+                      max={maxValidBet}
                       ariaDisabled={!canBet}
-                      describedBy={!canBet ? 'kingo-bet-unavailable' : undefined}
+                      invalid={canBet && !hasValidBetStep}
+                      describedBy={
+                        !canBet ? 'kingo-bet-unavailable' : !hasValidBetStep ? 'kingo-bet-step-error' : undefined
+                      }
                     />
+                    <p
+                      id="kingo-bet-step-error"
+                      data-testid="kingo-bet-step-error"
+                      className="text-ds-error-text text-sm"
+                      hidden={!canBet || hasValidBetStep}
+                    >
+                      {t('label.betStepError')}
+                    </p>
                   </>
                 ))}
 

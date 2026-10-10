@@ -200,7 +200,7 @@ function SpoilFivePageContent() {
               {t('dealer')}
             </span>
           )}
-          {` — ${t('roundTricksOf', { count: p.roundTricks, needed: SPOILFIVE_WIN_TRICKS })} · ${t('score', { count: p.score })}`}
+          {` — ${t('roundTricksOf', { count: p.roundTricks, needed: SPOILFIVE_WIN_TRICKS })} · ${t('score', { count: p.score })} · ${t('cards', { count: p.cardCount })}`}
         </span>
         {/* 残り1トリックで決まる状態は、終盤でいちばん重要な情報。 */}
         {!isRoundEnd && !isGameEnd && p.roundTricks === SPOILFIVE_WIN_TRICKS - 1 && (

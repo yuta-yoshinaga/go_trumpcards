@@ -396,9 +396,11 @@ function SirTommyPageContent() {
                       disabled={!isPlaying || loading || source === null}
                       title={upcomingLabel ? t('upcomingRanksTooltip', { sequence: upcomingLabel }) : undefined}
                       aria-label={
-                        nextRankLabel
-                          ? `${t('foundation')} ${idx} ${t('nextRankAria', { rank: nextRankLabel })}`
-                          : `${t('foundation')} ${idx} ${t('foundationCompleteAria')}`
+                        top
+                          ? nextRankLabel
+                            ? t('foundationTopAria', { idx, card: cardAlt(top), rank: nextRankLabel })
+                            : t('foundationCompleteTopAria', { idx, card: cardAlt(top) })
+                          : t('foundationEmptyAria', { idx, rank: nextRankLabel })
                       }
                     >
                       <span className="text-[11px] mb-0.5 text-ds-text-muted">F{idx}</span>

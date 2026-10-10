@@ -7,6 +7,7 @@
   "button.reset": "リセット",
   "label.tableCards": "場",
   "label.tableEmpty": "なし (誰でも出せます)",
+  "label.cpuCardCount": "手札 {{count}} 枚",
   "badge.revolution": "【革命中】2が最弱、3が最強",
   "flash.revolutionStart": "革命発生",
   "flash.revolutionEnd": "革命終了 — 強さの序列が通常に戻りました",

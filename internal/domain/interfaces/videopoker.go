@@ -48,6 +48,8 @@ type VideoPokerGame interface {
 	GetCurrentHandKey() string
 	// GetHeldIndices ホールドインデックスを取得する
 	GetHeldIndices() [domain.VideoPokerHandSize]bool
+	// RecommendedHold 戦略表による推奨ホールドを取得する
+	RecommendedHold() domain.VideoPokerHoldAdvice
 	// GetVariantName バリアント名を取得する
 	GetVariantName() string
 }

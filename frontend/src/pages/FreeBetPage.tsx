@@ -113,8 +113,7 @@ function FreeBetPageContent() {
 
   // **自分が出した金だけを数える。** ハウスの出資は失う対象ではないので、
   // ここに `freeBet` を足すと無料ダブルで負けたラウンドが倍の損に見える。
-  const staked = state.hands.reduce((sum, h) => sum + h.bet, 0);
-  const net = state.payout - staked;
+  const net = state.netChange;
   const won = state.hands.some((h) => h.result === FREE_BET_RESULT.win || h.result === FREE_BET_RESULT.blackjack);
   const resultKeyOf = (r: number) => Object.entries(FREE_BET_RESULT).find(([, v]) => v === r)?.[0] ?? 'none';
   return (
@@ -138,6 +137,9 @@ function FreeBetPageContent() {
         </>
       }
     >
+      <div role="status" aria-live="polite" aria-atomic="true" className="sr-only" data-testid="fb-result-announcement">
+        {isResultPhase ? `${t('label.net')}: ${net}` : ''}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (

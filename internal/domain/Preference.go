@@ -104,6 +104,13 @@ type PreferenceScoreBreakdown struct {
 	DefendingContract int `json:"defendingContract"`
 }
 
+// PreferenceRoundScore records each player's score and cumulative total after a round.
+type PreferenceRoundScore struct {
+	RoundNumber      int                      `json:"roundNumber"`
+	RoundScores      [PreferencePlayerCnt]int `json:"roundScores"`
+	CumulativeScores [PreferencePlayerCnt]int `json:"cumulativeScores"`
+}
+
 // Total returns the points awarded to the player in the round.
 func (b PreferenceScoreBreakdown) Total() int { return b.DeclarerContract + b.DefendingContract }
 
@@ -126,6 +133,7 @@ type Preference struct {
 	trumpSuit        int
 	playerScores     [PreferencePlayerCnt]int
 	scoreBreakdown   [PreferencePlayerCnt]PreferenceScoreBreakdown
+	scoreHistory     []PreferenceRoundScore
 	roundTricks      [PreferencePlayerCnt]int
 	gameEndFlag      bool
 	winnerPlayer     int // -1=未確定
@@ -154,6 +162,7 @@ func (g *Preference) Reset() {
 	g.roundNumber = 1
 	g.dealerIdx = 0
 	g.playerScores = [PreferencePlayerCnt]int{}
+	g.scoreHistory = make([]PreferenceRoundScore, 0)
 	g.actionLog = nil
 	g.startRound()
 }
@@ -404,6 +413,9 @@ func (g *Preference) ScoreRound() {
 	if g.phase != PreferencePhaseRoundEnd {
 		return
 	}
+	if len(g.scoreHistory) > 0 && g.scoreHistory[len(g.scoreHistory)-1].RoundNumber == g.roundNumber {
+		return
+	}
 	if g.declarerIdx >= 0 {
 		value := preferenceBidValue(g.contract)
 		won := g.contractMade()
@@ -421,6 +433,11 @@ func (g *Preference) ScoreRound() {
 		g.appendLog(-1, "round_score", "preference.log.roundScore", map[string]string{"round": fmt.Sprint(g.roundNumber), "contractKey": PreferenceBidKey(g.contract), "outcomeKey": preferenceOutcomeKey(won), "tricks": fmt.Sprint(g.roundTricks[g.declarerIdx]), "target": fmt.Sprint(preferenceBidTarget(g.contract))}, nil)
 		g.checkGameEnd()
 	}
+	var roundScores [PreferencePlayerCnt]int
+	for i := range roundScores {
+		roundScores[i] = g.scoreBreakdown[i].Total()
+	}
+	g.scoreHistory = append(g.scoreHistory, PreferenceRoundScore{RoundNumber: g.roundNumber, RoundScores: roundScores, CumulativeScores: g.playerScores})
 }
 
 // contractMade 宣言者が契約を達成したか。
@@ -699,6 +716,13 @@ func (g *Preference) GetScoreBreakdown() [PreferencePlayerCnt]PreferenceScoreBre
 	return g.scoreBreakdown
 }
 
+// GetScoreHistory returns recorded per-round and cumulative scores.
+func (g *Preference) GetScoreHistory() []PreferenceRoundScore {
+	out := make([]PreferenceRoundScore, len(g.scoreHistory))
+	copy(out, g.scoreHistory)
+	return out
+}
+
 // SetPlayerScores プレイヤー別累積点設定 (テスト用)
 func (g *Preference) SetPlayerScores(s [PreferencePlayerCnt]int) { g.playerScores = s }
 
@@ -832,6 +856,7 @@ type preferenceJSON struct {
 	TrumpSuit        int                                           `json:"ts"`
 	PlayerScores     [PreferencePlayerCnt]int                      `json:"sc"`
 	ScoreBreakdown   [PreferencePlayerCnt]PreferenceScoreBreakdown `json:"sb"`
+	ScoreHistory     []PreferenceRoundScore                        `json:"sh"`
 	RoundTricks      [PreferencePlayerCnt]int                      `json:"rt"`
 	GameEndFlag      bool                                          `json:"ge"`
 	WinnerPlayer     int                                           `json:"wp"`
@@ -858,6 +883,7 @@ func (g *Preference) MarshalJSON() ([]byte, error) {
 		TrumpSuit:        g.trumpSuit,
 		PlayerScores:     g.playerScores,
 		ScoreBreakdown:   g.scoreBreakdown,
+		ScoreHistory:     g.scoreHistory,
 		RoundTricks:      g.roundTricks,
 		GameEndFlag:      g.gameEndFlag,
 		WinnerPlayer:     g.winnerPlayer,
@@ -886,7 +912,7 @@ func (g *Preference) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
 	}
-	if len(j.Players) > preferenceMaxSliceLen || len(j.CurrentTrick) > preferenceMaxSliceLen ||
+	if len(j.Players) > preferenceMaxSliceLen || len(j.CurrentTrick) > preferenceMaxSliceLen || len(j.ScoreHistory) > preferenceMaxSliceLen ||
 		len(j.ActionLog) > preferenceMaxSliceLen {
 		return errPreferenceOversized
 	}
@@ -940,6 +966,10 @@ func (g *Preference) UnmarshalJSON(data []byte) error {
 	g.trumpSuit = j.TrumpSuit
 	g.playerScores = j.PlayerScores
 	g.scoreBreakdown = j.ScoreBreakdown
+	g.scoreHistory = j.ScoreHistory
+	if g.scoreHistory == nil {
+		g.scoreHistory = make([]PreferenceRoundScore, 0)
+	}
 	g.roundTricks = j.RoundTricks
 	g.gameEndFlag = j.GameEndFlag
 	g.winnerPlayer = j.WinnerPlayer

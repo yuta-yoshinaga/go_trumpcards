@@ -461,8 +461,8 @@ describe('SpiderPage', () => {
 
     const firstColumnCard = screen.getByAltText('♠ K').closest('button');
     const secondColumnCard = screen.getByAltText('♥ 5').closest('button');
-    expect(firstColumnCard).toHaveAttribute('aria-label', '♠ K（列0・上から1枚目）');
-    expect(secondColumnCard).toHaveAttribute('aria-label', '♥ 5（列1・上から2枚目）');
+    expect(firstColumnCard).toHaveAttribute('aria-label', '♠ K（列0・上から1枚目・移動可能な連続札1枚）');
+    expect(secondColumnCard).toHaveAttribute('aria-label', '♥ 5（列1・上から2枚目・移動可能な連続札1枚）');
     expect(firstColumnCard).toHaveAttribute('aria-pressed', 'false');
     fireEvent.click(firstColumnCard!);
     await waitFor(() => expect(firstColumnCard).toHaveAttribute('aria-pressed', 'true'));
@@ -790,6 +790,16 @@ describe('SpiderPage', () => {
 
       fireEvent.mouseLeave(top);
       await waitFor(() => expect(btnFor('♠ K')).not.toHaveAttribute('data-movable-run'));
+    });
+
+    it('announces the movable same-suit run length in card labels and omits it for a broken tail', async () => {
+      mockExec.mockResolvedValue(runState);
+      renderWithProviders(<SpiderPage />);
+      await waitFor(() => expect(screen.getByAltText('♠ K')).toBeInTheDocument());
+
+      expect(btnFor('♠ K')).toHaveAccessibleName('♠ K（列0・上から1枚目・移動可能な連続札3枚）');
+      expect(btnFor('♠ Q')).toHaveAccessibleName('♠ Q（列0・上から2枚目・移動可能な連続札2枚）');
+      expect(btnFor('♣ 7')).toHaveAccessibleName('♣ 7（列1・上から1枚目）');
     });
 
     it('rings only the valid suffix when hovering a mid-run card', async () => {

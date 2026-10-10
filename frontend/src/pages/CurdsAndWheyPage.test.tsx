@@ -234,6 +234,49 @@ describe('CurdsAndWheyPage', () => {
     expect(screen.getByTestId('card-3-0')).toHaveAttribute('aria-pressed', 'false');
   });
 
+  it('Escape clears the selected source without making a move', async () => {
+    renderWithProviders(<CurdsAndWheyPage />);
+    await screen.findByTestId('card-0-0');
+    fireEvent.click(screen.getByTestId('card-0-0'));
+    expect(screen.getByTestId('cw-guidance')).toHaveTextContent('移動先の列を選んでください');
+    expect(screen.getByTestId('card-0-0')).toHaveAttribute('aria-pressed', 'true');
+
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'Escape' });
+
+    expect(screen.getByTestId('cw-guidance')).toHaveTextContent(/動かすカード/);
+    expect(screen.getByTestId('card-0-0')).toHaveAttribute('aria-pressed', 'false');
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+    expect(
+      screen.getByText((_, element) => element?.textContent === '完成スート: 0 / 4 · 手数: 0'),
+    ).toBeInTheDocument();
+  });
+
+  it('keeps the selected source for other keys', async () => {
+    renderWithProviders(<CurdsAndWheyPage />);
+    await screen.findByTestId('card-0-0');
+    fireEvent.click(screen.getByTestId('card-0-0'));
+
+    fireEvent.keyDown(document, { key: 'x' });
+
+    expect(screen.getByTestId('cw-guidance')).toHaveTextContent('移動先の列を選んでください');
+    expect(screen.getByTestId('card-0-0')).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('leaves Escape handling to a focused form control', async () => {
+    renderWithProviders(<CurdsAndWheyPage />);
+    await screen.findByTestId('card-0-0');
+    fireEvent.click(screen.getByTestId('card-0-0'));
+    const checkbox = screen.getByRole('checkbox');
+    checkbox.focus();
+
+    fireEvent.keyDown(checkbox, { key: 'Escape' });
+
+    expect(screen.getByTestId('cw-guidance')).toHaveTextContent('移動先の列を選んでください');
+    expect(screen.getByTestId('card-0-0')).toHaveAttribute('aria-pressed', 'true');
+  });
+
   it('double-clicks a grabbable card to auto-move it to the best column', async () => {
     // Default state: col0 = ♠9, col1 = ♠8. Double-clicking ♠8 links same-suit onto ♠9.
     renderWithProviders(<CurdsAndWheyPage />);

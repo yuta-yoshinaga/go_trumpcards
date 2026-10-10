@@ -3,6 +3,7 @@
 package presenter
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -64,11 +65,52 @@ func ofcPlayerStr(g interfaces.OpenFaceChineseGame, idx int) string {
 	//
 	// 条件は Web と揃える: ラウンド終了時に、0 点でない席だけ。手役が確定する前に
 	// 出しても常に 0 で、意味のない行が毎ターン並ぶ。
-	if g.GetPhase() == domain.OpenFaceChinesePhaseRoundEnd && player.GetRoyalty() > 0 {
+	roundComplete := g.GetPhase() == domain.OpenFaceChinesePhaseRoundEnd || g.GetGameEndFlag()
+	if roundComplete && player.GetRoyalty() > 0 {
 		b.WriteString(i18n.Tf("openfacechinese.royalty",
 			"points", strconv.Itoa(player.GetRoyalty())) + "\n")
 	}
+	if roundComplete {
+		bd := g.RoundBreakdown(idx)
+		for _, row := range bd.Rows {
+			for _, comparison := range row.Comparisons {
+				b.WriteString(i18n.Tf("openfacechinese.roundBreakdownRow",
+					"row", openFaceChineseRowName(row.Row), "rank", openFaceChineseRankName(row.Row, row.Rank),
+					"opponent", cuiPlayerName(g.GetPlayer(comparison.OpponentIdx), comparison.OpponentIdx),
+					"result", openFaceChineseResultName(comparison.Outcome), "points", fmt.Sprintf("%+d", comparison.Outcome)) + "\n")
+			}
+		}
+		b.WriteString(i18n.Tf("openfacechinese.roundBreakdownBonuses",
+			"scoop", strconv.Itoa(bd.ScoopScore), "royalty", fmt.Sprintf("%+d", bd.RoyaltyAdjustment),
+			"total", strconv.Itoa(player.GetRoundScore())) + "\n")
+	}
 	return b.String()
+}
+
+func openFaceChineseRankName(row, rank int) string {
+	if row == domain.OpenFaceChineseRowFront {
+		keys := []string{"unknown", "highCard", "pair", "flush", "straight", "threeOfAKind", "straightFlush"}
+		if rank >= 0 && rank < len(keys) {
+			return i18n.T("pokerhand." + keys[rank])
+		}
+		return i18n.T("pokerhand.unknown")
+	}
+	keys := []string{"highCard", "pair", "twoPair", "threeOfAKind", "straight", "flush", "fullHouse", "fourOfAKind", "straightFlush", "royalFlush", "fiveOfAKind"}
+	if rank >= 0 && rank < len(keys) {
+		return i18n.T("pokerhand." + keys[rank])
+	}
+	return i18n.T("pokerhand.unknown")
+}
+
+func openFaceChineseResultName(outcome int) string {
+	switch {
+	case outcome > 0:
+		return i18n.T("openfacechinese.resultWin")
+	case outcome < 0:
+		return i18n.T("openfacechinese.resultLoss")
+	default:
+		return i18n.T("openfacechinese.resultTie")
+	}
 }
 
 // OpenFaceChineseCuiPresenter renders the Open Face Chinese (OFC) CUI view.

@@ -23,6 +23,7 @@ export interface OasisPokerResponse extends BaseGameResponse {
   playPayout: number;
   jackpotPayout: number;
   totalPayout: number;
+  netChange: number;
   dealerQualified: boolean;
   playerHandRank: number;
   dealerHandRank: number;

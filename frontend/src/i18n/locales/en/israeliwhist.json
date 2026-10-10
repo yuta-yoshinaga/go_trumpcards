@@ -28,6 +28,7 @@
     "value": "call {{n}}"
   },
   "currentTrick": "Current trick",
+  "dealerBadge": "Dealer",
   "listSeparator": ", ",
   "announcements": {
     "cpuAuctionBid": "{{player}} bid {{n}} in the auction",

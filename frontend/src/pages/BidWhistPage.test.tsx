@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { bidWhistApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BidWhistResponse, Card } from '../types/card';
 import { BidWhistPhase } from '../types/phases';
@@ -147,6 +148,24 @@ describe('BidWhistPage', () => {
   it('shows bid controls on the human bid turn', async () => {
     renderWithProviders(<BidWhistPage />);
     expect(await screen.findByTestId('pass-button')).toBeEnabled();
+  });
+
+  it.each([
+    { language: 'ja', names: ['♠ スペード', '♣ クラブ', '♦ ダイヤ', '♥ ハート'] },
+    { language: 'en', names: ['♠ Spade', '♣ Club', '♦ Diamond', '♥ Heart'] },
+  ])('gives each trump suit button an accessible name in $language', async ({ language, names }) => {
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage(language);
+    try {
+      mockExec.mockResolvedValue(makeState({ phase: BidWhistPhase.TRUMP_DECLARATION, declarerIdx: 0 }));
+      renderWithProviders(<BidWhistPage />);
+
+      for (const name of names) {
+        expect(await screen.findByRole('button', { name })).toBeInTheDocument();
+      }
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
   });
 
   it('shows a visible label for the trick-count selector', async () => {

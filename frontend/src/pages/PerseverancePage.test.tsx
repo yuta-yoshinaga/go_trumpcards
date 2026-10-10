@@ -370,6 +370,18 @@ describe('PerseverancePage', () => {
     expect(container.querySelector('[data-tutorial="bd-tableau"]')).toHaveClass('overflow-x-auto');
   });
 
+  it('explains single-card and same-suit sequence moves in the tutorial', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<PerseverancePage />);
+    fireEvent.click(await screen.findByRole('button', { name: 'チュートリアル' }));
+    fireEvent.click(await screen.findByRole('button', { name: '次へ' }));
+    fireEvent.click(await screen.findByRole('button', { name: '次へ' }));
+    expect(
+      await screen.findByText(/カードは1枚ずつ、または同じスートで降順につながる並びをまとめて移動できます/),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/同じスートで1つ上のランクのカードの上だけ/)).toBeInTheDocument();
+  });
+
   it('centers the selected tableau column in view on mobile', async () => {
     const originalScrollIntoView = Element.prototype.scrollIntoView;
     const originalWidth = window.innerWidth;

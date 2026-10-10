@@ -30,12 +30,12 @@ func TestSolver_ReproducesStandardTable(t *testing.T) {
 	const marginal = 0.01
 
 	var mismatches []string
-	check := func(label string, h handState, up int, isPair bool, pv int, got, want BJSuggestedAction) {
+	check := func(label string, h handState, up int, pv int, got, want BJSuggestedAction) {
 		if got == want || known[label] {
 			return
 		}
-		gotEV := r.evOfAction(h, up, got, isPair, pv)
-		wantEV := r.evOfAction(h, up, want, isPair, pv)
+		gotEV := r.evOfAction(h, up, got, pv)
+		wantEV := r.evOfAction(h, up, want, pv)
 		gap := gotEV - wantEV
 		if gap < marginal {
 			t.Logf("marginal: %s solver=%s(%.4f) table=%s(%.4f) gap=%.4f",
@@ -53,21 +53,21 @@ func TestSolver_ReproducesStandardTable(t *testing.T) {
 			h := hardHandOfTotal(total)
 			got := r.solveCell(h, up, false, 0)
 			want := hardStrategy(total, di)
-			check(fmt.Sprintf("hard%d-%s", total, upLabel(up)), h, up, false, 0, normalizeD(got), normalizeD(want))
+			check(fmt.Sprintf("hard%d-%s", total, upLabel(up)), h, up, 0, normalizeD(got), normalizeD(want))
 		}
 		// ソフト 13..20
 		for total := 13; total <= 20; total++ {
 			h := newHand(1, total-11)
 			got := r.solveCell(h, up, false, 0)
 			want := softStrategy(total, di)
-			check(fmt.Sprintf("soft%d-%s", total, upLabel(up)), h, up, false, 0, normalizeD(got), normalizeD(want))
+			check(fmt.Sprintf("soft%d-%s", total, upLabel(up)), h, up, 0, normalizeD(got), normalizeD(want))
 		}
 		// ペア A,A および 2,2..10,10
 		for _, pv := range []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10} {
 			h := newHand(pv, pv)
 			got := r.solveCell(h, up, true, pv)
 			want := pairStrategy(pv, di)
-			check(fmt.Sprintf("pair%d-%s", pv, upLabel(up)), h, up, true, pv, normalizeD(got), normalizeD(want))
+			check(fmt.Sprintf("pair%d-%s", pv, upLabel(up)), h, up, pv, normalizeD(got), normalizeD(want))
 		}
 	}
 
@@ -131,10 +131,10 @@ func TestSolver_Soft19vs6_DependsOnDealerSoft17Rule(t *testing.T) {
 	h17 := standardRules()
 	h17.dealerHitsSoft17 = true
 
-	standS17 := s17.evOfAction(h, dealerSix, BJSuggestStand, false, 0)
-	doubleS17 := s17.evOfAction(h, dealerSix, BJSuggestDouble, false, 0)
-	standH17 := h17.evOfAction(h, dealerSix, BJSuggestStand, false, 0)
-	doubleH17 := h17.evOfAction(h, dealerSix, BJSuggestDouble, false, 0)
+	standS17 := s17.evOfAction(h, dealerSix, BJSuggestStand, 0)
+	doubleS17 := s17.evOfAction(h, dealerSix, BJSuggestDouble, 0)
+	standH17 := h17.evOfAction(h, dealerSix, BJSuggestStand, 0)
+	doubleH17 := h17.evOfAction(h, dealerSix, BJSuggestDouble, 0)
 
 	// S17: スタンドが勝る。H17: ダブルが勝る。この向きが逆転しているのが要点。
 	if standS17 <= doubleS17 {
@@ -330,8 +330,8 @@ func TestSpanish21_SoftFourteenVsFour(t *testing.T) {
 	h := newHand(1, 3) // A,3 = soft 14
 	const dealerFour = 4
 
-	hitEV := r.evOfAction(h, dealerFour, BJSuggestHit, false, 0)
-	doubleEV := r.evOfAction(h, dealerFour, BJSuggestDouble, false, 0)
+	hitEV := r.evOfAction(h, dealerFour, BJSuggestHit, 0)
+	doubleEV := r.evOfAction(h, dealerFour, BJSuggestDouble, 0)
 
 	if hitEV <= doubleEV {
 		t.Errorf("expected hit to beat double under this game's 2-card-only doubling, got hit=%.4f double=%.4f",

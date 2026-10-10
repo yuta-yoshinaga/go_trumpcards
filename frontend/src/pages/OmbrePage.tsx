@@ -292,37 +292,35 @@ function OmbrePageContent() {
 
               {/* Right: info sidebar */}
               <div data-tutorial="ombre-info">
-                {isBidPhase && (
-                  <section
-                    aria-label={t('bidHistory')}
-                    className="mb-2 p-2 rounded bg-ds-surface text-ds-text-muted text-sm"
-                  >
-                    <div className="text-ds-text-primary font-semibold">{t('bidHistory')}</div>
-                    {state.players.map((p) => (
-                      <div key={p.id} className="py-0.5">
-                        {t('bidDeclaration', {
-                          name: playerName(p.id, p.isHuman),
-                          bid: state.bidActed[p.id]
-                            ? t(state.bids[p.id] === 0 ? 'bidPass' : BID_KEYS[state.bids[p.id]])
-                            : t('bidWaiting'),
-                          trump:
-                            state.bidActed[p.id] && state.bids[p.id] > 0
-                              ? t('bidTrumpSuffix', { suit: t(SUIT_KEYS[state.bidTrump[p.id]]) })
-                              : '',
-                          highest: state.highestBidderIdx === p.id ? t('highestBidderSuffix') : '',
-                        })}
-                      </div>
-                    ))}
-                    {highestBidder && (
-                      <div className="text-ds-text-primary">
-                        {t('currentHighestBid', {
-                          name: playerName(highestBidder.id, highestBidder.isHuman),
-                          bid: t(BID_KEYS[state.highestBid]),
-                        })}
-                      </div>
-                    )}
-                  </section>
-                )}
+                <section
+                  aria-label={t('bidHistory')}
+                  className="mb-2 p-2 rounded bg-ds-surface text-ds-text-muted text-sm"
+                >
+                  <div className="text-ds-text-primary font-semibold">{t('bidHistory')}</div>
+                  {state.players.map((p) => (
+                    <div key={p.id} className="py-0.5">
+                      {t('bidDeclaration', {
+                        name: playerName(p.id, p.isHuman),
+                        bid: state.bidActed[p.id]
+                          ? t(state.bids[p.id] === 0 ? 'bidPass' : BID_KEYS[state.bids[p.id]])
+                          : t('bidWaiting'),
+                        trump:
+                          state.bidActed[p.id] && state.bids[p.id] > 0
+                            ? t('bidTrumpSuffix', { suit: t(SUIT_KEYS[state.bidTrump[p.id]]) })
+                            : '',
+                        highest: state.highestBidderIdx === p.id ? t('highestBidderSuffix') : '',
+                      })}
+                    </div>
+                  ))}
+                  {isBidPhase && highestBidder && (
+                    <div className="text-ds-text-primary">
+                      {t('currentHighestBid', {
+                        name: playerName(highestBidder.id, highestBidder.isHuman),
+                        bid: t(BID_KEYS[state.highestBid]),
+                      })}
+                    </div>
+                  )}
+                </section>
                 {/* Per-player match scores with Ombre badge */}
                 <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
                   {state.players.map((p) => (

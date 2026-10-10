@@ -29,6 +29,7 @@
     "other": "{{name}} の番です。"
   },
   "playersTitle": "プレイヤー",
+  "turnBadge": "手番",
   "dealerBadge": "ディーラー",
   "badge": {
     "blind": "ブラインド",

@@ -13,7 +13,7 @@ import (
 )
 
 // setupOldMaidWebTest creates an OldMaid game with standard setup (player[0] SPADE 1, player[1] HEART 3, players[2,3] finished).
-func setupOldMaidWebTest() (*domain.OldMaid, []*domain.OldMaidPlayer) {
+func setupOldMaidWebTest() *domain.OldMaid {
 	tc := domain.NewTrumpCards(1)
 	players := []*domain.OldMaidPlayer{
 		domain.NewOldMaidPlayer(true),
@@ -26,7 +26,7 @@ func setupOldMaidWebTest() (*domain.OldMaid, []*domain.OldMaidPlayer) {
 	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
 	players[2].SetIsFinished(true)
 	players[3].SetIsFinished(true)
-	return om, players
+	return om
 }
 
 func TestOldMaidWebPresenter_Method(t *testing.T) {
@@ -293,7 +293,7 @@ func TestOldMaidWebPresenter_Method(t *testing.T) {
 	})
 
 	t.Run("success Output lastDrawPlayer nil hides draw card", func(t *testing.T) {
-		om, _ := setupOldMaidWebTest()
+		om := setupOldMaidWebTest()
 		// Simulate draw having happened with invalid player idx → GetPlayer returns nil
 		om.SetHasDrawn(true)
 		om.SetLastDrawPlayerIdx(-1)
@@ -303,7 +303,7 @@ func TestOldMaidWebPresenter_Method(t *testing.T) {
 	})
 
 	t.Run("success Output getCardObj nil card via humanAction", func(t *testing.T) {
-		om, _ := setupOldMaidWebTest()
+		om := setupOldMaidWebTest()
 		// HumanAction with nil DrawnCard → exercises getCardObj(nil)
 		om.SetHumanAction(&domain.OldMaidCpuAction{
 			DrawPlayerIdx:  0,
@@ -343,7 +343,7 @@ func TestOldMaidWebPresenter_MetaAI(t *testing.T) {
 	towp := new(presenter.OldMaidWebPresenter)
 
 	t.Run("metaAI populated when profile exists", func(t *testing.T) {
-		om, _ := setupOldMaidWebTest()
+		om := setupOldMaidWebTest()
 		om.SetHumanProfile(&domain.OldMaidHumanProfile{
 			GamesPlayed:     4,
 			PositionBuckets: [3]int{5, 3, 7},
@@ -361,7 +361,7 @@ func TestOldMaidWebPresenter_MetaAI(t *testing.T) {
 	})
 
 	t.Run("metaAI omitted when profile is nil", func(t *testing.T) {
-		om, _ := setupOldMaidWebTest()
+		om := setupOldMaidWebTest()
 		// No SetHumanProfile → profile is nil
 		result := towp.Output(om, nil)
 		var resObj controller.OldMaidWebOutput
@@ -452,7 +452,7 @@ func TestOldMaidWebPresenter_DrawHistory(t *testing.T) {
 	towp := new(presenter.OldMaidWebPresenter)
 
 	t.Run("empty history in initial state", func(t *testing.T) {
-		om, _ := setupOldMaidWebTest()
+		om := setupOldMaidWebTest()
 		result := towp.Output(om, nil)
 		assert.Contains(t, result, `"drawHistory":[]`)
 	})
@@ -507,7 +507,7 @@ func TestOldMaidWebPresenter_DrawHistory(t *testing.T) {
 	})
 
 	t.Run("history set via test helper", func(t *testing.T) {
-		om, _ := setupOldMaidWebTest()
+		om := setupOldMaidWebTest()
 		om.SetDrawHistory([]*domain.OldMaidDrawHistoryEntry{
 			{DrawPlayerIdx: 2, DrawFromIdx: 0, DiscardedPairs: 1, DiscardedCards: []*domain.Card{
 				domain.NewCard(domain.CardDesignSpade, 5, false),
@@ -519,7 +519,7 @@ func TestOldMaidWebPresenter_DrawHistory(t *testing.T) {
 	})
 
 	t.Run("history without discards emits empty cards", func(t *testing.T) {
-		om, _ := setupOldMaidWebTest()
+		om := setupOldMaidWebTest()
 		om.SetDrawHistory([]*domain.OldMaidDrawHistoryEntry{{DrawPlayerIdx: 0, DrawFromIdx: 1}})
 		result := towp.Output(om, nil)
 		assert.Contains(t, result, `"discardedCards":[]`)

@@ -184,6 +184,41 @@ describe('PochPage', () => {
     expect(screen.getByTestId('poch-pool-live')).toBeEmptyDOMElement();
   });
 
+  it('announces staking awards after the initial baseline in Japanese and English', async () => {
+    mockExec.mockResolvedValueOnce(makeState({ stakingAwards: [] }));
+    renderWithProviders(<PochPage />);
+    await screen.findAllByTestId('poch-pool');
+    expect(screen.getByTestId('poch-pool-live')).toBeEmptyDOMElement();
+
+    mockExec.mockResolvedValueOnce(makeState({ stakingAwards: [{ pool: 'marriage', player: 1, chips: 12 }] }));
+    fireEvent.click(screen.getByRole('button', { name: '賭ける' }));
+    await waitFor(() => expect(screen.getByTestId('poch-pool-live')).toHaveTextContent('席1'));
+    expect(screen.getByTestId('poch-pool-live')).toHaveTextContent('マリッジ');
+    expect(screen.getByTestId('poch-pool-live')).toHaveTextContent('12');
+
+    mockExec.mockResolvedValueOnce(makeState({ stakingAwards: [] }));
+    fireEvent.click(screen.getByRole('button', { name: '賭ける' }));
+    await waitFor(() => expect(screen.getByTestId('poch-pool-live')).toHaveTextContent('あなたの番です'));
+    mockExec.mockResolvedValueOnce(makeState({ stakingAwards: [{ pool: 'marriage', player: 0, chips: 10 }] }));
+    fireEvent.click(screen.getByRole('button', { name: '賭ける' }));
+    await waitFor(() => expect(screen.getByTestId('poch-pool-live')).toHaveTextContent('あなたが'));
+    expect(screen.getByTestId('poch-pool-live')).toHaveTextContent('10');
+
+    await i18n.changeLanguage('en');
+    try {
+      mockExec.mockResolvedValueOnce(makeState({ stakingAwards: [] }));
+      fireEvent.click(screen.getByRole('button', { name: 'Bet' }));
+      await waitFor(() => expect(screen.getByTestId('poch-pool-live')).toHaveTextContent('Your turn'));
+      mockExec.mockResolvedValueOnce(makeState({ stakingAwards: [{ pool: 'marriage', player: 2, chips: 9 }] }));
+      fireEvent.click(screen.getByRole('button', { name: 'Bet' }));
+      await waitFor(() => expect(screen.getByTestId('poch-pool-live')).toHaveTextContent('Seat 2'));
+      expect(screen.getByTestId('poch-pool-live')).toHaveTextContent('Marriage');
+      expect(screen.getByTestId('poch-pool-live')).toHaveTextContent('9');
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
+  });
+
   it('does not announce the human turn when an action rejects and a reset succeeds', async () => {
     renderWithProviders(<PochPage />);
     await screen.findAllByTestId('poch-pool');

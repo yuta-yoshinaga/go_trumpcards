@@ -53,5 +53,9 @@
   "scoreHistory": "得点履歴",
   "historyRound": "ラウンド",
   "historyRoundScore": "今回",
-  "historyCumulativeScore": "累計"
+  "historyCumulativeScore": "累計",
+  "finalRanking": "最終順位",
+  "finalRank": "順位",
+  "finalSeat": "席",
+  "finalScore": "最終得点"
 }

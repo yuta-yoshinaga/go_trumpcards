@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { botifarraApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -80,6 +80,33 @@ function BotifarraPageContent() {
 
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec: execApi, retry } = useGameApi(botifarraApi.exec);
+  const previousTrick = useRef<BotifarraResponse['currentTrick'] | null>(null);
+  const [trickAnnouncement, setTrickAnnouncement] = useState('');
+  useEffect(() => {
+    const current = state?.currentTrick;
+    if (!current) return;
+    const previous = previousTrick.current;
+    previousTrick.current = current;
+    if (!previous) return;
+    const isExtension =
+      previous.length <= current.length &&
+      previous.every((entry, index) => {
+        const next = current[index];
+        return next?.playerIdx === entry.playerIdx && cardAlt(next.card) === cardAlt(entry.card);
+      });
+    if (!isExtension || previous.length === current.length) return;
+    const human = state.players.find((player) => player.isHuman);
+    const announcements = current.slice(previous.length).map((entry) => {
+      const role =
+        entry.playerIdx === human?.id
+          ? t('label.you')
+          : state.players.find((player) => player.id === entry.playerIdx)?.team === human?.team
+            ? t('label.partner')
+            : t('label.opponent');
+      return t('trickCardPlayed', { role, card: cardAlt(entry.card) });
+    });
+    setTrickAnnouncement(announcements.join(t('listSeparator')));
+  }, [state?.currentTrick, state?.players, t]);
   // **ギブアップは取り消せない。**リセットには確認が挟まるのに、同じフッターの
   // ギブアップは即座に対局を打ち切っていた ── 誤タップへの保護がリセットより
   // 薄かった (#6475)。47 ページが既に使っている `useGiveUpConfirm` に揃える。
@@ -200,6 +227,9 @@ function BotifarraPageContent() {
       ) : (
         <>
           <div data-testid="card-area" className={`overflow-y-auto pt-3 px-4 lg:px-8 flex-1 ${lgCardAreaConstraint}`}>
+            <div className="sr-only" role="status" aria-live="polite">
+              {trickAnnouncement}
+            </div>
             <GameMessageBox
               message={state.message}
               messageCode={state.messageCode}

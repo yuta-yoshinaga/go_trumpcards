@@ -35,6 +35,7 @@
   "gameOver": "ゲームオーバー",
   "noHint": "ヒントはありません",
   "hintAvailable": "ヒントがあります",
+  "removeHint": "ヒントがあります: 行{{row}}・列{{col}}の{{card}}を除去できます",
   "hintType": {
     "remove": "カードを除去できます",
     "draw": "ストックからカードを引いてください"

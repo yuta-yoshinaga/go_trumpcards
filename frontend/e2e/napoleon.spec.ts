@@ -84,6 +84,8 @@ test.describe('Napoleon E2E', () => {
       // Trump declaration phase
       if (declareVisible) {
         interactions++;
+        await page.locator('[data-testid^="np-adjutant-option-"]').first().click();
+        await expect(declareButton).toBeEnabled();
         await declareButton.click();
         await waitForLoaded(page);
         continue;

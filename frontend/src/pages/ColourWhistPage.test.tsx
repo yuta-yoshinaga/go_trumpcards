@@ -95,6 +95,18 @@ beforeEach(() => {
 });
 
 describe('ColourWhistPage', () => {
+  it('shows the winning seat in the final result for either outcome', async () => {
+    mockApi.mockResolvedValue({ ...bidState, gameEndFlag: true, winnerIdx: 2 });
+    const { unmount } = renderWithProviders(<ColourWhistPage />);
+
+    expect(await screen.findByTestId('colourwhist-result')).toHaveTextContent('相手の勝ちです（勝者の席 #2）');
+
+    unmount();
+    mockApi.mockResolvedValue({ ...bidState, gameEndFlag: true, winnerIdx: 0 });
+    renderWithProviders(<ColourWhistPage />);
+    expect(await screen.findByTestId('colourwhist-result')).toHaveTextContent('あなたの勝ちです（勝者の席 #0）');
+  });
+
   it("shows each seat's current trick count", async () => {
     mockApi.mockResolvedValue({
       ...playState,

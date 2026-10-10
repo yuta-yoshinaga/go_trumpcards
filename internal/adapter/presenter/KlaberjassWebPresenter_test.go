@@ -31,7 +31,7 @@ func makeKlaberjassPlayers(hands ...[]*domain.Card) []*domain.KlaberjassPlayer {
 
 func kjTestCard(suit, value int) *domain.Card { return domain.NewCard(suit, value, true) }
 
-func setupKlaberjassWebMock(phase domain.KlaberjassPhase) (*interfaces.MockKlaberjassGame, []*domain.KlaberjassPlayer) {
+func setupKlaberjassWebMock(phase domain.KlaberjassPhase) *interfaces.MockKlaberjassGame {
 	m := new(interfaces.MockKlaberjassGame)
 	players := makeKlaberjassPlayers(
 		[]*domain.Card{kjTestCard(domain.CardDesignSpade, 11), kjTestCard(domain.CardDesignHeart, 1)},
@@ -75,11 +75,11 @@ func setupKlaberjassWebMock(phase domain.KlaberjassPhase) (*interfaces.MockKlabe
 			nil,
 		})
 	}
-	return m, players
+	return m
 }
 
 func TestKlaberjassWebPresenter_ReportsCompletedTrickHistory(t *testing.T) {
-	m, _ := setupKlaberjassWebMock(domain.KlaberjassPhasePlay)
+	m := setupKlaberjassWebMock(domain.KlaberjassPhasePlay)
 	out := parseKlaberjassOutput(t, new(presenter.KlaberjassWebPresenter).Output(m, nil))
 
 	require.Len(t, out.TrickHistory, 2)
@@ -90,7 +90,7 @@ func TestKlaberjassWebPresenter_ReportsCompletedTrickHistory(t *testing.T) {
 }
 
 func TestKlaberjassWebPresenter_SendsPointBreakdownFromGetters(t *testing.T) {
-	m, _ := setupKlaberjassWebMock(domain.KlaberjassPhaseHandEnd)
+	m := setupKlaberjassWebMock(domain.KlaberjassPhaseHandEnd)
 	out := parseKlaberjassOutput(t, new(presenter.KlaberjassWebPresenter).Output(m, nil))
 
 	assert.Equal(t, 11, out.Players[0].CardPoints)
@@ -108,7 +108,7 @@ func parseKlaberjassOutput(t *testing.T, s string) *controller.KlaberjassWebOutp
 
 // **相手の手札も役も伏せる。**役は申告し合う勝負なので、見えたら成立しない。
 func TestKlaberjassWebPresenter_HidesTheOpponentDuringPlay(t *testing.T) {
-	m, _ := setupKlaberjassWebMock(domain.KlaberjassPhasePlay)
+	m := setupKlaberjassWebMock(domain.KlaberjassPhasePlay)
 	out := parseKlaberjassOutput(t, new(presenter.KlaberjassWebPresenter).Output(m, nil))
 
 	assert.Len(t, out.Players, 2)
@@ -122,7 +122,7 @@ func TestKlaberjassWebPresenter_HidesTheOpponentDuringPlay(t *testing.T) {
 }
 
 func TestKlaberjassWebPresenter_RevealsAtTheSettlement(t *testing.T) {
-	m, _ := setupKlaberjassWebMock(domain.KlaberjassPhaseHandEnd)
+	m := setupKlaberjassWebMock(domain.KlaberjassPhaseHandEnd)
 	out := parseKlaberjassOutput(t, new(presenter.KlaberjassWebPresenter).Output(m, nil))
 
 	assert.Len(t, out.Players[1].Cards, 2, "hands are revealed once the hand is settled")
@@ -135,19 +135,19 @@ func TestKlaberjassWebPresenter_RevealsAtTheSettlement(t *testing.T) {
 // **出せる札はサーバーが決める。**追随・切札・上乗せが全部強制なので、
 // フロントで再現するとずれる。
 func TestKlaberjassWebPresenter_SendsValidPlaysOnlyOnTheHumansPlayTurn(t *testing.T) {
-	m, _ := setupKlaberjassWebMock(domain.KlaberjassPhasePlay)
+	m := setupKlaberjassWebMock(domain.KlaberjassPhasePlay)
 	out := parseKlaberjassOutput(t, new(presenter.KlaberjassWebPresenter).Output(m, nil))
 	assert.Equal(t, []int{1}, out.ValidPlays)
 
 	// ビッド中は出せる札という概念が無い。
-	bidding, _ := setupKlaberjassWebMock(domain.KlaberjassPhaseBidTurnUp)
+	bidding := setupKlaberjassWebMock(domain.KlaberjassPhaseBidTurnUp)
 	bidOut := parseKlaberjassOutput(t, new(presenter.KlaberjassWebPresenter).Output(bidding, nil))
 	assert.Empty(t, bidOut.ValidPlays)
 	bidding.AssertNotCalled(t, "KlaberjassValidPlays", 0)
 }
 
 func TestKlaberjassWebPresenter_TopLevelFields(t *testing.T) {
-	m, _ := setupKlaberjassWebMock(domain.KlaberjassPhasePlay)
+	m := setupKlaberjassWebMock(domain.KlaberjassPhasePlay)
 	out := parseKlaberjassOutput(t, new(presenter.KlaberjassWebPresenter).Output(m, nil))
 
 	assert.Equal(t, int(domain.KlaberjassPhasePlay), out.Phase)
@@ -182,13 +182,13 @@ func TestKlaberjassWebPresenter_Messages(t *testing.T) {
 		{domain.KlaberjassPhasePlay, "klaberjass.playPhase"},
 		{domain.KlaberjassPhaseHandEnd, "klaberjass.handEnd"},
 	} {
-		m, _ := setupKlaberjassWebMock(tc.phase)
+		m := setupKlaberjassWebMock(tc.phase)
 		out := parseKlaberjassOutput(t, new(presenter.KlaberjassWebPresenter).Output(m, nil))
 		assert.Equal(t, tc.wantKey, out.MessageCode)
 	}
 
 	t.Run("an error wins over any phase message", func(t *testing.T) {
-		m, _ := setupKlaberjassWebMock(domain.KlaberjassPhasePlay)
+		m := setupKlaberjassWebMock(domain.KlaberjassPhasePlay)
 		out := parseKlaberjassOutput(t, new(presenter.KlaberjassWebPresenter).Output(m, errors.New("boom")))
 		assert.Equal(t, "boom", out.Message)
 		assert.Empty(t, out.MessageCode)
@@ -251,7 +251,7 @@ func TestKlaberjassWebPresenter_GameEnd(t *testing.T) {
 		{"the CPU wins", 1, "klaberjass.result.cpuWin"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			m, _ := setupKlaberjassWebMock(domain.KlaberjassPhaseGameEnd)
+			m := setupKlaberjassWebMock(domain.KlaberjassPhaseGameEnd)
 			m.ExpectedCalls = nil
 			players := makeKlaberjassPlayers([]*domain.Card{}, []*domain.Card{})
 			m.On("GetPhase").Return(domain.KlaberjassPhaseGameEnd)
@@ -298,7 +298,7 @@ func TestKlaberjassWebPresenter_GameEnd(t *testing.T) {
 }
 
 func TestKlaberjassWebPresenter_ActionLogOutput(t *testing.T) {
-	m, _ := setupKlaberjassWebMock(domain.KlaberjassPhasePlay)
+	m := setupKlaberjassWebMock(domain.KlaberjassPhasePlay)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{})
 	assert.NotEmpty(t, new(presenter.KlaberjassWebPresenter).ActionLogOutput(m))
 }

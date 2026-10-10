@@ -228,6 +228,16 @@ function DoudizhuPageContent() {
       winShow={humanWon}
       headerExtra={
         <div className="flex items-center gap-2">
+          {phase === 'bid' && (
+            <span className="text-xs opacity-75">
+              {state.highestBid === 0
+                ? `${t('label.highestBid')}: ${t('label.highestBidNone')}`
+                : t('label.highestBidWithName', {
+                    bid: state.highestBid,
+                    name: findPlayerName(state.players, state.highestBidder),
+                  })}
+            </span>
+          )}
           {state.landlordIdx >= 0 && (
             <span className="text-xs opacity-75">
               {t('label.bid')}: {state.baseBid} | {t('label.bombs')}: {state.bombCount}

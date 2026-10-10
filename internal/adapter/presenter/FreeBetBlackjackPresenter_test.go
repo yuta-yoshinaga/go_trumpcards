@@ -285,6 +285,7 @@ func TestFreeBetWebPresenter_HandsCarryTheirState(t *testing.T) {
 		DealerScore    int               `json:"dealerScore"`
 		DealerPushed22 bool              `json:"dealerPushed22"`
 		Payout         int               `json:"payout"`
+		NetChange      int               `json:"netChange"`
 		RemainingCards int               `json:"remainingCards"`
 	}
 	require.NoError(t, json.Unmarshal([]byte(cp.Output(g, nil)), &got))
@@ -298,6 +299,7 @@ func TestFreeBetWebPresenter_HandsCarryTheirState(t *testing.T) {
 	assert.Positive(t, got.DealerScore)
 	assert.Equal(t, g.IsDealerPushed22(), got.DealerPushed22)
 	assert.Equal(t, g.GetPayout(), got.Payout)
+	assert.Equal(t, g.GetNetChange(), got.NetChange)
 	assert.Equal(t, g.GetRemainingCards(), got.RemainingCards)
 }
 
@@ -366,6 +368,7 @@ func TestFreeBetWebPresenter_SplitTwentyOneIsNotFlaggedAsBlackjack(t *testing.T)
 	m.On("CanFreeSplit").Return(false)
 	m.On("GetAnteBet").Return(100)
 	m.On("GetPayout").Return(0)
+	m.On("GetNetChange").Return(0)
 	m.On("GetChips").Return(1000)
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetRemainingCards").Return(300)

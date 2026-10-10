@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { followTheQueenApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -37,6 +37,7 @@ const humanPlayer = (overrides: Partial<import('../types/card').FollowTheQueenPl
   handRank: 0,
   handName: '',
   bestHand: [],
+  bestHandSource: [],
   playStyleName: '',
   totalHands: 0,
   vpip: 0,
@@ -64,6 +65,7 @@ const cpuPlayer = (id: number, overrides: Partial<import('../types/card').Follow
   handRank: 0,
   handName: '',
   bestHand: [],
+  bestHandSource: [],
   playStyleName: 'タイト',
   totalHands: 0,
   vpip: 0,
@@ -292,6 +294,68 @@ describe('FollowTheQueenPage', () => {
     expect(badge).toHaveTextContent('現在の役: スリーカード');
     // 手札から素朴に数えると「ワンペア」になる ── その答えが出ていないこと。
     expect(badge).not.toHaveTextContent('ワンペア');
+  });
+
+  it('highlights the server-selected best five cards during play and clears them after folding', async () => {
+    const selected = [
+      { design: 'SPADE' as const, value: 12 },
+      { design: 'DIAMOND' as const, value: 10 },
+      { design: 'CLOVER' as const, value: 10 },
+      { design: 'HEART' as const, value: 3 },
+      { design: 'SPADE' as const, value: 8 },
+    ];
+    const wildHuman = humanPlayer({
+      holeCards: selected.slice(0, 3),
+      doorCards: selected.slice(3),
+      bestHand: [{ design: 'SPADE', value: 1 }, ...selected.slice(1)],
+      bestHandSource: selected,
+    });
+    mockExec.mockResolvedValue({
+      ...thirdStreetState,
+      players: [wildHuman, cpuPlayer(1)],
+      humanHandRank: 3,
+    });
+    renderWithProviders(<FollowTheQueenPage />);
+    expect(await screen.findAllByTestId('ftq-best-hand-card')).toHaveLength(5);
+
+    // Wild Q is highlighted by its source card. The replacement A♠ must not
+    // highlight a separate physical A♠ elsewhere in the hand.
+    cleanup();
+    const sourceCards = [
+      { design: 'CLOVER' as const, value: 12 },
+      { design: 'DIAMOND' as const, value: 10 },
+      { design: 'CLOVER' as const, value: 10 },
+      { design: 'HEART' as const, value: 3 },
+      { design: 'SPADE' as const, value: 8 },
+      { design: 'SPADE' as const, value: 1 },
+    ];
+    mockExec.mockResolvedValue({
+      ...thirdStreetState,
+      players: [
+        humanPlayer({
+          holeCards: sourceCards.slice(0, 3),
+          doorCards: sourceCards.slice(3),
+          bestHand: [{ design: 'SPADE', value: 1 }, ...sourceCards.slice(1, 5)],
+          bestHandSource: sourceCards.filter((_, index) => index !== 4),
+        }),
+        cpuPlayer(1),
+      ],
+    });
+    renderWithProviders(<FollowTheQueenPage />);
+    const highlighted = await screen.findAllByTestId('ftq-best-hand-card');
+    expect(highlighted).toHaveLength(5);
+    const highlightedLabels = highlighted.map((el) => el.getAttribute('aria-label') ?? '');
+    expect(highlightedLabels.some((label) => label.includes('Q'))).toBe(true);
+    expect(highlightedLabels.join(' ')).not.toContain('A♠');
+
+    cleanup();
+    mockExec.mockResolvedValue({
+      ...thirdStreetState,
+      players: [humanPlayer({ ...wildHuman, folded: true }), cpuPlayer(1)],
+      humanHandRank: -1,
+    });
+    renderWithProviders(<FollowTheQueenPage />);
+    await waitFor(() => expect(screen.queryAllByTestId('ftq-best-hand-card')).toHaveLength(0));
   });
 
   it('hides the badge when the server reports no rank yet', async () => {

@@ -123,12 +123,19 @@ function CrazyFourPokerPageContent() {
   useMountReset(execApi);
 
   const phase = state?.phase;
+  const maxAnte = state ? Math.floor(state.chips / (2 * CRAZY_FOUR_POKER_ANTE_UNIT)) * CRAZY_FOUR_POKER_ANTE_UNIT : 0;
+  const effectiveAnte = Math.min(ante, maxAnte);
+  const maxQueensUp = state && maxAnte > 0 ? Math.max(0, state.chips - effectiveAnte * 2) : 0;
+  const effectiveQueensUp = Math.min(queensUp, maxQueensUp);
   const isBetPhase = phase === CrazyFourPokerPhase.BET;
   const isDecidePhase = phase === CrazyFourPokerPhase.DECIDE;
   const isResultPhase = phase === CrazyFourPokerPhase.RESULT;
   const gameOver = !!state?.gameEndFlag;
 
-  const handleDeal = useCallback(() => execApi('bet', { ante, queensUp }), [execApi, ante, queensUp]);
+  const handleDeal = useCallback(
+    () => execApi('bet', { ante: effectiveAnte, queensUp: effectiveQueensUp }),
+    [execApi, effectiveAnte, effectiveQueensUp],
+  );
 
   // **置ける倍率はサーバが決める。** 手役から計算し直すと、このゲームの本体である
   // 「3 倍はエースのペア以上だけ」という規則が 2 か所に増えてずれる。
@@ -351,9 +358,10 @@ function CrazyFourPokerPageContent() {
                   <ChipBetInput
                     id="crazyfourpoker-ante"
                     label={t('label.ante')}
-                    value={ante}
+                    value={effectiveAnte}
                     onChange={setAnte}
-                    max={state.chips}
+                    max={maxAnte}
+                    min={0}
                     step={CRAZY_FOUR_POKER_ANTE_UNIT}
                   />
                   {/* **アンティと Super Bonus を引いた残りしか置けない。** 上限を
@@ -361,18 +369,21 @@ function CrazyFourPokerPageContent() {
                   <ChipBetInput
                     id="crazyfourpoker-queensup"
                     label={t('label.queensUp')}
-                    value={queensUp}
+                    value={effectiveQueensUp}
                     onChange={setQueensUp}
-                    max={Math.max(0, state.chips - ante * 2)}
+                    max={maxQueensUp}
+                    min={0}
                     step={CRAZY_FOUR_POKER_ANTE_UNIT}
                   />
                   <section className="text-ds-text-primary text-sm text-center" data-testid="c4p-wager-summary">
                     <h2 className="font-bold">{t('wagerSummary.title')}</h2>
-                    <p>{t('wagerSummary.ante', { amount: ante })}</p>
-                    <p>{t('wagerSummary.superBonus', { amount: ante })}</p>
-                    <p>{t('wagerSummary.required', { amount: ante * 2 })}</p>
-                    <p>{t('wagerSummary.optional', { amount: queensUp })}</p>
-                    <p className="font-bold">{t('wagerSummary.total', { amount: ante * 2 + queensUp })}</p>
+                    <p>{t('wagerSummary.ante', { amount: effectiveAnte })}</p>
+                    <p>{t('wagerSummary.superBonus', { amount: effectiveAnte })}</p>
+                    <p>{t('wagerSummary.required', { amount: effectiveAnte * 2 })}</p>
+                    <p>{t('wagerSummary.optional', { amount: effectiveQueensUp })}</p>
+                    <p className="font-bold">
+                      {t('wagerSummary.total', { amount: effectiveAnte * 2 + effectiveQueensUp })}
+                    </p>
                   </section>
                   {/* **賭ける前に見えなければ意味がない** (#5775)。何が当たれば
                       何倍かを知って額を決めるもの。倍率はサーバの配当表そのまま。 */}

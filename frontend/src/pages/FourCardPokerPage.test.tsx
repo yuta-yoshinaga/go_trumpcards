@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, fourcardpokerApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import i18n from '../i18n';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, FourCardPokerResponse } from '../types/card';
 import { cardAlt } from '../utils/cardAlt';
@@ -225,6 +226,37 @@ describe('FourCardPokerPage', () => {
       fireEvent.keyDown(document, { key });
       await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', undefined, undefined, Number(key)));
     }
+  });
+
+  it('marks unaffordable multipliers and blocks their button actions', async () => {
+    mockExec.mockResolvedValue({ ...actionPhaseState, chips: 150 });
+    renderWithProviders(<FourCardPokerPage />);
+    await screen.findByTestId('play-1x');
+
+    expect(screen.getByText('残高で可能な最大倍率: 1倍')).toBeInTheDocument();
+    expect(screen.getByTestId('play-1x')).not.toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByTestId('play-2x')).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByTestId('play-3x')).toHaveAttribute('aria-describedby', 'fcp-play-unaffordable');
+    fireEvent.click(screen.getByTestId('play-2x'));
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('play', undefined, undefined, 2);
+    fireEvent.click(screen.getByTestId('play-1x'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', undefined, undefined, 1));
+    expect(screen.getByRole('button', { name: 'フォールド' })).toBeEnabled();
+  });
+
+  it('blocks unaffordable multiplier keyboard shortcuts while keeping affordable play and fold', async () => {
+    mockExec.mockResolvedValue({ ...actionPhaseState, chips: 150 });
+    renderWithProviders(<FourCardPokerPage />);
+    await screen.findByTestId('play-1x');
+    vi.mocked(mockExec).mockClear();
+
+    fireEvent.keyDown(document, { key: '2' });
+    fireEvent.keyDown(document, { key: '3' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+    fireEvent.keyDown(document, { key: '1' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', undefined, undefined, 1));
   });
 
   it('renders the dealer concealed cards as backs during the action phase', async () => {

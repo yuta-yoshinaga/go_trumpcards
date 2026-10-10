@@ -43,6 +43,29 @@ beforeEach(() => {
 });
 
 describe('EcartePage', () => {
+  it('shows dealer and elder badges on the current deal score rows', async () => {
+    mockExec.mockResolvedValue(makeEcarteState({ dealerIdx: 0, elderIdx: 1 }));
+    renderWithProviders(<EcartePage />);
+
+    const dealerBadge = await screen.findByText('(ディーラー)');
+    const elderBadge = screen.getByText('(エルダー)');
+    expect(dealerBadge.parentElement).toHaveTextContent('あなた:');
+    expect(elderBadge.parentElement).toHaveTextContent('CPU 1:');
+  });
+
+  it('updates role badges when the deal roles change and translates them in English', async () => {
+    await i18n.changeLanguage('en');
+    try {
+      mockExec.mockResolvedValue(makeEcarteState({ dealerIdx: 0, elderIdx: 1 }));
+      renderWithProviders(<EcartePage />);
+
+      expect(await screen.findByText('(Dealer)')).toBeInTheDocument();
+      expect(screen.getByText('(Elder)')).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
+  });
+
   it('shows the translated no-trump label before a trump is declared', async () => {
     mockExec.mockResolvedValue(makeEcarteState({ trumpSuit: 0 }));
     renderWithProviders(<EcartePage />);

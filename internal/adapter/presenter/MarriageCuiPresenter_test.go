@@ -13,7 +13,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
-func setupMarriageCuiMock(phase domain.MarriagePhase, gameEnd bool) (*interfaces.MockMarriageGame, []*domain.MarriagePlayer) {
+func setupMarriageCuiMock(phase domain.MarriagePhase, gameEnd bool) *interfaces.MockMarriageGame {
 	m := new(interfaces.MockMarriageGame)
 	players := []*domain.MarriagePlayer{
 		domain.NewMarriagePlayer(true),
@@ -42,14 +42,14 @@ func setupMarriageCuiMock(phase domain.MarriagePhase, gameEnd bool) (*interfaces
 	m.On("PlayerMaalValue", 1).Return(4).Maybe()
 	m.On("PlayerHasPureSequence", 0).Return(false).Maybe()
 	m.On("PlayerHasPureSequence", 1).Return(false).Maybe()
-	return m, players
+	return m
 }
 
 func TestMarriageCuiPresenter_Output(t *testing.T) {
 	p := new(presenter.MarriageCuiPresenter)
 
 	t.Run("draw phase", func(t *testing.T) {
-		m, _ := setupMarriageCuiMock(domain.MarriagePhaseDraw, false)
+		m := setupMarriageCuiMock(domain.MarriagePhaseDraw, false)
 		out := p.Output(m, nil)
 		assert.NotEmpty(t, out)
 		assert.Contains(t, out, "マリッジ")
@@ -62,7 +62,7 @@ func TestMarriageCuiPresenter_Output(t *testing.T) {
 	})
 
 	t.Run("discard phase shows deadwood and unmet pure sequence", func(t *testing.T) {
-		m, _ := setupMarriageCuiMock(domain.MarriagePhaseDiscard, false)
+		m := setupMarriageCuiMock(domain.MarriagePhaseDiscard, false)
 		out := p.Output(m, nil)
 		assert.NotEmpty(t, out)
 		assert.Contains(t, out, "ディスカードフェーズ")
@@ -71,7 +71,7 @@ func TestMarriageCuiPresenter_Output(t *testing.T) {
 	})
 
 	t.Run("discard phase explains the scale the deadwood number uses", func(t *testing.T) {
-		m, _ := setupMarriageCuiMock(domain.MarriagePhaseDiscard, false)
+		m := setupMarriageCuiMock(domain.MarriagePhaseDiscard, false)
 		out := p.Output(m, nil)
 		assert.Contains(t, out, "点数:")
 
@@ -90,7 +90,7 @@ func TestMarriageCuiPresenter_Output(t *testing.T) {
 	})
 
 	t.Run("discard phase shows pure sequence met", func(t *testing.T) {
-		m, _ := setupMarriageCuiMock(domain.MarriagePhaseDiscard, false)
+		m := setupMarriageCuiMock(domain.MarriagePhaseDiscard, false)
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "PlayerHasPureSequence")
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "PlayerDeadwoodValue")
 		m.On("PlayerHasPureSequence", 0).Return(true).Maybe()
@@ -102,21 +102,21 @@ func TestMarriageCuiPresenter_Output(t *testing.T) {
 	})
 
 	t.Run("round end", func(t *testing.T) {
-		m, _ := setupMarriageCuiMock(domain.MarriagePhaseRoundEnd, false)
+		m := setupMarriageCuiMock(domain.MarriagePhaseRoundEnd, false)
 		out := p.Output(m, nil)
 		assert.NotEmpty(t, out)
 		assert.Contains(t, out, "マール4点", "ラウンド終了時は CPU のマールを公開する")
 	})
 
 	t.Run("game end", func(t *testing.T) {
-		m, _ := setupMarriageCuiMock(domain.MarriagePhaseGameEnd, true)
+		m := setupMarriageCuiMock(domain.MarriagePhaseGameEnd, true)
 		out := p.Output(m, nil)
 		assert.NotEmpty(t, out)
 		assert.Contains(t, out, "マール4点", "ゲーム終了時は CPU のマールを公開する")
 	})
 
 	t.Run("error block", func(t *testing.T) {
-		m, _ := setupMarriageCuiMock(domain.MarriagePhaseDraw, false)
+		m := setupMarriageCuiMock(domain.MarriagePhaseDraw, false)
 		out := p.Output(m, errors.New("err"))
 		assert.NotEmpty(t, out)
 	})
@@ -124,7 +124,7 @@ func TestMarriageCuiPresenter_Output(t *testing.T) {
 
 func TestMarriageCuiPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.MarriageCuiPresenter)
-	m, _ := setupMarriageCuiMock(domain.MarriagePhaseDraw, false)
+	m := setupMarriageCuiMock(domain.MarriagePhaseDraw, false)
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	out := p.ActionLogOutput(m)
 	assert.NotEmpty(t, out)

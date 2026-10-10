@@ -351,6 +351,39 @@ func TestJokerPokerGetResult(t *testing.T) {
 			betAmount: 1, wantRank: PokerHandOnePair, wantMult: 1, wantName: "Kings or Better",
 		},
 		{
+			name: "JokerWithKing_1x",
+			hand: []*Card{
+				NewCard(CardDesignJoker, 1, false),
+				NewCard(CardDesignSpade, 13, false),
+				NewCard(CardDesignHeart, 3, false),
+				NewCard(CardDesignDiamond, 7, false),
+				NewCard(CardDesignSpade, 9, false),
+			},
+			betAmount: 1, wantRank: PokerHandOnePair, wantMult: 1, wantName: "Kings or Better",
+		},
+		{
+			name: "JokerWithAce_1x",
+			hand: []*Card{
+				NewCard(CardDesignJoker, 1, false),
+				NewCard(CardDesignSpade, 1, false),
+				NewCard(CardDesignHeart, 3, false),
+				NewCard(CardDesignDiamond, 7, false),
+				NewCard(CardDesignSpade, 9, false),
+			},
+			betAmount: 1, wantRank: PokerHandOnePair, wantMult: 1, wantName: "Kings or Better",
+		},
+		{
+			name: "JokerWithQueen_noPayout",
+			hand: []*Card{
+				NewCard(CardDesignJoker, 1, false),
+				NewCard(CardDesignSpade, 12, false),
+				NewCard(CardDesignHeart, 3, false),
+				NewCard(CardDesignDiamond, 7, false),
+				NewCard(CardDesignSpade, 9, false),
+			},
+			betAmount: 1, wantRank: PokerHandOnePair, wantMult: 0, wantName: "",
+		},
+		{
 			name: "QueensPair_noPayout",
 			hand: []*Card{
 				NewCard(CardDesignSpade, 12, false),

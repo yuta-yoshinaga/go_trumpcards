@@ -76,9 +76,31 @@ func TestMinchiateWebPresenter_Output(t *testing.T) {
 		assert.Len(t, res.Players[1].Cards, 0, "CPU hands stay hidden")
 		assert.Equal(t, []int{0}, res.PlayableIndices)
 		assert.Equal(t, domain.MinchiateSurplus, res.ScartoCount)
+		assert.Empty(t, res.PlayedTrumps)
+		assert.Equal(t, domain.MinchiateMaxTrump, res.RemainingTrumps)
 		assert.Equal(t, 2, res.RoundBreakdown[0].Tricks)
 		assert.Equal(t, 1, res.RoundBreakdown[1].ScartoBonus)
 		assert.True(t, res.Players[0].IsDealer)
+	})
+
+	t.Run("played trumps exclude Matto and suit cards and are rank ordered", func(t *testing.T) {
+		m, players := setupMinchiateWebMockWithPlayers()
+		players[0].AddTrick([]*domain.Card{
+			domain.NewCard(domain.MinchiateTrumpDesign, 39, false),
+			domain.NewCard(domain.MinchiateMattoDesign, domain.MinchiateMattoValue, false),
+			domain.NewCard(domain.CardDesignSpade, 14, false),
+		})
+		for _, expected := range m.ExpectedCalls {
+			if expected.Method == "GetCurrentTrick" {
+				expected.Return([]*domain.TrickCard{
+					{PlayerIdx: 1, Card: domain.NewCard(domain.MinchiateTrumpDesign, 4, false)},
+				})
+			}
+		}
+		var res controller.MinchiateWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, nil)), &res))
+		assert.Equal(t, []int{4, 39}, []int{res.PlayedTrumps[0].Value, res.PlayedTrumps[1].Value})
+		assert.Equal(t, 38, res.RemainingTrumps)
 	})
 
 	// 対面同士が組む。席のチーム番号がそのまま出ていないと、味方のトリックを

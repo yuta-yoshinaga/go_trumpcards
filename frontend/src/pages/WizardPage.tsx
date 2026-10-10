@@ -429,7 +429,13 @@ function WizardPageContent() {
                           </div>
                           <div>
                             {p.bid >= 0 ? t('bidProgress.values', { bid: p.bid, won: p.trickCount }) : t('bidNone')}
-                            {p.bid >= 0 && <> · {t(playerBidProgress(p).status)}</>}
+                            {p.bid >= 0 && (
+                              <>
+                                {' · '}
+                                {t(playerBidProgress(p).status)} (
+                                {t('bidProgress.remaining', { count: playerBidProgress(p).remainingTricks })})
+                              </>
+                            )}
                           </div>
                         </div>
                       ))}

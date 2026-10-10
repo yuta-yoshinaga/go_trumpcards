@@ -152,11 +152,11 @@ func lbFirstDiscardable(t *testing.T, l *Loba, seat int) int {
 }
 
 // lbReady puts a game into the act step for the given seat.
-func lbReady(t *testing.T, seat int) *Loba {
+func lbReady(t *testing.T) *Loba {
 	t.Helper()
 	l := NewDefaultLoba()
 	l.Reset()
-	l.SetCurrentPlayerForTest(seat)
+	l.SetCurrentPlayerForTest(0)
 	l.SetPhaseForTest(LobaPhaseAct)
 	return l
 }
@@ -164,7 +164,7 @@ func lbReady(t *testing.T, seat int) *Loba {
 func TestLoba_LayingOffToAPiernaStaysInTheOriginalThreeSuits(t *testing.T) {
 	// 4 つ目のスートは「異なる 3 スート」の枠を壊す。2 組デッキなので、元の
 	// 3 スートの 2 枚目なら付けられる。
-	l := lbReady(t, 0)
+	l := lbReady(t)
 	p := l.GetPlayer(0)
 	p.Reset()
 	p.AddCard(lbCard(CardDesignSpade, 7))
@@ -183,7 +183,7 @@ func TestLoba_LayingOffToAPiernaStaysInTheOriginalThreeSuits(t *testing.T) {
 }
 
 func TestLoba_LayingOffNeedsAMeldOfYourOwnFirst(t *testing.T) {
-	l := lbReady(t, 0)
+	l := lbReady(t)
 	p := l.GetPlayer(0)
 	p.Reset()
 	p.AddCard(lbCard(CardDesignSpade, 7))
@@ -208,7 +208,7 @@ func TestLoba_LayingOffNeedsAMeldOfYourOwnFirst(t *testing.T) {
 }
 
 func TestLoba_AJokerCannotBeDiscardedUnlessItIsTheLastCard(t *testing.T) {
-	l := lbReady(t, 0)
+	l := lbReady(t)
 	p := l.GetPlayer(0)
 	p.Reset()
 	p.AddCard(lbJoker())
@@ -217,7 +217,7 @@ func TestLoba_AJokerCannotBeDiscardedUnlessItIsTheLastCard(t *testing.T) {
 	require.NoError(t, l.Discard(0, 1), "an ordinary card is fine")
 
 	// 手札がジョーカー 1 枚だけなら捨てられる。
-	l2 := lbReady(t, 0)
+	l2 := lbReady(t)
 	q := l2.GetPlayer(0)
 	q.Reset()
 	q.AddCard(lbJoker())
@@ -225,7 +225,7 @@ func TestLoba_AJokerCannotBeDiscardedUnlessItIsTheLastCard(t *testing.T) {
 }
 
 func TestLoba_GoingOutInOneGoTakesTenOff(t *testing.T) {
-	l := lbReady(t, 0)
+	l := lbReady(t)
 	for i := range l.GetPlayers() {
 		l.GetPlayer(i).Reset()
 	}
@@ -246,7 +246,7 @@ func TestLoba_GoingOutInOneGoTakesTenOff(t *testing.T) {
 }
 
 func TestLoba_FinishRoundTracksScoreDeltaIncludingCleanBonus(t *testing.T) {
-	l := lbReady(t, 0)
+	l := lbReady(t)
 	for i := range l.GetPlayers() {
 		l.GetPlayer(i).Reset()
 		l.SetScoreForTest(i, 20+i*10)
@@ -271,7 +271,7 @@ func TestLoba_FinishRoundTracksScoreDeltaIncludingCleanBonus(t *testing.T) {
 // **最も普通の一気上がり**が -10 を取れることを確かめる。メルドの数で判定して
 // いると、この形が丸ごと弾かれる。
 func TestLoba_ThreeMeldsInOneTurnIsStillClean(t *testing.T) {
-	l := lbReady(t, 0)
+	l := lbReady(t)
 	for i := range l.GetPlayers() {
 		l.GetPlayer(i).Reset()
 	}
@@ -297,7 +297,7 @@ func TestLoba_ThreeMeldsInOneTurnIsStillClean(t *testing.T) {
 // 残りをレイオフで捌いた人に -10 を与えないことを確かめる。所有メルドは 1 つ
 // のままなので、数で判定していると通ってしまう。
 func TestLoba_MeldingOnAnEarlierTurnIsNotClean(t *testing.T) {
-	l := lbReady(t, 0)
+	l := lbReady(t)
 	for i := range l.GetPlayers() {
 		l.GetPlayer(i).Reset()
 	}
@@ -325,7 +325,7 @@ func TestLoba_MeldingOnAnEarlierTurnIsNotClean(t *testing.T) {
 }
 
 func TestLoba_ReachingAHundredAndOneEliminates(t *testing.T) {
-	l := lbReady(t, 0)
+	l := lbReady(t)
 	for i := range l.GetPlayers() {
 		l.GetPlayer(i).Reset()
 	}
@@ -345,7 +345,7 @@ func TestLoba_ReachingAHundredAndOneEliminates(t *testing.T) {
 }
 
 func TestLoba_TheLastPlayerStandingWins(t *testing.T) {
-	l := lbReady(t, 0)
+	l := lbReady(t)
 	for i := range l.GetPlayers() {
 		l.GetPlayer(i).Reset()
 	}
@@ -433,7 +433,7 @@ func TestLoba_RejectsIllegalRequests(t *testing.T) {
 }
 
 func TestLoba_PickDiscardCanDiscardFromAnAllJokerHand(t *testing.T) {
-	l := lbReady(t, 0)
+	l := lbReady(t)
 	p := l.GetPlayer(0)
 	p.Reset()
 	p.AddCard(lbJoker())
@@ -445,7 +445,7 @@ func TestLoba_PickDiscardCanDiscardFromAnAllJokerHand(t *testing.T) {
 }
 
 func TestLoba_DiscardAllowsAnAllJokerHand(t *testing.T) {
-	l := lbReady(t, 0)
+	l := lbReady(t)
 	p := l.GetPlayer(0)
 	p.Reset()
 	p.AddCard(lbJoker())
@@ -455,7 +455,7 @@ func TestLoba_DiscardAllowsAnAllJokerHand(t *testing.T) {
 }
 
 func TestLoba_PickDiscardKeepsJokersProtectedWithOtherCards(t *testing.T) {
-	l := lbReady(t, 0)
+	l := lbReady(t)
 	p := l.GetPlayer(0)
 	p.Reset()
 	p.AddCard(lbJoker())
@@ -466,7 +466,7 @@ func TestLoba_PickDiscardKeepsJokersProtectedWithOtherCards(t *testing.T) {
 }
 
 func TestLoba_PickDiscardReturnsNegativeOneForAnEmptyHand(t *testing.T) {
-	l := lbReady(t, 0)
+	l := lbReady(t)
 	p := l.GetPlayer(0)
 	p.Reset()
 

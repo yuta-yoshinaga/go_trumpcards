@@ -14,7 +14,7 @@ import (
 )
 
 func TestTwoTenJackWebPresenter_ValidPlayIndices(t *testing.T) {
-	m, _ := setupTTJWebMock()
+	m := setupTTJWebMock()
 	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
 	m.On("GetValidPlayIndices", 0).Return([]int{0, 2})
 
@@ -24,7 +24,7 @@ func TestTwoTenJackWebPresenter_ValidPlayIndices(t *testing.T) {
 }
 
 func TestTwoTenJackWebPresenter_ValidPlayIndices_NonPlayPhase(t *testing.T) {
-	m, _ := setupTTJWebMock()
+	m := setupTTJWebMock()
 	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 	m.On("GetPhase").Return(domain.TwoTenJackPhaseDeclare)
 
@@ -36,7 +36,7 @@ func TestTwoTenJackWebPresenter_ValidPlayIndices_NonPlayPhase(t *testing.T) {
 }
 
 func TestTwoTenJackWebPresenter_ValidPlayIndices_NonHumanTurn(t *testing.T) {
-	m, _ := setupTTJWebMock()
+	m := setupTTJWebMock()
 	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "IsHumanTurn")
 	m.On("IsHumanTurn").Return(false)
 
@@ -48,7 +48,7 @@ func TestTwoTenJackWebPresenter_ValidPlayIndices_NonHumanTurn(t *testing.T) {
 }
 
 func TestTwoTenJackWebPresenter_ValidPlayIndices_Nil(t *testing.T) {
-	m, _ := setupTTJWebMock()
+	m := setupTTJWebMock()
 	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
 	m.On("GetValidPlayIndices", 0).Return([]int(nil))
 
@@ -59,7 +59,7 @@ func TestTwoTenJackWebPresenter_ValidPlayIndices_Nil(t *testing.T) {
 	assert.Contains(t, result, `"validPlayIndices":[]`)
 }
 
-func setupTTJWebMock() (*interfaces.MockTwoTenJackGame, []*domain.TwoTenJackPlayer) {
+func setupTTJWebMock() *interfaces.MockTwoTenJackGame {
 	m := new(interfaces.MockTwoTenJackGame)
 	players := makeTTJPlayers()
 	m.On("GetRoundNumber").Return(1)
@@ -84,27 +84,27 @@ func setupTTJWebMock() (*interfaces.MockTwoTenJackGame, []*domain.TwoTenJackPlay
 	// **base だけに置く。**removeMockCall は最初の 1 件しか外さない。
 	m.On("GetHint").Return(nil).Maybe()
 
-	return m, players
+	return m
 }
 
 func TestTwoTenJackWebPresenter_Output(t *testing.T) {
 	p := new(presenter.TwoTenJackWebPresenter)
 
 	t.Run("basic", func(t *testing.T) {
-		m, _ := setupTTJWebMock()
+		m := setupTTJWebMock()
 		result := p.Output(m, nil)
 		assert.Contains(t, result, `"phase":1`)
 		assert.Contains(t, result, `"trumpSuit":1`)
 	})
 
 	t.Run("error", func(t *testing.T) {
-		m, _ := setupTTJWebMock()
+		m := setupTTJWebMock()
 		result := p.Output(m, errors.New("bad"))
 		assert.Contains(t, result, `"message":"bad"`)
 	})
 
 	t.Run("coded error uses message code", func(t *testing.T) {
-		m, _ := setupTTJWebMock()
+		m := setupTTJWebMock()
 		err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "twotenjack.errCardIndexOutOfRange", nil)
 		var output controller.TwoTenJackWebOutput
 		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, err)), &output))
@@ -113,7 +113,7 @@ func TestTwoTenJackWebPresenter_Output(t *testing.T) {
 	})
 
 	t.Run("declare phase msg", func(t *testing.T) {
-		m, _ := setupTTJWebMock()
+		m := setupTTJWebMock()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.On("GetPhase").Return(domain.TwoTenJackPhaseDeclare)
 		result := p.Output(m, nil)
@@ -121,7 +121,7 @@ func TestTwoTenJackWebPresenter_Output(t *testing.T) {
 	})
 
 	t.Run("trick end msg", func(t *testing.T) {
-		m, _ := setupTTJWebMock()
+		m := setupTTJWebMock()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.On("GetPhase").Return(domain.TwoTenJackPhaseTrickEnd)
 		result := p.Output(m, nil)
@@ -129,7 +129,7 @@ func TestTwoTenJackWebPresenter_Output(t *testing.T) {
 	})
 
 	t.Run("round end msg", func(t *testing.T) {
-		m, _ := setupTTJWebMock()
+		m := setupTTJWebMock()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.On("GetPhase").Return(domain.TwoTenJackPhaseRoundEnd)
 		result := p.Output(m, nil)
@@ -137,7 +137,7 @@ func TestTwoTenJackWebPresenter_Output(t *testing.T) {
 	})
 
 	t.Run("play follow msg", func(t *testing.T) {
-		m, _ := setupTTJWebMock()
+		m := setupTTJWebMock()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentTrick")
 		trick := []*domain.TrickCard{
 			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 5, false)},
@@ -148,7 +148,7 @@ func TestTwoTenJackWebPresenter_Output(t *testing.T) {
 	})
 
 	t.Run("game end", func(t *testing.T) {
-		m, _ := setupTTJWebMock()
+		m := setupTTJWebMock()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetWinnerTeam")
 		m.On("GetGameEndFlag").Return(true)
@@ -162,7 +162,7 @@ func TestTwoTenJackWebPresenter_HintOutput(t *testing.T) {
 	p := new(presenter.TwoTenJackWebPresenter)
 
 	t.Run("with hint", func(t *testing.T) {
-		m, _ := setupTTJWebMock()
+		m := setupTTJWebMock()
 		idx := 0
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.TwoTenJackHint{CardIndex: &idx, Reason: "lead"})
@@ -171,7 +171,7 @@ func TestTwoTenJackWebPresenter_HintOutput(t *testing.T) {
 	})
 
 	t.Run("no hint", func(t *testing.T) {
-		m, _ := setupTTJWebMock()
+		m := setupTTJWebMock()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return((*domain.TwoTenJackHint)(nil))
 		result := p.HintOutput(m)
@@ -194,7 +194,7 @@ func TestTwoTenJackWebPresenter_ActionLogOutput(t *testing.T) {
 // 行動を選べる状態か」を自分で確かめて nil を返します。
 func TestTwoTenJackWebPresenterOutputCarriesTheHint(t *testing.T) {
 	idx := 0
-	ttj, _ := setupTTJWebMock()
+	ttj := setupTTJWebMock()
 	ttj.ExpectedCalls = removeMockCall(ttj.ExpectedCalls, "GetHint")
 	ttj.On("GetHint").Return(&domain.TwoTenJackHint{CardIndex: &idx, Reason: "lead_trump"})
 

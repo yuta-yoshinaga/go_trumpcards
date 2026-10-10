@@ -186,6 +186,17 @@ function TienLenPageContent() {
               </button>
             )}
 
+            <section
+              aria-label={t('rules.title')}
+              data-testid="tl-rules"
+              className="rounded-lg bg-ds-surface p-3 text-xs text-ds-text-muted"
+            >
+              <h2 className="mb-1 font-semibold text-ds-text-primary">{t('rules.title')}</h2>
+              <p>{t('rules.strength')}</p>
+              <p>{t('rules.follow')}</p>
+              <p>{t('rules.lead')}</p>
+            </section>
+
             {/* CPU players */}
             <div className="flex justify-center gap-6 flex-wrap" data-tutorial="tl-cpu-area">
               {state.players

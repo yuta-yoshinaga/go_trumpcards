@@ -4,8 +4,12 @@
     "cpuDifficulty": "CPU difficulty"
   },
   "bombCardAriaLabel": "{{card}} (part of a bomb)",
+  "actionPlayed": "{{player}} played {{cards}}",
+  "actionPassed": "{{player}} passed",
+  "listSeparator": ", ",
   "label": {
     "table": "Table",
+    "cpuActions": "CPU responses",
     "playedBy": "{{player}} (Team {{team}})",
     "bombs": "Bombs",
     "team": "Team",

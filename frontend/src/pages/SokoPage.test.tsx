@@ -1,6 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fiveCardStudApi, sokoApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, FiveCardStudResponse } from '../types/card';
 import { FiveCardStudPhase } from '../types/phases';
@@ -140,6 +141,18 @@ describe('SokoPage hand ranking reference', () => {
     vi.clearAllMocks();
     mockSoko.mockResolvedValue(makeState());
     mockStud.mockResolvedValue(makeState());
+  });
+
+  it('explains the four-card hand ranking and two-pair fold cue in both locales', () => {
+    const jaRanking = i18n.getFixedT('ja', 'soko')('tutorial.ranking');
+    const enRanking = i18n.getFixedT('en', 'soko')('tutorial.ranking');
+
+    expect(jaRanking).toContain('ワンペアに勝ち');
+    expect(jaRanking).toContain('ツーペアに負けます');
+    expect(jaRanking).toContain('相手にツーペア');
+    expect(enRanking).toContain('beat one pair');
+    expect(enRanking).toContain('lose to two pair');
+    expect(enRanking).toContain('opponent showing two pair');
   });
 
   it('lists the ranking with the four-card hands between one pair and two pair', async () => {

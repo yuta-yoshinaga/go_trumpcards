@@ -40,6 +40,9 @@
   "you": "あなた",
   "cpu": "CPU {{id}}",
   "matchScoreTitle": "スコア",
+  "dealer": "ディーラー",
+  "elder": "エルダー",
+  "listSeparator": "、",
   "scoreLine": "{{name}}: マッチ {{match}} / ディール {{deal}} / {{tricks}}トリック",
   "scoreRules": {
     "kingBonus": "切り札のKをめくるとディーラーに+1点。プレイ開始時に切り札のKを手札に持って宣言すると、そのプレイヤーに+1点。"

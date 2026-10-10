@@ -80,6 +80,40 @@ describe('ScoponePage', () => {
     expect(screen.getByTestId('team-score-1')).toBeInTheDocument();
   });
 
+  it('shows captured cards from the human team in Japanese', async () => {
+    mockExec.mockResolvedValue(
+      makeScoponeState({
+        players: makeScoponeState().players.map((player) =>
+          player.id === 2 ? { ...player, capturedCount: 1, capturedCards: [{ design: 'DIAMOND', value: 7 }] } : player,
+        ),
+      }),
+    );
+    renderWithProviders(<ScoponePage />);
+    expect(await screen.findByText('自チームの獲得札')).toBeInTheDocument();
+    expect(screen.getByTestId('scopone-team-captured-cards')).toHaveTextContent('♦ 7');
+  });
+
+  it('shows captured cards in English', async () => {
+    await i18n.changeLanguage('en');
+    mockExec.mockResolvedValue(
+      makeScoponeState({
+        players: makeScoponeState().players.map((player) =>
+          player.id === 0 ? { ...player, capturedCount: 1, capturedCards: [{ design: 'SPADE', value: 3 }] } : player,
+        ),
+      }),
+    );
+    renderWithProviders(<ScoponePage />);
+    expect(await screen.findByText("Your team's captured cards")).toBeInTheDocument();
+    expect(screen.getByTestId('scopone-team-captured-cards')).toHaveTextContent('♠ 3');
+  });
+
+  it('renders an empty captured card list when older state has no card arrays', async () => {
+    const players = makeScoponeState().players.map(({ capturedCards: _capturedCards, ...player }) => player);
+    mockExec.mockResolvedValue(makeScoponeState({ players }));
+    renderWithProviders(<ScoponePage />);
+    expect(await screen.findByTestId('scopone-team-captured-cards')).toHaveTextContent('まだ札を獲得していません');
+  });
+
   it('shows the last capturer and team at round end', async () => {
     mockExec.mockResolvedValue(makeScoponeState({ phase: 'roundEnd', lastCaptureIdx: 2, isHumanTurn: false }));
     renderWithProviders(<ScoponePage />);
@@ -236,7 +270,18 @@ describe('ScoponePage', () => {
   it('shows loading state when state has fewer than 4 players', async () => {
     mockExec.mockResolvedValue(
       makeScoponeState({
-        players: [{ id: 0, isHuman: true, team: 0, handCount: 0, cards: [], capturedCount: 0, scopaCount: 0 }],
+        players: [
+          {
+            id: 0,
+            isHuman: true,
+            team: 0,
+            handCount: 0,
+            cards: [],
+            capturedCount: 0,
+            capturedCards: [],
+            scopaCount: 0,
+          },
+        ],
       }),
     );
     renderWithProviders(<ScoponePage />);
@@ -261,6 +306,7 @@ describe('ScoponePage', () => {
           handCount: 3,
           cards: makeScoponeState().players[0].cards,
           capturedCount: 0,
+          capturedCards: [],
           scopaCount: playerId === 0 ? scopaCount : 0,
         },
         {
@@ -270,6 +316,7 @@ describe('ScoponePage', () => {
           handCount: 3,
           cards: [],
           capturedCount: 0,
+          capturedCards: [],
           scopaCount: playerId === 1 ? scopaCount : 0,
         },
         {
@@ -279,6 +326,7 @@ describe('ScoponePage', () => {
           handCount: 3,
           cards: [],
           capturedCount: 0,
+          capturedCards: [],
           scopaCount: playerId === 2 ? scopaCount : 0,
         },
         {
@@ -288,6 +336,7 @@ describe('ScoponePage', () => {
           handCount: 3,
           cards: [],
           capturedCount: 0,
+          capturedCards: [],
           scopaCount: playerId === 3 ? scopaCount : 0,
         },
       ],

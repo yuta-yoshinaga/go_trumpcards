@@ -31,6 +31,7 @@
     "teamFoeAria": "相手チーム"
   },
   "currentTrick": "現在のトリック",
+  "trickWinner": "勝者",
   "roundResult": {
     "made": "契約成立: {{need}}トリック必要で {{took}} 取りました。",
     "down": "契約失敗: {{need}}トリック必要で {{took}} しか取れませんでした。",
@@ -40,6 +41,7 @@
     "level": "レベル",
     "contract": "{{level}}{{suit}} で契約",
     "nextRound": "次のディールへ",
+    "continue": "次へ",
     "reset": "リセット",
     "giveUp": "投了",
     "playAria": "{{card}} を出す",

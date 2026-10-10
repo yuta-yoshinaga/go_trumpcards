@@ -10,12 +10,12 @@ import (
 func vtCard(suit, value int) *Card { return NewCard(suit, value, true) }
 
 // vtPlaying puts a game into the play phase with a fixed contract.
-func vtPlaying(t *testing.T, declarer, level, denom int) *Vint {
+func vtPlaying(t *testing.T, level, denom int) *Vint {
 	t.Helper()
 	v := NewDefaultVint()
 	v.Reset()
 	v.SetPhaseForTest(VintPhasePlay)
-	v.SetContractForTest(declarer, level, denom)
+	v.SetContractForTest(0, level, denom)
 	v.SetCurrentPlayerForTest(0)
 	v.SetTrickLeaderForTest(0)
 	return v
@@ -86,7 +86,7 @@ func TestVintTrickValueDependsOnSuitAndLevel(t *testing.T) {
 //
 // **守備側も自分のトリックを得点する。**達成/失敗に関係ない。
 func TestVintBothSidesScoreTheirTricks(t *testing.T) {
-	v := vtPlaying(t, 0, 1, VintDenomSpade) // 単価 4
+	v := vtPlaying(t, 1, VintDenomSpade) // 単価 4
 	// 宣言側 (team 0) が 7、守備側 (team 1) が 6。
 	v.SetTricksWonForTest(0, 4)
 	v.SetTricksWonForTest(2, 3)
@@ -112,7 +112,7 @@ func TestVintBothSidesScoreTheirTricks(t *testing.T) {
 
 // **失敗しても守備側は自分のトリックを得点する。**
 func TestVintDefendersScoreEvenWhenTheContractFails(t *testing.T) {
-	v := vtPlaying(t, 0, 3, VintDenomSpade) // 9 トリック必要、単価 24
+	v := vtPlaying(t, 3, VintDenomSpade) // 9 トリック必要、単価 24
 	v.SetTricksWonForTest(0, 3)
 	v.SetTricksWonForTest(2, 2) // 宣言側 5
 	v.SetTricksWonForTest(1, 4)
@@ -138,7 +138,7 @@ func TestVintDefendersScoreEvenWhenTheContractFails(t *testing.T) {
 
 // **宣言レベル N は「6 + N トリック」。**
 func TestVintContractTargetIsSixPlusLevel(t *testing.T) {
-	made := vtPlaying(t, 0, 1, VintDenomSpade)
+	made := vtPlaying(t, 1, VintDenomSpade)
 	made.SetTricksWonForTest(0, 4)
 	made.SetTricksWonForTest(2, 3) // 7 トリック
 	made.SetTricksWonForTest(1, 3)
@@ -148,7 +148,7 @@ func TestVintContractTargetIsSixPlusLevel(t *testing.T) {
 		t.Error("7 tricks makes a bid of 1")
 	}
 
-	failed := vtPlaying(t, 0, 1, VintDenomSpade)
+	failed := vtPlaying(t, 1, VintDenomSpade)
 	failed.SetTricksWonForTest(0, 3)
 	failed.SetTricksWonForTest(2, 3) // 6 トリック
 	failed.SetTricksWonForTest(1, 4)
@@ -225,7 +225,7 @@ func TestVintAcesAreScoredSeparately(t *testing.T) {
 // 局の精算でオナーとエースが線上に入ること。
 func TestVintSettlementAddsHonoursAndAces(t *testing.T) {
 	const trump = CardDesignHeart
-	v := vtPlaying(t, 0, 1, VintDenomHeart) // 単価 10
+	v := vtPlaying(t, 1, VintDenomHeart) // 単価 10
 	v.SetTricksWonForTest(0, 4)
 	v.SetTricksWonForTest(2, 3)
 	v.SetTricksWonForTest(1, 3)
@@ -261,7 +261,7 @@ func TestVintSettlementAddsHonoursAndAces(t *testing.T) {
 
 // **ノートランプではオナーが付かない。**エースだけが数えられる。
 func TestVintNoTrumpHasNoHonoursOnlyAces(t *testing.T) {
-	v := vtPlaying(t, 0, 1, VintDenomNoTrump)
+	v := vtPlaying(t, 1, VintDenomNoTrump)
 	v.SetTricksWonForTest(0, 4)
 	v.SetTricksWonForTest(2, 3)
 	v.SetTricksWonForTest(1, 3)
@@ -285,7 +285,7 @@ func TestVintNoTrumpHasNoHonoursOnlyAces(t *testing.T) {
 // TestVintGameAndRubber covers the target and the bonuses.
 func TestVintGameAndRubber(t *testing.T) {
 	t.Run("500 below the line takes a game", func(t *testing.T) {
-		v := vtPlaying(t, 0, 7, VintDenomNoTrump) // 単価 72
+		v := vtPlaying(t, 7, VintDenomNoTrump) // 単価 72
 		v.SetBelowForTest(0, VintGameTarget-100)
 		v.SetTricksWonForTest(0, 7)
 		v.SetTricksWonForTest(2, 6)
@@ -307,7 +307,7 @@ func TestVintGameAndRubber(t *testing.T) {
 	})
 
 	t.Run("the second game takes the rubber", func(t *testing.T) {
-		v := vtPlaying(t, 0, 7, VintDenomNoTrump)
+		v := vtPlaying(t, 7, VintDenomNoTrump)
 		v.SetGamesWonForTest(0, 1)
 		v.SetBelowForTest(0, VintGameTarget-100)
 		v.SetTricksWonForTest(0, 7)
@@ -432,7 +432,7 @@ func TestVintBidding(t *testing.T) {
 
 // 追随は強制。
 func TestVintFollowingSuitIsCompulsory(t *testing.T) {
-	v := vtPlaying(t, 0, 2, VintDenomHeart)
+	v := vtPlaying(t, 2, VintDenomHeart)
 	v.SetHandForTest(0, []*Card{vtCard(CardDesignSpade, 1)})
 	v.SetHandForTest(1, []*Card{vtCard(CardDesignSpade, 13), vtCard(CardDesignHeart, 2)})
 	if err := v.PlayCard(0, 0); err != nil {
@@ -448,7 +448,7 @@ func TestVintFollowingSuitIsCompulsory(t *testing.T) {
 }
 
 func TestVintPlayGuards(t *testing.T) {
-	v := vtPlaying(t, 0, 2, VintDenomHeart)
+	v := vtPlaying(t, 2, VintDenomHeart)
 	v.SetHandForTest(0, []*Card{vtCard(CardDesignSpade, 1)})
 	if err := v.PlayCard(1, 0); err == nil {
 		t.Error("playing out of turn must be refused")
@@ -467,7 +467,7 @@ func TestVintPlayGuards(t *testing.T) {
 
 // 切札が勝ち、ノートランプでは効かない。
 func TestVintTrumpResolution(t *testing.T) {
-	withTrump := vtPlaying(t, 0, 2, VintDenomHeart)
+	withTrump := vtPlaying(t, 2, VintDenomHeart)
 	withTrump.SetHandForTest(0, []*Card{vtCard(CardDesignSpade, 1)})
 	withTrump.SetHandForTest(1, []*Card{vtCard(CardDesignHeart, 2)})
 	withTrump.SetHandForTest(2, []*Card{vtCard(CardDesignSpade, 13)})
@@ -481,7 +481,7 @@ func TestVintTrumpResolution(t *testing.T) {
 		t.Errorf("the low trump takes the trick, seat 1 has %d", got)
 	}
 
-	noTrump := vtPlaying(t, 0, 2, VintDenomNoTrump)
+	noTrump := vtPlaying(t, 2, VintDenomNoTrump)
 	noTrump.SetHandForTest(0, []*Card{vtCard(CardDesignSpade, 1)})
 	noTrump.SetHandForTest(1, []*Card{vtCard(CardDesignHeart, 2)})
 	noTrump.SetHandForTest(2, []*Card{vtCard(CardDesignSpade, 13)})
@@ -498,7 +498,7 @@ func TestVintTrumpResolution(t *testing.T) {
 
 // **取った札はチームごとに残す。**オナーとエースの集計に要る。
 func TestVintKeepsTakenCardsPerTeam(t *testing.T) {
-	v := vtPlaying(t, 0, 2, VintDenomHeart)
+	v := vtPlaying(t, 2, VintDenomHeart)
 	v.SetHandForTest(0, []*Card{vtCard(CardDesignSpade, 1)})
 	v.SetHandForTest(1, []*Card{vtCard(CardDesignSpade, 2)})
 	v.SetHandForTest(2, []*Card{vtCard(CardDesignSpade, 3)})
@@ -518,7 +518,7 @@ func TestVintKeepsTakenCardsPerTeam(t *testing.T) {
 }
 
 func TestVintTeamTricks(t *testing.T) {
-	v := vtPlaying(t, 0, 2, VintDenomHeart)
+	v := vtPlaying(t, 2, VintDenomHeart)
 	v.SetTricksWonForTest(0, 3)
 	v.SetTricksWonForTest(2, 2)
 	v.SetTricksWonForTest(1, 4)
@@ -539,7 +539,7 @@ func TestVintTeamTricks(t *testing.T) {
 }
 
 func TestVintNextHandRotatesTheDealer(t *testing.T) {
-	v := vtPlaying(t, 0, 1, VintDenomSpade)
+	v := vtPlaying(t, 1, VintDenomSpade)
 	v.SetTricksWonForTest(0, 7)
 	v.FinishHandForTest()
 
@@ -558,7 +558,7 @@ func TestVintNextHandRotatesTheDealer(t *testing.T) {
 }
 
 func TestVintNextHandGuards(t *testing.T) {
-	v := vtPlaying(t, 0, 1, VintDenomSpade)
+	v := vtPlaying(t, 1, VintDenomSpade)
 	if err := v.NextHand(); err == nil {
 		t.Error("dealing again mid-hand must be refused")
 	}
@@ -639,7 +639,7 @@ func TestVintCpuDrivesAFullHand(t *testing.T) {
 }
 
 func TestVintCpuEdges(t *testing.T) {
-	v := vtPlaying(t, 0, 2, VintDenomHeart)
+	v := vtPlaying(t, 2, VintDenomHeart)
 	v.SetHandForTest(0, []*Card{})
 	if got := v.VintCpuPlay(0); got != -1 {
 		t.Errorf("an empty hand has no play, got %d", got)

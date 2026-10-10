@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { tehonbikiApi } from '../api/games/tehonbiki';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -9,6 +9,7 @@ import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary } from '../styles/buttonStyles';
 import { TehonbikiPhase } from '../types/phases';
@@ -28,9 +29,7 @@ function TehonbikiPageContent() {
   const [betType, setBetType] = useState('single');
   const [numbers, setNumbers] = useState<number[]>([]);
   const [bet, setBet] = useState('50');
-  useEffect(() => {
-    exec('reset');
-  }, [exec]);
+  useMountReset(exec);
   if (!state) return <GameSkeleton gameKey="tehonbiki" layout={{ kind: 'casino-table', sections: [1] }} />;
   const minBet = state.minBet;
   const maxBet = Math.min(state.maxBet, state.chips);
@@ -96,6 +95,18 @@ function TehonbikiPageContent() {
                 </p>
               )}
             </>
+          )}
+          {state.phase !== 0 && state.result !== 0 && (
+            <div className="mx-auto mb-4 max-w-xl rounded-lg border border-ds-border-subtle bg-ds-surface p-3">
+              <p className={state.result === 1 ? 'text-ds-success' : 'text-ds-error-text'}>
+                {t(state.result === 1 ? 'result.win' : 'result.lose')}
+              </p>
+              <p>
+                {state.result === 1
+                  ? t('result.payout', { amount: state.payout })
+                  : t('result.lostBet', { amount: state.bet })}
+              </p>
+            </div>
           )}
         </div>
         {state.phase === 0 ? (

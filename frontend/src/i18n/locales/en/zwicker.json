@@ -25,6 +25,7 @@
   "trail": "Trail",
   "nextRound": "Next deal",
   "roundResult": "This deal: us {{us}}, them {{them}}",
+  "roundAnnouncement": "Deal over. {{roundResult}}. {{usBreakdown}}. {{themBreakdown}}.",
   "teamBreakdownUs": "us: card points {{cardPoints}}, cards captured {{cards}}, Zwicks {{zwicks}}, total {{total}}",
   "teamBreakdownThem": "them: card points {{cardPoints}}, cards captured {{cards}}, Zwicks {{zwicks}}, total {{total}}",
   "majorityTied": "the card counts were level, so nobody takes the three for the majority",

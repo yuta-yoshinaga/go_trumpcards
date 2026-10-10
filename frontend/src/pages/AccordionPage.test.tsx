@@ -396,6 +396,28 @@ describe('AccordionPage', () => {
     expect(pile1).toHaveAttribute('aria-pressed', 'false');
   });
 
+  it('clears the selected pile after giving up', async () => {
+    mockExec.mockResolvedValueOnce(playingState).mockResolvedValueOnce(gameOverState);
+    renderWithProviders(<AccordionPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const pile0 = screen.getByRole('button', { name: /^0:/ });
+    fireEvent.click(pile0);
+    expect(pile0).toHaveAttribute('aria-pressed', 'true');
+    expect(pile0.className).toMatch(/ring-2 ring-ds-warning/);
+
+    fireEvent.click(screen.getByRole('button', { name: 'ギブアップ' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+    await waitFor(() => {
+      expect(screen.getAllByRole('button', { name: /^\d+:/ })).toHaveLength(gameOverState.piles.length);
+      for (const pile of screen.getAllByRole('button', { name: /^\d+:/ })) {
+        expect(pile).toHaveAttribute('aria-pressed', 'false');
+        expect(pile.className).not.toMatch(/ring-2 ring-ds-warning/);
+      }
+    });
+  });
+
   it('selecting pile 1 then clicking pile 0 (offset=1) dispatches a move', async () => {
     // Same rank 2 on pile 0 and 1 for a valid move
     mockExec.mockResolvedValue({

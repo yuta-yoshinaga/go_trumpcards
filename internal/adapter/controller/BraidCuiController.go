@@ -3,8 +3,6 @@
 package controller
 
 import (
-	"strconv"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
@@ -22,31 +20,21 @@ func NewBraidCuiController(bi usecase.BraidInteractorIF) *BraidCuiController {
 
 // Exec コマンド実行
 func (c *BraidCuiController) Exec(command string) string {
-	return execCuiCommand(
-		command,
-		func(_ []string) string {
-			return c.bi.Reset()
+	return execSolitaireCui(command, solitaireCuiFns{
+		reset:        c.bi.Reset,
+		move:         c.handleMove,
+		giveUp:       c.bi.GiveUp,
+		autoComplete: c.bi.AutoComplete,
+		undo:         c.bi.Undo,
+		hint:         c.bi.Hint,
+		actionLog:    c.bi.ActionLog,
+		extraCommands: map[string]func([]string) string{
+			"d":         func([]string) string { return c.bi.Draw() },
+			"draw":      func([]string) string { return c.bi.Draw() },
+			"dir":       c.handleDirection,
+			"direction": c.handleDirection,
 		},
-		[]string{"d", "draw", "dir", "direction", "m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"},
-		func(cmd string, args []string) (string, bool) {
-			switch cmd {
-			case "d", "draw":
-				return c.bi.Draw(), true
-			case "dir", "direction":
-				return c.handleDirection(args), true
-			case "m", "move":
-				return c.handleMove(args), true
-			case "g", "giveup":
-				return c.bi.GiveUp(), true
-			case "ac", "autocomplete":
-				return c.bi.AutoComplete(), true
-			case "u", "undo":
-				return c.bi.Undo(), true
-			default:
-				return handleCuiHintAndLog(cmd, c.bi.Hint, c.bi.ActionLog)
-			}
-		},
-	)
+	})
 }
 
 // handleDirection 積む向きを決める。`dir a` / `dir d`。
@@ -107,9 +95,9 @@ func (c *BraidCuiController) handleMoveFromSlot(args []string, zone string, move
 	if len(args) == 0 {
 		return cuiutil.PromptRequest(i18n.T("braid.promptSlotIdx"), "m "+zone+" {0}")
 	}
-	idx, err := strconv.Atoi(args[0])
-	if err != nil {
-		return invalidArg("braid.invalidSlot", "val", args[0])
+	idx, msg, ok := cuiutil.ParseIntArgKeys(args, "", "braid.invalidSlot", cuiutil.NoMin, cuiutil.NoMax)
+	if !ok {
+		return msg
 	}
 	if len(args) < 2 {
 		return cuiutil.PromptRequest(i18n.T("braid.promptBraidTo"), "m "+zone+" "+args[0]+" {0}")
@@ -131,9 +119,9 @@ func (c *BraidCuiController) handleMoveFromWaste(args []string) string {
 		if len(args) < 2 {
 			return cuiutil.PromptRequest(i18n.T("braid.promptSlotIdx"), "m w hp {0}")
 		}
-		idx, err := strconv.Atoi(args[1])
-		if err != nil {
-			return invalidArg("braid.invalidSlot", "val", args[1])
+		idx, msg, ok := cuiutil.ParseIntArgKeys(args[1:], "", "braid.invalidSlot", cuiutil.NoMin, cuiutil.NoMax)
+		if !ok {
+			return msg
 		}
 		return c.bi.MoveWasteToHelper(idx)
 	default:

@@ -29,6 +29,8 @@ func minchiateSurplusIndices() []int {
 func mustMinchiateOutputJSON(msg string) string {
 	out := &controller.MinchiateWebOutput{
 		Players:         []*controller.MinchiateWebOutputPlayer{},
+		PlayedTrumps:    []*controller.WebOutputCard{},
+		RemainingTrumps: domain.MinchiateMaxTrump,
 		CurrentTrick:    []*controller.WebOutputTrickCard{},
 		PlayableIndices: []int{},
 		LastTrickWinner: -1,

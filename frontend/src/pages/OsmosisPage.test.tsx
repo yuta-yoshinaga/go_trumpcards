@@ -161,6 +161,30 @@ describe('OsmosisPage', () => {
     );
   });
 
+  it('keeps the selected source after a rejected move and clears it after a successful retry', async () => {
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    mockExec.mockResolvedValueOnce({ ...playingState, message: 'cannot move', messageCode: '' });
+    fireEvent.click(screen.getByRole('button', { name: /^ウェイスト:/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^組札 0/ }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'waste' }, { zone: 'foundation', col: 0 }),
+    );
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /^組札 1/ })).not.toHaveAttribute('aria-disabled', 'true'),
+    );
+
+    mockExec.mockResolvedValueOnce({ ...playingState, moveCount: 1 });
+    fireEvent.click(screen.getByRole('button', { name: /^組札 1/ }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'waste' }, { zone: 'foundation', col: 1 }),
+    );
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /^組札 1/ })).toHaveAttribute('aria-disabled', 'true'),
+    );
+  });
+
   it('includes the top foundation card and keeps empty row names clear in Japanese', async () => {
     renderWithProviders(<OsmosisPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

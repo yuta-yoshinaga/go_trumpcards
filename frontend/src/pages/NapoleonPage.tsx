@@ -364,7 +364,11 @@ function NapoleonPageContent() {
                 {/* Highest bid info */}
                 {state.highestBid > 0 && (
                   <div className="text-ds-text-muted text-center text-sm mb-2">
-                    {t('highestBid', { bid: state.highestBid })}
+                    <span>{t('highestBid', { bid: state.highestBid })}</span>{' '}
+                    <span>
+                      {t('highestBidder')}:{' '}
+                      {playerName(state.highestBidder, state.players[state.highestBidder].isHuman)}
+                    </span>
                   </div>
                 )}
 

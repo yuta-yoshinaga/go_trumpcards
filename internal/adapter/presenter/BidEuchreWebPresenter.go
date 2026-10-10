@@ -79,7 +79,7 @@ func (p *BidEuchreWebPresenter) Output(g interfaces.BidEuchreGame, lastErr error
 	}
 
 	resObj.Players = p.buildPlayersOutput(g)
-	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(g, lastErr)
+	resObj.Message, resObj.MessageCode = p.buildMessage(g, lastErr)
 
 	return marshalOrError(resObj)
 }
@@ -130,31 +130,31 @@ func (p *BidEuchreWebPresenter) buildPlayersOutput(g interfaces.BidEuchreGame) [
 }
 
 // buildMessage ゲーム結果メッセージを構築
-func (p *BidEuchreWebPresenter) buildMessage(g interfaces.BidEuchreGame, lastErr error) (string, string, map[string]string) {
+func (p *BidEuchreWebPresenter) buildMessage(g interfaces.BidEuchreGame, lastErr error) (string, string) {
 	if lastErr != nil {
-		return lastErr.Error(), "", nil
+		return lastErr.Error(), ""
 	}
 	if g.GetGameEndFlag() {
 		// **チーム戦なので勝敗は席ではなくチームで見る。**人間は席 0 = チーム 0。
 		if g.GetWinnerTeam() == domain.BidEuchreTeamOf(0) {
-			return "your team wins the game", "bideuchre.result.humanWin", nil
+			return "your team wins the game", "bideuchre.result.humanWin"
 		}
-		return "the other team wins the game", "bideuchre.result.cpuWin", nil
+		return "the other team wins the game", "bideuchre.result.cpuWin"
 	}
 	switch g.GetPhase() {
 	case domain.BidEuchrePhaseBid:
-		return "", "bideuchre.bidPhase", nil
+		return "", "bideuchre.bidPhase"
 	case domain.BidEuchrePhaseChooseTrump:
-		return "", "bideuchre.trumpPhase", nil
+		return "", "bideuchre.trumpPhase"
 	case domain.BidEuchrePhasePlay:
-		return "", "bideuchre.playPhase", nil
+		return "", "bideuchre.playPhase"
 	case domain.BidEuchrePhaseHandEnd:
 		if r := g.GetLastResult(); r != nil && !r.Made {
-			return "", "bideuchre.handSet", nil
+			return "", "bideuchre.handSet"
 		}
-		return "", "bideuchre.handMade", nil
+		return "", "bideuchre.handMade"
 	}
-	return "", "", nil
+	return "", ""
 }
 
 // ActionLogOutput 棋譜をJSON出力

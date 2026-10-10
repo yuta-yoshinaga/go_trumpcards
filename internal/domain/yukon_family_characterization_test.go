@@ -11,8 +11,8 @@ import (
 	"testing"
 )
 
-func familyCard(suit, rank int, faceUp bool) *KlondikeTableauCard {
-	return &KlondikeTableauCard{Card: NewCard(suit, rank, false), FaceUp: faceUp}
+func familyCard(suit, rank int) *KlondikeTableauCard {
+	return &KlondikeTableauCard{Card: NewCard(suit, rank, false), FaceUp: true}
 }
 
 func familyYukon(tableau [YukonTableauCnt][]*KlondikeTableauCard, foundation [YukonFoundationCnt][]*Card) *Yukon {
@@ -49,15 +49,15 @@ func TestRussianSolitaireFamilyCharacterization(t *testing.T) {
 	}{
 		{"multi_card_tableau_move", func() *RussianSolitaire {
 			var tab [RussianSolitaireTableauCnt][]*KlondikeTableauCard
-			tab[0] = []*KlondikeTableauCard{familyCard(CardDesignSpade, 5, true), familyCard(CardDesignHeart, 10, true), familyCard(CardDesignClover, 2, true)}
-			tab[1] = []*KlondikeTableauCard{familyCard(CardDesignSpade, 6, true)}
+			tab[0] = []*KlondikeTableauCard{familyCard(CardDesignSpade, 5), familyCard(CardDesignHeart, 10), familyCard(CardDesignClover, 2)}
+			tab[1] = []*KlondikeTableauCard{familyCard(CardDesignSpade, 6)}
 			return familyRussian(tab, [RussianSolitaireFoundationCnt][]*Card{})
 		}, func(r *RussianSolitaire) error { return r.MoveTableauToTableau(0, 0, 1) }, `{"FromCol":0,"CardIndex":0,"ToZone":"tableau","ToCol":1}`, "", "", 0, 1, true, 0, 1, true, false},
 		{"tableau_to_foundation", func() *RussianSolitaire {
 			var tab [RussianSolitaireTableauCnt][]*KlondikeTableauCard
 			var fd [RussianSolitaireFoundationCnt][]*Card
 			fd[0] = []*Card{NewCard(CardDesignSpade, 1, false)}
-			tab[0] = []*KlondikeTableauCard{familyCard(CardDesignSpade, 2, true)}
+			tab[0] = []*KlondikeTableauCard{familyCard(CardDesignSpade, 2)}
 			return familyRussian(tab, fd)
 		}, func(r *RussianSolitaire) error { return r.MoveTableauToFoundation(0) }, `{"FromCol":0,"CardIndex":0,"ToZone":"foundation","ToCol":0}`, "", "", 0, 1, true, 0, 1, true, false},
 		{"autocomplete_several", func() *RussianSolitaire {
@@ -67,14 +67,14 @@ func TestRussianSolitaireFamilyCharacterization(t *testing.T) {
 				for rank := 1; rank <= 10; rank++ {
 					fd[suit-1] = append(fd[suit-1], NewCard(suit, rank, false))
 				}
-				tab[suit-1] = []*KlondikeTableauCard{familyCard(suit, 13, true), familyCard(suit, 12, true), familyCard(suit, 11, true)}
+				tab[suit-1] = []*KlondikeTableauCard{familyCard(suit, 13), familyCard(suit, 12), familyCard(suit, 11)}
 			}
 			return familyRussian(tab, fd)
 		}, func(r *RussianSolitaire) error { return r.AutoComplete() }, `{"FromCol":0,"CardIndex":2,"ToZone":"foundation","ToCol":0}`, "", "game is not in playing phase", 1, 12, false, 1, 12, false, true},
 		{"stalemate", func() *RussianSolitaire {
 			var tab [RussianSolitaireTableauCnt][]*KlondikeTableauCard
-			tab[0] = []*KlondikeTableauCard{familyCard(CardDesignSpade, 5, true)}
-			tab[1] = []*KlondikeTableauCard{familyCard(CardDesignSpade, 6, true)}
+			tab[0] = []*KlondikeTableauCard{familyCard(CardDesignSpade, 5)}
+			tab[1] = []*KlondikeTableauCard{familyCard(CardDesignSpade, 6)}
 			return familyRussian(tab, [RussianSolitaireFoundationCnt][]*Card{})
 		}, func(r *RussianSolitaire) error { return r.MoveTableauToTableau(0, 0, 1) }, `{"FromCol":0,"CardIndex":0,"ToZone":"tableau","ToCol":1}`, "", "", 0, 1, true, 0, 1, true, false},
 		{"one_move_clear", func() *RussianSolitaire {
@@ -89,7 +89,7 @@ func TestRussianSolitaireFamilyCharacterization(t *testing.T) {
 					fd[suit-1] = append(fd[suit-1], NewCard(suit, rank, false))
 				}
 			}
-			tab[0] = []*KlondikeTableauCard{familyCard(CardDesignSpade, 13, true)}
+			tab[0] = []*KlondikeTableauCard{familyCard(CardDesignSpade, 13)}
 			return familyRussian(tab, fd)
 		}, func(r *RussianSolitaire) error { return r.MoveTableauToFoundation(0) }, `{"FromCol":0,"CardIndex":0,"ToZone":"foundation","ToCol":0}`, "", "game is not in playing phase", 1, 1, false, 1, 1, false, true},
 	}
@@ -153,15 +153,15 @@ func TestYukonFamilyCharacterization(t *testing.T) {
 	}{
 		{"multi_card_tableau_move", func() *Yukon {
 			var tab [YukonTableauCnt][]*KlondikeTableauCard
-			tab[0] = []*KlondikeTableauCard{familyCard(CardDesignHeart, 5, true), familyCard(CardDesignDiamond, 11, true), familyCard(CardDesignSpade, 2, true)}
-			tab[1] = []*KlondikeTableauCard{familyCard(CardDesignSpade, 6, true)}
+			tab[0] = []*KlondikeTableauCard{familyCard(CardDesignHeart, 5), familyCard(CardDesignDiamond, 11), familyCard(CardDesignSpade, 2)}
+			tab[1] = []*KlondikeTableauCard{familyCard(CardDesignSpade, 6)}
 			return familyYukon(tab, [YukonFoundationCnt][]*Card{})
 		}, func(y *Yukon) error { return y.MoveTableauToTableau(0, 0, 1) }},
 		{"tableau_to_foundation", func() *Yukon {
 			var tab [YukonTableauCnt][]*KlondikeTableauCard
 			var fd [YukonFoundationCnt][]*Card
 			fd[0] = []*Card{NewCard(CardDesignSpade, 1, false)}
-			tab[0] = []*KlondikeTableauCard{familyCard(CardDesignSpade, 2, true)}
+			tab[0] = []*KlondikeTableauCard{familyCard(CardDesignSpade, 2)}
 			return familyYukon(tab, fd)
 		}, func(y *Yukon) error { return y.MoveTableauToFoundation(0) }},
 		{"autocomplete_several", func() *Yukon {
@@ -171,14 +171,14 @@ func TestYukonFamilyCharacterization(t *testing.T) {
 				for rank := 1; rank <= 10; rank++ {
 					fd[suit-1] = append(fd[suit-1], NewCard(suit, rank, false))
 				}
-				tab[suit-1] = []*KlondikeTableauCard{familyCard(suit, 11, true), familyCard(suit, 12, true)}
+				tab[suit-1] = []*KlondikeTableauCard{familyCard(suit, 11), familyCard(suit, 12)}
 			}
 			return familyYukon(tab, fd)
 		}, func(y *Yukon) error { return y.AutoComplete() }},
 		{"stalemate", func() *Yukon {
 			var tab [YukonTableauCnt][]*KlondikeTableauCard
-			tab[0] = []*KlondikeTableauCard{familyCard(CardDesignSpade, 5, true)}
-			tab[1] = []*KlondikeTableauCard{familyCard(CardDesignClover, 5, true)}
+			tab[0] = []*KlondikeTableauCard{familyCard(CardDesignSpade, 5)}
+			tab[1] = []*KlondikeTableauCard{familyCard(CardDesignClover, 5)}
 			return familyYukon(tab, [YukonFoundationCnt][]*Card{})
 		}, func(y *Yukon) error { return y.MoveTableauToTableau(0, 0, 1) }},
 		{"one_move_clear", func() *Yukon {
@@ -189,7 +189,7 @@ func TestYukonFamilyCharacterization(t *testing.T) {
 					fd[suit-1] = append(fd[suit-1], NewCard(suit, rank, false))
 				}
 			}
-			tab[0] = []*KlondikeTableauCard{familyCard(CardDesignSpade, 13, true)}
+			tab[0] = []*KlondikeTableauCard{familyCard(CardDesignSpade, 13)}
 			return familyYukon(tab, fd)
 		}, func(y *Yukon) error { return y.MoveTableauToFoundation(0) }},
 	}
@@ -206,8 +206,8 @@ func TestYukonFamilyCharacterization(t *testing.T) {
 	}
 }
 
-func familyAlaskaCard(suit, rank int, faceUp bool) *AlaskaTableauCard {
-	return &AlaskaTableauCard{Card: NewCard(suit, rank, false), FaceUp: faceUp}
+func familyAlaskaCard(suit, rank int) *AlaskaTableauCard {
+	return &AlaskaTableauCard{Card: NewCard(suit, rank, false), FaceUp: true}
 }
 
 func familyAlaska(tableau [AlaskaTableauCnt][]*AlaskaTableauCard, foundation [AlaskaFoundationCnt][]*Card) *Alaska {
@@ -226,15 +226,15 @@ func TestAlaskaFamilyCharacterization(t *testing.T) {
 	}{
 		{"multi_card_tableau_move", func() *Alaska {
 			var tab [AlaskaTableauCnt][]*AlaskaTableauCard
-			tab[0] = []*AlaskaTableauCard{familyAlaskaCard(CardDesignSpade, 5, true), familyAlaskaCard(CardDesignHeart, 10, true), familyAlaskaCard(CardDesignClover, 2, true)}
-			tab[1] = []*AlaskaTableauCard{familyAlaskaCard(CardDesignSpade, 6, true)}
+			tab[0] = []*AlaskaTableauCard{familyAlaskaCard(CardDesignSpade, 5), familyAlaskaCard(CardDesignHeart, 10), familyAlaskaCard(CardDesignClover, 2)}
+			tab[1] = []*AlaskaTableauCard{familyAlaskaCard(CardDesignSpade, 6)}
 			return familyAlaska(tab, [AlaskaFoundationCnt][]*Card{})
 		}, func(a *Alaska) error { return a.MoveTableauToTableau(0, 0, 1) }},
 		{"tableau_to_foundation", func() *Alaska {
 			var tab [AlaskaTableauCnt][]*AlaskaTableauCard
 			var fd [AlaskaFoundationCnt][]*Card
 			fd[0] = []*Card{NewCard(CardDesignSpade, 1, false)}
-			tab[0] = []*AlaskaTableauCard{familyAlaskaCard(CardDesignSpade, 2, true)}
+			tab[0] = []*AlaskaTableauCard{familyAlaskaCard(CardDesignSpade, 2)}
 			return familyAlaska(tab, fd)
 		}, func(a *Alaska) error { return a.MoveTableauToFoundation(0) }},
 		{"autocomplete_several", func() *Alaska {
@@ -244,7 +244,7 @@ func TestAlaskaFamilyCharacterization(t *testing.T) {
 				for rank := 1; rank <= 10; rank++ {
 					fd[suit-1] = append(fd[suit-1], NewCard(suit, rank, false))
 				}
-				tab[suit-1] = []*AlaskaTableauCard{familyAlaskaCard(suit, 11, true)}
+				tab[suit-1] = []*AlaskaTableauCard{familyAlaskaCard(suit, 11)}
 			}
 			return familyAlaska(tab, fd)
 		}, func(a *Alaska) error { return a.AutoComplete() }},
@@ -252,7 +252,7 @@ func TestAlaskaFamilyCharacterization(t *testing.T) {
 			var tab [AlaskaTableauCnt][]*AlaskaTableauCard
 			spec := [AlaskaTableauCnt][2]int{{1, 3}, {1, 5}, {1, 7}, {2, 3}, {2, 5}, {2, 7}, {3, 3}}
 			for i, c := range spec {
-				tab[i] = []*AlaskaTableauCard{familyAlaskaCard(c[0], c[1], true)}
+				tab[i] = []*AlaskaTableauCard{familyAlaskaCard(c[0], c[1])}
 			}
 			return familyAlaska(tab, [AlaskaFoundationCnt][]*Card{})
 		}, func(a *Alaska) error { return a.MoveTableauToTableau(0, 0, 1) }},
@@ -264,7 +264,7 @@ func TestAlaskaFamilyCharacterization(t *testing.T) {
 					fd[suit-1] = append(fd[suit-1], NewCard(suit, rank, false))
 				}
 			}
-			tab[0] = []*AlaskaTableauCard{familyAlaskaCard(CardDesignSpade, 13, true)}
+			tab[0] = []*AlaskaTableauCard{familyAlaskaCard(CardDesignSpade, 13)}
 			return familyAlaska(tab, fd)
 		}, func(a *Alaska) error { return a.MoveTableauToFoundation(0) }},
 	}

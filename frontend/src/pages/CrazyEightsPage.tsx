@@ -465,7 +465,7 @@ function CrazyEightsPageContent() {
               </fieldset>
             )}
             {humanPlayer && (
-              <div className="flex flex-wrap gap-1 mb-2" data-tutorial="ce-player-hand">
+              <section aria-label={t('handLabel')} className="flex flex-wrap gap-1 mb-2" data-tutorial="ce-player-hand">
                 {/* Shared screen-reader reason, referenced by every illegal card via
                     aria-describedby so the "why" is spoken (title alone is skipped by SRs). */}
                 <span id={ILLEGAL_REASON_ID} className="sr-only">
@@ -515,7 +515,7 @@ function CrazyEightsPageContent() {
                     </button>
                   );
                 })}
-              </div>
+              </section>
             )}
 
             <ErrorAlert message={error} onRetry={retry} />

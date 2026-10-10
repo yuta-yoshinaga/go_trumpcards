@@ -156,6 +156,31 @@ describe('WarPage', () => {
     expect(screen.getByRole('tooltip')).toHaveTextContent('無限');
   });
 
+  it('offers server range endpoints and shows the selected limit after reset', async () => {
+    renderWithProviders(<WarPage />);
+    await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
+
+    const maxRounds = screen.getByLabelText('最大ラウンド数') as HTMLSelectElement;
+    expect(Array.from(maxRounds.options, (option) => option.value)).toEqual([
+      '10',
+      '100',
+      '250',
+      '500',
+      '1000',
+      '2000',
+      '10000',
+    ]);
+    fireEvent.change(maxRounds, { target: { value: '10000' } });
+    expect(maxRounds).toHaveValue('10000');
+
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    mockExec.mockResolvedValueOnce({ ...baseState, config: { maxRounds: 10000 } });
+    fireEvent.click(await screen.findByRole('button', { name: '確認' }));
+    // The confirmation invokes reset; wait for the response before checking the applied limit.
+    await waitFor(() => expect(mockExec).toHaveBeenLastCalledWith('reset', { maxRounds: 10000 }));
+    expect(await screen.findByText('ラウンド: 0 / 10000')).toBeInTheDocument();
+  });
+
   it('renders pile info after state loads', async () => {
     renderWithProviders(<WarPage />);
     await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());

@@ -19,9 +19,9 @@ import (
 func gutsCard(design, value int) *domain.Card { return domain.NewCard(design, value, false) }
 
 // gutsSetHand は player の手札を 2 枚に差し替える。
-func gutsSetHand(p *domain.GutsPlayer, d1, v1, d2, v2 int) {
+func gutsSetHand(p *domain.GutsPlayer, v1, d2, v2 int) {
 	p.ClearHand()
-	p.AddCard(gutsCard(d1, v1))
+	p.AddCard(gutsCard(domain.CardDesignSpade, v1))
 	p.AddCard(gutsCard(d2, v2))
 }
 
@@ -85,9 +85,9 @@ func TestGutsEval(t *testing.T) {
 
 func TestGuts_Settle_HumanWins(t *testing.T) {
 	g := domain.NewDefaultGuts()
-	gutsSetHand(g.GetPlayer(0), domain.CardDesignSpade, 10, domain.CardDesignClover, 10) // pair
+	gutsSetHand(g.GetPlayer(0), 10, domain.CardDesignClover, 10) // pair
 	g.GetPlayer(0).SetIn(true)
-	gutsSetHand(g.GetPlayer(1), domain.CardDesignSpade, 9, domain.CardDesignHeart, 5) // high card
+	gutsSetHand(g.GetPlayer(1), 9, domain.CardDesignHeart, 5) // high card
 	g.GetPlayer(1).SetIn(true)
 	for i := 2; i < g.GetPlayerCnt(); i++ {
 		g.GetPlayer(i).SetIn(false)
@@ -110,9 +110,9 @@ func TestGuts_Settle_HumanWins(t *testing.T) {
 
 func TestGuts_Settle_HumanLosesMatches(t *testing.T) {
 	g := domain.NewDefaultGuts()
-	gutsSetHand(g.GetPlayer(0), domain.CardDesignSpade, 4, domain.CardDesignClover, 7) // weak high card
+	gutsSetHand(g.GetPlayer(0), 4, domain.CardDesignClover, 7) // weak high card
 	g.GetPlayer(0).SetIn(true)
-	gutsSetHand(g.GetPlayer(1), domain.CardDesignSpade, 11, domain.CardDesignHeart, 11) // pair
+	gutsSetHand(g.GetPlayer(1), 11, domain.CardDesignHeart, 11) // pair
 	g.GetPlayer(1).SetIn(true)
 	for i := 2; i < g.GetPlayerCnt(); i++ {
 		g.GetPlayer(i).SetIn(false)
@@ -184,13 +184,13 @@ func TestGuts_GameEndByRounds(t *testing.T) {
 
 func TestGuts_Hint(t *testing.T) {
 	g := domain.NewDefaultGuts()
-	gutsSetHand(g.GetPlayer(0), domain.CardDesignSpade, 7, domain.CardDesignHeart, 7) // pair
+	gutsSetHand(g.GetPlayer(0), 7, domain.CardDesignHeart, 7) // pair
 	hint := g.GetHint()
 	require.NotNil(t, hint)
 	assert.Equal(t, domain.GutsDeclarationIn, hint.Declaration)
 	assert.Equal(t, "strong_hand", hint.Reason)
 
-	gutsSetHand(g.GetPlayer(0), domain.CardDesignSpade, 3, domain.CardDesignHeart, 5) // weak
+	gutsSetHand(g.GetPlayer(0), 3, domain.CardDesignHeart, 5) // weak
 	hint = g.GetHint()
 	require.NotNil(t, hint)
 	assert.Equal(t, domain.GutsDeclarationOut, hint.Declaration)

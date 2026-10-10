@@ -327,7 +327,11 @@ describe('BasraPage', () => {
     // A 2 枚 / バスラ 2 回 / 捕獲 30 枚 ── 合計 (27) からは出せない数字。
     expect(row).toHaveTextContent('2');
     expect(row).toHaveTextContent('30');
+    expect(row).toHaveTextContent('今回獲得 27点');
     expect(row.textContent).not.toContain('{{');
+
+    const cpuRow = await screen.findByTestId('basra-breakdown-1');
+    expect(cpuRow).toHaveTextContent('今回獲得 5点');
 
     // 各賞は取った席の名前で出る。
     expect(screen.getByTestId('basra-seven-diamonds')).toHaveTextContent('あなた');

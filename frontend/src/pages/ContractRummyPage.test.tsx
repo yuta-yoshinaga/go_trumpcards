@@ -673,7 +673,9 @@ describe('ContractRummyPage', () => {
       const select = await screen.findByLabelText('CPU難易度');
       mockExec.mockClear();
       fireEvent.change(select, { target: { value: '0' } });
-      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', { config: { cpuDifficulty: 0 } }));
+      await waitFor(() =>
+        expect(mockExec).toHaveBeenCalledWith('reset', { config: { cpuDifficulty: 0, failContractPenalty: 25 } }),
+      );
     });
 
     // **リセットでも難易度を持ち越す。**config を付けずに reset すると、サーバは
@@ -688,7 +690,9 @@ describe('ContractRummyPage', () => {
       // 途中リセットは確認ダイアログを挟む。
       fireEvent.click(await screen.findByRole('button', { name: '確認' }));
 
-      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', { config: { cpuDifficulty: 2 } }));
+      await waitFor(() =>
+        expect(mockExec).toHaveBeenCalledWith('reset', { config: { cpuDifficulty: 2, failContractPenalty: 25 } }),
+      );
     });
 
     it('offers exactly the three levels', async () => {
@@ -697,6 +701,44 @@ describe('ContractRummyPage', () => {
       const select = await screen.findByLabelText('CPU難易度');
       const values = [...(select as HTMLSelectElement).options].map((o) => o.value);
       expect(values).toEqual(['0', '1', '2']);
+    });
+  });
+
+  describe('failed contract penalty setting', () => {
+    it('shows the current penalty and available values', async () => {
+      mockExec.mockResolvedValue({ ...drawState, config: { cpuDifficulty: 1, failContractPenalty: 50 } });
+      renderWithProviders(<ContractRummyPage />);
+      const select = await screen.findByLabelText('コントラクト未達ペナルティ');
+      expect((select as HTMLSelectElement).value).toBe('50');
+      expect([...(select as HTMLSelectElement).options].map((option) => option.value)).toEqual([
+        '0',
+        '25',
+        '50',
+        '100',
+      ]);
+    });
+
+    it('applies the selected penalty while preserving CPU difficulty', async () => {
+      mockExec.mockResolvedValue({ ...drawState, config: { cpuDifficulty: 2, failContractPenalty: 25 } });
+      renderWithProviders(<ContractRummyPage />);
+      const select = await screen.findByLabelText('コントラクト未達ペナルティ');
+      mockExec.mockClear();
+      fireEvent.change(select, { target: { value: '100' } });
+      await waitFor(() =>
+        expect(mockExec).toHaveBeenCalledWith('reset', { config: { cpuDifficulty: 2, failContractPenalty: 100 } }),
+      );
+    });
+
+    it('keeps the selected penalty when the game is reset', async () => {
+      mockExec.mockResolvedValue({ ...drawState, config: { cpuDifficulty: 2, failContractPenalty: 100 } });
+      renderWithProviders(<ContractRummyPage />);
+      await screen.findByLabelText('コントラクト未達ペナルティ');
+      mockExec.mockClear();
+      fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+      fireEvent.click(await screen.findByRole('button', { name: '確認' }));
+      await waitFor(() =>
+        expect(mockExec).toHaveBeenCalledWith('reset', { config: { cpuDifficulty: 2, failContractPenalty: 100 } }),
+      );
     });
   });
 });

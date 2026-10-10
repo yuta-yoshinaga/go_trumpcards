@@ -23,6 +23,8 @@
   "contractUndecided": "契約: 未決定",
   "cpu": "CPU {{id}}",
   "currentTrick": "現在のトリック",
+  "trickWinnerBadge": "勝者",
+  "trickWinnerAnnouncement": "{{name}}がトリックを獲得",
   "declarerBadge": "宣言者",
   "dealerBadge": "ディーラー",
   "declarerLine": "宣言者: {{name}} — {{contract}}",

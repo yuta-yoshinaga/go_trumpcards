@@ -39,7 +39,9 @@
     "resetButton": "ゲームを最初からやり直すにはこのボタンを押します。"
   },
   "slotCardZone": "{{card}}（{{zone}}）",
+  "slotCardZonePlaceable": "{{card}}（{{zone}}）、移動先として選択可能",
   "slotEmptyZone": "{{zone}}（空き）",
+  "slotEmptyZonePlaceable": "{{zone}}（空き）、移動先として選択可能",
   "foundationZone": "組札{{n}}",
   "frontendHint": {
     "russianbankToFoundation": "この札を台札へ上げられます",

@@ -11,12 +11,12 @@ func (b *BlackJack) GetTrumpCards() *TrumpCards {
 	return b.trumpCards
 }
 
-func setupInternalTestBJ(playerChips, dealerChips int) (*BlackJack, *BlackJackPlayer, *BlackJackPlayer) {
+func setupInternalTestBJ(playerChips int) (*BlackJack, *BlackJackPlayer, *BlackJackPlayer) {
 	tc := NewTrumpCards(0)
 	player := NewBlackJackPlayer()
 	dealer := NewBlackJackPlayer()
 	player.SetChips(playerChips)
-	dealer.SetChips(dealerChips)
+	dealer.SetChips(1000)
 	bj := NewBlackJack(tc, player, dealer)
 	return bj, player, dealer
 }
@@ -27,7 +27,7 @@ func setupInternalTestBJ(playerChips, dealerChips int) (*BlackJack, *BlackJackPl
 // stacked so the next drawn card is guaranteed to be a King (BJ value 10),
 // pushing the player's score from 20 to 30 (bust).
 func TestBlackJack_PlayerDoubleDown_Bust_Deterministic(t *testing.T) {
-	bj, _, dealer := setupInternalTestBJ(1000, 1000)
+	bj, _, dealer := setupInternalTestBJ(1000)
 
 	// Set up player hand with score 20 (10 + King=10)
 	hand := bj.playerHands[0]
@@ -252,21 +252,21 @@ func TestCountingValue(t *testing.T) {
 
 func TestDealerShouldHit(t *testing.T) {
 	t.Run("score below 17 should hit", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj, _, dealer := setupInternalTestBJ(1000)
 		dealer.AddCard(NewCard(CardDesignSpade, 10, false))
 		dealer.AddCard(NewCard(CardDesignHeart, 5, false)) // score 15
 		assert.True(t, bj.dealerShouldHit())
 	})
 
 	t.Run("hard 17 should not hit (S17)", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj, _, dealer := setupInternalTestBJ(1000)
 		dealer.AddCard(NewCard(CardDesignSpade, 10, false))
 		dealer.AddCard(NewCard(CardDesignHeart, 7, false)) // score 17, hard
 		assert.False(t, bj.dealerShouldHit())
 	})
 
 	t.Run("soft 17 should not hit with S17", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj, _, dealer := setupInternalTestBJ(1000)
 		dealer.AddCard(NewCard(CardDesignSpade, 1, false))
 		dealer.AddCard(NewCard(CardDesignHeart, 6, false)) // soft 17
 		bj.config.DealerHitsSoft17 = false
@@ -274,7 +274,7 @@ func TestDealerShouldHit(t *testing.T) {
 	})
 
 	t.Run("soft 17 should hit with H17", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj, _, dealer := setupInternalTestBJ(1000)
 		dealer.AddCard(NewCard(CardDesignSpade, 1, false))
 		dealer.AddCard(NewCard(CardDesignHeart, 6, false)) // soft 17
 		bj.config.DealerHitsSoft17 = true
@@ -282,14 +282,14 @@ func TestDealerShouldHit(t *testing.T) {
 	})
 
 	t.Run("score above 17 should not hit", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj, _, dealer := setupInternalTestBJ(1000)
 		dealer.AddCard(NewCard(CardDesignSpade, 10, false))
 		dealer.AddCard(NewCard(CardDesignHeart, 8, false)) // score 18
 		assert.False(t, bj.dealerShouldHit())
 	})
 
 	t.Run("soft 18 should not hit even with H17", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj, _, dealer := setupInternalTestBJ(1000)
 		dealer.AddCard(NewCard(CardDesignSpade, 1, false))
 		dealer.AddCard(NewCard(CardDesignHeart, 7, false)) // soft 18
 		bj.config.DealerHitsSoft17 = true
@@ -301,7 +301,7 @@ func TestDealerShouldHit(t *testing.T) {
 
 func TestAllPlayerHandsDone(t *testing.T) {
 	t.Run("not all done when one hand is active", func(t *testing.T) {
-		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		bj, _, _ := setupInternalTestBJ(1000)
 		hand := bj.playerHands[0]
 		hand.AddCard(NewCard(CardDesignSpade, 10, false))
 		hand.AddCard(NewCard(CardDesignHeart, 8, false))
@@ -309,21 +309,21 @@ func TestAllPlayerHandsDone(t *testing.T) {
 	})
 
 	t.Run("all done when all hands busted", func(t *testing.T) {
-		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		bj, _, _ := setupInternalTestBJ(1000)
 		hand := bj.playerHands[0]
 		hand.SetBusted(true)
 		assert.True(t, bj.allPlayerHandsDone())
 	})
 
 	t.Run("all done when all hands surrendered", func(t *testing.T) {
-		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		bj, _, _ := setupInternalTestBJ(1000)
 		hand := bj.playerHands[0]
 		hand.SetSurrendered(true)
 		assert.True(t, bj.allPlayerHandsDone())
 	})
 
 	t.Run("CPU hand not busted prevents all done", func(t *testing.T) {
-		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		bj, _, _ := setupInternalTestBJ(1000)
 		hand := bj.playerHands[0]
 		hand.SetBusted(true)
 
@@ -337,7 +337,7 @@ func TestAllPlayerHandsDone(t *testing.T) {
 	})
 
 	t.Run("CPU hand busted allows all done", func(t *testing.T) {
-		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		bj, _, _ := setupInternalTestBJ(1000)
 		hand := bj.playerHands[0]
 		hand.SetBusted(true)
 
@@ -354,7 +354,7 @@ func TestAllPlayerHandsDone(t *testing.T) {
 
 func TestUpdateRunningCount(t *testing.T) {
 	t.Run("counting disabled does nothing", func(t *testing.T) {
-		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		bj, _, _ := setupInternalTestBJ(1000)
 		bj.config.CountingEnabled = false
 		bj.runningCount = 0
 		bj.updateRunningCount(NewCard(CardDesignSpade, 2, false))
@@ -362,7 +362,7 @@ func TestUpdateRunningCount(t *testing.T) {
 	})
 
 	t.Run("counting enabled updates RC", func(t *testing.T) {
-		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		bj, _, _ := setupInternalTestBJ(1000)
 		bj.config.CountingEnabled = true
 		bj.runningCount = 0
 
@@ -394,7 +394,7 @@ func TestGetTrueCountInternal(t *testing.T) {
 	})
 
 	t.Run("less than 52 remaining uses 1.0 as floor", func(t *testing.T) {
-		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		bj, _, _ := setupInternalTestBJ(1000)
 		bj.runningCount = 10
 		// Draw most of the cards to get remaining < 52
 		for i := 0; i < 42; i++ {
@@ -420,7 +420,7 @@ func TestGetTrueCountInternal(t *testing.T) {
 	})
 
 	t.Run("KO system returns 0 (unbalanced)", func(t *testing.T) {
-		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		bj, _, _ := setupInternalTestBJ(1000)
 		bj.config.CountingSystem = BJCountingKO
 		bj.runningCount = 10
 		assert.Equal(t, 0.0, bj.GetTrueCount())
@@ -457,7 +457,7 @@ func TestGetTrueCountInternal(t *testing.T) {
 
 func TestUpdateRunningCountWithSystems(t *testing.T) {
 	t.Run("KO system counts 7 as +1", func(t *testing.T) {
-		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		bj, _, _ := setupInternalTestBJ(1000)
 		bj.config.CountingEnabled = true
 		bj.config.CountingSystem = BJCountingKO
 		bj.runningCount = 0
@@ -466,7 +466,7 @@ func TestUpdateRunningCountWithSystems(t *testing.T) {
 	})
 
 	t.Run("Zen system counts 5 as +2", func(t *testing.T) {
-		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		bj, _, _ := setupInternalTestBJ(1000)
 		bj.config.CountingEnabled = true
 		bj.config.CountingSystem = BJCountingZen
 		bj.runningCount = 0
@@ -475,7 +475,7 @@ func TestUpdateRunningCountWithSystems(t *testing.T) {
 	})
 
 	t.Run("OmegaII system counts Ace as 0", func(t *testing.T) {
-		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		bj, _, _ := setupInternalTestBJ(1000)
 		bj.config.CountingEnabled = true
 		bj.config.CountingSystem = BJCountingOmegaII
 		bj.runningCount = 0
@@ -488,7 +488,7 @@ func TestUpdateRunningCountWithSystems(t *testing.T) {
 
 func TestSetConfigCountingSystem(t *testing.T) {
 	t.Run("valid counting systems accepted", func(t *testing.T) {
-		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		bj, _, _ := setupInternalTestBJ(1000)
 		for _, sys := range []int{BJCountingHiLo, BJCountingKO, BJCountingZen, BJCountingOmegaII} {
 			err := bj.SetConfig(BlackJackConfig{CountingSystem: sys, DoubleAfterSplit: true})
 			assert.NoError(t, err, "system %d should be valid", sys)
@@ -496,19 +496,19 @@ func TestSetConfigCountingSystem(t *testing.T) {
 	})
 
 	t.Run("invalid counting system rejected", func(t *testing.T) {
-		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		bj, _, _ := setupInternalTestBJ(1000)
 		err := bj.SetConfig(BlackJackConfig{CountingSystem: BJCountingMax + 1, DoubleAfterSplit: true})
 		assert.Error(t, err)
 	})
 
 	t.Run("negative counting system rejected", func(t *testing.T) {
-		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		bj, _, _ := setupInternalTestBJ(1000)
 		err := bj.SetConfig(BlackJackConfig{CountingSystem: -1, DoubleAfterSplit: true})
 		assert.Error(t, err)
 	})
 
 	t.Run("changing counting system resets running count", func(t *testing.T) {
-		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		bj, _, _ := setupInternalTestBJ(1000)
 		bj.config.CountingSystem = BJCountingHiLo
 		bj.runningCount = 5
 		err := bj.SetConfig(BlackJackConfig{CountingSystem: BJCountingKO, DoubleAfterSplit: true})
@@ -517,7 +517,7 @@ func TestSetConfigCountingSystem(t *testing.T) {
 	})
 
 	t.Run("same counting system does not reset running count", func(t *testing.T) {
-		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		bj, _, _ := setupInternalTestBJ(1000)
 		bj.config.CountingSystem = BJCountingHiLo
 		bj.runningCount = 5
 		err := bj.SetConfig(BlackJackConfig{CountingSystem: BJCountingHiLo, DoubleAfterSplit: true})
@@ -530,7 +530,7 @@ func TestSetConfigCountingSystem(t *testing.T) {
 
 func TestJudgeHandCore(t *testing.T) {
 	t.Run("player bust loses", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj, _, dealer := setupInternalTestBJ(1000)
 		dealer.AddCard(NewCard(CardDesignSpade, 10, false))
 		dealer.AddCard(NewCard(CardDesignHeart, 7, false)) // 17
 
@@ -543,7 +543,7 @@ func TestJudgeHandCore(t *testing.T) {
 	})
 
 	t.Run("dealer bust, player wins", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj, _, dealer := setupInternalTestBJ(1000)
 		dealer.AddCard(NewCard(CardDesignSpade, 10, false))
 		dealer.AddCard(NewCard(CardDesignHeart, 10, false))
 		dealer.AddCard(NewCard(CardDesignClover, 5, false)) // 25, bust
@@ -556,7 +556,7 @@ func TestJudgeHandCore(t *testing.T) {
 	})
 
 	t.Run("player higher score wins", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj, _, dealer := setupInternalTestBJ(1000)
 		dealer.AddCard(NewCard(CardDesignSpade, 10, false))
 		dealer.AddCard(NewCard(CardDesignHeart, 7, false)) // 17
 
@@ -568,7 +568,7 @@ func TestJudgeHandCore(t *testing.T) {
 	})
 
 	t.Run("dealer higher score, player loses", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj, _, dealer := setupInternalTestBJ(1000)
 		dealer.AddCard(NewCard(CardDesignSpade, 10, false))
 		dealer.AddCard(NewCard(CardDesignHeart, 9, false)) // 19
 
@@ -580,7 +580,7 @@ func TestJudgeHandCore(t *testing.T) {
 	})
 
 	t.Run("equal score, neither BJ, draw", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj, _, dealer := setupInternalTestBJ(1000)
 		dealer.AddCard(NewCard(CardDesignSpade, 10, false))
 		dealer.AddCard(NewCard(CardDesignHeart, 8, false)) // 18
 
@@ -592,7 +592,7 @@ func TestJudgeHandCore(t *testing.T) {
 	})
 
 	t.Run("both BJ draw", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj, _, dealer := setupInternalTestBJ(1000)
 		dealer.AddCard(NewCard(CardDesignSpade, 1, false))
 		dealer.AddCard(NewCard(CardDesignHeart, 13, false)) // BJ
 
@@ -604,7 +604,7 @@ func TestJudgeHandCore(t *testing.T) {
 	})
 
 	t.Run("player BJ beats dealer non-BJ at 21 (handCount=1)", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj, _, dealer := setupInternalTestBJ(1000)
 		dealer.AddCard(NewCard(CardDesignSpade, 7, false))
 		dealer.AddCard(NewCard(CardDesignHeart, 7, false))
 		dealer.AddCard(NewCard(CardDesignClover, 7, false)) // 21, but 3 cards
@@ -617,7 +617,7 @@ func TestJudgeHandCore(t *testing.T) {
 	})
 
 	t.Run("dealer BJ beats player non-BJ at 21", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj, _, dealer := setupInternalTestBJ(1000)
 		dealer.AddCard(NewCard(CardDesignSpade, 1, false))
 		dealer.AddCard(NewCard(CardDesignHeart, 13, false)) // BJ
 
@@ -630,7 +630,7 @@ func TestJudgeHandCore(t *testing.T) {
 	})
 
 	t.Run("fromSplit suppresses player BJ, dealer not BJ, draw", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj, _, dealer := setupInternalTestBJ(1000)
 		dealer.AddCard(NewCard(CardDesignSpade, 7, false))
 		dealer.AddCard(NewCard(CardDesignHeart, 7, false))
 		dealer.AddCard(NewCard(CardDesignClover, 7, false)) // 21, 3 cards
@@ -643,7 +643,7 @@ func TestJudgeHandCore(t *testing.T) {
 	})
 
 	t.Run("fromSplit suppresses player BJ, dealer BJ, lose", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj, _, dealer := setupInternalTestBJ(1000)
 		dealer.AddCard(NewCard(CardDesignSpade, 1, false))
 		dealer.AddCard(NewCard(CardDesignHeart, 13, false)) // BJ
 
@@ -728,7 +728,7 @@ func TestPayoutHand(t *testing.T) {
 
 func TestJudgeCpuHand(t *testing.T) {
 	t.Run("CPU bust loses", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj, _, dealer := setupInternalTestBJ(1000)
 		dealer.AddCard(NewCard(CardDesignSpade, 10, false))
 		dealer.AddCard(NewCard(CardDesignHeart, 7, false))
 
@@ -741,7 +741,7 @@ func TestJudgeCpuHand(t *testing.T) {
 	})
 
 	t.Run("dealer bust, CPU wins", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj, _, dealer := setupInternalTestBJ(1000)
 		dealer.AddCard(NewCard(CardDesignSpade, 10, false))
 		dealer.AddCard(NewCard(CardDesignHeart, 10, false))
 		dealer.AddCard(NewCard(CardDesignClover, 5, false)) // 25, bust
@@ -754,7 +754,7 @@ func TestJudgeCpuHand(t *testing.T) {
 	})
 
 	t.Run("CPU higher score wins", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj, _, dealer := setupInternalTestBJ(1000)
 		dealer.AddCard(NewCard(CardDesignSpade, 10, false))
 		dealer.AddCard(NewCard(CardDesignHeart, 7, false)) // 17
 
@@ -766,7 +766,7 @@ func TestJudgeCpuHand(t *testing.T) {
 	})
 
 	t.Run("dealer higher score, CPU loses", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj, _, dealer := setupInternalTestBJ(1000)
 		dealer.AddCard(NewCard(CardDesignSpade, 10, false))
 		dealer.AddCard(NewCard(CardDesignHeart, 9, false)) // 19
 
@@ -778,7 +778,7 @@ func TestJudgeCpuHand(t *testing.T) {
 	})
 
 	t.Run("same score draw", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj, _, dealer := setupInternalTestBJ(1000)
 		dealer.AddCard(NewCard(CardDesignSpade, 10, false))
 		dealer.AddCard(NewCard(CardDesignHeart, 8, false)) // 18
 
@@ -790,7 +790,7 @@ func TestJudgeCpuHand(t *testing.T) {
 	})
 
 	t.Run("CPU BJ beats dealer non-BJ at 21", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj, _, dealer := setupInternalTestBJ(1000)
 		dealer.AddCard(NewCard(CardDesignSpade, 7, false))
 		dealer.AddCard(NewCard(CardDesignHeart, 7, false))
 		dealer.AddCard(NewCard(CardDesignClover, 7, false)) // 21, but 3 cards
@@ -803,7 +803,7 @@ func TestJudgeCpuHand(t *testing.T) {
 	})
 
 	t.Run("dealer BJ beats CPU non-BJ at 21", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj, _, dealer := setupInternalTestBJ(1000)
 		dealer.AddCard(NewCard(CardDesignSpade, 1, false))
 		dealer.AddCard(NewCard(CardDesignHeart, 13, false)) // BJ
 
@@ -816,7 +816,7 @@ func TestJudgeCpuHand(t *testing.T) {
 	})
 
 	t.Run("both BJ is draw", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj, _, dealer := setupInternalTestBJ(1000)
 		dealer.AddCard(NewCard(CardDesignSpade, 1, false))
 		dealer.AddCard(NewCard(CardDesignHeart, 13, false)) // BJ
 
@@ -832,7 +832,7 @@ func TestJudgeCpuHand(t *testing.T) {
 
 func TestResolvePayoutsCpuInternal(t *testing.T) {
 	t.Run("CPU with 0 cards skipped", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj, _, dealer := setupInternalTestBJ(1000)
 		dealer.AddCard(NewCard(CardDesignSpade, 10, false))
 		dealer.AddCard(NewCard(CardDesignHeart, 7, false))
 
@@ -846,7 +846,7 @@ func TestResolvePayoutsCpuInternal(t *testing.T) {
 	})
 
 	t.Run("CPU surrendered hand skipped", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj, _, dealer := setupInternalTestBJ(1000)
 		dealer.AddCard(NewCard(CardDesignSpade, 10, false))
 		dealer.AddCard(NewCard(CardDesignHeart, 7, false))
 
@@ -865,7 +865,7 @@ func TestResolvePayoutsCpuInternal(t *testing.T) {
 	})
 
 	t.Run("CPU BJ with single hand gets 3:2 payout", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj, _, dealer := setupInternalTestBJ(1000)
 		dealer.AddCard(NewCard(CardDesignSpade, 10, false))
 		dealer.AddCard(NewCard(CardDesignHeart, 7, false)) // 17
 
@@ -884,7 +884,7 @@ func TestResolvePayoutsCpuInternal(t *testing.T) {
 	})
 
 	t.Run("CPU normal win gets 2x payout", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj, _, dealer := setupInternalTestBJ(1000)
 		dealer.AddCard(NewCard(CardDesignSpade, 10, false))
 		dealer.AddCard(NewCard(CardDesignHeart, 7, false)) // 17
 
@@ -902,7 +902,7 @@ func TestResolvePayoutsCpuInternal(t *testing.T) {
 	})
 
 	t.Run("CPU draw gets bet back", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj, _, dealer := setupInternalTestBJ(1000)
 		dealer.AddCard(NewCard(CardDesignSpade, 10, false))
 		dealer.AddCard(NewCard(CardDesignHeart, 8, false)) // 18
 
@@ -920,7 +920,7 @@ func TestResolvePayoutsCpuInternal(t *testing.T) {
 	})
 
 	t.Run("CPU lose gets nothing", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj, _, dealer := setupInternalTestBJ(1000)
 		dealer.AddCard(NewCard(CardDesignSpade, 10, false))
 		dealer.AddCard(NewCard(CardDesignHeart, 9, false)) // 19
 
@@ -942,7 +942,7 @@ func TestResolvePayoutsCpuInternal(t *testing.T) {
 
 func TestCpuPlaySeatInternal(t *testing.T) {
 	t.Run("empty hand skipped", func(t *testing.T) {
-		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		bj, _, _ := setupInternalTestBJ(1000)
 		cpu := NewBlackJackCpuSeat()
 		dealerUpcard := NewCard(CardDesignSpade, 10, false)
 		bj.cpuPlaySeat(cpu, dealerUpcard)
@@ -950,7 +950,7 @@ func TestCpuPlaySeatInternal(t *testing.T) {
 	})
 
 	t.Run("finished hand skipped", func(t *testing.T) {
-		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		bj, _, _ := setupInternalTestBJ(1000)
 		cpu := NewBlackJackCpuSeat()
 		cpuHand := cpu.GetHands()[0]
 		cpuHand.AddCard(NewCard(CardDesignClover, 10, false))
@@ -965,7 +965,7 @@ func TestCpuPlaySeatInternal(t *testing.T) {
 	})
 
 	t.Run("nil dealer upcard skips CPU play", func(t *testing.T) {
-		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		bj, _, _ := setupInternalTestBJ(1000)
 		cpu := NewBlackJackCpuSeat()
 		cpuHand := cpu.GetHands()[0]
 		cpuHand.AddCard(NewCard(CardDesignClover, 10, false))
@@ -1139,8 +1139,7 @@ func TestCpuSplitInternal(t *testing.T) {
 		hand.AddCard(NewCard(CardDesignHeart, 1, false)) // pair of aces
 		hand.SetBet(50)
 
-		dealerUpcard := NewCard(CardDesignClover, 6, false)
-		bj.cpuSplit(cpu, hand, 0, dealerUpcard)
+		bj.cpuSplit(cpu, hand, 0)
 
 		for _, h := range cpu.GetHands() {
 			assert.True(t, h.IsStood(), "ace split should auto-stand")
@@ -1162,8 +1161,7 @@ func TestCpuSplitInternal(t *testing.T) {
 		hand.AddCard(NewCard(CardDesignHeart, 8, false)) // pair of 8s
 		hand.SetBet(50)
 
-		dealerUpcard := NewCard(CardDesignClover, 6, false)
-		bj.cpuSplit(cpu, hand, 0, dealerUpcard)
+		bj.cpuSplit(cpu, hand, 0)
 
 		assert.Equal(t, 2, len(cpu.GetHands()))
 	})
@@ -1188,8 +1186,7 @@ func TestCpuSplitInternal(t *testing.T) {
 		hand.AddCard(NewCard(CardDesignHeart, 8, false))
 		hand.SetBet(50)
 
-		dealerUpcard := NewCard(CardDesignClover, 6, false)
-		bj.cpuSplit(cpu, hand, 0, dealerUpcard)
+		bj.cpuSplit(cpu, hand, 0)
 
 		// Rollback: should remain 1 hand with original 2 cards restored
 		// cpuSplit subtracts bet (50) at entry → 150, then rollback adds it back → 200
@@ -1218,8 +1215,7 @@ func TestCpuSplitInternal(t *testing.T) {
 		hand.AddCard(NewCard(CardDesignHeart, 8, false))
 		hand.SetBet(50)
 
-		dealerUpcard := NewCard(CardDesignClover, 6, false)
-		bj.cpuSplit(cpu, hand, 0, dealerUpcard)
+		bj.cpuSplit(cpu, hand, 0)
 
 		// Rollback: should remain 1 hand with original 2 cards restored
 		assert.Equal(t, 1, len(cpu.GetHands()))
@@ -1250,8 +1246,7 @@ func TestCpuSplitInternal(t *testing.T) {
 		hand.SetBet(50)
 
 		countBefore := bj.runningCount
-		dealerUpcard := NewCard(CardDesignClover, 6, false)
-		bj.cpuSplit(cpu, hand, 0, dealerUpcard)
+		bj.cpuSplit(cpu, hand, 0)
 
 		// Running count should be restored after rollback
 		assert.Equal(t, countBefore, bj.runningCount, "running count should be rolled back")
@@ -1261,7 +1256,7 @@ func TestCpuSplitInternal(t *testing.T) {
 // --- dealerPlay with counting ---
 
 func TestDealerPlaySkipsDraw_AllBustedWithCounting(t *testing.T) {
-	bj, _, dealer := setupInternalTestBJ(1000, 1000)
+	bj, _, dealer := setupInternalTestBJ(1000)
 	bj.config.CountingEnabled = true
 	bj.holeCardCounted = false
 
@@ -1417,7 +1412,7 @@ func TestCpuBetAndDealDeckExhaustion(t *testing.T) {
 // are busted, dealerPlay skips drawing cards. Uses internal access to stack the
 // deck and call PlayerHit to bust the hand naturally.
 func TestBlackJack_AllBustedSkipsDealerDraw(t *testing.T) {
-	bj, player, dealer := setupInternalTestBJ(1000, 1000)
+	bj, player, dealer := setupInternalTestBJ(1000)
 
 	// Set up player hand with score 20 (10 + 10) and a 100 chip bet
 	hand := bj.playerHands[0]
@@ -1452,7 +1447,7 @@ func TestBlackJack_AllBustedSkipsDealerDraw(t *testing.T) {
 // BJPhaseInsurance. Instead of relying on random shuffles, the deck is
 // directly stacked so the dealer's first dealt card is guaranteed to be an Ace.
 func TestBlackJack_PlayerBet_DealerAceTriggersInsurance_Deterministic(t *testing.T) {
-	bj, _, _ := setupInternalTestBJ(BJDefaultChips, BJDefaultChips)
+	bj, _, _ := setupInternalTestBJ(BJDefaultChips)
 
 	// Stack the deck so that the deal produces a known layout.
 	// PlayerBet deals cards in this order (2 iterations of the loop):
@@ -1488,7 +1483,7 @@ func TestBlackJack_PlayerBet_DealerAceTriggersInsurance_Deterministic(t *testing
 
 func TestPlayerBet_CountingWithCpuPlayers(t *testing.T) {
 	t.Run("counting enabled counts CPU cards after deal", func(t *testing.T) {
-		bj, _, _ := setupInternalTestBJ(BJDefaultChips, BJDefaultChips)
+		bj, _, _ := setupInternalTestBJ(BJDefaultChips)
 		bj.config.CountingEnabled = true
 		bj.config.CpuPlayerCount = 1
 		bj.phase = BJPhaseBet
@@ -1526,7 +1521,7 @@ func TestPlayerBet_CountingWithCpuPlayers(t *testing.T) {
 
 func TestCheckNaturalBlackJack_PartialBJ_AutoStand(t *testing.T) {
 	t.Run("one BJ hand auto-stands, non-BJ hand continues", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(2000, 1000)
+		bj, _, dealer := setupInternalTestBJ(2000)
 
 		hand0 := NewBlackJackHand()
 		hand0.SetBet(100)
@@ -1557,7 +1552,7 @@ func TestCheckNaturalBlackJack_PartialBJ_AutoStand(t *testing.T) {
 	})
 
 	t.Run("all hands BJ ends game immediately", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(2000, 1000)
+		bj, _, dealer := setupInternalTestBJ(2000)
 
 		hand0 := NewBlackJackHand()
 		hand0.SetBet(100)
@@ -1581,7 +1576,7 @@ func TestCheckNaturalBlackJack_PartialBJ_AutoStand(t *testing.T) {
 	})
 
 	t.Run("dealer BJ ends game immediately", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(2000, 1000)
+		bj, _, dealer := setupInternalTestBJ(2000)
 
 		hand0 := NewBlackJackHand()
 		hand0.SetBet(100)
@@ -1599,7 +1594,7 @@ func TestCheckNaturalBlackJack_PartialBJ_AutoStand(t *testing.T) {
 	})
 
 	t.Run("no BJ, game continues", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(2000, 1000)
+		bj, _, dealer := setupInternalTestBJ(2000)
 
 		hand0 := NewBlackJackHand()
 		hand0.SetBet(100)
@@ -1618,7 +1613,7 @@ func TestCheckNaturalBlackJack_PartialBJ_AutoStand(t *testing.T) {
 	})
 
 	t.Run("one BJ hand and other finished hand triggers advanceHand", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(2000, 1000)
+		bj, _, dealer := setupInternalTestBJ(2000)
 
 		hand0 := NewBlackJackHand()
 		hand0.SetBet(100)
@@ -1650,7 +1645,7 @@ func TestCheckNaturalBlackJack_PartialBJ_AutoStand(t *testing.T) {
 
 func TestDealerHit_CountingHoleCard(t *testing.T) {
 	t.Run("hole card counted during DealerHit when counting enabled", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj, _, dealer := setupInternalTestBJ(1000)
 		bj.config.CountingEnabled = true
 		bj.holeCardCounted = false
 		bj.runningCount = 0
@@ -1869,7 +1864,7 @@ func TestCpuPlaySeat_SurrenderAction(t *testing.T) {
 
 func TestCpuPlaySeat_DoubleStandAction(t *testing.T) {
 	t.Run("DoubleStand with enough chips doubles", func(t *testing.T) {
-		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		bj, _, _ := setupInternalTestBJ(1000)
 		cpu := NewBlackJackCpuSeat()
 		hand := cpu.GetHands()[0]
 		hand.SetBet(50)
@@ -1885,7 +1880,7 @@ func TestCpuPlaySeat_DoubleStandAction(t *testing.T) {
 	})
 
 	t.Run("DoubleStand without enough chips stands", func(t *testing.T) {
-		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		bj, _, _ := setupInternalTestBJ(1000)
 		cpu := NewBlackJackCpuSeat()
 		hand := cpu.GetHands()[0]
 		hand.SetBet(50)
@@ -1903,7 +1898,7 @@ func TestCpuPlaySeat_DoubleStandAction(t *testing.T) {
 	})
 
 	t.Run("DoubleStand with 3 cards stands", func(t *testing.T) {
-		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		bj, _, _ := setupInternalTestBJ(1000)
 		cpu := NewBlackJackCpuSeat()
 		hand := cpu.GetHands()[0]
 		hand.SetBet(50)
@@ -2076,7 +2071,7 @@ func TestCpuBetAndDealWithCounting(t *testing.T) {
 
 func TestCpuInsurance(t *testing.T) {
 	t.Run("counting disabled skips insurance", func(t *testing.T) {
-		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		bj, _, _ := setupInternalTestBJ(1000)
 		bj.config.CountingEnabled = false
 		bj.runningCount = 10
 
@@ -2093,7 +2088,7 @@ func TestCpuInsurance(t *testing.T) {
 	})
 
 	t.Run("count >= 3 takes insurance", func(t *testing.T) {
-		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		bj, _, _ := setupInternalTestBJ(1000)
 		bj.config.CountingEnabled = true
 		bj.config.CountingSystem = BJCountingHiLo
 		bj.runningCount = 6 // TC = 6/1 = 6 (1-deck, ~52 remaining)
@@ -2113,7 +2108,7 @@ func TestCpuInsurance(t *testing.T) {
 	})
 
 	t.Run("count < 3 declines insurance", func(t *testing.T) {
-		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		bj, _, _ := setupInternalTestBJ(1000)
 		bj.config.CountingEnabled = true
 		bj.config.CountingSystem = BJCountingHiLo
 		bj.runningCount = 1 // TC = 1/1 = 1
@@ -2133,7 +2128,7 @@ func TestCpuInsurance(t *testing.T) {
 	})
 
 	t.Run("insufficient chips for insurance", func(t *testing.T) {
-		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		bj, _, _ := setupInternalTestBJ(1000)
 		bj.config.CountingEnabled = true
 		bj.config.CountingSystem = BJCountingHiLo
 		bj.runningCount = 6
@@ -2153,7 +2148,7 @@ func TestCpuInsurance(t *testing.T) {
 	})
 
 	t.Run("CPU with no cards is skipped", func(t *testing.T) {
-		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		bj, _, _ := setupInternalTestBJ(1000)
 		bj.config.CountingEnabled = true
 		bj.config.CountingSystem = BJCountingHiLo
 		bj.runningCount = 6
@@ -2168,7 +2163,7 @@ func TestCpuInsurance(t *testing.T) {
 	})
 
 	t.Run("KO system uses running count for insurance", func(t *testing.T) {
-		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		bj, _, _ := setupInternalTestBJ(1000)
 		bj.config.CountingEnabled = true
 		bj.config.CountingSystem = BJCountingKO
 		bj.runningCount = 3 // RC = 3 >= 3 -> take insurance
@@ -2191,7 +2186,7 @@ func TestCpuInsurance(t *testing.T) {
 
 func TestResolvePayoutsCpuInsurance(t *testing.T) {
 	t.Run("CPU insurance wins when dealer has BJ", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj, _, dealer := setupInternalTestBJ(1000)
 		dealer.AddCard(NewCard(CardDesignSpade, 1, false))
 		dealer.AddCard(NewCard(CardDesignHeart, 13, false)) // BJ
 
@@ -2212,7 +2207,7 @@ func TestResolvePayoutsCpuInsurance(t *testing.T) {
 	})
 
 	t.Run("CPU insurance loses when dealer has no BJ", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj, _, dealer := setupInternalTestBJ(1000)
 		dealer.AddCard(NewCard(CardDesignSpade, 1, false))
 		dealer.AddCard(NewCard(CardDesignHeart, 7, false)) // 18, not BJ
 
@@ -2232,7 +2227,7 @@ func TestResolvePayoutsCpuInsurance(t *testing.T) {
 	})
 
 	t.Run("no insurance bet skips insurance payout", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj, _, dealer := setupInternalTestBJ(1000)
 		dealer.AddCard(NewCard(CardDesignSpade, 1, false))
 		dealer.AddCard(NewCard(CardDesignHeart, 13, false)) // BJ
 
@@ -2253,7 +2248,7 @@ func TestResolvePayoutsCpuInsurance(t *testing.T) {
 }
 
 func TestCpuSurrender_NoSurrenderMode(t *testing.T) {
-	bj, _, dealer := setupInternalTestBJ(1000, 1000)
+	bj, _, dealer := setupInternalTestBJ(1000)
 
 	// Set SurrenderRule to None
 	bj.config.SurrenderRule = BJSurrenderNone
@@ -2288,7 +2283,7 @@ func TestCpuSurrender_NoSurrenderMode(t *testing.T) {
 
 func TestCpuEarlySurrender(t *testing.T) {
 	t.Run("CPU surrenders when basic strategy suggests it", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj, _, dealer := setupInternalTestBJ(1000)
 		bj.config.SurrenderRule = BJSurrenderEarly
 
 		// Dealer upcard is 10
@@ -2311,7 +2306,7 @@ func TestCpuEarlySurrender(t *testing.T) {
 		assert.Equal(t, 950, cpu.GetPlayer().GetChips())
 	})
 	t.Run("CPU does not surrender when strategy says no", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj, _, dealer := setupInternalTestBJ(1000)
 		bj.config.SurrenderRule = BJSurrenderEarly
 
 		// Dealer upcard is 6
@@ -2333,7 +2328,7 @@ func TestCpuEarlySurrender(t *testing.T) {
 		assert.Equal(t, 900, cpu.GetPlayer().GetChips())
 	})
 	t.Run("skips finished hands", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj, _, dealer := setupInternalTestBJ(1000)
 		bj.config.SurrenderRule = BJSurrenderEarly
 
 		dealer.AddCard(NewCard(CardDesignClover, 10, false))
@@ -2353,7 +2348,7 @@ func TestCpuEarlySurrender(t *testing.T) {
 		assert.False(t, cpuHand.IsSurrendered(), "finished hand should not be surrendered")
 	})
 	t.Run("skips empty hands", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj, _, dealer := setupInternalTestBJ(1000)
 		bj.config.SurrenderRule = BJSurrenderEarly
 
 		dealer.AddCard(NewCard(CardDesignClover, 10, false))
@@ -2369,7 +2364,7 @@ func TestCpuEarlySurrender(t *testing.T) {
 		assert.False(t, cpu.GetHands()[0].IsSurrendered(), "empty hand should not be surrendered")
 	})
 	t.Run("nil dealer upcard does nothing", func(t *testing.T) {
-		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		bj, _, _ := setupInternalTestBJ(1000)
 		bj.config.SurrenderRule = BJSurrenderEarly
 		// No dealer cards → dealerUpcard is nil
 
@@ -2389,7 +2384,7 @@ func TestCpuEarlySurrender(t *testing.T) {
 
 func TestAdvanceEarlySurrender(t *testing.T) {
 	t.Run("advances to next unfinished hand", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj, _, dealer := setupInternalTestBJ(1000)
 		bj.config.SurrenderRule = BJSurrenderEarly
 		bj.phase = BJPhaseEarlySurrender
 
@@ -2416,7 +2411,7 @@ func TestAdvanceEarlySurrender(t *testing.T) {
 		assert.Equal(t, BJPhaseEarlySurrender, bj.phase)
 	})
 	t.Run("moves to action phase when all hands processed", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj, _, dealer := setupInternalTestBJ(1000)
 		bj.config.SurrenderRule = BJSurrenderEarly
 		bj.phase = BJPhaseEarlySurrender
 
@@ -2436,7 +2431,7 @@ func TestAdvanceEarlySurrender(t *testing.T) {
 		assert.Equal(t, BJPhaseAction, bj.phase)
 	})
 	t.Run("skips already finished hands", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj, _, dealer := setupInternalTestBJ(1000)
 		bj.config.SurrenderRule = BJSurrenderEarly
 		bj.phase = BJPhaseEarlySurrender
 
@@ -2473,7 +2468,7 @@ func TestAdvanceEarlySurrender(t *testing.T) {
 
 func TestAfterInsurance_EarlySurrender(t *testing.T) {
 	t.Run("routes to early surrender phase when SurrenderRule is Early", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj, _, dealer := setupInternalTestBJ(1000)
 		bj.config.SurrenderRule = BJSurrenderEarly
 
 		dealer.AddCard(NewCard(CardDesignSpade, 1, false))
@@ -2489,7 +2484,7 @@ func TestAfterInsurance_EarlySurrender(t *testing.T) {
 		assert.Equal(t, BJPhaseEarlySurrender, bj.phase)
 	})
 	t.Run("routes to action phase when SurrenderRule is Late", func(t *testing.T) {
-		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj, _, dealer := setupInternalTestBJ(1000)
 		bj.config.SurrenderRule = BJSurrenderLate
 
 		dealer.AddCard(NewCard(CardDesignSpade, 10, false))

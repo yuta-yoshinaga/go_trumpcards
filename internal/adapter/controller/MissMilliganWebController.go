@@ -92,10 +92,7 @@ func missMilliganDispatch(bc *baseController, w http.ResponseWriter, mi usecase.
 	case "u", "undo":
 		bc.writePresenterResponse(w, mi.Undo())
 	case "undo_n":
-		if !requireParam(bc, w, newDefault, param.N == nil, "param error: n is required.") {
-			return true
-		}
-		bc.writePresenterResponse(w, mi.UndoN(*param.N))
+		dispatchUndoN(bc, w, newDefault, param.N, mi.UndoN)
 	default:
 		return dispatchResetHintAndLog(param.Command, bc, w, mi.Reset, mi.Hint, mi.ActionLog)
 	}

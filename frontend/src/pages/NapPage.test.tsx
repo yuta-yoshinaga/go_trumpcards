@@ -123,6 +123,52 @@ describe('NapPage', () => {
     expect(screen.getByTestId('bid-5')).toBeInTheDocument();
   });
 
+  it('keeps every hand card unavailable during the bidding phase', async () => {
+    renderWithProviders(<NapPage />);
+
+    const cards = await screen.findAllByRole('button', { name: /♠|♥|♦|♣/ });
+    expect(cards.length).toBeGreaterThan(0);
+    for (const card of cards) {
+      expect(card).toHaveAttribute('aria-disabled', 'true');
+      expect(card).toHaveAttribute('aria-pressed', 'false');
+      fireEvent.click(card);
+      expect(card).toHaveAttribute('aria-pressed', 'false');
+    }
+  });
+
+  it('allows selecting only legal cards on the human play turn', async () => {
+    mockExec.mockResolvedValue(
+      makeNapState({
+        ...playPhaseState,
+        playableIndices: [0],
+      }),
+    );
+    renderWithProviders(<NapPage />);
+
+    const legalCard = await screen.findByRole('button', { name: '♥ Q' });
+    const illegalCard = screen.getByRole('button', { name: '♥ K' });
+    expect(legalCard).not.toHaveAttribute('aria-disabled', 'true');
+    expect(illegalCard).toHaveAttribute('aria-disabled', 'true');
+
+    fireEvent.click(illegalCard);
+    expect(illegalCard).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(legalCard);
+    expect(legalCard).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('clears the selected card after a successful play action', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<NapPage />);
+
+    const legalCard = await screen.findByRole('button', { name: '♥ Q' });
+    fireEvent.click(legalCard);
+    expect(legalCard).toHaveAttribute('aria-pressed', 'true');
+
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0 }));
+    await waitFor(() => expect(legalCard).toHaveAttribute('aria-pressed', 'false'));
+  });
+
   it('shows a stake legend, compact stake values, and accessible meanings in Japanese', async () => {
     renderWithProviders(<NapPage />);
 

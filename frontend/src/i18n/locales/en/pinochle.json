@@ -17,6 +17,7 @@
   },
   "bid": "Bid",
   "pass": "Pass",
+  "passed": "Passed",
   "declareTrump": "Declare Trump",
   "confirmMelds": "Confirm Melds",
   "play": "Play",

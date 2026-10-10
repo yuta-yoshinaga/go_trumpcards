@@ -463,7 +463,7 @@ function FortyAndEightPageContent() {
                                       }
                                     }}
                                     disabled={!isPlaying || loading}
-                                    aria-label={`${cardAlt(tcard.card)}${isEligibleCard ? t('tableauEligibleSuffix') : ''}`}
+                                    aria-label={`${t('tableauCardAriaLabel', { card: cardAlt(tcard.card), col: colIdx, position: cardIdx + 1 })}${isEligibleCard ? t('tableauEligibleSuffix') : ''}`}
                                     aria-pressed={isSourceSelected('tableau', colIdx, cardIdx)}
                                     data-eligible-tableau={isEligibleCard ? 'true' : undefined}
                                     draggable={isPlaying && !loading}

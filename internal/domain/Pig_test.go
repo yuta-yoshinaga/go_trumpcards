@@ -90,6 +90,24 @@ func TestPigPassIsSimultaneous(t *testing.T) {
 	assert.Equal(t, 1, g.GetPassCount())
 }
 
+func TestPigGetPendingPassCard(t *testing.T) {
+	g := newPigForTest(t, 4)
+	assert.Nil(t, g.GetPendingPassCard(-1))
+	assert.Nil(t, g.GetPendingPassCard(4))
+	assert.Nil(t, g.GetPendingPassCard(0))
+
+	chosen := g.GetPlayer(0).GetCard(0)
+	require.NoError(t, g.ChoosePassForTest(0, 0))
+	assert.Same(t, chosen, g.GetPendingPassCard(0))
+
+	for i := 1; i < 4; i++ {
+		require.NoError(t, g.ChoosePassForTest(i, 0))
+	}
+	for i := range 4 {
+		assert.Nil(t, g.GetPendingPassCard(i), "resolved pass clears pending card for seat %d", i)
+	}
+}
+
 // **渡す札は左隣へ行く。**
 func TestPigPassGoesToTheLeftNeighbour(t *testing.T) {
 	g := newPigForTest(t, 4)

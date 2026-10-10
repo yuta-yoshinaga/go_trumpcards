@@ -55,6 +55,7 @@
   "forehandBadge": "forehand",
   "forehandAria": "the forehand this deal (bids first and leads the first trick)",
   "score": "score: {{score}}",
+  "matchRank": "Rank {{rank}}",
   "playerScore": "{{name}}: {{score}}",
   "playButton": "Play",
   "nextTrick": "Next trick",

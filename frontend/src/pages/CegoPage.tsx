@@ -83,6 +83,13 @@ const CONTRACT_KEYS = ['contractNone', 'contractCego', 'contractHandspiel'] as c
 /** Outcome i18n keys indexed by outcome value (0=none, 1=Win/made, 2=Loss/failed). */
 const OUTCOME_KEYS = ['outcomeNone', 'outcomeWin', 'outcomeLoss'] as const;
 
+const SUIT_I18N_KEYS: Readonly<Record<string, string>> = {
+  SPADE: 'common.suit.spade',
+  CLOVER: 'common.suit.club',
+  HEART: 'common.suit.heart',
+  DIAMOND: 'common.suit.diamond',
+};
+
 /** Renders the Cego (チェゴ) game page: a 4-player 54-card Baden tarock trick-taker with a single-step auction, a Cego/Handspiel contract choice, and a Cego exchange (keep 1 card, take the hidden blind). */
 export const CegoPage = withTutorial(CegoPageContent, 'cego', CEGO_TUTORIAL_STEPS);
 
@@ -142,6 +149,12 @@ function CegoPageContent() {
   const isExchangePhase = state?.phase === CegoPhase.EXCHANGE;
   const isPlayPhase = state?.phase === CegoPhase.PLAY;
   const isTrickEnd = state?.phase === CegoPhase.TRICK_END;
+  const firstTrickCard = state?.currentTrick[0]?.card;
+  const leadSuitKey = firstTrickCard
+    ? firstTrickCard.color === 'purple' || firstTrickCard.color === 'gold'
+      ? 'leadTrump'
+      : SUIT_I18N_KEYS[firstTrickCard.design]
+    : undefined;
   const isRoundEnd = state?.phase === CegoPhase.ROUND_END;
 
   const canBid = isBidPhase && !!state?.isHumanBidTurn;
@@ -279,6 +292,8 @@ function CegoPageContent() {
                       ? t('previousTrickWinner', { name: findPlayerName(state.players, state.lastTrickWinner) })
                       : undefined
                   }
+                  leadSuit={leadSuitKey ? (leadSuitKey === 'leadTrump' ? t(leadSuitKey) : tc(leadSuitKey)) : undefined}
+                  leadSuitLabel={t('leadSuit')}
                   dataTutorial="cego-trick-display"
                 />
               </div>

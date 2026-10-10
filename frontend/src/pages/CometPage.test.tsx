@@ -123,8 +123,23 @@ describe('CometPage', () => {
     renderWithProviders(<CometPage />);
     await waitFor(() => {
       const piles = screen.getAllByTestId('comet-pile');
-      expect(piles[piles.length - 1].children).toHaveLength(2);
+      expect(piles[piles.length - 1].querySelectorAll('ol > li')).toHaveLength(2);
     });
+  });
+
+  it('labels the ordered sequence and describes omitted leading cards', async () => {
+    const pile = Array.from({ length: 9 }, (_, value) => ({
+      design: 'SPADE' as const,
+      value,
+      color: 'black' as const,
+    }));
+    mockExec.mockResolvedValue(makeCometState({ pile }));
+    renderWithProviders(<CometPage />);
+
+    const list = await screen.findByRole('list', { name: '連なり' });
+    expect(list).toHaveAttribute('aria-describedby', 'comet-pile-omitted');
+    expect(list.querySelectorAll(':scope > li')).toHaveLength(8);
+    expect(screen.getByTestId('comet-pile-omitted')).toHaveTextContent('先頭の 1 枚を省略');
   });
 
   it('shows how many leading cards are omitted when the sequence exceeds eight cards', async () => {

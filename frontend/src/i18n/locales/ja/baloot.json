@@ -37,8 +37,11 @@
     "reset": "リセット",
     "giveUp": "投了",
     "playAria": "{{card}} を出す",
+    "playAriaWithPoints": "{{card}}（{{points}}点）",
     "playableAria": "{{card}}。出せる札",
     "notPlayableAria": "{{card}}。出せない札",
+    "playableAriaWithPoints": "出せる札、{{card}}（{{points}}点）",
+    "notPlayableAriaWithPoints": "出せない札、{{card}}（{{points}}点）",
     "notPlayableReason": "この札は現在出せません。"
   },
   "dealerStuck": "あなたが親です。親は見送れません。",

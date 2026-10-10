@@ -199,6 +199,58 @@ describe('ZwanzigerrufenPage', () => {
     }
   });
 
+  it('hides team totals before the Rufer partner is revealed', async () => {
+    mockExec.mockResolvedValue(
+      makeZwanzigerrufenState({
+        phase: 2,
+        contract: 2,
+        contractName: 'rufer',
+        declarerIdx: 0,
+        calledTrump: 20,
+        partnerRevealed: false,
+        partnerIdx: -1,
+      }),
+    );
+    renderWithProviders(<ZwanzigerrufenPage />);
+    expect(await screen.findByTestId('zw-seats')).toBeInTheDocument();
+    expect(screen.queryByTestId('zw-team-points')).not.toBeInTheDocument();
+  });
+
+  it('shows both Rufer side totals only after the partner is revealed', async () => {
+    mockExec.mockResolvedValue(
+      makeZwanzigerrufenState({
+        phase: 2,
+        contract: 2,
+        contractName: 'rufer',
+        declarerIdx: 0,
+        partnerRevealed: true,
+        partnerIdx: 2,
+        declarerTeamPoints: 42,
+        defenderTeamPoints: 78,
+      }),
+    );
+    renderWithProviders(<ZwanzigerrufenPage />);
+    expect(await screen.findByTestId('zw-team-points')).toHaveTextContent('デクレアラー側 42点');
+    expect(screen.getByTestId('zw-team-points')).toHaveTextContent('守備側 78点');
+  });
+
+  it.each(['solo', 'trischaken'] as const)('does not show misleading team totals for %s', async (contractName) => {
+    mockExec.mockResolvedValue(
+      makeZwanzigerrufenState({
+        phase: 2,
+        contract: contractName === 'solo' ? 3 : 1,
+        contractName,
+        declarerIdx: contractName === 'solo' ? 0 : -1,
+        partnerRevealed: true,
+        declarerTeamPoints: 42,
+        defenderTeamPoints: 78,
+      }),
+    );
+    renderWithProviders(<ZwanzigerrufenPage />);
+    expect(await screen.findByTestId('zw-seats')).toBeInTheDocument();
+    expect(screen.queryByTestId('zw-team-points')).not.toBeInTheDocument();
+  });
+
   it('marks only the current player during the play phase', async () => {
     mockExec.mockResolvedValue(makeZwanzigerrufenState({ ...playState, currentPlayerIdx: 2 }));
     renderWithProviders(<ZwanzigerrufenPage />);

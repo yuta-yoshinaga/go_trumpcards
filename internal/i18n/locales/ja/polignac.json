@@ -11,6 +11,8 @@
   "capotMark": "[capot]",
   "playerLine": "{{name}}: 累計{{score}}失点 (今ラウンド{{round}}) 手札{{cards}}枚",
   "jackMarks": " 取ったJ: {{jacks}}",
+  "unclaimedJacks": "未獲得のジャック: {{suits}}",
+  "listSeparator": "、",
   "jackSpade": "♠J(2失点)",
   "jackOther": "{{suit}}",
   "promptCurrentPlayer": "手番: {{name}}",

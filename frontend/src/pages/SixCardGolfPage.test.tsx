@@ -30,6 +30,7 @@ function makeState(overrides: Partial<SixCardGolfResponse> = {}): SixCardGolfRes
     ],
     phase: 3, // SCG_PHASE_ROUND_OVER
     roundNumber: 1,
+    roundScoreHistory: [],
     totalRounds: 9,
     currentPlayerIdx: 0,
     discardTop: card(4),
@@ -53,6 +54,41 @@ beforeEach(() => {
 });
 
 describe('SixCardGolfPage', () => {
+  it('shows every completed round score and cumulative totals after the game', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        gameEndFlag: true,
+        roundScoreHistory: [
+          [12, 8],
+          [5, 9],
+        ],
+        players: [
+          {
+            id: 0,
+            isHuman: true,
+            grid: [slot(5), slot(3), slot(7), slot(5), slot(9), slot(2)],
+            roundScore: 5,
+            cumulativeScore: 17,
+            allFaceUp: true,
+          },
+          {
+            id: 1,
+            isHuman: false,
+            grid: [slot(5), slot(3), slot(7), slot(5), slot(9), slot(2)],
+            roundScore: 9,
+            cumulativeScore: 17,
+            allFaceUp: true,
+          },
+        ],
+      }),
+    );
+    renderWithProviders(<SixCardGolfPage />);
+    const history = await screen.findByRole('region', { name: 'ラウンド別スコア' });
+    expect(within(history).getByText('12')).toBeInTheDocument();
+    expect(within(history).getByText('8')).toBeInTheDocument();
+    expect(within(history).getAllByText('17')).toHaveLength(2);
+    expect(within(history).getByText('累計')).toBeInTheDocument();
+  });
   it('shows and announces the final turn trigger and current player', async () => {
     mockExec.mockResolvedValue(makeState({ phase: 1, finalTurnTrigger: 0, currentPlayerIdx: 1 }));
     renderWithProviders(<SixCardGolfPage />);

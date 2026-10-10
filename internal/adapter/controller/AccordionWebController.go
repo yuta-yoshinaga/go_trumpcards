@@ -73,10 +73,7 @@ func accordionDispatch(bc *baseController, w http.ResponseWriter, ai usecase.Acc
 		// 回していて、同じページの CLI モードからは呼べなかった (#5546)。
 		bc.writePresenterResponse(w, ai.AutoComplete())
 	case "undo_n":
-		if !requireParam(bc, w, newDefault, param.N == nil, "param error: n is required.") {
-			return true
-		}
-		bc.writePresenterResponse(w, ai.UndoN(*param.N))
+		dispatchUndoN(bc, w, newDefault, param.N, ai.UndoN)
 	default:
 		return dispatchResetHintAndLog(param.Command, bc, w, ai.Reset, ai.Hint, ai.ActionLog)
 	}

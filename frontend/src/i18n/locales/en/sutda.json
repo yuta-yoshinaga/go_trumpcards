@@ -7,6 +7,7 @@
   },
   "settings": {
     "title": "Settings",
+    "pendingReset": "Setting changes will apply from the next reset.",
     "cpuDifficulty": "CPU difficulty",
     "seats": "Seats",
     "startChips": "Starting chips",

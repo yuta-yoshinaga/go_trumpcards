@@ -990,7 +990,7 @@ func TestBridgeCpuBidEasy(t *testing.T) {
 
 	// Run multiple times to cover random branches
 	for range 100 {
-		bt, _, _ := b.cpuBidEasy(1)
+		bt, _, _ := b.cpuBidEasy()
 		assert.True(t, bt == BridgeBidPass || bt == BridgeBidNormal)
 	}
 }

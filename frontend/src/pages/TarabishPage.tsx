@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { tarabishApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -18,6 +18,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useMountReset } from '../hooks/useMountReset';
 import { badgeInfoColors, badgeWarningColors } from '../styles/badgeStyles';
 import { btnDanger, btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -79,9 +80,7 @@ function TarabishPageContent() {
   );
   const { handleCommand } = useCliGame(dispatch, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  useEffect(() => {
-    void dispatch('reset');
-  }, [dispatch]);
+  useMountReset(dispatch);
 
   const handleReset = useCallback(() => {
     hideActionLog();
@@ -243,6 +242,9 @@ function TarabishPageContent() {
                       これを毎回出しているのに、Web だけ読めなかった。 */}
                   <span className="ml-2" data-testid={`tb-seat-tricks-${p.id.toString()}`}>
                     {t('header.tricksTaken', { count: p.trickCount })}
+                  </span>
+                  <span className="ml-2" data-testid={`tb-seat-cards-${p.id.toString()}`}>
+                    {t('header.cardsLeft', { count: p.cardCount })}
                   </span>
                 </div>
               ))}

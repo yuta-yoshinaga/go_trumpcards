@@ -35,9 +35,10 @@ import { placeholderCardStyle } from '../styles/cardStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { FollowTheQueenResponse } from '../types/card';
+import type { Card, FollowTheQueenResponse } from '../types/card';
 import { FollowTheQueenPhase, FollowTheQueenRebuyPhaseType } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { findPlayerName } from '../utils/playerUtils';
@@ -254,6 +255,25 @@ export function FollowTheQueenPageContent({ gameKey }: { gameKey: StudPageGameKe
     const rank = state?.humanHandRank ?? -1;
     return rank < 0 ? null : pokerHandKey(rank as PokerHandRank);
   }, [state?.humanHandRank]);
+  const bestHandCards = humanPlayer?.bestHandSource ?? [];
+  const isBestHandCard = (card: Card) =>
+    bestHandCards.some((best) => best.design === card.design && best.value === card.value);
+  const renderHumanCard = (card: Card) => {
+    const image = <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />;
+    return isActive && !humanPlayer?.folded && isBestHandCard(card) ? (
+      <span
+        key={`${card.design}-${card.value}`}
+        role="img"
+        aria-label={t('bestHandCardLabel', { card: cardAlt(card) })}
+        className="inline-block rounded ring-2 ring-ds-success"
+        data-testid="ftq-best-hand-card"
+      >
+        {image}
+      </span>
+    ) : (
+      <AnimatedCard key={`${card.design}-${card.value}`} card={card} width={cardWidth} style={placeholderCardStyle} />
+    );
+  };
 
   const actionBindings = useMemo(
     () => [
@@ -508,14 +528,7 @@ export function FollowTheQueenPageContent({ gameKey }: { gameKey: StudPageGameKe
                 <div className="text-ds-text-muted text-xs mb-0.5">{t('doorCards')}</div>
                 <div className="flex flex-wrap gap-1.5 mb-1">
                   {humanPlayer.doorCards?.length
-                    ? humanPlayer.doorCards.map((card) => (
-                        <AnimatedCard
-                          key={`${card.design}-${card.value}`}
-                          card={card}
-                          width={cardWidth}
-                          style={placeholderCardStyle}
-                        />
-                      ))
+                    ? humanPlayer.doorCards.map(renderHumanCard)
                     : !humanPlayer.folded &&
                       Array.from({ length: 4 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
                 </div>
@@ -523,14 +536,7 @@ export function FollowTheQueenPageContent({ gameKey }: { gameKey: StudPageGameKe
                 <div className="text-ds-text-muted text-xs mb-0.5">{t('holeCards')}</div>
                 <div className="flex flex-wrap gap-1.5 mb-2">
                   {humanPlayer.holeCards?.length
-                    ? humanPlayer.holeCards.map((card) => (
-                        <AnimatedCard
-                          key={`${card.design}-${card.value}`}
-                          card={card}
-                          width={cardWidth}
-                          style={placeholderCardStyle}
-                        />
-                      ))
+                    ? humanPlayer.holeCards.map(renderHumanCard)
                     : !humanPlayer.folded &&
                       Array.from({ length: 3 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
                 </div>

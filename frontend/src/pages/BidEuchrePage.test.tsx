@@ -111,6 +111,19 @@ describe('BidEuchrePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('announces which hand card is selected', async () => {
+    renderWithProviders(<BidEuchrePage />);
+    await waitFor(() => expect(handButtons()).toHaveLength(3));
+
+    expect(handButtons().map((button) => button.getAttribute('aria-pressed'))).toEqual(['false', 'false', 'false']);
+
+    fireEvent.click(handButtons()[1]);
+    expect(handButtons().map((button) => button.getAttribute('aria-pressed'))).toEqual(['false', 'true', 'false']);
+
+    fireEvent.click(handButtons()[2]);
+    expect(handButtons().map((button) => button.getAttribute('aria-pressed'))).toEqual(['false', 'false', 'true']);
+  });
+
   it('shows the bidding history in order, including passes', async () => {
     mockExec.mockResolvedValue(
       makeState({

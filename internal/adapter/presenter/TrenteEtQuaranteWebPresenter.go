@@ -18,7 +18,7 @@ func (p *TrenteEtQuaranteWebPresenter) Output(g interfaces.TrenteEtQuaranteGame,
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else if g.GetPhase() == domain.TrenteEtQuarantePhaseResult {
-		resObj.Message, resObj.MessageCode = trenteEtQuaranteEndMessage(g)
+		resObj.MessageCode = trenteEtQuaranteEndMessage(g)
 	}
 	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
 	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
@@ -78,17 +78,17 @@ func trenteEtQuaranteWireResult(g interfaces.TrenteEtQuaranteGame) int {
 }
 
 // trenteEtQuaranteEndMessage はラウンド終了時の表示メッセージと i18n キーを返す。
-func trenteEtQuaranteEndMessage(g interfaces.TrenteEtQuaranteGame) (string, string) {
+func trenteEtQuaranteEndMessage(g interfaces.TrenteEtQuaranteGame) string {
 	if g.GetRefait() {
-		return "", "trenteetquarante.result.refait"
+		return "trenteetquarante.result.refait"
 	}
 	switch g.GetResult() {
 	case domain.TrenteEtQuaranteResultWin:
-		return "", "trenteetquarante.result.win"
+		return "trenteetquarante.result.win"
 	case domain.TrenteEtQuaranteResultDraw:
-		return "", "trenteetquarante.result.push"
+		return "trenteetquarante.result.push"
 	default:
-		return "", "trenteetquarante.result.lose"
+		return "trenteetquarante.result.lose"
 	}
 }
 

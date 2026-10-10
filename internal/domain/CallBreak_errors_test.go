@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func assertCallBreakDomainError(t *testing.T, err error, sentinel error, code string, params map[string]string) {
@@ -31,25 +32,25 @@ func TestCallBreakDomainErrorsHaveMessageCodes(t *testing.T) {
 		sentinel error
 	}{
 		{name: "bid range", setup: func(cb *domain.CallBreak) { setupCallBreakErrorBid(cb, 0) }, play: 0, code: "callbreak.errBidRange", params: map[string]string{"min": "1", "max": "13"}, sentinel: domain.ErrInvalidPlay},
-		{name: "card index out of range", setup: func(cb *domain.CallBreak) { setupCallBreakErrorPlay(cb, 0, nil) }, play: -1, code: "callbreak.errCardIndexOutOfRange", sentinel: domain.ErrInvalidCard},
+		{name: "card index out of range", setup: func(cb *domain.CallBreak) { setupCallBreakErrorPlay(cb, nil) }, play: -1, code: "callbreak.errCardIndexOutOfRange", sentinel: domain.ErrInvalidCard},
 		{
 			name: "spades not broken",
 			setup: func(cb *domain.CallBreak) {
-				setupCallBreakErrorPlay(cb, 0, []*domain.TrickCard{})
+				setupCallBreakErrorPlay(cb, []*domain.TrickCard{})
 				setCallBreakHand(cb, 0, callBreakCard(domain.CardDesignSpade, 2), callBreakCard(domain.CardDesignHeart, 3))
 			}, play: 0, code: "callbreak.errSpadesNotBroken", sentinel: domain.ErrInvalidPlay,
 		},
 		{
 			name: "follow lead suit",
 			setup: func(cb *domain.CallBreak) {
-				setupCallBreakErrorPlay(cb, 0, []*domain.TrickCard{{PlayerIdx: 1, Card: callBreakCard(domain.CardDesignHeart, 9)}})
+				setupCallBreakErrorPlay(cb, []*domain.TrickCard{{PlayerIdx: 1, Card: callBreakCard(domain.CardDesignHeart, 9)}})
 				setCallBreakHand(cb, 0, callBreakCard(domain.CardDesignHeart, 2), callBreakCard(domain.CardDesignSpade, 3))
-			}, play: 1, code: "callbreak.errFollowLeadSuit", sentinel: domain.ErrInvalidPlay,
+			}, play: 1, code: "shared.errFollowLeadSuit", sentinel: domain.ErrInvalidPlay,
 		},
 		{
 			name: "must trump",
 			setup: func(cb *domain.CallBreak) {
-				setupCallBreakErrorPlay(cb, 0, []*domain.TrickCard{{PlayerIdx: 1, Card: callBreakCard(domain.CardDesignHeart, 9)}})
+				setupCallBreakErrorPlay(cb, []*domain.TrickCard{{PlayerIdx: 1, Card: callBreakCard(domain.CardDesignHeart, 9)}})
 				setCallBreakHand(cb, 0, callBreakCard(domain.CardDesignSpade, 2), callBreakCard(domain.CardDesignClover, 3))
 			}, play: 1, code: "callbreak.errMustTrump", sentinel: domain.ErrInvalidPlay,
 		},
@@ -65,6 +66,10 @@ func TestCallBreakDomainErrorsHaveMessageCodes(t *testing.T) {
 				err = cb.PlayerPlay(tt.play)
 			}
 			assertCallBreakDomainError(t, err, tt.sentinel, tt.code, tt.params)
+			if tt.code == "shared.errFollowLeadSuit" {
+				assert.Equal(t, "リードスートに従ってください", i18n.TForLang("ja", tt.code))
+				assert.Equal(t, "Please follow the lead suit.", i18n.TForLang("en", tt.code))
+			}
 		})
 	}
 }
@@ -73,7 +78,8 @@ func setupCallBreakErrorBid(cb *domain.CallBreak, idx int) {
 	cb.SetPhase(domain.CallBreakPhaseBid)
 	cb.SetBidPlayerIdx(idx)
 }
-func setupCallBreakErrorPlay(cb *domain.CallBreak, current int, trick []*domain.TrickCard) {
+func setupCallBreakErrorPlay(cb *domain.CallBreak, trick []*domain.TrickCard) {
+	current := 0
 	cb.SetPhase(domain.CallBreakPhasePlay)
 	cb.SetCurrentPlayerIdx(current)
 	cb.SetCurrentTrick(trick)

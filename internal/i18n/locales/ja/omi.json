@@ -38,7 +38,6 @@
   "hintReasonTrumpCut": "切り札で勝負",
   "hintReasonDiscardWeak": "最弱カードを捨てる",
   "errInvalidSuit": "無効なスートです",
-  "errFollowLeadSuit": "リードスートに従ってください",
   "log.dealFirstBatch": "ラウンド {{round}}: ディーラー={{dealer}}、指名者={{caller}}、各自 {{cards}} 枚配布",
   "log.callTrump": "{{name}} が {{suit}} を切り札に宣言しました",
   "log.play": "{{name}} が {{card}} をプレイしました",

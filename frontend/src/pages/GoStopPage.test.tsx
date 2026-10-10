@@ -224,6 +224,24 @@ describe('GoStopPage', () => {
     );
   });
 
+  it('shows pending settings until a new game applies them', async () => {
+    mockExec
+      .mockResolvedValueOnce(gameEndState)
+      .mockResolvedValue(makeGoStopState({ phase: 0, config: { cpuDifficulty: 2, targetScore: 7 } }));
+    renderWithProviders(<GoStopPage />);
+    const difficulty = await screen.findByLabelText('CPU難易度');
+    fireEvent.change(difficulty, { target: { value: '2' } });
+    expect(await screen.findByText('設定の変更は次のリセットから適用されます。')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: '新しいゲーム' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', { config: { cpuDifficulty: 2, targetScore: 7 } }),
+    );
+    await waitFor(() =>
+      expect(screen.queryByText('設定の変更は次のリセットから適用されます。')).not.toBeInTheDocument(),
+    );
+  });
+
   it('renders a drawn round-end result without bak badges', async () => {
     mockExec.mockResolvedValue(
       makeGoStopState({

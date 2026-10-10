@@ -66,6 +66,16 @@ describe('PresidentPage', () => {
     expect(screen.getByTestId('hand-card-2')).toBeInTheDocument();
   });
 
+  it('labels CPU hand counts and hides their card backs from assistive technology', async () => {
+    renderWithProviders(<PresidentPage />);
+
+    const countLabels = await screen.findAllByText('手札 13 枚', { selector: '.sr-only' });
+    expect(countLabels).toHaveLength(3);
+    const cpuBackGroup = countLabels[0]?.parentElement?.parentElement?.nextElementSibling;
+    expect(cpuBackGroup).toHaveAttribute('aria-hidden', 'true');
+    expect(cpuBackGroup?.querySelectorAll('img')).toHaveLength(13);
+  });
+
   it('exposes each hand card selection state to assistive technology', async () => {
     renderWithProviders(<PresidentPage />);
     await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());

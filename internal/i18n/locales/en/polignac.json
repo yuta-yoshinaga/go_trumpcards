@@ -11,6 +11,8 @@
   "capotMark": "[capot]",
   "playerLine": "{{name}}: {{score}} pts total (this round {{round}}) {{cards}} in hand",
   "jackMarks": " jacks taken: {{jacks}}",
+  "unclaimedJacks": "Unclaimed jacks: {{suits}}",
+  "listSeparator": ", ",
   "jackSpade": "SPADE J (-2)",
   "jackOther": "{{suit}}",
   "promptCurrentPlayer": "Turn: {{name}}",

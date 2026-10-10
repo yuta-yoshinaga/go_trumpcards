@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, crazyeightsApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -535,6 +535,15 @@ describe('CrazyEightsPage', () => {
 
     const cardBtn2 = screen.getByAltText('\u2665 J').closest('button') as HTMLButtonElement;
     expect(cardBtn2).toHaveAttribute('aria-label', '\u2665 J');
+  });
+
+  it('labels the hand as a named region while preserving card selection state', async () => {
+    renderWithProviders(<CrazyEightsPage />);
+    const hand = await screen.findByRole('region', { name: 'あなたの手札' });
+    const card = within(hand).getByRole('button', { name: '♠ A' });
+    expect(card).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(card);
+    expect(card).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('reset button calls exec with confirm', async () => {

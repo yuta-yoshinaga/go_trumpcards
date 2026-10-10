@@ -74,6 +74,8 @@ type SergeantMajorWebOutput struct {
 	LeadPlayerIdx        int                         `json:"leadPlayerIdx"`
 	DealerIdx            int                         `json:"dealerIdx"`
 	CurrentTrick         []*WebOutputTrickCard       `json:"currentTrick"`
+	LastTrick            []*WebOutputTrickCard       `json:"lastTrick"`
+	LastTrickWinner      int                         `json:"lastTrickWinner"`
 	ValidPlays           []int                       `json:"validPlays"`
 	GameEndFlag          bool                        `json:"gameEndFlag"`
 	WinnerIdx            int                         `json:"winnerIdx"`
@@ -123,6 +125,8 @@ func newSergeantMajorDefaultOutput(msg string) *SergeantMajorWebOutput {
 		LastExchangeLost:     make([]*WebOutputCard, 0),
 		LastExchangeReceived: make([]*WebOutputCard, 0),
 		CurrentTrick:         make([]*WebOutputTrickCard, 0),
+		LastTrick:            make([]*WebOutputTrickCard, 0),
+		LastTrickWinner:      -1,
 		ValidPlays:           make([]int, 0),
 		DiscardCount:         domain.SergeantMajorKittySize,
 		WinnerIdx:            -1,

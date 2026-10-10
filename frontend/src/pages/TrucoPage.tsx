@@ -180,6 +180,9 @@ function TrucoPageContent() {
           <span className="rounded bg-ds-info px-2 py-1 text-sm" data-testid="truco-mano">
             {t('header.mano')}: {playerLabel(state.manoIdx)}
           </span>
+          <span className="ml-2 rounded bg-ds-accent px-2 py-1 text-sm" data-testid="truco-dealer">
+            {t('header.dealer')}: {playerLabel(state.dealerIdx)}
+          </span>
         </div>
         <div className="text-ds-text-muted text-center text-sm mb-3">
           <span className="mr-4">

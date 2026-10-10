@@ -29,7 +29,7 @@
   "previousTrickWinner": "{{name}} が獲得",
   "scores": "スコア",
   "scoresTeam": "チーム",
-  "scoresPoints": "得点",
+  "scoresPoints": "獲得ディール数（目標: {{target}}）",
   "scoresTricks": "トリック",
   "playButton": "出す",
   "nextTrick": "次のトリック",

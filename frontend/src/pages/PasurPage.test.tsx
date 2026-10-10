@@ -119,6 +119,34 @@ describe('PasurPage', () => {
     expect(await screen.findByTestId('ps-table')).toHaveTextContent(/なし/);
   });
 
+  it('shows matching zero-based indices on table cards and capture candidates', async () => {
+    renderWithProviders(<PasurPage />);
+    expect(await screen.findByTestId('ps-table-card-0')).toHaveTextContent('場札 0');
+    expect(screen.getByTestId('ps-table-card-1')).toHaveTextContent('場札 1');
+    expect(screen.getByTestId('ps-table-card-2')).toHaveTextContent('場札 2');
+
+    const cards = await screen.findAllByRole('button', { name: /を選ぶ$/ });
+    fireEvent.click(cards[0]);
+    expect(await screen.findByTestId('ps-take-0-btn')).toHaveTextContent('0：');
+    expect(screen.getByTestId('ps-take-1-2-btn')).toHaveTextContent('1：');
+    expect(screen.getByTestId('ps-take-1-2-btn')).toHaveTextContent('2：');
+  });
+
+  it('localizes table card indices in English', async () => {
+    await i18n.changeLanguage('en');
+    try {
+      renderWithProviders(<PasurPage />);
+      expect(await screen.findByTestId('ps-table-card-0')).toHaveTextContent('Table card 0');
+      const cards = await screen.findAllByRole('button', { name: /Select .*$/ });
+      fireEvent.click(cards[0]);
+      expect(await screen.findByTestId('ps-take-0-btn')).toHaveTextContent('0:');
+      expect(screen.getByTestId('ps-take-1-2-btn')).toHaveTextContent('1:');
+      expect(screen.getByTestId('ps-take-1-2-btn')).toHaveTextContent('2:');
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
+  });
+
   it('shows captures and soors for every seat', async () => {
     mockExec.mockResolvedValue(
       makeState({ players: [seat(0, { capturedCount: 6, soors: 2, score: 9 }), seat(1), seat(2), seat(3)] }),

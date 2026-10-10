@@ -32,6 +32,7 @@ function makeState(overrides: Partial<TressetteResponse> = {}): TressetteRespons
     teamScores: [0, 0],
     teamRoundThirds: [0, 0],
     playableIndices: [0, 1, 2],
+    handCardThirds: [0, 3, 0],
     gameEndFlag: false,
     winnerTeam: -1,
     message: '',

@@ -310,7 +310,7 @@ func (p *Pineapple) evalPreFlopStrength(idx int) int {
 	}
 
 	bonus := n + 2
-	return clamp(bestScore+bonus, 0, 100)
+	return clamp(bestScore+bonus, 100)
 }
 
 // evalTwoCardStrength 2枚のカードからプリフロップ強度を計算 (Holdem互換)
@@ -336,7 +336,7 @@ func evalTwoCardStrength(c1, c2 *Card) int {
 		if v1 >= 10 {
 			score += 15
 		}
-		return clamp(score, 0, 100)
+		return clamp(score, 100)
 	}
 
 	// ハイカード値
@@ -366,7 +366,7 @@ func evalTwoCardStrength(c1, c2 *Card) int {
 		score += 10
 	}
 
-	return clamp(score, 0, 100)
+	return clamp(score, 100)
 }
 
 // bestRankWithBoard は渡したホールカードと現在のボードから作れる最強の役を返す。

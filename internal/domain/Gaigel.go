@@ -408,7 +408,7 @@ func (g *Gaigel) NextTrick() {
 
 	g.drawReplenish()
 
-	if g.allHandsEmpty() {
+	if allHandsEmpty(g.players) {
 		g.phase = GaigelPhaseRoundEnd
 		return
 	}
@@ -456,11 +456,6 @@ func (g *Gaigel) drawReplenish() {
 // drawOne 山札または切り札表示カードから 1 枚引く。優先順位は山札 → 切り札表示カード。
 func (g *Gaigel) drawOne() *Card {
 	return drawOrTakeTrump(g.trumpCards, &g.trumpCard)
-}
-
-// allHandsEmpty 全プレイヤーの手札が空かを返す
-func (g *Gaigel) allHandsEmpty() bool {
-	return allHandsEmpty(g.players)
 }
 
 // IsEndgame 第2フェーズ (山札と切り札表示カードが尽きてマストフォローになる) かを返す

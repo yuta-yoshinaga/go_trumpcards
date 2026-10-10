@@ -2,6 +2,8 @@ package ui
 
 import (
 	"fmt"
+	"maps"
+	"slices"
 	"strings"
 	"sync"
 
@@ -7708,7 +7710,9 @@ func (m *GameManager) suggestionCandidates() []string {
 	for _, n := range m.gameOrder {
 		add(n)
 	}
-	for alias := range GameAliases {
+	// Sorted so equal-distance aliases tie-break the same way on every run
+	// (issue #10910); map iteration order would pick a different game each time.
+	for _, alias := range slices.Sorted(maps.Keys(GameAliases)) {
 		add(alias)
 	}
 	return out

@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { faroApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, FaroResponse } from '../types/card';
 import { FaroPage } from './FaroPage';
@@ -136,6 +137,27 @@ describe('FaroPage', () => {
     mockExec.mockClear();
     fireEvent.click(screen.getByTestId('rank-7'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', { rank: 7, amount: 100, copper: false }));
+  });
+
+  it('blocks stakes above available chips and keeps an affordable selection after a balance change', async () => {
+    mockExec.mockResolvedValue(makeState({ chips: 60 }));
+    renderWithProviders(<FaroPage />);
+    await screen.findByTestId('rank-7');
+
+    expect(screen.getByTestId('chip-100')).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByTestId('rank-7')).toBeEnabled();
+    fireEvent.click(screen.getByTestId('rank-7'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', { rank: 7, amount: 10, copper: false }));
+
+    mockExec.mockResolvedValue(makeState({ chips: 0, bets: [{ rank: 7, amount: 10, copper: false }] }));
+    fireEvent.click(screen.getByTestId('rank-7'));
+    await waitFor(() => expect(screen.getByTestId('chip-10')).toHaveAttribute('aria-pressed', 'true'));
+    expect(screen.getByTestId('rank-8')).toBeDisabled();
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('chip-50'));
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+    expect(screen.getByTestId('chip-50')).toHaveAttribute('aria-disabled', 'true');
   });
 
   it('toggles copper and bets to lose', async () => {
@@ -328,8 +350,8 @@ describe('FaroPage', () => {
       expect(available).toHaveAttribute('aria-label', expect.stringContaining('通常ベット'));
 
       fireEvent.click(screen.getByTestId('chip-50'));
-      expect(screen.getByTestId('case-keeper-rank-3')).toHaveTextContent('不足');
-      expect(screen.getByTestId('case-keeper-rank-3')).toHaveAttribute('aria-label', expect.stringContaining('50'));
+      expect(screen.getByTestId('chip-50')).toHaveAttribute('aria-disabled', 'true');
+      expect(screen.getByTestId('case-keeper-rank-3')).toHaveAttribute('aria-label', expect.stringContaining('10'));
 
       fireEvent.click(screen.getByTestId('copper-toggle'));
       expect(screen.getByTestId('case-keeper-rank-3')).toHaveAttribute(

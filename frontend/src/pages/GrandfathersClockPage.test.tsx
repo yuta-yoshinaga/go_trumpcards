@@ -286,12 +286,17 @@ describe('GrandfathersClockPage', () => {
     expect(screen.queryByTestId('gc-gameover-summary')).not.toBeInTheDocument();
   });
 
-  it('disables auto-complete while every face still holds only its starter', async () => {
+  it('explains how to enable auto-complete and keeps its reason associated while unavailable', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<GrandfathersClockPage />);
     const btn = await screen.findByTestId('autocomplete-button');
-    expect(btn).toBeDisabled();
-    expect(btn).toHaveAttribute('title');
+    expect(btn).toHaveAttribute('aria-disabled', 'true');
+    const reason = screen.getByText('文字盤を配り札より先へ進めると有効になります');
+    expect(reason).toBeInTheDocument();
+    expect(btn).toHaveAttribute('aria-describedby', reason.id);
+    fireEvent.click(btn);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('autocomplete');
   });
 
   it('enables and pulses auto-complete once a face builds past its starter', async () => {
@@ -302,6 +307,9 @@ describe('GrandfathersClockPage', () => {
     renderWithProviders(<GrandfathersClockPage />);
     const btn = await screen.findByTestId('autocomplete-button');
     expect(btn).toBeEnabled();
+    expect(btn).not.toHaveAttribute('aria-disabled');
+    expect(btn).not.toHaveAttribute('aria-describedby');
+    expect(screen.queryByText('文字盤を配り札より先へ進めると有効になります')).not.toBeInTheDocument();
     expect(btn.className).toContain('animate-pulse');
   });
 
@@ -320,7 +328,7 @@ describe('GrandfathersClockPage', () => {
     expect(liveRegion).toHaveClass('sr-only');
     expect(liveRegion).toHaveTextContent('自動完成中');
     expect(screen.getByTestId('gc-autocomplete-visible')).toBeInTheDocument();
-    expect(button).toBeDisabled();
+    expect(button).toHaveAttribute('aria-disabled', 'true');
 
     await act(async () => {
       vi.advanceTimersByTime(3000);

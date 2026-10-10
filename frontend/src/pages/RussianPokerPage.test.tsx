@@ -51,6 +51,18 @@ beforeEach(() => {
 });
 
 describe('RussianPokerPage', () => {
+  it.each([RussianPokerPhase.ACTION, RussianPokerPhase.POST_ACTION])(
+    'shows the required play bet next to Call in phase %s',
+    async (phase) => {
+      mockExec.mockResolvedValue(makeState({ phase, anteBet: 125 }));
+      renderWithProviders(<RussianPokerPage />);
+
+      const callButton = await screen.findByRole('button', { name: 'コール' });
+      expect(screen.getByTestId('russian-play-bet-required')).toHaveTextContent('コールに必要なプレイベット額: 250');
+      expect(callButton).toBeInTheDocument();
+    },
+  );
+
   it('resets on mount', async () => {
     renderWithProviders(<RussianPokerPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

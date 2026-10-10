@@ -19,6 +19,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
 import { btnSuccess } from '../styles/buttonStyles';
@@ -107,11 +108,7 @@ function CuarentaPageContent() {
   // that card would capture (equal-rank sweep). Clicking still plays instantly.
   const [previewHandIndex, setPreviewHandIndex] = useState<number | null>(null);
 
-  // Fetch a fresh game on mount.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
-  useEffect(() => {
-    exec('reset');
-  }, []);
+  useMountReset(exec);
 
   const handleDifficultyChange = (value: string) => {
     const level = Number(value);
@@ -224,6 +221,7 @@ function CuarentaPageContent() {
   );
   const winningTeam = state.roundWinners.length === 1 ? state.roundWinners[0] : -1;
   const humanWon = isGameEnd && state.roundWinners.includes(humanTeam);
+  const roundDetail = state.lastRoundDetail;
 
   const teamLabel = (team: number): string => t('team', { name: team === 0 ? 'A' : 'B' });
   const playerLabel = (id: number, isHuman: boolean): string => (isHuman ? t('you') : t('cpu', { id }));
@@ -369,6 +367,38 @@ function CuarentaPageContent() {
                 );
               })}
             </div>
+
+            {state.phase === CuarentaPhase.ROUND_END && (
+              <section
+                aria-label={t('roundBreakdown.title')}
+                className="mb-2 rounded-lg bg-ds-surface p-3 text-sm text-ds-text-primary"
+              >
+                <h2 className="mb-2 font-semibold">{t('roundBreakdown.title')}</h2>
+                {roundDetail ? (
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    {state.teamScores.map((_, team) => (
+                      <div key={`round-detail-${team}`} className="rounded bg-ds-surface-elevated p-2">
+                        <h3 className="mb-1 font-semibold">{teamLabel(team)}</h3>
+                        <p className="font-semibold">
+                          {t('roundBreakdown.gained', { points: roundDetail.gained[String(team)] })}
+                        </p>
+                        <ul className="text-ds-text-muted">
+                          <li>{t('roundBreakdown.caida', { points: roundDetail.caida[String(team)] })}</li>
+                          <li>{t('roundBreakdown.ronda', { points: roundDetail.ronda[String(team)] })}</li>
+                          <li>{t('roundBreakdown.limpia', { points: roundDetail.limpia[String(team)] })}</li>
+                          <li>
+                            {t('roundBreakdown.mostCards')}:{' '}
+                            {roundDetail.mostCards === team ? t('roundBreakdown.awarded') : t('roundBreakdown.none')}
+                          </li>
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-ds-text-muted">{t('roundBreakdown.unavailable')}</p>
+                )}
+              </section>
+            )}
 
             {/* Players (team / hand / captured / current turn) */}
             <div className="mb-2 p-2 rounded bg-black/20">

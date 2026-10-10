@@ -282,6 +282,12 @@ function ColourWhistPageContent() {
               ))}
             </div>
 
+            {state.gameEndFlag && (
+              <p className="text-center text-ds-text-primary font-semibold mb-4" data-testid="colourwhist-result">
+                {t(state.winnerIdx === 0 ? 'result.win' : 'result.lose', { seat: state.winnerIdx })}
+              </p>
+            )}
+
             <section className="mb-4 overflow-x-auto" data-testid="colourwhist-score-history">
               <h2 className="text-ds-text-primary text-center text-sm font-bold mb-2">{t('label.scoreHistory')}</h2>
               <table className="mx-auto text-sm text-ds-text-primary">

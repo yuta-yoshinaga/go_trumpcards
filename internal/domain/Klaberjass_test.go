@@ -11,12 +11,12 @@ import (
 func kjCard(suit, value int) *Card { return NewCard(suit, value, true) }
 
 // kjReady は切札を決めた状態のプレイ局面を作る。
-func kjReady(t *testing.T, trump int) *Klaberjass {
+func kjReady(t *testing.T) *Klaberjass {
 	t.Helper()
 	k := NewDefaultKlaberjass()
 	k.Reset()
 	k.SetPhaseForTest(KlaberjassPhasePlay)
-	k.SetTrumpForTest(trump)
+	k.SetTrumpForTest(1)
 	k.SetMakerForTest(0)
 	k.SetCurrentPlayerForTest(0)
 	k.SetTrickLeaderForTest(0)
@@ -217,7 +217,7 @@ func TestKlaberjassSequenceScoring(t *testing.T) {
 // TestKlaberjassOnlyTheBetterSequenceScoresAndScoresAllOfThem covers the rule
 // the issue states only half of.
 func TestKlaberjassOnlyTheBetterSequenceScoresAndScoresAllOfThem(t *testing.T) {
-	k := kjReady(t, CardDesignSpade)
+	k := kjReady(t)
 	// 席 0: ♠7-8-9-10 (50) と ♥J-Q-K (20)。
 	k.SetHandForTest(0, []*Card{
 		kjCard(CardDesignSpade, 7), kjCard(CardDesignSpade, 8),
@@ -246,7 +246,7 @@ func TestKlaberjassOnlyTheBetterSequenceScoresAndScoresAllOfThem(t *testing.T) {
 }
 
 func TestKlaberjassSequenceTieScoresNobody(t *testing.T) {
-	k := kjReady(t, CardDesignSpade)
+	k := kjReady(t)
 	k.SetHandForTest(0, []*Card{
 		kjCard(CardDesignHeart, 11), kjCard(CardDesignHeart, 12), kjCard(CardDesignHeart, 13),
 	})
@@ -266,7 +266,7 @@ func TestKlaberjassSequenceTieScoresNobody(t *testing.T) {
 }
 
 func TestKlaberjassLongerSequenceBeatsHigherOne(t *testing.T) {
-	k := kjReady(t, CardDesignSpade)
+	k := kjReady(t)
 	// 席 0 は低い 4 枚、席 1 は高い 3 枚。**長い方が勝つ。**
 	k.SetHandForTest(0, []*Card{
 		kjCard(CardDesignHeart, 7), kjCard(CardDesignHeart, 8),
@@ -287,7 +287,7 @@ func TestKlaberjassLongerSequenceBeatsHigherOne(t *testing.T) {
 // が誤りであることを示す。
 func TestKlaberjassBelaNeedNotBePlayedConsecutively(t *testing.T) {
 	const trump = CardDesignSpade
-	k := kjReady(t, trump)
+	k := kjReady(t)
 	k.SetHandForTest(0, []*Card{
 		kjCard(trump, 13), kjCard(CardDesignHeart, 7), kjCard(trump, 12),
 	})
@@ -342,7 +342,7 @@ func TestKlaberjassBelaNeedNotBePlayedConsecutively(t *testing.T) {
 
 func TestKlaberjassBelaNeedsBothHalvesInOneHand(t *testing.T) {
 	const trump = CardDesignSpade
-	k := kjReady(t, trump)
+	k := kjReady(t)
 	k.SetHandForTest(0, []*Card{kjCard(trump, 13)})
 	k.SetHandForTest(1, []*Card{kjCard(trump, 12)})
 	k.FindBelaForTest()
@@ -354,7 +354,7 @@ func TestKlaberjassBelaNeedsBothHalvesInOneHand(t *testing.T) {
 // TestKlaberjassFollowingAndTrumpingAreCompulsory covers the play restrictions.
 func TestKlaberjassFollowingAndTrumpingAreCompulsory(t *testing.T) {
 	const trump = CardDesignSpade
-	k := kjReady(t, trump)
+	k := kjReady(t)
 	k.SetHandForTest(0, []*Card{kjCard(CardDesignHeart, 7)})
 	k.SetHandForTest(1, []*Card{
 		kjCard(CardDesignHeart, 8), kjCard(trump, 7), kjCard(CardDesignDiamond, 1),
@@ -369,7 +369,7 @@ func TestKlaberjassFollowingAndTrumpingAreCompulsory(t *testing.T) {
 	}
 
 	// フォローできなければ切札を出さねばならない。
-	k2 := kjReady(t, trump)
+	k2 := kjReady(t)
 	k2.SetHandForTest(0, []*Card{kjCard(CardDesignHeart, 7)})
 	k2.SetHandForTest(1, []*Card{kjCard(trump, 7), kjCard(CardDesignDiamond, 1)})
 	if err := k2.PlayCard(0, 0); err != nil {
@@ -381,7 +381,7 @@ func TestKlaberjassFollowingAndTrumpingAreCompulsory(t *testing.T) {
 	}
 
 	// 切札も無ければ何でも出せる。
-	k3 := kjReady(t, trump)
+	k3 := kjReady(t)
 	k3.SetHandForTest(0, []*Card{kjCard(CardDesignHeart, 7)})
 	k3.SetHandForTest(1, []*Card{kjCard(CardDesignDiamond, 1), kjCard(CardDesignClover, 8)})
 	if err := k3.PlayCard(0, 0); err != nil {
@@ -395,7 +395,7 @@ func TestKlaberjassFollowingAndTrumpingAreCompulsory(t *testing.T) {
 // TestKlaberjassMustOvertrumpOnATrumpLead covers the third restriction.
 func TestKlaberjassMustOvertrumpOnATrumpLead(t *testing.T) {
 	const trump = CardDesignSpade
-	k := kjReady(t, trump)
+	k := kjReady(t)
 	// 切札 Q (rank 3) がリード。9 (Menel, rank 7) で勝てるので 7 は選べない。
 	k.SetHandForTest(0, []*Card{kjCard(trump, 12)})
 	k.SetHandForTest(1, []*Card{kjCard(trump, 7), kjCard(trump, 9)})
@@ -408,7 +408,7 @@ func TestKlaberjassMustOvertrumpOnATrumpLead(t *testing.T) {
 	}
 
 	// 勝てる切札が無ければ、切札のどれでもよい。
-	k2 := kjReady(t, trump)
+	k2 := kjReady(t)
 	k2.SetHandForTest(0, []*Card{kjCard(trump, 11)}) // Jass、最強
 	k2.SetHandForTest(1, []*Card{kjCard(trump, 7), kjCard(trump, 8)})
 	if err := k2.PlayCard(0, 0); err != nil {
@@ -420,8 +420,7 @@ func TestKlaberjassMustOvertrumpOnATrumpLead(t *testing.T) {
 }
 
 func TestKlaberjassRejectsAnIllegalPlay(t *testing.T) {
-	const trump = CardDesignSpade
-	k := kjReady(t, trump)
+	k := kjReady(t)
 	k.SetHandForTest(0, []*Card{kjCard(CardDesignHeart, 7)})
 	k.SetHandForTest(1, []*Card{kjCard(CardDesignHeart, 8), kjCard(CardDesignDiamond, 1)})
 	if err := k.PlayCard(0, 0); err != nil {
@@ -441,7 +440,7 @@ func TestKlaberjassRejectsAnIllegalPlay(t *testing.T) {
 // TestKlaberjassTrumpWinsAndTakesThePoints covers trick resolution.
 func TestKlaberjassTrumpWinsAndTakesThePoints(t *testing.T) {
 	const trump = CardDesignSpade
-	k := kjReady(t, trump)
+	k := kjReady(t)
 	k.SetHandForTest(0, []*Card{kjCard(CardDesignHeart, 1)}) // 11 点
 	k.SetHandForTest(1, []*Card{kjCard(trump, 7)})           // 0 点だが切札
 	k.SetHandPointsForTest(0, 0)
@@ -463,7 +462,7 @@ func TestKlaberjassTrumpWinsAndTakesThePoints(t *testing.T) {
 
 // TestKlaberjassBeteGivesEverythingToTheOpponent covers the settlement.
 func TestKlaberjassBeteGivesEverythingToTheOpponent(t *testing.T) {
-	k := kjReady(t, CardDesignSpade)
+	k := kjReady(t)
 	k.SetMakerForTest(0)
 	k.SetHandPointsForTest(0, 40)
 	k.SetHandPointsForTest(1, 90)
@@ -486,7 +485,7 @@ func TestKlaberjassBeteGivesEverythingToTheOpponent(t *testing.T) {
 //
 // **同点はメイカーの負け。**
 func TestKlaberjassTieIsBete(t *testing.T) {
-	k := kjReady(t, CardDesignSpade)
+	k := kjReady(t)
 	k.SetMakerForTest(0)
 	k.SetHandPointsForTest(0, 60)
 	k.SetHandPointsForTest(1, 60)
@@ -502,7 +501,7 @@ func TestKlaberjassTieIsBete(t *testing.T) {
 }
 
 func TestKlaberjassMakerSucceedsAndBothScore(t *testing.T) {
-	k := kjReady(t, CardDesignSpade)
+	k := kjReady(t)
 	k.SetMakerForTest(0)
 	k.SetHandPointsForTest(0, 90)
 	k.SetHandPointsForTest(1, 40)
@@ -522,7 +521,7 @@ func TestKlaberjassMakerSucceedsAndBothScore(t *testing.T) {
 }
 
 func TestKlaberjassLastTrickBonusGoesToItsWinner(t *testing.T) {
-	k := kjReady(t, CardDesignSpade)
+	k := kjReady(t)
 	k.SetMakerForTest(0)
 	k.SetHandPointsForTest(0, 50)
 	k.SetHandPointsForTest(1, 45)
@@ -790,7 +789,7 @@ func TestKlaberjassSchmeiss(t *testing.T) {
 }
 
 func TestKlaberjassNextDealAlternatesTheDealer(t *testing.T) {
-	k := kjReady(t, CardDesignSpade)
+	k := kjReady(t)
 	k.SetMakerForTest(0)
 	k.SetHandPointsForTest(0, 90)
 	k.SetHandPointsForTest(1, 40)
@@ -816,14 +815,14 @@ func TestKlaberjassNextDealAlternatesTheDealer(t *testing.T) {
 }
 
 func TestKlaberjassNextDealGuards(t *testing.T) {
-	k := kjReady(t, CardDesignSpade)
+	k := kjReady(t)
 	if err := k.NextDeal(); err == nil {
 		t.Error("dealing again mid-hand must be refused")
 	}
 }
 
 func TestKlaberjassGameEnd(t *testing.T) {
-	k := kjReady(t, CardDesignSpade)
+	k := kjReady(t)
 	k.SetMakerForTest(0)
 	k.SetScoreForTest(0, KlaberjassTargetScoreDefault-10)
 	k.SetHandPointsForTest(0, 90)
@@ -847,7 +846,7 @@ func TestKlaberjassGameEnd(t *testing.T) {
 
 // 両者が同時に目標を超えたら点の多い方、同点ならメイカーの勝ち。
 func TestKlaberjassGameEndTieBreak(t *testing.T) {
-	k := kjReady(t, CardDesignSpade)
+	k := kjReady(t)
 	k.SetMakerForTest(1)
 	k.SetScoreForTest(0, KlaberjassTargetScoreDefault)
 	k.SetScoreForTest(1, KlaberjassTargetScoreDefault)
@@ -968,8 +967,7 @@ func TestKlaberjassCpuBid(t *testing.T) {
 }
 
 func TestKlaberjassCpuPlayPrefersToWin(t *testing.T) {
-	const trump = CardDesignSpade
-	k := kjReady(t, trump)
+	k := kjReady(t)
 	k.SetHandForTest(0, []*Card{kjCard(CardDesignHeart, 13)}) // ♥K, 4 点
 	k.SetHandForTest(1, []*Card{
 		kjCard(CardDesignHeart, 7), kjCard(CardDesignHeart, 1), // ♥A で勝てる
@@ -982,7 +980,7 @@ func TestKlaberjassCpuPlayPrefersToWin(t *testing.T) {
 	}
 
 	// 勝てないなら一番安い札。
-	k2 := kjReady(t, trump)
+	k2 := kjReady(t)
 	k2.SetHandForTest(0, []*Card{kjCard(CardDesignHeart, 1)}) // ♥A
 	k2.SetHandForTest(1, []*Card{
 		kjCard(CardDesignHeart, 13), kjCard(CardDesignHeart, 7), // K(4) と 7(0)

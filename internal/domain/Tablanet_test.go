@@ -31,8 +31,8 @@ func newTestTablanet(t *testing.T, diff domain.TablanetCpuDifficulty) *domain.Ta
 }
 
 // setTablanetHand はプレイヤー idx の手札を指定カードで上書きする。
-func setTablanetHand(g *domain.Tablanet, idx int, cards ...*domain.Card) {
-	p := g.GetPlayer(idx)
+func setTablanetHand(g *domain.Tablanet, cards ...*domain.Card) {
+	p := g.GetPlayer(0)
 	p.Reset()
 	for _, c := range cards {
 		p.AddCard(c)
@@ -83,7 +83,7 @@ func TestTablanetRankCaptureIsTablanet(t *testing.T) {
 	g := newTestTablanet(t, domain.TablanetCpuDifficultyNormal)
 	g.SetCurrentTurn(0)
 	g.SetTableCards([]*domain.Card{tablanetCard(domain.CardDesignSpade, 5)})
-	setTablanetHand(g, 0, tablanetCard(domain.CardDesignHeart, 5))
+	setTablanetHand(g, tablanetCard(domain.CardDesignHeart, 5))
 
 	require.NoError(t, g.PlayerPlay(0, []int{0}))
 	assert.Empty(t, g.GetTableCards())
@@ -108,7 +108,7 @@ func TestTablanetSumCapture(t *testing.T) {
 		tablanetCard(domain.CardDesignHeart, 3),
 		tablanetCard(domain.CardDesignClover, 9),
 	})
-	setTablanetHand(g, 0, tablanetCard(domain.CardDesignDiamond, 5))
+	setTablanetHand(g, tablanetCard(domain.CardDesignDiamond, 5))
 
 	require.NoError(t, g.PlayerPlay(0, []int{0, 1}))
 	// 2+3 = 5 captured; the 9 remains, so no Tablanet.
@@ -125,7 +125,7 @@ func TestTablanetJackSweep(t *testing.T) {
 		tablanetCard(domain.CardDesignHeart, 9),
 		tablanetCard(domain.CardDesignClover, domain.TablanetJackValue),
 	})
-	setTablanetHand(g, 0, tablanetCard(domain.CardDesignDiamond, domain.TablanetJackValue))
+	setTablanetHand(g, tablanetCard(domain.CardDesignDiamond, domain.TablanetJackValue))
 
 	// Jack sweeps everything except the other Jack; table selection is ignored.
 	require.NoError(t, g.PlayerPlay(0, nil))
@@ -139,7 +139,7 @@ func TestTablanetTrail(t *testing.T) {
 	g := newTestTablanet(t, domain.TablanetCpuDifficultyNormal)
 	g.SetCurrentTurn(0)
 	g.SetTableCards([]*domain.Card{tablanetCard(domain.CardDesignSpade, 5)})
-	setTablanetHand(g, 0, tablanetCard(domain.CardDesignHeart, 9))
+	setTablanetHand(g, tablanetCard(domain.CardDesignHeart, 9))
 
 	require.NoError(t, g.PlayerPlay(0, nil))
 	assert.Len(t, g.GetTableCards(), 2)
@@ -150,7 +150,7 @@ func TestTablanetInvalidSelection(t *testing.T) {
 	g := newTestTablanet(t, domain.TablanetCpuDifficultyNormal)
 	g.SetCurrentTurn(0)
 	g.SetTableCards([]*domain.Card{tablanetCard(domain.CardDesignSpade, 5)})
-	setTablanetHand(g, 0, tablanetCard(domain.CardDesignHeart, 9))
+	setTablanetHand(g, tablanetCard(domain.CardDesignHeart, 9))
 
 	err := g.PlayerPlay(0, []int{0})
 	require.Error(t, err, "9 cannot capture a lone 5")
@@ -166,7 +166,7 @@ func TestTablanetFaceCardRankOnly(t *testing.T) {
 		tablanetCard(domain.CardDesignSpade, 12), // Q
 		tablanetCard(domain.CardDesignHeart, 3),
 	})
-	setTablanetHand(g, 0, tablanetCard(domain.CardDesignDiamond, 12)) // Q
+	setTablanetHand(g, tablanetCard(domain.CardDesignDiamond, 12)) // Q
 
 	// Cannot capture the 3 with a Queen.
 	require.Error(t, g.PlayerPlay(0, []int{1}))
@@ -221,7 +221,7 @@ func TestTablanetScoringBonuses(t *testing.T) {
 		g.GetPlayer(i).Reset()
 	}
 	// A single non-Jack card that clears the whole table scores a Tabla bonus.
-	setTablanetHand(g, 0, tablanetCard(domain.CardDesignHeart, 5))
+	setTablanetHand(g, tablanetCard(domain.CardDesignHeart, 5))
 	require.NoError(t, g.PlayerPlay(0, []int{0})) // Tabla: captures the lone 5
 	assert.GreaterOrEqual(t, g.GetPlayer(0).GetTablaCount(), 1)
 }
@@ -241,7 +241,7 @@ func TestTablanetHint(t *testing.T) {
 	g := newTestTablanet(t, domain.TablanetCpuDifficultyNormal)
 	g.SetCurrentTurn(0)
 	g.SetTableCards([]*domain.Card{tablanetCard(domain.CardDesignSpade, 5)})
-	setTablanetHand(g, 0, tablanetCard(domain.CardDesignHeart, 5), tablanetCard(domain.CardDesignClover, 9))
+	setTablanetHand(g, tablanetCard(domain.CardDesignHeart, 5), tablanetCard(domain.CardDesignClover, 9))
 	hint := g.GetHint()
 	require.NotNil(t, hint)
 	assert.NotEmpty(t, hint.CardIndices)

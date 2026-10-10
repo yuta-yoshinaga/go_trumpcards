@@ -84,6 +84,10 @@ func (p *FiveHundredWebPresenter) buildBase(g interfaces.FiveHundredGame) *contr
 	}
 
 	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())
+	resObj.ValidPlayIndices = []int{}
+	if g.GetPhase() == domain.FiveHundredPhasePlay && g.GetCurrentPlayerIdx() == 0 {
+		resObj.ValidPlayIndices = intSliceOrEmpty(g.GetValidPlayIndices(0))
+	}
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
 }

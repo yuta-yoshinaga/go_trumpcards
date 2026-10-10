@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react';
+import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { registerOpenModal } from './keyboardNavUtils';
 import { useCardKeyboardNav } from './useCardKeyboardNav';
@@ -296,6 +296,37 @@ describe('useCardKeyboardNav', () => {
     fire('1');
     fire('Enter');
     fire('Escape');
+    expect(onToggle).not.toHaveBeenCalled();
+    expect(onConfirm).not.toHaveBeenCalled();
+    expect(onClear).not.toHaveBeenCalled();
+  });
+
+  it('ignores a previously registered keydown handler after becoming disabled', () => {
+    const onToggle = vi.fn();
+    const onDirectPlay = vi.fn();
+    const onConfirm = vi.fn();
+    const onClear = vi.fn();
+    const addEventListener = vi.spyOn(document, 'addEventListener');
+    const { rerender } = renderHook(
+      ({ enabled }) =>
+        useCardKeyboardNav({
+          cardCount: 5,
+          onToggle,
+          onConfirm,
+          onClear,
+          onDirectPlay,
+          enabled,
+        }),
+      { initialProps: { enabled: true } },
+    );
+    const keydownRegistration = addEventListener.mock.calls.find(([type]) => type === 'keydown');
+    expect(keydownRegistration).toBeDefined();
+    const handler = keydownRegistration?.[1] as EventListener;
+
+    act(() => rerender({ enabled: false }));
+    handler(new KeyboardEvent('keydown', { key: '1' }));
+
+    expect(onDirectPlay).not.toHaveBeenCalled();
     expect(onToggle).not.toHaveBeenCalled();
     expect(onConfirm).not.toHaveBeenCalled();
     expect(onClear).not.toHaveBeenCalled();

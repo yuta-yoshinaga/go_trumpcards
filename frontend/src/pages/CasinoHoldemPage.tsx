@@ -310,21 +310,25 @@ function CasinoHoldemPageContent() {
                     {state.dealerQualify ? t('dealerQualified') : t('dealerDoesNotQualify')}
                   </div>
                 )}
-                {state.antePayout !== 0 && (
-                  <div>
-                    {t('payout.ante')}: {state.antePayout}
-                  </div>
-                )}
-                {state.callPayout !== 0 && (
-                  <div>
-                    {t('payout.call')}: {state.callPayout}
-                  </div>
-                )}
-                {state.bonusPayout !== 0 && (
-                  <div>
-                    {t('payout.bonus')}: {state.bonusPayout}
-                  </div>
-                )}
+                <div>
+                  {t('payout.ante')}: {state.antePayout === 0 ? t('payout.zeroPayout') : state.antePayout}
+                </div>
+                <div>
+                  {t('payout.call')}:{' '}
+                  {state.callBet > 0
+                    ? state.callPayout === 0
+                      ? t('payout.zeroPayout')
+                      : state.callPayout
+                    : t('payout.noBet')}
+                </div>
+                <div>
+                  {t('payout.bonus')}:{' '}
+                  {state.bonusBet > 0
+                    ? state.bonusPayout === 0
+                      ? t('payout.zeroPayout')
+                      : state.bonusPayout
+                    : t('payout.noBet')}
+                </div>
                 <div className="font-bold mt-1">
                   {t('payout.total')}: {state.totalPayout}
                 </div>

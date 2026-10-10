@@ -112,6 +112,21 @@ describe('CalabresellaPage', () => {
     expect(screen.getByText('ソリスト')).toBeInTheDocument();
   });
 
+  it('shows the lead suit while the current trick has a card', async () => {
+    mockExec.mockResolvedValueOnce(
+      makeCalabresellaState({ currentTrick: [{ playerIdx: 1, card: { design: 'HEART', value: 12 } }] }),
+    );
+    renderWithProviders(<CalabresellaPage />);
+    expect(await screen.findByText('リードスート: ハート')).toBeInTheDocument();
+  });
+
+  it('does not show a lead suit when the current trick is empty', async () => {
+    mockExec.mockResolvedValueOnce(makeCalabresellaState({ currentTrick: [] }));
+    renderWithProviders(<CalabresellaPage />);
+    await screen.findByText('あなたのターン');
+    expect(screen.queryByTestId('trick-lead-suit')).not.toBeInTheDocument();
+  });
+
   it('renders the bid phase with chiamo, solo and pass buttons', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<CalabresellaPage />);

@@ -139,6 +139,10 @@ function TarocchiniPageContent() {
 
   const canPlay = isPlayPhase && isHumanTurn;
   const canScarto = isScartoPhase && state.isHumanScarto;
+  const scartoValidIndices =
+    canScarto && humanPlayer
+      ? humanPlayer.cards.flatMap((card, idx) => (card.design !== 'JOKER' ? [idx] : []))
+      : undefined;
 
   const handleManualReset = () => {
     hideActionLog();
@@ -339,8 +343,8 @@ function TarocchiniPageContent() {
                 cardWidth={cardWidth}
                 isMobile={isMobile}
                 dataTutorialPrefix="tarocchini"
-                validIndices={canPlay ? state.playableIndices : undefined}
-                restrictedTooltip={t('playButton')}
+                validIndices={canPlay ? state.playableIndices : scartoValidIndices}
+                restrictedTooltip={canScarto ? t('scartoRestricted') : t('playButton')}
               />
             )}
 

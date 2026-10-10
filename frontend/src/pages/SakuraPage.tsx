@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { sakuraApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -18,6 +18,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useMountReset } from '../hooks/useMountReset';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, SakuraBonus, SakuraPlayer } from '../types/card';
@@ -106,9 +107,7 @@ function SakuraPageContent() {
 
   // Fetch a fresh game on mount.
   // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
-  useEffect(() => {
-    callApi('reset');
-  }, []);
+  useMountReset(callApi);
 
   /** Restarts with the settings currently chosen in the panel. */
   const resetWithConfig = useCallback(() => {
@@ -301,6 +300,9 @@ function SakuraPageContent() {
                   }`}
                   data-testid={`hand-card-${i}`}
                   data-can-capture={(state.captureOptions[i]?.length ?? 0) > 0 || undefined}
+                  aria-label={
+                    c.points != null ? t('handCardPoints', { cardName: cardAlt(c), points: c.points }) : undefined
+                  }
                 >
                   <SakuraCard card={c} width={cardWidth} />
                 </button>

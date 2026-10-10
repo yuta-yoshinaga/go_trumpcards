@@ -28,6 +28,8 @@
   "guide.sell": "{{buyer}} があなたの最高札に {{amount}} を提示しています。売りますか？",
   "guide.buy": "{{owner}} が最高札を {{amount}} で譲ると言っています。買いますか？",
   "guide.raiseHint": "上乗せするなら {{min}} 以上を指定してください",
+  "live.sell": "{{buyer}} があなたの最高札に {{amount}} を提示しています。{{accept}} または {{decline}} を選べます",
+  "live.buy": "{{owner}} が最高札を {{amount}} で譲ると言っています。{{accept}}、{{decline}}、または {{raise}} を選べます",
   "result.youWin": "あなたがポットを取りました！",
   "result.seatWins": "{{name}} がポットを取りました",
   "result.void": "切り札が1枚も出ませんでした。参加料は返却されます",

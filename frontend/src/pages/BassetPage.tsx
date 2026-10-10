@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { bassetApi } from '../api/games/basset';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
@@ -12,6 +12,7 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { useMountReset } from '../hooks/useMountReset';
 import { gameTheme } from '../styles/gameTheme';
 import type { BassetResponse } from '../types/games/basset';
 import type { TutorialStep } from '../types/tutorial';
@@ -35,9 +36,7 @@ function BassetPageContent() {
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('basset');
   const [rank, setRank] = useState(1);
   const [amount, setAmount] = useState(10);
-  useEffect(() => {
-    exec('reset');
-  }, [exec]);
+  useMountReset(exec);
   const config: CliGameConfig<BassetResponse, Parameters<typeof bassetApi.exec>> = useMemo(
     () => ({
       gameName: 'basset',
@@ -141,26 +140,46 @@ function BassetPageContent() {
                   onChange={(e) => setAmount(Number(e.target.value))}
                 />
                 <button
-                  className="min-h-[44px] rounded bg-ds-accent px-4 text-black"
+                  aria-disabled={loading}
+                  className="min-h-[44px] rounded bg-ds-accent px-4 text-black aria-disabled:opacity-50 aria-disabled:cursor-not-allowed"
                   type="button"
-                  onClick={() => exec('bet', { rank, amount })}
+                  onClick={() => {
+                    if (!loading) void exec('bet', { rank, amount });
+                  }}
                 >
                   {t('placeBet')}
                 </button>
-                <button className="min-h-[44px] rounded bg-ds-surface px-4" type="button" onClick={() => exec('deal')}>
+                <button
+                  aria-disabled={loading}
+                  className="min-h-[44px] rounded bg-ds-surface px-4 aria-disabled:opacity-50 aria-disabled:cursor-not-allowed"
+                  type="button"
+                  onClick={() => {
+                    if (!loading) void exec('deal');
+                  }}
+                >
                   {t('deal')}
                 </button>
               </div>
             ) : null}
             {state.phase === BassetPhase.DECISION ? (
               <div className="flex justify-center gap-3">
-                <button className="min-h-[44px] rounded bg-ds-success px-4" type="button" onClick={() => exec('take')}>
+                <button
+                  aria-disabled={loading}
+                  className="min-h-[44px] rounded bg-ds-success px-4 aria-disabled:opacity-50 aria-disabled:cursor-not-allowed"
+                  type="button"
+                  onClick={() => {
+                    if (!loading) void exec('take');
+                  }}
+                >
                   {t('take')}
                 </button>
                 <button
-                  className="min-h-[44px] rounded bg-ds-warning px-4"
+                  aria-disabled={loading}
+                  className="min-h-[44px] rounded bg-ds-warning px-4 aria-disabled:opacity-50 aria-disabled:cursor-not-allowed"
                   type="button"
-                  onClick={() => exec('paroli')}
+                  onClick={() => {
+                    if (!loading) void exec('paroli');
+                  }}
                 >
                   {t('paroli')}
                 </button>
@@ -168,9 +187,12 @@ function BassetPageContent() {
             ) : null}
             {state.phase === BassetPhase.ROUND_END ? (
               <button
-                className="min-h-[44px] rounded bg-ds-accent px-4 text-black"
+                aria-disabled={loading}
+                className="min-h-[44px] rounded bg-ds-accent px-4 text-black aria-disabled:opacity-50 aria-disabled:cursor-not-allowed"
                 type="button"
-                onClick={() => exec('next')}
+                onClick={() => {
+                  if (!loading) void exec('next');
+                }}
               >
                 {t('next')}
               </button>

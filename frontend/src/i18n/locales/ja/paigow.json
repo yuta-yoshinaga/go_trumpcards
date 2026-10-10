@@ -25,6 +25,12 @@
     "setHands": "ハンドセット",
     "end": "結果"
   },
+  "sort": {
+    "label": "手札の並べ替え",
+    "original": "元の順序",
+    "rank": "ランク順",
+    "suit": "スート順"
+  },
   "result": {
     "playerWins": "勝利！",
     "dealerWins": "ディーラー勝利！",

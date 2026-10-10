@@ -476,7 +476,9 @@ describe('DoubtPage', () => {
   it('shows cpu doubters in human-played doubt phase', async () => {
     mockExec.mockResolvedValue(doubtPhaseHumanPlayedState);
     renderWithProviders(<DoubtPage />);
-    await waitFor(() => expect(screen.getByText(/ダウト！.*CPU 1/)).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByText(/ダウト！.*CPU 1/, { selector: '.text-ds-error-text' })).toBeInTheDocument(),
+    );
   });
 
   it('does not show cpuDoubters label when empty in human-played phase', async () => {
@@ -485,6 +487,26 @@ describe('DoubtPage', () => {
     renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByText('CPUがダウトを判定中...')).toBeInTheDocument());
     expect(screen.queryByText(/ダウト！/)).not.toBeInTheDocument();
+  });
+
+  it('announces CPU doubters in the permanent live region', async () => {
+    mockExec.mockResolvedValue(doubtPhaseHumanPlayedState);
+    renderWithProviders(<DoubtPage />);
+    await waitFor(() => {
+      const announcement = screen.getByTestId('doubt-cpu-judgment-announcement');
+      expect(announcement).toHaveAttribute('role', 'status');
+      expect(announcement).toHaveAttribute('aria-live', 'polite');
+      expect(announcement).toHaveClass('sr-only');
+      expect(announcement).toHaveTextContent('ダウト！ CPU 1、CPU 2');
+    });
+  });
+
+  it('announces when CPUs do not doubt in the permanent live region', async () => {
+    mockExec.mockResolvedValue({ ...doubtPhaseHumanPlayedState, cpuDoubters: [] });
+    renderWithProviders(<DoubtPage />);
+    await waitFor(() => {
+      expect(screen.getByTestId('doubt-cpu-judgment-announcement')).toHaveTextContent('CPUはダウトしませんでした');
+    });
   });
 
   it('calls doubt with cpuDoubters when 確認 clicked', async () => {

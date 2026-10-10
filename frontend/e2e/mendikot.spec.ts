@@ -91,6 +91,8 @@ test.describe('Mendikot E2E', () => {
       .getByRole('button', { name: /^投了$|^Give up$/ })
       .first()
       .click();
+    await expect(page.getByRole('alertdialog')).toBeVisible({ timeout: TIMEOUT_TRANSITION });
+    await page.getByRole('button', { name: /^確認$|^Confirm$/ }).click();
     await expect(page.getByRole('button', { name: /^投了$|^Give up$/ })).toHaveCount(0, { timeout: TIMEOUT_ACTION });
   });
 });

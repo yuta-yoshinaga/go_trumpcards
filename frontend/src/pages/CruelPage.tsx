@@ -483,6 +483,7 @@ function CruelPageContent() {
                                   }
                                 }}
                                 disabled={!isPlaying || !isLast}
+                                aria-pressed={isSelected}
                                 aria-label={
                                   tc.card ? t('tableauCardAriaLabel', { card: cardAlt(tc.card), col: colIdx }) : ''
                                 }

@@ -36,6 +36,9 @@ func TestJulepeWebPresenterOutput(t *testing.T) {
 	assert.Equal(t, float64(1), m["roundNumber"])
 	// **ポットと切り札は参加判断の材料。** 常に出す。
 	assert.Equal(t, float64(domain.JulepeAnte*domain.JulepePlayerCntDefault), m["pot"])
+	antes := m["roundAntes"].([]any)
+	assert.Len(t, antes, domain.JulepePlayerCntDefault)
+	assert.Equal(t, float64(domain.JulepeAnte), antes[0])
 	require.NotNil(t, m["upCard"], "切り札を決めた 1 枚が出る")
 	assert.Equal(t, float64(r.GetTrumpSuit()), m["trumpSuit"])
 	assert.Empty(t, m["lastTrick"])

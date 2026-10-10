@@ -75,10 +75,7 @@ func osmosisDispatch(bc *baseController, w http.ResponseWriter, oi usecase.Osmos
 	case "u", "undo":
 		bc.writePresenterResponse(w, oi.Undo())
 	case "undo_n":
-		if !requireParam(bc, w, newDefault, param.N == nil, "param error: n is required.") {
-			return true
-		}
-		bc.writePresenterResponse(w, oi.UndoN(*param.N))
+		dispatchUndoN(bc, w, newDefault, param.N, oi.UndoN)
 	default:
 		return dispatchResetHintAndLog(param.Command, bc, w, oi.Reset, oi.Hint, oi.ActionLog)
 	}

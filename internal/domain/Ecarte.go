@@ -449,7 +449,7 @@ func (e *Ecarte) resolveTrick() {
 	e.leadPlayerIdx = winnerIdx
 	e.appendLog(winnerIdx, "trick_win", "ecarte.log.trickWin", map[string]string{"name": playerName(e.players, winnerIdx), "trick": strconv.Itoa(e.trickNumber)}, trickCards)
 
-	if e.allHandsEmpty() {
+	if allHandsEmpty(e.players) {
 		e.scoreDeal()
 		return
 	}
@@ -510,11 +510,6 @@ func (e *Ecarte) finishGame() {
 
 func (e *Ecarte) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	e.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
-}
-
-// allHandsEmpty 全プレイヤーの手札が空かを返す
-func (e *Ecarte) allHandsEmpty() bool {
-	return allHandsEmpty(e.players)
 }
 
 // validatePlay マストフォロー (フォロー→勝てるなら勝つ→出せないなら切り札) を検証する。

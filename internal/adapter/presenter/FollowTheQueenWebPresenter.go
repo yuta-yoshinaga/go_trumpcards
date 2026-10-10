@@ -63,7 +63,7 @@ func (p *FollowTheQueenWebPresenter) buildOutput(s interfaces.FollowTheQueenGame
 	resObj.CpuActions = p.buildCpuActionsOutput(s)
 	resObj.RoundResults = p.buildRoundResultsOutput(s)
 
-	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(s, lastErr)
+	resObj.Message, resObj.MessageCode = p.buildMessage(s, lastErr)
 
 	// メタAI情報
 	if profile := s.GetHumanProfile(); profile != nil {
@@ -135,13 +135,20 @@ func (p *FollowTheQueenWebPresenter) buildPlayersOutput(s interfaces.FollowTheQu
 			pObj.HoleCards = make([]*controller.WebOutputCard, 0)
 		}
 
-		// ショーダウン時のハンド情報
+		// ショーダウン時は確定したハンド情報を使う。プレイ中の人間には
+		// 現在の最善5枚をドメインのワイルド判定込みで返す。
 		if isShowdown && !player.GetFolded() {
 			pObj.HandRank = player.GetHandRank()
 			pObj.HandName = p.getHandName(player.GetHandRank())
 			pObj.BestHand = cardsToOutput(player.GetBestHand())
+		} else if !isShowdown && player.GetIsHuman() && !player.GetFolded() {
+			_, best := player.PeekBestHand()
+			pObj.BestHand = cardsToOutput(best)
+			_, source := player.PeekBestHandSource()
+			pObj.BestHandSource = cardsToOutput(source)
 		} else {
 			pObj.BestHand = make([]*controller.WebOutputCard, 0)
+			pObj.BestHandSource = make([]*controller.WebOutputCard, 0)
 		}
 
 		out = append(out, pObj)
@@ -188,31 +195,30 @@ func (p *FollowTheQueenWebPresenter) buildRoundResultsOutput(s interfaces.Follow
 }
 
 // buildMessage ゲーム結果メッセージを構築
-func (p *FollowTheQueenWebPresenter) buildMessage(s interfaces.FollowTheQueenGame, lastErr error) (string, string, map[string]string) {
+func (p *FollowTheQueenWebPresenter) buildMessage(s interfaces.FollowTheQueenGame, lastErr error) (string, string) {
 	if lastErr != nil {
-		return lastErr.Error(), "", nil
+		return lastErr.Error(), ""
 	}
 	if s.IsMuckAvailable() {
-		return "", "followthequeen.muck.prompt", nil
+		return "", "followthequeen.muck.prompt"
 	}
 	if s.GetGameEndFlag() {
-		msg, code := p.buildResultMessage(s)
-		return msg, code, nil
+		return "", p.buildResultMessage(s)
 	}
-	return "", "", nil
+	return "", ""
 }
 
 // buildResultMessage builds the end-of-round message and its i18n code
-func (p *FollowTheQueenWebPresenter) buildResultMessage(s interfaces.FollowTheQueenGame) (string, string) {
+func (p *FollowTheQueenWebPresenter) buildResultMessage(s interfaces.FollowTheQueenGame) string {
 	results := s.GetRoundResults()
 	if len(results) == 0 {
-		return "", "followthequeen.result.gameOver"
+		return "followthequeen.result.gameOver"
 	}
 
 	for _, r := range results {
 		if s.GetPlayer(r.PlayerIdx).GetIsHuman() {
 			if r.WonAmount > 0 {
-				return "", "followthequeen.result.win"
+				return "followthequeen.result.win"
 			}
 		}
 	}
@@ -220,18 +226,18 @@ func (p *FollowTheQueenWebPresenter) buildResultMessage(s interfaces.FollowTheQu
 	// Human not in results (folded)
 	for i := 0; i < s.GetPlayerCnt(); i++ {
 		if s.GetPlayer(i).GetIsHuman() && s.GetPlayer(i).GetFolded() {
-			return "", "followthequeen.result.folded"
+			return "followthequeen.result.folded"
 		}
 	}
 
 	// Human mucked
 	for _, r := range results {
 		if s.GetPlayer(r.PlayerIdx).GetIsHuman() && r.Mucked {
-			return "", "followthequeen.result.mucked"
+			return "followthequeen.result.mucked"
 		}
 	}
 
-	return "", "followthequeen.result.lose"
+	return "followthequeen.result.lose"
 }
 
 // ActionLogOutput 棋譜をJSON出力

@@ -148,6 +148,31 @@ describe('PontoonPage', () => {
     expect(screen.getByRole('button', { name: '10' })).toBeEnabled();
   });
 
+  it('offers a confirmed restart when chips are below the minimum bet', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 1, chips: 9, bankerHand: undefined }));
+    renderWithProviders(<PontoonPage />);
+    const restart = await screen.findByRole('button', { name: '再開する' });
+    expect(screen.getByText('チップが足りません。リセットすると初期チップで再開できます。')).toBeInTheDocument();
+    mockExec.mockClear();
+    fireEvent.click(restart);
+    expect(await screen.findByRole('alertdialog')).toBeInTheDocument();
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('does not show the restart guidance when chips suffice or betting is over', async () => {
+    mockExec.mockResolvedValueOnce(makeState({ phase: 1, chips: 10, bankerHand: undefined }));
+    const { unmount } = renderWithProviders(<PontoonPage />);
+    await screen.findByRole('button', { name: '10' });
+    expect(screen.queryByText('チップが足りません。リセットすると初期チップで再開できます。')).not.toBeInTheDocument();
+    unmount();
+
+    mockExec.mockResolvedValue(makeState({ phase: 2, chips: 0 }));
+    renderWithProviders(<PontoonPage />);
+    await screen.findByRole('button', { name: 'ツイスト' });
+    expect(screen.queryByRole('button', { name: '再開する' })).not.toBeInTheDocument();
+  });
+
   // The banker takes the other players' bets rather than making one, so the
   // stake buttons give way to a single deal.
   it('shows a deal button instead of stakes when the human banks', async () => {

@@ -596,11 +596,11 @@ func (h *Hearts) validatePlay(playerIdx int, card *Card) error {
 
 	// フォロースート
 	leadSuit := h.currentTrick[0].Card.GetDesign()
+	if err := validateFollowSuit(h.currentTrick, h.players, playerIdx, card); err != nil {
+		return err
+	}
+	// validateFollowSuit が通ったので、ここで off-suit なら手番の人はリードスートを持っていない。
 	if card.GetDesign() != leadSuit {
-		// そのスートを持っていない場合のみ許可
-		if h.playerHasSuit(playerIdx, leadSuit) {
-			return NewDomainErrorCode(ErrInvalidPlay, "hearts.errFollowLeadSuit", nil)
-		}
 		// 最初のトリックではハートとQ♠を出せない（強制される場合を除く）
 		if h.trickNumber == 1 {
 			if isPointCard(card, h.config.OmnibusJD) && h.playerHasNonPointCard(player) {
@@ -741,7 +741,7 @@ func (h *Hearts) GetHint() *HeartsHint {
 			return nil
 		}
 		idx := h.cpuPlayHard(0, validIndices)
-		return &HeartsHint{CardIndices: []int{idx}, Reason: h.playHintReason(idx, validIndices)}
+		return &HeartsHint{CardIndices: []int{idx}, Reason: h.playHintReason(idx)}
 	}
 	return nil
 }
@@ -794,7 +794,7 @@ func (h *Hearts) scorePassIndices(player *HeartsPlayer) []int {
 }
 
 // playHintReason プレイヒントの理由を判定する
-func (h *Hearts) playHintReason(chosenIdx int, validIndices []int) string {
+func (h *Hearts) playHintReason(chosenIdx int) string {
 	player := h.players[0]
 	card := player.GetCard(chosenIdx)
 

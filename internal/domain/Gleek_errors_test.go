@@ -84,6 +84,6 @@ func TestGleekDomainErrorsHaveMessageCodes(t *testing.T) {
 		g.SetTrumpSuit(domain.CardDesignHeart)
 		setGleekHand(g, 0, gleekCard(domain.CardDesignClover, 4), gleekCard(domain.CardDesignSpade, 5))
 		g.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 1, Card: gleekCard(domain.CardDesignSpade, 13)}})
-		assertGleekDomainError(t, g.PlayerPlay(0), domain.ErrInvalidPlay, "gleek.errFollowLeadSuit", nil)
+		assertGleekDomainError(t, g.PlayerPlay(0), domain.ErrInvalidPlay, "shared.errFollowLeadSuit", nil)
 	})
 }

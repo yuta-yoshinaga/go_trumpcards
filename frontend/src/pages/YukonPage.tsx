@@ -249,15 +249,21 @@ function YukonPageContent() {
   );
 
   const isPlayingForKbd = state?.phase === YukonPhase.PLAYING;
+  const canUndo = state?.canUndo === true;
 
   const actionBindings = useMemo(
     () => [
       { key: 'h', action: handleHint, label: 'hint' },
       { key: 'a', action: handleAutoComplete, label: 'autoComplete' },
       { key: 'g', action: confirmGiveUpAction, label: 'giveUp' },
-      { key: 'z', action: handleUndo, label: 'undo' },
+      {
+        key: 'z',
+        action: handleUndo,
+        label: 'undo',
+        enabled: canUndo && !loading && !isAutoCompleting,
+      },
     ],
-    [handleHint, handleAutoComplete, confirmGiveUpAction, handleUndo],
+    [handleHint, handleAutoComplete, confirmGiveUpAction, handleUndo, loading, isAutoCompleting, canUndo],
   );
 
   useActionKeyboardNav({

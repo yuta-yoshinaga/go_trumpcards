@@ -1,6 +1,6 @@
 import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { trexApi } from '../api/gameApi';
+import { actionLogApi, trexApi } from '../api/gameApi';
 import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -14,6 +14,7 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockExec = vi.mocked(trexApi.exec);
+const mockActionLog = vi.mocked(actionLogApi.trex);
 
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 
@@ -83,6 +84,17 @@ describe('TrexPage', () => {
     expect(screen.getByText(/同じ契約は1王国に1度だけ/)).toBeInTheDocument();
     expect(screen.getByText(/Jを起点/)).toBeInTheDocument();
     expect(screen.getByText(/ディール: 0\/20/)).toBeInTheDocument();
+  });
+
+  it('opens the action log during play and shows its entries', async () => {
+    mockActionLog.mockResolvedValue({
+      entries: [{ turnNumber: 1, playerIdx: 0, actionType: 'play', detail: 'Public card played' }],
+    });
+    renderWithProviders(<TrexPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    fireEvent.click(screen.getByRole('button', { name: '棋譜を見る' }));
+    expect(await screen.findByText(/Public card played/)).toBeInTheDocument();
   });
 
   it('offers only the contracts this king has left', async () => {

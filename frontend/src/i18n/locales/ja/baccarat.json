@@ -64,6 +64,7 @@
     "title": "設定"
   },
   "betGuide": "ベットしてゲーム開始",
+  "betLimitExceeded": "ベット合計がチップを超えています: 合計 {{total}} / 所持 {{chips}}",
   "hintReason": {
     "bankerBestOdds": "バンカーベットはハウスエッジが最も低い(1.06%) — 推奨",
     "avoidTie": "タイベットはハウスエッジが非常に高い(14.36%) — バンカーベット推奨"

@@ -35,6 +35,8 @@ type PigGame interface {
 	GetValidPassIndices(playerIdx int) []int
 	// HasChosenPass 席iが渡す札を選び終えたかを返す
 	HasChosenPass(i int) bool
+	// GetPendingPassCard 渡すために選んだ札を返す (未選択なら nil)
+	GetPendingPassCard(i int) *domain.Card
 	// GetCurrentPlayerIdx 渡す札を選ぶ番の席を返す
 	GetCurrentPlayerIdx() int
 	// GetSignallerIdx 最初に合図した席を返す (-1: 合図なし)

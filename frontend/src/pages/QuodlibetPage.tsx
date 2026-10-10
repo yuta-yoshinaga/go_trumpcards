@@ -433,7 +433,8 @@ function QuodlibetPageContent() {
                   {state.hint?.cardIndices &&
                     state.hint.cardIndices.length > 0 &&
                     ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
-                  {state.hintContract >= 0 && ` [${t(`contractName.${state.availableContractNames[0] ?? ''}`)}]`}
+                  {state.hintContract >= 0 &&
+                    ` [${t(`contractName.${state.availableContractNames[state.availableContracts.indexOf(state.hintContract)] ?? 'unknown'}`)}]`}
                 </div>
               )}
             </div>

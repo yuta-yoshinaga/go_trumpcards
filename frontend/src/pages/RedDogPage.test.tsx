@@ -39,6 +39,7 @@ const betState: RedDogResponse = {
   spread: 0,
   result: 0,
   totalPayout: 0,
+  netChange: 0,
   appliedMultiplier: 0,
   message: '',
 };
@@ -52,6 +53,7 @@ const spreadState: RedDogResponse = {
   spread: 4,
   result: 0,
   totalPayout: 0,
+  netChange: 0,
   appliedMultiplier: 0,
   message: '',
 };
@@ -66,6 +68,7 @@ const winState: RedDogResponse = {
   spread: 4,
   result: 1,
   totalPayout: 200,
+  netChange: 100,
   appliedMultiplier: 1,
   message: 'You win!',
 };
@@ -144,6 +147,19 @@ describe('RedDogPage', () => {
     renderWithProviders(<RedDogPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /次のゲーム/ })).toBeInTheDocument());
     expect(screen.getByText(/200/)).toBeInTheDocument();
+    expect(screen.getByTestId('payout-breakdown')).toHaveTextContent('損益: 100');
+  });
+
+  it('shows the ante and raise loss for a losing result', async () => {
+    mockApi.mockResolvedValue({ ...winState, result: -1, totalPayout: 0, netChange: -200, raise: 100 });
+    renderWithProviders(<RedDogPage />);
+    expect(await screen.findByTestId('payout-breakdown')).toHaveTextContent('損益: -200');
+  });
+
+  it('shows zero net change for a push', async () => {
+    mockApi.mockResolvedValue({ ...winState, result: 0, totalPayout: 100, netChange: 0, raise: 100 });
+    renderWithProviders(<RedDogPage />);
+    expect(await screen.findByTestId('payout-breakdown')).toHaveTextContent('損益: 0');
   });
 
   it('renders the consecutive-card push message from its messageCode', async () => {

@@ -79,7 +79,7 @@ func (pwp *PokerWebPresenter) buildOutput(p interfaces.PokerGame, lastErr error)
 	resObj.CpuActions = pwp.buildCpuActionsOutput(p)
 	resObj.CpuExchanges = pwp.buildCpuExchangesOutput(p)
 	resObj.RoundResults = pwp.buildRoundResultsOutput(p)
-	resObj.Message, resObj.MessageCode, resObj.MessageParams = pwp.buildMessage(p, lastErr)
+	resObj.Message, resObj.MessageCode = pwp.buildMessage(p, lastErr)
 
 	// メタAI情報
 	if profile := p.GetHumanProfile(); profile != nil {
@@ -98,15 +98,15 @@ func (pwp *PokerWebPresenter) buildOutput(p interfaces.PokerGame, lastErr error)
 }
 
 // buildMessage ゲーム結果メッセージを構築
-func (pwp *PokerWebPresenter) buildMessage(p interfaces.PokerGame, lastErr error) (string, string, map[string]string) {
+func (pwp *PokerWebPresenter) buildMessage(p interfaces.PokerGame, lastErr error) (string, string) {
 	if lastErr != nil {
-		return lastErr.Error(), "", nil
+		return lastErr.Error(), ""
 	}
 	if p.GetGameEndFlag() {
 		msg, code := pwp.buildResultMessage(p)
-		return msg, code, nil
+		return msg, code
 	}
-	return "", "", nil
+	return "", ""
 }
 
 // buildSidePotsOutput サイドポット情報を構築

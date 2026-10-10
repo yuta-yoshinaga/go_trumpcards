@@ -36,9 +36,10 @@ type BeziqueWebOutputPlayer struct {
 
 // BeziqueWebOutputMeld 宣言可能な役
 type BeziqueWebOutputMeld struct {
-	Type   int `json:"type"`
-	Suit   int `json:"suit"`
-	Points int `json:"points"`
+	Type        int   `json:"type"`
+	Suit        int   `json:"suit"`
+	Points      int   `json:"points"`
+	CardIndices []int `json:"cardIndices"`
 }
 
 // BeziqueWebOutputHint ヒント出力

@@ -256,6 +256,127 @@ describe('BaccaratPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 100, 0, 10, 20));
   });
 
+  it('updates all three bet limits to the chips remaining after the other bets', async () => {
+    mockExec.mockResolvedValue({ ...betPhaseState, chips: 100 });
+    renderWithProviders(<BaccaratPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 100')).toBeInTheDocument());
+
+    const main = screen.getByLabelText('ベット額:');
+    const details = screen.getByTestId('baccarat-sidebet-details');
+    const playerPair = within(details).getByLabelText('プレイヤーペア');
+    const bankerPair = within(details).getByLabelText('バンカーペア');
+
+    fireEvent.change(main, { target: { value: '60' } });
+    expect(main).toHaveAttribute('max', '100');
+    expect(playerPair).toHaveAttribute('max', '40');
+    expect(bankerPair).toHaveAttribute('max', '40');
+
+    fireEvent.change(playerPair, { target: { value: '30' } });
+    expect(main).toHaveAttribute('max', '70');
+    expect(playerPair).toHaveAttribute('max', '40');
+    expect(bankerPair).toHaveAttribute('max', '10');
+
+    fireEvent.change(bankerPair, { target: { value: '10' } });
+    expect(main).toHaveAttribute('max', '60');
+    expect(playerPair).toHaveAttribute('max', '30');
+    expect(bankerPair).toHaveAttribute('max', '10');
+
+    fireEvent.change(bankerPair, { target: { value: '50' } });
+    expect(bankerPair).toHaveValue('10');
+  });
+
+  it('blocks an over-budget bet caused by the main bet minimum', async () => {
+    mockExec.mockResolvedValue({ ...betPhaseState, chips: 5 });
+    renderWithProviders(<BaccaratPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 5')).toBeInTheDocument());
+
+    const betButton = screen.getByRole('button', { name: 'ベット' });
+    const main = screen.getByLabelText('ベット額:');
+    fireEvent.change(main, { target: { value: '0' } });
+    expect(main).toHaveValue('10');
+
+    expect(betButton).toHaveAttribute('aria-disabled', 'true');
+    const reason = screen.getByText('ベット合計がチップを超えています: 合計 10 / 所持 5');
+    expect(betButton).toHaveAttribute('aria-describedby', reason.id);
+    mockExec.mockClear();
+    fireEvent.click(betButton);
+    await flushPendingDispatch();
+    expect(mockExec.mock.calls.some(([action]) => action === 'bet')).toBe(false);
+  });
+
+  it('blocks a stale combined bet after the chip balance drops, then allows it when corrected', async () => {
+    mockExec
+      .mockResolvedValueOnce({ ...betPhaseState, chips: 150 })
+      .mockResolvedValueOnce({ ...endPhasePlayerWins, chips: 100 })
+      .mockResolvedValueOnce({ ...betPhaseState, chips: 100 });
+    renderWithProviders(<BaccaratPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 150')).toBeInTheDocument());
+
+    const main = screen.getByLabelText('ベット額:');
+    const playerPair = screen.getByLabelText('プレイヤーペア');
+    fireEvent.change(main, { target: { value: '100' } });
+    fireEvent.change(playerPair, { target: { value: '50' } });
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(screen.getByText(/プレイヤーの勝ち/)).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
+    await waitFor(() => expect(screen.getByText('チップ: 100')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByLabelText('プレイヤーペア')).toBeInTheDocument());
+
+    const betButton = screen.getByRole('button', { name: 'ベット' });
+    expect(betButton).toHaveAttribute('aria-disabled', 'true');
+    const reason = screen.getByText('ベット合計がチップを超えています: 合計 150 / 所持 100');
+    expect(betButton).toHaveAttribute('aria-describedby', reason.id);
+    mockExec.mockClear();
+    fireEvent.click(betButton);
+    await flushPendingDispatch();
+    expect(mockExec.mock.calls.some(([action]) => action === 'bet')).toBe(false);
+
+    fireEvent.change(screen.getByLabelText('プレイヤーペア'), { target: { value: '0' } });
+    expect(betButton).not.toHaveAttribute('aria-disabled', 'true');
+    fireEvent.click(betButton);
+    await flushPendingDispatch();
+    expect(mockExec).toHaveBeenCalledWith('bet', 100, 0, 0, 0);
+  });
+
+  it('blocks the b shortcut while the main bet minimum exceeds the chip balance', async () => {
+    mockExec.mockResolvedValue({ ...betPhaseState, chips: 5 });
+    renderWithProviders(<BaccaratPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 5')).toBeInTheDocument());
+    fireEvent.change(screen.getByLabelText('ベット額:'), { target: { value: '0' } });
+
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'b' });
+    await flushPendingDispatch();
+    expect(mockExec.mock.calls.some(([action]) => action === 'bet')).toBe(false);
+  });
+
+  it('keeps rebet unavailable when the saved wager exceeds the chip balance', async () => {
+    mockExec.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce({ ...endPhasePlayerWins, chips: 50 });
+    renderWithProviders(<BaccaratPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(screen.getByText(/プレイヤーの勝ち/)).toBeInTheDocument());
+
+    expect(screen.getByText('チップ: 50')).toBeInTheDocument();
+    expect(screen.queryByTestId('bac-rebet-button')).not.toBeInTheDocument();
+  });
+
+  it('sets other bet limits to zero when the chips are fully allocated', async () => {
+    mockExec.mockResolvedValue({ ...betPhaseState, chips: 100 });
+    renderWithProviders(<BaccaratPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 100')).toBeInTheDocument());
+    const details = screen.getByTestId('baccarat-sidebet-details');
+    const main = screen.getByLabelText('ベット額:');
+    const playerPair = within(details).getByLabelText('プレイヤーペア');
+    const bankerPair = within(details).getByLabelText('バンカーペア');
+
+    fireEvent.change(main, { target: { value: '100' } });
+    expect(playerPair).toHaveAttribute('max', '0');
+    expect(bankerPair).toHaveAttribute('max', '0');
+    fireEvent.change(playerPair, { target: { value: '10' } });
+    expect(playerPair).toHaveValue('0');
+  });
+
   it('resets after end phase', async () => {
     mockExec
       .mockResolvedValueOnce(betPhaseState)

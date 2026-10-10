@@ -283,4 +283,14 @@ describe('SchnapsenPage', () => {
       expect(container.querySelector(`[data-tutorial="${anchor}"]`)).toBeInTheDocument();
     }
   });
+
+  it('shows the Japanese card guide when opened', async () => {
+    renderWithProviders(<SchnapsenPage />);
+    const guide = await screen.findByTestId('schnapsen-card-guide');
+    fireEvent.click(guide.querySelector('summary')!);
+
+    expect(guide).toHaveTextContent('カード点: A=11点、10=10点、K=4点、Q=3点、J=2点。');
+    expect(guide).toHaveTextContent('同じスートの強さ: A > 10 > K > Q > J。');
+    expect(guide).toHaveTextContent('異なるスートでは切り札が勝ちます。カード点は獲得したトリックで得点になります。');
+  });
 });

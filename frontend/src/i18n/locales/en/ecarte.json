@@ -40,6 +40,9 @@
   "you": "You",
   "cpu": "CPU {{id}}",
   "matchScoreTitle": "Score",
+  "dealer": "Dealer",
+  "elder": "Elder",
+  "listSeparator": ", ",
   "scoreLine": "{{name}}: match {{match}} / deal {{deal}} / {{tricks}} tricks",
   "scoreRules": {
     "kingBonus": "A turned King of trumps gives the dealer +1. Holding the King of trumps when play starts and declaring it gives that player +1."
