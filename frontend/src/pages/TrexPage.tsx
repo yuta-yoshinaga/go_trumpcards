@@ -2,6 +2,7 @@ import { Fragment, useMemo } from 'react';
 import type { trexApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardBack } from '../components/CardImage';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -134,31 +135,38 @@ function TrexPageContent() {
             {/* Permanent, not tutorial-only: "once per kingdom" and "the
                 dominoes start from the JACK" are the two things a player gets
                 wrong. */}
-            <div className="text-center text-xs text-ds-warning mb-3 font-medium" data-tutorial="tx-rule">
-              {t('ruleLine')}
-            </div>
+            <details className="mb-2 p-2 rounded bg-ds-surface" data-testid="tx-rule-details">
+              <summary className="cursor-pointer select-none text-center text-xs text-ds-warning font-medium">
+                {t('rulesLabel')}
+              </summary>
+              <p className="mt-2 text-center text-xs text-ds-warning" data-tutorial="tx-rule">
+                {t('ruleLine')}
+              </p>
+            </details>
 
-            <div className="flex justify-center gap-4 mb-3 flex-wrap" data-tutorial="tx-seats">
-              {opponents.map((o) => (
-                <div key={`opp-${o.id.toString()}`} className="text-center">
-                  <div className="text-game-text-muted text-xs mb-1">
-                    {t('opponentHand', { name: `CPU${o.id.toString()}`, n: o.cardCount })}
-                    {' · '}
-                    {t('score', { n: o.score })}
-                    {o.id === state.kingIdx && ` · ${t('king')}`}
+            <CpuAccordion playerCount={opponents.length} dataTutorial="tx-seats">
+              <div className="flex flex-wrap sm:flex-nowrap justify-center gap-4 mb-3">
+                {opponents.map((o) => (
+                  <div key={`opp-${o.id.toString()}`} className="text-center">
+                    <div className="text-game-text-muted text-xs mb-1">
+                      {t('opponentHand', { name: `CPU${o.id.toString()}`, n: o.cardCount })}
+                      {' · '}
+                      {t('score', { n: o.score })}
+                      {o.id === state.kingIdx && ` · ${t('king')}`}
+                    </div>
+                    <div
+                      className="flex gap-1 justify-center flex-wrap"
+                      role="img"
+                      aria-label={t('opponentHandAriaLabel', { name: `CPU${o.id.toString()}`, n: o.cardCount })}
+                    >
+                      {Array.from({ length: o.cardCount }, (_, i) => (
+                        <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
+                      ))}
+                    </div>
                   </div>
-                  <div
-                    className="flex gap-1 justify-center flex-wrap"
-                    role="img"
-                    aria-label={t('opponentHandAriaLabel', { name: `CPU${o.id.toString()}`, n: o.cardCount })}
-                  >
-                    {Array.from({ length: o.cardCount }, (_, i) => (
-                      <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            </CpuAccordion>
 
             <div className="text-center mb-4" data-tutorial="tx-table">
               {state.isTrix ? (

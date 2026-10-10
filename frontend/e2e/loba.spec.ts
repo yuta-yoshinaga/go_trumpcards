@@ -4,6 +4,7 @@ import { navigateTo, TIMEOUT_GAME_LOOP, waitForLoaded } from './helpers';
 test.describe('Loba E2E', () => {
   test('shows both rules and draws a card', async ({ page }) => {
     await navigateTo(page, '/loba');
+    await page.getByTestId('lb-rule-details').locator('summary').click();
 
     // Permanent, not tutorial-only: "three different suits" and the joker
     // restriction are what a player gets wrong.

@@ -8,6 +8,13 @@ import type { Card, CardDesign, LobaPlayer, LobaResponse } from '../types/card';
 import { LobaPhase } from '../types/phases';
 import { LobaPage } from './LobaPage';
 
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+}));
+
 vi.mock('../api/gameApi', () => ({
   lobaApi: { exec: vi.fn() },
   actionLogApi: { loba: vi.fn() },
@@ -62,6 +69,7 @@ function selectCards(indices: number[]) {
 
 describe('LobaPage', () => {
   beforeEach(() => {
+    mobileState.isMobile = true;
     vi.clearAllMocks();
     // ヒントのトグルは localStorage に残る。消さないと次のテストが
     // チェック済みで始まり、クリックで off になる。
@@ -72,12 +80,49 @@ describe('LobaPage', () => {
     });
   });
 
+  it('keeps rules and CPU details collapsed while their content stays in the DOM', async () => {
+    renderWithProviders(<LobaPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    const ruleDetails = screen.getByTestId('lb-rule-details');
+    expect(ruleDetails).not.toHaveAttribute('open');
+    const ruleText = ruleDetails.querySelector('[data-tutorial="lb-rule"]');
+    expect(ruleText).toBeInTheDocument();
+    expect(ruleText?.parentElement?.tagName).not.toBe('SUMMARY');
+    expect(ruleText).not.toBeVisible();
+    fireEvent.click(ruleDetails.querySelector('summary')!);
+    expect(ruleDetails).toHaveAttribute('open');
+    expect(ruleText).toBeVisible();
+    const cpuDetails = screen.getByTestId('cpu-accordion');
+    expect(cpuDetails).not.toHaveAttribute('open');
+    expect(cpuDetails.querySelector('[role="img"]')).toBeInTheDocument();
+    const seatRow = cpuDetails.querySelector('.flex.flex-wrap');
+    expect(seatRow).toBeInTheDocument();
+    expect(seatRow?.classList.contains('sm:flex-nowrap')).toBe(true);
+  });
+
+  it('shows the eliminated label beside an eliminated CPU seat', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ players: [seat(0, true), seat(1, false, { eliminated: true }), seat(2, false), seat(3, false)] }),
+    );
+    renderWithProviders(<LobaPage />);
+
+    const cpuDetails = await screen.findByTestId('cpu-accordion');
+    expect(cpuDetails).toHaveTextContent('CPU 1: 手札9枚 · 失点12 · 脱落');
+  });
+
   it('opens the action log during play and shows its entries', async () => {
     renderWithProviders(<LobaPage />);
     const button = await screen.findByRole('button', { name: '棋譜を見る' });
     fireEvent.click(button);
     expect(await screen.findByText(/VISIBLE LOG ENTRY/)).toBeInTheDocument();
     expect(mockActionLog).toHaveBeenCalled();
+  });
+
+  it('keeps CPU seats open on desktop', async () => {
+    mobileState.isMobile = false;
+    renderWithProviders(<LobaPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
   });
 
   it('resets on mount', async () => {
@@ -88,6 +133,7 @@ describe('LobaPage', () => {
   it('shows both rules permanently and the knock-out threshold', async () => {
     renderWithProviders(<LobaPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    fireEvent.click(screen.getByTestId('lb-rule-details').querySelector('summary')!);
     expect(screen.getByText(/異なる3スート/)).toBeInTheDocument();
     expect(screen.getByText(/ジョーカーは1枚まで、ピエルナ不可/)).toBeInTheDocument();
     expect(screen.getByText(/101点で脱落/)).toBeInTheDocument();

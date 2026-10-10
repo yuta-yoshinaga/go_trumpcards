@@ -44,5 +44,6 @@
   "tutorial.carryOver": "Chips on a compartment nobody claims stay put and carry into the next deal. The dealer dresses the board again, so Pope and Matrimony build up.",
   "tutorial.eightOut": "The eight of diamonds is out of the pack, so nothing can follow the seven -- a run always dies there. A king stops a run too, since nothing outranks it.",
   "tutorial.popeExcused": "When someone goes out, everyone pays one chip per card still held -- except whoever is holding the Pope, who is excused.",
-  "dealerBadge": "dealer"
+  "dealerBadge": "dealer",
+  "rulesLabel": "Rules"
 }

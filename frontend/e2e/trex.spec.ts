@@ -4,6 +4,7 @@ import { gameButton, navigateTo, TIMEOUT_GAME_LOOP, waitForLoaded } from './help
 test.describe('Trex E2E', () => {
   test('shows both rules and lets the king choose a contract', async ({ page }) => {
     await navigateTo(page, '/trex');
+    await page.getByTestId('tx-rule-details').locator('summary').click();
 
     // Permanent, not tutorial-only: "once per kingdom" and "the dominoes start
     // from the JACK" are what a player gets wrong.
