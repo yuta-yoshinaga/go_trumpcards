@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { callBreakApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -150,7 +150,9 @@ describe('CallBreakPage', () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<CallBreakPage />);
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'ビッド' })).toBeInTheDocument();
+      expect(
+        within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: 'ビッド' }),
+      ).toBeInTheDocument();
     });
     // 13 selectable bid options, defaulting to 1 pressed.
     expect(screen.getByTestId('bid-option-1')).toHaveAttribute('aria-pressed', 'true');

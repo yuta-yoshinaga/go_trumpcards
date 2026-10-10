@@ -195,8 +195,9 @@ describe('PinochlePage', () => {
   it('renders bid phase with bid and pass buttons', async () => {
     renderWithProviders(<PinochlePage />);
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'ビッド' })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'パス' })).toBeInTheDocument();
+      const actions = within(screen.getByTestId('game-footer-actions'));
+      expect(actions.getByRole('button', { name: 'ビッド' })).toBeInTheDocument();
+      expect(actions.getByRole('button', { name: 'パス' })).toBeInTheDocument();
     });
   });
 

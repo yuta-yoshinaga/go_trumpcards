@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fortyFivesApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -106,6 +106,8 @@ describe('FortyFivesPage', () => {
     expect(screen.getByTestId('bid-15')).toBeInTheDocument();
     expect(screen.getByTestId('bid-20')).toBeInTheDocument();
     expect(screen.getByTestId('bid-25')).toBeInTheDocument();
+    const actions = within(screen.getByTestId('game-footer-actions'));
+    expect(actions.getByTestId('bid-0')).toBeInTheDocument();
   });
 
   it('marks the current player during bidding and play, but not between tricks', async () => {

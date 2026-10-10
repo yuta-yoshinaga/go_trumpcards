@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { napApi } from '../api/gameApi';
 import i18n from '../i18n';
@@ -116,11 +116,12 @@ describe('NapPage', () => {
 
   it('shows bid buttons on a human bid turn', async () => {
     renderWithProviders(<NapPage />);
-    await waitFor(() => expect(screen.getByTestId('bid-0')).toBeInTheDocument());
-    expect(screen.getByTestId('bid-2')).toBeInTheDocument();
-    expect(screen.getByTestId('bid-3')).toBeInTheDocument();
-    expect(screen.getByTestId('bid-4')).toBeInTheDocument();
-    expect(screen.getByTestId('bid-5')).toBeInTheDocument();
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByTestId('bid-0')).toBeInTheDocument();
+    expect(within(actions).getByTestId('bid-2')).toBeInTheDocument();
+    expect(within(actions).getByTestId('bid-3')).toBeInTheDocument();
+    expect(within(actions).getByTestId('bid-4')).toBeInTheDocument();
+    expect(within(actions).getByTestId('bid-5')).toBeInTheDocument();
   });
 
   it('keeps every hand card unavailable during the bidding phase', async () => {

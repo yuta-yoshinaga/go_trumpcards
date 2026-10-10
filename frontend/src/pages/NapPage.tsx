@@ -404,7 +404,74 @@ function NapPageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.nap.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.nap.footer} px-4 py-2.5`}
+            actions={
+              (isHumanBidTurn && isBidPhase) || canPlay || isTrickEnd || isRoundEnd ? (
+                <div className="flex flex-wrap gap-2 items-center" data-tutorial="nap-action-buttons">
+                  {isBidPhase &&
+                    isHumanBidTurn &&
+                    BIDS.map((b) => {
+                      // Pass (0) is always allowed; a non-pass bid must beat the current highest.
+                      const tooLow = b.value !== NapContract.PASS && b.value <= highestBid;
+                      const disabled = loading || tooLow;
+                      const reason = tooLow
+                        ? t('bidTooLow', { bid: highestBidLabelKey ? t(highestBidLabelKey) : '' })
+                        : undefined;
+                      // The title lives on the wrapping span: browsers suppress native tooltips and
+                      // hover events on disabled buttons, so hovering the span still surfaces the reason.
+                      const payout = napPayout(b.value);
+                      return (
+                        <span key={b.value} title={reason} data-testid={`bid-wrap-${b.value}`}>
+                          <button
+                            type="button"
+                            className="px-3 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
+                            onClick={() => handleBid(b.value)}
+                            disabled={disabled}
+                            aria-disabled={disabled}
+                            aria-label={
+                              reason
+                                ? `${t(b.key)} — ${reason}`
+                                : payout
+                                  ? t('bidStakeAria', { bid: t(b.key), make: payout.make, fail: payout.fail })
+                                  : undefined
+                            }
+                            data-testid={`bid-${b.value}`}
+                          >
+                            {t(b.key)}
+                            {payout && (
+                              <span className="ml-1 text-xs opacity-80">
+                                {t('bidStake', { make: payout.make, fail: payout.fail })}
+                              </span>
+                            )}
+                          </button>
+                        </span>
+                      );
+                    })}
+                  {canPlay && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handlePlay}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                    >
+                      {t('playButton')}
+                    </button>
+                  )}
+                  {isTrickEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                      {t('nextTrick')}
+                    </button>
+                  )}
+                  {isRoundEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                      {t('nextRound')}
+                    </button>
+                  )}
+                </div>
+              ) : null
+            }
+          >
             {humanPlayer && (
               <PlayerHandSection
                 humanPlayer={humanPlayer}
@@ -437,75 +504,18 @@ function NapPageContent() {
             </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-            <div className="flex flex-wrap gap-2 items-center" data-tutorial="nap-action-buttons">
-              {isBidPhase && isHumanBidTurn && (
-                <>
-                  <span className="text-xs text-ds-text-muted self-center mr-1">{t('bidPrompt')}</span>
-                  <span className="text-xs text-ds-text-muted self-center mr-1" data-testid="nap-highest-bid">
-                    {highestBid > 0 && highestBidLabelKey
-                      ? t('bidHighest', { bid: t(highestBidLabelKey), player: highestBidderName })
-                      : t('bidNone')}
-                  </span>
-                  <span className="basis-full text-xs text-ds-text-muted">{t('bidStakeLegend')}</span>
-                  {BIDS.map((b) => {
-                    // Pass (0) is always allowed; a non-pass bid must beat the current highest.
-                    const tooLow = b.value !== NapContract.PASS && b.value <= highestBid;
-                    const disabled = loading || tooLow;
-                    const reason = tooLow
-                      ? t('bidTooLow', { bid: highestBidLabelKey ? t(highestBidLabelKey) : '' })
-                      : undefined;
-                    // The title lives on the wrapping span: browsers suppress native tooltips and
-                    // hover events on disabled buttons, so hovering the span still surfaces the reason.
-                    const payout = napPayout(b.value);
-                    return (
-                      <span key={b.value} title={reason} data-testid={`bid-wrap-${b.value}`}>
-                        <button
-                          type="button"
-                          className="px-3 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
-                          onClick={() => handleBid(b.value)}
-                          disabled={disabled}
-                          aria-disabled={disabled}
-                          aria-label={
-                            reason
-                              ? `${t(b.key)} — ${reason}`
-                              : payout
-                                ? t('bidStakeAria', { bid: t(b.key), make: payout.make, fail: payout.fail })
-                                : undefined
-                          }
-                          data-testid={`bid-${b.value}`}
-                        >
-                          {t(b.key)}
-                          {payout && (
-                            <span className="ml-1 text-xs opacity-80">
-                              {t('bidStake', { make: payout.make, fail: payout.fail })}
-                            </span>
-                          )}
-                        </button>
-                      </span>
-                    );
-                  })}
-                </>
-              )}
-              {canPlay && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-              {isTrickEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                  {t('nextTrick')}
-                </button>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
+            {isBidPhase && isHumanBidTurn && (
+              <div className="mb-2 flex flex-wrap gap-2 items-center">
+                <span className="text-xs text-ds-text-muted self-center mr-1">{t('bidPrompt')}</span>
+                <span className="text-xs text-ds-text-muted self-center mr-1" data-testid="nap-highest-bid">
+                  {highestBid > 0 && highestBidLabelKey
+                    ? t('bidHighest', { bid: t(highestBidLabelKey), player: highestBidderName })
+                    : t('bidNone')}
+                </span>
+                <span className="basis-full text-xs text-ds-text-muted">{t('bidStakeLegend')}</span>
+              </div>
+            )}
+            <div className="flex flex-wrap gap-2 items-center">
               <GameResetButton
                 isGameEnd={isGameEnd}
                 onReset={handleManualReset}

@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { cincinnatiApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
@@ -156,7 +156,9 @@ describe('CincinnatiPage', () => {
   it('賭けが無ければチェック、あればコールを出す', async () => {
     mockApi.mockResolvedValue(base);
     const { unmount } = renderWithProviders(<CincinnatiPage />);
-    await waitFor(() => expect(screen.getByTestId('cin-check')).toBeInTheDocument());
+    await waitFor(() =>
+      expect(within(screen.getByTestId('game-footer-actions')).getByTestId('cin-check')).toBeInTheDocument(),
+    );
     expect(screen.queryByTestId('cin-call')).not.toBeInTheDocument();
     expect(screen.getByTestId('cin-bet')).toBeInTheDocument();
     unmount();
