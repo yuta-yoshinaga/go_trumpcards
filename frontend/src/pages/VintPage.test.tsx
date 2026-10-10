@@ -100,6 +100,11 @@ describe('VintPage', () => {
     expect(scores).not.toHaveAttribute('open');
     expect(within(scores).getByText(/チーム0/)).not.toBeVisible();
     expect(cpu).not.toHaveAttribute('open');
+    const humanRow = screen.getByText('あなた').closest('[data-testid="vint-player"]');
+    expect(humanRow).not.toBeNull();
+    expect(humanRow).toBeVisible();
+    expect(humanRow?.closest('[data-testid="cpu-accordion"]')).toBeNull();
+    expect(within(cpu).getAllByTestId('vint-player')).toHaveLength(3);
     expect(within(cpu).getAllByTestId('vint-player')[0]).not.toBeVisible();
 
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });

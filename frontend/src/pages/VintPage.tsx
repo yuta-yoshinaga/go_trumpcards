@@ -182,6 +182,22 @@ function VintPageContent() {
   };
 
   const result = state.lastResult;
+  const renderPlayer = (p: (typeof state.players)[number]) => (
+    <div
+      key={`player-${p.id}`}
+      data-testid="vint-player"
+      className={`text-sm py-0.5 flex items-center gap-2 ${
+        p.isCurrentTurn && !isGameEnd ? 'text-ds-warning' : 'text-ds-text-muted'
+      } ${p.isHuman ? 'font-semibold' : ''}`}
+    >
+      <span>{playerLabel(p.id, p.isHuman)}</span>
+      <span>({t('team', { n: p.team })})</span>
+      {p.isDealer && <span className="text-ds-accent">[{t('dealer')}]</span>}
+      {p.isDeclarer && <span className="text-ds-success">[{t('declarer')}]</span>}
+      <span>{t('tricksWon', { n: p.tricksWon })}</span>
+      {!p.isHuman && p.cards.length === 0 && <span>{t('hiddenHand', { count: p.cardCount })}</span>}
+    </div>
+  );
 
   return (
     <GamePageShell
@@ -288,24 +304,12 @@ function VintPageContent() {
             </details>
 
             {/* Players */}
-            <CpuAccordion playerCount={state.players.length} dataTutorial="vint-players">
+            <div className="mb-1 flex justify-center" data-testid="vint-human-seat">
+              {human && renderPlayer(human)}
+            </div>
+            <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length} dataTutorial="vint-players">
               <div className="mb-1 text-ds-text-primary text-sm">{t('playersTitle')}</div>
-              {state.players.map((p) => (
-                <div
-                  key={`player-${p.id}`}
-                  data-testid="vint-player"
-                  className={`text-sm py-0.5 flex items-center gap-2 ${
-                    p.isCurrentTurn && !isGameEnd ? 'text-ds-warning' : 'text-ds-text-muted'
-                  } ${p.isHuman ? 'font-semibold' : ''}`}
-                >
-                  <span>{playerLabel(p.id, p.isHuman)}</span>
-                  <span>({t('team', { n: p.team })})</span>
-                  {p.isDealer && <span className="text-ds-accent">[{t('dealer')}]</span>}
-                  {p.isDeclarer && <span className="text-ds-success">[{t('declarer')}]</span>}
-                  <span>{t('tricksWon', { n: p.tricksWon })}</span>
-                  {!p.isHuman && p.cards.length === 0 && <span>{t('hiddenHand', { count: p.cardCount })}</span>}
-                </div>
-              ))}
+              {state.players.filter((p) => !p.isHuman).map(renderPlayer)}
             </CpuAccordion>
 
             {/* Trick */}
