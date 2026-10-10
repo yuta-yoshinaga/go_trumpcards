@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { batakApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -764,5 +764,21 @@ describe('BatakPage trick winner badge', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: '次のトリック' }));
     await waitFor(() => expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument());
+  });
+
+  it('keeps the primary control in the pinned footer actions', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<BatakPage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: '出す' })).toBeInTheDocument();
+  });
+
+  it('keeps bid choices above the pinned bid action row', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<BatakPage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: 'ビッド' })).toBeInTheDocument();
+    expect(screen.getByTestId('bid-option-6')).toBeInTheDocument();
+    expect(actions).not.toContainElement(screen.getByTestId('bid-option-6'));
   });
 });

@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, napoleonApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -260,6 +260,9 @@ describe('NapoleonPage', () => {
       expect(screen.getByRole('button', { name: '\u30d3\u30c3\u30c9' })).toBeInTheDocument();
       expect(screen.getByLabelText('ビッド数入力')).toBeInTheDocument();
     });
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: 'ビッド' }),
+    ).toBeInTheDocument();
   });
 
   it('shows the highest bidder name with the highest bid, and hides it without a bid', async () => {

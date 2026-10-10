@@ -1,4 +1,4 @@
-import { act, fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { coincheApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -92,6 +92,13 @@ beforeEach(() => {
 });
 
 describe('CoinchePage', () => {
+  it('keeps the auction pass action in the fixed footer actions row', async () => {
+    mockExec.mockResolvedValue(initialState);
+    renderWithProviders(<CoinchePage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: /パス/ })).toBeInTheDocument();
+  });
+
   it('includes each trick player’s team role and card name in the accessible card name', async () => {
     mockExec.mockResolvedValue(
       makeState({

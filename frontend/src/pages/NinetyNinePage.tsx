@@ -455,7 +455,69 @@ function NinetyNinePageContent() {
             />
           </div>
 
-          <GameFooter className={`${gameTheme.ninetynine.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.ninetynine.footer} px-4 py-2.5`}
+            actions={
+              (isHumanBidTurn || isHumanTurn || isTrickEnd || isRoundEnd) && (
+                <div className="flex gap-2 items-center" data-tutorial="nn-play-button">
+                  {(isHumanBidTurn || isHumanTurn) && (
+                    <button
+                      type="button"
+                      className={btnSuccess}
+                      onClick={handleHint}
+                      disabled={loading || hintLoading}
+                      data-testid="nn-hint-button"
+                    >
+                      {tc('button.hint')}
+                    </button>
+                  )}
+                  {isHumanBidTurn && (
+                    // Use aria-disabled (not the HTML `disabled` attribute) for the
+                    // not-enough-cards state so the button stays focusable and a screen
+                    // reader can read why it can't be pressed yet; handleBury guards the
+                    // count so activating it while not-ready is a no-op. `disabled` is
+                    // still applied while loading. Mirrors the Cribbage pegRestricted pattern.
+                    <button
+                      type="button"
+                      className={`${btnPrimary}${buryReady ? '' : ' opacity-50 cursor-not-allowed'}`}
+                      onClick={handleBury}
+                      disabled={loading}
+                      aria-disabled={!buryReady || undefined}
+                      aria-label={
+                        buryReady
+                          ? undefined
+                          : buryOverBy > 0
+                            ? t('buryButtonTooManyAria', { count: buryOverBy })
+                            : t('buryButtonDisabledAria', { count: buryRemaining })
+                      }
+                    >
+                      {t('buryButton')}
+                    </button>
+                  )}
+                  {isHumanTurn && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handlePlay}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                    >
+                      {t('playButton')}
+                    </button>
+                  )}
+                  {isTrickEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                      {t('nextTrick')}
+                    </button>
+                  )}
+                  {isRoundEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                      {t('nextRound')}
+                    </button>
+                  )}
+                </div>
+              )
+            }
+          >
             {humanPlayer &&
               (isMobile ? (
                 <MobileHandGrid
@@ -531,61 +593,7 @@ function NinetyNinePageContent() {
             )}
 
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-            <div className="flex gap-2 items-center" data-tutorial="nn-play-button">
-              {(isHumanBidTurn || isHumanTurn) && (
-                <button
-                  type="button"
-                  className={btnSuccess}
-                  onClick={handleHint}
-                  disabled={loading || hintLoading}
-                  data-testid="nn-hint-button"
-                >
-                  {tc('button.hint')}
-                </button>
-              )}
-              {isHumanBidTurn && (
-                // Use aria-disabled (not the HTML `disabled` attribute) for the
-                // not-enough-cards state so the button stays focusable and a screen
-                // reader can read why it can't be pressed yet; handleBury guards the
-                // count so activating it while not-ready is a no-op. `disabled` is
-                // still applied while loading. Mirrors the Cribbage pegRestricted pattern.
-                <button
-                  type="button"
-                  className={`${btnPrimary}${buryReady ? '' : ' opacity-50 cursor-not-allowed'}`}
-                  onClick={handleBury}
-                  disabled={loading}
-                  aria-disabled={!buryReady || undefined}
-                  aria-label={
-                    buryReady
-                      ? undefined
-                      : buryOverBy > 0
-                        ? t('buryButtonTooManyAria', { count: buryOverBy })
-                        : t('buryButtonDisabledAria', { count: buryRemaining })
-                  }
-                >
-                  {t('buryButton')}
-                </button>
-              )}
-              {isHumanTurn && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-              {isTrickEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                  {t('nextTrick')}
-                </button>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
+            <div className="flex items-center">
               <GameResetButton
                 isGameEnd={isGameEnd}
                 onReset={handleManualReset}

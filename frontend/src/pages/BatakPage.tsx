@@ -520,7 +520,99 @@ function BatakPageContent() {
             />
           </div>
 
-          <GameFooter className={`${gameTheme.batak.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.batak.footer} px-4 py-2.5`}
+            actions={
+              <div className="flex gap-2 items-center" data-tutorial="batak-play-button">
+                {(isHumanBidTurn || isHumanTurn) && (
+                  <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
+                    {tc('button.hint')}
+                  </button>
+                )}
+                {isHumanBidTurn && (
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="flex gap-2">
+                      {minLegalBid > 0 && (
+                        <button
+                          type="button"
+                          className={btnPrimary}
+                          onClick={() => handleBid(effectiveBidValue)}
+                          disabled={loading}
+                        >
+                          {t('bidButton')}
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        className={btnSecondary}
+                        onClick={() => {
+                          setBidValue(0);
+                          handleBid(0);
+                        }}
+                        disabled={loading}
+                        data-testid="bid-pass"
+                      >
+                        {t('passButton')}
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {isHumanTurn && (
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handlePlay}
+                    disabled={loading || selectedCardIndices.length !== 1}
+                  >
+                    {t('playButton')}
+                  </button>
+                )}
+                {isTrickEnd && (
+                  <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                    {t('nextTrick')}
+                  </button>
+                )}
+                {isRoundEnd && (
+                  <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                    {t('nextRound')}
+                  </button>
+                )}
+              </div>
+            }
+          >
+            {isHumanBidTurn && (
+              <div className="mb-2 flex flex-col items-center gap-1">
+                <span className="text-ds-text-primary" data-testid="batak-high-bid">
+                  {t('highBid', { n: state.highBid })}
+                </span>
+                {minLegalBid > 0 && (
+                  <fieldset
+                    className="grid max-w-[16rem] grid-cols-7 gap-1 border-0 p-0"
+                    aria-label={t('bidSelectLabel')}
+                  >
+                    {Array.from({ length: 13 - minLegalBid + 1 }, (_, i) => minLegalBid + i).map((n) => (
+                      <button
+                        key={n}
+                        type="button"
+                        onClick={() => setBidValue(n)}
+                        disabled={loading}
+                        aria-pressed={effectiveBidValue === n}
+                        data-testid={`bid-option-${n}`}
+                        className={`h-9 w-9 rounded-lg font-medium text-sm transition-all ${effectiveBidValue === n ? 'bg-ds-accent text-white ring-2 ring-ds-accent' : 'bg-white/20 text-ds-text-primary hover:bg-white/30'}`}
+                      >
+                        {n}
+                      </button>
+                    ))}
+                  </fieldset>
+                )}
+                <span className="sr-only" role="status" aria-live="polite" data-testid="batak-bid-selected">
+                  {bidSelectedLabel}
+                </span>
+                <span className="text-ds-text-primary" data-testid="batak-bid-selected-visible">
+                  {bidSelectedLabel}
+                </span>
+              </div>
+            )}
             {humanPlayer && (
               <>
                 <div className="mb-1 text-ds-text-muted text-xs" role="status" data-testid="batak-spades-break-footer">
@@ -577,97 +669,7 @@ function BatakPageContent() {
             </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-            <div className="flex gap-2 items-center" data-tutorial="batak-play-button">
-              {(isHumanBidTurn || isHumanTurn) && (
-                <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
-                  {tc('button.hint')}
-                </button>
-              )}
-              {isHumanBidTurn && (
-                <div className="flex flex-col items-center gap-2">
-                  <span className="text-ds-text-primary" data-testid="batak-high-bid">
-                    {t('highBid', { n: state.highBid })}
-                  </span>
-                  {minLegalBid > 0 && (
-                    <>
-                      <fieldset
-                        className="grid max-w-[16rem] grid-cols-7 gap-1 border-0 p-0"
-                        aria-label={t('bidSelectLabel')}
-                      >
-                        {Array.from({ length: 13 - minLegalBid + 1 }, (_, i) => minLegalBid + i).map((n) => (
-                          <button
-                            key={n}
-                            type="button"
-                            onClick={() => setBidValue(n)}
-                            disabled={loading}
-                            aria-pressed={effectiveBidValue === n}
-                            data-testid={`bid-option-${n}`}
-                            className={`h-9 w-9 rounded-lg font-medium text-sm transition-all ${
-                              effectiveBidValue === n
-                                ? 'bg-ds-accent text-white ring-2 ring-ds-accent'
-                                : 'bg-white/20 text-ds-text-primary hover:bg-white/30'
-                            }`}
-                          >
-                            {n}
-                          </button>
-                        ))}
-                      </fieldset>
-                      {/* Announce the current bid selection to screen readers, since the
-                          grid's aria-pressed alone isn't read back as a running value. */}
-                      <span className="sr-only" role="status" aria-live="polite" data-testid="batak-bid-selected">
-                        {bidSelectedLabel}
-                      </span>
-                    </>
-                  )}
-                  <span className="text-ds-text-primary" data-testid="batak-bid-selected-visible">
-                    {bidSelectedLabel}
-                  </span>
-                  <div className="flex gap-2">
-                    {minLegalBid > 0 && (
-                      <button
-                        type="button"
-                        className={btnPrimary}
-                        onClick={() => handleBid(effectiveBidValue)}
-                        disabled={loading}
-                      >
-                        {t('bidButton')}
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      className={btnSecondary}
-                      onClick={() => {
-                        setBidValue(0);
-                        handleBid(0);
-                      }}
-                      disabled={loading}
-                      data-testid="bid-pass"
-                    >
-                      {t('passButton')}
-                    </button>
-                  </div>
-                </div>
-              )}
-              {isHumanTurn && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-              {isTrickEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                  {t('nextTrick')}
-                </button>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
+            <div className="flex gap-2 items-center">
               <GameResetButton
                 isGameEnd={!!isGameEnd}
                 onReset={handleManualReset}

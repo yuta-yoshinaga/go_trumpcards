@@ -433,7 +433,98 @@ function CoinchePageContent() {
         />
       </div>
 
-      <GameFooter className={`${gameTheme.coinche.footer} px-4 py-2.5`}>
+      <GameFooter
+        className={`${gameTheme.coinche.footer} px-4 py-2.5`}
+        actions={
+          isHumanBidTurn || isHumanDoubleTurn || isHumanTurn || isTrickEnd || isRoundEnd ? (
+            <div className="flex gap-2 items-center flex-wrap" data-tutorial="be-play-button">
+              {isHumanBidTurn && (
+                <fieldset
+                  data-tutorial="be-bid-controls"
+                  className="flex gap-2 flex-wrap items-center border-0 p-0 m-0 min-w-0"
+                >
+                  <legend className="sr-only">{t('bidControlsGroup')}</legend>
+                  <select
+                    className="rounded bg-black/40 px-2 py-1 text-ds-text-primary"
+                    value={selectedPoints ?? ''}
+                    onChange={(e) => setSelectedPoints(Number(e.target.value))}
+                    disabled={loading || biddablePoints.length === 0}
+                    aria-label={t('bidPointsLabel')}
+                  >
+                    <option value="">{t('bidPointsLabel')}</option>
+                    {biddablePoints.map((pts) => (
+                      <option key={pts} value={pts}>
+                        {pts === COINCHE_CAPOT_POINTS ? t('capotOption', { points: pts }) : pts}
+                      </option>
+                    ))}
+                  </select>
+                  {/* 目標点を選ぶまでスートは押せない。契約は対なので、片方だけ
+                  送ると残りに既定値が入って別の契約になる。 */}
+                  {allSuits.map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      className={btnPrimary}
+                      onClick={() =>
+                        selectedPoints !== null &&
+                        biddablePoints.includes(selectedPoints) &&
+                        handleBid(selectedPoints, s)
+                      }
+                      disabled={loading || selectedPoints === null || !biddablePoints.includes(selectedPoints)}
+                      aria-label={t('bidButtonAriaLabel', { suit: t(SUIT_LABEL_KEYS[s]) })}
+                    >
+                      {t(SUIT_LABEL_KEYS[s])}
+                    </button>
+                  ))}
+                  <button type="button" className={btnSuccess} onClick={handlePass} disabled={loading}>
+                    {t('passButton')}
+                  </button>
+                </fieldset>
+              )}
+
+              {isHumanDoubleTurn && (
+                <fieldset data-tutorial="be-bid-controls" className="flex gap-2 flex-wrap border-0 p-0 m-0 min-w-0">
+                  <legend className="sr-only">{t('doubleControlsGroup')}</legend>
+                  {canCoinche && (
+                    <button type="button" className={btnPrimary} onClick={handleCoinche} disabled={loading}>
+                      {t('coincheButton')}
+                    </button>
+                  )}
+                  {canSurcoinche && (
+                    <button type="button" className={btnPrimary} onClick={handleSurcoinche} disabled={loading}>
+                      {t('surcoincheButton')}
+                    </button>
+                  )}
+                  <button type="button" className={btnSuccess} onClick={handleDeclineDouble} disabled={loading}>
+                    {t('declineDoubleButton')}
+                  </button>
+                </fieldset>
+              )}
+
+              {isHumanTurn && (
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={handlePlay}
+                  disabled={loading || selectedCardIndices.length !== 1}
+                >
+                  {t('playButton')}
+                </button>
+              )}
+              {isTrickEnd && (
+                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                  {t('nextTrick')}
+                </button>
+              )}
+              {isRoundEnd && (
+                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                  {t('nextRound')}
+                </button>
+              )}
+            </div>
+          ) : null
+        }
+      >
         {humanPlayer && (
           <PlayerHandSection
             humanPlayer={humanPlayer}
@@ -451,6 +542,12 @@ function CoinchePageContent() {
         {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
             付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
             読み上げられないことがある (#5955, #6663)。 */}
+        {(isHumanTurn || isHumanBidTurn) && (
+          <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
+            {tc('button.hint')}
+          </button>
+        )}
+
         <div data-testid="coinche-hint-live" role="status" aria-live="polite">
           {hint && (
             <div className="text-ds-warning text-sm mb-2">
@@ -473,101 +570,13 @@ function CoinchePageContent() {
           )}
         </div>
 
-        <div className="flex gap-2 items-center flex-wrap" data-tutorial="be-play-button">
-          {isHumanBidTurn && (
-            <fieldset
-              data-tutorial="be-bid-controls"
-              className="flex gap-2 flex-wrap items-center border-0 p-0 m-0 min-w-0"
-            >
-              <legend className="sr-only">{t('bidControlsGroup')}</legend>
-              <select
-                className="rounded bg-black/40 px-2 py-1 text-ds-text-primary"
-                value={selectedPoints ?? ''}
-                onChange={(e) => setSelectedPoints(Number(e.target.value))}
-                disabled={loading || biddablePoints.length === 0}
-                aria-label={t('bidPointsLabel')}
-              >
-                <option value="">{t('bidPointsLabel')}</option>
-                {biddablePoints.map((pts) => (
-                  <option key={pts} value={pts}>
-                    {pts === COINCHE_CAPOT_POINTS ? t('capotOption', { points: pts }) : pts}
-                  </option>
-                ))}
-              </select>
-              {/* 目標点を選ぶまでスートは押せない。契約は対なので、片方だけ
-                  送ると残りに既定値が入って別の契約になる。 */}
-              {allSuits.map((s) => (
-                <button
-                  key={s}
-                  type="button"
-                  className={btnPrimary}
-                  onClick={() =>
-                    selectedPoints !== null && biddablePoints.includes(selectedPoints) && handleBid(selectedPoints, s)
-                  }
-                  disabled={loading || selectedPoints === null || !biddablePoints.includes(selectedPoints)}
-                  aria-label={t('bidButtonAriaLabel', { suit: t(SUIT_LABEL_KEYS[s]) })}
-                >
-                  {t(SUIT_LABEL_KEYS[s])}
-                </button>
-              ))}
-              <button type="button" className={btnSuccess} onClick={handlePass} disabled={loading}>
-                {t('passButton')}
-              </button>
-            </fieldset>
-          )}
-
-          {isHumanDoubleTurn && (
-            <fieldset data-tutorial="be-bid-controls" className="flex gap-2 flex-wrap border-0 p-0 m-0 min-w-0">
-              <legend className="sr-only">{t('doubleControlsGroup')}</legend>
-              {canCoinche && (
-                <button type="button" className={btnPrimary} onClick={handleCoinche} disabled={loading}>
-                  {t('coincheButton')}
-                </button>
-              )}
-              {canSurcoinche && (
-                <button type="button" className={btnPrimary} onClick={handleSurcoinche} disabled={loading}>
-                  {t('surcoincheButton')}
-                </button>
-              )}
-              <button type="button" className={btnSuccess} onClick={handleDeclineDouble} disabled={loading}>
-                {t('declineDoubleButton')}
-              </button>
-            </fieldset>
-          )}
-
-          {(isHumanTurn || isHumanBidTurn) && (
-            <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
-              {tc('button.hint')}
-            </button>
-          )}
-          {isHumanTurn && (
-            <button
-              type="button"
-              className={btnPrimary}
-              onClick={handlePlay}
-              disabled={loading || selectedCardIndices.length !== 1}
-            >
-              {t('playButton')}
-            </button>
-          )}
-          {isTrickEnd && (
-            <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-              {t('nextTrick')}
-            </button>
-          )}
-          {isRoundEnd && (
-            <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-              {t('nextRound')}
-            </button>
-          )}
-          <GameResetButton
-            isGameEnd={!!isGameEnd}
-            onReset={handleManualReset}
-            requestConfirm={requestConfirm}
-            loading={loading}
-            dataTutorial="be-reset-button"
-          />
-        </div>
+        <GameResetButton
+          isGameEnd={!!isGameEnd}
+          onReset={handleManualReset}
+          requestConfirm={requestConfirm}
+          loading={loading}
+          dataTutorial="be-reset-button"
+        />
         <CardNavShortcutsPanel data-testid="coinche-kbd-shortcuts" />
       </GameFooter>
     </GamePageShell>

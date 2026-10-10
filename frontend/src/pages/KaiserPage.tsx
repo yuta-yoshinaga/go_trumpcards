@@ -382,7 +382,91 @@ function KaiserPageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.kaiser.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.kaiser.footer} px-4 py-2.5`}
+            actions={
+              <div className="flex flex-wrap gap-2 items-center" data-tutorial="kaiser-actions">
+                {isHumanBid && (
+                  <>
+                    <label
+                      className="text-ds-text-muted text-xs flex items-center gap-1"
+                      htmlFor="kaiser-contract-select"
+                    >
+                      {t('contractLabel')}
+                      <select
+                        id="kaiser-contract-select"
+                        className="bg-black/30 text-ds-text-primary rounded px-1 min-h-[44px]"
+                        value={selectedContract}
+                        onChange={(e) => setContract(Number(e.target.value))}
+                      >
+                        {availableContracts.map((c) => (
+                          <option key={c.value} value={c.value}>
+                            {t(c.labelKey)}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    {bidValues.map((v) => (
+                      <button
+                        key={`bid-${v}`}
+                        type="button"
+                        className={btnPrimary}
+                        onClick={() => exec('bid', { bid: v, contract: selectedContract })}
+                        disabled={loading}
+                      >
+                        {t('bidButton', { n: v })}
+                      </button>
+                    ))}
+                    <button type="button" className={btnWarning} onClick={() => exec('pass')} disabled={loading}>
+                      {t('passButton')}
+                    </button>
+                  </>
+                )}
+                {needsTrump &&
+                  [1, 2, 3, 4].map((s) => (
+                    <button
+                      key={`trump-${s}`}
+                      type="button"
+                      className={btnPrimary}
+                      onClick={() => exec('trump', { suit: s })}
+                      disabled={loading}
+                    >
+                      {t('trumpButton', { suit: SUIT_GLYPHS[s] })}
+                    </button>
+                  ))}
+                {isHumanDeclarer && !needsTrump && (
+                  <button
+                    type="button"
+                    className={btnSuccess}
+                    onClick={handleDiscard}
+                    disabled={loading || selected.length !== KAISER_DISCARD_COUNT}
+                  >
+                    {t('discardButton')}
+                  </button>
+                )}
+                {isHumanPlay && (
+                  <button
+                    type="button"
+                    className={btnSuccess}
+                    onClick={handlePlay}
+                    disabled={loading || selected.length !== 1}
+                  >
+                    {t('playButton')}
+                  </button>
+                )}
+                {isHandEnd && !isGameEnd && (
+                  <button type="button" className={btnSuccess} onClick={() => exec('next')} disabled={loading}>
+                    {t('nextHand')}
+                  </button>
+                )}
+                {isGameEnd && (
+                  <span className="text-ds-text-primary text-sm font-semibold mr-1">
+                    {humanWon ? t('win') : t('lose')}
+                  </span>
+                )}
+              </div>
+            }
+          >
             <SettingsPanel
               title={t('settings.title')}
               groups={[
@@ -458,91 +542,7 @@ function KaiserPageContent() {
             </label>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-            <div className="flex flex-wrap gap-2 items-center" data-tutorial="kaiser-actions">
-              {isHumanBid && (
-                <>
-                  <label
-                    className="text-ds-text-muted text-xs flex items-center gap-1"
-                    htmlFor="kaiser-contract-select"
-                  >
-                    {t('contractLabel')}
-                    <select
-                      id="kaiser-contract-select"
-                      className="bg-black/30 text-ds-text-primary rounded px-1 min-h-[44px]"
-                      value={selectedContract}
-                      onChange={(e) => setContract(Number(e.target.value))}
-                    >
-                      {availableContracts.map((c) => (
-                        <option key={c.value} value={c.value}>
-                          {t(c.labelKey)}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  {bidValues.map((v) => (
-                    <button
-                      key={`bid-${v}`}
-                      type="button"
-                      className={btnPrimary}
-                      onClick={() => exec('bid', { bid: v, contract: selectedContract })}
-                      disabled={loading}
-                    >
-                      {t('bidButton', { n: v })}
-                    </button>
-                  ))}
-                  <button type="button" className={btnWarning} onClick={() => exec('pass')} disabled={loading}>
-                    {t('passButton')}
-                  </button>
-                </>
-              )}
-
-              {needsTrump &&
-                [1, 2, 3, 4].map((s) => (
-                  <button
-                    key={`trump-${s}`}
-                    type="button"
-                    className={btnPrimary}
-                    onClick={() => exec('trump', { suit: s })}
-                    disabled={loading}
-                  >
-                    {t('trumpButton', { suit: SUIT_GLYPHS[s] })}
-                  </button>
-                ))}
-
-              {isHumanDeclarer && !needsTrump && (
-                <button
-                  type="button"
-                  className={btnSuccess}
-                  onClick={handleDiscard}
-                  disabled={loading || selected.length !== KAISER_DISCARD_COUNT}
-                >
-                  {t('discardButton')}
-                </button>
-              )}
-
-              {isHumanPlay && (
-                <button
-                  type="button"
-                  className={btnSuccess}
-                  onClick={handlePlay}
-                  disabled={loading || selected.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-
-              {isHandEnd && !isGameEnd && (
-                <button type="button" className={btnSuccess} onClick={() => exec('next')} disabled={loading}>
-                  {t('nextHand')}
-                </button>
-              )}
-
-              {isGameEnd && (
-                <span className="text-ds-text-primary text-sm font-semibold mr-1">
-                  {humanWon ? t('win') : t('lose')}
-                </span>
-              )}
-
+            <div className="flex flex-wrap gap-2 items-center">
               <GameResetButton
                 isGameEnd={isGameEnd}
                 onReset={handleManualReset}

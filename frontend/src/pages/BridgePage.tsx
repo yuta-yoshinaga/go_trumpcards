@@ -606,7 +606,103 @@ function BridgePageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.bridge.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.bridge.footer} px-4 py-2.5`}
+            actions={
+              isHumanBidTurn || isHumanTurn || isTrickEnd || isRoundEnd ? (
+                <div className="flex gap-1 items-center flex-wrap" data-tutorial="br-play-button">
+                  {/* Bid phase controls */}
+                  {isHumanBidTurn && (
+                    <span data-tutorial="br-bid-controls" className="flex gap-1 items-center flex-wrap">
+                      <select
+                        className="text-xs rounded bg-black/50 text-ds-text-primary px-1.5 py-0.5"
+                        value={bidLevel}
+                        onChange={(e) => setBidLevel(Number(e.target.value))}
+                        aria-label={t('bidLevel')}
+                      >
+                        {[1, 2, 3, 4, 5, 6, 7].map((lv) => (
+                          <option key={lv} value={lv}>
+                            {lv}
+                          </option>
+                        ))}
+                      </select>
+                      <select
+                        className="text-xs rounded bg-black/50 text-ds-text-primary px-1.5 py-0.5"
+                        value={bidSuit}
+                        onChange={(e) => setBidSuit(Number(e.target.value))}
+                        aria-label={t('bidSuit')}
+                      >
+                        {DENOMINATIONS.map((d) => (
+                          <option key={d.suit} value={d.suit}>
+                            {t(d.labelKey)}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={() => handleBid(1, bidLevel, bidSuit)}
+                        disabled={loading || !bidLegal}
+                        title={!bidLegal ? t('bidTooLow') : undefined}
+                        data-testid="br-bid-submit"
+                      >
+                        {t('bidButton')}
+                      </button>
+                      <button type="button" className={btnSecondary} onClick={() => handleBid(0)} disabled={loading}>
+                        {t('passButton')}
+                      </button>
+                      <button
+                        type="button"
+                        className={btnSecondary}
+                        onClick={() => handleBid(2)}
+                        disabled={loading || !doubleLegal}
+                        title={!doubleLegal ? t('doubleIllegal') : undefined}
+                        data-testid="br-double"
+                      >
+                        {t('doubleButton')}
+                      </button>
+                      <button
+                        type="button"
+                        className={btnSecondary}
+                        onClick={() => handleBid(3)}
+                        disabled={loading || !redoubleLegal}
+                        title={!redoubleLegal ? t('redoubleIllegal') : undefined}
+                        data-testid="br-redouble"
+                      >
+                        {t('redoubleButton')}
+                      </button>
+                    </span>
+                  )}
+
+                  {/* Play phase */}
+                  {isHumanTurn && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handlePlay}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                    >
+                      {t('playButton')}
+                    </button>
+                  )}
+
+                  {/* Trick end */}
+                  {isTrickEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                      {t('nextTrick')}
+                    </button>
+                  )}
+
+                  {/* Round end */}
+                  {isRoundEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                      {t('nextRound')}
+                    </button>
+                  )}
+                </div>
+              ) : null
+            }
+          >
             {/* Human cards */}
             {activeHand.length > 0 &&
               (isMobile ? (
@@ -660,6 +756,11 @@ function BridgePageContent() {
             {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
                 付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
                 読み上げられないことがある (#5955, #6663)。 */}
+            {(isHumanBidTurn || isHumanTurn) && (
+              <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
+                {tc('button.hint')}
+              </button>
+            )}
             <div data-testid="bridge-hint-live" role="status" aria-live="polite">
               {hint && (
                 <div className="text-ds-warning text-sm mb-2">
@@ -670,111 +771,13 @@ function BridgePageContent() {
               )}
             </div>
 
-            <div className="flex gap-1 items-center flex-wrap" data-tutorial="br-play-button">
-              {(isHumanBidTurn || isHumanTurn) && (
-                <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
-                  {tc('button.hint')}
-                </button>
-              )}
-
-              {/* Bid phase controls */}
-              {isHumanBidTurn && (
-                <span data-tutorial="br-bid-controls" className="flex gap-1 items-center flex-wrap">
-                  <select
-                    className="text-xs rounded bg-black/50 text-ds-text-primary px-1.5 py-0.5"
-                    value={bidLevel}
-                    onChange={(e) => setBidLevel(Number(e.target.value))}
-                    aria-label={t('bidLevel')}
-                  >
-                    {[1, 2, 3, 4, 5, 6, 7].map((lv) => (
-                      <option key={lv} value={lv}>
-                        {lv}
-                      </option>
-                    ))}
-                  </select>
-                  <select
-                    className="text-xs rounded bg-black/50 text-ds-text-primary px-1.5 py-0.5"
-                    value={bidSuit}
-                    onChange={(e) => setBidSuit(Number(e.target.value))}
-                    aria-label={t('bidSuit')}
-                  >
-                    {DENOMINATIONS.map((d) => (
-                      <option key={d.suit} value={d.suit}>
-                        {t(d.labelKey)}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={() => handleBid(1, bidLevel, bidSuit)}
-                    disabled={loading || !bidLegal}
-                    title={!bidLegal ? t('bidTooLow') : undefined}
-                    data-testid="br-bid-submit"
-                  >
-                    {t('bidButton')}
-                  </button>
-                  <button type="button" className={btnSecondary} onClick={() => handleBid(0)} disabled={loading}>
-                    {t('passButton')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnSecondary}
-                    onClick={() => handleBid(2)}
-                    disabled={loading || !doubleLegal}
-                    title={!doubleLegal ? t('doubleIllegal') : undefined}
-                    data-testid="br-double"
-                  >
-                    {t('doubleButton')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnSecondary}
-                    onClick={() => handleBid(3)}
-                    disabled={loading || !redoubleLegal}
-                    title={!redoubleLegal ? t('redoubleIllegal') : undefined}
-                    data-testid="br-redouble"
-                  >
-                    {t('redoubleButton')}
-                  </button>
-                </span>
-              )}
-
-              {/* Play phase */}
-              {isHumanTurn && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-
-              {/* Trick end */}
-              {isTrickEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                  {t('nextTrick')}
-                </button>
-              )}
-
-              {/* Round end */}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
-
-              {/* Reset */}
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="br-reset-button"
-              />
-            </div>
+            <GameResetButton
+              isGameEnd={isGameEnd}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+              dataTutorial="br-reset-button"
+            />
             <CardNavShortcutsPanel data-testid="bridge-kbd-shortcuts" />
           </GameFooter>
         </>

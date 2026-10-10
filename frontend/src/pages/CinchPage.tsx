@@ -380,7 +380,64 @@ function CinchPageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.cinch.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.cinch.footer} px-4 py-2.5`}
+            actions={
+              canBid || canNameTrump || canPlay || isRoundEnd ? (
+                <div className="flex flex-wrap gap-2 items-center" data-tutorial="cinch-action-buttons">
+                  {canBid && (
+                    <div className="flex flex-wrap gap-2" data-testid="cinch-bid-buttons">
+                      <button type="button" className={btnSecondary} onClick={() => handleBid(0)} disabled={loading}>
+                        {t('bidPass')}
+                      </button>
+                      {bidChoices.map((b) => (
+                        <button
+                          key={b}
+                          type="button"
+                          className={btnPrimary}
+                          onClick={() => handleBid(b)}
+                          disabled={loading}
+                        >
+                          {b}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {canNameTrump && (
+                    <div className="flex flex-wrap gap-2" data-testid="cinch-trump-buttons">
+                      {TRUMP_SUITS.map((suit) => (
+                        <button
+                          key={suit}
+                          type="button"
+                          className={btnPrimary}
+                          onClick={() => handleNameTrump(suit)}
+                          disabled={loading}
+                          aria-label={suitLabel(suit)}
+                        >
+                          {renderSuitSymbol(suit)}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {canPlay && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handlePlay}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                    >
+                      {t('playButton')}
+                    </button>
+                  )}
+                  {isRoundEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextDeal} disabled={loading}>
+                      {t('nextDeal')}
+                    </button>
+                  )}
+                </div>
+              ) : null
+            }
+          >
             {isBidPhase && !canBid && (
               <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="cinch-bid-cpu">
                 {t('bidCpu', { id: state.bidPlayerIdx })}
@@ -486,64 +543,13 @@ function CinchPageContent() {
             </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-            <div className="flex flex-wrap gap-2 items-center" data-tutorial="cinch-action-buttons">
-              {canBid && (
-                <div className="flex flex-wrap gap-2" data-testid="cinch-bid-buttons">
-                  <button type="button" className={btnSecondary} onClick={() => handleBid(0)} disabled={loading}>
-                    {t('bidPass')}
-                  </button>
-                  {bidChoices.map((b) => (
-                    <button
-                      key={b}
-                      type="button"
-                      className={btnPrimary}
-                      onClick={() => handleBid(b)}
-                      disabled={loading}
-                    >
-                      {b}
-                    </button>
-                  ))}
-                </div>
-              )}
-              {canNameTrump && (
-                <div className="flex flex-wrap gap-2" data-testid="cinch-trump-buttons">
-                  {TRUMP_SUITS.map((suit) => (
-                    <button
-                      key={suit}
-                      type="button"
-                      className={btnPrimary}
-                      onClick={() => handleNameTrump(suit)}
-                      disabled={loading}
-                      aria-label={suitLabel(suit)}
-                    >
-                      {renderSuitSymbol(suit)}
-                    </button>
-                  ))}
-                </div>
-              )}
-              {canPlay && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextDeal} disabled={loading}>
-                  {t('nextDeal')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="cinch-reset-button"
-              />
-            </div>
+            <GameResetButton
+              isGameEnd={isGameEnd}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+              dataTutorial="cinch-reset-button"
+            />
           </GameFooter>
         </>
       )}

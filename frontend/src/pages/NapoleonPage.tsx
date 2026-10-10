@@ -627,7 +627,122 @@ function NapoleonPageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.napoleon.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.napoleon.footer} px-4 py-2.5`}
+            actions={
+              (isHumanBidTurn || isHumanTurn || isHumanNapoleon || isHumanExchange || isTrickEnd || isRoundEnd) && (
+                <div className="flex gap-2 items-center flex-wrap">
+                  {(isHumanBidTurn || isHumanTurn || isHumanNapoleon || isHumanExchange) && (
+                    <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
+                      {tc('button.hint')}
+                    </button>
+                  )}
+
+                  {/* Bid controls */}
+                  {isHumanBidTurn && (
+                    <>
+                      <input
+                        type="number"
+                        min={minLegalBid}
+                        max={MAX_BID}
+                        value={effectiveBidValue}
+                        onChange={(e) => setBidValue(Number(e.target.value))}
+                        className="w-16 px-2 py-1 rounded bg-white/20 text-ds-text-primary text-center"
+                        aria-label={t('bidInputLabel')}
+                      />
+                      <button
+                        type="button"
+                        className={`${btnPrimary}${!isBidValueLegal ? ' opacity-50 cursor-not-allowed active:scale-100 hover:shadow-none' : ''}`}
+                        onClick={() => {
+                          if (isBidValueLegal) handleBid(effectiveBidValue);
+                        }}
+                        disabled={loading}
+                        aria-disabled={!isBidValueLegal || undefined}
+                      >
+                        {t('bidButton')}
+                      </button>
+                      <button type="button" className={btnPrimary} onClick={handlePass} disabled={loading}>
+                        {t('passButton')}
+                      </button>
+                    </>
+                  )}
+
+                  {/* Trump declaration controls (adjutant card is chosen via the visual picker above) */}
+                  {isHumanNapoleon && (
+                    <>
+                      <select
+                        value={trumpSuitValue}
+                        onChange={(e) => setTrumpSuitValue(Number(e.target.value))}
+                        className="px-2 py-1 rounded bg-white/20 text-ds-text-primary"
+                        aria-label={t('trumpSuitLabel')}
+                      >
+                        {[1, 2, 3, 4].map((s) => (
+                          <option key={s} value={s}>
+                            {t(`suitName.${SUIT_KEYS[s]}`)}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={() => {
+                          if (adjSelection)
+                            handleTrumpDeclaration(trumpSuitValue, adjSelection.suit, adjSelection.value);
+                        }}
+                        disabled={loading || !adjSelection}
+                      >
+                        {t('declareButton')}
+                      </button>
+                    </>
+                  )}
+
+                  {/* Kitty exchange controls */}
+                  {isHumanExchange && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={() => {
+                        if (selectedCardIndices.length === 1) handleExchange(selectedCardIndices[0]);
+                      }}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                    >
+                      {selectedCardIndices.length === 1 && humanPlayer?.cards[selectedCardIndices[0]]
+                        ? t('exchangeButtonNamed', { card: cardAlt(humanPlayer.cards[selectedCardIndices[0]]) })
+                        : t('exchangeButton')}
+                    </button>
+                  )}
+
+                  {/* Play controls */}
+                  {isHumanTurn && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={confirmAction}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                    >
+                      {t('playButton')}
+                    </button>
+                  )}
+
+                  {/* Trick end */}
+                  {isTrickEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                      {t('nextTrick')}
+                    </button>
+                  )}
+
+                  {/* Round end */}
+                  {isRoundEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                      {t('nextRound')}
+                    </button>
+                  )}
+
+                  {/* Reset */}
+                </div>
+              )
+            }
+          >
             {isHumanExchange && (
               <div className="text-ds-info text-xs text-center mb-1" data-testid="np-hand-discard-label">
                 {t('handDiscardLabel')}
@@ -693,113 +808,7 @@ function NapoleonPageContent() {
             </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-            <div className="flex gap-2 items-center flex-wrap">
-              {(isHumanBidTurn || isHumanTurn || isHumanNapoleon || isHumanExchange) && (
-                <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
-                  {tc('button.hint')}
-                </button>
-              )}
-
-              {/* Bid controls */}
-              {isHumanBidTurn && (
-                <>
-                  <input
-                    type="number"
-                    min={minLegalBid}
-                    max={MAX_BID}
-                    value={effectiveBidValue}
-                    onChange={(e) => setBidValue(Number(e.target.value))}
-                    className="w-16 px-2 py-1 rounded bg-white/20 text-ds-text-primary text-center"
-                    aria-label={t('bidInputLabel')}
-                  />
-                  <button
-                    type="button"
-                    className={`${btnPrimary}${!isBidValueLegal ? ' opacity-50 cursor-not-allowed active:scale-100 hover:shadow-none' : ''}`}
-                    onClick={() => {
-                      if (isBidValueLegal) handleBid(effectiveBidValue);
-                    }}
-                    disabled={loading}
-                    aria-disabled={!isBidValueLegal || undefined}
-                  >
-                    {t('bidButton')}
-                  </button>
-                  <button type="button" className={btnPrimary} onClick={handlePass} disabled={loading}>
-                    {t('passButton')}
-                  </button>
-                </>
-              )}
-
-              {/* Trump declaration controls (adjutant card is chosen via the visual picker above) */}
-              {isHumanNapoleon && (
-                <>
-                  <select
-                    value={trumpSuitValue}
-                    onChange={(e) => setTrumpSuitValue(Number(e.target.value))}
-                    className="px-2 py-1 rounded bg-white/20 text-ds-text-primary"
-                    aria-label={t('trumpSuitLabel')}
-                  >
-                    {[1, 2, 3, 4].map((s) => (
-                      <option key={s} value={s}>
-                        {t(`suitName.${SUIT_KEYS[s]}`)}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={() => {
-                      if (adjSelection) handleTrumpDeclaration(trumpSuitValue, adjSelection.suit, adjSelection.value);
-                    }}
-                    disabled={loading || !adjSelection}
-                  >
-                    {t('declareButton')}
-                  </button>
-                </>
-              )}
-
-              {/* Kitty exchange controls */}
-              {isHumanExchange && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={() => {
-                    if (selectedCardIndices.length === 1) handleExchange(selectedCardIndices[0]);
-                  }}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {selectedCardIndices.length === 1 && humanPlayer?.cards[selectedCardIndices[0]]
-                    ? t('exchangeButtonNamed', { card: cardAlt(humanPlayer.cards[selectedCardIndices[0]]) })
-                    : t('exchangeButton')}
-                </button>
-              )}
-
-              {/* Play controls */}
-              {isHumanTurn && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={confirmAction}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-
-              {/* Trick end */}
-              {isTrickEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                  {t('nextTrick')}
-                </button>
-              )}
-
-              {/* Round end */}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
-
-              {/* Reset */}
+            <div className="flex items-center">
               <GameResetButton
                 isGameEnd={!!isGameEnd}
                 onReset={handleManualReset}

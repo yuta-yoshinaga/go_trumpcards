@@ -19,9 +19,12 @@ test.describe('Ninety-Nine (ナインティナイン) E2E', () => {
     const MAX_TURNS = 80;
     let interactions = 0;
     for (let turn = 0; turn < MAX_TURNS; turn++) {
-      await expect(
-        buryButton.or(playButton).or(nextTrickButton).or(nextRoundButton).or(anyResetButton).first(),
-      ).toBeVisible({ timeout: 10_000 });
+      await expect
+        .poll(
+          async () => (await page.getByTestId('game-footer-actions').isVisible()) || (await anyResetButton.isVisible()),
+          { timeout: 10_000 },
+        )
+        .toBe(true);
 
       const buryVisible = await buryButton.isVisible();
       const playVisible = await playButton.isVisible();

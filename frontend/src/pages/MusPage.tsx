@@ -321,7 +321,140 @@ function MusPageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.mus.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.mus.footer} px-4 py-2.5`}
+            actions={
+              ((isMusPhase && isHumanTurn) ||
+                (isDiscardPhase && isHumanTurn) ||
+                (isBetPhase && isHumanTurn) ||
+                (isRoundEnd && !isGameEnd)) && (
+                <div className="flex flex-wrap gap-2 items-center" data-tutorial="mus-action-buttons">
+                  {isMusPhase && isHumanTurn && (
+                    <>
+                      <button type="button" className={btnPrimary} onClick={() => handleMus(true)} disabled={loading}>
+                        {t('musButton')}
+                      </button>
+                      <button
+                        type="button"
+                        className={btnSecondary}
+                        onClick={() => handleMus(false)}
+                        disabled={loading}
+                      >
+                        {t('corteButton')}
+                      </button>
+                    </>
+                  )}
+
+                  {isDiscardPhase && isHumanTurn && (
+                    <>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={handleDiscard}
+                        disabled={loading || selectedCardIndices.length === 0}
+                      >
+                        {t('discardButton')} ({t('discardSelected', { count: selectedCardIndices.length })})
+                      </button>
+                      <span className="text-ds-text-muted text-sm" data-testid="mus-discard-guide">
+                        {selectedCardIndices.length === 0
+                          ? t('discardGuide')
+                          : t('discardCount', { count: selectedCardIndices.length })}
+                      </span>
+                    </>
+                  )}
+
+                  {isBetPhase && isHumanTurn && (
+                    <>
+                      {state.canPaso && (
+                        <button
+                          type="button"
+                          className={btnSecondary}
+                          onClick={() => handleBet(MusBetAction.PASO)}
+                          disabled={loading}
+                        >
+                          {t('bet.paso')}
+                        </button>
+                      )}
+                      {state.canEnvido && (
+                        <fieldset className="flex items-center gap-1 border-0 p-0 m-0">
+                          <legend className="sr-only">{t('envidoStepperLabel')}</legend>
+                          <button
+                            type="button"
+                            className={btnSecondary}
+                            onClick={() => setEnvidoAmount((a) => Math.max(2, a - 1))}
+                            disabled={loading}
+                            aria-label={t('envidoDecrease')}
+                          >
+                            −
+                          </button>
+                          <span
+                            className="text-ds-text-primary text-sm min-w-[3rem] text-center"
+                            aria-live="polite"
+                            aria-atomic="true"
+                          >
+                            {t('envidoAmount', { amount: envidoAmount })}
+                          </span>
+                          <button
+                            type="button"
+                            className={btnSecondary}
+                            onClick={() => setEnvidoAmount((a) => a + 1)}
+                            disabled={loading}
+                            aria-label={t('envidoIncrease')}
+                          >
+                            ＋
+                          </button>
+                          <button
+                            type="button"
+                            className={btnPrimary}
+                            onClick={() => handleBet(MusBetAction.ENVIDO, envidoAmount)}
+                            disabled={loading}
+                          >
+                            {t('bet.envido')}
+                          </button>
+                        </fieldset>
+                      )}
+                      {state.canOrdago && (
+                        <button
+                          type="button"
+                          className={btnPrimary}
+                          onClick={() => handleBet(MusBetAction.ORDAGO)}
+                          disabled={loading}
+                        >
+                          {t('bet.ordago')}
+                        </button>
+                      )}
+                      {state.canQuiero && (
+                        <button
+                          type="button"
+                          className={btnSuccess}
+                          onClick={() => handleBet(MusBetAction.QUIERO)}
+                          disabled={loading}
+                        >
+                          {t('bet.quiero')}
+                        </button>
+                      )}
+                      {state.canNoQuiero && (
+                        <button
+                          type="button"
+                          className={btnSecondary}
+                          onClick={() => handleBet(MusBetAction.NO_QUIERO)}
+                          disabled={loading}
+                        >
+                          {t('bet.noquiero')}
+                        </button>
+                      )}
+                    </>
+                  )}
+
+                  {isRoundEnd && !isGameEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                      {t('nextRound')}
+                    </button>
+                  )}
+                </div>
+              )
+            }
+          >
             {humanPlayer && (
               <PlayerHandSection
                 humanPlayer={humanPlayer}
@@ -382,125 +515,7 @@ function MusPageContent() {
 
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-            <div className="flex flex-wrap gap-2 items-center" data-tutorial="mus-action-buttons">
-              {isMusPhase && isHumanTurn && (
-                <>
-                  <button type="button" className={btnPrimary} onClick={() => handleMus(true)} disabled={loading}>
-                    {t('musButton')}
-                  </button>
-                  <button type="button" className={btnSecondary} onClick={() => handleMus(false)} disabled={loading}>
-                    {t('corteButton')}
-                  </button>
-                </>
-              )}
-
-              {isDiscardPhase && isHumanTurn && (
-                <>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleDiscard}
-                    disabled={loading || selectedCardIndices.length === 0}
-                  >
-                    {t('discardButton')} ({t('discardSelected', { count: selectedCardIndices.length })})
-                  </button>
-                  <span className="text-ds-text-muted text-sm" data-testid="mus-discard-guide">
-                    {selectedCardIndices.length === 0
-                      ? t('discardGuide')
-                      : t('discardCount', { count: selectedCardIndices.length })}
-                  </span>
-                </>
-              )}
-
-              {isBetPhase && isHumanTurn && (
-                <>
-                  {state.canPaso && (
-                    <button
-                      type="button"
-                      className={btnSecondary}
-                      onClick={() => handleBet(MusBetAction.PASO)}
-                      disabled={loading}
-                    >
-                      {t('bet.paso')}
-                    </button>
-                  )}
-                  {state.canEnvido && (
-                    <fieldset className="flex items-center gap-1 border-0 p-0 m-0">
-                      <legend className="sr-only">{t('envidoStepperLabel')}</legend>
-                      <button
-                        type="button"
-                        className={btnSecondary}
-                        onClick={() => setEnvidoAmount((a) => Math.max(2, a - 1))}
-                        disabled={loading}
-                        aria-label={t('envidoDecrease')}
-                      >
-                        −
-                      </button>
-                      <span
-                        className="text-ds-text-primary text-sm min-w-[3rem] text-center"
-                        aria-live="polite"
-                        aria-atomic="true"
-                      >
-                        {t('envidoAmount', { amount: envidoAmount })}
-                      </span>
-                      <button
-                        type="button"
-                        className={btnSecondary}
-                        onClick={() => setEnvidoAmount((a) => a + 1)}
-                        disabled={loading}
-                        aria-label={t('envidoIncrease')}
-                      >
-                        ＋
-                      </button>
-                      <button
-                        type="button"
-                        className={btnPrimary}
-                        onClick={() => handleBet(MusBetAction.ENVIDO, envidoAmount)}
-                        disabled={loading}
-                      >
-                        {t('bet.envido')}
-                      </button>
-                    </fieldset>
-                  )}
-                  {state.canOrdago && (
-                    <button
-                      type="button"
-                      className={btnPrimary}
-                      onClick={() => handleBet(MusBetAction.ORDAGO)}
-                      disabled={loading}
-                    >
-                      {t('bet.ordago')}
-                    </button>
-                  )}
-                  {state.canQuiero && (
-                    <button
-                      type="button"
-                      className={btnSuccess}
-                      onClick={() => handleBet(MusBetAction.QUIERO)}
-                      disabled={loading}
-                    >
-                      {t('bet.quiero')}
-                    </button>
-                  )}
-                  {state.canNoQuiero && (
-                    <button
-                      type="button"
-                      className={btnSecondary}
-                      onClick={() => handleBet(MusBetAction.NO_QUIERO)}
-                      disabled={loading}
-                    >
-                      {t('bet.noquiero')}
-                    </button>
-                  )}
-                </>
-              )}
-
-              {isRoundEnd && !isGameEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
-
+            <div className="flex items-center">
               <GameResetButton
                 isGameEnd={isGameEnd}
                 onReset={handleManualReset}

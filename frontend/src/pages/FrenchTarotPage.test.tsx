@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { frenchtarotApi } from '../api/gameApi';
 import i18n from '../i18n';
@@ -153,6 +153,13 @@ beforeEach(() => {
 });
 
 describe('FrenchTarotPage', () => {
+  it('keeps the pass action in the fixed footer actions row while bidding', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<FrenchTarotPage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: /パス/ })).toBeInTheDocument();
+  });
+
   it('shows the trick points and bouts at trick end, including zero bouts', async () => {
     mockExec.mockResolvedValue(makeFrenchTarotState({ phase: 3, trickHalfPoints: 11, trickBouts: 1 }));
     const { unmount } = renderWithProviders(<FrenchTarotPage />);

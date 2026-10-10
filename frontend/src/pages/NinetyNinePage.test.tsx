@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, ninetyNineApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -160,6 +160,9 @@ describe('NinetyNinePage', () => {
       expect(screen.getByAltText('♠ A')).toBeInTheDocument();
       expect(screen.getByAltText('♥ J')).toBeInTheDocument();
     });
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: 'カードを出す' }),
+    ).toBeInTheDocument();
   });
 
   it('marks cards that follow the led suit and explains restricted cards accessibly', async () => {

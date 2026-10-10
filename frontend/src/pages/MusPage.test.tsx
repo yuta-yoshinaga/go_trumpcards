@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { musApi } from '../api/gameApi';
 import i18n from '../i18n';
@@ -185,6 +185,9 @@ describe('MusPage', () => {
     mockExec.mockResolvedValue(musPhaseState);
     renderWithProviders(<MusPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /ムス（交換）/ })).toBeInTheDocument());
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: /ムス（交換）/ }),
+    ).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /コルテ（勝負）/ }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('mus', { mus: false }));
   });

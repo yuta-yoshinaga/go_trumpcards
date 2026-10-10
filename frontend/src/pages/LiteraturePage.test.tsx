@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { literatureApi } from '../api/gameApi';
 import i18n from '../i18n';
@@ -593,5 +593,21 @@ describe('LiteraturePage', () => {
     // テキストボックス(CLI)が出るまで待つ
     await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument());
     expect(screen.queryByTestId('literature-scores')).not.toBeInTheDocument();
+  });
+
+  it('keeps the primary control in the pinned footer actions', async () => {
+    localStorage.setItem('cli-mode-literature', 'false');
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<LiteraturePage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: '要求する' })).toBeInTheDocument();
+    expect(within(actions).getByRole('button', { name: '宣言する' })).toBeInTheDocument();
+
+    const content = screen.getByTestId('game-footer-content');
+    expect(within(content).getByLabelText(/相手/)).toBeInTheDocument();
+    expect(within(content).getByLabelText(/^札/)).toBeInTheDocument();
+    expect(within(content).getByLabelText(/^組/)).toBeInTheDocument();
+    expect(within(content).queryByRole('button', { name: '要求する' })).not.toBeInTheDocument();
+    expect(within(content).queryByRole('button', { name: '宣言する' })).not.toBeInTheDocument();
   });
 });
