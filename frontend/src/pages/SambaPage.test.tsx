@@ -89,6 +89,106 @@ describe('SambaPage', () => {
     expect(within(details).getByText('あと4枚でカナスタ')).toBeVisible();
   });
 
+  it('does not render opponent meld details when opponents have no melds or red threes', async () => {
+    renderWithProviders(<SambaPage />);
+    await screen.findByTestId('game-footer-actions');
+    expect(screen.queryByTestId('sa-opponent-meld-details')).not.toBeInTheDocument();
+  });
+
+  it('shows an opponent meld and counts only melds (not red threes) in the summary', async () => {
+    const base = makeSambaState();
+    const meld = {
+      cards: [
+        { design: 'SPADE' as const, value: 4 },
+        { design: 'HEART' as const, value: 4 },
+      ],
+      kind: 0,
+      isNatural: true,
+      isCanasta: false,
+      isSamba: false,
+      rank: 4,
+    };
+    const red3 = { design: 'HEART' as const, value: 3 };
+    mockExec.mockResolvedValue(
+      makeSambaState({
+        players: [base.players[0], { ...base.players[1], melds: [meld], red3s: [red3] }, ...base.players.slice(2)],
+      }),
+    );
+    renderWithProviders(<SambaPage />);
+
+    const details = await screen.findByTestId('sa-opponent-meld-details');
+    expect(within(details).getByText('相手チームのメルド (1)')).toBeInTheDocument();
+    expect(within(details).getByAltText('♠ 4')).toBeInTheDocument();
+    expect(within(details).getByAltText('♥ 3')).toBeInTheDocument();
+  });
+
+  it('shows an opponent red three when that seat has no melds', async () => {
+    const base = makeSambaState();
+    mockExec.mockResolvedValue(
+      makeSambaState({
+        players: [
+          base.players[0],
+          { ...base.players[1], red3s: [{ design: 'DIAMOND', value: 3 }] },
+          ...base.players.slice(2),
+        ],
+      }),
+    );
+    renderWithProviders(<SambaPage />);
+
+    const details = await screen.findByTestId('sa-opponent-meld-details');
+    expect(within(details).getByAltText('♦ 3')).toBeInTheDocument();
+  });
+
+  it('omits an empty opponent seat when the other opponent has a meld', async () => {
+    const base = makeSambaState();
+    const meld = {
+      cards: [{ design: 'SPADE' as const, value: 4 }],
+      kind: 0,
+      isNatural: true,
+      isCanasta: false,
+      isSamba: false,
+      rank: 4,
+    };
+    mockExec.mockResolvedValue(
+      makeSambaState({
+        players: [base.players[0], { ...base.players[1], melds: [meld] }, base.players[2], base.players[3]],
+      }),
+    );
+    renderWithProviders(<SambaPage />);
+
+    const details = await screen.findByTestId('sa-opponent-meld-details');
+    expect(within(details).getByText(/CPU 1/)).toBeInTheDocument();
+    expect(within(details).queryByText(/CPU 3/)).not.toBeInTheDocument();
+    expect(within(details).getAllByTestId('animated-card')).toHaveLength(1);
+  });
+
+  it('keeps the human team meld outside opponent details', async () => {
+    const base = makeSambaState();
+    const meld = {
+      cards: [{ design: 'SPADE' as const, value: 4 }],
+      kind: 0,
+      isNatural: true,
+      isCanasta: false,
+      isSamba: false,
+      rank: 4,
+    };
+    mockExec.mockResolvedValue(
+      makeSambaState({
+        players: [
+          { ...base.players[0], melds: [meld] },
+          { ...base.players[1], melds: [meld] },
+          ...base.players.slice(2),
+        ],
+      }),
+    );
+    renderWithProviders(<SambaPage />);
+
+    const details = await screen.findByTestId('sa-opponent-meld-details');
+    const allMeldProgress = screen.getAllByText('あと6枚でカナスタ');
+    expect(details).not.toContainElement(allMeldProgress[0]);
+    expect(details).toContainElement(allMeldProgress[1]);
+  });
+
   it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<SambaPage />);
