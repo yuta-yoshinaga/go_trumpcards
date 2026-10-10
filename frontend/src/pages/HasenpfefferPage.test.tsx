@@ -173,6 +173,11 @@ describe('HasenpfefferPage', () => {
     const { unmount } = renderWithProviders(<HasenpfefferPage />);
     const mobileSeats = await screen.findByTestId('cpu-accordion');
     expect(mobileSeats).not.toHaveAttribute('open');
+    const humanSeat = screen.getByTestId('hpf-seat-0');
+    const cpuSeat = screen.getByTestId('hpf-seat-1');
+    expect(humanSeat).toBeVisible();
+    expect(humanSeat.closest('[data-testid="cpu-accordion"]')).toBeNull();
+    expect(cpuSeat.closest('[data-testid="cpu-accordion"]')).toBe(mobileSeats);
     expect(screen.getByTestId('hpf-seat-1')).not.toBeVisible();
 
     unmount();

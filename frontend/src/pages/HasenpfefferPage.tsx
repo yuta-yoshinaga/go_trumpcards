@@ -243,21 +243,18 @@ function HasenpfefferPageContent() {
             )}
             <LiveAnnouncement message={isHumanBidTurn && state.mustBid ? t('header.mustBid') : ''} />
 
-            <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length} dataTutorial="hpf-seats">
-              <div className="flex flex-wrap justify-center gap-2 mb-4">
-                {state.players.map((p, playerIdx) => (
+            <div className="flex justify-center mb-2">
+              {state.players
+                .filter((p) => p.isHuman)
+                .map((p) => (
                   <fieldset
                     key={p.id}
-                    className="rounded bg-black/30 border-0 m-0 min-w-0 px-3 py-2 text-sm text-ds-text-muted"
+                    className="rounded bg-black/30 border-0 m-0 min-w-0 px-3 py-1 text-sm text-ds-text-muted"
                     data-testid={`hpf-seat-${p.id.toString()}`}
                   >
-                    <legend className="inline text-ds-text-primary">
-                      {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
-                    </legend>
+                    <legend className="inline text-ds-text-primary">{t('header.you')}</legend>
                     <span className="ml-1 text-ds-accent">{t('header.team', { team: String(p.team) })}</span>
-                    {playerIdx === state.dealerIdx && (
-                      <span className="ml-1 text-ds-accent"> / {t('dealerBadge')}</span>
-                    )}
+                    {p.id === state.dealerIdx && <span className="ml-1 text-ds-accent"> / {t('dealerBadge')}</span>}
                     {p.id === state.declarerIdx && <span className="ml-1 text-ds-accent">{t('header.declarer')}</span>}
                     {': '}
                     {p.bid < 0
@@ -269,6 +266,34 @@ function HasenpfefferPageContent() {
                     {t('header.took', { n: String(p.trickCount) })}
                   </fieldset>
                 ))}
+            </div>
+
+            <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length} dataTutorial="hpf-seats">
+              <div className="flex flex-wrap justify-center gap-2 mb-4">
+                {state.players
+                  .filter((p) => !p.isHuman)
+                  .map((p) => (
+                    <fieldset
+                      key={p.id}
+                      className="rounded bg-black/30 border-0 m-0 min-w-0 px-3 py-2 text-sm text-ds-text-muted"
+                      data-testid={`hpf-seat-${p.id.toString()}`}
+                    >
+                      <legend className="inline text-ds-text-primary">{t('header.cpu', { idx: String(p.id) })}</legend>
+                      <span className="ml-1 text-ds-accent">{t('header.team', { team: String(p.team) })}</span>
+                      {p.id === state.dealerIdx && <span className="ml-1 text-ds-accent"> / {t('dealerBadge')}</span>}
+                      {p.id === state.declarerIdx && (
+                        <span className="ml-1 text-ds-accent">{t('header.declarer')}</span>
+                      )}
+                      {': '}
+                      {p.bid < 0
+                        ? t('header.bidNone')
+                        : p.bid === 0
+                          ? t('header.bidPassed')
+                          : t('header.bidValue', { n: String(p.bid) })}
+                      {' / '}
+                      {t('header.took', { n: String(p.trickCount) })}
+                    </fieldset>
+                  ))}
               </div>
             </CpuAccordion>
 
