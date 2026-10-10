@@ -90,6 +90,68 @@ afterEach(() => {
 });
 
 describe('NertzPage', () => {
+  it('hides the playing phase message by code and keeps distinct guidance', async () => {
+    mockExec.mockResolvedValue({ ...playingState, messageCode: 'nertz.playing', message: '任意のバックエンド文言' });
+    const { unmount } = renderWithProviders(
+      <MemoryRouter initialEntries={['/nertz']}>
+        <NertzPage />
+      </MemoryRouter>,
+    );
+    expect(screen.queryByTestId('nertz-message')).not.toBeInTheDocument();
+
+    unmount();
+    mockExec.mockResolvedValue({
+      ...playingState,
+      messageCode: 'nertz.hintAvailable',
+      message: 'プレイ中',
+    });
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/nertz']}>
+        <NertzPage />
+      </MemoryRouter>,
+    );
+    await waitFor(() => expect(screen.getByTestId('nertz-message')).toBeInTheDocument());
+  });
+
+  it('uses compact foundation slots on mobile and keeps opponent boards in a desktop grid', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/nertz']}>
+        <NertzPage />
+      </MemoryRouter>,
+    );
+    const foundation = await screen.findByTestId('nertz-foundation-0');
+    expect(foundation.querySelector('span.border-dashed')).toHaveStyle({ width: '24px', height: '34px' });
+    expect(foundation).toHaveClass('min-h-11', 'min-w-11');
+    expect(screen.getAllByTestId(/^nertz-foundation-/)).toHaveLength(8);
+    expect(foundation.closest('[data-tutorial="nertz-foundations"]')?.querySelector('.grid')).toHaveClass(
+      'grid-cols-5',
+      'sm:flex',
+      'sm:flex-wrap',
+    );
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    window.dispatchEvent(new Event('resize'));
+    await waitFor(() =>
+      expect(screen.getByTestId('cpu-accordion').querySelector('.grid')).toHaveClass('lg:grid-cols-3'),
+    );
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
+  it('collapses CPU details on mobile while keeping them in the DOM', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/nertz']}>
+        <NertzPage />
+      </MemoryRouter>,
+    );
+    const accordion = await screen.findByTestId('cpu-accordion');
+    expect(accordion).not.toHaveAttribute('open');
+    expect(accordion).toHaveTextContent('CPU1');
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
   it('renders nertz-kbd-shortcuts when state is loaded', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(
