@@ -185,8 +185,10 @@ export function GamePageShell({
       <GamePageHeading title={title} />
       <PhaseIndicator phaseName={phaseName} isHumanTurn={isHumanTurn}>
         {headerExtra}
-        <TutorialButton />
-        <ManualButton gamePath={gamePath} />
+        <div className="ml-auto sm:ml-0 flex shrink-0 items-center gap-2 sm:gap-6">
+          <TutorialButton />
+          <ManualButton gamePath={gamePath} />
+        </div>
         {headerEnd}
       </PhaseIndicator>
       {children}
