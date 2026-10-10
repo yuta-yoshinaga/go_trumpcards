@@ -88,7 +88,10 @@ describe('KarnoffelPage', () => {
     for (const detail of details) expect(detail).not.toHaveAttribute('open');
     expect(screen.getByTestId('karnoffel-ladder')).not.toBeVisible();
     expect(screen.getByTestId('karnoffel-chosen-note')).not.toBeVisible();
+    expect(screen.getByTestId('karnoffel-ladder-summary')).toHaveTextContent('序列');
+    expect(screen.getByTestId('karnoffel-chosen-note-summary')).toHaveTextContent('切札の決め方');
     const settings = screen.getByText('設定', { exact: true }).closest('details');
+    expect(screen.getByTestId('karnoffel-settings-summary')).toHaveTextContent('設定');
     expect(settings).not.toHaveAttribute('open');
     expect(screen.getByLabelText('目標局数')).not.toBeVisible();
 

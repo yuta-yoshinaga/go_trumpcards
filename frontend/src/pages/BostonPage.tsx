@@ -241,7 +241,12 @@ function BostonPageContent() {
               data-testid="boston-ladder"
               open={!isMobile || undefined}
             >
-              <summary className="mb-1 cursor-pointer select-none text-ds-text-primary">{t('ladderSummary')}</summary>
+              <summary
+                className="mb-1 cursor-pointer select-none text-ds-text-primary"
+                data-testid="boston-ladder-summary"
+              >
+                {t('ladderSummary')}
+              </summary>
               <ol className="flex flex-col gap-0.5">
                 {state.bidOptions.map((o) => (
                   <li

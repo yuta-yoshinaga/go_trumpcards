@@ -123,6 +123,7 @@ describe('BostonPage', () => {
 
     const ladder = screen.getByTestId('boston-ladder');
     expect(ladder).not.toHaveAttribute('open');
+    expect(screen.getByTestId('boston-ladder-summary')).toBeInTheDocument();
     expect(within(ladder).getByText(/ミゼールはトリック宣言の間に挟まります/)).not.toBeVisible();
 
     mobileRender.unmount();

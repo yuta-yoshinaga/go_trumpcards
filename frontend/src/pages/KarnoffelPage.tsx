@@ -175,7 +175,9 @@ function KarnoffelPageContent() {
             </div>
 
             <details className="mb-2 text-center text-ds-text-primary text-sm" open={!isMobile || undefined}>
-              <summary className="cursor-pointer select-none">{tc('settings.title')}</summary>
+              <summary className="cursor-pointer select-none" data-testid="karnoffel-settings-summary">
+                {tc('settings.title')}
+              </summary>
               <div className="flex justify-center">
                 <label className="flex min-h-[44px] items-center gap-2 text-sm text-ds-text-primary">
                   <span>{t('targetHandsLabel')}</span>
@@ -197,13 +199,20 @@ function KarnoffelPageContent() {
 
             {/* The lowest face-up card decides the suit — not a turn-up. */}
             <details className="mb-2 text-center text-ds-text-muted text-xs" open={!isMobile || undefined}>
-              <summary className="cursor-pointer select-none">{t('chosenNoteSummary')}</summary>
+              <summary className="cursor-pointer select-none" data-testid="karnoffel-chosen-note-summary">
+                {t('chosenNoteSummary')}
+              </summary>
               <div data-testid="karnoffel-chosen-note">{t('chosenNote')}</div>
             </details>
 
             {/* The irregular ranking, which is the whole point of the game. */}
             <details className="mb-2 p-2 rounded bg-black/20 text-xs" open={!isMobile || undefined}>
-              <summary className="cursor-pointer select-none text-ds-text-primary">{t('ladderTitle')}</summary>
+              <summary
+                className="cursor-pointer select-none text-ds-text-primary"
+                data-testid="karnoffel-ladder-summary"
+              >
+                {t('ladderTitle')}
+              </summary>
               <div data-testid="karnoffel-ladder">
                 <div className="text-ds-text-primary">{t('ladderLine')}</div>
                 <div className="mt-1 text-ds-text-muted">{t('ladderNote')}</div>
