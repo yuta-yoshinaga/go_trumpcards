@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { biribaApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -15,7 +16,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useBiribaGame } from '../hooks/useBiribaGame';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -98,6 +99,7 @@ function BiribaPageContent() {
   } = useBiribaGame();
 
   const { cardWidth } = useCardDimensions();
+  const isMobile = useIsMobile();
   const { playSound } = useSound();
   const phaseNames = usePhaseNames('biriba', BIRIBA_PHASE_KEYS);
   const {
@@ -141,18 +143,7 @@ function BiribaPageContent() {
   const isDiscardPhase = state?.phase === BiribaPhase.DISCARD;
   const isRoundEnd = state?.phase === BiribaPhase.ROUND_END;
   const isGameEnd = state?.phase === BiribaPhase.GAME_END || !!state?.gameEndFlag;
-  const [discardPileViewerOpen, setDiscardPileViewerOpen] = useState(false);
-  const previousPhaseRef = useRef<number | undefined>(undefined);
-
-  useEffect(() => {
-    if (!state) return;
-    if (state.phase === BiribaPhase.DRAW && previousPhaseRef.current !== BiribaPhase.DRAW) {
-      setDiscardPileViewerOpen(true);
-    } else if (state.phase !== BiribaPhase.DRAW && previousPhaseRef.current === BiribaPhase.DRAW) {
-      setDiscardPileViewerOpen(false);
-    }
-    previousPhaseRef.current = state.phase;
-  }, [state]);
+  const [discardPileViewerOpen, setDiscardPileViewerOpen] = useState(!isMobile);
 
   // Biriba uses the Canasta discard-pile mechanism: two natural cards matching
   // the top card are required to take the pile.
@@ -366,7 +357,7 @@ function BiribaPageContent() {
                 <details
                   className="my-3 rounded bg-black/30 p-2"
                   data-testid="ca-discard-pile-viewer"
-                  open={discardPileViewerOpen}
+                  open={discardPileViewerOpen || undefined}
                   onToggle={(event) => setDiscardPileViewerOpen(event.currentTarget.open)}
                 >
                   <summary className="cursor-pointer select-none text-sm text-ds-text-muted">
@@ -430,79 +421,89 @@ function BiribaPageContent() {
               {/* Right: info sidebar */}
               <div>
                 {/* Score table */}
-                <div className="my-3 p-2 rounded bg-black/30">
-                  <table className="w-full text-sm text-ds-text-muted">
-                    <thead>
-                      <tr>
-                        <th scope="col" className="text-left">
-                          {tc('label.player')}
-                        </th>
-                        <th scope="col">{t('score.round')}</th>
-                        <th scope="col">{t('score.cumulative')}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {state.players.map((p) => (
-                        <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
-                          <td>{playerName(p.id, p.isHuman)}</td>
-                          <td
-                            className={`text-center ${pulsingScoreIds.has(p.id) ? 'motion-safe:animate-pulse text-ds-info' : ''}`}
-                            data-testid={`bu-round-score-${p.id.toString()}`}
-                          >
-                            {p.roundScore}
-                            {isRoundEnd && (
-                              <ul className="mt-2 space-y-1 text-left text-xs text-ds-text-muted">
-                                <li>{t('score.breakdown')}</li>
-                                <li>
-                                  {t('score.meldCards')}: {p.scoreBreakdown.meldCards || t('score.noPoints')}
-                                </li>
-                                <li>
-                                  {t('score.biribaBonus')}: {p.scoreBreakdown.canastaBonus || t('score.noPoints')}
-                                </li>
-                                <li>
-                                  {t('score.red3Bonus')}: {p.scoreBreakdown.red3Bonus || t('score.noPoints')}
-                                </li>
-                                <li>
-                                  {t('score.goingOutBonus')}: {p.scoreBreakdown.goOutBonus || t('score.noPoints')}
-                                </li>
-                                <li>
-                                  {t('score.handPenalty')}:{' '}
-                                  {p.scoreBreakdown.handPenalty
-                                    ? `−${p.scoreBreakdown.handPenalty}`
-                                    : t('score.noPoints')}
-                                </li>
-                              </ul>
-                            )}
-                          </td>
-                          <td className="text-center">{p.cumulativeScore}</td>
+                <details className="my-3 p-2 rounded bg-black/30" open={!isMobile || undefined}>
+                  <summary className="cursor-pointer select-none text-sm text-ds-text-muted">
+                    {t('score.round')}
+                  </summary>
+                  <div className="mt-2">
+                    <table className="w-full text-sm text-ds-text-muted">
+                      <thead>
+                        <tr>
+                          <th scope="col" className="text-left">
+                            {tc('label.player')}
+                          </th>
+                          <th scope="col">{t('score.round')}</th>
+                          <th scope="col">{t('score.cumulative')}</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody>
+                        {state.players.map((p) => (
+                          <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
+                            <td>{playerName(p.id, p.isHuman)}</td>
+                            <td
+                              className={`text-center ${pulsingScoreIds.has(p.id) ? 'motion-safe:animate-pulse text-ds-info' : ''}`}
+                              data-testid={`bu-round-score-${p.id.toString()}`}
+                            >
+                              {p.roundScore}
+                              {isRoundEnd && (
+                                <ul className="mt-2 space-y-1 text-left text-xs text-ds-text-muted">
+                                  <li>{t('score.breakdown')}</li>
+                                  <li>
+                                    {t('score.meldCards')}: {p.scoreBreakdown.meldCards || t('score.noPoints')}
+                                  </li>
+                                  <li>
+                                    {t('score.biribaBonus')}: {p.scoreBreakdown.canastaBonus || t('score.noPoints')}
+                                  </li>
+                                  <li>
+                                    {t('score.red3Bonus')}: {p.scoreBreakdown.red3Bonus || t('score.noPoints')}
+                                  </li>
+                                  <li>
+                                    {t('score.goingOutBonus')}: {p.scoreBreakdown.goOutBonus || t('score.noPoints')}
+                                  </li>
+                                  <li>
+                                    {t('score.handPenalty')}:{' '}
+                                    {p.scoreBreakdown.handPenalty
+                                      ? `−${p.scoreBreakdown.handPenalty}`
+                                      : t('score.noPoints')}
+                                  </li>
+                                </ul>
+                              )}
+                            </td>
+                            <td className="text-center">{p.cumulativeScore}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </details>
 
                 {/* CPU hand (shown at round/game end) */}
-                {(isRoundEnd || isGameEnd) &&
-                  state.players
-                    .filter((p) => !p.isHuman)
-                    .map((p) => (
-                      <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                        <div className="text-ds-text-muted text-sm">
-                          {playerName(p.id, p.isHuman)}: {t('handCards', { count: p.cardCount })}
-                        </div>
-                        {p.cards.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {p.cards.map((card, idx) => (
-                              <AnimatedCard
-                                key={`cpu-${card.design}-${card.value}-${idx}`}
-                                card={card}
-                                width={cardWidth * 0.7}
-                              />
-                            ))}
+                {(isRoundEnd || isGameEnd) && (
+                  <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+                    <div className="flex flex-wrap gap-2">
+                      {state.players
+                        .filter((p) => !p.isHuman)
+                        .map((p) => (
+                          <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
+                            <div className="text-ds-text-muted text-sm">
+                              {playerName(p.id, p.isHuman)}: {t('handCards', { count: p.cardCount })}
+                            </div>
+                            {p.cards.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {p.cards.map((card, idx) => (
+                                  <AnimatedCard
+                                    key={`cpu-${card.design}-${card.value}-${idx}`}
+                                    card={card}
+                                    width={cardWidth * 0.7}
+                                  />
+                                ))}
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
-                    ))}
+                        ))}
+                    </div>
+                  </CpuAccordion>
+                )}
               </div>
             </div>
 

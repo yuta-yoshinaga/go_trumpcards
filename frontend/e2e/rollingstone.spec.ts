@@ -20,6 +20,7 @@ test.describe('Rolling Stone E2E', () => {
   // **勝利条件が逆さまなのが規則そのもの。**
   test('always states that taking tricks is worth nothing', async ({ page }) => {
     await navigateTo(page, '/rollingstone');
+    await page.getByText('ルール', { exact: true }).click();
     await expect(page.getByTestId('rs-rule')).toContainText(/得点|score/, { timeout: TIMEOUT_TRANSITION });
   });
 

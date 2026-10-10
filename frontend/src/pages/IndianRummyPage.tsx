@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import type { indianRummyApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -14,7 +15,7 @@ import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -121,6 +122,7 @@ function IndianRummyPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('indianrummy', state);
   const { cardWidth } = useCardDimensions();
+  const isMobile = useIsMobile();
   const [keyboardFocusIndex, setKeyboardFocusIndex] = useState<number | null>(null);
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('indianrummy');
@@ -299,24 +301,26 @@ function IndianRummyPageContent() {
                 {/* Discard history is ordered oldest to newest; the last card is the top. */}
                 <div data-testid="indianrummy-discard-history">
                   {state.discardPile.length > 0 && (
-                    <div className="my-3 p-3 rounded bg-black/40">
-                      <div className="text-ds-text-muted text-sm mb-2">{t('discardHistory')}</div>
-                      <div className="flex flex-wrap gap-2 items-end">
-                        {state.discardPile.map((card, idx) => {
-                          const isLatest = idx === state.discardPile.length - 1;
-                          return (
-                            <div
-                              key={`discard-${card.design}-${card.value}-${idx}`}
-                              className={`relative ${isLatest ? 'ring-2 ring-ds-accent rounded-lg' : ''}`}
-                              data-testid={isLatest ? 'indianrummy-discard-latest' : undefined}
-                            >
-                              <AnimatedCard card={card} width={cardWidth} />
-                              {isLatest && <span className="sr-only">{t('discardLatest')}</span>}
-                            </div>
-                          );
-                        })}
+                    <details className="my-3 rounded bg-black/40" data-testid="indianrummy-discard-history-details">
+                      <summary className="cursor-pointer p-2 text-ds-text-muted text-sm">{t('discardHistory')}</summary>
+                      <div className="my-3 p-3 rounded bg-black/40">
+                        <div className="flex flex-wrap gap-2 items-end">
+                          {state.discardPile.map((card, idx) => {
+                            const isLatest = idx === state.discardPile.length - 1;
+                            return (
+                              <div
+                                key={`discard-${card.design}-${card.value}-${idx}`}
+                                className={`relative ${isLatest ? 'ring-2 ring-ds-accent rounded-lg' : ''}`}
+                                data-testid={isLatest ? 'indianrummy-discard-latest' : undefined}
+                              >
+                                <AnimatedCard card={card} width={cardWidth} />
+                                {isLatest && <span className="sr-only">{t('discardLatest')}</span>}
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
+                    </details>
                   )}
                 </div>
               </div>
@@ -324,45 +328,55 @@ function IndianRummyPageContent() {
               {/* Right: info sidebar */}
               <div>
                 {/* CPU players */}
-                {state.players
-                  .filter((p) => !p.isHuman)
-                  .map((p) => (
-                    <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                      <div className="text-ds-text-muted text-sm">
-                        {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                        {t('cumulativeScore', { score: p.cumulativeScore })}
-                        {revealCpu && (
-                          <>
-                            {' '}
-                            | {t('deadwoodShort', { score: p.deadwood })}
-                            {p.hasPureSequence && (
-                              <span className="ml-1 text-ds-success">{t('pureSequenceBadge')}</span>
+                <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+                  <div className="flex flex-wrap gap-2">
+                    {state.players
+                      .filter((p) => !p.isHuman)
+                      .map((p) => (
+                        <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
+                          <div className="text-ds-text-muted text-sm">
+                            {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                            {t('cumulativeScore', { score: p.cumulativeScore })}
+                            {revealCpu && (
+                              <>
+                                {' '}
+                                | {t('deadwoodShort', { score: p.deadwood })}
+                                {p.hasPureSequence && (
+                                  <span className="ml-1 text-ds-success">{t('pureSequenceBadge')}</span>
+                                )}
+                              </>
                             )}
-                          </>
-                        )}
-                      </div>
-                      {revealCpu && p.cards.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {p.cards.map((card, idx) => (
-                            <div
-                              key={`cpu-${p.id}-${card.design}-${card.value}-${idx}`}
-                              className={`relative inline-block rounded ${
-                                isWildCard(card) ? 'ring-2 ring-ds-info' : ''
-                              }`}
-                            >
-                              <AnimatedCard card={card} width={cardWidth * 0.8} />
-                              {isWildCard(card) && <span className="sr-only">{t('wildAria')}</span>}
-                              {wildBadge(card)}
+                          </div>
+                          {revealCpu && p.cards.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {p.cards.map((card, idx) => (
+                                <div
+                                  key={`cpu-${p.id}-${card.design}-${card.value}-${idx}`}
+                                  className={`relative inline-block rounded ${
+                                    isWildCard(card) ? 'ring-2 ring-ds-info' : ''
+                                  }`}
+                                >
+                                  <AnimatedCard card={card} width={cardWidth * 0.8} />
+                                  {isWildCard(card) && <span className="sr-only">{t('wildAria')}</span>}
+                                  {wildBadge(card)}
+                                </div>
+                              ))}
                             </div>
-                          ))}
+                          )}
                         </div>
-                      )}
-                    </div>
-                  ))}
+                      ))}
+                  </div>
+                </CpuAccordion>
 
                 {/* Score table */}
-                <div className="my-3 p-2 rounded bg-black/30" data-tutorial="ir-score-table">
-                  <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
+                <details
+                  open={!isMobile || undefined}
+                  className="my-3 p-2 rounded bg-black/30"
+                  data-testid="ir-score-details"
+                >
+                  <summary className="cursor-pointer text-ds-text-muted text-sm mb-1" data-tutorial="ir-score-table">
+                    {t('scores')}
+                  </summary>
                   <table className="w-full text-sm text-ds-text-muted">
                     <thead>
                       <tr>
@@ -383,7 +397,7 @@ function IndianRummyPageContent() {
                       ))}
                     </tbody>
                   </table>
-                </div>
+                </details>
               </div>
             </div>
 

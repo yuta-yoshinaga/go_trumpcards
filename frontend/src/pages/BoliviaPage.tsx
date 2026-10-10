@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { boliviaApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -98,6 +99,7 @@ function BoliviaPageContent() {
   } = useBoliviaGame();
 
   const { cardWidth } = useCardDimensions();
+  const boardCardWidth = isMobile ? 36 : cardWidth;
   const phaseNames = usePhaseNames('bolivia', BOLIVIA_PHASE_KEYS);
   const {
     hint: frontendHint,
@@ -271,8 +273,11 @@ function BoliviaPageContent() {
             ]}
           />
 
-          <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            <div className="text-ds-text-primary text-center mb-2">
+          <div
+            className={`flex-1 overflow-y-auto pt-2 sm:pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}
+            data-testid="sa-play-area"
+          >
+            <div className="text-ds-text-primary text-center mb-1 sm:mb-2">
               <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
               <span>
                 {t('drawPile', { count: state.drawPileCount })} / {t('discardPile', { count: state.discardPileCount })}
@@ -283,7 +288,7 @@ function BoliviaPageContent() {
                 {frozenMsg}
               </span>
             </div>
-            <div className="text-ds-text-muted text-center mb-2 text-sm" data-testid="sa-team-scores">
+            <div className="text-ds-text-muted text-center mb-1 sm:mb-2 text-sm" data-testid="sa-team-scores">
               {t('teamScores', {
                 a: t(humanPlayer?.team === 0 ? 'teamScoreSelf' : 'teamScoreOpponent', {
                   team: t('teamLabel', { n: 0 }),
@@ -310,13 +315,13 @@ function BoliviaPageContent() {
                 {/* Discard pile top */}
                 {state.discardTop && (
                   <div
-                    className={`my-3 p-3 rounded flex items-center gap-3 relative ${
+                    className={`my-2 sm:my-3 p-3 rounded flex items-center gap-3 relative ${
                       state.isFrozen ? `${badgeInfoColors} ring-2 ring-ds-info` : 'bg-black/40'
                     }`}
                     data-tutorial="sa-draw-area"
                     data-testid="sa-discard-pile"
                   >
-                    <AnimatedCard card={state.discardTop} width={cardWidth} />
+                    <AnimatedCard card={state.discardTop} width={boardCardWidth} />
                     <div className="text-ds-text-muted text-sm">{t('discardTop')}</div>
                     {state.isFrozen && (
                       <span
@@ -332,109 +337,113 @@ function BoliviaPageContent() {
                 )}
 
                 {/* Player melds */}
-                {state.players.map((p, pi) => {
-                  if (p.melds.length === 0 && p.red3s.length === 0) return null;
-                  const teamMelded = state.players.some((tp) => tp.team === p.team && tp.hasInitMeld);
-                  return (
-                    <div
-                      key={pi}
-                      className="my-2 p-2 rounded bg-black/30"
-                      data-tutorial={pi === 0 ? 'sa-meld-area' : undefined}
-                    >
-                      <div className="text-ds-text-muted text-sm mb-1">
-                        {playerName(p.id, p.isHuman)} ({t('teamLabel', { n: p.team })}) - {t('melds')}
-                        {p.hasCanasta && (
-                          <span className="ml-2 text-ds-warning" title={t('tag.canasta')}>
-                            ★
-                          </span>
-                        )}
-                        {/* **エスカレラの印を落とさない。** 上がりを止めているのは
-                            こちらで、ボリビアは点が重いだけ。 */}
-                        {p.hasEscalera && (
-                          <span
-                            className="ml-1 text-ds-success"
-                            title={t('tag.escalera')}
-                            data-testid={`bo-tag-escalera-${p.id}`}
-                          >
-                            ◆
-                          </span>
-                        )}
-                        {p.hasBolivia && (
-                          <span
-                            className="ml-1 text-ds-accent"
-                            title={t('tag.bolivia')}
-                            data-testid={`bo-tag-bolivia-${p.id}`}
-                          >
-                            ▲
-                          </span>
-                        )}
-                      </div>
-                      {p.melds.map((m, mi) => {
-                        // Progress toward the 7-card canasta (set) / bolivia (sequence)
-                        // milestone, derived purely from `cards.length` and `kind`.
-                        const remaining = BOLIVIA_CANASTA_SIZE - m.cards.length;
-                        // **メルドは 3 種類。** 2 分岐のままだと、ワイルドだけの
-                        // メルド (kind 2) が「カナスタ」と表示されてしまう。
-                        const meldWord =
-                          m.kind === BOLIVIA_MELD_KIND.ESCALERA
-                            ? 'escalera'
-                            : m.kind === BOLIVIA_MELD_KIND.WILD
-                              ? 'bolivia'
-                              : 'canasta';
-                        const complete = remaining <= 0;
-                        return (
-                          <div key={mi} className="flex flex-wrap gap-1 mb-1">
-                            <span className="text-xs text-ds-text-muted self-center mr-1">
-                              {m.kind === 1
-                                ? t('sequence')
-                                : m.kind === BOLIVIA_MELD_KIND.WILD
-                                  ? t(m.isBolivia ? 'boliviaMeld' : 'wildMeld')
-                                  : m.isCanasta
-                                    ? m.isNatural
-                                      ? t('naturalCanasta')
-                                      : t('mixedCanasta')
-                                    : `(${m.cards.length})`}
-                            </span>
-                            <span
-                              data-testid={`sa-meld-progress-${pi}-${mi}`}
-                              className={`text-xs self-center mr-1 ${
-                                complete ? 'text-ds-success font-bold motion-safe:animate-pulse' : 'text-ds-info'
-                              }`}
-                            >
-                              {complete
-                                ? t(`meldProgress.${meldWord}Complete`)
-                                : t(`meldProgress.to_${meldWord}`, { n: remaining })}
-                            </span>
-                            {m.cards.map((card, ci) => (
-                              <AnimatedCard key={`meld-${pi}-${mi}-${ci}`} card={card} width={cardWidth * 0.6} />
-                            ))}
-                          </div>
-                        );
-                      })}
-                      {p.red3s.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          <span
-                            className={`text-xs self-center mr-1 ${!teamMelded ? 'text-ds-warning font-semibold' : 'text-ds-error-text'}`}
-                          >
-                            {t('red3s')}
-                          </span>
-                          {!teamMelded && (
-                            <span
-                              data-testid={`bo-red3-warning-${p.id}`}
-                              className="text-xs text-ds-warning self-center mr-1"
-                              title={t('red3PenaltyWarning')}
-                            >
-                              ({t('red3PenaltyWarning')})
+                <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length} dataTutorial="sa-meld-area">
+                  {state.players.map((p, pi) => {
+                    if (p.melds.length === 0 && p.red3s.length === 0) return null;
+                    const teamMelded = state.players.some((tp) => tp.team === p.team && tp.hasInitMeld);
+                    return (
+                      <div key={pi} className="my-2 p-2 rounded bg-black/30">
+                        <div className="text-ds-text-muted text-sm mb-1">
+                          {playerName(p.id, p.isHuman)} ({t('teamLabel', { n: p.team })}) - {t('melds')}
+                          {p.hasCanasta && (
+                            <span className="ml-2 text-ds-warning" title={t('tag.canasta')}>
+                              ★
                             </span>
                           )}
-                          {p.red3s.map((card, ri) => (
-                            <AnimatedCard key={`red3-${pi}-${ri}`} card={card} width={cardWidth * 0.6} />
-                          ))}
+                          {/* **エスカレラの印を落とさない。** 上がりを止めているのは
+                            こちらで、ボリビアは点が重いだけ。 */}
+                          {p.hasEscalera && (
+                            <span
+                              className="ml-1 text-ds-success"
+                              title={t('tag.escalera')}
+                              data-testid={`bo-tag-escalera-${p.id}`}
+                            >
+                              ◆
+                            </span>
+                          )}
+                          {p.hasBolivia && (
+                            <span
+                              className="ml-1 text-ds-accent"
+                              title={t('tag.bolivia')}
+                              data-testid={`bo-tag-bolivia-${p.id}`}
+                            >
+                              ▲
+                            </span>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  );
-                })}
+                        {p.melds.map((m, mi) => {
+                          // Progress toward the 7-card canasta (set) / bolivia (sequence)
+                          // milestone, derived purely from `cards.length` and `kind`.
+                          const remaining = BOLIVIA_CANASTA_SIZE - m.cards.length;
+                          // **メルドは 3 種類。** 2 分岐のままだと、ワイルドだけの
+                          // メルド (kind 2) が「カナスタ」と表示されてしまう。
+                          const meldWord =
+                            m.kind === BOLIVIA_MELD_KIND.ESCALERA
+                              ? 'escalera'
+                              : m.kind === BOLIVIA_MELD_KIND.WILD
+                                ? 'bolivia'
+                                : 'canasta';
+                          const complete = remaining <= 0;
+                          return (
+                            <div key={mi} className="flex flex-nowrap gap-1 mb-1 overflow-x-auto sm:overflow-visible">
+                              <span className="text-xs text-ds-text-muted self-center mr-1">
+                                {m.kind === 1
+                                  ? t('sequence')
+                                  : m.kind === BOLIVIA_MELD_KIND.WILD
+                                    ? t(m.isBolivia ? 'boliviaMeld' : 'wildMeld')
+                                    : m.isCanasta
+                                      ? m.isNatural
+                                        ? t('naturalCanasta')
+                                        : t('mixedCanasta')
+                                      : `(${m.cards.length})`}
+                              </span>
+                              <span
+                                data-testid={`sa-meld-progress-${pi}-${mi}`}
+                                className={`text-xs self-center mr-1 ${
+                                  complete ? 'text-ds-success font-bold motion-safe:animate-pulse' : 'text-ds-info'
+                                }`}
+                              >
+                                {complete
+                                  ? t(`meldProgress.${meldWord}Complete`)
+                                  : t(`meldProgress.to_${meldWord}`, { n: remaining })}
+                              </span>
+                              {m.cards.map((card, ci) => (
+                                <span key={`meld-${pi}-${mi}-${ci}`} className={ci > 0 ? '-ml-[22px] sm:ml-0' : ''}>
+                                  <AnimatedCard card={card} width={isMobile ? 36 : cardWidth * 0.6} />
+                                </span>
+                              ))}
+                            </div>
+                          );
+                        })}
+                        {p.red3s.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            <span
+                              className={`text-xs self-center mr-1 ${!teamMelded ? 'text-ds-warning font-semibold' : 'text-ds-error-text'}`}
+                            >
+                              {t('red3s')}
+                            </span>
+                            {!teamMelded && (
+                              <span
+                                data-testid={`bo-red3-warning-${p.id}`}
+                                className="text-xs text-ds-warning self-center mr-1"
+                                title={t('red3PenaltyWarning')}
+                              >
+                                ({t('red3PenaltyWarning')})
+                              </span>
+                            )}
+                            {p.red3s.map((card, ri) => (
+                              <AnimatedCard
+                                key={`red3-${pi}-${ri}`}
+                                card={card}
+                                width={isMobile ? 36 : cardWidth * 0.6}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </CpuAccordion>
               </div>
 
               {/* Right: info sidebar */}

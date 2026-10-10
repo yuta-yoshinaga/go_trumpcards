@@ -95,9 +95,15 @@ describe('LobaPage', () => {
     const cpuDetails = screen.getByTestId('cpu-accordion');
     expect(cpuDetails).not.toHaveAttribute('open');
     expect(cpuDetails.querySelector('[role="img"]')).toBeInTheDocument();
-    const seatRow = cpuDetails.querySelector('.flex.flex-wrap');
-    expect(seatRow).toBeInTheDocument();
-    expect(seatRow?.classList.contains('sm:flex-nowrap')).toBe(true);
+    expect(cpuDetails.querySelector('.grid.grid-cols-2')).toBeInTheDocument();
+    const cpuHand = cpuDetails.querySelector('[role="img"]');
+    expect(cpuHand).toBeInTheDocument();
+    expect(cpuHand?.querySelector('img')).toHaveStyle({ width: '55px' });
+    expect(cpuHand?.querySelectorAll('img')[1]).toHaveClass('-ml-5');
+    const meldList = screen.getByTestId('loba-meld').parentElement;
+    expect(meldList?.classList.contains('flex-wrap')).toBe(true);
+    expect(meldList?.classList.contains('sm:flex-col')).toBe(true);
+    expect(screen.getByTestId('loba-meld').querySelector('.-ml-3')).toBeInTheDocument();
   });
 
   it('shows the eliminated label beside an eliminated CPU seat', async () => {
@@ -123,6 +129,10 @@ describe('LobaPage', () => {
     renderWithProviders(<LobaPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
+    expect(screen.getByTestId('cpu-accordion').querySelector('.grid-cols-2')).toBeInTheDocument();
+    expect(screen.getByTestId('cpu-accordion').querySelector('.sm\\:grid-cols-3')).toBeInTheDocument();
+    const meldList = screen.getByTestId('loba-meld').parentElement;
+    expect(meldList).toHaveClass('sm:flex-col');
   });
 
   it('resets on mount', async () => {

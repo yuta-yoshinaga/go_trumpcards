@@ -65,6 +65,7 @@
     "cpuWin": "Team {{cpuId}} wins!"
   },
   "score": {
+    "table": "Score table",
     "cumulative": "Total",
     "round": "Round",
     "breakdown": "Score breakdown",

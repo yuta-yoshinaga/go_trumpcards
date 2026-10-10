@@ -17,6 +17,12 @@ vi.mock('../hooks/useGameHint', () => ({
 
 const mockExec = vi.mocked(rollingstoneApi.exec);
 const mockActionLog = vi.mocked(actionLogApi.rollingstone);
+const mobileState = vi.hoisted(() => ({ isMobile: false }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+}));
 
 const card = (design: string, value: number): Card => ({ design, value }) as unknown as Card;
 
@@ -67,6 +73,7 @@ const forcedPickUp = (over: Partial<RollingStoneResponse> = {}) =>
   } as Partial<RollingStoneResponse>);
 
 beforeEach(() => {
+  mobileState.isMobile = false;
   vi.clearAllMocks();
   mockExec.mockResolvedValue(makeState());
 });
@@ -140,7 +147,12 @@ describe('RollingStonePage', () => {
   // **勝利条件が逆さまなのが規則そのもの。**
   it('states that taking tricks is worth nothing', async () => {
     renderWithProviders(<RollingStonePage />);
-    expect(await screen.findByTestId('rs-rule')).toHaveTextContent(/得点にはならず/);
+    const rule = await screen.findByTestId('rs-rule');
+    expect(rule).not.toBeVisible();
+    expect(rule.closest('details')).not.toHaveAttribute('open');
+    fireEvent.click(screen.getByText('ルール'));
+    expect(rule).toBeVisible();
+    expect(rule).toHaveTextContent(/得点にはならず/);
   });
 
   // **デッキ枚数は人数で変わる。**
@@ -185,11 +197,29 @@ describe('RollingStonePage', () => {
   it('structures seat summaries as a list with a heading for each seat', async () => {
     mockExec.mockResolvedValue(makeState());
     renderWithProviders(<RollingStonePage />);
-    const list = await screen.findByRole('list');
+    const list = await screen.findByTestId('rs-seats');
     expect(list).toHaveClass('list-none');
-    expect(list.querySelectorAll(':scope > li')).toHaveLength(4);
+    expect(list.querySelectorAll(':scope > li')).toHaveLength(1);
+    const cpuAccordion = screen.getByTestId('cpu-accordion');
+    expect(cpuAccordion).toHaveAttribute('open');
+    expect(cpuAccordion.querySelectorAll('li')).toHaveLength(3);
     expect(screen.getByRole('heading', { name: 'あなた', level: 2 })).toBeInTheDocument();
     expect(screen.getAllByRole('heading', { name: /CPU/, level: 2 })).toHaveLength(3);
+  });
+
+  it('collapses CPU seats on mobile and opens them on desktop', async () => {
+    mobileState.isMobile = true;
+    const { unmount } = renderWithProviders(<RollingStonePage />);
+    const accordion = await screen.findByTestId('cpu-accordion');
+    expect(accordion).not.toHaveAttribute('open');
+    expect(screen.getByTestId('rs-seat-0')).toBeVisible();
+    expect(screen.getByTestId('rs-seat-1')).not.toBeVisible();
+    unmount();
+
+    mobileState.isMobile = false;
+    renderWithProviders(<RollingStonePage />);
+    expect(await screen.findByTestId('cpu-accordion')).toHaveAttribute('open');
+    expect(screen.getByTestId('rs-seat-1')).toBeVisible();
   });
 
   // **引き取った席と上がった席は盤面に痕跡が残らない。**

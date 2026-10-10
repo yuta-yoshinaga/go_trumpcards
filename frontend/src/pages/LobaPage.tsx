@@ -72,7 +72,7 @@ function LobaPageContent() {
     [],
   );
   const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -159,7 +159,7 @@ function LobaPageContent() {
             </details>
 
             <CpuAccordion playerCount={opponents.length} dataTutorial="lb-seats">
-              <div className="flex flex-wrap sm:flex-nowrap justify-center gap-4 mb-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 justify-items-center gap-4 mb-3">
                 {opponents.map((o) => (
                   <div key={`opp-${o.id.toString()}`} className="text-center">
                     <div className="text-game-text-muted text-xs mb-1">
@@ -174,7 +174,11 @@ function LobaPageContent() {
                       aria-label={t('opponentHandAriaLabel', { name: playerName(o.id, false), n: o.cardCount })}
                     >
                       {Array.from({ length: o.cardCount }, (_, i) => (
-                        <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
+                        <CardBack
+                          key={`opp-${o.id.toString()}-c${i.toString()}`}
+                          width={Math.round(cardWidth * 0.55)}
+                          className={i > 0 ? '-ml-5' : undefined}
+                        />
                       ))}
                     </div>
                   </div>
@@ -186,7 +190,11 @@ function LobaPageContent() {
               <div className="text-game-text-muted text-xs mb-1">{t('discard')}</div>
               {state.discardTop ? (
                 <div className="flex justify-center">
-                  <AnimatedCard card={state.discardTop} width={cardWidth} draggable={false} />
+                  <AnimatedCard
+                    card={state.discardTop}
+                    width={isMobile ? Math.round(cardWidth * 0.55) : cardWidth}
+                    draggable={false}
+                  />
                 </div>
               ) : (
                 <span className="text-game-text-muted text-xs">—</span>
@@ -198,7 +206,7 @@ function LobaPageContent() {
               {state.melds.length === 0 ? (
                 <div className="text-center text-game-text-muted text-xs">{t('noMelds')}</div>
               ) : (
-                <div className="flex flex-col gap-1 items-center">
+                <div className="flex flex-wrap sm:flex-col gap-1 items-center justify-center">
                   {state.melds.map((m, i) => (
                     <button
                       key={`meld-${i.toString()}`}
@@ -218,7 +226,8 @@ function LobaPageContent() {
                         <AnimatedCard
                           key={`meld-${i.toString()}-c${j.toString()}`}
                           card={card}
-                          width={Math.round(cardWidth * 0.7)}
+                          width={Math.round(cardWidth * (isMobile ? 0.45 : 0.7))}
+                          wrapperClassName={j > 0 ? '-ml-3' : undefined}
                           draggable={false}
                         />
                       ))}

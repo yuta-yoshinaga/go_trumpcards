@@ -18,11 +18,13 @@ test.describe('Pasur E2E', () => {
   // **11 の合計と絵札の扱いが規則そのもの。**
   test('always states the capture rule', async ({ page }) => {
     await navigateTo(page, '/pasur');
-    await expect(page.getByTestId('ps-rule')).toContainText(/11/, { timeout: TIMEOUT_TRANSITION });
+    await page.getByTestId('ps-rule-details').locator('summary').click();
+    await expect(page.getByTestId('ps-rule-details')).toContainText(/11/, { timeout: TIMEOUT_TRANSITION });
   });
 
   test('shows every seat', async ({ page }) => {
     await navigateTo(page, '/pasur');
+    await page.getByTestId('cpu-accordion').locator('summary').click();
     for (const id of [0, 1, 2, 3]) {
       await expect(page.getByTestId(`ps-seat-${id}`)).toBeVisible({ timeout: TIMEOUT_TRANSITION });
     }

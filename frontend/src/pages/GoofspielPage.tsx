@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { goofspielApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -224,13 +225,14 @@ function GoofspielPageContent() {
             </div>
 
             {/* **同時入札であることが規則そのもの。** */}
-            <div
-              className="mb-3 rounded bg-black/30 px-3 py-2 text-ds-text-primary text-center"
-              data-testid="gs-rule"
-              data-tutorial="gs-rule"
-            >
-              {t('header.rule')}
-            </div>
+            <details className="mb-3 rounded bg-black/30 px-3 py-2 text-ds-text-primary text-center">
+              <summary className="cursor-pointer select-none" data-tutorial="gs-rule">
+                {t('header.rules')}
+              </summary>
+              <div className="mt-2" data-testid="gs-rule">
+                {t('header.rule')}
+              </div>
+            </details>
 
             {/* **懸かっている点は賞札のランク（＋持ち越し）。** */}
             {state.currentPrize && (
@@ -271,52 +273,54 @@ function GoofspielPageContent() {
             )}
 
             {/* **残り札は全員分を公開。** 使った札は場に出るので隠せていません。 */}
-            <div className="flex flex-col gap-2 mb-4" data-tutorial="gs-seats">
-              {state.players.map((p) => (
-                <div
-                  key={p.id}
-                  className={`rounded bg-black/30 px-3 py-2${p.revealedBid && highestBidValue === p.revealedBid.value ? ' border-2 border-ds-accent' : ''}`}
-                  data-testid={`gs-seat-${p.id.toString()}`}
-                >
-                  <div className="text-sm text-ds-text-muted">
-                    <span className="text-ds-text-primary">{seatName(p.id)}</span>
-                    {p.revealedBid ? (
-                      <>
-                        <span className="ml-1 text-ds-accent">{t('header.revealed')}</span>
-                        {highestBidValue === p.revealedBid.value && (
-                          <span className="ml-1 text-ds-accent font-semibold">{t('status.highestBid')}</span>
-                        )}
-                      </>
-                    ) : (
-                      p.hasBid && <span className="ml-1 text-ds-warning">{t('header.bidDone')}</span>
-                    )}
-                    {': '}
-                    <span>{t('header.cards', { n: String(p.cardCount) })}</span>
-                    {' / '}
-                    <span className="text-ds-accent">{t('header.score', { n: String(p.score) })}</span>
-                  </div>
-                  {p.revealedBid && (
-                    <div className="mt-1">
-                      <CardImage card={p.revealedBid} width={cardWidth} />
+            <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length} dataTutorial="gs-seats">
+              <div className="flex flex-wrap flex-col gap-2 mb-4">
+                {state.players.map((p) => (
+                  <div
+                    key={p.id}
+                    className={`rounded bg-black/30 px-3 py-2${p.revealedBid && highestBidValue === p.revealedBid.value ? ' border-2 border-ds-accent' : ''}`}
+                    data-testid={`gs-seat-${p.id.toString()}`}
+                  >
+                    <div className="text-sm text-ds-text-muted">
+                      <span className="text-ds-text-primary">{seatName(p.id)}</span>
+                      {p.revealedBid ? (
+                        <>
+                          <span className="ml-1 text-ds-accent">{t('header.revealed')}</span>
+                          {highestBidValue === p.revealedBid.value && (
+                            <span className="ml-1 text-ds-accent font-semibold">{t('status.highestBid')}</span>
+                          )}
+                        </>
+                      ) : (
+                        p.hasBid && <span className="ml-1 text-ds-warning">{t('header.bidDone')}</span>
+                      )}
+                      {': '}
+                      <span>{t('header.cards', { n: String(p.cardCount) })}</span>
+                      {' / '}
+                      <span className="text-ds-accent">{t('header.score', { n: String(p.score) })}</span>
                     </div>
-                  )}
-                  {/* **勝負はランクの大小比較そのもの** (#5769)。CPU の残り札も
+                    {p.revealedBid && (
+                      <div className="mt-1">
+                        <CardImage card={p.revealedBid} width={cardWidth} />
+                      </div>
+                    )}
+                    {/* **勝負はランクの大小比較そのもの** (#5769)。CPU の残り札も
                       公開情報なので、alt 文字列の羅列ではなく自分の手札と同じ絵で
                       並べる。枚数が多い局面 (13枚) でも折り返せるよう flex-wrap。 */}
-                  {!p.isHuman && p.cards.length > 0 && (
-                    <div className="mt-1 flex flex-wrap gap-1" data-testid={`gs-hand-${p.id.toString()}`}>
-                      {p.cards.map((c) => (
-                        <CardImage
-                          key={`${c.design}-${c.value.toString()}`}
-                          card={c}
-                          width={Math.round(cardWidth * 0.5)}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
+                    {!p.isHuman && p.cards.length > 0 && (
+                      <div className="mt-1 flex flex-wrap gap-1" data-testid={`gs-hand-${p.id.toString()}`}>
+                        {p.cards.map((c) => (
+                          <CardImage
+                            key={`${c.design}-${c.value.toString()}`}
+                            card={c}
+                            width={Math.round(cardWidth * 0.5)}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </CpuAccordion>
 
             {resultBanner && (
               <div

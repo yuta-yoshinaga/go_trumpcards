@@ -14,6 +14,13 @@ vi.mock('../api/gameApi', () => ({
 
 const mockExec = vi.mocked(sevensApi.exec);
 
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+}));
+
 // tableMinVals/tableMaxVals: index 0 unused; 1=SPADE, 2=CLOVER, 3=HEART, 4=DIAMOND
 // tablePlaced: bitmask per suit; bit i = value i placed. 7 placed = 1<<7 = 128
 // With all 7s placed: value 6 or 8 of any suit is playable
@@ -155,6 +162,7 @@ const passesExhaustedState: SevensResponse = {
 };
 
 beforeEach(() => {
+  mobileState.isMobile = true;
   mockExec.mockResolvedValue(humanTurnState);
 });
 
@@ -263,6 +271,21 @@ describe('SevensPage', () => {
       expect(screen.getByText('CPU 2')).toBeInTheDocument();
       expect(screen.getByText('CPU 3')).toBeInTheDocument();
     });
+  });
+
+  it('collapses CPU areas on mobile and opens them on desktop', async () => {
+    const { unmount } = renderWithProviders(<SevensPage />);
+    await screen.findByText('CPU 1');
+    const mobileAccordion = screen.getByTestId('cpu-accordion');
+    expect(mobileAccordion).not.toHaveAttribute('open');
+    expect(within(mobileAccordion).getByText('CPU 1')).not.toBeVisible();
+
+    unmount();
+    mobileState.isMobile = false;
+    renderWithProviders(<SevensPage />);
+    const desktopAccordion = await screen.findByTestId('cpu-accordion');
+    expect(desktopAccordion).toHaveAttribute('open');
+    expect(within(desktopAccordion).getByText('CPU 1')).toBeVisible();
   });
 
   it('renders the board section', async () => {

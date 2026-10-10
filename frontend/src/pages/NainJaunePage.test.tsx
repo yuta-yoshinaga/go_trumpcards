@@ -113,6 +113,23 @@ describe('NainJaunePage', () => {
     expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
   });
 
+  it('stacks small CPU card backs in one row while keeping the hand count', async () => {
+    mobileState.isMobile = false;
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [seat(0, true), seat(1, false, { cardCount: 11, points: 76 }), seat(2, false), seat(3, false)],
+      }),
+    );
+    renderWithProviders(<NainJaunePage />);
+    const hand = await screen.findByRole('img', { name: /CPU1 の手札 11 枚/ });
+    expect(hand).toHaveClass('flex-nowrap');
+    const backs = [...hand.querySelectorAll('img')];
+    expect(backs).toHaveLength(11);
+    expect(backs.every((back) => back.style.width === '18px')).toBe(true);
+    expect(backs.slice(1).every((back) => back.className.includes('-ml-3'))).toBe(true);
+    expect(screen.getByText(/CPU1.*手札11枚（76点）/)).toBeInTheDocument();
+  });
+
   it('reveals CPU hands only after a deal ends, while preserving the game-end reveal', async () => {
     const cpuCards = [card('HEART', 4), card('SPADE', 12)];
     mockExec.mockResolvedValue(

@@ -3,6 +3,7 @@
   "dealer": "Dealer",
   "seat": "seat {{n}}",
   "ruleLine": "capture one OR three table cards of a rank / when you cannot, your whole hand joins the table and you are out",
+  "rules": "Rules",
   "table": "Table (face up)",
   "you": "You",
   "takeThree": "Take three",

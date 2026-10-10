@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import i18n from 'i18next';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { pasurApi } from '../api/gameApi';
+import * as cardDimensions from '../hooks/useCardDimensions';
 import { useGameHint } from '../hooks/useGameHint';
 import enCommon from '../i18n/locales/en/common.json';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -18,6 +19,12 @@ vi.mock('../hooks/useGameHint', () => ({
 }));
 
 const mockExec = vi.mocked(pasurApi.exec);
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+}));
 
 const card = (design: string, value: number): Card => ({ design, value }) as unknown as Card;
 
@@ -63,6 +70,7 @@ function makeState(overrides: Partial<PasurResponse> = {}): PasurResponse {
 }
 
 beforeEach(() => {
+  mobileState.isMobile = true;
   vi.clearAllMocks();
   mockExec.mockResolvedValue(makeState());
 });
@@ -106,7 +114,19 @@ describe('PasurPage', () => {
   // **11 の合計と絵札の扱いが規則そのもの。**
   it('states the capture rule', async () => {
     renderWithProviders(<PasurPage />);
-    expect(await screen.findByTestId('ps-rule')).toHaveTextContent(/合計が11/);
+    const details = await screen.findByTestId('ps-rule-details');
+    expect(details).not.toHaveAttribute('open');
+    expect(screen.getByTestId('ps-rule')).toHaveTextContent('ルール');
+    const ruleText = details.querySelector('div');
+    expect(ruleText).toHaveTextContent(/合計が11/);
+    expect(ruleText).not.toBeVisible();
+  });
+
+  it('opens the rule and CPU seats by default on desktop', async () => {
+    vi.spyOn(cardDimensions, 'useIsMobile').mockReturnValue(false);
+    renderWithProviders(<PasurPage />);
+    expect(await screen.findByTestId('ps-rule-details')).toHaveAttribute('open');
+    expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
   });
 
   it('shows the table, and says when it is empty', async () => {

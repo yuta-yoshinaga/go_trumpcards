@@ -233,7 +233,10 @@ describe('MarriagePage', () => {
     expect(accordion).toHaveTextContent('CPU');
     const rules = screen.getByTestId('marriage-maal-rule').closest('details');
     expect(rules).not.toHaveAttribute('open');
-    expect(screen.getByTestId('marriage-maal-rule')).toBeInTheDocument();
+    expect(screen.getByTestId('marriage-maal-rule')).not.toBeVisible();
+    const scoreDetails = screen.getByTestId('marriage-score-table');
+    expect(scoreDetails).not.toHaveAttribute('open');
+    expect(within(scoreDetails).getByRole('table')).not.toBeVisible();
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
     mockExec.mockClear();
   });
@@ -244,6 +247,8 @@ describe('MarriagePage', () => {
     renderWithProviders(<MarriagePage />);
     const rules = (await screen.findByTestId('marriage-maal-rule')).closest('details');
     expect(rules).toHaveAttribute('open');
+    expect(screen.getByTestId('marriage-score-table')).toHaveAttribute('open');
+    expect(within(screen.getByTestId('marriage-score-table')).getByRole('table')).toBeVisible();
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
     mockExec.mockClear();
   });

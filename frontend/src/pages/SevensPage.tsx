@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { sevensApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { ReplaySpeedSettingsPanel } from '../components/common/ReplaySpeedSettingsPanel';
@@ -391,11 +392,13 @@ function SevensPageContent() {
                 </div>
               )}
 
-            <div className="flex gap-2.5 flex-wrap mb-2.5">
-              {cpuPlayers.map((player) => (
-                <SevensCpuArea key={player.id} player={player} isCurrentTurn={state.currentTurn === player.id} />
-              ))}
-            </div>
+            <CpuAccordion playerCount={cpuPlayers.length}>
+              <div className="flex flex-wrap sm:flex-nowrap gap-2.5 mb-2.5">
+                {cpuPlayers.map((player) => (
+                  <SevensCpuArea key={player.id} player={player} isCurrentTurn={state.currentTurn === player.id} />
+                ))}
+              </div>
+            </CpuAccordion>
 
             <div data-tutorial="sv-board">
               <SevensBoard

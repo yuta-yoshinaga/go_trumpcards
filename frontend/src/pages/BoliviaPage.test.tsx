@@ -47,7 +47,13 @@ describe('BoliviaPage', () => {
     expect(within(rule).getByText('上がるには完成メルド 2 個以上＋そのうち最低 1 本がエスカレラ')).not.toBeVisible();
     expect(scoreTable).not.toHaveAttribute('open');
     expect(within(scoreTable).getByRole('table')).not.toBeVisible();
+    const cpuAccordion = screen.getByTestId('cpu-accordion');
+    expect(cpuAccordion).not.toHaveAttribute('open');
+    expect(cpuAccordion.querySelector(':scope > div')).not.toBeVisible();
+    expect(screen.getByTestId('sa-discard-pile').querySelector('img')).toHaveStyle({ width: '36px' });
     expect(screen.getByTestId('sa-team-scores')).toBeVisible();
+    expect(screen.getByTestId('sa-play-area')).toHaveClass('pt-2', 'sm:pt-3');
+    expect(screen.getByTestId('sa-team-scores')).toHaveClass('mb-1', 'sm:mb-2');
   });
 
   it('opens the score details on desktop', async () => {
@@ -57,6 +63,7 @@ describe('BoliviaPage', () => {
     const scoreTable = await screen.findByTestId('bo-score-table');
     expect(scoreTable).toHaveAttribute('open');
     expect(within(scoreTable).getByRole('table')).toBeVisible();
+    expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
   });
 
   it('renders skeleton before first API response', () => {

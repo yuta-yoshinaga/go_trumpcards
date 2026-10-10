@@ -18,6 +18,7 @@
   },
   "roundLabel": "ラウンド {{round}} / {{total}}",
   "contractLabel": "今回のコントラクト",
+  "rules": "ルール",
   "stockLabel": "山札",
   "discardLabel": "捨て札",
   "yourHand": "あなたの手札",

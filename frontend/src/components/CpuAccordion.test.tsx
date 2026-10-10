@@ -43,6 +43,16 @@ describe('CpuAccordion', () => {
     expect(details).toHaveAttribute('open');
   });
 
+  it('can start closed on desktop', () => {
+    mockUseIsMobile.mockReturnValue(false);
+    render(
+      <CpuAccordion playerCount={2} desktopOpen={false}>
+        <div>content</div>
+      </CpuAccordion>,
+    );
+    expect(screen.getByTestId('cpu-accordion')).not.toHaveAttribute('open');
+  });
+
   it('is closed by default on mobile', () => {
     mockUseIsMobile.mockReturnValue(true);
     render(
