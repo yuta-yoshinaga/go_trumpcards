@@ -174,6 +174,11 @@ On a 375×667 phone a game page fits the viewport and scrolls **inside** its pla
 area, never by growing the document. This has regressed repeatedly (#1861, #1367,
 #4373), so the contract is written down here:
 
+`mobile-viewport.spec.ts` checks that the document stays within the viewport;
+`play-area-budget.spec.ts` also caps the play-area overflow on ten representative
+pages. Keep these budgets stable when adding information that is always visible:
+it must not increase the play-area overflow.
+
 | Region | Behaviour |
 |---|---|
 | Mobile nav | fixed, ~62px |
