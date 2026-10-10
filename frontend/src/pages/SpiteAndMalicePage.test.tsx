@@ -96,6 +96,32 @@ beforeEach(() => {
 describe('SpiteAndMalicePage', () => {
   const foundationButtons = () => screen.getAllByRole('button', { name: /組札|Foundation/ });
 
+  it('collapses CPU information and rules on mobile, while keeping the CPU section open on desktop', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    const { unmount } = renderWithProviders(<SpiteAndMalicePage />);
+
+    const cpu = await screen.findByTestId('cpu-accordion');
+    const rules = screen.getByTestId('sam-rule-details');
+    const mobileGoal = screen.getByRole('button', { name: /ゴール|Goal/ });
+    expect(cpu).not.toHaveAttribute('open');
+    expect(rules).not.toHaveAttribute('open');
+    expect(within(mobileGoal).getByTestId('animated-card').querySelector('img')).toHaveStyle({ width: '28px' });
+    expect(
+      within(rules).getByText('ストックが空になると、完成済みのカードをシャッフルしてストックに戻します。'),
+    ).not.toBeVisible();
+
+    unmount();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    renderWithProviders(<SpiteAndMalicePage />);
+    expect(await screen.findByTestId('cpu-accordion')).toHaveAttribute('open');
+    expect(screen.getByTestId('sam-rule-details')).not.toHaveAttribute('open');
+    const desktopGoal = screen.getByRole('button', { name: /ゴール|Goal/ });
+    expect(within(desktopGoal).getByTestId('animated-card').querySelector('img')).toHaveStyle({ width: '80px' });
+
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
   it('explains when completed cards return to stock and highlights low stock', async () => {
     await i18n.changeLanguage('ja');
     mockExec.mockResolvedValue({ ...baseState, stockSize: 3, completedSize: 24 });
@@ -119,7 +145,7 @@ describe('SpiteAndMalicePage', () => {
     renderWithProviders(<SpiteAndMalicePage />);
 
     const remainingCount = await screen.findByText('残り20枚');
-    expect(remainingCount.className).toContain('text-lg');
+    expect(remainingCount.className).toContain('text-sm');
     expect(remainingCount.className).toContain('font-bold');
     expect(remainingCount.className).toContain('text-ds-accent');
   });

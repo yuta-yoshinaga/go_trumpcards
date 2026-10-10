@@ -33,6 +33,10 @@ export interface ResponsiveTableauConfig {
    * to 300 px which matches the standard solo-game shell on a 667 px viewport.
    */
   reservedHeightPx?: number;
+  /** Optional width cap for pages whose tableau must fit a dense desktop layout. */
+  maxCardWidthPx?: number;
+  /** Apply fixed-depth vertical compression at desktop breakpoints too. */
+  compressDesktop?: boolean;
 }
 
 /** Initial maximum tableau depths used to keep these games' mobile layout steady during play. */
@@ -100,14 +104,25 @@ export function useResponsiveTableau(
   const maxColCards = config.maxColCards;
   const minVerticalOverlap = config.minVerticalOverlap ?? MIN_VERTICAL_OVERLAP;
   const reservedHeightPx = config.reservedHeightPx ?? DEFAULT_RESERVED_HEIGHT_PX;
+  const maxCardWidthPx = config.maxCardWidthPx;
+  const compressDesktop = config.compressDesktop ?? false;
 
   return useMemo<ResponsiveTableauDimensions>(() => {
     if (!isMobile) {
-      return { cw: cardWidth, ch: cardHeight, co: cardOverlap, wasteFan: DESKTOP_WASTE_FAN };
+      const cw = Math.min(cardWidth, maxCardWidthPx ?? cardWidth);
+      const ch = maxCardWidthPx === undefined ? cardHeight : Math.round(cw * 1.5);
+      const co =
+        compressDesktop && maxColCards !== undefined && maxColCards > 1
+          ? Math.max(
+              minVerticalOverlap,
+              Math.min(cardOverlap, Math.floor((windowHeight - reservedHeightPx - ch) / (maxColCards - 1))),
+            )
+          : cardOverlap;
+      return { cw, ch, co, wasteFan: DESKTOP_WASTE_FAN };
     }
     const availableWidth = windowWidth - padX - (numCols - 1) * gapPx;
     const colW = Math.floor(availableWidth / numCols);
-    const cw = Math.min(Math.max(colW, MIN_CARD_WIDTH), cardWidth);
+    const cw = Math.min(Math.max(colW, MIN_CARD_WIDTH), cardWidth, maxCardWidthPx ?? cardWidth);
     const ch = Math.round(cw * 1.5);
     const naturalCo = Math.round(cw * MOBILE_VERTICAL_OVERLAP_RATIO);
     let co = naturalCo;
@@ -128,6 +143,8 @@ export function useResponsiveTableau(
     maxColCards,
     minVerticalOverlap,
     reservedHeightPx,
+    maxCardWidthPx,
+    compressDesktop,
     cardWidth,
     cardHeight,
     cardOverlap,

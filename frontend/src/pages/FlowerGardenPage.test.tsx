@@ -81,6 +81,13 @@ describe('FlowerGardenPage', () => {
     expect(screen.getByText(/手数: 3/)).toBeInTheDocument();
   });
 
+  it('keeps the rules note collapsed until requested', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<FlowerGardenPage />);
+    expect(await screen.findByText('ルール')).toBeInTheDocument();
+    expect(screen.getByTestId('fg-rules-note')).not.toBeVisible();
+  });
+
   it('announces move count changes but stays silent on the initial render', async () => {
     mockExec.mockResolvedValueOnce(playingState).mockResolvedValueOnce({ ...playingState, moveCount: 4 });
     renderWithProviders(<FlowerGardenPage />);
@@ -235,6 +242,18 @@ describe('FlowerGardenPage', () => {
     for (let i = 0; i < 16; i++) {
       expect(screen.getByText(`#${i}`)).toBeInTheDocument();
     }
+  });
+
+  it('uses compact reserve cards on mobile', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    onTestFinished(() => {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+    });
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<FlowerGardenPage />);
+    const emptySlot = await screen.findByRole('img', { name: '空のリザーブ枠 1' });
+    expect(emptySlot).toHaveStyle({ width: '32px', height: '48px' });
   });
 
   it('selecting a reserve card marks it as selected', async () => {

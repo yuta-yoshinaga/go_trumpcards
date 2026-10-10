@@ -363,72 +363,76 @@ export function FollowTheQueenPageContent({ gameKey }: { gameKey: StudPageGameKe
           <div className={`flex-1 overflow-y-auto pt-4 px-5 lg:px-8 ${lgCardAreaConstraint}`}>
             {/* CPU players */}
             <CpuAccordion playerCount={cpuPlayers.length} dataTutorial="scs-cpu-area">
-              {cpuPlayers.map((p) => (
-                <div key={p.id} className="mb-3 p-2 rounded bg-black/30">
-                  <div className="text-ds-text-primary text-sm mb-1">
-                    CPU {p.id}
-                    {p.id === bringInPlayerId && (
-                      <span data-testid={`ftq-bringin-badge-${p.id}`} className={bringInBadgeClass}>
-                        {t('bringIn')}
-                      </span>
-                    )}
-                    <span className="ml-2 text-xs text-ds-text-muted">{p.playStyleName}</span>
-                    {/* サーバは VPIP/PFR/3Bet/AF を毎回返し CUI も毎ターン出しているのに、
+              <div className="flex flex-wrap gap-2">
+                {cpuPlayers.map((p) => (
+                  <div key={p.id} className="w-full sm:flex-1 sm:basis-[300px] p-2 rounded bg-black/30">
+                    <div className="text-ds-text-primary text-sm mb-1">
+                      CPU {p.id}
+                      {p.id === bringInPlayerId && (
+                        <span data-testid={`ftq-bringin-badge-${p.id}`} className={bringInBadgeClass}>
+                          {t('bringIn')}
+                        </span>
+                      )}
+                      <span className="ml-2 text-xs text-ds-text-muted">{p.playStyleName}</span>
+                      {/* サーバは VPIP/PFR/3Bet/AF を毎回返し CUI も毎ターン出しているのに、
                         Web だけ出していなかった (#5522)。0 ハンドのうちは全部 0% で
                         情報にならないので他のポーカーページと同じ条件で出す。 */}
-                    {p.totalHands > 0 && (
-                      <HudStats vpip={p.vpip} pfr={p.pfr} threeBet={p.threeBet} af={p.af} namespace={gameKey} />
-                    )}
-                    <span className="ml-2 text-xs">
-                      {tc('betting.chips')} {p.chips}
-                    </span>
-                    {p.currentBet > 0 && (
+                      {p.totalHands > 0 && (
+                        <HudStats vpip={p.vpip} pfr={p.pfr} threeBet={p.threeBet} af={p.af} namespace={gameKey} />
+                      )}
                       <span className="ml-2 text-xs">
-                        {tc('betting.currentBet')} {p.currentBet}
+                        {tc('betting.chips')} {p.chips}
                       </span>
-                    )}
-                    {p.folded && <span className="ml-2 text-ds-error-text text-xs">[{tc('status.folded')}]</span>}
-                    {p.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
-                    {isShowdown && !p.folded && p.handName && (
-                      <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
-                        {p.handName}
-                      </span>
-                    )}
+                      {p.currentBet > 0 && (
+                        <span className="ml-2 text-xs">
+                          {tc('betting.currentBet')} {p.currentBet}
+                        </span>
+                      )}
+                      {p.folded && <span className="ml-2 text-ds-error-text text-xs">[{tc('status.folded')}]</span>}
+                      {p.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
+                      {isShowdown && !p.folded && p.handName && (
+                        <span
+                          className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}
+                        >
+                          {p.handName}
+                        </span>
+                      )}
+                    </div>
+                    {/* Door cards (always visible) */}
+                    <div className="text-ds-text-muted text-xs mb-0.5">{t('doorCards')}</div>
+                    <div className="flex flex-wrap gap-1 mb-1">
+                      {p.doorCards?.length
+                        ? p.doorCards.map((card) => (
+                            <AnimatedCard
+                              key={`${card.design}-${card.value}`}
+                              card={card}
+                              width={cardWidth}
+                              style={placeholderCardStyle}
+                            />
+                          ))
+                        : !p.folded &&
+                          Array.from({ length: 4 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
+                    </div>
+                    {/* Hole cards (face-down unless showdown) */}
+                    <div className="text-ds-text-muted text-xs mb-0.5">{t('holeCards')}</div>
+                    <div className="flex flex-wrap gap-1">
+                      {isShowdown && !p.folded && p.holeCards?.length
+                        ? p.holeCards.map((card) => (
+                            <AnimatedCard
+                              key={`${card.design}-${card.value}`}
+                              card={card}
+                              width={cardWidth}
+                              style={placeholderCardStyle}
+                            />
+                          ))
+                        : !p.folded &&
+                          Array.from({
+                            length: (state?.phase ?? 0) >= FollowTheQueenPhase.SEVENTH_STREET ? 3 : 2,
+                          }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
+                    </div>
                   </div>
-                  {/* Door cards (always visible) */}
-                  <div className="text-ds-text-muted text-xs mb-0.5">{t('doorCards')}</div>
-                  <div className="flex flex-wrap gap-1 mb-1">
-                    {p.doorCards?.length
-                      ? p.doorCards.map((card) => (
-                          <AnimatedCard
-                            key={`${card.design}-${card.value}`}
-                            card={card}
-                            width={cardWidth}
-                            style={placeholderCardStyle}
-                          />
-                        ))
-                      : !p.folded &&
-                        Array.from({ length: 4 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
-                  </div>
-                  {/* Hole cards (face-down unless showdown) */}
-                  <div className="text-ds-text-muted text-xs mb-0.5">{t('holeCards')}</div>
-                  <div className="flex flex-wrap gap-1">
-                    {isShowdown && !p.folded && p.holeCards?.length
-                      ? p.holeCards.map((card) => (
-                          <AnimatedCard
-                            key={`${card.design}-${card.value}`}
-                            card={card}
-                            width={cardWidth}
-                            style={placeholderCardStyle}
-                          />
-                        ))
-                      : !p.folded &&
-                        Array.from({
-                          length: (state?.phase ?? 0) >= FollowTheQueenPhase.SEVENTH_STREET ? 3 : 2,
-                        }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </CpuAccordion>
 
             {/* CPU actions: toast on mobile, inline log on desktop */}

@@ -115,7 +115,11 @@ function OsmosisPageContent() {
       );
     },
   });
-  const { cardWidth, cardHeight } = useCardDimensions();
+  const { cardWidth, cardHeight, isMobile } = useCardDimensions();
+  // Keep the four foundation rows compact on phones so the active stacks and
+  // draw controls stay closer together. Desktop card sizes remain unchanged.
+  const boardCardWidth = isMobile ? 30 : cardWidth;
+  const boardCardHeight = isMobile ? 45 : cardHeight;
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -349,9 +353,9 @@ function OsmosisPageContent() {
                       } ${hintedMove?.toCol === i ? HINT_RING : ''}`}
                     >
                       <span className="w-5 text-xs text-ds-text-muted">#{i}</span>
-                      <div className="relative" style={{ width: cardWidth, height: cardHeight }}>
+                      <div className="relative" style={{ width: boardCardWidth, height: boardCardHeight }}>
                         {pile.length > 0 ? (
-                          <AnimatedCard card={pile[pile.length - 1]} width={cardWidth} draggable={false} />
+                          <AnimatedCard card={pile[pile.length - 1]} width={boardCardWidth} draggable={false} />
                         ) : (
                           <span className="absolute inset-0 flex items-center justify-center text-xs text-ds-text-muted/80">
                             {t('foundation')}
@@ -407,12 +411,12 @@ function OsmosisPageContent() {
                           hintedMove?.fromZone === 'reserve' && hintedMove.fromCol === i ? HINT_RING : ''
                         }`}
                       >
-                        <AnimatedCard card={top} width={cardWidth} draggable={false} />
+                        <AnimatedCard card={top} width={boardCardWidth} draggable={false} />
                       </button>
                     ) : (
                       <div
                         className="rounded border border-dashed border-white/30"
-                        style={{ width: cardWidth, height: cardHeight }}
+                        style={{ width: boardCardWidth, height: boardCardHeight }}
                       />
                     )}
                     <span className="text-xs text-ds-text-muted">({pile.length})</span>
@@ -430,10 +434,10 @@ function OsmosisPageContent() {
                   disabled={!isPlaying || loading}
                   className="rounded border border-white/30"
                   aria-label={t('stockAriaLabel', { count: state.stockCount })}
-                  style={{ width: cardWidth, height: cardHeight }}
+                  style={{ width: boardCardWidth, height: boardCardHeight }}
                 >
                   {state.stockCount > 0 ? (
-                    <AnimatedCardBack width={cardWidth} />
+                    <AnimatedCardBack width={boardCardWidth} />
                   ) : (
                     <span className="text-xs text-ds-text-muted/80">{t('empty')}</span>
                   )}
@@ -444,7 +448,7 @@ function OsmosisPageContent() {
               </div>
 
               <div className="flex flex-col items-center">
-                <div style={{ width: cardWidth, height: cardHeight }}>
+                <div style={{ width: boardCardWidth, height: boardCardHeight }}>
                   {topWaste ? (
                     <button
                       type="button"
@@ -461,12 +465,12 @@ function OsmosisPageContent() {
                         hintedMove?.fromZone === 'waste' ? HINT_RING : ''
                       }`}
                     >
-                      <AnimatedCard card={topWaste} width={cardWidth} draggable={false} />
+                      <AnimatedCard card={topWaste} width={boardCardWidth} draggable={false} />
                     </button>
                   ) : (
                     <div
                       className="rounded border border-dashed border-white/30"
-                      style={{ width: cardWidth, height: cardHeight }}
+                      style={{ width: boardCardWidth, height: boardCardHeight }}
                     />
                   )}
                 </div>

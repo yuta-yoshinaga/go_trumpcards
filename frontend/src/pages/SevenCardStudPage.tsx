@@ -390,7 +390,7 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
           {/* Scrollable: CPU players */}
           <div className={`flex-1 overflow-y-auto pt-4 px-5 lg:px-8 ${lgCardAreaConstraint}`}>
             {/* CPU players */}
-            <CpuAccordion playerCount={cpuPlayers.length} dataTutorial="scs-cpu-area">
+            <CpuAccordion playerCount={cpuPlayers.length} dataTutorial="scs-cpu-area" openOnDesktop={false}>
               {cpuPlayers.map((p) => (
                 <div key={p.id} className="mb-3 p-2 rounded bg-black/30">
                   <div className="text-ds-text-primary text-sm mb-1">
