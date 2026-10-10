@@ -196,6 +196,7 @@ describe('MendikotPage', () => {
     expect(tens.querySelector('details')).toBeNull();
     expect(screen.getByTestId('md-tens-rule')).toHaveTextContent('全4枚。3枚取れば');
     expect(screen.getAllByText('ルール')).toHaveLength(1);
+    expect(await screen.findByTestId('md-seats')).toHaveClass('grid-cols-2');
   });
 
   // **4枚独占と全トリック独占は追加点。**ハンドが終わるまで出てこないと、

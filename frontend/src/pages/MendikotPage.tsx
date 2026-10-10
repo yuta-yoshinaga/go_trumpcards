@@ -174,6 +174,8 @@ function MendikotPageContent() {
               <div className="mt-1" data-testid="md-tens-rule">
                 {t('header.tensRule', { total: String(state.tensInDeck) })}
               </div>
+              {/* **4枚独占と全トリック独占は追加点。** ハンド終了まで出てこないと、
+                  10 を4枚とも追う価値を知らないままプレイすることになる。 */}
               <div className="mt-1" data-testid="md-bonus-rule">
                 {t('header.bonusRule')}
               </div>
@@ -203,12 +205,8 @@ function MendikotPageContent() {
                 {t('header.tensCount', {
                   t0: String(state.teamTens[0] ?? 0),
                   t1: String(state.teamTens[1] ?? 0),
-                  total: String(state.tensInDeck),
                 })}
               </div>
-              {/* **4枚独占と全トリック独占は追加点。**ハンドが終わってから
-                  handEnd で初めて出るので、対局中は 10 を4枚とも追う価値が
-                  分からないままだった。CUI の rule と同じ内容を常時出す。 */}
             </div>
 
             <div className="text-ds-text-muted text-sm text-center" data-testid="md-tricks">
@@ -227,6 +225,7 @@ function MendikotPageContent() {
             <div
               className="grid grid-cols-2 gap-1 mb-4 sm:flex sm:flex-wrap sm:justify-center sm:gap-2"
               data-tutorial="md-seats"
+              data-testid="md-seats"
             >
               {state.players.map((p) => {
                 const isCurrentPlayer = p.id === state.currentPlayerIdx && !isGameEnd && !isHandEnd;

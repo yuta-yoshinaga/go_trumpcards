@@ -199,7 +199,13 @@ describe('MinibridgePage', () => {
     expect(rule).toHaveTextContent(/競りはありません/);
     const disclosure = rule.closest('details');
     expect(disclosure).not.toHaveAttribute('open');
+    expect(disclosure).toHaveAttribute('data-tutorial', 'mb-rule');
     expect(disclosure).toContainElement(rule);
+  });
+
+  it('lays out the seats in two columns on small screens', async () => {
+    renderWithProviders(<MinibridgePage />);
+    expect(await screen.findByTestId('mb-seats')).toHaveClass('grid-cols-2');
   });
 
   // **HCP は公開情報。** 4 席ぶん出て、合計は 40。

@@ -213,9 +213,12 @@ function MinibridgePageContent() {
             </div>
 
             {/* **競りが無いこと自体が規則。** 先に出す。 */}
-            <details className="mb-3 rounded bg-black/30 px-3 py-2 text-ds-text-primary text-center">
+            <details
+              className="mb-3 rounded bg-black/30 px-3 py-2 text-ds-text-primary text-center"
+              data-tutorial="mb-rule"
+            >
               <summary className="cursor-pointer select-none">{t('header.rules')}</summary>
-              <div className="mt-1" data-testid="mb-rule" data-tutorial="mb-rule">
+              <div className="mt-1" data-testid="mb-rule">
                 {t('header.rule')}
               </div>
             </details>
@@ -252,6 +255,7 @@ function MinibridgePageContent() {
             <div
               className="grid grid-cols-2 gap-1 mb-4 sm:flex sm:flex-wrap sm:justify-center sm:gap-2"
               data-tutorial="mb-seats"
+              data-testid="mb-seats"
             >
               {state.players.map((p) => (
                 <div
