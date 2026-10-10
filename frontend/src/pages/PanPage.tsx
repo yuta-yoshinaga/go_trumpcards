@@ -359,7 +359,7 @@ function PanPageContent() {
                   data-tutorial="pan-meld-area"
                 >
                   <div className="text-ds-text-muted text-sm mb-1">{t('meldsTitle')}</div>
-                  {humanPlayer?.laidMelds.length === 0 ? (
+                  {!humanPlayer?.laidMelds.length ? (
                     <div className="text-ds-text-muted text-sm">{t('noMelds')}</div>
                   ) : (
                     state.players
@@ -379,7 +379,10 @@ function PanPageContent() {
               {/* Right: info sidebar */}
               <div>
                 {/* CPU players */}
-                <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+                <CpuAccordion
+                  playerCount={state.players.filter((p) => !p.isHuman).length}
+                  forceOpen={canLayoff && state.players.some((p) => !p.isHuman && p.laidMelds.length > 0)}
+                >
                   {state.players
                     .filter((p) => !p.isHuman)
                     .map((p) => (
