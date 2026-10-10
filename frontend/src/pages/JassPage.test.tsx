@@ -96,6 +96,8 @@ describe('JassPage', () => {
     expect(cpuAccordion).not.toHaveAttribute('open');
     expect(cpuAccordion.querySelector('div')).not.toBeVisible();
     expect(scoreDetails).not.toHaveAttribute('open');
+    expect(scoreDetails).toHaveAttribute('data-tutorial', 'ja-score-table');
+    expect(scoreDetails.querySelector('summary')).not.toHaveAttribute('data-tutorial');
     expect(scoreDetails.querySelector('table')).not.toBeVisible();
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
   });

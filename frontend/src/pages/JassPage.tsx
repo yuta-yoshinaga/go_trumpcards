@@ -13,7 +13,7 @@ import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
+import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, TARGET_SCORE_OPTIONS, useJassGame } from '../hooks/useJassGame';
@@ -120,7 +120,6 @@ function JassPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('jass', state);
   const { cardWidth, isMobile } = useCardDimensions();
-  const isMobileViewport = useIsMobile();
 
   const phaseNames = usePhaseNames('jass', JASS_PHASE_KEYS);
 
@@ -281,11 +280,10 @@ function JassPageContent() {
         <details
           className="my-3 p-2 rounded bg-black/30"
           data-testid="ja-score-table"
-          open={!isMobileViewport || undefined}
+          data-tutorial="ja-score-table"
+          open={!isMobile || undefined}
         >
-          <summary className="cursor-pointer select-none text-ds-text-muted text-sm" data-tutorial="ja-score-table">
-            {t('teamScores')}
-          </summary>
+          <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('teamScores')}</summary>
           <table className="w-full text-sm text-ds-text-muted">
             <thead>
               <tr>

@@ -395,14 +395,11 @@ function MachiavelliPageContent() {
               <div>
                 {/* CPU players */}
                 <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
-                  <div className="flex flex-wrap sm:block">
+                  <div>
                     {state.players
                       .filter((p) => !p.isHuman)
                       .map((p) => (
-                        <div
-                          key={p.id}
-                          className="mb-2 min-w-0 max-w-full basis-full p-2 rounded bg-black/30 sm:basis-auto"
-                        >
+                        <div key={p.id} className="mb-2 min-w-0 max-w-full p-2 rounded bg-black/30">
                           <div className="text-ds-text-muted text-sm">
                             {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
                             {t('cumulativeScore', { score: p.cumulativeScore })}
