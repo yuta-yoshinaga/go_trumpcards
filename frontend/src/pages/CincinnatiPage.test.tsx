@@ -85,6 +85,12 @@ beforeEach(() => {
 });
 
 describe('CincinnatiPage', () => {
+  it('棋譜ボタンに日本語ラベルを表示する', async () => {
+    mockApi.mockResolvedValue(base);
+    renderWithProviders(<CincinnatiPage />);
+    expect(await screen.findByRole('button', { name: '棋譜を見る' })).toBeInTheDocument();
+  });
+
   it('賭け中に自分の現在の役名を表示する', async () => {
     mockApi.mockResolvedValue(withState({ seats: [seat({ handRank: 2 }), base.seats[1]] }));
     renderWithProviders(<CincinnatiPage />);

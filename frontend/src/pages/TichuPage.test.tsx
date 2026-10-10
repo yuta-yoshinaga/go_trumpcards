@@ -91,6 +91,8 @@ describe('TichuPage', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<TichuPage />);
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+    expect(screen.getByText('読み込み中…')).toBeInTheDocument();
+    expect(screen.queryByText('loading', { exact: true })).not.toBeInTheDocument();
   });
 
   it('calls reset command on mount', async () => {

@@ -120,6 +120,10 @@ describe('EscobaPage', () => {
   it('renders per-player scores and stock', async () => {
     renderWithProviders(<EscobaPage />);
     await waitFor(() => expect(screen.getByTestId('player-score-0')).toBeInTheDocument());
+    expect(
+      screen.getAllByText(/手札3枚/).find((element) => element.textContent?.includes('あなた')),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/CPU 1/)).toBeInTheDocument();
     expect(screen.getByTestId('player-score-1')).toBeInTheDocument();
     expect(screen.getByTestId('stock-remaining')).toBeInTheDocument();
   });

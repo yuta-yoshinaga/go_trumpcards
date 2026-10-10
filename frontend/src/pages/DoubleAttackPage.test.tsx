@@ -586,9 +586,9 @@ describe('DoubleAttackPage', () => {
     mockApi.mockResolvedValue(withState({ phase: DoubleAttackPhase.PLAY, hands: [hand()] }));
     mockActionLogApi.mockResolvedValue({ entries: [] });
     renderWithProviders(<DoubleAttackPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'button.actionLog' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: '棋譜を見る' })).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole('button', { name: 'button.actionLog' }));
+    fireEvent.click(screen.getByRole('button', { name: '棋譜を見る' }));
     await waitFor(() => expect(mockActionLogApi).toHaveBeenCalled());
     expect(screen.getByTestId('copy-announcer')).toBeInTheDocument();
 

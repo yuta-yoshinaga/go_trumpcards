@@ -495,7 +495,7 @@ function CatchTenPageContent() {
             {/* Human cards */}
             {humanPlayer && (
               <div className="mb-1 text-ds-text-muted text-sm" data-testid="catchten-human-team">
-                {tc('label.you')}:{' '}
+                {tc('player.you')}:{' '}
                 <span className={teamBadgeClass(humanPlayer.team)}>{t('team', { n: humanPlayer.team })}</span>
                 <span className="ml-2">
                   {' · '}

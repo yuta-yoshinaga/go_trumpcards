@@ -63,6 +63,8 @@ describe('WhistPage', () => {
     mockExec.mockResolvedValue(makeState({ trumpSuit: 1 }));
     renderWithProviders(<WhistPage />);
 
+    expect(await screen.findByTestId('whist-human-team')).toHaveTextContent('あなた:');
+    expect(screen.queryByText('label.you', { exact: true })).not.toBeInTheDocument();
     expect(await screen.findByRole('button', { name: '♠ A (切り札)' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '♥ 5' })).toBeInTheDocument();
   });

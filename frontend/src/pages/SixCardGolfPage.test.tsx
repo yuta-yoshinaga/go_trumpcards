@@ -83,6 +83,8 @@ describe('SixCardGolfPage', () => {
       }),
     );
     renderWithProviders(<SixCardGolfPage />);
+    expect(await screen.findByLabelText('ヒント')).toBeInTheDocument();
+    expect(screen.queryByText('hint', { exact: true })).not.toBeInTheDocument();
     const history = await screen.findByRole('region', { name: 'ラウンド別スコア' });
     expect(within(history).getByText('12')).toBeInTheDocument();
     expect(within(history).getByText('8')).toBeInTheDocument();

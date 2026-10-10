@@ -75,7 +75,8 @@ describe('CatchTenPage', () => {
     );
     renderWithProviders(<CatchTenPage />);
 
-    expect(await screen.findByTestId('catchten-human-team')).toHaveTextContent('チーム 0 · 獲得トリック数: 1');
+    expect(await screen.findByTestId('catchten-human-team')).toHaveTextContent('あなた: チーム 0 · 獲得トリック数: 1');
+    expect(screen.getByTestId('catchten-human-team')).not.toHaveTextContent('label.you');
     expect(screen.getByText('獲得トリック数: 2')).toBeInTheDocument();
     expect(screen.getByText('獲得トリック数: 3')).toBeInTheDocument();
     expect(screen.getByText('獲得トリック数: 4')).toBeInTheDocument();

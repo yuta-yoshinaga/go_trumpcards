@@ -367,7 +367,7 @@ function FreeBetPageContent() {
             <div className="flex flex-col items-center gap-2 pb-2">
               <div className="flex gap-2">
                 <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
-                  {tc('button.actionLog')}
+                  {tc('actionLog.view')}
                 </button>
                 <GameResetButton
                   isGameEnd={gameOver}

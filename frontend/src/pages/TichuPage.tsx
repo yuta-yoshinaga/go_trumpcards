@@ -271,7 +271,7 @@ function TichuPageContent() {
         <div className="flex flex-col gap-3 p-3 overflow-y-auto">
           {loading && (
             <span id="tichu-loading-description" className="sr-only">
-              {tc('loading')}
+              {tc('skeleton.loading')}
             </span>
           )}
           <LandscapeBanner message={t('landscapeBanner')} />
