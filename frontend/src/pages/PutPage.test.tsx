@@ -61,6 +61,8 @@ beforeEach(() => {
 describe('PutPage', () => {
   it('calls reset on mount', async () => {
     renderWithProviders(<PutPage />);
+    expect(await screen.findByTestId('put-hint-toggle')).toHaveTextContent('ヒント');
+    expect(screen.queryByText('hint', { exact: true })).not.toBeInTheDocument();
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { matchTarget: 15 }));
   });
 

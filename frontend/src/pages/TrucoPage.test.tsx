@@ -61,6 +61,8 @@ beforeEach(() => {
 describe('TrucoPage', () => {
   it('calls reset on mount', async () => {
     renderWithProviders(<TrucoPage />);
+    expect(await screen.findByTestId('truco-hint-toggle')).toHaveTextContent('ヒント');
+    expect(screen.queryByText('hint', { exact: true })).not.toBeInTheDocument();
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { matchTarget: 15 }));
   });
 

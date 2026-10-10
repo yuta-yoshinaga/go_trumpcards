@@ -437,7 +437,7 @@ function EscobaPageContent() {
                       <td className="pr-3 text-ds-text-muted" />
                       {state.players.map((p) => (
                         // 見出しだけが `P0` の英字リテラルで、同じページの他は
-                        // すべて tc('player.*') を通っていた。`scope="col"` は
+                        // すべて共通のプレイヤー名翻訳を通っていた。`scope="col"` は
                         // 各数字がどの席の列なのかを支援技術に伝える。
                         <th key={p.id} className="px-2" scope="col">
                           {p.isHuman ? tc('player.you') : tc('player.cpu', { id: p.id })}

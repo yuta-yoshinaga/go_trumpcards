@@ -113,6 +113,7 @@ describe('DoudizhuPage', () => {
   it('shows the resolved landlord label for the human player', async () => {
     mockExec.mockResolvedValue({
       ...defaultState,
+      gameEndFlag: true,
       players: [
         { ...defaultState.players[0], isHuman: false, isLandlord: false },
         { ...defaultState.players[1], isHuman: true, isLandlord: true },
@@ -123,6 +124,8 @@ describe('DoudizhuPage', () => {
     renderWithProviders(<DoudizhuPage />);
 
     const badge = await screen.findByTestId('ddz-own-role');
+    expect(screen.getByText('ヒント', { exact: true })).toBeInTheDocument();
+    expect(screen.getByText(/あなた \[地主\]/)).toBeInTheDocument();
     expect(badge).toHaveTextContent('地主');
     expect(badge).not.toHaveTextContent('label.landlord');
     expect(badge).not.toHaveTextContent('label.peasant');

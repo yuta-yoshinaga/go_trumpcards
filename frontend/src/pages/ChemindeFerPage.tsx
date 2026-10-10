@@ -412,7 +412,7 @@ function ChemindeFerPageContent() {
 
               <div className="flex gap-2">
                 <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
-                  {tc('button.actionLog')}
+                  {tc('actionLog.view')}
                 </button>
                 <button
                   type="button"

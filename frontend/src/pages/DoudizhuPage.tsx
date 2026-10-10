@@ -418,7 +418,7 @@ function DoudizhuPageContent() {
               </div>
               {state.players.map((p, i) => (
                 <div key={p.id} className="text-sm">
-                  {p.isHuman ? tc('you', { defaultValue: 'You' }) : `CPU ${p.id}`}
+                  {p.isHuman ? tc('player.you') : tc('player.cpu', { id: p.id })}
                   {p.isLandlord ? ` [${t('label.landlord')}]` : ''}: {state.scores[i]}
                 </div>
               ))}
@@ -444,7 +444,7 @@ function DoudizhuPageContent() {
         />
         <label className="flex items-center gap-1 text-ds-text-primary text-xs min-h-[44px]">
           <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
-          {tc('hint')}
+          {tc('button.hint')}
         </label>
       </GameFooter>
     </GamePageShell>

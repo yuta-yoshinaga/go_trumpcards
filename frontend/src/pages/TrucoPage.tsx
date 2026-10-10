@@ -343,7 +343,7 @@ function TrucoPageContent() {
             data-testid="truco-hint-toggle"
           >
             <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
-            {tc('hint')}
+            {tc('button.hint')}
           </label>
         </div>
       </div>
