@@ -57,6 +57,7 @@
   "meldProgressAnnouncement": "Your team's meld: {{updates}}",
   "listSeparator": ", ",
   "melds": "Melds",
+  "opponentMelds": "Opponents' melds ({{count}})",
   "mixedCanasta": "Mixed Canasta",
   "naturalCanasta": "Natural Canasta",
   "nextRound": "Next round",

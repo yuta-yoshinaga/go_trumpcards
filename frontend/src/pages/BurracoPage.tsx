@@ -108,6 +108,7 @@ function BurracoPageContent() {
   } = useGameHint('burraco', state);
 
   const humanPlayer = state?.players.find((p) => p.isHuman);
+  const humanSeat = state?.players.find((player) => player.isHuman)?.id ?? 0;
   // ヒントが無効なとき・サーバがヒントを返さない場面 (CPU の手番など) では空。
   // **useGameHint が無効時に null を返す**ので、ここで再度フラグを見ない
   // (見ると、条件が二重になって片方が死ぬ)。
@@ -408,10 +409,13 @@ function BurracoPageContent() {
                 {/* Player melds */}
                 {state.players.map((p, pi) => {
                   if (p.melds.length === 0 && p.red3s.length === 0) return null;
-                  return (
+                  // Burraco は 2 人戦 (NewDefaultBurraco: 人間 1 + CPU 1) なので席の偶奇で自分側が決まる。
+                  const isOwnTeam = Math.abs(p.id - humanSeat) % 2 === 0;
+                  const meldCount = p.melds.length + p.red3s.length;
+                  const meldContent = (
                     <div
                       key={pi}
-                      className="my-2 p-2 rounded bg-black/30"
+                      className="my-2 p-2 rounded bg-ds-surface"
                       data-tutorial={pi === 0 ? 'ca-meld-area' : undefined}
                     >
                       <div className="text-ds-text-muted text-sm mb-1">
@@ -452,6 +456,16 @@ function BurracoPageContent() {
                         </div>
                       )}
                     </div>
+                  );
+                  return isOwnTeam ? (
+                    meldContent
+                  ) : (
+                    <details key={pi} className="my-2 rounded bg-ds-surface p-2" open={!isMobile || undefined}>
+                      <summary className="cursor-pointer select-none text-sm text-ds-text-muted">
+                        {playerName(p.id, p.isHuman)} - {t('melds')} ({meldCount})
+                      </summary>
+                      {meldContent}
+                    </details>
                   );
                 })}
               </div>

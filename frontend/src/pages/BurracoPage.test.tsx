@@ -292,6 +292,57 @@ describe('BurracoPage', () => {
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
   });
 
+  it('keeps own-team melds visible and collapses opponent melds on mobile', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    mockExec.mockResolvedValue({
+      ...meldPhaseState,
+      players: [
+        {
+          ...basePlayers[0],
+          melds: [{ cards: basePlayers[0].cards.slice(0, 3), isNatural: true, isBurraco: false, rank: 7 }],
+        },
+        {
+          ...basePlayers[1],
+          melds: [{ cards: basePlayers[0].cards.slice(0, 3), isNatural: true, isBurraco: false, rank: 7 }],
+        },
+      ],
+    });
+    renderWithProviders(<BurracoPage />);
+
+    const opponentMelds = await screen.findByText('CPU 1 - メルド (1)');
+    expect(opponentMelds.closest('details')).not.toHaveAttribute('open');
+    expect(
+      screen
+        .getByText('あなた - メルド')
+        .closest('[data-tutorial="ca-meld-area"]')
+        ?.querySelector('[data-testid="bu-meld-cards"]'),
+    ).toBeVisible();
+    expect(within(opponentMelds.closest('details') as HTMLElement).getByTestId('bu-meld-cards')).not.toBeVisible();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
+  it('opens opponent melds on desktop', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 });
+    mockExec.mockResolvedValue({
+      ...meldPhaseState,
+      players: [
+        basePlayers[0],
+        {
+          ...basePlayers[1],
+          melds: [{ cards: basePlayers[0].cards.slice(0, 3), isNatural: true, isBurraco: false, rank: 7 }],
+        },
+      ],
+    });
+    renderWithProviders(<BurracoPage />);
+
+    const opponentMelds = await screen.findByText('CPU 1 - メルド (1)');
+    expect(opponentMelds.closest('details')).toHaveAttribute('open');
+    expect(within(opponentMelds.closest('details') as HTMLElement).getByTestId('bu-meld-cards')).toBeVisible();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
   it('keeps the state summary on one line and uses compact overlapping meld cards on mobile', async () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
