@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import { spiteAndMaliceApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -218,7 +219,8 @@ function SpiteAndMalicePageContent() {
   const { handleCommand } = useCliGame(apiCall, samCliConfig, state, { addInput, addOutput, addError, clearLog });
 
   const { hint: currentHint, hintEnabled, setHintEnabled } = useGameHint('spiteandmalice', state);
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
+  const playCardWidth = Math.round(cardWidth * (isMobile ? 0.7 : 0.8));
 
   const handleResetAction = useCallback(() => {
     setSelection(null);
@@ -354,25 +356,30 @@ function SpiteAndMalicePageContent() {
             <span id={selectSourceHintId} className="sr-only">
               {tc('label.selectSourceFirst')}
             </span>
-            <PlayerSummary
-              label={t('label.cpu')}
-              sidesLabel={t('label.cpuSides')}
-              player={opponent}
-              cardWidth={cardWidth}
-              dataTutorial="sam-opponent"
-              handCountLabel={(count) => t('label.handCount', { count })}
-              goalLabel={(count) => t('label.cpuGoal', { count })}
-              sidePileLabel={(index, top, count) =>
-                top
-                  ? t('aria.cpuSideTop', {
-                      n: index,
-                      card: cardAlt(top),
-                      count,
-                      listSeparator: t('listSeparator'),
-                    })
-                  : t('aria.cpuSideEmpty', { n: index })
-              }
-            />
+            <div data-tutorial="sam-opponent">
+              <CpuAccordion playerCount={1}>
+                <div className="flex flex-wrap justify-center gap-3 sm:flex-nowrap">
+                  <PlayerSummary
+                    label={t('label.cpu')}
+                    sidesLabel={t('label.cpuSides')}
+                    player={opponent}
+                    cardWidth={playCardWidth}
+                    handCountLabel={(count) => t('label.handCount', { count })}
+                    goalLabel={(count) => t('label.cpuGoal', { count })}
+                    sidePileLabel={(index, top, count) =>
+                      top
+                        ? t('aria.cpuSideTop', {
+                            n: index,
+                            card: cardAlt(top),
+                            count,
+                            listSeparator: t('listSeparator'),
+                          })
+                        : t('aria.cpuSideEmpty', { n: index })
+                    }
+                  />
+                </div>
+              </CpuAccordion>
+            </div>
 
             <div className="flex items-center justify-center gap-2 sm:gap-4" data-tutorial="sam-foundations">
               {state.foundations.map((pile, idx) => (
@@ -381,7 +388,7 @@ function SpiteAndMalicePageContent() {
                   idx={idx}
                   pile={pile}
                   topValue={state.foundationTops[idx]}
-                  cardWidth={cardWidth}
+                  cardWidth={playCardWidth}
                   highlight={isHintTarget(`hand${selection?.kind === 'hand' ? selection.idx : ''}-to-f${idx}`)}
                   playable={
                     isHumanTurn &&
@@ -405,13 +412,18 @@ function SpiteAndMalicePageContent() {
             >
               {t('label.stock')}: {state.stockSize} / {t('label.completed')}: {state.completedSize}
             </div>
-            <p className="text-center text-xs text-ds-text-muted">{t('stockRefillInfo')}</p>
+            <details className="rounded bg-ds-surface p-2" data-testid="sam-rule-details">
+              <summary className="cursor-pointer select-none text-center text-xs text-ds-text-muted">
+                {t('rulesLabel')}
+              </summary>
+              <p className="mt-2 text-center text-xs text-ds-text-muted">{t('stockRefillInfo')}</p>
+            </details>
 
             <div className="flex items-end justify-center gap-3" data-tutorial="sam-goal">
               <GoalPile
                 top={human.goalTop}
                 size={human.goalSize}
-                cardWidth={cardWidth}
+                cardWidth={playCardWidth}
                 selected={selection?.kind === 'goal'}
                 onClick={handleSelectGoal}
                 label={t('label.goal')}
@@ -426,7 +438,7 @@ function SpiteAndMalicePageContent() {
 
             <HandRow
               hand={human.hand}
-              cardWidth={cardWidth}
+              cardWidth={playCardWidth}
               selectedIdx={selectionIsHand ? selection.idx : null}
               onSelect={handleSelectHand}
               dataTutorial="sam-hand"
@@ -440,7 +452,7 @@ function SpiteAndMalicePageContent() {
 
             <SideRow
               sides={human.sides}
-              cardWidth={cardWidth}
+              cardWidth={playCardWidth}
               cpuLabel={false}
               onSelect={handleSelectSide}
               onDiscard={handleDiscardSide}
@@ -533,7 +545,7 @@ function PlayerSummary({
   sidesLabel: string;
   player: SpiteAndMaliceResponse['players'][number];
   cardWidth: number;
-  dataTutorial: string;
+  dataTutorial?: string;
   handCountLabel: (count: number) => string;
   goalLabel: (count: number) => string;
   sidePileLabel: (index: number, top: Card | undefined, count: number) => string;
@@ -541,7 +553,7 @@ function PlayerSummary({
   // Side piles render at half scale to keep the opponent strip compact on mobile.
   const sideWidth = Math.round(cardWidth * 0.5);
   return (
-    <div className="flex flex-col items-center" data-tutorial={dataTutorial}>
+    <div className="flex flex-col items-center" {...(dataTutorial ? { 'data-tutorial': dataTutorial } : {})}>
       <span className="text-sm text-ds-text-muted mb-1">
         {label} ({handCountLabel(player.hand.length)})
       </span>
@@ -688,13 +700,15 @@ function GoalPile({
       type="button"
       data-hint-action="goal-to-f0"
       data-goal-playable={playable ? 'true' : 'false'}
-      className={`${focusRingWhite} flex flex-col items-center rounded-lg transition-transform ${accentClass}`}
+      className={`${focusRingWhite} flex items-center gap-2 rounded-lg transition-transform ${accentClass}`}
       onClick={onClick}
       disabled={size === 0}
       aria-label={top ? ariaTop(cardAlt(top), size) : ariaEmpty}
     >
-      <span className="text-xs text-ds-text-muted">{label}</span>
-      <span className="mb-1 text-lg font-bold tabular-nums text-ds-accent">{remainingLabel(size)}</span>
+      <span className="flex flex-col items-end">
+        <span className="text-xs text-ds-text-muted">{label}</span>
+        <span className="text-sm font-bold tabular-nums text-ds-accent">{remainingLabel(size)}</span>
+      </span>
       {top ? <AnimatedCard card={top} width={cardWidth} /> : <FaceDownSlot label={label} width={cardWidth} />}
     </button>
   );

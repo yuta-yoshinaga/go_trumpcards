@@ -43,6 +43,13 @@ describe('useResponsiveTableau', () => {
     expect(result.current.co).toBe(CARD_DIMENSIONS.largeDesktop.cardOverlap);
   });
 
+  it('caps desktop card width and derives height when maxCardWidthPx is specified', () => {
+    setWidth(800);
+    const { result } = renderHook(() => useResponsiveTableau(10, { maxCardWidthPx: 40 }));
+    expect(result.current.cw).toBe(40);
+    expect(result.current.ch).toBe(Math.round(40 * 1.5));
+  });
+
   it('shrinks card width to fit 10 columns on a 375px mobile viewport (default px-2/gap-1)', () => {
     setWidth(375);
     const { result } = renderHook(() => useResponsiveTableau(10));

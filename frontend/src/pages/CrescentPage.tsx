@@ -154,7 +154,18 @@ function CrescentPageContent() {
   } = useGameHint('crescent', state);
 
   const isMobile = useIsMobile();
-  const tableauDim = useResponsiveTableau(8, mobileTableauConfig(isMobile, FIXED_TABLEAU_DEPTH.crescent));
+  const responsiveTableauDim = useResponsiveTableau(8, mobileTableauConfig(isMobile, FIXED_TABLEAU_DEPTH.crescent));
+  // Crescent has two rows of eight piles. Keep its mobile cards compact so both
+  // rows and the foundation controls leave more of the play area for the stacks.
+  const compactMobileCardWidth = Math.min(responsiveTableauDim.cw, 30);
+  const tableauDim = isMobile
+    ? {
+        ...responsiveTableauDim,
+        cw: compactMobileCardWidth,
+        ch: Math.round(compactMobileCardWidth * 1.5),
+        co: 14,
+      }
+    : { ...responsiveTableauDim, co: Math.min(responsiveTableauDim.co, 30) };
   const foundationCardWidth = tableauDim.cw;
   // The 8-column mobile grid makes the per-column arc translate Y create a zigzag
   // instead of a crescent silhouette. Skip the offset there. We read the breakpoint
@@ -308,76 +319,65 @@ function CrescentPageContent() {
           <LandscapeBanner message={t('landscapeBanner')} />
 
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
-            {/* Foundations (4 ascending + 4 descending in two rows) */}
-            <div className="flex flex-col gap-2 mb-4" data-tutorial="crescent-foundations">
-              {([0, 1] as const).map((rowIdx) => {
-                const startIdx = rowIdx * 4;
-                const directionKey = rowIdx === 0 ? 'asc' : 'desc';
+            {/* Foundations: all eight piles share one row to keep the tableau in view. */}
+            <div className="flex gap-1 sm:gap-2 justify-center mb-4" data-tutorial="crescent-foundations">
+              {Array.from({ length: 8 }, (_, idx) => {
+                const col = idx % 4;
+                const directionKey = idx < 4 ? 'asc' : 'desc';
+                const foundationZone: CrescentMoveZone = { zone: 'foundation', col: idx };
+                const pile = state.foundation[idx] ?? [];
+                const suit = FOUNDATION_SUITS[col];
                 return (
-                  <div key={`fnd-row-${rowIdx}`} className="flex gap-1 sm:gap-2 justify-center flex-wrap">
-                    {[0, 1, 2, 3].map((col) => {
-                      const idx = startIdx + col;
-                      const foundationZone: CrescentMoveZone = { zone: 'foundation', col: idx };
-                      const pile = state.foundation[idx] ?? [];
-                      const suit = FOUNDATION_SUITS[col];
-                      return (
-                        <div key={`f-${idx}`} className="text-center">
-                          <div className="text-xs mb-1">
-                            <span
-                              data-testid={`foundation-dir-${idx}`}
-                              className={`inline-block rounded px-1 font-bold ${
-                                directionKey === 'asc' ? badgeSuccessColors : badgeWarningColors
-                              }`}
-                            >
-                              {suit} {directionKey === 'asc' ? '↑' : '↓'}
-                            </span>
-                          </div>
-                          <DropZone
-                            isDropTarget={dnd.isDropTarget(foundationZone)}
-                            onDragOver={dnd.handleDragOver(foundationZone)}
-                            onDrop={dnd.handleDrop(foundationZone)}
-                            onDragLeave={dnd.handleDragLeave}
-                            className={targetRingClass(isFoundationTarget(idx), dnd.isDropTarget(foundationZone))}
-                          >
-                            {pile.length > 0 ? (
-                              <button
-                                type="button"
-                                onClick={() => handleSelectTarget(foundationZone)}
-                                disabled={!isPlaying || loading || isAutoCompleting}
-                                aria-disabled={!selectedSource || undefined}
-                                aria-describedby={!selectedSource ? selectSourceHintId : undefined}
-                                aria-label={t('foundationAriaLabel', {
-                                  suit,
-                                  direction: t(`direction.${directionKey}`),
-                                  count: pile.length,
-                                  top: cardAlt(pile[pile.length - 1]),
-                                })}
-                                className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${selectedCard !== null && !isFoundationTarget(idx) ? 'opacity-40' : ''}`}
-                              >
-                                <AnimatedCard
-                                  card={pile[pile.length - 1]}
-                                  width={foundationCardWidth}
-                                  draggable={false}
-                                />
-                              </button>
-                            ) : (
-                              <button
-                                type="button"
-                                onClick={() => handleSelectTarget(foundationZone)}
-                                disabled={!isPlaying || loading}
-                                aria-disabled={!selectedSource || undefined}
-                                aria-describedby={!selectedSource ? selectSourceHintId : undefined}
-                                aria-label={t('emptyFoundationAriaLabel', { suit, direction: directionKey })}
-                                style={{ width: foundationCardWidth, height: tableauDim.ch }}
-                                className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
-                              >
-                                {directionKey === 'asc' ? 'A' : 'K'}
-                              </button>
-                            )}
-                          </DropZone>
-                        </div>
-                      );
-                    })}
+                  <div key={`f-${idx}`} className="text-center">
+                    <div className="text-xs mb-1">
+                      <span
+                        data-testid={`foundation-dir-${idx}`}
+                        className={`inline-block rounded px-1 font-bold ${
+                          directionKey === 'asc' ? badgeSuccessColors : badgeWarningColors
+                        }`}
+                      >
+                        {suit} {directionKey === 'asc' ? '↑' : '↓'}
+                      </span>
+                    </div>
+                    <DropZone
+                      isDropTarget={dnd.isDropTarget(foundationZone)}
+                      onDragOver={dnd.handleDragOver(foundationZone)}
+                      onDrop={dnd.handleDrop(foundationZone)}
+                      onDragLeave={dnd.handleDragLeave}
+                      className={targetRingClass(isFoundationTarget(idx), dnd.isDropTarget(foundationZone))}
+                    >
+                      {pile.length > 0 ? (
+                        <button
+                          type="button"
+                          onClick={() => handleSelectTarget(foundationZone)}
+                          disabled={!isPlaying || loading || isAutoCompleting}
+                          aria-disabled={!selectedSource || undefined}
+                          aria-describedby={!selectedSource ? selectSourceHintId : undefined}
+                          aria-label={t('foundationAriaLabel', {
+                            suit,
+                            direction: t(`direction.${directionKey}`),
+                            count: pile.length,
+                            top: cardAlt(pile[pile.length - 1]),
+                          })}
+                          className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${selectedCard !== null && !isFoundationTarget(idx) ? 'opacity-40' : ''}`}
+                        >
+                          <AnimatedCard card={pile[pile.length - 1]} width={foundationCardWidth} draggable={false} />
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleSelectTarget(foundationZone)}
+                          disabled={!isPlaying || loading}
+                          aria-disabled={!selectedSource || undefined}
+                          aria-describedby={!selectedSource ? selectSourceHintId : undefined}
+                          aria-label={t('emptyFoundationAriaLabel', { suit, direction: directionKey })}
+                          style={{ width: foundationCardWidth, height: tableauDim.ch }}
+                          className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                        >
+                          {directionKey === 'asc' ? 'A' : 'K'}
+                        </button>
+                      )}
+                    </DropZone>
                   </div>
                 );
               })}

@@ -127,6 +127,17 @@ describe('BraidPage', () => {
     expect(screen.getByTestId('direction-down')).toBeInTheDocument();
   });
 
+  it('does not repeat the direction prompt in the game message panel', async () => {
+    mockExec.mockResolvedValue({
+      ...awaitingDirectionState,
+      message: '方向を選んでください',
+    });
+    renderWithProviders(<BraidPage />);
+
+    await screen.findByTestId('direction-up');
+    expect(screen.queryByText('方向を選んでください')).not.toBeInTheDocument();
+  });
+
   it.each([
     ['direction-up', true],
     ['direction-down', false],

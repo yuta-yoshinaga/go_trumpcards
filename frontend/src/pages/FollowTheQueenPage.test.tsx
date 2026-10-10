@@ -15,6 +15,13 @@ vi.mock('../api/gameApi', () => ({
 
 const mockExec = vi.mocked(followTheQueenApi.exec);
 
+const mobileState = vi.hoisted(() => ({ isMobile: false }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+}));
+
 /** Helper: base human player */
 const humanPlayer = (overrides: Partial<import('../types/card').FollowTheQueenPlayerData> = {}) => ({
   id: 0,
@@ -170,6 +177,7 @@ const showdownState: FollowTheQueenResponse = {
 };
 
 beforeEach(() => {
+  mobileState.isMobile = false;
   mockExec.mockResolvedValue(initState);
 });
 
@@ -216,6 +224,22 @@ describe('FollowTheQueenPage', () => {
     await waitFor(() => expect(screen.getByText(/CPU 1/)).toBeInTheDocument());
     expect(screen.getByText(/CPU 2/)).toBeInTheDocument();
     expect(screen.getAllByText(/タイト/).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('keeps CPU details collapsed on mobile and opens them on desktop', async () => {
+    mobileState.isMobile = true;
+    mockExec.mockResolvedValue(thirdStreetState);
+    const { unmount } = renderWithProviders(<FollowTheQueenPage />);
+    const mobileAccordion = await screen.findByTestId('cpu-accordion');
+    expect(mobileAccordion).not.toHaveAttribute('open');
+    expect(within(mobileAccordion).getAllByText('ドアカード')[0]).not.toBeVisible();
+
+    unmount();
+    mobileState.isMobile = false;
+    renderWithProviders(<FollowTheQueenPage />);
+    const desktopAccordion = await screen.findByTestId('cpu-accordion');
+    expect(desktopAccordion).toHaveAttribute('open');
+    expect(within(desktopAccordion).getAllByText('ドアカード')[0]).toBeVisible();
   });
 
   it('shows fold badge for folded CPU', async () => {

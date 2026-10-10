@@ -54,6 +54,13 @@
     "side": "Sides - reach either row",
     "bottom": "Bottom four - reach the ace row only"
   },
+  "bandLabel": {
+    "top": "Top",
+    "side": "Sides",
+    "bottom": "Bottom"
+  },
+  "rulesSummary": "Rules",
+  "rulesNote": "The top four columns reach only the king row, the bottom four only the ace row, and the side columns reach either row. The first redeal lifts this restriction.",
   "restrictionsActive": "First deal: top columns {{topCols}} reach the king row only, bottom columns {{bottomCols}} reach the ace row only, and side columns {{sideCols}} reach either row",
   "restrictionsLifted": "The destination restriction has been lifted",
   "listSeparator": ", ",
