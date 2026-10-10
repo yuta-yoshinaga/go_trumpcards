@@ -33,6 +33,13 @@ beforeEach(() => {
 });
 
 describe('TrogguPage', () => {
+  it('keeps the tutorial action target present outside the human bidding turn', async () => {
+    mockExec.mockResolvedValue(playState);
+    const { container } = renderWithProviders(<TrogguPage />);
+    expect(await screen.findByTestId('tg-info')).toBeInTheDocument();
+    expect(container.querySelector('[data-tutorial="tg-actions"]')).toBeInTheDocument();
+  });
+
   it('marks ordinary trumps visually and in accessible names, but not the Excuse', async () => {
     mockExec.mockResolvedValue(
       makeTrogguState({

@@ -62,6 +62,13 @@ beforeEach(() => {
 });
 
 describe('TappTarockPage', () => {
+  it('keeps the tutorial action target present when the human has no actions', async () => {
+    mockExec.mockResolvedValue(makeTappTarockState({ isHumanTurn: false }));
+    const { container } = renderWithProviders(<TappTarockPage />);
+    expect(await screen.findByTestId('zw-info')).toBeInTheDocument();
+    expect(container.querySelector('[data-tutorial="zw-actions"]')).toBeInTheDocument();
+  });
+
   it('explains the 16-card hand and the six-card talon exchange in English', () => {
     expect(enTappTarock.tutorial.playerHand).toContain('16 cards');
     expect(enTappTarock.tutorial.playerHand).toContain('six-card talon');

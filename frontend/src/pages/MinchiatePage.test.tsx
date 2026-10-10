@@ -41,6 +41,13 @@ beforeEach(() => {
 });
 
 describe('MinchiatePage', () => {
+  it('keeps the tutorial action target present during a CPU turn with no actions', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    const { container } = renderWithProviders(<MinchiatePage />);
+    expect(await screen.findByTestId('phase-indicator')).toBeInTheDocument();
+    expect(container.querySelector('[data-tutorial="minchiate-action-buttons"]')).toBeInTheDocument();
+  });
+
   it('renders minchiate-scarto-done when scartoCount is greater than 0', async () => {
     // スカルト（不要牌捨て）で既に捨てた枚数があるならその旨のメッセージを出す
     const state = makeMinchiateState({ scartoCount: 1 });
