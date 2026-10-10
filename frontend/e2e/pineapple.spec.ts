@@ -22,9 +22,16 @@ test.describe('Pineapple Poker E2E', () => {
     const discardControls = page.getByTestId('discard-controls');
 
     // Wait for either betting controls or discard phase
-    await expect(checkButton.or(callButton).or(foldButton).or(discardControls).or(resetButton).first()).toBeVisible({
-      timeout: 10_000,
-    });
+    await expect
+      .poll(
+        async () =>
+          (await checkButton.isVisible()) ||
+          (await callButton.isVisible()) ||
+          (await foldButton.isVisible()) ||
+          (await discardControls.isVisible()),
+        { timeout: 10_000 },
+      )
+      .toBe(true);
 
     // Verify we can reset the game
     await resetButton.click();

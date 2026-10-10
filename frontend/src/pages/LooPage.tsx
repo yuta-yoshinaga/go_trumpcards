@@ -376,7 +376,68 @@ function LooPageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.loo.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.loo.footer} px-4 py-2.5`}
+            actions={
+              canDecide || canPlay || isRoundEnd ? (
+                <>
+                  <div data-testid="loo-pot-risk-live" role="status" aria-live="polite">
+                    {canDecide &&
+                      (() => {
+                        const { looPenalty, perTrick, maxWin } = computeLooPotRisk(state.pot, state.potStart);
+                        return (
+                          <div
+                            className="mb-2 mx-auto max-w-md p-2 rounded bg-black/30 text-center text-sm"
+                            data-testid="loo-pot-risk"
+                          >
+                            <div className="text-ds-text-muted mb-0.5">{t('potRisk.label')}</div>
+                            <div className="text-ds-accent">{t('potRisk.win', { pot: maxWin, perTrick })}</div>
+                            <div className="text-ds-error-text">{t('potRisk.loss', { penalty: looPenalty })}</div>
+                          </div>
+                        );
+                      })()}
+                  </div>
+                  <div className="flex flex-wrap gap-2 items-center" data-tutorial="loo-action-buttons">
+                    {canDecide && (
+                      <div className="flex flex-wrap gap-2" data-testid="loo-decide-buttons">
+                        <button
+                          type="button"
+                          className={btnPrimary}
+                          onClick={() => handleDecide(true)}
+                          disabled={loading}
+                        >
+                          {t('decidePlay')}
+                        </button>
+                        <button
+                          type="button"
+                          className={btnSecondary}
+                          onClick={() => handleDecide(false)}
+                          disabled={loading}
+                        >
+                          {t('decidePass')}
+                        </button>
+                      </div>
+                    )}
+                    {canPlay && (
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={handlePlay}
+                        disabled={loading || selectedCardIndices.length !== 1}
+                      >
+                        {t('playButton')}
+                      </button>
+                    )}
+                    {isRoundEnd && (
+                      <button type="button" className={btnSuccess} onClick={handleNextDeal} disabled={loading}>
+                        {t('nextDeal')}
+                      </button>
+                    )}
+                  </div>
+                </>
+              ) : null
+            }
+          >
             {isDecidePhase && !canDecide && (
               <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="loo-decide-cpu">
                 {t('decideCpu', { id: state.decidePlayerIdx })}
@@ -400,24 +461,6 @@ function LooPageContent() {
                   {t('decisionCounts', decisionCounts)}
                 </div>
               )}
-            </div>
-            {/* ポットの損益表示は領域を常設し、中身だけを判断フェーズで差し替える。領域と
-                パネルを同時に挿入すると、変化として読み上げられないことがある (#7352)。 */}
-            <div data-testid="loo-pot-risk-live" role="status" aria-live="polite">
-              {canDecide &&
-                (() => {
-                  const { looPenalty, perTrick, maxWin } = computeLooPotRisk(state.pot, state.potStart);
-                  return (
-                    <div
-                      className="mb-2 mx-auto max-w-md p-2 rounded bg-black/30 text-center text-sm"
-                      data-testid="loo-pot-risk"
-                    >
-                      <div className="text-ds-text-muted mb-0.5">{t('potRisk.label')}</div>
-                      <div className="text-ds-accent">{t('potRisk.win', { pot: maxWin, perTrick })}</div>
-                      <div className="text-ds-error-text">{t('potRisk.loss', { penalty: looPenalty })}</div>
-                    </div>
-                  );
-                })()}
             </div>
             {humanPlayer && (
               <PlayerHandSection
@@ -451,32 +494,7 @@ function LooPageContent() {
             </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-            <div className="flex flex-wrap gap-2 items-center" data-tutorial="loo-action-buttons">
-              {canDecide && (
-                <div className="flex flex-wrap gap-2" data-testid="loo-decide-buttons">
-                  <button type="button" className={btnPrimary} onClick={() => handleDecide(true)} disabled={loading}>
-                    {t('decidePlay')}
-                  </button>
-                  <button type="button" className={btnSecondary} onClick={() => handleDecide(false)} disabled={loading}>
-                    {t('decidePass')}
-                  </button>
-                </div>
-              )}
-              {canPlay && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextDeal} disabled={loading}>
-                  {t('nextDeal')}
-                </button>
-              )}
+            <div className="flex flex-wrap gap-2 items-center">
               <GameResetButton
                 isGameEnd={false}
                 onReset={handleManualReset}

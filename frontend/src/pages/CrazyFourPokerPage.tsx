@@ -343,7 +343,50 @@ function CrazyFourPokerPageContent() {
             {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
           </div>
 
-          <GameFooter className={`${gameTheme.crazyfourpoker.footer} px-4 pt-3`}>
+          <GameFooter
+            className={`${gameTheme.crazyfourpoker.footer} px-4 pt-3`}
+            actions={
+              isBetPhase && !gameOver ? (
+                <div className="flex justify-center">
+                  <button type="button" className={btnPrimary} onClick={handleDeal} disabled={loading}>
+                    {t('button.deal')}
+                  </button>
+                </div>
+              ) : isDecidePhase ? (
+                <div className="flex gap-2 flex-wrap justify-center" data-tutorial="c4p-actions">
+                  {multipliers.map((m) => (
+                    <div key={`mult-${m}`} className="text-center">
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        data-hint-action={m === state.maxMultiplier && state.hasAcesOrBetter ? 'raise' : 'play'}
+                        data-testid={`c4p-play-${m}`}
+                        onClick={() => execApi('play', { multiplier: m })}
+                        disabled={loading}
+                      >
+                        {t('button.play', { multiplier: m })}
+                      </button>
+                      <p className="text-ds-text-muted text-xs" data-testid={`c4p-play-wager-${m}`}>
+                        {t('wagerSummary.playChoice', {
+                          playBet: state.anteBet * m,
+                          total: state.anteBet + state.superBet + state.queensUpBet + state.anteBet * m,
+                        })}
+                      </p>
+                    </div>
+                  ))}
+                  <button type="button" className={btnWarning} onClick={() => execApi('fold')} disabled={loading}>
+                    {t('button.fold')}
+                  </button>
+                </div>
+              ) : isResultPhase && !gameOver ? (
+                <div className="flex justify-center">
+                  <button type="button" className={btnPrimary} onClick={() => execApi('next')} disabled={loading}>
+                    {t('button.next')}
+                  </button>
+                </div>
+              ) : null
+            }
+          >
             <ErrorAlert message={error} onRetry={retry} />
             <SettingsPanel
               title={tc('settings.title')}
@@ -351,7 +394,7 @@ function CrazyFourPokerPageContent() {
             />
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-            <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="c4p-actions">
+            <div className="flex flex-col items-center gap-2 pb-2">
               {isBetPhase && !gameOver && (
                 <div className="flex flex-col items-center gap-2" data-tutorial="c4p-bet">
                   <p className="text-ds-text-muted text-sm">{t('betGuide')}</p>
@@ -411,9 +454,6 @@ function CrazyFourPokerPageContent() {
                       ))}
                     </tbody>
                   </table>
-                  <button type="button" className={btnPrimary} onClick={handleDeal} disabled={loading}>
-                    {t('button.deal')}
-                  </button>
                 </div>
               )}
 
@@ -426,38 +466,7 @@ function CrazyFourPokerPageContent() {
                   >
                     {state.hasAcesOrBetter ? t('acesNotice') : t('normalNotice')}
                   </p>
-                  <div className="flex gap-2 flex-wrap justify-center">
-                    {multipliers.map((m) => (
-                      <div key={`mult-${m}`} className="text-center">
-                        <button
-                          type="button"
-                          className={btnPrimary}
-                          data-hint-action={m === state.maxMultiplier && state.hasAcesOrBetter ? 'raise' : 'play'}
-                          data-testid={`c4p-play-${m}`}
-                          onClick={() => execApi('play', { multiplier: m })}
-                          disabled={loading}
-                        >
-                          {t('button.play', { multiplier: m })}
-                        </button>
-                        <p className="text-ds-text-muted text-xs" data-testid={`c4p-play-wager-${m}`}>
-                          {t('wagerSummary.playChoice', {
-                            playBet: state.anteBet * m,
-                            total: state.anteBet + state.superBet + state.queensUpBet + state.anteBet * m,
-                          })}
-                        </p>
-                      </div>
-                    ))}
-                    <button type="button" className={btnWarning} onClick={() => execApi('fold')} disabled={loading}>
-                      {t('button.fold')}
-                    </button>
-                  </div>
                 </>
-              )}
-
-              {isResultPhase && !gameOver && (
-                <button type="button" className={btnPrimary} onClick={() => execApi('next')} disabled={loading}>
-                  {t('button.next')}
-                </button>
               )}
 
               <div className="flex gap-2">

@@ -83,6 +83,7 @@ describe('LooPage', () => {
     mockExec.mockResolvedValue(state);
     const { getByTestId } = renderWithProviders(<LooPage />);
     await waitFor(() => expect(getByTestId('loo-decide-buttons')).toBeInTheDocument());
+    expect(within(screen.getByTestId('game-footer-actions')).getByTestId('loo-decide-buttons')).toBeInTheDocument();
   });
 
   it('does not render loo-decide-buttons when it is cpu turn', async () => {

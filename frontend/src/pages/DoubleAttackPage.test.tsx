@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, doubleattackApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
@@ -91,6 +91,15 @@ beforeEach(() => {
 });
 
 describe('DoubleAttackPage', () => {
+  it('keeps the deal action in the persistent footer action row', async () => {
+    mockApi.mockResolvedValue(withState({ phase: DoubleAttackPhase.BET }));
+    renderWithProviders(<DoubleAttackPage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: '配る' })).toBeInTheDocument();
+    expect(screen.getByTestId('da-bet-support').parentElement).not.toBe(actions);
+    expect(within(actions).queryByTestId('da-bustit-payouts')).not.toBeInTheDocument();
+  });
+
   it('announces the newly active hand and score only when the active hand changes during play', async () => {
     mockApi
       .mockResolvedValueOnce(

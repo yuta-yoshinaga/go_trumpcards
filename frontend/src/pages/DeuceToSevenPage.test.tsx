@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { deuceToSevenApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -259,6 +259,9 @@ describe('DeuceToSevenPage', () => {
     mockExec.mockResolvedValue(baseState({ phase: DeuceToSevenPhase.DEAL, currentTurn: 0 }));
     renderWithProviders(<DeuceToSevenPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /チェック/ })).toBeInTheDocument());
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: /チェック/ }),
+    ).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /チェック/ }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('check', undefined, undefined, undefined, 0));

@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import i18n from 'i18next';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, blackjackApi, doubleexposureApi, spanish21Api } from '../api/gameApi';
@@ -263,6 +263,11 @@ describe('BlackJackPage', () => {
   it('shows bet button in bet phase', async () => {
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: 'ベット' }),
+    ).toBeInTheDocument();
+    expect(within(screen.getByTestId('game-footer-actions')).queryByTestId('bj-quick-bet')).not.toBeInTheDocument();
+    expect(screen.getByTestId('bj-quick-bet').closest('[data-testid="game-footer-actions"]')).toBeNull();
   });
 
   it('shows bet amount input in bet phase', async () => {
@@ -284,6 +289,9 @@ describe('BlackJackPage', () => {
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ヒット' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'スタンド' })).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: 'ヒット' }),
+    ).toBeInTheDocument();
   });
 
   it('shows double down button when 2 cards and sufficient chips', async () => {

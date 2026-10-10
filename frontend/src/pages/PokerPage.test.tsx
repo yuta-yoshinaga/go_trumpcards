@@ -845,6 +845,12 @@ describe('PokerPage', () => {
     mockExec.mockResolvedValue(secondBetState);
     renderWithProviders(<PokerPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: 'ベット' }),
+    ).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId('game-footer-actions')).queryByTestId('pk-exchange-confirmability'),
+    ).not.toBeInTheDocument();
   });
 
   it('hides betting controls in END phase', async () => {

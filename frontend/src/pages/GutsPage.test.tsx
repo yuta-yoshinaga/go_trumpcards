@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { gutsApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -143,7 +143,9 @@ describe('GutsPage', () => {
   it('shows the declare action buttons on the declare phase', async () => {
     renderWithProviders(<GutsPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'イン（残る）' })).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: 'アウト（降りる）' })).toBeInTheDocument();
+    const actions = within(screen.getByTestId('game-footer-actions'));
+    expect(actions.getByRole('button', { name: 'イン（残る）' })).toBeInTheDocument();
+    expect(actions.getByRole('button', { name: 'アウト（降りる）' })).toBeInTheDocument();
   });
 
   it('shows the human chips, round bet, and current pot beside the declare actions', async () => {

@@ -166,6 +166,9 @@ describe('IndianPokerPage', () => {
     mockExec.mockResolvedValue(bettingState);
     renderWithProviders(<IndianPokerPage />);
     await waitFor(() => expect(screen.getByText('ベッティング')).toBeInTheDocument());
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: /チェック/ }),
+    ).toBeInTheDocument();
   });
 
   it('shows "アンティ" when phase is ANTE', async () => {

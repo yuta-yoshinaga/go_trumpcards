@@ -411,6 +411,48 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
       />
     );
 
+  const renderBetControls = (layout: 'action' | 'support') => (
+    <BjBetPhaseControls
+      layout={layout}
+      betAmount={betAmount}
+      onBetAmountChange={setBetAmount}
+      playerChips={playerChips}
+      deckCount={state.deckCount ?? 1}
+      onDeckCountChange={(v) => exec('setdeckcount', v)}
+      cpuPlayerCount={cpuPlayerCount}
+      onCpuPlayerCountChange={(v) => exec('setcpucount', v)}
+      hintEnabled={hintEnabled}
+      onToggleHint={() => exec('togglehint')}
+      dealerHitsSoft17={dealerHitsSoft17}
+      onToggleSoft17={() => exec('togglesoft17')}
+      countingEnabled={countingEnabled}
+      onToggleCounting={() => exec('togglecounting')}
+      doubleAfterSplit={doubleAfterSplit}
+      onToggleDAS={() => exec('toggledas')}
+      countingSystem={countingSystem}
+      onCountingSystemChange={(v) => exec('setcountingsystem', v)}
+      deckPenetration={deckPenetration}
+      onDeckPenetrationChange={(v) => exec('setpenetration', v)}
+      surrenderRule={surrenderRule}
+      onSurrenderRuleChange={(v) => exec('setsurrenderrule', v)}
+      handCount={handCount}
+      onHandCountChange={setHandCount}
+      loading={loading}
+      onBet={() => {
+        const betOptions: BlackJackBetOptions = {};
+        if (perfectPairsBet > 0) betOptions.perfectPairsBet = perfectPairsBet;
+        if (twentyOnePlus3Bet > 0) betOptions.twentyOnePlus3Bet = twentyOnePlus3Bet;
+        if (handCount > 1) betOptions.handCount = handCount;
+        exec('bet', betAmount, undefined, betOptions);
+      }}
+      perfectPairsBet={perfectPairsBet}
+      onPerfectPairsBetChange={setPerfectPairsBet}
+      twentyOnePlus3Bet={twentyOnePlus3Bet}
+      onTwentyOnePlus3BetChange={setTwentyOnePlus3Bet}
+      autoExpandAdvanced={!isMobile}
+    />
+  );
+
   return (
     <GamePageShell
       title={tc(navTitleKey)}
@@ -583,7 +625,104 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
           </div>
 
           {/* Sticky footer: player hand + result + buttons */}
-          <GameFooter className={`${gameTheme[themeKey].footer} px-4 py-3`}>
+          <GameFooter
+            className={`${gameTheme[themeKey].footer} px-4 py-3`}
+            actions={
+              phase === Number(BjPhase.END) ? null : (
+                <div className="text-center">
+                  {phase === BjPhase.BET && playerChips <= 0 && (
+                    <button type="button" className={btnDanger} onClick={handleReset} disabled={loading}>
+                      {t('outOfChips')}
+                    </button>
+                  )}
+                  {phase === BjPhase.BET && playerChips > 0 && <>{renderBetControls('action')}</>}
+
+                  {phase === BjPhase.INSURANCE && (
+                    <BjInsurancePhaseControls
+                      loading={loading}
+                      hintEnabled={hintEnabled}
+                      suggestedAction={suggestedAction}
+                      onInsurance={() => exec('insurance')}
+                      onDecline={() => exec('declineinsurance')}
+                    />
+                  )}
+
+                  {phase === BjPhase.ACTION && (
+                    <div data-tutorial="bj-action-buttons">
+                      {variant === 'doubleexposure' &&
+                        state?.doubleDownBlock !== BjDoubleDownBlock.HAND_FINISHED &&
+                        state?.doubleDownBlock !== BjDoubleDownBlock.WRONG_PHASE && (
+                          <p className="mb-2 text-sm text-ds-text-muted">
+                            {state?.doubleDownBlock === BjDoubleDownBlock.NOT_TWO_CARDS
+                              ? t('doubleDownUnavailable.cards')
+                              : state?.doubleDownBlock === BjDoubleDownBlock.INSUFFICIENT_CHIPS
+                                ? t('doubleDownUnavailable.chips')
+                                : state?.doubleDownBlock === BjDoubleDownBlock.SPLIT_NO_DAS
+                                  ? t('doubleDownUnavailable.split')
+                                  : t('doubleDownAvailable')}
+                          </p>
+                        )}
+                      <BjActionPhaseControls
+                        loading={loading}
+                        hintEnabled={hintEnabled}
+                        suggestedAction={suggestedAction}
+                        showDoubleDown={showDoubleDown}
+                        showSplit={showSplit}
+                        showSurrender={showSurrender}
+                        onHit={() => exec('hit')}
+                        onStand={() => exec('stand')}
+                        onDoubleDown={() => exec('doubledown')}
+                        onSplit={() => exec('split')}
+                        onSurrender={() => exec('surrender')}
+                      />
+                    </div>
+                  )}
+
+                  {phase === BjPhase.EARLY_SURRENDER && (
+                    <BjEarlySurrenderPhaseControls
+                      loading={loading}
+                      hintEnabled={hintEnabled}
+                      suggestedAction={suggestedAction}
+                      onSurrender={() => exec('earlysurrender')}
+                      onContinue={() => exec('declineearlysurrender')}
+                    />
+                  )}
+
+                  {phase === BjPhase.END && (
+                    <div data-tutorial="bj-reset-button">
+                      <BjEndPhaseControls
+                        loading={loading}
+                        onReset={handleReset}
+                        onRequestReset={requestResetConfirm}
+                        autoAdvanceSeconds={autoAdvance > 0 ? autoAdvance : undefined}
+                      />
+                    </div>
+                  )}
+                </div>
+              )
+            }
+          >
+            {phase === BjPhase.BET && playerChips > 0 && (
+              <>
+                <div data-tutorial="bj-bet-controls">{renderBetControls('support')}</div>
+                <div className="flex items-center justify-center gap-2 mt-2">
+                  <label htmlFor="bj-auto-advance" className="text-ds-text-primary text-sm">
+                    {t('autoAdvance')}
+                  </label>
+                  <select
+                    id="bj-auto-advance"
+                    value={autoAdvance}
+                    onChange={(e) => setAutoAdvance(Number(e.target.value))}
+                    className="px-3 py-2 rounded text-sm min-h-[44px]"
+                  >
+                    <option value={0}>OFF</option>
+                    <option value={3}>{t('autoAdvanceSec', { sec: 3 })}</option>
+                    <option value={5}>{t('autoAdvanceSec', { sec: 5 })}</option>
+                    <option value={10}>{t('autoAdvanceSec', { sec: 10 })}</option>
+                  </select>
+                </div>
+              </>
+            )}
             {/* Player hands */}
             {phase !== BjPhase.BET && hands.length > 0 && (
               <div className="mb-2" data-tutorial="bj-player-hand">
@@ -800,136 +939,17 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {/* Phase-based buttons */}
-            <div className="text-center">
-              {phase === BjPhase.BET && playerChips <= 0 && (
-                <button type="button" className={btnDanger} onClick={handleReset} disabled={loading}>
-                  {t('outOfChips')}
-                </button>
-              )}
-              {phase === BjPhase.BET && playerChips > 0 && (
-                <>
-                  <div data-tutorial="bj-bet-controls">
-                    <BjBetPhaseControls
-                      betAmount={betAmount}
-                      onBetAmountChange={setBetAmount}
-                      playerChips={playerChips}
-                      deckCount={state?.deckCount ?? 1}
-                      onDeckCountChange={(v) => exec('setdeckcount', v)}
-                      cpuPlayerCount={cpuPlayerCount}
-                      onCpuPlayerCountChange={(v) => exec('setcpucount', v)}
-                      hintEnabled={hintEnabled}
-                      onToggleHint={() => exec('togglehint')}
-                      dealerHitsSoft17={dealerHitsSoft17}
-                      onToggleSoft17={() => exec('togglesoft17')}
-                      countingEnabled={countingEnabled}
-                      onToggleCounting={() => exec('togglecounting')}
-                      doubleAfterSplit={doubleAfterSplit}
-                      onToggleDAS={() => exec('toggledas')}
-                      countingSystem={countingSystem}
-                      onCountingSystemChange={(v) => exec('setcountingsystem', v)}
-                      deckPenetration={deckPenetration}
-                      onDeckPenetrationChange={(v) => exec('setpenetration', v)}
-                      surrenderRule={surrenderRule}
-                      onSurrenderRuleChange={(v) => exec('setsurrenderrule', v)}
-                      handCount={handCount}
-                      onHandCountChange={setHandCount}
-                      loading={loading}
-                      onBet={() => {
-                        const betOptions: BlackJackBetOptions = {};
-                        if (perfectPairsBet > 0) betOptions.perfectPairsBet = perfectPairsBet;
-                        if (twentyOnePlus3Bet > 0) betOptions.twentyOnePlus3Bet = twentyOnePlus3Bet;
-                        if (handCount > 1) betOptions.handCount = handCount;
-                        exec('bet', betAmount, undefined, betOptions);
-                      }}
-                      perfectPairsBet={perfectPairsBet}
-                      onPerfectPairsBetChange={setPerfectPairsBet}
-                      twentyOnePlus3Bet={twentyOnePlus3Bet}
-                      onTwentyOnePlus3BetChange={setTwentyOnePlus3Bet}
-                      autoExpandAdvanced={!isMobile}
-                    />
-                  </div>
-                  <div className="flex items-center justify-center gap-2 mt-2">
-                    <label htmlFor="bj-auto-advance" className="text-ds-text-primary text-sm">
-                      {t('autoAdvance')}
-                    </label>
-                    <select
-                      id="bj-auto-advance"
-                      value={autoAdvance}
-                      onChange={(e) => setAutoAdvance(Number(e.target.value))}
-                      className="px-3 py-2 rounded text-sm min-h-[44px]"
-                    >
-                      <option value={0}>OFF</option>
-                      <option value={3}>{t('autoAdvanceSec', { sec: 3 })}</option>
-                      <option value={5}>{t('autoAdvanceSec', { sec: 5 })}</option>
-                      <option value={10}>{t('autoAdvanceSec', { sec: 10 })}</option>
-                    </select>
-                  </div>
-                </>
-              )}
-
-              {phase === BjPhase.INSURANCE && (
-                <BjInsurancePhaseControls
+            {phase === BjPhase.END && (
+              <div className="text-center" data-tutorial="bj-reset-button">
+                <BjEndPhaseControls
                   loading={loading}
-                  hintEnabled={hintEnabled}
-                  suggestedAction={suggestedAction}
-                  onInsurance={() => exec('insurance')}
-                  onDecline={() => exec('declineinsurance')}
+                  onReset={handleReset}
+                  onRequestReset={requestResetConfirm}
+                  autoAdvanceSeconds={autoAdvance > 0 ? autoAdvance : undefined}
                 />
-              )}
+              </div>
+            )}
 
-              {phase === BjPhase.ACTION && (
-                <div data-tutorial="bj-action-buttons">
-                  {variant === 'doubleexposure' &&
-                    state?.doubleDownBlock !== BjDoubleDownBlock.HAND_FINISHED &&
-                    state?.doubleDownBlock !== BjDoubleDownBlock.WRONG_PHASE && (
-                      <p className="mb-2 text-sm text-ds-text-muted">
-                        {state?.doubleDownBlock === BjDoubleDownBlock.NOT_TWO_CARDS
-                          ? t('doubleDownUnavailable.cards')
-                          : state?.doubleDownBlock === BjDoubleDownBlock.INSUFFICIENT_CHIPS
-                            ? t('doubleDownUnavailable.chips')
-                            : state?.doubleDownBlock === BjDoubleDownBlock.SPLIT_NO_DAS
-                              ? t('doubleDownUnavailable.split')
-                              : t('doubleDownAvailable')}
-                      </p>
-                    )}
-                  <BjActionPhaseControls
-                    loading={loading}
-                    hintEnabled={hintEnabled}
-                    suggestedAction={suggestedAction}
-                    showDoubleDown={showDoubleDown}
-                    showSplit={showSplit}
-                    showSurrender={showSurrender}
-                    onHit={() => exec('hit')}
-                    onStand={() => exec('stand')}
-                    onDoubleDown={() => exec('doubledown')}
-                    onSplit={() => exec('split')}
-                    onSurrender={() => exec('surrender')}
-                  />
-                </div>
-              )}
-
-              {phase === BjPhase.EARLY_SURRENDER && (
-                <BjEarlySurrenderPhaseControls
-                  loading={loading}
-                  hintEnabled={hintEnabled}
-                  suggestedAction={suggestedAction}
-                  onSurrender={() => exec('earlysurrender')}
-                  onContinue={() => exec('declineearlysurrender')}
-                />
-              )}
-
-              {phase === BjPhase.END && (
-                <div data-tutorial="bj-reset-button">
-                  <BjEndPhaseControls
-                    loading={loading}
-                    onReset={handleReset}
-                    onRequestReset={requestResetConfirm}
-                    autoAdvanceSeconds={autoAdvance > 0 ? autoAdvance : undefined}
-                  />
-                </div>
-              )}
-            </div>
             <ActionShortcutsPanel
               bindings={[...actionBindings, ...insuranceBindings, ...earlySurrenderBindings]}
               data-testid="black-jack-kbd-shortcuts"

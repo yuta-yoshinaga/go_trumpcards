@@ -510,7 +510,146 @@ function DramahaPageContent() {
           </div>
 
           {/* Sticky footer: player hand + buttons */}
-          <GameFooter className={`${gameTheme.dramaha.footer} px-5 py-3`}>
+          <GameFooter
+            className={`${gameTheme.dramaha.footer} px-5 py-3`}
+            actions={
+              <>
+                {/* Draw controls */}
+                {canDraw && (
+                  <div className="mb-2 text-center" data-testid="draw-controls" data-tutorial="dr-draw-round">
+                    <p className="text-ds-text-primary font-bold mb-1">{t('draw.title')}</p>
+                    <p className="text-ds-text-primary mb-1">{t('draw.prompt')}</p>
+                    <p className="text-ds-text-muted text-xs mb-2" data-testid="dramaha-draw-once">
+                      {t('draw.onceOnly')}
+                    </p>
+                    <p className="text-ds-text-primary text-xs mb-2" data-testid="dramaha-draw-selected">
+                      {t('draw.selected', { count: selectedDraw.length, max: DRAMAHA_HOLE_CARDS })}
+                    </p>
+                    <div className="flex justify-center gap-2">
+                      <button
+                        type="button"
+                        className={`${btnPrimary} min-w-[90px]`}
+                        disabled={loading || selectedDraw.length === 0}
+                        onClick={() => submitDraw([...selectedDraw])}
+                        data-testid="dramaha-draw-exchange"
+                      >
+                        {t('draw.exchange', { count: selectedDraw.length })}
+                      </button>
+                      <button
+                        type="button"
+                        className={`${btnSecondary} min-w-[90px]`}
+                        disabled={loading}
+                        onClick={() => submitDraw([])}
+                        data-testid="dramaha-draw-standpat"
+                      >
+                        {t('draw.standPat')}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Muck/Show controls */}
+                {isMuckPhase && (
+                  <div className="mb-2 text-center" data-testid="muck-controls">
+                    <div className="flex justify-center gap-2">
+                      <button
+                        type="button"
+                        className={`${btnPrimary} min-w-[90px]`}
+                        disabled={loading}
+                        onClick={() => execApi('muck')}
+                      >
+                        {t('muck.muck')}
+                      </button>
+                      <button
+                        type="button"
+                        className={`${btnSecondary} min-w-[90px]`}
+                        disabled={loading}
+                        onClick={() => execApi('show')}
+                      >
+                        {t('muck.show')}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Rebuy/Addon controls */}
+                {isRebuyPhase && (
+                  <div className="mb-2 text-center" data-testid="rebuy-controls">
+                    <p className="text-ds-text-primary mb-2">
+                      {t('rebuy.prompt', {
+                        chips: state?.rebuyChips,
+                        used: humanRebuyCount,
+                        max: state?.rebuyMaxCount,
+                      })}
+                    </p>
+                    <div className="flex justify-center gap-2">
+                      <button
+                        type="button"
+                        className={`${btnPrimary} min-w-[90px]`}
+                        disabled={loading}
+                        onClick={() => execApi('rebuy')}
+                      >
+                        {t('rebuy.accept')}
+                      </button>
+                      <button
+                        type="button"
+                        className={`${btnSecondary} min-w-[90px]`}
+                        disabled={loading}
+                        onClick={() => execApi('skiprebuy')}
+                      >
+                        {t('rebuy.skip')}
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {isAddonPhase && (
+                  <div className="mb-2 text-center" data-testid="addon-controls">
+                    <p className="text-ds-text-primary mb-2">{t('addon.prompt', { chips: state?.addonChips })}</p>
+                    <div className="flex justify-center gap-2">
+                      <button
+                        type="button"
+                        className={`${btnPrimary} min-w-[90px]`}
+                        disabled={loading}
+                        onClick={() => execApi('addon')}
+                      >
+                        {t('addon.accept')}
+                      </button>
+                      <button
+                        type="button"
+                        className={`${btnSecondary} min-w-[90px]`}
+                        disabled={loading}
+                        onClick={() => execApi('skipaddon')}
+                      >
+                        {t('addon.skip')}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Betting controls */}
+                {canAct && (
+                  <div data-tutorial="dr-action-buttons">
+                    <BettingControls
+                      inputId="dramahaBetAmount"
+                      betAmount={betAmount}
+                      onBetAmountChange={setBetAmount}
+                      minRaise={minRaise}
+                      maxBetAmount={state?.maxBetAmount}
+                      potSize={state?.pot}
+                      hasOutstandingBet={hasOutstandingBet}
+                      loading={loading}
+                      onCall={() => execApi('call', undefined, undefined, getElapsed())}
+                      onRaise={() => execApi('raise', betAmount, undefined, getElapsed())}
+                      onBet={() => execApi('bet', betAmount, undefined, getElapsed())}
+                      onCheck={() => execApi('check', undefined, undefined, getElapsed())}
+                      onFold={() => execApi('fold', undefined, undefined, getElapsed())}
+                      onAllIn={() => execApi('allin', undefined, undefined, getElapsed())}
+                    />
+                  </div>
+                )}
+              </>
+            }
+          >
             {/* Human player */}
             {humanPlayer && (
               <div className="mb-2" data-tutorial="dr-player-hand">
@@ -615,139 +754,9 @@ function DramahaPageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {/* Draw controls */}
-            {canDraw && (
-              <div className="mb-2 text-center" data-testid="draw-controls" data-tutorial="dr-draw-round">
-                <p className="text-ds-text-primary font-bold mb-1">{t('draw.title')}</p>
-                <p className="text-ds-text-primary mb-1">{t('draw.prompt')}</p>
-                <p className="text-ds-text-muted text-xs mb-2" data-testid="dramaha-draw-once">
-                  {t('draw.onceOnly')}
-                </p>
-                <p className="text-ds-text-primary text-xs mb-2" data-testid="dramaha-draw-selected">
-                  {t('draw.selected', { count: selectedDraw.length, max: DRAMAHA_HOLE_CARDS })}
-                </p>
-                <div className="flex justify-center gap-2">
-                  <button
-                    type="button"
-                    className={`${btnPrimary} min-w-[90px]`}
-                    disabled={loading || selectedDraw.length === 0}
-                    onClick={() => submitDraw([...selectedDraw])}
-                    data-testid="dramaha-draw-exchange"
-                  >
-                    {t('draw.exchange', { count: selectedDraw.length })}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnSecondary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => submitDraw([])}
-                    data-testid="dramaha-draw-standpat"
-                  >
-                    {t('draw.standPat')}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Muck/Show controls */}
-            {isMuckPhase && (
-              <div className="mb-2 text-center" data-testid="muck-controls">
-                <div className="flex justify-center gap-2">
-                  <button
-                    type="button"
-                    className={`${btnPrimary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => execApi('muck')}
-                  >
-                    {t('muck.muck')}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnSecondary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => execApi('show')}
-                  >
-                    {t('muck.show')}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Rebuy/Addon controls */}
-            {isRebuyPhase && (
-              <div className="mb-2 text-center" data-testid="rebuy-controls">
-                <p className="text-ds-text-primary mb-2">
-                  {t('rebuy.prompt', { chips: state?.rebuyChips, used: humanRebuyCount, max: state?.rebuyMaxCount })}
-                </p>
-                <div className="flex justify-center gap-2">
-                  <button
-                    type="button"
-                    className={`${btnPrimary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => execApi('rebuy')}
-                  >
-                    {t('rebuy.accept')}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnSecondary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => execApi('skiprebuy')}
-                  >
-                    {t('rebuy.skip')}
-                  </button>
-                </div>
-              </div>
-            )}
-            {isAddonPhase && (
-              <div className="mb-2 text-center" data-testid="addon-controls">
-                <p className="text-ds-text-primary mb-2">{t('addon.prompt', { chips: state?.addonChips })}</p>
-                <div className="flex justify-center gap-2">
-                  <button
-                    type="button"
-                    className={`${btnPrimary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => execApi('addon')}
-                  >
-                    {t('addon.accept')}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnSecondary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => execApi('skipaddon')}
-                  >
-                    {t('addon.skip')}
-                  </button>
-                </div>
-              </div>
-            )}
-
             {/* Hint */}
             {hintEnabled && hint && (
               <HintTooltip reason={t(hint.reason, hint.reasonParams)} confidence={hint.confidence} />
-            )}
-
-            {/* Betting controls */}
-            {canAct && (
-              <div data-tutorial="dr-action-buttons">
-                <BettingControls
-                  inputId="dramahaBetAmount"
-                  betAmount={betAmount}
-                  onBetAmountChange={setBetAmount}
-                  minRaise={minRaise}
-                  maxBetAmount={state?.maxBetAmount}
-                  potSize={state?.pot}
-                  hasOutstandingBet={hasOutstandingBet}
-                  loading={loading}
-                  onCall={() => execApi('call', undefined, undefined, getElapsed())}
-                  onRaise={() => execApi('raise', betAmount, undefined, getElapsed())}
-                  onBet={() => execApi('bet', betAmount, undefined, getElapsed())}
-                  onCheck={() => execApi('check', undefined, undefined, getElapsed())}
-                  onFold={() => execApi('fold', undefined, undefined, getElapsed())}
-                  onAllIn={() => execApi('allin', undefined, undefined, getElapsed())}
-                />
-              </div>
             )}
 
             {/* Settings + Reset */}

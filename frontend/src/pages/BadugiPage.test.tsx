@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { badugiApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -372,6 +372,7 @@ describe('BadugiPage', () => {
     mockExec.mockResolvedValue(baseState({ phase: BadugiPhase.DRAW, drawIndex: 1, currentTurn: 0 }));
     renderWithProviders(<BadugiPage />);
     await waitFor(() => expect(screen.getByTestId('bg-stand-btn')).toBeInTheDocument());
+    expect(within(screen.getByTestId('game-footer-actions')).getByTestId('bg-stand-btn')).toBeInTheDocument();
 
     expect(screen.getByTestId('bg-complete-badugi-banner')).toBeInTheDocument();
     expect(screen.getByTestId('bg-stand-btn').className).toContain('animate-pulse');

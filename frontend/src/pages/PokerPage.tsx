@@ -367,7 +367,77 @@ function PokerPageContent() {
           </div>
 
           {/* Sticky footer: player hand + buttons */}
-          <GameFooter className={`${gameTheme.poker.footer} px-5 py-3`}>
+          <GameFooter
+            className={`${gameTheme.poker.footer} px-5 py-3`}
+            actions={
+              <>
+                {/* Betting controls */}
+                {canAct && (
+                  <div data-tutorial="pk-bet-controls">
+                    <BettingControls
+                      inputId="pokerBetAmount"
+                      betAmount={betAmount}
+                      onBetAmountChange={setBetAmount}
+                      minRaise={minRaise}
+                      maxBetAmount={state?.maxBetAmount}
+                      potSize={state?.pot}
+                      hasOutstandingBet={hasOutstandingBet}
+                      loading={loading}
+                      onCall={() => exec('call', undefined, undefined, undefined, getElapsed())}
+                      onRaise={() => exec('raise', undefined, betAmount, undefined, getElapsed())}
+                      onBet={() => exec('bet', undefined, betAmount, undefined, getElapsed())}
+                      onCheck={() => exec('check', undefined, undefined, undefined, getElapsed())}
+                      onFold={() => exec('fold', undefined, undefined, undefined, getElapsed())}
+                      onAllIn={() => exec('allin', undefined, undefined, undefined, getElapsed())}
+                    />
+                  </div>
+                )}
+
+                {/* Exchange controls */}
+                {canExchange && (
+                  <div className="text-center mb-2" data-tutorial="pk-exchange-button">
+                    <button
+                      type="button"
+                      className={`${btnWarning} min-w-[90px]`}
+                      disabled={loading || selected.length === 0}
+                      onClick={() => handleExchange(selected)}
+                    >
+                      {t('exchangeLabel')}
+                    </button>
+                    <button
+                      type="button"
+                      className={`${btnSuccess} min-w-[90px]`}
+                      disabled={loading}
+                      onClick={() => exec('stand')}
+                    >
+                      {t('standLabel')}
+                    </button>
+                  </div>
+                )}
+              </>
+            }
+          >
+            {/* Round guidance stays at the top of the scrollable footer content. */}
+            {state.equity && <EquityDisplay equity={state.equity} potOdds={state.potOdds ?? 0} />}
+            <div aria-live="polite" data-testid="pk-exchange-confirmability">
+              {canExchange && (
+                <span className="block text-center text-ds-text-muted text-xs mb-1">
+                  {selected.length === 0
+                    ? t('exchangeNotConfirmable')
+                    : t('exchangeConfirmable', { n: selected.length })}
+                </span>
+              )}
+            </div>
+            {canExchange && (
+              <>
+                <div className="text-game-text-highlight text-xs mb-1 text-center" data-testid="pk-exchange-selected">
+                  {t('exchangeSelectedCount', { n: selected.length })}
+                </div>
+                <div className="text-ds-text-muted text-xs mt-1 text-center" data-testid="pk-stand-hint">
+                  {t('standHint')}
+                </div>
+              </>
+            )}
             {/* Human player */}
             {humanPlayer && (
               <div className="mb-2" data-tutorial="pk-player-hand">
@@ -444,34 +514,6 @@ function PokerPageContent() {
             {/* Hint display */}
             {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
 
-            {/* Betting controls */}
-            {canAct && (
-              <div data-tutorial="pk-bet-controls">
-                <BettingControls
-                  inputId="pokerBetAmount"
-                  betAmount={betAmount}
-                  onBetAmountChange={setBetAmount}
-                  minRaise={minRaise}
-                  maxBetAmount={state?.maxBetAmount}
-                  potSize={state?.pot}
-                  hasOutstandingBet={hasOutstandingBet}
-                  loading={loading}
-                  onCall={() => exec('call', undefined, undefined, undefined, getElapsed())}
-                  onRaise={() => exec('raise', undefined, betAmount, undefined, getElapsed())}
-                  onBet={() => exec('bet', undefined, betAmount, undefined, getElapsed())}
-                  onCheck={() => exec('check', undefined, undefined, undefined, getElapsed())}
-                  onFold={() => exec('fold', undefined, undefined, undefined, getElapsed())}
-                  onAllIn={() => exec('allin', undefined, undefined, undefined, getElapsed())}
-                />
-              </div>
-            )}
-
-            {/* **2巡目ベットの判断材料。**Holdem 系は EquityDisplay を持つのに
-                5カードドローには仕組み自体が無く、交換確率パネルしか無かった
-                (#4678)。ベッティングフェーズ以外はサーバーが送らないので、
-                ここでフェーズを再判定しない。 */}
-            {state.equity && <EquityDisplay equity={state.equity} potOdds={state.potOdds ?? 0} />}
-
             {/* Draw odds panel */}
             {canExchange && odds?.some((o) => o.probability > 0) && (
               <div
@@ -503,43 +545,6 @@ function PokerPageContent() {
                 >
                   {t('oddsRetry')}
                 </button>
-              </div>
-            )}
-
-            {/* Exchange controls */}
-            <div aria-live="polite" data-testid="pk-exchange-confirmability">
-              {canExchange && (
-                <span className="block text-center text-ds-text-muted text-xs mb-1">
-                  {selected.length === 0
-                    ? t('exchangeNotConfirmable')
-                    : t('exchangeConfirmable', { n: selected.length })}
-                </span>
-              )}
-            </div>
-            {canExchange && (
-              <div className="text-center mb-2" data-tutorial="pk-exchange-button">
-                <div className="text-game-text-highlight text-xs mb-1" data-testid="pk-exchange-selected">
-                  {t('exchangeSelectedCount', { n: selected.length })}
-                </div>
-                <button
-                  type="button"
-                  className={`${btnWarning} min-w-[90px]`}
-                  disabled={loading || selected.length === 0}
-                  onClick={() => handleExchange(selected)}
-                >
-                  {t('exchangeLabel')}
-                </button>
-                <button
-                  type="button"
-                  className={`${btnSuccess} min-w-[90px]`}
-                  disabled={loading}
-                  onClick={() => exec('stand')}
-                >
-                  {t('standLabel')}
-                </button>
-                <div className="text-ds-text-muted text-xs mt-1" data-testid="pk-stand-hint">
-                  {t('standHint')}
-                </div>
               </div>
             )}
 

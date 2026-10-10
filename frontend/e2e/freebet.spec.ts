@@ -94,13 +94,10 @@ test.describe('Free Bet Blackjack E2E', () => {
     await navigateTo(page, '/freebet');
     await expect(page.getByTestId('fb-bet-line')).toBeVisible({ timeout: TIMEOUT_TRANSITION });
 
-    await page
-      .getByRole('button', { name: /リセット|やり直/ })
-      .first()
-      .click();
+    await page.getByRole('button', { name: /リセット|やり直/ }).click();
     const confirm = page.getByRole('button', { name: /はい|OK|確認/ });
-    if (await isVisibleWithin(confirm.first(), TIMEOUT_ACTION)) {
-      await confirm.first().click();
+    if (await isVisibleWithin(confirm, TIMEOUT_ACTION)) {
+      await confirm.click();
     }
     await waitForLoaded(page);
     await expect(page.getByRole('button', { name: '配る' })).toBeVisible({ timeout: TIMEOUT_TRANSITION });

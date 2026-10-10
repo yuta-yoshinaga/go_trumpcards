@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { freebetApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
@@ -263,6 +263,8 @@ describe('FreeBetPage', () => {
     renderWithProviders(<FreeBetPage />);
 
     await waitFor(() => expect(screen.getByTestId('fb-hit')).toBeInTheDocument());
+    expect(within(screen.getByTestId('game-footer-actions')).getByTestId('fb-hit')).toBeInTheDocument();
+    expect(within(screen.getByTestId('game-footer-actions')).queryByTestId('fb-bet-summary')).not.toBeInTheDocument();
     expect(screen.getByTestId('fb-hit')).toHaveAttribute('aria-keyshortcuts', 'h');
     expect(screen.getByTestId('fb-hit')).toHaveTextContent('H');
     expect(screen.getByTestId('fb-stand')).toHaveAttribute('aria-keyshortcuts', 's');

@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { crazyPineappleApi, irishPokerApi, pineappleApi } from '../api/gameApi';
 import i18n from '../i18n';
@@ -329,7 +329,9 @@ describe('PineapplePage', () => {
     await waitFor(() => expect(screen.getByText('あなたの手札')).toBeInTheDocument());
     expect(screen.queryByRole('log')).not.toBeInTheDocument();
     expect(screen.queryByTestId('cp-cpu-discard-log')).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'チェック' })).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: 'チェック' }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
   });
 
