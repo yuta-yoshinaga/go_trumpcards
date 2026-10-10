@@ -4,12 +4,14 @@ import type { Card } from '../types/card';
 import { PlayerHandSection } from './PlayerHandSection';
 
 let observedHandWidth = 640;
+const observedTargets: Element[] = [];
 class MockResizeObserver {
   private callback: ResizeObserverCallback;
   constructor(callback: ResizeObserverCallback) {
     this.callback = callback;
   }
   observe(target: Element) {
+    observedTargets.push(target);
     Object.defineProperty(target, 'clientWidth', { configurable: true, value: observedHandWidth });
     this.callback([], this as unknown as ResizeObserver);
   }
@@ -105,6 +107,16 @@ describe('PlayerHandSection (desktop)', () => {
     expect(container.querySelector('[data-tutorial="ht-player-hand"]')).toBeInTheDocument();
   });
 
+  it('observes the hand node when cards are added after an empty render', () => {
+    observedTargets.length = 0;
+    const { rerender, container } = render(
+      <PlayerHandSection {...baseProps} humanPlayer={{ cards: [] }} isMobile={true} />,
+    );
+    rerender(<PlayerHandSection {...baseProps} isMobile={false} />);
+    const hand = container.querySelector('[data-tutorial="ht-player-hand"]');
+    expect(observedTargets).toContain(hand);
+  });
+
   it('marks selected cards with aria-pressed=true', () => {
     render(<PlayerHandSection {...baseProps} isMobile={false} selectedCardIndices={[0, 2]} />);
     const buttons = screen.getAllByRole('button');
@@ -132,7 +144,7 @@ describe('PlayerHandSection (desktop)', () => {
       <PlayerHandSection {...baseProps} humanPlayer={{ cards: makeCards(30) }} isMobile={false} />,
     );
     const hand = container.querySelector('[data-tutorial="ht-player-hand"]');
-    expect(hand).not.toHaveClass('lg:overflow-x-auto');
+    expect(hand).toHaveClass('lg:overflow-x-auto');
     expect(container.querySelectorAll('[data-hand-card-index="0"]')).toHaveLength(1);
     expect(screen.getAllByRole('button')[1].style.marginLeft).toMatch(/-/);
     rerender(<PlayerHandSection {...baseProps} isMobile={false} />);

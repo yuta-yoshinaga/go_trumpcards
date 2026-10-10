@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useWindowWidth } from '../hooks/useCardDimensions';
 import { focusRingCard, highlightCardStyle, selectedCardStyle, trumpRingStyle } from '../styles/cardStyles';
 import type { Card } from '../types/card';
 import { cardAlt } from '../utils/cardAlt';
+import { splitBalanced } from '../utils/splitBalanced';
 import { CardRoleBadge } from './CardRoleBadge';
 import { MobileHandGrid } from './MobileHandGrid';
 import { AnimatedCard } from './motion/AnimatedCard';
@@ -78,6 +79,9 @@ export interface PlayerHandSectionProps {
   cardBadgeFor?: (idx: number) => { glyph: string; title: string } | null;
 }
 
+/** Minimum visible card width in the desktop overlap layout. */
+const MIN_CARD_EXPOSURE_PX = 28;
+
 /**
  * Renders the human player's card hand with mobile/desktop layout branching.
  * On mobile, uses MobileHandGrid for a compact two-row layout.
@@ -102,16 +106,17 @@ export function PlayerHandSection({
   cardBadgeFor,
 }: PlayerHandSectionProps) {
   const viewportWidth = useWindowWidth();
-  const handRef = useRef<HTMLDivElement>(null);
-  const [containerWidth, setContainerWidth] = useState(0);
-  useEffect(() => {
-    const hand = handRef.current;
+  const observerRef = useRef<ResizeObserver | null>(null);
+  const handRef = useCallback((hand: HTMLDivElement | null) => {
+    observerRef.current?.disconnect();
+    observerRef.current = null;
     if (!hand || typeof ResizeObserver === 'undefined') return;
     const observer = new ResizeObserver(() => setContainerWidth(hand.clientWidth));
+    observerRef.current = observer;
     observer.observe(hand);
     setContainerWidth(hand.clientWidth);
-    return () => observer.disconnect();
   }, []);
+  const [containerWidth, setContainerWidth] = useState(0);
   const dataTutorial = `${dataTutorialPrefix}-player-hand`;
   const isRestricted = (idx: number): boolean => validIndices != null && !validIndices.includes(idx);
   const isHighlighted = (idx: number): boolean => highlightIndices?.includes(idx) ?? false;
@@ -143,22 +148,24 @@ export function PlayerHandSection({
   const desktop = viewportWidth >= 1024;
   const availableWidth = containerWidth;
   const buttonWidth = cardWidth + 6;
-  const maxPerRow = availableWidth > 0 ? Math.max(1, Math.floor((availableWidth - buttonWidth) / 28) + 1) : Infinity;
+  const maxPerRow =
+    availableWidth > 0 ? Math.max(1, Math.floor((availableWidth - buttonWidth) / MIN_CARD_EXPOSURE_PX) + 1) : Infinity;
   const rowCount = desktop && Number.isFinite(maxPerRow) ? Math.ceil(humanPlayer.cards.length / maxPerRow) : 1;
-  const baseRowSize = Math.floor(humanPlayer.cards.length / rowCount);
-  const largerRows = humanPlayer.cards.length % rowCount;
-  const rows = Array.from({ length: rowCount }, (_, rowIdx) => {
-    const start = rowIdx * baseRowSize + Math.min(rowIdx, largerRows);
-    const length = baseRowSize + (rowIdx < largerRows ? 1 : 0);
-    return { cards: humanPlayer.cards.slice(start, start + length), start };
-  });
+  const rows = splitBalanced(humanPlayer.cards, rowCount);
 
   return (
-    <div ref={handRef} className={`mb-2 ${desktop ? 'flex flex-col' : 'flex flex-wrap'}`} data-tutorial={dataTutorial}>
-      {rows.map(({ cards: rowCards, start }, rowIdx) => {
+    <div
+      ref={handRef}
+      className={`mb-2 ${desktop ? 'flex flex-col lg:overflow-x-auto' : 'flex flex-wrap'}`}
+      data-tutorial={dataTutorial}
+    >
+      {rows.map(({ items: rowCards, start }, rowIdx) => {
         const overlap =
           desktop && availableWidth > 0 && rowCards.length > 1 && rowCards.length * buttonWidth > availableWidth
-            ? -Math.min(buttonWidth - 28, (rowCards.length * buttonWidth - availableWidth) / (rowCards.length - 1))
+            ? -Math.min(
+                buttonWidth - MIN_CARD_EXPOSURE_PX,
+                (rowCards.length * buttonWidth - availableWidth) / (rowCards.length - 1),
+              )
             : 4;
         return (
           <div key={`hand-row-${rowIdx}`} className={`flex ${desktop ? 'flex-nowrap' : 'flex-wrap gap-1'}`}>

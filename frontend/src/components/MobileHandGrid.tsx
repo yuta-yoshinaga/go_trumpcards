@@ -9,6 +9,7 @@ import {
 } from '../styles/cardStyles';
 import type { Card } from '../types/card';
 import { cardAlt } from '../utils/cardAlt';
+import { splitBalanced } from '../utils/splitBalanced';
 import { CardImage } from './CardImage';
 import { CardRoleBadge } from './CardRoleBadge';
 
@@ -116,17 +117,11 @@ export function MobileHandGrid({
     if (!computeOverlap(largestRow, buttonWidth, viewportWidth).useScroll) break;
     rowCount += 1;
   }
-  const rows = Array.from({ length: rowCount }, (_, rowIdx) => {
-    const baseSize = Math.floor(cards.length / rowCount);
-    const largerRows = cards.length % rowCount;
-    const start = rowIdx * baseSize + Math.min(rowIdx, largerRows);
-    const length = baseSize + (rowIdx < largerRows ? 1 : 0);
-    return { cards: cards.slice(start, start + length), start };
-  });
+  const rows = splitBalanced(cards, rowCount);
 
   return (
     <div className="mb-2" data-tutorial={dataTutorial}>
-      {rows.map(({ cards: rowCards, start }, rowIdx) => {
+      {rows.map(({ items: rowCards, start }, rowIdx) => {
         const { overlap } = computeOverlap(rowCards.length, buttonWidth, viewportWidth);
 
         return (
