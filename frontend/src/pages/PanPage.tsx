@@ -381,6 +381,7 @@ function PanPageContent() {
                 {/* CPU players */}
                 <CpuAccordion
                   playerCount={state.players.filter((p) => !p.isHuman).length}
+                  openOnDesktop={false}
                   forceOpen={canLayoff && state.players.some((p) => !p.isHuman && p.laidMelds.length > 0)}
                 >
                   {state.players
