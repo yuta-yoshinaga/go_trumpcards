@@ -90,5 +90,6 @@
     "teamInfo": "The player across from you is your partner.",
     "resetButton": "Press the reset button to start a new game."
   },
-  "scoringExplanation": "Card points: trump J=20, 9=14, A=11, 10=10, K=4, Q=3; other suits A=11, 10=10, K=4, Q=3, J=2 (152 card points total). The last trick adds +{{dixDeDer}} points (10 by default). When enabled, holding both trump K and Q earns a Belote/Rebelote bonus of +20. If the maker makes the contract, each team adds its points to its total; otherwise defenders take the card points and the declaring team keeps its Belote bonus. Taking all 8 tricks earns +90."
+  "scoringExplanation": "Card points: trump J=20, 9=14, A=11, 10=10, K=4, Q=3; other suits A=11, 10=10, K=4, Q=3, J=2 (152 card points total). The last trick adds +{{dixDeDer}} points (10 by default). When enabled, holding both trump K and Q earns a Belote/Rebelote bonus of +20. If the maker makes the contract, each team adds its points to its total; otherwise defenders take the card points and the declaring team keeps its Belote bonus. Taking all 8 tricks earns +90.",
+  "rules": "Rules"
 }

@@ -6,6 +6,14 @@ import { renderWithProviders } from '../test/renderWithProviders';
 import type { CardDesign, ChineseTenCard, ChineseTenPlayer, ChineseTenResponse } from '../types/card';
 import { ChineseTenPage } from './ChineseTenPage';
 
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+  useWindowWidth: () => (mobileState.isMobile ? 375 : 1280),
+}));
+
 vi.mock('../api/gameApi', () => ({
   chinesetenApi: { exec: vi.fn() },
   actionLogApi: { chineseten: vi.fn() },
@@ -66,6 +74,7 @@ function makeState(overrides?: Partial<ChineseTenResponse>): ChineseTenResponse 
 
 describe('ChineseTenPage', () => {
   beforeEach(() => {
+    mobileState.isMobile = true;
     vi.clearAllMocks();
     mockExec.mockResolvedValue(makeState());
   });
@@ -75,11 +84,50 @@ describe('ChineseTenPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
-  it('shows the two capture rules permanently', async () => {
+  it('keeps capture rules available in a collapsed details section', async () => {
     // A-9 and 10-K capture differently, and that is what a player gets wrong.
     renderWithProviders(<ChineseTenPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
-    expect(screen.getByText(/A〜9は合計10で取る/)).toBeInTheDocument();
+    const details = screen.getByTestId('ct-rules');
+    expect(details).not.toHaveAttribute('open');
+    expect(screen.getByText(/A〜9は合計10で取る/)).not.toBeVisible();
+    fireEvent.click(within(details).getByText('ルール'));
+    expect(screen.getByText(/A〜9は合計10で取る/)).toBeVisible();
+  });
+
+  it('collapses CPU cards on mobile and opens them on desktop', async () => {
+    const { unmount } = renderWithProviders(<ChineseTenPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    const cpu = screen.getByTestId('cpu-accordion');
+    expect(cpu).not.toHaveAttribute('open');
+    expect(screen.getByRole('img', { name: 'CPU の手札 3 枚（裏向き）', hidden: true })).not.toBeVisible();
+
+    unmount();
+    mobileState.isMobile = false;
+    renderWithProviders(<ChineseTenPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
+    expect(screen.getByRole('img', { name: 'CPU の手札 3 枚（裏向き）' })).toBeVisible();
+  });
+
+  it('overlaps the desktop CPU and player hands into single rows', async () => {
+    mobileState.isMobile = false;
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [human({ cards: Array.from({ length: 8 }, (_, i) => card('SPADE', i + 1)) }), cpu({ cardCount: 12 })],
+      }),
+    );
+    renderWithProviders(<ChineseTenPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    const hiddenHand = screen.getByRole('img', { name: 'CPU の手札 12 枚（裏向き）' });
+    expect(hiddenHand.children).toHaveLength(12);
+    expect(hiddenHand.firstElementChild?.querySelector('img')).toHaveStyle({ width: '36px' });
+    expect(hiddenHand.children[1]).toHaveClass('-ml-3');
+
+    const playCards = screen.getAllByRole('button').filter((button) => button.dataset.hintAction === 'play');
+    expect(playCards).toHaveLength(8);
+    expect(playCards[1]).toHaveStyle({ marginLeft: '-78px' });
   });
 
   it('opens the action log during active play', async () => {

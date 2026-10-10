@@ -18,7 +18,7 @@ import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsLargeDesktop } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useCrazyQuiltGame } from '../hooks/useCrazyQuiltGame';
@@ -104,7 +104,9 @@ function CrazyQuiltPageContent() {
   );
   const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
+  const isLargeDesktop = useIsLargeDesktop();
   const dims = useMemo(() => {
+    if (isLargeDesktop) return { cw: 52, ch: 78, co: cardOverlap };
     if (!isMobile) return { cw: cardWidth, ch: cardHeight, co: cardOverlap };
     // The 8×8 quilt needs a vertical budget as well as a horizontal fit. Keep
     // mobile cards at the same 24px floor used by responsive solitaire tableaux.
@@ -112,7 +114,7 @@ function CrazyQuiltPageContent() {
     const ch = Math.round(cw * 1.5);
     const co = Math.round(cw * 0.32);
     return { cw, ch, co };
-  }, [isMobile, cardWidth, cardHeight, cardOverlap]);
+  }, [isMobile, isLargeDesktop, cardWidth, cardHeight, cardOverlap]);
 
   const isPlayingForKbd = state?.phase === CrazyQuiltPhase.PLAYING;
 

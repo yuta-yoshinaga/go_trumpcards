@@ -48,11 +48,13 @@
   },
   "undo": "戻す",
   "gameOverSummary": "組札 {{count}}/104 枚（{{percent}}%）まで到達",
-  "band": {
-    "top": "上の4列 — K段(降順)へのみ送れます",
-    "side": "横の4列 — どちらの段へも送れます",
-    "bottom": "下の4列 — A段(昇順)へのみ送れます"
+  "bandLabel": {
+    "top": "上段",
+    "side": "横列",
+    "bottom": "下段"
   },
+  "rulesSummary": "ルール",
+  "rulesNote": "上の4列はK段、下の4列はA段にのみ送れます。横の4列はどちらにも送れます。1回目の再配りでこの制限が解けます。",
   "restrictionsActive": "初回の配り: 上の列 ({{topCols}}) は K 段のみ、下の列 ({{bottomCols}}) は A 段のみ、横の列 ({{sideCols}}) はどちらの段へも送れます",
   "restrictionsLifted": "送り先の制限は解けています",
   "listSeparator": "、",

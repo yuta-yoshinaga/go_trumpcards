@@ -317,12 +317,25 @@ describe('JassPage', () => {
     renderWithProviders(<JassPage />);
     const panel = await screen.findByTestId('jass-weis-panel');
     expect(panel).toBeInTheDocument();
+    expect(panel).toHaveAttribute('open');
     expect(panel).toHaveTextContent('Weis（メルド）宣言');
     // Human is on team 0, so the (You) marker appears on team 0.
     expect(panel).toHaveTextContent('チーム0（あなた）');
     expect(panel).toHaveTextContent('20点');
     // Only the scoring team (team 0) gets the "獲得" marker.
     expect(screen.getAllByText('獲得')).toHaveLength(1);
+  });
+
+  it('collapses the Weis panel on mobile while keeping its summary visible', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    mockExec.mockResolvedValue(makeState({ phase: JassPhase.TRICK_END, trumpSuit: 1, roundWeisPoints: [20, 0] }));
+    renderWithProviders(<JassPage />);
+    const panel = await screen.findByTestId('jass-weis-panel');
+    expect(panel).not.toHaveAttribute('open');
+    expect(panel.querySelector('summary')).toHaveTextContent('Weis（メルド）宣言');
+    expect(panel.querySelector('section')).not.toBeVisible();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
   });
 
   it('hides the Weis panel when the feature is disabled', async () => {

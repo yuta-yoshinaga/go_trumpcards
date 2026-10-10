@@ -207,6 +207,28 @@ describe('RazzPage', () => {
     await waitFor(() => expect(screen.getByText('サードストリート')).toBeInTheDocument());
   });
 
+  it('uses compact CPU cards while keeping the human hand at the regular size', async () => {
+    mockExec.mockResolvedValue(thirdStreetState);
+    const { container } = renderWithProviders(<RazzPage />);
+    await screen.findByText('サードストリート');
+    const cpuCard = container.querySelector('[data-tutorial="razz-cpu-area"] [data-testid="animated-card"] img');
+    const humanCard = container.querySelector('[data-tutorial="razz-player-hand"] [data-testid="animated-card"] img');
+    expect(cpuCard).toHaveStyle({ width: '82px' });
+    expect(humanCard).toHaveStyle({ width: '100px' });
+  });
+
+  it('lays CPU seats out in a wrapping desktop grid while keeping mobile seats full width', async () => {
+    mockExec.mockResolvedValue(thirdStreetState);
+    const { container } = renderWithProviders(<RazzPage />);
+    await screen.findByText('サードストリート');
+
+    const seatGrid = container.querySelector('[data-tutorial="razz-cpu-area"] > div > div');
+    const seats = seatGrid?.querySelectorAll(':scope > div');
+    expect(seatGrid).toHaveClass('flex', 'flex-wrap');
+    expect(seats).toHaveLength(3);
+    expect(seats?.[0]).toHaveClass('w-full', 'sm:w-[calc(33.333%-0.34rem)]');
+  });
+
   it('shows the call amount and pot odds only when a call is required', async () => {
     mockExec.mockResolvedValue(thirdStreetWithBetState);
     renderWithProviders(<RazzPage />);

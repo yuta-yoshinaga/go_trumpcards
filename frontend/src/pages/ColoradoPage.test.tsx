@@ -7,6 +7,13 @@ import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, ColoradoResponse } from '../types/card';
 import { ColoradoPage, coloradoNextRank } from './ColoradoPage';
 
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return { ...actual, useIsMobile: () => mobileState.isMobile };
+});
+
 /**
  * This page's own hint region.
  *
@@ -75,6 +82,7 @@ describe('ColoradoPage', () => {
     vi.clearAllMocks();
     localStorage.clear();
     mockExec.mockResolvedValue(makeState());
+    mobileState.isMobile = true;
   });
 
   it('resets on mount', async () => {
@@ -197,6 +205,16 @@ describe('ColoradoPage', () => {
     // The empty piles still show their opening rank, one per direction.
     expect(screen.getByTestId('co-foundation-next-1')).toHaveTextContent('A');
     expect(screen.getByTestId('co-foundation-next-5')).toHaveTextContent('K');
+  });
+
+  it('fits all foundations in one row with compact cards on mobile', async () => {
+    renderWithProviders(<ColoradoPage />);
+    const foundations = (await screen.findByTestId('co-foundation-0')).closest('[data-tutorial="co-foundations"]');
+    expect(foundations).toHaveClass('flex-nowrap');
+    expect(foundations?.children).toHaveLength(8);
+    const cardBox = screen.getByTestId('co-foundation-0').querySelector('.relative');
+    expect(cardBox).toHaveStyle({ width: '32px', height: '48px' });
+    expect(screen.getByTestId('co-tableau-0').querySelector('img')).toHaveStyle({ width: '32px' });
   });
 
   it('renders every tableau pile', async () => {

@@ -21,12 +21,16 @@ test.describe('Honeymoon Bridge E2E', () => {
   // **前半のトリックは得点にならない。** 読めないと打ち方を間違える。
   test('says the first half does not score, and shows the stock', async ({ page }) => {
     await navigateTo(page, '/honeymoonbridge');
+    await page.locator('[data-tutorial="hb-rule"] > summary').click();
     await expect(page.getByTestId('hb-rule')).toContainText(/得点|score/, { timeout: TIMEOUT_TRANSITION });
     await expect(page.getByTestId('hb-stock')).toContainText('26', { timeout: TIMEOUT_TRANSITION });
   });
 
   test('labels both seats', async ({ page }) => {
     await navigateTo(page, '/honeymoonbridge');
+    // Open on desktop already; only expand it where it starts closed (phones).
+    const cpuAccordion = page.getByTestId('cpu-accordion');
+    if ((await cpuAccordion.getAttribute('open')) === null) await cpuAccordion.locator('summary').click();
     for (const id of [0, 1]) {
       await expect(page.getByTestId(`hb-seat-${id}`)).toBeVisible({ timeout: TIMEOUT_TRANSITION });
     }

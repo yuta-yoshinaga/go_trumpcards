@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { killeApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -15,7 +16,7 @@ import { KbdBadge } from '../components/KbdBadge';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -113,6 +114,7 @@ export const KillePage = withTutorial(KillePageContent, 'kille', KILLE_TUTORIAL_
 
 /** Inner content of the Kille page, wrapped by TutorialProvider. */
 function KillePageContent() {
+  const isMobile = useIsMobile();
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('kille');
   const { state, loading, error, exec, retry } = useGameApi(killeApi.exec);
@@ -251,32 +253,64 @@ function KillePageContent() {
               <span>{t('stock', { count: state.stockCount })}</span>
             </div>
 
-            {/* The one rule that reliably surprises people. */}
-            <div className="mb-2 text-center text-ds-text-muted text-xs" data-testid="kille-rules-note">
-              {t('rulesNote')}
-            </div>
+            <details
+              className="mb-2 text-center text-ds-text-muted text-xs"
+              data-testid="kille-rules"
+              open={!isMobile || undefined}
+            >
+              <summary className="cursor-pointer select-none text-ds-text-primary">{t('rulesLabel')}</summary>
+              <div className="pt-1" data-testid="kille-rules-note">
+                {t('rulesNote')}
+              </div>
+            </details>
 
             {/* Players */}
             <div className="mb-2 p-2 rounded bg-black/30" data-tutorial="kille-players">
               <div className="mb-1 text-ds-text-primary text-sm">{t('playersTitle')}</div>
-              {state.players.map((p) => (
-                <div
-                  key={`player-${p.id}`}
-                  data-testid="kille-player"
-                  className={`text-sm py-0.5 flex items-center gap-2 ${
-                    p.isCurrentTurn && !isGameEnd ? 'text-ds-warning' : 'text-ds-text-muted'
-                  } ${p.isHuman ? 'font-semibold' : ''} ${p.isFinished ? 'opacity-50' : ''}`}
-                >
-                  <span>{playerLabel(p.id, p.isHuman)}</span>
-                  {p.id === state.dealerIdx && <span className="text-ds-accent">[{t('dealer')}]</span>}
-                  <span>{t('chips', { n: p.chips })}</span>
-                  <span>{t('reentriesRemaining', { count: KILLE_MAX_REENTRIES - p.reentries })}</span>
-                  {p.isSatisfied && !p.isOut && <span className="text-ds-success">[{t('satisfied')}]</span>}
-                  {p.isOut && <span className="text-ds-error-text">[{outReason(p)}]</span>}
-                  {p.isFinished && <span>({t('eliminated')})</span>}
-                  {!p.isHuman && p.card && <CardImage card={p.card} width={cardWidth} />}
+              {state.players
+                .filter((p) => p.isHuman)
+                .map((p) => (
+                  <div
+                    key={`player-${p.id}`}
+                    data-testid="kille-player"
+                    className={`text-sm py-0.5 flex items-center gap-2 ${
+                      p.isCurrentTurn && !isGameEnd ? 'text-ds-warning' : 'text-ds-text-muted'
+                    } ${p.isHuman ? 'font-semibold' : ''} ${p.isFinished ? 'opacity-50' : ''}`}
+                  >
+                    <span>{playerLabel(p.id, p.isHuman)}</span>
+                    {p.id === state.dealerIdx && <span className="text-ds-accent">[{t('dealer')}]</span>}
+                    <span>{t('chips', { n: p.chips })}</span>
+                    <span>{t('reentriesRemaining', { count: KILLE_MAX_REENTRIES - p.reentries })}</span>
+                    {p.isSatisfied && !p.isOut && <span className="text-ds-success">[{t('satisfied')}]</span>}
+                    {p.isOut && <span className="text-ds-error-text">[{outReason(p)}]</span>}
+                    {p.isFinished && <span>({t('eliminated')})</span>}
+                    {!p.isHuman && p.card && <CardImage card={p.card} width={cardWidth} />}
+                  </div>
+                ))}
+              <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+                <div className="flex flex-wrap gap-x-3">
+                  {state.players
+                    .filter((p) => !p.isHuman)
+                    .map((p) => (
+                      <div
+                        key={`player-${p.id}`}
+                        data-testid="kille-player"
+                        className={`text-sm py-0.5 flex flex-wrap items-center gap-2 ${
+                          p.isCurrentTurn && !isGameEnd ? 'text-ds-warning' : 'text-ds-text-muted'
+                        } ${p.isFinished ? 'opacity-50' : ''}`}
+                      >
+                        <span>{playerLabel(p.id, false)}</span>
+                        {p.id === state.dealerIdx && <span className="text-ds-accent">[{t('dealer')}]</span>}
+                        <span>{t('chips', { n: p.chips })}</span>
+                        <span>{t('reentriesRemaining', { count: KILLE_MAX_REENTRIES - p.reentries })}</span>
+                        {p.isSatisfied && !p.isOut && <span className="text-ds-success">[{t('satisfied')}]</span>}
+                        {p.isOut && <span className="text-ds-error-text">[{outReason(p)}]</span>}
+                        {p.isFinished && <span>({t('eliminated')})</span>}
+                        {p.card && <CardImage card={p.card} width={cardWidth} />}
+                      </div>
+                    ))}
                 </div>
-              ))}
+              </CpuAccordion>
             </div>
 
             {/* Exchanges this round. The region is mounted unconditionally and only
@@ -336,26 +370,33 @@ function KillePageContent() {
             </div>
 
             {/* The pack, for reference: a single suit means denomination is everything. */}
-            <div className="mb-2 p-2 rounded bg-black/20 text-xs" data-testid="kille-ladder">
-              <div className="mb-1 text-ds-text-primary">{t('deckTitle')}</div>
-              <div className="flex flex-wrap gap-x-2 gap-y-1">
-                {KILLE_LADDER.map((r) => (
-                  <span key={r.key} className={r.color}>
-                    {t(`cards.${r.key}`)}
-                  </span>
-                ))}
+            <details
+              className="mb-2 p-2 rounded bg-black/20 text-xs"
+              data-testid="kille-ladder"
+              open={!isMobile || undefined}
+            >
+              <summary className="cursor-pointer select-none text-ds-text-primary">{t('deckLabel')}</summary>
+              <div className="pt-1">
+                <div className="mb-1 text-ds-text-primary">{t('deckTitle')}</div>
+                <div className="flex flex-wrap gap-x-2 gap-y-1">
+                  {KILLE_LADDER.map((r) => (
+                    <span key={r.key} className={r.color}>
+                      {t(`cards.${r.key}`)}
+                    </span>
+                  ))}
+                </div>
+                <div className="mt-1 text-ds-text-muted">{t('deckNote')}</div>
+                <div className="mt-2 grid gap-1" data-testid="kille-effect-legend">
+                  <div className="text-ds-text-primary">{t('effectLegendTitle')}</div>
+                  {KILLE_EFFECTS.map((effect) => (
+                    <div key={effect.nameKey}>
+                      <span aria-hidden="true">{effect.glyph}</span>{' '}
+                      <span className="font-semibold">{t(effect.nameKey)}</span>: {t(effect.descriptionKey)}
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div className="mt-1 text-ds-text-muted">{t('deckNote')}</div>
-              <div className="mt-2 grid gap-1" data-testid="kille-effect-legend">
-                <div className="text-ds-text-primary">{t('effectLegendTitle')}</div>
-                {KILLE_EFFECTS.map((effect) => (
-                  <div key={effect.nameKey}>
-                    <span aria-hidden="true">{effect.glyph}</span>{' '}
-                    <span className="font-semibold">{t(effect.nameKey)}</span>: {t(effect.descriptionKey)}
-                  </div>
-                ))}
-              </div>
-            </div>
+            </details>
 
             <GameMessageBox
               message={state.message}

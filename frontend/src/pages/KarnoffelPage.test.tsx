@@ -94,6 +94,20 @@ describe('KarnoffelPage', () => {
     expect(screen.getByTestId('karnoffel-settings-summary')).toHaveTextContent('設定');
     expect(settings).not.toHaveAttribute('open');
     expect(screen.getByLabelText('目標局数')).not.toBeVisible();
+    const cpuAccordion = screen.getByTestId('cpu-accordion');
+    expect(cpuAccordion).not.toHaveAttribute('open');
+    const players = screen.getAllByTestId('karnoffel-player');
+    expect(players).toHaveLength(4);
+    const humanPlayer = screen.getByTestId('karnoffel-human-player');
+    expect(screen.getByText('プレイヤー', { exact: true })).toBeVisible();
+    expect(screen.getByTestId('karnoffel-players')).toContainElement(humanPlayer);
+    expect(humanPlayer).toContainElement(players[0]);
+    expect(cpuAccordion).not.toContainElement(players[0]);
+    expect(players[0]).toBeVisible();
+    for (const player of players.slice(1)) {
+      expect(cpuAccordion).toContainElement(player);
+      expect(player).not.toBeVisible();
+    }
 
     unmount();
     mobileState.isMobile = false;
@@ -102,6 +116,12 @@ describe('KarnoffelPage', () => {
     for (const detail of document.querySelectorAll('details')) expect(detail).toHaveAttribute('open');
     expect(screen.getByTestId('karnoffel-ladder')).toBeVisible();
     expect(screen.getByText('設定', { exact: true }).closest('details')).toHaveAttribute('open');
+    expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
+    for (const player of screen.getAllByTestId('karnoffel-player')) expect(player).toBeVisible();
+    const desktopAccordion = screen.getByTestId('cpu-accordion');
+    expect(
+      screen.getAllByTestId('karnoffel-player').filter((player) => desktopAccordion.contains(player)),
+    ).toHaveLength(3);
   });
 
   it('resets on mount', async () => {
