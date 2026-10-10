@@ -20,7 +20,7 @@ export function PhaseIndicator({ phaseName, isHumanTurn, children }: PhaseIndica
 
   return (
     <div
-      className="shrink-0 glass-panel text-ds-text-primary text-sm px-5 py-2 flex flex-wrap gap-x-6 gap-y-1 items-center tabular-nums"
+      className="shrink-0 glass-panel text-ds-text-primary text-sm px-3 sm:px-5 py-2 flex flex-wrap gap-x-2 sm:gap-x-6 gap-y-1 items-center tabular-nums"
       data-testid="phase-indicator"
     >
       <span>

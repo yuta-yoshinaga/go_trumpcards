@@ -129,6 +129,20 @@ describe('GamePageShell', () => {
     expect(screen.getByRole('button', { name: 'manual-/hearts' })).toBeInTheDocument();
   });
 
+  it('groups the shared header buttons at the right edge of the phase indicator', () => {
+    render(
+      <GamePageShell {...baseProps}>
+        <div />
+      </GamePageShell>,
+    );
+    const tutorial = screen.getByText('チュートリアル');
+    const manual = screen.getByRole('button', { name: 'manual-/hearts' });
+    const buttonGroup = tutorial.parentElement;
+    expect(buttonGroup).toBe(manual.parentElement);
+    expect(buttonGroup).toHaveClass('ml-auto', 'sm:ml-0', 'flex', 'shrink-0');
+    expect(screen.getByTestId('phase-indicator')).toContainElement(buttonGroup);
+  });
+
   it('does not show WinCelebration when gameEndFlag is false', () => {
     render(
       <GamePageShell {...baseProps} gameEndFlag={false}>

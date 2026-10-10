@@ -13,6 +13,19 @@ import { navigateTo } from './helpers';
  */
 test.use({ viewport: { width: 375, height: 667 } });
 
+// The shared header chrome (phase, turn pill, CLI, ?, 📖) fits one 375px row
+// (#11612). Pages whose own headerExtra adds chips or long labels may still wrap,
+// so these are pages with only the shared chrome.
+for (const path of ['/tapptarock', '/hearts', '/solowhist']) {
+  test(`${path} keeps the phase indicator to one mobile row`, async ({ page }) => {
+    await navigateTo(page, path);
+    const height = await page
+      .locator('[data-testid="phase-indicator"]')
+      .evaluate((element) => Math.round(element.getBoundingClientRect().height));
+    expect(height, `${path} phase indicator is ${height}px tall`).toBeLessThanOrEqual(70);
+  });
+}
+
 // A spread of layout shapes rather than a long list: the two tallest footers
 // (watten 558px, spades 511px before the cap), a trick-taking page that used to
 // fit at exactly 667, a deep tableau, a page with tall CPU meld display, a

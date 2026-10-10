@@ -3,6 +3,11 @@ import { describe, expect, it } from 'vitest';
 import { PhaseIndicator } from './PhaseIndicator';
 
 describe('PhaseIndicator', () => {
+  it('uses compact horizontal padding on mobile', () => {
+    render(<PhaseIndicator phaseName="プリフロップ" />);
+    expect(screen.getByTestId('phase-indicator')).toHaveClass('px-3', 'sm:px-5');
+  });
+
   it('renders phase name', () => {
     render(<PhaseIndicator phaseName="プリフロップ" />);
     expect(screen.getByText('プリフロップ')).toBeInTheDocument();

@@ -5,7 +5,10 @@ import { CliToggle } from './CliToggle';
 describe('CliToggle', () => {
   it('shows CLI label (destination) when in GUI mode', () => {
     render(<CliToggle cliEnabled={false} onToggle={vi.fn()} />);
-    expect(screen.getByText('CLI')).toBeInTheDocument();
+    const label = screen.getByText('CLI');
+    expect(label).toBeInTheDocument();
+    expect(label).toHaveClass('hidden', 'sm:inline');
+    expect(screen.getByRole('button', { name: 'CLIモードに切り替え' })).toBeInTheDocument();
   });
 
   it('shows GUI label (destination) when in CLI mode', () => {
