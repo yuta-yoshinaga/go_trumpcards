@@ -11,7 +11,6 @@ const files = roots.flatMap((root) => walk(join(SRC, root))).filter((file) => !/
 const translations = Object.fromEntries(
   ['ja', 'en'].map((lang) => [lang, JSON.parse(readFileSync(join(LOCALES, lang, 'common.json'), 'utf8'))]),
 );
-const allowlist = new Map();
 
 function walk(dir) {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
@@ -28,15 +27,19 @@ function hasKey(tree, key) {
   );
 }
 
-assertFloor('common-translation-keys', files.length, 100, 'page and component source files scanned');
+if (!process.argv[2])
+  assertFloor('common-translation-keys', files.length, 100, 'page and component source files scanned');
 const problems = [];
 for (const file of files) {
   const source = readFileSync(file, 'utf8');
-  const pattern = /\btc\(\s*(['"])([^'"\n]+)\1\s*\)/g;
+  // Dynamic keys (including template literals with ${...}) are intentionally outside this static guard.
+  const pattern = /\btc\(\s*(['"`])([^'"`$\n]+)\1\s*(?:,\s*([^)]*))?\)/g;
   for (const match of source.matchAll(pattern)) {
+    // An explicit namespace means this is not a key in the common namespace being guarded.
+    if (/\bns\s*:\s*(['"])(?!common\1)[^'"]+\1/.test(match[3] ?? '')) continue;
     const key = match[2];
     for (const lang of ['ja', 'en']) {
-      if (!hasKey(translations[lang], key) && !allowlist.has(`${relative(SRC, file)}:${key}`)) {
+      if (!hasKey(translations[lang], key)) {
         problems.push(`${relative(SRC, file)}: tc('${key}') missing from ${lang}/common.json`);
       }
     }
