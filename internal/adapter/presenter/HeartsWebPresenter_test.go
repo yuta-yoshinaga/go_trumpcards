@@ -353,7 +353,11 @@ func TestHeartsWebPresenter_Output(t *testing.T) {
 		for _, tc := range []struct {
 			direction domain.HeartsPassDirection
 			code      string
-		}{{domain.HeartsPassLeft, "hearts.passPhase.left"}, {domain.HeartsPassRight, "hearts.passPhase.right"}, {domain.HeartsPassAcross, "hearts.passPhase.across"}} {
+		}{
+			{domain.HeartsPassLeft, "hearts.passPhase.left"},
+			{domain.HeartsPassRight, "hearts.passPhase.right"},
+			{domain.HeartsPassAcross, "hearts.passPhase.across"},
+		} {
 			t.Run(tc.code, func(t *testing.T) {
 				m, _ := setupHeartsWebMockWithPlayers()
 				m.ExpectedCalls = removeWebMockCall(m.ExpectedCalls, "GetPhase")

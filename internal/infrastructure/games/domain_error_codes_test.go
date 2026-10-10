@@ -65,6 +65,11 @@ func TestDomainErrorCodesResolveInGoLocales(t *testing.T) {
 	}
 }
 
+// TestNilMessageCodeParamsHaveNoFrontendTemplatePlaceholders catches a code emitted
+// as `return "", "<code>", nil` whose web template still interpolates `{{...}}`
+// (#11615: hearts.passPhase rendered a literal "{{count}}"). It only sees string-
+// literal codes returned with a literal nil, and only checks common.json's
+// messageCode map; a code missing from that map is not reported here.
 func TestNilMessageCodeParamsHaveNoFrontendTemplatePlaceholders(t *testing.T) {
 	codes := collectNilMessageCodeParams(t)
 	if len(codes) == 0 {
