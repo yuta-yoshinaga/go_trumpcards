@@ -31,6 +31,8 @@
     "b": "Team B"
   },
   "teamScore": "{{team}}: {{score}} / target {{target}} pts",
+  "teamScores": "A {{a}} / B {{b}} / target {{target}} pts",
+  "referenceInfo": { "title": "Scoring and declarations" },
   "scoringReference": {
     "title": "Card scoring reference",
     "ace": "A: 11 points",

@@ -17,12 +17,14 @@ test.describe('Reversis E2E', () => {
     await navigateTo(page, '/reversis');
     // 開始時のプールは全員のアンティ 5×4。
     await expect(page.getByTestId('rv-pool')).toContainText('20', { timeout: TIMEOUT_TRANSITION });
+    await page.getByTestId('rv-rules').locator('summary').click();
     await expect(page.getByTestId('rv-penalty-rule')).toContainText(/A=4/, { timeout: TIMEOUT_TRANSITION });
   });
 
   // 4 席すべてが表示され、開始時は全員「無傷」。
   test('shows all four seats, all clean at the start', async ({ page }) => {
     await navigateTo(page, '/reversis');
+    await page.getByTestId('cpu-accordion').locator('summary').click();
     for (const id of [0, 1, 2, 3]) {
       await expect(page.getByTestId(`rv-seat-${id}`)).toContainText(/無傷|clean/, { timeout: TIMEOUT_TRANSITION });
     }

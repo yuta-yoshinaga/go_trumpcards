@@ -15,6 +15,7 @@
   "trick": "Trick",
   "trickCardLabel": "{{card}} ({{name}})",
   "tricksWon": "Tricks {{n}}",
+  "rules": "Rules",
   "progress": {
     "line": "Declarer side: {{won}} / {{needed}} tricks"
   },

@@ -54,6 +54,7 @@
   "shedArea": "Table",
   "shedEmpty": "Nothing down yet - you may start with anything.",
   "penaltyLegend": "Penalty points (fewest wins)",
+  "scoreSummary": "Scores",
   "penalty": "{{n}} pts",
   "dealPoints": "{{n}} pts",
   "history": {

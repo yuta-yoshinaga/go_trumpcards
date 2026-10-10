@@ -5,6 +5,22 @@ import { renderWithProviders } from '../test/renderWithProviders';
 import { makeTwentyNineState } from '../test/stateFactories';
 import { TwentyNinePage } from './TwentyNinePage';
 
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+  useCardDimensions: () => ({
+    cardHeight: 60,
+    cardOverlap: 20,
+    cardWidth: 40,
+    cpuCardWidth: 34,
+    footerCardWidth: 36,
+    solitaireMinColWidth: 52,
+    isMobile: mobileState.isMobile,
+  }),
+}));
+
 vi.mock('../api/gameApi', () => ({
   twentyNineApi: { exec: vi.fn() },
   actionLogApi: { twentynine: vi.fn() },
@@ -61,11 +77,44 @@ const gameEndState = makeTwentyNineState({
 });
 
 beforeEach(() => {
+  mobileState.isMobile = true;
   mockExec.mockReset();
   mockExec.mockResolvedValue(bidPhaseState);
 });
 
 describe('TwentyNinePage', () => {
+  it('collapses CPU details and bid history on mobile', async () => {
+    mobileState.isMobile = true;
+    renderWithProviders(<TwentyNinePage />);
+
+    const cpuAccordion = await screen.findByTestId('cpu-accordion');
+    const humanSeat = screen.getByTestId('tn29-human-seat');
+    const bidHistory = screen.getByTestId('tn29-bid-history');
+    expect(humanSeat.parentElement).not.toBe(cpuAccordion);
+    expect(humanSeat).toBeVisible();
+    expect(humanSeat).toHaveAttribute('data-tutorial', 'twentynine-human-seat');
+    expect(humanSeat).toHaveAttribute('aria-label');
+    expect(cpuAccordion).not.toHaveAttribute('open');
+    expect(cpuAccordion).toContainElement(screen.getByText('CPU 1: 8枚 | 0トリック'));
+    expect(screen.getByText('CPU 1: 8枚 | 0トリック')).not.toBeVisible();
+    expect(bidHistory).not.toHaveAttribute('open');
+    expect(screen.queryByText(/席1 CPU 1/)).not.toBeVisible();
+    expect(screen.getByText('カードの強さと点数').closest('details')).not.toHaveAttribute('open');
+    for (const order of screen.getAllByText('強さ順: J > 9 > A > 10 > K > Q > 8 > 7')) {
+      expect(order).not.toBeVisible();
+    }
+  });
+
+  it('expands CPU details and bid history on desktop', async () => {
+    mobileState.isMobile = false;
+    renderWithProviders(<TwentyNinePage />);
+
+    expect(await screen.findByText('CPU 1: 8枚 | 0トリック')).toBeVisible();
+    expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
+    expect(screen.getByTestId('tn29-bid-history')).toHaveAttribute('open');
+    expect(screen.getByText(/席1 CPU 1/)).toBeVisible();
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<TwentyNinePage />);

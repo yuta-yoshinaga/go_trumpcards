@@ -34,6 +34,7 @@
   "currentTrick": "Current trick",
   "previousTrickWinner": "Won by {{name}}",
   "players": "Players",
+  "rules": "Rules",
   "you": "You",
   "cpu": "CPU {{id}}",
   "dealerBadge": "Dealer",

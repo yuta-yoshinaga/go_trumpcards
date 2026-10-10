@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import type { tuteApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -238,121 +239,92 @@ function TutePageContent() {
               {/* Right: info sidebar */}
               <div data-tutorial="tute-info">
                 {/* Team scores */}
-                <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-                  <div>
-                    {t('teamScore', {
-                      team: t('team.a'),
-                      score: state.teamScores[0],
-                      target: state.config.targetPoints,
-                    })}
-                  </div>
-                  <div>
-                    {t('teamScore', {
-                      team: t('team.b'),
-                      score: state.teamScores[1],
-                      target: state.config.targetPoints,
-                    })}
-                  </div>
-                  <div className="mt-1">
-                    {t('yourTeam')}: {humanTeam === 0 ? t('team.a') : t('team.b')}
-                  </div>
+                <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-xs whitespace-nowrap">
+                  {t('teamScores', {
+                    a: state.teamScores[0],
+                    b: state.teamScores[1],
+                    target: state.config.targetPoints,
+                  })}
                 </div>
 
-                <details className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
+                <details
+                  open={!isMobile || undefined}
+                  className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                  data-testid="tute-reference-info"
+                >
                   <summary className="cursor-pointer select-none min-h-[44px] flex items-center text-ds-text-primary">
-                    {t('scoringReference.title')}
+                    {t('referenceInfo.title')}
                   </summary>
                   <div className="mt-1">
+                    <div className="text-ds-text-primary">{t('scoringReference.title')}</div>
                     <div>{t('scoringReference.ace')}</div>
                     <div>{t('scoringReference.three')}</div>
                     <div>{t('scoringReference.king')}</div>
                     <div>{t('scoringReference.queen')}</div>
                     <div>{t('scoringReference.jack')}</div>
                     <div className="mt-1">{t('scoringReference.lastTrick')}</div>
-                  </div>
-                </details>
-
-                {/* Declared marriage suits (persistent readout of state.declaredSuits) */}
-                <div
-                  className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
-                  data-testid="tute-declared-marriages"
-                >
-                  <div className="mb-1 text-ds-text-primary">{t('declaredMarriages.title')}</div>
-                  {([1, 2, 3, 4] as const).map((suit) => {
-                    const declared = state.declaredSuits[suit] ?? false;
-                    return (
-                      <div key={suit} className="py-0.5">
-                        <span className="mr-1">{suitSymbolAt(suit, '')}</span>
-                        {suit === state.trumpSuit && <span className="mr-1 text-ds-warning">★</span>}
-                        <span className={declared ? 'text-ds-text-primary' : ''}>
-                          {declared ? t('declaredMarriages.declared') : t('declaredMarriages.undeclared')}
-                        </span>
+                    <div data-testid="tute-declared-marriages">
+                      <div className="mt-2 text-ds-text-primary">{t('declaredMarriages.title')}</div>
+                      <div className="mt-2">
+                        {([1, 2, 3, 4] as const).map((suit) => {
+                          const declared = state.declaredSuits[suit] ?? false;
+                          return (
+                            <span key={suit} className="mr-3">
+                              <span className="mr-1">{suitSymbolAt(suit, '')}</span>
+                              {suit === state.trumpSuit && <span className="mr-1 text-ds-warning">★</span>}
+                              <span className={declared ? 'text-ds-text-primary' : ''}>
+                                {declared ? t('declaredMarriages.declared') : t('declaredMarriages.undeclared')}
+                              </span>
+                            </span>
+                          );
+                        })}
                       </div>
-                    );
-                  })}
-                  <div className="mt-1 text-xs">{t('declaredMarriages.trumpNote')}</div>
-                </div>
-
-                {/* Players: cards / tricks */}
-                {isMobile ? (
-                  <details className="mb-2 p-2 rounded bg-black/30">
-                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('players')}</summary>
-                    <div className="mt-1">
-                      {state.players.map((p) => (
-                        <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                          {t('playerTeam', {
-                            name: playerName(p.id, p.isHuman),
-                            team: teamLabels[p.teamId],
-                          })}
-                          : {t('cards', { count: p.cardCount })} | {t('tricks', { count: p.trickCount })}
-                        </div>
-                      ))}
+                      <div className="mt-1 text-xs">{t('declaredMarriages.trumpNote')}</div>
                     </div>
-                  </details>
-                ) : (
-                  <div className="mb-2 p-2 rounded bg-black/30">
-                    {state.players.map((p) => (
-                      <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
+                    {humanPlayer && (
+                      <div className="mt-2" data-testid="tute-human-info">
                         {t('playerTeam', {
-                          name: playerName(p.id, p.isHuman),
-                          team: teamLabels[p.teamId],
+                          name: playerName(humanPlayer.id, true),
+                          team: teamLabels[humanPlayer.teamId],
                         })}
-                        : {t('cards', { count: p.cardCount })} | {t('tricks', { count: p.trickCount })}
+                        : {t('cards', { count: humanPlayer.cardCount })} |{' '}
+                        {t('tricks', { count: humanPlayer.trickCount })}
                       </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* A marriage scores the moment it is declared, and the button even
-                    announces how much — but the total only appeared at round end,
-                    so the player could not see it land (#4722). */}
-                {(isPlayPhase || isTrickEnd) && (
-                  <div
-                    className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
-                    data-testid="tute-running-points"
-                    role="status"
-                    aria-live="polite"
-                  >
-                    <div className="mb-1 text-ds-text-primary">{t('roundResult.runningTitle')}</div>
-                    {teamPointLines}
-                  </div>
-                )}
-
-                {/* Round result */}
-                {(isRoundEnd || isGameEnd) && (
-                  <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-                    <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
-                    {teamPointLines}
-                    {state.lastTrickBonusTeam >= 0 && (
-                      <div data-testid="tute-last-trick-bonus">
-                        {t('roundResult.lastTrickBonus', {
-                          team: state.lastTrickBonusTeam === 0 ? t('team.a') : t('team.b'),
-                          points: state.lastTrickBonusPoints,
-                        })}
+                    )}
+                    {(isPlayPhase || isTrickEnd) && (
+                      <div className="mt-2" data-testid="tute-running-points" role="status" aria-live="polite">
+                        <div className="text-ds-text-primary">{t('roundResult.runningTitle')}</div>
+                        {teamPointLines}
+                      </div>
+                    )}
+                    {(isRoundEnd || isGameEnd) && (
+                      <div className="mt-2">
+                        <div className="text-ds-text-primary">{t('roundResult.title')}</div>
+                        {teamPointLines}
+                        {state.lastTrickBonusTeam >= 0 && (
+                          <div data-testid="tute-last-trick-bonus">
+                            {t('roundResult.lastTrickBonus', {
+                              team: state.lastTrickBonusTeam === 0 ? t('team.a') : t('team.b'),
+                              points: state.lastTrickBonusPoints,
+                            })}
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
-                )}
+                </details>
+                <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+                  <div className="flex flex-wrap gap-x-3">
+                    {state.players
+                      .filter((p) => !p.isHuman)
+                      .map((p) => (
+                        <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
+                          {t('playerTeam', { name: playerName(p.id, false), team: teamLabels[p.teamId] })}:{' '}
+                          {t('cards', { count: p.cardCount })} | {t('tricks', { count: p.trickCount })}
+                        </div>
+                      ))}
+                  </div>
+                </CpuAccordion>
               </div>
             </div>
 
