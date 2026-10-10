@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { crazyfourpokerApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
@@ -126,6 +126,7 @@ describe('CrazyFourPokerPage', () => {
     mockApi.mockResolvedValue(base);
     renderWithProviders(<CrazyFourPokerPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '配る' })).toBeInTheDocument());
+    expect(within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '配る' })).toBeInTheDocument();
   });
 
   it('賭け入力に応じて必須分と任意分の投入合計を更新する', async () => {

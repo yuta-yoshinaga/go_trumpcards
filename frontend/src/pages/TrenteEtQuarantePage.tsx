@@ -297,27 +297,72 @@ function TrenteEtQuarantePageContent() {
             {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
           </div>
 
-          <GameFooter className={`${gameTheme.trenteetquarante.footer} px-4 pt-3`}>
-            <ErrorAlert message={error} onRetry={retry} />
-            <SettingsPanel
-              title={tc('settings.title')}
-              groups={[
-                {
-                  items: [
-                    {
-                      type: 'select' as const,
-                      id: 'defaultBet',
-                      label: t('settings.defaultBet'),
-                      value: String(config.defaultBet),
-                      options: BET_OPTIONS.map((opt) => ({ value: String(opt.type), label: t(opt.labelKey) })),
-                      onSelect: (v: string) => handleConfigChange('defaultBet', v),
-                    },
-                  ],
-                },
-              ]}
-            />
+          <GameFooter
+            className={`${gameTheme.trenteetquarante.footer} px-4 pt-3`}
+            actions={
+              isBetPhase || isResultPhase ? (
+                <>
+                  {isBetPhase && (
+                    <div className="flex flex-col items-center gap-3 pb-2" data-tutorial="teq-bet-controls">
+                      <ChipBetInput
+                        id="trenteetquarante-bet-amount"
+                        label={t('label.stake')}
+                        value={betAmount}
+                        onChange={setBetAmount}
+                        max={state.chips}
+                      />
+                      {canRebet && lastBet !== null && lastBet.stake !== betAmount && (
+                        <button
+                          type="button"
+                          className={btnSecondary}
+                          onClick={() => setBetAmount(lastBet.stake)}
+                          disabled={loading}
+                          data-testid="teq-previous-bet"
+                        >
+                          {t('previousBet', { amount: lastBet.stake })}
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={handleBet}
+                        disabled={loading || betAmount <= 0 || betAmount > state.chips}
+                        data-testid="teq-deal-button"
+                      >
+                        {t('button.deal')}
+                      </button>
+                    </div>
+                  )}
+                  {isResultPhase && (
+                    <div className="flex justify-center gap-2 pb-2" data-tutorial="teq-action-buttons">
+                      {canRebet && (
+                        <button
+                          type="button"
+                          className={btnSecondary}
+                          onClick={handleRebet}
+                          disabled={loading}
+                          data-testid="teq-rebet-button"
+                        >
+                          {t('button.rebet', { amount: lastBet?.stake })}
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={handleNextRound}
+                        disabled={loading}
+                        data-testid="teq-next-round-button"
+                      >
+                        {t('button.nextRound')}
+                      </button>
+                    </div>
+                  )}
+                </>
+              ) : null
+            }
+          >
             {isBetPhase && (
-              <div className="flex flex-col items-center gap-3 pb-2" data-tutorial="teq-bet-controls">
+              <div data-tutorial="teq-bet-controls">
                 {/* biome-ignore lint/a11y/useSemanticElements: a flex row of bet buttons; fieldset would break the layout */}
                 <div
                   className="flex flex-wrap justify-center items-start gap-2"
@@ -337,11 +382,9 @@ function TrenteEtQuarantePageContent() {
                           disabled={loading}
                           data-testid={`teq-bet-${opt.type}`}
                         >
-                          {/* Shape cue for the current choice, in addition to the colour. */}
                           {selected && <span aria-hidden="true">✓ </span>}
                           {t(opt.labelKey)}
                         </button>
-                        {/* Couleur/Inverse are opaque on sight — keep the meaning always visible. */}
                         <span className="mt-0.5 text-[10px] leading-tight text-ds-text-muted text-center">
                           {t(opt.descKey)}
                         </span>
@@ -349,63 +392,32 @@ function TrenteEtQuarantePageContent() {
                     );
                   })}
                 </div>
-                <ChipBetInput
-                  id="trenteetquarante-bet-amount"
-                  label={t('label.stake')}
-                  value={betAmount}
-                  onChange={setBetAmount}
-                  max={state.chips}
-                />
-                {canRebet && lastBet !== null && lastBet.stake !== betAmount && (
-                  <button
-                    type="button"
-                    className={btnSecondary}
-                    onClick={() => setBetAmount(lastBet.stake)}
-                    disabled={loading}
-                    data-testid="teq-previous-bet"
-                  >
-                    {t('previousBet', { amount: lastBet.stake })}
-                  </button>
-                )}
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handleBet}
-                  disabled={loading || betAmount <= 0 || betAmount > state.chips}
-                  data-testid="teq-deal-button"
-                >
-                  {t('button.deal')}
-                </button>
               </div>
             )}
-            {isResultPhase && (
-              <div className="flex justify-center gap-2 pb-2" data-tutorial="teq-action-buttons">
-                {canRebet && (
-                  <button
-                    type="button"
-                    className={btnSecondary}
-                    onClick={handleRebet}
-                    disabled={loading}
-                    data-testid="teq-rebet-button"
-                  >
-                    {t('button.rebet', { amount: lastBet?.stake })}
-                  </button>
-                )}
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handleNextRound}
-                  disabled={loading}
-                  data-testid="teq-next-round-button"
-                >
-                  {t('button.nextRound')}
-                </button>
+            <ErrorAlert message={error} onRetry={retry} />
+            <SettingsPanel
+              title={tc('settings.title')}
+              groups={[
+                {
+                  items: [
+                    {
+                      type: 'select' as const,
+                      id: 'defaultBet',
+                      label: t('settings.defaultBet'),
+                      value: String(config.defaultBet),
+                      options: BET_OPTIONS.map((opt) => ({ value: String(opt.type), label: t(opt.labelKey) })),
+                      onSelect: (v: string) => handleConfigChange('defaultBet', v),
+                    },
+                  ],
+                },
+              ]}
+            />
+            <div className="flex justify-center pb-2">
+              {isResultPhase && (
                 <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
                   {tc('actionLog.view')}
                 </button>
-              </div>
-            )}
-            <div className="flex justify-center pb-2">
+              )}
               <GameResetButton
                 isGameEnd={false}
                 onReset={reset}

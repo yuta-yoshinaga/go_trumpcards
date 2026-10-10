@@ -398,7 +398,31 @@ function IndianPokerPageContent() {
           </div>
 
           {/* Sticky footer: player card + buttons */}
-          <GameFooter className={`${gameTheme.indianpoker.footer} px-5 py-3`}>
+          <GameFooter
+            className={`${gameTheme.indianpoker.footer} px-5 py-3`}
+            actions={
+              canAct ? (
+                <div data-tutorial="ip-action-buttons">
+                  <BettingControls
+                    inputId="indianPokerBetAmount"
+                    betAmount={betAmount}
+                    onBetAmountChange={setBetAmount}
+                    minRaise={minRaise}
+                    maxBetAmount={state.maxBetAmount}
+                    potSize={state.pot}
+                    hasOutstandingBet={hasOutstandingBet}
+                    loading={loading}
+                    onCall={() => execApi('call', undefined, undefined, getElapsed())}
+                    onRaise={() => execApi('raise', betAmount, undefined, getElapsed())}
+                    onBet={() => execApi('bet', betAmount, undefined, getElapsed())}
+                    onCheck={() => execApi('check', undefined, undefined, getElapsed())}
+                    onFold={() => execApi('fold', undefined, undefined, getElapsed())}
+                    onAllIn={() => execApi('allin', undefined, undefined, getElapsed())}
+                  />
+                </div>
+              ) : null
+            }
+          >
             {/* Human player */}
             {humanPlayer && (
               <div className="mb-2" data-tutorial="ip-player-card">
@@ -493,28 +517,6 @@ function IndianPokerPageContent() {
 
             {/* Hint */}
             {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
-
-            {/* Betting controls */}
-            {canAct && (
-              <div data-tutorial="ip-action-buttons">
-                <BettingControls
-                  inputId="indianPokerBetAmount"
-                  betAmount={betAmount}
-                  onBetAmountChange={setBetAmount}
-                  minRaise={minRaise}
-                  maxBetAmount={state.maxBetAmount}
-                  potSize={state.pot}
-                  hasOutstandingBet={hasOutstandingBet}
-                  loading={loading}
-                  onCall={() => execApi('call', undefined, undefined, getElapsed())}
-                  onRaise={() => execApi('raise', betAmount, undefined, getElapsed())}
-                  onBet={() => execApi('bet', betAmount, undefined, getElapsed())}
-                  onCheck={() => execApi('check', undefined, undefined, getElapsed())}
-                  onFold={() => execApi('fold', undefined, undefined, getElapsed())}
-                  onAllIn={() => execApi('allin', undefined, undefined, getElapsed())}
-                />
-              </div>
-            )}
 
             {/* Settings */}
             <SettingsPanel

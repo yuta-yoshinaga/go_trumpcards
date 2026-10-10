@@ -824,6 +824,9 @@ describe('OmahaHiLoPage', () => {
     mockExec.mockResolvedValue(preFlopState);
     renderWithProviders(<OmahaHiLoPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: 'ベット' }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'チェック' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'オールイン' })).toBeInTheDocument();

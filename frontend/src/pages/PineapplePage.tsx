@@ -568,7 +568,209 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
           </div>
 
           {/* Sticky footer: player hand + buttons */}
-          <GameFooter className={`${gameTheme[variant].footer} px-5 py-3`}>
+          <GameFooter
+            className={`${gameTheme[variant].footer} px-5 py-3`}
+            actions={
+              canAct || canDiscard || isMuckPhase || isRebuyPhase || isAddonPhase ? (
+                <>
+                  {/* Discard controls */}
+                  {canDiscard && (
+                    <div
+                      className="mb-2 text-center"
+                      data-testid="discard-controls"
+                      data-tutorial="pn-discard-controls"
+                    >
+                      {discardPreview && (
+                        <div className="mb-2 text-sm" data-testid="irishpoker-discard-preview">
+                          {/* **見えている行は読み上げ向きではない。** ラベル・札・役が
+                        別々の要素に割れていて、順に読まれても対応が取れない。1文に
+                        まとめた sr-only の live region を別に置く。上限超過通知
+                        (pn-discard-limit-announce) だけが aria-live を持っていて、
+                        こちらは無音だった (#5490)。視覚表示は変えていない。 */}
+                          <div
+                            className="sr-only"
+                            role="status"
+                            aria-live="polite"
+                            data-testid="irishpoker-discard-preview-announce"
+                          >
+                            {discardPreview.handKey
+                              ? t('discard.previewAriaWithHand', {
+                                  cards: discardPreview.kept.map((c) => cardAlt(c)).join(t('listSeparator')),
+                                  hand: t(`hand.${discardPreview.handKey}`),
+                                  strength: discardPreview.strengthCards.map(cardAlt).join(t('listSeparator')),
+                                })
+                              : t('discard.previewAria', {
+                                  cards: discardPreview.kept.map((c) => cardAlt(c)).join(t('listSeparator')),
+                                })}
+                          </div>
+                          <span className="text-ds-text-muted">{`${t('discard.keepLabel')}: `}</span>
+                          <span className="text-ds-text-primary font-semibold">
+                            {discardPreview.kept.map((c) => cardAlt(c)).join('  ')}
+                          </span>
+                          {discardPreview.handKey && (
+                            <span className="ml-2 inline-block rounded-full bg-ds-accent/30 px-2 py-0.5 text-ds-text-primary font-semibold">
+                              {t('discard.previewWithStrength', {
+                                hand: t(`hand.${discardPreview.handKey}`),
+                                strength: discardPreview.strengthCards.map(cardAlt).join(t('listSeparator')),
+                              })}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      {discardConfirming && selectedDiscards.length === discardCount && humanPlayer ? (
+                        <div data-testid="discard-confirm">
+                          <p className="text-ds-text-primary mb-2">
+                            {t('discard.confirm', {
+                              card: selectedDiscards.map((i) => cardAlt(humanPlayer.cards[i])).join(', '),
+                            })}
+                          </p>
+                          <div className="flex justify-center gap-2">
+                            <button
+                              type="button"
+                              className={`${btnPrimary} min-w-[90px]`}
+                              disabled={loading}
+                              onClick={() => {
+                                apiExec('discard', undefined, { cardIdxs: [...selectedDiscards] });
+                                setSelectedDiscards([]);
+                                setDiscardConfirming(false);
+                              }}
+                            >
+                              {t('discard.confirmYes')}
+                            </button>
+                            <button
+                              type="button"
+                              className={`${btnSecondary} min-w-[90px]`}
+                              disabled={loading}
+                              onClick={() => setDiscardConfirming(false)}
+                            >
+                              {t('discard.confirmNo')}
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <p className="text-ds-text-primary mb-2">{t('discard.select')}</p>
+                          {discardCount > 1 && (
+                            <p className="text-ds-text-muted text-xs mb-2" data-testid="discard-count">
+                              {t('discard.selectedCount', { n: selectedDiscards.length, total: discardCount })}
+                            </p>
+                          )}
+                          <button
+                            type="button"
+                            className={`${btnPrimary} min-w-[90px]`}
+                            disabled={loading || selectedDiscards.length !== discardCount}
+                            onClick={() => setDiscardConfirming(true)}
+                          >
+                            {t('discard.prompt')}
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Muck/Show controls */}
+                  {isMuckPhase && (
+                    <div className="mb-2 text-center" data-testid="muck-controls">
+                      <div className="flex justify-center gap-2">
+                        <button
+                          type="button"
+                          className={`${btnPrimary} min-w-[90px]`}
+                          disabled={loading}
+                          onClick={() => apiExec('muck')}
+                        >
+                          {t('muck.muck')}
+                        </button>
+                        <button
+                          type="button"
+                          className={`${btnSecondary} min-w-[90px]`}
+                          disabled={loading}
+                          onClick={() => apiExec('show')}
+                        >
+                          {t('muck.show')}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Rebuy/Addon controls */}
+                  {isRebuyPhase && (
+                    <div className="mb-2 text-center" data-testid="rebuy-controls">
+                      <p className="text-ds-text-primary mb-2">
+                        {t('rebuy.prompt', {
+                          chips: state?.rebuyChips,
+                          used: humanRebuyCount,
+                          max: state?.rebuyMaxCount,
+                        })}
+                      </p>
+                      <div className="flex justify-center gap-2">
+                        <button
+                          type="button"
+                          className={`${btnPrimary} min-w-[90px]`}
+                          disabled={loading}
+                          onClick={() => apiExec('rebuy')}
+                        >
+                          {t('rebuy.accept')}
+                        </button>
+                        <button
+                          type="button"
+                          className={`${btnSecondary} min-w-[90px]`}
+                          disabled={loading}
+                          onClick={() => apiExec('skiprebuy')}
+                        >
+                          {t('rebuy.skip')}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  {isAddonPhase && (
+                    <div className="mb-2 text-center" data-testid="addon-controls">
+                      <p className="text-ds-text-primary mb-2">{t('addon.prompt', { chips: state?.addonChips })}</p>
+                      <div className="flex justify-center gap-2">
+                        <button
+                          type="button"
+                          className={`${btnPrimary} min-w-[90px]`}
+                          disabled={loading}
+                          onClick={() => apiExec('addon')}
+                        >
+                          {t('addon.accept')}
+                        </button>
+                        <button
+                          type="button"
+                          className={`${btnSecondary} min-w-[90px]`}
+                          disabled={loading}
+                          onClick={() => apiExec('skipaddon')}
+                        >
+                          {t('addon.skip')}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {canAct && (
+                    <div data-tutorial="pn-action-buttons">
+                      <BettingControls
+                        inputId="pineappleBetAmount"
+                        betAmount={betAmount}
+                        onBetAmountChange={setBetAmount}
+                        minRaise={minRaise}
+                        maxBetAmount={state?.maxBetAmount}
+                        potSize={state?.pot}
+                        hasOutstandingBet={hasOutstandingBet}
+                        callAmountLabel={hasOutstandingBet ? t('callAmount', { amount: callAmount }) : undefined}
+                        loading={loading}
+                        onCall={() => apiExec('call', undefined, undefined, getElapsed())}
+                        onRaise={() => apiExec('raise', betAmount, undefined, getElapsed())}
+                        onBet={() => apiExec('bet', betAmount, undefined, getElapsed())}
+                        onCheck={() => apiExec('check', undefined, undefined, getElapsed())}
+                        onFold={() => apiExec('fold', undefined, undefined, getElapsed())}
+                        onAllIn={() => apiExec('allin', undefined, undefined, getElapsed())}
+                      />
+                    </div>
+                  )}
+                </>
+              ) : null
+            }
+          >
             {/* Crazy Pineapple and Irish Poker discard after the flop betting round
                 (unlike plain Pineapple's immediate discard) — forewarn the player during
                 the flop bet so they can factor the upcoming discard into their decision. */}
@@ -788,196 +990,8 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                     }))}
             </div>
 
-            {/* Discard controls */}
-            {canDiscard && (
-              <div className="mb-2 text-center" data-testid="discard-controls" data-tutorial="pn-discard-controls">
-                {discardPreview && (
-                  <div className="mb-2 text-sm" data-testid="irishpoker-discard-preview">
-                    {/* **見えている行は読み上げ向きではない。** ラベル・札・役が
-                        別々の要素に割れていて、順に読まれても対応が取れない。1文に
-                        まとめた sr-only の live region を別に置く。上限超過通知
-                        (pn-discard-limit-announce) だけが aria-live を持っていて、
-                        こちらは無音だった (#5490)。視覚表示は変えていない。 */}
-                    <div
-                      className="sr-only"
-                      role="status"
-                      aria-live="polite"
-                      data-testid="irishpoker-discard-preview-announce"
-                    >
-                      {discardPreview.handKey
-                        ? t('discard.previewAriaWithHand', {
-                            cards: discardPreview.kept.map((c) => cardAlt(c)).join(t('listSeparator')),
-                            hand: t(`hand.${discardPreview.handKey}`),
-                            strength: discardPreview.strengthCards.map(cardAlt).join(t('listSeparator')),
-                          })
-                        : t('discard.previewAria', {
-                            cards: discardPreview.kept.map((c) => cardAlt(c)).join(t('listSeparator')),
-                          })}
-                    </div>
-                    <span className="text-ds-text-muted">{`${t('discard.keepLabel')}: `}</span>
-                    <span className="text-ds-text-primary font-semibold">
-                      {discardPreview.kept.map((c) => cardAlt(c)).join('  ')}
-                    </span>
-                    {discardPreview.handKey && (
-                      <span className="ml-2 inline-block rounded-full bg-ds-accent/30 px-2 py-0.5 text-ds-text-primary font-semibold">
-                        {t('discard.previewWithStrength', {
-                          hand: t(`hand.${discardPreview.handKey}`),
-                          strength: discardPreview.strengthCards.map(cardAlt).join(t('listSeparator')),
-                        })}
-                      </span>
-                    )}
-                  </div>
-                )}
-                {discardConfirming && selectedDiscards.length === discardCount && humanPlayer ? (
-                  <div data-testid="discard-confirm">
-                    <p className="text-ds-text-primary mb-2">
-                      {t('discard.confirm', {
-                        card: selectedDiscards.map((i) => cardAlt(humanPlayer.cards[i])).join(', '),
-                      })}
-                    </p>
-                    <div className="flex justify-center gap-2">
-                      <button
-                        type="button"
-                        className={`${btnPrimary} min-w-[90px]`}
-                        disabled={loading}
-                        onClick={() => {
-                          apiExec('discard', undefined, { cardIdxs: [...selectedDiscards] });
-                          setSelectedDiscards([]);
-                          setDiscardConfirming(false);
-                        }}
-                      >
-                        {t('discard.confirmYes')}
-                      </button>
-                      <button
-                        type="button"
-                        className={`${btnSecondary} min-w-[90px]`}
-                        disabled={loading}
-                        onClick={() => setDiscardConfirming(false)}
-                      >
-                        {t('discard.confirmNo')}
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <p className="text-ds-text-primary mb-2">{t('discard.select')}</p>
-                    {discardCount > 1 && (
-                      <p className="text-ds-text-muted text-xs mb-2" data-testid="discard-count">
-                        {t('discard.selectedCount', { n: selectedDiscards.length, total: discardCount })}
-                      </p>
-                    )}
-                    <button
-                      type="button"
-                      className={`${btnPrimary} min-w-[90px]`}
-                      disabled={loading || selectedDiscards.length !== discardCount}
-                      onClick={() => setDiscardConfirming(true)}
-                    >
-                      {t('discard.prompt')}
-                    </button>
-                  </>
-                )}
-              </div>
-            )}
-
-            {/* Muck/Show controls */}
-            {isMuckPhase && (
-              <div className="mb-2 text-center" data-testid="muck-controls">
-                <div className="flex justify-center gap-2">
-                  <button
-                    type="button"
-                    className={`${btnPrimary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => apiExec('muck')}
-                  >
-                    {t('muck.muck')}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnSecondary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => apiExec('show')}
-                  >
-                    {t('muck.show')}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Rebuy/Addon controls */}
-            {isRebuyPhase && (
-              <div className="mb-2 text-center" data-testid="rebuy-controls">
-                <p className="text-ds-text-primary mb-2">
-                  {t('rebuy.prompt', { chips: state?.rebuyChips, used: humanRebuyCount, max: state?.rebuyMaxCount })}
-                </p>
-                <div className="flex justify-center gap-2">
-                  <button
-                    type="button"
-                    className={`${btnPrimary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => apiExec('rebuy')}
-                  >
-                    {t('rebuy.accept')}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnSecondary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => apiExec('skiprebuy')}
-                  >
-                    {t('rebuy.skip')}
-                  </button>
-                </div>
-              </div>
-            )}
-            {isAddonPhase && (
-              <div className="mb-2 text-center" data-testid="addon-controls">
-                <p className="text-ds-text-primary mb-2">{t('addon.prompt', { chips: state?.addonChips })}</p>
-                <div className="flex justify-center gap-2">
-                  <button
-                    type="button"
-                    className={`${btnPrimary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => apiExec('addon')}
-                  >
-                    {t('addon.accept')}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnSecondary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => apiExec('skipaddon')}
-                  >
-                    {t('addon.skip')}
-                  </button>
-                </div>
-              </div>
-            )}
-
             {/* Hint */}
             {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
-
-            {/* Betting controls */}
-            {canAct && (
-              <div data-tutorial="pn-action-buttons">
-                <BettingControls
-                  inputId="pineappleBetAmount"
-                  betAmount={betAmount}
-                  onBetAmountChange={setBetAmount}
-                  minRaise={minRaise}
-                  maxBetAmount={state?.maxBetAmount}
-                  potSize={state?.pot}
-                  hasOutstandingBet={hasOutstandingBet}
-                  callAmountLabel={hasOutstandingBet ? t('callAmount', { amount: callAmount }) : undefined}
-                  loading={loading}
-                  onCall={() => apiExec('call', undefined, undefined, getElapsed())}
-                  onRaise={() => apiExec('raise', betAmount, undefined, getElapsed())}
-                  onBet={() => apiExec('bet', betAmount, undefined, getElapsed())}
-                  onCheck={() => apiExec('check', undefined, undefined, getElapsed())}
-                  onFold={() => apiExec('fold', undefined, undefined, getElapsed())}
-                  onAllIn={() => apiExec('allin', undefined, undefined, getElapsed())}
-                />
-              </div>
-            )}
 
             {/* Settings + Reset */}
             {variant === 'irishpoker' && (

@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { eightGameApi, horseApi } from '../api/gameApi';
 import { TutorialProvider } from '../providers/TutorialProvider';
@@ -39,7 +39,9 @@ describe('HorsePage', () => {
     expect(screen.getByTestId('ho-forced-bets')).not.toHaveTextContent(/forcedBets\.|listSeparator/);
     expect(screen.getByTestId('ho-action-context')).toHaveTextContent('プリフロップ · ベッティング手番');
     expect(screen.getByTestId('ho-action-context')).not.toHaveTextContent('action.betting');
-    expect(screen.getByRole('button', { name: /コール/ })).toHaveTextContent('25 チップ');
+    expect(within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: /コール/ })).toHaveTextContent(
+      '25 チップ',
+    );
     expect(document.body).not.toHaveTextContent('callAmount');
   });
 
@@ -509,6 +511,7 @@ describe('HorsePage', () => {
     mockExec.mockResolvedValue(makeHorseState({ isDrawPhase: true, drawIndex: 1 }));
     renderWithProviders(<HorsePage />);
     await waitFor(() => expect(screen.getByTestId('ho-draw-exchange')).toBeInTheDocument());
+    expect(within(screen.getByTestId('game-footer-actions')).getByTestId('ho-draw-exchange')).toBeInTheDocument();
   });
 
   // ドローフェーズ以外ではカード交換ボタンを表示しない。

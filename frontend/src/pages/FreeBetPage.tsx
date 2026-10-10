@@ -244,7 +244,119 @@ function FreeBetPageContent() {
             {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
           </div>
 
-          <GameFooter className={`${gameTheme.freebet.footer} px-4 pt-3`}>
+          <GameFooter
+            className={`${gameTheme.freebet.footer} px-4 pt-3`}
+            actions={
+              (isBetPhase && !gameOver) || isPlayPhase || (isResultPhase && !gameOver) ? (
+                <div className="flex flex-col items-center gap-2 pb-2">
+                  {isBetPhase && !gameOver && (
+                    <div className="flex flex-col items-center gap-2" data-tutorial="fb-bet">
+                      <button
+                        type="button"
+                        className={`${btnPrimary} aria-disabled:opacity-70 aria-disabled:cursor-not-allowed aria-disabled:saturate-50`}
+                        onClick={handleDeal}
+                        aria-disabled={dealUnavailable || undefined}
+                      >
+                        {t('button.deal')}
+                      </button>
+                    </div>
+                  )}
+                  {isPlayPhase && (
+                    <div className="flex flex-col items-center gap-2" data-tutorial="fb-actions">
+                      <div className="flex gap-2 flex-wrap justify-center">
+                        <button
+                          type="button"
+                          className={btnSuccess}
+                          data-testid="fb-hit"
+                          data-hint-action="hit"
+                          onClick={() => execApi('hit')}
+                          disabled={loading}
+                          aria-keyshortcuts="h"
+                        >
+                          {t('button.hit')}
+                          <KbdBadge label={t('kbd.hit')} />
+                        </button>
+                        <button
+                          type="button"
+                          className={btnSecondary}
+                          data-testid="fb-stand"
+                          data-hint-action="stand"
+                          onClick={() => execApi('stand')}
+                          disabled={loading}
+                          aria-keyshortcuts="s"
+                        >
+                          {t('button.stand')}
+                          <KbdBadge label={t('kbd.stand')} />
+                        </button>
+                        {state.canFreeDouble && (
+                          <button
+                            type="button"
+                            className={btnWarning}
+                            data-testid="fb-freedouble"
+                            data-hint-action="freedouble"
+                            onClick={() => execApi('freedouble')}
+                            disabled={loading}
+                            aria-keyshortcuts="d"
+                          >
+                            {t('button.freeDouble')}
+                            <KbdBadge label={t('kbd.freeDouble')} />
+                          </button>
+                        )}
+                        {state.canFreeSplit && (
+                          <button
+                            type="button"
+                            className={btnWarning}
+                            data-testid="fb-freesplit"
+                            data-hint-action="freesplit"
+                            onClick={() => execApi('freesplit')}
+                            disabled={loading}
+                            aria-keyshortcuts="p"
+                          >
+                            {t('button.freeSplit')}
+                            <KbdBadge label={t('kbd.freeSplit')} />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  {isResultPhase && !gameOver && (
+                    <button type="button" className={btnPrimary} onClick={() => execApi('next')} disabled={loading}>
+                      {t('button.next')}
+                    </button>
+                  )}
+                </div>
+              ) : null
+            }
+          >
+            {isBetPhase && !gameOver && (
+              <div className="flex flex-col items-center gap-2">
+                <p className="text-ds-text-muted text-sm">{t('betGuide')}</p>
+                <div
+                  data-testid="fb-bet-summary"
+                  className="rounded bg-ds-surface-elevated px-3 py-2 text-ds-text-primary text-sm tabular-nums"
+                >
+                  <p>{t('betSummary.balance', { amount: state.chips })}</p>
+                  <p>{t('betSummary.ante', { amount: ante })}</p>
+                  <p>{t('betSummary.remaining', { amount: Math.max(0, state.chips - ante) })}</p>
+                  <p className="text-ds-text-muted">{t('betSummary.freeBets')}</p>
+                </div>
+                <ChipBetInput
+                  id="freebet-ante"
+                  label={t('label.ante')}
+                  value={ante}
+                  onChange={setAnte}
+                  max={state.chips}
+                />
+              </div>
+            )}
+            {isPlayPhase && (
+              <div className="flex flex-col items-center gap-2">
+                <p className="text-ds-text-muted text-sm">{t('playGuide')}</p>
+                <p className="text-ds-text-muted text-xs" data-testid="fb-free-notice">
+                  {t('freeNotice')}
+                </p>
+              </div>
+            )}
             <ErrorAlert message={error} onRetry={retry} />
             <SettingsPanel
               title={tc('settings.title')}
@@ -253,109 +365,6 @@ function FreeBetPageContent() {
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex flex-col items-center gap-2 pb-2">
-              {isBetPhase && !gameOver && (
-                <div className="flex flex-col items-center gap-2" data-tutorial="fb-bet">
-                  <p className="text-ds-text-muted text-sm">{t('betGuide')}</p>
-                  <div
-                    data-testid="fb-bet-summary"
-                    className="rounded bg-ds-surface-elevated px-3 py-2 text-ds-text-primary text-sm tabular-nums"
-                  >
-                    <p>{t('betSummary.balance', { amount: state.chips })}</p>
-                    <p>{t('betSummary.ante', { amount: ante })}</p>
-                    <p>{t('betSummary.remaining', { amount: Math.max(0, state.chips - ante) })}</p>
-                    <p className="text-ds-text-muted">{t('betSummary.freeBets')}</p>
-                  </div>
-                  <ChipBetInput
-                    id="freebet-ante"
-                    label={t('label.ante')}
-                    value={ante}
-                    onChange={setAnte}
-                    max={state.chips}
-                  />
-                  <button
-                    type="button"
-                    className={`${btnPrimary} aria-disabled:opacity-70 aria-disabled:cursor-not-allowed aria-disabled:saturate-50`}
-                    onClick={handleDeal}
-                    aria-disabled={dealUnavailable || undefined}
-                  >
-                    {t('button.deal')}
-                  </button>
-                </div>
-              )}
-
-              {isPlayPhase && (
-                <div className="flex flex-col items-center gap-2" data-tutorial="fb-actions">
-                  <p className="text-ds-text-muted text-sm">{t('playGuide')}</p>
-                  <p className="text-ds-text-muted text-xs" data-testid="fb-free-notice">
-                    {t('freeNotice')}
-                  </p>
-                  <div className="flex gap-2 flex-wrap justify-center">
-                    {/* **同じ仕組みのショートカットは同じ手掛かりを出す。** Free
-                        Double / Free Split だけがキーを表示していて、h / s の
-                        存在は画面からも読み上げからも分からなかった。 */}
-                    <button
-                      type="button"
-                      className={btnSuccess}
-                      data-testid="fb-hit"
-                      data-hint-action="hit"
-                      onClick={() => execApi('hit')}
-                      disabled={loading}
-                      aria-keyshortcuts="h"
-                    >
-                      {t('button.hit')}
-                      <KbdBadge label={t('kbd.hit')} />
-                    </button>
-                    <button
-                      type="button"
-                      className={btnSecondary}
-                      data-testid="fb-stand"
-                      data-hint-action="stand"
-                      onClick={() => execApi('stand')}
-                      disabled={loading}
-                      aria-keyshortcuts="s"
-                    >
-                      {t('button.stand')}
-                      <KbdBadge label={t('kbd.stand')} />
-                    </button>
-                    {/* **押せるかどうかはサーバが決める。** 手札から計算し直さない。 */}
-                    {state.canFreeDouble && (
-                      <button
-                        type="button"
-                        className={btnWarning}
-                        data-testid="fb-freedouble"
-                        data-hint-action="freedouble"
-                        onClick={() => execApi('freedouble')}
-                        disabled={loading}
-                        aria-keyshortcuts="d"
-                      >
-                        {t('button.freeDouble')}
-                        <KbdBadge label={t('kbd.freeDouble')} />
-                      </button>
-                    )}
-                    {state.canFreeSplit && (
-                      <button
-                        type="button"
-                        className={btnWarning}
-                        data-testid="fb-freesplit"
-                        data-hint-action="freesplit"
-                        onClick={() => execApi('freesplit')}
-                        disabled={loading}
-                        aria-keyshortcuts="p"
-                      >
-                        {t('button.freeSplit')}
-                        <KbdBadge label={t('kbd.freeSplit')} />
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {isResultPhase && !gameOver && (
-                <button type="button" className={btnPrimary} onClick={() => execApi('next')} disabled={loading}>
-                  {t('button.next')}
-                </button>
-              )}
-
               <div className="flex gap-2">
                 <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
                   {tc('button.actionLog')}

@@ -376,7 +376,118 @@ export function HorsePageContent({ gameKey }: { gameKey: HorsePageGameKey }) {
             ]}
           />
 
-          <GameFooter className={`${gameTheme[gameKey].footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme[gameKey].footer} px-4 py-2.5`}
+            actions={
+              isDrawTurn || isBetTurn || isHandEnd || isGameEnd ? (
+                <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="ho-actions">
+                  {isDrawTurn && (
+                    <div className="flex flex-col items-center gap-2" data-testid="ho-draw">
+                      <div className="text-xs text-ds-text-muted">{t('draw.prompt', { n: state.drawIndex })}</div>
+                      <div className="flex flex-wrap justify-center gap-2">
+                        {humanCards.map((card, idx) => {
+                          const selected = drawSelection.includes(idx);
+                          return (
+                            <button
+                              type="button"
+                              key={`${card.design}-${card.value}`}
+                              className={`rounded ${selected ? 'ring-2 ring-ds-accent' : ''}`}
+                              aria-pressed={selected}
+                              aria-label={cardAlt(card)}
+                              data-testid={`ho-draw-card-${idx}`}
+                              disabled={loading}
+                              onClick={() =>
+                                setDrawSelection((prev) =>
+                                  prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx],
+                                )
+                              }
+                            >
+                              <AnimatedCard card={card} width={Math.round(cardWidth * 0.8)} />
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          className={btnPrimary}
+                          disabled={loading || drawSelection.length === 0}
+                          data-testid="ho-draw-exchange"
+                          onClick={() => {
+                            callApi('draw', { cardIndices: [...drawSelection].sort((a, b) => a - b) });
+                            setDrawSelection([]);
+                          }}
+                        >
+                          {t('draw.exchange', { count: drawSelection.length })}
+                        </button>
+                        <button
+                          type="button"
+                          className={btnSuccess}
+                          disabled={loading}
+                          data-testid="ho-draw-stand"
+                          onClick={() => {
+                            callApi('draw', { cardIndices: [] });
+                            setDrawSelection([]);
+                          }}
+                        >
+                          {t('draw.stand')}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  {isBetTurn && (
+                    <>
+                      <p className="text-sm text-ds-text-muted" data-testid="ho-forced-bets">
+                        {[
+                          state.smallBlind > 0 && t('forcedBets.smallBlind', { amount: state.smallBlind }),
+                          state.bigBlind > 0 && t('forcedBets.bigBlind', { amount: state.bigBlind }),
+                          state.ante > 0 && t('forcedBets.ante', { amount: state.ante }),
+                          state.bringIn > 0 && t('forcedBets.bringIn', { amount: state.bringIn }),
+                        ]
+                          .filter(Boolean)
+                          .join(t('listSeparator'))}
+                      </p>
+                      <BettingControls
+                        inputId="ho-bet"
+                        betAmount={betAmount}
+                        onBetAmountChange={setBetAmount}
+                        minRaise={Math.max(state.minRaise, 1)}
+                        maxBetAmount={state.maxBetAmount}
+                        potSize={state.pot}
+                        // **「賭けられているか」はサーバが決める。** 固定すると、
+                        // チェックできる場面でチェックが出ず、逆も起きる。
+                        hasOutstandingBet={state.toCall > 0}
+                        callAmountLabel={state.toCall > 0 ? t('callAmount', { amount: state.toCall }) : undefined}
+                        loading={loading}
+                        onCall={() => callApi('action', { action: 'call' })}
+                        onRaise={() => callApi('action', { action: 'raise', amount: betAmount })}
+                        onBet={() => callApi('action', { action: 'bet', amount: betAmount })}
+                        onCheck={() => callApi('action', { action: 'check' })}
+                        onFold={() => callApi('action', { action: 'fold' })}
+                        onAllIn={() => callApi('action', { action: 'allin' })}
+                      />
+                    </>
+                  )}
+                  {isHandEnd && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={() => callApi('next')}
+                      disabled={loading}
+                      data-testid="ho-next-hand"
+                    >
+                      {t('nextHand')}
+                    </button>
+                  )}
+                  {isGameEnd && (
+                    <button type="button" className={btnSuccess} onClick={resetWithConfig} disabled={loading}>
+                      {t('newGame')}
+                    </button>
+                  )}
+                </div>
+              ) : null
+            }
+          >
             <div className="text-center text-xs text-ds-text-muted" data-testid="ho-action-context">
               <span className="text-ds-text-primary">{tc(`nav.${gameKey}`)}</span>
               <span> · {disciplineName}</span>
@@ -385,109 +496,6 @@ export function HorsePageContent({ gameKey }: { gameKey: HorsePageGameKey }) {
               {roundLabel && isBetTurn && <span> · {t('action.betting')}</span>}
             </div>
             <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="ho-actions">
-              {isDrawTurn && (
-                <div className="flex flex-col items-center gap-2" data-testid="ho-draw">
-                  <div className="text-xs text-ds-text-muted">{t('draw.prompt', { n: state.drawIndex })}</div>
-                  <div className="flex flex-wrap justify-center gap-2">
-                    {humanCards.map((card, idx) => {
-                      const selected = drawSelection.includes(idx);
-                      return (
-                        <button
-                          type="button"
-                          key={`${card.design}-${card.value}`}
-                          className={`rounded ${selected ? 'ring-2 ring-ds-accent' : ''}`}
-                          aria-pressed={selected}
-                          aria-label={cardAlt(card)}
-                          data-testid={`ho-draw-card-${idx}`}
-                          disabled={loading}
-                          onClick={() =>
-                            setDrawSelection((prev) =>
-                              prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx],
-                            )
-                          }
-                        >
-                          <AnimatedCard card={card} width={Math.round(cardWidth * 0.8)} />
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      className={btnPrimary}
-                      disabled={loading || drawSelection.length === 0}
-                      data-testid="ho-draw-exchange"
-                      onClick={() => {
-                        callApi('draw', { cardIndices: [...drawSelection].sort((a, b) => a - b) });
-                        setDrawSelection([]);
-                      }}
-                    >
-                      {t('draw.exchange', { count: drawSelection.length })}
-                    </button>
-                    <button
-                      type="button"
-                      className={btnSuccess}
-                      disabled={loading}
-                      data-testid="ho-draw-stand"
-                      onClick={() => {
-                        callApi('draw', { cardIndices: [] });
-                        setDrawSelection([]);
-                      }}
-                    >
-                      {t('draw.stand')}
-                    </button>
-                  </div>
-                </div>
-              )}
-              {isBetTurn && (
-                <>
-                  <p className="text-sm text-ds-text-muted" data-testid="ho-forced-bets">
-                    {[
-                      state.smallBlind > 0 && t('forcedBets.smallBlind', { amount: state.smallBlind }),
-                      state.bigBlind > 0 && t('forcedBets.bigBlind', { amount: state.bigBlind }),
-                      state.ante > 0 && t('forcedBets.ante', { amount: state.ante }),
-                      state.bringIn > 0 && t('forcedBets.bringIn', { amount: state.bringIn }),
-                    ]
-                      .filter(Boolean)
-                      .join(t('listSeparator'))}
-                  </p>
-                  <BettingControls
-                    inputId="ho-bet"
-                    betAmount={betAmount}
-                    onBetAmountChange={setBetAmount}
-                    minRaise={Math.max(state.minRaise, 1)}
-                    maxBetAmount={state.maxBetAmount}
-                    potSize={state.pot}
-                    // **「賭けられているか」はサーバが決める。** 固定すると、
-                    // チェックできる場面でチェックが出ず、逆も起きる。
-                    hasOutstandingBet={state.toCall > 0}
-                    callAmountLabel={state.toCall > 0 ? t('callAmount', { amount: state.toCall }) : undefined}
-                    loading={loading}
-                    onCall={() => callApi('action', { action: 'call' })}
-                    onRaise={() => callApi('action', { action: 'raise', amount: betAmount })}
-                    onBet={() => callApi('action', { action: 'bet', amount: betAmount })}
-                    onCheck={() => callApi('action', { action: 'check' })}
-                    onFold={() => callApi('action', { action: 'fold' })}
-                    onAllIn={() => callApi('action', { action: 'allin' })}
-                  />
-                </>
-              )}
-              {isHandEnd && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={() => callApi('next')}
-                  disabled={loading}
-                  data-testid="ho-next-hand"
-                >
-                  {t('nextHand')}
-                </button>
-              )}
-              {isGameEnd && (
-                <button type="button" className={btnSuccess} onClick={resetWithConfig} disabled={loading}>
-                  {t('newGame')}
-                </button>
-              )}
               <GameResetButton
                 isGameEnd={isGameEnd}
                 onReset={resetWithConfig}

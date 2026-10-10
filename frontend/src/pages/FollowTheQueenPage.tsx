@@ -487,7 +487,45 @@ export function FollowTheQueenPageContent({ gameKey }: { gameKey: StudPageGameKe
           />
 
           {/* Sticky footer: player hand + buttons */}
-          <GameFooter className={`${gameTheme[gameKey].footer} px-5 py-3`}>
+          <GameFooter
+            className={`${gameTheme[gameKey].footer} px-5 py-3`}
+            actions={
+              <>
+                {/* Betting controls */}
+                {canAct && (
+                  <div data-tutorial="scs-action-buttons">
+                    <p
+                      data-testid="ftq-betting-pot"
+                      className="mb-2 text-center text-ds-text-primary text-sm tabular-nums"
+                    >
+                      {tc('label.pot')} <strong>{state.pot}</strong>
+                    </p>
+                    <BettingControls
+                      inputId="followTheQueenBetAmount"
+                      betAmount={betAmount}
+                      onBetAmountChange={setBetAmount}
+                      minRaise={minRaise}
+                      maxBetAmount={state?.maxBetAmount}
+                      potSize={state?.pot}
+                      hasOutstandingBet={hasOutstandingBet}
+                      callAmountLabel={
+                        hasOutstandingBet && callAmount > 0 ? t('callAmount', { amount: callAmount }) : undefined
+                      }
+                      loading={loading}
+                      onCall={() => execApi('call', undefined, undefined, getElapsed())}
+                      onRaise={() => execApi('raise', betAmount, undefined, getElapsed())}
+                      onBet={() => execApi('bet', betAmount, undefined, getElapsed())}
+                      onCheck={() => execApi('check', undefined, undefined, getElapsed())}
+                      onFold={() => execApi('fold', undefined, undefined, getElapsed())}
+                      onAllIn={() => execApi('allin', undefined, undefined, getElapsed())}
+                    />
+                  </div>
+                )}
+
+                <ActionShortcutsPanel bindings={actionBindings} data-testid="seven-card-stud-kbd-shortcuts" />
+              </>
+            }
+          >
             {/* Human player */}
             {humanPlayer && (
               <div className="mb-2" data-tutorial="scs-player-hand">
@@ -630,34 +668,6 @@ export function FollowTheQueenPageContent({ gameKey }: { gameKey: StudPageGameKe
             {/* Hint */}
             {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
 
-            {/* Betting controls */}
-            {canAct && (
-              <div data-tutorial="scs-action-buttons">
-                <p data-testid="ftq-betting-pot" className="mb-2 text-center text-ds-text-primary text-sm tabular-nums">
-                  {tc('label.pot')} <strong>{state.pot}</strong>
-                </p>
-                <BettingControls
-                  inputId="followTheQueenBetAmount"
-                  betAmount={betAmount}
-                  onBetAmountChange={setBetAmount}
-                  minRaise={minRaise}
-                  maxBetAmount={state?.maxBetAmount}
-                  potSize={state?.pot}
-                  hasOutstandingBet={hasOutstandingBet}
-                  callAmountLabel={
-                    hasOutstandingBet && callAmount > 0 ? t('callAmount', { amount: callAmount }) : undefined
-                  }
-                  loading={loading}
-                  onCall={() => execApi('call', undefined, undefined, getElapsed())}
-                  onRaise={() => execApi('raise', betAmount, undefined, getElapsed())}
-                  onBet={() => execApi('bet', betAmount, undefined, getElapsed())}
-                  onCheck={() => execApi('check', undefined, undefined, getElapsed())}
-                  onFold={() => execApi('fold', undefined, undefined, getElapsed())}
-                  onAllIn={() => execApi('allin', undefined, undefined, getElapsed())}
-                />
-              </div>
-            )}
-
             <GameResetButton
               isGameEnd={phase === FollowTheQueenPhase.SHOWDOWN || phase === FollowTheQueenPhase.END}
               onReset={handleManualReset}
@@ -666,7 +676,6 @@ export function FollowTheQueenPageContent({ gameKey }: { gameKey: StudPageGameKe
               dataTutorial="scs-reset-button"
               className="min-w-[90px]"
             />
-            <ActionShortcutsPanel bindings={actionBindings} data-testid="seven-card-stud-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

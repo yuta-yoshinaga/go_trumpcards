@@ -18,9 +18,16 @@ test.describe('Crazy Pineapple Poker E2E', () => {
     const foldButton = page.getByRole('button', { name: 'フォールド' });
     const discardControls = page.getByTestId('discard-controls');
 
-    await expect(checkButton.or(callButton).or(foldButton).or(discardControls).or(resetButton).first()).toBeVisible({
-      timeout: 10_000,
-    });
+    await expect
+      .poll(
+        async () =>
+          (await checkButton.isVisible()) ||
+          (await callButton.isVisible()) ||
+          (await foldButton.isVisible()) ||
+          (await discardControls.isVisible()),
+        { timeout: 10_000 },
+      )
+      .toBe(true);
 
     await resetButton.click();
     await page.getByRole('button', { name: '確認' }).click();

@@ -271,7 +271,176 @@ function DoubleAttackPageContent() {
             {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
           </div>
 
-          <GameFooter className={`${gameTheme.doubleattack.footer} px-4 pt-3`}>
+          <GameFooter
+            className={`${gameTheme.doubleattack.footer} px-4 pt-3`}
+            actions={
+              !gameOver ? (
+                <div className="flex flex-col items-center gap-2 pb-2">
+                  {isBetPhase && !gameOver && (
+                    <div className="flex flex-col items-center gap-2" data-tutorial="da-bet">
+                      <button type="button" className={btnPrimary} onClick={handleDeal} disabled={loading}>
+                        {t('button.deal')}
+                      </button>
+                    </div>
+                  )}
+
+                  {isAttackPhase && (
+                    <>
+                      {/* **上限はサーバの値に従う。** アンティから計算し直さない。 */}
+                      <ChipBetInput
+                        id="doubleattack-attack"
+                        label={t('label.attack')}
+                        value={attack}
+                        onChange={setAttack}
+                        max={state.maxAttackBet}
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          className={btnPrimary}
+                          data-hint-action="attack"
+                          aria-keyshortcuts="a"
+                          onClick={handleAttack}
+                          disabled={loading}
+                        >
+                          {t('button.attack')}
+                        </button>
+                        <button
+                          type="button"
+                          className={btnSecondary}
+                          data-hint-action="decline"
+                          aria-keyshortcuts="q"
+                          onClick={handleDecline}
+                          disabled={loading}
+                        >
+                          {t('button.decline')}
+                        </button>
+                      </div>
+                    </>
+                  )}
+
+                  {isPlayPhase && (
+                    <>
+                      <div className="flex gap-2 flex-wrap justify-center">
+                        <button
+                          type="button"
+                          className={btnSuccess}
+                          data-hint-action="hit"
+                          aria-keyshortcuts="h"
+                          onClick={() => execApi('hit')}
+                          disabled={loading}
+                        >
+                          {t('button.hit')}
+                        </button>
+                        <button
+                          type="button"
+                          className={btnSecondary}
+                          data-hint-action="stand"
+                          aria-keyshortcuts="s"
+                          onClick={() => execApi('stand')}
+                          disabled={loading}
+                        >
+                          {t('button.stand')}
+                        </button>
+                        {/* **押せるかどうかはサーバが決める。** 手札から計算し直さない。 */}
+                        {state.canDouble && (
+                          <button
+                            type="button"
+                            className={btnWarning}
+                            data-testid="da-double"
+                            aria-keyshortcuts="d"
+                            onClick={() => execApi('double')}
+                            disabled={loading}
+                          >
+                            {t('button.double')}
+                          </button>
+                        )}
+                        {state.canSplit && (
+                          <button
+                            type="button"
+                            className={btnWarning}
+                            data-testid="da-split"
+                            aria-keyshortcuts="p"
+                            onClick={() => execApi('split')}
+                            disabled={loading}
+                          >
+                            {t('button.split')}
+                          </button>
+                        )}
+                      </div>
+                    </>
+                  )}
+
+                  {isResultPhase && !gameOver && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      aria-keyshortcuts="n"
+                      onClick={() => execApi('next')}
+                      disabled={loading}
+                    >
+                      {t('button.next')}
+                    </button>
+                  )}
+                </div>
+              ) : null
+            }
+          >
+            {isBetPhase && !gameOver && (
+              <div className="flex flex-col items-center gap-2" data-testid="da-bet-support">
+                <p className="text-ds-text-muted text-sm">{t('betGuide')}</p>
+                <ChipBetInput
+                  id="doubleattack-ante"
+                  label={t('label.ante')}
+                  value={ante}
+                  onChange={handleAnteChange}
+                  max={state.chips}
+                />
+                <ChipBetInput
+                  id="doubleattack-bustit"
+                  label={t('label.bustIt')}
+                  value={bustIt}
+                  onChange={setBustIt}
+                  max={Math.max(0, state.chips - ante)}
+                />
+                <div className="text-ds-text-primary text-sm tabular-nums" data-testid="da-bustit-payouts">
+                  <p className="font-medium">{t('bustItPayoutTitle')}</p>
+                  <ul>
+                    {state.bustItPayouts.map(({ cards, multiplier }, index) => (
+                      <li key={cards}>
+                        {t(index === state.bustItPayouts.length - 1 ? 'bustItPayoutRowOrMore' : 'bustItPayoutRow', {
+                          cards,
+                          payout: `${multiplier}:1`,
+                        })}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+            {isAttackPhase && (
+              <div className="flex flex-col items-center gap-2">
+                <p className="text-ds-text-muted text-sm">{t('attackGuide')}</p>
+                <p className="text-ds-text-muted text-xs" data-testid="da-attack-notice">
+                  {t('attackNotice')}
+                </p>
+                <div
+                  className="flex flex-wrap justify-center gap-x-4 gap-y-1 rounded bg-ds-surface px-3 py-2 text-ds-text-primary text-sm tabular-nums"
+                  data-testid="da-attack-comparison"
+                >
+                  <span>
+                    {t('label.chips')}: {state.chips}
+                  </span>
+                  <span>
+                    {t('label.attackLimit')}: {state.maxAttackBet}
+                  </span>
+                  <span>
+                    {t('label.selectedAttack')}: {attack}
+                  </span>
+                </div>
+              </div>
+            )}
+            {isPlayPhase && <p className="text-ds-text-muted text-sm">{t('playGuide')}</p>}
             <ErrorAlert message={error} onRetry={retry} />
             <SettingsPanel
               title={tc('settings.title')}
@@ -279,172 +448,16 @@ function DoubleAttackPageContent() {
             />
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-            <div className="flex flex-col items-center gap-2 pb-2">
-              {isBetPhase && !gameOver && (
-                <div className="flex flex-col items-center gap-2" data-tutorial="da-bet">
-                  <p className="text-ds-text-muted text-sm">{t('betGuide')}</p>
-                  <ChipBetInput
-                    id="doubleattack-ante"
-                    label={t('label.ante')}
-                    value={ante}
-                    onChange={handleAnteChange}
-                    max={state.chips}
-                  />
-                  <ChipBetInput
-                    id="doubleattack-bustit"
-                    label={t('label.bustIt')}
-                    value={bustIt}
-                    onChange={setBustIt}
-                    max={Math.max(0, state.chips - ante)}
-                  />
-                  <div className="text-ds-text-primary text-sm tabular-nums" data-testid="da-bustit-payouts">
-                    <p className="font-medium">{t('bustItPayoutTitle')}</p>
-                    <ul>
-                      {state.bustItPayouts.map(({ cards, multiplier }, index) => (
-                        <li key={cards}>
-                          {t(index === state.bustItPayouts.length - 1 ? 'bustItPayoutRowOrMore' : 'bustItPayoutRow', {
-                            cards,
-                            payout: `${multiplier}:1`,
-                          })}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <button type="button" className={btnPrimary} onClick={handleDeal} disabled={loading}>
-                    {t('button.deal')}
-                  </button>
-                </div>
-              )}
-
-              {isAttackPhase && (
-                <>
-                  <p className="text-ds-text-muted text-sm">{t('attackGuide')}</p>
-                  <p className="text-ds-text-muted text-xs" data-testid="da-attack-notice">
-                    {t('attackNotice')}
-                  </p>
-                  <div
-                    className="flex flex-wrap justify-center gap-x-4 gap-y-1 rounded bg-ds-surface px-3 py-2 text-ds-text-primary text-sm tabular-nums"
-                    data-testid="da-attack-comparison"
-                  >
-                    <span>
-                      {t('label.chips')}: {state.chips}
-                    </span>
-                    <span>
-                      {t('label.attackLimit')}: {state.maxAttackBet}
-                    </span>
-                    <span>
-                      {t('label.selectedAttack')}: {attack}
-                    </span>
-                  </div>
-                  {/* **上限はサーバの値に従う。** アンティから計算し直さない。 */}
-                  <ChipBetInput
-                    id="doubleattack-attack"
-                    label={t('label.attack')}
-                    value={attack}
-                    onChange={setAttack}
-                    max={state.maxAttackBet}
-                  />
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      className={btnPrimary}
-                      data-hint-action="attack"
-                      aria-keyshortcuts="a"
-                      onClick={handleAttack}
-                      disabled={loading}
-                    >
-                      {t('button.attack')}
-                    </button>
-                    <button
-                      type="button"
-                      className={btnSecondary}
-                      data-hint-action="decline"
-                      aria-keyshortcuts="q"
-                      onClick={handleDecline}
-                      disabled={loading}
-                    >
-                      {t('button.decline')}
-                    </button>
-                  </div>
-                </>
-              )}
-
-              {isPlayPhase && (
-                <>
-                  <p className="text-ds-text-muted text-sm">{t('playGuide')}</p>
-                  <div className="flex gap-2 flex-wrap justify-center">
-                    <button
-                      type="button"
-                      className={btnSuccess}
-                      data-hint-action="hit"
-                      aria-keyshortcuts="h"
-                      onClick={() => execApi('hit')}
-                      disabled={loading}
-                    >
-                      {t('button.hit')}
-                    </button>
-                    <button
-                      type="button"
-                      className={btnSecondary}
-                      data-hint-action="stand"
-                      aria-keyshortcuts="s"
-                      onClick={() => execApi('stand')}
-                      disabled={loading}
-                    >
-                      {t('button.stand')}
-                    </button>
-                    {/* **押せるかどうかはサーバが決める。** 手札から計算し直さない。 */}
-                    {state.canDouble && (
-                      <button
-                        type="button"
-                        className={btnWarning}
-                        data-testid="da-double"
-                        aria-keyshortcuts="d"
-                        onClick={() => execApi('double')}
-                        disabled={loading}
-                      >
-                        {t('button.double')}
-                      </button>
-                    )}
-                    {state.canSplit && (
-                      <button
-                        type="button"
-                        className={btnWarning}
-                        data-testid="da-split"
-                        aria-keyshortcuts="p"
-                        onClick={() => execApi('split')}
-                        disabled={loading}
-                      >
-                        {t('button.split')}
-                      </button>
-                    )}
-                  </div>
-                </>
-              )}
-
-              {isResultPhase && !gameOver && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  aria-keyshortcuts="n"
-                  onClick={() => execApi('next')}
-                  disabled={loading}
-                >
-                  {t('button.next')}
-                </button>
-              )}
-
-              <div className="flex gap-2">
-                <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
-                  {tc('button.actionLog')}
-                </button>
-                <GameResetButton
-                  isGameEnd={gameOver}
-                  onReset={() => execApi('reset')}
-                  requestConfirm={requestConfirm}
-                  loading={loading}
-                />
-              </div>
+            <div className="flex gap-2">
+              <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
+                {tc('button.actionLog')}
+              </button>
+              <GameResetButton
+                isGameEnd={gameOver}
+                onReset={() => execApi('reset')}
+                requestConfirm={requestConfirm}
+                loading={loading}
+              />
             </div>
           </GameFooter>
         </>

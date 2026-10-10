@@ -83,6 +83,7 @@ describe('LooPage', () => {
     mockExec.mockResolvedValue(state);
     const { getByTestId } = renderWithProviders(<LooPage />);
     await waitFor(() => expect(getByTestId('loo-decide-buttons')).toBeInTheDocument());
+    expect(within(screen.getByTestId('game-footer-actions')).getByTestId('loo-decide-buttons')).toBeInTheDocument();
   });
 
   it('does not render loo-decide-buttons when it is cpu turn', async () => {
@@ -92,6 +93,15 @@ describe('LooPage', () => {
     const { queryByTestId, getByTestId } = renderWithProviders(<LooPage />);
     await waitFor(() => expect(getByTestId('loo-hint-live')).toBeInTheDocument());
     expect(queryByTestId('loo-decide-buttons')).not.toBeInTheDocument();
+  });
+
+  it('keeps the pot-risk live region mounted when there are no action buttons', async () => {
+    mockExec.mockResolvedValue(cpuDecideState);
+    renderWithProviders(<LooPage />);
+
+    await waitFor(() => expect(screen.getByTestId('loo-hint-live')).toBeInTheDocument());
+    expect(screen.getByTestId('loo-pot-risk-live')).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-actions')).not.toBeInTheDocument();
   });
 
   it('renders skeleton when no state', () => {
