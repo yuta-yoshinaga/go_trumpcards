@@ -7,17 +7,24 @@ export interface CpuAccordionProps {
   playerCount: number;
   dataTutorial?: string;
   openOnDesktop?: boolean;
+  className?: string;
 }
 
 /** Collapsible wrapper for CPU player cards. Closed by default on mobile to reduce scroll. */
-export function CpuAccordion({ children, playerCount, dataTutorial, openOnDesktop = true }: CpuAccordionProps) {
+export function CpuAccordion({
+  children,
+  playerCount,
+  dataTutorial,
+  openOnDesktop = true,
+  className,
+}: CpuAccordionProps) {
   const { t } = useTranslation('common');
   const isMobile = useIsMobile();
 
   return (
     <details
       open={(!isMobile && openOnDesktop) || undefined}
-      className="mb-3 rounded-lg bg-black/20 border border-white/10"
+      className={['mb-3 rounded-lg bg-black/20 border border-white/10', className].filter(Boolean).join(' ')}
       data-testid="cpu-accordion"
       {...(dataTutorial ? { 'data-tutorial': dataTutorial } : {})}
     >

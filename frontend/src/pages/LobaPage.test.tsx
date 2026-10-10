@@ -85,6 +85,8 @@ describe('LobaPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     const ruleDetails = screen.getByTestId('lb-rule-details');
     expect(ruleDetails).not.toHaveAttribute('open');
+    expect(ruleDetails).toHaveClass('flex-1', 'open:basis-full');
+    expect(ruleDetails.parentElement).toHaveClass('flex', 'flex-wrap', 'gap-2', 'sm:block');
     const ruleText = ruleDetails.querySelector('[data-tutorial="lb-rule"]');
     expect(ruleText).toBeInTheDocument();
     expect(ruleText?.parentElement?.tagName).not.toBe('SUMMARY');
@@ -94,8 +96,9 @@ describe('LobaPage', () => {
     expect(ruleText).toBeVisible();
     const cpuDetails = screen.getByTestId('cpu-accordion');
     expect(cpuDetails).not.toHaveAttribute('open');
+    expect(cpuDetails).toHaveClass('flex-1', 'open:basis-full');
     expect(cpuDetails.querySelector('[role="img"]')).toBeInTheDocument();
-    expect(cpuDetails.querySelector('.grid.grid-cols-2')).toBeInTheDocument();
+    expect(cpuDetails.querySelector('.flex.flex-wrap')).toBeInTheDocument();
     const cpuHand = cpuDetails.querySelector('[role="img"]');
     expect(cpuHand).toBeInTheDocument();
     expect(cpuHand?.querySelector('img')).toHaveStyle({ width: '55px' });
@@ -129,7 +132,6 @@ describe('LobaPage', () => {
     renderWithProviders(<LobaPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
-    expect(screen.getByTestId('cpu-accordion').querySelector('.grid-cols-2')).toBeInTheDocument();
     expect(screen.getByTestId('cpu-accordion').querySelector('.sm\\:grid-cols-3')).toBeInTheDocument();
     const meldList = screen.getByTestId('loba-meld').parentElement;
     expect(meldList).toHaveClass('sm:flex-col');

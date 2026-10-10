@@ -173,6 +173,38 @@ describe('PanPage', () => {
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
   });
 
+  it('keeps CPU melds and their chip units inside the CPU accordion', async () => {
+    mockExec.mockResolvedValue(valleMeldState);
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    renderWithProviders(<PanPage />);
+
+    const accordion = await screen.findByTestId('cpu-accordion');
+    expect(accordion).not.toHaveAttribute('open');
+    const chipUnits = within(accordion).getByTestId('pan-chip-units-1-0');
+    expect(chipUnits).not.toBeVisible();
+    expect(screen.queryByTestId('pan-chip-units-1-0')).toBe(chipUnits);
+
+    fireEvent.click(within(accordion).getByText(/CPU対戦相手/));
+    expect(chipUnits).toBeVisible();
+    for (const meld of within(accordion).getAllByLabelText(/CPU 1 のメルド/)) {
+      expect(meld).toBeVisible();
+    }
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
+  it('shows CPU melds inside the open desktop CPU accordion', async () => {
+    mockExec.mockResolvedValue(valleMeldState);
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    renderWithProviders(<PanPage />);
+
+    const accordion = await screen.findByTestId('cpu-accordion');
+    expect(accordion).toHaveAttribute('open');
+    expect(within(accordion).getByTestId('pan-chip-units-1-0')).toBeVisible();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<PanPage />);

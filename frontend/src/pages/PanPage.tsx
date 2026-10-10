@@ -194,6 +194,53 @@ function PanPageContent() {
   const isHumanTurn = (isDrawPhase || isPlayPhase) && state.players[state.currentPlayerIdx]?.isHuman === true;
   const canLayoff = isPlayPhase && isHumanTurn && selectedCardIndices.length === 1 && !loading;
 
+  const renderPlayerMelds = (p: PanPlayer) =>
+    p.laidMelds.map((meld, meldIdx) => (
+      <fieldset
+        key={`meld-${p.id}-${meldIdx}-${meld.cards.map((c) => `${c.design}${c.value}`).join('')}`}
+        className={`border-0 p-0 m-0 min-w-0 flex flex-wrap items-center gap-1 ${isMobile ? 'mb-0' : 'mb-1'}`}
+        aria-label={t('a11y.meldGroup', {
+          name: playerName(p.id, p.isHuman),
+          cards: meld.cards.map(cardAlt).join(t('listSeparator')),
+        })}
+      >
+        {meld.cards.map((card, idx) => (
+          <span
+            key={`meldcard-${p.id}-${meldIdx}-${card.design}-${card.value}-${idx}`}
+            className="inline-block"
+            style={{ marginLeft: idx > 0 ? -Math.round(cardWidth * (isMobile ? 0.48 : 0.5) * 0.6) : 0 }}
+          >
+            <AnimatedCard card={card} width={cardWidth * (isMobile ? 0.48 : 0.5)} />
+          </span>
+        ))}
+        {meld.chipUnits > 0 && (
+          // A valle deals chips to every player; showing the unit beside its
+          // meld makes the source clear on the table (#4853).
+          <span
+            className={`text-xs font-bold px-1.5 py-0.5 rounded ${badgeWarningColors}`}
+            data-testid={`pan-chip-units-${p.id}-${meldIdx}`}
+          >
+            {t('chipUnits', { count: meld.chipUnits })}
+          </span>
+        )}
+        {canLayoff && (
+          <button
+            type="button"
+            className={btnPrimary}
+            onClick={() => handleLayoff(p.id, meldIdx)}
+            data-testid={`pan-layoff-${p.id}-${meldIdx}`}
+            // Owner and cards distinguish this target from other layoff buttons (#6502).
+            aria-label={t('a11y.layoffTo', {
+              name: playerName(p.id, p.isHuman),
+              meld: meld.cards.map(cardAlt).join(t('listSeparator')),
+            })}
+          >
+            {t('layoffButton')}
+          </button>
+        )}
+      </fieldset>
+    ));
+
   // Meld-progress indicator toward the win condition (winMeldCount cards laid on
   // the table), highlighting the final stretch (<=2 cards left) to go out.
   const renderMeldProgress = (p: PanPlayer) => {
@@ -312,65 +359,17 @@ function PanPageContent() {
                   data-tutorial="pan-meld-area"
                 >
                   <div className="text-ds-text-muted text-sm mb-1">{t('meldsTitle')}</div>
-                  {state.players.every((p) => p.laidMelds.length === 0) ? (
+                  {humanPlayer?.laidMelds.length === 0 ? (
                     <div className="text-ds-text-muted text-sm">{t('noMelds')}</div>
                   ) : (
                     state.players
-                      .filter((p) => p.laidMelds.length > 0)
+                      .filter((p) => p.isHuman && p.laidMelds.length > 0)
                       .map((p) => (
                         <div key={`melds-${p.id}`} className={isMobile ? 'mb-1' : 'mb-2'}>
                           <div className="text-ds-text-muted text-xs mb-1">
                             {t('meldOwner', { name: playerName(p.id, p.isHuman) })}
                           </div>
-                          {p.laidMelds.map((meld, meldIdx) => (
-                            <fieldset
-                              key={`meld-${p.id}-${meldIdx}-${meld.cards.map((c) => `${c.design}${c.value}`).join('')}`}
-                              className={`border-0 p-0 m-0 min-w-0 flex flex-wrap items-center gap-1 ${isMobile ? 'mb-0' : 'mb-1'}`}
-                              aria-label={t('a11y.meldGroup', {
-                                name: playerName(p.id, p.isHuman),
-                                cards: meld.cards.map(cardAlt).join(t('listSeparator')),
-                              })}
-                            >
-                              {meld.cards.map((card, idx) => (
-                                <span
-                                  key={`meldcard-${p.id}-${meldIdx}-${card.design}-${card.value}-${idx}`}
-                                  className="inline-block"
-                                  style={{
-                                    marginLeft: idx > 0 ? -Math.round(cardWidth * (isMobile ? 0.48 : 0.5) * 0.6) : 0,
-                                  }}
-                                >
-                                  <AnimatedCard card={card} width={cardWidth * (isMobile ? 0.48 : 0.5)} />
-                                </span>
-                              ))}
-                              {/* バジェ (3/5/7 のセット) は全員にチップを配る。どのメルドが
-                                  その原因なのかが盤面から読めなかった (#4853)。 */}
-                              {meld.chipUnits > 0 && (
-                                <span
-                                  className={`text-xs font-bold px-1.5 py-0.5 rounded ${badgeWarningColors}`}
-                                  data-testid={`pan-chip-units-${p.id}-${meldIdx}`}
-                                >
-                                  {t('chipUnits', { count: meld.chipUnits })}
-                                </span>
-                              )}
-                              {canLayoff && (
-                                <button
-                                  type="button"
-                                  className={btnPrimary}
-                                  onClick={() => handleLayoff(p.id, meldIdx)}
-                                  data-testid={`pan-layoff-${p.id}-${meldIdx}`}
-                                  // **同じ「レイオフ」が卓の上に何個も並ぶ。**読み上げでは
-                                  // どのプレイヤーのどのメルド宛かが区別できなかった (#6502)。
-                                  // 所有者と札そのものを言えば、並んでいても取り違えない。
-                                  aria-label={t('a11y.layoffTo', {
-                                    name: playerName(p.id, p.isHuman),
-                                    meld: meld.cards.map(cardAlt).join(t('listSeparator')),
-                                  })}
-                                >
-                                  {t('layoffButton')}
-                                </button>
-                              )}
-                            </fieldset>
-                          ))}
+                          {renderPlayerMelds(p)}
                         </div>
                       ))
                   )}
@@ -389,6 +388,14 @@ function PanPageContent() {
                           {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
                           {t('chips', { count: p.chips })} | {t('melded', { count: p.meldedCount })}
                         </div>
+                        {p.laidMelds.length > 0 && (
+                          <div className="mt-1">
+                            <div className="text-ds-text-muted text-xs mb-1">
+                              {t('meldOwner', { name: playerName(p.id, p.isHuman) })}
+                            </div>
+                            {renderPlayerMelds(p)}
+                          </div>
+                        )}
                         {revealCpu && p.cards.length > 0 && (
                           <div className="flex flex-wrap gap-1 mt-1">
                             {p.cards.map((card, idx) => (
