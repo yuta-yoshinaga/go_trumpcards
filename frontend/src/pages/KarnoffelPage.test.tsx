@@ -12,6 +12,12 @@ vi.mock('../api/gameApi', () => ({
   actionLogApi: { karnoffel: vi.fn() },
 }));
 
+const mobileState = { isMobile: false };
+vi.mock('../hooks/useCardDimensions', () => ({
+  useCardDimensions: () => ({ cardWidth: 40 }),
+  useIsMobile: () => mobileState.isMobile,
+}));
+
 const mockExec = vi.mocked(karnoffelApi.exec);
 
 const card = (design: CardDesign, value: number) => ({ design, value });
@@ -69,7 +75,30 @@ function handButtons() {
 describe('KarnoffelPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mobileState.isMobile = false;
     mockExec.mockResolvedValue(makeState());
+  });
+
+  it('collapses reference details on mobile and keeps them open on desktop', async () => {
+    mobileState.isMobile = true;
+    const { unmount } = renderWithProviders(<KarnoffelPage />);
+    await screen.findByTestId('karnoffel-scores');
+    const details = screen.getAllByText(/切札の決め方|序列/).map((summary) => summary.closest('details'));
+    expect(details).toHaveLength(2);
+    for (const detail of details) expect(detail).not.toHaveAttribute('open');
+    expect(screen.getByTestId('karnoffel-ladder')).not.toBeVisible();
+    expect(screen.getByTestId('karnoffel-chosen-note')).not.toBeVisible();
+    const settings = screen.getByText('設定', { exact: true }).closest('details');
+    expect(settings).not.toHaveAttribute('open');
+    expect(screen.getByLabelText('目標局数')).not.toBeVisible();
+
+    unmount();
+    mobileState.isMobile = false;
+    renderWithProviders(<KarnoffelPage />);
+    await screen.findByTestId('karnoffel-scores');
+    for (const detail of document.querySelectorAll('details')) expect(detail).toHaveAttribute('open');
+    expect(screen.getByTestId('karnoffel-ladder')).toBeVisible();
+    expect(screen.getByText('設定', { exact: true }).closest('details')).toHaveAttribute('open');
   });
 
   it('resets on mount', async () => {

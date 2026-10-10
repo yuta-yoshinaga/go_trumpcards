@@ -5,8 +5,9 @@ test.describe('Karnöffel E2E', () => {
   test('shows the irregular ranking and progresses the hand', async ({ page }) => {
     await navigateTo(page, '/karnoffel');
 
-    // Permanent, not tutorial-only: the ranking is the whole point, and the
-    // devil's rule cannot be inferred from the cards on screen.
+    // Open the reference details before checking their contents.
+    await page.getByText('序列', { exact: true }).click();
+    await page.getByText('切札の決め方', { exact: true }).click();
     const ladder = page.getByTestId('karnoffel-ladder');
     await expect(ladder).toBeVisible({ timeout: TIMEOUT_GAME_LOOP });
     await expect(ladder).toContainText('J（カルニッフェル）');
@@ -35,6 +36,7 @@ test.describe('Karnöffel E2E', () => {
     }
     await waitForLoaded(page);
 
+    await page.getByText('序列', { exact: true }).click();
     await expect(page.getByTestId('karnoffel-ladder')).toBeVisible({ timeout: TIMEOUT_GAME_LOOP });
   });
 });

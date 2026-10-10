@@ -6,6 +6,7 @@
   "team": "Team {{n}}",
   "chosenSuit": "Chosen suit",
   "chosenNote": "THE LOWEST of the four face-up cards picks the suit.",
+  "chosenNoteSummary": "Trump selection",
   "upCard": "up",
   "playersTitle": "Players",
   "hiddenHand": "{{count}} hidden",

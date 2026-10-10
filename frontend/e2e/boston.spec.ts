@@ -9,6 +9,7 @@ test.describe('Boston E2E', () => {
     // which is what the whole auction turns on.
     const ladder = page.getByTestId('boston-ladder');
     await expect(ladder).toBeVisible({ timeout: TIMEOUT_GAME_LOOP });
+    await ladder.locator('summary').click();
     await expect(ladder).toContainText('リトル・ミゼール');
     await expect(ladder).toContainText('ピッコリッシモ');
     await expect(ladder).toContainText('ミゼールはトリック宣言の間に挟まります');

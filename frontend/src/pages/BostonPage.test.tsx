@@ -7,6 +7,13 @@ import type { BostonBidOption, BostonPlayer, BostonResponse, CardDesign } from '
 import { BostonPhase } from '../types/phases';
 import { BostonPage } from './BostonPage';
 
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+}));
+
 vi.mock('../api/gameApi', () => ({
   bostonApi: { exec: vi.fn() },
   actionLogApi: { boston: vi.fn() },
@@ -107,6 +114,23 @@ describe('BostonPage', () => {
   it('resets on mount', async () => {
     renderWithProviders(<BostonPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('keeps the bidding ladder collapsed on mobile and open on desktop', async () => {
+    mobileState.isMobile = true;
+    const mobileRender = renderWithProviders(<BostonPage />);
+    await waitFor(() => expect(screen.getByTestId('boston-ladder')).toBeInTheDocument());
+
+    const ladder = screen.getByTestId('boston-ladder');
+    expect(ladder).not.toHaveAttribute('open');
+    expect(within(ladder).getByText(/ミゼールはトリック宣言の間に挟まります/)).not.toBeVisible();
+
+    mobileRender.unmount();
+    mobileState.isMobile = false;
+    renderWithProviders(<BostonPage />);
+    const desktopLadder = await screen.findByTestId('boston-ladder');
+    expect(desktopLadder).toHaveAttribute('open');
+    expect(within(desktopLadder).getByText(/ミゼールはトリック宣言の間に挟まります/)).toBeVisible();
   });
 
   // **序列はサーバーが送る順のまま出す。**ミゼールがトリック宣言の間に挟まる。

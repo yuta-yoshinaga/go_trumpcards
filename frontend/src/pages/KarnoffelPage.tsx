@@ -12,7 +12,7 @@ import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -79,6 +79,7 @@ export const KarnoffelPage = withTutorial(KarnoffelPageContent, 'karnoffel', KAR
 
 /** Inner content of the Karnöffel page, wrapped by TutorialProvider. */
 function KarnoffelPageContent() {
+  const isMobile = useIsMobile();
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('karnoffel');
   const { state, loading, error, exec, retry } = useGameApi(karnoffelApi.exec);
@@ -173,35 +174,41 @@ function KarnoffelPageContent() {
               </span>
             </div>
 
-            <div className="mb-2 flex justify-center">
-              <label className="flex min-h-[44px] items-center gap-2 text-sm text-ds-text-primary">
-                <span>{t('targetHandsLabel')}</span>
-                <select
-                  aria-label={t('targetHandsLabel')}
-                  className="min-h-[44px] rounded border border-ds-border bg-ds-surface px-3 text-ds-text-primary"
-                  value={targetHands}
-                  onChange={(event) => setTargetHands(Number(event.target.value))}
-                >
-                  {Array.from({ length: 10 }, (_, index) => index + 1).map((count) => (
-                    <option key={count} value={count}>
-                      {count}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
+            <details className="mb-2 text-center text-ds-text-primary text-sm" open={!isMobile || undefined}>
+              <summary className="cursor-pointer select-none">{tc('settings.title')}</summary>
+              <div className="flex justify-center">
+                <label className="flex min-h-[44px] items-center gap-2 text-sm text-ds-text-primary">
+                  <span>{t('targetHandsLabel')}</span>
+                  <select
+                    aria-label={t('targetHandsLabel')}
+                    className="min-h-[44px] rounded border border-ds-border bg-ds-surface px-3 text-ds-text-primary"
+                    value={targetHands}
+                    onChange={(event) => setTargetHands(Number(event.target.value))}
+                  >
+                    {Array.from({ length: 10 }, (_, index) => index + 1).map((count) => (
+                      <option key={count} value={count}>
+                        {count}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+            </details>
 
             {/* The lowest face-up card decides the suit — not a turn-up. */}
-            <div className="mb-2 text-center text-ds-text-muted text-xs" data-testid="karnoffel-chosen-note">
-              {t('chosenNote')}
-            </div>
+            <details className="mb-2 text-center text-ds-text-muted text-xs" open={!isMobile || undefined}>
+              <summary className="cursor-pointer select-none">{t('chosenNoteSummary')}</summary>
+              <div data-testid="karnoffel-chosen-note">{t('chosenNote')}</div>
+            </details>
 
             {/* The irregular ranking, which is the whole point of the game. */}
-            <div className="mb-2 p-2 rounded bg-black/20 text-xs" data-testid="karnoffel-ladder">
-              <div className="mb-1 text-ds-text-primary">{t('ladderTitle')}</div>
-              <div className="text-ds-text-primary">{t('ladderLine')}</div>
-              <div className="mt-1 text-ds-text-muted">{t('ladderNote')}</div>
-            </div>
+            <details className="mb-2 p-2 rounded bg-black/20 text-xs" open={!isMobile || undefined}>
+              <summary className="cursor-pointer select-none text-ds-text-primary">{t('ladderTitle')}</summary>
+              <div data-testid="karnoffel-ladder">
+                <div className="text-ds-text-primary">{t('ladderLine')}</div>
+                <div className="mt-1 text-ds-text-muted">{t('ladderNote')}</div>
+              </div>
+            </details>
 
             {/* Score sheet */}
             <div className="mb-2 p-2 rounded bg-black/20 text-sm" data-testid="karnoffel-scores">
@@ -218,47 +225,53 @@ function KarnoffelPageContent() {
             {/* Players */}
             <div className="mb-2 p-2 rounded bg-black/30" data-tutorial="karnoffel-players">
               <div className="mb-1 text-ds-text-primary text-sm">{t('playersTitle')}</div>
-              {state.players.map((p) => (
-                <div
-                  key={`player-${p.id}`}
-                  data-testid="karnoffel-player"
-                  className={`text-sm py-0.5 flex items-center gap-2 ${
-                    p.isCurrentTurn && !isGameEnd ? 'text-ds-warning' : 'text-ds-text-muted'
-                  } ${p.isHuman ? 'font-semibold' : ''}`}
-                >
-                  <span>{playerLabel(p.id, p.isHuman)}</span>
-                  <span>({t('team', { n: p.team })})</span>
-                  {p.isDealer && <span className="text-ds-accent">[{t('dealer')}]</span>}
-                  {/* **表向きの札は全員ぶん見える。**切札の根拠がここにある。 */}
-                  {/* 上札自身が称号札のこともある。**手札にはバッジを出しているのに
+              <div className="grid grid-cols-2 sm:block">
+                {state.players.map((p) => (
+                  <div
+                    key={`player-${p.id}`}
+                    data-testid="karnoffel-player"
+                    className={`grid grid-cols-[1fr_auto] items-center gap-x-1 text-xs py-0.5 sm:flex sm:flex-wrap sm:gap-2 sm:text-sm ${
+                      p.isCurrentTurn && !isGameEnd ? 'text-ds-warning' : 'text-ds-text-muted'
+                    } ${p.isHuman ? 'font-semibold' : ''}`}
+                  >
+                    <span className="col-span-2 flex min-w-0 items-center gap-1 truncate sm:contents">
+                      <span className="truncate">{playerLabel(p.id, p.isHuman)}</span>
+                      <span>({t('team', { n: p.team })})</span>
+                      {p.isDealer && <span className="text-ds-accent">[{t('dealer')}]</span>}
+                    </span>
+                    {/* **表向きの札は全員ぶん見える。**切札の根拠がここにある。 */}
+                    {/* 上札自身が称号札のこともある。**手札にはバッジを出しているのに
                       上札には出していない**と、同じ札が場所によって別の重みに見える (#6529)。 */}
-                  <span className="flex items-center gap-1">
-                    {t('upCard')}:
-                    {p.upCard ? (
-                      (() => {
-                        const upKey = karnoffelRankKey(p.upCard, state.chosenSuit);
-                        return (
-                          <span className="relative inline-block">
-                            <CardImage card={p.upCard} width={cardWidth} />
-                            {upKey && (
-                              <span
-                                data-testid={`karnoffel-up-rank-${p.id}`}
-                                className={`absolute left-0 right-0 bottom-0 rounded-b px-0.5 text-[9px] font-bold text-center truncate ${badgeWarningColors}`}
-                              >
-                                {t(`rankBadge.${upKey}`)}
+                    <span className="col-span-2 row-start-2 flex items-center gap-1 sm:contents">
+                      <span className="flex items-center gap-1">
+                        {t('upCard')}:
+                        {p.upCard ? (
+                          (() => {
+                            const upKey = karnoffelRankKey(p.upCard, state.chosenSuit);
+                            return (
+                              <span className="relative inline-block">
+                                <CardImage card={p.upCard} width={cardWidth} />
+                                {upKey && (
+                                  <span
+                                    data-testid={`karnoffel-up-rank-${p.id}`}
+                                    className={`absolute left-0 right-0 bottom-0 rounded-b px-0.5 text-[9px] font-bold text-center truncate ${badgeWarningColors}`}
+                                  >
+                                    {t(`rankBadge.${upKey}`)}
+                                  </span>
+                                )}
                               </span>
-                            )}
-                          </span>
-                        );
-                      })()
-                    ) : (
-                      <span>-</span>
-                    )}
-                  </span>
-                  <span>{t('tricksWon', { n: p.tricksWon })}</span>
-                  {!p.isHuman && p.cards.length === 0 && <span>{t('hiddenHand', { count: p.cardCount })}</span>}
-                </div>
-              ))}
+                            );
+                          })()
+                        ) : (
+                          <span>-</span>
+                        )}
+                      </span>
+                      <span className="ml-auto sm:ml-0">{t('tricksWon', { n: p.tricksWon })}</span>
+                      {!p.isHuman && p.cards.length === 0 && <span>{t('hiddenHand', { count: p.cardCount })}</span>}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Trick */}
