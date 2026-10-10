@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import i18n from 'i18next';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { pigtailApi } from '../api/gameApi';
+import { useIsMobile } from '../hooks/useCardDimensions';
 import { useCliMode } from '../hooks/useCliMode';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { PigsTailResponse } from '../types/card';
@@ -20,6 +21,12 @@ vi.mock('../hooks/useCliMode', () => ({
 }));
 
 const mockUseCliMode = vi.mocked(useCliMode);
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: vi.fn(() => true),
+}));
+const mockUseIsMobile = vi.mocked(useIsMobile);
 
 vi.mock('../api/gameApi', () => ({
   pigtailApi: { exec: vi.fn() },
@@ -81,9 +88,51 @@ beforeEach(() => {
     addError: vi.fn(),
     clearLog: vi.fn(),
   });
+  mockUseIsMobile.mockReturnValue(true);
 });
 
 describe('PigsTailPage', () => {
+  it('collapses CPU seats on mobile while keeping the human seat visible', async () => {
+    renderWithProviders(<PigsTailPage />);
+    const accordion = await screen.findByTestId('cpu-accordion');
+    expect(accordion).not.toHaveAttribute('open');
+    expect(screen.getByText('あなた')).toBeVisible();
+    expect(screen.getByText('CPU 1')).not.toBeVisible();
+  });
+
+  it('shows CPU seats by default on desktop', async () => {
+    mockUseIsMobile.mockReturnValue(false);
+    renderWithProviders(<PigsTailPage />);
+    const accordion = await screen.findByTestId('cpu-accordion');
+    expect(accordion).toHaveAttribute('open');
+    expect(screen.getByText('CPU 1')).toBeVisible();
+  });
+
+  it('uses compact cards and center pile on mobile', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      lastDrawCard: { design: 'SPADE', value: 1 },
+    });
+    renderWithProviders(<PigsTailPage />);
+
+    expect((await screen.findByTestId('circular-deck')).querySelector('img')).toHaveStyle({ width: '24px' });
+    expect(screen.getByTestId('pt-center-top')).toHaveClass('w-12', 'h-12');
+    expect(screen.getByTestId('pt-draw-reveal').querySelector('img')).toHaveStyle({ width: '32px' });
+  });
+
+  it('keeps desktop deck and revealed card at their default sizes', async () => {
+    mockUseIsMobile.mockReturnValue(false);
+    mockExec.mockResolvedValue({
+      ...baseState,
+      lastDrawCard: { design: 'SPADE', value: 1 },
+    });
+    renderWithProviders(<PigsTailPage />);
+
+    expect((await screen.findByTestId('circular-deck')).querySelector('img')).toHaveStyle({ width: '32px' });
+    expect(screen.getByTestId('pt-center-top')).toHaveClass('w-16', 'h-16');
+    expect(screen.getByTestId('pt-draw-reveal').querySelector('img')).toHaveStyle({ width: '48px' });
+  });
+
   it('keeps the status region empty before a draw', async () => {
     renderWithProviders(<PigsTailPage />);
     const status = await screen.findByTestId('pigtail-action-announcement');

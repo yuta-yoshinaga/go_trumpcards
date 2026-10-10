@@ -3,6 +3,7 @@ import { pigtailApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CircularDeck } from '../components/CircularDeck';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -15,6 +16,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { type ActionBinding, useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
+import { useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -85,6 +87,7 @@ const PIGTAIL_PHASE_KEYS: Readonly<Record<number, string>> = {
 export const PigsTailPage = withTutorial(PigsTailPageContent, 'pigtail', PT_TUTORIAL_STEPS);
 /** Inner content of the Pig's Tail page. */
 function PigsTailPageContent() {
+  const isMobile = useIsMobile();
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('pigtail');
   const { state, loading, exec: execApi } = useGameApi(pigtailApi.exec);
@@ -245,14 +248,13 @@ function PigsTailPageContent() {
           )}
           <div className="flex-1 overflow-y-auto px-4 py-2 space-y-3">
             {/* Circle & Center area */}
-            <div className="flex flex-col items-center gap-3" data-tutorial="pt-circle-area">
+            <div className="flex flex-col items-center gap-2 sm:gap-3" data-tutorial="pt-circle-area">
               <div className="text-xs text-ds-text-muted">
                 {t('label.circle')}: {state.circleCount}
               </div>
               <CircularDeck
                 count={state.circleCount}
-                cardWidth={32}
-                diameter={160}
+                cardWidth={isMobile ? 24 : 32}
                 onDrawCard={handleDraw}
                 disabled={loading || isGameEnd || !isHumanTurn}
                 drawAriaLabel={t('button.draw')}
@@ -262,7 +264,7 @@ function PigsTailPageContent() {
                   {t('label.center')} ({state.centerCount})
                 </div>
                 <div
-                  className="w-16 h-16 rounded-lg bg-ds-warning/60 border-2 border-ds-warning/40 flex items-center justify-center text-lg font-bold text-white"
+                  className={`${isMobile ? 'w-12 h-12 text-base' : 'w-16 h-16 text-lg'} rounded-lg bg-ds-warning/60 border-2 border-ds-warning/40 flex items-center justify-center font-bold text-white`}
                   data-testid="pt-center-top"
                 >
                   {state.centerTop ? centerCardLabel(state.centerTop) : '-'}
@@ -299,7 +301,7 @@ function PigsTailPageContent() {
                       state.lastPenalty ? 'rounded-lg ring-2 ring-ds-error shadow-lg shadow-ds-error/50' : undefined
                     }
                   >
-                    <AnimatedCard card={state.lastDrawCard} width={48} silent />
+                    <AnimatedCard card={state.lastDrawCard} width={isMobile ? 32 : 48} silent />
                   </div>
                 </div>
                 <div className={`text-sm font-medium ${state.lastPenalty ? 'text-ds-error-text' : 'text-ds-success'}`}>
@@ -349,23 +351,46 @@ function PigsTailPageContent() {
 
             {/* Players */}
             <div className="space-y-2" data-tutorial="pt-player-area">
-              {state.players.map((player, idx) => (
-                <div
-                  key={player.id}
-                  className={`flex items-center justify-between px-3 py-2 rounded ${
-                    !isGameEnd && state.currentTurn === idx
-                      ? 'bg-ds-warning/30 border border-ds-warning/50'
-                      : 'bg-black/30'
-                  } ${isGameEnd && state.loserIdx === idx ? 'bg-ds-error/40 border border-ds-error/50' : ''}`}
-                >
-                  <span className="text-ds-text-primary text-sm font-medium">
-                    {playerName(player.id, player.isHuman)}
-                  </span>
-                  <span className="text-ds-text-primary text-sm">
-                    {player.cardCount} {t('label.cards')}
-                  </span>
+              {state.players
+                .filter((player) => player.isHuman)
+                .map((player) => (
+                  <div
+                    key={player.id}
+                    className={`flex items-center justify-between px-3 py-2 rounded ${
+                      !isGameEnd && state.currentTurn === player.id
+                        ? 'bg-ds-warning/30 border border-ds-warning/50'
+                        : 'bg-black/30'
+                    } ${isGameEnd && state.loserIdx === player.id ? 'bg-ds-error/40 border border-ds-error/50' : ''}`}
+                  >
+                    <span className="text-ds-text-primary text-sm font-medium">
+                      {playerName(player.id, player.isHuman)}
+                    </span>
+                    <span className="text-ds-text-primary text-sm">
+                      {player.cardCount} {t('label.cards')}
+                    </span>
+                  </div>
+                ))}
+              <CpuAccordion playerCount={state.players.filter((player) => !player.isHuman).length}>
+                <div className="flex flex-wrap gap-2 sm:flex-col">
+                  {state.players
+                    .filter((player) => !player.isHuman)
+                    .map((player) => (
+                      <div
+                        key={player.id}
+                        className={`flex items-center justify-between px-3 py-2 rounded flex-1 min-w-40 sm:flex-none sm:min-w-0 ${
+                          !isGameEnd && state.currentTurn === player.id
+                            ? 'bg-ds-warning/30 border border-ds-warning/50'
+                            : 'bg-black/30'
+                        } ${isGameEnd && state.loserIdx === player.id ? 'bg-ds-error/40 border border-ds-error/50' : ''}`}
+                      >
+                        <span className="text-ds-text-primary text-sm font-medium">{playerName(player.id, false)}</span>
+                        <span className="text-ds-text-primary text-sm">
+                          {player.cardCount} {t('label.cards')}
+                        </span>
+                      </div>
+                    ))}
                 </div>
-              ))}
+              </CpuAccordion>
             </div>
 
             {/* Message */}

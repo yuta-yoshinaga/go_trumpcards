@@ -13,6 +13,12 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockExec = vi.mocked(cariocaApi.exec);
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+}));
 
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 
@@ -95,6 +101,25 @@ beforeEach(() => {
 });
 
 describe('CariocaPage', () => {
+  it('collapses CPU seats and explanatory rules on mobile, and opens CPU seats on desktop', async () => {
+    mobileState.isMobile = true;
+    renderWithProviders(<CariocaPage />);
+    await screen.findByText(/Your hand|あなたの手札/);
+
+    const cpuAccordion = screen.getByTestId('cpu-accordion');
+    expect(cpuAccordion).not.toHaveAttribute('open');
+    for (const cpuLabel of screen.getAllByText(/CPU 1|CPU 2/)) expect(cpuLabel).not.toBeVisible();
+    const rules = screen.getByTestId('ca-joker-penalty-help');
+    expect(rules).not.toHaveAttribute('open');
+    expect(rules.querySelector('p')).not.toBeVisible();
+
+    cleanup();
+    mobileState.isMobile = false;
+    renderWithProviders(<CariocaPage />);
+    await screen.findByText(/Your hand|あなたの手札/);
+    expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
+  });
+
   it('keeps a bare status live region mounted while empty and shows messages when present', async () => {
     renderWithProviders(<CariocaPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

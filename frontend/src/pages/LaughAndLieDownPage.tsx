@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { laughandliedownApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardBack } from '../components/CardImage';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -15,7 +16,7 @@ import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
@@ -88,7 +89,8 @@ function LaughAndLieDownPageContent() {
     [],
   );
   const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, cpuCardWidth, isMobile: isCardMobile } = useCardDimensions();
+  const isMobile = useIsMobile();
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -166,51 +168,64 @@ function LaughAndLieDownPageContent() {
             {/* Permanent, not tutorial-only: "one or three" and "cannot
                 capture means your whole hand goes to the table" are the two
                 things a player gets wrong. */}
-            <div className="text-center text-xs text-ds-warning mb-3 font-medium" data-tutorial="lld-rule">
-              {t('ruleLine')}
-            </div>
+            <details
+              className="mb-3 text-center text-xs text-ds-warning font-medium"
+              data-testid="lld-rules"
+              open={!isMobile || undefined}
+            >
+              <summary className="cursor-pointer select-none" data-tutorial="lld-rule">
+                {t('rules')}
+              </summary>
+              <div className="pt-1">{t('ruleLine')}</div>
+            </details>
 
             {/* Opponent hands: backs only. The server withholds the cards. */}
-            <div className="flex justify-center gap-4 mb-3 flex-wrap" data-tutorial="lld-seats">
-              {opponents.map((o) => (
-                <div key={`opp-${o.id.toString()}`} className="text-center">
-                  <div className="text-game-text-muted text-xs mb-1">
-                    {t('opponentHand', { name: `CPU${o.id.toString()}`, n: o.cardCount })}
-                    {' · '}
-                    {t('won', { n: o.wonCount })}
-                    {o.laidDown && ` · ${t('laidDown')}`}
-                    {ended ? ` · ${t('score', { n: o.score })}` : ` · ${t('runningScore', { n: o.runningScore })}`}
-                    {ended && state.lastInIdx === o.id && (
-                      <span data-testid={`lld-lastin-${o.id.toString()}`}>
-                        {` · ${t('lastIn', { amount: state.lastInBonus })}`}
-                      </span>
+            <CpuAccordion playerCount={opponents.length} dataTutorial="lld-seats">
+              <div className="flex flex-wrap justify-center gap-4 sm:grid sm:grid-cols-4">
+                {opponents.map((o) => (
+                  <div key={`opp-${o.id.toString()}`} className="text-center">
+                    <div className="text-game-text-muted text-xs mb-1">
+                      {t('opponentHand', { name: `CPU${o.id.toString()}`, n: o.cardCount })}
+                      {' · '}
+                      {t('won', { n: o.wonCount })}
+                      {o.laidDown && ` · ${t('laidDown')}`}
+                      {ended ? ` · ${t('score', { n: o.score })}` : ` · ${t('runningScore', { n: o.runningScore })}`}
+                      {ended && state.lastInIdx === o.id && (
+                        <span data-testid={`lld-lastin-${o.id.toString()}`}>
+                          {` · ${t('lastIn', { amount: state.lastInBonus })}`}
+                        </span>
+                      )}
+                    </div>
+                    {ended ? (
+                      <div className="flex gap-1 justify-center flex-wrap">
+                        {o.cards.map((card, i) => (
+                          <AnimatedCard
+                            key={`opp-${o.id.toString()}-c${i.toString()}`}
+                            card={card}
+                            width={cardWidth}
+                            draggable={false}
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <div
+                        className="flex justify-center flex-wrap sm:flex-nowrap sm:gap-0"
+                        role="img"
+                        aria-label={t('opponentHandAriaLabel', { name: `CPU${o.id.toString()}`, n: o.cardCount })}
+                      >
+                        {Array.from({ length: o.cardCount }, (_, i) => (
+                          <CardBack
+                            key={`opp-${o.id.toString()}-c${i.toString()}`}
+                            width={isCardMobile ? cpuCardWidth : 36}
+                            style={!isCardMobile && i > 0 ? { marginLeft: -22 } : undefined}
+                          />
+                        ))}
+                      </div>
                     )}
                   </div>
-                  {ended ? (
-                    <div className="flex gap-1 justify-center flex-wrap">
-                      {o.cards.map((card, i) => (
-                        <AnimatedCard
-                          key={`opp-${o.id.toString()}-c${i.toString()}`}
-                          card={card}
-                          width={cardWidth}
-                          draggable={false}
-                        />
-                      ))}
-                    </div>
-                  ) : (
-                    <div
-                      className="flex gap-1 justify-center flex-wrap"
-                      role="img"
-                      aria-label={t('opponentHandAriaLabel', { name: `CPU${o.id.toString()}`, n: o.cardCount })}
-                    >
-                      {Array.from({ length: o.cardCount }, (_, i) => (
-                        <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            </CpuAccordion>
 
             {/* The table is face up in full: seeing how many of each rank are
                 left is what makes the three-card take a decision. */}

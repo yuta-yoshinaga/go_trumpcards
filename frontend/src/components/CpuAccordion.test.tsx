@@ -43,6 +43,16 @@ describe('CpuAccordion', () => {
     expect(details).toHaveAttribute('open');
   });
 
+  it('can start closed on desktop', () => {
+    mockUseIsMobile.mockReturnValue(false);
+    render(
+      <CpuAccordion playerCount={2} openOnDesktop={false}>
+        <div>content</div>
+      </CpuAccordion>,
+    );
+    expect(screen.getByTestId('cpu-accordion')).not.toHaveAttribute('open');
+  });
+
   it('is closed by default on mobile', () => {
     mockUseIsMobile.mockReturnValue(true);
     render(
@@ -54,7 +64,7 @@ describe('CpuAccordion', () => {
     expect(details).not.toHaveAttribute('open');
   });
 
-  it('forwards data-tutorial attribute', () => {
+  it('places the data-tutorial target on the details element', () => {
     render(
       <CpuAccordion playerCount={3} dataTutorial="oh-cpu-area">
         <div>content</div>

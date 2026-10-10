@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, oldmaidApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import * as cardDimensions from '../hooks/useCardDimensions';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { OldMaidResponse } from '../types/card';
@@ -77,6 +78,25 @@ async function startGame() {
 }
 
 describe('OldMaidPage', () => {
+  it('collapses the CPU row on mobile and leaves the tutorial target visible', async () => {
+    vi.spyOn(cardDimensions, 'useIsMobile').mockReturnValue(true);
+    await startGame();
+
+    const accordion = screen.getByTestId('cpu-accordion');
+    expect(accordion).not.toHaveAttribute('open');
+    expect(accordion).toHaveAttribute('data-tutorial', 'om-cpu-area');
+    expect(accordion.querySelector('#player-area-1')).not.toBeVisible();
+  });
+
+  it('keeps the CPU row expanded on desktop', async () => {
+    vi.spyOn(cardDimensions, 'useIsMobile').mockReturnValue(false);
+    await startGame();
+
+    const accordion = screen.getByTestId('cpu-accordion');
+    expect(accordion).toHaveAttribute('open');
+    expect(accordion.querySelector('#player-area-1')).toBeVisible();
+  });
+
   it('renders old-maid-kbd-shortcuts when state is loaded', async () => {
     // 状態がロードされてプレイ中であればショートカット一覧を出す
     await startGame();
@@ -464,11 +484,14 @@ describe('OldMaidPage', () => {
   });
 
   it('calls draw with drawIdx when a target player card back is clicked', async () => {
+    vi.spyOn(cardDimensions, 'useIsMobile').mockReturnValue(false);
     await startGame();
     mockExec.mockClear();
     mockExec.mockResolvedValue(cpuTurnState);
     // CPU 1 is target player: click its first card back
     const btn = screen.getByRole('button', { name: 'カード 1 枚目を引く' });
+    expect(btn).toHaveClass('min-w-[44px]');
+    expect(btn.querySelector('img')).toHaveAttribute('style', expect.stringContaining('width: 36px'));
     fireEvent.click(btn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw', 0));
   });

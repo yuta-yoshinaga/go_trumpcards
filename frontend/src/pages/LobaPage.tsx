@@ -34,6 +34,11 @@ import type { CliGameConfig } from '../utils/cli/types';
 import { findPlayerName, playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
+const OPPONENT_CARD_WIDTH_RATIO = 0.55;
+const MOBILE_DISCARD_CARD_WIDTH_RATIO = 0.55;
+const MOBILE_MELD_CARD_WIDTH_RATIO = 0.45;
+const DESKTOP_MELD_CARD_WIDTH_RATIO = 0.7;
+
 const LB_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="lb-rule"]', messageKey: 'tutorial.pierna', placement: 'bottom', advanceOn: 'next' },
   { target: '[data-tutorial="lb-rule"]', messageKey: 'tutorial.joker', placement: 'bottom', advanceOn: 'next' },
@@ -72,7 +77,7 @@ function LobaPageContent() {
     [],
   );
   const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -159,7 +164,7 @@ function LobaPageContent() {
             </details>
 
             <CpuAccordion playerCount={opponents.length} dataTutorial="lb-seats">
-              <div className="flex flex-wrap sm:flex-nowrap justify-center gap-4 mb-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 justify-items-center gap-4 mb-3">
                 {opponents.map((o) => (
                   <div key={`opp-${o.id.toString()}`} className="text-center">
                     <div className="text-game-text-muted text-xs mb-1">
@@ -174,7 +179,11 @@ function LobaPageContent() {
                       aria-label={t('opponentHandAriaLabel', { name: playerName(o.id, false), n: o.cardCount })}
                     >
                       {Array.from({ length: o.cardCount }, (_, i) => (
-                        <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
+                        <CardBack
+                          key={`opp-${o.id.toString()}-c${i.toString()}`}
+                          width={Math.round(cardWidth * OPPONENT_CARD_WIDTH_RATIO)}
+                          className={i > 0 ? '-ml-5' : undefined}
+                        />
                       ))}
                     </div>
                   </div>
@@ -186,7 +195,11 @@ function LobaPageContent() {
               <div className="text-game-text-muted text-xs mb-1">{t('discard')}</div>
               {state.discardTop ? (
                 <div className="flex justify-center">
-                  <AnimatedCard card={state.discardTop} width={cardWidth} draggable={false} />
+                  <AnimatedCard
+                    card={state.discardTop}
+                    width={isMobile ? Math.round(cardWidth * MOBILE_DISCARD_CARD_WIDTH_RATIO) : cardWidth}
+                    draggable={false}
+                  />
                 </div>
               ) : (
                 <span className="text-game-text-muted text-xs">—</span>
@@ -198,7 +211,7 @@ function LobaPageContent() {
               {state.melds.length === 0 ? (
                 <div className="text-center text-game-text-muted text-xs">{t('noMelds')}</div>
               ) : (
-                <div className="flex flex-col gap-1 items-center">
+                <div className="flex flex-wrap sm:flex-col gap-1 items-center justify-center">
                   {state.melds.map((m, i) => (
                     <button
                       key={`meld-${i.toString()}`}
@@ -218,7 +231,10 @@ function LobaPageContent() {
                         <AnimatedCard
                           key={`meld-${i.toString()}-c${j.toString()}`}
                           card={card}
-                          width={Math.round(cardWidth * 0.7)}
+                          width={Math.round(
+                            cardWidth * (isMobile ? MOBILE_MELD_CARD_WIDTH_RATIO : DESKTOP_MELD_CARD_WIDTH_RATIO),
+                          )}
+                          wrapperClassName={j > 0 ? '-ml-3' : undefined}
                           draggable={false}
                         />
                       ))}

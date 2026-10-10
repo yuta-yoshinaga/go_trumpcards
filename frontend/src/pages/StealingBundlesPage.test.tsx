@@ -7,6 +7,13 @@ import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, StealingBundlesResponse } from '../types/card';
 import { StealingBundlesPage } from './StealingBundlesPage';
 
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+}));
+
 vi.mock('../api/gameApi', () => ({
   stealingbundlesApi: { exec: vi.fn() },
   actionLogApi: { stealingbundles: vi.fn() },
@@ -59,11 +66,34 @@ const selectCard = (idx: number) => {
 };
 
 beforeEach(() => {
+  mobileState.isMobile = true;
   vi.clearAllMocks();
   mockExec.mockResolvedValue(makeState());
 });
 
 describe('StealingBundlesPage', () => {
+  it('collapses rules and CPU seats on mobile and opens CPU seats on desktop', async () => {
+    const { unmount } = renderWithProviders(<StealingBundlesPage />);
+    const rules = await screen.findByTestId('sb-rule');
+    const seats = screen.getByTestId('cpu-accordion');
+    const humanSeat = screen.getByTestId('sb-seat-0');
+    expect(rules).not.toHaveAttribute('open');
+    expect(within(rules).getByText(/束ごと丸ごと奪えます/)).not.toBeVisible();
+    expect(seats).not.toHaveAttribute('open');
+    expect(humanSeat).toBeVisible();
+    expect(humanSeat.parentElement).not.toBe(seats);
+    expect(seats).toContainElement(screen.getByTestId('sb-seat-1'));
+    expect(seats).toContainElement(screen.getByTestId('sb-seat-2'));
+    expect(seats).toContainElement(screen.getByTestId('sb-seat-3'));
+    expect(screen.getByTestId('sb-seat-1')).not.toBeVisible();
+    expect(document.querySelector('[data-tutorial="sb-seats"]')).toContainElement(humanSeat);
+
+    unmount();
+    mobileState.isMobile = false;
+    renderWithProviders(<StealingBundlesPage />);
+    expect(await screen.findByTestId('cpu-accordion')).toHaveAttribute('open');
+  });
+
   it('shows each bundle size, its gap to the largest bundle, and tied leaders', async () => {
     mockExec.mockResolvedValue(
       makeState({

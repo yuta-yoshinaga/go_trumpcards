@@ -65,6 +65,7 @@
     "cpuWin": "チーム {{cpuId}} の勝利！"
   },
   "score": {
+    "table": "スコア表",
     "cumulative": "累積",
     "round": "ラウンド",
     "breakdown": "得点内訳",

@@ -2,6 +2,7 @@ import { useCallback, useMemo } from 'react';
 import type { handandfootApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -14,7 +15,7 @@ import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -72,6 +73,7 @@ const HF_TUTORIAL_STEPS: TutorialStep[] = [
 export const HandAndFootPage = withTutorial(HandAndFootPageContent, 'handandfoot', HF_TUTORIAL_STEPS);
 /** Inner content of the Hand and Foot page. */
 function HandAndFootPageContent() {
+  const isMobile = useIsMobile();
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('handandfoot');
   const {
@@ -352,7 +354,10 @@ function HandAndFootPageContent() {
               {/* Right: info sidebar */}
               <div>
                 {/* Score table */}
-                <div className="my-3 p-2 rounded bg-black/30">
+                <details className="my-3 p-2 rounded bg-black/30" open={!isMobile || undefined}>
+                  <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
+                    {t('score.table')}
+                  </summary>
                   <table className="w-full text-sm text-ds-text-muted">
                     <thead>
                       <tr>
@@ -407,30 +412,33 @@ function HandAndFootPageContent() {
                       ))}
                     </div>
                   )}
-                </div>
+                </details>
 
                 {/* CPU hands (shown at round/game end) */}
-                {(isRoundEnd || isGameEnd) &&
-                  state.players
-                    .filter((p) => !p.isHuman)
-                    .map((p) => (
-                      <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                        <div className="text-ds-text-muted text-sm">
-                          {playerName(p.id, p.isHuman)}: {t('handCards', { count: p.cardCount })}
-                        </div>
-                        {p.cards.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {p.cards.map((card, idx) => (
-                              <AnimatedCard
-                                key={`cpu-${card.design}-${card.value}-${idx}`}
-                                card={card}
-                                width={cardWidth * 0.7}
-                              />
-                            ))}
+                {(isRoundEnd || isGameEnd) && (
+                  <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+                    {state.players
+                      .filter((p) => !p.isHuman)
+                      .map((p) => (
+                        <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
+                          <div className="text-ds-text-muted text-sm">
+                            {playerName(p.id, p.isHuman)}: {t('handCards', { count: p.cardCount })}
                           </div>
-                        )}
-                      </div>
-                    ))}
+                          {p.cards.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {p.cards.map((card, idx) => (
+                                <AnimatedCard
+                                  key={`cpu-${card.design}-${card.value}-${idx}`}
+                                  card={card}
+                                  width={cardWidth * 0.7}
+                                />
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                  </CpuAccordion>
+                )}
               </div>
             </div>
 

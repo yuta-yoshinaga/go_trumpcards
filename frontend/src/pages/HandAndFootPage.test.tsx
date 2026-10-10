@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { handandfootApi } from '../api/gameApi';
+import * as cardDimensions from '../hooks/useCardDimensions';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { HandAndFootPlayerData, HandAndFootResponse, HandAndFootTeamData } from '../types/card';
 import { HandAndFootPage } from './HandAndFootPage';
@@ -186,6 +187,37 @@ describe('HandAndFootPage', () => {
     renderWithProviders(<HandAndFootPage />);
     await waitFor(() => expect(screen.getByText('山札から引く')).toBeInTheDocument());
     expect(screen.queryByTestId('hf-score-breakdown')).not.toBeInTheDocument();
+  });
+
+  it('keeps the score table collapsed on mobile while retaining its data', async () => {
+    vi.spyOn(cardDimensions, 'useIsMobile').mockReturnValue(true);
+    mockExec.mockResolvedValue(drawPhaseState);
+    renderWithProviders(<HandAndFootPage />);
+
+    const scoreDetails = await screen.findByText('スコア表').then((summary) => summary.closest('details'));
+    expect(scoreDetails).not.toHaveAttribute('open');
+    expect(within(scoreDetails as HTMLElement).getByRole('table')).not.toBeVisible();
+    expect(within(scoreDetails as HTMLElement).getByRole('rowheader', { name: 'あなた' })).not.toBeVisible();
+  });
+
+  it('opens the score table on desktop', async () => {
+    vi.spyOn(cardDimensions, 'useIsMobile').mockReturnValue(false);
+    mockExec.mockResolvedValue(drawPhaseState);
+    renderWithProviders(<HandAndFootPage />);
+
+    const scoreDetails = await screen.findByText('スコア表').then((summary) => summary.closest('details'));
+    expect(scoreDetails).toHaveAttribute('open');
+    expect(within(scoreDetails as HTMLElement).getByRole('table')).toBeVisible();
+  });
+
+  it('uses the CPU accordion for revealed CPU hands and keeps it closed on mobile', async () => {
+    vi.spyOn(cardDimensions, 'useIsMobile').mockReturnValue(true);
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<HandAndFootPage />);
+
+    const accordion = await screen.findByTestId('cpu-accordion');
+    expect(accordion).not.toHaveAttribute('open');
+    expect(within(accordion).getByText(/CPU 1:/)).not.toBeVisible();
   });
 
   // 最初の手札が配られるまでは捨て札の山がないので表示しない

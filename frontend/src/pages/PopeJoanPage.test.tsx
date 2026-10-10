@@ -92,17 +92,20 @@ describe('PopeJoanPage', () => {
     expect(ruleText).toBeVisible();
     const cpuDetails = screen.getByTestId('cpu-accordion');
     expect(cpuDetails).not.toHaveAttribute('open');
-    expect(cpuDetails.querySelector('[role="img"]')).toBeInTheDocument();
+    expect(cpuDetails.querySelector('[role="img"]')).not.toBeVisible();
     const seatRow = cpuDetails.querySelector('.flex.flex-wrap');
     expect(seatRow).toBeInTheDocument();
     expect(seatRow?.classList.contains('sm:flex-nowrap')).toBe(true);
   });
 
-  it('keeps CPU seats open on desktop', async () => {
+  it('keeps CPU seats collapsed on desktop', async () => {
     mobileState.isMobile = false;
     renderWithProviders(<PopeJoanPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
-    expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
+    const cpuDetails = screen.getByTestId('cpu-accordion');
+    expect(cpuDetails).not.toHaveAttribute('open');
+    const cpuHands = cpuDetails.querySelector('[role="img"]');
+    expect(cpuHands).not.toBeVisible();
   });
 
   it('resets on mount', async () => {

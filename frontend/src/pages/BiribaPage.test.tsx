@@ -1,10 +1,17 @@
-import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { biribaApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BiribaPlayerData, BiribaResponse } from '../types/card';
 import { BiribaPage } from './BiribaPage';
+
+const mobileState = vi.hoisted(() => ({ isMobile: false }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+}));
 
 vi.mock('../api/gameApi', () => ({
   biribaApi: { exec: vi.fn() },
@@ -110,7 +117,25 @@ const gameEndState: BiribaResponse = {
 describe('BiribaPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mobileState.isMobile = false;
     mockExec.mockResolvedValue(drawPhaseState);
+  });
+
+  it('collapses reference details on mobile and keeps them open on desktop', async () => {
+    mobileState.isMobile = true;
+    renderWithProviders(<BiribaPage />);
+    const pileViewer = await screen.findByTestId('ca-discard-pile-viewer');
+    expect(pileViewer).not.toHaveAttribute('open');
+    expect(screen.queryByTestId('ca-discard-pile-cards')).not.toBeVisible();
+    const scoreDetails = document.querySelector('table')?.closest('details');
+    expect(scoreDetails).not.toHaveAttribute('open');
+    expect(scoreDetails?.querySelector('table')).not.toBeVisible();
+
+    cleanup();
+    mobileState.isMobile = false;
+    renderWithProviders(<BiribaPage />);
+    expect(await screen.findByTestId('ca-discard-pile-viewer')).toHaveAttribute('open');
+    expect(document.querySelector('table')?.closest('details')).toHaveAttribute('open');
   });
 
   it('shows every round score component and labels zero values at round end', async () => {
@@ -194,7 +219,7 @@ describe('BiribaPage', () => {
     expect(screen.getByTestId('ca-discard-pile-viewer')).not.toHaveAttribute('open');
   });
 
-  it('opens the discard pile viewer again on the next draw phase', async () => {
+  it('keeps the discard pile viewer closed through later draw phases', async () => {
     renderWithProviders(<BiribaPage />);
     const viewer = await screen.findByTestId('ca-discard-pile-viewer');
     fireEvent.click(viewer.querySelector('summary') as HTMLElement);
@@ -212,7 +237,7 @@ describe('BiribaPage', () => {
     fireEvent.click(document.querySelector('[data-tutorial="ca-player-hand"] button') as HTMLElement);
     fireEvent.click(screen.getByRole('button', { name: '捨てる' }));
 
-    await waitFor(() => expect(screen.getByTestId('ca-discard-pile-viewer')).toHaveAttribute('open'));
+    await waitFor(() => expect(screen.getByTestId('ca-discard-pile-viewer')).not.toHaveAttribute('open'));
   });
 
   it('shows an empty message when the discard pile is empty', async () => {

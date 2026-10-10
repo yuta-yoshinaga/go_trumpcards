@@ -1,5 +1,6 @@
 {
   "deal": "deal {{n}}/{{target}}",
+  "rules": "Rules",
   "ruleLine": "a pool pays only on a card of the turn-up's suit / pochen compares same-rank sets (four beats three beats a pair) -- there is no declaration",
   "turnUp": "Turn-up",
   "paySuit": "Pay suit: {{suit}}",

@@ -1,4 +1,5 @@
 {
+  "rulesLabel": "ルール",
   "discardTop": "捨て札",
   "discardPileViewer": "捨て札の山を見る ({{count}}枚)",
   "discardPileEmpty": "捨て札の山は空です。",
@@ -71,6 +72,7 @@
     "cpuWin": "CPU {{cpuId}} の勝利！"
   },
   "score": {
+    "title": "スコア",
     "cumulative": "累積",
     "round": "ラウンド",
     "update": "{{player}}のラウンド得点は{{score}}点、累積得点は{{cumulativeScore}}点"

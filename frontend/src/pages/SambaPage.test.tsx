@@ -12,6 +12,12 @@ vi.mock('../api/gameApi', () => ({
   actionLogApi: { samba: vi.fn() },
 }));
 const mockExec = vi.mocked(sambaApi.exec);
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+}));
 
 const drawPhaseState = makeSambaState();
 const meldPhaseState = makeSambaState({ phase: 1, messageCode: 'samba.meldPhase' });
@@ -24,6 +30,7 @@ const cpuTurnState = makeSambaState({ currentPlayerIdx: 1 });
 describe('SambaPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mobileState.isMobile = true;
     mockExec.mockResolvedValue(drawPhaseState);
   });
 
@@ -51,6 +58,35 @@ describe('SambaPage', () => {
     expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeInTheDocument();
     expect(screen.getByTestId('sa-team-scores')).toBeInTheDocument();
     expect(screen.getByTestId('sa-meld-points')).toHaveAttribute('aria-live', 'polite');
+  });
+
+  it('collapses the score table on mobile and opens it on desktop', async () => {
+    const { unmount } = renderWithProviders(<SambaPage />);
+    await screen.findByTestId('sa-score-details');
+    const mobileDetails = screen.getByTestId('sa-score-details');
+    expect(mobileDetails).not.toHaveAttribute('open');
+    expect(within(mobileDetails).getByRole('table')).not.toBeVisible();
+    unmount();
+
+    mobileState.isMobile = false;
+    renderWithProviders(<SambaPage />);
+    const desktopDetails = await screen.findByTestId('sa-score-details');
+    expect(desktopDetails).toHaveAttribute('open');
+    expect(within(desktopDetails).getByRole('table')).toBeVisible();
+  });
+
+  it('renders the score summary using the active locale', async () => {
+    await i18n.changeLanguage('ja');
+    const { unmount } = renderWithProviders(<SambaPage />);
+    expect(await within(await screen.findByTestId('sa-score-details')).findByText('スコア')).toBeInTheDocument();
+    expect(screen.queryByText('label.score')).not.toBeInTheDocument();
+    unmount();
+
+    await i18n.changeLanguage('en');
+    renderWithProviders(<SambaPage />);
+    expect(await within(await screen.findByTestId('sa-score-details')).findByText('Scores')).toBeInTheDocument();
+    expect(screen.queryByText('label.score')).not.toBeInTheDocument();
+    await i18n.changeLanguage('ja');
   });
 
   it('announces only changed team scores after the initial state', async () => {

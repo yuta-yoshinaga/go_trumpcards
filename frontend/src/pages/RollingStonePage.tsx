@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { rollingstoneApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -168,6 +169,28 @@ function RollingStonePageContent() {
     return state.winnerIdx === 0 ? t('result.you') : t('result.cpu', { name });
   })();
 
+  const renderSeat = (p: (typeof state.players)[number]) => (
+    <li
+      key={p.id}
+      className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
+      data-testid={`rs-seat-${p.id.toString()}`}
+    >
+      <h2 className="m-0 inline font-normal text-ds-text-primary">
+        {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
+      </h2>
+      {p.finishedAt > 0 && (
+        <span className="ml-1 text-ds-accent">{t('header.finished', { rank: String(p.finishedAt) })}</span>
+      )}
+      {p.finishedAt === 0 && p.id === state.lastPickupIdx && (
+        <span className="ml-1 text-ds-warning">{t('header.pickedUp')}</span>
+      )}
+      {': '}
+      <span className="text-ds-accent">{t('header.cards', { n: String(p.cardCount) })}</span>
+      {' / '}
+      {t('header.pickups', { n: String(p.pickups) })}
+    </li>
+  );
+
   return (
     <GamePageShell
       title={tc('nav.rollingstone')}
@@ -205,38 +228,29 @@ function RollingStonePageContent() {
             </div>
 
             {/* **勝利条件が逆さまなのが規則そのもの。** 先に出す。 */}
-            <div
+            <details
               className="mb-3 rounded bg-black/30 px-3 py-2 text-ds-text-primary text-center"
-              data-testid="rs-rule"
               data-tutorial="rs-rule"
             >
-              {t('header.rule')}
-            </div>
+              <summary className="cursor-pointer select-none">{tc('label.rules')}</summary>
+              <p className="mt-2" data-testid="rs-rule">
+                {t('header.rule')}
+              </p>
+            </details>
 
             {/* **手札の枚数がそのまま順位。** 得点表示は無い。 */}
-            <ul className="flex flex-wrap justify-center gap-2 mb-4 list-none p-0" data-tutorial="rs-seats">
-              {state.players.map((p) => (
-                <li
-                  key={p.id}
-                  className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
-                  data-testid={`rs-seat-${p.id.toString()}`}
-                >
-                  <h2 className="m-0 inline font-normal text-ds-text-primary">
-                    {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
-                  </h2>
-                  {p.finishedAt > 0 && (
-                    <span className="ml-1 text-ds-accent">{t('header.finished', { rank: String(p.finishedAt) })}</span>
-                  )}
-                  {p.finishedAt === 0 && p.id === state.lastPickupIdx && (
-                    <span className="ml-1 text-ds-warning">{t('header.pickedUp')}</span>
-                  )}
-                  {': '}
-                  <span className="text-ds-accent">{t('header.cards', { n: String(p.cardCount) })}</span>
-                  {' / '}
-                  {t('header.pickups', { n: String(p.pickups) })}
-                </li>
-              ))}
+            <ul
+              className="flex flex-wrap justify-center gap-2 mb-2 list-none p-0"
+              data-testid="rs-seats"
+              data-tutorial="rs-seats"
+            >
+              {state.players.filter((p) => p.isHuman).map(renderSeat)}
             </ul>
+            <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+              <ul className="flex flex-wrap sm:flex-nowrap justify-center gap-2 mb-3 list-none p-0">
+                {state.players.filter((p) => !p.isHuman).map(renderSeat)}
+              </ul>
+            </CpuAccordion>
 
             <div data-tutorial="rs-trick">
               <TrickDisplay

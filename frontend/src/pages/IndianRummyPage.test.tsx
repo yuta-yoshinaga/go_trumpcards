@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, indianRummyApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import * as cardDimensions from '../hooks/useCardDimensions';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { IndianRummyPlayer, IndianRummyResponse } from '../types/card';
 import { IndianRummyPage } from './IndianRummyPage';
@@ -209,8 +210,10 @@ describe('IndianRummyPage', () => {
 
   it('renders discard history oldest first and marks the latest card', async () => {
     renderWithProviders(<IndianRummyPage />);
-    await waitFor(() => expect(screen.getByTestId('indianrummy-discard-latest')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('indianrummy-discard-history-details')).toBeInTheDocument());
     const history = screen.getByTestId('indianrummy-discard-history');
+    fireEvent.click(within(history).getByText('捨て札の履歴（古い順）'));
+    await waitFor(() => expect(screen.getByTestId('indianrummy-discard-latest')).toBeInTheDocument());
     expect(history).toHaveTextContent('捨て札の履歴（古い順）');
     expect(history.querySelectorAll('img')).toHaveLength(2);
     expect(screen.getByRole('img', { name: '♣ 5' })).toBeInTheDocument();
@@ -447,6 +450,24 @@ describe('IndianRummyPage', () => {
       expect(screen.getByText('あなた')).toBeInTheDocument();
       expect(screen.getByText('CPU 1')).toBeInTheDocument();
     });
+  });
+
+  it('collapses reference areas and CPU seats on mobile', async () => {
+    vi.spyOn(cardDimensions, 'useIsMobile').mockReturnValue(true);
+    renderWithProviders(<IndianRummyPage />);
+    await waitFor(() => expect(screen.getByTestId('ir-score-details')).toBeInTheDocument());
+    expect(screen.getByTestId('ir-score-details')).not.toHaveAttribute('open');
+    expect(screen.getByTestId('cpu-accordion')).not.toHaveAttribute('open');
+    expect(screen.getByRole('table')).not.toBeVisible();
+    expect(screen.getByText(/CPU 1.*13枚/)).not.toBeVisible();
+  });
+
+  it('opens score table and CPU seats on desktop', async () => {
+    vi.spyOn(cardDimensions, 'useIsMobile').mockReturnValue(false);
+    renderWithProviders(<IndianRummyPage />);
+    await waitFor(() => expect(screen.getByTestId('ir-score-details')).toHaveAttribute('open'));
+    expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
+    expect(screen.getByText('スコア')).toBeVisible();
   });
 
   it('score table headers have scope="col"', async () => {
