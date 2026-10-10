@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { popejoanApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardBack } from '../components/CardImage';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -185,9 +186,14 @@ function PopeJoanPageContent() {
             {/* Permanent, not tutorial-only: "only trumps pay" and "the 8D is
                 out, so a run always dies at the 7" are what a player gets
                 wrong. */}
-            <div className="text-center text-xs text-ds-warning mb-3 font-medium" data-tutorial="pj-rule">
-              {t('ruleLine')}
-            </div>
+            <details className="mb-2 p-2 rounded bg-ds-surface" data-testid="pj-rule-details">
+              <summary
+                className="cursor-pointer select-none text-center text-xs text-ds-warning font-medium"
+                data-tutorial="pj-rule"
+              >
+                {t('ruleLine')}
+              </summary>
+            </details>
 
             <div className="text-center mb-3">
               <div className="text-game-text-muted text-xs mb-1">{t('turnUp')}</div>
@@ -260,35 +266,37 @@ function PopeJoanPageContent() {
               </section>
             )}
 
-            <div className="flex justify-center gap-4 mb-3 flex-wrap">
-              {opponents.map((o) => (
-                <div key={`opp-${o.id.toString()}`} className="text-center">
-                  <div className="text-game-text-muted text-xs mb-1">
-                    {playing
-                      ? t('seat', { name: `CPU${o.id.toString()}`, chips: o.chips, n: o.cardCount })
-                      : t('seatEnded', { name: `CPU${o.id.toString()}`, chips: o.chips })}
-                    {/* **ディーラーは区画の種銭を負担し、めくり札が Pope/A/K/Q/J なら
+            <CpuAccordion playerCount={opponents.length}>
+              <div className="flex flex-nowrap justify-center gap-4 mb-3">
+                {opponents.map((o) => (
+                  <div key={`opp-${o.id.toString()}`} className="text-center">
+                    <div className="text-game-text-muted text-xs mb-1">
+                      {playing
+                        ? t('seat', { name: `CPU${o.id.toString()}`, chips: o.chips, n: o.cardCount })
+                        : t('seatEnded', { name: `CPU${o.id.toString()}`, chips: o.chips })}
+                      {/* **ディーラーは区画の種銭を負担し、めくり札が Pope/A/K/Q/J なら
                         その区画を総取りする。**毎ディール回るので印を付けないと追えない (#6520)。 */}
-                    {o.id === state.dealerIdx && (
-                      <span data-testid={`pj-dealer-${o.id.toString()}`}> · {t('dealerBadge')}</span>
-                    )}
-                    {/* Pope 保持者は支払いを免除されるので、伏せ手でも出す。 */}
-                    {o.holdsPope && ` · ${t('holdsPope')}`}
-                  </div>
-                  {playing && (
-                    <div
-                      className="flex gap-1 justify-center flex-wrap"
-                      role="img"
-                      aria-label={t('opponentHandAriaLabel', { name: `CPU${o.id.toString()}`, n: o.cardCount })}
-                    >
-                      {Array.from({ length: o.cardCount }, (_, i) => (
-                        <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
-                      ))}
+                      {o.id === state.dealerIdx && (
+                        <span data-testid={`pj-dealer-${o.id.toString()}`}> · {t('dealerBadge')}</span>
+                      )}
+                      {/* Pope 保持者は支払いを免除されるので、伏せ手でも出す。 */}
+                      {o.holdsPope && ` · ${t('holdsPope')}`}
                     </div>
-                  )}
-                </div>
-              ))}
-            </div>
+                    {playing && (
+                      <div
+                        className="flex gap-1 justify-center flex-wrap"
+                        role="img"
+                        aria-label={t('opponentHandAriaLabel', { name: `CPU${o.id.toString()}`, n: o.cardCount })}
+                      >
+                        {Array.from({ length: o.cardCount }, (_, i) => (
+                          <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </CpuAccordion>
 
             {state.playedPile.length > 0 && (
               <div className="text-center mb-3">

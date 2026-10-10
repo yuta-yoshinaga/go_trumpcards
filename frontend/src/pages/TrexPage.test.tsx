@@ -8,6 +8,11 @@ import type { Card, CardDesign, TrexPlayer, TrexResponse } from '../types/card';
 import { TrexContract, TrexPhase } from '../types/phases';
 import { TrexPage } from './TrexPage';
 
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => true,
+}));
+
 vi.mock('../api/gameApi', () => ({
   trexApi: { exec: vi.fn() },
   actionLogApi: { trex: vi.fn() },
@@ -71,6 +76,18 @@ describe('TrexPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockExec.mockResolvedValue(makeState());
+  });
+
+  it('keeps rules and CPU details collapsed while their content stays in the DOM', async () => {
+    renderWithProviders(<TrexPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    const ruleDetails = screen.getByTestId('tx-rule-details');
+    expect(ruleDetails).not.toHaveAttribute('open');
+    expect(ruleDetails.querySelector('[data-tutorial="tx-rule"]')).toBeInTheDocument();
+    const cpuDetails = screen.getByTestId('cpu-accordion');
+    expect(cpuDetails).not.toHaveAttribute('open');
+    expect(cpuDetails.querySelector('[role="img"]')).toBeInTheDocument();
+    expect(cpuDetails.querySelector('.flex.flex-nowrap')).toBeInTheDocument();
   });
 
   it('resets on mount', async () => {

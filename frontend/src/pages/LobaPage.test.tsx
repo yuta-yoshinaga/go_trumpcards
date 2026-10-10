@@ -8,6 +8,11 @@ import type { Card, CardDesign, LobaPlayer, LobaResponse } from '../types/card';
 import { LobaPhase } from '../types/phases';
 import { LobaPage } from './LobaPage';
 
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => true,
+}));
+
 vi.mock('../api/gameApi', () => ({
   lobaApi: { exec: vi.fn() },
   actionLogApi: { loba: vi.fn() },
@@ -70,6 +75,28 @@ describe('LobaPage', () => {
     mockActionLog.mockResolvedValue({
       entries: [{ turnNumber: 1, playerIdx: 0, actionType: 'discard', detail: 'VISIBLE LOG ENTRY' }],
     });
+  });
+
+  it('keeps rules and CPU details collapsed while their content stays in the DOM', async () => {
+    renderWithProviders(<LobaPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    const ruleDetails = screen.getByTestId('lb-rule-details');
+    expect(ruleDetails).not.toHaveAttribute('open');
+    expect(ruleDetails.querySelector('[data-tutorial="lb-rule"]')).toBeInTheDocument();
+    const cpuDetails = screen.getByTestId('cpu-accordion');
+    expect(cpuDetails).not.toHaveAttribute('open');
+    expect(cpuDetails.querySelector('[role="img"]')).toBeInTheDocument();
+    expect(cpuDetails.querySelector('.flex.flex-nowrap')).toBeInTheDocument();
+  });
+
+  it('shows the eliminated label beside an eliminated CPU seat', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ players: [seat(0, true), seat(1, false, { eliminated: true }), seat(2, false), seat(3, false)] }),
+    );
+    renderWithProviders(<LobaPage />);
+
+    const cpuDetails = await screen.findByTestId('cpu-accordion');
+    expect(cpuDetails).toHaveTextContent('CPU 1: 手札9枚 · 失点12 · 脱落');
   });
 
   it('opens the action log during play and shows its entries', async () => {

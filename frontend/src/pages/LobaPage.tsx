@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { lobaApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardBack } from '../components/CardImage';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -148,31 +149,38 @@ function LobaPageContent() {
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
             {/* Permanent, not tutorial-only: "three different suits" and "jokers
                 only in runs" are the two rules a player gets wrong. */}
-            <div className="text-center text-xs text-ds-warning mb-3 font-medium" data-tutorial="lb-rule">
-              {t('ruleLine')}
-            </div>
+            <details className="mb-2 p-2 rounded bg-ds-surface" data-testid="lb-rule-details">
+              <summary
+                className="cursor-pointer select-none text-center text-xs text-ds-warning font-medium"
+                data-tutorial="lb-rule"
+              >
+                {t('ruleLine')}
+              </summary>
+            </details>
 
-            <div className="flex justify-center gap-4 mb-3 flex-wrap" data-tutorial="lb-seats">
-              {opponents.map((o) => (
-                <div key={`opp-${o.id.toString()}`} className="text-center">
-                  <div className="text-game-text-muted text-xs mb-1">
-                    {t('opponentHand', { name: playerName(o.id, false), n: o.cardCount })}
-                    {' · '}
-                    {t('score', { n: o.score })}
-                    {o.eliminated && ` · ${t('eliminated')}`}
+            <CpuAccordion playerCount={opponents.length} dataTutorial="lb-seats">
+              <div className="flex flex-nowrap justify-center gap-4 mb-3">
+                {opponents.map((o) => (
+                  <div key={`opp-${o.id.toString()}`} className="text-center">
+                    <div className="text-game-text-muted text-xs mb-1">
+                      {t('opponentHand', { name: playerName(o.id, false), n: o.cardCount })}
+                      {' · '}
+                      {t('score', { n: o.score })}
+                      {o.eliminated && ` · ${t('eliminated')}`}
+                    </div>
+                    <div
+                      className="flex gap-1 justify-center flex-wrap"
+                      role="img"
+                      aria-label={t('opponentHandAriaLabel', { name: playerName(o.id, false), n: o.cardCount })}
+                    >
+                      {Array.from({ length: o.cardCount }, (_, i) => (
+                        <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
+                      ))}
+                    </div>
                   </div>
-                  <div
-                    className="flex gap-1 justify-center flex-wrap"
-                    role="img"
-                    aria-label={t('opponentHandAriaLabel', { name: playerName(o.id, false), n: o.cardCount })}
-                  >
-                    {Array.from({ length: o.cardCount }, (_, i) => (
-                      <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            </CpuAccordion>
 
             <div className="text-center mb-3">
               <div className="text-game-text-muted text-xs mb-1">{t('discard')}</div>

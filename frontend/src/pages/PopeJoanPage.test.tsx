@@ -9,6 +9,11 @@ import type { CardDesign, PopeJoanPlayer, PopeJoanResponse } from '../types/card
 import { PopeJoanPhase } from '../types/phases';
 import { PopeJoanPage } from './PopeJoanPage';
 
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => true,
+}));
+
 vi.mock('../api/gameApi', () => ({
   popejoanApi: { exec: vi.fn() },
   actionLogApi: { popejoan: vi.fn() },
@@ -68,6 +73,18 @@ describe('PopeJoanPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockExec.mockResolvedValue(makeState());
+  });
+
+  it('keeps rules and CPU details collapsed while their content stays in the DOM', async () => {
+    renderWithProviders(<PopeJoanPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    const ruleDetails = screen.getByTestId('pj-rule-details');
+    expect(ruleDetails).not.toHaveAttribute('open');
+    expect(ruleDetails.querySelector('[data-tutorial="pj-rule"]')).toBeInTheDocument();
+    const cpuDetails = screen.getByTestId('cpu-accordion');
+    expect(cpuDetails).not.toHaveAttribute('open');
+    expect(cpuDetails.querySelector('[role="img"]')).toBeInTheDocument();
+    expect(cpuDetails.querySelector('.flex.flex-nowrap')).toBeInTheDocument();
   });
 
   it('resets on mount', async () => {
