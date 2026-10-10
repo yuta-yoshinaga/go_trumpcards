@@ -109,6 +109,7 @@ const roundEndCpuCardsState: MachiavelliResponse = {
 
 beforeEach(() => {
   mockExec.mockResolvedValue(turnState);
+  mockUseIsMobile.mockReturnValue(false);
 });
 
 describe('MachiavelliPage', () => {
@@ -235,6 +236,30 @@ describe('MachiavelliPage', () => {
     // The layoff button's accessible name includes the target meld description.
     const layoff = screen.getByRole('button', { name: /にレイオフ/ });
     expect(layoff.getAttribute('aria-label')).toMatch(/3枚/);
+  });
+
+  it('overlaps mobile table cards and keeps a layoff button in every meld', async () => {
+    mockUseIsMobile.mockReturnValue(true);
+    const secondMeld: MachiavelliMeld = {
+      kind: 0,
+      cards: [
+        { design: 'HEART', value: 7 },
+        { design: 'CLOVER', value: 7 },
+        { design: 'DIAMOND', value: 7 },
+      ],
+    };
+    mockExec.mockResolvedValue({ ...turnState, table: [tableMeld, secondMeld] });
+    renderWithProviders(<MachiavelliPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ 3')).toBeInTheDocument());
+
+    const meldGroups = within(screen.getByTestId('machiavelli-table')).getAllByRole('group');
+    expect(meldGroups).toHaveLength(2);
+    for (const meldGroup of meldGroups) {
+      expect(within(meldGroup).getByRole('button', { name: /レイオフ/ })).toBeInTheDocument();
+      const meldCards = within(meldGroup).getAllByRole('img');
+      expect(Number.parseFloat(meldCards[1].style.marginLeft)).toBeLessThan(0);
+      expect(Number.parseFloat(meldCards[2].style.marginLeft)).toBeLessThan(0);
+    }
   });
 
   it('labels a set meld with its shared rank', async () => {

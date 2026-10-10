@@ -191,7 +191,7 @@ function DesmochePageContent() {
               <p className="mt-2 text-center text-xs text-ds-warning">{t('ruleLine', { n: state.goOutSize })}</p>
             </details>
 
-            <CpuAccordion playerCount={opponents.length} dataTutorial="ds-seats">
+            <CpuAccordion playerCount={opponents.length} dataTutorial="ds-seats" openOnDesktop={false}>
               <div className="flex flex-wrap sm:flex-nowrap justify-center gap-4 mb-3">
                 {opponents.map((o) => (
                   <div key={`opp-${o.id.toString()}`} className="text-center">

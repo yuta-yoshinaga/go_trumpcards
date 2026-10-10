@@ -354,29 +354,30 @@ function MachiavelliPageContent() {
                           key={`meld-${meldIdx}-${meld.kind}-${meld.cards.map((c) => `${c.design}${c.value}`).join('')}`}
                           role="group"
                           aria-label={meldAria(meld)}
-                          className={`flex items-center gap-2 flex-wrap rounded transition-colors ${
+                          className={`${isMobile ? 'grid grid-cols-2 gap-1' : 'flex items-center gap-2 flex-wrap'} rounded transition-colors ${
                             canLayoff ? 'ring-2 ring-ds-accent/70 p-1' : ''
                           }`}
                         >
                           <span
-                            className="text-ds-text-muted text-xs whitespace-nowrap min-w-16"
+                            className={`text-ds-text-muted text-xs whitespace-nowrap min-w-16 ${isMobile ? 'col-span-2' : ''}`}
                             data-testid={`machiavelli-meld-label-${meldIdx}`}
                           >
                             {meldVisualLabel(meld)}
                           </span>
-                          <div className="flex flex-wrap gap-1">
+                          <div className={`flex ${isMobile ? 'flex-nowrap' : 'flex-wrap gap-1'}`}>
                             {meld.cards.map((card, idx) => (
                               <AnimatedCard
                                 key={`meld-${meldIdx}-card-${card.design}-${card.value}-${idx}`}
                                 card={card}
                                 width={cardWidth * 0.8}
+                                style={isMobile && idx > 0 ? { marginLeft: -(cardWidth * 0.8 * 0.55) } : undefined}
                               />
                             ))}
                           </div>
                           {isHumanTurn && (
                             <button
                               type="button"
-                              className={btnPrimary}
+                              className={`${btnPrimary} ${isMobile ? 'text-xs px-2 py-0.5' : ''}`}
                               onClick={() => handleLayoff(meldIdx)}
                               disabled={loading || selectedCardIndices.length !== 1}
                               aria-label={t('a11y.layoffTo', { meld: meldAria(meld) })}

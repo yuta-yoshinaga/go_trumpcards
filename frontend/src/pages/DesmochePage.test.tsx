@@ -96,7 +96,7 @@ describe('DesmochePage', () => {
     expect(screen.getByText(/ポット40/)).toBeInTheDocument();
   });
 
-  it('collapses the rules and CPU seats on mobile and opens them on desktop', async () => {
+  it('collapses CPU seats on mobile and desktop while keeping desktop rules open', async () => {
     mobileState.isMobile = true;
     const { unmount } = renderWithProviders(<DesmochePage />);
     const mobileRule = await screen.findByTestId('ds-rule-details');
@@ -110,7 +110,8 @@ describe('DesmochePage', () => {
     const desktopRule = await screen.findByTestId('ds-rule-details');
     expect(desktopRule).toHaveAttribute('open');
     expect(screen.getByText(/ちょうど10枚/)).toBeVisible();
-    expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
+    expect(screen.getByTestId('cpu-accordion')).not.toHaveAttribute('open');
+    expect(screen.getByTestId('desmoche-score-1')).not.toBeVisible();
   });
 
   it.each([

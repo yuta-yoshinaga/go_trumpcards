@@ -206,15 +206,18 @@ describe('PanPage', () => {
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
   });
 
-  it('shows CPU melds inside the open desktop CPU accordion', async () => {
+  it('keeps the desktop CPU accordion closed by default and opens it when a layoff target is available', async () => {
     mockExec.mockResolvedValue(valleMeldState);
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
     renderWithProviders(<PanPage />);
 
     const accordion = await screen.findByTestId('cpu-accordion');
+    expect(accordion).not.toHaveAttribute('open');
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
     expect(accordion).toHaveAttribute('open');
     expect(within(accordion).getByTestId('pan-chip-units-1-0')).toBeVisible();
+    expect(within(accordion).getByTestId('pan-layoff-1-0')).toBeVisible();
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
   });
 
