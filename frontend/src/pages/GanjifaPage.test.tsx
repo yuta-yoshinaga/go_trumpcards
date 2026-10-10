@@ -80,6 +80,7 @@ describe('GanjifaPage', () => {
     const readout = await screen.findByTestId('ganjifa-trump-group');
     expect(readout).toHaveTextContent('数字が大きいほど強い');
     expect(readout).toHaveClass('text-ds-info');
+    expect(readout).toBeVisible();
   });
 
   it('states that lower numbers win when trump is a weak suit', async () => {
@@ -88,6 +89,7 @@ describe('GanjifaPage', () => {
     const readout = await screen.findByTestId('ganjifa-trump-group');
     expect(readout).toHaveTextContent('数字が小さいほど強い');
     expect(readout).toHaveClass('text-ds-warning');
+    expect(readout).toBeVisible();
   });
 
   it('identifies each hand card suit and its rank direction in the accessible name', async () => {
@@ -128,6 +130,7 @@ describe('GanjifaPage', () => {
     expect(readout).toHaveAttribute('role', 'status');
     expect(readout).toHaveAttribute('aria-live', 'polite');
     expect(readout).toHaveTextContent('数字が大きいほど強い');
+    fireEvent.click(screen.getByText('ルール'));
 
     // **同じ要素の中身が入れ替わること。**領域ごと差し替わると変化として扱われず、
     // 読み上げられないことがある。
@@ -169,11 +172,33 @@ describe('GanjifaPage', () => {
     );
   });
 
+  it('keeps the trump strength readout visible outside collapsed rules', async () => {
+    renderWithProviders(<GanjifaPage />);
+    const rules = await screen.findByText('ルール');
+    const details = rules.closest('details');
+    const readout = screen.getByTestId('ganjifa-trump-group');
+
+    expect(details).not.toHaveAttribute('open');
+    expect(readout).toBeVisible();
+    expect(details).not.toContainElement(readout);
+  });
+
+  it('keeps dealer and trump strength in the mobile information row', async () => {
+    renderWithProviders(<GanjifaPage />);
+    const info = await screen.findByTestId('ganjifa-trump-group').then((readout) => readout.parentElement);
+
+    expect(info).toHaveAttribute('data-tutorial', 'ganjifa-info');
+    expect(info).toContainElement(screen.getByTestId('ganjifa-dealer'));
+    expect(info).toContainElement(screen.getByText('ルール'));
+    expect(info).toHaveClass('text-xs', 'sm:text-base', 'gap-x-2', 'gap-y-0');
+  });
+
   it('keeps rules and player details open on desktop', async () => {
     mobileState.isMobile = false;
     renderWithProviders(<GanjifaPage />);
     const rules = await screen.findByText('ルール');
     expect(rules.closest('details')).toHaveAttribute('open');
+    expect(screen.getByTestId('ganjifa-trump-group')).toBeVisible();
     const cpuDetails = screen.getByTestId('cpu-accordion');
     expect(cpuDetails).toHaveAttribute('open');
     mobileState.isMobile = true;
@@ -188,7 +213,7 @@ describe('GanjifaPage', () => {
     expect(humanDetails).toBeVisible();
     expect(humanDetails).toHaveTextContent('あなた: 32枚 | 0トリック');
     expect(cpuDetails).not.toContainElement(humanDetails);
-    expect(screen.getByText('あなた: 得点: 0')).toBeVisible();
+    expect(screen.getByTestId('ganjifa-mobile-scores')).toHaveTextContent('得点 あなた 0 · CPU 1 0 · CPU 2 0');
   });
 
   it('plays the selected card', async () => {

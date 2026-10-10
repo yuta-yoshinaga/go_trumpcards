@@ -13,7 +13,7 @@ import { HintTooltip } from '../components/hint/HintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -69,6 +69,7 @@ function MinibridgePageContent() {
     retry,
   } = useGameApi<MinibridgeResponse, Parameters<typeof minibridgeApi.exec>>(minibridgeApi.exec);
   const { cardWidth } = useCardDimensions();
+  const isMobile = useIsMobile();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('minibridge', state);
   const [level, setLevel] = useState(1);
   const [cpuProcessing, setCpuProcessing] = useState(false);
@@ -235,8 +236,10 @@ function MinibridgePageContent() {
       ) : (
         <>
           <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
-            <div className="text-ds-text-primary text-center mb-2">
-              <span className="mr-4" data-testid="mb-round">
+            <div
+              className={`text-ds-text-primary text-center mb-2${isMobile ? ' flex flex-wrap justify-center gap-x-2' : ''}`}
+            >
+              <span className={isMobile ? undefined : 'mr-4'} data-testid="mb-round">
                 {t('header.round', { round: String(state.roundNumber), total: String(state.config.rounds) })}
               </span>
               <span data-testid="mb-score">
@@ -250,16 +253,27 @@ function MinibridgePageContent() {
             </div>
 
             {/* **競りが無いこと自体が規則。** 先に出す。 */}
-            <details
-              className="mb-3 rounded bg-black/30 px-3 py-2 text-ds-text-primary text-center"
-              data-tutorial="mb-rule"
-              data-testid="mb-rule-details"
-            >
-              <summary className="cursor-pointer select-none">{t('header.rules')}</summary>
-              <div className="mt-1" data-testid="mb-rule">
-                {t('header.rule')}
-              </div>
-            </details>
+            <div className={isMobile ? 'flex flex-wrap gap-2 mb-3' : undefined}>
+              <details
+                className={`${isMobile ? 'mb-0 flex-1 basis-0' : 'mb-3'} rounded bg-black/30 px-3 py-2 text-ds-text-primary text-center`}
+                data-tutorial="mb-rule"
+                data-testid="mb-rule-details"
+              >
+                <summary className="cursor-pointer select-none">{t('header.rules')}</summary>
+                <div className="mt-1" data-testid="mb-rule">
+                  {t('header.rule')}
+                </div>
+              </details>
+              <CpuAccordion
+                playerCount={state.players.filter((p) => !p.isHuman).length}
+                dataTutorial="mb-seats"
+                className={isMobile ? 'mb-0 flex-1 basis-0 open:basis-full' : undefined}
+              >
+                <div className="flex flex-wrap justify-center gap-1 mb-4 sm:gap-2" data-testid="mb-seats">
+                  {state.players.filter((p) => !p.isHuman).map(renderSeat)}
+                </div>
+              </CpuAccordion>
+            </div>
 
             <div
               className="text-center mb-3 text-ds-text-primary"
@@ -293,12 +307,6 @@ function MinibridgePageContent() {
             <div className="flex flex-wrap justify-center gap-1 mb-2 sm:gap-2" data-testid="mb-human-seat">
               {human && renderSeat(human)}
             </div>
-            <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length} dataTutorial="mb-seats">
-              <div className="flex flex-wrap justify-center gap-1 mb-4 sm:gap-2" data-testid="mb-seats">
-                {state.players.filter((p) => !p.isHuman).map(renderSeat)}
-              </div>
-            </CpuAccordion>
-
             <div data-tutorial="mb-trick">
               <TrickDisplay
                 currentTrick={state.currentTrick}
@@ -368,13 +376,14 @@ function MinibridgePageContent() {
                 </div>
                 <div className="flex flex-nowrap gap-0">
                   {state.dummyHand.map((card, idx) => (
+                    // disabled:opacity-50 の札は positioned 層で描かれ、出せる札の上に重なるので全札を relative にして DOM 順で重ねる
                     <button
                       key={`dummy-${card.design}-${card.value}-${idx}`}
                       type="button"
                       onClick={() => handlePlay(idx)}
                       disabled={loading || !isHumanDummyTurn || !legalRing.has(idx)}
                       aria-label={t('actions.playDummyAria', { card: cardAlt(card) })}
-                      className={`disabled:opacity-50 sm:focus-visible:z-10 ${
+                      className={`relative disabled:opacity-50 sm:focus-visible:z-10 ${
                         isHumanDummyTurn && legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''
                       }`}
                       style={{ marginLeft: idx > 0 ? -Math.round(cardWidth * 0.55) : undefined }}

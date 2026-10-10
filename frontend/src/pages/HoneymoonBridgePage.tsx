@@ -232,26 +232,23 @@ function HoneymoonBridgePageContent() {
             </details>
 
             {/* **前半のトリックは得点にならない。** 山札の残りだけが意味を持つ。 */}
-            {isDraw && (
-              <div className="text-center mb-3 text-ds-accent text-sm" role="status" data-testid="hb-stock">
-                {t('header.stock', { n: String(state.stockSize) })}
+            <div className="mb-2 flex flex-wrap items-center justify-center gap-x-3 text-center text-sm">
+              {isDraw && (
+                <div className="text-ds-accent" role="status" data-testid="hb-stock">
+                  {t('header.stock', { n: String(state.stockSize) })}
+                </div>
+              )}
+              <div className="text-ds-text-primary" data-testid="hb-contract" data-tutorial="hb-contract">
+                {state.contractLevel > 0
+                  ? t('header.contract', {
+                      level: String(state.contractLevel),
+                      suit: suitSymbolAt(state.trumpSuit, 'NT'),
+                      name:
+                        state.declarerIdx === 0 ? t('header.you') : t('header.cpu', { idx: String(state.declarerIdx) }),
+                      need: String(state.requiredTricks),
+                    })
+                  : t('header.contractUndecided')}
               </div>
-            )}
-
-            <div
-              className="text-center mb-3 text-ds-text-primary"
-              data-testid="hb-contract"
-              data-tutorial="hb-contract"
-            >
-              {state.contractLevel > 0
-                ? t('header.contract', {
-                    level: String(state.contractLevel),
-                    suit: suitSymbolAt(state.trumpSuit, 'NT'),
-                    name:
-                      state.declarerIdx === 0 ? t('header.you') : t('header.cpu', { idx: String(state.declarerIdx) }),
-                    need: String(state.requiredTricks),
-                  })
-                : t('header.contractUndecided')}
             </div>
 
             {/* **サーバが必ず拒否する値を出させない。** 通る最小の宣言を明示する。 */}
@@ -266,14 +263,14 @@ function HoneymoonBridgePageContent() {
               </div>
             )}
 
-            <div data-tutorial="hb-seats">
-              <div className="flex flex-wrap justify-center gap-2 mb-2">
+            <div className="mb-2 flex flex-wrap items-start justify-center gap-x-2 gap-y-1" data-tutorial="hb-seats">
+              <div className="flex flex-wrap justify-center gap-x-1 gap-y-0.5">
                 {state.players
                   .filter((p) => p.isHuman)
                   .map((p) => (
                     <div
                       key={p.id}
-                      className={`rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted ${p.id === state.currentPlayerIdx && isHumanTurn ? 'ring-2 ring-ds-accent' : ''}`}
+                      className={`rounded bg-black/30 px-1.5 py-1 text-xs text-ds-text-muted ${p.id === state.currentPlayerIdx && isHumanTurn ? 'ring-2 ring-ds-accent' : ''}`}
                       data-testid={`hb-seat-${p.id.toString()}`}
                     >
                       <span className="text-ds-text-primary">{t('header.you')}</span>
@@ -315,7 +312,7 @@ function HoneymoonBridgePageContent() {
                     .map((p) => (
                       <div
                         key={p.id}
-                        className={`rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted ${
+                        className={`rounded bg-black/30 px-1.5 py-1 text-xs text-ds-text-muted ${
                           (isHumanBidTurn || isHumanTurn) && p.id === state.currentPlayerIdx
                             ? 'ring-2 ring-ds-accent'
                             : ''

@@ -237,17 +237,17 @@ function MendikotPageContent() {
               </div>
             </div>
 
-            <div className="text-ds-text-muted text-sm text-center" data-testid="md-tricks">
-              <div className="whitespace-nowrap">
+            <div className="mb-3 flex flex-wrap justify-center gap-x-3 text-ds-text-muted text-sm">
+              <span className="whitespace-nowrap" data-testid="md-tricks">
                 {t('header.tricksCount', {
                   t0: String(state.teamTricks[0] ?? 0),
                   t1: String(state.teamTricks[1] ?? 0),
                 })}
-              </div>
-            </div>
+              </span>
 
-            <div className="text-ds-text-muted text-sm text-center mb-3" data-testid="md-score">
-              {t('header.score', { t0: String(state.scores[0] ?? 0), t1: String(state.scores[1] ?? 0) })}
+              <span className="whitespace-nowrap" data-testid="md-score">
+                {t('header.score', { t0: String(state.scores[0] ?? 0), t1: String(state.scores[1] ?? 0) })}
+              </span>
             </div>
 
             <div className="mb-2 flex flex-wrap justify-center gap-1 sm:gap-2" data-testid="md-human-seat">
@@ -317,7 +317,7 @@ function MendikotPageContent() {
                       className={`flex flex-col items-center disabled:opacity-50 ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
                     >
                       {legalRing.has(idx) && (
-                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-ds-success">
+                        <span className="sr-only sm:not-sr-only sm:inline-flex sm:items-center sm:gap-1 text-xs font-semibold text-ds-success">
                           <span aria-hidden="true">✓</span>
                           {t('actions.playableVisual')}
                         </span>

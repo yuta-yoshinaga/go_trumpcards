@@ -28,6 +28,7 @@
   "you": "You",
   "cpu": "CPU {{id}}",
   "score": "Score: {{score}}",
+  "scores": "Scores",
   "playerScore": "{{name}}: {{score}} pts",
   "playButton": "Play",
   "mustFollowSuit": "Must follow the lead suit",

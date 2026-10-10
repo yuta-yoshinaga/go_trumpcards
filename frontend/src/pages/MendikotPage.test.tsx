@@ -81,7 +81,16 @@ describe('MendikotPage', () => {
     expect(screen.getAllByRole('button', { name: /を出す/ })).toHaveLength(3);
     const visualMarker = screen.getAllByText('出せる');
     expect(visualMarker).toHaveLength(1);
+    expect(visualMarker[0]).toHaveClass('sr-only');
     expect(visualMarker[0].querySelector('[aria-hidden="true"]')).toHaveTextContent('✓');
+  });
+
+  it('keeps trick count and hand score on one shared row', async () => {
+    renderWithProviders(<MendikotPage />);
+
+    const tricks = await screen.findByTestId('md-tricks');
+    const score = screen.getByTestId('md-score');
+    expect(tricks.parentElement).toBe(score.parentElement);
   });
 
   it('highlights the current seat and labels it when its play will set undecided trump', async () => {

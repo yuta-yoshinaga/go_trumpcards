@@ -28,6 +28,7 @@
   "you": "あなた",
   "cpu": "CPU {{id}}",
   "score": "得点: {{score}}",
+  "scores": "得点",
   "playerScore": "{{name}}: {{score}}点",
   "playButton": "出す",
   "mustFollowSuit": "リードスートに従う必要があります",

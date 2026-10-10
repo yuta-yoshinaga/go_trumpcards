@@ -15,7 +15,7 @@ import { PlayerHandSection } from '../components/PlayerHandSection';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { CPU_DIFFICULTY_OPTIONS, TARGET_CHIPS_OPTIONS, useDoppelkopfGame } from '../hooks/useDoppelkopfGame';
@@ -133,6 +133,7 @@ function DoppelkopfPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('doppelkopf', state);
   const { cardWidth, isMobile } = useCardDimensions();
+  const isMobileViewport = useIsMobile();
   const phaseNames = usePhaseNames('doppelkopf', DOPPELKOPF_PHASE_KEYS);
 
   if (!state)
@@ -268,11 +269,11 @@ function DoppelkopfPageContent() {
                 </div>
 
                 {/* Players: chips / cards / tricks (team shown once revealed) */}
-                <div className="mb-1 p-2 rounded bg-black/30">
+                <div className="mb-1 p-1 sm:p-2 rounded bg-black/30">
                   {state.players
                     .filter((p) => p.isHuman)
                     .map((p) => (
-                      <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
+                      <div key={p.id} className="text-ds-text-muted text-sm sm:py-0.5">
                         {playerName(p.id, true)}
                         {(state.teamsRevealed || p.teamKnown) && ` [${p.isRe ? t('team.re') : t('team.kontra')}]`}:{' '}
                         {t('chips', { count: p.chips })} | {t('cards', { count: p.cardCount })} |{' '}
@@ -301,12 +302,12 @@ function DoppelkopfPageContent() {
                     実戦上の判断材料になる。終了後は下の内訳が引き継ぐ。 */}
                 {!(isRoundEnd || isGameEnd) && (
                   <div
-                    className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                    className="my-1 sm:my-3 p-1 sm:p-2 rounded bg-black/30 text-ds-text-muted text-sm"
                     role="status"
                     aria-live="polite"
                     data-testid="dk-live-points"
                   >
-                    <div className="mb-1 text-ds-text-primary">{t('livePoints.title')}</div>
+                    <div className="mb-0.5 sm:mb-1 text-ds-text-primary">{t('livePoints.title')}</div>
                     <div>
                       {t('livePoints.re', {
                         points: state.liveRePoints,
@@ -324,7 +325,7 @@ function DoppelkopfPageContent() {
 
                 {/* Round result */}
                 {(isRoundEnd || isGameEnd) && (
-                  <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
+                  <div className="my-1 sm:my-3 p-1 sm:p-2 rounded bg-black/30 text-ds-text-muted text-sm">
                     <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
                     <div>{t('roundResult.rePoints', { points: state.roundRePoints })}</div>
                     <div>{state.roundReWon ? t('roundResult.reWon') : t('roundResult.reLost')}</div>
@@ -332,33 +333,41 @@ function DoppelkopfPageContent() {
                   </div>
                 )}
                 {state.roundScoreHistory.length > 0 && (
-                  <div className="my-3 overflow-x-auto" data-testid="dk-round-history">
-                    <table className="w-full text-sm">
-                      <caption className="mb-1 text-left text-ds-text-primary">{t('roundHistory.title')}</caption>
-                      <thead>
-                        <tr>
-                          <th scope="col">{t('roundHistory.round')}</th>
-                          {state.players.map((p) => (
-                            <th scope="col" key={p.id}>
-                              {playerName(p.id, p.isHuman)}
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {state.roundScoreHistory.map((scores, index) => (
-                          <tr key={index}>
-                            <th scope="row">{index + 1}</th>
-                            {scores.map((score, playerIdx) => (
-                              <td key={playerIdx} className="text-center">
-                                {formatSignedDelta(score)}
-                              </td>
+                  <details
+                    open={!isMobileViewport || undefined}
+                    className="my-1 sm:my-3"
+                    data-testid="dk-round-history-details"
+                  >
+                    <summary className="cursor-pointer select-none text-ds-text-primary text-sm">
+                      {t('roundHistory.title')}
+                    </summary>
+                    <div className="mt-1 overflow-x-auto" data-testid="dk-round-history">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr>
+                            <th scope="col">{t('roundHistory.round')}</th>
+                            {state.players.map((p) => (
+                              <th scope="col" key={p.id}>
+                                {playerName(p.id, p.isHuman)}
+                              </th>
                             ))}
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                        </thead>
+                        <tbody>
+                          {state.roundScoreHistory.map((scores, index) => (
+                            <tr key={index}>
+                              <th scope="row">{index + 1}</th>
+                              {scores.map((score, playerIdx) => (
+                                <td key={playerIdx} className="text-center">
+                                  {formatSignedDelta(score)}
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </details>
                 )}
               </div>
             </div>

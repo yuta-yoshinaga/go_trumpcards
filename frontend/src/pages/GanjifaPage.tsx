@@ -188,40 +188,34 @@ function GanjifaPageContent() {
           />
 
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            <div className="text-ds-text-primary text-center mb-2" data-tutorial="ganjifa-info">
-              <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
-              <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
-              <span className="mr-4">{t('trump', { suit: trumpLabel })}</span>
+            <div
+              className="flex flex-wrap items-center justify-center gap-x-2 gap-y-0 text-xs sm:text-base text-ds-text-primary text-center mb-2"
+              data-tutorial="ganjifa-info"
+            >
+              <span className="sm:mr-4">{t('round', { n: state.roundNumber })}</span>
+              <span className="sm:mr-4">{t('trick', { n: state.trickNumber })}</span>
+              <span className="sm:mr-4">{t('trump', { suit: trumpLabel })}</span>
               <span>{t('target', { rounds: state.config.targetRounds })}</span>
-            </div>
-
-            <div className="flex flex-wrap justify-center gap-x-3 text-center text-ds-text-muted text-sm mb-1">
+              {/* 強さの向きがこのゲームの要 */}
+              <span
+                className={`text-xs font-semibold ${trumpIsStrong ? 'text-ds-info' : 'text-ds-warning'}`}
+                data-testid="ganjifa-trump-group"
+                role="status"
+                aria-live="polite"
+              >
+                {trumpIsStrong ? t('trumpGroupStrong') : t('trumpGroupWeak')}
+              </span>
               {dealer && (
-                <span data-testid="ganjifa-dealer">{t('dealer', { name: playerName(dealer.id, dealer.isHuman) })}</span>
+                <span className="text-ds-text-muted text-sm" data-testid="ganjifa-dealer">
+                  {t('dealer', { name: playerName(dealer.id, dealer.isHuman) })}
+                </span>
               )}
-              <details className="text-sm" open={!isMobile || undefined}>
+              <details className="basis-full text-sm sm:ml-auto sm:basis-auto" open={!isMobile || undefined}>
                 <summary className="cursor-pointer select-none">{t('rules')}</summary>
-                <div className="text-ds-text-muted" data-testid="ganjifa-trump-auto-note">
+                <div className="text-ds-text-muted w-full" data-testid="ganjifa-trump-auto-note">
                   {t('trumpAutoNote')}
                 </div>
               </details>
-            </div>
-
-            {/*
-              The rank direction is the whole game, so it gets its own line rather
-              than a tooltip: in a strong suit the 12 is the best card, in a weak
-              suit the 1 is, and the hand below is sorted by that order.
-            */}
-            <div
-              className={`text-center mb-2 text-sm font-semibold ${trumpIsStrong ? 'text-ds-info' : 'text-ds-warning'}`}
-              data-testid="ganjifa-trump-group"
-              // **向きはラウンドごとに反転する。**色と文字でしか伝わっていないと、
-              // 支援技術の利用者は反転に気づかないまま前の並び順で打ってしまう。
-              // 領域は常設で中身だけが差し替わるので、変化がそのまま告知になる (#6449)。
-              role="status"
-              aria-live="polite"
-            >
-              {trumpIsStrong ? t('trumpGroupStrong') : t('trumpGroupWeak')}
             </div>
 
             <div className={lgTwoColGrid}>
@@ -242,12 +236,23 @@ function GanjifaPageContent() {
 
               {/* Right: info sidebar */}
               <div>
-                <div className="mb-2 px-2 py-1 rounded bg-black/30 text-ds-text-muted text-sm flex flex-wrap justify-center gap-x-3 sm:flex-col sm:gap-x-0">
-                  {state.players.map((p) => (
-                    <span key={p.id} className="py-0.5">
-                      {playerName(p.id, p.isHuman)}: {t('score', { score: p.score })}
-                    </span>
-                  ))}
+                <div className="mb-2 px-2 py-1 rounded bg-black/30 text-ds-text-muted text-sm text-center sm:text-left">
+                  <div className="sm:hidden whitespace-nowrap" data-testid="ganjifa-mobile-scores">
+                    {t('scores')}{' '}
+                    {state.players.map((p, index) => (
+                      <span key={p.id}>
+                        {index > 0 && ' · '}
+                        {playerName(p.id, p.isHuman)} {p.score}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="hidden sm:flex sm:flex-col sm:gap-x-0">
+                    {state.players.map((p) => (
+                      <span key={p.id} className="py-0.5">
+                        {playerName(p.id, p.isHuman)}: {t('score', { score: p.score })}
+                      </span>
+                    ))}
+                  </div>
                 </div>
 
                 {humanPlayer && (
