@@ -28,7 +28,9 @@ test.describe('Honeymoon Bridge E2E', () => {
 
   test('labels both seats', async ({ page }) => {
     await navigateTo(page, '/honeymoonbridge');
-    await page.getByTestId('cpu-accordion').locator('summary').click();
+    // Open on desktop already; only expand it where it starts closed (phones).
+    const cpuAccordion = page.getByTestId('cpu-accordion');
+    if ((await cpuAccordion.getAttribute('open')) === null) await cpuAccordion.locator('summary').click();
     for (const id of [0, 1]) {
       await expect(page.getByTestId(`hb-seat-${id}`)).toBeVisible({ timeout: TIMEOUT_TRANSITION });
     }

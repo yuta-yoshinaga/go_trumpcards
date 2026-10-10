@@ -199,16 +199,16 @@ function ChineseTenPageContent() {
                         </fieldset>
                       ) : (
                         <div
-                          className={`flex gap-1 justify-center ${viewportWidth >= 1024 ? 'flex-nowrap' : 'flex-wrap'}`}
+                          className={`flex gap-1 justify-center ${viewportWidth >= LG_BREAKPOINT ? 'flex-nowrap' : 'flex-wrap'}`}
                           role="img"
                           aria-label={t('opponentHandAriaLabel', { n: o.cardCount })}
                         >
                           {Array.from({ length: o.cardCount }, (_, i) => (
                             <span
                               key={`opp-${o.id.toString()}-c${i.toString()}`}
-                              className={viewportWidth >= 1024 && i > 0 ? '-ml-3' : undefined}
+                              className={viewportWidth >= LG_BREAKPOINT && i > 0 ? '-ml-3' : undefined}
                             >
-                              <CardBack width={viewportWidth >= 1024 ? 36 : cardWidth} />
+                              <CardBack width={viewportWidth >= LG_BREAKPOINT ? 36 : cardWidth} />
                             </span>
                           ))}
                         </div>
