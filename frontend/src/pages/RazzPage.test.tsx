@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { razzApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -502,6 +502,9 @@ describe('RazzPage', () => {
     mockExec.mockResolvedValue(thirdStreetState);
     renderWithProviders(<RazzPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument());
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: 'フォールド' }),
+    ).toBeInTheDocument();
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(thirdStreetState);

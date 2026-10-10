@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { chicagoApi, sevenCardStudApi, sevenCardStudHiLoApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -175,6 +175,22 @@ beforeEach(() => {
 });
 
 describe('SevenCardStudPage', () => {
+  it.each([
+    ['Chicago', chicagoApi, ChicagoPage, 'isChicago'],
+    ['Hi-Lo', sevenCardStudHiLoApi, SevenCardStudHiLoPage, 'isHiLo'],
+  ] as const)('translates visible opponent hands in the %s namespace', async (_name, api, Page, variantFlag) => {
+    vi.mocked(api.exec).mockResolvedValueOnce({
+      ...thirdStreetState,
+      players: [humanPlayer(), cpuPlayer(1)],
+      [variantFlag]: true,
+    } as SevenCardStudResponse);
+
+    renderWithProviders(<Page />);
+
+    expect(await screen.findByTestId('scs-showing-hand-1')).toHaveTextContent('見えている札: ハイカード');
+    expect(screen.queryByText('showingHand')).not.toBeInTheDocument();
+  });
+
   it('keeps the Chicago result live region mounted before showdown', async () => {
     vi.mocked(chicagoApi.exec).mockResolvedValueOnce({ ...thirdStreetState, isChicago: true } as SevenCardStudResponse);
     renderWithProviders(<ChicagoPage />);
@@ -567,6 +583,9 @@ describe('SevenCardStudPage', () => {
     mockExec.mockResolvedValue(thirdStreetState);
     renderWithProviders(<SevenCardStudPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument());
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: 'フォールド' }),
+    ).toBeInTheDocument();
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(thirdStreetState);

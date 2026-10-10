@@ -85,4 +85,45 @@ describe('GameFooter', () => {
     expect(footer.className).toContain('sm:max-h-none');
     expect(footer.className).toContain('sm:overflow-y-visible');
   });
+
+  it('keeps the legacy footer classes when actions are omitted', () => {
+    render(
+      <GameFooter>
+        <span>content</span>
+      </GameFooter>,
+    );
+    const footer = screen.getByRole('contentinfo');
+    expect(footer.className).toContain('max-h-[45vh] overflow-y-auto sm:max-h-none sm:overflow-y-visible');
+    expect(screen.queryByTestId('game-footer-content')).not.toBeInTheDocument();
+  });
+
+  it('separates scrollable content from persistent actions', () => {
+    render(
+      <GameFooter actions={<button type="button">進む</button>}>
+        <span>手札</span>
+      </GameFooter>,
+    );
+    const footer = screen.getByRole('contentinfo');
+    const content = screen.getByTestId('game-footer-content');
+    const actions = screen.getByTestId('game-footer-actions');
+    expect(content).toContainElement(screen.getByText('手札'));
+    expect(actions).toContainElement(screen.getByRole('button', { name: '進む' }));
+    expect(content).not.toContainElement(actions);
+    expect(footer.className).toContain('sm:max-h-[50vh]');
+    expect(footer.className).not.toContain('overflow-y-auto');
+    expect(content.className).toContain('min-h-0');
+    expect(content.className).toContain('overflow-y-auto');
+  });
+
+  it('keeps the actions layout but omits the action row when actions is null', () => {
+    render(
+      <GameFooter actions={null}>
+        <span>手札</span>
+      </GameFooter>,
+    );
+    const footer = screen.getByRole('contentinfo');
+    expect(footer.className).toContain('sm:max-h-[50vh]');
+    expect(screen.getByTestId('game-footer-content')).toContainElement(screen.getByText('手札'));
+    expect(screen.queryByTestId('game-footer-actions')).not.toBeInTheDocument();
+  });
 });
