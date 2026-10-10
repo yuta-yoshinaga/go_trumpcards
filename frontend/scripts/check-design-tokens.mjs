@@ -486,6 +486,13 @@ for (const need of ['max-h-[45vh]', 'overflow-y-auto', 'sm:max-h-none', 'sm:over
     );
   }
 }
+for (const need of ['min-h-0 overflow-y-auto', 'sm:max-h-[50vh]', 'game-footer-actions']) {
+  if (!footerText.includes(need)) {
+    shellViolations.push(
+      `src/components/GameFooter.tsx: actions layout lost "${need}" — footer actions may be hidden by inner scrolling`,
+    );
+  }
+}
 
 if (shellViolations.length > 0) {
   console.error('\nMobile shell-height violations:\n');

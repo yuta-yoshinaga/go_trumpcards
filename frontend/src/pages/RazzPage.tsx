@@ -462,7 +462,41 @@ function RazzPageContent() {
           />
 
           {/* Sticky footer: player hand + buttons */}
-          <GameFooter className={`${gameTheme.razz.footer} px-5 py-3`}>
+          <GameFooter
+            className={`${gameTheme.razz.footer} px-5 py-3`}
+            actions={
+              <>
+                {/* Betting controls */}
+                {canAct && (
+                  <div data-tutorial="razz-action-buttons">
+                    {hasOutstandingBet && callPotOdds !== null && (
+                      <p data-testid="razz-call-pot-odds" className="text-ds-text-primary text-sm mb-2">
+                        {t('callPotOdds', { amount: callAmount, odds: callPotOdds })}
+                      </p>
+                    )}
+                    <BettingControls
+                      inputId="razzBetAmount"
+                      betAmount={betAmount}
+                      onBetAmountChange={setBetAmount}
+                      minRaise={minRaise}
+                      maxBetAmount={state?.maxBetAmount}
+                      potSize={state?.pot}
+                      hasOutstandingBet={hasOutstandingBet}
+                      loading={loading}
+                      onCall={() => execApi('call', undefined, undefined, getElapsed())}
+                      onRaise={() => execApi('raise', betAmount, undefined, getElapsed())}
+                      onBet={() => execApi('bet', betAmount, undefined, getElapsed())}
+                      onCheck={() => execApi('check', undefined, undefined, getElapsed())}
+                      onFold={() => execApi('fold', undefined, undefined, getElapsed())}
+                      onAllIn={() => execApi('allin', undefined, undefined, getElapsed())}
+                    />
+                  </div>
+                )}
+
+                <ActionShortcutsPanel bindings={actionBindings} data-testid="razz-kbd-shortcuts" />
+              </>
+            }
+          >
             {/* Human player */}
             {humanPlayer && (
               <div className="mb-2" data-tutorial="razz-player-hand">
@@ -635,33 +669,6 @@ function RazzPageContent() {
             {/* Hint */}
             {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
 
-            {/* Betting controls */}
-            {canAct && (
-              <div data-tutorial="razz-action-buttons">
-                {hasOutstandingBet && callPotOdds !== null && (
-                  <p data-testid="razz-call-pot-odds" className="text-ds-text-primary text-sm mb-2">
-                    {t('callPotOdds', { amount: callAmount, odds: callPotOdds })}
-                  </p>
-                )}
-                <BettingControls
-                  inputId="razzBetAmount"
-                  betAmount={betAmount}
-                  onBetAmountChange={setBetAmount}
-                  minRaise={minRaise}
-                  maxBetAmount={state?.maxBetAmount}
-                  potSize={state?.pot}
-                  hasOutstandingBet={hasOutstandingBet}
-                  loading={loading}
-                  onCall={() => execApi('call', undefined, undefined, getElapsed())}
-                  onRaise={() => execApi('raise', betAmount, undefined, getElapsed())}
-                  onBet={() => execApi('bet', betAmount, undefined, getElapsed())}
-                  onCheck={() => execApi('check', undefined, undefined, getElapsed())}
-                  onFold={() => execApi('fold', undefined, undefined, getElapsed())}
-                  onAllIn={() => execApi('allin', undefined, undefined, getElapsed())}
-                />
-              </div>
-            )}
-
             <GameResetButton
               isGameEnd={phase === SevenCardStudPhase.SHOWDOWN || phase === SevenCardStudPhase.END}
               onReset={handleManualReset}
@@ -670,7 +677,6 @@ function RazzPageContent() {
               dataTutorial="razz-reset-button"
               className="min-w-[90px]"
             />
-            <ActionShortcutsPanel bindings={actionBindings} data-testid="razz-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

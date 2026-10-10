@@ -568,7 +568,38 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
           />
 
           {/* Sticky footer: player hand + buttons */}
-          <GameFooter className={`${gameTheme[gameKey].footer} px-5 py-3`}>
+          <GameFooter
+            className={`${gameTheme[gameKey].footer} px-5 py-3`}
+            actions={
+              <>
+                {/* Betting controls */}
+                {canAct && state && humanPlayer && (
+                  <div data-tutorial="scs-action-buttons">
+                    <BettingControls
+                      inputId="sevenCardStudBetAmount"
+                      betAmount={betAmount}
+                      onBetAmountChange={setBetAmount}
+                      minRaise={minRaise}
+                      maxBetAmount={state?.maxBetAmount}
+                      potSize={state?.pot}
+                      hasOutstandingBet={hasOutstandingBet}
+                      callAmountLabel={` ${t('callAmount', { amount: callAmount })}`}
+                      callPotOddsLabel={callPotOddsLabel}
+                      loading={loading}
+                      onCall={() => execApi('call', undefined, undefined, getElapsed())}
+                      onRaise={() => execApi('raise', betAmount, undefined, getElapsed())}
+                      onBet={() => execApi('bet', betAmount, undefined, getElapsed())}
+                      onCheck={() => execApi('check', undefined, undefined, getElapsed())}
+                      onFold={() => execApi('fold', undefined, undefined, getElapsed())}
+                      onAllIn={() => execApi('allin', undefined, undefined, getElapsed())}
+                    />
+                  </div>
+                )}
+
+                <ActionShortcutsPanel bindings={actionBindings} data-testid="seven-card-stud-kbd-shortcuts" />
+              </>
+            }
+          >
             {/* Human player */}
             {humanPlayer && (
               <div className="mb-2" data-tutorial="scs-player-hand">
@@ -762,30 +793,6 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
             {/* Hint */}
             {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
 
-            {/* Betting controls */}
-            {canAct && state && humanPlayer && (
-              <div data-tutorial="scs-action-buttons">
-                <BettingControls
-                  inputId="sevenCardStudBetAmount"
-                  betAmount={betAmount}
-                  onBetAmountChange={setBetAmount}
-                  minRaise={minRaise}
-                  maxBetAmount={state?.maxBetAmount}
-                  potSize={state?.pot}
-                  hasOutstandingBet={hasOutstandingBet}
-                  callAmountLabel={` ${t('callAmount', { amount: callAmount })}`}
-                  callPotOddsLabel={callPotOddsLabel}
-                  loading={loading}
-                  onCall={() => execApi('call', undefined, undefined, getElapsed())}
-                  onRaise={() => execApi('raise', betAmount, undefined, getElapsed())}
-                  onBet={() => execApi('bet', betAmount, undefined, getElapsed())}
-                  onCheck={() => execApi('check', undefined, undefined, getElapsed())}
-                  onFold={() => execApi('fold', undefined, undefined, getElapsed())}
-                  onAllIn={() => execApi('allin', undefined, undefined, getElapsed())}
-                />
-              </div>
-            )}
-
             <GameResetButton
               isGameEnd={phase === SevenCardStudPhase.SHOWDOWN || phase === SevenCardStudPhase.END}
               onReset={handleManualReset}
@@ -794,7 +801,6 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
               dataTutorial="scs-reset-button"
               className="min-w-[90px]"
             />
-            <ActionShortcutsPanel bindings={actionBindings} data-testid="seven-card-stud-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

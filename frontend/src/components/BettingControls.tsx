@@ -81,8 +81,8 @@ export function BettingControls({
   };
 
   return (
-    <div className="text-center mb-2">
-      <div className="flex flex-col items-center justify-center gap-1 mb-2">
+    <div className="flex flex-wrap justify-center gap-1 text-center mb-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center">
+      <div className="flex basis-full flex-row flex-wrap items-center justify-center gap-1 mb-2 sm:basis-auto sm:flex-row sm:gap-1">
         <ChipBetInput
           id={inputId}
           label={t('betting.betAmount')}
@@ -97,12 +97,12 @@ export function BettingControls({
           describedBy={isOutOfRange ? `${inputId}-range` : undefined}
         />
         {isOutOfRange && (
-          <p id={`${inputId}-range`} className="text-ds-error-text text-xs" role="alert">
+          <p id={`${inputId}-range`} className="basis-full text-ds-error-text text-xs sm:basis-full" role="alert">
             {t('betting.rangeHint', { min: minRaise, max: hasMax ? max : '∞' })}
           </p>
         )}
         {showPresets && (
-          <div className="flex items-center justify-center gap-2">
+          <div className="flex items-center justify-center gap-1 sm:gap-2">
             <button
               type="button"
               className={`${btnPokerMuted} min-w-[70px] text-xs`}
@@ -136,7 +136,7 @@ export function BettingControls({
         <>
           <button
             type="button"
-            className={`${btnPokerPrimary} min-w-[80px]`}
+            className={`${btnPokerPrimary} min-w-[56px] flex-1 whitespace-nowrap px-1 sm:min-w-[80px] sm:flex-none`}
             disabled={loading}
             onClick={withChipSound(onCall)}
             aria-keyshortcuts="c"
@@ -147,7 +147,7 @@ export function BettingControls({
           </button>
           <button
             type="button"
-            className={`${btnPokerAccent} min-w-[80px]`}
+            className={`${btnPokerAccent} min-w-[56px] flex-1 whitespace-nowrap px-1 sm:min-w-[80px] sm:flex-none`}
             disabled={!canRaise}
             onClick={withChipSound(onRaise)}
             aria-keyshortcuts="r"
@@ -162,7 +162,7 @@ export function BettingControls({
               mounted and swap their contents, because a region that enters the
               DOM together with its text is not announced as a change. */}
           {raiseDisabledReason && (
-            <p id={`${inputId}-raise-limit`} className="text-ds-warning text-xs mt-1">
+            <p id={`${inputId}-raise-limit`} className="basis-full text-ds-warning text-xs mt-1">
               {raiseDisabledReason}
             </p>
           )}
@@ -171,7 +171,7 @@ export function BettingControls({
         <>
           <button
             type="button"
-            className={`${btnPokerAccent} min-w-[80px]`}
+            className={`${btnPokerAccent} min-w-[56px] flex-1 whitespace-nowrap px-1 sm:min-w-[80px] sm:flex-none`}
             disabled={!canBet}
             onClick={withChipSound(onBet)}
             aria-keyshortcuts="r"
@@ -181,7 +181,7 @@ export function BettingControls({
           </button>
           <button
             type="button"
-            className={`${btnPokerPrimary} min-w-[80px]`}
+            className={`${btnPokerPrimary} min-w-[56px] flex-1 whitespace-nowrap px-1 sm:min-w-[80px] sm:flex-none`}
             disabled={loading}
             onClick={onCheck}
             aria-keyshortcuts="k"
@@ -193,7 +193,7 @@ export function BettingControls({
       )}
       <button
         type="button"
-        className={`${btnPokerMuted} min-w-[80px]`}
+        className={`${btnPokerMuted} min-w-[56px] flex-1 whitespace-nowrap px-1 sm:min-w-[80px] sm:flex-none`}
         disabled={loading}
         onClick={onFold}
         aria-keyshortcuts="f"
@@ -203,7 +203,7 @@ export function BettingControls({
       </button>
       <button
         type="button"
-        className={`${btnPokerAllIn} min-w-[80px]`}
+        className={`${btnPokerAllIn} min-w-[56px] flex-1 whitespace-nowrap px-1 sm:min-w-[80px] sm:flex-none`}
         disabled={loading}
         onClick={withChipSound(onAllIn)}
         aria-keyshortcuts="a"
@@ -211,12 +211,14 @@ export function BettingControls({
         {t('action.allIn')}
         {kbd('A')}
       </button>
-      {hasOutstandingBet && callPotOddsLabel && <p className="text-ds-text-muted text-xs mt-1">{callPotOddsLabel}</p>}
+      {hasOutstandingBet && callPotOddsLabel && (
+        <p className="basis-full text-ds-text-muted text-xs mt-1 sm:basis-full">{callPotOddsLabel}</p>
+      )}
       {/* Keyboard shortcut hint. BettingControls only renders while the human can
           act, so the shortcuts are always live here. Show only the actions that are
           actually on screen (call/raise vs check/bet) to avoid advertising the
           mutually-exclusive one. */}
-      <p className="text-game-text-muted text-xs mt-2" data-testid="betting-key-hints">
+      <p className="hidden text-game-text-muted text-xs mt-2 sm:basis-full sm:block" data-testid="betting-key-hints">
         {t(hasOutstandingBet ? 'betting.keyHintsOutstanding' : 'betting.keyHintsNormal')}
       </p>
     </div>

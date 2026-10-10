@@ -466,7 +466,48 @@ export function FiveCardStudPageContent({ gameKey }: { gameKey: FcsPageGameKey }
           />
 
           {/* Sticky footer: player hand + buttons */}
-          <GameFooter className={`${gameTheme[gameKey].footer} px-5 py-3`}>
+          <GameFooter
+            className={`${gameTheme[gameKey].footer} px-5 py-3`}
+            actions={
+              <>
+                {/* Betting controls */}
+                {canAct && (
+                  <div data-tutorial="fcs-action-buttons">
+                    <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+                    <p className="text-center text-sm text-ds-text-primary" aria-live="polite" role="status">
+                      {hasOutstandingBet ? (
+                        <>
+                          {t('betting.callAmount', { amount: callAmount })}
+                          {callPotOdds !== null && t('callPotOdds', { percent: callPotOdds })}
+                        </>
+                      ) : (
+                        t('betting.checkAvailable')
+                      )}
+                    </p>
+
+                    <BettingControls
+                      inputId="fiveCardStudBetAmount"
+                      betAmount={betAmount}
+                      onBetAmountChange={setBetAmount}
+                      minRaise={minRaise}
+                      maxBetAmount={state?.maxBetAmount}
+                      potSize={state?.pot}
+                      hasOutstandingBet={hasOutstandingBet}
+                      loading={loading}
+                      onCall={() => execApi('call', undefined, undefined, getElapsed())}
+                      onRaise={() => execApi('raise', betAmount, undefined, getElapsed())}
+                      onBet={() => execApi('bet', betAmount, undefined, getElapsed())}
+                      onCheck={() => execApi('check', undefined, undefined, getElapsed())}
+                      onFold={() => execApi('fold', undefined, undefined, getElapsed())}
+                      onAllIn={() => execApi('allin', undefined, undefined, getElapsed())}
+                    />
+                  </div>
+                )}
+
+                <ActionShortcutsPanel bindings={actionBindings} data-testid="five-card-stud-kbd-shortcuts" />
+              </>
+            }
+          >
             {/* Human player */}
             {humanPlayer && (
               <div className="mb-2" data-tutorial="fcs-player-hand">
@@ -617,40 +658,6 @@ export function FiveCardStudPageContent({ gameKey }: { gameKey: FcsPageGameKey }
               </div>
             )}
 
-            {/* Betting controls */}
-            {canAct && (
-              <div data-tutorial="fcs-action-buttons">
-                <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-                <p className="text-center text-sm text-ds-text-primary" aria-live="polite" role="status">
-                  {hasOutstandingBet ? (
-                    <>
-                      {t('betting.callAmount', { amount: callAmount })}
-                      {callPotOdds !== null && t('callPotOdds', { percent: callPotOdds })}
-                    </>
-                  ) : (
-                    t('betting.checkAvailable')
-                  )}
-                </p>
-
-                <BettingControls
-                  inputId="fiveCardStudBetAmount"
-                  betAmount={betAmount}
-                  onBetAmountChange={setBetAmount}
-                  minRaise={minRaise}
-                  maxBetAmount={state?.maxBetAmount}
-                  potSize={state?.pot}
-                  hasOutstandingBet={hasOutstandingBet}
-                  loading={loading}
-                  onCall={() => execApi('call', undefined, undefined, getElapsed())}
-                  onRaise={() => execApi('raise', betAmount, undefined, getElapsed())}
-                  onBet={() => execApi('bet', betAmount, undefined, getElapsed())}
-                  onCheck={() => execApi('check', undefined, undefined, getElapsed())}
-                  onFold={() => execApi('fold', undefined, undefined, getElapsed())}
-                  onAllIn={() => execApi('allin', undefined, undefined, getElapsed())}
-                />
-              </div>
-            )}
-
             <GameResetButton
               isGameEnd={phase === FiveCardStudPhase.SHOWDOWN || phase === FiveCardStudPhase.END}
               onReset={handleManualReset}
@@ -659,7 +666,6 @@ export function FiveCardStudPageContent({ gameKey }: { gameKey: FcsPageGameKey }
               dataTutorial="fcs-reset-button"
               className="min-w-[90px]"
             />
-            <ActionShortcutsPanel bindings={actionBindings} data-testid="five-card-stud-kbd-shortcuts" />
           </GameFooter>
         </>
       )}
