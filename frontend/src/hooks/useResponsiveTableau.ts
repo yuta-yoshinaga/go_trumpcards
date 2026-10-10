@@ -122,8 +122,8 @@ export function useResponsiveTableau(
     }
     const availableWidth = windowWidth - padX - (numCols - 1) * gapPx;
     const colW = Math.floor(availableWidth / numCols);
-    const cw = Math.min(Math.max(colW, MIN_CARD_WIDTH), cardWidth);
-    const ch = Math.round(Math.min(cw, maxCardWidthPx ?? cw) * 1.5);
+    const cw = Math.min(Math.max(colW, MIN_CARD_WIDTH), cardWidth, maxCardWidthPx ?? cardWidth);
+    const ch = Math.round(cw * 1.5);
     const naturalCo = Math.round(cw * MOBILE_VERTICAL_OVERLAP_RATIO);
     let co = naturalCo;
     if (maxColCards !== undefined && maxColCards > 1) {

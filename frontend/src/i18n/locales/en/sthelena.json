@@ -49,11 +49,6 @@
   },
   "undo": "Undo",
   "gameOverSummary": "Reached {{count}}/104 cards on the foundations ({{percent}}%)",
-  "band": {
-    "top": "Top four - reach the king row only",
-    "side": "Sides - reach either row",
-    "bottom": "Bottom four - reach the ace row only"
-  },
   "bandLabel": {
     "top": "Top",
     "side": "Sides",

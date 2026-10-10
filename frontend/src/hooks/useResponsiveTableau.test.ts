@@ -59,6 +59,13 @@ describe('useResponsiveTableau', () => {
     expect(result.current.ch).toBe(Math.round(result.current.cw * 1.5));
   });
 
+  it('caps mobile card width and derives height from the capped width', () => {
+    setWidth(375);
+    const { result } = renderHook(() => useResponsiveTableau(10, { maxCardWidthPx: 20 }));
+    expect(result.current.cw).toBe(20);
+    expect(result.current.ch).toBe(Math.round(result.current.cw * 1.5));
+  });
+
   it('honors custom padX/gapPx so SpiderPage (px-4 / gap-0.5) gets accurate sizing', () => {
     setWidth(375);
     const { result } = renderHook(() => useResponsiveTableau(10, { padX: 32, gapPx: 2 }));

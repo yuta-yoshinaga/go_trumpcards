@@ -26,6 +26,10 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { FIXED_TABLEAU_DEPTH, mobileTableauConfig, useResponsiveTableau } from '../hooks/useResponsiveTableau';
+
+const MOBILE_CARD_WIDTH_PX = 30;
+const MOBILE_CARD_OVERLAP_PX = 14;
+
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { badgeSuccessColors, badgeWarningColors } from '../styles/badgeStyles';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
@@ -157,13 +161,13 @@ function CrescentPageContent() {
   const responsiveTableauDim = useResponsiveTableau(8, mobileTableauConfig(isMobile, FIXED_TABLEAU_DEPTH.crescent));
   // Crescent has two rows of eight piles. Keep its mobile cards compact so both
   // rows and the foundation controls leave more of the play area for the stacks.
-  const compactMobileCardWidth = Math.min(responsiveTableauDim.cw, 30);
+  const compactMobileCardWidth = Math.min(responsiveTableauDim.cw, MOBILE_CARD_WIDTH_PX);
   const tableauDim = isMobile
     ? {
         ...responsiveTableauDim,
         cw: compactMobileCardWidth,
         ch: Math.round(compactMobileCardWidth * 1.5),
-        co: 14,
+        co: MOBILE_CARD_OVERLAP_PX,
       }
     : { ...responsiveTableauDim, co: Math.min(responsiveTableauDim.co, 30) };
   const foundationCardWidth = tableauDim.cw;

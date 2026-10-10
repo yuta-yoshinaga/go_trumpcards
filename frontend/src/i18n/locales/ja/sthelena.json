@@ -48,11 +48,6 @@
   },
   "undo": "戻す",
   "gameOverSummary": "組札 {{count}}/104 枚（{{percent}}%）まで到達",
-  "band": {
-    "top": "上の4列 — K段(降順)へのみ送れます",
-    "side": "横の4列 — どちらの段へも送れます",
-    "bottom": "下の4列 — A段(昇順)へのみ送れます"
-  },
   "bandLabel": {
     "top": "上段",
     "side": "横列",
