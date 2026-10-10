@@ -239,7 +239,7 @@ describe('MinibridgePage', () => {
     expect(await screen.findByTestId('mb-seats')).toHaveClass('flex-wrap');
   });
 
-  it('overlaps both desktop hands in a single non-wrapping row', async () => {
+  it('overlaps the desktop dummy hand while keeping the human hand spaced and wrapping', async () => {
     mobileState.isMobile = false;
     mockExec.mockResolvedValue(
       playing({
@@ -255,7 +255,8 @@ describe('MinibridgePage', () => {
     const ownHand = document.querySelector('[data-tutorial="mb-hand"]');
     expect(ownHand).not.toBeNull();
     expect(dummyHand.querySelector('.flex')).toHaveClass('flex-nowrap', 'gap-0');
-    expect(ownHand?.querySelector('.flex')).toHaveClass('sm:flex-nowrap');
+    expect(ownHand?.querySelector('.flex')).toHaveClass('flex-wrap', 'gap-2');
+    expect(ownHand?.querySelector('.flex')).not.toHaveClass('sm:flex-nowrap', 'sm:gap-0');
     expect(dummyHand.querySelectorAll('button')).toHaveLength(5);
     expect(ownHand?.querySelectorAll('button')).toHaveLength(5);
   });

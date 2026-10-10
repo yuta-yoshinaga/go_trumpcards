@@ -68,7 +68,7 @@ function MinibridgePageContent() {
     exec: dispatch,
     retry,
   } = useGameApi<MinibridgeResponse, Parameters<typeof minibridgeApi.exec>>(minibridgeApi.exec);
-  const { cardWidth, isMobile } = useCardDimensions();
+  const { cardWidth } = useCardDimensions();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('minibridge', state);
   const [level, setLevel] = useState(1);
   const [cpuProcessing, setCpuProcessing] = useState(false);
@@ -395,7 +395,7 @@ function MinibridgePageContent() {
                     <span className="ml-2 text-ds-accent">{t('header.yourTurn')}</span>
                   )}
                 </div>
-                <div className="flex flex-wrap gap-2 sm:flex-nowrap sm:gap-0">
+                <div className="flex flex-wrap gap-2">
                   {human.cards.map((card, idx) => (
                     <button
                       key={`${card.design}-${card.value}-${idx}`}
@@ -403,10 +403,9 @@ function MinibridgePageContent() {
                       onClick={() => handlePlay(idx)}
                       disabled={loading || !isHumanTurn || isHumanDummyTurn || !legalRing.has(idx)}
                       aria-label={t('actions.playAria', { card: cardAlt(card) })}
-                      className={`disabled:opacity-50 sm:focus-visible:z-10 ${
+                      className={`disabled:opacity-50 ${
                         !isHumanDummyTurn && legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''
                       }`}
-                      style={{ marginLeft: !isMobile && idx > 0 ? -Math.round(cardWidth * 0.55) : undefined }}
                     >
                       <CardImage card={card} width={cardWidth} />
                     </button>

@@ -200,26 +200,27 @@ function ReversisPageContent() {
                 >
                   <span className="text-ds-text-primary">{t('header.you')}</span>
                   {': '}
-                  {t('header.seat', { chips: String(human.chips), penalty: String(human.roundPenalty) })} [{markStr(human)}]
+                  {t('header.seat', { chips: String(human.chips), penalty: String(human.roundPenalty) })} [
+                  {markStr(human)}]
                 </div>
               )}
             </div>
             <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length} dataTutorial="reversis-seats">
               <div className="flex flex-wrap justify-center gap-2 mb-4">
-                {state.players.filter((p) => !p.isHuman).map((p) => (
-                  <div
-                    key={p.id}
-                    className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
-                    data-testid={`rv-seat-${p.id.toString()}`}
-                    data-tutorial="reversis-seats"
-                  >
-                    <span className="text-ds-text-primary">
-                      {t('header.cpu', { idx: String(p.id) })}
-                    </span>
-                    {': '}
-                    {t('header.seat', { chips: String(p.chips), penalty: String(p.roundPenalty) })} [{markStr(p)}]
-                  </div>
-                ))}
+                {state.players
+                  .filter((p) => !p.isHuman)
+                  .map((p) => (
+                    <div
+                      key={p.id}
+                      className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
+                      data-testid={`rv-seat-${p.id.toString()}`}
+                      data-tutorial="reversis-seats"
+                    >
+                      <span className="text-ds-text-primary">{t('header.cpu', { idx: String(p.id) })}</span>
+                      {': '}
+                      {t('header.seat', { chips: String(p.chips), penalty: String(p.roundPenalty) })} [{markStr(p)}]
+                    </div>
+                  ))}
               </div>
             </CpuAccordion>
 

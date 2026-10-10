@@ -326,22 +326,22 @@ function ShelemPageContent() {
             )}
             <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length} dataTutorial="sh-seats">
               <div className="flex flex-wrap justify-center gap-2 mb-4">
-                {state.players.filter((p) => !p.isHuman).map((p) => (
-                  <div
-                    key={p.id}
-                    className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
-                    data-testid={`sh-seat-${p.id.toString()}`}
-                  >
-                    <span className="text-ds-text-primary">
-                      {t('header.cpu', { idx: String(p.id) })}
-                    </span>
-                    <span className="ml-1 text-ds-accent">{t('header.team', { team: String(p.team) })}</span>
-                    {': '}
-                    {roleStr(p)}
-                    {' / '}
-                    {t('header.took', { n: String(p.trickCount) })}
-                  </div>
-                ))}
+                {state.players
+                  .filter((p) => !p.isHuman)
+                  .map((p) => (
+                    <div
+                      key={p.id}
+                      className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
+                      data-testid={`sh-seat-${p.id.toString()}`}
+                    >
+                      <span className="text-ds-text-primary">{t('header.cpu', { idx: String(p.id) })}</span>
+                      <span className="ml-1 text-ds-accent">{t('header.team', { team: String(p.team) })}</span>
+                      {': '}
+                      {roleStr(p)}
+                      {' / '}
+                      {t('header.took', { n: String(p.trickCount) })}
+                    </div>
+                  ))}
               </div>
             </CpuAccordion>
 
