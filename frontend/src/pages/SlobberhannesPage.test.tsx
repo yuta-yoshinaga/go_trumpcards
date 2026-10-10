@@ -184,6 +184,16 @@ describe('SlobberhannesPage', () => {
     expect(screen.getByTestId('sh-seat-0')).not.toHaveTextContent('無傷');
   });
 
+  it('keeps score and penalty information visible in compact seat rows', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<SlobberhannesPage />);
+
+    expect(await screen.findByTestId('sh-seat-0')).toHaveTextContent('あなた');
+    expect(screen.getByTestId('sh-seat-0')).toHaveTextContent('0点');
+    expect(screen.getByTestId('sh-seat-0')).toHaveTextContent('無傷(+1点)');
+    expect(screen.getByTestId('sh-seat-0')).toHaveClass('px-2', 'py-1', 'text-xs');
+  });
+
   it('shows the current round trick counts with scores at round and game end only', async () => {
     mockExec.mockResolvedValue(
       makeState({

@@ -8,6 +8,13 @@ import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, MendikotResponse } from '../types/card';
 import { MendikotPage } from './MendikotPage';
 
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+}));
+
 vi.mock('../api/gameApi', () => ({
   mendikotApi: { exec: vi.fn() },
   actionLogApi: { mendikot: vi.fn() },
@@ -61,6 +68,7 @@ function makeState(overrides: Partial<MendikotResponse> = {}): MendikotResponse 
 }
 
 beforeEach(() => {
+  mobileState.isMobile = true;
   vi.clearAllMocks();
   mockExec.mockResolvedValue(makeState());
 });
@@ -195,9 +203,26 @@ describe('MendikotPage', () => {
     expect(tens).toHaveTextContent('1');
     expect(tens).toHaveTextContent('全4枚');
     expect(tens.querySelector('details')).toBeNull();
-    expect(screen.getByTestId('md-tens-rule')).toHaveTextContent('全4枚。3枚取れば');
+    expect(screen.getByTestId('md-tens-rule')).not.toBeVisible();
     expect(screen.getAllByText('ルール')).toHaveLength(1);
     expect(await screen.findByTestId('md-seats')).toHaveClass('grid-cols-2');
+  });
+
+  it('collapses CPU seats on mobile and opens them on desktop', async () => {
+    const { unmount } = renderWithProviders(<MendikotPage />);
+    const accordion = await screen.findByTestId('cpu-accordion');
+    expect(accordion).not.toHaveAttribute('open');
+    expect(screen.getByTestId('md-seats')).not.toBeVisible();
+    expect(screen.getByTestId('md-human-seat')).toBeVisible();
+    expect(screen.getByTestId('md-seat-0')).toBeVisible();
+    expect(screen.getByTestId('md-seat-0').parentElement).toHaveAttribute('data-testid', 'md-human-seat');
+
+    unmount();
+    mobileState.isMobile = false;
+    renderWithProviders(<MendikotPage />);
+    const desktopAccordion = await screen.findByTestId('cpu-accordion');
+    expect(desktopAccordion).toHaveAttribute('open');
+    expect(screen.getByTestId('md-seats')).toBeVisible();
   });
 
   // **4枚独占と全トリック独占は追加点。**ハンドが終わるまで出てこないと、
@@ -208,7 +233,7 @@ describe('MendikotPage', () => {
 
     const rule = await screen.findByTestId('md-bonus-rule');
     expect(rule.closest('details')).not.toHaveAttribute('open');
-    expect(rule).toBeInTheDocument();
+    expect(rule).not.toBeVisible();
     expect(rule).toHaveTextContent('Mendikot で +2');
     expect(rule).toHaveTextContent('Whitewash で +3');
     // 通常勝利の +1 と取り違えないよう、そちらも同じ行で名指しされている。

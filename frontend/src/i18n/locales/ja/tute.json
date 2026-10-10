@@ -31,6 +31,8 @@
     "b": "チームB"
   },
   "teamScore": "{{team}}: {{score}} / 目標 {{target}}点",
+  "teamScores": "A {{a}} / B {{b}} / 目標 {{target}}点",
+  "referenceInfo": { "title": "得点・宣言情報" },
   "scoringReference": {
     "title": "カード点早見表",
     "ace": "A: 11点",

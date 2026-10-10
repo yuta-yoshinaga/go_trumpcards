@@ -17,7 +17,7 @@ import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -125,6 +125,7 @@ export const PitchPage = withTutorial(PitchPageContent, 'pitch', PT_TUTORIAL_STE
 const PITCH_NO_SCORER = -1;
 
 function PitchPageContent() {
+  const isMobile = useIsMobile();
   const { t } = useTranslation('pitch');
   const { tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('pitch');
@@ -327,33 +328,39 @@ function PitchPageContent() {
             {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
 
             {/* Score table */}
-            <div data-tutorial="pt-score-table" className="overflow-x-auto mb-3">
-              <table className="text-sm w-full border-collapse text-ds-text-primary">
-                <thead>
-                  <tr className="border-b border-white/20">
-                    <th className="text-left p-1">{t('scoresPlayer')}</th>
-                    <th className="text-right p-1">{t('scoresBid')}</th>
-                    <th className="text-right p-1">{t('scoresTricks')}</th>
-                    <th className="text-right p-1">{t('scoresRound')}</th>
-                    <th className="text-right p-1">{t('scoresTotal')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {state.players.map((p) => {
-                    const bidLabel = p.bid === -1 ? t('bidNone') : p.bid === 0 ? t('bidPass') : t('bid', { n: p.bid });
-                    return (
-                      <tr key={p.id} className={p.isHuman ? 'font-semibold' : ''}>
-                        <td className="p-1">{playerName(p.id, p.isHuman)}</td>
-                        <td className="text-right p-1">{bidLabel}</td>
-                        <td className="text-right p-1">{p.trickCount}</td>
-                        <td className="text-right p-1">{p.roundScore}</td>
-                        <td className="text-right p-1">{p.cumulativeScore}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+            <details open={!isMobile || undefined} className="mb-3 rounded border border-ds-border-subtle p-2">
+              <summary data-tutorial="pt-score-table" className="cursor-pointer select-none text-ds-text-muted text-sm">
+                {t('scores')}
+              </summary>
+              <div data-testid="pt-score-table" className="overflow-x-auto mt-2">
+                <table className="text-sm w-full border-collapse text-ds-text-primary">
+                  <thead>
+                    <tr className="border-b border-white/20">
+                      <th className="text-left p-1">{t('scoresPlayer')}</th>
+                      <th className="text-right p-1">{t('scoresBid')}</th>
+                      <th className="text-right p-1">{t('scoresTricks')}</th>
+                      <th className="text-right p-1">{t('scoresRound')}</th>
+                      <th className="text-right p-1">{t('scoresTotal')}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {state.players.map((p) => {
+                      const bidLabel =
+                        p.bid === -1 ? t('bidNone') : p.bid === 0 ? t('bidPass') : t('bid', { n: p.bid });
+                      return (
+                        <tr key={p.id} className={p.isHuman ? 'font-semibold' : ''}>
+                          <td className="p-1">{playerName(p.id, p.isHuman)}</td>
+                          <td className="text-right p-1">{bidLabel}</td>
+                          <td className="text-right p-1">{p.trickCount}</td>
+                          <td className="text-right p-1">{p.roundScore}</td>
+                          <td className="text-right p-1">{p.cumulativeScore}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </details>
 
             {/* **4 種の得点がこのゲームの骨格**なのに、合計しか出ていなかった
                 (#5584)。用意されていた scoring.* のキーもどこからも使われて

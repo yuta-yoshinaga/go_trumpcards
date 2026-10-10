@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { vintApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -13,7 +14,7 @@ import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -84,6 +85,7 @@ export const VintPage = withTutorial(VintPageContent, 'vint', VINT_TUTORIAL_STEP
 
 /** Inner content of the Vint page, wrapped by TutorialProvider. */
 function VintPageContent() {
+  const isMobile = useIsMobile();
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('vint');
   const { state, loading, error, exec, retry } = useGameApi(vintApi.exec);
@@ -180,6 +182,22 @@ function VintPageContent() {
   };
 
   const result = state.lastResult;
+  const renderPlayer = (p: (typeof state.players)[number]) => (
+    <div
+      key={`player-${p.id}`}
+      data-testid="vint-player"
+      className={`text-sm py-0.5 flex items-center gap-2 ${
+        p.isCurrentTurn && !isGameEnd ? 'text-ds-warning' : 'text-ds-text-muted'
+      } ${p.isHuman ? 'font-semibold' : ''}`}
+    >
+      <span>{playerLabel(p.id, p.isHuman)}</span>
+      <span>({t('team', { n: p.team })})</span>
+      {p.isDealer && <span className="text-ds-accent">[{t('dealer')}]</span>}
+      {p.isDeclarer && <span className="text-ds-success">[{t('declarer')}]</span>}
+      <span>{t('tricksWon', { n: p.tricksWon })}</span>
+      {!p.isHuman && p.cards.length === 0 && <span>{t('hiddenHand', { count: p.cardCount })}</span>}
+    </div>
+  );
 
   return (
     <GamePageShell
@@ -220,23 +238,29 @@ function VintPageContent() {
               </div>
             )}
 
-            {/* No dummy — the rule that separates this from bridge. */}
-            <div className="mb-2 text-center text-ds-text-muted text-xs" data-testid="vint-no-dummy">
-              {t('noDummyNote')}
-            </div>
-
-            {/* The bidding order — reversed from bridge. */}
-            <div className="mb-2 p-2 rounded bg-black/20 text-xs" data-testid="vint-ladder">
-              <div className="mb-1 text-ds-text-primary">{t('ladderTitle')}</div>
-              <div className="flex flex-wrap gap-x-3">
-                {DENOMS.map((d) => (
-                  <span key={d} className={d === 0 ? 'text-ds-text-muted' : 'text-ds-text-primary'}>
-                    {denomLabel(d)} ({state.trickValues[d]})
-                  </span>
-                ))}
+            <details
+              className="mb-2 rounded bg-black/20 p-2 text-xs"
+              data-testid="vint-rules"
+              open={!isMobile || undefined}
+            >
+              <summary className="cursor-pointer select-none text-ds-text-primary">{t('rules')}</summary>
+              <div className="pt-2">
+                <div className="mb-2 text-center text-ds-text-muted" data-testid="vint-no-dummy">
+                  {t('noDummyNote')}
+                </div>
+                <div data-testid="vint-ladder">
+                  <div className="mb-1 text-ds-text-primary">{t('ladderTitle')}</div>
+                  <div className="flex flex-wrap gap-x-3">
+                    {DENOMS.map((d) => (
+                      <span key={d} className={d === 0 ? 'text-ds-text-muted' : 'text-ds-text-primary'}>
+                        {denomLabel(d)} ({state.trickValues[d]})
+                      </span>
+                    ))}
+                  </div>
+                  <div className="mt-1 text-ds-text-muted">{t('ladderNote')}</div>
+                </div>
               </div>
-              <div className="mt-1 text-ds-text-muted">{t('ladderNote')}</div>
-            </div>
+            </details>
 
             {/* **相方がどの組・レベルで宣言し、誰がどこで降りたかは公開情報で、続けるか
                 降りるかの判断そのもの。**パス (level=0) も区別して並べる (#7389)。 */}
@@ -262,8 +286,12 @@ function VintPageContent() {
             )}
 
             {/* Score sheet */}
-            <div className="mb-2 p-2 rounded bg-black/20 text-sm" data-testid="vint-scores">
-              <div className="mb-1 text-ds-text-primary">{t('scoreTitle')}</div>
+            <details
+              className="mb-2 p-2 rounded bg-black/20 text-sm"
+              data-testid="vint-scores"
+              open={!isMobile || undefined}
+            >
+              <summary className="mb-1 cursor-pointer select-none text-ds-text-primary">{t('scoreTitle')}</summary>
               <div>
                 {t('team', { n: 0 })}: {t('below')} {state.below[0]} / {t('above')} {state.above[0]} / {t('games')}{' '}
                 {state.gamesWon[0]}
@@ -273,28 +301,16 @@ function VintPageContent() {
                 {state.gamesWon[1]}
               </div>
               <div className="text-xs text-ds-text-muted">{t('gameTargetNote', { n: state.gameTarget })}</div>
-            </div>
+            </details>
 
             {/* Players */}
-            <div className="mb-2 p-2 rounded bg-black/30" data-tutorial="vint-players">
-              <div className="mb-1 text-ds-text-primary text-sm">{t('playersTitle')}</div>
-              {state.players.map((p) => (
-                <div
-                  key={`player-${p.id}`}
-                  data-testid="vint-player"
-                  className={`text-sm py-0.5 flex items-center gap-2 ${
-                    p.isCurrentTurn && !isGameEnd ? 'text-ds-warning' : 'text-ds-text-muted'
-                  } ${p.isHuman ? 'font-semibold' : ''}`}
-                >
-                  <span>{playerLabel(p.id, p.isHuman)}</span>
-                  <span>({t('team', { n: p.team })})</span>
-                  {p.isDealer && <span className="text-ds-accent">[{t('dealer')}]</span>}
-                  {p.isDeclarer && <span className="text-ds-success">[{t('declarer')}]</span>}
-                  <span>{t('tricksWon', { n: p.tricksWon })}</span>
-                  {!p.isHuman && p.cards.length === 0 && <span>{t('hiddenHand', { count: p.cardCount })}</span>}
-                </div>
-              ))}
+            <div className="mb-1 flex justify-center" data-testid="vint-human-seat">
+              {human && renderPlayer(human)}
             </div>
+            <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length} dataTutorial="vint-players">
+              <div className="mb-1 text-ds-text-primary text-sm">{t('playersTitle')}</div>
+              {state.players.filter((p) => !p.isHuman).map(renderPlayer)}
+            </CpuAccordion>
 
             {/* Trick */}
             {state.trick.length > 0 && (

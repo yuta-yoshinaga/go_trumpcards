@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { quodlibetApi } from '../api/gameApi';
 import i18n from '../i18n';
@@ -12,8 +12,32 @@ vi.mock('../api/gameApi', () => ({
   quodlibetApi: { exec: vi.fn() },
   actionLogApi: { quodlibet: vi.fn() },
 }));
+vi.mock('../hooks/useCardDimensions', async () => ({
+  ...(await vi.importActual('../hooks/useCardDimensions')),
+  useIsMobile: vi.fn(() => true),
+  useCardDimensions: vi.fn(() => ({
+    cardWidth: 40,
+    cardHeight: 60,
+    cardOverlap: 20,
+    cpuCardWidth: 34,
+    footerCardWidth: 36,
+    solitaireMinColWidth: 52,
+    isMobile: true,
+  })),
+}));
+
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
+const { useIsMobile, useCardDimensions } = await import('../hooks/useCardDimensions');
+const mockUseIsMobile = vi.mocked(useIsMobile);
+const mockUseCardDimensions = vi.mocked(useCardDimensions);
 
 const mockExec = vi.mocked(quodlibetApi.exec);
+
+function toggleDetails(testId: string) {
+  const summary = screen.getByTestId(testId).querySelector('summary');
+  if (!summary) throw new Error(`Missing summary for ${testId}`);
+  fireEvent.click(summary);
+}
 
 const contractState = makeQuodlibetState();
 
@@ -30,11 +54,50 @@ const playState = makeQuodlibetState({
 });
 
 beforeEach(() => {
+  mockUseIsMobile.mockReturnValue(true);
+  mockUseCardDimensions.mockReturnValue({
+    cardWidth: 40,
+    cardHeight: 60,
+    cardOverlap: 20,
+    cpuCardWidth: 34,
+    footerCardWidth: 36,
+    solitaireMinColWidth: 52,
+    isMobile: true,
+  });
   mockExec.mockReset();
   mockExec.mockResolvedValue(contractState);
 });
 
 describe('QuodlibetPage', () => {
+  it('collapses scores and CPU hands on mobile and opens them on desktop', async () => {
+    renderWithProviders(<QuodlibetPage />);
+    await screen.findByText('ディール 1/12');
+    await screen.findByTestId('quodlibet-scores');
+    const scores = screen.getByTestId('quodlibet-scores').closest('details');
+    const cpu = screen.getByTestId('cpu-accordion');
+
+    expect(scores).not.toHaveAttribute('open');
+    expect(screen.getByTestId('quodlibet-scores')).not.toBeVisible();
+    expect(cpu).not.toHaveAttribute('open');
+    expect(screen.getByTestId('quodlibet-opponent-hand-1')).not.toBeVisible();
+
+    mockUseIsMobile.mockReturnValue(false);
+    mockUseCardDimensions.mockReturnValue({
+      cardWidth: 60,
+      cardHeight: 84,
+      cardOverlap: 22,
+      cpuCardWidth: 50,
+      footerCardWidth: 54,
+      solitaireMinColWidth: 0,
+      isMobile: false,
+    });
+    cleanup();
+    renderWithProviders(<QuodlibetPage />);
+    await screen.findByTestId('quodlibet-scores');
+    expect(screen.getByTestId('quodlibet-scores').closest('details')).toHaveAttribute('open');
+    expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
+  });
+
   it('shows each opponent hand count when cards are hidden', async () => {
     mockExec.mockResolvedValue(
       makeQuodlibetState({
@@ -42,6 +105,8 @@ describe('QuodlibetPage', () => {
       }),
     );
     renderWithProviders(<QuodlibetPage />);
+    await screen.findByText('罰点', { selector: 'summary' });
+    toggleDetails('cpu-accordion');
 
     expect(await screen.findByTestId('quodlibet-opponent-hand-1')).toHaveTextContent('4枚');
     expect(screen.getByTestId('quodlibet-opponent-hand-2')).toHaveTextContent('5枚');
@@ -55,6 +120,8 @@ describe('QuodlibetPage', () => {
     });
     mockExec.mockImplementation(async (command) => (command === 'play' ? updatedState : playState));
     renderWithProviders(<QuodlibetPage />);
+    await screen.findByText('ディール 1/12');
+    toggleDetails('cpu-accordion');
 
     expect(await screen.findByTestId('quodlibet-opponent-hand-1')).toHaveTextContent('残り8枚');
     fireEvent.click((await screen.findAllByRole('button', { name: /♠|♥|♦|♣/ }))[0]);
@@ -74,6 +141,8 @@ describe('QuodlibetPage', () => {
     });
     mockExec.mockResolvedValue(huntState);
     renderWithProviders(<QuodlibetPage />);
+    await screen.findByText('ディール 1/12');
+    toggleDetails('cpu-accordion');
     expect(await screen.findByTestId('quodlibet-visible-hand-1')).toBeInTheDocument();
     expect(screen.getByTestId('quodlibet-visible-hand-2')).toBeInTheDocument();
     expect(screen.getByTestId('quodlibet-visible-hand-3')).toBeInTheDocument();
@@ -94,6 +163,8 @@ describe('QuodlibetPage', () => {
     });
     mockExec.mockResolvedValue(openState);
     renderWithProviders(<QuodlibetPage />);
+    await screen.findByText('ディール 1/12');
+    toggleDetails('cpu-accordion');
     expect(await screen.findByTestId('quodlibet-visible-hand-1')).toBeInTheDocument();
     expect(screen.queryByTestId('quodlibet-visible-hand-0')).not.toBeInTheDocument();
   });
@@ -231,6 +302,8 @@ describe('QuodlibetPage', () => {
       }),
     );
     renderWithProviders(<QuodlibetPage />);
+    await screen.findByTestId('quodlibet-scores');
+    fireEvent.click(screen.getByText('罰点', { selector: 'summary' }));
     expect(await screen.findByText('罰点（少ないほうが勝ち）')).toBeInTheDocument();
     expect(screen.getByTestId('quodlibet-scores')).toHaveTextContent('120 点');
   });
@@ -316,6 +389,8 @@ describe('QuodlibetPage', () => {
       }),
     );
     renderWithProviders(<QuodlibetPage />);
+    await screen.findByTestId('quodlibet-score-history');
+    fireEvent.click(screen.getByText('罰点', { selector: 'summary' }));
 
     const history = await screen.findByTestId('quodlibet-score-history');
     expect(history.querySelectorAll('tbody tr')).toHaveLength(12);

@@ -11,6 +11,13 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockExec = vi.mocked(tuteApi.exec);
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useCardDimensions: () => ({ cardWidth: 70, isMobile: mobileState.isMobile }),
+  useIsMobile: () => mobileState.isMobile,
+}));
 
 const playPhaseState = makeTuteState();
 const marriageState = makeTuteState({ canDeclareMarriage: true });
@@ -42,6 +49,7 @@ const gameEndState = makeTuteState({
 const cpuTurnState = makeTuteState({ currentPlayerIdx: 1 });
 
 beforeEach(() => {
+  mobileState.isMobile = true;
   localStorage.clear();
   mockExec.mockReset();
   mockExec.mockResolvedValue(playPhaseState);
@@ -70,6 +78,30 @@ describe('TutePage', () => {
       expect(screen.getByAltText('♠ A')).toBeInTheDocument();
     });
     expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument();
+  });
+
+  it('collapses reference information on mobile and keeps it open on desktop', async () => {
+    const mobile = renderWithProviders(<TutePage />);
+    const mobileAccordion = await screen.findByTestId('cpu-accordion');
+    const mobileReference = screen.getByTestId('tute-reference-info');
+    expect(mobileAccordion).not.toHaveAttribute('open');
+    expect(screen.getByText(/CPU 1（チームB）/)).not.toBeVisible();
+    expect(mobileReference).not.toHaveAttribute('open');
+    expect(mobileReference.querySelector('div.mt-1')).not.toBeVisible();
+    expect(screen.getByTestId('tute-declared-marriages')).not.toBeVisible();
+    expect(screen.getByText('A 0 / B 0 / 目標 121点')).toBeVisible();
+    expect(screen.getByTestId('tute-human-info')).not.toBeVisible();
+    expect(screen.getByTestId('tute-human-info')).toHaveTextContent('トリック');
+    mobile.unmount();
+
+    mobileState.isMobile = false;
+    renderWithProviders(<TutePage />);
+    const desktopAccordion = await screen.findByTestId('cpu-accordion');
+    const desktopReference = screen.getByTestId('tute-reference-info');
+    expect(desktopAccordion).toHaveAttribute('open');
+    expect(screen.getByText(/CPU 1（チームB）/)).toBeVisible();
+    expect(desktopReference).toHaveAttribute('open');
+    expect(screen.getByTestId('tute-human-info')).toBeVisible();
   });
 
   it('shows each player team and marks allies and opponents in the trick', async () => {
@@ -215,7 +247,12 @@ describe('TutePage', () => {
     // Club (suit 2) declared; the other three suits remain undeclared.
     mockExec.mockResolvedValue(makeTuteState({ declaredSuits: [false, false, true, false, false] }));
     renderWithProviders(<TutePage />);
-    const panel = await screen.findByTestId('tute-declared-marriages');
+    const panel = await screen.findByTestId('tute-reference-info');
+    const marriages = screen.getByTestId('tute-declared-marriages');
+    expect(marriages).not.toBeVisible();
+    fireEvent.click(screen.getByText('得点・宣言情報'));
+    expect(marriages).toBeVisible();
+    expect(marriages).toHaveTextContent('宣言済みマリッジ');
     expect(panel).toHaveTextContent('宣言済みマリッジ');
     // One suit declared, three not declared.
     expect(screen.getAllByText('宣言済')).toHaveLength(1);
@@ -264,12 +301,14 @@ describe('TutePage', () => {
 
   it('shows a collapsible scoring reference during play', async () => {
     renderWithProviders(<TutePage />);
-    const summary = await screen.findByText('カード点早見表');
+    const summary = await screen.findByText('得点・宣言情報');
     const details = summary.closest('details');
-    expect(details).not.toBeNull();
+    expect(details).toBe(screen.getByTestId('tute-reference-info'));
     expect(details).not.toHaveAttribute('open');
+    expect(details?.querySelector('div.mt-1')).not.toBeVisible();
     fireEvent.click(summary);
     expect(details).toHaveAttribute('open');
+    expect(details).toHaveTextContent('カード点早見表');
     expect(details).toHaveTextContent('A: 11点');
     expect(details).toHaveTextContent('3: 10点');
     expect(details).toHaveTextContent('K: 4点');
@@ -284,7 +323,7 @@ describe('TutePage', () => {
     await i18n.changeLanguage('en');
     try {
       renderWithProviders(<TutePage />);
-      const summary = await screen.findByText('Card scoring reference');
+      const summary = await screen.findByText('Scoring and declarations');
       fireEvent.click(summary);
       const details = summary.closest('details');
       expect(details).toHaveTextContent('A: 11 points');
@@ -307,7 +346,6 @@ describe('TutePage', () => {
     );
     renderWithProviders(<TutePage />);
 
-    expect(await screen.findByText('チームA: 80 / 目標 121点')).toBeInTheDocument();
-    expect(screen.getByText('チームB: 121 / 目標 121点')).toBeInTheDocument();
+    expect(await screen.findByText('A 80 / B 121 / 目標 121点')).toBeInTheDocument();
   });
 });

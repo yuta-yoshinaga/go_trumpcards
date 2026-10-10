@@ -87,21 +87,58 @@ describe('VintPage', () => {
     mockExec.mockResolvedValue(makeState());
   });
 
+  it('collapses rules, scores, and CPU seats on mobile', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    renderWithProviders(<VintPage />);
+
+    const rules = await screen.findByTestId('vint-rules');
+    const scores = screen.getByTestId('vint-scores');
+    const cpu = screen.getByTestId('cpu-accordion');
+    expect(rules).not.toHaveAttribute('open');
+    expect(screen.getByTestId('vint-ladder')).not.toBeVisible();
+    expect(scores).not.toHaveAttribute('open');
+    expect(within(scores).getByText(/チーム0/)).not.toBeVisible();
+    expect(cpu).not.toHaveAttribute('open');
+    const humanRow = screen.getByText('あなた').closest('[data-testid="vint-player"]');
+    expect(humanRow).not.toBeNull();
+    expect(humanRow).toBeVisible();
+    expect(humanRow?.closest('[data-testid="cpu-accordion"]')).toBeNull();
+    expect(within(cpu).getAllByTestId('vint-player')).toHaveLength(3);
+    expect(within(cpu).getAllByTestId('vint-player')[0]).not.toBeVisible();
+
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
+  it('keeps rules, scores, and CPU seats open on desktop', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    renderWithProviders(<VintPage />);
+
+    expect(await screen.findByTestId('vint-rules')).toHaveAttribute('open');
+    expect(screen.getByTestId('vint-scores')).toHaveAttribute('open');
+    expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
+
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
   it('resets on mount', async () => {
     renderWithProviders(<VintPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
-  // **ダミーが無いのがブリッジとの違い。**常時表示する。
+  // **ダミーが無いのがブリッジとの違い。**ルール詳細に残す。
   it('states that there is no dummy', async () => {
     renderWithProviders(<VintPage />);
+    fireEvent.click(await screen.findByText('ルール'));
     await waitFor(() => expect(screen.getByTestId('vint-no-dummy')).toBeInTheDocument());
     expect(screen.getByTestId('vint-no-dummy')).toHaveTextContent('ダミーはありません');
   });
 
-  // **♠ が最弱で NT が最強。**ブリッジと逆なので単価つきで常時表示する。
+  // **♠ が最弱で NT が最強。**ブリッジと逆なので単価つきでルール詳細に残す。
   it('shows the reversed bidding order with its trick values', async () => {
     renderWithProviders(<VintPage />);
+    fireEvent.click(await screen.findByText('ルール'));
     await waitFor(() => expect(screen.getByTestId('vint-ladder')).toBeInTheDocument());
     const ladder = screen.getByTestId('vint-ladder');
     const text = ladder.textContent ?? '';
