@@ -448,7 +448,119 @@ function HandAndFootPageContent() {
             />
           </div>
 
-          <GameFooter className={`${gameTheme.handandfoot.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.handandfoot.footer} px-4 py-2.5`}
+            actions={
+              (isDrawPhase && isHumanTurn) ||
+              (isMeldPhase && isHumanTurn) ||
+              (isDiscardPhase && isHumanTurn) ||
+              isRoundEnd ? (
+                <div className="flex gap-2 items-center flex-wrap" data-tutorial="hf-actions">
+                  {isDrawPhase && isHumanTurn && (
+                    <div className="flex gap-2 flex-col">
+                      <div className="flex gap-2">
+                        <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
+                          {t('drawStockButton')}
+                        </button>
+                        <button
+                          type="button"
+                          className={`${btnPrimary} ${
+                            state.isFrozen && selectedCardIndices.length === 2 && !loading
+                              ? 'motion-safe:animate-pulse ring-2 ring-ds-info'
+                              : ''
+                          }`}
+                          data-frozen={
+                            state.isFrozen && selectedCardIndices.length === 2 && !loading ? 'true' : undefined
+                          }
+                          onClick={handleDrawDiscard}
+                          disabled={loading || selectedCardIndices.length !== 2}
+                          aria-describedby="hf-draw-discard-reason"
+                        >
+                          {t('drawDiscardButton')}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  {isMeldPhase && isHumanTurn && (
+                    <>
+                      {
+                        <div
+                          id="hf-meld-points"
+                          data-testid="hf-meld-points"
+                          className={`w-full text-xs ${
+                            meldPointInfo.below
+                              ? 'text-ds-warning'
+                              : meldPointInfo.needInitial
+                                ? 'text-ds-success'
+                                : 'text-ds-text-muted'
+                          }`}
+                        >
+                          {meldPointInfo.needInitial
+                            ? t('meldPoints.initial', {
+                                min: meldPointInfo.minMeld,
+                                points: meldPointInfo.selectedPoints,
+                              })
+                            : t('meldPoints.selected', { points: meldPointInfo.selectedPoints })}
+                        </div>
+                      }
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={handleMeldSelected}
+                        // **最低点未達なら押させない** (#5663)。警告テキストは出ていた
+                        // のにボタンはそれを見ておらず、サーバーのバリデーションで
+                        // 弾かれて初めて気づく形だった。
+                        disabled={loading || selectedCardIndices.length < 3 || meldPointInfo.below}
+                      >
+                        {t('meldButton')}
+                      </button>
+                      <button type="button" className={btnOutline} onClick={handleSkipMeld} disabled={loading}>
+                        {t('skipMeldButton')}
+                      </button>
+                    </>
+                  )}
+                  {isDiscardPhase && isHumanTurn && (
+                    <div className="flex gap-2 flex-col">
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          className={btnPrimary}
+                          onClick={handleDiscard}
+                          disabled={loading || selectedCardIndices.length !== 1}
+                        >
+                          {t('discardButton')}
+                        </button>
+                        <button
+                          type="button"
+                          className={btnSuccess}
+                          onClick={handleGoOut}
+                          disabled={loading || goOutGuidance?.canGoOut !== true}
+                          title={goOutGuidance && !goOutGuidance.canGoOut ? t(goOutGuidance.reasonKey) : undefined}
+                          aria-describedby={goOutGuidance ? 'hf-go-out-guidance' : undefined}
+                        >
+                          {t('goOutButton')}
+                        </button>
+                      </div>
+                      {goOutGuidance && (
+                        <div
+                          id="hf-go-out-guidance"
+                          data-testid="hf-go-out-guidance"
+                          className={`text-xs ${goOutGuidance.canGoOut ? 'text-ds-success' : 'text-ds-text-muted'}`}
+                        >
+                          {t(goOutGuidance.reasonKey)}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {isRoundEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                      {t('nextRound')}
+                    </button>
+                  )}
+                </div>
+              ) : null
+            }
+          >
             {humanPlayer && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="hf-player-hand">
                 {humanPlayer.cards.map((card, idx) => (
@@ -475,113 +587,12 @@ function HandAndFootPageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            <div className="flex gap-2 items-center flex-wrap" data-tutorial="hf-actions">
-              {isDrawPhase && isHumanTurn && (
-                <div className="flex gap-2 flex-col">
-                  <div className="flex gap-2">
-                    <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
-                      {t('drawStockButton')}
-                    </button>
-                    <button
-                      type="button"
-                      className={`${btnPrimary} ${
-                        state.isFrozen && selectedCardIndices.length === 2 && !loading
-                          ? 'motion-safe:animate-pulse ring-2 ring-ds-info'
-                          : ''
-                      }`}
-                      data-frozen={state.isFrozen && selectedCardIndices.length === 2 && !loading ? 'true' : undefined}
-                      onClick={handleDrawDiscard}
-                      disabled={loading || selectedCardIndices.length !== 2}
-                      aria-describedby="hf-draw-discard-reason"
-                    >
-                      {t('drawDiscardButton')}
-                    </button>
-                  </div>
-                </div>
-              )}
-              {isMeldPhase && isHumanTurn && (
-                <>
-                  {
-                    <div
-                      id="hf-meld-points"
-                      data-testid="hf-meld-points"
-                      className={`w-full text-xs ${
-                        meldPointInfo.below
-                          ? 'text-ds-warning'
-                          : meldPointInfo.needInitial
-                            ? 'text-ds-success'
-                            : 'text-ds-text-muted'
-                      }`}
-                    >
-                      {meldPointInfo.needInitial
-                        ? t('meldPoints.initial', {
-                            min: meldPointInfo.minMeld,
-                            points: meldPointInfo.selectedPoints,
-                          })
-                        : t('meldPoints.selected', { points: meldPointInfo.selectedPoints })}
-                    </div>
-                  }
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleMeldSelected}
-                    // **最低点未達なら押させない** (#5663)。警告テキストは出ていた
-                    // のにボタンはそれを見ておらず、サーバーのバリデーションで
-                    // 弾かれて初めて気づく形だった。
-                    disabled={loading || selectedCardIndices.length < 3 || meldPointInfo.below}
-                  >
-                    {t('meldButton')}
-                  </button>
-                  <button type="button" className={btnOutline} onClick={handleSkipMeld} disabled={loading}>
-                    {t('skipMeldButton')}
-                  </button>
-                </>
-              )}
-              {isDiscardPhase && isHumanTurn && (
-                <div className="flex gap-2 flex-col">
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      className={btnPrimary}
-                      onClick={handleDiscard}
-                      disabled={loading || selectedCardIndices.length !== 1}
-                    >
-                      {t('discardButton')}
-                    </button>
-                    <button
-                      type="button"
-                      className={btnSuccess}
-                      onClick={handleGoOut}
-                      disabled={loading || goOutGuidance?.canGoOut !== true}
-                      title={goOutGuidance && !goOutGuidance.canGoOut ? t(goOutGuidance.reasonKey) : undefined}
-                      aria-describedby={goOutGuidance ? 'hf-go-out-guidance' : undefined}
-                    >
-                      {t('goOutButton')}
-                    </button>
-                  </div>
-                  {goOutGuidance && (
-                    <div
-                      id="hf-go-out-guidance"
-                      data-testid="hf-go-out-guidance"
-                      className={`text-xs ${goOutGuidance.canGoOut ? 'text-ds-success' : 'text-ds-text-muted'}`}
-                    >
-                      {t(goOutGuidance.reasonKey)}
-                    </div>
-                  )}
-                </div>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-              />
-            </div>
+            <GameResetButton
+              isGameEnd={isGameEnd}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+            />
             <div
               id="hf-draw-discard-reason"
               data-testid="hf-draw-discard-reason"

@@ -578,7 +578,49 @@ function MachiavelliPageContent() {
             />
           </div>
 
-          <GameFooter className={`${gameTheme.machiavelli.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.machiavelli.footer} px-4 py-2.5`}
+            actions={
+              isHumanTurn ? (
+                <div className="flex gap-2 items-center flex-wrap">
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handleDraw}
+                    disabled={loading}
+                    data-tutorial="mv-draw-button"
+                  >
+                    {t('drawButton')}
+                  </button>
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handleNewMeld}
+                    disabled={loading || selectedCardIndices.length < 3}
+                    data-tutorial="mv-newmeld-button"
+                    data-testid="machiavelli-newmeld-button"
+                  >
+                    {t('newMeldButton')}
+                  </button>
+                  <button
+                    type="button"
+                    className={btnSecondary}
+                    onClick={rearrangeOpen ? closeRearrange : openRearrange}
+                    disabled={loading || selectedCardIndices.length < 1}
+                    aria-pressed={rearrangeOpen}
+                    title={selectedCardIndices.length < 1 ? t('rearrange.selectPrompt') : undefined}
+                    data-testid="machiavelli-rearrange-toggle"
+                  >
+                    {t('rearrange.toggle')}
+                  </button>
+                </div>
+              ) : isRoundEnd ? (
+                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                  {t('nextRound')}
+                </button>
+              ) : null
+            }
+          >
             {/* **デッドウッドはそのまま失点になる。**サーバは人間の分も毎回
                 送っているのに、画面は revealCpu の下で CPU の分しか出しておらず、
                 自分の持ち点はラウンドが終わるまで見えなかった (#6501)。
@@ -632,45 +674,6 @@ function MachiavelliPageContent() {
                   aria-pressed={handSorted}
                 >
                   {t(handSorted ? 'handOrder.deal' : 'handOrder.rankSuit')}
-                </button>
-              )}
-              {isHumanTurn && (
-                <>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleDraw}
-                    disabled={loading}
-                    data-tutorial="mv-draw-button"
-                  >
-                    {t('drawButton')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleNewMeld}
-                    disabled={loading || selectedCardIndices.length < 3}
-                    data-tutorial="mv-newmeld-button"
-                    data-testid="machiavelli-newmeld-button"
-                  >
-                    {t('newMeldButton')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnSecondary}
-                    onClick={rearrangeOpen ? closeRearrange : openRearrange}
-                    disabled={loading || selectedCardIndices.length < 1}
-                    aria-pressed={rearrangeOpen}
-                    title={selectedCardIndices.length < 1 ? t('rearrange.selectPrompt') : undefined}
-                    data-testid="machiavelli-rearrange-toggle"
-                  >
-                    {t('rearrange.toggle')}
-                  </button>
-                </>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
                 </button>
               )}
               <GameResetButton

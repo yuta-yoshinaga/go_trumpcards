@@ -465,7 +465,58 @@ function MarriagePageContent() {
             />
           </div>
 
-          <GameFooter className={`${marriageTheme.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${marriageTheme.footer} px-4 py-2.5`}
+            actions={
+              <div className="flex gap-2 items-center justify-center flex-wrap">
+                {isDrawPhase && isHumanTurn && (
+                  <>
+                    <div className="flex gap-2" data-tutorial="marriage-draw-area">
+                      <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
+                        {t('drawStockButton')}
+                      </button>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={handleDrawDiscard}
+                        disabled={loading || !state.discardTop}
+                      >
+                        {t('drawDiscardButton')}
+                      </button>
+                    </div>
+                  </>
+                )}
+                {isDiscardPhase && isHumanTurn && (
+                  <>
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handleDiscard}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                      data-tutorial="marriage-discard-button"
+                    >
+                      {t('discardButton')}
+                    </button>
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handleDeclare}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                      data-tutorial="marriage-declare-button"
+                      data-testid="marriage-declare-button"
+                    >
+                      {t('declareButton')}
+                    </button>
+                  </>
+                )}
+                {isRoundEnd && (
+                  <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                    {t('nextRound')}
+                  </button>
+                )}
+              </div>
+            }
+          >
             {humanPlayer && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="marriage-player-hand">
                 {humanPlayer.cards.map((card, idx) => (
@@ -582,49 +633,6 @@ function MarriagePageContent() {
             )}
 
             <div className="flex gap-2 items-center flex-wrap">
-              {isDrawPhase && isHumanTurn && (
-                <div className="flex gap-2" data-tutorial="marriage-draw-area">
-                  <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
-                    {t('drawStockButton')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleDrawDiscard}
-                    disabled={loading || !state.discardTop}
-                  >
-                    {t('drawDiscardButton')}
-                  </button>
-                </div>
-              )}
-              {isDiscardPhase && isHumanTurn && (
-                <>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleDiscard}
-                    disabled={loading || selectedCardIndices.length !== 1}
-                    data-tutorial="marriage-discard-button"
-                  >
-                    {t('discardButton')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleDeclare}
-                    disabled={loading || selectedCardIndices.length !== 1}
-                    data-tutorial="marriage-declare-button"
-                    data-testid="marriage-declare-button"
-                  >
-                    {t('declareButton')}
-                  </button>
-                </>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
               <GameResetButton
                 isGameEnd={!!isGameEnd}
                 onReset={handleManualReset}

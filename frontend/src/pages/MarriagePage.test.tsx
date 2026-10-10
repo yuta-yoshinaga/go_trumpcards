@@ -274,6 +274,14 @@ describe('MarriagePage', () => {
     });
   });
 
+  it('keeps the draw action in the persistent footer actions row', async () => {
+    renderWithProviders(<MarriagePage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: '山札から引く' })).toBeInTheDocument();
+    expect(within(actions).getByRole('button', { name: '捨て札から引く' })).toBeInTheDocument();
+    expect(actions.querySelector('[data-tutorial="marriage-draw-area"]')).toBeInTheDocument();
+  });
+
   it('marks wild-rank cards in the human hand with a WILD badge', async () => {
     const wildInHandState: MarriageResponse = {
       ...drawPhaseState,

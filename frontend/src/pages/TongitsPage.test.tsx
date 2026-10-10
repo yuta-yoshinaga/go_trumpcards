@@ -133,6 +133,13 @@ describe('TongitsPage', () => {
     );
   });
 
+  it('keeps the discard action in the game footer actions slot during the human turn', async () => {
+    renderWithProviders(<TongitsPage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+
+    expect(within(actions).getByRole('button', { name: '捨てる' })).toBeInTheDocument();
+  });
+
   it('shows the win celebration after a challenge ends the game', async () => {
     mockExec
       .mockResolvedValueOnce(state())

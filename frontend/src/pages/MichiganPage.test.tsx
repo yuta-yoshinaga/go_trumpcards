@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { michiganApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -251,7 +251,10 @@ describe('MichiganPage', () => {
 
   it('shows the place-bets button on the human bet turn', async () => {
     renderWithProviders(<MichiganPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '賭ける' })).toBeInTheDocument());
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: '賭ける' })).toBeInTheDocument();
+    expect(within(actions).getByRole('button', { name: '♥ A の賭け金 2 チップから 1 枚減らす' })).toBeInTheDocument();
+    expect(screen.getByTestId('game-footer-content')).toHaveTextContent('4 つのブードル');
   });
 
   it('names each bet control with its card and current bet amount', async () => {

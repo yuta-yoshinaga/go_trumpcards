@@ -464,7 +464,64 @@ function PanPageContent() {
             />
           </div>
 
-          <GameFooter className={`${gameTheme.pan.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.pan.footer} px-4 py-2.5`}
+            actions={
+              <div className="flex gap-2 items-center justify-center flex-wrap">
+                {isDrawPhase && isHumanTurn && (
+                  <>
+                    <span className="text-ds-text-muted text-sm" data-testid="pan-draw-pile-count">
+                      {t('drawPile', { count: state.drawPileCount })}
+                    </span>
+                    {state.drawPileCount === 0 && (
+                      <span className="text-ds-warning text-sm">{t('drawStockEmpty')}</span>
+                    )}
+                    <div className="flex gap-2" data-tutorial="pan-draw-area">
+                      <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
+                        {t('drawStockButton')}
+                      </button>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={handleDrawDiscard}
+                        disabled={loading || !state.discardTop}
+                      >
+                        {t('drawDiscardButton')}
+                      </button>
+                    </div>
+                  </>
+                )}
+                {isPlayPhase && isHumanTurn && (
+                  <>
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handleMeld}
+                      disabled={loading || selectedCardIndices.length < 3}
+                      data-testid="pan-meld-button"
+                    >
+                      {t('meldButton')}
+                    </button>
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handleDiscard}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                      data-tutorial="pan-discard-button"
+                      data-testid="pan-discard-button"
+                    >
+                      {t('discardButton')}
+                    </button>
+                  </>
+                )}
+                {isRoundEnd && (
+                  <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                    {t('nextRound')}
+                  </button>
+                )}
+              </div>
+            }
+          >
             {humanPlayer && meldCandidates.length > 0 && (
               <div className="mb-2 p-2 rounded bg-black/30" data-testid="pan-meld-candidates">
                 <div className="text-ds-text-muted text-xs mb-1">{t('candidates.title')}</div>
@@ -540,53 +597,6 @@ function PanPageContent() {
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex gap-2 items-center flex-wrap">
-              {isDrawPhase && isHumanTurn && (
-                <div className="flex flex-wrap items-center gap-2" data-tutorial="pan-draw-area">
-                  <span className="text-ds-text-muted text-sm" data-testid="pan-draw-pile-count">
-                    {t('drawPile', { count: state.drawPileCount })}
-                  </span>
-                  {state.drawPileCount === 0 && <span className="text-ds-warning text-sm">{t('drawStockEmpty')}</span>}
-                  <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
-                    {t('drawStockButton')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleDrawDiscard}
-                    disabled={loading || !state.discardTop}
-                  >
-                    {t('drawDiscardButton')}
-                  </button>
-                </div>
-              )}
-              {isPlayPhase && isHumanTurn && (
-                <>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleMeld}
-                    disabled={loading || selectedCardIndices.length < 3}
-                    data-testid="pan-meld-button"
-                  >
-                    {t('meldButton')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleDiscard}
-                    disabled={loading || selectedCardIndices.length !== 1}
-                    data-tutorial="pan-discard-button"
-                    data-testid="pan-discard-button"
-                  >
-                    {t('discardButton')}
-                  </button>
-                </>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
               <GameResetButton
                 isGameEnd={!!isGameEnd}
                 onReset={handleManualReset}

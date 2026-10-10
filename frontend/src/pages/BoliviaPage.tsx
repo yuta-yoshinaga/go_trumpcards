@@ -549,7 +549,122 @@ function BoliviaPageContent() {
             />
           </div>
 
-          <GameFooter className={`${gameTheme.bolivia.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.bolivia.footer} px-4 py-2.5`}
+            actions={
+              <div className="flex gap-2 items-center flex-wrap" data-tutorial="sa-actions">
+                {isDrawPhase && isHumanTurn && (
+                  <div className="flex gap-2 flex-col">
+                    <div className="flex gap-2">
+                      <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
+                        {t('drawStockButton')}
+                      </button>
+                      <button
+                        type="button"
+                        className={`${btnPrimary} aria-disabled:opacity-50 aria-disabled:cursor-not-allowed`}
+                        onClick={() => {
+                          if (loading || !canTakeDiscard) return;
+                          handleDrawDiscard();
+                        }}
+                        aria-disabled={loading || !canTakeDiscard}
+                        title={drawDiscardReason || undefined}
+                        aria-describedby={drawDiscardReason ? 'sa-draw-discard-reason' : undefined}
+                      >
+                        {t('drawDiscardButton')}
+                      </button>
+                    </div>
+                    <div id="sa-draw-discard-reason" data-testid="sa-draw-discard-reason">
+                      {drawDiscardReason && <span className="text-xs text-ds-text-muted">{drawDiscardReason}</span>}
+                    </div>
+                  </div>
+                )}
+                {isMeldPhase && isHumanTurn && (
+                  <>
+                    {meldGroups.length > 0 && (
+                      <div className="w-full flex flex-wrap gap-2" data-testid="sa-meld-groups">
+                        {meldGroups.map((group, index) => (
+                          <button
+                            key={index}
+                            type="button"
+                            className={btnOutline}
+                            onClick={() => handleRemoveMeldGroup(index)}
+                            disabled={loading}
+                            aria-label={t('removeMeldGroup', { n: index + 1, count: group.length })}
+                          >
+                            {t('meldGroup', { n: index + 1, count: group.length })} ×
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {meldPointInfo && (
+                      <div
+                        id="sa-meld-points"
+                        data-testid="sa-meld-points"
+                        className={`w-full text-xs ${meldPointInfo.below ? 'text-ds-warning' : 'text-ds-text-muted'}`}
+                      >
+                        {meldPointInfo.needInitial
+                          ? t('meldPoints.initial', {
+                              min: meldPointInfo.minMeld,
+                              points: meldPointInfo.selectedPoints,
+                            })
+                          : t('meldPoints.selected', { points: meldPointInfo.selectedPoints })}
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handleMeldSelected}
+                      disabled={
+                        loading ||
+                        (meldGroups.length === 0 && selectedCardIndices.length < 3) ||
+                        (selectedCardIndices.length > 0 && selectedCardIndices.length < 3)
+                      }
+                      aria-describedby={meldPointInfo?.below ? 'sa-meld-points' : undefined}
+                    >
+                      {t('meldButton')}
+                    </button>
+                    <button
+                      type="button"
+                      className={btnOutline}
+                      onClick={handleAddMeldGroup}
+                      disabled={loading || selectedCardIndices.length < 3}
+                    >
+                      {t('addMeldGroupButton')}
+                    </button>
+                    <button type="button" className={btnOutline} onClick={handleSkipMeld} disabled={loading}>
+                      {t('skipMeldButton')}
+                    </button>
+                  </>
+                )}
+                {isDiscardPhase && isHumanTurn && (
+                  <>
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handleDiscard}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                    >
+                      {t('discardButton')}
+                    </button>
+                    <button
+                      type="button"
+                      className={btnSuccess}
+                      onClick={handleGoOut}
+                      disabled={loading || !state.canGoOut}
+                    >
+                      {t('goOutButton')}
+                    </button>
+                    {!state.canGoOut && <p className="text-ds-text-muted text-xs">{t('goOutRule')}</p>}
+                  </>
+                )}
+                {isRoundEnd && (
+                  <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                    {t('nextRound')}
+                  </button>
+                )}
+              </div>
+            }
+          >
             {humanPlayer && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="sa-player-hand">
                 {humanPlayer.cards.map((card, idx) => (
@@ -580,126 +695,13 @@ function BoliviaPageContent() {
                 ))}
               </div>
             )}
-
             <ErrorAlert message={error} onRetry={retry} />
-
-            <div className="flex gap-2 items-center flex-wrap" data-tutorial="sa-actions">
-              {isDrawPhase && isHumanTurn && (
-                <div className="flex gap-2 flex-col">
-                  <div className="flex gap-2">
-                    <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
-                      {t('drawStockButton')}
-                    </button>
-                    <button
-                      type="button"
-                      className={`${btnPrimary} aria-disabled:opacity-50 aria-disabled:cursor-not-allowed`}
-                      onClick={() => {
-                        if (loading || !canTakeDiscard) return;
-                        handleDrawDiscard();
-                      }}
-                      aria-disabled={loading || !canTakeDiscard}
-                      title={drawDiscardReason || undefined}
-                      aria-describedby={drawDiscardReason ? 'sa-draw-discard-reason' : undefined}
-                    >
-                      {t('drawDiscardButton')}
-                    </button>
-                  </div>
-                  <div id="sa-draw-discard-reason" data-testid="sa-draw-discard-reason">
-                    {drawDiscardReason && <span className="text-xs text-ds-text-muted">{drawDiscardReason}</span>}
-                  </div>
-                </div>
-              )}
-              {isMeldPhase && isHumanTurn && (
-                <>
-                  {meldGroups.length > 0 && (
-                    <div className="w-full flex flex-wrap gap-2" data-testid="sa-meld-groups">
-                      {meldGroups.map((group, index) => (
-                        <button
-                          key={index}
-                          type="button"
-                          className={btnOutline}
-                          onClick={() => handleRemoveMeldGroup(index)}
-                          disabled={loading}
-                          aria-label={t('removeMeldGroup', { n: index + 1, count: group.length })}
-                        >
-                          {t('meldGroup', { n: index + 1, count: group.length })} ×
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                  {meldPointInfo && (
-                    <div
-                      id="sa-meld-points"
-                      data-testid="sa-meld-points"
-                      className={`w-full text-xs ${meldPointInfo.below ? 'text-ds-warning' : 'text-ds-text-muted'}`}
-                    >
-                      {meldPointInfo.needInitial
-                        ? t('meldPoints.initial', {
-                            min: meldPointInfo.minMeld,
-                            points: meldPointInfo.selectedPoints,
-                          })
-                        : t('meldPoints.selected', { points: meldPointInfo.selectedPoints })}
-                    </div>
-                  )}
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleMeldSelected}
-                    disabled={
-                      loading ||
-                      (meldGroups.length === 0 && selectedCardIndices.length < 3) ||
-                      (selectedCardIndices.length > 0 && selectedCardIndices.length < 3)
-                    }
-                    aria-describedby={meldPointInfo?.below ? 'sa-meld-points' : undefined}
-                  >
-                    {t('meldButton')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnOutline}
-                    onClick={handleAddMeldGroup}
-                    disabled={loading || selectedCardIndices.length < 3}
-                  >
-                    {t('addMeldGroupButton')}
-                  </button>
-                  <button type="button" className={btnOutline} onClick={handleSkipMeld} disabled={loading}>
-                    {t('skipMeldButton')}
-                  </button>
-                </>
-              )}
-              {isDiscardPhase && isHumanTurn && (
-                <>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleDiscard}
-                    disabled={loading || selectedCardIndices.length !== 1}
-                  >
-                    {t('discardButton')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnSuccess}
-                    onClick={handleGoOut}
-                    disabled={loading || !state.canGoOut}
-                  >
-                    {t('goOutButton')}
-                  </button>
-                  {!state.canGoOut && <p className="text-ds-text-muted text-xs">{t('goOutRule')}</p>}
-                </>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-              />
-            </div>
+            <GameResetButton
+              isGameEnd={isGameEnd}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+            />
             <CardNavShortcutsPanel data-testid="bolivia-kbd-shortcuts" />
           </GameFooter>
         </>

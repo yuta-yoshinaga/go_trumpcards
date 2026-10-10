@@ -481,7 +481,33 @@ function SevensPageContent() {
             />
           </div>
 
-          <GameFooter className={`${gameTheme.sevens.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.sevens.footer} px-4 py-2.5`}
+            actions={
+              <div className="flex gap-2 items-center justify-center flex-wrap">
+                <button
+                  type="button"
+                  className={`${btnSecondary} min-w-[90px] ${passesRemaining === 1 ? 'text-ds-warning' : ''}`}
+                  disabled={loading || !canPass}
+                  onClick={() => exec('play', -1)}
+                  data-tutorial="sv-play-pass"
+                  title={passDisabledReason ?? undefined}
+                  aria-describedby={passDisabledReason ? 'pass-disabled-reason' : undefined}
+                >
+                  {passesRemaining === null ? tc('button.pass') : t('passRemaining', { count: passesRemaining })}
+                </button>
+                {jokerCardIdx !== null && (
+                  <button
+                    type="button"
+                    className={`${btnSecondary} min-w-[90px]`}
+                    onClick={() => setJokerCardIdx(null)}
+                  >
+                    {tc('button.cancel')}
+                  </button>
+                )}
+              </div>
+            }
+          >
             {humanPlayer && (
               <div className="mb-2" data-tutorial="sv-player-hand">
                 <SevensHumanArea
@@ -525,17 +551,6 @@ function SevensPageContent() {
                 dataTutorial="sv-reset-button"
                 className="min-w-[90px]"
               />
-              <button
-                type="button"
-                className={`${btnSecondary} min-w-[90px] ${passesRemaining === 1 ? 'text-ds-warning' : ''}`}
-                disabled={loading || !canPass}
-                onClick={() => exec('play', -1)}
-                data-tutorial="sv-play-pass"
-                title={passDisabledReason ?? undefined}
-                aria-describedby={passDisabledReason ? 'pass-disabled-reason' : undefined}
-              >
-                {passesRemaining === null ? tc('button.pass') : t('passRemaining', { count: passesRemaining })}
-              </button>
               {passDisabledReason && (
                 <p
                   id="pass-disabled-reason"
@@ -544,11 +559,6 @@ function SevensPageContent() {
                 >
                   {passDisabledReason}
                 </p>
-              )}
-              {jokerCardIdx !== null && (
-                <button type="button" className={`${btnSecondary} min-w-[90px]`} onClick={() => setJokerCardIdx(null)}>
-                  {tc('button.cancel')}
-                </button>
               )}
             </div>
             <CardNavShortcutsPanel directPlay data-testid="sevens-kbd-shortcuts" />

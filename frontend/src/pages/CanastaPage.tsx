@@ -467,7 +467,111 @@ function CanastaPageContent() {
             />
           </div>
 
-          <GameFooter className={`${gameTheme.canasta.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.canasta.footer} px-4 py-2.5`}
+            actions={
+              <div className="flex gap-2 items-center flex-wrap" data-tutorial="ca-actions">
+                {isDrawPhase && isHumanTurn && (
+                  <div className="flex gap-2 flex-col">
+                    <div className="flex gap-2">
+                      <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
+                        {t('drawStockButton')}
+                      </button>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={handleDrawDiscard}
+                        disabled={loading || drawDiscardProblem !== null}
+                        title={drawDiscardReason || undefined}
+                        aria-describedby={drawDiscardReason ? 'ca-draw-discard-reason' : undefined}
+                      >
+                        {t('drawDiscardButton')}
+                      </button>
+                    </div>
+                    {drawDiscardReason && (
+                      <div
+                        id="ca-draw-discard-reason"
+                        data-testid="ca-draw-discard-reason"
+                        className="text-xs text-ds-text-muted"
+                      >
+                        {drawDiscardReason}
+                      </div>
+                    )}
+                  </div>
+                )}
+                {isMeldPhase && isHumanTurn && (
+                  <>
+                    {
+                      <div
+                        id="ca-meld-points"
+                        data-testid="ca-meld-points"
+                        className={`w-full text-xs ${meldPointInfo.below ? 'text-ds-warning' : 'text-ds-text-muted'}`}
+                      >
+                        {meldPointInfo.needInitial
+                          ? t('meldPoints.initial', {
+                              min: meldPointInfo.minMeld,
+                              points: meldPointInfo.selectedPoints,
+                            })
+                          : t('meldPoints.selected', { points: meldPointInfo.selectedPoints })}
+                      </div>
+                    }
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handleMeldSelected}
+                      // **最低点未達なら押させない** (#6165)。警告テキストは出て
+                      // いたのにボタンはそれを見ておらず、サーバのバリデーションで
+                      // 弾かれて初めて気づく形だった。
+                      disabled={loading || selectedCardIndices.length < 3 || meldPointInfo.below}
+                      aria-describedby={meldPointInfo.below ? 'ca-meld-points' : undefined}
+                    >
+                      {t('meldButton')}
+                    </button>
+                    <button type="button" className={btnOutline} onClick={handleSkipMeld} disabled={loading}>
+                      {t('skipMeldButton')}
+                    </button>
+                  </>
+                )}
+                {isDiscardPhase && isHumanTurn && (
+                  <>
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handleDiscard}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                    >
+                      {t('discardButton')}
+                    </button>
+                    <button
+                      type="button"
+                      className={btnSuccess}
+                      onClick={handleGoOut}
+                      disabled={loading || !canGoOut}
+                      title={canGoOut ? undefined : t('goOutReason')}
+                      aria-describedby={canGoOut ? undefined : 'ca-go-out-reason'}
+                      data-testid="ca-go-out-button"
+                    >
+                      {t('goOutButton')}
+                    </button>
+                    {!canGoOut && (
+                      <div
+                        id="ca-go-out-reason"
+                        data-testid="ca-go-out-reason"
+                        className="w-full text-xs text-ds-text-muted"
+                      >
+                        {t('goOutReason')}
+                      </div>
+                    )}
+                  </>
+                )}
+                {isRoundEnd && (
+                  <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                    {t('nextRound')}
+                  </button>
+                )}
+              </div>
+            }
+          >
             {humanPlayer && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="ca-player-hand">
                 {humanPlayer.cards.map((card, idx) => (
@@ -491,115 +595,13 @@ function CanastaPageContent() {
                 ))}
               </div>
             )}
-
             <ErrorAlert message={error} onRetry={retry} />
-
-            <div className="flex gap-2 items-center flex-wrap" data-tutorial="ca-actions">
-              {isDrawPhase && isHumanTurn && (
-                <div className="flex gap-2 flex-col">
-                  <div className="flex gap-2">
-                    <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
-                      {t('drawStockButton')}
-                    </button>
-                    <button
-                      type="button"
-                      className={btnPrimary}
-                      onClick={handleDrawDiscard}
-                      disabled={loading || drawDiscardProblem !== null}
-                      title={drawDiscardReason || undefined}
-                      aria-describedby={drawDiscardReason ? 'ca-draw-discard-reason' : undefined}
-                    >
-                      {t('drawDiscardButton')}
-                    </button>
-                  </div>
-                  {drawDiscardReason && (
-                    <div
-                      id="ca-draw-discard-reason"
-                      data-testid="ca-draw-discard-reason"
-                      className="text-xs text-ds-text-muted"
-                    >
-                      {drawDiscardReason}
-                    </div>
-                  )}
-                </div>
-              )}
-              {isMeldPhase && isHumanTurn && (
-                <>
-                  {
-                    <div
-                      id="ca-meld-points"
-                      data-testid="ca-meld-points"
-                      className={`w-full text-xs ${meldPointInfo.below ? 'text-ds-warning' : 'text-ds-text-muted'}`}
-                    >
-                      {meldPointInfo.needInitial
-                        ? t('meldPoints.initial', {
-                            min: meldPointInfo.minMeld,
-                            points: meldPointInfo.selectedPoints,
-                          })
-                        : t('meldPoints.selected', { points: meldPointInfo.selectedPoints })}
-                    </div>
-                  }
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleMeldSelected}
-                    // **最低点未達なら押させない** (#6165)。警告テキストは出て
-                    // いたのにボタンはそれを見ておらず、サーバのバリデーションで
-                    // 弾かれて初めて気づく形だった。
-                    disabled={loading || selectedCardIndices.length < 3 || meldPointInfo.below}
-                    aria-describedby={meldPointInfo.below ? 'ca-meld-points' : undefined}
-                  >
-                    {t('meldButton')}
-                  </button>
-                  <button type="button" className={btnOutline} onClick={handleSkipMeld} disabled={loading}>
-                    {t('skipMeldButton')}
-                  </button>
-                </>
-              )}
-              {isDiscardPhase && isHumanTurn && (
-                <>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleDiscard}
-                    disabled={loading || selectedCardIndices.length !== 1}
-                  >
-                    {t('discardButton')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnSuccess}
-                    onClick={handleGoOut}
-                    disabled={loading || !canGoOut}
-                    title={canGoOut ? undefined : t('goOutReason')}
-                    aria-describedby={canGoOut ? undefined : 'ca-go-out-reason'}
-                    data-testid="ca-go-out-button"
-                  >
-                    {t('goOutButton')}
-                  </button>
-                  {!canGoOut && (
-                    <div
-                      id="ca-go-out-reason"
-                      data-testid="ca-go-out-reason"
-                      className="w-full text-xs text-ds-text-muted"
-                    >
-                      {t('goOutReason')}
-                    </div>
-                  )}
-                </>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-              />
-            </div>
+            <GameResetButton
+              isGameEnd={isGameEnd}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+            />
             <CardNavShortcutsPanel data-testid="canasta-kbd-shortcuts" />
           </GameFooter>
         </>

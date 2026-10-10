@@ -525,7 +525,103 @@ function BurracoPageContent() {
             />
           </div>
 
-          <GameFooter className={`${gameTheme.burraco.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.burraco.footer} px-4 py-2.5`}
+            actions={
+              <div className="flex gap-2 items-center flex-wrap" data-tutorial="ca-actions">
+                {isDrawPhase && isHumanTurn && (
+                  <div className="flex gap-2 flex-col">
+                    {state.isFrozen && (
+                      <div role="status" data-testid="ca-draw-freeze-guide" className="text-xs text-ds-warning">
+                        {t('drawFreezeGuide')}
+                      </div>
+                    )}
+                    <div className="flex gap-2">
+                      <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
+                        {t('drawStockButton')}
+                      </button>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={handleDrawDiscard}
+                        disabled={loading || drawDiscardProblem !== null}
+                        title={drawDiscardReason || undefined}
+                        aria-describedby={drawDiscardReason ? 'ca-draw-discard-reason' : undefined}
+                      >
+                        {t('drawDiscardButton')}
+                      </button>
+                    </div>
+                    {drawDiscardReason && (
+                      <div
+                        id="ca-draw-discard-reason"
+                        data-testid="ca-draw-discard-reason"
+                        className="text-xs text-ds-text-muted"
+                      >
+                        {drawDiscardReason}
+                      </div>
+                    )}
+                  </div>
+                )}
+                {isMeldPhase && isHumanTurn && (
+                  <>
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handleMeldSelected}
+                      disabled={loading || selectedCardIndices.length < 3}
+                      aria-describedby="bu-meld-selection-reason"
+                    >
+                      {t('meldButton')}
+                    </button>
+                    <button type="button" className={btnOutline} onClick={handleSkipMeld} disabled={loading}>
+                      {t('skipMeldButton')}
+                    </button>
+                    <span
+                      id="bu-meld-selection-reason"
+                      data-testid="bu-meld-selection-reason"
+                      className="text-xs text-ds-text-muted"
+                    >
+                      {meldSelectionReason}
+                    </span>
+                  </>
+                )}
+                {isDiscardPhase && isHumanTurn && (
+                  <>
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handleDiscard}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                    >
+                      {t('discardButton')}
+                    </button>
+                    <button
+                      type="button"
+                      className={`${btnSuccess} ${!canGoOut ? 'aria-disabled:opacity-70 aria-disabled:cursor-not-allowed' : ''}`}
+                      onClick={() => {
+                        if (!loading && canGoOut) handleGoOut();
+                      }}
+                      disabled={loading}
+                      aria-disabled={!canGoOut || undefined}
+                      aria-describedby={!canGoOut ? 'bu-go-out-reason' : undefined}
+                    >
+                      {t('goOutButton')}
+                    </button>
+                    {goOutReason && (
+                      <span id="bu-go-out-reason" data-testid="bu-go-out-reason" className="text-xs text-ds-text-muted">
+                        {goOutReason}
+                      </span>
+                    )}
+                  </>
+                )}
+                {isRoundEnd && (
+                  <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                    {t('nextRound')}
+                  </button>
+                )}
+              </div>
+            }
+          >
             {humanPlayer && humanPlayer.cards.length > 0 && (
               <fieldset className="flex flex-wrap justify-center gap-1.5 mb-2 border-0 p-0 m-0">
                 <legend className="sr-only">{t('sort.label')}</legend>
@@ -572,107 +668,13 @@ function BurracoPageContent() {
                 ))}
               </div>
             )}
-
             <ErrorAlert message={error} onRetry={retry} />
-
-            <div className="flex gap-2 items-center flex-wrap" data-tutorial="ca-actions">
-              {isDrawPhase && isHumanTurn && (
-                <div className="flex gap-2 flex-col">
-                  {state.isFrozen && (
-                    <div role="status" data-testid="ca-draw-freeze-guide" className="text-xs text-ds-warning">
-                      {t('drawFreezeGuide')}
-                    </div>
-                  )}
-                  <div className="flex gap-2">
-                    <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
-                      {t('drawStockButton')}
-                    </button>
-                    <button
-                      type="button"
-                      className={btnPrimary}
-                      onClick={handleDrawDiscard}
-                      disabled={loading || drawDiscardProblem !== null}
-                      title={drawDiscardReason || undefined}
-                      aria-describedby={drawDiscardReason ? 'ca-draw-discard-reason' : undefined}
-                    >
-                      {t('drawDiscardButton')}
-                    </button>
-                  </div>
-                  {drawDiscardReason && (
-                    <div
-                      id="ca-draw-discard-reason"
-                      data-testid="ca-draw-discard-reason"
-                      className="text-xs text-ds-text-muted"
-                    >
-                      {drawDiscardReason}
-                    </div>
-                  )}
-                </div>
-              )}
-              {isMeldPhase && isHumanTurn && (
-                <>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleMeldSelected}
-                    disabled={loading || selectedCardIndices.length < 3}
-                    aria-describedby="bu-meld-selection-reason"
-                  >
-                    {t('meldButton')}
-                  </button>
-                  <button type="button" className={btnOutline} onClick={handleSkipMeld} disabled={loading}>
-                    {t('skipMeldButton')}
-                  </button>
-                  <span
-                    id="bu-meld-selection-reason"
-                    data-testid="bu-meld-selection-reason"
-                    className="text-xs text-ds-text-muted"
-                  >
-                    {meldSelectionReason}
-                  </span>
-                </>
-              )}
-              {isDiscardPhase && isHumanTurn && (
-                <>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleDiscard}
-                    disabled={loading || selectedCardIndices.length !== 1}
-                  >
-                    {t('discardButton')}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnSuccess} ${!canGoOut ? 'aria-disabled:opacity-70 aria-disabled:cursor-not-allowed' : ''}`}
-                    onClick={() => {
-                      if (!loading && canGoOut) handleGoOut();
-                    }}
-                    disabled={loading}
-                    aria-disabled={!canGoOut || undefined}
-                    aria-describedby={!canGoOut ? 'bu-go-out-reason' : undefined}
-                  >
-                    {t('goOutButton')}
-                  </button>
-                  {goOutReason && (
-                    <span id="bu-go-out-reason" data-testid="bu-go-out-reason" className="text-xs text-ds-text-muted">
-                      {goOutReason}
-                    </span>
-                  )}
-                </>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-              />
-            </div>
+            <GameResetButton
+              isGameEnd={isGameEnd}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+            />
             <CardNavShortcutsPanel data-testid="burraco-kbd-shortcuts" />
           </GameFooter>
         </>

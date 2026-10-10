@@ -428,7 +428,79 @@ function Rummy500PageContent() {
         />
       </div>
 
-      <GameFooter className={`${gameTheme.rummy500.footer} px-4 py-2.5`}>
+      <GameFooter
+        className={`${gameTheme.rummy500.footer} px-4 py-2.5`}
+        actions={
+          <div className="flex gap-2 items-center flex-wrap">
+            {isDrawPhase && isHumanTurn && (
+              <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
+                {t('drawStockButton')}
+              </button>
+            )}
+            {isPlayPhase && isHumanTurn && (
+              <>
+                {showInvalidMeld && (
+                  <p
+                    role="status"
+                    data-testid="r5-invalid-meld"
+                    className="w-full text-center font-medium text-ds-warning text-xs"
+                  >
+                    {t('invalidMeld')}
+                  </p>
+                )}
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={handleMeld}
+                  disabled={loading || selectedCardIndices.length < 3 || !meldValid}
+                  data-tutorial="r5-meld-button"
+                >
+                  {t('meldButton')}
+                </button>
+                <div className="flex items-center gap-1 text-xs text-ds-text-muted">
+                  <span data-testid="r5-layoff-target">
+                    {layoffTarget
+                      ? t('layoffTargetLabel', { owner: layoffTarget.ownerName, idx: layoffTarget.meldIdx })
+                      : t('layoffTargetNone')}
+                  </span>
+                  <button
+                    type="button"
+                    className={btnSecondary}
+                    onClick={
+                      layoffTarget
+                        ? () => {
+                            handleLayoff(layoffTarget.owner, layoffTarget.meldIdx);
+                            setLayoffTarget(null);
+                          }
+                        : undefined
+                    }
+                    // **選び直しで不正になった組み合わせを弾く。**カード A に合う先を
+                    // 選んだあと選択を B に変えると、ボタン自体は無効化されるのに
+                    // 送信は通ってしまっていた (#4832 のレビュー指摘)。
+                    disabled={loading || !selectedLayoffIsLegal}
+                  >
+                    {t('layoffButton')}
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={handleDiscard}
+                  disabled={loading || selectedCardIndices.length !== 1}
+                  data-tutorial="r5-discard-button"
+                >
+                  {t('discardButton')}
+                </button>
+              </>
+            )}
+            {isRoundEnd && (
+              <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                {t('nextRound')}
+              </button>
+            )}
+          </div>
+        }
+      >
         <ActionShortcutsPanel bindings={keyboardActions} data-testid="rummy500-kbd-shortcuts" />
         <CardNavShortcutsPanel data-testid="rummy500-card-kbd-shortcuts" />
         {humanPlayer && humanPlayer.cards.length > 0 && (
@@ -478,73 +550,7 @@ function Rummy500PageContent() {
 
         <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-        <div className="flex gap-2 items-center flex-wrap">
-          {isDrawPhase && isHumanTurn && (
-            <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
-              {t('drawStockButton')}
-            </button>
-          )}
-          {isPlayPhase && isHumanTurn && (
-            <>
-              {showInvalidMeld && (
-                <p
-                  role="status"
-                  data-testid="r5-invalid-meld"
-                  className="w-full text-center font-medium text-ds-warning text-xs"
-                >
-                  {t('invalidMeld')}
-                </p>
-              )}
-              <button
-                type="button"
-                className={btnPrimary}
-                onClick={handleMeld}
-                disabled={loading || selectedCardIndices.length < 3 || !meldValid}
-                data-tutorial="r5-meld-button"
-              >
-                {t('meldButton')}
-              </button>
-              <div className="flex items-center gap-1 text-xs text-ds-text-muted">
-                <span data-testid="r5-layoff-target">
-                  {layoffTarget
-                    ? t('layoffTargetLabel', { owner: layoffTarget.ownerName, idx: layoffTarget.meldIdx })
-                    : t('layoffTargetNone')}
-                </span>
-                <button
-                  type="button"
-                  className={btnSecondary}
-                  onClick={
-                    layoffTarget
-                      ? () => {
-                          handleLayoff(layoffTarget.owner, layoffTarget.meldIdx);
-                          setLayoffTarget(null);
-                        }
-                      : undefined
-                  }
-                  // **選び直しで不正になった組み合わせを弾く。**カード A に合う先を
-                  // 選んだあと選択を B に変えると、ボタン自体は無効化されるのに
-                  // 送信は通ってしまっていた (#4832 のレビュー指摘)。
-                  disabled={loading || !selectedLayoffIsLegal}
-                >
-                  {t('layoffButton')}
-                </button>
-              </div>
-              <button
-                type="button"
-                className={btnPrimary}
-                onClick={handleDiscard}
-                disabled={loading || selectedCardIndices.length !== 1}
-                data-tutorial="r5-discard-button"
-              >
-                {t('discardButton')}
-              </button>
-            </>
-          )}
-          {isRoundEnd && (
-            <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-              {t('nextRound')}
-            </button>
-          )}
+        <div>
           <GameResetButton
             isGameEnd={!!isGameEnd}
             onReset={handleManualReset}
