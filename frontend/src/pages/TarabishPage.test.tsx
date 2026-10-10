@@ -132,12 +132,17 @@ describe('TarabishPage', () => {
     mobileState.isMobile = true;
   });
 
-  it('collapses CPU seats on mobile and opens them on desktop', async () => {
+  it('keeps the human seat visible outside the mobile CPU accordion', async () => {
     const firstRender = renderWithProviders(<TarabishPage />);
-    expect(await screen.findByTestId('cpu-accordion')).not.toHaveAttribute('open');
-    expect(screen.getByTestId('tb-seat-0')).not.toBeVisible();
+    const accordion = await screen.findByTestId('cpu-accordion');
+    const humanSeat = screen.getByTestId('tb-seat-0');
+    expect(accordion).not.toHaveAttribute('open');
+    expect(humanSeat).toBeVisible();
+    expect(accordion).not.toContainElement(humanSeat);
+    expect(accordion).toContainElement(screen.getByTestId('tb-seat-1'));
+    expect(accordion.querySelector('summary')).toHaveTextContent('CPU対戦相手 (3)');
     fireEvent.click(screen.getByTestId('cpu-accordion').querySelector('summary') as HTMLElement);
-    expect(screen.getByTestId('tb-seat-0')).toBeVisible();
+    expect(screen.getByTestId('tb-seat-1')).toBeVisible();
     firstRender.unmount();
     mobileState.isMobile = false;
     const { unmount } = renderWithProviders(<TarabishPage />);

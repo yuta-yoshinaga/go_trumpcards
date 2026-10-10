@@ -230,30 +230,52 @@ function TarabishPageContent() {
             </div>
 
             {/* メルドは自動判定。誰がいくら持っているかは盤面に出ない。 */}
-            <CpuAccordion playerCount={3} dataTutorial="tarabish-melds">
-              <div className="flex flex-wrap justify-center gap-2 mb-4">
-                {state.players.map((p) => (
+            <div className="mb-2 flex flex-wrap justify-center gap-1 sm:gap-2" data-testid="tb-human-seat">
+              {state.players
+                .filter((p) => p.isHuman)
+                .map((p) => (
                   <div
                     key={p.id}
-                    className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
+                    className="rounded bg-black/30 px-2 py-1 text-xs text-ds-text-muted sm:px-3 sm:py-2 sm:text-sm"
                     data-testid={`tb-seat-${p.id.toString()}`}
                   >
-                    <span className="text-ds-text-primary">
-                      {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
-                    </span>
+                    <span className="text-ds-text-primary">{t('header.you')}</span>
                     <span className="ml-1 text-ds-accent">{t('header.team', { team: String(p.team) })}</span>
                     {': '}
                     {meldStr(p)}
-                    {/* **トリック配分がそのまま点数の趨勢。**CUI の playerLine は
-                      これを毎回出しているのに、Web だけ読めなかった。 */}
-                    <span className="ml-2" data-testid={`tb-seat-tricks-${p.id.toString()}`}>
+                    <span className="ml-1 sm:ml-2" data-testid={`tb-seat-tricks-${p.id.toString()}`}>
                       {t('header.tricksTaken', { count: p.trickCount })}
                     </span>
-                    <span className="ml-2" data-testid={`tb-seat-cards-${p.id.toString()}`}>
+                    <span className="ml-1 sm:ml-2" data-testid={`tb-seat-cards-${p.id.toString()}`}>
                       {t('header.cardsLeft', { count: p.cardCount })}
                     </span>
                   </div>
                 ))}
+            </div>
+            <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length} dataTutorial="tarabish-melds">
+              <div className="mb-4 flex flex-wrap justify-center gap-2">
+                {state.players
+                  .filter((p) => !p.isHuman)
+                  .map((p) => (
+                    <div
+                      key={p.id}
+                      className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
+                      data-testid={`tb-seat-${p.id.toString()}`}
+                    >
+                      <span className="text-ds-text-primary">{t('header.cpu', { idx: String(p.id) })}</span>
+                      <span className="ml-1 text-ds-accent">{t('header.team', { team: String(p.team) })}</span>
+                      {': '}
+                      {meldStr(p)}
+                      {/* **トリック配分がそのまま点数の趨勢。**CUI の playerLine は
+                      これを毎回出しているのに、Web だけ読めなかった。 */}
+                      <span className="ml-2" data-testid={`tb-seat-tricks-${p.id.toString()}`}>
+                        {t('header.tricksTaken', { count: p.trickCount })}
+                      </span>
+                      <span className="ml-2" data-testid={`tb-seat-cards-${p.id.toString()}`}>
+                        {t('header.cardsLeft', { count: p.cardCount })}
+                      </span>
+                    </div>
+                  ))}
               </div>
             </CpuAccordion>
 
