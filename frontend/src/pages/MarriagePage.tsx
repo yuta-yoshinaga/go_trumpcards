@@ -129,7 +129,7 @@ function MarriagePageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('marriage', state);
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('marriage');
   const cliConfig: CliGameConfig<MarriageResponse, Parameters<typeof marriageApi.exec>> = useMemo(
@@ -407,7 +407,7 @@ function MarriagePageContent() {
                 {/* Score table */}
                 <div className="my-3 p-2 rounded bg-black/30" data-tutorial="marriage-score-table">
                   <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
-                  <details className="mb-2 p-2 rounded bg-ds-surface">
+                  <details open={!isMobile || undefined} className="mb-2 p-2 rounded bg-ds-surface">
                     <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('rules')}</summary>
                     <p className="text-ds-text-muted text-xs mt-1" data-testid="marriage-maal-rule">
                       {t('maalRule')}

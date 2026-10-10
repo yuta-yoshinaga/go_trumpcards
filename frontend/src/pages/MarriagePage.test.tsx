@@ -238,6 +238,16 @@ describe('MarriagePage', () => {
     mockExec.mockClear();
   });
 
+  it('keeps the Maal rules open on desktop', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    renderWithProviders(<MarriagePage />);
+    const rules = (await screen.findByTestId('marriage-maal-rule')).closest('details');
+    expect(rules).toHaveAttribute('open');
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+    mockExec.mockClear();
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<MarriagePage />);

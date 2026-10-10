@@ -34,7 +34,6 @@ import { NERTZ_HELP, parseNertzCommand } from '../utils/cli/commands/nertzComman
 import { formatNertzState } from '../utils/cli/formatters/nertzFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { formatSignedDelta } from '../utils/formatSignedDelta';
-import { resolveMessageCode } from '../utils/resolveMessageCode';
 
 /** CPU cadence presets — faster ticks make the CPUs harder to out-race. */
 type NertzCpuSpeed = 'slow' | 'normal' | 'fast';
@@ -464,8 +463,6 @@ function NertzPageContent() {
     if (isRoundEnd) return t('phase.roundEnd');
     return t('phase.playing');
   }, [isGameEnd, isRoundEnd, t]);
-  const displayMessage = state ? resolveMessageCode(tc, state.messageCode, state.messageParams, state.message) : '';
-
   if (!state || !human) {
     return (
       <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.nertz.bg}`}>
@@ -544,7 +541,7 @@ function NertzPageContent() {
               </div>
             </div>
 
-            {displayMessage !== phaseName && (
+            {state.messageCode !== 'nertz.playing' && (
               <GameMessageBox
                 message={state.message}
                 messageCode={state.messageCode}
@@ -612,7 +609,7 @@ function NertzPageContent() {
 
             <div data-tutorial="nertz-foundations" className="bg-black/30 text-ds-text-primary p-3 rounded">
               <div className="text-xs uppercase tracking-wide text-ds-text-muted mb-2">{t('labels.foundation')}</div>
-              <div className="grid grid-cols-5 gap-2">
+              <div className="grid grid-cols-5 gap-2 sm:flex sm:flex-wrap">
                 {state.foundations.map((f, idx) => {
                   const flash = placedFlashes.get(idx);
                   return (
@@ -802,7 +799,7 @@ function FoundationCell({
         type="button"
         onClick={onClick}
         disabled={disabled}
-        className={`flex flex-col items-center rounded p-0.5 text-xs text-ds-text-muted disabled:opacity-50 ${targetCls}`}
+        className={`flex min-h-11 min-w-11 flex-col items-center justify-center rounded p-0.5 text-xs text-ds-text-muted disabled:opacity-50 ${targetCls}`}
         aria-label={ariaLabel}
         data-testid={`nertz-foundation-${idx}`}
         data-collided={collided || undefined}

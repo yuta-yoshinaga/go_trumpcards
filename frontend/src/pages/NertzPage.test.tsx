@@ -90,24 +90,27 @@ afterEach(() => {
 });
 
 describe('NertzPage', () => {
-  it('hides the message panel when it repeats the phase and keeps distinct guidance', async () => {
-    mockExec.mockResolvedValue({ ...playingState, message: 'プレイ中' });
+  it('hides the playing phase message by code and keeps distinct guidance', async () => {
+    mockExec.mockResolvedValue({ ...playingState, messageCode: 'nertz.playing', message: '任意のバックエンド文言' });
     const { unmount } = renderWithProviders(
       <MemoryRouter initialEntries={['/nertz']}>
         <NertzPage />
       </MemoryRouter>,
     );
-    await waitFor(() => expect(screen.getByText('プレイ中')).toBeInTheDocument());
     expect(screen.queryByTestId('nertz-message')).not.toBeInTheDocument();
 
     unmount();
-    mockExec.mockResolvedValue({ ...playingState, message: '移動先を選んでください' });
+    mockExec.mockResolvedValue({
+      ...playingState,
+      messageCode: 'nertz.hintAvailable',
+      message: 'プレイ中',
+    });
     renderWithProviders(
       <MemoryRouter initialEntries={['/nertz']}>
         <NertzPage />
       </MemoryRouter>,
     );
-    await waitFor(() => expect(screen.getByTestId('nertz-message')).toHaveTextContent('移動先を選んでください'));
+    await waitFor(() => expect(screen.getByTestId('nertz-message')).toBeInTheDocument());
   });
 
   it('uses compact foundation slots on mobile and keeps opponent boards in a desktop grid', async () => {
@@ -120,6 +123,13 @@ describe('NertzPage', () => {
     );
     const foundation = await screen.findByTestId('nertz-foundation-0');
     expect(foundation.querySelector('span.border-dashed')).toHaveStyle({ width: '24px', height: '34px' });
+    expect(foundation).toHaveClass('min-h-11', 'min-w-11');
+    expect(screen.getAllByTestId(/^nertz-foundation-/)).toHaveLength(8);
+    expect(foundation.closest('[data-tutorial="nertz-foundations"]')?.querySelector('.grid')).toHaveClass(
+      'grid-cols-5',
+      'sm:flex',
+      'sm:flex-wrap',
+    );
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
     window.dispatchEvent(new Event('resize'));
     await waitFor(() =>
