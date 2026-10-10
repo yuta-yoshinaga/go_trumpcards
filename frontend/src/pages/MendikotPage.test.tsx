@@ -193,6 +193,7 @@ describe('MendikotPage', () => {
     const tens = await screen.findByTestId('md-tens');
     expect(tens).toHaveTextContent('2');
     expect(tens).toHaveTextContent('1');
+    expect(tens).toHaveTextContent('全4枚');
     expect(tens.querySelector('details')).toBeNull();
     expect(screen.getByTestId('md-tens-rule')).toHaveTextContent('全4枚。3枚取れば');
     expect(screen.getAllByText('ルール')).toHaveLength(1);

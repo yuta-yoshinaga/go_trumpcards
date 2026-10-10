@@ -205,6 +205,7 @@ function MendikotPageContent() {
                 {t('header.tensCount', {
                   t0: String(state.teamTens[0] ?? 0),
                   t1: String(state.teamTens[1] ?? 0),
+                  total: String(state.tensInDeck),
                 })}
               </div>
             </div>
