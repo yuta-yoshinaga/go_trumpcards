@@ -51,6 +51,10 @@ test.describe('Baloot E2E', () => {
   // 4 席すべてがチーム番号つきで出る。
   test('labels all four seats with their team', async ({ page }) => {
     await navigateTo(page, '/baloot');
+    const cpuAccordion = page.getByTestId('cpu-accordion');
+    if (!(await cpuAccordion.getAttribute('open'))) {
+      await cpuAccordion.locator('summary').click();
+    }
     for (const id of [0, 1, 2, 3]) {
       await expect(page.getByTestId(`bl-seat-${id}`)).toContainText(/T[01]/, { timeout: TIMEOUT_TRANSITION });
     }

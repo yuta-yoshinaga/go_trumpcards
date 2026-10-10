@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { klaverjasApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -11,6 +11,12 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockExec = vi.mocked(klaverjasApi.exec);
+
+async function openKlaverjasInfo() {
+  const details = await screen.findByTestId('klaverjas-match-details');
+  if (!details.hasAttribute('open')) fireEvent.click(within(details).getByText('目標とチーム'));
+  return details;
+}
 
 const playPhaseState = makeKlaverjasState();
 const trickEndState = makeKlaverjasState({
@@ -45,6 +51,39 @@ beforeEach(() => {
 });
 
 describe('KlaverjasPage', () => {
+  it('collapses CPU status on mobile while keeping match scores visible', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    renderWithProviders(<KlaverjasPage />);
+
+    const accordion = await screen.findByTestId('cpu-accordion');
+    expect(accordion).not.toHaveAttribute('open');
+    expect(within(accordion).getByText('CPU 1: 8枚 | 0トリック')).not.toBeVisible();
+    expect(await screen.findByText('チームA: 0点')).toBeVisible();
+    const matchDetails = screen.getByTestId('klaverjas-match-details');
+    expect(matchDetails).not.toHaveAttribute('open');
+    expect(within(matchDetails).getByText('目標 1501点')).not.toBeVisible();
+    expect(within(matchDetails).getByTestId('klaverjas-roem')).not.toBeVisible();
+    expect(screen.getByTestId('klaverjas-strength-legend')).not.toHaveAttribute('open');
+
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
+  it('shows CPU status on desktop', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    renderWithProviders(<KlaverjasPage />);
+
+    const accordion = await screen.findByTestId('cpu-accordion');
+    expect(accordion).toHaveAttribute('open');
+    expect(within(accordion).getByText('CPU 1: 8枚 | 0トリック')).toBeVisible();
+    const matchDetails = await screen.findByTestId('klaverjas-match-details');
+    expect(matchDetails).toHaveAttribute('open');
+    expect(within(matchDetails).getByText('目標 1501点')).toBeVisible();
+
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
   it('marks alternating seats as ally and foe in the trick display', async () => {
     mockExec.mockResolvedValue(
       makeKlaverjasState({
@@ -96,14 +135,14 @@ describe('KlaverjasPage', () => {
     mockExec.mockResolvedValue(makeKlaverjasState({ currentTrick: [], currentTrickPoints: 0 }));
     renderWithProviders(<KlaverjasPage />);
 
-    expect(await screen.findByText('チームA: 0点 / 目標 1501点')).toBeInTheDocument();
+    expect(await screen.findByText('チームA: 0点')).toBeInTheDocument();
     expect(screen.queryByTestId('klaverjas-current-trick-points')).not.toBeInTheDocument();
   });
   it('shows each team score against the configured match target', async () => {
     mockExec.mockResolvedValue(makeKlaverjasState({ teamScores: [420, 300] }));
     renderWithProviders(<KlaverjasPage />);
-    expect(await screen.findByText('チームA: 420点 / 目標 1501点')).toBeInTheDocument();
-    expect(screen.getByText('チームB: 300点 / 目標 1501点')).toBeInTheDocument();
+    expect(await screen.findByText('チームA: 420点')).toBeInTheDocument();
+    expect(screen.getByText('チームB: 300点')).toBeInTheDocument();
   });
 
   it('renders skeleton when no state', () => {
@@ -270,6 +309,7 @@ describe('KlaverjasPage', () => {
   it('shows live Roem during play', async () => {
     mockExec.mockResolvedValue(makeKlaverjasState({ phase: 0, roundRoem: [40, 20] }));
     renderWithProviders(<KlaverjasPage />);
+    await openKlaverjasInfo();
     const roem = await screen.findByTestId('klaverjas-roem');
     expect(roem).toHaveTextContent('40');
     expect(roem).toHaveTextContent('20');
@@ -278,22 +318,24 @@ describe('KlaverjasPage', () => {
   it("shows each team's round card points in a live region during play", async () => {
     mockExec.mockResolvedValue(makeKlaverjasState({ phase: 0, roundCardPoints: [70, 50] }));
     renderWithProviders(<KlaverjasPage />);
+    await openKlaverjasInfo();
     const points = await screen.findByTestId('klaverjas-round-card-points');
     expect(points).toHaveAttribute('role', 'status');
     expect(points).toHaveAttribute('aria-live', 'polite');
-    expect(points).toHaveTextContent('チームAのカード点: 70');
-    expect(points).toHaveTextContent('チームBのカード点: 50');
+    expect(points).toHaveTextContent('A: 70点');
+    expect(points).toHaveTextContent('B: 50点');
 
     fireEvent.click(await screen.findByAltText('♥ Q'));
     const playButton = await screen.findByRole('button', { name: '出す' });
     mockExec.mockResolvedValue(makeKlaverjasState({ phase: 0, roundCardPoints: [90, 50] }));
     fireEvent.click(playButton);
-    await waitFor(() => expect(points).toHaveTextContent('チームAのカード点: 90'));
+    await waitFor(() => expect(points).toHaveTextContent('A: 90点'));
   });
 
   it('exposes the live Roem panel as a polite live region', async () => {
     mockExec.mockResolvedValue(makeKlaverjasState({ phase: 0, roundRoem: [20, 0] }));
     renderWithProviders(<KlaverjasPage />);
+    await openKlaverjasInfo();
     const roem = await screen.findByTestId('klaverjas-roem');
     expect(roem).toHaveAttribute('role', 'status');
     expect(roem).toHaveAttribute('aria-live', 'polite');
@@ -304,6 +346,7 @@ describe('KlaverjasPage', () => {
   it('pulses the Roem panel when the combined Roem total increases', async () => {
     mockExec.mockResolvedValue(makeKlaverjasState({ phase: 0, roundRoem: [20, 0] }));
     renderWithProviders(<KlaverjasPage />);
+    await openKlaverjasInfo();
     const card = await screen.findByAltText('♥ Q');
     fireEvent.click(card);
     const playBtn = await screen.findByRole('button', { name: '出す' });
@@ -316,6 +359,7 @@ describe('KlaverjasPage', () => {
   it('falls back to 0 Roem when the array is empty', async () => {
     mockExec.mockResolvedValue(makeKlaverjasState({ phase: 0, roundRoem: [] }));
     renderWithProviders(<KlaverjasPage />);
+    await openKlaverjasInfo();
     const roem = await screen.findByTestId('klaverjas-roem');
     expect(roem).toHaveTextContent('A=0');
     expect(roem).toHaveTextContent('B=0');
@@ -330,6 +374,7 @@ describe('KlaverjasPage', () => {
       }),
     );
     renderWithProviders(<KlaverjasPage />);
+    await openKlaverjasInfo();
     const breakdown = await screen.findByTestId('klaverjas-roem-breakdown');
     expect(breakdown).toHaveTextContent('内訳: あなた 50点, CPU 3 100点');
     expect(breakdown.textContent).not.toContain('CPU 1');
@@ -347,6 +392,7 @@ describe('KlaverjasPage', () => {
       }),
     );
     renderWithProviders(<KlaverjasPage />);
+    await openKlaverjasInfo();
     await screen.findByTestId('klaverjas-roem');
     expect(screen.queryByTestId('klaverjas-roem-breakdown')).not.toBeInTheDocument();
   });

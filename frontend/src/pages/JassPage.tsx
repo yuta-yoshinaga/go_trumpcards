@@ -358,32 +358,37 @@ function JassPageContent() {
             each team's declared Weis total, a "counted" marker for the scoring team, and a
             note explaining the meld mechanic. */}
         {state.config.enableWeis && (state.roundWeisPoints[0] > 0 || state.roundWeisPoints[1] > 0) && (
-          <section
-            className="my-3 p-3 rounded bg-black/30 border border-ds-warning/40"
+          <details
+            className="my-3 p-2 rounded bg-black/30 border border-ds-warning/40"
             aria-label={t('weisPanel.title')}
             data-testid="jass-weis-panel"
+            open={!isMobile || undefined}
           >
-            <h3 className="text-ds-warning text-sm font-semibold mb-2">{t('weisPanel.title')}</h3>
-            <ul className="flex flex-col gap-1">
-              {[0, 1].map((team) => (
-                <li key={team} className="flex items-center gap-2 text-sm text-ds-text-muted">
-                  <span>
-                    {t('team', { n: team })}
-                    {humanPlayer?.team === team ? t('weisPanel.you') : ''}
-                  </span>
-                  <span className="text-ds-warning font-medium">
-                    {t('weisPanel.teamPoints', { points: state.roundWeisPoints[team] })}
-                  </span>
-                  {state.roundWeisPoints[team] > 0 && (
-                    <span className={`text-xs px-1.5 py-0.5 rounded ${badgeWarningColors}`}>
-                      {t('weisPanel.scored')}
+            <summary className="cursor-pointer select-none text-ds-warning text-sm font-semibold">
+              {t('weisPanel.title')}
+            </summary>
+            <section className="pt-2" aria-label={t('weisPanel.title')}>
+              <ul className="flex flex-col gap-1">
+                {[0, 1].map((team) => (
+                  <li key={team} className="flex items-center gap-2 text-sm text-ds-text-muted">
+                    <span>
+                      {t('team', { n: team })}
+                      {humanPlayer?.team === team ? t('weisPanel.you') : ''}
                     </span>
-                  )}
-                </li>
-              ))}
-            </ul>
-            <p className="mt-2 text-xs text-ds-text-muted">{t('weisPanel.note')}</p>
-          </section>
+                    <span className="text-ds-warning font-medium">
+                      {t('weisPanel.teamPoints', { points: state.roundWeisPoints[team] })}
+                    </span>
+                    {state.roundWeisPoints[team] > 0 && (
+                      <span className={`text-xs px-1.5 py-0.5 rounded ${badgeWarningColors}`}>
+                        {t('weisPanel.scored')}
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-2 text-xs text-ds-text-muted">{t('weisPanel.note')}</p>
+            </section>
+          </details>
         )}
 
         <RoundScoreAnnouncement

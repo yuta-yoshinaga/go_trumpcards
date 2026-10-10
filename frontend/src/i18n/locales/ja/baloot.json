@@ -29,6 +29,7 @@
     "hidden": "不明"
   },
   "currentTrick": "現在のトリック",
+  "rulesLabel": "ルール",
   "actions": {
     "sun": "Sun（切り札なし）",
     "hokom": "Hokom {{suit}}",

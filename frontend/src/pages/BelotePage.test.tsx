@@ -150,6 +150,7 @@ describe('BelotePage', () => {
 
   it('explains card points and round bonuses beside the score table', async () => {
     renderWithProviders(<BelotePage />);
+    fireEvent.click(await screen.findByText('ルール'));
     const explanation = await screen.findByTestId('belote-scoring-explanation');
     expect(explanation).toHaveTextContent('カード点合計152');
     expect(explanation).toHaveTextContent('切り札はJ=20、9=14');
@@ -157,6 +158,43 @@ describe('BelotePage', () => {
     expect(explanation).toHaveTextContent('切り札のKとQでベロート／レベロート+20点');
     expect(screen.getByTestId('belote-target-score')).toBeInTheDocument();
     expect(screen.getByRole('table')).toHaveTextContent('0');
+  });
+
+  it('collapses CPU details, score table, and scoring rules on mobile while keeping scores visible', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      renderWithProviders(<BelotePage />);
+      const cpu = await screen.findByTestId('cpu-accordion');
+      const score = screen.getByTestId('belote-score-details');
+      const rules = screen.getByText('ルール').closest('details');
+      expect(cpu).not.toHaveAttribute('open');
+      expect(score).not.toHaveAttribute('open');
+      expect(rules).not.toHaveAttribute('open');
+      expect(screen.getByTestId('belote-team-score-summary')).toHaveTextContent('チーム0 0');
+      expect(screen.getByTestId('belote-target-score')).toBeVisible();
+      expect(screen.getByTestId('belote-scoring-explanation')).not.toBeVisible();
+      fireEvent.click(screen.getByText('ルール'));
+      expect(screen.getByTestId('belote-scoring-explanation')).toBeVisible();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it('opens CPU details and the score table on desktop', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      renderWithProviders(<BelotePage />);
+      expect(await screen.findByTestId('cpu-accordion')).toHaveAttribute('open');
+      expect(screen.getByTestId('belote-score-details')).toHaveAttribute('open');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
   });
 
   it('shows the configured target score beside the team scores', async () => {
@@ -295,20 +333,16 @@ describe('BelotePage', () => {
     mockExec.mockResolvedValue(
       makeState({ phase: BelotePhase.PLAY, trumpSuit: 1, makerTeam: 0, roundBeloteBonus: [0, 20] }),
     );
-    const { container } = renderWithProviders(<BelotePage />);
+    renderWithProviders(<BelotePage />);
     expect(await screen.findByTestId('belote-rebelote-badge')).toHaveTextContent('チーム1に20点');
-    const scoreTable = container.querySelector('[data-tutorial="be-score-table"]');
+    const scoreTable = screen.getByTestId('belote-score-details');
     expect(scoreTable).not.toBeNull();
     expect(scoreTable).toHaveTextContent('チーム1に20点');
   });
 
   it('aligns the score row with the team headers', async () => {
-    const { container } = renderWithProviders(<BelotePage />);
-    const scoreTable = await waitFor(() => {
-      const table = container.querySelector('[data-tutorial="be-score-table"] table');
-      expect(table).not.toBeNull();
-      return table as HTMLTableElement;
-    });
+    renderWithProviders(<BelotePage />);
+    const scoreTable = await screen.findByRole('table');
     const headerRow = scoreTable.querySelector('thead tr');
     const scoreRow = scoreTable.querySelector('tbody tr');
     expect(headerRow).toBeDefined();

@@ -9,6 +9,7 @@
   "header": {
     "round": "Deal {{round}}",
     "target": "Target {{n}} pts",
+    "rules": "Rules",
     "stock": "Stock: {{n}} left (tricks in this half do not score)",
     "contract": "Contract: {{level}}{{suit}} ({{name}}) / needs {{need}} tricks",
     "contractUndecided": "Contract: not yet decided",

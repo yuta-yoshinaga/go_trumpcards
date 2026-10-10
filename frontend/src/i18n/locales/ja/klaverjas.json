@@ -34,6 +34,9 @@
     "b": "チームB"
   },
   "teamScoreWithTarget": "{{team}}: {{score}}点 / 目標 {{target}}点",
+  "teamScore": "{{team}}: {{score}}点",
+  "matchDetails": "目標とチーム",
+  "targetPoints": "目標 {{target}}点",
   "playButton": "出す",
   "playRestriction": {
     "followSuit": "リードスートに従ってください",
@@ -48,6 +51,9 @@
     "title": "ラウンド結果",
     "teamA": "チームAのカード点: {{points}}",
     "teamB": "チームBのカード点: {{points}}",
+    "teamAShort": "A: {{points}}点",
+    "teamBShort": "B: {{points}}点",
+    "roemShort": "Roem A={{roemA}} B={{roemB}}",
     "roem": "Roem(ボーナス): A={{roemA}} B={{roemB}}"
   },
   "hintAvailable": "ヒント",

@@ -21,6 +21,7 @@
   "chips": "{{count}} chips",
   "currentTrick": "Current Trick",
   "players": "Players",
+  "rules": "Rules",
   "you": "You",
   "cpu": "CPU {{id}}",
   "yourTeam": "Your team",

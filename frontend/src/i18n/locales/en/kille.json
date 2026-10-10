@@ -31,6 +31,8 @@
   "gameWinner": "{{name}} wins the game.",
   "loserLine": "{{name}} goes out ({{reason}})",
   "eventsTitle": "Exchanges this round",
+  "rulesLabel": "Rules",
+  "deckLabel": "Deck guide",
   "event": {
     "swap": "{{actor}} exchanged with {{target}}",
     "satisfied": "{{actor}} kept their card",
