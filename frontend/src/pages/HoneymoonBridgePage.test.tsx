@@ -108,6 +108,19 @@ describe('HoneymoonBridgePage', () => {
     mobileState.isMobile = true;
   });
 
+  it('keeps stock and contract together and leaves the human seat outside CPU details', async () => {
+    renderWithProviders(<HoneymoonBridgePage />);
+    const stock = await screen.findByTestId('hb-stock');
+    const contract = screen.getByTestId('hb-contract');
+    expect(stock.parentElement).toBe(contract.parentElement);
+
+    const humanSeat = screen.getByTestId('hb-seat-0');
+    const cpuSeat = screen.getByTestId('hb-seat-1');
+    expect(humanSeat.closest('details')).toBeNull();
+    expect(cpuSeat.closest('details')).toBe(screen.getByTestId('cpu-accordion'));
+    expect(humanSeat).toHaveClass('text-xs', 'py-1');
+  });
+
   it('allows only valid hand indices during the human play turn', async () => {
     mockExec.mockResolvedValue(playing({ validPlays: [1, 3] }));
     renderWithProviders(<HoneymoonBridgePage />);

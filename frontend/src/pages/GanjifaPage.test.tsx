@@ -80,6 +80,7 @@ describe('GanjifaPage', () => {
     const readout = await screen.findByTestId('ganjifa-trump-group');
     expect(readout).toHaveTextContent('数字が大きいほど強い');
     expect(readout).toHaveClass('text-ds-info');
+    expect(readout).not.toBeVisible();
   });
 
   it('states that lower numbers win when trump is a weak suit', async () => {
@@ -88,6 +89,7 @@ describe('GanjifaPage', () => {
     const readout = await screen.findByTestId('ganjifa-trump-group');
     expect(readout).toHaveTextContent('数字が小さいほど強い');
     expect(readout).toHaveClass('text-ds-warning');
+    expect(readout).not.toBeVisible();
   });
 
   it('identifies each hand card suit and its rank direction in the accessible name', async () => {
@@ -128,6 +130,7 @@ describe('GanjifaPage', () => {
     expect(readout).toHaveAttribute('role', 'status');
     expect(readout).toHaveAttribute('aria-live', 'polite');
     expect(readout).toHaveTextContent('数字が大きいほど強い');
+    fireEvent.click(screen.getByText('ルール'));
 
     // **同じ要素の中身が入れ替わること。**領域ごと差し替わると変化として扱われず、
     // 読み上げられないことがある。
@@ -174,6 +177,7 @@ describe('GanjifaPage', () => {
     renderWithProviders(<GanjifaPage />);
     const rules = await screen.findByText('ルール');
     expect(rules.closest('details')).toHaveAttribute('open');
+    expect(screen.getByTestId('ganjifa-trump-group')).toBeVisible();
     const cpuDetails = screen.getByTestId('cpu-accordion');
     expect(cpuDetails).toHaveAttribute('open');
     mobileState.isMobile = true;
@@ -188,7 +192,7 @@ describe('GanjifaPage', () => {
     expect(humanDetails).toBeVisible();
     expect(humanDetails).toHaveTextContent('あなた: 32枚 | 0トリック');
     expect(cpuDetails).not.toContainElement(humanDetails);
-    expect(screen.getByText('あなた: 得点: 0')).toBeVisible();
+    expect(screen.getByTestId('ganjifa-mobile-scores')).toHaveTextContent('得点 あなた 0 · CPU 1 0 · CPU 2 0');
   });
 
   it('plays the selected card', async () => {

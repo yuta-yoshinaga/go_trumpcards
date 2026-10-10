@@ -269,6 +269,9 @@ describe('MinibridgePage', () => {
     const dummyCards = dummyHand.querySelectorAll('button');
     expect(dummyHand.querySelector('.flex')).toHaveClass('flex-nowrap', 'gap-0');
     expect(dummyCards).toHaveLength(2);
+    // relative keeps disabled overlapping cards in the same paint layer.
+    expect(dummyCards[0]).toHaveClass('relative');
+    expect(dummyCards[1]).toHaveClass('relative');
     expect(dummyCards[0]).toHaveAttribute('aria-label');
     expect(dummyCards[0]).toBeEnabled();
     expect(dummyCards[1]).toBeDisabled();
@@ -393,7 +396,7 @@ describe('MinibridgePage', () => {
   });
 
   // **ダミーは契約が決まってから公開される。**
-  it('reveals the dummy only after the contract', async () => {
+  it('shows the dummy hand after the contract', async () => {
     const { unmount } = renderWithProviders(<MinibridgePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     expect(screen.queryByTestId('mb-dummy')).not.toBeInTheDocument();
@@ -402,6 +405,29 @@ describe('MinibridgePage', () => {
     mockExec.mockResolvedValue(playing());
     renderWithProviders(<MinibridgePage />);
     expect(await screen.findByTestId('mb-dummy')).toBeInTheDocument();
+  });
+
+  it('lays out the round summary, rule disclosure, and CPU disclosure in mobile rows', async () => {
+    renderWithProviders(<MinibridgePage />);
+    const round = await screen.findByTestId('mb-round');
+    expect(round.parentElement).toHaveClass('flex', 'flex-wrap', 'gap-x-2');
+
+    const rule = screen.getByTestId('mb-rule-details');
+    const cpu = screen.getByTestId('cpu-accordion');
+    expect(rule.parentElement).toHaveClass('flex', 'flex-wrap', 'gap-2');
+    expect(rule).toHaveClass('flex-1', 'basis-0');
+    expect(cpu).toHaveClass('flex-1', 'basis-0', 'open:basis-full');
+    expect(screen.getByTestId('mb-human-seat').closest('details')).toBeNull();
+  });
+
+  it('keeps the round and disclosure layout unchanged on desktop', async () => {
+    mobileState.isMobile = false;
+    renderWithProviders(<MinibridgePage />);
+    const round = await screen.findByTestId('mb-round');
+    expect(round.parentElement).not.toHaveClass('flex');
+    expect(screen.getByTestId('mb-rule-details').parentElement).not.toHaveClass('flex');
+    expect(screen.getByTestId('mb-rule-details')).toHaveClass('mb-3');
+    expect(screen.getByTestId('cpu-accordion')).not.toHaveClass('basis-0');
   });
 
   it('shows a CPU-operated dummy hand in the human seat only once', async () => {
