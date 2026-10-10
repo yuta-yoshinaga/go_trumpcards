@@ -349,16 +349,25 @@ func TestHeartsWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, map[string]string{"cpuId": "99"}, resObj.MessageParams)
 	})
 
-	t.Run("pass phase messageCode", func(t *testing.T) {
-		m, _ := setupHeartsWebMockWithPlayers()
-		m.ExpectedCalls = removeWebMockCall(m.ExpectedCalls, "GetPhase")
-		m.On("GetPhase").Return(domain.HeartsPhasePass)
+	t.Run("pass phase messageCode follows direction and includes count", func(t *testing.T) {
+		for _, tc := range []struct {
+			direction domain.HeartsPassDirection
+			code      string
+		}{{domain.HeartsPassLeft, "hearts.passPhase.left"}, {domain.HeartsPassRight, "hearts.passPhase.right"}, {domain.HeartsPassAcross, "hearts.passPhase.across"}} {
+			t.Run(tc.code, func(t *testing.T) {
+				m, _ := setupHeartsWebMockWithPlayers()
+				m.ExpectedCalls = removeWebMockCall(m.ExpectedCalls, "GetPhase")
+				m.ExpectedCalls = removeWebMockCall(m.ExpectedCalls, "GetPassDirection")
+				m.On("GetPhase").Return(domain.HeartsPhasePass)
+				m.On("GetPassDirection").Return(tc.direction)
 
-		result := p.Output(m, nil)
-		var resObj controller.HeartsWebOutput
-		_ = json.Unmarshal([]byte(result), &resObj)
-
-		assert.Equal(t, "hearts.passPhase", resObj.MessageCode)
+				result := p.Output(m, nil)
+				var resObj controller.HeartsWebOutput
+				_ = json.Unmarshal([]byte(result), &resObj)
+				assert.Equal(t, tc.code, resObj.MessageCode)
+				assert.Equal(t, map[string]string{"count": "3"}, resObj.MessageParams)
+			})
+		}
 	})
 
 	t.Run("play phase lead messageCode when trick empty", func(t *testing.T) {
