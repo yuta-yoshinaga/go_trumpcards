@@ -11,6 +11,16 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockExec = vi.mocked(ganjifaApi.exec);
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const original = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...original,
+    useCardDimensions: () => ({ ...original.useCardDimensions(), isMobile: mobileState.isMobile }),
+    useIsMobile: () => mobileState.isMobile,
+  };
+});
 
 const playPhaseState = makeGanjifaState();
 const cpuTurnState = makeGanjifaState({ isHumanTurn: false, currentPlayerIdx: 1, playableIndices: [] });
@@ -36,6 +46,7 @@ const gameEndState = makeGanjifaState({
 });
 
 beforeEach(() => {
+  mobileState.isMobile = true;
   mockExec.mockReset();
   mockExec.mockResolvedValue(playPhaseState);
 });
@@ -148,9 +159,32 @@ describe('GanjifaPage', () => {
 
   it('explains that trump is chosen automatically from the dealer hand', async () => {
     renderWithProviders(<GanjifaPage />);
-    expect(await screen.findByTestId('ganjifa-trump-auto-note')).toHaveTextContent(
+    const rules = await screen.findByText('ルール');
+    const note = screen.getByTestId('ganjifa-trump-auto-note');
+    expect(rules.closest('details')).not.toHaveAttribute('open');
+    expect(note).not.toBeVisible();
+    fireEvent.click(rules);
+    expect(note).toHaveTextContent(
       '切り札はディーラーの手札で最も多いスートから自動で決まります（選択操作はありません）',
     );
+  });
+
+  it('keeps rules and player details open on desktop', async () => {
+    mobileState.isMobile = false;
+    renderWithProviders(<GanjifaPage />);
+    const rules = await screen.findByText('ルール');
+    expect(rules.closest('details')).toHaveAttribute('open');
+    const cpuDetails = screen.getByTestId('cpu-accordion');
+    expect(cpuDetails).toHaveAttribute('open');
+    mobileState.isMobile = true;
+  });
+
+  it('collapses CPU player counts on mobile while keeping scores visible', async () => {
+    renderWithProviders(<GanjifaPage />);
+    const cpuDetails = await screen.findByTestId('cpu-accordion');
+    expect(cpuDetails).not.toHaveAttribute('open');
+    expect(within(cpuDetails).getByText(/CPU 1: 32枚/)).not.toBeVisible();
+    expect(screen.getByText('あなた: 得点: 0')).toBeVisible();
   });
 
   it('plays the selected card', async () => {

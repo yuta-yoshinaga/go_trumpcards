@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import type { ganjifaApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -194,13 +195,16 @@ function GanjifaPageContent() {
               <span>{t('target', { rounds: state.config.targetRounds })}</span>
             </div>
 
-            {dealer && (
-              <div className="text-center text-ds-text-muted text-sm mb-1" data-testid="ganjifa-dealer">
-                {t('dealer', { name: playerName(dealer.id, dealer.isHuman) })}
-              </div>
-            )}
-            <div className="text-center text-ds-text-muted text-sm mb-2" data-testid="ganjifa-trump-auto-note">
-              {t('trumpAutoNote')}
+            <div className="flex flex-wrap justify-center gap-x-3 text-center text-ds-text-muted text-sm mb-1">
+              {dealer && (
+                <span data-testid="ganjifa-dealer">{t('dealer', { name: playerName(dealer.id, dealer.isHuman) })}</span>
+              )}
+              <details className="text-sm" open={!isMobile || undefined}>
+                <summary className="cursor-pointer select-none">{t('rules')}</summary>
+                <div className="text-ds-text-muted" data-testid="ganjifa-trump-auto-note">
+                  {t('trumpAutoNote')}
+                </div>
+              </details>
             </div>
 
             {/*
@@ -238,27 +242,15 @@ function GanjifaPageContent() {
 
               {/* Right: info sidebar */}
               <div>
-                <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
+                <div className="mb-2 px-2 py-1 rounded bg-black/30 text-ds-text-muted text-sm flex flex-wrap justify-center gap-x-3 sm:flex-col sm:gap-x-0">
                   {state.players.map((p) => (
-                    <div key={p.id} className="py-0.5">
+                    <span key={p.id} className="py-0.5">
                       {playerName(p.id, p.isHuman)}: {t('score', { score: p.score })}
-                    </div>
+                    </span>
                   ))}
                 </div>
 
-                {isMobile ? (
-                  <details className="mb-2 p-2 rounded bg-black/30">
-                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('players')}</summary>
-                    <div className="mt-1">
-                      {state.players.map((p) => (
-                        <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                          {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                          {t('tricks', { count: p.trickCount })}
-                        </div>
-                      ))}
-                    </div>
-                  </details>
-                ) : (
+                <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
                   <div className="mb-2 p-2 rounded bg-black/30">
                     {state.players.map((p) => (
                       <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
@@ -267,7 +259,7 @@ function GanjifaPageContent() {
                       </div>
                     ))}
                   </div>
-                )}
+                </CpuAccordion>
 
                 {(isRoundEnd || isGameEnd) && (
                   <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm">

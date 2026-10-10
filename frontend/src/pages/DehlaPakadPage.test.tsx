@@ -11,6 +11,16 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockExec = vi.mocked(dehlaPakadApi.exec);
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useIsMobile: () => mobileState.isMobile,
+    useCardDimensions: () => ({ ...actual.useCardDimensions(), isMobile: mobileState.isMobile }),
+  };
+});
 
 const trumpState = makeDehlaPakadState();
 
@@ -26,11 +36,47 @@ const playState = makeDehlaPakadState({
 });
 
 beforeEach(() => {
+  mobileState.isMobile = true;
   mockExec.mockReset();
   mockExec.mockResolvedValue(trumpState);
 });
 
 describe('DehlaPakadPage', () => {
+  it('collapses reference information and CPU seats on mobile', async () => {
+    mockExec.mockResolvedValue(
+      makeDehlaPakadState({
+        handHistory: [{ winnerTeam: 0, teamTens: [3, 1], kot: false, kotReason: '', dealerIdx: 3, trumpSuit: 1 }],
+      }),
+    );
+    renderWithProviders(<DehlaPakadPage />);
+
+    const cpu = await screen.findByTestId('cpu-accordion');
+    const history = screen.getByTestId('dehlapakad-hand-history');
+    const earnedTens = screen.getByTestId('dehlapakad-earned-tens');
+    expect(cpu).not.toHaveAttribute('open');
+    expect(cpu.querySelector('div.px-1.pb-1')).not.toBeVisible();
+    expect(history.closest('details')).not.toHaveAttribute('open');
+    expect(history).not.toBeVisible();
+    expect(earnedTens.closest('details')).not.toHaveAttribute('open');
+    expect(earnedTens).not.toBeVisible();
+    expect(screen.getByTestId('dehlapakad-scores')).toBeVisible();
+  });
+
+  it('opens reference information and CPU seats on desktop', async () => {
+    mobileState.isMobile = false;
+    mockExec.mockResolvedValue(
+      makeDehlaPakadState({
+        handHistory: [{ winnerTeam: 0, teamTens: [3, 1], kot: false, kotReason: '', dealerIdx: 3, trumpSuit: 1 }],
+      }),
+    );
+    renderWithProviders(<DehlaPakadPage />);
+
+    const cpu = await screen.findByTestId('cpu-accordion');
+    expect(cpu).toHaveAttribute('open');
+    expect(screen.getByTestId('dehlapakad-hand-history').closest('details')).toHaveAttribute('open');
+    expect(screen.getByTestId('dehlapakad-earned-tens').closest('details')).toHaveAttribute('open');
+  });
+
   it('shows the five-card suit breakdown, including empty suits', async () => {
     mockExec.mockResolvedValue(
       makeDehlaPakadState({

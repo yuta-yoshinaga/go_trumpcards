@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { klaverjasApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -299,122 +300,124 @@ function KlaverjasPageContent() {
 
               {/* Right: info sidebar */}
               <div data-tutorial="klaverjas-info">
-                {/* Team match scores */}
                 <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-                  <div>
-                    {t('teamScoreWithTarget', {
-                      team: t('team.a'),
-                      score: state.teamScores[0],
-                      target: state.config.targetPoints,
-                    })}
+                  <div className="flex flex-wrap gap-x-3">
+                    <span>{t('teamScore', { team: t('team.a'), score: state.teamScores[0] })}</span>
+                    <span>{t('teamScore', { team: t('team.b'), score: state.teamScores[1] })}</span>
                   </div>
-                  <div>
-                    {t('teamScoreWithTarget', {
-                      team: t('team.b'),
-                      score: state.teamScores[1],
-                      target: state.config.targetPoints,
-                    })}
-                  </div>
-                  <div className="mt-1">
-                    {t('yourTeam')}: {humanTeam === 0 ? t('team.a') : t('team.b')}
-                  </div>
-                </div>
-
-                <div role="status" aria-live="polite" data-testid="klaverjas-round-card-points" aria-atomic="true">
-                  {!(isRoundEnd || isGameEnd) && (
-                    <div className="mb-2 p-2 rounded bg-ds-surface text-ds-text-muted text-sm">
-                      <div>{t('roundResult.teamA', { points: state.roundCardPoints[0] })}</div>
-                      <div>{t('roundResult.teamB', { points: state.roundCardPoints[1] })}</div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Live Roem (bonus) per team, shown throughout the hand to match the CUI's
-                    Roem readout; the round-result block below repeats it once the round ends. */}
-                {!(isRoundEnd || isGameEnd) && (
-                  <div
-                    className={`mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm${
-                      roemPulse ? ' motion-safe:animate-pulse ring-1 ring-ds-warning' : ''
-                    }`}
-                    data-testid="klaverjas-roem"
-                    role="status"
-                    aria-live="polite"
-                  >
-                    <div className="mb-1 text-ds-text-primary">{t('roem.title')}</div>
-                    <div>
-                      {t('roundResult.roem', { roemA: state.roundRoem[0] ?? 0, roemB: state.roundRoem[1] ?? 0 })}
-                    </div>
-                    {roemBreakdown && <div data-testid="klaverjas-roem-breakdown">{roemBreakdown}</div>}
-                  </div>
-                )}
-
-                {/* Players: cards / tricks */}
-                {isMobile ? (
-                  <details className="mb-2 p-2 rounded bg-black/30">
-                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('players')}</summary>
-                    <div className="mt-1">
-                      {state.players.map((p) => (
-                        <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                          {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                          {t('tricks', { count: p.trickCount })}
-                        </div>
-                      ))}
-                    </div>
-                  </details>
-                ) : (
-                  <div className="mb-2 p-2 rounded bg-black/30">
-                    {state.players.map((p) => (
-                      <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                        {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                        {t('tricks', { count: p.trickCount })}
+                  <details open={!isMobile || undefined} data-testid="klaverjas-match-details">
+                    <summary className="cursor-pointer select-none text-xs">{t('matchDetails')}</summary>
+                    <div className="mt-1 text-xs">
+                      <div>{t('targetPoints', { target: state.config.targetPoints })}</div>
+                      <div>
+                        {t('yourTeam')}: {humanTeam === 0 ? t('team.a') : t('team.b')}
                       </div>
-                    ))}
-                  </div>
-                )}
+                      {!(isRoundEnd || isGameEnd) && (
+                        <div
+                          className="mt-1 flex flex-wrap gap-x-2"
+                          role="status"
+                          aria-live="polite"
+                          data-testid="klaverjas-round-card-points"
+                          aria-atomic="true"
+                        >
+                          <span>{t('roundResult.teamAShort', { points: state.roundCardPoints[0] })}</span>
+                          <span>{t('roundResult.teamBShort', { points: state.roundCardPoints[1] })}</span>
+                          <span>
+                            {t('roundResult.roemShort', {
+                              roemA: state.roundRoem[0] ?? 0,
+                              roemB: state.roundRoem[1] ?? 0,
+                            })}
+                          </span>
+                        </div>
+                      )}
 
-                {/* **切り札と非切り札で強さの順序が完全に違う (#4757)。**切り札は
+                      {!(isRoundEnd || isGameEnd) && (
+                        <div
+                          className={`mt-1 p-1 rounded bg-black/30${roemPulse ? ' motion-safe:animate-pulse ring-1 ring-ds-warning' : ''}`}
+                          data-testid="klaverjas-roem"
+                          role="status"
+                          aria-live="polite"
+                        >
+                          <div>
+                            {t('roundResult.roemShort', {
+                              roemA: state.roundRoem[0] ?? 0,
+                              roemB: state.roundRoem[1] ?? 0,
+                            })}
+                          </div>
+                          {roemBreakdown && <div data-testid="klaverjas-roem-breakdown">{roemBreakdown}</div>}
+                        </div>
+                      )}
+
+                      {/* Players: cards / tricks */}
+                      <div className="mt-1 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
+                        {humanPlayer && (
+                          <div className="py-0.5">
+                            {playerName(humanPlayer.id, true)}: {t('cards', { count: humanPlayer.cardCount })} |{' '}
+                            {t('tricks', { count: humanPlayer.trickCount })}
+                          </div>
+                        )}
+                        <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+                          <div className="flex flex-wrap gap-x-3">
+                            {state.players
+                              .filter((p) => !p.isHuman)
+                              .map((p) => (
+                                <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
+                                  {playerName(p.id, false)}: {t('cards', { count: p.cardCount })} |{' '}
+                                  {t('tricks', { count: p.trickCount })}
+                                </div>
+                              ))}
+                          </div>
+                        </CpuAccordion>
+                      </div>
+
+                      {/* **切り札と非切り札で強さの順序が完全に違う (#4757)。**切り札は
                     J > 9 > A > 10、非切り札は A > 10 > K。姉妹ゲームの Manille には
                     早見表があるのに、より覚えにくいこちらには無かった。 */}
-                <details className="mb-2 p-2 rounded bg-black/30" data-testid="klaverjas-strength-legend">
-                  <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
-                    {t('strengthLegend.title')}
-                  </summary>
-                  <div className="mt-1 text-ds-text-muted text-xs">
-                    {(
-                      [
-                        ['trumpCol', KLAVERJAS_TRUMP_ROWS],
-                        ['plainCol', KLAVERJAS_PLAIN_ROWS],
-                      ] as const
-                    ).map(([headKey, rows]) => (
-                      <table className="w-full mb-1" key={headKey}>
-                        <caption className="text-left">{t(`strengthLegend.${headKey}`)}</caption>
-                        <thead>
-                          <tr>
-                            <th scope="col" className="text-left font-normal">
-                              {t('strengthLegend.rankCol')}
-                            </th>
-                            <th scope="col" className="text-left font-normal">
-                              {t('strengthLegend.cardCol')}
-                            </th>
-                            <th scope="col" className="text-right font-normal">
-                              {t('strengthLegend.pointCol')}
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {rows.map((row, i) => (
-                            <tr key={row.face}>
-                              <td>{i + 1}</td>
-                              <td>{'nameKey' in row && row.nameKey ? `${row.face} (${t(row.nameKey)})` : row.face}</td>
-                              <td className="text-right">{row.points}</td>
-                            </tr>
+                      <details className="mt-1" data-testid="klaverjas-strength-legend">
+                        <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
+                          {t('strengthLegend.title')}
+                        </summary>
+                        <div className="mt-1 text-ds-text-muted text-xs">
+                          {(
+                            [
+                              ['trumpCol', KLAVERJAS_TRUMP_ROWS],
+                              ['plainCol', KLAVERJAS_PLAIN_ROWS],
+                            ] as const
+                          ).map(([headKey, rows]) => (
+                            <table className="w-full mb-1" key={headKey}>
+                              <caption className="text-left">{t(`strengthLegend.${headKey}`)}</caption>
+                              <thead>
+                                <tr>
+                                  <th scope="col" className="text-left font-normal">
+                                    {t('strengthLegend.rankCol')}
+                                  </th>
+                                  <th scope="col" className="text-left font-normal">
+                                    {t('strengthLegend.cardCol')}
+                                  </th>
+                                  <th scope="col" className="text-right font-normal">
+                                    {t('strengthLegend.pointCol')}
+                                  </th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {rows.map((row, i) => (
+                                  <tr key={row.face}>
+                                    <td>{i + 1}</td>
+                                    <td>
+                                      {'nameKey' in row && row.nameKey ? `${row.face} (${t(row.nameKey)})` : row.face}
+                                    </td>
+                                    <td className="text-right">{row.points}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
                           ))}
-                        </tbody>
-                      </table>
-                    ))}
-                    <div className="mt-1">{t('strengthLegend.note')}</div>
-                  </div>
-                </details>
+                          <div className="mt-1">{t('strengthLegend.note')}</div>
+                        </div>
+                      </details>
+                    </div>
+                  </details>
+                </div>
 
                 {/* Round result */}
                 {(isRoundEnd || isGameEnd) && (

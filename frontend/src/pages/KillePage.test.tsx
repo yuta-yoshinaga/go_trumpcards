@@ -14,6 +14,11 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockExec = vi.mocked(killeApi.exec);
+const mobileState = { isMobile: false };
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+}));
 
 /** A Kille card: single suit, so the procedural fields carry the identity. */
 const killeCard = (value: number, label: string, color: string) => ({
@@ -64,6 +69,7 @@ function makeState(overrides?: Partial<KilleResponse>): KilleResponse {
 
 describe('KillePage', () => {
   beforeEach(() => {
+    mobileState.isMobile = false;
     vi.clearAllMocks();
     mockExec.mockResolvedValue(makeState());
   });
@@ -97,8 +103,32 @@ describe('KillePage', () => {
   // 交換で渡ってきた道化が最弱になるのはこのゲーム最大の罠なので、常時出す。
   it('states the inverted Harlequin rule permanently', async () => {
     renderWithProviders(<KillePage />);
-    await waitFor(() => expect(screen.getByTestId('kille-rules-note')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('kille-rules-note')).toBeVisible());
     expect(screen.getByTestId('kille-rules-note')).toHaveTextContent('最強ではなく最弱');
+  });
+
+  it('collapses reference information and CPU rows on mobile while keeping the human row visible', async () => {
+    mobileState.isMobile = true;
+    renderWithProviders(<KillePage />);
+    await screen.findAllByTestId('kille-player');
+    expect(screen.getByTestId('kille-rules')).not.toHaveAttribute('open');
+    expect(screen.getByTestId('kille-rules-note')).not.toBeVisible();
+    expect(screen.getByTestId('kille-ladder')).not.toHaveAttribute('open');
+    expect(screen.getByTestId('kille-effect-legend')).not.toBeVisible();
+    expect(screen.getByTestId('cpu-accordion')).not.toHaveAttribute('open');
+    expect(screen.getByText('あなた')).toBeVisible();
+    expect(screen.getByText('CPU 1')).not.toBeVisible();
+  });
+
+  it('opens reference information and CPU rows on desktop', async () => {
+    renderWithProviders(<KillePage />);
+    await screen.findAllByTestId('kille-player');
+    expect(screen.getByTestId('kille-rules')).toHaveAttribute('open');
+    expect(screen.getByTestId('kille-rules-note')).toBeVisible();
+    expect(screen.getByTestId('kille-ladder')).toHaveAttribute('open');
+    expect(screen.getByTestId('kille-effect-legend')).toBeVisible();
+    expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
+    expect(screen.getAllByTestId('kille-player')).toHaveLength(4);
   });
 
   it('shows Japanese card names in the strength ladder and effect guide', async () => {
@@ -131,7 +161,7 @@ describe('KillePage', () => {
   it('shows every number rank in strength order between the special cards', async () => {
     renderWithProviders(<KillePage />);
     const ladder = await screen.findByTestId('kille-ladder');
-    const ranks = Array.from(ladder.querySelectorAll(':scope > div:nth-child(2) > span')).map(
+    const ranks = Array.from(ladder.querySelectorAll(':scope > div > div:nth-child(2) > span')).map(
       (rank) => rank.textContent,
     );
     expect(ranks).toEqual([

@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { hasenpfefferApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -204,13 +205,10 @@ function HasenpfefferPageContent() {
             </div>
 
             {/* **ジョーカーが全カード中最強。** 知らないと打ち方が変わる。 */}
-            <div
-              className="mb-3 rounded bg-black/30 px-3 py-2 text-ds-text-primary text-center"
-              data-testid="hpf-rule"
-              data-tutorial="hpf-rule"
-            >
-              {t('header.rule')}
-            </div>
+            <details className="mb-3 rounded bg-black/30 px-3 py-2" data-testid="hpf-rule" data-tutorial="hpf-rule">
+              <summary className="cursor-pointer select-none text-ds-text-primary text-center">ルール / Rules</summary>
+              <div className="pt-2 text-ds-text-primary text-center">{t('header.rule')}</div>
+            </details>
 
             <div className="text-ds-text-muted text-sm text-center mb-3" data-testid="hpf-score">
               {t('header.score', { t0: String(state.scores[0] ?? 0), t1: String(state.scores[1] ?? 0) })}
@@ -245,30 +243,34 @@ function HasenpfefferPageContent() {
             )}
             <LiveAnnouncement message={isHumanBidTurn && state.mustBid ? t('header.mustBid') : ''} />
 
-            <div className="flex flex-wrap justify-center gap-2 mb-4" data-tutorial="hpf-seats">
-              {state.players.map((p, playerIdx) => (
-                <fieldset
-                  key={p.id}
-                  className="rounded bg-black/30 border-0 m-0 min-w-0 px-3 py-2 text-sm text-ds-text-muted"
-                  data-testid={`hpf-seat-${p.id.toString()}`}
-                >
-                  <legend className="inline text-ds-text-primary">
-                    {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
-                  </legend>
-                  <span className="ml-1 text-ds-accent">{t('header.team', { team: String(p.team) })}</span>
-                  {playerIdx === state.dealerIdx && <span className="ml-1 text-ds-accent"> / {t('dealerBadge')}</span>}
-                  {p.id === state.declarerIdx && <span className="ml-1 text-ds-accent">{t('header.declarer')}</span>}
-                  {': '}
-                  {p.bid < 0
-                    ? t('header.bidNone')
-                    : p.bid === 0
-                      ? t('header.bidPassed')
-                      : t('header.bidValue', { n: String(p.bid) })}
-                  {' / '}
-                  {t('header.took', { n: String(p.trickCount) })}
-                </fieldset>
-              ))}
-            </div>
+            <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length} dataTutorial="hpf-seats">
+              <div className="flex flex-wrap justify-center gap-2 mb-4">
+                {state.players.map((p, playerIdx) => (
+                  <fieldset
+                    key={p.id}
+                    className="rounded bg-black/30 border-0 m-0 min-w-0 px-3 py-2 text-sm text-ds-text-muted"
+                    data-testid={`hpf-seat-${p.id.toString()}`}
+                  >
+                    <legend className="inline text-ds-text-primary">
+                      {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
+                    </legend>
+                    <span className="ml-1 text-ds-accent">{t('header.team', { team: String(p.team) })}</span>
+                    {playerIdx === state.dealerIdx && (
+                      <span className="ml-1 text-ds-accent"> / {t('dealerBadge')}</span>
+                    )}
+                    {p.id === state.declarerIdx && <span className="ml-1 text-ds-accent">{t('header.declarer')}</span>}
+                    {': '}
+                    {p.bid < 0
+                      ? t('header.bidNone')
+                      : p.bid === 0
+                        ? t('header.bidPassed')
+                        : t('header.bidValue', { n: String(p.bid) })}
+                    {' / '}
+                    {t('header.took', { n: String(p.trickCount) })}
+                  </fieldset>
+                ))}
+              </div>
+            </CpuAccordion>
 
             <div data-tutorial="hpf-trick">
               <TrickDisplay

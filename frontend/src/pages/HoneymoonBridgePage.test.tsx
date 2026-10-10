@@ -16,6 +16,12 @@ vi.mock('../hooks/useGameHint', () => ({
   useGameHint: vi.fn(() => ({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() })),
 }));
 
+const mobileState = { isMobile: true };
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+}));
+
 const mockExec = vi.mocked(honeymoonbridgeApi.exec);
 const mockActionLog = vi.mocked(actionLogApi.honeymoonbridge);
 
@@ -79,12 +85,29 @@ const playing = (over: Partial<HoneymoonBridgeResponse> = {}) =>
   } as Partial<HoneymoonBridgeResponse>);
 
 beforeEach(() => {
+  mobileState.isMobile = true;
   vi.clearAllMocks();
   mockExec.mockResolvedValue(makeState());
   mockActionLog.mockResolvedValue({ entries: [] });
 });
 
 describe('HoneymoonBridgePage', () => {
+  it('collapses the rules and CPU seats on mobile, and opens them on desktop', async () => {
+    const { unmount } = renderWithProviders(<HoneymoonBridgePage />);
+    const mobileRules = await screen.findByText('ルール');
+    expect(mobileRules.closest('details')).not.toHaveAttribute('open');
+    expect(screen.getByTestId('hb-rule')).not.toBeVisible();
+    expect(screen.getByTestId('cpu-accordion')).not.toHaveAttribute('open');
+    unmount();
+
+    mobileState.isMobile = false;
+    renderWithProviders(<HoneymoonBridgePage />);
+    await screen.findByTestId('hb-rule');
+    expect(screen.getByTestId('hb-rule')).not.toBeVisible();
+    expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
+    mobileState.isMobile = true;
+  });
+
   it('allows only valid hand indices during the human play turn', async () => {
     mockExec.mockResolvedValue(playing({ validPlays: [1, 3] }));
     renderWithProviders(<HoneymoonBridgePage />);

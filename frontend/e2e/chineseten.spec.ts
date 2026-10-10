@@ -5,7 +5,8 @@ test.describe('Chinese Ten E2E', () => {
   test('plays a card and shows both seats captures', async ({ page }) => {
     await navigateTo(page, '/chineseten');
 
-    // Both capture rules are permanent, not tutorial-only.
+    // The capture rules remain available on demand.
+    await page.getByTestId('ct-rules').locator('summary').click();
     await expect(page.getByText(/A〜9は合計10で取る/)).toBeVisible();
     await expect(page.getByText(/あなたの取り札/)).toBeVisible();
     await expect(page.getByText(/CPU の取り札/)).toBeVisible();

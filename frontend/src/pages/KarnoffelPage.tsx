@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { karnoffelApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -130,6 +131,48 @@ function KarnoffelPageContent() {
 
   const playerLabel = (id: number, isHuman: boolean): string => (isHuman ? t('you') : t('cpu', { id }));
   const suitLabel = (s: number): string => t(`suitName.${s}`);
+  const renderPlayer = (p: (typeof state.players)[number]) => (
+    <div
+      key={`player-${p.id}`}
+      data-testid="karnoffel-player"
+      className={`grid grid-cols-[1fr_auto] items-center gap-x-1 rounded bg-black/30 p-1 text-xs ${
+        p.isCurrentTurn && !isGameEnd ? 'text-ds-warning' : 'text-ds-text-muted'
+      } ${p.isHuman ? 'font-semibold' : ''}`}
+    >
+      <span className="col-span-2 flex min-w-0 items-center gap-1 truncate">
+        <span className="truncate">{playerLabel(p.id, p.isHuman)}</span>
+        <span>({t('team', { n: p.team })})</span>
+        {p.isDealer && <span className="text-ds-accent">[{t('dealer')}]</span>}
+      </span>
+      <span className="col-span-2 row-start-2 flex items-center gap-1">
+        <span className="flex items-center gap-1">
+          {t('upCard')}:
+          {p.upCard ? (
+            (() => {
+              const upKey = karnoffelRankKey(p.upCard, state.chosenSuit);
+              return (
+                <span className="relative inline-block">
+                  <CardImage card={p.upCard} width={cardWidth} />
+                  {upKey && (
+                    <span
+                      data-testid={`karnoffel-up-rank-${p.id}`}
+                      className={`absolute left-0 right-0 bottom-0 rounded-b px-0.5 text-[9px] font-bold text-center truncate ${badgeWarningColors}`}
+                    >
+                      {t(`rankBadge.${upKey}`)}
+                    </span>
+                  )}
+                </span>
+              );
+            })()
+          ) : (
+            <span>-</span>
+          )}
+        </span>
+        <span className="ml-auto">{t('tricksWon', { n: p.tricksWon })}</span>
+        {!p.isHuman && p.cards.length === 0 && <span>{t('hiddenHand', { count: p.cardCount })}</span>}
+      </span>
+    </div>
+  );
 
   const canPlay = (i: number) => state.validPlays.includes(i);
 
@@ -232,56 +275,18 @@ function KarnoffelPageContent() {
             </div>
 
             {/* Players */}
-            <div className="mb-2 p-2 rounded bg-black/30" data-tutorial="karnoffel-players">
-              <div className="mb-1 text-ds-text-primary text-sm">{t('playersTitle')}</div>
-              <div className="grid grid-cols-2 sm:block">
-                {state.players.map((p) => (
-                  <div
-                    key={`player-${p.id}`}
-                    data-testid="karnoffel-player"
-                    className={`grid grid-cols-[1fr_auto] items-center gap-x-1 text-xs py-0.5 sm:flex sm:flex-wrap sm:gap-2 sm:text-sm ${
-                      p.isCurrentTurn && !isGameEnd ? 'text-ds-warning' : 'text-ds-text-muted'
-                    } ${p.isHuman ? 'font-semibold' : ''}`}
-                  >
-                    <span className="col-span-2 flex min-w-0 items-center gap-1 truncate sm:contents">
-                      <span className="truncate">{playerLabel(p.id, p.isHuman)}</span>
-                      <span>({t('team', { n: p.team })})</span>
-                      {p.isDealer && <span className="text-ds-accent">[{t('dealer')}]</span>}
-                    </span>
-                    {/* **表向きの札は全員ぶん見える。**切札の根拠がここにある。 */}
-                    {/* 上札自身が称号札のこともある。**手札にはバッジを出しているのに
-                      上札には出していない**と、同じ札が場所によって別の重みに見える (#6529)。 */}
-                    <span className="col-span-2 row-start-2 flex items-center gap-1 sm:contents">
-                      <span className="flex items-center gap-1">
-                        {t('upCard')}:
-                        {p.upCard ? (
-                          (() => {
-                            const upKey = karnoffelRankKey(p.upCard, state.chosenSuit);
-                            return (
-                              <span className="relative inline-block">
-                                <CardImage card={p.upCard} width={cardWidth} />
-                                {upKey && (
-                                  <span
-                                    data-testid={`karnoffel-up-rank-${p.id}`}
-                                    className={`absolute left-0 right-0 bottom-0 rounded-b px-0.5 text-[9px] font-bold text-center truncate ${badgeWarningColors}`}
-                                  >
-                                    {t(`rankBadge.${upKey}`)}
-                                  </span>
-                                )}
-                              </span>
-                            );
-                          })()
-                        ) : (
-                          <span>-</span>
-                        )}
-                      </span>
-                      <span className="ml-auto sm:ml-0">{t('tricksWon', { n: p.tricksWon })}</span>
-                      {!p.isHuman && p.cards.length === 0 && <span>{t('hiddenHand', { count: p.cardCount })}</span>}
-                    </span>
-                  </div>
-                ))}
-              </div>
+            <div className="mb-2 grid grid-cols-2 gap-1 sm:grid-cols-4" data-testid="karnoffel-human-player">
+              {state.players.filter((player) => player.isHuman).map(renderPlayer)}
             </div>
+            <CpuAccordion
+              playerCount={state.players.filter((player) => !player.isHuman).length}
+              dataTutorial="karnoffel-players"
+            >
+              <div className="grid grid-cols-2 gap-1 sm:grid-cols-4">
+                {/* **CPUの表向き札は全員ぶん見える。**切札の根拠がここにある。 */}
+                {state.players.filter((player) => !player.isHuman).map(renderPlayer)}
+              </div>
+            </CpuAccordion>
 
             {/* Trick */}
             {state.trick.length > 0 && (

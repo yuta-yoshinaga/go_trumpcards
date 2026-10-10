@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import type { doppelkopfApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -213,7 +214,7 @@ function DoppelkopfPageContent() {
             ]}
           />
 
-          <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+          <div className={`flex-1 overflow-y-auto pt-2 sm:pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
             <div className="text-ds-text-primary text-center mb-2">
               <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
               <span>{t('trick', { n: state.trickNumber })}</span>
@@ -234,11 +235,10 @@ function DoppelkopfPageContent() {
               {/* Right: info sidebar */}
               <div data-tutorial="dk-info">
                 {/* Trump ordering legend (collapsible) */}
-                <details className="mb-2 p-2 rounded bg-black/30" data-testid="dk-trump-legend">
-                  <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
-                    {t('trumpLegend.title')}
-                  </summary>
+                <details className="mb-1 sm:mb-2 p-1 sm:p-2 rounded bg-black/30" data-testid="dk-trump-legend">
+                  <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('rules')}</summary>
                   <div className="mt-1 text-ds-text-muted text-xs">
+                    <div className="mb-1 text-ds-text-primary">{t('trumpLegend.title')}</div>
                     <div className="mb-1">{t('trumpLegend.caption')}</div>
                     <div className="flex flex-wrap items-center gap-x-1 gap-y-0.5">
                       {DOPPELKOPF_TRUMP_ORDER.map((symbol, i) => (
@@ -252,37 +252,23 @@ function DoppelkopfPageContent() {
                 </details>
 
                 {/* Your team / announcements */}
-                <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-                  <div>
+                <div className="mb-1 sm:mb-2 p-1 sm:p-2 rounded bg-black/30 text-ds-text-muted text-sm flex flex-wrap items-center gap-x-2 sm:block">
+                  <span className="sm:block">
                     {t('yourTeam')}: {teamLabel}
                     {state.soloRe && ` (${t('soloRe')})`}
-                  </div>
+                  </span>
                   {(state.reAnnounced || state.kontraAnnounced) && (
-                    <div>
+                    <span className="sm:block">
                       {t('announced')}:{' '}
                       {[state.reAnnounced && t('team.re'), state.kontraAnnounced && t('team.kontra')]
                         .filter(Boolean)
                         .join(', ')}
-                    </div>
+                    </span>
                   )}
                 </div>
 
                 {/* Players: chips / cards / tricks (team shown once revealed) */}
-                {isMobile ? (
-                  <details className="mb-2 p-2 rounded bg-black/30">
-                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('players')}</summary>
-                    <div className="mt-1">
-                      {state.players.map((p) => (
-                        <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                          {playerName(p.id, p.isHuman)}
-                          {(state.teamsRevealed || p.teamKnown) && ` [${p.isRe ? t('team.re') : t('team.kontra')}]`}:{' '}
-                          {t('chips', { count: p.chips })} | {t('cards', { count: p.cardCount })} |{' '}
-                          {t('tricks', { count: p.trickCount })}
-                        </div>
-                      ))}
-                    </div>
-                  </details>
-                ) : (
+                <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
                   <div className="mb-2 p-2 rounded bg-black/30">
                     {state.players.map((p) => (
                       <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
@@ -293,7 +279,7 @@ function DoppelkopfPageContent() {
                       </div>
                     ))}
                   </div>
-                )}
+                </CpuAccordion>
 
                 {/* ラウンド中の獲得点。**同じ値がレスポンスに毎回乗っているのに、
                     ラウンド終了まで画面に出していなかった。**最初のトリックで

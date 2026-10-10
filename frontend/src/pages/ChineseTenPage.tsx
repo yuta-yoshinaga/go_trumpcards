@@ -3,6 +3,7 @@ import type { chinesetenApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CardBack, CardImage } from '../components/CardImage';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -17,7 +18,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useChineseTenGame } from '../hooks/useChineseTenGame';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -51,6 +52,7 @@ function ChineseTenPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('chineseten');
   const game = useChineseTenGame();
+  const viewportWidth = useWindowWidth();
   const { state, loading, error, retry } = game;
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('chineseten');
@@ -157,9 +159,15 @@ function ChineseTenPageContent() {
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
             {/* Permanent, not tutorial-only: A-9 and 10-K capture by different
                 rules, and that is what a player gets wrong. */}
-            <div className="text-center text-xs text-ds-warning mb-3 font-medium" data-tutorial="ct-rule">
-              {t('captureRule')}
-            </div>
+            <details className="mb-2 rounded bg-ds-surface px-2 py-1" data-testid="ct-rules">
+              <summary
+                className="cursor-pointer select-none text-center text-xs text-ds-warning font-medium"
+                data-tutorial="ct-rule"
+              >
+                {t('rules')}
+              </summary>
+              <div className="pt-1 text-center text-xs text-ds-warning font-medium">{t('captureRule')}</div>
+            </details>
 
             <div className="flex justify-center gap-6 mb-3 text-sm" data-tutorial="ct-scores">
               <span>
@@ -173,36 +181,43 @@ function ChineseTenPageContent() {
             </div>
 
             {/* Opponent cards are revealed by the server only after the game ends. */}
-            <div className="flex justify-center gap-4 mb-3">
-              {opponents.map((o) => {
-                const revealed = ended && o.cards.length > 0;
-                return (
-                  <div key={`opp-${o.id.toString()}`} className="text-center">
-                    <div className="text-game-text-muted text-xs mb-1">{t('opponentHand', { n: o.cardCount })}</div>
-                    {revealed ? (
-                      <fieldset
-                        className="m-0 flex gap-1 justify-center border-0 p-0"
-                        aria-label={t('opponentHandRevealedAriaLabel')}
-                      >
-                        {o.cards.map((card, i) => (
-                          <CardImage key={`opp-${o.id.toString()}-c${i.toString()}`} card={card} width={cardWidth} />
-                        ))}
-                      </fieldset>
-                    ) : (
-                      <div
-                        className="flex gap-1 justify-center flex-wrap"
-                        role="img"
-                        aria-label={t('opponentHandAriaLabel', { n: o.cardCount })}
-                      >
-                        {Array.from({ length: o.cardCount }, (_, i) => (
-                          <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+            <CpuAccordion playerCount={opponents.length}>
+              <div className="flex flex-wrap sm:flex-nowrap justify-center gap-4">
+                {opponents.map((o) => {
+                  const revealed = ended && o.cards.length > 0;
+                  return (
+                    <div key={`opp-${o.id.toString()}`} className="text-center">
+                      <div className="text-game-text-muted text-xs mb-1">{t('opponentHand', { n: o.cardCount })}</div>
+                      {revealed ? (
+                        <fieldset
+                          className="m-0 flex gap-1 justify-center border-0 p-0"
+                          aria-label={t('opponentHandRevealedAriaLabel')}
+                        >
+                          {o.cards.map((card, i) => (
+                            <CardImage key={`opp-${o.id.toString()}-c${i.toString()}`} card={card} width={cardWidth} />
+                          ))}
+                        </fieldset>
+                      ) : (
+                        <div
+                          className={`flex gap-1 justify-center ${viewportWidth >= 1024 ? 'flex-nowrap' : 'flex-wrap'}`}
+                          role="img"
+                          aria-label={t('opponentHandAriaLabel', { n: o.cardCount })}
+                        >
+                          {Array.from({ length: o.cardCount }, (_, i) => (
+                            <span
+                              key={`opp-${o.id.toString()}-c${i.toString()}`}
+                              className={viewportWidth >= 1024 && i > 0 ? '-ml-3' : undefined}
+                            >
+                              <CardBack width={viewportWidth >= 1024 ? 36 : cardWidth} />
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </CpuAccordion>
 
             {/* 出した札そのものを見せる。場札は複数あるので、これが無いと
                 「何に対して」10 や同ランクを選んでいるのか記憶に頼ることになる
@@ -288,7 +303,7 @@ function ChineseTenPageContent() {
 
             <div className="text-center" data-tutorial="ct-hand">
               <div className="text-game-text-muted text-xs mb-1">{t('yourHand')}</div>
-              <div className="flex gap-1 justify-center flex-wrap">
+              <div className={`flex justify-center ${viewportWidth >= 1024 ? 'flex-nowrap' : 'flex-wrap gap-1'}`}>
                 {(human?.cards ?? []).map((card, i) => (
                   <button
                     key={`hand-${i.toString()}`}
@@ -303,6 +318,7 @@ function ChineseTenPageContent() {
                       isHumanTurn && !choosing ? 'hover:-translate-y-2' : 'opacity-60',
                       showServerHint && state.hint?.cardIndex === i ? 'ring-2 ring-ds-warning' : '',
                     ].join(' ')}
+                    style={viewportWidth >= 1024 && i > 0 ? { marginLeft: -(cardWidth - 22) } : undefined}
                   >
                     {renderCard(card, `hand-c${i.toString()}`)}
                   </button>

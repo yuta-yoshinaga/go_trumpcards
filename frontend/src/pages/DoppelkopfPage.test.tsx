@@ -119,6 +119,27 @@ describe('DoppelkopfPage', () => {
     expect(screen.queryByText(/CPU 2 \[Kontra\]/)).not.toBeInTheDocument();
   });
 
+  it('keeps the team and announcement status compact on mobile', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    mockExec.mockResolvedValue(
+      makeDoppelkopfState({
+        canAnnounce: false,
+        youAreRe: true,
+        reAnnounced: true,
+      }),
+    );
+    const { unmount } = renderWithProviders(<DoppelkopfPage />);
+    const teamStatus = await screen.findByText(/あなたのチーム:/);
+    const status = teamStatus.parentElement;
+    expect(status).toHaveClass('flex', 'flex-wrap');
+    expect(status?.querySelectorAll('span')).toHaveLength(2);
+    expect(status).toHaveTextContent('あなたのチーム: Re');
+    expect(status).toHaveTextContent('宣言済み: Re');
+    unmount();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<DoppelkopfPage />);
@@ -229,11 +250,31 @@ describe('DoppelkopfPage', () => {
     renderWithProviders(<DoppelkopfPage />);
     const legend = await screen.findByTestId('dk-trump-legend');
     expect(legend).toBeInTheDocument();
-    expect(legend).toContainHTML('details');
-    expect(screen.getByText('切り札序列')).toBeInTheDocument();
+    expect(legend).not.toHaveAttribute('open');
+    expect(screen.getByText('ルール')).toBeInTheDocument();
+    expect(screen.getByText('切り札序列')).not.toBeVisible();
+    fireEvent.click(screen.getByText('ルール'));
+    expect(screen.getByText('切り札序列')).toBeVisible();
     // The strongest and weakest trumps appear in the ordering.
     expect(screen.getByText('♥10')).toBeInTheDocument();
     expect(screen.getByText('♦9')).toBeInTheDocument();
+  });
+
+  it('collapses player statistics on mobile and opens them on desktop', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    const mobile = renderWithProviders(<DoppelkopfPage />);
+    const mobileAccordion = await screen.findByTestId('cpu-accordion');
+    expect(mobileAccordion).not.toHaveAttribute('open');
+    expect(screen.getByText(/CPU 1:/)).not.toBeVisible();
+    mobile.unmount();
+
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    renderWithProviders(<DoppelkopfPage />);
+    const desktopAccordion = await screen.findByTestId('cpu-accordion');
+    expect(desktopAccordion).toHaveAttribute('open');
+    expect(screen.getByText(/CPU 1:/)).toBeVisible();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
   });
 
   it('rings trump cards in the hand and leaves fail cards unmarked', async () => {

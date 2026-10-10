@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -275,35 +276,37 @@ function FiveHundredPageContent() {
             </div>
 
             {/* CPU players */}
-            <div className="flex justify-center gap-6 flex-wrap">
-              {state.players
-                .filter((p) => !p.isHuman)
-                .map((p) => (
-                  <fieldset
-                    key={p.id}
-                    className="text-center border-0 p-0 min-w-0"
-                    aria-label={t('cpuHandAriaLabel', { player: tc('player.cpu', { id: p.id }), count: p.cardCount })}
-                  >
-                    <div className="text-xs text-ds-text-muted mb-1 flex items-center justify-center gap-1">
-                      <span>{tc('player.cpu', { id: p.id })}</span>
-                      <span>
-                        ({t('teamShort', { team: p.team })}) {p.trickCount}🂠
-                      </span>
-                      {p.isDeclarer && <span className="font-bold text-ds-warning">★</span>}
-                      {p.passed ? (
-                        <span className="opacity-60">{t('passed')}</span>
-                      ) : (
-                        p.bid && <span className="ml-1">{t('playerBid', { bid: formatBid(p.bid) })}</span>
-                      )}
-                    </div>
-                    <div className="flex gap-0.5 justify-center" aria-hidden="true">
-                      {Array.from({ length: Math.min(p.cardCount, 13) }, (_, i) => (
-                        <AnimatedCardBack key={i} width={cardWidth * 0.4} />
-                      ))}
-                    </div>
-                  </fieldset>
-                ))}
-            </div>
+            <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+              <div className="flex justify-center gap-6 flex-wrap sm:flex-nowrap">
+                {state.players
+                  .filter((p) => !p.isHuman)
+                  .map((p) => (
+                    <fieldset
+                      key={p.id}
+                      className="text-center border-0 p-0 min-w-0"
+                      aria-label={t('cpuHandAriaLabel', { player: tc('player.cpu', { id: p.id }), count: p.cardCount })}
+                    >
+                      <div className="text-xs text-ds-text-muted mb-1 flex items-center justify-center gap-1">
+                        <span>{tc('player.cpu', { id: p.id })}</span>
+                        <span>
+                          ({t('teamShort', { team: p.team })}) {p.trickCount}🂠
+                        </span>
+                        {p.isDeclarer && <span className="font-bold text-ds-warning">★</span>}
+                        {p.passed ? (
+                          <span className="opacity-60">{t('passed')}</span>
+                        ) : (
+                          p.bid && <span className="ml-1">{t('playerBid', { bid: formatBid(p.bid) })}</span>
+                        )}
+                      </div>
+                      <div className="flex gap-0.5 justify-center" aria-hidden="true">
+                        {Array.from({ length: Math.min(p.cardCount, 13) }, (_, i) => (
+                          <AnimatedCardBack key={i} width={cardWidth * 0.4} />
+                        ))}
+                      </div>
+                    </fieldset>
+                  ))}
+              </div>
+            </CpuAccordion>
 
             {/* Current trick */}
             <div className="py-3 bg-black/20 rounded-lg" data-tutorial="fh-trick">

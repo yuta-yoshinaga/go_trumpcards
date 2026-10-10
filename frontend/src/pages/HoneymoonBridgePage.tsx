@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { honeymoonbridgeApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -220,13 +221,15 @@ function HoneymoonBridgePageContent() {
             </div>
 
             {/* **前半と後半で意味が変わる。** 規則を先に出す。 */}
-            <div
+            <details
               className="mb-3 rounded bg-black/30 px-3 py-2 text-ds-text-primary text-center"
-              data-testid="hb-rule"
               data-tutorial="hb-rule"
             >
-              {t('header.rule')}
-            </div>
+              <summary className="cursor-pointer select-none">{t('header.rules')}</summary>
+              <div className="mt-1" data-testid="hb-rule">
+                {t('header.rule')}
+              </div>
+            </details>
 
             {/* **前半のトリックは得点にならない。** 山札の残りだけが意味を持つ。 */}
             {isDraw && (
@@ -263,53 +266,61 @@ function HoneymoonBridgePageContent() {
               </div>
             )}
 
-            <div className="flex flex-wrap justify-center gap-2 mb-4" data-tutorial="hb-seats">
-              {state.players.map((p) => (
-                <div
-                  key={p.id}
-                  className={`rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted ${
-                    (isHumanBidTurn || isHumanTurn) && p.id === state.currentPlayerIdx ? 'ring-2 ring-ds-accent' : ''
-                  }`}
-                  data-testid={`hb-seat-${p.id.toString()}`}
-                >
-                  <span className="text-ds-text-primary">
-                    {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
-                  </span>
-                  {(isHumanBidTurn || isHumanTurn) && p.id === state.currentPlayerIdx && (
-                    <span
-                      className="ml-1 text-ds-accent"
-                      aria-current="step"
-                      data-testid={`hb-turn-${p.id.toString()}`}
+            <div data-tutorial="hb-seats">
+              <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+                <div className="flex flex-wrap justify-center gap-2 mb-4">
+                  {state.players.map((p) => (
+                    <div
+                      key={p.id}
+                      className={`rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted ${
+                        (isHumanBidTurn || isHumanTurn) && p.id === state.currentPlayerIdx
+                          ? 'ring-2 ring-ds-accent'
+                          : ''
+                      }`}
+                      data-testid={`hb-seat-${p.id.toString()}`}
                     >
-                      {t('header.currentTurn')}
-                    </span>
-                  )}
-                  {/* **親は NextRound ごとに交代し、引き合いの最初のリードを決める。**
+                      <span className="text-ds-text-primary">
+                        {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
+                      </span>
+                      {(isHumanBidTurn || isHumanTurn) && p.id === state.currentPlayerIdx && (
+                        <span
+                          className="ml-1 text-ds-accent"
+                          aria-current="step"
+                          data-testid={`hb-turn-${p.id.toString()}`}
+                        >
+                          {t('header.currentTurn')}
+                        </span>
+                      )}
+                      {/* **親は NextRound ごとに交代し、引き合いの最初のリードを決める。**
                       落札者とは別の役なので、色を変えて並べる。 */}
-                  {p.id === state.dealerIdx && (
-                    <span className="ml-1 text-ds-warning" data-testid={`hb-dealer-${p.id.toString()}`}>
-                      {t('header.dealer')}
-                    </span>
-                  )}
-                  {p.id === state.declarerIdx && <span className="ml-1 text-ds-accent">{t('header.declarer')}</span>}
-                  {': '}
-                  <span className="text-ds-accent">
-                    {p.bidLevel > 0
-                      ? t('header.bid', { level: String(p.bidLevel), suit: suitSymbolAt(p.bidSuit, 'NT') })
-                      : t('header.noBid')}
-                  </span>
-                  {' / '}
-                  {t('header.took', { n: String(p.trickCount) })}
-                  {' / '}
-                  {t('header.score', { n: String(p.score) })}
-                  {(isDraw || state.phase === HoneymoonBridgePhase.PLAY) && (
-                    <>
+                      {p.id === state.dealerIdx && (
+                        <span className="ml-1 text-ds-warning" data-testid={`hb-dealer-${p.id.toString()}`}>
+                          {t('header.dealer')}
+                        </span>
+                      )}
+                      {p.id === state.declarerIdx && (
+                        <span className="ml-1 text-ds-accent">{t('header.declarer')}</span>
+                      )}
+                      {': '}
+                      <span className="text-ds-accent">
+                        {p.bidLevel > 0
+                          ? t('header.bid', { level: String(p.bidLevel), suit: suitSymbolAt(p.bidSuit, 'NT') })
+                          : t('header.noBid')}
+                      </span>
                       {' / '}
-                      {t('header.handCount', { n: String(p.cardCount) })}
-                    </>
-                  )}
+                      {t('header.took', { n: String(p.trickCount) })}
+                      {' / '}
+                      {t('header.score', { n: String(p.score) })}
+                      {(isDraw || state.phase === HoneymoonBridgePhase.PLAY) && (
+                        <>
+                          {' / '}
+                          {t('header.handCount', { n: String(p.cardCount) })}
+                        </>
+                      )}
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </CpuAccordion>
             </div>
 
             <div data-tutorial="hb-trick">
