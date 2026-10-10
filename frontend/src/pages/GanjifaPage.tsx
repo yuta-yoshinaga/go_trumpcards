@@ -250,14 +250,25 @@ function GanjifaPageContent() {
                   ))}
                 </div>
 
+                {humanPlayer && (
+                  <div className="mb-2 rounded bg-black/30 px-2 py-1 text-ds-text-muted text-sm">
+                    <div className="py-0.5" data-testid="ganjifa-human-player" data-tutorial="ganjifa-human-player">
+                      {playerName(humanPlayer.id, humanPlayer.isHuman)}: {t('cards', { count: humanPlayer.cardCount })}{' '}
+                      | {t('tricks', { count: humanPlayer.trickCount })}
+                    </div>
+                  </div>
+                )}
+
                 <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
                   <div className="mb-2 p-2 rounded bg-black/30">
-                    {state.players.map((p) => (
-                      <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                        {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                        {t('tricks', { count: p.trickCount })}
-                      </div>
-                    ))}
+                    {state.players
+                      .filter((p) => !p.isHuman)
+                      .map((p) => (
+                        <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
+                          {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                          {t('tricks', { count: p.trickCount })}
+                        </div>
+                      ))}
                   </div>
                 </CpuAccordion>
 

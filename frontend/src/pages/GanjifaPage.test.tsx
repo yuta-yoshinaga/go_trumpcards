@@ -184,6 +184,10 @@ describe('GanjifaPage', () => {
     const cpuDetails = await screen.findByTestId('cpu-accordion');
     expect(cpuDetails).not.toHaveAttribute('open');
     expect(within(cpuDetails).getByText(/CPU 1: 32枚/)).not.toBeVisible();
+    const humanDetails = screen.getByTestId('ganjifa-human-player');
+    expect(humanDetails).toBeVisible();
+    expect(humanDetails).toHaveTextContent('あなた: 32枚 | 0トリック');
+    expect(cpuDetails).not.toContainElement(humanDetails);
     expect(screen.getByText('あなた: 得点: 0')).toBeVisible();
   });
 
