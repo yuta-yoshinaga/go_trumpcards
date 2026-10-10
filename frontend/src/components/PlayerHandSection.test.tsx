@@ -3,6 +3,21 @@ import { describe, expect, it, vi } from 'vitest';
 import type { Card } from '../types/card';
 import { PlayerHandSection } from './PlayerHandSection';
 
+let observedHandWidth = 640;
+class MockResizeObserver {
+  private callback: ResizeObserverCallback;
+  constructor(callback: ResizeObserverCallback) {
+    this.callback = callback;
+  }
+  observe(target: Element) {
+    Object.defineProperty(target, 'clientWidth', { configurable: true, value: observedHandWidth });
+    this.callback([], this as unknown as ResizeObserver);
+  }
+  disconnect() {}
+  unobserve() {}
+}
+vi.stubGlobal('ResizeObserver', MockResizeObserver);
+
 /** Helper to create N cards for testing. */
 function makeCards(n: number): Card[] {
   const suits: Card['design'][] = ['SPADE', 'HEART', 'DIAMOND', 'CLOVER'];
@@ -46,6 +61,40 @@ describe('PlayerHandSection (desktop)', () => {
     expect(screen.getByRole('button')).not.toHaveAccessibleName(/ \([^)]*\)$/);
   });
 
+  it('includes the trump label and role badge in the accessible name', () => {
+    render(
+      <PlayerHandSection
+        {...baseProps}
+        humanPlayer={{ cards: [{ design: 'SPADE', value: 13 }] }}
+        isMobile={false}
+        trumpIndices={[0]}
+        trumpAccessibleLabel="切り札"
+        cardBadgeFor={() => ({ glyph: 'M', title: 'マタドール' })}
+      />,
+    );
+    expect(screen.getByRole('button')).toHaveAccessibleName(/♠ K \(切り札\) \(マタドール\)/);
+    expect(screen.getByText('M')).toBeInTheDocument();
+  });
+
+  it('renders legal cards with the success ring', () => {
+    render(<PlayerHandSection {...baseProps} isMobile={false} legalIndices={[0]} />);
+    expect(screen.getAllByRole('button')[0]).toHaveClass('ring-2', 'ring-ds-success');
+    expect(screen.getAllByRole('button')[1]).not.toHaveClass('ring-ds-success');
+  });
+
+  it('uses the flexible wrapped layout below desktop width', () => {
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 800 });
+    window.dispatchEvent(new Event('resize'));
+    const { container } = render(<PlayerHandSection {...baseProps} isMobile={false} />);
+    const hand = container.querySelector('[data-tutorial="ht-player-hand"]');
+    expect(hand).toHaveClass('flex', 'flex-wrap');
+    expect(hand).not.toHaveClass('flex-col');
+    expect(hand?.firstElementChild).toHaveClass('flex-wrap', 'gap-1');
+    expect(screen.getAllByRole('button')[0].style.marginLeft).toBe('');
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1200 });
+    window.dispatchEvent(new Event('resize'));
+  });
+
   it('renders one button per card', () => {
     render(<PlayerHandSection {...baseProps} isMobile={false} />);
     expect(screen.getAllByRole('button')).toHaveLength(5);
@@ -76,11 +125,67 @@ describe('PlayerHandSection (desktop)', () => {
     expect(container.querySelector('[data-tutorial="sp-player-hand"]')).toBeInTheDocument();
   });
 
-  it('applies lg:flex-nowrap and lg:overflow-x-auto classes for desktop single-row layout', () => {
-    const { container } = render(<PlayerHandSection {...baseProps} isMobile={false} />);
+  it('overlaps cards only when needed on wide desktop layouts', () => {
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1050 });
+    window.dispatchEvent(new Event('resize'));
+    const { container, rerender } = render(
+      <PlayerHandSection {...baseProps} humanPlayer={{ cards: makeCards(30) }} isMobile={false} />,
+    );
     const hand = container.querySelector('[data-tutorial="ht-player-hand"]');
-    expect(hand).toHaveClass('lg:flex-nowrap');
-    expect(hand).toHaveClass('lg:overflow-x-auto');
+    expect(hand).not.toHaveClass('lg:overflow-x-auto');
+    expect(container.querySelectorAll('[data-hand-card-index="0"]')).toHaveLength(1);
+    expect(screen.getAllByRole('button')[1].style.marginLeft).toMatch(/-/);
+    rerender(<PlayerHandSection {...baseProps} isMobile={false} />);
+    expect(screen.getAllByRole('button')[1].style.marginLeft).toBe('4px');
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1200 });
+    window.dispatchEvent(new Event('resize'));
+  });
+
+  it('splits into two desktop rows when 28px exposure cannot fit one row', () => {
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1050 });
+    window.dispatchEvent(new Event('resize'));
+    const { container } = render(
+      <PlayerHandSection {...baseProps} humanPlayer={{ cards: makeCards(60) }} isMobile={false} />,
+    );
+    const hand = container.querySelector('[data-tutorial="ht-player-hand"]');
+    expect(hand?.children.length).toBeGreaterThan(2);
+    const rows = hand?.children;
+    expect(rows?.[0].querySelectorAll('button').length).toBeLessThanOrEqual(22);
+    expect(rows?.[0].querySelector('button:nth-child(2)')?.getAttribute('style')).toContain('margin-left');
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1200 });
+    window.dispatchEvent(new Event('resize'));
+  });
+
+  it('puts the remainder card in the first of two rows', () => {
+    observedHandWidth = 500;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });
+    window.dispatchEvent(new Event('resize'));
+    const { container } = render(
+      <PlayerHandSection {...baseProps} humanPlayer={{ cards: makeCards(19) }} isMobile={false} />,
+    );
+    const rows = container.querySelectorAll('[data-tutorial="ht-player-hand"] > div');
+    expect(rows).toHaveLength(2);
+    expect(rows[0].querySelectorAll('button')).toHaveLength(10);
+    expect(rows[1].querySelectorAll('button')).toHaveLength(9);
+    observedHandWidth = 640;
+  });
+
+  it('uses the hand container width for overlap even when the window is wider', () => {
+    observedHandWidth = 500;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });
+    const { container } = render(
+      <PlayerHandSection {...baseProps} humanPlayer={{ cards: makeCards(30) }} isMobile={false} />,
+    );
+    const rows = container.querySelectorAll('[data-tutorial="ht-player-hand"] > div');
+    expect(rows.length).toBe(2);
+    for (const row of rows) {
+      const buttons = Array.from(row.querySelectorAll('button'));
+      const totalWidth =
+        buttons.length * 46 +
+        buttons.slice(1).reduce((sum, button) => sum + Number.parseFloat(button.style.marginLeft), 0);
+      expect(totalWidth).toBeLessThanOrEqual(500);
+    }
+    observedHandWidth = 640;
   });
 
   it('appends each card status to its accessible name when provided', () => {
