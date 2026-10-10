@@ -12,7 +12,7 @@ import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -88,6 +88,7 @@ export const BostonPage = withTutorial(BostonPageContent, 'boston', BOSTON_TUTOR
 
 /** Inner content of the Boston page, wrapped by TutorialProvider. */
 function BostonPageContent() {
+  const isMobile = useIsMobile();
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('boston');
   const { state, loading, error, exec, retry } = useGameApi(bostonApi.exec);
@@ -235,8 +236,17 @@ function BostonPageContent() {
             </div>
 
             {/* The ladder — the one thing the ordering of this game turns on. */}
-            <div className="mb-2 p-2 rounded bg-black/20 text-xs" data-testid="boston-ladder">
-              <div className="mb-1 text-ds-text-primary">{t('ladderTitle')}</div>
+            <details
+              className="mb-2 p-2 rounded bg-black/20 text-xs"
+              data-testid="boston-ladder"
+              open={!isMobile || undefined}
+            >
+              <summary
+                className="mb-1 cursor-pointer select-none text-ds-text-primary"
+                data-testid="boston-ladder-summary"
+              >
+                {t('ladderSummary')}
+              </summary>
               <ol className="flex flex-col gap-0.5">
                 {state.bidOptions.map((o) => (
                   <li
@@ -250,7 +260,7 @@ function BostonPageContent() {
                 ))}
               </ol>
               <div className="mt-1 text-ds-text-muted">{t('ladderNote')}</div>
-            </div>
+            </details>
 
             {/* **相方がどの段で宣言し、誰がどこで降りたかは公開情報で、続けるか降りるかの
                 判断そのもの。**パス (level=0) も区別して並べる (#7388)。 */}

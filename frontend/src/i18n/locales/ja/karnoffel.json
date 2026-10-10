@@ -6,6 +6,7 @@
   "team": "チーム{{n}}",
   "chosenSuit": "選ばれたスート",
   "chosenNote": "【表向きに配られた4枚のうち最も低い札】がスートを決めます。",
+  "chosenNoteSummary": "切札の決め方",
   "upCard": "表",
   "playersTitle": "プレイヤー",
   "hiddenHand": "非公開 {{count}}枚",
