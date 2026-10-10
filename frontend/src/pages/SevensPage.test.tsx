@@ -344,6 +344,9 @@ describe('SevensPage', () => {
     renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /パス/ })).toBeDisabled());
     expect(screen.getByText('パスできる回数の上限に達しました')).toBeInTheDocument();
+    expect(within(screen.getByTestId('game-footer-actions')).getByTestId('pass-disabled-reason')).toHaveTextContent(
+      'パスできる回数の上限に達しました',
+    );
     expect(screen.getByRole('button', { name: /パス/ })).toHaveAttribute('title', 'パスできる回数の上限に達しました');
   });
 

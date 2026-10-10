@@ -203,6 +203,9 @@ describe('PanPage', () => {
       expect(within(actions).getByRole('button', { name: '山札から引く' })).toBeInTheDocument();
       expect(within(actions).getByRole('button', { name: '捨て札から引く' })).toBeInTheDocument();
       expect(actions.querySelector('[data-tutorial="pan-draw-area"]')).toBeInTheDocument();
+      expect(
+        actions.querySelector('[data-tutorial="pan-draw-area"] [data-testid="pan-draw-pile-count"]'),
+      ).toBeInTheDocument();
     });
   });
 

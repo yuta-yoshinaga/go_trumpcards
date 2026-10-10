@@ -467,16 +467,16 @@ function PanPageContent() {
           <GameFooter
             className={`${gameTheme.pan.footer} px-4 py-2.5`}
             actions={
-              <div className="flex gap-2 items-center justify-center flex-wrap">
-                {isDrawPhase && isHumanTurn && (
-                  <>
-                    <span className="text-ds-text-muted text-sm" data-testid="pan-draw-pile-count">
-                      {t('drawPile', { count: state.drawPileCount })}
-                    </span>
-                    {state.drawPileCount === 0 && (
-                      <span className="text-ds-warning text-sm">{t('drawStockEmpty')}</span>
-                    )}
-                    <div className="flex gap-2" data-tutorial="pan-draw-area">
+              (isDrawPhase && isHumanTurn) || (isPlayPhase && isHumanTurn) || isRoundEnd ? (
+                <div className="flex gap-2 items-center justify-center flex-wrap">
+                  {isDrawPhase && isHumanTurn && (
+                    <div className="flex gap-2 items-center" data-tutorial="pan-draw-area">
+                      <span className="text-ds-text-muted text-sm" data-testid="pan-draw-pile-count">
+                        {t('drawPile', { count: state.drawPileCount })}
+                      </span>
+                      {state.drawPileCount === 0 && (
+                        <span className="text-ds-warning text-sm">{t('drawStockEmpty')}</span>
+                      )}
                       <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
                         {t('drawStockButton')}
                       </button>
@@ -489,37 +489,37 @@ function PanPageContent() {
                         {t('drawDiscardButton')}
                       </button>
                     </div>
-                  </>
-                )}
-                {isPlayPhase && isHumanTurn && (
-                  <>
-                    <button
-                      type="button"
-                      className={btnPrimary}
-                      onClick={handleMeld}
-                      disabled={loading || selectedCardIndices.length < 3}
-                      data-testid="pan-meld-button"
-                    >
-                      {t('meldButton')}
+                  )}
+                  {isPlayPhase && isHumanTurn && (
+                    <>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={handleMeld}
+                        disabled={loading || selectedCardIndices.length < 3}
+                        data-testid="pan-meld-button"
+                      >
+                        {t('meldButton')}
+                      </button>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={handleDiscard}
+                        disabled={loading || selectedCardIndices.length !== 1}
+                        data-tutorial="pan-discard-button"
+                        data-testid="pan-discard-button"
+                      >
+                        {t('discardButton')}
+                      </button>
+                    </>
+                  )}
+                  {isRoundEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                      {t('nextRound')}
                     </button>
-                    <button
-                      type="button"
-                      className={btnPrimary}
-                      onClick={handleDiscard}
-                      disabled={loading || selectedCardIndices.length !== 1}
-                      data-tutorial="pan-discard-button"
-                      data-testid="pan-discard-button"
-                    >
-                      {t('discardButton')}
-                    </button>
-                  </>
-                )}
-                {isRoundEnd && (
-                  <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                    {t('nextRound')}
-                  </button>
-                )}
-              </div>
+                  )}
+                </div>
+              ) : null
             }
           >
             {humanPlayer && meldCandidates.length > 0 && (

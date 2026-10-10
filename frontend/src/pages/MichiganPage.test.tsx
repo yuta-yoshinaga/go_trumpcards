@@ -254,6 +254,9 @@ describe('MichiganPage', () => {
     const actions = await screen.findByTestId('game-footer-actions');
     expect(within(actions).getByRole('button', { name: '賭ける' })).toBeInTheDocument();
     expect(within(actions).getByRole('button', { name: '♥ A の賭け金 2 チップから 1 枚減らす' })).toBeInTheDocument();
+    expect(
+      screen.getByTestId('game-footer-content').querySelector('[data-tutorial="michigan-action-buttons"]'),
+    ).toBeInTheDocument();
     expect(screen.getByTestId('game-footer-content')).toHaveTextContent('4 つのブードル');
   });
 

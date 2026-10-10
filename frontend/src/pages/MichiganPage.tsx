@@ -536,7 +536,7 @@ function MichiganPageContent() {
 
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2" data-tutorial="michigan-action-buttons">
               {isPlayPhase && isHumanTurn && !isGameEnd && (
                 <div className="text-ds-text-muted text-sm">{t('playPrompt')}</div>
               )}

@@ -505,6 +505,15 @@ function SevensPageContent() {
                     {tc('button.cancel')}
                   </button>
                 )}
+                {passDisabledReason && (
+                  <p
+                    id="pass-disabled-reason"
+                    data-testid="pass-disabled-reason"
+                    className="w-full text-center text-xs text-ds-text-muted"
+                  >
+                    {passDisabledReason}
+                  </p>
+                )}
               </div>
             }
           >
@@ -551,15 +560,6 @@ function SevensPageContent() {
                 dataTutorial="sv-reset-button"
                 className="min-w-[90px]"
               />
-              {passDisabledReason && (
-                <p
-                  id="pass-disabled-reason"
-                  data-testid="pass-disabled-reason"
-                  className="text-xs text-ds-text-muted mt-1"
-                >
-                  {passDisabledReason}
-                </p>
-              )}
             </div>
             <CardNavShortcutsPanel directPlay data-testid="sevens-kbd-shortcuts" />
           </GameFooter>
