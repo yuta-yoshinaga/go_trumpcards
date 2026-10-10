@@ -25,6 +25,24 @@ beforeEach(() => {
 });
 
 describe('HorsePage', () => {
+  it('resolves betting footer translations in Eight-Game Mix', async () => {
+    mockEightExec.mockResolvedValue(
+      makeHorseState({ variant: 1, tablePhase: 1, toCall: 25, smallBlind: 5, bigBlind: 10 }),
+    );
+    renderWithProviders(
+      <TutorialProvider config={{ gameName: 'eightgame', steps: [] }}>
+        <HorsePageContent gameKey="eightgame" />
+      </TutorialProvider>,
+    );
+
+    expect(await screen.findByTestId('ho-forced-bets')).toHaveTextContent('スモールブラインド 5、ビッグブラインド 10');
+    expect(screen.getByTestId('ho-forced-bets')).not.toHaveTextContent(/forcedBets\.|listSeparator/);
+    expect(screen.getByTestId('ho-action-context')).toHaveTextContent('プリフロップ · ベッティング手番');
+    expect(screen.getByTestId('ho-action-context')).not.toHaveTextContent('action.betting');
+    expect(screen.getByRole('button', { name: /コール/ })).toHaveTextContent('25 チップ');
+    expect(document.body).not.toHaveTextContent('callAmount');
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<HorsePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
