@@ -405,10 +405,11 @@ function NapPageContent() {
 
           {/* Footer */}
           <GameFooter
+            dataTutorial="nap-action-buttons"
             className={`${gameTheme.nap.footer} px-4 py-2.5`}
             actions={
               (isHumanBidTurn && isBidPhase) || canPlay || isTrickEnd || isRoundEnd ? (
-                <div className="flex flex-wrap gap-2 items-center" data-tutorial="nap-action-buttons">
+                <div className="flex flex-wrap gap-2 items-center">
                   {isBidPhase &&
                     isHumanBidTurn &&
                     BIDS.map((b) => {

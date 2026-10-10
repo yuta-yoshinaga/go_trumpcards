@@ -124,6 +124,13 @@ describe('NapPage', () => {
     expect(within(actions).getByTestId('bid-5')).toBeInTheDocument();
   });
 
+  it('keeps the tutorial action anchor available on a CPU turn', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<NapPage />);
+    const footerContent = await screen.findByTestId('game-footer-content');
+    expect(footerContent.closest('footer')).toHaveAttribute('data-tutorial', 'nap-action-buttons');
+  });
+
   it('keeps every hand card unavailable during the bidding phase', async () => {
     renderWithProviders(<NapPage />);
 

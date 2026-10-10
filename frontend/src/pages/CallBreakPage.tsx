@@ -458,13 +458,14 @@ function CallBreakPageContent() {
           </div>
 
           <GameFooter
+            dataTutorial="cb-play-button"
             className={`${gameTheme.callbreak.footer} px-4 py-2.5`}
             actions={
               isHumanBidTurn || isHumanTurn || isTrickEnd || isRoundEnd ? (
-                <div className="flex gap-2 items-center" data-tutorial="cb-play-button">
+                <div className="flex gap-2 items-center">
                   {isHumanBidTurn && (
                     <button type="button" className={btnPrimary} onClick={() => handleBid(bidValue)} disabled={loading}>
-                      {t('bidButton')}
+                      {t('bidButtonSelected', { n: bidValue })}
                     </button>
                   )}
                   {isHumanTurn && (

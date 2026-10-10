@@ -24,13 +24,14 @@ test.describe('Nap E2E', () => {
       .or(actions.getByRole('button', { name: '出す' }))
       .or(actions.getByRole('button', { name: '次のトリック' }))
       .or(actions.getByRole('button', { name: '次のラウンド' }))
+      .or(resetButton)
       .first();
     await expect(anyControl).toBeVisible({ timeout: TIMEOUT_GAME_LOOP });
 
     // If a bid button is offered, place a Pass to progress the bidding round.
     const passButton = actions.getByTestId('bid-0');
     if (await isVisibleWithin(passButton, TIMEOUT_TRANSITION)) {
-      await passButton.click({ timeout: TIMEOUT_TRANSITION }).catch(() => {});
+      await passButton.click({ timeout: TIMEOUT_TRANSITION });
       await waitForLoaded(page);
     }
 

@@ -128,6 +128,20 @@ describe('CallBreakPage', () => {
     });
   });
 
+  it('keeps the tutorial action anchor available on a CPU bid turn and labels the selected bid', async () => {
+    mockExec.mockResolvedValue(bidPhaseCpuTurnState);
+    const cpuTurn = renderWithProviders(<CallBreakPage />);
+    const footer = await screen.findByTestId('game-footer-content');
+    expect(footer.closest('footer')).toHaveAttribute('data-tutorial', 'cb-play-button');
+    cpuTurn.unmount();
+
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<CallBreakPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ビッド 1' })).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('bid-option-5'));
+    expect(screen.getByRole('button', { name: 'ビッド 5' })).toBeInTheDocument();
+  });
+
   // **バッグの式はドメインの GetBags() が唯一の出どころ (#4752)。**以前はこの
   // ページが bid と trickCount から自前で組み立てており、CUI 側と二重化していた。
   // ここで確かめるのは「サーバーの値をそのまま出すこと」— わざと式と矛盾する
@@ -151,7 +165,7 @@ describe('CallBreakPage', () => {
     renderWithProviders(<CallBreakPage />);
     await waitFor(() => {
       expect(
-        within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: 'ビッド' }),
+        within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: 'ビッド 1' }),
       ).toBeInTheDocument();
     });
     // 13 selectable bid options, defaulting to 1 pressed.
@@ -184,7 +198,7 @@ describe('CallBreakPage', () => {
     mockExec.mockImplementation((command) =>
       Promise.resolve(command === 'nextround' ? nextRoundBidState : roundEndState),
     );
-    fireEvent.click(screen.getByRole('button', { name: 'ビッド' }));
+    fireEvent.click(screen.getByRole('button', { name: 'ビッド 5' }));
     await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
     fireEvent.click(screen.getByRole('button', { name: '次のラウンド' }));
     await waitFor(() => expect(screen.getByTestId('bid-option-1')).toHaveAttribute('aria-pressed', 'true'));
@@ -210,7 +224,7 @@ describe('CallBreakPage', () => {
   it('calls bid command when bid button is clicked', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<CallBreakPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'ビッド' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ビッド 1' })).toBeInTheDocument());
 
     // Select bid 5 from the button group.
     fireEvent.click(screen.getByTestId('bid-option-5'));
@@ -220,7 +234,7 @@ describe('CallBreakPage', () => {
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(playPhaseState);
-    fireEvent.click(screen.getByRole('button', { name: 'ビッド' }));
+    fireEvent.click(screen.getByRole('button', { name: 'ビッド 5' }));
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', 5));
   });
