@@ -9,7 +9,7 @@ test.describe('Poch E2E', () => {
     // pochen being a comparison rather than a declaration are the two rules a
     // player gets wrong.
     const rules = page.getByTestId('poch-rules');
-    if (!(await rules.getAttribute('open'))) {
+    if ((await rules.getAttribute('open')) === null) {
       await rules.locator('summary').click();
     }
     await expect(rules.getByText(/めくり札と同じスート/)).toBeVisible();

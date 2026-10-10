@@ -275,7 +275,7 @@ function GoofspielPageContent() {
             {/* **残り札は全員分を公開。** 使った札は場に出るので隠せていません。 */}
             {human && (
               <div
-                className={`mb-2 rounded bg-black/30 px-3 py-2${human.revealedBid && highestBidValue === human.revealedBid.value ? ' border-2 border-ds-accent' : ''}`}
+                className={`mb-2 rounded bg-ds-surface px-3 py-2${human.revealedBid && highestBidValue === human.revealedBid.value ? ' border-2 border-ds-accent' : ''}`}
                 data-testid={`gs-seat-${human.id.toString()}`}
               >
                 <div className="text-sm text-ds-text-muted">

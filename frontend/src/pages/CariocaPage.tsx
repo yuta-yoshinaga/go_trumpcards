@@ -406,7 +406,7 @@ function CariocaPageContent() {
                     key={p.id}
                     className={`p-3 rounded border ${
                       state.currentPlayerIdx === p.id ? 'border-ds-warning' : 'border-white/30'
-                    } text-white text-sm bg-black/20`}
+                    } text-white text-sm bg-ds-surface`}
                   >
                     <div className="flex justify-between font-semibold">
                       <span>

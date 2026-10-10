@@ -98,14 +98,14 @@ describe('PopeJoanPage', () => {
     expect(seatRow?.classList.contains('sm:flex-nowrap')).toBe(true);
   });
 
-  it('keeps CPU seats open on desktop', async () => {
+  it('keeps CPU seats collapsed on desktop', async () => {
     mobileState.isMobile = false;
     renderWithProviders(<PopeJoanPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     const cpuDetails = screen.getByTestId('cpu-accordion');
-    expect(cpuDetails).toHaveAttribute('open');
+    expect(cpuDetails).not.toHaveAttribute('open');
     const cpuHands = cpuDetails.querySelector('[role="img"]');
-    expect(cpuHands).toBeVisible();
+    expect(cpuHands).not.toBeVisible();
   });
 
   it('resets on mount', async () => {

@@ -25,7 +25,9 @@ test.describe('Pasur E2E', () => {
   test('shows every seat', async ({ page }) => {
     await navigateTo(page, '/pasur');
     await expect(page.getByTestId('ps-seat-0')).toBeVisible({ timeout: TIMEOUT_TRANSITION });
-    await page.getByTestId('cpu-accordion').locator('summary').click();
+    // Open on desktop already; only expand it where it starts closed (phones).
+    const cpuAccordion = page.getByTestId('cpu-accordion');
+    if ((await cpuAccordion.getAttribute('open')) === null) await cpuAccordion.locator('summary').click();
     for (const id of [1, 2, 3]) {
       await expect(page.getByTestId(`ps-seat-${id}`)).toBeVisible({ timeout: TIMEOUT_TRANSITION });
     }

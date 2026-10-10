@@ -64,13 +64,16 @@ describe('CpuAccordion', () => {
     expect(details).not.toHaveAttribute('open');
   });
 
-  it('forwards data-tutorial attribute', () => {
+  it('places the data-tutorial target on the always-visible summary', () => {
     render(
       <CpuAccordion playerCount={3} dataTutorial="oh-cpu-area">
         <div>content</div>
       </CpuAccordion>,
     );
     const details = screen.getByTestId('cpu-accordion');
-    expect(details).toHaveAttribute('data-tutorial', 'oh-cpu-area');
+    expect(details).not.toHaveAttribute('data-tutorial');
+    const summary = details.querySelector('summary');
+    expect(summary).toHaveAttribute('data-tutorial', 'oh-cpu-area');
+    expect(summary).toBeVisible();
   });
 });

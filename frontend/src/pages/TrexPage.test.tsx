@@ -102,13 +102,16 @@ describe('TrexPage', () => {
     expect(seatRow?.classList.contains('sm:flex-nowrap')).toBe(true);
   });
 
-  it('keeps CPU seats open on desktop so the tutorial target is visible', async () => {
+  it('keeps CPU seats collapsed on desktop and places the tutorial target on the visible summary', async () => {
     mobileState.isMobile = false;
     renderWithProviders(<TrexPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     const cpuDetails = screen.getByTestId('cpu-accordion');
-    expect(cpuDetails).toHaveAttribute('open');
-    expect(cpuDetails.querySelector('[role="img"]')).toBeVisible();
+    expect(cpuDetails).not.toHaveAttribute('open');
+    const tutorialTarget = cpuDetails.querySelector('[data-tutorial="tx-seats"]');
+    expect(tutorialTarget?.tagName).toBe('SUMMARY');
+    expect(tutorialTarget).toBeVisible();
+    expect(cpuDetails.querySelector('[role="img"]')).not.toBeVisible();
   });
 
   it('resets on mount', async () => {
