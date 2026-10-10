@@ -335,14 +335,27 @@ function ScartoPageContent() {
                 </details>
 
                 {/* Players: cards / tricks / captured points */}
+                {humanPlayer && (
+                  <section
+                    className="mb-2 px-2 py-1 rounded bg-black/30 text-ds-text-muted text-sm"
+                    data-testid="scarto-human-seat"
+                    data-tutorial="scarto-human-seat"
+                    aria-label={`${playerName(humanPlayer.id, true)}: ${t('cards', { count: humanPlayer.cardCount })} | ${t('tricks', { count: humanPlayer.trickCount })} | ${t('points', { points: humanPlayer.cardPoints })}`}
+                  >
+                    {playerName(humanPlayer.id, true)}: {t('cards', { count: humanPlayer.cardCount })} |{' '}
+                    {t('tricks', { count: humanPlayer.trickCount })} | {t('points', { points: humanPlayer.cardPoints })}
+                  </section>
+                )}
                 <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
                   <div className="mb-2 p-2 rounded bg-black/30 flex flex-wrap gap-x-4">
-                    {state.players.map((p) => (
-                      <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                        {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                        {t('tricks', { count: p.trickCount })} | {t('points', { points: p.cardPoints })}
-                      </div>
-                    ))}
+                    {state.players
+                      .filter((p) => !p.isHuman)
+                      .map((p) => (
+                        <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
+                          {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                          {t('tricks', { count: p.trickCount })} | {t('points', { points: p.cardPoints })}
+                        </div>
+                      ))}
                   </div>
                 </CpuAccordion>
 

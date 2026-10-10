@@ -487,8 +487,15 @@ describe('ScartoPage', () => {
     renderWithProviders(<ScartoPage />);
     await screen.findByTestId('scarto-provisional');
     const cpuAccordion = screen.getByTestId('cpu-accordion');
+    const humanSeat = screen.getByTestId('scarto-human-seat');
     expect(cpuAccordion).not.toHaveAttribute('open');
+    expect(humanSeat).toBeVisible();
+    expect(humanSeat).toHaveAttribute('data-tutorial', 'scarto-human-seat');
+    expect(humanSeat).toHaveAttribute('aria-label', 'あなた: 25枚 | 0トリック | 0点');
+    expect(cpuAccordion).not.toContainElement(humanSeat);
+    expect(humanSeat).toHaveTextContent('あなた: 25枚 | 0トリック | 0点');
     expect(within(cpuAccordion).queryByText(/CPU 1: 25枚/)).not.toBeVisible();
+    expect(within(cpuAccordion).queryByText(/あなた:/)).not.toBeInTheDocument();
     fireEvent.click(within(cpuAccordion).getByText('CPU対戦相手 (2)'));
     expect(within(cpuAccordion).getByText(/CPU 1: 25枚/)).toBeVisible();
   });
