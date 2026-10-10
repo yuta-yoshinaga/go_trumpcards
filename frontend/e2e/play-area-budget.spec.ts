@@ -4,7 +4,8 @@ import { navigateTo } from './helpers';
 /**
  * Representative play-area scroll budgets at 375×667 (#11613). Each limit is the
  * midpoint between the page's overflow before its fix (PRs #11622, #11623, #11624,
- * #11626) and the worst overflow measured after it; the measurements are in #11627.
+ * #11626, then #11636, #11637, #11638) and the worst overflow measured after it; the
+ * measurements are in #11627 and in the PR that adds each later page.
  * These heights depend on the shuffled deal (#4373), so one load per page is
  * intentional and the limits leave room for deal variation.
  *
@@ -25,6 +26,14 @@ const BUDGETS: ReadonlyArray<{ path: string; maxOverflow: number }> = [
   { path: '/minibridge', maxOverflow: 493 },
   { path: '/trex', maxOverflow: 443 },
   { path: '/marriage', maxOverflow: 550 },
+  { path: '/desmoche', maxOverflow: 439 },
+  { path: '/karnoffel', maxOverflow: 416 },
+  { path: '/jass', maxOverflow: 407 },
+  { path: '/crazyquilt', maxOverflow: 375 },
+  { path: '/openfacechinese', maxOverflow: 373 },
+  { path: '/slyfox', maxOverflow: 332 },
+  { path: '/nainjaune', maxOverflow: 314 },
+  { path: '/boston', maxOverflow: 307 },
 ];
 
 for (const { path, maxOverflow } of BUDGETS) {
