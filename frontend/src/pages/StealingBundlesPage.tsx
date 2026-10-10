@@ -187,6 +187,40 @@ function StealingBundlesPageContent() {
     return state.winnerIdx === 0 ? t('result.you', { n }) : t('result.cpu', { name: seatName(state.winnerIdx), n });
   })();
 
+  const renderSeat = (p: (typeof state.players)[number]) => (
+    <div
+      key={p.id}
+      className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
+      data-testid={`sb-seat-${p.id.toString()}`}
+    >
+      <span className="text-ds-text-primary">{seatName(p.id)}</span>
+      {p.id === state.lastCaptureIdx && (
+        <span className="ml-1 text-ds-warning" data-testid={`sb-capture-${p.id.toString()}`}>
+          {state.lastCaptureKind === 'steal'
+            ? t('header.lastCaptureSteal', { name: seatName(state.lastCaptureVictimIdx) })
+            : t('header.lastCaptureTake')}
+        </span>
+      )}
+      {': '}
+      <span>{t('header.cards', { n: String(p.cardCount) })}</span>
+      {' / '}
+      <span className="text-ds-accent">{t('header.bundle', { n: String(p.bundleSize) })}</span>
+      {' / '}
+      <span data-testid={`sb-bundle-gap-${p.id.toString()}`}>
+        {p.bundleSize === maxBundleSize
+          ? leadersCount > 1
+            ? t('header.tiedLead')
+            : t('header.lead')
+          : t('header.bundleGap', { count: maxBundleSize - p.bundleSize })}
+      </span>
+      {' / '}
+      <span>
+        {t('header.bundleTop')}:{' '}
+        {p.bundleTop ? <span className="text-ds-accent">{cardAlt(p.bundleTop)}</span> : t('header.bundleEmpty')}
+      </span>
+    </div>
+  );
+
   return (
     <GamePageShell
       title={tc('nav.stealingbundles')}
@@ -249,51 +283,15 @@ function StealingBundlesPageContent() {
               )}
             </div>
 
-            {/* **束の一番上は全員に見えます。** そこが狙われる場所だからです。 */}
-            <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length} dataTutorial="sb-seats">
-              <div className="flex flex-wrap justify-center gap-2 mb-4">
-                {state.players.map((p) => (
-                  <div
-                    key={p.id}
-                    className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
-                    data-testid={`sb-seat-${p.id.toString()}`}
-                  >
-                    <span className="text-ds-text-primary">{seatName(p.id)}</span>
-                    {/* **盗みは相手の束を丸ごと消す。** 場から取っただけの手と
-                      同じ印にすると、痕跡の残らないこの盤面では区別が付かない
-                      (#5767)。 */}
-                    {p.id === state.lastCaptureIdx && (
-                      <span className="ml-1 text-ds-warning" data-testid={`sb-capture-${p.id.toString()}`}>
-                        {state.lastCaptureKind === 'steal'
-                          ? t('header.lastCaptureSteal', { name: seatName(state.lastCaptureVictimIdx) })
-                          : t('header.lastCaptureTake')}
-                      </span>
-                    )}
-                    {': '}
-                    <span>{t('header.cards', { n: String(p.cardCount) })}</span>
-                    {' / '}
-                    <span className="text-ds-accent">{t('header.bundle', { n: String(p.bundleSize) })}</span>
-                    {' / '}
-                    <span data-testid={`sb-bundle-gap-${p.id.toString()}`}>
-                      {p.bundleSize === maxBundleSize
-                        ? leadersCount > 1
-                          ? t('header.tiedLead')
-                          : t('header.lead')
-                        : t('header.bundleGap', { count: maxBundleSize - p.bundleSize })}
-                    </span>
-                    {' / '}
-                    <span>
-                      {t('header.bundleTop')}:{' '}
-                      {p.bundleTop ? (
-                        <span className="text-ds-accent">{cardAlt(p.bundleTop)}</span>
-                      ) : (
-                        t('header.bundleEmpty')
-                      )}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </CpuAccordion>
+            {/* **自分の席は常に見せ、CPU 席だけを折りたたみます。** */}
+            <div data-tutorial="sb-seats">
+              <div className="flex justify-center mb-2">{human && renderSeat(human)}</div>
+              <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+                <div className="flex flex-wrap justify-center gap-2 mb-4">
+                  {state.players.filter((p) => !p.isHuman).map(renderSeat)}
+                </div>
+              </CpuAccordion>
+            </div>
 
             {resultBanner && (
               <div

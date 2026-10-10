@@ -76,10 +76,17 @@ describe('StealingBundlesPage', () => {
     const { unmount } = renderWithProviders(<StealingBundlesPage />);
     const rules = await screen.findByTestId('sb-rule');
     const seats = screen.getByTestId('cpu-accordion');
+    const humanSeat = screen.getByTestId('sb-seat-0');
     expect(rules).not.toHaveAttribute('open');
     expect(within(rules).getByText(/束ごと丸ごと奪えます/)).not.toBeVisible();
     expect(seats).not.toHaveAttribute('open');
+    expect(humanSeat).toBeVisible();
+    expect(humanSeat.parentElement).not.toBe(seats);
+    expect(seats).toContainElement(screen.getByTestId('sb-seat-1'));
+    expect(seats).toContainElement(screen.getByTestId('sb-seat-2'));
+    expect(seats).toContainElement(screen.getByTestId('sb-seat-3'));
     expect(screen.getByTestId('sb-seat-1')).not.toBeVisible();
+    expect(document.querySelector('[data-tutorial="sb-seats"]')).toContainElement(humanSeat);
 
     unmount();
     mobileState.isMobile = false;
