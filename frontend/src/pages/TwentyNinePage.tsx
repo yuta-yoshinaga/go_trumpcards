@@ -358,16 +358,40 @@ function TwentyNinePageContent() {
                 </details>
 
                 {/* Players grouped by team, with the declarer badge */}
+                {state.players
+                  .filter((p) => p.isHuman)
+                  .map((p) => (
+                    <section
+                      key={p.id}
+                      className="mb-2 px-2 py-1 rounded bg-black/30 flex items-center gap-2 text-ds-text-muted text-sm"
+                      data-testid="tn29-human-seat"
+                      data-tutorial="twentynine-human-seat"
+                      aria-label={t('yourTeam')}
+                    >
+                      <span className={p.isDeclarer ? 'text-ds-warning font-semibold' : ''}>
+                        {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                        {t('tricks', { count: p.trickCount })}
+                      </span>
+                      {p.isDeclarer && (
+                        <span className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>
+                          {t('declarerBadge')}
+                        </span>
+                      )}
+                    </section>
+                  ))}
                 <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
                   <div className="flex flex-wrap sm:block">
-                    {([0, 1] as const).map((team) => (
-                      <div key={team} className="mb-2 p-2 rounded bg-black/30">
-                        <div className="text-ds-text-primary text-xs mb-1">
-                          {team === 0 ? t('team.a') : t('team.b')}
-                        </div>
-                        {renderTeamPlayers(team)}
-                      </div>
-                    ))}
+                    {([0, 1] as const).map(
+                      (team) =>
+                        state.players.some((p) => !p.isHuman && p.id % 2 === team) && (
+                          <div key={team} className="mb-2 p-2 rounded bg-black/30">
+                            <div className="text-ds-text-primary text-xs mb-1">
+                              {team === 0 ? t('team.a') : t('team.b')}
+                            </div>
+                            {renderTeamPlayers(team, true)}
+                          </div>
+                        ),
+                    )}
                   </div>
                 </CpuAccordion>
 
@@ -528,10 +552,10 @@ function TwentyNinePageContent() {
   );
 
   /** Renders the per-player rows for one team (seats with seat%2 === team). */
-  function renderTeamPlayers(team: number) {
+  function renderTeamPlayers(team: number, cpuOnly = false) {
     if (!state) return null;
     return state.players
-      .filter((p) => p.id % 2 === team)
+      .filter((p) => p.id % 2 === team && (!cpuOnly || !p.isHuman))
       .map((p) => (
         <div key={p.id} className="py-0.5 flex items-center gap-2 text-ds-text-muted text-sm">
           <span className={p.isDeclarer ? 'text-ds-warning font-semibold' : ''}>

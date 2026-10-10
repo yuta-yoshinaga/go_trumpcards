@@ -88,8 +88,14 @@ describe('TwentyNinePage', () => {
     renderWithProviders(<TwentyNinePage />);
 
     const cpuAccordion = await screen.findByTestId('cpu-accordion');
+    const humanSeat = screen.getByTestId('tn29-human-seat');
     const bidHistory = screen.getByTestId('tn29-bid-history');
+    expect(humanSeat.parentElement).not.toBe(cpuAccordion);
+    expect(humanSeat).toBeVisible();
+    expect(humanSeat).toHaveAttribute('data-tutorial', 'twentynine-human-seat');
+    expect(humanSeat).toHaveAttribute('aria-label');
     expect(cpuAccordion).not.toHaveAttribute('open');
+    expect(cpuAccordion).toContainElement(screen.getByText('CPU 1: 8枚 | 0トリック'));
     expect(screen.getByText('CPU 1: 8枚 | 0トリック')).not.toBeVisible();
     expect(bidHistory).not.toHaveAttribute('open');
     expect(screen.queryByText(/席1 CPU 1/)).not.toBeVisible();
