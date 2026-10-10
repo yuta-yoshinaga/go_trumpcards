@@ -1,12 +1,5 @@
 import { expect, test } from '@playwright/test';
-import {
-  gameButton,
-  isVisibleWithin,
-  navigateTo,
-  TIMEOUT_GAME_LOOP,
-  TIMEOUT_TRANSITION,
-  waitForLoaded,
-} from './helpers';
+import { isVisibleWithin, navigateTo, TIMEOUT_GAME_LOOP, TIMEOUT_TRANSITION, waitForLoaded } from './helpers';
 
 test.describe('Nap E2E', () => {
   test('loads, resets, and renders the bid/play UI', async ({ page }) => {
@@ -24,23 +17,21 @@ test.describe('Nap E2E', () => {
     await expect(page.getByText(/^トリック \d+$/).first()).toBeVisible({ timeout: TIMEOUT_TRANSITION });
 
     // The game starts in the Bid phase; some interactive control must be present
-    // (a bid button, the human's play control, a trick/round advance, or — once
-    // the round resolves via CPU play — the reset / next-game button).
-    const anyControl = gameButton(page, /パス|ツー|スリー|フォー|ナップ/)
-      .or(page.getByRole('button', { name: '出す' }))
-      .or(page.getByRole('button', { name: '次のトリック' }))
-      .or(page.getByRole('button', { name: '次のラウンド' }))
-      .or(page.getByRole('button', { name: /リセット|次のゲーム/ }))
+    // (a bid button, the human's play control, or a trick/round advance).
+    const actions = page.getByTestId('game-footer-actions');
+    const anyControl = actions
+      .getByTestId('bid-0')
+      .or(actions.getByRole('button', { name: '出す' }))
+      .or(actions.getByRole('button', { name: '次のトリック' }))
+      .or(actions.getByRole('button', { name: '次のラウンド' }))
+      .or(resetButton)
       .first();
     await expect(anyControl).toBeVisible({ timeout: TIMEOUT_GAME_LOOP });
 
     // If a bid button is offered, place a Pass to progress the bidding round.
-    const passButton = gameButton(page, 'パス');
+    const passButton = actions.getByTestId('bid-0');
     if (await isVisibleWithin(passButton, TIMEOUT_TRANSITION)) {
-      await passButton
-        .first()
-        .click({ timeout: TIMEOUT_TRANSITION })
-        .catch(() => {});
+      await passButton.click({ timeout: TIMEOUT_TRANSITION });
       await waitForLoaded(page);
     }
 

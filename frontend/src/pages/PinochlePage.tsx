@@ -441,7 +441,97 @@ function PinochlePageContent() {
             />
           </div>
 
-          <GameFooter className={`${gameTheme.pinochle.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.pinochle.footer} px-4 py-2.5`}
+            actions={
+              isBidTurn ||
+              isTrumpTurn ||
+              phase === PinochlePhase.MELD ||
+              phase === PinochlePhase.TRICK_END ||
+              phase === PinochlePhase.ROUND_END ? (
+                <div className="flex gap-2 items-center flex-wrap" data-tutorial="pn-action-buttons">
+                  {/* Bid */}
+                  {isBidTurn && (
+                    <>
+                      <ChipBetInput
+                        id="pinochle-bid"
+                        label={t('bidAmountLabel', { min: minBid })}
+                        value={bidAmount}
+                        onChange={setBidAmount}
+                        min={minBid}
+                        step={5}
+                        showSteppers
+                        autoClamp={false}
+                        disabled={loading}
+                        invalid={bidInvalid}
+                        describedBy={bidInvalid ? 'pinochle-bid-error' : undefined}
+                      />
+                      <button
+                        type="button"
+                        // aria-disabled (not HTML disabled) while invalid so the button stays
+                        // focusable and its state is announced; the click is guarded.
+                        className={`${btnPrimary}${bidInvalid ? ' opacity-50 cursor-not-allowed' : ''}`}
+                        onClick={() => {
+                          if (!bidInvalid) handleBid(bidAmount);
+                        }}
+                        disabled={loading}
+                        aria-disabled={bidInvalid || undefined}
+                      >
+                        {t('bid')}
+                      </button>
+                      <button type="button" className={btnOutline} onClick={handlePass} disabled={loading}>
+                        {t('pass')}
+                      </button>
+                      {bidInvalid && (
+                        <p
+                          id="pinochle-bid-error"
+                          role="alert"
+                          className="text-ds-error-text text-xs w-full text-center"
+                        >
+                          {t('bidTooLow', { min: minBid })}
+                        </p>
+                      )}
+                    </>
+                  )}
+
+                  {/* Trump */}
+                  {isTrumpTurn &&
+                    [1, 2, 3, 4].map((suit) => (
+                      <button
+                        key={suit}
+                        type="button"
+                        className={btnPrimary}
+                        onClick={() => handleCallTrump(suit)}
+                        disabled={loading}
+                      >
+                        {SUIT_LABELS[suit]}
+                      </button>
+                    ))}
+
+                  {/* Meld confirm */}
+                  {phase === PinochlePhase.MELD && (
+                    <button type="button" className={btnSuccess} onClick={handleConfirmMelds} disabled={loading}>
+                      {t('confirmMelds')}
+                    </button>
+                  )}
+
+                  {/* Trick End */}
+                  {phase === PinochlePhase.TRICK_END && (
+                    <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                      {t('nextTrick')}
+                    </button>
+                  )}
+
+                  {/* Round End */}
+                  {phase === PinochlePhase.ROUND_END && (
+                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                      {t('nextRound')}
+                    </button>
+                  )}
+                </div>
+              ) : null
+            }
+          >
             {/* Hand */}
             {humanPlayer && humanPlayer.cards.length > 0 && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="pn-player-hand">
@@ -535,7 +625,7 @@ function PinochlePageContent() {
               )}
             </div>
 
-            <div className="flex gap-2 items-center flex-wrap" data-tutorial="pn-action-buttons">
+            <div className="flex gap-2 items-center flex-wrap">
               {/* Server hint */}
               {(isBidTurn || isTrumpTurn || isPlayTurn) && (
                 <button
@@ -548,82 +638,6 @@ function PinochlePageContent() {
                   {tc('button.hint')}
                 </button>
               )}
-
-              {/* Bid */}
-              {isBidTurn && (
-                <>
-                  <ChipBetInput
-                    id="pinochle-bid"
-                    label={t('bidAmountLabel', { min: minBid })}
-                    value={bidAmount}
-                    onChange={setBidAmount}
-                    min={minBid}
-                    step={5}
-                    showSteppers
-                    autoClamp={false}
-                    disabled={loading}
-                    invalid={bidInvalid}
-                    describedBy={bidInvalid ? 'pinochle-bid-error' : undefined}
-                  />
-                  <button
-                    type="button"
-                    // aria-disabled (not HTML disabled) while invalid so the button stays
-                    // focusable and its state is announced; the click is guarded.
-                    className={`${btnPrimary}${bidInvalid ? ' opacity-50 cursor-not-allowed' : ''}`}
-                    onClick={() => {
-                      if (!bidInvalid) handleBid(bidAmount);
-                    }}
-                    disabled={loading}
-                    aria-disabled={bidInvalid || undefined}
-                  >
-                    {t('bid')}
-                  </button>
-                  <button type="button" className={btnOutline} onClick={handlePass} disabled={loading}>
-                    {t('pass')}
-                  </button>
-                  {bidInvalid && (
-                    <p id="pinochle-bid-error" role="alert" className="text-ds-error-text text-xs w-full text-center">
-                      {t('bidTooLow', { min: minBid })}
-                    </p>
-                  )}
-                </>
-              )}
-
-              {/* Trump */}
-              {isTrumpTurn &&
-                [1, 2, 3, 4].map((suit) => (
-                  <button
-                    key={suit}
-                    type="button"
-                    className={btnPrimary}
-                    onClick={() => handleCallTrump(suit)}
-                    disabled={loading}
-                  >
-                    {SUIT_LABELS[suit]}
-                  </button>
-                ))}
-
-              {/* Meld confirm */}
-              {phase === PinochlePhase.MELD && (
-                <button type="button" className={btnSuccess} onClick={handleConfirmMelds} disabled={loading}>
-                  {t('confirmMelds')}
-                </button>
-              )}
-
-              {/* Trick End */}
-              {phase === PinochlePhase.TRICK_END && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                  {t('nextTrick')}
-                </button>
-              )}
-
-              {/* Round End */}
-              {phase === PinochlePhase.ROUND_END && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
-
               {/* Reset */}
               <GameResetButton
                 isGameEnd={!!isGameEnd}

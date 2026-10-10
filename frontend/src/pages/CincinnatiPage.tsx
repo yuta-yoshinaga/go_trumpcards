@@ -262,7 +262,130 @@ function CincinnatiPageContent() {
             {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
           </div>
 
-          <GameFooter className={`${gameTheme.cincinnati.footer} px-4 pt-3`}>
+          <GameFooter
+            className={`${gameTheme.cincinnati.footer} px-4 pt-3`}
+            actions={
+              <div className="flex flex-col items-center gap-2" data-tutorial="cin-actions">
+                {canAct && (
+                  <>
+                    <p className="text-ds-text-muted text-sm" data-testid="cin-call-pot-ratio">
+                      {state.toCall === 0
+                        ? t('label.callPotRatio', { percentage: 0 })
+                        : state.pot === 0
+                          ? t('label.callPotRatioUnavailable')
+                          : t('label.callPotRatio', {
+                              percentage: Math.round((state.toCall / state.pot) * 100),
+                            })}
+                    </p>
+                    <p className="text-ds-text-muted text-sm" data-testid="cin-bet-guide">
+                      {facingBet ? t('label.toCall', { amount: state.toCall }) : t('label.canCheck')}
+                    </p>
+                    <div className="flex gap-2 flex-wrap justify-center">
+                      {/* **チェックとコールは場況で入れ替わる。** サーバの toCall に従う。 */}
+                      {facingBet ? (
+                        <button
+                          type="button"
+                          className={btnSuccess}
+                          data-testid="cin-call"
+                          data-hint-action="call"
+                          onClick={() => execApi('call')}
+                          disabled={loading}
+                        >
+                          {t('button.call')}
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          className={btnSuccess}
+                          data-testid="cin-check"
+                          data-hint-action="check"
+                          onClick={() => execApi('check')}
+                          disabled={loading}
+                        >
+                          {t('button.check')}
+                        </button>
+                      )}
+                      {/* **レイズの可否はサーバが決める。** 上限に達したら出さない。 */}
+                      {facingBet ? (
+                        state.canRaise && (
+                          <button
+                            type="button"
+                            className={btnWarning}
+                            data-testid="cin-raise"
+                            data-hint-action="raise"
+                            aria-keyshortcuts="r"
+                            onClick={handleRaise}
+                            disabled={loading}
+                          >
+                            {t('button.raise')}
+                            <KbdBadge label="R" />
+                          </button>
+                        )
+                      ) : (
+                        <button
+                          type="button"
+                          className={btnWarning}
+                          data-testid="cin-bet"
+                          data-hint-action="bet"
+                          aria-keyshortcuts="b"
+                          onClick={handleBet}
+                          disabled={loading}
+                        >
+                          {t('button.bet')}
+                          <KbdBadge label="B" />
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        className={btnSecondary}
+                        data-testid="cin-fold"
+                        data-hint-action="fold"
+                        onClick={() => execApi('fold')}
+                        disabled={loading}
+                      >
+                        {t('button.fold')}
+                      </button>
+                    </div>
+                  </>
+                )}
+                {isShowdown && !gameOver && (
+                  <button type="button" className={btnPrimary} onClick={() => execApi('next')} disabled={loading}>
+                    {t('button.next')}
+                  </button>
+                )}
+              </div>
+            }
+          >
+            {canAct && (
+              <>
+                <ChipBetInput
+                  id="cincinnati-amount"
+                  label={t('label.bet')}
+                  value={amount}
+                  onChange={setAmount}
+                  max={maxAmount}
+                />
+                <div className="flex flex-wrap justify-center gap-2" data-testid="cin-pot-size-options">
+                  {[0.5, 1].map((fraction) => {
+                    const max = maxAmount;
+                    const rounded = Math.round((state.pot * fraction) / 10) * 10;
+                    const suggested = Math.min(max, Math.max(Math.min(10, max), rounded));
+                    return (
+                      <button
+                        key={fraction}
+                        type="button"
+                        className={btnSecondary}
+                        data-testid={fraction === 0.5 ? 'cin-pot-size-half' : 'cin-pot-size-full'}
+                        onClick={() => setAmount(suggested)}
+                        disabled={loading}
+                      >
+                        {t('button.potFraction', { percentage: fraction * 100, amount: suggested })}
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
             <ActionShortcutsPanel bindings={actionBindings} data-testid="cincinnati-kbd-shortcuts" />
             <ErrorAlert message={error} onRetry={retry} />
             <SettingsPanel
@@ -271,122 +394,7 @@ function CincinnatiPageContent() {
             />
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-            <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="cin-actions">
-              {canAct && (
-                <>
-                  <p className="text-ds-text-muted text-sm" data-testid="cin-call-pot-ratio">
-                    {state.toCall === 0
-                      ? t('label.callPotRatio', { percentage: 0 })
-                      : state.pot === 0
-                        ? t('label.callPotRatioUnavailable')
-                        : t('label.callPotRatio', {
-                            percentage: Math.round((state.toCall / state.pot) * 100),
-                          })}
-                  </p>
-                  <p className="text-ds-text-muted text-sm" data-testid="cin-bet-guide">
-                    {facingBet ? t('label.toCall', { amount: state.toCall }) : t('label.canCheck')}
-                  </p>
-                  <div className="flex gap-2 flex-wrap justify-center">
-                    {/* **チェックとコールは場況で入れ替わる。** サーバの toCall に従う。 */}
-                    {facingBet ? (
-                      <button
-                        type="button"
-                        className={btnSuccess}
-                        data-testid="cin-call"
-                        data-hint-action="call"
-                        onClick={() => execApi('call')}
-                        disabled={loading}
-                      >
-                        {t('button.call')}
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        className={btnSuccess}
-                        data-testid="cin-check"
-                        data-hint-action="check"
-                        onClick={() => execApi('check')}
-                        disabled={loading}
-                      >
-                        {t('button.check')}
-                      </button>
-                    )}
-                    {/* **レイズの可否はサーバが決める。** 上限に達したら出さない。 */}
-                    {facingBet ? (
-                      state.canRaise && (
-                        <button
-                          type="button"
-                          className={btnWarning}
-                          data-testid="cin-raise"
-                          data-hint-action="raise"
-                          aria-keyshortcuts="r"
-                          onClick={handleRaise}
-                          disabled={loading}
-                        >
-                          {t('button.raise')}
-                          <KbdBadge label="R" />
-                        </button>
-                      )
-                    ) : (
-                      <button
-                        type="button"
-                        className={btnWarning}
-                        data-testid="cin-bet"
-                        data-hint-action="bet"
-                        aria-keyshortcuts="b"
-                        onClick={handleBet}
-                        disabled={loading}
-                      >
-                        {t('button.bet')}
-                        <KbdBadge label="B" />
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      className={btnSecondary}
-                      data-testid="cin-fold"
-                      data-hint-action="fold"
-                      onClick={() => execApi('fold')}
-                      disabled={loading}
-                    >
-                      {t('button.fold')}
-                    </button>
-                  </div>
-                  <ChipBetInput
-                    id="cincinnati-amount"
-                    label={t('label.bet')}
-                    value={amount}
-                    onChange={setAmount}
-                    max={maxAmount}
-                  />
-                  <div className="flex flex-wrap justify-center gap-2" data-testid="cin-pot-size-options">
-                    {[0.5, 1].map((fraction) => {
-                      const max = maxAmount;
-                      const rounded = Math.round((state.pot * fraction) / 10) * 10;
-                      const suggested = Math.min(max, Math.max(Math.min(10, max), rounded));
-                      return (
-                        <button
-                          key={fraction}
-                          type="button"
-                          className={btnSecondary}
-                          data-testid={fraction === 0.5 ? 'cin-pot-size-half' : 'cin-pot-size-full'}
-                          onClick={() => setAmount(suggested)}
-                          disabled={loading}
-                        >
-                          {t('button.potFraction', { percentage: fraction * 100, amount: suggested })}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </>
-              )}
-
-              {isShowdown && !gameOver && (
-                <button type="button" className={btnPrimary} onClick={() => execApi('next')} disabled={loading}>
-                  {t('button.next')}
-                </button>
-              )}
-
+            <div className="flex flex-col items-center gap-2 pb-2">
               <div className="flex gap-2">
                 <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
                   {tc('actionLog.view')}

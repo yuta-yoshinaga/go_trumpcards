@@ -11,6 +11,8 @@ export interface GameFooterProps {
    * keep this layout and omit the (otherwise empty, padded) action row.
    */
   actions?: React.ReactNode;
+  /** Stable tutorial anchor rendered on the footer even when its actions are absent. */
+  dataTutorial?: string;
 }
 
 /**
@@ -31,13 +33,14 @@ export interface GameFooterProps {
  * In the legacy form without `actions`, the mobile cap is lifted from `sm` up,
  * where the viewport is tall enough that it would only add a pointless inner scrollbar.
  */
-export function GameFooter({ className, children, actions }: GameFooterProps) {
+export function GameFooter({ className, children, actions, dataTutorial }: GameFooterProps) {
   if (actions !== undefined) {
     return (
       <footer
         className={['shrink-0', 'border-t', 'flex', 'flex-col', 'max-h-[45vh]', 'sm:max-h-[50vh]', className]
           .filter(Boolean)
           .join(' ')}
+        data-tutorial={dataTutorial}
         style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 12px)' }}
       >
         <div className="min-h-0 overflow-y-auto" data-testid="game-footer-content">

@@ -457,7 +457,72 @@ function CallBreakPageContent() {
             />
           </div>
 
-          <GameFooter className={`${gameTheme.callbreak.footer} px-4 py-2.5`}>
+          <GameFooter
+            dataTutorial="cb-play-button"
+            className={`${gameTheme.callbreak.footer} px-4 py-2.5`}
+            actions={
+              isHumanBidTurn || isHumanTurn || isTrickEnd || isRoundEnd ? (
+                <div className="flex gap-2 items-center">
+                  {isHumanBidTurn && (
+                    <button type="button" className={btnPrimary} onClick={() => handleBid(bidValue)} disabled={loading}>
+                      {t('bidButtonSelected', { n: bidValue })}
+                    </button>
+                  )}
+                  {isHumanTurn && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handlePlay}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                    >
+                      {t('playButton')}
+                    </button>
+                  )}
+                  {isTrickEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                      {t('nextTrick')}
+                    </button>
+                  )}
+                  {isRoundEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                      {t('nextRound')}
+                    </button>
+                  )}
+                </div>
+              ) : null
+            }
+          >
+            {isHumanBidTurn && (
+              <div className="flex flex-col items-center gap-2 pb-2">
+                <fieldset
+                  className="grid max-w-[16rem] grid-cols-7 gap-1 border-0 p-0"
+                  aria-label={t('bidSelectLabel')}
+                >
+                  {Array.from({ length: 13 }, (_, i) => i + 1).map((n) => (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => setBidSelection({ roundNumber: state.roundNumber, value: n })}
+                      disabled={loading}
+                      aria-pressed={bidValue === n}
+                      data-testid={`bid-option-${n}`}
+                      className={`h-9 w-9 rounded-lg font-medium text-sm transition-all ${
+                        bidValue === n
+                          ? 'bg-ds-accent text-white ring-2 ring-ds-accent'
+                          : 'bg-white/20 text-ds-text-primary hover:bg-white/30'
+                      }`}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                </fieldset>
+                {/* Announce the current bid selection to screen readers, since the
+                    grid's aria-pressed alone isn't read back as a running value. */}
+                <span className="sr-only" role="status" aria-live="polite" data-testid="cb-bid-selected">
+                  {t('bidSelected', { n: bidValue })}
+                </span>
+              </div>
+            )}
             {humanPlayer && (
               <>
                 <div className="mb-1 text-ds-text-muted text-xs" role="status" data-testid="cb-spades-break-footer">
@@ -510,64 +575,10 @@ function CallBreakPageContent() {
             </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-            <div className="flex gap-2 items-center" data-tutorial="cb-play-button">
+            <div className="flex gap-2 items-center">
               {(isHumanBidTurn || isHumanTurn) && (
                 <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
                   {tc('button.hint')}
-                </button>
-              )}
-              {isHumanBidTurn && (
-                <div className="flex flex-col items-center gap-2">
-                  <fieldset
-                    className="grid max-w-[16rem] grid-cols-7 gap-1 border-0 p-0"
-                    aria-label={t('bidSelectLabel')}
-                  >
-                    {Array.from({ length: 13 }, (_, i) => i + 1).map((n) => (
-                      <button
-                        key={n}
-                        type="button"
-                        onClick={() => setBidSelection({ roundNumber: state.roundNumber, value: n })}
-                        disabled={loading}
-                        aria-pressed={bidValue === n}
-                        data-testid={`bid-option-${n}`}
-                        className={`h-9 w-9 rounded-lg font-medium text-sm transition-all ${
-                          bidValue === n
-                            ? 'bg-ds-accent text-white ring-2 ring-ds-accent'
-                            : 'bg-white/20 text-ds-text-primary hover:bg-white/30'
-                        }`}
-                      >
-                        {n}
-                      </button>
-                    ))}
-                  </fieldset>
-                  {/* Announce the current bid selection to screen readers, since the
-                      grid's aria-pressed alone isn't read back as a running value. */}
-                  <span className="sr-only" role="status" aria-live="polite" data-testid="cb-bid-selected">
-                    {t('bidSelected', { n: bidValue })}
-                  </span>
-                  <button type="button" className={btnPrimary} onClick={() => handleBid(bidValue)} disabled={loading}>
-                    {t('bidButton')}
-                  </button>
-                </div>
-              )}
-              {isHumanTurn && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-              {isTrickEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                  {t('nextTrick')}
-                </button>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
                 </button>
               )}
               <GameResetButton

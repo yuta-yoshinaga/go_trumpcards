@@ -389,7 +389,68 @@ function FortyFivesPageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.fortyfives.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.fortyfives.footer} px-4 py-2.5`}
+            actions={
+              (isBidPhase && isHumanBidTurn) || canPlay || isTrickEnd || isRoundEnd ? (
+                <div className="flex flex-wrap gap-2 items-center" data-tutorial="fortyfives-action-buttons">
+                  {isBidPhase && isHumanBidTurn && (
+                    <>
+                      <span className="text-xs text-ds-text-muted self-center mr-1">{t('bidPrompt')}</span>
+                      <span className="text-xs text-ds-text-muted self-center mr-1" data-testid="ff-highest-bid">
+                        {highestBid > 0
+                          ? t('bidHighest', { bid: bidName(highestBid), player: highestBidderName })
+                          : t('bidNone')}
+                      </span>
+                      {BIDS.map((b) => {
+                        // Pass (0) is always allowed; a non-pass bid must beat the current highest.
+                        const tooLow = b.value !== 0 && b.value <= highestBid;
+                        const disabled = loading || tooLow;
+                        const reason = tooLow ? t('bidDisabledReason', { currentBid: highestBid }) : undefined;
+                        // The title lives on the wrapping span: browsers suppress native tooltips on
+                        // disabled buttons, so hovering the span still surfaces the reason.
+                        return (
+                          <span key={b.value} title={reason} data-testid={`bid-wrap-${b.value}`}>
+                            <button
+                              type="button"
+                              className="px-3 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
+                              onClick={() => handleBid(b.value)}
+                              disabled={disabled}
+                              aria-disabled={disabled}
+                              aria-label={reason ? `${t(b.key)} — ${reason}` : undefined}
+                              data-testid={`bid-${b.value}`}
+                            >
+                              {t(b.key)}
+                            </button>
+                          </span>
+                        );
+                      })}
+                    </>
+                  )}
+                  {canPlay && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handlePlay}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                    >
+                      {t('playButton')}
+                    </button>
+                  )}
+                  {isTrickEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                      {t('nextTrick')}
+                    </button>
+                  )}
+                  {isRoundEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                      {t('nextRound')}
+                    </button>
+                  )}
+                </div>
+              ) : null
+            }
+          >
             {humanPlayer && (
               <PlayerHandSection
                 humanPlayer={humanPlayer}
@@ -436,60 +497,7 @@ function FortyFivesPageContent() {
               </span>
             </div>
 
-            <div className="flex flex-wrap gap-2 items-center" data-tutorial="fortyfives-action-buttons">
-              {isBidPhase && isHumanBidTurn && (
-                <>
-                  <span className="text-xs text-ds-text-muted self-center mr-1">{t('bidPrompt')}</span>
-                  <span className="text-xs text-ds-text-muted self-center mr-1" data-testid="ff-highest-bid">
-                    {highestBid > 0
-                      ? t('bidHighest', { bid: bidName(highestBid), player: highestBidderName })
-                      : t('bidNone')}
-                  </span>
-                  {BIDS.map((b) => {
-                    // Pass (0) is always allowed; a non-pass bid must beat the current highest.
-                    const tooLow = b.value !== 0 && b.value <= highestBid;
-                    const disabled = loading || tooLow;
-                    const reason = tooLow ? t('bidDisabledReason', { currentBid: highestBid }) : undefined;
-                    // The title lives on the wrapping span: browsers suppress native tooltips on
-                    // disabled buttons, so hovering the span still surfaces the reason.
-                    return (
-                      <span key={b.value} title={reason} data-testid={`bid-wrap-${b.value}`}>
-                        <button
-                          type="button"
-                          className="px-3 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
-                          onClick={() => handleBid(b.value)}
-                          disabled={disabled}
-                          aria-disabled={disabled}
-                          aria-label={reason ? `${t(b.key)} — ${reason}` : undefined}
-                          data-testid={`bid-${b.value}`}
-                        >
-                          {t(b.key)}
-                        </button>
-                      </span>
-                    );
-                  })}
-                </>
-              )}
-              {canPlay && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-              {isTrickEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                  {t('nextTrick')}
-                </button>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
+            <div className="flex flex-wrap gap-2 items-center">
               <GameResetButton
                 isGameEnd={isGameEnd}
                 onReset={handleManualReset}
