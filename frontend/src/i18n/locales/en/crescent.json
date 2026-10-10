@@ -36,6 +36,7 @@
   "redealUnavailable": "No redeals remaining",
   "redealsLeft": "Redeals left: {{count}}",
   "rulesNote": "Same suit and rank ±1 (A↔K wraps). Empty piles take no cards.",
+  "rulesSummary": "Rules",
   "selectionMoves": "Selected card has {{count}} legal destination(s)",
   "selectionMovesWithTargets": "Selected card has {{count}} legal destination(s): {{targets}}",
   "selectionTableauTarget": "tableau column {{col}}",

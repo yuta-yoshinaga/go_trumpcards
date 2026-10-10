@@ -25,12 +25,27 @@ export interface ResponsiveTableauConfig {
    * Omit for layouts where columns can never grow tall enough to overflow (#1861).
    */
   maxColCards?: number;
+  /** Smallest card-to-card vertical step when compressing a tall stack. */
+  minVerticalOverlap?: number;
   /**
    * Vertical pixels reserved for non-tableau chrome (header, stock row, footer, settings, message
    * box). Subtracted from `window.innerHeight` to derive the tableau's vertical budget. Defaults
    * to 300 px which matches the standard solo-game shell on a 667 px viewport.
    */
   reservedHeightPx?: number;
+}
+
+/** Initial maximum tableau depths used to keep these games' mobile layout steady during play. */
+export const FIXED_TABLEAU_DEPTH = { crescent: 6, sthelena: 8 } as const;
+
+/** Shared mobile-only compression settings for Crescent and St. Helena. */
+export function mobileTableauConfig(isMobile: boolean, maxColCards: number): ResponsiveTableauConfig | undefined {
+  if (!isMobile) return undefined;
+  return {
+    maxColCards,
+    minVerticalOverlap: 14,
+    reservedHeightPx: 420,
+  };
 }
 
 /** Minimum visual card width in px. Anything smaller is unreadable on a 375 px portrait phone. */
@@ -83,6 +98,7 @@ export function useResponsiveTableau(
   const padX = config.padX ?? DEFAULT_PAD_X;
   const gapPx = config.gapPx ?? DEFAULT_GAP_PX;
   const maxColCards = config.maxColCards;
+  const minVerticalOverlap = config.minVerticalOverlap ?? MIN_VERTICAL_OVERLAP;
   const reservedHeightPx = config.reservedHeightPx ?? DEFAULT_RESERVED_HEIGHT_PX;
 
   return useMemo<ResponsiveTableauDimensions>(() => {
@@ -98,7 +114,7 @@ export function useResponsiveTableau(
     if (maxColCards !== undefined && maxColCards > 1) {
       const availableHeight = windowHeight - reservedHeightPx;
       const fittingCo = Math.floor((availableHeight - ch) / (maxColCards - 1));
-      co = Math.max(MIN_VERTICAL_OVERLAP, Math.min(naturalCo, fittingCo));
+      co = Math.max(minVerticalOverlap, Math.min(naturalCo, fittingCo));
     }
     const wasteFan = Math.round(cw * 0.3);
     return { cw, ch, co, wasteFan };
@@ -110,6 +126,7 @@ export function useResponsiveTableau(
     padX,
     gapPx,
     maxColCards,
+    minVerticalOverlap,
     reservedHeightPx,
     cardWidth,
     cardHeight,

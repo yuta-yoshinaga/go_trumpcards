@@ -18,12 +18,13 @@ import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
+import { useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
-import { useResponsiveTableau } from '../hooks/useResponsiveTableau';
+import { FIXED_TABLEAU_DEPTH, mobileTableauConfig, useResponsiveTableau } from '../hooks/useResponsiveTableau';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useStHelenaGame } from '../hooks/useStHelenaGame';
 import { badgeSuccessColors, badgeWarningColors } from '../styles/badgeStyles';
@@ -165,8 +166,9 @@ function StHelenaPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('sthelena', state);
 
-  const tableauDim = useResponsiveTableau(8);
-  // Mobile renders the tableau as a 4-column grid, which makes the per-column arc translate Y
+  const isMobile = useIsMobile();
+  const tableauDim = useResponsiveTableau(8, mobileTableauConfig(isMobile, FIXED_TABLEAU_DEPTH.sthelena));
+  const foundationCardWidth = tableauDim.cw;
 
   const isPlayingForKbd = state?.phase === StHelenaPhase.PLAYING;
 
@@ -356,12 +358,12 @@ function StHelenaPageContent() {
               {tc('label.selectSourceFirst')}
             </span>
             {/* Foundations (4 ascending + 4 descending in two rows) */}
-            <div className="flex flex-col gap-2 mb-4" data-tutorial="sthelena-foundations">
+            <div className="flex flex-row sm:flex-col gap-2 mb-4" data-tutorial="sthelena-foundations">
               {([0, 1] as const).map((rowIdx) => {
                 const startIdx = rowIdx * 4;
                 const directionKey = rowIdx === 0 ? 'asc' : 'desc';
                 return (
-                  <div key={`fnd-row-${rowIdx}`} className="flex gap-1 sm:gap-2 justify-center flex-wrap">
+                  <div key={`fnd-row-${rowIdx}`} className="flex gap-1 sm:gap-2 justify-center flex-nowrap">
                     {[0, 1, 2, 3].map((col) => {
                       const idx = startIdx + col;
                       const foundationZone: StHelenaMoveZone = { zone: 'foundation', col: idx };
@@ -412,7 +414,11 @@ function StHelenaPageContent() {
                                 })}
                                 className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${selectedCard !== null && !isFoundationTarget(idx) ? 'opacity-40' : ''}`}
                               >
-                                <AnimatedCard card={pile[pile.length - 1]} width={tableauDim.cw} draggable={false} />
+                                <AnimatedCard
+                                  card={pile[pile.length - 1]}
+                                  width={foundationCardWidth}
+                                  draggable={false}
+                                />
                               </button>
                             ) : (
                               <button
@@ -428,7 +434,7 @@ function StHelenaPageContent() {
                                   suit,
                                   direction: t(`direction.${directionKey}`),
                                 })}
-                                style={{ width: tableauDim.cw, height: tableauDim.ch }}
+                                style={{ width: foundationCardWidth, height: tableauDim.ch }}
                                 className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                               >
                                 {directionKey === 'asc' ? 'A' : 'K'}
@@ -449,9 +455,9 @@ function StHelenaPageContent() {
                 beside, so rendering them as one undifferentiated grid would hide the
                 only thing that decides where a card can go. (The clone source draws a
                 sixteen-column crescent arc; that silhouette belongs to Crescent.) */}
-            <div className="flex flex-col gap-1 sm:gap-2 mb-3" data-tutorial="sthelena-tableau">
-              {STHELENA_BANDS.map((band) => (
-                <div key={band.key}>
+            <div className="grid grid-cols-8 gap-1 sm:flex sm:flex-col sm:gap-2 mb-3" data-tutorial="sthelena-tableau">
+              {STHELENA_BANDS.map((band, bandIdx) => (
+                <div key={band.key} className={bandIdx === 2 ? 'col-span-8 sm:col-span-1' : 'col-span-4 sm:col-span-1'}>
                   <div className="text-center text-[10px] text-ds-text-muted mb-0.5" aria-hidden="true">
                     {t(`band.${band.key}`)}
                   </div>
@@ -460,7 +466,14 @@ function StHelenaPageContent() {
                       const col = state.tableau[colIdx] ?? [];
                       const tableauColZone: StHelenaMoveZone = { zone: 'tableau', col: colIdx };
                       return (
-                        <div key={`col-${colIdx.toString()}`} className="min-w-0">
+                        <div
+                          key={`col-${colIdx.toString()}`}
+                          className="min-w-0"
+                          // Phones pin each column to the small card width so the 8-column rows
+                          // fit 375px; desktop keeps the grid-sized columns it had before.
+                          style={isMobile ? { width: tableauDim.cw } : undefined}
+                        >
+                          {/* Explicit mobile width fits eight columns; desktop keeps its legacy sizing. */}
                           {/* Column-number badge mirrors the CUI "タブロー列{{col}}" labelling so hints
                         and logs that reference a column index map to a visible marker (#2618). */}
                           <div

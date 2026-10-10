@@ -1,7 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { CARD_DIMENSIONS } from './useCardDimensions';
-import { useResponsiveTableau } from './useResponsiveTableau';
+import { FIXED_TABLEAU_DEPTH, mobileTableauConfig, useResponsiveTableau } from './useResponsiveTableau';
 
 const setWidth = (w: number) =>
   Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: w });
@@ -15,6 +15,16 @@ describe('useResponsiveTableau', () => {
   afterEach(() => {
     setWidth(originalInnerWidth);
     setHeight(originalInnerHeight);
+  });
+
+  it('uses fixed initial column depths and leaves desktop options at their defaults', () => {
+    expect(FIXED_TABLEAU_DEPTH).toEqual({ crescent: 6, sthelena: 8 });
+    expect(mobileTableauConfig(false, FIXED_TABLEAU_DEPTH.sthelena)).toBeUndefined();
+    expect(mobileTableauConfig(true, FIXED_TABLEAU_DEPTH.sthelena)).toEqual({
+      maxColCards: 8,
+      minVerticalOverlap: 14,
+      reservedHeightPx: 420,
+    });
   });
 
   it('returns desktop preset when viewport is at desktop breakpoint', () => {
@@ -120,6 +130,13 @@ describe('useResponsiveTableau', () => {
       const co = result.current.co;
       const tallestCol = (25 - 1) * co + ch;
       expect(tallestCol).toBeLessThanOrEqual(667 - 300);
+    });
+
+    it('honors a game-specific 14px minimum overlap', () => {
+      setWidth(375);
+      setHeight(300);
+      const { result } = renderHook(() => useResponsiveTableau(8, { maxColCards: 30, minVerticalOverlap: 14 }));
+      expect(result.current.co).toBeGreaterThanOrEqual(14);
     });
 
     it('does not trigger compression when maxColCards is 1 (single-card column)', () => {

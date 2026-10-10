@@ -1,5 +1,5 @@
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, crescentApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -17,6 +17,12 @@ vi.mock('../hooks/useGameHint', () => ({
 }));
 
 const mockExec = vi.mocked(crescentApi.exec);
+const originalViewportWidth = window.innerWidth;
+
+afterEach(() => {
+  Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalViewportWidth });
+  window.dispatchEvent(new Event('resize'));
+});
 
 function makeTableau(cols: CrescentTableauCard[][]): CrescentTableauCard[][] {
   const result: CrescentTableauCard[][] = [];
@@ -80,6 +86,26 @@ beforeEach(() => {
 });
 
 describe('CrescentPage', () => {
+  it('uses eight tableau columns on mobile and retains the desktop grid class', async () => {
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    const { container, unmount } = renderWithProviders(<CrescentPage />);
+    const tableau = await screen
+      .findByTestId('phase-indicator')
+      .then(() => container.querySelector('[data-tutorial="crescent-tableau"]'));
+    expect(tableau).toHaveClass('grid-cols-8');
+    expect(tableau).not.toHaveClass('grid-cols-4');
+    unmount();
+
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 800 });
+    window.dispatchEvent(new Event('resize'));
+    const desktop = renderWithProviders(<CrescentPage />);
+    await screen.findByTestId('phase-indicator');
+    const desktopTableau = desktop.container.querySelector('[data-tutorial="crescent-tableau"]');
+    expect(desktopTableau).toHaveClass('grid-cols-8');
+    expect(desktopTableau).not.toHaveClass('grid-cols-4');
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<CrescentPage />);
@@ -436,6 +462,23 @@ describe('CrescentPage', () => {
     expect(screen.getByTestId('crescent-col-badge-7')).toHaveAttribute('aria-hidden', 'true');
   });
 
+  it('keeps the mobile card step based on the fixed initial depth as columns grow', async () => {
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    const deepStack = Array.from({ length: 20 }, (_, index) => ({
+      card: card('SPADE', (index % 13) + 1),
+      faceUp: true,
+    }));
+    mockExec.mockResolvedValue({ ...playingState, tableau: makeTableau([deepStack]) });
+    renderWithProviders(<CrescentPage />);
+    await screen.findByTestId('crescent-col-badge-0');
+    const columnCards = [
+      ...document.querySelectorAll<HTMLButtonElement>('[data-tutorial="crescent-tableau"] button'),
+    ].filter((button) => button.getAttribute('aria-label')?.startsWith('タブロー列0、'));
+    const top = Number.parseInt(columnCards.at(-1)?.parentElement?.style.top ?? '0', 10);
+    expect(top / 19).toBe(23);
+  });
+
   it('announces how many legal destinations the selected card has', async () => {
     localStorage.clear();
     mockExec.mockReset();
@@ -559,17 +602,24 @@ describe('tableau rules note', () => {
   });
 
   it('displays the packing rule note during play with exact text and mentions A-K wrap', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
     renderWithProviders(<CrescentPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
     const note = screen.getByTestId('cr-rules-note');
+    const rules = note.closest('details');
+    expect(rules).not.toHaveAttribute('open');
+    expect(rules?.querySelector('summary')).toHaveTextContent('ルール');
     expect(note).toBeInTheDocument();
     expect(note.textContent).toBe('同スートで値差±1（A↔Kはラップ）で重ねられます（空列には置けません）。');
     expect(note.textContent).toContain('A');
     expect(note.textContent).toContain('K');
     expect(note.textContent).toMatch(/A.*K/);
     expect(note).toHaveClass('text-ds-text-muted');
-    expect(note).toHaveClass('mb-1', 'text-center', 'text-xs');
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    window.dispatchEvent(new Event('resize'));
   });
 
   it('persists and displays the note after the tutorial is completed', async () => {
