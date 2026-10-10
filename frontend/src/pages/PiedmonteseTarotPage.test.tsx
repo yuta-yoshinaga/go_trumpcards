@@ -217,7 +217,9 @@ describe('PiedmonteseTarotPage', () => {
     renderWithProviders(<PiedmonteseTarotPage />);
     const cards = await screen.findAllByRole('button', { name: /♥|♠|♣|✦|★/ });
     fireEvent.click(cards[0]);
-    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+    const actions = await screen.findByTestId('game-footer-actions');
+    const playButton = within(actions).getByRole('button', { name: '出す' });
+    fireEvent.click(playButton);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0 }));
   });
 

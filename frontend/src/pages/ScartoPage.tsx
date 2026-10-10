@@ -414,7 +414,45 @@ function ScartoPageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.scarto.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.scarto.footer} px-4 py-2.5`}
+            actions={
+              canScarto || canPlay || isTrickEnd || isRoundEnd ? (
+                <div className="flex flex-wrap gap-2 items-center" data-tutorial="scarto-action-buttons">
+                  {canScarto && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handleScarto}
+                      disabled={loading || selectedCardIndices.length !== SCARTO_DISCARD_COUNT}
+                    >
+                      {t('discardButton', { count: selectedCardIndices.length, total: SCARTO_DISCARD_COUNT })}
+                    </button>
+                  )}
+                  {canPlay && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handlePlay}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                    >
+                      {t('playButton')}
+                    </button>
+                  )}
+                  {isTrickEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                      {t('nextTrick')}
+                    </button>
+                  )}
+                  {isRoundEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                      {t('nextRound')}
+                    </button>
+                  )}
+                </div>
+              ) : null
+            }
+          >
             {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
                 変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。 */}
             <div data-testid="scarto-prompt-live" role="status" aria-live="polite">
@@ -465,37 +503,7 @@ function ScartoPageContent() {
             </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-            <div className="flex flex-wrap gap-2 items-center" data-tutorial="scarto-action-buttons">
-              {canScarto && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handleScarto}
-                  disabled={loading || selectedCardIndices.length !== SCARTO_DISCARD_COUNT}
-                >
-                  {t('discardButton', { count: selectedCardIndices.length, total: SCARTO_DISCARD_COUNT })}
-                </button>
-              )}
-              {canPlay && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-              {isTrickEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                  {t('nextTrick')}
-                </button>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
+            <div className="flex flex-wrap gap-2 items-center">
               <GameResetButton
                 isGameEnd={isGameEnd}
                 onReset={handleManualReset}

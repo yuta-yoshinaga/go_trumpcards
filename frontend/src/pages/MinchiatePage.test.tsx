@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { minchiateApi } from '../api/gameApi';
 import i18n from '../i18n';
@@ -41,6 +41,13 @@ beforeEach(() => {
 });
 
 describe('MinchiatePage', () => {
+  it('keeps the tutorial action target present during a CPU turn with no actions', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    const { container } = renderWithProviders(<MinchiatePage />);
+    expect(await screen.findByTestId('phase-indicator')).toBeInTheDocument();
+    expect(container.querySelector('[data-tutorial="minchiate-action-buttons"]')).toBeInTheDocument();
+  });
+
   it('renders minchiate-scarto-done when scartoCount is greater than 0', async () => {
     // スカルト（不要牌捨て）で既に捨てた枚数があるならその旨のメッセージを出す
     const state = makeMinchiateState({ scartoCount: 1 });
@@ -137,6 +144,7 @@ describe('MinchiatePage', () => {
   it('plays the selected card', async () => {
     renderWithProviders(<MinchiatePage />);
     const playButton = await screen.findByRole('button', { name: '出す' });
+    expect(within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '出す' })).toBe(playButton);
     expect(playButton).toBeDisabled();
 
     fireEvent.click(screen.getByRole('button', { name: 'Re ♠' }));
@@ -189,6 +197,9 @@ describe('MinchiatePage', () => {
       mockExec.mockResolvedValue(scartoHandState());
       renderWithProviders(<MinchiatePage />);
       expect(await screen.findByTestId('minchiate-scarto-prompt')).toHaveTextContent(String(MINCHIATE_SURPLUS));
+      expect(
+        within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '捨てる' }),
+      ).toBeInTheDocument();
       const progress = screen.getByTestId('minchiate-scarto-progress');
       expect(progress).toHaveTextContent('選択済み 0/13枚');
 

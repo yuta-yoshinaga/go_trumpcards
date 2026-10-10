@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { tarocchiniApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -88,6 +88,7 @@ describe('TarocchiniPage', () => {
   it('plays the selected card', async () => {
     renderWithProviders(<TarocchiniPage />);
     const playButton = await screen.findByRole('button', { name: '出す' });
+    expect(within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '出す' })).toBe(playButton);
     expect(playButton).toBeDisabled();
 
     fireEvent.click(screen.getByRole('button', { name: 'Re ♠' }));
