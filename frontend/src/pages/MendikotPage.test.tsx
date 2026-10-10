@@ -213,6 +213,9 @@ describe('MendikotPage', () => {
     const accordion = await screen.findByTestId('cpu-accordion');
     expect(accordion).not.toHaveAttribute('open');
     expect(screen.getByTestId('md-seats')).not.toBeVisible();
+    expect(screen.getByTestId('md-human-seat')).toBeVisible();
+    expect(screen.getByTestId('md-seat-0')).toBeVisible();
+    expect(screen.getByTestId('md-seat-0').parentElement).toHaveAttribute('data-testid', 'md-human-seat');
 
     unmount();
     mobileState.isMobile = false;

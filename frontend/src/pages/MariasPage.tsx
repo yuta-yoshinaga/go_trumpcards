@@ -283,14 +283,28 @@ function MariasPageContent() {
                 </div>
 
                 {/* Players: cards / tricks */}
+                <div
+                  className="mb-1 text-ds-text-muted text-sm py-0.5"
+                  data-testid="marias-human-seat"
+                  data-tutorial="marias-human-seat"
+                >
+                  {humanPlayer && (
+                    <>
+                      {playerName(humanPlayer.id, true)}: {playerRoleLabel(humanPlayer.isSoloist)} |{' '}
+                      {t('cards', { count: humanPlayer.cardCount })} | {t('tricks', { count: humanPlayer.trickCount })}
+                    </>
+                  )}
+                </div>
                 <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
                   <div className="flex flex-wrap gap-x-3 gap-y-1">
-                    {state.players.map((p) => (
-                      <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                        {playerName(p.id, p.isHuman)}: {playerRoleLabel(p.isSoloist)} |{' '}
-                        {t('cards', { count: p.cardCount })} | {t('tricks', { count: p.trickCount })}
-                      </div>
-                    ))}
+                    {state.players
+                      .filter((p) => !p.isHuman)
+                      .map((p) => (
+                        <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
+                          {playerName(p.id, p.isHuman)}: {playerRoleLabel(p.isSoloist)} |{' '}
+                          {t('cards', { count: p.cardCount })} | {t('tricks', { count: p.trickCount })}
+                        </div>
+                      ))}
                   </div>
                 </CpuAccordion>
 

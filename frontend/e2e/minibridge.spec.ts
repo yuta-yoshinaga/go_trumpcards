@@ -1,5 +1,5 @@
 import { expect, type Page, test } from '@playwright/test';
-import { navigateTo, TIMEOUT_ACTION, TIMEOUT_TRANSITION } from './helpers';
+import { clickHandCard, navigateTo, TIMEOUT_ACTION, TIMEOUT_TRANSITION } from './helpers';
 
 // **合法な札だけを選ぶ。** カードは意図的に disabled にしていないので、
 // フォロー義務を満たさない札を押すとサーバが拒否して盤面が動かない。
@@ -142,7 +142,9 @@ test.describe('Minibridge E2E', () => {
 
     await expect(legalCard(page).first()).toBeVisible({ timeout: TIMEOUT_ACTION });
     await expect(legalCard(page).first()).toBeEnabled({ timeout: TIMEOUT_ACTION });
-    await legalCard(page).first().click();
+    // Desktop cards overlap. Click the exposed left edge so the next card
+    // cannot intercept the pointer intended for the first legal card.
+    await clickHandCard(legalCard(page).first());
 
     await expect
       .poll(

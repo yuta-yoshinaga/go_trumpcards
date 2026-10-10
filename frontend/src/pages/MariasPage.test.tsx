@@ -79,9 +79,14 @@ describe('MariasPage', () => {
     const progress = screen.getByTestId('marias-round-progress-live').querySelector('details');
     expect(cpuDetails).not.toHaveAttribute('open');
     expect(progress).not.toHaveAttribute('open');
+    const humanSeat = screen.getByTestId('marias-human-seat');
+    expect(humanSeat).toBeVisible();
+    expect(humanSeat).toHaveAttribute('data-tutorial', 'marias-human-seat');
+    expect(cpuDetails).not.toContainElement(humanSeat);
+    expect(cpuDetails).toContainElement(screen.getByText('CPU 1: ディフェンダー | 10枚 | 0トリック'));
     expect(screen.getByTestId('marias-side-totals')).toHaveTextContent('ソリスト: 0点');
     expect(screen.getByTestId('marias-side-totals')).toHaveTextContent('ディフェンダー合計: 0点');
-    expect(screen.getByText('あなた: ソリスト | 10枚 | 0トリック')).not.toBeVisible();
+    expect(humanSeat).toHaveTextContent('あなた: ソリスト | 10枚 | 0トリック');
   });
 
   it('opens CPU details and round progress on desktop', async () => {
@@ -101,6 +106,8 @@ describe('MariasPage', () => {
     const progress = screen.getByTestId('marias-round-progress-live').querySelector('details');
     expect(cpuDetails).toHaveAttribute('open');
     expect(progress).toHaveAttribute('open');
+    expect(screen.getByTestId('marias-human-seat')).toBeVisible();
+    expect(cpuDetails).not.toContainElement(screen.getByTestId('marias-human-seat'));
     expect(screen.getByText('あなた: ソリスト | 10枚 | 0トリック')).toBeVisible();
   });
 
