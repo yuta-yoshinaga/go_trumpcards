@@ -164,6 +164,7 @@ function LooPageContent() {
   const leadSuitKey = state.currentTrick[0]?.card.design
     ? SUIT_I18N_KEYS[state.currentTrick[0].card.design]
     : undefined;
+  const { looPenalty, perTrick, maxWin } = computeLooPotRisk(state.pot, state.potStart);
 
   const handleManualReset = () => {
     hideActionLog();
@@ -381,22 +382,13 @@ function LooPageContent() {
             actions={
               canDecide || canPlay || isRoundEnd ? (
                 <>
-                  <div data-testid="loo-pot-risk-live" role="status" aria-live="polite">
-                    {canDecide &&
-                      (() => {
-                        const { looPenalty, perTrick, maxWin } = computeLooPotRisk(state.pot, state.potStart);
-                        return (
-                          <div
-                            className="mb-2 mx-auto max-w-md p-2 rounded bg-black/30 text-center text-sm"
-                            data-testid="loo-pot-risk"
-                          >
-                            <div className="text-ds-text-muted mb-0.5">{t('potRisk.label')}</div>
-                            <div className="text-ds-accent">{t('potRisk.win', { pot: maxWin, perTrick })}</div>
-                            <div className="text-ds-error-text">{t('potRisk.loss', { penalty: looPenalty })}</div>
-                          </div>
-                        );
-                      })()}
-                  </div>
+                  {canDecide && (
+                    <div className="mb-2 mx-auto max-w-md p-2 rounded bg-black/30 text-center text-sm">
+                      <div className="text-ds-text-muted mb-0.5">{t('potRisk.label')}</div>
+                      <div className="text-ds-accent">{t('potRisk.win', { pot: maxWin, perTrick })}</div>
+                      <div className="text-ds-error-text">{t('potRisk.loss', { penalty: looPenalty })}</div>
+                    </div>
+                  )}
                   <div className="flex flex-wrap gap-2 items-center" data-tutorial="loo-action-buttons">
                     {canDecide && (
                       <div className="flex flex-wrap gap-2" data-testid="loo-decide-buttons">
@@ -438,6 +430,14 @@ function LooPageContent() {
               ) : null
             }
           >
+            <div data-testid="loo-pot-risk-live" role="status" aria-live="polite" className="sr-only">
+              {canDecide && (
+                <div data-testid="loo-pot-risk">
+                  {t('potRisk.label')} {t('potRisk.win', { pot: maxWin, perTrick })}{' '}
+                  {t('potRisk.loss', { penalty: looPenalty })}
+                </div>
+              )}
+            </div>
             {isDecidePhase && !canDecide && (
               <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="loo-decide-cpu">
                 {t('decideCpu', { id: state.decidePlayerIdx })}

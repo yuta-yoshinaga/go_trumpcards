@@ -108,20 +108,18 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
       )}
       {/* Basic bet amount stays beside the Bet action. */}
       {showAction && (
-        <>
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <ChipBetInput
-              id="bj-bet-amount"
-              label={t('betAmount')}
-              value={props.betAmount}
-              onChange={props.onBetAmountChange}
-              min={10}
-              step={10}
-              autoClamp={false}
-              disabled={props.loading}
-            />
-          </div>
-        </>
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <ChipBetInput
+            id="bj-bet-amount"
+            label={t('betAmount')}
+            value={props.betAmount}
+            onChange={props.onBetAmountChange}
+            min={10}
+            step={10}
+            autoClamp={false}
+            disabled={props.loading}
+          />
+        </div>
       )}
       {showSupport && (
         <>
@@ -322,17 +320,15 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
       )}
 
       {showAction && (
-        <>
-          <button
-            type="button"
-            className={btnPrimary}
-            disabled={props.loading}
-            onClick={props.onBet}
-            data-tutorial="bj-bet-button"
-          >
-            {t('button.bet')}
-          </button>
-        </>
+        <button
+          type="button"
+          className={btnPrimary}
+          disabled={props.loading}
+          onClick={props.onBet}
+          data-tutorial="bj-bet-button"
+        >
+          {t('button.bet')}
+        </button>
       )}
     </>
   );

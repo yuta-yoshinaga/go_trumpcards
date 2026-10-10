@@ -95,6 +95,15 @@ describe('LooPage', () => {
     expect(queryByTestId('loo-decide-buttons')).not.toBeInTheDocument();
   });
 
+  it('keeps the pot-risk live region mounted when there are no action buttons', async () => {
+    mockExec.mockResolvedValue(cpuDecideState);
+    renderWithProviders(<LooPage />);
+
+    await waitFor(() => expect(screen.getByTestId('loo-hint-live')).toBeInTheDocument());
+    expect(screen.getByTestId('loo-pot-risk-live')).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-actions')).not.toBeInTheDocument();
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<LooPage />);
