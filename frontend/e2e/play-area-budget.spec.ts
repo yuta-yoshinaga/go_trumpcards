@@ -5,7 +5,7 @@ import { navigateTo } from './helpers';
  * Representative play-area scroll budgets at 375×667 (#11613). Each limit is the
  * midpoint between the page's overflow before its fix (PRs #11622, #11623, #11624,
  * #11626, then #11636, #11637, #11638) and the worst overflow measured after it; the
- * measurements are in #11627 and in the PR that adds each later page.
+ * measurements are in #11627 (first ten pages) and #11640 (the next eight).
  * These heights depend on the shuffled deal (#4373), so one load per page is
  * intentional and the limits leave room for deal variation.
  *
