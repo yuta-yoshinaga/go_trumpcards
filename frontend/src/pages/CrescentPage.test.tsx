@@ -102,7 +102,8 @@ describe('CrescentPage', () => {
     const desktop = renderWithProviders(<CrescentPage />);
     await screen.findByTestId('phase-indicator');
     const desktopTableau = desktop.container.querySelector('[data-tutorial="crescent-tableau"]');
-    expect(desktopTableau).toHaveClass('grid-cols-4', 'sm:grid-cols-8');
+    expect(desktopTableau).toHaveClass('grid-cols-8');
+    expect(desktopTableau).not.toHaveClass('grid-cols-4');
   });
 
   it('renders skeleton when no state', () => {
@@ -461,7 +462,7 @@ describe('CrescentPage', () => {
     expect(screen.getByTestId('crescent-col-badge-7')).toHaveAttribute('aria-hidden', 'true');
   });
 
-  it('compresses deep mobile tableau stacks without dropping below a readable 14px step', async () => {
+  it('keeps the mobile card step based on the fixed initial depth as columns grow', async () => {
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
     window.dispatchEvent(new Event('resize'));
     const deepStack = Array.from({ length: 20 }, (_, index) => ({
@@ -475,8 +476,7 @@ describe('CrescentPage', () => {
       ...document.querySelectorAll<HTMLButtonElement>('[data-tutorial="crescent-tableau"] button'),
     ].filter((button) => button.getAttribute('aria-label')?.startsWith('タブロー列0、'));
     const top = Number.parseInt(columnCards.at(-1)?.parentElement?.style.top ?? '0', 10);
-    expect(top / 19).toBeGreaterThanOrEqual(14);
-    expect(top / 19).toBeLessThan(23);
+    expect(top / 19).toBe(23);
   });
 
   it('announces how many legal destinations the selected card has', async () => {

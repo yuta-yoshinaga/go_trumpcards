@@ -35,6 +35,19 @@ export interface ResponsiveTableauConfig {
   reservedHeightPx?: number;
 }
 
+/** Initial maximum tableau depths used to keep these games' mobile layout steady during play. */
+export const FIXED_TABLEAU_DEPTH = { crescent: 6, sthelena: 8 } as const;
+
+/** Shared mobile-only compression settings for Crescent and St. Helena. */
+export function mobileTableauConfig(isMobile: boolean, maxColCards: number): ResponsiveTableauConfig | undefined {
+  if (!isMobile) return undefined;
+  return {
+    maxColCards,
+    minVerticalOverlap: 14,
+    reservedHeightPx: 420,
+  };
+}
+
 /** Minimum visual card width in px. Anything smaller is unreadable on a 375 px portrait phone. */
 const MIN_CARD_WIDTH = 24;
 /**

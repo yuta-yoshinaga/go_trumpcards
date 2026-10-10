@@ -24,7 +24,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
-import { useResponsiveTableau } from '../hooks/useResponsiveTableau';
+import { FIXED_TABLEAU_DEPTH, mobileTableauConfig, useResponsiveTableau } from '../hooks/useResponsiveTableau';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useStHelenaGame } from '../hooks/useStHelenaGame';
 import { badgeSuccessColors, badgeWarningColors } from '../styles/badgeStyles';
@@ -166,15 +166,9 @@ function StHelenaPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('sthelena', state);
 
-  const maxColumnDepth = Math.max(0, ...(state?.tableau.map((col) => col.length) ?? []));
-  const tableauDim = useResponsiveTableau(8, {
-    maxColCards: maxColumnDepth,
-    minVerticalOverlap: 14,
-    reservedHeightPx: 420,
-  });
   const isMobile = useIsMobile();
-  const foundationCardWidth = isMobile ? 36 : tableauDim.cw;
-  // Mobile renders the tableau as a 4-column grid, which makes the per-column arc translate Y
+  const tableauDim = useResponsiveTableau(8, mobileTableauConfig(isMobile, FIXED_TABLEAU_DEPTH.sthelena));
+  const foundationCardWidth = tableauDim.cw;
 
   const isPlayingForKbd = state?.phase === StHelenaPhase.PLAYING;
 
@@ -440,7 +434,7 @@ function StHelenaPageContent() {
                                   suit,
                                   direction: t(`direction.${directionKey}`),
                                 })}
-                                style={{ width: foundationCardWidth, height: foundationCardWidth * 1.5 }}
+                                style={{ width: foundationCardWidth, height: tableauDim.ch }}
                                 className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                               >
                                 {directionKey === 'asc' ? 'A' : 'K'}
@@ -477,6 +471,7 @@ function StHelenaPageContent() {
                           className="min-w-0"
                           style={isMobile ? { width: tableauDim.cw } : undefined}
                         >
+                          {/* Explicit mobile width fits eight columns; desktop keeps its legacy sizing. */}
                           {/* Column-number badge mirrors the CUI "タブロー列{{col}}" labelling so hints
                         and logs that reference a column index map to a visible marker (#2618). */}
                           <div

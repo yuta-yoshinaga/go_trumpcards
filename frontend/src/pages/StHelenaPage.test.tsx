@@ -139,7 +139,7 @@ describe('StHelenaPage', () => {
     });
   });
 
-  it('compresses deep mobile tableau stacks while retaining the 14px card step', async () => {
+  it('keeps the mobile card step based on the fixed initial depth as columns grow', async () => {
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
     window.dispatchEvent(new Event('resize'));
     const deepStack = Array.from({ length: 20 }, (_, index) => ({
@@ -154,8 +154,7 @@ describe('StHelenaPage', () => {
     const firstColumn = container.querySelector('[data-testid="sthelena-col-badge-0"]')?.parentElement;
     const cards = Array.from(firstColumn?.querySelectorAll<HTMLButtonElement>('button') ?? []);
     const top = Number.parseInt(cards.at(-1)?.parentElement?.style.top ?? '0', 10);
-    expect(top / 19).toBeGreaterThanOrEqual(14);
-    expect(top / 19).toBeLessThan(23);
+    expect(top / 19).toBe(23);
   });
 
   it('announces the first-deal destinations with zero-based column numbers', async () => {

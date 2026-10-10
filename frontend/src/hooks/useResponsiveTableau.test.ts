@@ -1,7 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { CARD_DIMENSIONS } from './useCardDimensions';
-import { useResponsiveTableau } from './useResponsiveTableau';
+import { FIXED_TABLEAU_DEPTH, mobileTableauConfig, useResponsiveTableau } from './useResponsiveTableau';
 
 const setWidth = (w: number) =>
   Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: w });
@@ -15,6 +15,16 @@ describe('useResponsiveTableau', () => {
   afterEach(() => {
     setWidth(originalInnerWidth);
     setHeight(originalInnerHeight);
+  });
+
+  it('uses fixed initial column depths and leaves desktop options at their defaults', () => {
+    expect(FIXED_TABLEAU_DEPTH).toEqual({ crescent: 6, sthelena: 8 });
+    expect(mobileTableauConfig(false, FIXED_TABLEAU_DEPTH.sthelena)).toBeUndefined();
+    expect(mobileTableauConfig(true, FIXED_TABLEAU_DEPTH.sthelena)).toEqual({
+      maxColCards: 8,
+      minVerticalOverlap: 14,
+      reservedHeightPx: 420,
+    });
   });
 
   it('returns desktop preset when viewport is at desktop breakpoint', () => {
