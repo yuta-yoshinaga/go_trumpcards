@@ -407,102 +407,109 @@ function OmbrePageContent() {
           <GameFooter
             className={`${gameTheme.ombre.footer} px-4 py-2.5`}
             actions={
-              <div className="flex flex-wrap gap-2 items-center" data-tutorial="ombre-action-buttons">
-                {canBid && pendingBid === null && (
-                  <div className="flex flex-wrap gap-2 items-center" data-testid="ombre-bid-stage1">
-                    <span className="text-ds-text-muted text-sm">{t('chooseBidType')}:</span>
-                    {([1, 2] as const).map((bid) => {
-                      const unavailable = bid <= state.highestBid;
-                      const reasonId = `ombre-bid-unavailable-${bid}`;
-                      return (
-                        <span key={bid}>
-                          <button
-                            type="button"
-                            className={btnPrimary}
-                            onClick={() => chooseBid(bid)}
-                            disabled={loading}
-                            aria-disabled={unavailable || undefined}
-                            aria-describedby={unavailable ? reasonId : undefined}
-                          >
-                            {t(BID_KEYS[bid])}
-                          </button>
-                          {unavailable && (
-                            <span id={reasonId} className="sr-only">
-                              {t('bidMustExceedWinningBid')}
-                            </span>
-                          )}
-                        </span>
-                      );
-                    })}
-                    <button type="button" className={btnSecondary} onClick={() => chooseBid(0)} disabled={loading}>
-                      {t('bidPass')}
-                    </button>
-                  </div>
-                )}
-                {canBid && pendingBid !== null && (
-                  <div className="flex flex-wrap gap-2 items-center" data-testid="ombre-bid-stage2">
-                    <span className="text-ds-text-muted text-sm">
-                      {t('chooseTrumpFor', { bid: t(BID_KEYS[pendingBid]) })}:
-                    </span>
-                    {TRUMP_CHOICES.map((c) => (
-                      <button
-                        key={c.code}
-                        type="button"
-                        className={selectedTrump === c.code ? btnPrimary : btnSecondary}
-                        onClick={() => setSelectedTrump(c.code)}
-                        disabled={loading}
-                        aria-label={t(SUIT_KEYS[c.code])}
-                        aria-pressed={selectedTrump === c.code}
-                      >
-                        {c.symbol}
+              canBid || canPlay || isTrickEnd || isRoundEnd ? (
+                <div className="flex flex-wrap gap-2 items-center" data-tutorial="ombre-action-buttons">
+                  {canBid && pendingBid === null && (
+                    <div className="flex flex-wrap gap-2 items-center" data-testid="ombre-bid-stage1">
+                      <span className="text-ds-text-muted text-sm">{t('chooseBidType')}:</span>
+                      {([1, 2] as const).map((bid) => {
+                        const unavailable = bid <= state.highestBid;
+                        const reasonId = `ombre-bid-unavailable-${bid}`;
+                        return (
+                          <span key={bid}>
+                            <button
+                              type="button"
+                              className={btnPrimary}
+                              onClick={() => chooseBid(bid)}
+                              disabled={loading}
+                              aria-disabled={unavailable || undefined}
+                              aria-describedby={unavailable ? reasonId : undefined}
+                            >
+                              {t(BID_KEYS[bid])}
+                            </button>
+                            {unavailable && (
+                              <span id={reasonId} className="sr-only">
+                                {t('bidMustExceedWinningBid')}
+                              </span>
+                            )}
+                          </span>
+                        );
+                      })}
+                      <button type="button" className={btnSecondary} onClick={() => chooseBid(0)} disabled={loading}>
+                        {t('bidPass')}
                       </button>
-                    ))}
-                    <button
-                      type="button"
-                      className={btnSuccess}
-                      onClick={confirmBid}
-                      disabled={loading || selectedTrump === null}
-                      data-testid="ombre-bid-confirm"
-                    >
-                      {t('confirmBid')}
+                    </div>
+                  )}
+                  {canBid && pendingBid !== null && (
+                    <div className="flex flex-wrap gap-2 items-center" data-testid="ombre-bid-stage2">
+                      <span className="text-ds-text-muted text-sm">
+                        {t('chooseTrumpFor', { bid: t(BID_KEYS[pendingBid]) })}:
+                      </span>
+                      {TRUMP_CHOICES.map((c) => (
+                        <button
+                          key={c.code}
+                          type="button"
+                          className={selectedTrump === c.code ? btnPrimary : btnSecondary}
+                          onClick={() => setSelectedTrump(c.code)}
+                          disabled={loading}
+                          aria-label={t(SUIT_KEYS[c.code])}
+                          aria-pressed={selectedTrump === c.code}
+                        >
+                          {c.symbol}
+                        </button>
+                      ))}
+                      <button
+                        type="button"
+                        className={btnSuccess}
+                        onClick={confirmBid}
+                        disabled={loading || selectedTrump === null}
+                        data-testid="ombre-bid-confirm"
+                      >
+                        {t('confirmBid')}
+                      </button>
+                      <button
+                        type="button"
+                        className={btnSecondary}
+                        onClick={cancelBid}
+                        disabled={loading}
+                        data-testid="ombre-bid-back"
+                      >
+                        {t('bidBack')}
+                      </button>
+                    </div>
+                  )}
+                  {canPlay && (
+                    <>
+                      <button
+                        type="button"
+                        className={btnSecondary}
+                        onClick={() => void exec('hint')}
+                        disabled={loading}
+                      >
+                        {t('requestHint')}
+                      </button>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={handlePlay}
+                        disabled={loading || selectedCardIndices.length !== 1}
+                      >
+                        {t('playButton')}
+                      </button>
+                    </>
+                  )}
+                  {isTrickEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                      {t('nextTrick')}
                     </button>
-                    <button
-                      type="button"
-                      className={btnSecondary}
-                      onClick={cancelBid}
-                      disabled={loading}
-                      data-testid="ombre-bid-back"
-                    >
-                      {t('bidBack')}
+                  )}
+                  {isRoundEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                      {t('nextRound')}
                     </button>
-                  </div>
-                )}
-                {canPlay && (
-                  <>
-                    <button type="button" className={btnSecondary} onClick={() => void exec('hint')} disabled={loading}>
-                      {t('requestHint')}
-                    </button>
-                    <button
-                      type="button"
-                      className={btnPrimary}
-                      onClick={handlePlay}
-                      disabled={loading || selectedCardIndices.length !== 1}
-                    >
-                      {t('playButton')}
-                    </button>
-                  </>
-                )}
-                {isTrickEnd && (
-                  <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                    {t('nextTrick')}
-                  </button>
-                )}
-                {isRoundEnd && (
-                  <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                    {t('nextRound')}
-                  </button>
-                )}
-              </div>
+                  )}
+                </div>
+              ) : null
             }
           >
             {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は

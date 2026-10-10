@@ -287,6 +287,7 @@ describe('QuadrillePage', () => {
     renderWithProviders(<QuadrillePage />);
     await waitFor(() => expect(screen.getByAltText('♥ Q')).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-actions')).not.toBeInTheDocument();
   });
 
   it('badges Spadille (♠A) in the hand when trump is decided', async () => {

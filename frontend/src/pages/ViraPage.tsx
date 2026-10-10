@@ -22,7 +22,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, TARGET_ROUNDS_OPTIONS, useViraGame } from '../hooks/useViraGame';
 import { badgeWarningColors } from '../styles/badgeStyles';
-import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
+import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { ViraResponse } from '../types/card';
@@ -438,29 +438,20 @@ function ViraPageContent() {
           <GameFooter
             className={`${gameTheme.vira.footer} px-4 py-2.5`}
             actions={
-              isBidPhase || canPlay || isTrickEnd || isRoundEnd ? (
+              (isBidPhase && isHumanBidTurn) || canPlay || isTrickEnd || isRoundEnd ? (
                 <div className="grid grid-cols-3 sm:grid-cols-5 gap-1 items-center" data-tutorial="vira-action-buttons">
-                  {isBidPhase &&
-                    isHumanBidTurn &&
-                    BIDS.filter((bid) => bid.value === ViraContract.PASS).map((b) => {
-                      const disabled = loading;
-                      return (
-                        <span key={b.value} title={undefined} className="inline-flex">
-                          <button
-                            type="button"
-                            className="px-3 py-2 rounded-lg text-white text-sm bg-ds-info disabled:opacity-40"
-                            onClick={() => handleBid(b.value)}
-                            disabled={disabled}
-                            aria-disabled={disabled}
-                            aria-label={undefined}
-                            aria-describedby={undefined}
-                            data-testid={`bid-${b.value}`}
-                          >
-                            {t(b.key)}
-                          </button>
-                        </span>
-                      );
-                    })}
+                  {isBidPhase && isHumanBidTurn && (
+                    <button
+                      type="button"
+                      className={btnSecondary}
+                      onClick={() => handleBid(ViraContract.PASS)}
+                      disabled={loading}
+                      aria-disabled={loading}
+                      data-testid={`bid-${ViraContract.PASS}`}
+                    >
+                      {t('bid.pass')}
+                    </button>
+                  )}
                   {canPlay && (
                     <button
                       type="button"

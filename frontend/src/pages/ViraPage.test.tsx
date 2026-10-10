@@ -524,4 +524,11 @@ describe('ViraPage pot settlement', () => {
     expect(bidChoice).toBeInTheDocument();
     expect(actions).not.toContainElement(bidChoice);
   });
+
+  it('omits the pinned action row while the CPU is bidding', async () => {
+    mockExec.mockResolvedValue(makeViraState({ phase: 0, isHumanBidTurn: false, currentPlayerIdx: 1 }));
+    renderWithProviders(<ViraPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('game-footer-actions')).not.toBeInTheDocument();
+  });
 });

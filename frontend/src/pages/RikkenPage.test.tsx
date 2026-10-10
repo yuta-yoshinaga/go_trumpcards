@@ -233,6 +233,26 @@ describe('RikkenPage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('call', undefined, undefined, 3));
   });
 
+  it('keeps the call guide in the footer content and hides actions on a CPU turn', async () => {
+    mockApi.mockResolvedValue({
+      ...bidState,
+      phase: RikkenPhase.CALL,
+      contract: RikkenContract.RIK,
+      isHumanTurn: true,
+    });
+    const { unmount } = renderWithProviders(<RikkenPage />);
+    const content = await screen.findByTestId('game-footer-content');
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(content).getByText('切り札を決めてください')).toBeInTheDocument();
+    expect(within(actions).getByRole('button', { name: /ハート.*を切り札/ })).toBeInTheDocument();
+
+    mockApi.mockResolvedValue({ ...bidState, isHumanTurn: false });
+    unmount();
+    renderWithProviders(<RikkenPage />);
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('reset'));
+    expect(screen.queryByTestId('game-footer-actions')).not.toBeInTheDocument();
+  });
+
   it('enables only the legal cards', async () => {
     mockApi.mockResolvedValue(playState);
     renderWithProviders(<RikkenPage />);

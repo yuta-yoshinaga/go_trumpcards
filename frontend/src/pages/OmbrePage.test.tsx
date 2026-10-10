@@ -135,6 +135,13 @@ describe('OmbrePage', () => {
     ).toBeInTheDocument();
   });
 
+  it('omits the pinned action row when the CPU is playing', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<OmbrePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('game-footer-actions')).not.toBeInTheDocument();
+  });
+
   it('marks bids at or below the highest bid unavailable and keeps pass selectable', async () => {
     mockExec.mockResolvedValue({ ...bidPhaseState, highestBid: 1 });
     renderWithProviders(<OmbrePage />);
