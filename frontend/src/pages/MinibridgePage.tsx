@@ -255,7 +255,7 @@ function MinibridgePageContent() {
             {/* **競りが無いこと自体が規則。** 先に出す。 */}
             <div className={isMobile ? 'flex flex-wrap gap-2 mb-3' : undefined}>
               <details
-                className={`mb-3 rounded bg-black/30 px-3 py-2 text-ds-text-primary text-center${isMobile ? ' mb-0 flex-1 basis-0' : ''}`}
+                className={`${isMobile ? 'mb-0 flex-1 basis-0' : 'mb-3'} rounded bg-black/30 px-3 py-2 text-ds-text-primary text-center`}
                 data-tutorial="mb-rule"
                 data-testid="mb-rule-details"
               >
@@ -376,6 +376,7 @@ function MinibridgePageContent() {
                 </div>
                 <div className="flex flex-nowrap gap-0">
                   {state.dummyHand.map((card, idx) => (
+                    // disabled:opacity-50 の札は positioned 層で描かれ、出せる札の上に重なるので全札を relative にして DOM 順で重ねる
                     <button
                       key={`dummy-${card.design}-${card.value}-${idx}`}
                       type="button"

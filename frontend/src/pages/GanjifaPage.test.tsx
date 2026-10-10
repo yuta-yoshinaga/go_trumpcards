@@ -80,7 +80,7 @@ describe('GanjifaPage', () => {
     const readout = await screen.findByTestId('ganjifa-trump-group');
     expect(readout).toHaveTextContent('数字が大きいほど強い');
     expect(readout).toHaveClass('text-ds-info');
-    expect(readout).not.toBeVisible();
+    expect(readout).toBeVisible();
   });
 
   it('states that lower numbers win when trump is a weak suit', async () => {
@@ -89,7 +89,7 @@ describe('GanjifaPage', () => {
     const readout = await screen.findByTestId('ganjifa-trump-group');
     expect(readout).toHaveTextContent('数字が小さいほど強い');
     expect(readout).toHaveClass('text-ds-warning');
-    expect(readout).not.toBeVisible();
+    expect(readout).toBeVisible();
   });
 
   it('identifies each hand card suit and its rank direction in the accessible name', async () => {
@@ -170,6 +170,27 @@ describe('GanjifaPage', () => {
     expect(note).toHaveTextContent(
       '切り札はディーラーの手札で最も多いスートから自動で決まります（選択操作はありません）',
     );
+  });
+
+  it('keeps the trump strength readout visible outside collapsed rules', async () => {
+    renderWithProviders(<GanjifaPage />);
+    const rules = await screen.findByText('ルール');
+    const details = rules.closest('details');
+    const readout = screen.getByTestId('ganjifa-trump-group');
+
+    expect(details).not.toHaveAttribute('open');
+    expect(readout).toBeVisible();
+    expect(details).not.toContainElement(readout);
+  });
+
+  it('keeps dealer and trump strength in the mobile information row', async () => {
+    renderWithProviders(<GanjifaPage />);
+    const info = await screen.findByTestId('ganjifa-trump-group').then((readout) => readout.parentElement);
+
+    expect(info).toHaveAttribute('data-tutorial', 'ganjifa-info');
+    expect(info).toContainElement(screen.getByTestId('ganjifa-dealer'));
+    expect(info).toContainElement(screen.getByText('ルール'));
+    expect(info).toHaveClass('text-xs', 'sm:text-base', 'gap-x-2', 'gap-y-0');
   });
 
   it('keeps rules and player details open on desktop', async () => {
