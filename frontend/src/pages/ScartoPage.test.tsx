@@ -145,6 +145,8 @@ const drawState = makeScartoState({
 const cpuTurnState = makeScartoState({ currentPlayerIdx: 1, isHumanTurn: false });
 
 beforeEach(() => {
+  window.innerWidth = 375;
+  window.dispatchEvent(new Event('resize'));
   mockExec.mockReset();
   mockExec.mockResolvedValue(playPhaseState);
 });
@@ -184,6 +186,7 @@ describe('ScartoPage', () => {
 
   it('shows the card point reference during play without revealing CPU hands', async () => {
     renderWithProviders(<ScartoPage />);
+    fireEvent.click(await screen.findByText('ルール'));
     const reference = await screen.findByTestId('scarto-point-reference');
     expect(reference).toHaveTextContent('スート札のキング: 4.5点');
     expect(reference).toHaveTextContent('スート札のクイーン: 3.5点');
@@ -191,6 +194,7 @@ describe('ScartoPage', () => {
     expect(reference).toHaveTextContent('スート札のジャック: 1.5点');
     expect(reference).toHaveTextContent('ブー（切り札の1・21とエクスキューズ）: 各4.5点');
     expect(reference).toHaveTextContent('その他の札: 各0.5点');
+    fireEvent.click(screen.getByText('CPU対戦相手 (2)'));
     expect(screen.getByText(/CPU 1: 25枚/)).toBeInTheDocument();
     expect(screen.getByText(/CPU 2: 25枚/)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /CPU 1/ })).not.toBeInTheDocument();
@@ -465,13 +469,37 @@ describe('ScartoPage', () => {
   });
   // **エクスキューズだけが勝敗の外にいる。**出した札が誰の手にも渡らず自分の得点山に
   // 戻るという規則は実装されているのに説明が無く、cardPoints の内訳が読み解けなかった
-  // (#6514)。Minchiate/Tarocchini と同じ常設の注釈。
-  it('always explains that the excuse comes back to its owner', async () => {
+  // (#6514)。説明は「ルール」details に置く。
+  it('keeps the excuse rule available inside the rules disclosure', async () => {
     renderWithProviders(<ScartoPage />);
+    await screen.findByTestId('scarto-provisional');
+    const rules = screen.getByText('ルール').closest('details');
+    expect(rules).not.toHaveAttribute('open');
+    expect(screen.getByTestId('scarto-rules')).not.toBeVisible();
+    fireEvent.click(screen.getByText('ルール'));
     const note = await screen.findByTestId('scarto-excuse-note');
     // **キーではなく解決後の文言を見る** ── i18next は未知のキーをそのまま返す。
     expect(note).toHaveTextContent('エクスキューズは特別');
     expect(note.textContent).not.toContain('excuseReturnsNote');
+  });
+
+  it('keeps the CPU seat information collapsed on mobile', async () => {
+    renderWithProviders(<ScartoPage />);
+    await screen.findByTestId('scarto-provisional');
+    const cpuAccordion = screen.getByTestId('cpu-accordion');
+    expect(cpuAccordion).not.toHaveAttribute('open');
+    expect(within(cpuAccordion).queryByText(/CPU 1: 25枚/)).not.toBeVisible();
+    fireEvent.click(within(cpuAccordion).getByText('CPU対戦相手 (2)'));
+    expect(within(cpuAccordion).getByText(/CPU 1: 25枚/)).toBeVisible();
+  });
+
+  it('opens the rules and CPU information on desktop', async () => {
+    window.innerWidth = 1280;
+    window.dispatchEvent(new Event('resize'));
+    renderWithProviders(<ScartoPage />);
+    await screen.findByTestId('scarto-point-reference');
+    expect(screen.getByText('ルール').closest('details')).toHaveAttribute('open');
+    expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
   });
 
   // **催促は常設のライブ領域の中にある (#6880)。** フェーズ切り替えで現れる

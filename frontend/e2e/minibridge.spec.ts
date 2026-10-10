@@ -11,6 +11,13 @@ const ownHand = (page: Page) => page.getByRole('button', { name: /^(?!ダミー�
 /** Contract buttons, only rendered when the human is the declarer. */
 const contractBtn = (page: Page) => page.locator('[data-testid^="mb-contract-"]:not([disabled])');
 
+const expandDisclosure = async (page: Page, testId: string) => {
+  const disclosure = page.getByTestId(testId);
+  if (!(await disclosure.evaluate((element) => (element as HTMLDetailsElement).open))) {
+    await disclosure.locator('summary').click();
+  }
+};
+
 /**
  * True when the human sits in the dummy seat.
  *
@@ -68,12 +75,14 @@ test.describe('Minibridge E2E', () => {
   // **競りが無いこと自体が規則。**
   test('always states that there is no auction', async ({ page }) => {
     await navigateTo(page, '/minibridge');
+    await expandDisclosure(page, 'mb-rule-details');
     await expect(page.getByTestId('mb-rule')).toContainText(/競り|auction/, { timeout: TIMEOUT_TRANSITION });
   });
 
   // **HCP は 4 席ぶん公開され、合計は必ず 40。**
   test('shows every seat HCP, totalling forty', async ({ page }) => {
     await navigateTo(page, '/minibridge');
+    await expandDisclosure(page, 'cpu-accordion');
     await expect(page.getByTestId('mb-seat-0')).toBeVisible({ timeout: TIMEOUT_TRANSITION });
 
     let total = 0;
@@ -90,6 +99,7 @@ test.describe('Minibridge E2E', () => {
   /** Settle the contract — the human only chooses it when they are the declarer. */
   const settleContract = async (page: Page) => {
     await expect(page.getByTestId('mb-round')).toBeVisible({ timeout: TIMEOUT_ACTION });
+    await expandDisclosure(page, 'cpu-accordion');
     if (await contractBtn(page).first().isVisible()) {
       await contractBtn(page).first().click();
     }

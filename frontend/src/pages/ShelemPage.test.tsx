@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { shelemApi } from '../api/gameApi';
+import { useIsMobile } from '../hooks/useCardDimensions';
 import { useGameHint } from '../hooks/useGameHint';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -17,7 +18,13 @@ vi.mock('../hooks/useGameHint', () => ({
   useGameHint: vi.fn(() => ({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() })),
 }));
 
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: vi.fn(() => false),
+}));
+
 const mockExec = vi.mocked(shelemApi.exec);
+const mockIsMobile = vi.mocked(useIsMobile);
 
 const card = (design: string, value: number): Card => ({ design, value }) as unknown as Card;
 
@@ -55,6 +62,7 @@ const playing = (over: Partial<ShelemResponse> = {}) =>
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mockIsMobile.mockReturnValue(false);
   mockExec.mockResolvedValue(makeState());
 });
 
@@ -70,6 +78,29 @@ describe('ShelemPage', () => {
     const box = await screen.findByTestId('sh-points');
     expect(box).toHaveTextContent(/A/);
     expect(box).toHaveTextContent(/100/);
+  });
+
+  it('collapses point guidance, seats, and cumulative score on mobile', async () => {
+    mockIsMobile.mockReturnValue(true);
+    renderWithProviders(<ShelemPage />);
+
+    const pointDetails = (await screen.findByText('得点札')).closest('details');
+    const score = await screen.findByTestId('sh-score');
+    const seats = screen.getByTestId('cpu-accordion');
+    expect(pointDetails).not.toHaveAttribute('open');
+    expect(screen.getByTestId('sh-points')).not.toBeVisible();
+    expect(score).not.toHaveAttribute('open');
+    expect(score.querySelector('div')).not.toBeVisible();
+    expect(seats).not.toHaveAttribute('open');
+    expect(screen.getByTestId('sh-seat-0')).not.toBeVisible();
+  });
+
+  it('opens cumulative score and seats on desktop', async () => {
+    renderWithProviders(<ShelemPage />);
+
+    expect(await screen.findByTestId('sh-score')).toHaveAttribute('open');
+    expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
+    expect(screen.getByTestId('sh-seat-0')).toBeVisible();
   });
 
   it('shows the last trick points separately from the round total', async () => {

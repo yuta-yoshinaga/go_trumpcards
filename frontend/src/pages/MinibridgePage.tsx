@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { minibridgeApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -67,7 +68,7 @@ function MinibridgePageContent() {
     exec: dispatch,
     retry,
   } = useGameApi<MinibridgeResponse, Parameters<typeof minibridgeApi.exec>>(minibridgeApi.exec);
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('minibridge', state);
   const [level, setLevel] = useState(1);
   const [cpuProcessing, setCpuProcessing] = useState(false);
@@ -162,6 +163,42 @@ function MinibridgePageContent() {
     .filter((p) => p.team === state.players[state.declarerIdx]?.team)
     .reduce((sum, p) => sum + p.hcp, 0);
 
+  const renderSeat = (p: (typeof state.players)[number]) => (
+    <div
+      key={p.id}
+      className={`rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted ${
+        state.phase === MinibridgePhase.PLAY && isHumanTurn && p.id === state.currentPlayerIdx
+          ? 'ring-2 ring-ds-accent'
+          : ''
+      }`}
+      data-testid={`mb-seat-${p.id.toString()}`}
+    >
+      <span className="text-ds-text-primary">
+        {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
+      </span>
+      {state.phase === MinibridgePhase.PLAY && isHumanTurn && p.id === state.currentPlayerIdx && (
+        <span className="ml-1 text-ds-accent" aria-current="step" data-testid={`mb-turn-${p.id.toString()}`}>
+          {t('header.currentTurn')}
+        </span>
+      )}
+      <span className={`ml-1 ${teamTagClass(p.team === humanTeam)}`} data-testid={`mb-team-${p.id.toString()}`}>
+        <span aria-hidden="true">{t('header.teamTag', { team: String(p.team) })}</span>
+        <span className="sr-only">{p.team === humanTeam ? t('header.teamAllyAria') : t('header.teamFoeAria')}</span>
+      </span>
+      {p.id === state.dealerIdx && (
+        <span className="ml-1 text-ds-info" data-testid={`mb-dealer-${p.id.toString()}`}>
+          {t('header.dealer')}
+        </span>
+      )}
+      {p.id === state.declarerIdx && <span className="ml-1 text-ds-accent">{t('header.declarer')}</span>}
+      {p.id === state.dummyIdx && <span className="ml-1 text-ds-accent">{t('header.dummy')}</span>}
+      {': '}
+      <span className="text-ds-accent">{t('header.hcp', { n: String(p.hcp) })}</span>
+      {' / '}
+      {t('header.took', { n: String(p.trickCount) })}
+    </div>
+  );
+
   const resultBanner = (() => {
     if (!isGameEnd) return null;
     if (state.winnerTeam === 0) return t('result.you');
@@ -216,6 +253,7 @@ function MinibridgePageContent() {
             <details
               className="mb-3 rounded bg-black/30 px-3 py-2 text-ds-text-primary text-center"
               data-tutorial="mb-rule"
+              data-testid="mb-rule-details"
             >
               <summary className="cursor-pointer select-none">{t('header.rules')}</summary>
               <div className="mt-1" data-testid="mb-rule">
@@ -251,60 +289,15 @@ function MinibridgePageContent() {
               </div>
             )}
 
-            {/* **HCP は公開情報。** 4 席ぶん常に出す。 */}
-            <div
-              className="grid grid-cols-2 gap-1 mb-4 sm:flex sm:flex-wrap sm:justify-center sm:gap-2"
-              data-tutorial="mb-seats"
-              data-testid="mb-seats"
-            >
-              {state.players.map((p) => (
-                <div
-                  key={p.id}
-                  className={`rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted ${
-                    state.phase === MinibridgePhase.PLAY && isHumanTurn && p.id === state.currentPlayerIdx
-                      ? 'ring-2 ring-ds-accent'
-                      : ''
-                  }`}
-                  data-testid={`mb-seat-${p.id.toString()}`}
-                >
-                  <span className="text-ds-text-primary">
-                    {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
-                  </span>
-                  {state.phase === MinibridgePhase.PLAY && isHumanTurn && p.id === state.currentPlayerIdx && (
-                    <span
-                      className="ml-1 text-ds-accent"
-                      aria-current="step"
-                      data-testid={`mb-turn-${p.id.toString()}`}
-                    >
-                      {t('header.currentTurn')}
-                    </span>
-                  )}
-                  {/* **競りが無いぶん、味方が誰かは席表示でしか分からない** (#5761)。
-                      CUI は最初から team を出しているのに、Web は契約が決まって
-                      デクレアラー/ダミーのタグが付くまで何も出していなかった。 */}
-                  <span
-                    className={`ml-1 ${teamTagClass(p.team === humanTeam)}`}
-                    data-testid={`mb-team-${p.id.toString()}`}
-                  >
-                    <span aria-hidden="true">{t('header.teamTag', { team: String(p.team) })}</span>
-                    <span className="sr-only">
-                      {p.team === humanTeam ? t('header.teamAllyAria') : t('header.teamFoeAria')}
-                    </span>
-                  </span>
-                  {p.id === state.dealerIdx && (
-                    <span className="ml-1 text-ds-info" data-testid={`mb-dealer-${p.id.toString()}`}>
-                      {t('header.dealer')}
-                    </span>
-                  )}
-                  {p.id === state.declarerIdx && <span className="ml-1 text-ds-accent">{t('header.declarer')}</span>}
-                  {p.id === state.dummyIdx && <span className="ml-1 text-ds-accent">{t('header.dummy')}</span>}
-                  {': '}
-                  <span className="text-ds-accent">{t('header.hcp', { n: String(p.hcp) })}</span>
-                  {' / '}
-                  {t('header.took', { n: String(p.trickCount) })}
-                </div>
-              ))}
+            {/* **HCP は公開情報。** CPU の席だけを折りたたみ、自分の席は常時表示する。 */}
+            <div className="flex flex-wrap justify-center gap-1 mb-2 sm:gap-2" data-testid="mb-human-seat">
+              {human && renderSeat(human)}
             </div>
+            <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length} dataTutorial="mb-seats">
+              <div className="flex flex-wrap justify-center gap-1 mb-4 sm:gap-2" data-testid="mb-seats">
+                {state.players.filter((p) => !p.isHuman).map(renderSeat)}
+              </div>
+            </CpuAccordion>
 
             <div data-tutorial="mb-trick">
               <TrickDisplay
@@ -373,7 +366,7 @@ function MinibridgePageContent() {
                   {t('header.dummyHand')}
                   {isHumanDummyTurn && <span className="ml-2 text-ds-accent">{t('header.dummyTurn')}</span>}
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-nowrap gap-0">
                   {state.dummyHand.map((card, idx) => (
                     <button
                       key={`dummy-${card.design}-${card.value}-${idx}`}
@@ -381,9 +374,10 @@ function MinibridgePageContent() {
                       onClick={() => handlePlay(idx)}
                       disabled={loading || !isHumanDummyTurn || !legalRing.has(idx)}
                       aria-label={t('actions.playDummyAria', { card: cardAlt(card) })}
-                      className={`disabled:opacity-50 ${
+                      className={`disabled:opacity-50 sm:focus-visible:z-10 ${
                         isHumanDummyTurn && legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''
                       }`}
+                      style={{ marginLeft: idx > 0 ? -Math.round(cardWidth * 0.55) : undefined }}
                     >
                       <CardImage card={card} width={cardWidth} />
                     </button>
@@ -401,7 +395,7 @@ function MinibridgePageContent() {
                     <span className="ml-2 text-ds-accent">{t('header.yourTurn')}</span>
                   )}
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2 sm:flex-nowrap sm:gap-0">
                   {human.cards.map((card, idx) => (
                     <button
                       key={`${card.design}-${card.value}-${idx}`}
@@ -409,9 +403,10 @@ function MinibridgePageContent() {
                       onClick={() => handlePlay(idx)}
                       disabled={loading || !isHumanTurn || isHumanDummyTurn || !legalRing.has(idx)}
                       aria-label={t('actions.playAria', { card: cardAlt(card) })}
-                      className={`disabled:opacity-50 ${
+                      className={`disabled:opacity-50 sm:focus-visible:z-10 ${
                         !isHumanDummyTurn && legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''
                       }`}
+                      style={{ marginLeft: !isMobile && idx > 0 ? -Math.round(cardWidth * 0.55) : undefined }}
                     >
                       <CardImage card={card} width={cardWidth} />
                     </button>

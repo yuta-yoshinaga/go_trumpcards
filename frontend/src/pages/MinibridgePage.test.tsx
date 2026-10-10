@@ -16,6 +16,14 @@ vi.mock('../hooks/useGameHint', () => ({
   useGameHint: vi.fn(() => ({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() })),
 }));
 
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useCardDimensions: () => ({ cardWidth: mobileState.isMobile ? 36 : 60, isMobile: mobileState.isMobile }),
+  useIsMobile: () => mobileState.isMobile,
+}));
+
 const mockExec = vi.mocked(minibridgeApi.exec);
 
 const card = (design: string, value: number): Card => ({ design, value }) as unknown as Card;
@@ -81,6 +89,7 @@ const playing = (over: Partial<MinibridgeResponse> = {}) =>
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mobileState.isMobile = true;
   mockExec.mockResolvedValue(makeState());
 });
 
@@ -192,20 +201,81 @@ describe('MinibridgePage', () => {
     await waitFor(() => expect(screen.getByTestId('mb-cpu-processing')).toBeEmptyDOMElement());
   });
 
-  // **競りが無いこと自体が規則。**
-  it('states that there is no auction', async () => {
+  it('keeps the rule text hidden in a closed mobile disclosure', async () => {
     renderWithProviders(<MinibridgePage />);
     const rule = await screen.findByTestId('mb-rule');
     expect(rule).toHaveTextContent(/競りはありません/);
     const disclosure = rule.closest('details');
     expect(disclosure).not.toHaveAttribute('open');
+    expect(rule).not.toBeVisible();
     expect(disclosure).toHaveAttribute('data-tutorial', 'mb-rule');
     expect(disclosure).toContainElement(rule);
   });
 
+  it('opens the CPU seat disclosure on desktop', async () => {
+    mobileState.isMobile = false;
+    renderWithProviders(<MinibridgePage />);
+    const seats = await screen.findByTestId('mb-seats');
+    expect(seats.closest('details')).toHaveAttribute('open');
+    expect(seats).toBeVisible();
+  });
+
+  it('keeps the CPU seat details collapsed on mobile', async () => {
+    renderWithProviders(<MinibridgePage />);
+    const seats = await screen.findByTestId('mb-seats');
+    expect(seats.closest('details')).not.toHaveAttribute('open');
+    expect(seats).not.toBeVisible();
+  });
+
+  it('keeps the human seat outside the CPU disclosure', async () => {
+    renderWithProviders(<MinibridgePage />);
+    const humanSeat = await screen.findByTestId('mb-seat-0');
+    expect(humanSeat.closest('details')).toBeNull();
+    expect(screen.getByTestId('mb-human-seat')).toContainElement(humanSeat);
+  });
+
   it('lays out the seats in two columns on small screens', async () => {
     renderWithProviders(<MinibridgePage />);
-    expect(await screen.findByTestId('mb-seats')).toHaveClass('grid-cols-2');
+    expect(await screen.findByTestId('mb-seats')).toHaveClass('flex-wrap');
+  });
+
+  it('overlaps both desktop hands in a single non-wrapping row', async () => {
+    mobileState.isMobile = false;
+    mockExec.mockResolvedValue(
+      playing({
+        declarerIdx: 1,
+        currentPlayerIdx: 0,
+        dummyHand: hand,
+        players: [seat(0), seat(1), seat(2, { isHuman: false }), seat(3)],
+      }),
+    );
+    renderWithProviders(<MinibridgePage />);
+    const dummyHand = await screen.findByTestId('mb-dummy');
+    await screen.findByTestId('mb-seat-0');
+    const ownHand = document.querySelector('[data-tutorial="mb-hand"]');
+    expect(ownHand).not.toBeNull();
+    expect(dummyHand.querySelector('.flex')).toHaveClass('flex-nowrap', 'gap-0');
+    expect(ownHand?.querySelector('.flex')).toHaveClass('sm:flex-nowrap');
+    expect(dummyHand.querySelectorAll('button')).toHaveLength(5);
+    expect(ownHand?.querySelectorAll('button')).toHaveLength(5);
+  });
+
+  it('overlaps the mobile dummy hand in one row and keeps legal plays operable', async () => {
+    mockExec.mockResolvedValue(playing({ currentPlayerIdx: 2, validPlays: [0, 2] }));
+    renderWithProviders(<MinibridgePage />);
+
+    const dummyHand = await screen.findByTestId('mb-dummy');
+    const dummyCards = dummyHand.querySelectorAll('button');
+    expect(dummyHand.querySelector('.flex')).toHaveClass('flex-nowrap', 'gap-0');
+    expect(dummyCards).toHaveLength(2);
+    expect(dummyCards[0]).toHaveAttribute('aria-label');
+    expect(dummyCards[0]).toBeEnabled();
+    expect(dummyCards[1]).toBeDisabled();
+    expect(dummyCards[1].querySelector('img')).toHaveStyle({ width: '36px' });
+    expect(dummyCards[1]).toHaveStyle({ marginLeft: '-20px' });
+
+    fireEvent.click(dummyCards[0]);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0));
   });
 
   // **HCP は公開情報。** 4 席ぶん出て、合計は 40。

@@ -2,6 +2,7 @@ import { useCallback, useMemo } from 'react';
 import { ramsApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -208,43 +209,45 @@ function RamsPageContent() {
               </div>
             </div>
 
-            <div className="flex flex-wrap justify-center gap-2 mb-4">
-              {state.players.map((p) => (
-                <div
-                  key={p.id}
-                  className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
-                  data-testid={`rm-seat-${p.id.toString()}`}
-                >
-                  <span className="text-ds-text-primary">
-                    {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
-                  </span>
-                  {/* **参加判断もリードも親の左隣から始まる** (#5748)。3〜5 人卓で
+            <CpuAccordion playerCount={state.players.length}>
+              <div className="flex flex-wrap justify-center gap-2 mb-4">
+                {state.players.map((p) => (
+                  <div
+                    key={p.id}
+                    className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
+                    data-testid={`rm-seat-${p.id.toString()}`}
+                  >
+                    <span className="text-ds-text-primary">
+                      {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
+                    </span>
+                    {/* **参加判断もリードも親の左隣から始まる** (#5748)。3〜5 人卓で
                       毎ラウンド 1 つ回るので、誰が親かが出ていないと自分が何番目に
                       決断するのか読めない。 */}
-                  {p.id === state.dealerIdx && (
-                    <span
-                      className={`ml-1 rounded px-1.5 py-0.5 text-xs ${badgeWarningColors}`}
-                      data-testid={`rm-dealer-${p.id.toString()}`}
-                    >
-                      <span aria-hidden="true">{t('dealerBadge')}</span>
-                      <span className="sr-only">{t('dealerAria')}</span>
-                    </span>
-                  )}
-                  {': '}
-                  {t('header.seat', { chips: String(p.chips), tricks: String(p.roundTricks) })} [{statusStr(p)}]
-                  {(() => {
-                    const movement = state.roundSettlement?.find((item) => item.playerIdx === p.id);
-                    if (!movement) return null;
-                    const delta = movement.payout - movement.penalty;
-                    return (
-                      <span className={delta >= 0 ? 'ml-1 text-ds-success' : 'ml-1 text-ds-error-text'}>
-                        {t('header.roundDelta', { delta })}
+                    {p.id === state.dealerIdx && (
+                      <span
+                        className={`ml-1 rounded px-1.5 py-0.5 text-xs ${badgeWarningColors}`}
+                        data-testid={`rm-dealer-${p.id.toString()}`}
+                      >
+                        <span aria-hidden="true">{t('dealerBadge')}</span>
+                        <span className="sr-only">{t('dealerAria')}</span>
                       </span>
-                    );
-                  })()}
-                </div>
-              ))}
-            </div>
+                    )}
+                    {': '}
+                    {t('header.seat', { chips: String(p.chips), tricks: String(p.roundTricks) })} [{statusStr(p)}]
+                    {(() => {
+                      const movement = state.roundSettlement?.find((item) => item.playerIdx === p.id);
+                      if (!movement) return null;
+                      const delta = movement.payout - movement.penalty;
+                      return (
+                        <span className={delta >= 0 ? 'ml-1 text-ds-success' : 'ml-1 text-ds-error-text'}>
+                          {t('header.roundDelta', { delta })}
+                        </span>
+                      );
+                    })()}
+                  </div>
+                ))}
+              </div>
+            </CpuAccordion>
 
             <div data-tutorial="rams-trick">
               <TrickDisplay

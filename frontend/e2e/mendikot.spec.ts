@@ -31,6 +31,7 @@ test.describe('Mendikot E2E', () => {
   // 4 席すべてがチーム番号つきで出る。
   test('labels all four seats with their team', async ({ page }) => {
     await navigateTo(page, '/mendikot');
+    await page.getByTestId('cpu-accordion').locator('summary').click();
     for (const id of [0, 1, 2, 3]) {
       await expect(page.getByTestId(`md-seat-${id}`)).toContainText(/T[01]/, { timeout: TIMEOUT_TRANSITION });
     }

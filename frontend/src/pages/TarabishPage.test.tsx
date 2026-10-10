@@ -17,6 +17,12 @@ vi.mock('../hooks/useGameHint', () => ({
 }));
 
 const mockExec = vi.mocked(tarabishApi.exec);
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+}));
 
 const card = (design: string, value: number): Card => ({ design, value }) as unknown as Card;
 
@@ -64,6 +70,7 @@ const playing = (over: Partial<TarabishResponse> = {}) =>
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mobileState.isMobile = true;
   mockExec.mockResolvedValue(makeState());
 });
 
@@ -107,11 +114,37 @@ describe('TarabishPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
-  // **切り札の序列は盤面から読めない。** 常に出ていなければならない。
-  it('always states the trump order', async () => {
+  it('keeps the trump order collapsed on mobile and exposes it on demand', async () => {
     renderWithProviders(<TarabishPage />);
-    expect(await screen.findByTestId('tb-order')).toHaveTextContent(/J\(Jass\)=20/);
+    expect(await screen.findByTestId('tb-order-details')).not.toHaveAttribute('open');
+    expect(screen.getByTestId('tb-order')).not.toBeVisible();
+    fireEvent.click(screen.getByText('ルール'));
+    expect(screen.getByTestId('tb-order')).toHaveTextContent(/J\(Jass\)=20/);
     expect(screen.getByTestId('tb-order')).toHaveTextContent(/9\(Menel\)=14/);
+  });
+
+  it('keeps the rules disclosure available on desktop', async () => {
+    mobileState.isMobile = false;
+    renderWithProviders(<TarabishPage />);
+    const details = await screen.findByTestId('tb-order-details');
+    expect(details).not.toHaveAttribute('open');
+    expect(details.querySelector('summary')).toHaveTextContent('ルール');
+    mobileState.isMobile = true;
+  });
+
+  it('collapses CPU seats on mobile and opens them on desktop', async () => {
+    const firstRender = renderWithProviders(<TarabishPage />);
+    expect(await screen.findByTestId('cpu-accordion')).not.toHaveAttribute('open');
+    expect(screen.getByTestId('tb-seat-0')).not.toBeVisible();
+    fireEvent.click(screen.getByTestId('cpu-accordion').querySelector('summary') as HTMLElement);
+    expect(screen.getByTestId('tb-seat-0')).toBeVisible();
+    firstRender.unmount();
+    mobileState.isMobile = false;
+    const { unmount } = renderWithProviders(<TarabishPage />);
+    expect(await screen.findByTestId('cpu-accordion')).toHaveAttribute('open');
+    expect(screen.getByTestId('tb-seat-0')).toBeVisible();
+    unmount();
+    mobileState.isMobile = true;
   });
 
   it('offers both choices while bidding', async () => {
@@ -184,6 +217,7 @@ describe('TarabishPage', () => {
       } as Partial<TarabishResponse>),
     );
     renderWithProviders(<TarabishPage />);
+    fireEvent.click((await screen.findByTestId('cpu-accordion')).querySelector('summary') as HTMLElement);
 
     expect(await screen.findByTestId('tb-seat-0')).toHaveTextContent('T0');
     expect(screen.getByTestId('tb-seat-0')).toHaveTextContent('ラン4枚');

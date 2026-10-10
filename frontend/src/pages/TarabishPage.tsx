@@ -2,6 +2,7 @@ import { useCallback, useMemo } from 'react';
 import { tarabishApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -194,13 +195,17 @@ function TarabishPageContent() {
             </div>
 
             {/* 切り札の序列はこの系統の肝。盤面からは読み取れない。 */}
-            <div
+            <details
               className="mb-3 rounded bg-black/30 px-3 py-2 text-ds-text-muted text-sm text-center"
-              data-testid="tb-order"
-              data-tutorial="tarabish-order"
+              data-testid="tb-order-details"
             >
-              {t('header.order')}
-            </div>
+              <summary className="cursor-pointer select-none text-ds-text-primary" data-tutorial="tarabish-order">
+                {t('disclosure.rules')}
+              </summary>
+              <div className="mt-1" data-testid="tb-order">
+                {t('header.order')}
+              </div>
+            </details>
 
             {/* 入札前は候補、決まったあとは切り札。 */}
             <div className="mb-3 flex flex-wrap justify-center items-center gap-3">
@@ -225,30 +230,32 @@ function TarabishPageContent() {
             </div>
 
             {/* メルドは自動判定。誰がいくら持っているかは盤面に出ない。 */}
-            <div className="flex flex-wrap justify-center gap-2 mb-4" data-tutorial="tarabish-melds">
-              {state.players.map((p) => (
-                <div
-                  key={p.id}
-                  className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
-                  data-testid={`tb-seat-${p.id.toString()}`}
-                >
-                  <span className="text-ds-text-primary">
-                    {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
-                  </span>
-                  <span className="ml-1 text-ds-accent">{t('header.team', { team: String(p.team) })}</span>
-                  {': '}
-                  {meldStr(p)}
-                  {/* **トリック配分がそのまま点数の趨勢。**CUI の playerLine は
+            <CpuAccordion playerCount={3} dataTutorial="tarabish-melds">
+              <div className="flex flex-wrap justify-center gap-2 mb-4">
+                {state.players.map((p) => (
+                  <div
+                    key={p.id}
+                    className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
+                    data-testid={`tb-seat-${p.id.toString()}`}
+                  >
+                    <span className="text-ds-text-primary">
+                      {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
+                    </span>
+                    <span className="ml-1 text-ds-accent">{t('header.team', { team: String(p.team) })}</span>
+                    {': '}
+                    {meldStr(p)}
+                    {/* **トリック配分がそのまま点数の趨勢。**CUI の playerLine は
                       これを毎回出しているのに、Web だけ読めなかった。 */}
-                  <span className="ml-2" data-testid={`tb-seat-tricks-${p.id.toString()}`}>
-                    {t('header.tricksTaken', { count: p.trickCount })}
-                  </span>
-                  <span className="ml-2" data-testid={`tb-seat-cards-${p.id.toString()}`}>
-                    {t('header.cardsLeft', { count: p.cardCount })}
-                  </span>
-                </div>
-              ))}
-            </div>
+                    <span className="ml-2" data-testid={`tb-seat-tricks-${p.id.toString()}`}>
+                      {t('header.tricksTaken', { count: p.trickCount })}
+                    </span>
+                    <span className="ml-2" data-testid={`tb-seat-cards-${p.id.toString()}`}>
+                      {t('header.cardsLeft', { count: p.cardCount })}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </CpuAccordion>
 
             <div data-tutorial="tarabish-trick">
               <TrickDisplay

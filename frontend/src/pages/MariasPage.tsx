@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import type { mariasApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -161,6 +162,17 @@ function MariasPageContent() {
   // ボーナスを失った」という誤解**を与えていた (#4759)。確定済みの点数
   // そのものを根拠にする。
   const marriagePoints = isPlayPhase ? (state.roundMarriage[humanPlayer?.id ?? 0] ?? 0) : 0;
+  const sideTotal = (soloist: boolean) =>
+    state.players.reduce(
+      (sum, player) =>
+        player.isSoloist === soloist
+          ? sum + (state.roundCardPoints[player.id] ?? 0) + (state.roundMarriage[player.id] ?? 0)
+          : sum,
+      0,
+    );
+  const soloistTotal = sideTotal(true);
+  const defenderTotal = sideTotal(false);
+  const soloistWon = soloistTotal > defenderTotal;
 
   const handleManualReset = () => {
     hideActionLog();
@@ -271,20 +283,8 @@ function MariasPageContent() {
                 </div>
 
                 {/* Players: cards / tricks */}
-                {isMobile ? (
-                  <details className="mb-2 p-2 rounded bg-black/30">
-                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('players')}</summary>
-                    <div className="mt-1">
-                      {state.players.map((p) => (
-                        <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                          {playerName(p.id, p.isHuman)}: {playerRoleLabel(p.isSoloist)} |{' '}
-                          {t('cards', { count: p.cardCount })} | {t('tricks', { count: p.trickCount })}
-                        </div>
-                      ))}
-                    </div>
-                  </details>
-                ) : (
-                  <div className="mb-2 p-2 rounded bg-black/30">
+                <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+                  <div className="flex flex-wrap gap-x-3 gap-y-1">
                     {state.players.map((p) => (
                       <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
                         {playerName(p.id, p.isHuman)}: {playerRoleLabel(p.isSoloist)} |{' '}
@@ -292,73 +292,62 @@ function MariasPageContent() {
                       </div>
                     ))}
                   </div>
-                )}
+                </CpuAccordion>
 
                 {/* Round result: per-player card points + marriage */}
                 <div data-testid="marias-round-progress-live" role="status" aria-live="polite" aria-atomic="true">
                   {(isPlayPhase || isTrickEnd || isRoundEnd || isGameEnd) && (
-                    <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-                      <div className="mb-1 text-ds-text-primary">
+                    <details
+                      open={!isMobile || undefined}
+                      className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                    >
+                      <summary className="cursor-pointer select-none text-ds-text-primary">
                         {t(isRoundEnd || isGameEnd ? 'roundResult.title' : 'roundResult.progressTitle')}
-                      </div>
-                      {state.players.map((p) => {
-                        const cardPoints = state.roundCardPoints[p.id] ?? 0;
-                        const marriage = state.roundMarriage[p.id] ?? 0;
+                        <span className="ml-2" data-testid="marias-side-totals">
+                          <span
+                            className={(isRoundEnd || isGameEnd) && soloistWon ? 'text-ds-warning font-semibold' : ''}
+                          >
+                            {t('roundResult.soloistTotal', { points: soloistTotal })}
+                          </span>
+                          {' / '}
+                          <span
+                            className={(isRoundEnd || isGameEnd) && !soloistWon ? 'text-ds-warning font-semibold' : ''}
+                          >
+                            {t('roundResult.defenderTotal', { points: defenderTotal })}
+                          </span>
+                        </span>
+                      </summary>
+                      <div className="pt-1">
+                        {state.players.map((p) => {
+                          const cardPoints = state.roundCardPoints[p.id] ?? 0;
+                          const marriage = state.roundMarriage[p.id] ?? 0;
 
-                        return (
-                          <div key={p.id}>
-                            <div>
-                              {t('roundResult.cardPoints', {
-                                name: playerName(p.id, p.isHuman),
-                                points: cardPoints,
-                              })}
-                            </div>
-                            {marriage > 0 && (
+                          return (
+                            <div key={p.id}>
                               <div>
-                                {t('roundResult.marriage', {
+                                {t('roundResult.cardPoints', {
                                   name: playerName(p.id, p.isHuman),
-                                  points: marriage,
+                                  points: cardPoints,
                                 })}
-                                <span className="ml-1">({marriageDetails(p.id)})</span>
                               </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                      {/* Soloist-vs-Defenders total comparison. Each side total is
+                              {marriage > 0 && (
+                                <div>
+                                  {t('roundResult.marriage', {
+                                    name: playerName(p.id, p.isHuman),
+                                    points: marriage,
+                                  })}
+                                  <span className="ml-1">({marriageDetails(p.id)})</span>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                        {/* Soloist-vs-Defenders total comparison. Each side total is
                           cardPoints + marriage; the Soloist wins the round only when
                           their total strictly exceeds the two Defenders' combined total
                           (matching the domain's ScoreRound). The winning side is emphasised. */}
-                      {(() => {
-                        const sideTotal = (soloist: boolean) =>
-                          state.players.reduce(
-                            (sum, p) =>
-                              p.isSoloist === soloist
-                                ? sum + (state.roundCardPoints[p.id] ?? 0) + (state.roundMarriage[p.id] ?? 0)
-                                : sum,
-                            0,
-                          );
-                        const soloistTotal = sideTotal(true);
-                        const defenderTotal = sideTotal(false);
-                        const soloistWon = soloistTotal > defenderTotal;
-                        const highlightWinner = (isRoundEnd || isGameEnd) && soloistWon;
-                        return (
-                          <div className="mt-1 pt-1 border-t border-ds-border-subtle" data-testid="marias-side-totals">
-                            <span className={highlightWinner ? 'text-ds-warning font-semibold' : ''}>
-                              {t('roundResult.soloistTotal', { points: soloistTotal })}
-                            </span>
-                            <span className="mx-1">/</span>
-                            <span
-                              className={
-                                (isRoundEnd || isGameEnd) && !soloistWon ? 'text-ds-warning font-semibold' : ''
-                              }
-                            >
-                              {t('roundResult.defenderTotal', { points: defenderTotal })}
-                            </span>
-                          </div>
-                        );
-                      })()}
-                    </div>
+                      </div>
+                    </details>
                   )}
                 </div>
               </div>

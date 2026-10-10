@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { marjapussiApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardFace } from '../components/CardFace';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -272,7 +273,7 @@ function MarjapussiPageContent() {
           />
 
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            <div className="text-ds-text-primary text-center mb-2 flex flex-wrap justify-center gap-x-4 gap-y-1">
+            <div className="text-ds-text-primary text-center mb-2 flex flex-wrap justify-center gap-x-2 gap-y-1 text-xs sm:gap-x-4 sm:text-base">
               <span>{t('round', { n: state.roundNumber })}</span>
               <span>{t('trick', { n: state.trickNumber })}</span>
               <span data-testid="marjapussi-trump" className="font-semibold text-ds-accent">
@@ -281,36 +282,38 @@ function MarjapussiPageContent() {
               <span>{t('target', { points: target })}</span>
             </div>
 
-            <section
+            <details
+              open={!isMobile || undefined}
               className="mb-2 rounded bg-ds-surface p-2 text-sm text-ds-text-primary"
               data-testid="marjapussi-marriage-history"
-              aria-labelledby="marjapussi-marriage-history-heading"
             >
-              <h2 id="marjapussi-marriage-history-heading" className="mb-1 font-semibold">
-                {t('marriageHistory')}
-              </h2>
-              {marriagesThisRound.length > 0 ? (
-                <ol className="space-y-1">
-                  {marriagesThisRound.map((marriage, index) => (
-                    <li
-                      key={`${index}-${marriage.playerIdx}-${marriage.suit}`}
-                      aria-current={index === marriagesThisRound.length - 1 ? 'true' : undefined}
-                      className={
-                        index === marriagesThisRound.length - 1 ? 'font-semibold text-ds-accent' : 'text-ds-text-muted'
-                      }
-                    >
-                      {t('marriageEntry', {
-                        player: playerName(marriage.playerIdx, marriage.playerIdx === humanIdx),
-                        suit: suitSymbolAt(marriage.suit, '-'),
-                        points: marriage.points,
-                      })}
-                    </li>
-                  ))}
-                </ol>
-              ) : (
-                <p className="text-ds-text-muted">{t('noMarriage')}</p>
-              )}
-            </section>
+              <summary className="cursor-pointer select-none font-semibold">{t('marriageHistory')}</summary>
+              <div className="mt-1">
+                {marriagesThisRound.length > 0 ? (
+                  <ol className="space-y-1">
+                    {marriagesThisRound.map((marriage, index) => (
+                      <li
+                        key={`${index}-${marriage.playerIdx}-${marriage.suit}`}
+                        aria-current={index === marriagesThisRound.length - 1 ? 'true' : undefined}
+                        className={
+                          index === marriagesThisRound.length - 1
+                            ? 'font-semibold text-ds-accent'
+                            : 'text-ds-text-muted'
+                        }
+                      >
+                        {t('marriageEntry', {
+                          player: playerName(marriage.playerIdx, marriage.playerIdx === humanIdx),
+                          suit: suitSymbolAt(marriage.suit, '-'),
+                          points: marriage.points,
+                        })}
+                      </li>
+                    ))}
+                  </ol>
+                ) : (
+                  <p className="text-ds-text-muted">{t('noMarriage')}</p>
+                )}
+              </div>
+            </details>
 
             <div className={lgTwoColGrid}>
               {/* Left: play area */}
@@ -329,6 +332,10 @@ function MarjapussiPageContent() {
                   data-testid="marjapussi-pussi"
                 >
                   <div className="text-ds-text-primary font-medium">{t('pussi', { count: state.pussiCount })}</div>
+                  <details className="mt-1 text-ds-text-muted text-xs" data-testid="marjapussi-pussi-details">
+                    <summary className="cursor-pointer select-none">{t('pussiInfoLabel')}</summary>
+                    <p>{t('pussiDescription')}</p>
+                  </details>
                   {(isRoundEnd || isGameEnd) && state.pussiWinnerTeam >= 0 && (
                     <div className="mt-2 text-ds-accent font-semibold" data-testid="marjapussi-pussi-result">
                       <div>
@@ -351,53 +358,70 @@ function MarjapussiPageContent() {
 
               {/* Right: info sidebar */}
               <div data-tutorial="marjapussi-info">
+                {/* Team scores with progress toward the target */}
+                <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
+                  <div className="flex flex-wrap justify-center gap-x-3 gap-y-2 font-medium text-ds-text-primary">
+                    {[team0Score, team1Score].map((score, teamId) => {
+                      const pct = Math.max(0, Math.min(100, (score / target) * 100));
+                      const isNearWin = score / target > NEAR_WIN_RATIO;
+                      const teamLabel = teamId === 0 ? t('scoreTeamUs') : t('scoreTeamThem');
+                      return (
+                        <div key={teamId} className="flex items-center gap-1.5">
+                          <span className={teamId === 0 ? 'text-ds-accent' : ''}>
+                            {teamLabel}: {score}点
+                          </span>
+                          <div
+                            role="progressbar"
+                            aria-label={`${teamLabel}: ${score} / ${target}`}
+                            aria-valuemin={0}
+                            aria-valuemax={target}
+                            aria-valuenow={Math.max(0, Math.min(target, score))}
+                            data-testid={`marjapussi-progress-team-${teamId}`}
+                            className="relative h-2 w-10 rounded-sm bg-white/15 overflow-hidden"
+                          >
+                            <div
+                              className={`h-full rounded-sm ${isNearWin ? 'bg-ds-warning' : teamId === 0 ? 'bg-ds-accent' : 'bg-ds-info'}`}
+                              style={{ width: `${pct}%` }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 {humanPlayer && (
-                  <div className="text-ds-text-muted text-sm text-center mb-2">
-                    <div>{t('teamUs')}</div>
-                    <div>{t('teamThem')}</div>
+                  <div
+                    className="mb-1 flex justify-between text-sm text-ds-text-primary"
+                    data-testid={`marjapussi-player-team-${humanPlayer.id}`}
+                  >
+                    <span>
+                      {playerName(humanPlayer.id, true)}{' '}
+                      <span className={`px-1.5 py-0.2 rounded text-xs ${badgeSuccessColors}`}>{t('usBadge')}</span>
+                    </span>
+                    <span>
+                      {t('cards', { count: humanPlayer.cardCount })} | {t('tricks', { count: humanPlayer.trickCount })}
+                    </span>
                   </div>
                 )}
 
-                {/* Team scores with progress toward the target */}
-                <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-                  <div className="font-semibold text-ds-text-primary mb-1">{t('teamScore', { score: '' })}</div>
-                  {[0, 1].map((teamId) => {
-                    const score = teamId === 0 ? team0Score : team1Score;
-                    const pct = Math.max(0, Math.min(100, (score / target) * 100));
-                    const isNearWin = score / target > NEAR_WIN_RATIO;
-                    const teamLabel = teamId === 0 ? t('team0') : t('team1');
-                    const barLabel = `${teamLabel}: ${score} / ${target}`;
-                    return (
-                      <div key={teamId} className="py-1">
-                        <div className="flex justify-between items-center text-xs">
-                          <span className={teamId === 0 ? 'text-ds-accent font-semibold' : ''}>{teamLabel}</span>
-                          <span className="font-medium text-ds-text-primary">{score}点</span>
-                        </div>
-                        <div
-                          role="progressbar"
-                          aria-label={barLabel}
-                          aria-valuemin={0}
-                          aria-valuemax={target}
-                          aria-valuenow={Math.max(0, Math.min(target, score))}
-                          data-testid={`marjapussi-progress-team-${teamId}`}
-                          className="relative mt-0.5 h-2 w-full rounded-sm bg-white/15 overflow-hidden"
-                        >
-                          <div
-                            className={`h-full rounded-sm ${isNearWin ? 'bg-ds-warning' : teamId === 0 ? 'bg-ds-accent' : 'bg-ds-info'}`}
-                            style={{ width: `${pct}%` }}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
                 {/* Players: team membership / cards / tricks */}
-                {isMobile ? (
-                  <details className="mb-2 p-2 rounded bg-black/30">
-                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('players')}</summary>
-                    <div className="mt-1">
-                      {state.players.map((p) => {
+                <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+                  <details
+                    open={!isMobile || undefined}
+                    className="mb-2 rounded bg-ds-surface p-2 text-sm text-ds-text-primary"
+                    data-testid="marjapussi-team-details"
+                  >
+                    <summary className="cursor-pointer select-none font-semibold">{t('teamDetails')}</summary>
+                    <div className="mt-1 text-center text-ds-text-muted">
+                      <div>{t('teamUs')}</div>
+                      <div>{t('teamThem')}</div>
+                    </div>
+                  </details>
+                  <div className="p-2 flex flex-wrap gap-x-4">
+                    {state.players
+                      .filter((p) => !p.isHuman)
+                      .map((p) => {
                         const isUs = p.teamId === 0;
                         return (
                           <div
@@ -419,35 +443,8 @@ function MarjapussiPageContent() {
                           </div>
                         );
                       })}
-                    </div>
-                  </details>
-                ) : (
-                  <div className="mb-2 p-2 rounded bg-black/30">
-                    <div className="text-ds-text-primary text-xs font-semibold mb-1">{t('players')}</div>
-                    {state.players.map((p) => {
-                      const isUs = p.teamId === 0;
-                      return (
-                        <div
-                          key={p.id}
-                          className="text-ds-text-muted text-sm py-0.5 flex justify-between items-center"
-                          data-testid={`marjapussi-player-team-${p.id}`}
-                        >
-                          <span className="flex items-center gap-1.5">
-                            <span>{playerName(p.id, p.isHuman)}</span>
-                            <span
-                              className={`px-1.5 py-0.2 rounded text-xs ${isUs ? badgeSuccessColors : badgeWarningColors}`}
-                            >
-                              {isUs ? t('usBadge') : t('themBadge')}
-                            </span>
-                          </span>
-                          <span>
-                            {t('cards', { count: p.cardCount })} | {t('tricks', { count: p.trickCount })}
-                          </span>
-                        </div>
-                      );
-                    })}
                   </div>
-                )}
+                </CpuAccordion>
 
                 {/* Round result: per-team card points + marriage + pussi */}
                 {(isRoundEnd || isGameEnd) && (

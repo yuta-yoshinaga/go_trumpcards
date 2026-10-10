@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { quodlibetApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -249,86 +250,99 @@ function QuodlibetPageContent() {
                 )}
               </div>
 
-              <div data-tutorial="quodlibet-scores">
-                {/* **点は罰点。少ないほうが良い。** 順位の向きを書かないと、
+              <div>
+                <details
+                  className="mb-2 p-2 rounded bg-black/30"
+                  data-tutorial="quodlibet-scores"
+                  open={!isMobile || undefined}
+                >
+                  <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
+                    {t('scoreSummary')}
+                  </summary>
+                  {/* **点は罰点。少ないほうが良い。** 順位の向きを書かないと、
                     多い人が勝っているように読める。 */}
-                <div className="mb-1 text-ds-text-muted text-sm">{t('penaltyLegend')}</div>
-                <div className="mb-2 p-2 rounded bg-black/30" data-testid="quodlibet-scores">
-                  {state.players.map((p) => (
-                    <div key={p.id} className="text-ds-text-muted text-sm py-0.5 flex items-center gap-2">
-                      <span className={state.winners.includes(p.id) ? 'text-ds-success' : ''}>
-                        {playerName(p.id, p.isHuman)}: {t('penalty', { n: p.penalty })}
-                        {p.dealPoints !== 0 && ` (${t('dealPoints', { n: p.dealPoints })})`}
-                      </span>
-                      {p.isDealer && (
-                        <span className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>
-                          {t('dealerBadge')}
+                  <div className="mb-1 text-ds-text-muted text-sm">{t('penaltyLegend')}</div>
+                  <div className="mb-2" data-testid="quodlibet-scores">
+                    {state.players.map((p) => (
+                      <div key={p.id} className="text-ds-text-muted text-sm py-0.5 flex items-center gap-2">
+                        <span className={state.winners.includes(p.id) ? 'text-ds-success' : ''}>
+                          {playerName(p.id, p.isHuman)}: {t('penalty', { n: p.penalty })}
+                          {p.dealPoints !== 0 && ` (${t('dealPoints', { n: p.dealPoints })})`}
                         </span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-                {(isDealEnd || isGameEnd) && state.dealHistory.length > 0 && (
-                  <div className="overflow-x-auto" data-testid="quodlibet-score-history">
-                    <table className="w-full text-xs text-ds-text-muted border-collapse">
-                      <caption className="mb-1 text-xs text-ds-text-muted">{t('history.caption')}</caption>
-                      <thead>
-                        <tr>
-                          <th scope="col" className="px-2 py-1 text-center">
-                            {t('history.deal')}
-                          </th>
-                          <th scope="col" className="px-2 py-1 text-left">
-                            {t('history.contract')}
-                          </th>
-                          {state.players.map((p) => (
-                            <th key={p.id} scope="col" className="px-2 py-1 text-center">
-                              {playerName(p.id, p.isHuman)}
+                        {p.isDealer && (
+                          <span className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>
+                            {t('dealerBadge')}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  {(isDealEnd || isGameEnd) && state.dealHistory.length > 0 && (
+                    <div className="overflow-x-auto" data-testid="quodlibet-score-history">
+                      <table className="w-full text-xs text-ds-text-muted border-collapse">
+                        <caption className="mb-1 text-xs text-ds-text-muted">{t('history.caption')}</caption>
+                        <thead>
+                          <tr>
+                            <th scope="col" className="px-2 py-1 text-center">
+                              {t('history.deal')}
                             </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {state.dealHistory.map((deal, index) => (
-                          <tr key={`${deal.round}-${index}`} className="border-t border-ds-border">
-                            <td className="px-2 py-1 text-center">{index + 1}</td>
-                            <td className="px-2 py-1 whitespace-nowrap text-ds-text-primary">
-                              {t(`contractName.${deal.contractName}`)}
-                            </td>
+                            <th scope="col" className="px-2 py-1 text-left">
+                              {t('history.contract')}
+                            </th>
                             {state.players.map((p) => (
-                              <td key={p.id} className="px-2 py-1 text-center">
-                                {t('dealPoints', { n: deal.points[p.id] ?? 0 })}
-                              </td>
+                              <th key={p.id} scope="col" className="px-2 py-1 text-center">
+                                {playerName(p.id, p.isHuman)}
+                              </th>
                             ))}
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-                {state.players
-                  .filter((p) => !p.isHuman)
-                  .map((p) => (
-                    <div
-                      key={p.id}
-                      className="mb-2 p-2 rounded bg-black/30"
-                      data-testid={`quodlibet-opponent-hand-${p.id}`}
-                    >
-                      <div className="text-ds-text-muted text-xs mb-1">
-                        {t('opponentHandCount', { count: p.cardCount, name: playerName(p.id, false) })}
-                      </div>
-                      {p.cards.length > 0 && (
-                        <div className="flex flex-wrap gap-1" data-testid={`quodlibet-visible-hand-${p.id}`}>
-                          {p.cards.map((card, i) => (
-                            <CardImage
-                              key={`${card.design}-${card.value}-${i}`}
-                              card={card}
-                              width={Math.min(cardWidth, 48)}
-                            />
+                        </thead>
+                        <tbody>
+                          {state.dealHistory.map((deal, index) => (
+                            <tr key={`${deal.round}-${index}`} className="border-t border-ds-border">
+                              <td className="px-2 py-1 text-center">{index + 1}</td>
+                              <td className="px-2 py-1 whitespace-nowrap text-ds-text-primary">
+                                {t(`contractName.${deal.contractName}`)}
+                              </td>
+                              {state.players.map((p) => (
+                                <td key={p.id} className="px-2 py-1 text-center">
+                                  {t('dealPoints', { n: deal.points[p.id] ?? 0 })}
+                                </td>
+                              ))}
+                            </tr>
                           ))}
-                        </div>
-                      )}
+                        </tbody>
+                      </table>
                     </div>
-                  ))}
+                  )}
+                </details>
+                <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+                  <div className="flex flex-wrap gap-2">
+                    {state.players
+                      .filter((p) => !p.isHuman)
+                      .map((p) => (
+                        <div
+                          key={p.id}
+                          className="mb-2 p-2 rounded bg-black/30 max-sm:flex-1 max-sm:min-w-0"
+                          data-testid={`quodlibet-opponent-hand-${p.id}`}
+                        >
+                          <div className="text-ds-text-muted text-xs mb-1">
+                            {t('opponentHandCount', { count: p.cardCount, name: playerName(p.id, false) })}
+                          </div>
+                          {p.cards.length > 0 && (
+                            <div className="flex flex-wrap gap-1" data-testid={`quodlibet-visible-hand-${p.id}`}>
+                              {p.cards.map((card, i) => (
+                                <CardImage
+                                  key={`${card.design}-${card.value}-${i}`}
+                                  card={card}
+                                  width={Math.min(cardWidth, 48)}
+                                />
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                  </div>
+                </CpuAccordion>
 
                 {/* **選べるのはこの輪の残りだけ。** 全 12 種目を並べると、
                     押せない選択肢を勧めることになる。 */}

@@ -10,6 +10,19 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockExec = vi.mocked(marjapussiApi.exec);
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const original = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...original,
+    useCardDimensions: () => ({
+      ...original.CARD_DIMENSIONS[mobileState.isMobile ? 'mobile' : 'desktop'],
+      isMobile: mobileState.isMobile,
+    }),
+    useIsMobile: () => mobileState.isMobile,
+  };
+});
 
 const playPhaseState = makeMarjapussiState();
 const trickEndState = makeMarjapussiState({
@@ -42,12 +55,37 @@ const gameEndState = makeMarjapussiState({
 const cpuTurnState = makeMarjapussiState({ currentPlayerIdx: 1, isHumanTurn: false });
 
 beforeEach(() => {
+  mobileState.isMobile = true;
   localStorage.clear();
   mockExec.mockReset();
   mockExec.mockResolvedValue(playPhaseState);
 });
 
 describe('MarjapussiPage', () => {
+  it('collapses reference details on mobile and opens them on desktop', async () => {
+    const { unmount } = renderWithProviders(<MarjapussiPage />);
+    const marriageHistory = await screen.findByTestId('marjapussi-marriage-history');
+    const cpuDetails = screen.getByTestId('cpu-accordion');
+    const teamDetails = await screen.findByTestId('marjapussi-team-details');
+    const pussiDetails = screen.getByTestId('marjapussi-pussi-details');
+    expect(marriageHistory).not.toHaveAttribute('open');
+    expect(marriageHistory.querySelector('p')).not.toBeVisible();
+    expect(cpuDetails).not.toHaveAttribute('open');
+    expect(teamDetails).not.toHaveAttribute('open');
+    expect(teamDetails.querySelector('div')).not.toBeVisible();
+    expect(pussiDetails).not.toHaveAttribute('open');
+    expect(pussiDetails.querySelector('p')).not.toBeVisible();
+    expect(screen.getByTestId('marjapussi-player-team-1')).not.toBeVisible();
+    expect(screen.getByTestId('marjapussi-player-team-0')).toBeVisible();
+    unmount();
+
+    mobileState.isMobile = false;
+    renderWithProviders(<MarjapussiPage />);
+    expect(await screen.findByTestId('marjapussi-marriage-history')).toHaveAttribute('open');
+    expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
+    expect(screen.getByTestId('marjapussi-team-details')).toHaveAttribute('open');
+  });
+
   it('announces the matching follow restriction on illegal cards only', async () => {
     mockExec.mockResolvedValue(
       makeMarjapussiState({
@@ -158,12 +196,16 @@ describe('MarjapussiPage', () => {
   // --- 必須テスト 2: チーム分けが画面に出ていること (席 0+2 と 1+3 が別チームとして描かれる) ---
   it('displays partnership teams on screen (seats 0+2 as us, seats 1+3 as them)', async () => {
     renderWithProviders(<MarjapussiPage />);
+    const teamDetails = await screen.findByTestId('marjapussi-team-details');
+    fireEvent.click(teamDetails.querySelector('summary') as HTMLElement);
     expect(await screen.findByText('味方チーム（あなた & CPU 2）')).toBeInTheDocument();
     expect(screen.getByText('相手チーム（CPU 1 & CPU 3）')).toBeInTheDocument();
 
     // 席 0 (人間) と 席 2 (CPU 2) は味方チーム
     const p0 = await screen.findByTestId('marjapussi-player-team-0');
     expect(p0).toHaveTextContent('味方');
+    const cpuAccordion = screen.getByTestId('cpu-accordion');
+    fireEvent.click(cpuAccordion.querySelector('summary') as HTMLElement);
     const p2 = await screen.findByTestId('marjapussi-player-team-2');
     expect(p2).toHaveTextContent('味方');
 
@@ -260,7 +302,9 @@ describe('MarjapussiPage', () => {
     // プレイ中: 伏せ札表示
     renderWithProviders(<MarjapussiPage />);
     const pussiEl = await screen.findByTestId('marjapussi-pussi');
-    expect(pussiEl).toHaveTextContent('ベリー袋: 4枚（伏せ札）');
+    expect(pussiEl).toHaveTextContent('ベリー袋: 4枚');
+    expect(screen.getByTestId('marjapussi-pussi-details')).not.toHaveAttribute('open');
+    expect(screen.getByTestId('marjapussi-pussi-details').querySelector('p')).not.toBeVisible();
     expect(screen.queryByTestId('marjapussi-pussi-result')).not.toBeInTheDocument();
 
     // ラウンド終了時: 結果表示 (チーム 0 が獲得、A+10+K+7 = 11+10+4+0 = 25点)

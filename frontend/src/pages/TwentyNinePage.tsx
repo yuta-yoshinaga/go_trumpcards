@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { twentyNineApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -336,8 +337,14 @@ function TwentyNinePageContent() {
                   </div>
                 </div>
 
-                <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm" data-testid="tn29-bid-history">
-                  <div className="text-ds-text-primary text-xs mb-1">{t('bidHistory.title')}</div>
+                <details
+                  open={!isMobile || undefined}
+                  className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                  data-testid="tn29-bid-history"
+                >
+                  <summary className="cursor-pointer select-none text-ds-text-primary text-xs">
+                    {t('bidHistory.title')}
+                  </summary>
                   {bidHistory.map(({ player, seat, committed, bid }) => (
                     <div key={seat} className="py-0.5">
                       {t('bidHistory.player', {
@@ -348,24 +355,21 @@ function TwentyNinePageContent() {
                       : {committed ? (bid === 0 ? t('bid.pass') : bid) : t('bidHistory.pending')}
                     </div>
                   ))}
-                </div>
+                </details>
 
                 {/* Players grouped by team, with the declarer badge */}
-                {([0, 1] as const).map((team) => (
-                  <div key={team} className="mb-2 p-2 rounded bg-black/30">
-                    <div className="text-ds-text-primary text-xs mb-1">{team === 0 ? t('team.a') : t('team.b')}</div>
-                    {isMobile ? (
-                      <details>
-                        <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
-                          {t('players')}
-                        </summary>
-                        <div className="mt-1">{renderTeamPlayers(team)}</div>
-                      </details>
-                    ) : (
-                      renderTeamPlayers(team)
-                    )}
+                <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+                  <div className="flex flex-wrap sm:block">
+                    {([0, 1] as const).map((team) => (
+                      <div key={team} className="mb-2 p-2 rounded bg-black/30">
+                        <div className="text-ds-text-primary text-xs mb-1">
+                          {team === 0 ? t('team.a') : t('team.b')}
+                        </div>
+                        {renderTeamPlayers(team)}
+                      </div>
+                    ))}
                   </div>
-                ))}
+                </CpuAccordion>
 
                 {/* Live round card points during bidding/play (matches the CUI's roundPoints
                     readout); the round-result block below takes over once the round ends. */}

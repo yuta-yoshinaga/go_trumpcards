@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { reversisApi } from '../api/gameApi';
+import { useIsMobile } from '../hooks/useCardDimensions';
 import { useGameHint } from '../hooks/useGameHint';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -14,6 +15,11 @@ vi.mock('../api/gameApi', () => ({
 
 vi.mock('../hooks/useGameHint', () => ({
   useGameHint: vi.fn(() => ({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() })),
+}));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: vi.fn(() => true),
 }));
 
 const mockExec = vi.mocked(reversisApi.exec);
@@ -56,6 +62,7 @@ function makeState(overrides: Partial<ReversisResponse> = {}): ReversisResponse 
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.mocked(useIsMobile).mockReturnValue(true);
   mockExec.mockResolvedValue(makeState());
 });
 
@@ -119,12 +126,23 @@ describe('ReversisPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 2));
   });
 
-  // **プールと失点配分は盤面から読めない。** 常に出ていなければならない。
-  it('always shows the pool and the penalty scale', async () => {
+  it('keeps the pool visible and collapses the rules on mobile', async () => {
     renderWithProviders(<ReversisPage />);
     expect(await screen.findByTestId('rv-pool')).toHaveTextContent('20');
+    const rules = screen.getByTestId('rv-rules');
+    expect(rules).not.toHaveAttribute('open');
+    expect(screen.getByTestId('rv-penalty-rule')).not.toBeVisible();
+    fireEvent.click(screen.getByText('ルール / Rules'));
+    expect(screen.getByTestId('rv-penalty-rule')).toBeVisible();
     expect(screen.getByTestId('rv-penalty-rule')).toHaveTextContent(/A=4 K=3 Q=2 J=1/);
-    expect(screen.getByTestId('rv-penalty-rule')).toHaveTextContent(/♥J（キノラ）と♦A/);
+  });
+
+  it('opens the CPU seats by default on desktop', async () => {
+    vi.mocked(useIsMobile).mockReturnValue(false);
+    renderWithProviders(<ReversisPage />);
+    const accordion = await screen.findByTestId('cpu-accordion');
+    expect(accordion).toHaveAttribute('open');
+    expect(screen.getByTestId('rv-seat-1')).toBeVisible();
   });
 
   it('shows a per-player round penalty breakdown that adds up to the displayed penalty', async () => {
@@ -150,9 +168,11 @@ describe('ReversisPage', () => {
     renderWithProviders(<ReversisPage />);
     const pool = await screen.findByTestId('rv-pool');
     expect(pool).toHaveTextContent('45');
-    expect(pool).toHaveTextContent('通常ラウンドの同点なら次のラウンドへ持ち越し');
-    expect(pool).toHaveTextContent('最終ラウンドの同点なら同点者で分配');
-    expect(pool).toHaveTextContent('失点が最も少ない人が総取り');
+    fireEvent.click(screen.getByText('ルール / Rules'));
+    const rules = screen.getByTestId('rv-rules');
+    expect(rules).toHaveTextContent('通常ラウンドの同点なら次のラウンドへ持ち越し');
+    expect(rules).toHaveTextContent('最終ラウンドの同点なら同点者で分配');
+    expect(rules).toHaveTextContent('失点が最も少ない人が総取り');
 
     fireEvent.click(screen.getByRole('button', { name: 'チュートリアル' }));
     expect(await screen.findByRole('status')).toHaveTextContent(

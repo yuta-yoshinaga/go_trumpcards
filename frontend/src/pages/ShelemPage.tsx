@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { shelemApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -12,7 +13,7 @@ import { HintTooltip } from '../components/hint/HintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -91,6 +92,7 @@ function ShelemPageContent() {
     retry,
   } = useGameApi<ShelemResponse, Parameters<typeof shelemApi.exec>>(shelemApi.exec);
   const { cardWidth } = useCardDimensions();
+  const isMobile = useIsMobile();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('shelem', state);
   // 捨てる4枚は押して選ぶ。サーバに送るまではこちらで保持する。
   const [picked, setPicked] = useState<number[]>([]);
@@ -241,13 +243,12 @@ function ShelemPageContent() {
             </div>
 
             {/* **点になるのは A/10/5 だけ。** 盤面から読めない。 */}
-            <div
-              className="mb-3 rounded bg-black/30 px-3 py-2 text-ds-text-muted text-sm text-center"
-              data-testid="sh-points"
-              data-tutorial="sh-points"
-            >
-              {t('header.pointTable')}
-            </div>
+            <details className="mb-3 rounded bg-black/30 px-3 py-2 text-sm" data-tutorial="sh-points">
+              <summary className="cursor-pointer select-none text-ds-text-muted">{t('header.pointTableLabel')}</summary>
+              <div className="pt-2 text-center text-ds-text-muted" data-testid="sh-points">
+                {t('header.pointTable')}
+              </div>
+            </details>
 
             {state.widowSize > 0 && (
               <div className="mb-2 p-2 rounded bg-black/20 text-xs" data-testid="sh-widow">
@@ -281,9 +282,12 @@ function ShelemPageContent() {
               {state.trumpSuit > 0 && ` / ${t('header.trump', { suit: suitSymbolAt(state.trumpSuit, '?') })}`}
             </div>
 
-            <div className="text-ds-text-muted text-sm text-center mb-3" data-testid="sh-score">
-              {t('header.score', { t0: String(state.scores[0] ?? 0), t1: String(state.scores[1] ?? 0) })}
-            </div>
+            <details className="mb-3 text-center text-sm" data-testid="sh-score" open={!isMobile || undefined}>
+              <summary className="cursor-pointer select-none text-ds-text-muted">{t('header.scoreLabel')}</summary>
+              <div className="pt-1 text-ds-text-muted">
+                {t('header.score', { t0: String(state.scores[0] ?? 0), t1: String(state.scores[1] ?? 0) })}
+              </div>
+            </details>
             <div className="text-ds-text-muted text-sm text-center mb-3" data-testid="sh-team-tricks">
               <div>{t('header.teamTricksLabel')}</div>
               <div className="flex justify-center gap-3">
@@ -307,24 +311,26 @@ function ShelemPageContent() {
               </div>
             )}
 
-            <div className="flex flex-wrap justify-center gap-2 mb-4" data-tutorial="sh-seats">
-              {state.players.map((p) => (
-                <div
-                  key={p.id}
-                  className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
-                  data-testid={`sh-seat-${p.id.toString()}`}
-                >
-                  <span className="text-ds-text-primary">
-                    {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
-                  </span>
-                  <span className="ml-1 text-ds-accent">{t('header.team', { team: String(p.team) })}</span>
-                  {': '}
-                  {roleStr(p)}
-                  {' / '}
-                  {t('header.took', { n: String(p.trickCount) })}
-                </div>
-              ))}
-            </div>
+            <CpuAccordion playerCount={state.players.length - 1} dataTutorial="sh-seats">
+              <div className="flex flex-wrap justify-center gap-2 mb-4">
+                {state.players.map((p) => (
+                  <div
+                    key={p.id}
+                    className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
+                    data-testid={`sh-seat-${p.id.toString()}`}
+                  >
+                    <span className="text-ds-text-primary">
+                      {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
+                    </span>
+                    <span className="ml-1 text-ds-accent">{t('header.team', { team: String(p.team) })}</span>
+                    {': '}
+                    {roleStr(p)}
+                    {' / '}
+                    {t('header.took', { n: String(p.trickCount) })}
+                  </div>
+                ))}
+              </div>
+            </CpuAccordion>
 
             <div data-tutorial="sh-trick">
               <TrickDisplay

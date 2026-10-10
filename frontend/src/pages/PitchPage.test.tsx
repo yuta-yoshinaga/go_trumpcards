@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { pitchApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
@@ -7,6 +7,13 @@ import { renderWithProviders } from '../test/renderWithProviders';
 import type { CardDesign, PitchResponse } from '../types/card';
 import { PitchPhase } from '../types/phases';
 import { PitchPage } from './PitchPage';
+
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+}));
 
 vi.mock('../api/gameApi', () => ({
   pitchApi: { exec: vi.fn() },
@@ -104,6 +111,7 @@ const gameEndState: PitchResponse = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mobileState.isMobile = true;
   mockApi.mockResolvedValue(bidState);
 });
 
@@ -242,6 +250,22 @@ describe('PitchPage', () => {
     renderWithProviders(<PitchPage />);
     await waitFor(() => expect(screen.getAllByText(/あなた/).length).toBeGreaterThan(0));
     expect(screen.getAllByText(/CPU 1/).length).toBeGreaterThan(0);
+  });
+
+  it('collapses the score table on mobile and opens it on desktop', async () => {
+    const { container } = renderWithProviders(<PitchPage />);
+    await screen.findByTestId('pt-score-table');
+    let scoreDetails = container.querySelector('details:has([data-testid="pt-score-table"])');
+    expect(scoreDetails).not.toHaveAttribute('open');
+    expect(screen.getByTestId('pt-score-table')).not.toBeVisible();
+
+    cleanup();
+    mobileState.isMobile = false;
+    const desktopRender = renderWithProviders(<PitchPage />);
+    await screen.findByTestId('pt-score-table');
+    scoreDetails = desktopRender.container.querySelector('details:has([data-testid="pt-score-table"])');
+    expect(scoreDetails).toHaveAttribute('open');
+    expect(screen.getByTestId('pt-score-table')).toBeVisible();
   });
 
   it('shows winner banner on game end', async () => {

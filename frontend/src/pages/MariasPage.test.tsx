@@ -10,6 +10,26 @@ vi.mock('../api/gameApi', () => ({
   mariasApi: { exec: vi.fn() },
   actionLogApi: { marias: vi.fn() },
 }));
+vi.mock('../hooks/useCardDimensions', async () => ({
+  ...(await vi.importActual('../hooks/useCardDimensions')),
+  useIsMobile: vi.fn(() => true),
+  useCardDimensions: vi.fn(() => ({
+    cardWidth: 40,
+    cardHeight: 60,
+    cardOverlap: 20,
+    cpuCardWidth: 34,
+    footerCardWidth: 36,
+    solitaireMinColWidth: 52,
+    isMobile: true,
+  })),
+}));
+
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
+const { useIsMobile } = await import('../hooks/useCardDimensions');
+const mockUseIsMobile = vi.mocked(useIsMobile);
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
+const { useCardDimensions } = await import('../hooks/useCardDimensions');
+const mockUseCardDimensions = vi.mocked(useCardDimensions);
 
 const mockExec = vi.mocked(mariasApi.exec);
 
@@ -42,6 +62,48 @@ beforeEach(() => {
 });
 
 describe('MariasPage', () => {
+  it('collapses CPU details and round progress on mobile while keeping totals visible', async () => {
+    mockUseIsMobile.mockReturnValue(true);
+    mockUseCardDimensions.mockReturnValue({
+      cardWidth: 40,
+      cardHeight: 60,
+      cardOverlap: 20,
+      cpuCardWidth: 34,
+      footerCardWidth: 36,
+      solitaireMinColWidth: 52,
+      isMobile: true,
+    });
+    renderWithProviders(<MariasPage />);
+
+    const cpuDetails = await screen.findByTestId('cpu-accordion');
+    const progress = screen.getByTestId('marias-round-progress-live').querySelector('details');
+    expect(cpuDetails).not.toHaveAttribute('open');
+    expect(progress).not.toHaveAttribute('open');
+    expect(screen.getByTestId('marias-side-totals')).toHaveTextContent('ソリスト: 0点');
+    expect(screen.getByTestId('marias-side-totals')).toHaveTextContent('ディフェンダー合計: 0点');
+    expect(screen.getByText('あなた: ソリスト | 10枚 | 0トリック')).not.toBeVisible();
+  });
+
+  it('opens CPU details and round progress on desktop', async () => {
+    mockUseIsMobile.mockReturnValue(false);
+    mockUseCardDimensions.mockReturnValue({
+      cardWidth: 60,
+      cardHeight: 84,
+      cardOverlap: 22,
+      cpuCardWidth: 50,
+      footerCardWidth: 54,
+      solitaireMinColWidth: 0,
+      isMobile: false,
+    });
+    renderWithProviders(<MariasPage />);
+
+    const cpuDetails = await screen.findByTestId('cpu-accordion');
+    const progress = screen.getByTestId('marias-round-progress-live').querySelector('details');
+    expect(cpuDetails).toHaveAttribute('open');
+    expect(progress).toHaveAttribute('open');
+    expect(screen.getByText('あなた: ソリスト | 10枚 | 0トリック')).toBeVisible();
+  });
+
   it('renders player roles in English', async () => {
     const previousLanguage = i18n.language;
     await i18n.changeLanguage('en');

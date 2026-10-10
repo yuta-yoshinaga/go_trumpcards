@@ -2,6 +2,7 @@ import { useCallback, useMemo } from 'react';
 import { mendikotApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -223,39 +224,40 @@ function MendikotPageContent() {
               {t('header.score', { t0: String(state.scores[0] ?? 0), t1: String(state.scores[1] ?? 0) })}
             </div>
 
-            <div
-              className="grid grid-cols-2 gap-1 mb-4 sm:flex sm:flex-wrap sm:justify-center sm:gap-2"
-              data-tutorial="md-seats"
-              data-testid="md-seats"
-            >
-              {state.players.map((p) => {
-                const isCurrentPlayer = p.id === state.currentPlayerIdx && !isGameEnd && !isHandEnd;
-                const isTrumpDecider = isCurrentPlayer && state.trumpSuit === 0 && state.willSetTrump;
+            <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length} dataTutorial="md-seats">
+              <div
+                className="grid grid-cols-2 gap-1 mb-4 flex-wrap sm:flex sm:justify-center sm:gap-2"
+                data-testid="md-seats"
+              >
+                {state.players.map((p) => {
+                  const isCurrentPlayer = p.id === state.currentPlayerIdx && !isGameEnd && !isHandEnd;
+                  const isTrumpDecider = isCurrentPlayer && state.trumpSuit === 0 && state.willSetTrump;
 
-                return (
-                  <div
-                    key={p.id}
-                    className={`rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted ${isCurrentPlayer ? 'border border-ds-accent ring-1 ring-ds-accent' : 'border border-transparent'}`}
-                    data-testid={`md-seat-${p.id.toString()}`}
-                    aria-current={isCurrentPlayer ? 'step' : undefined}
-                  >
-                    <span className="text-ds-text-primary">
-                      {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
-                    </span>
-                    <span className="ml-1 text-ds-accent">{t('header.team', { team: String(p.team) })}</span>
-                    {isCurrentPlayer && <span className="ml-1 text-ds-accent">{t('header.currentTurn')}</span>}
-                    {isTrumpDecider && <span className="ml-1 text-ds-warning">{t('header.trumpDecider')}</span>}
-                    {p.id === state.trumpChooserIdx && (
-                      <span className="ml-1 text-ds-accent">{t('header.chooser')}</span>
-                    )}
-                    {': '}
-                    {t('header.seatTens', { n: String(p.tens) })}
-                    {' / '}
-                    {t('header.took', { n: String(p.trickCount) })}
-                  </div>
-                );
-              })}
-            </div>
+                  return (
+                    <div
+                      key={p.id}
+                      className={`rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted ${isCurrentPlayer ? 'border border-ds-accent ring-1 ring-ds-accent' : 'border border-transparent'}`}
+                      data-testid={`md-seat-${p.id.toString()}`}
+                      aria-current={isCurrentPlayer ? 'step' : undefined}
+                    >
+                      <span className="text-ds-text-primary">
+                        {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
+                      </span>
+                      <span className="ml-1 text-ds-accent">{t('header.team', { team: String(p.team) })}</span>
+                      {isCurrentPlayer && <span className="ml-1 text-ds-accent">{t('header.currentTurn')}</span>}
+                      {isTrumpDecider && <span className="ml-1 text-ds-warning">{t('header.trumpDecider')}</span>}
+                      {p.id === state.trumpChooserIdx && (
+                        <span className="ml-1 text-ds-accent">{t('header.chooser')}</span>
+                      )}
+                      {': '}
+                      {t('header.seatTens', { n: String(p.tens) })}
+                      {' / '}
+                      {t('header.took', { n: String(p.trickCount) })}
+                    </div>
+                  );
+                })}
+              </div>
+            </CpuAccordion>
 
             <div data-tutorial="md-trick">
               <TrickDisplay

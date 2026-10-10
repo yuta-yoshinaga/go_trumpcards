@@ -4,6 +4,7 @@ import { navigateTo, TIMEOUT_ACTION, TIMEOUT_TRANSITION } from './helpers';
 // **合法な札だけを選ぶ。** カードは意図的に disabled にしていないので、
 // フォロー義務を満たさない札を押すとサーバが拒否して盤面が動かない。
 const legalCard = (page: Page) => page.locator('button.ring-ds-success');
+const openCpuSeats = async (page: Page) => page.getByTestId('cpu-accordion').locator('summary').click();
 
 test.describe('Rams E2E', () => {
   test('navigates to rams and renders initial game state', async ({ page }) => {
@@ -34,6 +35,7 @@ test.describe('Rams E2E', () => {
     await page.getByTestId('rm-in-btn').click();
 
     await expect(page.getByTestId('rm-in-btn')).toHaveCount(0, { timeout: TIMEOUT_ACTION });
+    await openCpuSeats(page);
     await expect(page.getByTestId('rm-seat-0')).toContainText(/参加|in/, { timeout: TIMEOUT_ACTION });
   });
 
@@ -42,6 +44,7 @@ test.describe('Rams E2E', () => {
     await navigateTo(page, '/rams');
     await page.getByTestId('rm-out-btn').click();
 
+    await openCpuSeats(page);
     await expect(page.getByTestId('rm-seat-0')).toContainText(/降り|out/, { timeout: TIMEOUT_ACTION });
   });
 
