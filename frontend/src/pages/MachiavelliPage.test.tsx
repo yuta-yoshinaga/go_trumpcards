@@ -14,6 +14,14 @@ vi.mock('../api/gameApi', () => ({
 
 const mockExec = vi.mocked(machiavelliApi.exec);
 
+vi.mock('../hooks/useCardDimensions', async () => ({
+  ...(await vi.importActual<typeof import('../hooks/useCardDimensions')>('../hooks/useCardDimensions')),
+  useIsMobile: vi.fn(() => false),
+}));
+
+const { useIsMobile } = await import('../hooks/useCardDimensions');
+const mockUseIsMobile = vi.mocked(useIsMobile);
+
 function player(overrides: Partial<MachiavelliPlayer> = {}): MachiavelliPlayer {
   return {
     id: 0,
@@ -312,12 +320,45 @@ describe('MachiavelliPage', () => {
     await waitFor(() => expect(screen.getByText(/CPU 1.*13枚/)).toBeInTheDocument());
   });
 
+  it('collapses the CPU player area on mobile and opens it on desktop', async () => {
+    mockUseIsMobile.mockReturnValue(true);
+    const { unmount } = renderWithProviders(<MachiavelliPage />);
+    await waitFor(() => expect(screen.getByTestId('cpu-accordion')).toBeInTheDocument());
+    expect(screen.getByTestId('cpu-accordion')).not.toHaveAttribute('open');
+    expect(screen.getByText(/CPU 1.*13枚/)).not.toBeVisible();
+
+    unmount();
+    mockUseIsMobile.mockReturnValue(false);
+    renderWithProviders(<MachiavelliPage />);
+    await waitFor(() => {
+      expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
+      expect(screen.getByText(/CPU 1.*13枚/)).toBeVisible();
+    });
+  });
+
   it('score table shows all players', async () => {
     renderWithProviders(<MachiavelliPage />);
     await waitFor(() => {
       expect(screen.getByText('スコア')).toBeInTheDocument();
+      expect(screen.getByTestId('mv-score-table')).toHaveAttribute('open');
       expect(screen.getByText('あなた')).toBeInTheDocument();
       expect(screen.getByText('CPU 1')).toBeInTheDocument();
+    });
+  });
+
+  it('collapses the score table on mobile and opens it on desktop', async () => {
+    mockUseIsMobile.mockReturnValue(true);
+    const { unmount } = renderWithProviders(<MachiavelliPage />);
+    await waitFor(() => expect(screen.getByTestId('mv-score-table')).toBeInTheDocument());
+    expect(screen.getByTestId('mv-score-table')).not.toHaveAttribute('open');
+    expect(screen.getByTestId('mv-score-table').querySelector('table')).not.toBeVisible();
+
+    unmount();
+    mockUseIsMobile.mockReturnValue(false);
+    renderWithProviders(<MachiavelliPage />);
+    await waitFor(() => {
+      expect(screen.getByTestId('mv-score-table')).toHaveAttribute('open');
+      expect(screen.getByTestId('mv-score-table').querySelector('table')).toBeVisible();
     });
   });
 

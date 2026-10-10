@@ -87,6 +87,30 @@ beforeEach(() => {
 });
 
 describe('JassPage', () => {
+  it('collapses CPU details and the score table on mobile', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    renderWithProviders(<JassPage />);
+    const cpuAccordion = await screen.findByTestId('cpu-accordion');
+    const scoreDetails = await screen.findByTestId('ja-score-table');
+    expect(cpuAccordion).not.toHaveAttribute('open');
+    expect(cpuAccordion.querySelector('div')).not.toBeVisible();
+    expect(scoreDetails).not.toHaveAttribute('open');
+    expect(scoreDetails).toHaveAttribute('data-tutorial', 'ja-score-table');
+    expect(scoreDetails.querySelector('summary')).not.toHaveAttribute('data-tutorial');
+    expect(scoreDetails.querySelector('table')).not.toBeVisible();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
+  it('keeps CPU details and the score table open on desktop', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    renderWithProviders(<JassPage />);
+    expect(await screen.findByTestId('cpu-accordion')).toHaveAttribute('open');
+    expect(await screen.findByTestId('ja-score-table')).toHaveAttribute('open');
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
   it('marks the dealer in the player list and above the human hand', async () => {
     const { unmount } = renderWithProviders(<JassPage />);
     await waitFor(() => expect(screen.getByTestId('jass-dealer-3')).toHaveTextContent('ディーラー'));

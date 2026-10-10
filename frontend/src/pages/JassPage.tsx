@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -222,23 +223,25 @@ function JassPageContent() {
         </div>
 
         {/* CPU players */}
-        <div className="mb-3">
-          {state.players
-            .filter((p) => !p.isHuman)
-            .map((p) => (
-              <div key={p.id} className="mb-1 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-                {playerName(p.id, p.isHuman)}:{' '}
-                {p.id === state.dealerIdx && (
-                  <span className="mr-2 text-ds-warning" data-testid={`jass-dealer-${p.id.toString()}`}>
-                    <span aria-hidden="true">♛ </span>
-                    {t('dealerBadge')}
-                  </span>
-                )}
-                {t('team', { n: p.team })} | {t('cards', { count: p.cardCount })} |{' '}
-                {t('trickCount', { count: p.trickCount })}
-              </div>
-            ))}
-        </div>
+        <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+          <div className="flex flex-wrap">
+            {state.players
+              .filter((p) => !p.isHuman)
+              .map((p) => (
+                <div key={p.id} className="mb-1 w-full p-2 rounded bg-black/30 text-ds-text-muted text-sm">
+                  {playerName(p.id, p.isHuman)}:{' '}
+                  {p.id === state.dealerIdx && (
+                    <span className="mr-2 text-ds-warning" data-testid={`jass-dealer-${p.id.toString()}`}>
+                      <span aria-hidden="true">♛ </span>
+                      {t('dealerBadge')}
+                    </span>
+                  )}
+                  {t('team', { n: p.team })} | {t('cards', { count: p.cardCount })} |{' '}
+                  {t('trickCount', { count: p.trickCount })}
+                </div>
+              ))}
+          </div>
+        </CpuAccordion>
 
         {/* Current trick */}
         <TrickDisplay
@@ -274,8 +277,13 @@ function JassPageContent() {
         </details>
 
         {/* Team scores */}
-        <div className="my-3 p-2 rounded bg-black/30" data-tutorial="ja-score-table">
-          <div className="text-ds-text-muted text-sm mb-1">{t('teamScores')}</div>
+        <details
+          className="my-3 p-2 rounded bg-black/30"
+          data-testid="ja-score-table"
+          data-tutorial="ja-score-table"
+          open={!isMobile || undefined}
+        >
+          <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('teamScores')}</summary>
           <table className="w-full text-sm text-ds-text-muted">
             <thead>
               <tr>
@@ -343,7 +351,7 @@ function JassPageContent() {
               )}
             </tbody>
           </table>
-        </div>
+        </details>
 
         {/* Weis (meld) declaration panel — surfaces where the Weis bonus came from.
             Only per-team totals are exposed by the API, so we visualize those faithfully:

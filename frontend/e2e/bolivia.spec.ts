@@ -102,6 +102,7 @@ test.describe('Bolivia E2E', () => {
     await expect(page.getByText(/ラウンド \d+/).first()).toBeVisible({ timeout: 15_000 });
 
     // 上がりの条件がどこかに書いてあること。
+    await page.getByTestId('bo-goout-rule').getByText('ルール').click();
     const goOutRule = page.getByText(/エスカレラ/).first();
     await expect(goOutRule).toBeVisible({ timeout: 10_000 });
   });

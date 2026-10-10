@@ -7,6 +7,10 @@ test.describe('Desmoche E2E', () => {
 
     // Permanent, not tutorial-only: going out takes ten rather than the nine
     // dealt, and poker rankings play no part.
+    const ruleDetails = page.getByTestId('ds-rule-details');
+    if (!(await ruleDetails.evaluate((details) => (details as HTMLDetailsElement).open))) {
+      await ruleDetails.locator('summary').click();
+    }
     await expect(page.getByText(/ちょうど10枚/)).toBeVisible();
     await expect(page.getByText(/ポーカーの役は使いません/)).toBeVisible();
     await expect(page.getByText(/ポット/)).toBeVisible();

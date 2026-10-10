@@ -70,6 +70,7 @@
     "cpuWin": "The CPU team wins!"
   },
   "round": "Round {{n}}",
+  "rules": "Rules",
   "roundEnd": "Round over. Proceed to the next round.",
   "samba": "escalera",
   "score": {

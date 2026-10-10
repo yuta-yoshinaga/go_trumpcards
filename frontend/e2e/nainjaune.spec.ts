@@ -7,6 +7,7 @@ test.describe('Le Nain Jaune E2E', () => {
 
     // Permanent, not tutorial-only: the run ignoring suit and paying in points
     // are what a player coming from Pope Joan gets wrong.
+    await page.getByTestId('nj-rule-details').locator('summary').click();
     await expect(page.getByText(/スート無関係/)).toBeVisible();
     await expect(page.getByText(/枚数ではなく【点数】/)).toBeVisible();
 

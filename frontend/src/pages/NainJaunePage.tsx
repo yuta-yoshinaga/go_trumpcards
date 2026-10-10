@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { nainjauneApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardBack } from '../components/CardImage';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -153,13 +154,22 @@ function NainJaunePageContent() {
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
             {/* Permanent, not tutorial-only: the run ignoring suit and paying in
                 points are what a player coming from Pope Joan gets wrong. */}
-            <div className="text-center text-xs text-ds-warning mb-3 font-medium" data-tutorial="nj-rule">
-              {t('ruleLine')}
-            </div>
+            <details className="mb-3 text-center text-xs text-ds-warning font-medium" data-testid="nj-rule-details">
+              <summary className="cursor-pointer">{t('rulesSummary')}</summary>
+              <div className="mt-1" data-tutorial="nj-rule">
+                {t('ruleLine')}
+              </div>
+            </details>
 
             {/* **5 区画は毎回すべて出す。**取る札もスートまで見せる。 */}
             <div className="mb-4" data-tutorial="nj-board">
-              <div className="text-game-text-muted text-xs mb-1 text-center">{t('board')}</div>
+              <div className="text-game-text-muted text-xs mb-1 text-center">
+                {t('board')}
+                <details className="inline-block ml-1">
+                  <summary className="cursor-pointer">ⓘ</summary>
+                  <span className="block">{t('boardExplanation')}</span>
+                </details>
+              </div>
               <div className="flex gap-2 justify-center flex-wrap">
                 {state.boxes.map((box) => (
                   <div
@@ -212,34 +222,36 @@ function NainJaunePageContent() {
               </section>
             )}
 
-            <div className="flex justify-center gap-4 mb-3 flex-wrap">
-              {opponents.map((o) => (
-                <div key={`opp-${o.id.toString()}`} className="text-center">
-                  <div className="text-game-text-muted text-xs mb-1">
-                    {/* 点も出す。支払いは枚数ではなく点数。 */}
-                    {t('seat', { name: `CPU${o.id.toString()}`, chips: o.chips, n: o.cardCount, pts: o.points })}
+            <CpuAccordion playerCount={opponents.length}>
+              <div className="flex justify-center gap-4 mb-3 flex-wrap">
+                {opponents.map((o) => (
+                  <div key={`opp-${o.id.toString()}`} className="text-center">
+                    <div className="text-game-text-muted text-xs mb-1">
+                      {/* 点も出す。支払いは枚数ではなく点数。 */}
+                      {t('seat', { name: `CPU${o.id.toString()}`, chips: o.chips, n: o.cardCount, pts: o.points })}
+                    </div>
+                    <div
+                      className="flex gap-1 justify-center flex-wrap"
+                      role="img"
+                      aria-label={t('opponentHandAriaLabel', { name: `CPU${o.id.toString()}`, n: o.cardCount })}
+                    >
+                      {o.hidden
+                        ? Array.from({ length: o.cardCount }, (_, i) => (
+                            <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
+                          ))
+                        : o.cards.map((card, i) => (
+                            <AnimatedCard
+                              key={`opp-${o.id.toString()}-c${i.toString()}`}
+                              card={card}
+                              width={cardWidth}
+                              draggable={false}
+                            />
+                          ))}
+                    </div>
                   </div>
-                  <div
-                    className="flex gap-1 justify-center flex-wrap"
-                    role="img"
-                    aria-label={t('opponentHandAriaLabel', { name: `CPU${o.id.toString()}`, n: o.cardCount })}
-                  >
-                    {o.hidden
-                      ? Array.from({ length: o.cardCount }, (_, i) => (
-                          <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
-                        ))
-                      : o.cards.map((card, i) => (
-                          <AnimatedCard
-                            key={`opp-${o.id.toString()}-c${i.toString()}`}
-                            card={card}
-                            width={cardWidth}
-                            draggable={false}
-                          />
-                        ))}
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            </CpuAccordion>
 
             {state.playedPile.length > 0 && (
               <div className="text-center mb-3">

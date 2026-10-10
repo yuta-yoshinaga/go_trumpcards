@@ -6,6 +6,13 @@ import { renderWithProviders } from '../test/renderWithProviders';
 import { makeBoliviaState } from '../test/stateFactories';
 import { BoliviaPage } from './BoliviaPage';
 
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+}));
+
 vi.mock('../api/gameApi', () => ({
   boliviaApi: { exec: vi.fn() },
   actionLogApi: { bolivia: vi.fn() },
@@ -28,6 +35,28 @@ describe('BoliviaPage', () => {
 
   afterEach(() => {
     localStorage.clear();
+    mobileState.isMobile = true;
+  });
+
+  it('collapses the rule and score details on mobile while keeping team scores visible', async () => {
+    renderWithProviders(<BoliviaPage />);
+
+    const rule = await screen.findByTestId('bo-goout-rule');
+    const scoreTable = screen.getByTestId('bo-score-table');
+    expect(rule).not.toHaveAttribute('open');
+    expect(within(rule).getByText('上がるには完成メルド 2 個以上＋そのうち最低 1 本がエスカレラ')).not.toBeVisible();
+    expect(scoreTable).not.toHaveAttribute('open');
+    expect(within(scoreTable).getByRole('table')).not.toBeVisible();
+    expect(screen.getByTestId('sa-team-scores')).toBeVisible();
+  });
+
+  it('opens the score details on desktop', async () => {
+    mobileState.isMobile = false;
+    renderWithProviders(<BoliviaPage />);
+
+    const scoreTable = await screen.findByTestId('bo-score-table');
+    expect(scoreTable).toHaveAttribute('open');
+    expect(within(scoreTable).getByRole('table')).toBeVisible();
   });
 
   it('renders skeleton before first API response', () => {
