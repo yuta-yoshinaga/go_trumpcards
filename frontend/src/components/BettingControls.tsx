@@ -81,8 +81,8 @@ export function BettingControls({
   };
 
   return (
-    <div className="flex flex-wrap justify-center gap-1 text-center mb-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center">
-      <div className="flex basis-full flex-row flex-wrap items-center justify-center gap-1 mb-2 sm:basis-auto sm:flex-row sm:gap-1">
+    <div className="flex flex-wrap justify-center gap-1 text-center mb-2 sm:items-center">
+      <div className="flex basis-full flex-row flex-wrap items-center justify-center gap-1 mb-2 sm:basis-auto">
         <ChipBetInput
           id={inputId}
           label={t('betting.betAmount')}
@@ -97,7 +97,7 @@ export function BettingControls({
           describedBy={isOutOfRange ? `${inputId}-range` : undefined}
         />
         {isOutOfRange && (
-          <p id={`${inputId}-range`} className="basis-full text-ds-error-text text-xs sm:basis-full" role="alert">
+          <p id={`${inputId}-range`} className="basis-full text-ds-error-text text-xs" role="alert">
             {t('betting.rangeHint', { min: minRaise, max: hasMax ? max : '∞' })}
           </p>
         )}
@@ -212,7 +212,7 @@ export function BettingControls({
         {kbd('A')}
       </button>
       {hasOutstandingBet && callPotOddsLabel && (
-        <p className="basis-full text-ds-text-muted text-xs mt-1 sm:basis-full">{callPotOddsLabel}</p>
+        <p className="basis-full text-ds-text-muted text-xs mt-1">{callPotOddsLabel}</p>
       )}
       {/* Keyboard shortcut hint. BettingControls only renders while the human can
           act, so the shortcuts are always live here. Show only the actions that are

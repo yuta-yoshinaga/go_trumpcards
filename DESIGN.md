@@ -180,7 +180,7 @@ area, never by growing the document. This has regressed repeatedly (#1861, #1367
 | Header block (phase, score chips, settings `<details>`) | `shrink-0` |
 | Play area | `flex-1 overflow-y-auto` **and `min-h-0`** — this is the only region allowed to absorb overflow |
 | `GameFooter` (legacy) | `shrink-0`, capped at `max-h-[45vh]` with internal scroll below `sm` |
-| `GameFooter` with `actions` | footer capped at `45vh`; content scrolls internally while its action row stays visible |
+| `GameFooter` with `actions` | footer capped at `45vh` below `sm` and `50vh` from `sm` up; content scrolls internally while its action row stays visible |
 
 Three classes are load-bearing and must not be "cleaned up". All three are enforced
 by the `shell-height` guard in `scripts/check-design-tokens.mjs`, because each one
@@ -198,8 +198,11 @@ looks like redundant cruft to a reader:
 - Pages migrated to `GameFooter`'s optional `actions` slot keep the action row
   visible and scroll only the supporting content. That variant keeps a `45vh`
   mobile cap and uses a `50vh` cap from `sm` up.
+- BettingControls hides keyboard shortcut hints below `sm` because those layouts
+  are treated as touch-first; `aria-keyshortcuts` remains available to assistive
+  technology and keyboard users.
 - **Desktop vertical budget (1280×800).** The actions variant's `50vh` cap leaves
-  about 340px for the play area after the roughly 62px header, while keeping the main controls reachable.
+  about 300px for the play area on stud pages (302px measured), while keeping the main controls reachable.
   Legacy pages retain their existing uncapped `sm` behavior until migration.
 - **`overflow-hidden` on `GamePageShell`'s column.** Its children each scroll
   themselves, so nothing should overflow it — but stray scrollable overflow from a

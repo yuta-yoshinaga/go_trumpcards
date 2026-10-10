@@ -6,6 +6,9 @@ export interface GameFooterProps {
   /**
    * The always-visible primary action row. When provided, the footer itself does not
    * scroll; only its children scroll internally, with a 50vh cap from the sm breakpoint up.
+   * Migrated pages should always provide this prop, passing `null` when a turn has no
+   * actions, so the footer layout does not change between turns: `null` and `false`
+   * keep this layout and omit the (otherwise empty, padded) action row.
    */
   actions?: React.ReactNode;
 }
@@ -40,9 +43,11 @@ export function GameFooter({ className, children, actions }: GameFooterProps) {
         <div className="min-h-0 overflow-y-auto" data-testid="game-footer-content">
           {children}
         </div>
-        <div className="shrink-0 pt-2" data-testid="game-footer-actions">
-          {actions}
-        </div>
+        {actions != null && actions !== false && (
+          <div className="shrink-0 pt-2" data-testid="game-footer-actions">
+            {actions}
+          </div>
+        )}
       </footer>
     );
   }

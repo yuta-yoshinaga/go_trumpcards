@@ -87,14 +87,12 @@ describe('BettingControls', () => {
   it('lays out the bet controls and actions in a wrapping desktop row with hints below', () => {
     render(<BettingControls {...makeProps({ hasOutstandingBet: true })} />);
     const controls = screen.getByTestId('betting-key-hints').parentElement;
-    expect(controls?.className.split(' ')).toEqual(
-      expect.arrayContaining(['sm:flex-row', 'sm:flex-wrap', 'sm:items-center', 'sm:justify-center']),
-    );
+    expect(controls?.className.split(' ')).toEqual(expect.arrayContaining(['sm:items-center']));
     expect(screen.getByTestId('betting-key-hints').className.split(' ')).toEqual(
       expect.arrayContaining(['hidden', 'sm:basis-full', 'sm:block']),
     );
     expect(screen.getByLabelText('ベット額:').parentElement?.parentElement?.className.split(' ')).toEqual(
-      expect.arrayContaining(['sm:flex-row']),
+      expect.arrayContaining(['flex-row']),
     );
     for (const name of [/^コール(?:\s|$)/, 'レイズ', 'フォールド', 'オールイン'] as const) {
       const classes = screen.getByRole('button', { name }).className.split(' ');
@@ -109,13 +107,11 @@ describe('BettingControls', () => {
       <BettingControls {...makeProps({ hasOutstandingBet: true, callPotOddsLabel: '必要ポットオッズ: 25.0%' })} />,
     );
     expect(screen.getByText('必要ポットオッズ: 25.0%').className.split(' ')).toEqual(
-      expect.arrayContaining(['basis-full', 'sm:basis-full']),
+      expect.arrayContaining(['basis-full']),
     );
 
     rerender(<BettingControls {...makeProps({ betAmount: 5, minRaise: 10 })} />);
-    expect(screen.getByRole('alert').className.split(' ')).toEqual(
-      expect.arrayContaining(['basis-full', 'sm:basis-full']),
-    );
+    expect(screen.getByRole('alert').className.split(' ')).toEqual(expect.arrayContaining(['basis-full']));
   });
 
   it('renders the check/bet key-hint line and aria-keyshortcuts when there is no outstanding bet', () => {

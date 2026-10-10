@@ -114,4 +114,16 @@ describe('GameFooter', () => {
     expect(content.className).toContain('min-h-0');
     expect(content.className).toContain('overflow-y-auto');
   });
+
+  it('keeps the actions layout but omits the action row when actions is null', () => {
+    render(
+      <GameFooter actions={null}>
+        <span>手札</span>
+      </GameFooter>,
+    );
+    const footer = screen.getByRole('contentinfo');
+    expect(footer.className).toContain('sm:max-h-[50vh]');
+    expect(screen.getByTestId('game-footer-content')).toContainElement(screen.getByText('手札'));
+    expect(screen.queryByTestId('game-footer-actions')).not.toBeInTheDocument();
+  });
 });
