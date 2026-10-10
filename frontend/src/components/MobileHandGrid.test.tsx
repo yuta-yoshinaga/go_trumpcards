@@ -96,6 +96,16 @@ describe('MobileHandGrid', () => {
     expect(buttons[12]).toHaveAttribute('aria-pressed', 'true');
   });
 
+  it('does not clip a row containing a selected card vertically', () => {
+    const { container } = render(
+      <MobileHandGrid cards={makeCards(8)} selectedIndices={[2]} onToggle={() => {}} cardWidth={40} />,
+    );
+    const selectedRow = container.querySelector('[data-testid="hand-row"]');
+    expect(selectedRow).not.toHaveClass('overflow-y-hidden');
+    expect(selectedRow).not.toHaveStyle({ overflowY: 'hidden' });
+    expect(selectedRow?.querySelector('[aria-pressed="true"]')).toBeInTheDocument();
+  });
+
   it('renders a ✓ badge only on selected cards', () => {
     const cards = makeCards(5);
     render(<MobileHandGrid cards={cards} selectedIndices={[1, 3]} onToggle={() => {}} cardWidth={40} />);
@@ -152,23 +162,37 @@ describe('MobileHandGrid', () => {
     expect(buttons[0].style.marginLeft).toBe('0px');
   });
 
-  it('applies scroll fallback when many cards on narrow viewport exceed minimum tap target', () => {
+  it.each([25, 34])('fits %i cards across enough rows without horizontal scrolling at 375px', (count) => {
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
     window.dispatchEvent(new Event('resize'));
     try {
-      // 15 cards split into 2 rows: ceil(15/2)=8 cards per row.
-      // buttonWidth = 40+6 = 46. 8*46=368, available=375-32=343 => overlap needed = 25/7 ≈ 3.6px.
-      // But with even more cards in a row this should trigger scroll.
-      // Use 20 cards: ceil(20/2)=10 per row. 10*46=460 >> 343 => overlap = 117/9 ≈ 13px.
-      // 46 - 13 = 33 visible < 44 minimum → scroll fallback expected.
-      const cards = makeCards(20);
+      const cards = makeCards(count);
+      const onToggle = vi.fn();
       const { container } = render(
-        <MobileHandGrid cards={cards} selectedIndices={[]} onToggle={() => {}} cardWidth={40} />,
+        <MobileHandGrid cards={cards} selectedIndices={[]} onToggle={onToggle} cardWidth={40} />,
       );
       const rows = container.querySelectorAll('[data-testid="hand-row"]');
-      // At least one row should have scroll fallback class
-      const hasScroll = Array.from(rows).some((row) => row.classList.contains('overflow-x-auto'));
-      expect(hasScroll).toBe(true);
+      expect(rows.length).toBe(Math.ceil(count / 7));
+      for (const row of rows) expect(row).not.toHaveClass('overflow-x-auto');
+      const thirdRowButtons = rows[2].querySelectorAll('button');
+      const thirdRowLastButton = thirdRowButtons[thirdRowButtons.length - 1];
+      expect(thirdRowLastButton).toBeDefined();
+      if (!thirdRowLastButton) throw new Error('Expected a card in the third row');
+      fireEvent.click(thirdRowLastButton);
+      const expectedIndex = count === 25 ? 18 : 20;
+      expect(onToggle).toHaveBeenCalledWith(expectedIndex);
+      const legal = render(
+        <MobileHandGrid
+          cards={cards}
+          selectedIndices={[]}
+          onToggle={() => {}}
+          cardWidth={40}
+          validIndices={[expectedIndex]}
+        />,
+      );
+      const legalButtons = legal.container.querySelectorAll('button');
+      expect(legalButtons[expectedIndex]).not.toHaveAttribute('aria-disabled');
+      expect(legalButtons[expectedIndex - 1]).toHaveAttribute('aria-disabled', 'true');
     } finally {
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });
     }
@@ -191,21 +215,15 @@ describe('MobileHandGrid', () => {
     }
   });
 
-  it('card buttons have flex-shrink-0 in scroll fallback mode', () => {
+  it('does not use a horizontal scrolling fallback', () => {
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
     window.dispatchEvent(new Event('resize'));
     try {
-      const cards = makeCards(20);
+      const cards = makeCards(25);
       const { container } = render(
         <MobileHandGrid cards={cards} selectedIndices={[]} onToggle={() => {}} cardWidth={40} />,
       );
-      const scrollRow = container.querySelector('.overflow-x-auto');
-      expect(scrollRow).not.toBeNull();
-      const buttons = scrollRow?.querySelectorAll('button') ?? [];
-      // Buttons in scroll row should have flex-shrink: 0
-      for (const btn of buttons) {
-        expect(btn.style.flexShrink).toBe('0');
-      }
+      expect(container.querySelector('.overflow-x-auto')).toBeNull();
     } finally {
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });
     }

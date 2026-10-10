@@ -11,6 +11,11 @@ export function gameButton(page: Page, name: string | RegExp): Locator {
   return page.getByRole('button', { name }).and(page.locator(':not(nav *)'));
 }
 
+/** Click a hand card on its exposed left edge, where overlapped desktop cards remain clickable. */
+export async function clickHandCard(card: Locator): Promise<void> {
+  await card.click({ position: { x: 8, y: 24 } });
+}
+
 /** Timeout for quick UI checks (button appeared after an action). */
 export const TIMEOUT_QUICK = 1_000;
 /** Timeout for standard action visibility (betting round transitions, card animations). */

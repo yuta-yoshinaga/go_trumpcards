@@ -9,6 +9,7 @@ import {
 } from '../styles/cardStyles';
 import type { Card } from '../types/card';
 import { cardAlt } from '../utils/cardAlt';
+import { splitBalanced } from '../utils/splitBalanced';
 import { CardImage } from './CardImage';
 import { CardRoleBadge } from './CardRoleBadge';
 
@@ -109,25 +110,29 @@ export function MobileHandGrid({
   const isTrump = (idx: number): boolean => trumpIndices?.includes(idx) ?? false;
   const isLegal = (idx: number): boolean => legalIndices?.includes(idx) ?? false;
 
-  const useTwoRows = cards.length >= TWO_ROW_THRESHOLD;
-  const splitAt = useTwoRows ? Math.ceil(cards.length / 2) : cards.length;
-  const rows = useTwoRows ? [cards.slice(0, splitAt), cards.slice(splitAt)] : [cards];
+  const initialRows = cards.length >= TWO_ROW_THRESHOLD ? 2 : 1;
+  let rowCount = initialRows;
+  while (rowCount < cards.length) {
+    const largestRow = Math.ceil(cards.length / rowCount);
+    if (!computeOverlap(largestRow, buttonWidth, viewportWidth).useScroll) break;
+    rowCount += 1;
+  }
+  const rows = splitBalanced(cards, rowCount);
 
   return (
     <div className="mb-2" data-tutorial={dataTutorial}>
-      {rows.map((rowCards, rowIdx) => {
-        const { overlap, useScroll } = computeOverlap(rowCards.length, buttonWidth, viewportWidth);
-        const startIdx = rowIdx === 0 ? 0 : splitAt;
+      {rows.map(({ items: rowCards, start }, rowIdx) => {
+        const { overlap } = computeOverlap(rowCards.length, buttonWidth, viewportWidth);
 
         return (
           <div
             key={`row-${rowIdx}`}
             data-testid="hand-row"
-            className={useScroll ? 'flex overflow-x-auto' : 'flex justify-center'}
+            className="flex justify-center"
             style={{ marginBottom: rowIdx === 0 && rows.length > 1 ? 4 : 0 }}
           >
             {rowCards.map((card, i) => {
-              const globalIdx = startIdx + i;
+              const globalIdx = start + i;
               const isSelected = selectedIndices.includes(globalIdx);
               const isExpanded =
                 selectedIndices.includes(globalIdx) || (i > 0 && selectedIndices.includes(globalIdx - 1));
@@ -173,7 +178,6 @@ export function MobileHandGrid({
                     transition: 'transform 0.15s, border 0.15s, box-shadow 0.15s, margin-left 0.15s',
                     boxSizing: 'border-box',
                     marginLeft: ml,
-                    ...(useScroll ? { flexShrink: 0 } : {}),
                   }}
                 >
                   <CardImage

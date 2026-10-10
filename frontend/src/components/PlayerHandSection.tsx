@@ -1,6 +1,9 @@
+import { useCallback, useRef, useState } from 'react';
+import { useWindowWidth } from '../hooks/useCardDimensions';
 import { focusRingCard, highlightCardStyle, selectedCardStyle, trumpRingStyle } from '../styles/cardStyles';
 import type { Card } from '../types/card';
 import { cardAlt } from '../utils/cardAlt';
+import { splitBalanced } from '../utils/splitBalanced';
 import { CardRoleBadge } from './CardRoleBadge';
 import { MobileHandGrid } from './MobileHandGrid';
 import { AnimatedCard } from './motion/AnimatedCard';
@@ -76,6 +79,9 @@ export interface PlayerHandSectionProps {
   cardBadgeFor?: (idx: number) => { glyph: string; title: string } | null;
 }
 
+/** Minimum visible card width in the desktop overlap layout. */
+const MIN_CARD_EXPOSURE_PX = 28;
+
 /**
  * Renders the human player's card hand with mobile/desktop layout branching.
  * On mobile, uses MobileHandGrid for a compact two-row layout.
@@ -99,6 +105,18 @@ export function PlayerHandSection({
   legalIndices,
   cardBadgeFor,
 }: PlayerHandSectionProps) {
+  const viewportWidth = useWindowWidth();
+  const observerRef = useRef<ResizeObserver | null>(null);
+  const handRef = useCallback((hand: HTMLDivElement | null) => {
+    observerRef.current?.disconnect();
+    observerRef.current = null;
+    if (!hand || typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(() => setContainerWidth(hand.clientWidth));
+    observerRef.current = observer;
+    observer.observe(hand);
+    setContainerWidth(hand.clientWidth);
+  }, []);
+  const [containerWidth, setContainerWidth] = useState(0);
   const dataTutorial = `${dataTutorialPrefix}-player-hand`;
   const isRestricted = (idx: number): boolean => validIndices != null && !validIndices.includes(idx);
   const isHighlighted = (idx: number): boolean => highlightIndices?.includes(idx) ?? false;
@@ -127,55 +145,88 @@ export function PlayerHandSection({
     );
   }
 
+  const desktop = viewportWidth >= 1024;
+  const availableWidth = containerWidth;
+  const buttonWidth = cardWidth + 6;
+  const maxPerRow =
+    availableWidth > 0 ? Math.max(1, Math.floor((availableWidth - buttonWidth) / MIN_CARD_EXPOSURE_PX) + 1) : Infinity;
+  const rowCount = desktop && Number.isFinite(maxPerRow) ? Math.ceil(humanPlayer.cards.length / maxPerRow) : 1;
+  const rows = splitBalanced(humanPlayer.cards, rowCount);
+
   return (
-    <div className="flex flex-wrap lg:flex-nowrap lg:overflow-x-auto gap-1 mb-2" data-tutorial={dataTutorial}>
-      {humanPlayer.cards.map((card, idx) => {
-        const isSelected = selectedCardIndices.includes(idx);
-        const restricted = isRestricted(idx);
-        const highlighted = isHighlighted(idx);
-        const trump = isTrump(idx);
-        const legal = isLegal(idx);
-        // When a highlight list is active, dim the non-highlighted (and unselected) cards.
-        // Skip already-restricted cards so the two opacity classes never collide.
-        const dimmed = highlightIndices != null && !highlighted && !isSelected && !restricted;
-        const badge = cardBadgeFor?.(idx);
-        const status = cardStatusFor?.(idx);
+    <div
+      ref={handRef}
+      className={`mb-2 ${desktop ? 'flex flex-col lg:overflow-x-auto' : 'flex flex-wrap'}`}
+      data-tutorial={dataTutorial}
+    >
+      {rows.map(({ items: rowCards, start }, rowIdx) => {
+        const overlap =
+          desktop && availableWidth > 0 && rowCards.length > 1 && rowCards.length * buttonWidth > availableWidth
+            ? -Math.min(
+                buttonWidth - MIN_CARD_EXPOSURE_PX,
+                (rowCards.length * buttonWidth - availableWidth) / (rowCards.length - 1),
+              )
+            : 4;
         return (
-          <button
-            type="button"
-            key={`${card.design}-${card.value}-${idx}`}
-            onClick={() => {
-              if (!restricted) toggleCard(idx);
-            }}
-            // **バッジの意味も読み上げに載せる。** バッジは title だけを持つ
-            // pointer-events-none の span で、button の aria-label が
-            // アクセシブル名を完全に上書きするため、付けないと「スペードの
-            // キング」としか読まれず、結婚のチャンスが伝わらない (#6612)。
-            aria-label={`${cardAlt(card)}${trump && trumpAccessibleLabel ? ` (${trumpAccessibleLabel})` : ''}${badge ? ` (${badge.title})` : ''}${status ? ` (${status})` : ''}`}
-            aria-pressed={isSelected}
-            // Use aria-disabled (not the HTML `disabled` attribute) so restricted
-            // cards remain focusable for keyboard / screen-reader users — they
-            // need to reach the tooltip that explains why the card is illegal.
-            aria-disabled={restricted || undefined}
-            title={cardTitleFor?.(idx) ?? (restricted ? restrictedTooltip : trump ? trumpTitle : undefined)}
-            data-trump={trump || undefined}
-            data-legal={legal || undefined}
-            className={`transition-transform ${focusRingCard} ${legal ? 'rounded-lg ring-2 ring-ds-success' : ''} ${restricted ? 'opacity-50 cursor-not-allowed' : ''} ${dimmed ? 'opacity-60' : ''}`}
-            style={{
-              background: 'none',
-              padding: 0,
-              borderRadius: 8,
-              position: 'relative',
-              // Selection takes visual priority; otherwise show the highlight border.
-              ...(isSelected ? selectedCardStyle(true) : highlighted ? highlightCardStyle() : selectedCardStyle(false)),
-              // Trump ring stacks additively (outline) on top of the border above.
-              ...(trump ? trumpRingStyle() : {}),
-              boxSizing: 'border-box',
-            }}
-          >
-            <AnimatedCard card={card} width={cardWidth} />
-            {badge && <CardRoleBadge idx={idx} glyph={badge.glyph} title={badge.title} />}
-          </button>
+          <div key={`hand-row-${rowIdx}`} className={`flex ${desktop ? 'flex-nowrap' : 'flex-wrap gap-1'}`}>
+            {rowCards.map((card, rowCardIdx) => {
+              const idx = start + rowCardIdx;
+              const isSelected = selectedCardIndices.includes(idx);
+              const restricted = isRestricted(idx);
+              const highlighted = isHighlighted(idx);
+              const trump = isTrump(idx);
+              const legal = isLegal(idx);
+              // When a highlight list is active, dim the non-highlighted (and unselected) cards.
+              // Skip already-restricted cards so the two opacity classes never collide.
+              const dimmed = highlightIndices != null && !highlighted && !isSelected && !restricted;
+              const overlapped = desktop && overlap < 0;
+              const badge = cardBadgeFor?.(idx);
+              const status = cardStatusFor?.(idx);
+              return (
+                <button
+                  type="button"
+                  key={`${card.design}-${card.value}-${idx}`}
+                  onClick={() => {
+                    if (!restricted) toggleCard(idx);
+                  }}
+                  // **バッジの意味も読み上げに載せる。** バッジは title だけを持つ
+                  // pointer-events-none の span で、button の aria-label が
+                  // アクセシブル名を完全に上書きするため、付けないと「スペードの
+                  // キング」としか読まれず、結婚のチャンスが伝わらない (#6612)。
+                  aria-label={`${cardAlt(card)}${trump && trumpAccessibleLabel ? ` (${trumpAccessibleLabel})` : ''}${badge ? ` (${badge.title})` : ''}${status ? ` (${status})` : ''}`}
+                  aria-pressed={isSelected}
+                  // Use aria-disabled (not the HTML `disabled` attribute) so restricted
+                  // cards remain focusable for keyboard / screen-reader users — they
+                  // need to reach the tooltip that explains why the card is illegal.
+                  aria-disabled={restricted || undefined}
+                  title={cardTitleFor?.(idx) ?? (restricted ? restrictedTooltip : trump ? trumpTitle : undefined)}
+                  data-trump={trump || undefined}
+                  data-legal={legal || undefined}
+                  className={`transition-transform ${focusRingCard} ${overlapped ? '' : 'hover:z-10'} focus-visible:z-10 ${legal ? 'rounded-lg ring-2 ring-ds-success' : ''} ${restricted ? 'opacity-50 cursor-not-allowed' : ''} ${dimmed ? 'opacity-60' : ''}`}
+                  data-hand-card-index={idx}
+                  style={{
+                    background: 'none',
+                    padding: 0,
+                    borderRadius: 8,
+                    position: 'relative',
+                    // Selection takes visual priority; otherwise show the highlight border.
+                    ...(isSelected
+                      ? selectedCardStyle(true)
+                      : highlighted
+                        ? highlightCardStyle()
+                        : selectedCardStyle(false)),
+                    // Trump ring stacks additively (outline) on top of the border above.
+                    ...(trump ? trumpRingStyle() : {}),
+                    boxSizing: 'border-box',
+                    ...(desktop ? { marginLeft: rowCardIdx === 0 ? 0 : overlap } : {}),
+                  }}
+                >
+                  <AnimatedCard card={card} width={cardWidth} />
+                  {badge && <CardRoleBadge idx={idx} glyph={badge.glyph} title={badge.title} />}
+                </button>
+              );
+            })}
+          </div>
         );
       })}
     </div>
