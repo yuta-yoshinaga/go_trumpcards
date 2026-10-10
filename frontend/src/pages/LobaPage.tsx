@@ -34,6 +34,11 @@ import type { CliGameConfig } from '../utils/cli/types';
 import { findPlayerName, playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
+const OPPONENT_CARD_WIDTH_RATIO = 0.55;
+const MOBILE_DISCARD_CARD_WIDTH_RATIO = 0.55;
+const MOBILE_MELD_CARD_WIDTH_RATIO = 0.45;
+const DESKTOP_MELD_CARD_WIDTH_RATIO = 0.7;
+
 const LB_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="lb-rule"]', messageKey: 'tutorial.pierna', placement: 'bottom', advanceOn: 'next' },
   { target: '[data-tutorial="lb-rule"]', messageKey: 'tutorial.joker', placement: 'bottom', advanceOn: 'next' },
@@ -176,7 +181,7 @@ function LobaPageContent() {
                       {Array.from({ length: o.cardCount }, (_, i) => (
                         <CardBack
                           key={`opp-${o.id.toString()}-c${i.toString()}`}
-                          width={Math.round(cardWidth * 0.55)}
+                          width={Math.round(cardWidth * OPPONENT_CARD_WIDTH_RATIO)}
                           className={i > 0 ? '-ml-5' : undefined}
                         />
                       ))}
@@ -192,7 +197,7 @@ function LobaPageContent() {
                 <div className="flex justify-center">
                   <AnimatedCard
                     card={state.discardTop}
-                    width={isMobile ? Math.round(cardWidth * 0.55) : cardWidth}
+                    width={isMobile ? Math.round(cardWidth * MOBILE_DISCARD_CARD_WIDTH_RATIO) : cardWidth}
                     draggable={false}
                   />
                 </div>
@@ -226,7 +231,9 @@ function LobaPageContent() {
                         <AnimatedCard
                           key={`meld-${i.toString()}-c${j.toString()}`}
                           card={card}
-                          width={Math.round(cardWidth * (isMobile ? 0.45 : 0.7))}
+                          width={Math.round(
+                            cardWidth * (isMobile ? MOBILE_MELD_CARD_WIDTH_RATIO : DESKTOP_MELD_CARD_WIDTH_RATIO),
+                          )}
                           wrapperClassName={j > 0 ? '-ml-3' : undefined}
                           draggable={false}
                         />

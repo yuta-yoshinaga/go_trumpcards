@@ -173,6 +173,7 @@ describe('PasurPage', () => {
     );
     renderWithProviders(<PasurPage />);
     const s0 = await screen.findByTestId('ps-seat-0');
+    expect(s0.closest('details')).toBeNull();
     expect(s0).toHaveTextContent('捕獲6枚');
     expect(s0).toHaveTextContent('スール2');
     expect(s0).toHaveTextContent('得点9');

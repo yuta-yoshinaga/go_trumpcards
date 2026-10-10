@@ -309,8 +309,9 @@ export function OldMaidPlayerArea({
           <>
             {Array.from({ length: showCount }, (_, i) => {
               // 全カードを同一スタイルで描く。罠の位置を光らせない (#5476)。
-              // Keep each selectable card at least 44px wide while fitting a
-              // CPU's hand on one compact row on desktop.
+              // Keep compact desktop targets at least 44px wide while fitting
+              // a CPU's hand on one compact row. Normal cards follow the
+              // configured card size.
               return compactCpuCards ? (
                 <button
                   key={i}
@@ -325,7 +326,7 @@ export function OldMaidPlayerArea({
               ) : (
                 <CardBack
                   key={i}
-                  width={44}
+                  width={cardWidth}
                   style={NEUTRAL_CARD_STYLE}
                   onClick={() => onDraw(i)}
                   ariaLabel={t('drawCardAriaLabel', { idx: i + 1 })}

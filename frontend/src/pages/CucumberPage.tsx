@@ -232,37 +232,67 @@ function CucumberPageContent() {
             <LiveAnnouncement message={state.trickNumber + 1 === state.totalTricks ? t('status.finalTrick') : ''} />
 
             {/* **失点がそのまま順位。** 少ないほうが良い。 */}
-            <CpuAccordion playerCount={state.players.length - 1} dataTutorial="cu-seats">
+            {human && (
+              <div
+                className={`mb-2 rounded bg-black/30 px-2 py-1 text-center text-sm text-ds-text-muted ${
+                  human.id === state.currentPlayerIdx && !isGameEnd ? 'ring-1 ring-ds-warning' : ''
+                }`}
+                data-testid={`cu-seat-${human.id.toString()}`}
+                data-tutorial="cu-seats"
+                data-current-turn={human.id === state.currentPlayerIdx && !isGameEnd ? 'true' : undefined}
+              >
+                <span className="text-ds-text-primary">{seatName(human.id)}</span>
+                {human.id === state.lastTrickWinnerIdx && state.lastPenalty > 0 && (
+                  <span className="ml-1 text-ds-warning">
+                    {t('header.lastTrick', { n: String(state.lastPenalty) })}
+                  </span>
+                )}
+                {': '}
+                <span>{t('header.cards', { n: String(human.cardCount) })}</span>
+                {' / '}
+                <span className="text-ds-accent">{t('header.penalty', { n: String(human.penalty) })}</span>
+                {' / '}
+                <span className={human.penalty >= state.config.targetScore ? 'text-ds-warning' : ''}>
+                  {human.penalty >= state.config.targetScore
+                    ? t('header.targetReached')
+                    : t('header.targetRemaining', { count: state.config.targetScore - human.penalty })}
+                </span>
+              </div>
+            )}
+
+            <CpuAccordion playerCount={state.players.length - 1}>
               <div className="flex flex-wrap justify-center gap-2 mb-4">
-                {state.players.map((p) => (
-                  <div
-                    key={p.id}
-                    // **CPU 同士の手番中、誰が考えているのかが画面に無かった。**
-                    // 罰点バッジは行の中にあるので、手番はリングで囲って共存させる。
-                    className={`rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted ${
-                      p.id === state.currentPlayerIdx && !isGameEnd ? 'ring-1 ring-ds-warning' : ''
-                    }`}
-                    data-testid={`cu-seat-${p.id.toString()}`}
-                    data-current-turn={p.id === state.currentPlayerIdx && !isGameEnd ? 'true' : undefined}
-                  >
-                    <span className="text-ds-text-primary">{seatName(p.id)}</span>
-                    {p.id === state.lastTrickWinnerIdx && state.lastPenalty > 0 && (
-                      <span className="ml-1 text-ds-warning">
-                        {t('header.lastTrick', { n: String(state.lastPenalty) })}
+                {state.players
+                  .filter((p) => !p.isHuman)
+                  .map((p) => (
+                    <div
+                      key={p.id}
+                      // **CPU 同士の手番中、誰が考えているのかが画面に無かった。**
+                      // 罰点バッジは行の中にあるので、手番はリングで囲って共存させる。
+                      className={`rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted ${
+                        p.id === state.currentPlayerIdx && !isGameEnd ? 'ring-1 ring-ds-warning' : ''
+                      }`}
+                      data-testid={`cu-seat-${p.id.toString()}`}
+                      data-current-turn={p.id === state.currentPlayerIdx && !isGameEnd ? 'true' : undefined}
+                    >
+                      <span className="text-ds-text-primary">{seatName(p.id)}</span>
+                      {p.id === state.lastTrickWinnerIdx && state.lastPenalty > 0 && (
+                        <span className="ml-1 text-ds-warning">
+                          {t('header.lastTrick', { n: String(state.lastPenalty) })}
+                        </span>
+                      )}
+                      {': '}
+                      <span>{t('header.cards', { n: String(p.cardCount) })}</span>
+                      {' / '}
+                      <span className="text-ds-accent">{t('header.penalty', { n: String(p.penalty) })}</span>
+                      {' / '}
+                      <span className={p.penalty >= state.config.targetScore ? 'text-ds-warning' : ''}>
+                        {p.penalty >= state.config.targetScore
+                          ? t('header.targetReached')
+                          : t('header.targetRemaining', { count: state.config.targetScore - p.penalty })}
                       </span>
-                    )}
-                    {': '}
-                    <span>{t('header.cards', { n: String(p.cardCount) })}</span>
-                    {' / '}
-                    <span className="text-ds-accent">{t('header.penalty', { n: String(p.penalty) })}</span>
-                    {' / '}
-                    <span className={p.penalty >= state.config.targetScore ? 'text-ds-warning' : ''}>
-                      {p.penalty >= state.config.targetScore
-                        ? t('header.targetReached')
-                        : t('header.targetRemaining', { count: state.config.targetScore - p.penalty })}
-                    </span>
-                  </div>
-                ))}
+                    </div>
+                  ))}
               </div>
             </CpuAccordion>
 

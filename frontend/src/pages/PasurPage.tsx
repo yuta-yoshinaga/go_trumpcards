@@ -118,6 +118,32 @@ function PasurPageContent() {
     return t('result.tie', { n: String(state.winners.length) });
   })();
 
+  const renderSeat = (p: PasurResponse['players'][number]) => (
+    <div
+      key={p.id}
+      className={`rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted ${
+        isHumanTurn && p.id === state.currentPlayerIdx ? 'ring-2 ring-ds-accent' : ''
+      }`}
+      data-testid={`ps-seat-${p.id.toString()}`}
+    >
+      <span className="text-ds-text-primary">
+        {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
+      </span>
+      {isHumanTurn && p.id === state.currentPlayerIdx && (
+        <span className="ml-1 text-ds-accent" aria-current="step" data-testid={`ps-turn-${p.id.toString()}`}>
+          {t('header.currentTurn')}
+        </span>
+      )}
+      {p.id === state.lastCaptureIdx && <span className="ml-1 text-ds-accent">{t('header.lastCapture')}</span>}
+      {': '}
+      {t('header.captured', { n: String(p.capturedCount) })}
+      {' / '}
+      <span className="text-ds-accent">{t('header.soors', { n: String(p.soors) })}</span>
+      {' / '}
+      {t('header.score', { n: String(p.score) })}
+    </div>
+  );
+
   return (
     <GamePageShell
       title={tc('nav.pasur')}
@@ -175,39 +201,12 @@ function PasurPageContent() {
               </div>
             </div>
 
-            <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length} dataTutorial="ps-seats">
+            <div className="flex justify-center mb-2" data-tutorial="ps-seats">
+              {human && renderSeat(human)}
+            </div>
+            <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
               <div className="flex flex-wrap justify-center gap-2 mb-4 sm:flex-nowrap" data-tutorial="ps-seats">
-                {state.players.map((p) => (
-                  <div
-                    key={p.id}
-                    className={`rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted ${
-                      isHumanTurn && p.id === state.currentPlayerIdx ? 'ring-2 ring-ds-accent' : ''
-                    }`}
-                    data-testid={`ps-seat-${p.id.toString()}`}
-                  >
-                    <span className="text-ds-text-primary">
-                      {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
-                    </span>
-                    {isHumanTurn && p.id === state.currentPlayerIdx && (
-                      <span
-                        className="ml-1 text-ds-accent"
-                        aria-current="step"
-                        data-testid={`ps-turn-${p.id.toString()}`}
-                      >
-                        {t('header.currentTurn')}
-                      </span>
-                    )}
-                    {p.id === state.lastCaptureIdx && (
-                      <span className="ml-1 text-ds-accent">{t('header.lastCapture')}</span>
-                    )}
-                    {': '}
-                    {t('header.captured', { n: String(p.capturedCount) })}
-                    {' / '}
-                    <span className="text-ds-accent">{t('header.soors', { n: String(p.soors) })}</span>
-                    {' / '}
-                    {t('header.score', { n: String(p.score) })}
-                  </div>
-                ))}
+                {state.players.filter((p) => !p.isHuman).map(renderSeat)}
               </div>
             </CpuAccordion>
 

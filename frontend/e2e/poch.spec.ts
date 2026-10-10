@@ -9,9 +9,11 @@ test.describe('Poch E2E', () => {
     // pochen being a comparison rather than a declaration are the two rules a
     // player gets wrong.
     const rules = page.getByTestId('poch-rules');
-    await rules.locator('summary').click();
-    await expect(page.getByText(/めくり札と同じスート/)).toBeVisible();
-    await expect(page.getByText(/宣言ではなく同ランクの組の比べ合い/)).toBeVisible();
+    if (!(await rules.getAttribute('open'))) {
+      await rules.locator('summary').click();
+    }
+    await expect(rules.getByText(/めくり札と同じスート/)).toBeVisible();
+    await expect(rules.getByText(/宣言ではなく同ランクの組の比べ合い/)).toBeVisible();
 
     // All nine pools, always -- the carry-over is only readable from them.
     await expect(page.getByTestId('poch-pool')).toHaveCount(9, { timeout: TIMEOUT_GAME_LOOP });

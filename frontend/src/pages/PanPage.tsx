@@ -332,12 +332,15 @@ function PanPageContent() {
                               })}
                             >
                               {meld.cards.map((card, idx) => (
-                                <AnimatedCard
+                                <span
                                   key={`meldcard-${p.id}-${meldIdx}-${card.design}-${card.value}-${idx}`}
-                                  card={card}
-                                  width={cardWidth * (isMobile ? 0.48 : 0.5)}
-                                  wrapperClassName={idx > 0 ? 'inline-block -ml-[60%]' : 'inline-block'}
-                                />
+                                  className="inline-block"
+                                  style={{
+                                    marginLeft: idx > 0 ? -Math.round(cardWidth * (isMobile ? 0.48 : 0.5) * 0.6) : 0,
+                                  }}
+                                >
+                                  <AnimatedCard card={card} width={cardWidth * (isMobile ? 0.48 : 0.5)} />
+                                </span>
                               ))}
                               {/* バジェ (3/5/7 のセット) は全員にチップを配る。どのメルドが
                                   その原因なのかが盤面から読めなかった (#4853)。 */}

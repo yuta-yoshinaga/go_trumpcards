@@ -179,9 +179,13 @@ describe('CucumberPage', () => {
   it('collapses CPU seats on mobile and opens them on desktop', async () => {
     const mobileRender = renderWithProviders(<CucumberPage />);
     const accordion = await screen.findByTestId('cpu-accordion');
+    const humanSeat = screen.getByTestId('cu-seat-0');
     expect(accordion).not.toHaveAttribute('open');
+    expect(accordion).not.toContainElement(humanSeat);
+    expect(humanSeat).toBeVisible();
+    expect(humanSeat).toHaveAttribute('data-tutorial', 'cu-seats');
     expect(screen.getByTestId('cu-seat-1')).not.toBeVisible();
-    expect(screen.getByTestId('cu-seat-0')).not.toBeVisible();
+    expect(accordion).toContainElement(screen.getByTestId('cu-seat-1'));
     mobileRender.unmount();
 
     mobileState.isMobile = false;

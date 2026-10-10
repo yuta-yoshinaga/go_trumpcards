@@ -144,7 +144,7 @@ function TrexPageContent() {
               </p>
             </details>
 
-            <CpuAccordion playerCount={opponents.length} dataTutorial="tx-seats" desktopOpen={false}>
+            <CpuAccordion playerCount={opponents.length} dataTutorial="tx-seats">
               <div className="flex flex-wrap sm:flex-nowrap justify-center gap-4 mb-3">
                 {opponents.map((o) => (
                   <div key={`opp-${o.id.toString()}`} className="text-center">

@@ -685,10 +685,11 @@ describe('PanPage meld candidates', () => {
     const meld = await screen.findByRole('group', { name: 'CPU 1 のメルド: ♦ 4、♥ 4、♣ 4' });
     const images = within(meld).getAllByRole('img');
     const wrappers = images.map((image) => image.closest('.inline-block'));
-    expect(wrappers[0]).toHaveClass('inline-block');
+    const overlap = `${-Math.round(Number.parseFloat(getComputedStyle(images[1]).width) * 0.6)}px`;
+    expect(wrappers[0]).toHaveStyle({ marginLeft: '0px' });
     expect(wrappers[0]).not.toHaveClass('-ml-[60%]');
-    expect(wrappers[1]).toHaveClass('-ml-[60%]');
-    expect(wrappers[2]).toHaveClass('-ml-[60%]');
+    expect(wrappers[1]).toHaveStyle({ marginLeft: overlap });
+    expect(wrappers[2]).toHaveStyle({ marginLeft: overlap });
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
   });
   it('uses compact overlapping meld cards on desktop', async () => {
@@ -701,8 +702,8 @@ describe('PanPage meld candidates', () => {
     expect(images[0]).toHaveStyle({ width: '50px' });
     const wrappers = images.map((image) => image.closest('.inline-block'));
     expect(wrappers[0]).not.toHaveClass('-ml-[60%]');
-    expect(wrappers[1]).toHaveClass('-ml-[60%]');
-    expect(wrappers[2]).toHaveClass('-ml-[60%]');
+    expect(wrappers[1]).toHaveStyle({ marginLeft: '-30px' });
+    expect(wrappers[2]).toHaveStyle({ marginLeft: '-30px' });
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
   });
   // **同じ「レイオフ」が卓の上に何個も並ぶ。**読み上げではどのプレイヤーの
