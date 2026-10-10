@@ -78,7 +78,7 @@ describe('KingPage', () => {
     expect(screen.getByRole('button', { name: /^ノートリック —/ })).toBeInTheDocument();
   });
 
-  it('keeps contract buttons in footer content without rendering footer actions', async () => {
+  it('keeps contract buttons at the start of footer content without rendering footer actions', async () => {
     mockExec.mockResolvedValue(selectPhaseState);
     renderWithProviders(<KingPage />);
     const content = await screen.findByTestId('game-footer-content');
@@ -88,6 +88,7 @@ describe('KingPage', () => {
     expect(screen.queryByTestId('game-footer-actions')).not.toBeInTheDocument();
     const descriptions = screen.getByTestId('king-contract-descriptions');
     expect(content).toContainElement(descriptions);
+    expect(descriptions).toHaveTextContent('契約の説明');
     expect(descriptions).toHaveTextContent(i18n.t('king:contractDesc.0'));
     expect(within(contractButtons).getByTestId('king-contract-0')).toHaveAttribute(
       'aria-describedby',
@@ -398,6 +399,7 @@ describe('KingPage', () => {
     renderWithProviders(<KingPage />);
     await waitFor(() => expect(screen.getByTestId('king-select-cpu')).toBeInTheDocument());
     expect(screen.queryByTestId('king-contract-buttons')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-actions')).not.toBeInTheDocument();
   });
 
   it('shows king-trump-buttons when the user clicks the King/Trump contract', async () => {
@@ -406,7 +408,8 @@ describe('KingPage', () => {
     renderWithProviders(<KingPage />);
     const trumpContractBtn = await screen.findByTestId('king-contract-6');
     fireEvent.click(trumpContractBtn);
-    expect(await screen.findByTestId('king-trump-buttons')).toBeInTheDocument();
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByTestId('king-trump-buttons')).toBeInTheDocument();
   });
 
   it('does not show king-trump-buttons before a contract is selected', async () => {
