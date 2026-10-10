@@ -36,6 +36,7 @@ import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
+const MOBILE_PLAY_CARD_WIDTH = 32;
 const TABLEAU_CNT = 20;
 const FOUNDATION_CNT = 8;
 const FOUNDATION_PILE_FULL = 13;
@@ -133,7 +134,9 @@ function SlyFoxPageContent() {
   );
   const { handleCommand } = useCliGame(runApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  const { cardWidth, cardHeight } = useCardDimensions();
+  const { cardWidth, cardHeight, isMobile } = useCardDimensions();
+  const playCardWidth = isMobile ? MOBILE_PLAY_CARD_WIDTH : cardWidth;
+  const playCardHeight = isMobile ? Math.round(playCardWidth * 1.5) : cardHeight;
 
   const handleManualReset = useCallback(() => {
     void runApi('reset');
@@ -285,7 +288,7 @@ function SlyFoxPageContent() {
 
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
             <div className="mb-2 text-xs text-ds-text-muted">{t('foundations')}</div>
-            <div className="flex gap-2 mb-5 flex-wrap" data-tutorial="co-foundations">
+            <div className="flex gap-1 sm:gap-2 mb-5 flex-nowrap sm:flex-wrap" data-tutorial="co-foundations">
               {Array.from({ length: FOUNDATION_CNT }, (_, idx) => {
                 const pile = state.foundation[idx] ?? [];
                 const top = pile[pile.length - 1];
@@ -297,7 +300,7 @@ function SlyFoxPageContent() {
                   <button
                     key={`f-${idx.toString()}`}
                     type="button"
-                    className={`flex flex-col items-center p-1 rounded ${focusRingWhite} ${hintFoundation === idx ? 'ring-2 ring-ds-success animate-pulse' : ''} ${source ? 'cursor-pointer' : 'cursor-default'}`}
+                    className={`flex flex-col items-center p-0 sm:p-1 rounded ${focusRingWhite} ${hintFoundation === idx ? 'ring-2 ring-ds-success animate-pulse' : ''} ${source ? 'cursor-pointer' : 'cursor-default'}`}
                     onClick={() => clickFoundation(idx)}
                     disabled={!isPlaying || loading || source === null}
                     data-testid={`co-foundation-${idx.toString()}`}
@@ -317,12 +320,12 @@ function SlyFoxPageContent() {
                     <span className="text-[11px] mb-0.5 text-ds-text-muted">
                       {ascending ? '↑' : '↓'}F{idx}
                     </span>
-                    <div className="relative" style={{ width: cardWidth, height: cardHeight }}>
+                    <div className="relative" style={{ width: playCardWidth, height: playCardHeight }}>
                       {top ? (
-                        <AnimatedCard card={top} width={cardWidth} />
+                        <AnimatedCard card={top} width={playCardWidth} />
                       ) : (
                         <div
-                          style={{ width: cardWidth, height: cardHeight }}
+                          style={{ width: playCardWidth, height: playCardHeight }}
                           className="rounded border-2 border-dashed border-white/30 flex items-center justify-center text-ds-text-muted text-xs"
                         >
                           {t('empty')}
@@ -361,10 +364,10 @@ function SlyFoxPageContent() {
                   className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${source?.kind === 'dealing' ? 'ring-2 ring-ds-warning' : ''} ${hintStock ? 'ring-2 ring-ds-success animate-pulse' : ''}`}
                 >
                   {state.stockCount > 0 ? (
-                    <AnimatedCardBack width={cardWidth} />
+                    <AnimatedCardBack width={playCardWidth} />
                   ) : (
                     <div
-                      style={{ width: cardWidth, height: cardHeight }}
+                      style={{ width: playCardWidth, height: playCardHeight }}
                       className="rounded border-2 border-dashed border-white/30 flex items-center justify-center text-ds-text-muted text-xs"
                     >
                       {t('empty')}
@@ -387,7 +390,7 @@ function SlyFoxPageContent() {
             </div>
 
             <div className="mb-2 text-xs text-ds-text-muted">{t('tableau')}</div>
-            <div className="flex gap-2 flex-wrap items-start" data-tutorial="co-tableau">
+            <div className="flex gap-1 sm:gap-2 flex-wrap items-start" data-tutorial="co-tableau">
               {Array.from({ length: TABLEAU_CNT }, (_, idx) => {
                 const pile = state.tableau[idx] ?? [];
                 const top = pile[pile.length - 1];
@@ -416,10 +419,10 @@ function SlyFoxPageContent() {
                       className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${selected ? 'ring-2 ring-ds-warning' : ''} ${hintTableau === idx || hintTableauTarget === idx ? 'ring-2 ring-ds-success animate-pulse' : ''} ${isTarget && !selected ? 'ring-2 ring-ds-info/70' : ''}`}
                     >
                       {top ? (
-                        <AnimatedCard card={top} width={cardWidth} />
+                        <AnimatedCard card={top} width={playCardWidth} />
                       ) : (
                         <div
-                          style={{ width: cardWidth, height: cardHeight }}
+                          style={{ width: playCardWidth, height: playCardHeight }}
                           className="rounded border-2 border-dashed border-white/30 flex items-center justify-center text-ds-text-muted text-xs"
                         >
                           {t('empty')}

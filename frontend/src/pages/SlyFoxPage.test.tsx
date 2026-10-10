@@ -76,11 +76,47 @@ describe('slyfoxNextRank', () => {
 
 describe('SlyFoxPage', () => {
   const originalLanguage = i18n.language;
+  const originalInnerWidth = window.innerWidth;
 
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
     mockExec.mockResolvedValue(makeState());
+  });
+
+  it('uses compact cards and a single foundation row on mobile', async () => {
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      renderWithProviders(<SlyFoxPage />);
+
+      const foundations = await screen.findByTestId('co-foundation-0');
+      expect(foundations.parentElement).toHaveClass('flex-nowrap');
+      expect(foundations.querySelector('img')).toHaveStyle({ width: '32px' });
+      expect(screen.getByTestId('co-tableau-0').querySelector('img')).toHaveStyle({ width: '32px' });
+    } finally {
+      Object.defineProperty(window, 'innerWidth', {
+        writable: true,
+        configurable: true,
+        value: originalInnerWidth,
+      });
+    }
+  });
+
+  it('keeps the existing card size on desktop', async () => {
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 800 });
+    try {
+      renderWithProviders(<SlyFoxPage />);
+
+      const foundations = await screen.findByTestId('co-foundation-0');
+      expect(foundations.querySelector('img')).toHaveStyle({ width: '60px' });
+      expect(screen.getByTestId('co-tableau-0').querySelector('img')).toHaveStyle({ width: '60px' });
+    } finally {
+      Object.defineProperty(window, 'innerWidth', {
+        writable: true,
+        configurable: true,
+        value: originalInnerWidth,
+      });
+    }
   });
 
   it('includes the top reserve card in localized accessible names and preserves empty names', async () => {
