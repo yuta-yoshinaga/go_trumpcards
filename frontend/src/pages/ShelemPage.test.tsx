@@ -92,7 +92,12 @@ describe('ShelemPage', () => {
     expect(score).not.toHaveAttribute('open');
     expect(score.querySelector('div')).not.toBeVisible();
     expect(seats).not.toHaveAttribute('open');
-    expect(screen.getByTestId('sh-seat-0')).not.toBeVisible();
+    const humanSeat = screen.getByTestId('sh-seat-0');
+    const cpuSeat = screen.getByTestId('sh-seat-1');
+    expect(humanSeat).toBeVisible();
+    expect(humanSeat.closest('[data-testid="cpu-accordion"]')).toBeNull();
+    expect(cpuSeat.closest('[data-testid="cpu-accordion"]')).toBe(seats);
+    expect(cpuSeat).not.toBeVisible();
   });
 
   it('opens cumulative score and seats on desktop', async () => {
@@ -101,6 +106,8 @@ describe('ShelemPage', () => {
     expect(await screen.findByTestId('sh-score')).toHaveAttribute('open');
     expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
     expect(screen.getByTestId('sh-seat-0')).toBeVisible();
+    expect(screen.getByTestId('sh-seat-0').closest('[data-testid="cpu-accordion"]')).toBeNull();
+    expect(screen.getByTestId('sh-seat-1').closest('[data-testid="cpu-accordion"]')).toBe(screen.getByTestId('cpu-accordion'));
   });
 
   it('shows the last trick points separately from the round total', async () => {

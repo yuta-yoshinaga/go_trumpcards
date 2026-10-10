@@ -311,16 +311,29 @@ function ShelemPageContent() {
               </div>
             )}
 
-            <CpuAccordion playerCount={state.players.length - 1} dataTutorial="sh-seats">
+            {human && (
+              <div className="mb-2 flex justify-center" data-testid="sh-human-seat">
+                <div
+                  className="rounded bg-black/30 px-2 py-1 text-xs text-ds-text-muted whitespace-nowrap"
+                  data-testid={`sh-seat-${human.id.toString()}`}
+                >
+                  <span className="text-ds-text-primary">{t('header.you')}</span>
+                  <span className="ml-1 text-ds-accent">{t('header.team', { team: String(human.team) })}</span>
+                  {': '}
+                  {roleStr(human)} / {t('header.took', { n: String(human.trickCount) })}
+                </div>
+              </div>
+            )}
+            <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length} dataTutorial="sh-seats">
               <div className="flex flex-wrap justify-center gap-2 mb-4">
-                {state.players.map((p) => (
+                {state.players.filter((p) => !p.isHuman).map((p) => (
                   <div
                     key={p.id}
                     className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
                     data-testid={`sh-seat-${p.id.toString()}`}
                   >
                     <span className="text-ds-text-primary">
-                      {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
+                      {t('header.cpu', { idx: String(p.id) })}
                     </span>
                     <span className="ml-1 text-ds-accent">{t('header.team', { team: String(p.team) })}</span>
                     {': '}
