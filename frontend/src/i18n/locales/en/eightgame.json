@@ -20,15 +20,26 @@
   "disciplineChangeAnnouncement": "Discipline changed to {{name}}. Rules: {{rules}}",
   "handTotal": "{{n}} overall",
   "pot": "Pot {{pot}}",
+  "listSeparator": ", ",
+  "forcedBets": {
+    "smallBlind": "Small blind {{amount}}",
+    "bigBlind": "Big blind {{amount}}",
+    "ante": "Ante {{amount}}",
+    "bringIn": "Bring-in {{amount}}"
+  },
+  "callAmount": "({{amount}} chips to call)",
   "community": "Board",
   "chips": "{{chips}} chips",
   "you": "You",
+  "label.folded": "folded",
+  "label.allIn": "all-in",
   "nextHand": "Next hand",
   "newGame": "New game",
   "result": {
     "title": "Final result",
     "winner": "Winner: {{name}}",
-    "chips": "{{name}}: {{chips}} chips"
+    "chips": "{{name}}: {{chips}} chips",
+    "hand": "Hand: {{hand}}"
   },
   "tutorial": {
     "discipline": "The discipline in play. The table rotates Limit Hold'em, Omaha Hi-Lo, Razz, Stud, Stud Hi-Lo, No-Limit Hold'em, Pot-Limit Omaha and 2-7 Triple Draw, and the rules change with it.",
@@ -64,6 +75,8 @@
   "round.deal": "Dealt",
   "round.betting": "Betting",
   "round.drawing": "Draw",
+  "action.betting": "Betting turn",
+  "action.draw": "Draw turn ({{n}})",
   "draw": {
     "prompt": "Draw {{n}} - pick the cards to exchange",
     "exchange": "Exchange {{count}}",

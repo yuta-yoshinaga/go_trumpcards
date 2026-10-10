@@ -20,15 +20,26 @@
   "disciplineChangeAnnouncement": "種目が切り替わりました。{{name}}。規則: {{rules}}",
   "handTotal": "通算 {{n}}",
   "pot": "ポット {{pot}}",
+  "listSeparator": "、",
+  "forcedBets": {
+    "smallBlind": "スモールブラインド {{amount}}",
+    "bigBlind": "ビッグブラインド {{amount}}",
+    "ante": "アンティ {{amount}}",
+    "bringIn": "ブリングイン {{amount}}"
+  },
+  "callAmount": "（{{amount}} チップ）",
   "community": "場",
   "chips": "{{chips}} チップ",
   "you": "あなた",
+  "label.folded": "フォールド",
+  "label.allIn": "オールイン",
   "nextHand": "次のハンドへ",
   "newGame": "新しいゲーム",
   "result": {
     "title": "最終結果",
     "winner": "勝者: {{name}}",
-    "chips": "{{name}}: {{chips}} チップ"
+    "chips": "{{name}}: {{chips}} チップ",
+    "hand": "役: {{hand}}"
   },
   "tutorial": {
     "discipline": "いま打っている種目です。リミットホールデム→オマハハイロー→ラズ→スタッド→スタッドハイロー→ノーリミットホールデム→ポットリミットオマハ→2-7 トリプルドローの順に切り替わり、そのたびに規則が変わります。",
@@ -64,6 +75,8 @@
   "round.deal": "配り終わり",
   "round.betting": "ベッティング",
   "round.drawing": "引き直し",
+  "action.betting": "ベッティング手番",
+  "action.draw": "ドロー手番（{{n}}回目）",
   "draw": {
     "prompt": "引き直し {{n}} 回目 — 交換する札を選んでください",
     "exchange": "{{count}} 枚交換する",
