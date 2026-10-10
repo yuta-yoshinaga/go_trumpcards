@@ -176,8 +176,8 @@ area, never by growing the document. This has regressed repeatedly (#1861, #1367
 
 `mobile-viewport.spec.ts` checks that the document stays within the viewport;
 `play-area-budget.spec.ts` also caps the play-area overflow on ten representative
-pages. Keep these budgets stable when adding information that is always visible:
-it must not increase the play-area overflow.
+pages. Information that is always visible must not raise a page's play-area overflow;
+do not raise a page's limit to make a change pass without re-measuring the page.
 
 | Region | Behaviour |
 |---|---|

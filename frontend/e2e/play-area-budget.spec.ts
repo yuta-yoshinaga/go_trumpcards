@@ -2,14 +2,15 @@ import { expect, test } from '@playwright/test';
 import { navigateTo } from './helpers';
 
 /**
- * Representative play-area scroll budgets at 375×667. The original overflow
- * and worst post-fix measurements are separated by each limit: nertz 1125/415/770,
- * crescent 849/459/654, loba 795/486/640, sthelena 781/440/610, mendikot
- * 725/545/635, pan 718/498/608, popejoan 713/301/507, minibridge 667/319/493,
- * trex 649/237/443, marriage 623/477/550 (before/after/limit, px). The fixes
- * shipped in PRs #11622, #11623, #11624, and #11626. These heights depend on the
- * shuffled deal (#4373), so one load per page is intentional; the limits allow
- * deal variation while catching a regression to the pre-fix layout.
+ * Representative play-area scroll budgets at 375×667 (#11613). Each limit is the
+ * midpoint between the page's overflow before its fix (PRs #11622, #11623, #11624,
+ * #11626) and the worst overflow measured after it; the measurements are in #11627.
+ * These heights depend on the shuffled deal (#4373), so one load per page is
+ * intentional and the limits leave room for deal variation.
+ *
+ * The guard is statistical for /loba, /mendikot and /minibridge: their height varies
+ * so much by deal that the pre-fix layout passed on some deals. A pass there is not a
+ * proof, and a failure means "re-measure the worst case", never "retry".
  */
 test.use({ viewport: { width: 375, height: 667 } });
 
