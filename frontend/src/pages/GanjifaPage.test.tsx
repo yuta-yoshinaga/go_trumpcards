@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ganjifaApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -155,6 +155,8 @@ describe('GanjifaPage', () => {
 
   it('plays the selected card', async () => {
     renderWithProviders(<GanjifaPage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: '出す' })).toBeInTheDocument();
     const playButton = await screen.findByRole('button', { name: '出す' });
     // The play button stays inert until exactly one card is selected.
     expect(playButton).toBeDisabled();

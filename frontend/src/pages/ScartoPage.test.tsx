@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { scartoApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -206,6 +206,7 @@ describe('ScartoPage', () => {
       fireEvent.click(screen.getByRole('button', { name: label }));
     }
     const discardBtn = screen.getByRole('button', { name: /捨てる/ });
+    expect(within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: /捨てる/ })).toBe(discardBtn);
     expect(discardBtn).toBeEnabled();
     mockExec.mockClear();
     mockExec.mockResolvedValue(scartoPhaseState);
@@ -262,6 +263,7 @@ describe('ScartoPage', () => {
     const card = await screen.findByRole('button', { name: 'D ♥' });
     fireEvent.click(card);
     const playBtn = await screen.findByRole('button', { name: '出す' });
+    expect(within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '出す' })).toBe(playBtn);
     mockExec.mockClear();
     mockExec.mockResolvedValue(playPhaseState);
     fireEvent.click(playBtn);

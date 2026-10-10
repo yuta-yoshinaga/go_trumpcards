@@ -130,6 +130,8 @@ function TappTarockPageContent() {
   const isRoundEnd = state.phase === TappTarockPhase.ROUND_END;
   const isGameEnd = state.gameEndFlag;
   const isHumanTurn = state.isHumanTurn && !isGameEnd;
+  const hasFooterActions =
+    (isBid && isHumanTurn) || (isTalon && isHumanTurn) || isTrickEnd || (isRoundEnd && !isGameEnd) || isGameEnd;
   const humanWon = isGameEnd && state.winnerPlayer === (human?.id ?? 0);
   const result: RoundResult | null = state.breakdown
     ? state.breakdown.loser >= 0
@@ -341,88 +343,94 @@ function TappTarockPageContent() {
             ]}
           />
 
-          <GameFooter className={`${gameTheme.tapptarock.footer} px-4 py-2.5`}>
-            <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="zw-actions">
-              {isBid && isHumanTurn && (
-                <>
-                  {/* **押せるかは規則が決める** (#5786)。ドメインは「現在の最高
+          <GameFooter
+            className={`${gameTheme.tapptarock.footer} px-4 py-2.5`}
+            actions={
+              hasFooterActions ? (
+                <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="zw-actions">
+                  {isBid && isHumanTurn && (
+                    <>
+                      {/* **押せるかは規則が決める** (#5786)。ドメインは「現在の最高
                       入札を上回らない入札」を拒むので、上回れない側は押させない。
                       押せてしまうとサーバのエラーで返ってくるだけになる。 */}
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={() => callApi('bid', { bid: 'dreier' })}
-                    disabled={loading || state.highestBid >= TappTarockBid.DREIER}
-                    data-testid="tapp-bid-dreier"
-                  >
-                    {t('bidDreier')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnSecondary}
-                    onClick={() => callApi('bid', { bid: 'solo' })}
-                    disabled={loading || state.highestBid >= TappTarockBid.SOLO}
-                    data-testid="zw-bid-solo"
-                  >
-                    {t('bidSolo')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnSecondary}
-                    onClick={() => callApi('pass')}
-                    disabled={loading}
-                    data-testid="zw-pass"
-                  >
-                    {t('pass')}
-                  </button>
-                </>
-              )}
-              {isTalon && isHumanTurn && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={() => callApi('discard', { cardIndices: selected })}
-                  disabled={loading || selected.length !== DISCARD_COUNT}
-                  data-testid="zw-discard"
-                >
-                  {t('discard', { count: selected.length, total: DISCARD_COUNT })}
-                </button>
-              )}
-              {isTrickEnd && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={() => callApi('next')}
-                  disabled={loading}
-                  data-testid="zw-next-trick"
-                >
-                  {t('nextTrick')}
-                </button>
-              )}
-              {isRoundEnd && !isGameEnd && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={() => callApi('nextround')}
-                  disabled={loading}
-                  data-testid="zw-next-round"
-                >
-                  {t('nextDeal')}
-                </button>
-              )}
-              {isGameEnd && (
-                <button type="button" className={btnSuccess} onClick={resetWithConfig} disabled={loading}>
-                  {t('newGame')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={resetWithConfig}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="zw-reset-button"
-              />
-            </div>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={() => callApi('bid', { bid: 'dreier' })}
+                        disabled={loading || state.highestBid >= TappTarockBid.DREIER}
+                        data-testid="tapp-bid-dreier"
+                      >
+                        {t('bidDreier')}
+                      </button>
+                      <button
+                        type="button"
+                        className={btnSecondary}
+                        onClick={() => callApi('bid', { bid: 'solo' })}
+                        disabled={loading || state.highestBid >= TappTarockBid.SOLO}
+                        data-testid="zw-bid-solo"
+                      >
+                        {t('bidSolo')}
+                      </button>
+                      <button
+                        type="button"
+                        className={btnSecondary}
+                        onClick={() => callApi('pass')}
+                        disabled={loading}
+                        data-testid="zw-pass"
+                      >
+                        {t('pass')}
+                      </button>
+                    </>
+                  )}
+                  {isTalon && isHumanTurn && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={() => callApi('discard', { cardIndices: selected })}
+                      disabled={loading || selected.length !== DISCARD_COUNT}
+                      data-testid="zw-discard"
+                    >
+                      {t('discard', { count: selected.length, total: DISCARD_COUNT })}
+                    </button>
+                  )}
+                  {isTrickEnd && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={() => callApi('next')}
+                      disabled={loading}
+                      data-testid="zw-next-trick"
+                    >
+                      {t('nextTrick')}
+                    </button>
+                  )}
+                  {isRoundEnd && !isGameEnd && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={() => callApi('nextround')}
+                      disabled={loading}
+                      data-testid="zw-next-round"
+                    >
+                      {t('nextDeal')}
+                    </button>
+                  )}
+                  {isGameEnd && (
+                    <button type="button" className={btnSuccess} onClick={resetWithConfig} disabled={loading}>
+                      {t('newGame')}
+                    </button>
+                  )}
+                </div>
+              ) : null
+            }
+          >
+            <GameResetButton
+              isGameEnd={isGameEnd}
+              onReset={resetWithConfig}
+              requestConfirm={requestConfirm}
+              loading={loading}
+              dataTutorial="zw-reset-button"
+            />
           </GameFooter>
         </>
       )}

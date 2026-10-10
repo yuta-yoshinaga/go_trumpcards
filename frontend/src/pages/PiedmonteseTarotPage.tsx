@@ -515,7 +515,45 @@ function PiedmonteseTarotPageContent() {
             />
           </div>
 
-          <GameFooter className={`${gameTheme.piedmontesetarot.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.piedmontesetarot.footer} px-4 py-2.5`}
+            actions={
+              canScarto || canPlay || isTrickEnd || isRoundEnd ? (
+                <div className="flex flex-wrap gap-2 items-center" data-tutorial="piedmontesetarot-action-buttons">
+                  {canScarto && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={() => handleScarto(talonSize)}
+                      disabled={loading || selectedCardIndices.length !== talonSize}
+                    >
+                      {t('discardButton', { count: selectedCardIndices.length, total: talonSize })}
+                    </button>
+                  )}
+                  {canPlay && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handlePlay}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                    >
+                      {t('playButton')}
+                    </button>
+                  )}
+                  {isTrickEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                      {t('nextTrick')}
+                    </button>
+                  )}
+                  {isRoundEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                      {t('nextRound')}
+                    </button>
+                  )}
+                </div>
+              ) : null
+            }
+          >
             {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
                 変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。 */}
             <div data-testid="piedmontesetarot-prompt-live" role="status" aria-live="polite">
@@ -567,37 +605,7 @@ function PiedmonteseTarotPageContent() {
             </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-            <div className="flex flex-wrap gap-2 items-center" data-tutorial="piedmontesetarot-action-buttons">
-              {canScarto && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={() => handleScarto(talonSize)}
-                  disabled={loading || selectedCardIndices.length !== talonSize}
-                >
-                  {t('discardButton', { count: selectedCardIndices.length, total: talonSize })}
-                </button>
-              )}
-              {canPlay && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-              {isTrickEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                  {t('nextTrick')}
-                </button>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
+            <div className="flex items-center gap-2">
               <GameResetButton
                 isGameEnd={isGameEnd}
                 onReset={handleManualReset}

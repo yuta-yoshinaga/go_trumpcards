@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { minchiateApi } from '../api/gameApi';
 import i18n from '../i18n';
@@ -137,6 +137,7 @@ describe('MinchiatePage', () => {
   it('plays the selected card', async () => {
     renderWithProviders(<MinchiatePage />);
     const playButton = await screen.findByRole('button', { name: '出す' });
+    expect(within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '出す' })).toBe(playButton);
     expect(playButton).toBeDisabled();
 
     fireEvent.click(screen.getByRole('button', { name: 'Re ♠' }));
@@ -189,6 +190,9 @@ describe('MinchiatePage', () => {
       mockExec.mockResolvedValue(scartoHandState());
       renderWithProviders(<MinchiatePage />);
       expect(await screen.findByTestId('minchiate-scarto-prompt')).toHaveTextContent(String(MINCHIATE_SURPLUS));
+      expect(
+        within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '捨てる' }),
+      ).toBeInTheDocument();
       const progress = screen.getByTestId('minchiate-scarto-progress');
       expect(progress).toHaveTextContent('選択済み 0/13枚');
 
