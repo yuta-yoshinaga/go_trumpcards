@@ -145,6 +145,23 @@ describe('ReversisPage', () => {
     expect(screen.getByTestId('rv-seat-1')).toBeVisible();
   });
 
+  it('keeps the human seat visible outside the collapsed CPU accordion on mobile', async () => {
+    renderWithProviders(<ReversisPage />);
+    const humanSeat = await screen.findByTestId('rv-seat-0');
+    const accordion = screen.getByTestId('cpu-accordion');
+    const cpuSeat = screen.getByTestId('rv-seat-1');
+
+    expect(humanSeat.closest('[data-testid="rv-human-seat"]')).not.toBeNull();
+    expect(accordion).not.toContainElement(humanSeat);
+    expect(humanSeat).toBeVisible();
+    expect(humanSeat).toHaveAttribute('data-tutorial', 'reversis-seats');
+    expect(accordion).not.toHaveAttribute('open');
+    expect(accordion).toContainElement(cpuSeat);
+    expect(cpuSeat).toHaveAttribute('data-tutorial', 'reversis-seats');
+    expect(cpuSeat).not.toBeVisible();
+    expect(accordion).toHaveTextContent('CPU3');
+  });
+
   it('shows a per-player round penalty breakdown that adds up to the displayed penalty', async () => {
     mockExec.mockResolvedValue(
       makeState({
