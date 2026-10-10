@@ -4,12 +4,13 @@ import { navigateTo } from './helpers';
 /**
  * Representative play-area scroll budgets at 375×667 (#11613). Each limit is the
  * midpoint between the page's overflow before its fix (PRs #11622, #11623, #11624,
- * #11626, then #11636, #11637, #11638) and the worst overflow measured after it; the
- * measurements are in #11627 (first ten pages) and #11640 (the next eight).
+ * #11626, then #11636, #11637, #11638, then #11642, #11643, #11644, #11645) and the
+ * worst overflow measured after it; the measurements are in #11627 (first ten pages),
+ * #11640 (the next eight) and this PR's description (the round-three pages).
  * These heights depend on the shuffled deal (#4373), so one load per page is
  * intentional and the limits leave room for deal variation.
  *
- * The guard is statistical for /loba, /mendikot and /minibridge: their height varies
+ * The guard is statistical for /loba, /mendikot, /minibridge and /kille: their height varies
  * so much by deal that the pre-fix layout passed on some deals. A pass there is not a
  * proof, and a failure means "re-measure the worst case", never "retry".
  */
@@ -34,6 +35,27 @@ const BUDGETS: ReadonlyArray<{ path: string; maxOverflow: number }> = [
   { path: '/slyfox', maxOverflow: 332 },
   { path: '/nainjaune', maxOverflow: 314 },
   { path: '/boston', maxOverflow: 307 },
+  { path: '/kille', maxOverflow: 422 },
+  { path: '/carioca', maxOverflow: 359 },
+  { path: '/julepe', maxOverflow: 329 },
+  { path: '/colorado', maxOverflow: 329 },
+  { path: '/stealingbundles', maxOverflow: 314 },
+  { path: '/oldmaid', maxOverflow: 302 },
+  { path: '/indianrummy', maxOverflow: 301 },
+  { path: '/tarabish', maxOverflow: 300 },
+  { path: '/tute', maxOverflow: 281 },
+  { path: '/rollingstone', maxOverflow: 268 },
+  { path: '/klaverjas', maxOverflow: 234 },
+  { path: '/poch', maxOverflow: 230 },
+  { path: '/yaniv', maxOverflow: 228 },
+  { path: '/pasur', maxOverflow: 228 },
+  { path: '/belote', maxOverflow: 220 },
+  { path: '/goofspiel', maxOverflow: 213 },
+  { path: '/vint', maxOverflow: 208 },
+  { path: '/crazyeights', maxOverflow: 205 },
+  { path: '/hasenpfeffer', maxOverflow: 184 },
+  { path: '/laughandliedown', maxOverflow: 173 },
+  { path: '/cucumber', maxOverflow: 157 },
 ];
 
 for (const { path, maxOverflow } of BUDGETS) {
