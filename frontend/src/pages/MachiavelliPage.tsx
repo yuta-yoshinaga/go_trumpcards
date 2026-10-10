@@ -347,46 +347,70 @@ function MachiavelliPageContent() {
                   {state.table.length === 0 ? (
                     <div className="text-ds-text-muted text-sm">{t('tableEmpty')}</div>
                   ) : (
-                    <div className="flex flex-col gap-2">
-                      {state.table.map((meld, meldIdx) => (
-                        // biome-ignore lint/a11y/useSemanticElements: a labelled group of cards forming one meld; <fieldset> would be semantically wrong here
-                        <div
-                          key={`meld-${meldIdx}-${meld.kind}-${meld.cards.map((c) => `${c.design}${c.value}`).join('')}`}
-                          role="group"
-                          aria-label={meldAria(meld)}
-                          className={`${isMobile ? 'grid grid-cols-2 gap-1' : 'flex items-center gap-2 flex-wrap'} rounded transition-colors ${
-                            canLayoff ? 'ring-2 ring-ds-accent/70 p-1' : ''
-                          }`}
-                        >
-                          <span
-                            className={`text-ds-text-muted text-xs whitespace-nowrap min-w-16 ${isMobile ? 'col-span-2' : ''}`}
-                            data-testid={`machiavelli-meld-label-${meldIdx}`}
+                    <div
+                      className={`${isMobile ? 'grid grid-cols-2 gap-2' : 'flex flex-col gap-2'}`}
+                      data-testid="machiavelli-meld-list"
+                    >
+                      {state.table.map((meld, meldIdx) => {
+                        const meldCardWidth = cardWidth * 0.8;
+                        const layoffButton = isHumanTurn ? (
+                          <button
+                            type="button"
+                            className={`${btnPrimary} ${isMobile ? 'min-h-11 min-w-11 text-xs' : ''}`}
+                            onClick={() => handleLayoff(meldIdx)}
+                            disabled={loading || selectedCardIndices.length !== 1}
+                            aria-label={t('a11y.layoffTo', { meld: meldAria(meld) })}
                           >
-                            {meldVisualLabel(meld)}
-                          </span>
-                          <div className={`flex ${isMobile ? 'flex-nowrap' : 'flex-wrap gap-1'}`}>
-                            {meld.cards.map((card, idx) => (
-                              <AnimatedCard
-                                key={`meld-${meldIdx}-card-${card.design}-${card.value}-${idx}`}
-                                card={card}
-                                width={cardWidth * 0.8}
-                                style={isMobile && idx > 0 ? { marginLeft: -(cardWidth * 0.8 * 0.55) } : undefined}
-                              />
-                            ))}
-                          </div>
-                          {isHumanTurn && (
-                            <button
-                              type="button"
-                              className={`${btnPrimary} ${isMobile ? 'text-xs px-2 py-0.5' : ''}`}
-                              onClick={() => handleLayoff(meldIdx)}
-                              disabled={loading || selectedCardIndices.length !== 1}
-                              aria-label={t('a11y.layoffTo', { meld: meldAria(meld) })}
+                            {t('layoffButton')}
+                          </button>
+                        ) : null;
+                        return (
+                          // biome-ignore lint/a11y/useSemanticElements: a labelled group of cards forming one meld; <fieldset> would be semantically wrong here
+                          <div
+                            key={`meld-${meldIdx}-${meld.kind}-${meld.cards.map((c) => `${c.design}${c.value}`).join('')}`}
+                            role="group"
+                            aria-label={meldAria(meld)}
+                            className={`${isMobile ? 'flex flex-col gap-1' : 'flex items-center gap-2 flex-wrap'} rounded transition-colors ${
+                              canLayoff ? 'ring-2 ring-ds-accent/70 p-1' : ''
+                            }`}
+                          >
+                            {isMobile ? (
+                              <div className="flex items-center justify-between gap-2">
+                                <span
+                                  className="text-ds-text-muted text-xs whitespace-nowrap min-w-16 truncate"
+                                  data-testid={`machiavelli-meld-label-${meldIdx}`}
+                                  title={meldVisualLabel(meld)}
+                                >
+                                  {meldVisualLabel(meld)}
+                                </span>
+                                {layoffButton}
+                              </div>
+                            ) : (
+                              <span
+                                className="text-ds-text-muted text-xs whitespace-nowrap min-w-16"
+                                data-testid={`machiavelli-meld-label-${meldIdx}`}
+                                title={meldVisualLabel(meld)}
+                              >
+                                {meldVisualLabel(meld)}
+                              </span>
+                            )}
+                            <div
+                              className={`flex ${isMobile ? 'flex-wrap min-w-0' : 'flex-wrap gap-1'}`}
+                              style={isMobile ? { paddingLeft: meldCardWidth * 0.55 } : undefined}
                             >
-                              {t('layoffButton')}
-                            </button>
-                          )}
-                        </div>
-                      ))}
+                              {meld.cards.map((card, idx) => (
+                                <AnimatedCard
+                                  key={`meld-${meldIdx}-card-${card.design}-${card.value}-${idx}`}
+                                  card={card}
+                                  width={meldCardWidth}
+                                  style={isMobile && idx > 0 ? { marginLeft: -(meldCardWidth * 0.55) } : undefined}
+                                />
+                              ))}
+                            </div>
+                            {!isMobile && layoffButton}
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>

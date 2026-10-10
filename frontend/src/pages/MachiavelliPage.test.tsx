@@ -254,8 +254,11 @@ describe('MachiavelliPage', () => {
 
     const meldGroups = within(screen.getByTestId('machiavelli-table')).getAllByRole('group');
     expect(meldGroups).toHaveLength(2);
+    expect(screen.getByTestId('machiavelli-meld-list').className).toContain('grid-cols-2');
     for (const meldGroup of meldGroups) {
-      expect(within(meldGroup).getByRole('button', { name: /レイオフ/ })).toBeInTheDocument();
+      const layoffButton = within(meldGroup).getByRole('button', { name: /レイオフ/ });
+      expect(layoffButton).toBeInTheDocument();
+      expect(layoffButton.className).toContain('min-h-11');
       const meldCards = within(meldGroup).getAllByRole('img');
       expect(Number.parseFloat(meldCards[1].style.marginLeft)).toBeLessThan(0);
       expect(Number.parseFloat(meldCards[2].style.marginLeft)).toBeLessThan(0);
