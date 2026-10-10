@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { sixBidSoloApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -107,9 +107,21 @@ describe('SixBidSoloPage', () => {
     expect(widow).toHaveTextContent('宣言者の得点へ加算');
   });
 
+  it('shows a zero target when a bid target is missing', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ phase: SixBidSoloPhase.BID, highBid: null, declarerIdx: -1, bidTargets: [] }),
+    );
+    renderWithProviders(<SixBidSoloPage />);
+    const bidSelect = await screen.findByLabelText('宣言');
+    expect(
+      Array.from(bidSelect.querySelectorAll('option')).some((option) => option.textContent?.includes('目標 0')),
+    ).toBe(true);
+  });
+
   it('plays exactly one card', async () => {
     renderWithProviders(<SixBidSoloPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '出す' })).toBeInTheDocument());
+    expect(within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '出す' })).toBeInTheDocument();
 
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: '出す' }));

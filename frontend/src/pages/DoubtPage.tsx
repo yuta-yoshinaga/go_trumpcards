@@ -403,14 +403,6 @@ function DoubtPageContent() {
                             })}
                           </div>
                         )}
-                        <div className="flex gap-2">
-                          <button type="button" className={btnDanger} disabled={loading} onClick={handleDoubt}>
-                            {t('doubtButton')}
-                          </button>
-                          <button type="button" className={btnSecondary} disabled={loading} onClick={handleSkip}>
-                            {t('skipButton')}
-                          </button>
-                        </div>
                         <p className="text-game-text-muted text-xs mt-2" data-testid="doubt-key-hints">
                           {t('keyHints')}
                         </p>
@@ -425,9 +417,6 @@ function DoubtPageContent() {
                             })}
                           </div>
                         )}
-                        <button type="button" className={btnPrimary} disabled={loading} onClick={handleCpuDoubtConfirm}>
-                          {t('confirmButton')}
-                        </button>
                       </>
                     )}
                   </div>
@@ -536,7 +525,67 @@ function DoubtPageContent() {
           </div>
 
           {/* Sticky footer: human player hand + action buttons */}
-          <GameFooter className={`${gameTheme.doubt.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.doubt.footer} px-4 py-2.5`}
+            actions={
+              isDoubtPhase && !state.gameEndFlag ? (
+                cpuPlayed ? (
+                  <div className="flex flex-wrap justify-center gap-2">
+                    <button type="button" className={btnDanger} disabled={loading} onClick={handleDoubt}>
+                      {t('doubtButton')}
+                    </button>
+                    <button type="button" className={btnSecondary} disabled={loading} onClick={handleSkip}>
+                      {t('skipButton')}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="text-center">
+                    <button type="button" className={btnPrimary} disabled={loading} onClick={handleCpuDoubtConfirm}>
+                      {t('confirmButton')}
+                    </button>
+                  </div>
+                )
+              ) : isHumanTurn && state.phase === 0 ? (
+                <div className="text-center">
+                  {showClaimInput && (
+                    <fieldset className="m-0 border-0 p-0 mb-2" data-tutorial="dt-claim-input">
+                      <legend className="text-ds-text-primary text-sm mb-1">{t('claimedValue')}</legend>
+                      <div className="flex flex-wrap gap-1.5 justify-center">
+                        {Array.from({ length: 13 }, (_, i) => i + 1).map((v) => (
+                          <button
+                            key={v}
+                            type="button"
+                            className={
+                              claimedValue === v
+                                ? `${btnSecondary} min-w-[44px] ring-2 ring-ds-warning ${focusRingAccent}`
+                                : v === honestValue
+                                  ? `${btnSecondary} min-w-[44px] ring-2 ring-ds-success ${focusRingAccent}`
+                                  : `${btnSecondary} min-w-[44px] ${focusRingAccent}`
+                            }
+                            aria-pressed={claimedValue === v}
+                            data-testid={v === honestValue ? 'doubt-honest-value' : undefined}
+                            onClick={() => setClaimedValue(v)}
+                            disabled={loading}
+                          >
+                            {valueName(v)}
+                          </button>
+                        ))}
+                      </div>
+                    </fieldset>
+                  )}
+                  <button
+                    type="button"
+                    className={`${btnSuccess} min-w-[90px]`}
+                    disabled={loading || selectedCardIndices.length === 0}
+                    onClick={handlePlay}
+                    data-tutorial="dt-play-button"
+                  >
+                    {t('playButton')}
+                  </button>
+                </div>
+              ) : null
+            }
+          >
             {/* Human player info */}
             {humanPlayer && (
               <div className="mb-2" data-tutorial="dt-player-hand">
@@ -562,32 +611,6 @@ function DoubtPageContent() {
                 </div>
 
                 {/* Claimed value buttons (shown when cards are selected) */}
-                {showClaimInput && (
-                  <fieldset className="m-0 border-0 p-0 mt-2" data-tutorial="dt-claim-input">
-                    <legend className="text-ds-text-primary text-sm mb-1">{t('claimedValue')}</legend>
-                    <div className="flex flex-wrap gap-1.5">
-                      {Array.from({ length: 13 }, (_, i) => i + 1).map((v) => (
-                        <button
-                          key={v}
-                          type="button"
-                          className={
-                            claimedValue === v
-                              ? `${btnSecondary} min-w-[44px] ring-2 ring-ds-warning ${focusRingAccent}`
-                              : v === honestValue
-                                ? `${btnSecondary} min-w-[44px] ring-2 ring-ds-success ${focusRingAccent}`
-                                : `${btnSecondary} min-w-[44px] ${focusRingAccent}`
-                          }
-                          aria-pressed={claimedValue === v}
-                          data-testid={v === honestValue ? 'doubt-honest-value' : undefined}
-                          onClick={() => setClaimedValue(v)}
-                          disabled={loading}
-                        >
-                          {valueName(v)}
-                        </button>
-                      ))}
-                    </div>
-                  </fieldset>
-                )}
               </div>
             )}
 
@@ -605,17 +628,6 @@ function DoubtPageContent() {
                 dataTutorial="dt-reset-button"
                 className="min-w-[90px]"
               />
-              {isHumanTurn && state.phase === 0 && (
-                <button
-                  type="button"
-                  className={`${btnSuccess} min-w-[90px]`}
-                  disabled={loading || selectedCardIndices.length === 0}
-                  onClick={handlePlay}
-                  data-tutorial="dt-play-button"
-                >
-                  {t('playButton')}
-                </button>
-              )}
             </div>
             <CardNavShortcutsPanel data-testid="doubt-kbd-shortcuts" />
           </GameFooter>

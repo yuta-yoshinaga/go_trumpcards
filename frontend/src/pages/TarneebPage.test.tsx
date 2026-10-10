@@ -223,6 +223,7 @@ describe('TarneebPage', () => {
     renderWithProviders(<TarneebPage />);
     // minBid 7 → buttons 7..13, none below 7.
     const bid9 = await screen.findByTestId('bid-option-9');
+    expect(within(screen.getByTestId('game-footer-actions')).getByTestId('bid-option-9')).toBeInTheDocument();
     expect(screen.queryByTestId('bid-option-6')).not.toBeInTheDocument();
     expect(screen.getByTestId('bid-option-13')).toBeInTheDocument();
     expect(bid9).toHaveClass('h-11', 'w-11');

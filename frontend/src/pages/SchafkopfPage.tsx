@@ -400,7 +400,91 @@ function SchafkopfPageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.schafkopf.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.schafkopf.footer} px-4 py-2.5`}
+            actions={
+              canPick || canCall || canPlay || isTrickEnd || isRoundEnd ? (
+                <div className="flex flex-wrap gap-1 items-center">
+                  {canPick && (
+                    <button type="button" className={btnSecondary} onClick={handlePass} disabled={loading}>
+                      {t('passButton')}
+                    </button>
+                  )}
+                  {canCall &&
+                    state.callableSuits.map((suit) => {
+                      // callableSuits are the three fail suits (♠♣♦), all present in SUIT_KEYS.
+                      const suitName = t(`suit.${SUIT_KEYS[suit]}`);
+                      return (
+                        <button
+                          key={`call-${suit}`}
+                          type="button"
+                          className={btnPrimary}
+                          onClick={() => handleCall(suit)}
+                          disabled={loading}
+                          aria-label={t('callButtonAriaLabel', { suit: suitName })}
+                        >
+                          {t('callButton', { suit: suitName })}
+                        </button>
+                      );
+                    })}
+                  {canPlay && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handlePlay}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                    >
+                      {t('playButton')}
+                    </button>
+                  )}
+                  {isTrickEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                      {t('nextTrick')}
+                    </button>
+                  )}
+                  {isRoundEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                      {t('nextRound')}
+                    </button>
+                  )}
+                </div>
+              ) : null
+            }
+          >
+            {canPick && (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 items-center" data-tutorial="sh-action-buttons">
+                {/* Only the contracts that outrank the standing bid: a button
+                  the server is bound to refuse is worse than no button. */}
+                {beatable.includes(CONTRACT_RUFSPIEL) && (
+                  <button type="button" className={btnPrimary} onClick={handlePick} disabled={loading}>
+                    {t('pickButton')}
+                  </button>
+                )}
+                {beatable.includes(CONTRACT_WENZ) && (
+                  <button type="button" className={btnPrimary} onClick={() => handleDeclare(1)} disabled={loading}>
+                    {t('wenzButton')}
+                  </button>
+                )}
+                {/* Solo names its own trump, so each suit is its own button
+                  rather than a declare-then-choose second step. */}
+                {beatable.includes(CONTRACT_SOLO) &&
+                  SOLO_SUITS.map((suit) => {
+                    const suitName = t(`suit.${SUIT_KEYS[suit]}`);
+                    return (
+                      <button
+                        key={`solo-${suit}`}
+                        type="button"
+                        className={btnPrimary}
+                        onClick={() => handleDeclare(2, suit)}
+                        disabled={loading}
+                        aria-label={t('soloButtonAriaLabel', { suit: suitName })}
+                      >
+                        {t('soloButton', { suit: suitName })}
+                      </button>
+                    );
+                  })}
+              </div>
+            )}
             {humanPlayer && (
               <PlayerHandSection
                 humanPlayer={humanPlayer}
@@ -434,89 +518,13 @@ function SchafkopfPageContent() {
             </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-            <div className="flex flex-wrap gap-2 items-center" data-tutorial="sh-action-buttons">
-              {canPick && (
-                <>
-                  {/* Only the contracts that outrank the standing bid: a button
-                      the server is bound to refuse is worse than no button. */}
-                  {beatable.includes(CONTRACT_RUFSPIEL) && (
-                    <button type="button" className={btnPrimary} onClick={handlePick} disabled={loading}>
-                      {t('pickButton')}
-                    </button>
-                  )}
-                  {beatable.includes(CONTRACT_WENZ) && (
-                    <button type="button" className={btnPrimary} onClick={() => handleDeclare(1)} disabled={loading}>
-                      {t('wenzButton')}
-                    </button>
-                  )}
-                  {/* Solo names its own trump, so each suit is its own button
-                      rather than a declare-then-choose second step. */}
-                  {beatable.includes(CONTRACT_SOLO) &&
-                    SOLO_SUITS.map((suit) => {
-                      const suitName = t(`suit.${SUIT_KEYS[suit]}`);
-                      return (
-                        <button
-                          key={`solo-${suit}`}
-                          type="button"
-                          className={btnPrimary}
-                          onClick={() => handleDeclare(2, suit)}
-                          disabled={loading}
-                          aria-label={t('soloButtonAriaLabel', { suit: suitName })}
-                        >
-                          {t('soloButton', { suit: suitName })}
-                        </button>
-                      );
-                    })}
-                  <button type="button" className={btnSecondary} onClick={handlePass} disabled={loading}>
-                    {t('passButton')}
-                  </button>
-                </>
-              )}
-              {canCall &&
-                state.callableSuits.map((suit) => {
-                  // callableSuits are the three fail suits (♠♣♦), all present in SUIT_KEYS.
-                  const suitName = t(`suit.${SUIT_KEYS[suit]}`);
-                  return (
-                    <button
-                      key={`call-${suit}`}
-                      type="button"
-                      className={btnPrimary}
-                      onClick={() => handleCall(suit)}
-                      disabled={loading}
-                      aria-label={t('callButtonAriaLabel', { suit: suitName })}
-                    >
-                      {t('callButton', { suit: suitName })}
-                    </button>
-                  );
-                })}
-              {canPlay && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-              {isTrickEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                  {t('nextTrick')}
-                </button>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="sh-reset-button"
-              />
-            </div>
+            <GameResetButton
+              isGameEnd={isGameEnd}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+              dataTutorial="sh-reset-button"
+            />
             <CardNavShortcutsPanel data-testid="schafkopf-kbd-shortcuts" />
           </GameFooter>
         </>

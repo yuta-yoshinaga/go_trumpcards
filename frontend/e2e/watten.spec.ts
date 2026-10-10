@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { gameButton, navigateTo, TIMEOUT_GAME_LOOP, TIMEOUT_TRANSITION, waitForLoaded } from './helpers';
+import { navigateTo, TIMEOUT_GAME_LOOP, TIMEOUT_TRANSITION, waitForLoaded } from './helpers';
 
 test.describe('Watten E2E', () => {
   test('loads, resets, and renders the play UI', async ({ page }) => {
@@ -20,12 +20,14 @@ test.describe('Watten E2E', () => {
     // be present (a declare button, the human's play/raise control, a hold/fold
     // response, a deal advance, or — once the deal resolves via CPU play — the
     // reset / next-game button).
-    const anyControl = gameButton(page, '宣言')
-      .or(page.getByRole('button', { name: '出す' }))
-      .or(gameButton(page, /レイズ/))
-      .or(page.getByRole('button', { name: /hold/ }))
-      .or(page.getByRole('button', { name: /fold/ }))
-      .or(page.getByRole('button', { name: '次のディール' }))
+    const actions = page.getByTestId('game-footer-actions');
+    const anyControl = actions
+      .getByRole('button', { name: '宣言' })
+      .or(actions.getByRole('button', { name: '出す' }))
+      .or(actions.getByRole('button', { name: /レイズ/ }))
+      .or(actions.getByRole('button', { name: /hold/ }))
+      .or(actions.getByRole('button', { name: /fold/ }))
+      .or(actions.getByRole('button', { name: '次のディール' }))
       .or(page.getByRole('button', { name: /リセット|次のゲーム/ }))
       .first();
     await expect(anyControl).toBeVisible({ timeout: TIMEOUT_GAME_LOOP });

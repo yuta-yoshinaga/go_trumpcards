@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { schafkopfApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -157,6 +157,7 @@ describe('SchafkopfPage', () => {
     const card = await screen.findByAltText('♠ A');
     fireEvent.click(card);
     const playBtn = await screen.findByRole('button', { name: '出す' });
+    expect(within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '出す' })).toBeInTheDocument();
     mockExec.mockClear();
     mockExec.mockResolvedValue(playPhaseState);
     fireEvent.click(playBtn);
@@ -189,6 +190,12 @@ describe('SchafkopfPage', () => {
     mockExec.mockResolvedValue(pickPhaseState);
     renderWithProviders(<SchafkopfPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'Rufspiel（A呼び）' })).toBeInTheDocument());
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: 'パスする' }),
+    ).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId('game-footer-content')).getByRole('button', { name: 'Rufspiel（A呼び）' }),
+    ).toBeInTheDocument();
     // **All three contracts have to be reachable.** Only Rufspiel used to be,
     // which left Wenz and Solo settable by the domain but not by any player.
     expect(screen.getByRole('button', { name: 'Wenz（Unterのみ切り札）' })).toBeInTheDocument();

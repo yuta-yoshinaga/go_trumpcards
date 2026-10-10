@@ -507,4 +507,28 @@ describe('ViraPage pot settlement', () => {
 
     expect(screen.queryByTestId('vira-pot-settlement')).not.toBeInTheDocument();
   });
+  it('places the current turn action in the pinned footer actions', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<ViraPage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: '出す' })).toBeInTheDocument();
+  });
+
+  it('keeps bid choices in the scrollable footer content and pass in pinned actions', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<ViraPage />);
+
+    const actions = await screen.findByTestId('game-footer-actions');
+    const bidChoice = await screen.findByTestId('bid-1');
+    expect(within(actions).getByTestId('bid-0')).toBeInTheDocument();
+    expect(bidChoice).toBeInTheDocument();
+    expect(actions).not.toContainElement(bidChoice);
+  });
+
+  it('omits the pinned action row while the CPU is bidding', async () => {
+    mockExec.mockResolvedValue(makeViraState({ phase: 0, isHumanBidTurn: false, currentPlayerIdx: 1 }));
+    renderWithProviders(<ViraPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('game-footer-actions')).not.toBeInTheDocument();
+  });
 });

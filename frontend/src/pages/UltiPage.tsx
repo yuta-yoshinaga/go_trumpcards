@@ -403,7 +403,114 @@ function UltiPageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.ulti.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.ulti.footer} px-4 py-2.5`}
+            actions={
+              canBid || canDiscard || canPlay || isTrickEnd || isRoundEnd ? (
+                <div className="flex flex-wrap gap-2 items-center" data-tutorial="ulti-action-buttons">
+                  {canBid && (
+                    <>
+                      <fieldset className="flex items-center gap-2 border-0 p-0 m-0 min-w-0">
+                        <legend className="text-ds-text-muted text-sm">{t('chooseTrump')}</legend>
+                        {TRUMP_CHOICES.map((c) => (
+                          <button
+                            key={c.code}
+                            type="button"
+                            className={selectedTrump === c.code ? btnPrimary : btnSecondary}
+                            onClick={() => setSelectedTrump(c.code)}
+                            disabled={loading}
+                            aria-label={t(SUIT_KEYS[c.code])}
+                            aria-pressed={selectedTrump === c.code}
+                          >
+                            {c.symbol}
+                          </button>
+                        ))}
+                      </fieldset>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={declareParty}
+                        disabled={loading || selectedTrump === null}
+                        title={t('bidDesc.party')}
+                        aria-describedby="ulti-bid-desc-party"
+                      >
+                        {t('bidParty')}
+                      </button>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={declareUlti}
+                        disabled={loading || selectedTrump === null}
+                        title={t('bidDesc.ulti')}
+                        aria-describedby="ulti-bid-desc-ulti"
+                      >
+                        {t('bidUlti')}
+                      </button>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={() => handleBid('betli')}
+                        disabled={loading}
+                        title={t('bidDesc.betli')}
+                        aria-describedby="ulti-bid-desc-betli"
+                      >
+                        {t('bidBetli')}
+                      </button>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={() => handleBid('durchmarsch')}
+                        disabled={loading}
+                        title={t('bidDesc.durchmarsch')}
+                        aria-describedby="ulti-bid-desc-durchmarsch"
+                      >
+                        {t('bidDurchmarsch')}
+                      </button>
+                      {/* The win conditions the CUI states in promptBidHelp; Ulti's own
+                      (trump 7 takes the last trick) is the name of the game. */}
+                      <div className="sr-only" data-testid="ulti-bid-descriptions">
+                        {(['party', 'ulti', 'betli', 'durchmarsch'] as const).map((k) => (
+                          <span key={k} id={`ulti-bid-desc-${k}`}>
+                            {t(`bidDesc.${k}`)}
+                          </span>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                  {canDiscard && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handleDiscard}
+                      disabled={loading || selectedCardIndices.length !== 2}
+                    >
+                      {t('discardButton')}
+                    </button>
+                  )}
+                  {canPlay && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handlePlay}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                    >
+                      {t('playButton')}
+                    </button>
+                  )}
+                  {isTrickEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                      {t('nextTrick')}
+                    </button>
+                  )}
+                  {isRoundEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                      {t('nextRound')}
+                    </button>
+                  )}
+                </div>
+              ) : null
+            }
+          >
             {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
                 変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。
                 宣言中と捨て札中は排他なので領域は 1 つでよい。タロンの案内も同じ群。 */}
@@ -465,114 +572,13 @@ function UltiPageContent() {
             </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-            <div className="flex flex-wrap gap-2 items-center" data-tutorial="ulti-action-buttons">
-              {canBid && (
-                <>
-                  <fieldset className="flex items-center gap-2 border-0 p-0 m-0 min-w-0">
-                    <legend className="text-ds-text-muted text-sm">{t('chooseTrump')}</legend>
-                    {TRUMP_CHOICES.map((c) => (
-                      <button
-                        key={c.code}
-                        type="button"
-                        className={selectedTrump === c.code ? btnPrimary : btnSecondary}
-                        onClick={() => setSelectedTrump(c.code)}
-                        disabled={loading}
-                        aria-label={t(SUIT_KEYS[c.code])}
-                        aria-pressed={selectedTrump === c.code}
-                      >
-                        {c.symbol}
-                      </button>
-                    ))}
-                  </fieldset>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={declareParty}
-                    disabled={loading || selectedTrump === null}
-                    title={t('bidDesc.party')}
-                    aria-describedby="ulti-bid-desc-party"
-                  >
-                    {t('bidParty')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={declareUlti}
-                    disabled={loading || selectedTrump === null}
-                    title={t('bidDesc.ulti')}
-                    aria-describedby="ulti-bid-desc-ulti"
-                  >
-                    {t('bidUlti')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={() => handleBid('betli')}
-                    disabled={loading}
-                    title={t('bidDesc.betli')}
-                    aria-describedby="ulti-bid-desc-betli"
-                  >
-                    {t('bidBetli')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={() => handleBid('durchmarsch')}
-                    disabled={loading}
-                    title={t('bidDesc.durchmarsch')}
-                    aria-describedby="ulti-bid-desc-durchmarsch"
-                  >
-                    {t('bidDurchmarsch')}
-                  </button>
-                  {/* The win conditions the CUI states in promptBidHelp; Ulti's own
-                      (trump 7 takes the last trick) is the name of the game. */}
-                  <div className="sr-only" data-testid="ulti-bid-descriptions">
-                    {(['party', 'ulti', 'betli', 'durchmarsch'] as const).map((k) => (
-                      <span key={k} id={`ulti-bid-desc-${k}`}>
-                        {t(`bidDesc.${k}`)}
-                      </span>
-                    ))}
-                  </div>
-                </>
-              )}
-              {canDiscard && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handleDiscard}
-                  disabled={loading || selectedCardIndices.length !== 2}
-                >
-                  {t('discardButton')}
-                </button>
-              )}
-              {canPlay && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-              {isTrickEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                  {t('nextTrick')}
-                </button>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="ulti-reset-button"
-              />
-            </div>
+            <GameResetButton
+              isGameEnd={isGameEnd}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+              dataTutorial="ulti-reset-button"
+            />
           </GameFooter>
         </>
       )}

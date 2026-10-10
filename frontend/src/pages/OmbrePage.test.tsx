@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ombreApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -130,6 +130,16 @@ describe('OmbrePage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'エントラール' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'ソロ' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'パス' })).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: 'エントラール' }),
+    ).toBeInTheDocument();
+  });
+
+  it('omits the pinned action row when the CPU is playing', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<OmbrePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('game-footer-actions')).not.toBeInTheDocument();
   });
 
   it('marks bids at or below the highest bid unavailable and keeps pass selectable', async () => {

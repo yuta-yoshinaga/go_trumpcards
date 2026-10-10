@@ -426,7 +426,42 @@ function DaifugoPageContent() {
             />
           </div>
 
-          <GameFooter className={`${footerClass} px-4 py-2.5 motion-safe:transition-colors motion-safe:duration-500`}>
+          <GameFooter
+            className={`${footerClass} px-4 py-2.5 motion-safe:transition-colors motion-safe:duration-500`}
+            actions={
+              <div className="text-center" data-tutorial="df-play-pass">
+                <button
+                  type="button"
+                  className={`${btnSecondary} min-w-[90px]`}
+                  disabled={loading || !isHumanTurn || state.gameEndFlag || pendingAction !== 'none'}
+                  onClick={() => exec('play', [])}
+                >
+                  {tc('button.pass')}
+                </button>
+                <button
+                  type="button"
+                  className={`${btnSuccess} min-w-[120px]`}
+                  disabled={
+                    loading ||
+                    !isHumanTurn ||
+                    state.gameEndFlag ||
+                    selectedIndices.length === 0 ||
+                    pendingAction === 'queenBomber' ||
+                    countMismatch ||
+                    invalidCombination
+                  }
+                  onClick={() =>
+                    exec(
+                      'play',
+                      [...selectedIndices].sort((a, b) => a - b),
+                    )
+                  }
+                >
+                  {playButtonLabel}
+                </button>
+              </div>
+            }
+          >
             <fieldset className="text-center mb-1 border-0 p-0 m-0" data-tutorial="df-sort-buttons">
               <legend className="sr-only">{t('sort.label')}</legend>
               {sortModes.map(({ mode, label }) => (
@@ -462,7 +497,7 @@ function DaifugoPageContent() {
 
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-            <div className="text-center" data-tutorial="df-play-pass">
+            <div className="text-center">
               {countMismatch && (
                 <p className="mb-1.5 text-xs text-ds-error-text" role="alert" data-testid="daifugo-count-warning">
                   {t('countMismatch', { count: tableCount })}
@@ -490,35 +525,6 @@ function DaifugoPageContent() {
                 dataTutorial="df-reset-button"
                 className="min-w-[90px]"
               />
-              <button
-                type="button"
-                className={`${btnSecondary} min-w-[90px]`}
-                disabled={loading || !isHumanTurn || state.gameEndFlag || pendingAction !== 'none'}
-                onClick={() => exec('play', [])}
-              >
-                {tc('button.pass')}
-              </button>
-              <button
-                type="button"
-                className={`${btnSuccess} min-w-[120px]`}
-                disabled={
-                  loading ||
-                  !isHumanTurn ||
-                  state.gameEndFlag ||
-                  selectedIndices.length === 0 ||
-                  pendingAction === 'queenBomber' ||
-                  countMismatch ||
-                  invalidCombination
-                }
-                onClick={() =>
-                  exec(
-                    'play',
-                    [...selectedIndices].sort((a, b) => a - b),
-                  )
-                }
-              >
-                {playButtonLabel}
-              </button>
               <button
                 type="button"
                 className={`${btnSecondary} min-w-[90px]`}

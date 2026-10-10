@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { vintApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -464,5 +464,13 @@ describe('VintPage', () => {
     renderWithProviders(<VintPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     expect(screen.queryByTestId('vint-bid-history')).not.toBeInTheDocument();
+  });
+  it('places the current turn action in the pinned footer actions', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ phase: VintPhase.BID, bids: [], highBid: { player: -1, level: 0, denom: -1, trickValue: 0 } }),
+    );
+    renderWithProviders(<VintPage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByTestId('vint-bid-button')).toBeInTheDocument();
   });
 });

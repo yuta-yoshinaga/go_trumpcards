@@ -110,6 +110,9 @@ describe('QuadrillePage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'エントラール' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'ソロ' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'パス' })).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: 'エントラール' }),
+    ).toBeInTheDocument();
   });
 
   it('shows each seat declaration and current bidder only during the auction', async () => {
@@ -284,6 +287,7 @@ describe('QuadrillePage', () => {
     renderWithProviders(<QuadrillePage />);
     await waitFor(() => expect(screen.getByAltText('♥ Q')).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-actions')).not.toBeInTheDocument();
   });
 
   it('badges Spadille (♠A) in the hand when trump is decided', async () => {
