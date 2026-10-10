@@ -267,22 +267,17 @@ function HoneymoonBridgePageContent() {
             )}
 
             <div data-tutorial="hb-seats">
-              <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
-                <div className="flex flex-wrap justify-center gap-2 mb-4">
-                  {state.players.map((p) => (
+              <div className="flex flex-wrap justify-center gap-2 mb-2">
+                {state.players
+                  .filter((p) => p.isHuman)
+                  .map((p) => (
                     <div
                       key={p.id}
-                      className={`rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted ${
-                        (isHumanBidTurn || isHumanTurn) && p.id === state.currentPlayerIdx
-                          ? 'ring-2 ring-ds-accent'
-                          : ''
-                      }`}
+                      className={`rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted ${p.id === state.currentPlayerIdx && isHumanTurn ? 'ring-2 ring-ds-accent' : ''}`}
                       data-testid={`hb-seat-${p.id.toString()}`}
                     >
-                      <span className="text-ds-text-primary">
-                        {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
-                      </span>
-                      {(isHumanBidTurn || isHumanTurn) && p.id === state.currentPlayerIdx && (
+                      <span className="text-ds-text-primary">{t('header.you')}</span>
+                      {p.id === state.currentPlayerIdx && (isHumanBidTurn || isHumanTurn) && (
                         <span
                           className="ml-1 text-ds-accent"
                           aria-current="step"
@@ -291,8 +286,6 @@ function HoneymoonBridgePageContent() {
                           {t('header.currentTurn')}
                         </span>
                       )}
-                      {/* **親は NextRound ごとに交代し、引き合いの最初のリードを決める。**
-                      落札者とは別の役なので、色を変えて並べる。 */}
                       {p.id === state.dealerIdx && (
                         <span className="ml-1 text-ds-warning" data-testid={`hb-dealer-${p.id.toString()}`}>
                           {t('header.dealer')}
@@ -302,23 +295,73 @@ function HoneymoonBridgePageContent() {
                         <span className="ml-1 text-ds-accent">{t('header.declarer')}</span>
                       )}
                       {': '}
-                      <span className="text-ds-accent">
-                        {p.bidLevel > 0
-                          ? t('header.bid', { level: String(p.bidLevel), suit: suitSymbolAt(p.bidSuit, 'NT') })
-                          : t('header.noBid')}
-                      </span>
+                      {p.bidLevel > 0
+                        ? t('header.bid', { level: String(p.bidLevel), suit: suitSymbolAt(p.bidSuit, 'NT') })
+                        : t('header.noBid')}
                       {' / '}
                       {t('header.took', { n: String(p.trickCount) })}
                       {' / '}
                       {t('header.score', { n: String(p.score) })}
                       {(isDraw || state.phase === HoneymoonBridgePhase.PLAY) && (
-                        <>
-                          {' / '}
-                          {t('header.handCount', { n: String(p.cardCount) })}
-                        </>
+                        <> / {t('header.handCount', { n: String(p.cardCount) })}</>
                       )}
                     </div>
                   ))}
+              </div>
+              <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+                <div className="flex flex-wrap justify-center gap-2 mb-4">
+                  {state.players
+                    .filter((p) => !p.isHuman)
+                    .map((p) => (
+                      <div
+                        key={p.id}
+                        className={`rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted ${
+                          (isHumanBidTurn || isHumanTurn) && p.id === state.currentPlayerIdx
+                            ? 'ring-2 ring-ds-accent'
+                            : ''
+                        }`}
+                        data-testid={`hb-seat-${p.id.toString()}`}
+                      >
+                        <span className="text-ds-text-primary">
+                          {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
+                        </span>
+                        {(isHumanBidTurn || isHumanTurn) && p.id === state.currentPlayerIdx && (
+                          <span
+                            className="ml-1 text-ds-accent"
+                            aria-current="step"
+                            data-testid={`hb-turn-${p.id.toString()}`}
+                          >
+                            {t('header.currentTurn')}
+                          </span>
+                        )}
+                        {/* **親は NextRound ごとに交代し、引き合いの最初のリードを決める。**
+                      落札者とは別の役なので、色を変えて並べる。 */}
+                        {p.id === state.dealerIdx && (
+                          <span className="ml-1 text-ds-warning" data-testid={`hb-dealer-${p.id.toString()}`}>
+                            {t('header.dealer')}
+                          </span>
+                        )}
+                        {p.id === state.declarerIdx && (
+                          <span className="ml-1 text-ds-accent">{t('header.declarer')}</span>
+                        )}
+                        {': '}
+                        <span className="text-ds-accent">
+                          {p.bidLevel > 0
+                            ? t('header.bid', { level: String(p.bidLevel), suit: suitSymbolAt(p.bidSuit, 'NT') })
+                            : t('header.noBid')}
+                        </span>
+                        {' / '}
+                        {t('header.took', { n: String(p.trickCount) })}
+                        {' / '}
+                        {t('header.score', { n: String(p.score) })}
+                        {(isDraw || state.phase === HoneymoonBridgePhase.PLAY) && (
+                          <>
+                            {' / '}
+                            {t('header.handCount', { n: String(p.cardCount) })}
+                          </>
+                        )}
+                      </div>
+                    ))}
                 </div>
               </CpuAccordion>
             </div>

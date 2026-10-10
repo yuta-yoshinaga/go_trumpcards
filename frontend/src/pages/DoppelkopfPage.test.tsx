@@ -76,6 +76,13 @@ beforeEach(() => {
 });
 
 describe('DoppelkopfPage', () => {
+  it('keeps the human player summary outside the CPU accordion', async () => {
+    renderWithProviders(<DoppelkopfPage />);
+    const accordion = await screen.findByTestId('cpu-accordion');
+    expect(accordion).not.toContainElement(screen.getByText(/あなた.*チップ/));
+    expect(screen.getByText(/あなた.*チップ/)).toBeVisible();
+  });
+
   it('shows each player’s remaining hand count and refreshes it from the response', async () => {
     const initial = makeDoppelkopfState({
       players: makeDoppelkopfState().players.map((player, index) => ({ ...player, cardCount: 12 - index })),

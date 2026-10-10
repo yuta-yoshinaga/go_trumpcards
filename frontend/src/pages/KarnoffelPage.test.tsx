@@ -99,6 +99,8 @@ describe('KarnoffelPage', () => {
     const players = screen.getAllByTestId('karnoffel-player');
     expect(players).toHaveLength(4);
     const humanPlayer = screen.getByTestId('karnoffel-human-player');
+    expect(screen.getByText('プレイヤー', { exact: true })).toBeVisible();
+    expect(screen.getByTestId('karnoffel-players')).toContainElement(humanPlayer);
     expect(humanPlayer).toContainElement(players[0]);
     expect(cpuAccordion).not.toContainElement(players[0]);
     expect(players[0]).toBeVisible();

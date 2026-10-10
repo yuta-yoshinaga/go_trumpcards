@@ -5,7 +5,10 @@ test.describe('Kille E2E', () => {
   test('shows the pack, keeps other hands hidden and takes a turn', async ({ page }) => {
     await navigateTo(page, '/kille');
 
-    await page.getByTestId('kille-rules').locator('summary').click();
+    const rules = page.getByTestId('kille-rules');
+    if (!(await rules.locator('[data-testid="kille-rules-note"]').isVisible())) {
+      await rules.locator('summary').click();
+    }
     await page.getByTestId('kille-ladder').locator('summary').click();
 
     // Permanent, not tutorial-only: an exchanged Harlequin being the LOWEST card

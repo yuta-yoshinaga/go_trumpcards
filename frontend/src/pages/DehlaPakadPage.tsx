@@ -339,21 +339,43 @@ function DehlaPakadPageContent() {
                   </section>
                 </details>
 
+                {humanPlayer && (
+                  <section
+                    className="mb-1 flex flex-wrap items-center gap-x-2 text-ds-text-muted text-sm"
+                    data-testid="dehlapakad-human-seat"
+                    aria-label={playerName(humanPlayer.id, true)}
+                  >
+                    <span className={humanPlayer.team === state.humanTeam ? 'text-ds-success' : ''}>
+                      {playerName(humanPlayer.id, true)} ({t('team', { n: humanPlayer.team })}):{' '}
+                      {t('cards', { count: humanPlayer.cardCount })}
+                    </span>
+                    {humanPlayer.isDealer && (
+                      <span className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>{t('dealerBadge')}</span>
+                    )}
+                  </section>
+                )}
+
                 <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
                   <div className="flex flex-wrap gap-x-4">
-                    {state.players.map((p) => (
-                      <div key={p.id} className="text-ds-text-muted text-sm py-0.5 flex items-center gap-2">
-                        <span className={p.team === state.humanTeam ? 'text-ds-success' : ''}>
-                          {playerName(p.id, p.isHuman)} ({t('team', { n: p.team })}):{' '}
-                          {t('cards', { count: p.cardCount })}
-                        </span>
-                        {p.isDealer && (
-                          <span className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>
-                            {t('dealerBadge')}
+                    {state.players
+                      .filter((p) => !p.isHuman)
+                      .map((p) => (
+                        <div
+                          key={p.id}
+                          className="text-ds-text-muted text-sm py-0.5 flex items-center gap-2"
+                          data-testid={`dehlapakad-cpu-seat-${p.id}`}
+                        >
+                          <span className={p.team === state.humanTeam ? 'text-ds-success' : ''}>
+                            {playerName(p.id, p.isHuman)} ({t('team', { n: p.team })}):{' '}
+                            {t('cards', { count: p.cardCount })}
                           </span>
-                        )}
-                      </div>
-                    ))}
+                          {p.isDealer && (
+                            <span className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>
+                              {t('dealerBadge')}
+                            </span>
+                          )}
+                        </div>
+                      ))}
                   </div>
                 </CpuAccordion>
 

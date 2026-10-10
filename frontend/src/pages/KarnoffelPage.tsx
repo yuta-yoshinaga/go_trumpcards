@@ -275,18 +275,18 @@ function KarnoffelPageContent() {
             </div>
 
             {/* Players */}
-            <div className="mb-2 grid grid-cols-2 gap-1 sm:grid-cols-4" data-testid="karnoffel-human-player">
-              {state.players.filter((player) => player.isHuman).map(renderPlayer)}
-            </div>
-            <CpuAccordion
-              playerCount={state.players.filter((player) => !player.isHuman).length}
-              dataTutorial="karnoffel-players"
-            >
-              <div className="grid grid-cols-2 gap-1 sm:grid-cols-4">
-                {/* **CPUの表向き札は全員ぶん見える。**切札の根拠がここにある。 */}
-                {state.players.filter((player) => !player.isHuman).map(renderPlayer)}
+            <div className="mb-2" data-testid="karnoffel-players" data-tutorial="karnoffel-players">
+              <div className="mb-1 text-ds-text-primary text-sm">{t('playersTitle')}</div>
+              <div className="grid grid-cols-2 gap-1 sm:grid-cols-4" data-testid="karnoffel-human-player">
+                {state.players.filter((player) => player.isHuman).map(renderPlayer)}
               </div>
-            </CpuAccordion>
+              <CpuAccordion playerCount={state.players.filter((player) => !player.isHuman).length}>
+                <div className="grid grid-cols-2 gap-1 sm:grid-cols-4">
+                  {/* **CPUの表向き札は全員ぶん見える。**切札の根拠がここにある。 */}
+                  {state.players.filter((player) => !player.isHuman).map(renderPlayer)}
+                </div>
+              </CpuAccordion>
+            </div>
 
             {/* Trick */}
             {state.trick.length > 0 && (

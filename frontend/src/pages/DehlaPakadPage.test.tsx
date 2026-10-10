@@ -51,10 +51,14 @@ describe('DehlaPakadPage', () => {
     renderWithProviders(<DehlaPakadPage />);
 
     const cpu = await screen.findByTestId('cpu-accordion');
+    const humanSeat = screen.getByTestId('dehlapakad-human-seat');
     const history = screen.getByTestId('dehlapakad-hand-history');
     const earnedTens = screen.getByTestId('dehlapakad-earned-tens');
     expect(cpu).not.toHaveAttribute('open');
     expect(cpu.querySelector('div.px-1.pb-1')).not.toBeVisible();
+    expect(humanSeat).toBeVisible();
+    expect(cpu).not.toContainElement(humanSeat);
+    expect(screen.getByTestId('dehlapakad-cpu-seat-1').closest('[data-testid="cpu-accordion"]')).toBe(cpu);
     expect(history.closest('details')).not.toHaveAttribute('open');
     expect(history).not.toBeVisible();
     expect(earnedTens.closest('details')).not.toHaveAttribute('open');

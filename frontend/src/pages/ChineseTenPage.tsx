@@ -18,7 +18,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
+import { LG_BREAKPOINT, useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useChineseTenGame } from '../hooks/useChineseTenGame';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -303,7 +303,9 @@ function ChineseTenPageContent() {
 
             <div className="text-center" data-tutorial="ct-hand">
               <div className="text-game-text-muted text-xs mb-1">{t('yourHand')}</div>
-              <div className={`flex justify-center ${viewportWidth >= 1024 ? 'flex-nowrap' : 'flex-wrap gap-1'}`}>
+              <div
+                className={`flex justify-center ${viewportWidth >= LG_BREAKPOINT ? 'flex-nowrap' : 'flex-wrap gap-1'}`}
+              >
                 {(human?.cards ?? []).map((card, i) => (
                   <button
                     key={`hand-${i.toString()}`}
@@ -318,7 +320,7 @@ function ChineseTenPageContent() {
                       isHumanTurn && !choosing ? 'hover:-translate-y-2' : 'opacity-60',
                       showServerHint && state.hint?.cardIndex === i ? 'ring-2 ring-ds-warning' : '',
                     ].join(' ')}
-                    style={viewportWidth >= 1024 && i > 0 ? { marginLeft: -(cardWidth - 22) } : undefined}
+                    style={viewportWidth >= LG_BREAKPOINT && i > 0 ? { marginLeft: -(cardWidth - 22) } : undefined}
                   >
                     {renderCard(card, `hand-c${i.toString()}`)}
                   </button>

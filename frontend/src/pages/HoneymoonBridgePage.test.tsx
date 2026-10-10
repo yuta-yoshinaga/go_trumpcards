@@ -337,6 +337,9 @@ describe('HoneymoonBridgePage', () => {
   it('shows each seat, and marks the declarer', async () => {
     mockExec.mockResolvedValue(playing({ declarerIdx: 1 } as Partial<HoneymoonBridgeResponse>));
     renderWithProviders(<HoneymoonBridgePage />);
+    const cpuAccordion = await screen.findByTestId('cpu-accordion');
+    expect(cpuAccordion).not.toContainElement(screen.getByTestId('hb-seat-0'));
+    expect(screen.getByTestId('hb-seat-0')).toBeVisible();
     expect(await screen.findByTestId('hb-seat-1')).toHaveTextContent(/落札者/);
     expect(screen.getByTestId('hb-seat-0')).not.toHaveTextContent(/落札者/);
   });
