@@ -423,7 +423,102 @@ function QuadrillePageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.quadrille.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.quadrille.footer} px-4 py-2.5`}
+            actions={
+              <div className="flex flex-wrap gap-2 items-center" data-tutorial="quadrille-action-buttons">
+                {canCallKing && (
+                  <div className="flex flex-wrap gap-2 items-center" data-testid="quadrille-king-call">
+                    <span className="text-ds-text-muted text-sm">{t('chooseKing')}:</span>
+                    {state.callableKingSuits.map((suit) => (
+                      <button
+                        key={suit}
+                        type="button"
+                        className={btnPrimary}
+                        onClick={() => handleCallKing(suit)}
+                        disabled={loading}
+                        aria-label={t(SUIT_KEYS[suit] ?? 'suitNone')}
+                      >
+                        {t('callKingOf', { suit: t(SUIT_KEYS[suit] ?? 'suitNone') })}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {canBid && pendingBid === null && (
+                  <div className="flex flex-wrap gap-2 items-center" data-testid="quadrille-bid-stage1">
+                    <span className="text-ds-text-muted text-sm">{t('chooseBidType')}:</span>
+                    <button type="button" className={btnPrimary} onClick={() => chooseBid(1)} disabled={loading}>
+                      {t('bidEntrar')}
+                    </button>
+                    <button type="button" className={btnPrimary} onClick={() => chooseBid(2)} disabled={loading}>
+                      {t('bidSolo')}
+                    </button>
+                    <button type="button" className={btnSecondary} onClick={() => chooseBid(0)} disabled={loading}>
+                      {t('bidPass')}
+                    </button>
+                  </div>
+                )}
+                {canBid && pendingBid !== null && (
+                  <div className="flex flex-wrap gap-2 items-center" data-testid="quadrille-bid-stage2">
+                    <span className="text-ds-text-muted text-sm">
+                      {t('chooseTrumpFor', { bid: t(BID_KEYS[pendingBid] ?? 'bidNone') })}:
+                    </span>
+                    {TRUMP_CHOICES.map((c) => (
+                      <button
+                        key={c.code}
+                        type="button"
+                        className={selectedTrump === c.code ? btnPrimary : btnSecondary}
+                        onClick={() => setSelectedTrump(c.code)}
+                        disabled={loading}
+                        aria-label={t(SUIT_KEYS[c.code])}
+                        aria-pressed={selectedTrump === c.code}
+                      >
+                        {c.symbol}
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      className={btnSuccess}
+                      onClick={confirmBid}
+                      disabled={loading || selectedTrump === null}
+                      data-testid="quadrille-bid-confirm"
+                    >
+                      {t('confirmBid')}
+                    </button>
+                    <button
+                      type="button"
+                      className={btnSecondary}
+                      onClick={cancelBid}
+                      disabled={loading}
+                      data-testid="quadrille-bid-back"
+                    >
+                      {t('bidBack')}
+                    </button>
+                  </div>
+                )}
+                {canPlay && (
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handlePlay}
+                    disabled={loading || selectedCardIndices.length !== 1}
+                  >
+                    {t('playButton')}
+                  </button>
+                )}
+                {isTrickEnd && (
+                  <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                    {t('nextTrick')}
+                  </button>
+                )}
+                {isRoundEnd && (
+                  <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                    {t('nextRound')}
+                  </button>
+                )}
+              </div>
+            }
+          >
             {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
                 変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。 */}
             <div data-testid="quadrille-prompt-live" role="status" aria-live="polite">
@@ -469,104 +564,13 @@ function QuadrillePageContent() {
             </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-            <div className="flex flex-wrap gap-2 items-center" data-tutorial="quadrille-action-buttons">
-              {canCallKing && (
-                <div className="flex flex-wrap gap-2 items-center" data-testid="quadrille-king-call">
-                  <span className="text-ds-text-muted text-sm">{t('chooseKing')}:</span>
-                  {state.callableKingSuits.map((suit) => (
-                    <button
-                      key={suit}
-                      type="button"
-                      className={btnPrimary}
-                      onClick={() => handleCallKing(suit)}
-                      disabled={loading}
-                      aria-label={t(SUIT_KEYS[suit] ?? 'suitNone')}
-                    >
-                      {t('callKingOf', { suit: t(SUIT_KEYS[suit] ?? 'suitNone') })}
-                    </button>
-                  ))}
-                </div>
-              )}
-              {canBid && pendingBid === null && (
-                <div className="flex flex-wrap gap-2 items-center" data-testid="quadrille-bid-stage1">
-                  <span className="text-ds-text-muted text-sm">{t('chooseBidType')}:</span>
-                  <button type="button" className={btnPrimary} onClick={() => chooseBid(1)} disabled={loading}>
-                    {t('bidEntrar')}
-                  </button>
-                  <button type="button" className={btnPrimary} onClick={() => chooseBid(2)} disabled={loading}>
-                    {t('bidSolo')}
-                  </button>
-                  <button type="button" className={btnSecondary} onClick={() => chooseBid(0)} disabled={loading}>
-                    {t('bidPass')}
-                  </button>
-                </div>
-              )}
-              {canBid && pendingBid !== null && (
-                <div className="flex flex-wrap gap-2 items-center" data-testid="quadrille-bid-stage2">
-                  <span className="text-ds-text-muted text-sm">
-                    {t('chooseTrumpFor', { bid: t(BID_KEYS[pendingBid] ?? 'bidNone') })}:
-                  </span>
-                  {TRUMP_CHOICES.map((c) => (
-                    <button
-                      key={c.code}
-                      type="button"
-                      className={selectedTrump === c.code ? btnPrimary : btnSecondary}
-                      onClick={() => setSelectedTrump(c.code)}
-                      disabled={loading}
-                      aria-label={t(SUIT_KEYS[c.code])}
-                      aria-pressed={selectedTrump === c.code}
-                    >
-                      {c.symbol}
-                    </button>
-                  ))}
-                  <button
-                    type="button"
-                    className={btnSuccess}
-                    onClick={confirmBid}
-                    disabled={loading || selectedTrump === null}
-                    data-testid="quadrille-bid-confirm"
-                  >
-                    {t('confirmBid')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnSecondary}
-                    onClick={cancelBid}
-                    disabled={loading}
-                    data-testid="quadrille-bid-back"
-                  >
-                    {t('bidBack')}
-                  </button>
-                </div>
-              )}
-              {canPlay && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-              {isTrickEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                  {t('nextTrick')}
-                </button>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="quadrille-reset-button"
-              />
-            </div>
+            <GameResetButton
+              isGameEnd={isGameEnd}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+              dataTutorial="quadrille-reset-button"
+            />
           </GameFooter>
         </>
       )}

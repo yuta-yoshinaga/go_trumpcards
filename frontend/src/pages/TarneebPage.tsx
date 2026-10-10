@@ -433,7 +433,90 @@ function TarneebPageContent() {
             />
           </div>
 
-          <GameFooter className={`${gameTheme.tarneeb.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.tarneeb.footer} px-4 py-2.5`}
+            actions={
+              isHumanBidTurn || isHumanTrumpTurn || isHumanTurn || isTrickEnd || isRoundEnd ? (
+                <div className="flex flex-wrap gap-2 items-center">
+                  {isHumanBidTurn && (
+                    <div className="flex flex-col items-center gap-2">
+                      <fieldset
+                        className="grid grid-cols-4 gap-1 border-0 p-0 min-w-0 sm:grid-cols-7"
+                        aria-label={t('bidSelectLabel')}
+                      >
+                        {Array.from({ length: 13 - state.config.minBid + 1 }, (_, i) => i + state.config.minBid).map(
+                          (n) => (
+                            <button
+                              key={n}
+                              type="button"
+                              onClick={() => setBidValue(n)}
+                              disabled={loading || n <= state.highestBid}
+                              aria-pressed={bidValue === n}
+                              data-testid={`bid-option-${n}`}
+                              className={`h-11 w-11 rounded-lg font-medium text-sm transition-all disabled:cursor-not-allowed disabled:opacity-40 ${bidValue === n ? 'bg-ds-accent text-white ring-2 ring-ds-accent' : 'bg-white/20 text-ds-text-primary hover:bg-white/30'}`}
+                            >
+                              {n}
+                            </button>
+                          ),
+                        )}
+                      </fieldset>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          className={btnPrimary}
+                          onClick={() => handleBid(bidValue)}
+                          disabled={
+                            loading || bidValue < state.config.minBid || bidValue > 13 || bidValue <= state.highestBid
+                          }
+                        >
+                          {t('bidButton')}
+                        </button>
+                        <button type="button" className={btnSuccess} onClick={() => handleBid(0)} disabled={loading}>
+                          {t('passButton')}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  {isHumanTrumpTurn && (
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4].map((suit) => (
+                        <button
+                          key={suit}
+                          type="button"
+                          className={btnPrimary}
+                          onClick={() => handleDeclareTrump(suit)}
+                          disabled={loading}
+                          aria-label={t(`suitName.${SUIT_KEYS[suit]}`)}
+                        >
+                          {TRUMP_LABELS[suit]}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {isHumanTurn && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handlePlay}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                    >
+                      {t('playButton')}
+                    </button>
+                  )}
+                  {isTrickEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                      {t('nextTrick')}
+                    </button>
+                  )}
+                  {isRoundEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                      {t('nextRound')}
+                    </button>
+                  )}
+                </div>
+              ) : null
+            }
+          >
             {humanPlayer && (
               <PlayerHandSection
                 humanPlayer={humanPlayer}
@@ -478,95 +561,10 @@ function TarneebPageContent() {
             </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-            <div className="flex flex-wrap gap-2 items-center" data-tutorial="tn-play-button">
+            <div data-tutorial="tn-play-button">
               {(isHumanBidTurn || isHumanTrumpTurn || isHumanTurn) && (
                 <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
                   {tc('button.hint')}
-                </button>
-              )}
-              {isHumanBidTurn && (
-                <div className="flex flex-col items-center gap-2">
-                  {/*
-                    Valid Tarneeb bids are 0 (pass) or minBid..13 and must beat the current
-                    highest bid. A discrete button group (mirroring CallBreak) replaces the raw
-                    number input: out-of-range / already-beaten values are simply disabled, so no
-                    client-side clamping is needed.
-                  */}
-                  <fieldset
-                    className="grid grid-cols-4 gap-1 border-0 p-0 min-w-0 sm:grid-cols-7"
-                    aria-label={t('bidSelectLabel')}
-                  >
-                    {Array.from({ length: 13 - state.config.minBid + 1 }, (_, i) => i + state.config.minBid).map(
-                      (n) => (
-                        <button
-                          key={n}
-                          type="button"
-                          onClick={() => setBidValue(n)}
-                          disabled={loading || n <= state.highestBid}
-                          aria-pressed={bidValue === n}
-                          data-testid={`bid-option-${n}`}
-                          className={`h-11 w-11 rounded-lg font-medium text-sm transition-all disabled:cursor-not-allowed disabled:opacity-40 ${
-                            bidValue === n
-                              ? 'bg-ds-accent text-white ring-2 ring-ds-accent'
-                              : 'bg-white/20 text-ds-text-primary hover:bg-white/30'
-                          }`}
-                        >
-                          {n}
-                        </button>
-                      ),
-                    )}
-                  </fieldset>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      className={btnPrimary}
-                      onClick={() => handleBid(bidValue)}
-                      disabled={
-                        loading || bidValue < state.config.minBid || bidValue > 13 || bidValue <= state.highestBid
-                      }
-                    >
-                      {t('bidButton')}
-                    </button>
-                    <button type="button" className={btnSuccess} onClick={() => handleBid(0)} disabled={loading}>
-                      {t('passButton')}
-                    </button>
-                  </div>
-                </div>
-              )}
-              {isHumanTrumpTurn && (
-                <div className="flex gap-1">
-                  {[1, 2, 3, 4].map((suit) => (
-                    <button
-                      key={suit}
-                      type="button"
-                      className={btnPrimary}
-                      onClick={() => handleDeclareTrump(suit)}
-                      disabled={loading}
-                      aria-label={t(`suitName.${SUIT_KEYS[suit]}`)}
-                    >
-                      {TRUMP_LABELS[suit]}
-                    </button>
-                  ))}
-                </div>
-              )}
-              {isHumanTurn && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-              {isTrickEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                  {t('nextTrick')}
-                </button>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
                 </button>
               )}
               <GameResetButton

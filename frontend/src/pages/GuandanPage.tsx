@@ -366,7 +366,50 @@ function GuandanPageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.guandan.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.guandan.footer} px-4 py-2.5`}
+            actions={
+              isTribute || isPlay || isHandEnd ? (
+                <div className="flex flex-wrap gap-2 items-center" data-tutorial="guandan-actions">
+                  {isTribute && (
+                    <button
+                      type="button"
+                      className={btnSuccess}
+                      onClick={handleTribute}
+                      disabled={loading || selected.length !== 1}
+                    >
+                      {t('tributeButton')}
+                    </button>
+                  )}
+                  {isPlay && (
+                    <>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={handlePlay}
+                        disabled={loading || selected.length === 0}
+                      >
+                        {t('playButton')}
+                      </button>
+                      <button
+                        type="button"
+                        className={btnSecondary}
+                        onClick={handlePass}
+                        disabled={loading || state.lastCombo === null}
+                      >
+                        {t('passButton')}
+                      </button>
+                    </>
+                  )}
+                  {isHandEnd && (
+                    <button type="button" className={btnPrimary} onClick={handleNext} disabled={loading}>
+                      {t('nextButton')}
+                    </button>
+                  )}
+                </div>
+              ) : null
+            }
+          >
             <div
               className="sr-only"
               role="status"
@@ -447,51 +490,15 @@ function GuandanPageContent() {
             </label>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-            <div className="flex flex-wrap gap-2 items-center" data-tutorial="guandan-actions">
-              {isTribute && (
-                <>
-                  <span className="text-ds-text-muted text-xs" data-testid="guandan-tribute-rules">
-                    {t('tributeRules')}
-                  </span>
-                  <button
-                    type="button"
-                    className={btnSuccess}
-                    onClick={handleTribute}
-                    disabled={loading || selected.length !== 1}
-                  >
-                    {t('tributeButton')}
-                  </button>
-                </>
-              )}
+            {isTribute && (
+              <div className="mb-2">
+                <span className="text-ds-text-muted text-xs" data-testid="guandan-tribute-rules">
+                  {t('tributeRules')}
+                </span>
+              </div>
+            )}
 
-              {isPlay && (
-                <>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handlePlay}
-                    disabled={loading || selected.length === 0}
-                  >
-                    {t('playButton')}
-                  </button>
-                  {/* **場が流れているときはパスできない。**リードは必ず何か出す。 */}
-                  <button
-                    type="button"
-                    className={btnSecondary}
-                    onClick={handlePass}
-                    disabled={loading || state.lastCombo === null}
-                  >
-                    {t('passButton')}
-                  </button>
-                </>
-              )}
-
-              {isHandEnd && (
-                <button type="button" className={btnPrimary} onClick={handleNext} disabled={loading}>
-                  {t('nextButton')}
-                </button>
-              )}
-
+            <div className="flex flex-wrap gap-2 items-center">
               {isGameEnd && (
                 <span className="text-ds-text-primary text-sm font-semibold mr-1">
                   {humanWon ? t('win') : t('lose')}

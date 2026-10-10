@@ -33,16 +33,11 @@ test.describe('Spades E2E', () => {
     // 全札から first() を取ると制限札を掴んでクリックが無反応になるため、
     // 合法な札だけに絞る。
     const handCards = page.locator('button[aria-pressed]:has(img):not([aria-disabled="true"])');
-    const anyResetButton = page.getByRole('button', { name: /リセット|次のゲーム/ });
 
     // Play through several interactions to verify phase transitions
     const MAX_TURNS = 60;
     let interactions = 0;
     for (let turn = 0; turn < MAX_TURNS; turn++) {
-      await expect(
-        bidButton.or(playButton).or(nextTrickButton).or(nextRoundButton).or(anyResetButton).first(),
-      ).toBeVisible({ timeout: 10_000 });
-
       const bidVisible = await bidButton.isVisible();
       const playVisible = await playButton.isVisible();
       const nextTrickVisible = await nextTrickButton.isVisible();

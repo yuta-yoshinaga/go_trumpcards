@@ -94,6 +94,12 @@ beforeEach(() => {
 });
 
 describe('DoubtPage', () => {
+  it('keeps the play action in the fixed footer action row on the human turn', async () => {
+    renderWithProviders(<DoubtPage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: '出す' })).toBeInTheDocument();
+  });
+
   it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<DoubtPage />);

@@ -530,7 +530,69 @@ function SpadesPageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.spades.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.spades.footer} px-4 py-2.5`}
+            actions={
+              isHumanBidTurn || isHumanTurn || isTrickEnd || isRoundEnd ? (
+                <div className="flex gap-2 items-center">
+                  {isHumanBidTurn && (
+                    <>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={() => handleBid(bidValue)}
+                        disabled={loading}
+                      >
+                        {t('bidButton')}
+                      </button>
+                    </>
+                  )}
+                  {isHumanTurn && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handlePlay}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                    >
+                      {t('playButton')}
+                    </button>
+                  )}
+                  {isTrickEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                      {t('nextTrick')}
+                    </button>
+                  )}
+                  {isRoundEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                      {t('nextRound')}
+                    </button>
+                  )}
+                </div>
+              ) : null
+            }
+          >
+            {isHumanBidTurn && (
+              <fieldset className="m-0 border-0 p-0" aria-label={t('bidPhase')}>
+                <div className="grid grid-cols-7 gap-1 justify-center">
+                  {[0, ...Array.from({ length: 13 }, (_, i) => i + 1)].map((v) => (
+                    <button
+                      key={v}
+                      type="button"
+                      className={
+                        v === bidValue
+                          ? `${btnSecondary} min-w-[44px] ring-2 ring-ds-warning`
+                          : `${btnSecondary} min-w-[44px]`
+                      }
+                      aria-pressed={bidValue === v}
+                      onClick={() => setBidValue(v)}
+                      disabled={loading}
+                    >
+                      {v === 0 ? t('nilButton') : v}
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+            )}
             {/* Human cards */}
             {humanPlayer && (
               <PlayerHandSection
@@ -561,70 +623,10 @@ function SpadesPageContent() {
             </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-            <div className="flex gap-2 items-center" data-tutorial="sp-play-button">
+            <div data-tutorial="sp-play-button">
               {(isHumanBidTurn || isHumanTurn) && (
                 <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
                   {tc('button.hint')}
-                </button>
-              )}
-              {isHumanBidTurn && (
-                <>
-                  <fieldset className="m-0 border-0 p-0" aria-label={t('bidPhase')}>
-                    <div className="flex flex-wrap gap-1.5 justify-center">
-                      <button
-                        type="button"
-                        className={
-                          bidValue === 0
-                            ? `${btnSecondary} min-w-[44px] ring-2 ring-ds-warning`
-                            : `${btnSecondary} min-w-[44px]`
-                        }
-                        aria-pressed={bidValue === 0}
-                        onClick={() => setBidValue(0)}
-                        disabled={loading}
-                      >
-                        {t('nilButton')}
-                      </button>
-                      {Array.from({ length: 13 }, (_, i) => i + 1).map((v) => (
-                        <button
-                          key={v}
-                          type="button"
-                          className={
-                            bidValue === v
-                              ? `${btnSecondary} min-w-[44px] ring-2 ring-ds-warning`
-                              : `${btnSecondary} min-w-[44px]`
-                          }
-                          aria-pressed={bidValue === v}
-                          onClick={() => setBidValue(v)}
-                          disabled={loading}
-                        >
-                          {v}
-                        </button>
-                      ))}
-                    </div>
-                  </fieldset>
-                  <button type="button" className={btnPrimary} onClick={() => handleBid(bidValue)} disabled={loading}>
-                    {t('bidButton')}
-                  </button>
-                </>
-              )}
-              {isHumanTurn && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-              {isTrickEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                  {t('nextTrick')}
-                </button>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
                 </button>
               )}
               <GameResetButton

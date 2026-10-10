@@ -461,7 +461,122 @@ function WattenPageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.watten.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.watten.footer} px-4 py-2.5`}
+            actions={
+              canDeclare || canPlay || canRespond || isRoundEnd ? (
+                <div className="flex flex-wrap gap-2 items-center" data-tutorial="watten-action-buttons">
+                  {canDeclare && (
+                    <>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={declare}
+                        disabled={loading || selectedRank === null || selectedSuit === null}
+                      >
+                        {t('declareButton')}
+                      </button>
+                    </>
+                  )}
+                  {canPlay && (
+                    <>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={handlePlay}
+                        disabled={loading || selectedCardIndices.length !== 1}
+                      >
+                        {t('playButton')}
+                      </button>
+                      {state.canRaise && (
+                        <button type="button" className={btnSecondary} onClick={handleRaise} disabled={loading}>
+                          {t('raiseButton')}
+                        </button>
+                      )}
+                      <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading}>
+                        {tc('button.hint')}
+                      </button>
+                    </>
+                  )}
+                  {canRespond && (
+                    <>
+                      <span className="text-ds-text-muted text-sm">
+                        {t('respondPhase', { stake: state.pendingStake })}
+                      </span>
+                      {/* **吊り上げたのが誰かで hold/fold の判断は変わる。**サーバは
+                      raiserTeam を毎回送っているのに画面が読まず、人間は
+                      pendingStake だけを見て決めるしかなかった (#6497)。
+                      まだ誰も吊り上げていない (-1) 局面では出さない。 */}
+                      {state.raiserTeam >= 0 && (
+                        <span className="text-ds-text-muted text-sm" data-testid="watten-raiser-info">
+                          {state.raiserTeam === humanPlayer?.team ? t('raiserOwn') : t('raiserOpponent')}
+                        </span>
+                      )}
+                      <span className="text-ds-warning text-sm" data-testid="watten-respond-loss">
+                        {t('respondLoss', { stake: state.stake })}
+                      </span>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={() => handleRespond(true)}
+                        disabled={loading}
+                      >
+                        {t('holdButton')}
+                      </button>
+                      <button
+                        type="button"
+                        className={btnSecondary}
+                        onClick={() => handleRespond(false)}
+                        disabled={loading}
+                      >
+                        {t('foldButton')}
+                      </button>
+                    </>
+                  )}
+                  {isRoundEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                      {t('nextRound')}
+                    </button>
+                  )}
+                </div>
+              ) : null
+            }
+          >
+            {canDeclare && (
+              <div className="flex flex-col gap-1">
+                <fieldset className="grid grid-cols-3 sm:grid-cols-6 gap-1 border-0 p-0 m-0 min-w-0">
+                  <legend className="text-ds-text-muted text-sm">{t('chooseSchlag')}</legend>
+                  {SCHLAG_CHOICES.map((c) => (
+                    <button
+                      key={c.value}
+                      type="button"
+                      className={selectedRank === c.value ? btnPrimary : btnSecondary}
+                      onClick={() => setSelectedRank(c.value)}
+                      disabled={loading}
+                      aria-pressed={selectedRank === c.value}
+                    >
+                      {c.label}
+                    </button>
+                  ))}
+                </fieldset>
+                <fieldset className="grid grid-cols-4 sm:grid-cols-8 gap-1 border-0 p-0 m-0 min-w-0">
+                  <legend className="text-ds-text-muted text-sm">{t('chooseCritical')}</legend>
+                  {SUIT_CHOICES.map((c) => (
+                    <button
+                      key={c.code}
+                      type="button"
+                      className={selectedSuit === c.code ? btnPrimary : btnSecondary}
+                      onClick={() => setSelectedSuit(c.code)}
+                      disabled={loading}
+                      aria-label={t(SUIT_KEYS[c.code])}
+                      aria-pressed={selectedSuit === c.code}
+                    >
+                      {c.symbol}
+                    </button>
+                  ))}
+                </fieldset>
+              </div>
+            )}
             {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
                 変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。 */}
             <div data-testid="watten-prompt-live" role="status" aria-live="polite">
@@ -536,111 +651,13 @@ function WattenPageContent() {
             </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-            <div className="flex flex-wrap gap-2 items-center" data-tutorial="watten-action-buttons">
-              {canDeclare && (
-                <>
-                  <fieldset className="flex flex-wrap items-center gap-2 border-0 p-0 m-0 min-w-0">
-                    <legend className="text-ds-text-muted text-sm">{t('chooseSchlag')}</legend>
-                    {SCHLAG_CHOICES.map((c) => (
-                      <button
-                        key={c.value}
-                        type="button"
-                        className={selectedRank === c.value ? btnPrimary : btnSecondary}
-                        onClick={() => setSelectedRank(c.value)}
-                        disabled={loading}
-                        aria-pressed={selectedRank === c.value}
-                      >
-                        {c.label}
-                      </button>
-                    ))}
-                  </fieldset>
-                  <fieldset className="flex flex-wrap items-center gap-2 border-0 p-0 m-0 min-w-0">
-                    <legend className="text-ds-text-muted text-sm">{t('chooseCritical')}</legend>
-                    {SUIT_CHOICES.map((c) => (
-                      <button
-                        key={c.code}
-                        type="button"
-                        className={selectedSuit === c.code ? btnPrimary : btnSecondary}
-                        onClick={() => setSelectedSuit(c.code)}
-                        disabled={loading}
-                        aria-label={t(SUIT_KEYS[c.code])}
-                        aria-pressed={selectedSuit === c.code}
-                      >
-                        {c.symbol}
-                      </button>
-                    ))}
-                  </fieldset>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={declare}
-                    disabled={loading || selectedRank === null || selectedSuit === null}
-                  >
-                    {t('declareButton')}
-                  </button>
-                </>
-              )}
-              {canPlay && (
-                <>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handlePlay}
-                    disabled={loading || selectedCardIndices.length !== 1}
-                  >
-                    {t('playButton')}
-                  </button>
-                  {state.canRaise && (
-                    <button type="button" className={btnSecondary} onClick={handleRaise} disabled={loading}>
-                      {t('raiseButton')}
-                    </button>
-                  )}
-                  <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading}>
-                    {tc('button.hint')}
-                  </button>
-                </>
-              )}
-              {canRespond && (
-                <>
-                  <span className="text-ds-text-muted text-sm">{t('respondPhase', { stake: state.pendingStake })}</span>
-                  {/* **吊り上げたのが誰かで hold/fold の判断は変わる。**サーバは
-                      raiserTeam を毎回送っているのに画面が読まず、人間は
-                      pendingStake だけを見て決めるしかなかった (#6497)。
-                      まだ誰も吊り上げていない (-1) 局面では出さない。 */}
-                  {state.raiserTeam >= 0 && (
-                    <span className="text-ds-text-muted text-sm" data-testid="watten-raiser-info">
-                      {state.raiserTeam === humanPlayer?.team ? t('raiserOwn') : t('raiserOpponent')}
-                    </span>
-                  )}
-                  <span className="text-ds-warning text-sm" data-testid="watten-respond-loss">
-                    {t('respondLoss', { stake: state.stake })}
-                  </span>
-                  <button type="button" className={btnPrimary} onClick={() => handleRespond(true)} disabled={loading}>
-                    {t('holdButton')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnSecondary}
-                    onClick={() => handleRespond(false)}
-                    disabled={loading}
-                  >
-                    {t('foldButton')}
-                  </button>
-                </>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="watten-reset-button"
-              />
-            </div>
+            <GameResetButton
+              isGameEnd={isGameEnd}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+              dataTutorial="watten-reset-button"
+            />
           </GameFooter>
         </>
       )}

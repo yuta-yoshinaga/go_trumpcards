@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { rikkenApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
@@ -185,6 +185,12 @@ describe('RikkenPage', () => {
       expect(screen.getByRole('button', { name })).toBeInTheDocument();
     }
     expect(screen.getByRole('button', { name: '降りる' })).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '降りる' }),
+    ).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId('game-footer-actions')).queryByRole('button', { name: /^リク/ }),
+    ).not.toBeInTheDocument();
   });
 
   it('sends the contract value on a bid', async () => {

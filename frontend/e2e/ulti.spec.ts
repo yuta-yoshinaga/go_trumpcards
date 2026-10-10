@@ -20,14 +20,15 @@ test.describe('Ulti E2E', () => {
     // (a contract declaration, a talon discard, the human's play control, a
     // trick/deal advance, or — once the deal resolves via CPU play — the reset /
     // next-game button).
-    const anyControl = page
+    const actions = page.getByTestId('game-footer-actions');
+    const anyControl = actions
       .getByRole('button', { name: 'パルティ' })
-      .or(page.getByRole('button', { name: 'ベトリ' }))
-      .or(page.getByRole('button', { name: 'ドゥルマルス' }))
-      .or(page.getByRole('button', { name: '捨てる' }))
-      .or(page.getByRole('button', { name: '出す' }))
-      .or(page.getByRole('button', { name: '次のトリック' }))
-      .or(page.getByRole('button', { name: '次のディール' }))
+      .or(actions.getByRole('button', { name: 'ベトリ' }))
+      .or(actions.getByRole('button', { name: 'ドゥルマルス' }))
+      .or(actions.getByRole('button', { name: '捨てる' }))
+      .or(actions.getByRole('button', { name: '出す' }))
+      .or(actions.getByRole('button', { name: '次のトリック' }))
+      .or(actions.getByRole('button', { name: '次のディール' }))
       .or(page.getByRole('button', { name: /リセット|次のゲーム/ }))
       .first();
     await expect(anyControl).toBeVisible({ timeout: TIMEOUT_GAME_LOOP });

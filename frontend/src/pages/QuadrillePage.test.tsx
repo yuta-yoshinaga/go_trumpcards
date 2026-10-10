@@ -110,6 +110,9 @@ describe('QuadrillePage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'エントラール' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'ソロ' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'パス' })).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: 'エントラール' }),
+    ).toBeInTheDocument();
   });
 
   it('shows each seat declaration and current bidder only during the auction', async () => {

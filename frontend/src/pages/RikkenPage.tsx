@@ -311,14 +311,55 @@ function RikkenPageContent() {
             {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
           </div>
 
-          <GameFooter className={`${gameTheme.rikken.footer} px-4 pt-3`}>
-            <ErrorAlert message={error} onRetry={retry} />
-            <SettingsPanel
-              title={tc('settings.title')}
-              groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
-            />
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+          <GameFooter
+            className={`${gameTheme.rikken.footer} px-4 pt-3`}
+            actions={
+              <>
+                {isBidPhase && state.isHumanTurn && (
+                  <button
+                    type="button"
+                    className={btnSecondary}
+                    onClick={() => handleBid(RikkenContract.NONE)}
+                    disabled={loading}
+                  >
+                    {t('button.pass')}
+                  </button>
+                )}
 
+                {isCallPhase && state.isHumanTurn && (
+                  <div className="flex flex-col items-center gap-2 pb-2">
+                    <p className="text-ds-text-muted text-sm">{t('callGuide')}</p>
+                    <div className="flex justify-center gap-2 flex-wrap">
+                      {TRUMP_CHOICES.map((c) => (
+                        <button
+                          key={`call-${c.suit}`}
+                          type="button"
+                          className={btnPrimary}
+                          onClick={() => handleCall(c.suit)}
+                          disabled={loading}
+                        >
+                          {t('button.call', { trump: t(c.key) })}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {isRoundEnd && !state.gameEndFlag && (
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={() => execApi('next')}
+                    disabled={loading}
+                    data-testid="rk-next-button"
+                    aria-keyshortcuts="n"
+                  >
+                    {t('button.next')}
+                    <KbdBadge label={t('kbd.next')} />
+                  </button>
+                )}
+              </>
+            }
+          >
             {isBidPhase && state.isHumanTurn && (
               <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="rk-bid">
                 <p data-testid="rikken-current-bid" className="text-ds-text-primary text-sm font-medium">
@@ -330,65 +371,30 @@ function RikkenPageContent() {
                       })}
                 </p>
                 <p className="text-ds-text-muted text-sm">{t('bidGuide')}</p>
-                <div className="flex justify-center gap-2 flex-wrap">
+                <div className="grid grid-cols-2 sm:grid-cols-4 justify-center gap-1">
                   {RIKKEN_CONTRACTS.map((c) => (
                     <button
                       key={`bid-${c.contract}`}
                       type="button"
                       className={btnPrimary}
                       onClick={() => handleBid(c.contract)}
-                      // **いまより弱い契約は押せません。** 競りは上へしか積めません。
                       disabled={loading || c.contract <= state.contract}
                       aria-disabled={c.contract <= state.contract}
                     >
                       {t('button.bid', { contract: t(c.key) })}
                     </button>
                   ))}
-                  <button
-                    type="button"
-                    className={btnSecondary}
-                    onClick={() => handleBid(RikkenContract.NONE)}
-                    disabled={loading}
-                  >
-                    {t('button.pass')}
-                  </button>
                 </div>
               </div>
             )}
-
-            {isCallPhase && state.isHumanTurn && (
-              <div className="flex flex-col items-center gap-2 pb-2">
-                <p className="text-ds-text-muted text-sm">{t('callGuide')}</p>
-                <div className="flex justify-center gap-2 flex-wrap">
-                  {TRUMP_CHOICES.map((c) => (
-                    <button
-                      key={`call-${c.suit}`}
-                      type="button"
-                      className={btnPrimary}
-                      onClick={() => handleCall(c.suit)}
-                      disabled={loading}
-                    >
-                      {t('button.call', { trump: t(c.key) })}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+            <ErrorAlert message={error} onRetry={retry} />
+            <SettingsPanel
+              title={tc('settings.title')}
+              groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
+            />
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex justify-center gap-2 pb-2 flex-wrap">
-              {isRoundEnd && !state.gameEndFlag && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={() => execApi('next')}
-                  disabled={loading}
-                  data-testid="rk-next-button"
-                  aria-keyshortcuts="n"
-                >
-                  {t('button.next')}
-                  <KbdBadge label={t('kbd.next')} />
-                </button>
-              )}
               <GameResetButton
                 isGameEnd={state.gameEndFlag}
                 onReset={() => execApi('reset')}

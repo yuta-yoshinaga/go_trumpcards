@@ -1,4 +1,4 @@
-import { act, createEvent, fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, createEvent, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, daifugoApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -117,6 +117,12 @@ beforeEach(() => {
 });
 
 describe('DaifugoPage', () => {
+  it('keeps the pass action in the fixed footer action row on the human turn', async () => {
+    renderWithProviders(<DaifugoPage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: 'パス' })).toBeInTheDocument();
+  });
+
   it.each([
     ['sevenPass', '【7渡し】CPU 1にカードを1枚渡してください'],
     ['tenDiscard', '【10捨て】捨てるカードを1枚選択してください'],

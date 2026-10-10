@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, spadesApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -223,6 +223,12 @@ describe('SpadesPage', () => {
     renderWithProviders(<SpadesPage />);
     await waitFor(() => {
       expect(screen.getByRole('button', { name: '\u30d3\u30c3\u30c9' })).toBeInTheDocument();
+      expect(
+        within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '\u30d3\u30c3\u30c9' }),
+      ).toBeInTheDocument();
+      expect(
+        within(screen.getByTestId('game-footer-actions')).queryByRole('button', { name: '\u30cb\u30eb' }),
+      ).not.toBeInTheDocument();
       expect(screen.getByRole('button', { name: '\u30cb\u30eb' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: '1' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: '13' })).toBeInTheDocument();

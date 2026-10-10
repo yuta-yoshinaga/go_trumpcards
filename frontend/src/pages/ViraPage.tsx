@@ -435,7 +435,111 @@ function ViraPageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.vira.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.vira.footer} px-4 py-2.5`}
+            actions={
+              isBidPhase || canPlay || isTrickEnd || isRoundEnd ? (
+                <div className="grid grid-cols-3 sm:grid-cols-5 gap-1 items-center" data-tutorial="vira-action-buttons">
+                  {isBidPhase &&
+                    isHumanBidTurn &&
+                    BIDS.filter((bid) => bid.value === ViraContract.PASS).map((b) => {
+                      const disabled = loading;
+                      return (
+                        <span key={b.value} title={undefined} className="inline-flex">
+                          <button
+                            type="button"
+                            className="px-3 py-2 rounded-lg text-white text-sm bg-ds-info disabled:opacity-40"
+                            onClick={() => handleBid(b.value)}
+                            disabled={disabled}
+                            aria-disabled={disabled}
+                            aria-label={undefined}
+                            aria-describedby={undefined}
+                            data-testid={`bid-${b.value}`}
+                          >
+                            {t(b.key)}
+                          </button>
+                        </span>
+                      );
+                    })}
+                  {canPlay && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handlePlay}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                    >
+                      {t('playButton')}
+                    </button>
+                  )}
+                  {isTrickEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                      {t('nextTrick')}
+                    </button>
+                  )}
+                  {isRoundEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                      {t('nextRound')}
+                    </button>
+                  )}
+                </div>
+              ) : null
+            }
+          >
+            {isBidPhase && (
+              <div className="mb-2">
+                {/* The running bid stays visible while the CPUs bid; otherwise the auction is invisible until it is over (#4835). */}
+                <div className="text-xs font-semibold text-ds-text-primary" data-testid="vira-highest-bid">
+                  {t('bidHighest', {
+                    name: highestBid > 0 ? t(`bid.${CONTRACT_KEYS[highestBid]}`) : t('bidNone'),
+                  })}
+                </div>
+                <div className="text-xs text-ds-text-muted" data-testid="vira-bid-status">
+                  <span className="font-semibold text-ds-text-primary">{t('bidStatusTitle')}</span>
+                  {state.players.map((player) => (
+                    <div key={player.id}>
+                      {playerName(player.id, player.isHuman)}:{' '}
+                      {state.bidDone[player.id] ? t(`bid.${CONTRACT_KEYS[state.bids[player.id]]}`) : t('bidNotYet')}
+                    </div>
+                  ))}
+                </div>
+                {isHumanBidTurn && (
+                  <div className="grid grid-cols-3 sm:grid-cols-5 gap-1 items-center" data-tutorial="vira-bid-choices">
+                    <span className="text-xs text-ds-text-muted self-center mr-1">{t('bidPrompt')}</span>
+                    {BIDS.filter((bid) => bid.value !== ViraContract.PASS).map((b) => {
+                      // A non-pass bid must beat the current highest.
+                      const tooLow = b.value <= highestBid;
+                      const disabled = loading || tooLow;
+                      const isMisere = b.value === ViraContract.MISERE;
+                      const reason = tooLow ? t('bidTooLow') : undefined;
+                      return (
+                        <span key={b.value} title={reason} className="inline-flex">
+                          <button
+                            type="button"
+                            className={`px-3 py-2 rounded-lg text-white text-sm disabled:opacity-40 ${
+                              isMisere ? 'bg-ds-warning ring-1 ring-ds-warning' : 'bg-ds-info'
+                            }`}
+                            onClick={() => handleBid(b.value)}
+                            disabled={disabled}
+                            aria-disabled={disabled}
+                            aria-label={reason ? `${t(b.key)} — ${reason}` : undefined}
+                            aria-describedby={isMisere ? 'vira-misere-desc' : undefined}
+                            data-testid={`bid-${b.value}`}
+                          >
+                            {t(b.key)}
+                            {isMisere && <span className="ml-1 text-[10px] opacity-80">{t('misereBadge')}</span>}
+                          </button>
+                          {isMisere && (
+                            <span id="vira-misere-desc" className="sr-only">
+                              {t('misereDesc')}
+                            </span>
+                          )}
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
             {humanPlayer && (
               <PlayerHandSection
                 humanPlayer={humanPlayer}
@@ -468,96 +572,13 @@ function ViraPageContent() {
             </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-            <div className="flex flex-wrap gap-2 items-center" data-tutorial="vira-action-buttons">
-              {/* The running bid stays visible while the CPUs bid; only the buttons
-                  are gated on the human's turn. Otherwise the whole auction is
-                  invisible until it is over (#4835). */}
-              {isBidPhase && (
-                <span
-                  className="text-xs font-semibold text-ds-text-primary self-center mr-1"
-                  data-testid="vira-highest-bid"
-                >
-                  {t('bidHighest', {
-                    name: highestBid > 0 ? t(`bid.${CONTRACT_KEYS[highestBid]}`) : t('bidNone'),
-                  })}
-                </span>
-              )}
-              {isBidPhase && (
-                <div className="w-full text-xs text-ds-text-muted" data-testid="vira-bid-status">
-                  <span className="font-semibold text-ds-text-primary">{t('bidStatusTitle')}</span>
-                  {state.players.map((player) => (
-                    <div key={player.id}>
-                      {playerName(player.id, player.isHuman)}:{' '}
-                      {state.bidDone[player.id] ? t(`bid.${CONTRACT_KEYS[state.bids[player.id]]}`) : t('bidNotYet')}
-                    </div>
-                  ))}
-                </div>
-              )}
-              {isBidPhase && isHumanBidTurn && (
-                <>
-                  <span className="text-xs text-ds-text-muted self-center mr-1">{t('bidPrompt')}</span>
-                  {BIDS.map((b) => {
-                    // Pass (0) is always allowed; a non-pass bid must beat the current highest.
-                    const tooLow = b.value !== ViraContract.PASS && b.value <= highestBid;
-                    const disabled = loading || tooLow;
-                    const isMisere = b.value === ViraContract.MISERE;
-                    const reason = tooLow ? t('bidTooLow') : undefined;
-                    return (
-                      // Wrap in a span so the explanatory tooltip still shows on a disabled button.
-                      <span key={b.value} title={reason} className="inline-flex">
-                        <button
-                          type="button"
-                          className={`px-3 py-2 rounded-lg text-white text-sm disabled:opacity-40 ${
-                            isMisere ? 'bg-ds-warning ring-1 ring-ds-warning' : 'bg-ds-info'
-                          }`}
-                          onClick={() => handleBid(b.value)}
-                          disabled={disabled}
-                          aria-disabled={disabled}
-                          aria-label={reason ? `${t(b.key)} — ${reason}` : undefined}
-                          aria-describedby={isMisere ? 'vira-misere-desc' : undefined}
-                          data-testid={`bid-${b.value}`}
-                        >
-                          {t(b.key)}
-                          {isMisere && <span className="ml-1 text-[10px] opacity-80">{t('misereBadge')}</span>}
-                        </button>
-                        {isMisere && (
-                          <span id="vira-misere-desc" className="sr-only">
-                            {t('misereDesc')}
-                          </span>
-                        )}
-                      </span>
-                    );
-                  })}
-                </>
-              )}
-              {canPlay && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-              {isTrickEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                  {t('nextTrick')}
-                </button>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="vira-reset-button"
-              />
-            </div>
+            <GameResetButton
+              isGameEnd={isGameEnd}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+              dataTutorial="vira-reset-button"
+            />
           </GameFooter>
         </>
       )}
