@@ -13,6 +13,9 @@ printf '%s %s\n' "${AGENT_BROWSER_IDLE_TIMEOUT_MS-unset}" "$*" >> "$MOCK_LOG"
 if [[ ${MOCK_HANG:-0} == 1 && " $* " == *" wait "* ]]; then echo $$ > "$MOCK_LOG.hang"; exec sleep 30; fi
 if [[ " $* " == *" eval "* ]]; then
   if [[ $* == *'document.documentElement.scrollWidth'* ]]; then echo 375
+  elif [[ $* == *'game-footer-content'* && $* == *'overflow-blackjack-'* ]]; then echo '"nofooter"'
+  elif [[ $* == *'game-footer-content'* && ${MOCK_BAD_FOOTER:-0} == 1 ]]; then echo garbage
+  elif [[ $* == *'game-footer-content'* ]]; then echo 123
   elif [[ $* == *'overflow-blackjack-'* ]]; then echo '"nopa"'
   elif [[ $* == *'overflow-minibridge-'* && ${MOCK_BAD_VALUE:-0} == 1 ]]; then echo garbage
   else echo 123
@@ -24,10 +27,10 @@ export MOCK_LOG="$tmp/log"
 
 output=$(PATH="$tmp/bin:$PATH" bash "$script_dir/play-area-overflow.sh" -p 19001 -n 1 -j 1 blackjack minibridge 2>"$tmp/stderr")
 [[ $(printf '%s\n' "$output" | wc -l) -eq 3 ]]
-[[ $(printf '%s\n' "$output" | sed -n '1p') == $'game\tmobile_worst\tdesktop\tscrollWidth' ]]
-[[ $(printf '%s\n' "$output" | sed -n '2p') == $'blackjack\tnopa\tnopa\t375' ]]
-[[ $(printf '%s\n' "$output" | sed -n '3p') == $'minibridge\t123\t123\t375' ]]
-grep -q 'mobile>300: 0, desktop>600: 0, scrollWidth>375: 0' "$tmp/stderr"
+[[ $(printf '%s\n' "$output" | sed -n '1p') == $'game\tmobile_worst\tmobile_footer\tdesktop\tscrollWidth' ]]
+[[ $(printf '%s\n' "$output" | sed -n '2p') == $'blackjack\tnopa\tnofooter\tnopa\t375' ]]
+[[ $(printf '%s\n' "$output" | sed -n '3p') == $'minibridge\t123\t123\t123\t375' ]]
+grep -q 'mobile>300: 0, mobile_footer>40: 1, desktop>600: 0, scrollWidth>375: 0' "$tmp/stderr"
 blackjack_close=$(grep -n 'overflow-blackjack-.* close$' "$tmp/log" | head -1 | cut -d: -f1)
 minibridge_first=$(grep -n 'overflow-minibridge-.* set viewport' "$tmp/log" | head -1 | cut -d: -f1)
 [[ -n $blackjack_close && -n $minibridge_first && $blackjack_close -lt $minibridge_first ]]
@@ -63,6 +66,13 @@ set -e
 minibridge_close=$(grep -n 'overflow-minibridge-.* close$' "$tmp/log" | head -1 | cut -d: -f1)
 blackjack_first=$(grep -n 'overflow-blackjack-.* set viewport' "$tmp/log" | head -1 | cut -d: -f1)
 [[ -n $minibridge_close && -n $blackjack_first && $minibridge_close -lt $blackjack_first ]]
+
+# Invalid footer measurements fail the worker just like invalid play-area values.
+set +e
+MOCK_BAD_FOOTER=1 PATH="$tmp/bin:$PATH" bash "$script_dir/play-area-overflow.sh" -n 1 -j 1 minibridge >/dev/null 2>/dev/null
+status=$?
+set -e
+[[ $status -ne 0 ]]
 
 # A failing browser command (not only an invalid measurement) must still fail the game.
 set +e

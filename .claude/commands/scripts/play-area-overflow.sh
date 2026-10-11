@@ -11,6 +11,7 @@ Usage: play-area-overflow.sh [-p port] [-n deals] [-j sessions] [-o out.tsv] [ga
 
 Measure games on an already running go_trumpcards web server. Defaults: port 8080,
 3 mobile reloads per game, 3 parallel browser sessions (max 4), and stdout TSV output.
+mobile_footer measures nested scrolling inside the game footer on each mobile reload.
 EOF
 }
 
@@ -73,7 +74,7 @@ base="http://localhost:$port"
 keys=$(printf '%s\n' "${all_games[@]}" "${games[@]}" | sort -u | sed 's/.*/tutorial_completed_&/; s/.*/"&": "true"/' | paste -sd, -)
 init="for (const [k,v] of Object.entries({$keys})) localStorage.setItem(k,v)"
 
-printf 'game\tmobile_worst\tdesktop\tscrollWidth\n' > "$tmp/results"
+printf 'game\tmobile_worst\tmobile_footer\tdesktop\tscrollWidth\n' > "$tmp/results"
 eval_value() {
   local value
   value=$(agent-browser "$@" | tail -1)
@@ -82,7 +83,7 @@ eval_value() {
   printf '%s\n' "$value"
 }
 worker() {
-  local game=$1 session="overflow-$1-$$" path url mobile=nopa desktop width value i
+  local game=$1 session="overflow-$1-$$" path url mobile=nopa mobile_footer=nofooter desktop width value footer_value i
   worker_body() {
     path="/#/$game"; [[ $game == "$root_game" ]] && path=/
     url="$base$path"
@@ -97,6 +98,9 @@ worker() {
       value=$(eval_value --session "$session" eval "(()=>{const e=document.querySelector('main [aria-busy] > div.flex-1.overflow-y-auto');return e?e.scrollHeight-e.clientHeight:'nopa'})()")
       [[ $value == nopa || $value =~ ^[0-9]+$ ]] || { echo "$game: invalid mobile measurement: $value" >&2; return 1; }
       if [[ $value =~ ^[0-9]+$ ]] && { [[ $mobile == nopa ]] || (( value > mobile )); }; then mobile=$value; fi
+      footer_value=$(eval_value --session "$session" eval "(()=>{const e=document.querySelector('[data-testid=\"game-footer-content\"]');return e?e.scrollHeight-e.clientHeight:'nofooter'})()")
+      [[ $footer_value == nofooter || $footer_value =~ ^[0-9]+$ ]] || { echo "$game: invalid mobile footer measurement: $footer_value" >&2; return 1; }
+      if [[ $footer_value =~ ^[0-9]+$ ]] && { [[ $mobile_footer == nofooter ]] || (( footer_value > mobile_footer )); }; then mobile_footer=$footer_value; fi
     done
     agent-browser --session "$session" set viewport 1280 800 >/dev/null
     agent-browser --session "$session" open "$url" >/dev/null
@@ -106,7 +110,7 @@ worker() {
     agent-browser --session "$session" set viewport 375 667 >/dev/null
     width=$(eval_value --session "$session" eval 'document.documentElement.scrollWidth')
     [[ ( $desktop == nopa || $desktop =~ ^[0-9]+$ ) && $width =~ ^[0-9]+$ ]] || { echo "$game: invalid desktop/width measurement: $desktop/$width" >&2; return 1; }
-    printf '%s\t%s\t%s\t%s\n' "$game" "$mobile" "$desktop" "$width" > "$tmp/$game.tsv"
+    printf '%s\t%s\t%s\t%s\t%s\n' "$game" "$mobile" "$mobile_footer" "$desktop" "$width" > "$tmp/$game.tsv"
   }
   # Close this game's browser as soon as it is measured, on failure too. errexit must stay
   # live inside the subshell, so it cannot be tested by `if`/`||` (that context disables -e).
@@ -132,4 +136,4 @@ while ((active)); do wait -n || failed=1; active=$((active - 1)); done
 for game in "${games[@]}"; do cat "$tmp/$game.tsv" >> "$tmp/results"; done
 if [[ $output == - ]]; then cat "$tmp/results"; else cp "$tmp/results" "$output"; fi
 
-awk -F '\t' 'NR>1 {if ($2 ~ /^[0-9]+$/ && $2>300) m++; if ($3 ~ /^[0-9]+$/ && $3>600) d++; if ($4 ~ /^[0-9]+$/ && $4>375) w++} END {printf "mobile>300: %d, desktop>600: %d, scrollWidth>375: %d\n", m, d, w}' "$tmp/results" >&2
+awk -F '\t' 'NR>1 {if ($2 ~ /^[0-9]+$/ && $2>300) m++; if ($3 ~ /^[0-9]+$/ && $3>40) f++; if ($4 ~ /^[0-9]+$/ && $4>600) d++; if ($5 ~ /^[0-9]+$/ && $5>375) w++} END {printf "mobile>300: %d, mobile_footer>40: %d, desktop>600: %d, scrollWidth>375: %d\n", m, f, d, w}' "$tmp/results" >&2
