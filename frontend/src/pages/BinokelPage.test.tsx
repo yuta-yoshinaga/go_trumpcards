@@ -945,4 +945,21 @@ describe('BinokelPage meld reference', () => {
     const actions = await screen.findByTestId('game-footer-actions');
     expect(within(actions).getByRole('button', { name: 'ビッド' })).toBeInTheDocument();
   });
+
+  it('keeps phase choices and reset in the play area while the hand stays in the footer', async () => {
+    mockExec.mockResolvedValue({
+      ...bidPhaseState,
+      players: makePlayers([{ cards: [{ design: 'SPADE', value: 1 }] }]),
+    });
+    renderWithProviders(<BinokelPage />);
+
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const playArea = footerContent.parentElement?.parentElement?.querySelector('.flex-1.overflow-y-auto');
+    expect(playArea).not.toBeNull();
+    expect(within(footerContent).queryByTestId('bid-option-150')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('bid-option-150')).toBeInTheDocument();
+    expect(footerContent.querySelector('[data-tutorial="bn-player-hand"]')).toBeInTheDocument();
+    expect(footerContent.querySelector('[data-tutorial="bn-reset-button"]')).not.toBeInTheDocument();
+    expect(playArea?.querySelector('[data-tutorial="bn-reset-button"]')).toBeInTheDocument();
+  });
 });

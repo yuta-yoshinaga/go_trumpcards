@@ -675,6 +675,31 @@ describe('RazzPage', () => {
     expect(screen.getByRole('button', { name: 'リバイ' })).toBeInTheDocument();
   });
 
+  it('keeps rebuy choices and reset in the play area while the hand stays in the footer', async () => {
+    const rebuyState = {
+      ...baseState,
+      players: [humanPlayer({ chips: 0 }), cpuPlayer(1)],
+      phase: 8,
+      message: '',
+      rebuyPhaseType: 1,
+      rebuyChips: 1000,
+      rebuyMaxCount: 3,
+      rebuyCounts: [1, 0],
+    };
+    mockExec.mockResolvedValue(rebuyState);
+    const { container } = renderWithProviders(<RazzPage />);
+    await waitFor(() => expect(screen.getByTestId('rebuy-controls')).toBeInTheDocument());
+
+    const footerContent = screen.getByTestId('game-footer-content');
+    const playArea = container.querySelector('div.flex-1.overflow-y-auto');
+    expect(playArea).not.toBeNull();
+    expect(within(footerContent).queryByTestId('rebuy-controls')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('rebuy-controls')).toBeInTheDocument();
+    expect(footerContent.querySelector('[data-tutorial="razz-player-hand"]')).not.toBeNull();
+    expect(within(footerContent).queryByRole('button', { name: 'リセット' })).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByRole('button', { name: 'リセット' })).toBeInTheDocument();
+  });
+
   it('calls rebuy command when rebuy button clicked', async () => {
     const rebuyState = {
       ...baseState,
