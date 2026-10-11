@@ -97,18 +97,36 @@ describe('BettingControls', () => {
     for (const name of [/^コール(?:\s|$)/, 'レイズ', 'フォールド', 'オールイン'] as const) {
       const classes = screen.getByRole('button', { name }).className.split(' ');
       expect(classes).toEqual(
-        expect.arrayContaining(['flex-1', 'min-w-fit', 'whitespace-nowrap', 'sm:flex-none', 'sm:min-w-[80px]']),
+        expect.arrayContaining([
+          'flex-1',
+          'min-w-fit',
+          'whitespace-nowrap',
+          'max-sm:px-1!',
+          'max-sm:mx-0!',
+          'min-h-[44px]',
+          'text-sm',
+          'sm:flex-none',
+          'sm:min-w-[80px]',
+        ]),
       );
-      expect(classes).not.toContain('min-w-[56px]');
     }
 
     rerender(<BettingControls {...makeProps()} />);
     for (const name of ['ベット', 'チェック', 'フォールド', 'オールイン'] as const) {
       const classes = screen.getByRole('button', { name }).className.split(' ');
       expect(classes).toEqual(
-        expect.arrayContaining(['flex-1', 'min-w-fit', 'whitespace-nowrap', 'sm:flex-none', 'sm:min-w-[80px]']),
+        expect.arrayContaining([
+          'flex-1',
+          'min-w-fit',
+          'whitespace-nowrap',
+          'max-sm:px-1!',
+          'max-sm:mx-0!',
+          'min-h-[44px]',
+          'text-sm',
+          'sm:flex-none',
+          'sm:min-w-[80px]',
+        ]),
       );
-      expect(classes).not.toContain('min-w-[56px]');
     }
   });
 
