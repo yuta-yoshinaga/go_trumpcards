@@ -247,6 +247,49 @@ function CinchPageContent() {
                     </button>
                   ))}
                 </div>
+                {/* Shown right under the bid buttons: it is what the bid is based on. */}
+                {bidStrength && (
+                  <div
+                    className="mb-2 mx-auto max-w-xl p-2 rounded bg-black/30 text-ds-text-muted text-xs text-center"
+                    data-testid="cinch-bid-strength"
+                  >
+                    <div className="text-ds-text-primary" data-testid="cinch-bid-strength-range">
+                      {t('bidStrength.range', { min: bidStrength.minPoints, max: bidStrength.maxPoints })}
+                    </div>
+                    <div data-testid="cinch-bid-strength-best">
+                      {t('bidStrength.best', {
+                        symbol: suitSymbolAt(bidStrength.bestSuit, '-'),
+                        suit: suitLabel(bidStrength.bestSuit),
+                        points: bidStrength.pointsBySuit[bidStrength.bestSuit],
+                      })}
+                    </div>
+                    <div
+                      className="mt-1 grid grid-cols-2 gap-x-3 text-left sm:grid-cols-4"
+                      data-testid="cinch-bid-strength-suits"
+                    >
+                      {TRUMP_SUITS.map((suit) => (
+                        <div key={suit}>
+                          <span className="text-ds-text-primary">
+                            {suitSymbolAt(suit, '-')} {suitLabel(suit)}
+                          </span>
+                          <div>
+                            {t('bidStrength.suitEstimate', {
+                              points: bidStrength.pointsBySuit[suit],
+                              trumps: bidStrength.trumpCountBySuit[suit],
+                              control: bidStrength.controlBySuit[suit],
+                            })}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-1">{t('bidStrength.controlMethod')}</div>
+                    <div className="mt-1">
+                      <span className="text-ds-text-primary">{t('bidStrength.legendTitle')}:</span>{' '}
+                      {t('bidStrength.legend')}
+                    </div>
+                    <div className="mt-1 italic">{t('bidStrength.note')}</div>
+                  </div>
+                )}
               </div>
             )}
             <div className="text-ds-text-primary text-center mb-2">
@@ -398,48 +441,6 @@ function CinchPageContent() {
               hideActionLog={hideActionLog}
             />
 
-            {canBid && bidStrength && (
-              <div
-                className="mb-2 mx-auto max-w-xl p-2 rounded bg-black/30 text-ds-text-muted text-xs text-center"
-                data-testid="cinch-bid-strength"
-              >
-                <div className="text-ds-text-primary" data-testid="cinch-bid-strength-range">
-                  {t('bidStrength.range', { min: bidStrength.minPoints, max: bidStrength.maxPoints })}
-                </div>
-                <div data-testid="cinch-bid-strength-best">
-                  {t('bidStrength.best', {
-                    symbol: suitSymbolAt(bidStrength.bestSuit, '-'),
-                    suit: suitLabel(bidStrength.bestSuit),
-                    points: bidStrength.pointsBySuit[bidStrength.bestSuit],
-                  })}
-                </div>
-                <div
-                  className="mt-1 grid grid-cols-2 gap-x-3 text-left sm:grid-cols-4"
-                  data-testid="cinch-bid-strength-suits"
-                >
-                  {TRUMP_SUITS.map((suit) => (
-                    <div key={suit}>
-                      <span className="text-ds-text-primary">
-                        {suitSymbolAt(suit, '-')} {suitLabel(suit)}
-                      </span>
-                      <div>
-                        {t('bidStrength.suitEstimate', {
-                          points: bidStrength.pointsBySuit[suit],
-                          trumps: bidStrength.trumpCountBySuit[suit],
-                          control: bidStrength.controlBySuit[suit],
-                        })}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-1">{t('bidStrength.controlMethod')}</div>
-                <div className="mt-1">
-                  <span className="text-ds-text-primary">{t('bidStrength.legendTitle')}:</span>{' '}
-                  {t('bidStrength.legend')}
-                </div>
-                <div className="mt-1 italic">{t('bidStrength.note')}</div>
-              </div>
-            )}
             <div data-testid="cinch-trump-selection-live" role="status" aria-live="polite">
               {state.trumpSuit >= 1 && (
                 <div className="mb-1 text-center text-sm text-ds-accent font-semibold">

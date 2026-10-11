@@ -25,6 +25,8 @@ for (const { path, maxOverflow } of BUDGETS) {
   test(`${path} keeps footer-content scrolling within its mobile budget`, async ({ page }) => {
     await navigateTo(page, path);
     const region = page.getByTestId('game-footer-content');
+    // Measure once the hand has rendered: before that the footer is shorter than it will be.
+    await expect(region.locator('img').first()).toBeVisible();
     const { overflow, scrollHeight, clientHeight } = await region.evaluate((element) => ({
       overflow: element.scrollHeight - element.clientHeight,
       scrollHeight: element.scrollHeight,

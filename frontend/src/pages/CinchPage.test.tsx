@@ -90,6 +90,8 @@ describe('CinchPage', () => {
     expect(within(footerContent).getByAltText('♥ Q')).toBeInTheDocument();
     expect(within(footerContent).queryByTestId('cinch-bid-strength')).not.toBeInTheDocument();
     expect(within(playArea as HTMLElement).getByTestId('cinch-bid-strength')).toBeInTheDocument();
+    // The estimate the bid is based on sits right under the bid buttons, not after the board.
+    expect(screen.getByTestId('cinch-bid-buttons').nextElementSibling).toBe(screen.getByTestId('cinch-bid-strength'));
     expect(within(playArea as HTMLElement).getByTestId('cinch-bid-buttons')).toBeInTheDocument();
     expect(screen.queryByTestId('game-footer-actions')).not.toBeInTheDocument();
   });
