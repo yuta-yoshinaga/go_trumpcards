@@ -109,6 +109,8 @@ describe('BettingControls', () => {
           'sm:min-w-[80px]',
         ]),
       );
+      // The old fixed minimum let labels outgrow their buttons (#11657).
+      expect(classes).not.toContain('min-w-[56px]');
     }
 
     rerender(<BettingControls {...makeProps()} />);
@@ -127,6 +129,8 @@ describe('BettingControls', () => {
           'sm:min-w-[80px]',
         ]),
       );
+      // The old fixed minimum let labels outgrow their buttons (#11657).
+      expect(classes).not.toContain('min-w-[56px]');
     }
   });
 
