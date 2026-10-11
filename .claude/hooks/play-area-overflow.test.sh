@@ -3,14 +3,18 @@ set -euo pipefail
 
 script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/../commands/scripts" && pwd)
 tmp=$(mktemp -d)
-cleanup() { rm -rf "$tmp"; }
+foreign_pid=''
+cleanup() {
+  [[ -n ${foreign_pid:-} ]] && kill "$foreign_pid" 2>/dev/null || true
+  rm -rf "$tmp"
+}
 trap cleanup EXIT
 mkdir -p "$tmp/bin"
 cat > "$tmp/bin/ss" <<'MOCKSS'
 #!/usr/bin/env bash
 case ${MOCK_SS_MODE:-same} in
   none) exit 0 ;;
-  other) printf 'LISTEN 0 128 *:19001 *:* users:(("fake",pid=1,fd=3))\n' ;;
+  unknown) printf 'LISTEN 0 128 *:19001 *:* users:(("fake",pid=999999999,fd=3))\n' ;;
   foreign) printf 'LISTEN 0 128 *:19001 *:* users:(("fake",pid=%s,fd=3))\n' "${MOCK_FOREIGN_PID:?}" ;;
   *) printf 'LISTEN 0 128 *:19001 *:* users:(("fake",pid=%s,fd=3))\n' "${MOCK_SS_PID:?}" ;;
 esac
@@ -104,6 +108,8 @@ set -e
 grep -q 'no server is listening on port 19001' "$tmp/no-listener.err"
 (cd "$tmp" && sleep 30) &
 foreign_pid=$!
+mkdir -p "$tmp/public"
+: > "$tmp/public/index.html"
 export MOCK_FOREIGN_PID=$foreign_pid
 set +e
 MOCK_SS_MODE=foreign PATH="$tmp/bin:$PATH" bash "$script_dir/play-area-overflow.sh" -p 19001 -n 1 blackjack >/dev/null 2>"$tmp/foreign.err"
@@ -115,6 +121,38 @@ MOCK_SS_MODE=foreign PATH="$tmp/bin:$PATH" bash "$script_dir/play-area-overflow.
 grep -q 'server: pid' "$tmp/foreign-x.err"
 kill "$foreign_pid" 2>/dev/null || true
 wait "$foreign_pid" 2>/dev/null || true
+foreign_pid=''
+
+# An unknown server PID fails closed without -x and warns while continuing with -x.
+set +e
+MOCK_SS_MODE=unknown PATH="$tmp/bin:$PATH" bash "$script_dir/play-area-overflow.sh" -p 19001 -n 1 blackjack >/dev/null 2>"$tmp/unknown.err"
+status=$?
+set -e
+[[ $status -eq 2 ]]
+grep -q 'cannot identify the server process on port 19001' "$tmp/unknown.err"
+MOCK_SS_MODE=unknown PATH="$tmp/bin:$PATH" bash "$script_dir/play-area-overflow.sh" -p 19001 -n 1 -x blackjack >/dev/null 2>"$tmp/unknown-x.err"
+grep -q 'warning: cannot identify the server process on port 19001' "$tmp/unknown-x.err"
+
+# Missing ss is reported as a dependency error before querying listeners.
+set +e
+mkdir -p "$tmp/no-ss-bin"
+ln -s "$tmp/bin/agent-browser" "$tmp/no-ss-bin/agent-browser"
+PATH="$tmp/no-ss-bin" /bin/bash "$script_dir/play-area-overflow.sh" -p 19001 -n 1 blackjack >/dev/null 2>"$tmp/missing-ss.err"
+status=$?
+set -e
+[[ $status -eq 127 ]]
+grep -q 'ss (iproute2) is required to identify the server' "$tmp/missing-ss.err"
+
+# An external server cwd without public/index.html gets the actionable build warning.
+mkdir -p "$tmp/missing"
+(cd "$tmp/missing" && sleep 30) &
+foreign_pid=$!
+export MOCK_FOREIGN_PID=$foreign_pid
+MOCK_SS_MODE=foreign PATH="$tmp/bin:$PATH" bash "$script_dir/play-area-overflow.sh" -p 19001 -n 1 -x blackjack >/dev/null 2>"$tmp/missing-index.err"
+grep -q "warning: $tmp/missing/public/index.html does not exist; build with (cd frontend && bun run build)" "$tmp/missing-index.err"
+kill "$foreign_pid" 2>/dev/null || true
+wait "$foreign_pid" 2>/dev/null || true
+foreign_pid=''
 # A failed game must close its own session before the next game starts; the EXIT
 # cleanup alone would also send a close, so only the ordering proves the worker did it.
 : > "$tmp/log"

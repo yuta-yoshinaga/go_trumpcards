@@ -35,25 +35,26 @@ shift $((OPTIND - 1))
 [[ $port =~ ^[0-9]+$ && $deals =~ ^[1-9][0-9]*$ && $sessions =~ ^[1-9][0-9]*$ ]] || { echo 'port must be numeric; deals and sessions must be positive integers' >&2; exit 2; }
 ((sessions <= 4)) || { echo 'sessions must be between 1 and 4' >&2; exit 2; }
 command -v agent-browser >/dev/null || { echo 'agent-browser is required' >&2; exit 127; }
+command -v ss >/dev/null || { echo "ss (iproute2) is required to identify the server" >&2; exit 127; }
 top=$(git rev-parse --show-toplevel)
 listening=$(ss -ltnpH "sport = :$port" 2>/dev/null || true)
 [[ -n $listening ]] || { echo "no server is listening on port $port" >&2; exit 2; }
-pid=$(sed -n 's/.*pid=\([0-9][0-9]*\).*/\1/p' <<<"$listening" | head -1)
-if [[ -z $pid ]]; then
+pid=$(sed -n 's/.*pid=\([0-9][0-9]*\).*/\1/p;T;q' <<<"$listening")
+cwd=''
+[[ -z $pid ]] || cwd=$(readlink "/proc/$pid/cwd" 2>/dev/null || true)
+if [[ -z $pid || -z $cwd ]]; then
   if ((allow_other)); then echo "warning: cannot identify the server process on port $port (-x)" >&2
   else echo "cannot identify the server process on port $port" >&2; exit 2; fi
 else
-  cwd=$(readlink "/proc/$pid/cwd" 2>/dev/null || true)
-  if [[ -z $cwd ]]; then
-    if ((allow_other)); then echo "warning: cannot identify the server process on port $port (-x)" >&2
-    else echo "cannot identify the server process on port $port" >&2; exit 2; fi
+  if [[ $cwd != "$top" && $allow_other -eq 0 ]]; then echo "server on port $port (pid $pid) runs from $cwd, not $top; it serves that tree's public/ — pass -x to measure it anyway" >&2; exit 2; fi
+  public_mtime=$(stat -c %y "$cwd/public/index.html" 2>/dev/null || echo missing)
+  echo "server: pid $pid cwd $cwd public/index.html $public_mtime" >&2
+  if [[ ! -e $cwd/public/index.html ]]; then
+    echo "warning: $cwd/public/index.html does not exist; build with (cd frontend && bun run build)" >&2
   else
-    if [[ $cwd != "$top" && $allow_other -eq 0 ]]; then echo "server on port $port (pid $pid) runs from $cwd, not $top; it serves that tree's public/ — pass -x to measure it anyway" >&2; exit 2; fi
-    public_mtime=$(stat -c %y "$cwd/public/index.html" 2>/dev/null || echo missing)
-    echo "server: pid $pid cwd $cwd public/index.html $public_mtime" >&2
     # One file under frontend/src newer than the build is enough; -quit avoids a pipe that
     # pipefail would turn into a failure once the reader closes early (SIGPIPE).
-    if [[ ! -e $cwd/public/index.html ]] || [[ -n $(find "$cwd/frontend/src" -type f -newer "$cwd/public/index.html" -print -quit 2>/dev/null) ]]; then
+    if [[ -n $(find "$cwd/frontend/src" -type f -newer "$cwd/public/index.html" -print -quit 2>/dev/null) ]]; then
       echo 'warning: public/ is older than frontend/src; rebuild with (cd frontend && bun run build)' >&2
     fi
   fi
