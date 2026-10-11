@@ -500,4 +500,21 @@ describe('UltiPage', () => {
     const actions = await screen.findByTestId('game-footer-actions');
     expect(within(actions).getByRole('button', { name: '出す' })).toBeInTheDocument();
   });
+  it('keeps only the hand and turn prompt in the footer content', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      hint: { cardIndices: [0], reason: 'x' },
+      messageCode: 'ulti.hintRequested',
+    });
+    const { container } = renderWithProviders(<UltiPage />);
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const playArea = container.querySelector('.flex-1.overflow-y-auto');
+    expect(playArea).not.toBeNull();
+
+    expect(footerContent.querySelector('[data-testid="ulti-hint-live"]')).toBeNull();
+    expect(footerContent.querySelector('[data-tutorial="ulti-reset-button"]')).toBeNull();
+    expect(playArea).toContainElement(screen.getByTestId('ulti-hint-live'));
+    expect(playArea?.querySelector('[data-tutorial="ulti-reset-button"]')).not.toBeNull();
+    expect(footerContent.querySelector('[data-tutorial="ulti-player-hand"]')).toBeInTheDocument();
+  });
 });

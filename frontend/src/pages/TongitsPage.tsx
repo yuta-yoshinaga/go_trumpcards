@@ -415,6 +415,21 @@ function TongitsPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+
+            <ErrorAlert message={error} onRetry={retry} />
+
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            <div className="flex gap-2 items-center flex-wrap">
+              <GameResetButton
+                isGameEnd={!!isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="tongits-reset-button"
+              />
+            </div>
+            <CardNavShortcutsPanel data-testid="tongits-kbd-shortcuts" />
           </div>
 
           <GameFooter
@@ -534,21 +549,6 @@ function TongitsPageContent() {
                 })}
               </div>
             )}
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            <div className="flex gap-2 items-center flex-wrap">
-              <GameResetButton
-                isGameEnd={!!isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="tongits-reset-button"
-              />
-            </div>
-            <CardNavShortcutsPanel data-testid="tongits-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

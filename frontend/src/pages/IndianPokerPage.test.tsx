@@ -171,6 +171,19 @@ describe('IndianPokerPage', () => {
     ).toBeInTheDocument();
   });
 
+  it('keeps the hand in the footer and places settings and shortcuts in the play area', async () => {
+    mockExec.mockResolvedValue(bettingState);
+    const { container } = renderWithProviders(<IndianPokerPage />);
+    const footer = await screen.findByTestId('game-footer-content');
+    const playArea = container.querySelector('.flex-1.overflow-y-auto.pt-4');
+
+    expect(playArea).not.toBeNull();
+    expect(within(footer).getByText(/あなたのカード|自分のカード|あなたの手札/)).toBeInTheDocument();
+    expect(within(footer).queryByTestId('indian-poker-kbd-shortcuts')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('indian-poker-kbd-shortcuts')).toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByLabelText(/アンティ額|アンティ/)).toBeInTheDocument();
+  });
+
   it('shows "アンティ" when phase is ANTE', async () => {
     mockExec.mockResolvedValue(anteState);
     renderWithProviders(<IndianPokerPage />);

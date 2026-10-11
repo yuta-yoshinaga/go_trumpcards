@@ -536,4 +536,18 @@ describe('BostonPage', () => {
     const actions = await screen.findByTestId('game-footer-actions');
     expect(within(actions).getByRole('button', { name: '出す' })).toBeInTheDocument();
   });
+
+  it('keeps only the hand and turn notice in the footer content', async () => {
+    renderWithProviders(<BostonPage />);
+    const footer = await screen.findByTestId('game-footer-content');
+    const playArea = footer.parentElement?.previousElementSibling;
+    expect(playArea).toBeInTheDocument();
+
+    expect(footer.querySelector('[data-tutorial="boston-hand"]')).toBeInTheDocument();
+    expect(within(footer).getByTestId('boston-play-notice')).toBeInTheDocument();
+    expect(within(footer).queryByLabelText('ヒント表示')).not.toBeInTheDocument();
+    expect(footer.querySelector('[data-tutorial="boston-reset-button"]')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByLabelText('ヒント表示')).toBeInTheDocument();
+    expect(playArea?.querySelector('[data-tutorial="boston-reset-button"]')).toBeInTheDocument();
+  });
 });

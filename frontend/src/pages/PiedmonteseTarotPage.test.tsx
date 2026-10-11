@@ -14,6 +14,8 @@ vi.mock('../api/gameApi', () => ({
 
 const mockExec = vi.mocked(piedmonteseTarotApi.exec);
 
+const getByTutorialId = (container: HTMLElement, id: string) => container.querySelector(`[data-tutorial="${id}"]`);
+
 const suit = (value: number, design: 'HEART' | 'SPADE' | 'CLOVER' | 'DIAMOND', glyph: string, label: string) => ({
   design,
   value,
@@ -130,6 +132,20 @@ beforeEach(() => {
 });
 
 describe('PiedmonteseTarotPage', () => {
+  it('keeps the hand in the footer and renders supporting controls in the play area', async () => {
+    renderWithProviders(<PiedmonteseTarotPage />);
+
+    const footerContent = await screen.findByTestId('game-footer-content');
+    expect(getByTutorialId(footerContent, 'piedmontesetarot-player-hand')).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('piedmontesetarot-hint-live')).not.toBeInTheDocument();
+    expect(getByTutorialId(footerContent, 'piedmontesetarot-reset-button')).toBeNull();
+
+    const playArea = footerContent.parentElement?.parentElement?.querySelector(':scope > .flex-1.overflow-y-auto');
+    expect(playArea).not.toBeNull();
+    expect(within(playArea as HTMLElement).getByTestId('piedmontesetarot-hint-live')).toBeInTheDocument();
+    expect(getByTutorialId(playArea as HTMLElement, 'piedmontesetarot-reset-button')).toBeInTheDocument();
+  });
+
   it('shows empty deal score history at the start of a three-seat match', async () => {
     mockExec.mockResolvedValueOnce(
       makePiedmonteseTarotState({

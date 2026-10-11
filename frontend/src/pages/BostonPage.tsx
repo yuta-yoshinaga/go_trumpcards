@@ -377,6 +377,28 @@ function BostonPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+
+            <ErrorAlert message={error} onRetry={retry} />
+
+            <label className="flex items-center gap-1 text-ds-text-primary text-xs w-full justify-center cursor-pointer min-h-[44px]">
+              <input
+                type="checkbox"
+                checked={frontendHintEnabled}
+                onChange={(e) => setFrontendHintEnabled(e.target.checked)}
+              />
+              {tc('hint.toggle', { ns: 'tutorial' })}
+            </label>
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            <div className="flex justify-end">
+              <GameResetButton
+                isGameEnd={isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="boston-reset-button"
+              />
+            </div>
           </div>
 
           {/* Footer */}
@@ -511,8 +533,6 @@ function BostonPageContent() {
               </div>
             </div>
 
-            <ErrorAlert message={error} onRetry={retry} />
-
             {isHumanBid && (
               <div className="text-ds-text-muted text-xs mb-2" data-testid="boston-bid-notice">
                 {t('bidNotice')}
@@ -528,26 +548,6 @@ function BostonPageContent() {
                 {t('playNotice')}
               </div>
             )}
-
-            <label className="flex items-center gap-1 text-ds-text-primary text-xs w-full justify-center cursor-pointer min-h-[44px]">
-              <input
-                type="checkbox"
-                checked={frontendHintEnabled}
-                onChange={(e) => setFrontendHintEnabled(e.target.checked)}
-              />
-              {tc('hint.toggle', { ns: 'tutorial' })}
-            </label>
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            <div className="flex justify-end">
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="boston-reset-button"
-              />
-            </div>
           </GameFooter>
         </>
       )}
