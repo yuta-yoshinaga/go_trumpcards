@@ -81,7 +81,7 @@ export function BettingControls({
   };
 
   return (
-    <div className="flex flex-wrap justify-center gap-1 text-center mb-2 sm:items-center">
+    <div className="flex flex-wrap justify-center gap-1 text-center mb-2 sm:items-center" data-testid="betting-actions">
       <div className="flex basis-full flex-row flex-wrap items-center justify-center gap-1 mb-2 sm:basis-auto">
         <ChipBetInput
           id={inputId}
@@ -136,7 +136,7 @@ export function BettingControls({
         <>
           <button
             type="button"
-            className={`${btnPokerPrimary} min-w-[56px] flex-1 whitespace-nowrap px-1 sm:min-w-[80px] sm:flex-none`}
+            className={`${btnPokerPrimary} min-w-fit flex-1 whitespace-nowrap px-1 sm:min-w-[80px] sm:flex-none`}
             disabled={loading}
             onClick={withChipSound(onCall)}
             aria-keyshortcuts="c"
@@ -147,7 +147,7 @@ export function BettingControls({
           </button>
           <button
             type="button"
-            className={`${btnPokerAccent} min-w-[56px] flex-1 whitespace-nowrap px-1 sm:min-w-[80px] sm:flex-none`}
+            className={`${btnPokerAccent} min-w-fit flex-1 whitespace-nowrap px-1 sm:min-w-[80px] sm:flex-none`}
             disabled={!canRaise}
             onClick={withChipSound(onRaise)}
             aria-keyshortcuts="r"
@@ -171,7 +171,7 @@ export function BettingControls({
         <>
           <button
             type="button"
-            className={`${btnPokerAccent} min-w-[56px] flex-1 whitespace-nowrap px-1 sm:min-w-[80px] sm:flex-none`}
+            className={`${btnPokerAccent} min-w-fit flex-1 whitespace-nowrap px-1 sm:min-w-[80px] sm:flex-none`}
             disabled={!canBet}
             onClick={withChipSound(onBet)}
             aria-keyshortcuts="r"
@@ -181,7 +181,7 @@ export function BettingControls({
           </button>
           <button
             type="button"
-            className={`${btnPokerPrimary} min-w-[56px] flex-1 whitespace-nowrap px-1 sm:min-w-[80px] sm:flex-none`}
+            className={`${btnPokerPrimary} min-w-fit flex-1 whitespace-nowrap px-1 sm:min-w-[80px] sm:flex-none`}
             disabled={loading}
             onClick={onCheck}
             aria-keyshortcuts="k"
@@ -193,7 +193,7 @@ export function BettingControls({
       )}
       <button
         type="button"
-        className={`${btnPokerMuted} min-w-[56px] flex-1 whitespace-nowrap px-1 sm:min-w-[80px] sm:flex-none`}
+        className={`${btnPokerMuted} min-w-fit flex-1 whitespace-nowrap px-1 sm:min-w-[80px] sm:flex-none`}
         disabled={loading}
         onClick={onFold}
         aria-keyshortcuts="f"
@@ -203,7 +203,7 @@ export function BettingControls({
       </button>
       <button
         type="button"
-        className={`${btnPokerAllIn} min-w-[56px] flex-1 whitespace-nowrap px-1 sm:min-w-[80px] sm:flex-none`}
+        className={`${btnPokerAllIn} min-w-fit flex-1 whitespace-nowrap px-1 sm:min-w-[80px] sm:flex-none`}
         disabled={loading}
         onClick={withChipSound(onAllIn)}
         aria-keyshortcuts="a"
