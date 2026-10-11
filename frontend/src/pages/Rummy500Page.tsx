@@ -426,6 +426,32 @@ function Rummy500PageContent() {
           showActionLog={showActionLog}
           hideActionLog={hideActionLog}
         />
+
+        <ActionShortcutsPanel bindings={keyboardActions} data-testid="rummy500-kbd-shortcuts" />
+        <CardNavShortcutsPanel data-testid="rummy500-card-kbd-shortcuts" />
+        {humanPlayer && humanPlayer.cards.length > 0 && (
+          <div className="flex justify-end mb-1 text-xs">
+            <span
+              data-testid="hand-penalty-badge"
+              className={`px-2 py-0.5 rounded-full border border-ds-error font-medium ${badgeErrorColors}`}
+              title={t('handPenaltyHint')}
+            >
+              {t('handPenalty', { points: rummy500HandPenalty(humanPlayer.cards) })}
+              <span className="sr-only"> — {t('handPenaltyHint')}</span>
+            </span>
+          </div>
+        )}
+        <ErrorAlert message={error} onRetry={retry} />
+        <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+        <div>
+          <GameResetButton
+            isGameEnd={!!isGameEnd}
+            onReset={handleManualReset}
+            requestConfirm={requestConfirm}
+            loading={loading}
+            dataTutorial="r5-reset-button"
+          />
+        </div>
       </div>
 
       <GameFooter
@@ -501,20 +527,6 @@ function Rummy500PageContent() {
           </div>
         }
       >
-        <ActionShortcutsPanel bindings={keyboardActions} data-testid="rummy500-kbd-shortcuts" />
-        <CardNavShortcutsPanel data-testid="rummy500-card-kbd-shortcuts" />
-        {humanPlayer && humanPlayer.cards.length > 0 && (
-          <div className="flex justify-end mb-1 text-xs">
-            <span
-              data-testid="hand-penalty-badge"
-              className={`px-2 py-0.5 rounded-full border border-ds-error font-medium ${badgeErrorColors}`}
-              title={t('handPenaltyHint')}
-            >
-              {t('handPenalty', { points: rummy500HandPenalty(humanPlayer.cards) })}
-              <span className="sr-only"> — {t('handPenaltyHint')}</span>
-            </span>
-          </div>
-        )}
         {humanPlayer && (
           <div className="flex flex-wrap gap-1 mb-2" data-tutorial="r5-player-hand">
             {humanPlayer.cards.map((card, idx) => (
@@ -545,20 +557,6 @@ function Rummy500PageContent() {
             {t('meldScorePreview', { score: meldScorePreview })}
           </p>
         )}
-
-        <ErrorAlert message={error} onRetry={retry} />
-
-        <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-        <div>
-          <GameResetButton
-            isGameEnd={!!isGameEnd}
-            onReset={handleManualReset}
-            requestConfirm={requestConfirm}
-            loading={loading}
-            dataTutorial="r5-reset-button"
-          />
-        </div>
       </GameFooter>
     </GamePageShell>
   );

@@ -72,6 +72,18 @@ describe('BoliviaPage', () => {
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
   });
 
+  it('keeps the hand in the footer and places supporting controls in the play area', async () => {
+    renderWithProviders(<BoliviaPage />);
+
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const playArea = screen.getByTestId('sa-play-area');
+    expect(footerContent.querySelector('[data-tutorial="sa-player-hand"]')).toBeInTheDocument();
+    expect(within(playArea).getByTestId('bolivia-kbd-shortcuts')).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('bolivia-kbd-shortcuts')).not.toBeInTheDocument();
+    expect(within(playArea).getByRole('button', { name: 'リセット' })).toBeInTheDocument();
+    expect(within(footerContent).queryByRole('button', { name: 'リセット' })).not.toBeInTheDocument();
+  });
+
   it('calls reset on mount with the default config', async () => {
     renderWithProviders(<BoliviaPage />);
     await waitFor(() =>

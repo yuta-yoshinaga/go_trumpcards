@@ -188,6 +188,21 @@ describe('Rummy500Page', () => {
     expect(within(actions).getByRole('button', { name: /山札から引く/ })).toBeInTheDocument();
   });
 
+  it('keeps the hand in the footer and places its supporting content in the play area', async () => {
+    renderWithProviders(<Rummy500Page />);
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const playArea = footerContent.parentElement?.parentElement?.querySelector(
+      'div[class~="flex-1"][class~="overflow-y-auto"]',
+    );
+
+    expect(footerContent.querySelector('[data-tutorial="r5-player-hand"]')).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('rummy500-kbd-shortcuts')).not.toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('hand-penalty-badge')).not.toBeInTheDocument();
+    expect(playArea).not.toBeNull();
+    expect(within(playArea as HTMLElement).getByTestId('rummy500-kbd-shortcuts')).toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('hand-penalty-badge')).toBeInTheDocument();
+  });
+
   it('uses card digits for discard draws and an action key for stock draws', async () => {
     renderWithProviders(<Rummy500Page />);
     await screen.findByRole('button', { name: /山札から引く/ });

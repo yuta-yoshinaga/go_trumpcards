@@ -160,6 +160,19 @@ describe('TrenteEtQuarantePage', () => {
     ).not.toBeInTheDocument();
   });
 
+  it('keeps bet choices and reference information in the play area', async () => {
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<TrenteEtQuarantePage />);
+    await screen.findByTestId('teq-deal-button');
+
+    const footer = screen.getByTestId('game-footer-content');
+    const playArea = screen.getByTestId('card-area');
+    expect(within(footer).queryByTestId(`teq-bet-${TrenteEtQuaranteBetType.NOIR}`)).not.toBeInTheDocument();
+    expect(within(playArea).getByTestId(`teq-bet-${TrenteEtQuaranteBetType.NOIR}`)).toBeInTheDocument();
+    expect(within(footer).queryByTestId('teq-refait-explainer')).not.toBeInTheDocument();
+    expect(within(playArea).getByTestId('teq-refait-explainer')).toBeInTheDocument();
+  });
+
   it.each([
     ['bet', betState],
     ['result', endState],
