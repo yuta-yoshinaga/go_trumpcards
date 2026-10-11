@@ -410,7 +410,7 @@ describe('RazzPage', () => {
     mockExec.mockResolvedValue(thirdStreetWithBetState);
     renderWithProviders(<RazzPage />);
     await waitFor(() => expect(screen.getByText('CPU行動:')).toBeInTheDocument());
-    expect(screen.getByText(/Player 1: ベット/)).toBeInTheDocument();
+    expect(screen.getByText(/CPU 1: ベット/)).toBeInTheDocument();
   });
 
   // ---- round results ----

@@ -29,11 +29,11 @@ describe('findPlayerName', () => {
   });
 
   it('returns fallback for out-of-range index', () => {
-    expect(findPlayerName(players, 5)).toBe('Player 5');
-    expect(findPlayerName(players, -1)).toBe('Player -1');
+    expect(findPlayerName(players, 5)).toBe('プレイヤー 5');
+    expect(findPlayerName(players, -1)).toBe('プレイヤー -1');
   });
 
   it('returns fallback for empty players array', () => {
-    expect(findPlayerName([], 0)).toBe('Player 0');
+    expect(findPlayerName([], 0)).toBe('プレイヤー 0');
   });
 });

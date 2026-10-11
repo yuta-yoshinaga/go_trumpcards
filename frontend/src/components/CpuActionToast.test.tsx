@@ -2,7 +2,9 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CpuActionToast } from './CpuActionToast';
 
-const mockT = vi.fn((key: string) => key);
+const mockT = vi.fn((key: string, options?: { id?: number; idx?: number }) =>
+  key === 'player.cpu' ? `CPU ${options?.id}` : key === 'player.player' ? `Player ${options?.idx}` : key,
+);
 vi.mock('react-i18next', async () => ({
   ...(await vi.importActual('react-i18next')),
   useTranslation: () => ({ t: mockT }),
@@ -34,7 +36,10 @@ describe('CpuActionToast', () => {
     render(<CpuActionToast actions={actions} />);
     expect(screen.getByTestId('cpu-action-announcement')).toHaveAttribute('aria-live', 'polite');
     expect(screen.getByTestId('cpu-action-toast')).toBeInTheDocument();
-    expect(mockT).toHaveBeenCalledWith('player.player', { idx: 1 });
+    expect(screen.getByTestId('cpu-action-toast-anchor')).toContainElement(screen.getByTestId('cpu-action-toast'));
+    expect(screen.getByTestId('cpu-action-toast')).toHaveTextContent('CPU 1:');
+    expect(screen.getByTestId('cpu-action-toast')).not.toHaveTextContent('Player');
+    expect(mockT).toHaveBeenCalledWith('player.cpu', { id: 1 });
   });
 
   it('auto-dismisses after the long duration (6s)', () => {

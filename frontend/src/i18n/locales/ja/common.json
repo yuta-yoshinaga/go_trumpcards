@@ -833,7 +833,7 @@
   "player": {
     "you": "あなた",
     "cpu": "CPU {{id}}",
-    "player": "Player {{idx}}"
+    "player": "プレイヤー {{idx}}"
   },
   "action": {
     "fold": "フォールド",

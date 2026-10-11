@@ -420,7 +420,7 @@ describe('FollowTheQueenPage', () => {
     mockExec.mockResolvedValue(thirdStreetWithBetState);
     renderWithProviders(<FollowTheQueenPage />);
     await waitFor(() => expect(screen.getByText('CPU行動:')).toBeInTheDocument());
-    expect(screen.getByText(/Player 1: ベット/)).toBeInTheDocument();
+    expect(screen.getByText(/CPU 1: ベット/)).toBeInTheDocument();
   });
 
   // ---- round results ----
