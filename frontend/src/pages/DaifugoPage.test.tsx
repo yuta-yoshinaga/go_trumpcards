@@ -130,7 +130,7 @@ describe('DaifugoPage', () => {
     expect(within(actions).getByRole('button', { name: 'パス' })).toBeInTheDocument();
   });
 
-  it('keeps phase choices and page controls in the play area while the hand stays in the footer', async () => {
+  it('keeps the clear-selection control in the play area while the hand stays in the footer', async () => {
     mockExec.mockResolvedValue({ ...humanTurnState, pendingAction: 'queenBomber' });
     const { container } = renderWithProviders(<DaifugoPage />);
     const footer = await screen.findByTestId('game-footer-content');

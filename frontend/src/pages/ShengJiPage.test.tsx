@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { shengjiApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -81,6 +81,60 @@ describe('ShengJiPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockExec.mockResolvedValue(makeState());
+  });
+
+  it('stacks mobile hand rows', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      renderWithProviders(<ShengJiPage />);
+      const hand = await screen.findByTestId('game-footer-content');
+      await waitFor(() => expect(hand.querySelectorAll('[data-testid="hand-row"]').length).toBeGreaterThanOrEqual(2));
+      const rows = hand.querySelectorAll<HTMLElement>('[data-testid="hand-row"]');
+      for (const row of Array.from(rows).slice(1)) expect(row.style.marginTop).toMatch(/^-/);
+      const tutorialHand = hand.querySelector('[data-tutorial="shengji-hand"]');
+      expect(tutorialHand).not.toBeNull();
+      expect(tutorialHand).toHaveTextContent('あなたの手札');
+      expect(tutorialHand?.querySelector('[data-testid="hand-row"]')).not.toBeNull();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it('toggles mobile card selection and ignores taps when cards cannot be selected', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      renderWithProviders(<ShengJiPage />);
+      const selectable = await screen.findByRole('button', { name: '♠ 2' });
+      fireEvent.click(selectable);
+      expect(selectable).toHaveAttribute('aria-pressed', 'true');
+      cleanup();
+
+      mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1 }));
+      renderWithProviders(<ShengJiPage />);
+      const unavailable = await screen.findByRole('button', { name: '♠ 2' });
+      fireEvent.click(unavailable);
+      expect(unavailable).toHaveAttribute('aria-pressed', 'false');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it('marks mobile hand cards aria-disabled when they cannot be selected', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1 }));
+      renderWithProviders(<ShengJiPage />);
+      const unavailable = await screen.findByRole('button', { name: '♠ 2' });
+      expect(unavailable).toHaveAttribute('aria-disabled', 'true');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
   });
 
   it('resets on mount', async () => {
