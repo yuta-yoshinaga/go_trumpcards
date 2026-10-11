@@ -712,6 +712,74 @@ describe('MarriagePage', () => {
     expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
   });
 
+  it('uses stacked MobileHandGrid rows on mobile and preserves card selection', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      players: [
+        player({
+          cards: Array.from({ length: 22 }, (_, index) => ({ design: 'SPADE' as const, value: (index % 13) + 1 })),
+        }),
+        drawPhaseState.players[1],
+      ],
+    });
+    renderWithProviders(<MarriagePage />);
+
+    const rows = await screen.findAllByTestId('hand-row');
+    expect(rows.length).toBeGreaterThanOrEqual(2);
+    expect(Number.parseFloat((rows[1] as HTMLElement).style.marginTop)).toBeLessThan(0);
+    const card = screen.getAllByRole('button', { name: '♠ A' })[0];
+    expect(card).toBeDefined();
+    if (!card) return;
+    expect(card).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(card);
+    expect(card).toHaveAttribute('aria-pressed', 'true');
+
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
+  it('announces wild cards in the mobile hand', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      players: [player({ cards: [{ design: 'DIAMOND', value: 5 }] }), drawPhaseState.players[1]],
+    });
+    renderWithProviders(<MarriagePage />);
+
+    try {
+      const wildCard = await screen.findByAltText('♦ 5');
+      const wildButton = wildCard.closest('button');
+      expect(wildButton?.getAttribute('aria-label')).toContain('WILD');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it('announces meld membership once in the mobile hand', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue(declareValidState);
+    renderWithProviders(<MarriagePage />);
+
+    try {
+      fireEvent.click((await screen.findByAltText('♣ 2')).closest('button') as HTMLButtonElement);
+      const meldCard = await screen.findByAltText('♠ 3');
+      await waitFor(() =>
+        expect(meldCard.closest('button')).toHaveAttribute('aria-label', expect.stringContaining('の一部')),
+      );
+      const meldName = meldCard.closest('button')?.getAttribute('aria-label') ?? '';
+      expect(meldName.match(/の一部/g)).toHaveLength(1);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
   it('card buttons have aria-label with card name', async () => {
     renderWithProviders(<MarriagePage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
