@@ -66,6 +66,33 @@ beforeEach(() => {
 });
 
 describe('TarneebPage', () => {
+  it('stacks mobile hand rows for the human player', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      const state = makeState({
+        players: [
+          {
+            ...player(0, true, 0, 3, 4),
+            cards: Array.from({ length: 13 }, (_, i) => card('SPADE', (i % 13) + 1)),
+            cardCount: 13,
+          },
+          ...makeState().players.slice(1),
+        ],
+      });
+      mockExec.mockResolvedValue(state);
+      renderWithProviders(<TarneebPage />);
+      await screen.findByTestId('phase-indicator');
+      const hand = document.querySelector<HTMLElement>('[data-tutorial="tn-player-hand"]');
+      await waitFor(() => expect(hand?.querySelectorAll('[data-testid="hand-row"]').length).toBeGreaterThanOrEqual(2));
+      const rows = hand?.querySelectorAll<HTMLElement>('[data-testid="hand-row"]') ?? [];
+      for (const row of Array.from(rows).slice(1)) expect(row.style.marginTop).toMatch(/^-/);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
   it('shows the declared trump symbol and translated suit name in Japanese and English', async () => {
     const previousLanguage = i18n.language;
     mockExec.mockResolvedValue(makeState({ phase: TarneebPhase.PLAY, trumpSuit: 1 }));

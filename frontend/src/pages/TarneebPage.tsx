@@ -524,6 +524,7 @@ function TarneebPageContent() {
                 toggleCard={toggleCard}
                 cardWidth={cardWidth}
                 isMobile={isMobile}
+                stackRows
                 dataTutorialPrefix="tn"
                 validIndices={isHumanTurn ? state.validPlayIndices : undefined}
                 restrictedTooltip={t('restrictedCard')}
