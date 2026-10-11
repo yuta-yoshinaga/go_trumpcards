@@ -249,6 +249,10 @@ describe('ShengJiPage', () => {
       await waitFor(() =>
         expect(screen.getByTestId('shengji-declare-rules')).toHaveTextContent('強い宣言だけが上書き'),
       );
+      const footerActions = screen.getByTestId('game-footer-actions');
+      const playArea = footerActions.closest('footer')?.previousElementSibling;
+      expect(within(footerActions).queryByTestId('shengji-declare-rules')).not.toBeInTheDocument();
+      expect(within(playArea as HTMLElement).getByTestId('shengji-declare-rules')).toBeInTheDocument();
     });
   });
 
@@ -279,6 +283,10 @@ describe('ShengJiPage', () => {
       await waitFor(() =>
         expect(screen.getByTestId('shengji-kitty-rules')).toHaveTextContent('得点札と切札は埋めないでください'),
       );
+      const footerActions = screen.getByTestId('game-footer-actions');
+      const playArea = footerActions.closest('footer')?.previousElementSibling;
+      expect(within(footerActions).queryByTestId('shengji-kitty-rules')).not.toBeInTheDocument();
+      expect(within(playArea as HTMLElement).getByTestId('shengji-kitty-rules')).toBeInTheDocument();
     });
   });
 
