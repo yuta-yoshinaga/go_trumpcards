@@ -77,11 +77,7 @@ export interface PlayerHandSectionProps {
    * layouts.
    */
   cardBadgeFor?: (idx: number) => { glyph: string; title: string } | null;
-  /**
-   * Overlap the rows of a hand that needs two or more rows: each later row is pulled up over the
-   * row above, leaving the top 52px of those cards (rank corner plus a 44px tap target) visible.
-   * Off by default; for pages whose hand would otherwise outgrow the mobile footer (#11655).
-   */
+  /** Passed to `MobileHandGrid`; see `MobileHandGridProps.stackRows`. */
   stackRows?: boolean;
 }
 
