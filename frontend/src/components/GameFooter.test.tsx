@@ -126,4 +126,27 @@ describe('GameFooter', () => {
     expect(screen.getByTestId('game-footer-content')).toContainElement(screen.getByText('手札'));
     expect(screen.queryByTestId('game-footer-actions')).not.toBeInTheDocument();
   });
+
+  it.each([false, true])('uses the default cap when tall is omitted (actions: %s)', (withActions) => {
+    render(
+      <GameFooter actions={withActions ? <button type="button">進む</button> : undefined}>
+        <span>手札</span>
+      </GameFooter>,
+    );
+    const footer = screen.getByRole('contentinfo');
+    expect(footer.className).toContain('max-h-[45vh]');
+    expect(footer.className).not.toContain('max-h-[60vh]');
+  });
+
+  it.each([false, true])('uses the tall cap and keeps the sm cap (actions: %s)', (withActions) => {
+    render(
+      <GameFooter tall actions={withActions ? <button type="button">進む</button> : undefined}>
+        <span>手札</span>
+      </GameFooter>,
+    );
+    const footer = screen.getByRole('contentinfo');
+    expect(footer.className).toContain('max-h-[60vh]');
+    expect(footer.className).not.toContain('max-h-[45vh]');
+    if (withActions) expect(footer.className).toContain('sm:max-h-[50vh]');
+  });
 });
