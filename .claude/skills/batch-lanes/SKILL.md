@@ -46,12 +46,12 @@ The flows require `dele`, `gh`, `jq`, `flock`, `bun`, `go`, and `golangci-lint`,
 - `rc.sh` also records `WARN WORKER_BUILD`, `WARN UNUSED_NEW_SYMBOL`, and `WARN PATCH_BRANCH_GAP`; set `ALLOW_WORKER_BUILD=1`, `ALLOW_UNUSED="name ..."`, or `ALLOW_PATCH_GAPS=1` to allow known exceptions.
 - `rc.sh` also reruns the Go test functions the change adds or edits (`repeattests.sh`, `-count=50`) and records `WARN DEAL_DEPENDENT` when one fails, which usually means it depends on the deal. Set `REPEAT_TESTS_COUNT` to change the count, or `0` to skip.
 - `rcg.sh`: serialize receipt gates with `flock` and write a fresh slot result.
-- `ship.sh`: commit a gated issue worktree and create a PR. The 4th argument is either summary lines (wrapped in `## Summary` / `Closes` / `## Test plan` / footer) or a complete body with its own `## ` headings, which is used as written. In that case only a missing `Closes #n` and a missing footer are added (`prbody.sh`).
+- `ship.sh`: commit a gated issue worktree and create a PR. It refuses files changed on `develop` since the lane branched; set `ALLOW_STALE_BASE=1` to bypass. The 4th argument is either summary lines (wrapped in `## Summary` / `Closes` / `## Test plan` / footer) or a complete body with its own `## ` headings, which is used as written. In that case only a missing `Closes #n` and a missing footer are added (`prbody.sh`).
 - `fixpush.sh`: commit and push a gated fix and comment on its PR.
 - `sweep.sh`: land eligible reviewed batch PRs and report blocked ones.
 - `sweep.sh` reports `UNSWEPT` for open PRs outside `BATCH_BRANCH_RE`; set `BATCH_UNSWEPT_IGNORE="<pr ...>"` to ignore intentional non-batch PRs.
 - `triage.sh`: inspect automated review feedback and mark clean reviews as read.
-- `land.sh`: run the merge gate and squash-merge a PR.
+- `land.sh`: require the PR to be listed in `reviewed.txt`, require a passing `codecov/patch` result when the PR changes production Go or TypeScript, then run the merge gate and squash-merge. Missing or pending coverage exits 3 to wait. `BATCH_SKIP_CODECOV=1` bypasses the coverage check; unreviewed PRs are never bypassed.
 - `waitfor.sh`: wait for a shell condition up to a timeout.
 - `waitdone.sh`: wait for a slot's `rcg` result written after its latest start.
 - `drain.sh`: repeatedly sweep the selected batch until it is clear or blocked.

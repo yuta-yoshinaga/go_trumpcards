@@ -15,6 +15,20 @@ if [[ "${CLAIM_SKIP:-}" != 1 ]] && ! "$B/claimcheck.sh" "$PWD" "$summ"; then
 fi
 br=$(git branch --show-current)
 mapfile -d '' -t files < <({ git diff --name-only -z HEAD; git ls-files -o --exclude-standard -z; } | sort -zu)
+if [[ "${ALLOW_STALE_BASE:-}" != 1 ]]; then
+  if ! git fetch -q origin develop; then
+    echo "REFUSED: could not fetch origin/develop to verify this lane's base" >&2
+    exit 1
+  fi
+  base=$(git merge-base HEAD origin/develop) || { echo "REFUSED: could not find merge base with origin/develop" >&2; exit 1; }
+  upstream=$(git diff --name-only "$base" origin/develop)
+  overlap=$(comm -12 <(printf '%s\n' "${files[@]}" | LC_ALL=C sort -u) <(printf '%s\n' "$upstream" | LC_ALL=C sort -u))
+  if [[ -n "$overlap" ]]; then
+    printf '%s\n' "$overlap" >&2
+    echo "REFUSED: develop changed these files after this lane branched; merge origin/develop into the lane first" >&2
+    exit 1
+  fi
+fi
 if ((${#files[@]})); then git add -- "${files[@]}"; fi
 metadata=()
 [[ -n "${BATCH_DELEGATED_TO:-codex (dele -k edit)}" ]] && metadata+=("Delegated-To: ${BATCH_DELEGATED_TO:-codex (dele -k edit)}")
