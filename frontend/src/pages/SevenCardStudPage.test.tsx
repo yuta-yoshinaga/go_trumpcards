@@ -175,6 +175,35 @@ beforeEach(() => {
 });
 
 describe('SevenCardStudPage', () => {
+  it('groups the human door and hole cards side by side', async () => {
+    mockExec.mockResolvedValueOnce(thirdStreetState);
+    const { container } = renderWithProviders(<SevenCardStudPage />);
+
+    const doorHeadings = await screen.findAllByText('ドアカード');
+    const playerHand = doorHeadings
+      .find((heading) => heading.closest('[data-tutorial="scs-player-hand"]'))
+      ?.closest('[data-tutorial="scs-player-hand"]') as HTMLElement;
+    const doorHeading = within(playerHand).getByText('ドアカード');
+    const holeHeading = within(playerHand).getByText('ホールカード');
+    const ancestors = (element: HTMLElement) => {
+      const result: HTMLElement[] = [];
+      let current: HTMLElement | null = element.parentElement;
+      while (current) {
+        result.push(current);
+        current = current.parentElement;
+      }
+      return result;
+    };
+    const holeAncestors = new Set(ancestors(holeHeading));
+    const sharedFlexWrap = ancestors(doorHeading).find(
+      (ancestor) => holeAncestors.has(ancestor) && ancestor.classList.contains('flex-wrap'),
+    );
+
+    expect(container).toContainElement(doorHeading);
+    expect(sharedFlexWrap).toBeDefined();
+    expect(doorHeading.parentElement).not.toBe(holeHeading.parentElement);
+  });
+
   it.each([
     ['Chicago', chicagoApi, ChicagoPage, 'isChicago'],
     ['Hi-Lo', sevenCardStudHiLoApi, SevenCardStudHiLoPage, 'isHiLo'],

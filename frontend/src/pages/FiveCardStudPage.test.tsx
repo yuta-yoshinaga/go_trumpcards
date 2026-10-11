@@ -288,6 +288,31 @@ describe('FiveCardStudPage', () => {
     expect(screen.queryByLabelText('♠ A、役の構成札')).not.toBeInTheDocument();
   });
 
+  it('lays out the human door and hole card groups in a shared wrapping row', async () => {
+    mockExec.mockResolvedValue(secondStreetState);
+    renderWithProviders(<FiveCardStudPage />);
+    await screen.findByTestId('latest-door-human');
+    const humanHand = document.querySelector<HTMLElement>('[data-tutorial="fcs-player-hand"]');
+    expect(humanHand).not.toBeNull();
+    const doorHeading = within(humanHand as HTMLElement).getByText('ドアカード');
+    const holeHeading = within(humanHand as HTMLElement).getByText('ホールカード');
+    const ancestors = (element: HTMLElement) => {
+      const result: HTMLElement[] = [];
+      let current: HTMLElement | null = element;
+      while (current) {
+        result.push(current);
+        current = current.parentElement;
+      }
+      return result;
+    };
+    const holeAncestors = new Set(ancestors(holeHeading));
+    const sharedWrapper = ancestors(doorHeading).find((ancestor) => holeAncestors.has(ancestor));
+
+    expect(sharedWrapper).toBeDefined();
+    expect(sharedWrapper).toHaveClass('flex', 'flex-wrap');
+    expect(doorHeading.parentElement).not.toBe(holeHeading.parentElement);
+  });
+
   it('highlights the latest door card for the human and each CPU', async () => {
     mockExec.mockResolvedValue(secondStreetState);
     renderWithProviders(<FiveCardStudPage />);

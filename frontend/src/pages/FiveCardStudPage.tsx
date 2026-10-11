@@ -641,36 +641,44 @@ export function FiveCardStudPageContent({ gameKey }: { gameKey: FcsPageGameKey }
                     </span>
                   )}
                 </div>
-                {/* Door cards */}
-                <div className="text-ds-text-muted text-xs mb-0.5">{t('doorCards')}</div>
-                <div className="flex flex-wrap gap-1.5 mb-1">
-                  {humanPlayer.doorCards?.length
-                    ? humanPlayer.doorCards.map((card, i, arr) =>
-                        i === arr.length - 1 ? (
-                          <span
-                            key={`${card.design}-${card.value}`}
-                            className="inline-block rounded ring-2 ring-ds-accent motion-safe:animate-pulse"
-                            data-testid="latest-door-human"
-                            role="img"
-                            aria-label={t('latestDoorCard', { card: cardAlt(card) })}
-                          >
-                            {renderPlayerCard(humanPlayer, card)}
-                          </span>
-                        ) : (
-                          <span key={`${card.design}-${card.value}`}>{renderPlayerCard(humanPlayer, card)}</span>
-                        ),
-                      )
-                    : !humanPlayer.folded &&
-                      Array.from({ length: doorCount }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
-                </div>
-                {/* Hole card */}
-                <div className="text-ds-text-muted text-xs mb-0.5">{t('holeCards')}</div>
-                <div className="flex flex-wrap gap-1.5 mb-2">
-                  {humanPlayer.holeCards?.length
-                    ? humanPlayer.holeCards.map((card) => (
-                        <span key={`${card.design}-${card.value}`}>{renderPlayerCard(humanPlayer, card)}</span>
-                      ))
-                    : !humanPlayer.folded && <AnimatedCardBack width={cardWidth} />}
+                <div className="flex flex-wrap items-start gap-x-3 mb-2">
+                  {/* Door cards */}
+                  <div>
+                    <div className="text-ds-text-muted text-xs mb-0.5">{t('doorCards')}</div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {humanPlayer.doorCards?.length
+                        ? humanPlayer.doorCards.map((card, i, arr) =>
+                            i === arr.length - 1 ? (
+                              <span
+                                key={`${card.design}-${card.value}`}
+                                className="inline-block rounded ring-2 ring-ds-accent motion-safe:animate-pulse"
+                                data-testid="latest-door-human"
+                                role="img"
+                                aria-label={t('latestDoorCard', { card: cardAlt(card) })}
+                              >
+                                {renderPlayerCard(humanPlayer, card)}
+                              </span>
+                            ) : (
+                              <span key={`${card.design}-${card.value}`}>{renderPlayerCard(humanPlayer, card)}</span>
+                            ),
+                          )
+                        : !humanPlayer.folded &&
+                          Array.from({ length: doorCount }).map((_, i) => (
+                            <AnimatedCardBack key={i} width={cardWidth} />
+                          ))}
+                    </div>
+                  </div>
+                  {/* Hole card */}
+                  <div>
+                    <div className="text-ds-text-muted text-xs mb-0.5">{t('holeCards')}</div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {humanPlayer.holeCards?.length
+                        ? humanPlayer.holeCards.map((card) => (
+                            <span key={`${card.design}-${card.value}`}>{renderPlayerCard(humanPlayer, card)}</span>
+                          ))
+                        : !humanPlayer.folded && <AnimatedCardBack width={cardWidth} />}
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
