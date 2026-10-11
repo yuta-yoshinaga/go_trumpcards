@@ -1,6 +1,7 @@
-import { render, screen } from '@testing-library/react';
+import { cleanup, render, screen } from '@testing-library/react';
 import i18n from 'i18next';
 import { describe, expect, it } from 'vitest';
+import jaCommon from '../i18n/locales/ja/common.json';
 import { GameMessageBox } from './GameMessageBox';
 
 describe('GameMessageBox', () => {
@@ -186,5 +187,24 @@ describe('GameMessageBox', () => {
       expect(box.textContent).not.toContain('農民');
     }
     await i18n.changeLanguage('ja');
+  });
+
+  // Guards the hard-coded exclusion list against drift: a new *.playing code whose text is an
+  // instruction (not the bare status プレイ中) must stay visible, so it has to be listed there.
+  it('hides exactly the playing codes whose ja text is the bare status プレイ中', () => {
+    const flatten = (node: unknown, prefix: string): [string, string][] =>
+      typeof node === 'string'
+        ? [[prefix, node]]
+        : Object.entries(node as Record<string, unknown>).flatMap(([k, v]) =>
+            flatten(v, prefix ? `${prefix}.${k}` : k),
+          );
+    const playingCodes = flatten(jaCommon.messageCode, '').filter(([code]) => /^(?:[a-z0-9]+\.)?playing$/.test(code));
+    expect(playingCodes.length).toBeGreaterThan(0);
+    for (const [code, text] of playingCodes) {
+      render(<GameMessageBox message={text} messageCode={code} testId="box" />);
+      if (text === 'プレイ中') expect(screen.queryByTestId('box'), code).toBeNull();
+      else expect(screen.getByTestId('box'), code).toHaveTextContent(text);
+      cleanup();
+    }
   });
 });
