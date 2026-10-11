@@ -372,6 +372,57 @@ function ContinentalRummyPageContent() {
             )}
 
             {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
+
+            <ErrorAlert message={error} onRetry={retry} />
+            <SettingsPanel
+              title={tc('settings.title')}
+              groups={[
+                {
+                  items: [
+                    {
+                      type: 'select',
+                      id: 'continentalrummy-cpuDifficulty',
+                      label: t('settings.cpuDifficulty'),
+                      value: config.cpuDifficulty,
+                      options: CONTINENTAL_RUMMY_DIFFICULTY_OPTIONS.map((value) => ({
+                        value,
+                        label: t(`settings.difficulty.${value}`),
+                      })),
+                      onSelect: (value) => handleConfigChange('cpuDifficulty', value),
+                      testId: 'continentalrummy-cpuDifficulty',
+                    },
+                    {
+                      type: 'select',
+                      id: 'continentalrummy-totalRounds',
+                      label: t('settings.totalRounds'),
+                      value: config.totalRounds,
+                      options: Array.from(
+                        { length: CONTINENTAL_RUMMY_MAX_ROUNDS - CONTINENTAL_RUMMY_MIN_ROUNDS + 1 },
+                        (_, index) => index + CONTINENTAL_RUMMY_MIN_ROUNDS,
+                      ).map((value) => ({ value, label: String(value) })),
+                      onSelect: (value) => handleConfigChange('totalRounds', value),
+                      testId: 'continentalrummy-totalRounds',
+                    },
+                    hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
+                  ],
+                },
+              ]}
+            />
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            <div className="flex flex-col items-center gap-2 pb-2">
+              <div className="flex gap-2">
+                <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
+                  {tc('actionLog.view')}
+                </button>
+                <GameResetButton
+                  isGameEnd={gameOver}
+                  onReset={handleResetWithConfig}
+                  requestConfirm={requestConfirm}
+                  loading={loading}
+                />
+              </div>
+            </div>
           </div>
 
           <GameFooter
@@ -466,43 +517,6 @@ function ContinentalRummyPageContent() {
               </div>
             }
           >
-            <ErrorAlert message={error} onRetry={retry} />
-            <SettingsPanel
-              title={tc('settings.title')}
-              groups={[
-                {
-                  items: [
-                    {
-                      type: 'select',
-                      id: 'continentalrummy-cpuDifficulty',
-                      label: t('settings.cpuDifficulty'),
-                      value: config.cpuDifficulty,
-                      options: CONTINENTAL_RUMMY_DIFFICULTY_OPTIONS.map((value) => ({
-                        value,
-                        label: t(`settings.difficulty.${value}`),
-                      })),
-                      onSelect: (value) => handleConfigChange('cpuDifficulty', value),
-                      testId: 'continentalrummy-cpuDifficulty',
-                    },
-                    {
-                      type: 'select',
-                      id: 'continentalrummy-totalRounds',
-                      label: t('settings.totalRounds'),
-                      value: config.totalRounds,
-                      options: Array.from(
-                        { length: CONTINENTAL_RUMMY_MAX_ROUNDS - CONTINENTAL_RUMMY_MIN_ROUNDS + 1 },
-                        (_, index) => index + CONTINENTAL_RUMMY_MIN_ROUNDS,
-                      ).map((value) => ({ value, label: String(value) })),
-                      onSelect: (value) => handleConfigChange('totalRounds', value),
-                      testId: 'continentalrummy-totalRounds',
-                    },
-                    hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
-                  ],
-                },
-              ]}
-            />
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
             {me && (
               <PlayerHandSection
                 humanPlayer={me}
@@ -525,20 +539,6 @@ function ContinentalRummyPageContent() {
                 restrictedTooltip={t('restrictedTooltip')}
               />
             )}
-
-            <div className="flex flex-col items-center gap-2 pb-2">
-              <div className="flex gap-2">
-                <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
-                  {tc('actionLog.view')}
-                </button>
-                <GameResetButton
-                  isGameEnd={gameOver}
-                  onReset={handleResetWithConfig}
-                  requestConfirm={requestConfirm}
-                  loading={loading}
-                />
-              </div>
-            </div>
           </GameFooter>
         </>
       )}

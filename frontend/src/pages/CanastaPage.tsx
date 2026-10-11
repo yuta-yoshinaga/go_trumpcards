@@ -465,6 +465,15 @@ function CanastaPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+
+            <ErrorAlert message={error} onRetry={retry} />
+            <GameResetButton
+              isGameEnd={isGameEnd}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+            />
+            <CardNavShortcutsPanel data-testid="canasta-kbd-shortcuts" />
           </div>
 
           <GameFooter
@@ -595,14 +604,6 @@ function CanastaPageContent() {
                 ))}
               </div>
             )}
-            <ErrorAlert message={error} onRetry={retry} />
-            <GameResetButton
-              isGameEnd={isGameEnd}
-              onReset={handleManualReset}
-              requestConfirm={requestConfirm}
-              loading={loading}
-            />
-            <CardNavShortcutsPanel data-testid="canasta-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

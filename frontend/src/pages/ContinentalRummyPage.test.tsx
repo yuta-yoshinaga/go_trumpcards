@@ -129,6 +129,18 @@ describe('ContinentalRummyPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('keeps only the hand in the footer content and places settings and utility controls in the play area', async () => {
+    renderWithProviders(<ContinentalRummyPage />);
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const playArea = screen.getByTestId('card-area');
+
+    expect(footerContent.querySelector('[data-tutorial="continentalrummy-player-hand"]')).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('continentalrummy-cpuDifficulty')).not.toBeInTheDocument();
+    expect(within(footerContent).queryByRole('button', { name: '棋譜を見る' })).not.toBeInTheDocument();
+    expect(within(playArea).getByTestId('continentalrummy-cpuDifficulty')).toBeInTheDocument();
+    expect(within(playArea).getByRole('button', { name: '棋譜を見る' })).toBeInTheDocument();
+  });
+
   // **上がれる形は常に見えていること。** 5+5+5 がそこに無いのが肝。
   it('shows the legal layouts and never advertises 5+5+5', async () => {
     renderWithProviders(<ContinentalRummyPage />);
