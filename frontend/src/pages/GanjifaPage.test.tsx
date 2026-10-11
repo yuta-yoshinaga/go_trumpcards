@@ -72,6 +72,25 @@ describe('GanjifaPage', () => {
     expect(await screen.findByRole('button', { name: '棋譜を見る' })).toBeInTheDocument();
   });
 
+  it('keeps only the hand in the footer and places live hints and reset in the play area', async () => {
+    renderWithProviders(<GanjifaPage />);
+
+    const footer = await screen.findByTestId('game-footer-content');
+    const playArea = document.querySelector<HTMLElement>('[data-tutorial="ganjifa-info"]')?.closest('div.flex-1');
+    if (!playArea) throw new Error('Ganjifa play area not found');
+    const hintLive = screen.getByTestId('ganjifa-hint-live');
+    const info = document.querySelector<HTMLElement>('[data-tutorial="ganjifa-info"]');
+    if (!info) throw new Error('Ganjifa info not found');
+    const reset = document.querySelector<HTMLElement>('[data-tutorial="ganjifa-reset-button"]');
+
+    expect(footer).toContainElement(document.querySelector<HTMLElement>('[data-tutorial="ganjifa-player-hand"]'));
+    expect(footer).not.toContainElement(hintLive);
+    expect(footer).not.toContainElement(reset);
+    expect(playArea).toContainElement(hintLive);
+    expect(playArea).toContainElement(reset);
+    expect(info.compareDocumentPosition(hintLive) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   // The rank direction is the only thing a player cannot infer from the cards,
   // so the readout has to change with the trump group, not just exist.
   it('states that higher numbers win when trump is a strong suit', async () => {

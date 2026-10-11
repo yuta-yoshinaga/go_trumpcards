@@ -311,6 +311,35 @@ function BinokelPageContent() {
           />
 
           <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
+            {isBidTurn && (
+              <div className="mb-2 flex flex-col items-start gap-2">
+                <fieldset
+                  className="grid grid-cols-4 sm:grid-cols-6 max-h-36 overflow-y-auto gap-1 border-0 p-1 bg-black/20 rounded"
+                  aria-label={t('bidSelectLabel')}
+                >
+                  {bidOptions.map((n) => (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => setBidAmount(n)}
+                      disabled={loading}
+                      aria-pressed={bidAmount === n}
+                      data-testid={`bid-option-${n}`}
+                      className={`h-9 px-2 rounded-lg font-medium text-sm transition-all ${
+                        bidAmount === n
+                          ? 'bg-ds-accent text-white ring-2 ring-ds-accent'
+                          : 'bg-white/20 text-ds-text-primary hover:bg-white/30'
+                      }`}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                </fieldset>
+                <span className="sr-only" role="status" aria-live="polite" data-testid="bn-bid-selected">
+                  {t('bidSelected', { n: bidAmount })}
+                </span>
+              </div>
+            )}
             {/* Game Info */}
             <div className="text-ds-text-primary text-center mb-2 text-sm" data-tutorial="bn-game-info">
               <span className="mr-4">
@@ -548,6 +577,57 @@ function BinokelPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+
+            <ErrorAlert message={error ?? hintError} onRetry={retry} />
+
+            {/* Server hint result */}
+            <div data-testid="binokel-hint-live" role="status" aria-live="polite">
+              {hint?.reason && (
+                <div
+                  className="text-ds-warning text-sm mb-2 flex items-center gap-2 flex-wrap"
+                  data-testid="bn-server-hint"
+                >
+                  <span>
+                    {hint.pass
+                      ? t('serverHintPass')
+                      : hint.bidAmount !== undefined
+                        ? t('serverHintBid', { n: hint.bidAmount })
+                        : hint.suit !== undefined
+                          ? t('serverHintTrump', { suit: SUIT_LABELS[hint.suit] ?? '-' })
+                          : hint.cardIndex !== undefined
+                            ? t('serverHintPlay', {
+                                card: humanPlayer?.cards[hint.cardIndex]
+                                  ? cardAlt(humanPlayer.cards[hint.cardIndex])
+                                  : '-',
+                                idx: hint.cardIndex,
+                              })
+                            : ''}{' '}
+                    ({t(`hintReason.${hint.reason}`)})
+                  </span>
+                  {isBidTurn && hint.bidAmount !== undefined && (
+                    <button
+                      type="button"
+                      className={btnOutline}
+                      data-testid="bn-hint-apply-bid"
+                      onClick={() => hint.bidAmount !== undefined && setBidAmount(hint.bidAmount)}
+                      disabled={loading}
+                    >
+                      {t('applyBid')}
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end">
+              <GameResetButton
+                isGameEnd={!!isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="bn-reset-button"
+              />
+            </div>
           </div>
 
           <GameFooter
@@ -645,35 +725,6 @@ function BinokelPageContent() {
               </div>
             }
           >
-            {isBidTurn && (
-              <div className="mb-2 flex flex-col items-start gap-2">
-                <fieldset
-                  className="grid grid-cols-4 sm:grid-cols-6 max-h-36 overflow-y-auto gap-1 border-0 p-1 bg-black/20 rounded"
-                  aria-label={t('bidSelectLabel')}
-                >
-                  {bidOptions.map((n) => (
-                    <button
-                      key={n}
-                      type="button"
-                      onClick={() => setBidAmount(n)}
-                      disabled={loading}
-                      aria-pressed={bidAmount === n}
-                      data-testid={`bid-option-${n}`}
-                      className={`h-9 px-2 rounded-lg font-medium text-sm transition-all ${
-                        bidAmount === n
-                          ? 'bg-ds-accent text-white ring-2 ring-ds-accent'
-                          : 'bg-white/20 text-ds-text-primary hover:bg-white/30'
-                      }`}
-                    >
-                      {n}
-                    </button>
-                  ))}
-                </fieldset>
-                <span className="sr-only" role="status" aria-live="polite" data-testid="bn-bid-selected">
-                  {t('bidSelected', { n: bidAmount })}
-                </span>
-              </div>
-            )}
             {/* Hand */}
             {humanPlayer && humanPlayer.cards.length > 0 && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="bn-player-hand">
@@ -740,60 +791,9 @@ function BinokelPageContent() {
               </div>
             )}
 
-            <ErrorAlert message={error ?? hintError} onRetry={retry} />
-
             <span className="sr-only" role="status" aria-live="polite" data-testid="bn-dabb-selection-live">
               {isDabbTurn ? t('dabbSelectionCount', { count: selectedCardIndices.length }) : ''}
             </span>
-
-            {/* Server hint result */}
-            <div data-testid="binokel-hint-live" role="status" aria-live="polite">
-              {hint?.reason && (
-                <div
-                  className="text-ds-warning text-sm mb-2 flex items-center gap-2 flex-wrap"
-                  data-testid="bn-server-hint"
-                >
-                  <span>
-                    {hint.pass
-                      ? t('serverHintPass')
-                      : hint.bidAmount !== undefined
-                        ? t('serverHintBid', { n: hint.bidAmount })
-                        : hint.suit !== undefined
-                          ? t('serverHintTrump', { suit: SUIT_LABELS[hint.suit] ?? '-' })
-                          : hint.cardIndex !== undefined
-                            ? t('serverHintPlay', {
-                                card: humanPlayer?.cards[hint.cardIndex]
-                                  ? cardAlt(humanPlayer.cards[hint.cardIndex])
-                                  : '-',
-                                idx: hint.cardIndex,
-                              })
-                            : ''}{' '}
-                    ({t(`hintReason.${hint.reason}`)})
-                  </span>
-                  {isBidTurn && hint.bidAmount !== undefined && (
-                    <button
-                      type="button"
-                      className={btnOutline}
-                      data-testid="bn-hint-apply-bid"
-                      onClick={() => hint.bidAmount !== undefined && setBidAmount(hint.bidAmount)}
-                      disabled={loading}
-                    >
-                      {t('applyBid')}
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-
-            <div className="flex justify-end">
-              <GameResetButton
-                isGameEnd={!!isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="bn-reset-button"
-              />
-            </div>
           </GameFooter>
         </>
       )}
