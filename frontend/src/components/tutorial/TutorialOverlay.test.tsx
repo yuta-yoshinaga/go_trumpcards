@@ -35,8 +35,12 @@ const defaultProps = {
 
 describe('TutorialOverlay', () => {
   let targetEl: HTMLDivElement;
+  const originalScrollIntoView = Object.getOwnPropertyDescriptor(Element.prototype, 'scrollIntoView');
+  const scrollIntoView = vi.fn();
 
   beforeEach(() => {
+    scrollIntoView.mockClear();
+    Object.defineProperty(Element.prototype, 'scrollIntoView', { configurable: true, value: scrollIntoView });
     targetEl = document.createElement('div');
     targetEl.setAttribute('data-tutorial', 'test-target');
     targetEl.getBoundingClientRect = vi.fn().mockReturnValue({
@@ -57,6 +61,14 @@ describe('TutorialOverlay', () => {
 
   afterEach(() => {
     document.body.removeChild(targetEl);
+    if (originalScrollIntoView) Object.defineProperty(Element.prototype, 'scrollIntoView', originalScrollIntoView);
+    else Reflect.deleteProperty(Element.prototype, 'scrollIntoView');
+  });
+
+  it('scrolls the step target into view', () => {
+    render(<TutorialOverlay {...defaultProps} />);
+    expect(scrollIntoView).toHaveBeenCalledTimes(1);
+    expect(scrollIntoView).toHaveBeenCalledWith({ block: 'nearest', behavior: 'auto' });
   });
 
   it('renders an overlay with dialog role', () => {
@@ -128,6 +140,7 @@ describe('TutorialOverlay', () => {
     const { container } = render(<TutorialOverlay {...defaultProps} />);
     // Should still render overlay without crashing
     expect(container.querySelector('svg')).toBeInTheDocument();
+    expect(scrollIntoView).not.toHaveBeenCalled();
     // Re-add to avoid afterEach error
     document.body.appendChild(targetEl);
   });

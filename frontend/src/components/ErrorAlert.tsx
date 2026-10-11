@@ -20,10 +20,15 @@ export function ErrorAlert({ message, onRetry }: ErrorAlertProps) {
   const sound = useOptionalSound();
   const soundRef = useRef(sound);
   soundRef.current = sound;
+  const alertRef = useRef<HTMLDivElement>(null);
   const prevMessageRef = useRef<string | null>(null);
   useEffect(() => {
     if (message && message !== prevMessageRef.current) {
       soundRef.current?.playSound('errorBuzz');
+      const alert = alertRef.current;
+      if (alert && typeof alert.scrollIntoView === 'function') {
+        alert.scrollIntoView({ block: 'nearest', behavior: 'auto' });
+      }
     }
     prevMessageRef.current = message;
   }, [message]);
@@ -31,6 +36,7 @@ export function ErrorAlert({ message, onRetry }: ErrorAlertProps) {
   if (!message) return null;
   return (
     <div
+      ref={alertRef}
       role="alert"
       className="bg-ds-error text-white text-center px-4 py-2 text-sm font-bold mb-2 rounded-lg flex items-center justify-center gap-2"
     >
