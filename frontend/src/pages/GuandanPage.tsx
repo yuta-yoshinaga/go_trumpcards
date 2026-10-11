@@ -11,6 +11,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
+import { MobileHandGrid } from '../components/MobileHandGrid';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -129,7 +130,7 @@ function GuandanPageContent() {
   );
   const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('guandan', GUANDAN_PHASE_KEYS);
 
   // 選択中の役プレビュー (#4901)。サーバに拒否されて初めて分かる、では遅い。
@@ -404,6 +405,8 @@ function GuandanPageContent() {
           {/* Footer */}
           <GameFooter
             className={`${gameTheme.guandan.footer} px-4 py-2.5`}
+            // 27 cards need four stacked rows; the 45vh cap leaves them about 18px short (#11655).
+            tall
             actions={
               isTribute || isPlay || isHandEnd ? (
                 <div className="flex flex-wrap gap-2 items-center" data-tutorial="guandan-actions">
@@ -461,23 +464,34 @@ function GuandanPageContent() {
             </div>
             <div className="mb-2" data-tutorial="guandan-hand">
               <div className="text-ds-text-muted text-xs mb-1">{t('yourHand')}</div>
-              <div className="flex flex-wrap gap-1">
-                {(human?.cards ?? []).map((c, i) => (
-                  <button
-                    key={`hand-${c.design}-${c.value}-${i}`}
-                    type="button"
-                    onClick={() => (isPlay || isTribute) && handleToggle(i)}
-                    disabled={!isPlay && !isTribute}
-                    aria-pressed={selected.includes(i)}
-                    className={`rounded transition-all ${selected.includes(i) ? 'ring-2 ring-ds-info -translate-y-2' : ''} ${
-                      isPlay || isTribute ? 'cursor-pointer hover:opacity-90' : 'cursor-default'
-                    }`}
-                    data-testid={`hand-card-${i}`}
-                  >
-                    <CardImage card={c} width={cardWidth} />
-                  </button>
-                ))}
-              </div>
+              {isMobile ? (
+                <MobileHandGrid
+                  cards={human?.cards ?? []}
+                  selectedIndices={selected}
+                  onToggle={(i) => (isPlay || isTribute) && handleToggle(i)}
+                  cardWidth={cardWidth}
+                  validIndices={isPlay || isTribute ? (human?.cards ?? []).map((_, i) => i) : []}
+                  stackRows
+                />
+              ) : (
+                <div className="flex flex-wrap gap-1">
+                  {(human?.cards ?? []).map((c, i) => (
+                    <button
+                      key={`hand-${c.design}-${c.value}-${i}`}
+                      type="button"
+                      onClick={() => (isPlay || isTribute) && handleToggle(i)}
+                      disabled={!isPlay && !isTribute}
+                      aria-pressed={selected.includes(i)}
+                      className={`rounded transition-all ${selected.includes(i) ? 'ring-2 ring-ds-info -translate-y-2' : ''} ${
+                        isPlay || isTribute ? 'cursor-pointer hover:opacity-90' : 'cursor-default'
+                      }`}
+                      data-testid={`hand-card-${i}`}
+                    >
+                      <CardImage card={c} width={cardWidth} />
+                    </button>
+                  ))}
+                </div>
+              )}
               {isPlay && selected.length > 0 && (
                 <div className="mt-2 text-center text-xs" data-testid="guandan-combo-preview" aria-hidden="true">
                   {selectedCombo === null ? (

@@ -653,21 +653,27 @@ export function FollowTheQueenPageContent({ gameKey }: { gameKey: StudPageGameKe
                     </span>
                   )}
                 </div>
-                {/* Door cards */}
-                <div className="text-ds-text-muted text-xs mb-0.5">{t('doorCards')}</div>
-                <div className="flex flex-wrap gap-1.5 mb-1">
-                  {humanPlayer.doorCards?.length
-                    ? humanPlayer.doorCards.map(renderHumanCard)
-                    : !humanPlayer.folded &&
-                      Array.from({ length: 4 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
-                </div>
-                {/* Hole cards */}
-                <div className="text-ds-text-muted text-xs mb-0.5">{t('holeCards')}</div>
-                <div className="flex flex-wrap gap-1.5 mb-2">
-                  {humanPlayer.holeCards?.length
-                    ? humanPlayer.holeCards.map(renderHumanCard)
-                    : !humanPlayer.folded &&
-                      Array.from({ length: 3 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
+                <div className="flex flex-wrap items-start gap-x-3 mb-2">
+                  {/* Door cards */}
+                  <div>
+                    <div className="text-ds-text-muted text-xs mb-0.5">{t('doorCards')}</div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {humanPlayer.doorCards?.length
+                        ? humanPlayer.doorCards.map(renderHumanCard)
+                        : !humanPlayer.folded &&
+                          Array.from({ length: 4 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
+                    </div>
+                  </div>
+                  {/* Hole cards */}
+                  <div>
+                    <div className="text-ds-text-muted text-xs mb-0.5">{t('holeCards')}</div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {humanPlayer.holeCards?.length
+                        ? humanPlayer.holeCards.map(renderHumanCard)
+                        : !humanPlayer.folded &&
+                          Array.from({ length: 3 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
+                    </div>
+                  </div>
                 </div>
               </div>
             )}

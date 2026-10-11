@@ -83,6 +83,9 @@ export function TutorialOverlay({ step, stepIndex, totalSteps, onNext, onSkip, r
   // focus per step nor hands it back before the tutorial ends.
   useEffect(() => {
     const targetEl = document.querySelector(step.target);
+    if (targetEl && typeof targetEl.scrollIntoView === 'function') {
+      targetEl.scrollIntoView({ block: 'nearest', behavior: 'auto' });
+    }
     setSpotlightRect(getSpotlightRect(targetEl));
 
     if (!targetEl) return;
