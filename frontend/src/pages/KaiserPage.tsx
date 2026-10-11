@@ -234,7 +234,8 @@ function KaiserPageContent() {
         <>
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
             {isHumanBid && (
-              <div className="mb-2 flex flex-wrap gap-2 items-center">
+              // While bidding the tutorial's "actions" step (which explains the 7–12 bid) points here.
+              <div className="mb-2 flex flex-wrap gap-2 items-center" data-tutorial="kaiser-actions">
                 <label className="text-ds-text-muted text-xs flex items-center gap-1" htmlFor="kaiser-contract-select">
                   {t('contractLabel')}
                   <select
@@ -435,7 +436,10 @@ function KaiserPageContent() {
           <GameFooter
             className={`${gameTheme.kaiser.footer} px-4 py-2.5`}
             actions={
-              <div className="flex flex-wrap gap-2 items-center" data-tutorial="kaiser-actions">
+              <div
+                className="flex flex-wrap gap-2 items-center"
+                data-tutorial={isHumanBid ? undefined : 'kaiser-actions'}
+              >
                 {needsTrump &&
                   [1, 2, 3, 4].map((s) => (
                     <button
