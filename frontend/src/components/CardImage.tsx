@@ -19,7 +19,8 @@ function getImagePath(card: Card): string {
     JOKER: 'x',
   };
   const prefix = prefixMap[card.design] ?? 'x';
-  return `/images/${prefix}${zeroPad(card.value)}.png`;
+  const value = card.design === 'JOKER' ? (card.value <= 0 ? 1 : ((card.value - 1) % 2) + 1) : card.value;
+  return `/images/${prefix}${zeroPad(value)}.png`;
 }
 
 /** Props for {@link CardImage}. */
