@@ -153,6 +153,43 @@ beforeEach(() => {
 });
 
 describe('FrenchTarotPage', () => {
+  it('uses the taller mobile footer cap', async () => {
+    renderWithProviders(<FrenchTarotPage />);
+    const content = await screen.findByTestId('game-footer-content');
+    expect(content.closest('footer')?.className).toContain('max-h-[60vh]');
+  });
+
+  it('stacks mobile hand rows with negative margins', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      window.dispatchEvent(new Event('resize'));
+      mobileFlag.value = true;
+      const source = playPhaseState;
+      const human = source.players.find((player) => player.isHuman);
+      if (!human) throw new Error('Expected the FrenchTarotPage human player');
+      const cards = Array.from({ length: 17 }, (_, index) => human.cards[index % human.cards.length]);
+      mockExec.mockResolvedValue({
+        ...playPhaseState,
+        players: playPhaseState.players.map((player) =>
+          player.isHuman ? { ...player, cards, cardCount: cards.length } : player,
+        ),
+      });
+      renderWithProviders(<FrenchTarotPage />);
+      const content = await screen.findByTestId('game-footer-content');
+      const hand = content.querySelector<HTMLElement>('[data-tutorial="frenchtarot-player-hand"]');
+      expect(hand).not.toBeNull();
+      if (!hand) throw new Error('Expected the FrenchTarotPage player hand');
+      await waitFor(() => expect(hand.querySelectorAll('[data-testid="hand-row"]').length).toBeGreaterThanOrEqual(2));
+      for (const row of Array.from(hand.querySelectorAll<HTMLElement>('[data-testid="hand-row"]')).slice(1)) {
+        expect(row.style.marginTop).toMatch(/^-/);
+      }
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
   it('keeps the hand in the footer and supporting controls in the play area', async () => {
     renderWithProviders(<FrenchTarotPage />);
     const footerContent = await screen.findByTestId('game-footer-content');

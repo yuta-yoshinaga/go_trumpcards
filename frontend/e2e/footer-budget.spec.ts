@@ -23,8 +23,8 @@ const BUDGETS: ReadonlyArray<{ path: string; maxOverflow: number }> = [
   { path: '/crazyfourpoker', maxOverflow: 200 },
   { path: '/shengji', maxOverflow: 96 },
   { path: '/poker', maxOverflow: 101 },
-  // Third wave (#11669): Minchiate is partial (229 → 186); its discard-phase hand outgrows the footer.
-  { path: '/minchiate', maxOverflow: 207 },
+  // Third wave (#11669) left Minchiate partial (229 → 186); stacked rows and the tall footer (#11655) bring it to 2px.
+  { path: '/minchiate', maxOverflow: 115 },
   { path: '/literature', maxOverflow: 167 },
   { path: '/bauernschnapsen', maxOverflow: 129 },
   { path: '/kaiser', maxOverflow: 97 },

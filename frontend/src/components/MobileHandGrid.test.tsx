@@ -87,7 +87,7 @@ describe('MobileHandGrid', () => {
       const rows = container.querySelectorAll<HTMLElement>('[data-testid="hand-row"]');
       expect(rows.length).toBeGreaterThanOrEqual(2);
       expect(rows[0].style.marginBottom).toBe('0px');
-      const expectedMargin = -(40 * 1.5 + 2 - 52);
+      const expectedMargin = -14;
       for (const row of Array.from(rows).slice(1)) expect(row.style.marginTop).toBe(`${expectedMargin}px`);
     } finally {
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });

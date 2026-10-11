@@ -540,7 +540,9 @@ function PiedmonteseTarotPageContent() {
             </div>
           </div>
 
+          {/* Tarot-size hands outgrow the 45vh cap on phones (#11655). */}
           <GameFooter
+            tall
             className={`${gameTheme.piedmontesetarot.footer} px-4 py-2.5`}
             actions={
               canScarto || canPlay || isTrickEnd || isRoundEnd ? (
@@ -604,6 +606,7 @@ function PiedmonteseTarotPageContent() {
                 cardWidth={cardWidth}
                 isMobile={isMobile}
                 dataTutorialPrefix="piedmontesetarot"
+                stackRows
                 validIndices={handValidIndices}
                 // **出せる札には輪を付ける。** `validIndices` は「押せない札を
                 // 薄くする」だけで、`data-legal` (と成功色のリング) を付けるのは
