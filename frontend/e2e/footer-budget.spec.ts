@@ -19,9 +19,9 @@ const BUDGETS: ReadonlyArray<{ path: string; maxOverflow: number }> = [
   { path: '/watten', maxOverflow: 197 },
   { path: '/cinch', maxOverflow: 187 },
   { path: '/mighty', maxOverflow: 115 },
-  // Second wave (#11668): ShengJi is a partial fix (191 → 147), so its limit is the midpoint.
+  // Second wave (#11668) left ShengJi partial (191 → 147); moving its rule text out of `actions` (#11655) brings it to 1px.
   { path: '/crazyfourpoker', maxOverflow: 200 },
-  { path: '/shengji', maxOverflow: 169 },
+  { path: '/shengji', maxOverflow: 96 },
   { path: '/poker', maxOverflow: 101 },
   // Third wave (#11669): Minchiate is partial (229 → 186); its discard-phase hand outgrows the footer.
   { path: '/minchiate', maxOverflow: 207 },
