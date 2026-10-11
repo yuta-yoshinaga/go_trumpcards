@@ -100,6 +100,30 @@ describe('DoubleAttackPage', () => {
     expect(within(actions).queryByTestId('da-bustit-payouts')).not.toBeInTheDocument();
   });
 
+  it('keeps bet choices and payout information in the play area outside the footer', async () => {
+    mockApi.mockResolvedValue(withState({ phase: DoubleAttackPhase.BET }));
+    renderWithProviders(<DoubleAttackPage />);
+
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const betSupport = screen.getByTestId('da-bet-support');
+    const playArea = screen.getByTestId('card-area');
+    expect(within(footerContent).queryByTestId('da-bet-support')).not.toBeInTheDocument();
+    expect(within(playArea).getByTestId('da-bet-support')).toBe(betSupport);
+    expect(within(footerContent).queryByTestId('da-bustit-payouts')).not.toBeInTheDocument();
+    expect(within(playArea).getByTestId('da-bustit-payouts')).toBeInTheDocument();
+  });
+
+  it('keeps attack comparison in the play area outside the footer', async () => {
+    mockApi.mockResolvedValue(withState({ phase: DoubleAttackPhase.ATTACK }));
+    renderWithProviders(<DoubleAttackPage />);
+
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const comparison = screen.getByTestId('da-attack-comparison');
+    const playArea = screen.getByTestId('card-area');
+    expect(within(footerContent).queryByTestId('da-attack-comparison')).not.toBeInTheDocument();
+    expect(within(playArea).getByTestId('da-attack-comparison')).toBe(comparison);
+  });
+
   it('announces the newly active hand and score only when the active hand changes during play', async () => {
     mockApi
       .mockResolvedValueOnce(

@@ -521,8 +521,16 @@ describe('FiveCardStudPage', () => {
       rebuyCounts: [1, 0],
     };
     mockExec.mockResolvedValue(rebuyState);
-    renderWithProviders(<FiveCardStudPage />);
+    const { container } = renderWithProviders(<FiveCardStudPage />);
     await waitFor(() => expect(screen.getByTestId('rebuy-controls')).toBeInTheDocument());
+    const footerContent = screen.getByTestId('game-footer-content');
+    const playArea = container.querySelector('.flex-1.overflow-y-auto');
+    expect(playArea).not.toBeNull();
+    expect(within(footerContent).queryByTestId('rebuy-controls')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('rebuy-controls')).toBeInTheDocument();
+    expect(footerContent.querySelector('[data-tutorial="fcs-player-hand"]')).toBeInTheDocument();
+    expect(footerContent.querySelector('[data-tutorial="fcs-reset-button"]')).toBeNull();
+    expect(playArea?.querySelector('[data-tutorial="fcs-reset-button"]')).toBeInTheDocument();
     mockExec.mockClear();
     mockExec.mockResolvedValue(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リバイ' }));

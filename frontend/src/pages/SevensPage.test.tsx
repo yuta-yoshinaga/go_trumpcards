@@ -167,6 +167,17 @@ beforeEach(() => {
 });
 
 describe('SevensPage', () => {
+  it('keeps the hand in the footer and moves settings into the play area', async () => {
+    renderWithProviders(<SevensPage />);
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const footer = footerContent.closest('footer');
+    const settings = screen.getByText('ゲーム設定');
+
+    expect(footerContent.querySelector('[data-tutorial="sv-player-hand"]')).toBeInTheDocument();
+    expect(within(footerContent).queryByText('ゲーム設定')).not.toBeInTheDocument();
+    expect(footer?.parentElement).toContainElement(settings);
+  });
+
   it('announces a normally played human card in the live region', async () => {
     mockExec.mockResolvedValue({
       ...humanTurnState,

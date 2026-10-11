@@ -6,6 +6,7 @@ import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { FollowTheQueenResponse } from '../types/card';
+import { FollowTheQueenPhase, FollowTheQueenRebuyPhaseType } from '../types/phases';
 import { FollowTheQueenPage } from './FollowTheQueenPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -503,6 +504,29 @@ describe('FollowTheQueenPage', () => {
     mockExec.mockResolvedValue(thirdStreetState);
     renderWithProviders(<FollowTheQueenPage />);
     await waitFor(() => expect(screen.getByText(/あなたの手札/)).toBeInTheDocument());
+  });
+
+  it('keeps the hand in the footer and places phase choices and reset controls in the play area', async () => {
+    mockExec.mockResolvedValue({
+      ...thirdStreetState,
+      phase: FollowTheQueenPhase.REBUY,
+      rebuyPhaseType: FollowTheQueenRebuyPhaseType.REBUY,
+      rebuyChips: 500,
+      rebuyMaxCount: 2,
+      rebuyCounts: [0],
+    });
+    renderWithProviders(<FollowTheQueenPage />);
+
+    const footer = await screen.findByTestId('game-footer-content');
+    const playArea = footer.closest('footer')?.previousElementSibling?.previousElementSibling;
+    await waitFor(() => expect(screen.getByTestId('rebuy-controls')).toBeInTheDocument());
+
+    expect(footer.querySelector('[data-tutorial="scs-player-hand"]')).toBeInTheDocument();
+    expect(footer.querySelector('[data-testid="rebuy-controls"]')).toBeNull();
+    expect(footer.querySelector('[data-tutorial="scs-reset-button"]')).toBeNull();
+    expect(playArea).toHaveAttribute('class', expect.stringContaining('flex-1 overflow-y-auto'));
+    expect(within(playArea as HTMLElement).getByTestId('rebuy-controls')).toBeInTheDocument();
+    expect(playArea?.querySelector('[data-tutorial="scs-reset-button"]')).toBeInTheDocument();
   });
 
   it('does not show human player section when no players', async () => {

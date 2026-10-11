@@ -251,6 +251,15 @@ describe('GuandanPage', () => {
       mockExec.mockResolvedValue(tributeState());
       renderWithProviders(<GuandanPage />);
       await waitFor(() => expect(screen.getByTestId('guandan-tribute-rules')).toBeInTheDocument());
+
+      const playArea = screen.getByTestId('guandan-info').parentElement;
+      const footerContent = screen.getByTestId('game-footer-content');
+      expect(playArea).toContainElement(screen.getByTestId('guandan-tribute-rules'));
+      expect(footerContent).not.toContainElement(screen.getByTestId('guandan-tribute-rules'));
+      expect(footerContent).toContainElement(screen.getByTestId('hand-card-0'));
+      expect(
+        within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '還貢する' }),
+      ).toBeInTheDocument();
     });
 
     it('hides tribute rules when human does not owe return', async () => {
