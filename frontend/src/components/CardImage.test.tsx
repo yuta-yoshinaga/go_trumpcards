@@ -1,7 +1,12 @@
-import { render, screen } from '@testing-library/react';
+import { cleanup, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { Card, CardDesign } from '../types/card';
 import { CardBack, CardImage } from './CardImage';
+
+// The card images are served from the repository-root public/ directory.
+const publicImages = new Set(
+  Object.keys(import.meta.glob('../../../public/images/*.png')).map((path) => path.replace('../../../public', '')),
+);
 
 describe('CardImage', () => {
   it.each<[CardDesign, string]>([
@@ -14,6 +19,31 @@ describe('CardImage', () => {
     const card: Card = { design, value: 1 };
     render(<CardImage card={card} />);
     expect(screen.getByRole('img')).toHaveAttribute('src', `/images/${prefix}01.png`);
+  });
+
+  it.each([
+    [0, '/images/x01.png'],
+    [3, '/images/x01.png'],
+    [4, '/images/x02.png'],
+    [8, '/images/x02.png'],
+  ])('maps joker value %i to an available joker image', (value, src) => {
+    render(<CardImage card={{ design: 'JOKER', value }} />);
+    expect(screen.getByRole('img')).toHaveAttribute('src', src);
+  });
+
+  it('renders only image paths backed by a file under public/images', () => {
+    const designs: CardDesign[] = ['SPADE', 'CLOVER', 'HEART', 'DIAMOND'];
+    const cards: Card[] = [
+      ...designs.flatMap((design) => Array.from({ length: 13 }, (_, index) => ({ design, value: index + 1 }))),
+      ...Array.from({ length: 9 }, (_, value) => ({ design: 'JOKER' as const, value })),
+    ];
+
+    for (const card of cards) {
+      render(<CardImage card={card} />);
+      const src = screen.getByRole('img').getAttribute('src');
+      expect(publicImages.has(src ?? ''), `${src} has no file under public/images`).toBe(true);
+      cleanup();
+    }
   });
 
   it('zero-pads single-digit card values', () => {
