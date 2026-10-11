@@ -8,6 +8,7 @@
 - Go サーバーが起動可能な状態
 - `gh` CLIでGitHubにログイン済み
 - 画像アップロード先として catbox.moe を使用（永続的な無料ホスティング、APIキー不要）
+- agent-browser の daemon は close するまで Chrome ごと残り続ける。1 回のレビューでは `--session` 名を 1 つに固定し（コマンドごとに名前を変えると daemon がその数だけ増える）、終了時に必ず `agent-browser close` する。保険として `AGENT_BROWSER_IDLE_TIMEOUT_MS=600000` を環境に入れておくと、10 分操作が無い daemon は自動で終了する。
 
 ## 手順
 
