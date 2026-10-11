@@ -147,6 +147,30 @@ describe('KaiserPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('keeps the hand and turn notice in the footer, with bidding controls in the play area', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: KaiserPhase.BID, highBid: null, declarerIdx: -1 }));
+    renderWithProviders(<KaiserPage />);
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const footer = within(footerContent);
+    const playArea = footerContent.parentElement?.previousElementSibling;
+    expect(playArea).toBeInTheDocument();
+
+    expect(footer.getAllByRole('button').filter((button) => button.dataset.hintAction === 'play')).toHaveLength(3);
+    expect(footer.getByTestId('kaiser-bid-notice')).toBeInTheDocument();
+    expect(footer.queryByLabelText(/ノートランプを許可/)).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).queryByTestId('kaiser-bid-notice')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByRole('button', { name: '7 を宣言' })).toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('kaiser-specials')).toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByLabelText(/ノートランプを許可/)).toBeInTheDocument();
+  });
+
+  it('keeps trump selection in the pinned footer actions', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: KaiserPhase.DISCARD, declarerIdx: 0, contract: 0, trumpSuit: 0 }));
+    renderWithProviders(<KaiserPage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: '♠ を切札に' })).toBeInTheDocument();
+  });
+
   // **♥5 と ♠3 でトリック8点と同じ重みが動く。**常時表示する。
   it('states both scoring cards permanently', async () => {
     renderWithProviders(<KaiserPage />);
@@ -259,8 +283,9 @@ describe('KaiserPage', () => {
   it('bids points from the minimum the server sends', async () => {
     mockExec.mockResolvedValue(makeState({ phase: KaiserPhase.BID, highBid: null, declarerIdx: -1, trumpSuit: 0 }));
     renderWithProviders(<KaiserPage />);
-    await waitFor(() => expect(screen.getByTestId('kaiser-bid-notice')).toBeInTheDocument());
-    expect(screen.getByTestId('kaiser-bid-notice')).toHaveTextContent('トリック数ではありません');
+    const footer = within(await screen.findByTestId('game-footer-content'));
+    await waitFor(() => expect(footer.getByTestId('kaiser-bid-notice')).toBeInTheDocument());
+    expect(footer.getByTestId('kaiser-bid-notice')).toHaveTextContent('トリック数ではありません');
 
     // 6 以下のボタンは出ない。
     expect(screen.queryByRole('button', { name: '6 を宣言' })).not.toBeInTheDocument();

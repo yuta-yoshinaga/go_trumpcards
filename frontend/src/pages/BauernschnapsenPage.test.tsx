@@ -176,13 +176,26 @@ describe('BauernschnapsenPage', () => {
     const actions = screen.getByTestId('game-footer-actions');
     expect(within(actions).queryByTestId('bauernschnapsen-contract-controls')).not.toBeInTheDocument();
     expect(
-      within(screen.getByTestId('game-footer-content')).getByTestId('bauernschnapsen-contract-controls'),
-    ).toBeInTheDocument();
+      within(screen.getByTestId('game-footer-content')).queryByTestId('bauernschnapsen-contract-controls'),
+    ).not.toBeInTheDocument();
+    expect(screen.getByTestId('bauernschnapsen-contract-controls')).toBeInTheDocument();
 
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: 'ベテル' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(mockExec).toHaveBeenCalledWith('contract', 3, undefined, undefined, 1);
+  });
+
+  it('keeps only the hand in the footer while contract choices and settings stay in the play area', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: BauernschnapsenPhase.CONTRACT, contract: 0, declarerIdx: -1 }));
+    renderWithProviders(<BauernschnapsenPage />);
+
+    const footer = await screen.findByTestId('game-footer-content');
+    const playArea = footer.parentElement?.parentElement?.querySelector(':scope > div.flex-1.overflow-y-auto');
+    expect(playArea).not.toBeNull();
+    expect(within(footer).getByRole('button', { name: '♠ K' })).toBeInTheDocument();
+    expect(within(footer).queryByTestId('bauernschnapsen-contract-controls')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('bauernschnapsen-contract-controls')).toBeInTheDocument();
   });
 
   it('shows each contract condition and associates it with its contract buttons', async () => {
