@@ -194,7 +194,9 @@ describe('SchafkopfPage', () => {
       within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: 'パスする' }),
     ).toBeInTheDocument();
     expect(
-      within(screen.getByTestId('game-footer-content')).getByRole('button', { name: 'Rufspiel（A呼び）' }),
+      within(document.querySelector('.flex-1.overflow-y-auto') as HTMLElement).getByRole('button', {
+        name: 'Rufspiel（A呼び）',
+      }),
     ).toBeInTheDocument();
     // **All three contracts have to be reachable.** Only Rufspiel used to be,
     // which left Wenz and Solo settable by the domain but not by any player.
@@ -202,6 +204,23 @@ describe('SchafkopfPage', () => {
     expect(screen.getByRole('button', { name: '♠ スペードを切り札にした Solo を宣言する' })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'パスする' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('pick', { pick: false }));
+  });
+
+  it('keeps phase choices and reference controls in the play area while the hand stays in the footer', async () => {
+    mockExec.mockResolvedValue(pickPhaseState);
+    renderWithProviders(<SchafkopfPage />);
+    const pickButton = await screen.findByRole('button', { name: 'Rufspiel（A呼び）' });
+    const footer = screen.getByTestId('game-footer-content');
+    const playArea = document.querySelector('.flex-1.overflow-y-auto');
+    expect(playArea).toBeInTheDocument();
+
+    expect(within(footer).queryByRole('button', { name: 'Rufspiel（A呼び）' })).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByRole('button', { name: 'Rufspiel（A呼び）' })).toBe(pickButton);
+
+    const hintLive = screen.getByTestId('schafkopf-hint-live');
+    expect(within(footer).queryByTestId('schafkopf-hint-live')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('schafkopf-hint-live')).toBe(hintLive);
+    expect(within(footer).getByAltText('♠ A')).toBeInTheDocument();
   });
 
   it('declaring Wenz sends the contract, and a Solo carries the suit it names', async () => {

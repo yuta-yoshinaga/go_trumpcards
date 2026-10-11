@@ -323,6 +323,69 @@ function BadugiPageContent() {
                 ))}
               </div>
             )}
+
+            {/* Action log */}
+            <ActionLogSection
+              isEndPhase={!!state?.gameEndFlag}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
+
+            <ErrorAlert message={error} onRetry={retry} />
+
+            {/* Hint display */}
+            {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
+
+            {/* Settings (collapsible) + Reset */}
+            <SettingsPanel
+              title={t('settings.title')}
+              groups={[
+                {
+                  items: [
+                    {
+                      type: 'select',
+                      id: 'badugiBettingLimit',
+                      label: tc('betting.bettingLimit'),
+                      tooltip: t('settings.bettingLimitHelp'),
+                      value: bettingLimit,
+                      options: [
+                        { value: 0, label: tc('betting.fixed') },
+                        { value: 1, label: tc('betting.potLimit') },
+                        { value: 2, label: tc('betting.noLimit') },
+                      ],
+                      onSelect: (v) => setBettingLimit(Number(v)),
+                    },
+                    {
+                      type: 'checkbox',
+                      id: 'badugiCpuMetaAI',
+                      label: t('settings.cpuMetaAI'),
+                      tooltip: t('settings.cpuMetaAIHelp'),
+                      checked: cpuMetaAI,
+                      onToggle: setCpuMetaAI,
+                    },
+                    {
+                      type: 'checkbox',
+                      id: 'badugiHint',
+                      label: tc('hint.toggle', { ns: 'tutorial' }),
+                      checked: hintEnabled,
+                      onToggle: setHintEnabled,
+                    },
+                  ],
+                },
+              ]}
+            />
+            <div className="text-center mt-2">
+              <GameResetButton
+                isGameEnd={isHandOver}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="bg-reset-button"
+                className="min-w-[90px]"
+              />
+            </div>
+            <CardNavShortcutsPanel data-testid="badugi-kbd-shortcuts" />
           </div>
 
           {/* Sticky footer: player hand + buttons */}
@@ -485,69 +548,6 @@ function BadugiPageContent() {
                 severity={isEnd ? 'alert' : 'info'}
               />
             </div>
-
-            {/* Action log */}
-            <ActionLogSection
-              isEndPhase={!!state?.gameEndFlag}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            {/* Hint display */}
-            {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
-
-            {/* Settings (collapsible) + Reset */}
-            <SettingsPanel
-              title={t('settings.title')}
-              groups={[
-                {
-                  items: [
-                    {
-                      type: 'select',
-                      id: 'badugiBettingLimit',
-                      label: tc('betting.bettingLimit'),
-                      tooltip: t('settings.bettingLimitHelp'),
-                      value: bettingLimit,
-                      options: [
-                        { value: 0, label: tc('betting.fixed') },
-                        { value: 1, label: tc('betting.potLimit') },
-                        { value: 2, label: tc('betting.noLimit') },
-                      ],
-                      onSelect: (v) => setBettingLimit(Number(v)),
-                    },
-                    {
-                      type: 'checkbox',
-                      id: 'badugiCpuMetaAI',
-                      label: t('settings.cpuMetaAI'),
-                      tooltip: t('settings.cpuMetaAIHelp'),
-                      checked: cpuMetaAI,
-                      onToggle: setCpuMetaAI,
-                    },
-                    {
-                      type: 'checkbox',
-                      id: 'badugiHint',
-                      label: tc('hint.toggle', { ns: 'tutorial' }),
-                      checked: hintEnabled,
-                      onToggle: setHintEnabled,
-                    },
-                  ],
-                },
-              ]}
-            />
-            <div className="text-center mt-2">
-              <GameResetButton
-                isGameEnd={isHandOver}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="bg-reset-button"
-                className="min-w-[90px]"
-              />
-            </div>
-            <CardNavShortcutsPanel data-testid="badugi-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

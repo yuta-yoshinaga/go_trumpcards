@@ -92,6 +92,20 @@ beforeEach(() => {
 });
 
 describe('CoinchePage', () => {
+  it('keeps only the hand in the footer content and places supporting UI in the play area', async () => {
+    renderWithProviders(<CoinchePage />);
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const footer = footerContent.parentElement;
+    const playArea = footer?.previousElementSibling;
+    expect(playArea).not.toBeNull();
+
+    expect(within(footerContent).getByRole('button', { name: '♠ J' })).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('coinche-kbd-shortcuts')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('coinche-kbd-shortcuts')).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('coinche-hint-live')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('coinche-hint-live')).toBeInTheDocument();
+  });
+
   it('keeps the auction pass action in the fixed footer actions row', async () => {
     mockExec.mockResolvedValue(initialState);
     renderWithProviders(<CoinchePage />);

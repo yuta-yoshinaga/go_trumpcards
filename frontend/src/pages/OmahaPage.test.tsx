@@ -758,6 +758,22 @@ describe('OmahaPage', () => {
     expect(screen.getByRole('button', { name: 'オールイン' })).toBeInTheDocument();
   });
 
+  it('keeps the hand in the footer and supporting controls in the play area', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<OmahaPage />);
+    await waitFor(() => expect(screen.getByTestId('game-footer-content')).toBeInTheDocument());
+
+    const footerContent = screen.getByTestId('game-footer-content');
+    const playArea = footerContent.closest('footer')?.previousElementSibling;
+    expect(footerContent.querySelector('[data-tutorial="oh-player-hand"]')).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('learning-mode-toggle')).not.toBeInTheDocument();
+    expect(playArea).toContainElement(screen.getByTestId('learning-mode-toggle'));
+    expect(playArea?.querySelector('[data-tutorial="oh-reset-button"]')).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: 'ベット' }),
+    ).toBeInTheDocument();
+  });
+
   it('shows call/raise buttons when canAct and has outstanding bet', async () => {
     mockExec.mockResolvedValue(preFlopWithBetState);
     renderWithProviders(<OmahaPage />);

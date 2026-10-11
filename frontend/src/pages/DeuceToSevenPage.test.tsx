@@ -100,6 +100,26 @@ describe('DeuceToSevenPage', () => {
     await waitFor(() => expect(screen.getByText('プリドロー')).toBeInTheDocument());
   });
 
+  it('keeps the hand in the footer and renders results and shortcuts in the play area', async () => {
+    mockExec.mockResolvedValue(
+      baseState({
+        phase: DeuceToSevenPhase.SHOWDOWN,
+        roundResults: [{ playerIdx: 0, handRank: 0, handName: 'Seven Low', wonAmount: 40 }],
+      }),
+    );
+    renderWithProviders(<DeuceToSevenPage />);
+
+    const footer = await screen.findByTestId('game-footer-content');
+    expect(footer.querySelector('[data-tutorial="d7-player-hand"]')).toBeInTheDocument();
+
+    const playArea = footer.parentElement?.previousElementSibling;
+    expect(playArea).not.toBeNull();
+    expect(within(playArea as HTMLElement).getByTestId('round-results-visible')).toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('deuce-to-seven-kbd-shortcuts')).toBeInTheDocument();
+    expect(within(footer).queryByTestId('round-results-visible')).not.toBeInTheDocument();
+    expect(within(footer).queryByTestId('deuce-to-seven-kbd-shortcuts')).not.toBeInTheDocument();
+  });
+
   it('announces the latest CPU exchange in a persistent live region while keeping the visible log', async () => {
     mockExec.mockResolvedValue(baseState({ cpuExchanges: [{ playerIdx: 1, drawIndex: 2, exchangeCount: 3 }] }));
     renderWithProviders(<DeuceToSevenPage />);

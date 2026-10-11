@@ -510,4 +510,17 @@ describe('VintPage', () => {
     const actions = await screen.findByTestId('game-footer-actions');
     expect(within(actions).getByTestId('vint-bid-button')).toBeInTheDocument();
   });
+
+  it('keeps only the hand and turn notice in the footer content', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: VintPhase.BID, bids: [] }));
+    renderWithProviders(<VintPage />);
+
+    const footer = await screen.findByTestId('game-footer-content');
+    const playArea = footer.closest('[aria-busy]')?.querySelectorAll('.overflow-y-auto')[0];
+    expect(within(footer).getByText('あなたの手札')).toBeInTheDocument();
+    expect(footer.querySelector('[data-tutorial="vint-reset-button"]')).not.toBeInTheDocument();
+    expect((playArea as HTMLElement).querySelector('[data-tutorial="vint-reset-button"]')).toBeInTheDocument();
+    expect(within(footer).queryByText('ヒント表示')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByText('ヒント表示')).toBeInTheDocument();
+  });
 });

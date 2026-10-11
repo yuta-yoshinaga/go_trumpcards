@@ -276,6 +276,41 @@ function SchafkopfPageContent() {
               <span>{t('contractLabel', { contract: contractLabel })}</span>
             </div>
 
+            {canPick && (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 items-center" data-tutorial="sh-action-buttons">
+                {/* Only the contracts that outrank the standing bid: a button
+                  the server is bound to refuse is worse than no button. */}
+                {beatable.includes(CONTRACT_RUFSPIEL) && (
+                  <button type="button" className={btnPrimary} onClick={handlePick} disabled={loading}>
+                    {t('pickButton')}
+                  </button>
+                )}
+                {beatable.includes(CONTRACT_WENZ) && (
+                  <button type="button" className={btnPrimary} onClick={() => handleDeclare(1)} disabled={loading}>
+                    {t('wenzButton')}
+                  </button>
+                )}
+                {/* Solo names its own trump, so each suit is its own button
+                  rather than a declare-then-choose second step. */}
+                {beatable.includes(CONTRACT_SOLO) &&
+                  SOLO_SUITS.map((suit) => {
+                    const suitName = t(`suit.${SUIT_KEYS[suit]}`);
+                    return (
+                      <button
+                        key={`solo-${suit}`}
+                        type="button"
+                        className={btnPrimary}
+                        onClick={() => handleDeclare(2, suit)}
+                        disabled={loading}
+                        aria-label={t('soloButtonAriaLabel', { suit: suitName })}
+                      >
+                        {t('soloButton', { suit: suitName })}
+                      </button>
+                    );
+                  })}
+              </div>
+            )}
+
             {(isPlayPhase || isTrickEnd) && (
               <div className="mb-2 text-center text-sm text-ds-text-muted" data-testid="schafkopf-round-points">
                 {t(state.roundPickerPointsTeamTotal ? 'roundProgress.pickerPoints' : 'roundProgress.pickerOnlyPoints', {
@@ -397,6 +432,32 @@ function SchafkopfPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+
+            <ErrorAlert message={error} onRetry={retry} />
+
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+              られないことがある (#5955)。
+            */}
+            <div data-testid="schafkopf-hint-live" role="status" aria-live="polite">
+              {state.hint && isRequestedHint(state) && (
+                <div className="text-ds-warning text-sm mb-2">
+                  {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
+                  {state.hint.cardIndices.length > 0 && ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
+                </div>
+              )}
+            </div>
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            <GameResetButton
+              isGameEnd={isGameEnd}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+              dataTutorial="sh-reset-button"
+            />
+            <CardNavShortcutsPanel data-testid="schafkopf-kbd-shortcuts" />
           </div>
 
           {/* Footer */}
@@ -451,40 +512,6 @@ function SchafkopfPageContent() {
               ) : null
             }
           >
-            {canPick && (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 items-center" data-tutorial="sh-action-buttons">
-                {/* Only the contracts that outrank the standing bid: a button
-                  the server is bound to refuse is worse than no button. */}
-                {beatable.includes(CONTRACT_RUFSPIEL) && (
-                  <button type="button" className={btnPrimary} onClick={handlePick} disabled={loading}>
-                    {t('pickButton')}
-                  </button>
-                )}
-                {beatable.includes(CONTRACT_WENZ) && (
-                  <button type="button" className={btnPrimary} onClick={() => handleDeclare(1)} disabled={loading}>
-                    {t('wenzButton')}
-                  </button>
-                )}
-                {/* Solo names its own trump, so each suit is its own button
-                  rather than a declare-then-choose second step. */}
-                {beatable.includes(CONTRACT_SOLO) &&
-                  SOLO_SUITS.map((suit) => {
-                    const suitName = t(`suit.${SUIT_KEYS[suit]}`);
-                    return (
-                      <button
-                        key={`solo-${suit}`}
-                        type="button"
-                        className={btnPrimary}
-                        onClick={() => handleDeclare(2, suit)}
-                        disabled={loading}
-                        aria-label={t('soloButtonAriaLabel', { suit: suitName })}
-                      >
-                        {t('soloButton', { suit: suitName })}
-                      </button>
-                    );
-                  })}
-              </div>
-            )}
             {humanPlayer && (
               <PlayerHandSection
                 humanPlayer={humanPlayer}
@@ -500,32 +527,6 @@ function SchafkopfPageContent() {
                 restrictedTooltip={t('playButton')}
               />
             )}
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            {/*
-              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
-              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
-              られないことがある (#5955)。
-            */}
-            <div data-testid="schafkopf-hint-live" role="status" aria-live="polite">
-              {state.hint && isRequestedHint(state) && (
-                <div className="text-ds-warning text-sm mb-2">
-                  {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
-                  {state.hint.cardIndices.length > 0 && ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
-                </div>
-              )}
-            </div>
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            <GameResetButton
-              isGameEnd={isGameEnd}
-              onReset={handleManualReset}
-              requestConfirm={requestConfirm}
-              loading={loading}
-              dataTutorial="sh-reset-button"
-            />
-            <CardNavShortcutsPanel data-testid="schafkopf-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

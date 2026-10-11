@@ -317,6 +317,68 @@ function DeuceToSevenPageContent() {
                 ))}
               </div>
             )}
+            {isHandOver && <RoundResults results={state.roundResults} players={state.players} />}
+
+            {/* Action log */}
+            <ActionLogSection
+              isEndPhase={!!state?.gameEndFlag}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
+
+            <ErrorAlert message={error} onRetry={retry} />
+
+            {/* Hint display */}
+            {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
+
+            {/* Settings (collapsible) + Reset */}
+            <SettingsPanel
+              title={t('settings.title')}
+              groups={[
+                {
+                  items: [
+                    {
+                      type: 'select',
+                      id: 'deuceToSevenBettingLimit',
+                      label: tc('betting.bettingLimit'),
+                      value: bettingLimit,
+                      options: [
+                        { value: 0, label: tc('betting.fixed') },
+                        { value: 1, label: tc('betting.potLimit') },
+                        { value: 2, label: tc('betting.noLimit') },
+                      ],
+                      onSelect: (v) => setBettingLimit(Number(v)),
+                    },
+                    {
+                      type: 'checkbox',
+                      id: 'deuceToSevenCpuMetaAI',
+                      label: t('settings.cpuMetaAI'),
+                      checked: cpuMetaAI,
+                      onToggle: setCpuMetaAI,
+                    },
+                    {
+                      type: 'checkbox',
+                      id: 'deuceToSevenHint',
+                      label: tc('hint.toggle', { ns: 'tutorial' }),
+                      checked: hintEnabled,
+                      onToggle: setHintEnabled,
+                    },
+                  ],
+                },
+              ]}
+            />
+            <div className="text-center mt-2">
+              <GameResetButton
+                isGameEnd={isHandOver}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="d7-reset-button"
+                className="min-w-[90px]"
+              />
+            </div>
+            <CardNavShortcutsPanel data-testid="deuce-to-seven-kbd-shortcuts" />
           </div>
 
           {/* Sticky footer: player hand + buttons */}
@@ -465,69 +527,6 @@ function DeuceToSevenPageContent() {
                 severity={isEnd ? 'alert' : 'info'}
               />
             </div>
-
-            {isHandOver && <RoundResults results={state.roundResults} players={state.players} />}
-
-            {/* Action log */}
-            <ActionLogSection
-              isEndPhase={!!state?.gameEndFlag}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            {/* Hint display */}
-            {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
-
-            {/* Settings (collapsible) + Reset */}
-            <SettingsPanel
-              title={t('settings.title')}
-              groups={[
-                {
-                  items: [
-                    {
-                      type: 'select',
-                      id: 'deuceToSevenBettingLimit',
-                      label: tc('betting.bettingLimit'),
-                      value: bettingLimit,
-                      options: [
-                        { value: 0, label: tc('betting.fixed') },
-                        { value: 1, label: tc('betting.potLimit') },
-                        { value: 2, label: tc('betting.noLimit') },
-                      ],
-                      onSelect: (v) => setBettingLimit(Number(v)),
-                    },
-                    {
-                      type: 'checkbox',
-                      id: 'deuceToSevenCpuMetaAI',
-                      label: t('settings.cpuMetaAI'),
-                      checked: cpuMetaAI,
-                      onToggle: setCpuMetaAI,
-                    },
-                    {
-                      type: 'checkbox',
-                      id: 'deuceToSevenHint',
-                      label: tc('hint.toggle', { ns: 'tutorial' }),
-                      checked: hintEnabled,
-                      onToggle: setHintEnabled,
-                    },
-                  ],
-                },
-              ]}
-            />
-            <div className="text-center mt-2">
-              <GameResetButton
-                isGameEnd={isHandOver}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="d7-reset-button"
-                className="min-w-[90px]"
-              />
-            </div>
-            <CardNavShortcutsPanel data-testid="deuce-to-seven-kbd-shortcuts" />
           </GameFooter>
         </>
       )}
