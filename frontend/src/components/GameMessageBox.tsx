@@ -1,6 +1,15 @@
 import { useTranslation } from 'react-i18next';
 import { resolveMessageCode } from '../utils/resolveMessageCode';
 
+// "playing" codes whose ja text is an instruction rather than the bare status プレイ中; these stay visible.
+const instructionPlayingCodes = new Set([
+  'bigben.playing',
+  'cruel.playing',
+  'saliclaw.playing',
+  'slyfox.playing',
+  'sthelena.playing',
+]);
+
 /** Props for {@link GameMessageBox}. */
 export interface GameMessageBoxProps {
   message: string | undefined;
@@ -26,9 +35,13 @@ export function GameMessageBox({
 }: GameMessageBoxProps) {
   const { t } = useTranslation('common');
   const displayMessage = resolveMessageCode(t, messageCode, messageParams, message);
-  if (!alwaysVisible && !displayMessage) return null;
+  const isRedundantPlayingStatus =
+    !!messageCode && /^(?:[a-z0-9]+\.)?playing$/.test(messageCode) && !instructionPlayingCodes.has(messageCode);
+  if (!alwaysVisible && (isRedundantPlayingStatus || !displayMessage)) return null;
   const role = severity === 'alert' ? 'alert' : 'status';
   const live = severity === 'alert' ? 'assertive' : 'polite';
+  // The steady "playing" status repeats the phase indicator: keep the live region, drop the box.
+  if (isRedundantPlayingStatus) return <div role={role} aria-live={live} data-testid={testId} />;
   if (alwaysVisible && bareWhenEmpty)
     return (
       <div role={role} aria-live={live} data-testid={testId}>

@@ -577,7 +577,7 @@ describe('SpiderPage', () => {
     expect(region).toBeEmptyDOMElement();
   });
 
-  it('displays message with messageCode', async () => {
+  it('keeps the message region empty for the steady playing code', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
       message: 'プレイ中',
@@ -585,7 +585,10 @@ describe('SpiderPage', () => {
     });
     renderWithProviders(<SpiderPage />);
     const region = await screen.findByTestId('spider-game-message');
-    await waitFor(() => expect(region).toHaveTextContent('プレイ中'));
+    // Wait until the state has rendered (the phase indicator shows プレイ中); the region starts
+    // empty before the response arrives, so checking it earlier would pass without the change.
+    await waitFor(() => expect(screen.getAllByText('プレイ中').length).toBeGreaterThan(0));
+    expect(region).toBeEmptyDOMElement();
   });
 
   it('stock card back is clickable during playing phase', async () => {
