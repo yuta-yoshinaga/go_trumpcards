@@ -133,6 +133,22 @@ describe('SixBidSoloPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 1 }));
   });
 
+  it('keeps the hand in the footer and places supporting controls in the play area', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: SixBidSoloPhase.BID, highBid: null, declarerIdx: -1 }));
+    renderWithProviders(<SixBidSoloPage />);
+    const footer = await screen.findByTestId('game-footer-content');
+    const playArea = footer.parentElement?.previousElementSibling;
+    const hand = footer.querySelector('[data-tutorial="sixbidsolo-hand"]');
+    const hintToggle = screen.getByRole('checkbox', { name: /ヒント/ });
+    const bidSelect = screen.getByLabelText('宣言');
+
+    expect(hand).toBeInTheDocument();
+    expect(footer).not.toContainElement(hintToggle);
+    expect(playArea).toContainElement(hintToggle);
+    expect(footer).not.toContainElement(bidSelect);
+    expect(within(screen.getByTestId('game-footer-actions')).getByLabelText('宣言')).toBeInTheDocument();
+  });
+
   it('announces hand-card selection and deselection', async () => {
     renderWithProviders(<SixBidSoloPage />);
     await waitFor(() => expect(handButtons()).toHaveLength(3));
