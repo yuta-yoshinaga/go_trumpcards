@@ -274,6 +274,27 @@ beforeEach(() => {
 });
 
 describe('DramahaPage', () => {
+  it('keeps the hand in the footer and moves error and settings into the play area', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<DramahaPage />);
+
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const playArea = document.querySelector('div.relative.flex-1.overflow-y-auto');
+    expect(playArea).not.toBeNull();
+    expect(within(footerContent).getByTestId('dramaha-hole-card-0')).toBeInTheDocument();
+    expect(within(footerContent).queryByRole('alert')).not.toBeInTheDocument();
+    expect(within(footerContent).queryByText('設定')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByText('設定')).toBeInTheDocument();
+    expect(playArea?.querySelector('[data-tutorial="dr-reset-button"]')).toBeInTheDocument();
+
+    mockExec.mockRejectedValueOnce(new Error('network error'));
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    const alert = await screen.findByRole('alert');
+    expect(footerContent).not.toContainElement(alert);
+    expect(within(playArea as HTMLElement).getByRole('alert')).toBeInTheDocument();
+    expect(screen.getByText('設定')).toBeInTheDocument();
+  });
+
   it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<DramahaPage />);

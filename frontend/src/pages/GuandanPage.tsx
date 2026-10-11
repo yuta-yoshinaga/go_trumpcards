@@ -363,6 +363,42 @@ function GuandanPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+
+            <ErrorAlert message={error} onRetry={retry} />
+
+            <label className="flex items-center gap-1 text-ds-text-primary text-xs w-full justify-center cursor-pointer min-h-[44px]">
+              <input
+                type="checkbox"
+                checked={frontendHintEnabled}
+                onChange={(e) => setFrontendHintEnabled(e.target.checked)}
+              />
+              {tc('hint.toggle', { ns: 'tutorial' })}
+            </label>
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            {isTribute && (
+              <div className="mb-2">
+                <span className="text-ds-text-muted text-xs" data-testid="guandan-tribute-rules">
+                  {t('tributeRules')}
+                </span>
+              </div>
+            )}
+
+            <div className="flex flex-wrap gap-2 items-center">
+              {isGameEnd && (
+                <span className="text-ds-text-primary text-sm font-semibold mr-1">
+                  {humanWon ? t('win') : t('lose')}
+                </span>
+              )}
+
+              <GameResetButton
+                isGameEnd={isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="guandan-reset-button"
+              />
+            </div>
           </div>
 
           {/* Footer */}
@@ -476,42 +512,6 @@ function GuandanPageContent() {
                   )}
                 </div>
               )}
-            </div>
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            <label className="flex items-center gap-1 text-ds-text-primary text-xs w-full justify-center cursor-pointer min-h-[44px]">
-              <input
-                type="checkbox"
-                checked={frontendHintEnabled}
-                onChange={(e) => setFrontendHintEnabled(e.target.checked)}
-              />
-              {tc('hint.toggle', { ns: 'tutorial' })}
-            </label>
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            {isTribute && (
-              <div className="mb-2">
-                <span className="text-ds-text-muted text-xs" data-testid="guandan-tribute-rules">
-                  {t('tributeRules')}
-                </span>
-              </div>
-            )}
-
-            <div className="flex flex-wrap gap-2 items-center">
-              {isGameEnd && (
-                <span className="text-ds-text-primary text-sm font-semibold mr-1">
-                  {humanWon ? t('win') : t('lose')}
-                </span>
-              )}
-
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="guandan-reset-button"
-              />
             </div>
           </GameFooter>
         </>

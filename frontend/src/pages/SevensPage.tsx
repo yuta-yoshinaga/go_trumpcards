@@ -482,6 +482,26 @@ function SevensPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+            <div data-tutorial="sv-settings">
+              <SettingsPanel title={t('config.title')} groups={settingsGroups} />
+              <ReplaySpeedSettingsPanel />
+            </div>
+
+            <ErrorAlert message={error} onRetry={retry} />
+
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            <div className="text-center">
+              <GameResetButton
+                isGameEnd={!!state.gameEndFlag}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="sv-reset-button"
+                className="min-w-[90px]"
+              />
+            </div>
+            <CardNavShortcutsPanel directPlay data-testid="sevens-kbd-shortcuts" />
           </div>
 
           <GameFooter
@@ -544,27 +564,6 @@ function SevensPageContent() {
                 )}
               </div>
             )}
-
-            <div data-tutorial="sv-settings">
-              <SettingsPanel title={t('config.title')} groups={settingsGroups} />
-              <ReplaySpeedSettingsPanel />
-            </div>
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            <div className="text-center">
-              <GameResetButton
-                isGameEnd={!!state.gameEndFlag}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="sv-reset-button"
-                className="min-w-[90px]"
-              />
-            </div>
-            <CardNavShortcutsPanel directPlay data-testid="sevens-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

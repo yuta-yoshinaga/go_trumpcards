@@ -182,6 +182,54 @@ function DoubleAttackPageContent() {
       ) : (
         <>
           <div data-testid="card-area" className={`overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+            {isAttackPhase && (
+              <div
+                className="flex flex-wrap justify-center gap-x-4 gap-y-1 rounded bg-ds-surface px-3 py-2 text-ds-text-primary text-sm tabular-nums"
+                data-testid="da-attack-comparison"
+              >
+                <span>
+                  {t('label.chips')}: {state.chips}
+                </span>
+                <span>
+                  {t('label.attackLimit')}: {state.maxAttackBet}
+                </span>
+                <span>
+                  {t('label.selectedAttack')}: {attack}
+                </span>
+              </div>
+            )}
+            {isBetPhase && !gameOver && (
+              <div className="flex flex-col items-center gap-2" data-testid="da-bet-support">
+                <p className="text-ds-text-muted text-sm">{t('betGuide')}</p>
+                <ChipBetInput
+                  id="doubleattack-ante"
+                  label={t('label.ante')}
+                  value={ante}
+                  onChange={handleAnteChange}
+                  max={state.chips}
+                />
+                <ChipBetInput
+                  id="doubleattack-bustit"
+                  label={t('label.bustIt')}
+                  value={bustIt}
+                  onChange={setBustIt}
+                  max={Math.max(0, state.chips - ante)}
+                />
+                <div className="text-ds-text-primary text-sm tabular-nums" data-testid="da-bustit-payouts">
+                  <p className="font-medium">{t('bustItPayoutTitle')}</p>
+                  <ul>
+                    {state.bustItPayouts.map(({ cards, multiplier }, index) => (
+                      <li key={cards}>
+                        {t(index === state.bustItPayouts.length - 1 ? 'bustItPayoutRowOrMore' : 'bustItPayoutRow', {
+                          cards,
+                          payout: `${multiplier}:1`,
+                        })}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
             <GameMessageBox
               message={state.message}
               messageCode={state.messageCode}
@@ -269,6 +317,25 @@ function DoubleAttackPageContent() {
             )}
 
             {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
+
+            <ErrorAlert message={error} onRetry={retry} />
+            <SettingsPanel
+              title={tc('settings.title')}
+              groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
+            />
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            <div className="flex gap-2">
+              <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
+                {tc('actionLog.view')}
+              </button>
+              <GameResetButton
+                isGameEnd={gameOver}
+                onReset={() => execApi('reset')}
+                requestConfirm={requestConfirm}
+                loading={loading}
+              />
+            </div>
           </div>
 
           <GameFooter
@@ -386,79 +453,15 @@ function DoubleAttackPageContent() {
               ) : null
             }
           >
-            {isBetPhase && !gameOver && (
-              <div className="flex flex-col items-center gap-2" data-testid="da-bet-support">
-                <p className="text-ds-text-muted text-sm">{t('betGuide')}</p>
-                <ChipBetInput
-                  id="doubleattack-ante"
-                  label={t('label.ante')}
-                  value={ante}
-                  onChange={handleAnteChange}
-                  max={state.chips}
-                />
-                <ChipBetInput
-                  id="doubleattack-bustit"
-                  label={t('label.bustIt')}
-                  value={bustIt}
-                  onChange={setBustIt}
-                  max={Math.max(0, state.chips - ante)}
-                />
-                <div className="text-ds-text-primary text-sm tabular-nums" data-testid="da-bustit-payouts">
-                  <p className="font-medium">{t('bustItPayoutTitle')}</p>
-                  <ul>
-                    {state.bustItPayouts.map(({ cards, multiplier }, index) => (
-                      <li key={cards}>
-                        {t(index === state.bustItPayouts.length - 1 ? 'bustItPayoutRowOrMore' : 'bustItPayoutRow', {
-                          cards,
-                          payout: `${multiplier}:1`,
-                        })}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            )}
             {isAttackPhase && (
               <div className="flex flex-col items-center gap-2">
                 <p className="text-ds-text-muted text-sm">{t('attackGuide')}</p>
                 <p className="text-ds-text-muted text-xs" data-testid="da-attack-notice">
                   {t('attackNotice')}
                 </p>
-                <div
-                  className="flex flex-wrap justify-center gap-x-4 gap-y-1 rounded bg-ds-surface px-3 py-2 text-ds-text-primary text-sm tabular-nums"
-                  data-testid="da-attack-comparison"
-                >
-                  <span>
-                    {t('label.chips')}: {state.chips}
-                  </span>
-                  <span>
-                    {t('label.attackLimit')}: {state.maxAttackBet}
-                  </span>
-                  <span>
-                    {t('label.selectedAttack')}: {attack}
-                  </span>
-                </div>
               </div>
             )}
             {isPlayPhase && <p className="text-ds-text-muted text-sm">{t('playGuide')}</p>}
-            <ErrorAlert message={error} onRetry={retry} />
-            <SettingsPanel
-              title={tc('settings.title')}
-              groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
-            />
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            <div className="flex gap-2">
-              <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
-                {tc('actionLog.view')}
-              </button>
-              <GameResetButton
-                isGameEnd={gameOver}
-                onReset={() => execApi('reset')}
-                requestConfirm={requestConfirm}
-                loading={loading}
-              />
-            </div>
           </GameFooter>
         </>
       )}

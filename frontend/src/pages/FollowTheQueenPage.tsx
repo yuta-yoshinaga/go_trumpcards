@@ -361,6 +361,79 @@ export function FollowTheQueenPageContent({ gameKey }: { gameKey: StudPageGameKe
         <>
           {/* Scrollable: CPU players */}
           <div className={`flex-1 overflow-y-auto pt-4 px-5 lg:px-8 ${lgCardAreaConstraint}`}>
+            {/* Muck/Show controls */}
+            {isMuckPhase && (
+              <div className="mb-2 text-center" data-testid="muck-controls">
+                <div className="flex justify-center gap-2">
+                  <button
+                    type="button"
+                    className={`${btnPrimary} min-w-[90px]`}
+                    disabled={loading}
+                    onClick={() => execApi('muck')}
+                  >
+                    {t('muck.muck')}
+                  </button>
+                  <button
+                    type="button"
+                    className={`${btnSecondary} min-w-[90px]`}
+                    disabled={loading}
+                    onClick={() => execApi('show')}
+                  >
+                    {t('muck.show')}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Rebuy/Addon controls */}
+            {isRebuyPhase && (
+              <div className="mb-2 text-center" data-testid="rebuy-controls">
+                <p className="text-ds-text-primary mb-2">
+                  {t('rebuy.prompt', { chips: state?.rebuyChips, used: humanRebuyCount, max: state?.rebuyMaxCount })}
+                </p>
+                <div className="flex justify-center gap-2">
+                  <button
+                    type="button"
+                    className={`${btnPrimary} min-w-[90px]`}
+                    disabled={loading}
+                    onClick={() => execApi('rebuy')}
+                  >
+                    {t('rebuy.accept')}
+                  </button>
+                  <button
+                    type="button"
+                    className={`${btnSecondary} min-w-[90px]`}
+                    disabled={loading}
+                    onClick={() => execApi('skiprebuy')}
+                  >
+                    {t('rebuy.skip')}
+                  </button>
+                </div>
+              </div>
+            )}
+            {isAddonPhase && (
+              <div className="mb-2 text-center" data-testid="addon-controls">
+                <p className="text-ds-text-primary mb-2">{t('addon.prompt', { chips: state?.addonChips })}</p>
+                <div className="flex justify-center gap-2">
+                  <button
+                    type="button"
+                    className={`${btnPrimary} min-w-[90px]`}
+                    disabled={loading}
+                    onClick={() => execApi('addon')}
+                  >
+                    {t('addon.accept')}
+                  </button>
+                  <button
+                    type="button"
+                    className={`${btnSecondary} min-w-[90px]`}
+                    disabled={loading}
+                    onClick={() => execApi('skipaddon')}
+                  >
+                    {t('addon.skip')}
+                  </button>
+                </div>
+              </div>
+            )}
             {/* CPU players */}
             <CpuAccordion playerCount={cpuPlayers.length} dataTutorial="scs-cpu-area">
               <div className="flex flex-wrap gap-2">
@@ -468,6 +541,20 @@ export function FollowTheQueenPageContent({ gameKey }: { gameKey: StudPageGameKe
               actionLog={actionLog}
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
+            />
+
+            <ErrorAlert message={error} onRetry={retry} />
+
+            {/* Hint */}
+            {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
+
+            <GameResetButton
+              isGameEnd={phase === FollowTheQueenPhase.SHOWDOWN || phase === FollowTheQueenPhase.END}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+              dataTutorial="scs-reset-button"
+              className="min-w-[90px]"
             />
           </div>
 
@@ -591,94 +678,6 @@ export function FollowTheQueenPageContent({ gameKey }: { gameKey: StudPageGameKe
               messageCode={state?.messageCode}
               messageParams={state?.messageParams}
               alwaysVisible
-            />
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            {/* Muck/Show controls */}
-            {isMuckPhase && (
-              <div className="mb-2 text-center" data-testid="muck-controls">
-                <div className="flex justify-center gap-2">
-                  <button
-                    type="button"
-                    className={`${btnPrimary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => execApi('muck')}
-                  >
-                    {t('muck.muck')}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnSecondary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => execApi('show')}
-                  >
-                    {t('muck.show')}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Rebuy/Addon controls */}
-            {isRebuyPhase && (
-              <div className="mb-2 text-center" data-testid="rebuy-controls">
-                <p className="text-ds-text-primary mb-2">
-                  {t('rebuy.prompt', { chips: state?.rebuyChips, used: humanRebuyCount, max: state?.rebuyMaxCount })}
-                </p>
-                <div className="flex justify-center gap-2">
-                  <button
-                    type="button"
-                    className={`${btnPrimary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => execApi('rebuy')}
-                  >
-                    {t('rebuy.accept')}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnSecondary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => execApi('skiprebuy')}
-                  >
-                    {t('rebuy.skip')}
-                  </button>
-                </div>
-              </div>
-            )}
-            {isAddonPhase && (
-              <div className="mb-2 text-center" data-testid="addon-controls">
-                <p className="text-ds-text-primary mb-2">{t('addon.prompt', { chips: state?.addonChips })}</p>
-                <div className="flex justify-center gap-2">
-                  <button
-                    type="button"
-                    className={`${btnPrimary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => execApi('addon')}
-                  >
-                    {t('addon.accept')}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnSecondary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => execApi('skipaddon')}
-                  >
-                    {t('addon.skip')}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Hint */}
-            {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
-
-            <GameResetButton
-              isGameEnd={phase === FollowTheQueenPhase.SHOWDOWN || phase === FollowTheQueenPhase.END}
-              onReset={handleManualReset}
-              requestConfirm={requestConfirm}
-              loading={loading}
-              dataTutorial="scs-reset-button"
-              className="min-w-[90px]"
             />
           </GameFooter>
         </>
