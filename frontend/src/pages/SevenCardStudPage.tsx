@@ -657,6 +657,7 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
 
           {/* Sticky footer: player hand + buttons */}
           <GameFooter
+            tall={gameKey === 'chicago'}
             className={`${gameTheme[gameKey].footer} px-5 py-3`}
             actions={
               <>

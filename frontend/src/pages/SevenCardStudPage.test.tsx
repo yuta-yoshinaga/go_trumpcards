@@ -175,6 +175,13 @@ beforeEach(() => {
 });
 
 describe('SevenCardStudPage', () => {
+  it('keeps the standard Stud footer at the default height', async () => {
+    mockExec.mockResolvedValue(thirdStreetState);
+    renderWithProviders(<SevenCardStudPage />);
+    expect((await screen.findByTestId('game-footer-content')).closest('footer')?.className).not.toContain(
+      'max-h-[60vh]',
+    );
+  });
   it.each([
     ['Chicago', chicagoApi, ChicagoPage, 'isChicago'],
     ['Hi-Lo', sevenCardStudHiLoApi, SevenCardStudHiLoPage, 'isHiLo'],

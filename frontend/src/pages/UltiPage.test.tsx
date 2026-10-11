@@ -59,6 +59,10 @@ beforeEach(() => {
 });
 
 describe('UltiPage', () => {
+  it('allows the taller mobile footer', async () => {
+    renderWithProviders(<UltiPage />);
+    expect((await screen.findByTestId('game-footer-content')).closest('footer')?.className).toContain('max-h-[60vh]');
+  });
   it('keeps an empty persistent live region when no contract progress exists', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<UltiPage />);

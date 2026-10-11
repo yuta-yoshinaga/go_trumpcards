@@ -106,7 +106,7 @@ export function MobileHandGrid({
   const isTrump = (idx: number): boolean => trumpIndices?.includes(idx) ?? false;
   const isLegal = (idx: number): boolean => legalIndices?.includes(idx) ?? false;
 
-  const rowCount = rowCountFor(cards.length, buttonWidth, viewportWidth);
+  const rowCount = rowCountFor(cards.length, buttonWidth, viewportWidth, { allowSingleRow: stackRows });
   const rows = splitBalanced(cards, rowCount);
   const shouldStackRows = stackRows && rows.length >= 2;
   const rowMarginTop = stackedRowMarginTop(cardWidth);

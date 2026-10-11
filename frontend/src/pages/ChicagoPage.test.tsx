@@ -84,6 +84,11 @@ describe('ChicagoPage', () => {
     mockExec.mockResolvedValue(makeState());
   });
 
+  it('allows the taller mobile footer', async () => {
+    renderWithProviders(<ChicagoPage />);
+    expect((await screen.findByTestId('game-footer-content')).closest('footer')?.className).toContain('max-h-[60vh]');
+  });
+
   it('drives the chicago endpoint, not the plain stud one', async () => {
     // 同じページを共有しているので、キーの取り違えは静かに別ゲームを叩く。
     renderWithProviders(<ChicagoPage />);
