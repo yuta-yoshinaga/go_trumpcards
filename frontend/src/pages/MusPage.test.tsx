@@ -138,6 +138,19 @@ describe('MusPage', () => {
     );
   });
 
+  it('keeps the hand in the footer and puts hand details and reset in the play area', async () => {
+    renderWithProviders(<MusPage />);
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const playArea = footerContent.parentElement?.previousElementSibling;
+    expect(playArea).toBeInTheDocument();
+
+    expect(within(footerContent).getByRole('button', { name: '♠ A' })).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('mus-hand-summary')).not.toBeInTheDocument();
+    expect(within(footerContent).queryByRole('button', { name: /リセット/ })).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('mus-hand-summary')).toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByRole('button', { name: /リセット/ })).toBeInTheDocument();
+  });
+
   it('renders the human cards and the amarrakos panel', async () => {
     renderWithProviders(<MusPage />);
     await waitFor(() => {

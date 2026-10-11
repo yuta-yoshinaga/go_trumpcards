@@ -565,6 +565,14 @@ function BoliviaPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+            <ErrorAlert message={error} onRetry={retry} />
+            <GameResetButton
+              isGameEnd={isGameEnd}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+            />
+            <CardNavShortcutsPanel data-testid="bolivia-kbd-shortcuts" />
           </div>
 
           <GameFooter
@@ -713,14 +721,6 @@ function BoliviaPageContent() {
                 ))}
               </div>
             )}
-            <ErrorAlert message={error} onRetry={retry} />
-            <GameResetButton
-              isGameEnd={isGameEnd}
-              onReset={handleManualReset}
-              requestConfirm={requestConfirm}
-              loading={loading}
-            />
-            <CardNavShortcutsPanel data-testid="bolivia-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

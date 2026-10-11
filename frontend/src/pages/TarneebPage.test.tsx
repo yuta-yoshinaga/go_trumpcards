@@ -66,6 +66,19 @@ beforeEach(() => {
 });
 
 describe('TarneebPage', () => {
+  it('keeps the hand in the footer and places hint and keyboard reference content in the play area', async () => {
+    const { container } = renderWithProviders(<TarneebPage />);
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const playArea = container.querySelector('.flex-1.overflow-y-auto');
+    expect(playArea).not.toBeNull();
+
+    expect(footerContent.querySelector('[data-tutorial="tn-player-hand"]')).not.toBeNull();
+    expect(footerContent.querySelector('[data-testid="tarneeb-hint-live"]')).toBeNull();
+    expect(playArea?.querySelector('[data-testid="tarneeb-hint-live"]')).not.toBeNull();
+    expect(footerContent.querySelector('[data-testid="tarneeb-kbd-shortcuts"]')).toBeNull();
+    expect(playArea?.querySelector('[data-testid="tarneeb-kbd-shortcuts"]')).not.toBeNull();
+  });
+
   it('shows the declared trump symbol and translated suit name in Japanese and English', async () => {
     const previousLanguage = i18n.language;
     mockExec.mockResolvedValue(makeState({ phase: TarneebPhase.PLAY, trumpSuit: 1 }));
