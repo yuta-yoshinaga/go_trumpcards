@@ -504,7 +504,9 @@ function SevensPageContent() {
             <CardNavShortcutsPanel directPlay data-testid="sevens-kbd-shortcuts" />
           </div>
 
+          {/* Hand plus actions outgrow the 45vh cap on phones (#11655). */}
           <GameFooter
+            tall
             className={`${gameTheme.sevens.footer} px-4 py-2.5`}
             actions={
               <div className="flex gap-2 items-center justify-center flex-wrap">

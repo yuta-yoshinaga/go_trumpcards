@@ -40,6 +40,30 @@ beforeEach(() => {
 });
 
 describe('LooPage', () => {
+  it('stacks mobile hand rows for the human player', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      const cards = Array.from({ length: 13 }, (_, i) => ({ design: 'SPADE' as const, value: (i % 13) + 1 }));
+      const base = makeLooState();
+      mockExec.mockResolvedValue(
+        makeLooState({ players: [{ ...base.players[0], cards, cardCount: cards.length }, ...base.players.slice(1)] }),
+      );
+      renderWithProviders(<LooPage />);
+      const hand = await screen.findByAltText('♠ A');
+      const handSection = hand.closest('[data-tutorial="loo-player-hand"]');
+      expect(handSection).not.toBeNull();
+      await waitFor(() =>
+        expect(handSection?.querySelectorAll('[data-testid="hand-row"]').length).toBeGreaterThanOrEqual(2),
+      );
+      const rows = handSection?.querySelectorAll<HTMLElement>('[data-testid="hand-row"]') ?? [];
+      for (const row of Array.from(rows).slice(1)) expect(row.style.marginTop).toMatch(/^-/);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
   it('shows the turn-up card alongside the trump suit', async () => {
     renderWithProviders(<LooPage />);
     expect(await screen.findByText('めくり札:')).toBeInTheDocument();

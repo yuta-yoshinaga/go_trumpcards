@@ -380,7 +380,9 @@ function MinchiatePageContent() {
           </div>
 
           {/* Footer */}
+          {/* Tarot-size hands outgrow the 45vh cap on phones (#11655). */}
           <GameFooter
+            tall
             className={`${gameTheme.minchiate.footer} px-4 py-2.5`}
             actions={
               <div className="flex flex-wrap gap-2 items-center" data-tutorial="minchiate-action-buttons">
@@ -431,22 +433,20 @@ function MinchiatePageContent() {
           >
             {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
                 変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。 */}
-            <div data-testid="minchiate-prompt-live" role="status" aria-live="polite">
+            <div className={`text-center text-sm ${canScarto ? 'mb-1' : ''}`}>
+              <span data-testid="minchiate-prompt-live" role="status" aria-live="polite">
+                {canScarto && (
+                  <span className="text-ds-text-muted" data-testid="minchiate-scarto-prompt">
+                    {t('scartoPrompt', { count: MINCHIATE_SURPLUS })}
+                  </span>
+                )}
+              </span>
               {canScarto && (
-                <div className="mb-1 text-center text-sm text-ds-text-muted" data-testid="minchiate-scarto-prompt">
-                  {t('scartoPrompt', { count: MINCHIATE_SURPLUS })}
-                </div>
+                <span className="ml-2 text-ds-text-primary tabular-nums" data-testid="minchiate-scarto-progress">
+                  {t('scartoProgress', { selected: selectedCardIndices.length, count: MINCHIATE_SURPLUS })}
+                </span>
               )}
             </div>
-
-            {canScarto && (
-              <div
-                className="mb-1 text-center text-sm text-ds-text-primary tabular-nums"
-                data-testid="minchiate-scarto-progress"
-              >
-                {t('scartoProgress', { selected: selectedCardIndices.length, count: MINCHIATE_SURPLUS })}
-              </div>
-            )}
 
             {humanPlayer && (
               <PlayerHandSection

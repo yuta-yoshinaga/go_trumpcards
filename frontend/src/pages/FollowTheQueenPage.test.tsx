@@ -549,6 +549,48 @@ describe('FollowTheQueenPage', () => {
     expect(screen.getByAltText('♥ K')).toBeInTheDocument();
   });
 
+  it('shows seven face-down placeholders for an undealt, active human hand and none when folded', async () => {
+    mockExec.mockResolvedValue({
+      ...thirdStreetState,
+      players: [humanPlayer({ doorCards: [], holeCards: [] }), cpuPlayer(1), cpuPlayer(2)],
+    });
+    const { unmount } = renderWithProviders(<FollowTheQueenPage />);
+    const hand = await screen.findByTestId('game-footer-content');
+    const humanHand = hand.querySelector('[data-tutorial="scs-player-hand"]') as HTMLElement;
+    expect(within(humanHand).getAllByTestId('animated-card-back')).toHaveLength(7);
+    unmount();
+
+    mockExec.mockResolvedValue({
+      ...thirdStreetState,
+      players: [humanPlayer({ doorCards: [], holeCards: [], folded: true }), cpuPlayer(1), cpuPlayer(2)],
+    });
+    renderWithProviders(<FollowTheQueenPage />);
+    const foldedHand = (await screen.findByTestId('game-footer-content')).querySelector(
+      '[data-tutorial="scs-player-hand"]',
+    ) as HTMLElement;
+    expect(within(foldedHand).queryAllByTestId('animated-card-back')).toHaveLength(0);
+  });
+
+  it('places the human door and hole card groups side by side', async () => {
+    mockExec.mockResolvedValue(thirdStreetState);
+    renderWithProviders(<FollowTheQueenPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+    const hand = screen.getByTestId('game-footer-content').querySelector('[data-tutorial="scs-player-hand"]');
+    expect(hand).not.toBeNull();
+    const doorHeading = within(hand as HTMLElement).getByText(i18n.t('followthequeen:doorCards'));
+    const holeHeading = within(hand as HTMLElement).getByText(i18n.t('followthequeen:holeCards'));
+    const ancestors = new Set<HTMLElement>();
+    for (let node = doorHeading.parentElement; node; node = node.parentElement) ancestors.add(node);
+
+    let commonAncestor = holeHeading.parentElement;
+    while (commonAncestor && !ancestors.has(commonAncestor)) commonAncestor = commonAncestor.parentElement;
+
+    expect(commonAncestor).not.toBeNull();
+    expect(commonAncestor).toHaveClass('flex', 'flex-wrap', 'items-start', 'gap-x-3');
+    expect(doorHeading.parentElement).not.toBe(holeHeading.parentElement);
+  });
+
   // ---- message ----
   it('shows game message', async () => {
     mockExec.mockResolvedValue(thirdStreetState);

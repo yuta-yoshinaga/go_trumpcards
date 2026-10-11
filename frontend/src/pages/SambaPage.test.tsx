@@ -39,23 +39,31 @@ describe('SambaPage', () => {
   });
 
   it('uses stacked MobileHandGrid rows for a large mobile hand', async () => {
-    const base = makeSambaState();
-    mockExec.mockResolvedValue(
-      makeSambaState({
-        players: [
-          {
-            ...base.players[0],
-            cards: Array.from({ length: 16 }, (_, i) => ({ design: 'SPADE' as const, value: (i % 13) + 1 })),
-          },
-          ...base.players.slice(1),
-        ],
-      }),
-    );
-    renderWithProviders(<SambaPage />);
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      const base = makeSambaState();
+      mockExec.mockResolvedValue(
+        makeSambaState({
+          players: [
+            {
+              ...base.players[0],
+              cards: Array.from({ length: 16 }, (_, i) => ({ design: 'SPADE' as const, value: (i % 13) + 1 })),
+            },
+            ...base.players.slice(1),
+          ],
+        }),
+      );
+      renderWithProviders(<SambaPage />);
 
-    const rows = await screen.findAllByTestId('hand-row');
-    expect(rows.length).toBeGreaterThanOrEqual(2);
-    expect(Number.parseFloat((rows[1] as HTMLElement).style.marginTop)).toBeLessThan(0);
+      const rows = await screen.findAllByTestId('hand-row');
+      expect(rows.length).toBeGreaterThanOrEqual(2);
+      expect(Number.parseFloat((rows[1] as HTMLElement).style.marginTop)).toBeLessThan(0);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
   });
 
   it('selects tappable mobile cards and keeps staged meld cards unavailable', async () => {

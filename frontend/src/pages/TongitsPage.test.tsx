@@ -65,6 +65,62 @@ beforeEach(() => {
 });
 
 describe('TongitsPage', () => {
+  it('stacks mobile hand rows in the footer', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      const initial = state();
+      const cards = Array.from({ length: 13 }, (_, i) => card('SPADE', (i % 13) + 1));
+      mockExec.mockResolvedValue(
+        state({ players: [{ ...initial.players[0], cards, cardCount: cards.length }, ...initial.players.slice(1)] }),
+      );
+      renderWithProviders(<TongitsPage />);
+      const footer = await screen.findByTestId('game-footer-content');
+      const hand = footer.querySelector('[data-tutorial="tongits-player-hand"]');
+      expect(hand).not.toBeNull();
+      if (!hand) throw new Error('Expected the Tongits player hand');
+      await waitFor(() => expect(hand.querySelectorAll('[data-testid="hand-row"]').length).toBeGreaterThanOrEqual(2));
+      const rows = hand.querySelectorAll<HTMLElement>('[data-testid="hand-row"]');
+      for (const row of Array.from(rows).slice(1)) expect(row.style.marginTop).toMatch(/^-/);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it('toggles a mobile hand card with the existing selection behavior', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      renderWithProviders(<TongitsPage />);
+      const footer = await screen.findByTestId('game-footer-content');
+      const hand = footer.querySelector('[data-tutorial="tongits-player-hand"]');
+      expect(hand).not.toBeNull();
+      if (!hand) throw new Error('Expected the Tongits player hand');
+      const cardButton = hand.querySelector('button');
+      expect(cardButton).not.toBeNull();
+      if (!cardButton) throw new Error('Expected a card button');
+      fireEvent.click(cardButton);
+      expect(cardButton).toHaveAttribute('aria-pressed', 'true');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it('renders the desktop hand and toggles a card selection', async () => {
+    renderWithProviders(<TongitsPage />);
+
+    const footer = await screen.findByTestId('game-footer-content');
+    const hand = footer.querySelector('[data-tutorial="tongits-player-hand"]');
+    expect(hand).toBeInTheDocument();
+    if (!hand) throw new Error('Expected the Tongits player hand');
+    const cardButton = within(hand as HTMLElement).getByTestId('tongits-hand-0');
+    expect(cardButton).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(cardButton);
+    expect(cardButton).toHaveAttribute('aria-pressed', 'true');
+  });
+
   it('keeps the hand in the footer and places reset and shortcuts in the play area', async () => {
     renderWithProviders(<TongitsPage />);
 

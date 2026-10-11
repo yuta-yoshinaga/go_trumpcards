@@ -84,6 +84,76 @@ describe('BoliviaPage', () => {
     expect(within(footerContent).queryByRole('button', { name: 'リセット' })).not.toBeInTheDocument();
   });
 
+  it('stacks mobile hand rows and preserves card selection and restrictions', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      const cards = Array.from({ length: 13 }, (_, value) => ({ design: 'SPADE' as const, value }));
+      mockExec.mockResolvedValue(
+        makeBoliviaState({
+          phase: 1,
+          players: makeBoliviaState().players.map((player) =>
+            player.isHuman ? { ...player, cards, cardCount: cards.length } : player,
+          ),
+        }),
+      );
+      renderWithProviders(<BoliviaPage />);
+
+      const hand = await screen
+        .findByTestId('game-footer-content')
+        .then((footer) => footer.querySelector('[data-tutorial="sa-player-hand"]'));
+      expect(hand).not.toBeNull();
+      if (!hand) throw new Error('Expected the Bolivia player hand');
+      await waitFor(() => expect(hand.querySelectorAll('[data-testid="hand-row"]').length).toBeGreaterThanOrEqual(2));
+      const rows = hand.querySelectorAll<HTMLElement>('[data-testid="hand-row"]');
+      for (const row of Array.from(rows).slice(1)) expect(row.style.marginTop).toMatch(/^-/);
+
+      const handCards = within(hand as HTMLElement).getAllByRole('button');
+      fireEvent.click(handCards[0]);
+      expect(handCards[0]).toHaveAttribute('aria-pressed', 'true');
+      fireEvent.click(handCards[1]);
+      fireEvent.click(handCards[2]);
+      fireEvent.click(screen.getByRole('button', { name: 'グループを追加' }));
+      expect(handCards[0]).toHaveAttribute('aria-disabled', 'true');
+      expect(handCards[0]).toHaveAccessibleName(/グループ1に追加済み/);
+      fireEvent.click(handCards[0]);
+      expect(handCards[0]).toHaveAttribute('aria-pressed', 'false');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it('renders the desktop hand and keeps grouped cards unselectable', async () => {
+    mobileState.isMobile = false;
+    const cards = Array.from({ length: 5 }, (_, value) => ({ design: 'SPADE' as const, value }));
+    mockExec.mockResolvedValue(
+      makeBoliviaState({
+        phase: 1,
+        players: makeBoliviaState().players.map((player) =>
+          player.isHuman ? { ...player, cards, cardCount: cards.length } : player,
+        ),
+      }),
+    );
+    renderWithProviders(<BoliviaPage />);
+
+    const hand = await screen
+      .findByTestId('game-footer-content')
+      .then((footer) => footer.querySelector('[data-tutorial="sa-player-hand"]'));
+    expect(hand).toBeInTheDocument();
+    if (!hand) throw new Error('Expected the Bolivia player hand');
+    const handCards = within(hand as HTMLElement).getAllByRole('button');
+    fireEvent.click(handCards[0]);
+    expect(handCards[0]).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(handCards[1]);
+    fireEvent.click(handCards[2]);
+    fireEvent.click(screen.getByRole('button', { name: 'グループを追加' }));
+    expect(handCards[0]).toHaveAttribute('aria-disabled', 'true');
+    expect(handCards[0]).toHaveAccessibleName(/グループ1に追加済み/);
+    fireEvent.click(handCards[0]);
+    expect(handCards[0]).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('calls reset on mount with the default config', async () => {
     renderWithProviders(<BoliviaPage />);
     await waitFor(() =>

@@ -41,6 +41,11 @@ beforeEach(() => {
 });
 
 describe('MinchiatePage', () => {
+  it('uses the taller mobile footer cap', async () => {
+    renderWithProviders(<MinchiatePage />);
+    const content = await screen.findByTestId('game-footer-content');
+    expect(content.closest('footer')?.className).toContain('max-h-[60vh]');
+  });
   it('stacks the mobile hand rows when the hand spans at least two rows', async () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
@@ -393,5 +398,11 @@ describe('MinchiatePage', () => {
 
     const progress = await screen.findByTestId('minchiate-scarto-progress');
     expect(progress.closest('[aria-live]')).toBeNull();
+    const promptLive = screen.getByTestId('minchiate-prompt-live');
+    expect(progress.parentElement).not.toBeNull();
+    expect(promptLive.parentElement).not.toBeNull();
+    expect(progress.parentElement).toBe(promptLive.parentElement);
+    // On one line, not two footer rows: the shared parent is the prompt line, not the footer content.
+    expect(progress.parentElement).not.toBe(screen.getByTestId('game-footer-content'));
   });
 });

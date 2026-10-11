@@ -265,6 +265,30 @@ describe('OhHellPage', () => {
     }
   });
 
+  it('stacks later mobile hand rows', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    try {
+      mockExec.mockResolvedValue({
+        ...playPhaseState,
+        players: [
+          {
+            ...playPhaseState.players[0],
+            cards: Array.from({ length: 8 }, (_, i) => ({ design: 'SPADE' as const, value: i + 1 })),
+          },
+          ...playPhaseState.players.slice(1),
+        ],
+      });
+      const { container } = renderWithProviders(<OhHellPage />);
+      await screen.findByRole('button', { name: /♠ 8/ });
+      const rows = container.querySelectorAll<HTMLElement>('[data-tutorial="oh-player-hand"] [data-testid="hand-row"]');
+      expect(rows.length).toBeGreaterThan(1);
+      expect(Number.parseFloat(rows[1].style.marginTop)).toBeLessThan(0);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+    }
+  });
+
   it('shows the bid-progress chip in the header during play', async () => {
     renderWithProviders(<OhHellPage />);
     // Human bid 2, won 0, 5 cards left \u2192 still achievable \u2192 neutral info colors.

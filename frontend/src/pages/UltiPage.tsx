@@ -430,7 +430,9 @@ function UltiPageContent() {
           </div>
 
           {/* Footer */}
+          {/* Hand plus actions outgrow the 45vh cap on phones (#11655). */}
           <GameFooter
+            tall
             className={`${gameTheme.ulti.footer} px-4 py-2.5`}
             actions={
               canBid || canDiscard || canPlay || isTrickEnd || isRoundEnd ? (
@@ -574,6 +576,7 @@ function UltiPageContent() {
                 toggleCard={toggleCard}
                 cardWidth={cardWidth}
                 isMobile={isMobile}
+                stackRows
                 dataTutorialPrefix="ulti"
                 validIndices={canPlay ? state.playableIndices : undefined}
                 restrictedTooltip={t('playButton')}

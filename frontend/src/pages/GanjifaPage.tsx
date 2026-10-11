@@ -342,7 +342,9 @@ function GanjifaPageContent() {
           </div>
 
           {/* Footer */}
+          {/* Tarot-size hands outgrow the 45vh cap on phones (#11655). */}
           <GameFooter
+            tall
             className={`${gameTheme.ganjifa.footer} px-4 py-2.5`}
             actions={
               <div className="flex flex-wrap gap-2 items-center" data-tutorial="ganjifa-action-buttons">
@@ -377,6 +379,7 @@ function GanjifaPageContent() {
                 cardWidth={cardWidth}
                 isMobile={isMobile}
                 dataTutorialPrefix="ganjifa"
+                stackRows
                 validIndices={canPlay ? state.playableIndices : undefined}
                 restrictedTooltip={t('mustFollowSuit')}
                 cardStatusFor={(idx) => {

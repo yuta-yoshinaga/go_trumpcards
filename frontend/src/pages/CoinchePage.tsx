@@ -574,6 +574,7 @@ function CoinchePageContent() {
             toggleCard={toggleCard}
             cardWidth={cardWidth}
             isMobile={isMobile}
+            stackRows
             dataTutorialPrefix="be"
             legalIndices={legalPlayIndices}
           />

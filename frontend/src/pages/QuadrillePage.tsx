@@ -567,6 +567,7 @@ function QuadrillePageContent() {
                 toggleCard={toggleCard}
                 cardWidth={cardWidth}
                 isMobile={isMobile}
+                stackRows
                 dataTutorialPrefix="quadrille"
                 validIndices={canPlay ? state.playableIndices : undefined}
                 restrictedTooltip={t('playButton')}

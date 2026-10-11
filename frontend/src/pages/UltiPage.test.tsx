@@ -59,6 +59,35 @@ beforeEach(() => {
 });
 
 describe('UltiPage', () => {
+  it('allows the taller mobile footer', async () => {
+    renderWithProviders(<UltiPage />);
+    expect((await screen.findByTestId('game-footer-content')).closest('footer')?.className).toContain('max-h-[60vh]');
+  });
+
+  it('stacks mobile hand rows for the human player', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      const cards = Array.from({ length: 13 }, (_, i) => ({ design: 'HEART' as const, value: (i % 13) + 1 }));
+      mockExec.mockResolvedValue({
+        ...playPhaseState,
+        players: [{ ...playPhaseState.players[0], cards, cardCount: cards.length }, ...playPhaseState.players.slice(1)],
+      });
+      renderWithProviders(<UltiPage />);
+      const hand = await screen.findByAltText('♥ A');
+      const handSection = hand.closest('[data-tutorial="ulti-player-hand"]');
+      expect(handSection).not.toBeNull();
+      await waitFor(() =>
+        expect(handSection?.querySelectorAll('[data-testid="hand-row"]').length).toBeGreaterThanOrEqual(2),
+      );
+      const rows = handSection?.querySelectorAll<HTMLElement>('[data-testid="hand-row"]') ?? [];
+      for (const row of Array.from(rows).slice(1)) expect(row.style.marginTop).toMatch(/^-/);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
   it('keeps an empty persistent live region when no contract progress exists', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<UltiPage />);

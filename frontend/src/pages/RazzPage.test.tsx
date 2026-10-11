@@ -190,6 +190,11 @@ describe('RazzPage', () => {
   });
 
   // ---- mount & reset ----
+  it('opts into the taller mobile footer', async () => {
+    renderWithProviders(<RazzPage />);
+    expect((await screen.findByTestId('game-footer-content')).closest('footer')?.className).toContain('max-h-[60vh]');
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<RazzPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
@@ -452,6 +457,35 @@ describe('RazzPage', () => {
     renderWithProviders(<RazzPage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
     expect(screen.getByAltText('♥ K')).toBeInTheDocument();
+  });
+
+  it('renders human door and hole card groups side by side', async () => {
+    mockExec.mockResolvedValue(thirdStreetState);
+    renderWithProviders(<RazzPage />);
+    const doorHeadings = await screen.findAllByText(i18n.t('razz:doorCards'));
+    const holeHeadings = screen.getAllByText(i18n.t('razz:holeCards'));
+    const doorHeading = doorHeadings.at(-1);
+    const holeHeading = holeHeadings.at(-1);
+    expect(doorHeading).toBeDefined();
+    expect(holeHeading).toBeDefined();
+    const ancestors = (element: HTMLElement) => {
+      const result: HTMLElement[] = [];
+      let current: HTMLElement | null = element;
+      while (current) {
+        result.push(current);
+        current = current.parentElement;
+      }
+      return result;
+    };
+    const holeAncestors = new Set(ancestors(holeHeading!));
+    const commonWrapper = ancestors(doorHeading!).find(
+      (ancestor) => holeAncestors.has(ancestor) && ancestor.className.includes('flex-wrap'),
+    );
+
+    expect(commonWrapper).toBeDefined();
+    expect(doorHeading!.parentElement).not.toBe(holeHeading!.parentElement);
+    expect(commonWrapper).toContainElement(doorHeading!);
+    expect(commonWrapper).toContainElement(holeHeading!);
   });
 
   // ---- message ----

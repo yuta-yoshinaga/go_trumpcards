@@ -498,6 +498,7 @@ function LooPageContent() {
                 toggleCard={toggleCard}
                 cardWidth={cardWidth}
                 isMobile={isMobile}
+                stackRows
                 dataTutorialPrefix="loo"
                 validIndices={canPlay ? state.playableIndices : undefined}
                 restrictedTooltip={t('playButton')}

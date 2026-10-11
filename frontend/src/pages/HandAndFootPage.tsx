@@ -467,7 +467,9 @@ function HandAndFootPageContent() {
             <CardNavShortcutsPanel data-testid="hand-and-foot-kbd-shortcuts" />
           </div>
 
+          {/* Hand plus actions outgrow the 45vh cap on phones (#11655). */}
           <GameFooter
+            tall
             className={`${gameTheme.handandfoot.footer} px-4 py-2.5`}
             actions={
               (isDrawPhase && isHumanTurn) ||

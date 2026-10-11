@@ -288,6 +288,52 @@ describe('FiveCardStudPage', () => {
     expect(screen.queryByLabelText('♠ A、役の構成札')).not.toBeInTheDocument();
   });
 
+  it('shows two face-down placeholders for an undealt active hand and none when folded', async () => {
+    mockExec.mockResolvedValue({
+      ...secondStreetState,
+      players: [humanPlayer({ doorCards: [], holeCards: [] }), cpuPlayer(1), cpuPlayer(2), cpuPlayer(3)],
+    });
+    const { unmount } = renderWithProviders(<FiveCardStudPage />);
+    const footer = await screen.findByTestId('game-footer-content');
+    const humanHand = footer.querySelector('[data-tutorial="fcs-player-hand"]') as HTMLElement;
+    expect(within(humanHand).getAllByTestId('animated-card-back')).toHaveLength(2);
+    unmount();
+
+    mockExec.mockResolvedValue({
+      ...secondStreetState,
+      players: [humanPlayer({ doorCards: [], holeCards: [], folded: true }), cpuPlayer(1), cpuPlayer(2), cpuPlayer(3)],
+    });
+    renderWithProviders(<FiveCardStudPage />);
+    const foldedFooter = await screen.findByTestId('game-footer-content');
+    const foldedHand = foldedFooter.querySelector('[data-tutorial="fcs-player-hand"]') as HTMLElement;
+    expect(within(foldedHand).queryAllByTestId('animated-card-back')).toHaveLength(0);
+  });
+
+  it('lays out the human door and hole card groups in a shared wrapping row', async () => {
+    mockExec.mockResolvedValue(secondStreetState);
+    renderWithProviders(<FiveCardStudPage />);
+    await screen.findByTestId('latest-door-human');
+    const humanHand = document.querySelector<HTMLElement>('[data-tutorial="fcs-player-hand"]');
+    expect(humanHand).not.toBeNull();
+    const doorHeading = within(humanHand as HTMLElement).getByText('ドアカード');
+    const holeHeading = within(humanHand as HTMLElement).getByText('ホールカード');
+    const ancestors = (element: HTMLElement) => {
+      const result: HTMLElement[] = [];
+      let current: HTMLElement | null = element;
+      while (current) {
+        result.push(current);
+        current = current.parentElement;
+      }
+      return result;
+    };
+    const holeAncestors = new Set(ancestors(holeHeading));
+    const sharedWrapper = ancestors(doorHeading).find((ancestor) => holeAncestors.has(ancestor));
+
+    expect(sharedWrapper).toBeDefined();
+    expect(sharedWrapper).toHaveClass('flex', 'flex-wrap');
+    expect(doorHeading.parentElement).not.toBe(holeHeading.parentElement);
+  });
+
   it('highlights the latest door card for the human and each CPU', async () => {
     mockExec.mockResolvedValue(secondStreetState);
     renderWithProviders(<FiveCardStudPage />);

@@ -555,6 +555,8 @@ function RazzPageContent() {
           {/* Sticky footer: player hand + buttons */}
           <GameFooter
             className={`${gameTheme.razz.footer} px-5 py-3`}
+            // The hand plus its low-hand lines and BettingControls outgrow the 45vh cap on phones (#11655).
+            tall
             actions={
               <>
                 {/* Betting controls */}
@@ -630,45 +632,51 @@ function RazzPageContent() {
                     </span>
                   )}
                 </div>
-                {/* Door cards */}
-                <div className="text-ds-text-muted text-xs mb-0.5">{t('doorCards')}</div>
-                <div
-                  className={`flex flex-wrap gap-1.5 mb-1 ${humanPlayer.id === bringInPlayerId ? bringInCardClass : ''}`}
-                >
-                  {humanPlayer.doorCards?.length
-                    ? humanPlayer.doorCards.map((card, index) => (
-                        <AnimatedCard
-                          key={`${card.design}-${card.value}`}
-                          card={card}
-                          width={cardWidth}
-                          style={placeholderCardStyle}
-                          wrapperClassName={
-                            selectedLowCards.has(index) ? 'rounded ring-2 ring-game-status-active' : undefined
-                          }
-                        />
-                      ))
-                    : !humanPlayer.folded &&
-                      Array.from({ length: 4 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
-                </div>
-                {/* Hole cards */}
-                <div className="text-ds-text-muted text-xs mb-0.5">{t('holeCards')}</div>
-                <div className="flex flex-wrap gap-1.5 mb-2">
-                  {humanPlayer.holeCards?.length
-                    ? humanPlayer.holeCards.map((card, index) => (
-                        <AnimatedCard
-                          key={`${card.design}-${card.value}`}
-                          card={card}
-                          width={cardWidth}
-                          style={placeholderCardStyle}
-                          wrapperClassName={
-                            selectedLowCards.has(humanPlayer.doorCards.length + index)
-                              ? 'rounded ring-2 ring-game-status-active'
-                              : undefined
-                          }
-                        />
-                      ))
-                    : !humanPlayer.folded &&
-                      Array.from({ length: 3 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
+                <div className="flex flex-wrap items-start gap-x-3 mb-2">
+                  {/* Door cards */}
+                  <div>
+                    <div className="text-ds-text-muted text-xs mb-0.5">{t('doorCards')}</div>
+                    <div
+                      className={`flex flex-wrap gap-1.5 ${humanPlayer.id === bringInPlayerId ? bringInCardClass : ''}`}
+                    >
+                      {humanPlayer.doorCards?.length
+                        ? humanPlayer.doorCards.map((card, index) => (
+                            <AnimatedCard
+                              key={`${card.design}-${card.value}`}
+                              card={card}
+                              width={cardWidth}
+                              style={placeholderCardStyle}
+                              wrapperClassName={
+                                selectedLowCards.has(index) ? 'rounded ring-2 ring-game-status-active' : undefined
+                              }
+                            />
+                          ))
+                        : !humanPlayer.folded &&
+                          Array.from({ length: 4 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
+                    </div>
+                  </div>
+                  {/* Hole cards */}
+                  <div>
+                    <div className="text-ds-text-muted text-xs mb-0.5">{t('holeCards')}</div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {humanPlayer.holeCards?.length
+                        ? humanPlayer.holeCards.map((card, index) => (
+                            <AnimatedCard
+                              key={`${card.design}-${card.value}`}
+                              card={card}
+                              width={cardWidth}
+                              style={placeholderCardStyle}
+                              wrapperClassName={
+                                selectedLowCards.has(humanPlayer.doorCards.length + index)
+                                  ? 'rounded ring-2 ring-game-status-active'
+                                  : undefined
+                              }
+                            />
+                          ))
+                        : !humanPlayer.folded &&
+                          Array.from({ length: 3 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
+                    </div>
+                  </div>
                 </div>
               </div>
             )}

@@ -87,7 +87,7 @@ describe('MobileHandGrid', () => {
       const rows = container.querySelectorAll<HTMLElement>('[data-testid="hand-row"]');
       expect(rows.length).toBeGreaterThanOrEqual(2);
       expect(rows[0].style.marginBottom).toBe('0px');
-      const expectedMargin = -(40 * 1.5 + 2 - 52);
+      const expectedMargin = -14;
       for (const row of Array.from(rows).slice(1)) expect(row.style.marginTop).toBe(`${expectedMargin}px`);
     } finally {
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });
@@ -101,6 +101,27 @@ describe('MobileHandGrid', () => {
     const rows = container.querySelectorAll<HTMLElement>('[data-testid="hand-row"]');
     expect(rows).toHaveLength(1);
     expect(rows[0].style.marginTop).toBe('');
+  });
+
+  it('uses one row for five fitting cards only when stackRows is enabled', () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      const stacked = render(
+        <MobileHandGrid cards={makeCards(5)} selectedIndices={[]} onToggle={() => {}} cardWidth={40} stackRows />,
+      );
+      expect(stacked.container.querySelectorAll('[data-testid="hand-row"]')).toHaveLength(1);
+      stacked.unmount();
+
+      const unstacked = render(
+        <MobileHandGrid cards={makeCards(5)} selectedIndices={[]} onToggle={() => {}} cardWidth={40} />,
+      );
+      expect(unstacked.container.querySelectorAll('[data-testid="hand-row"]')).toHaveLength(2);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
   });
 
   it('splits even card count evenly', () => {

@@ -63,6 +63,12 @@ describe('GuandanPage', () => {
     mockExec.mockResolvedValue(makeState());
   });
 
+  it('opts into the taller mobile footer for its 27-card hand', async () => {
+    renderWithProviders(<GuandanPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.getByRole('contentinfo').className).toContain('max-h-[60vh]');
+  });
+
   it('resets on mount', async () => {
     renderWithProviders(<GuandanPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
@@ -170,6 +176,56 @@ describe('GuandanPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '出す' }));
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndexes: [0, 2] }));
+  });
+
+  it('stacks mobile hand rows and preserves selectable and disabled card behavior', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      const designs: CardDesign[] = ['SPADE', 'HEART', 'CLOVER', 'DIAMOND'];
+      const cards = Array.from({ length: 27 }, (_, i) => card(designs[Math.floor(i / 13)] ?? 'SPADE', (i % 13) + 1));
+      mockExec.mockResolvedValue(
+        makeState({ players: [seat(0, true, { cards, cardCount: cards.length }), ...makeState().players.slice(1)] }),
+      );
+      renderWithProviders(<GuandanPage />);
+      await waitFor(() =>
+        expect(document.querySelectorAll('[data-testid="hand-row"]').length).toBeGreaterThanOrEqual(2),
+      );
+      const hand = document.querySelector<HTMLElement>('[data-tutorial="guandan-hand"]');
+      expect(document.querySelectorAll('[data-tutorial="guandan-hand"]')).toHaveLength(1);
+      const rows = hand?.querySelectorAll<HTMLElement>('[data-testid="hand-row"]');
+      expect(rows).toBeDefined();
+      for (const row of Array.from(rows ?? []).slice(1)) expect(row.style.marginTop).toMatch(/^-/);
+
+      const availableCard = screen.getByRole('button', { name: '♠ A' });
+      fireEvent.click(availableCard);
+      expect(availableCard).toHaveAttribute('aria-pressed', 'true');
+      fireEvent.click(availableCard);
+      expect(availableCard).toHaveAttribute('aria-pressed', 'false');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it('does not allow mobile hand selection outside the human action phase', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      const otherTurn = makeState({ currentPlayerIdx: 1 });
+      mockExec.mockResolvedValue(otherTurn);
+      renderWithProviders(<GuandanPage />);
+      await waitFor(() => expect(document.querySelectorAll('[data-testid="hand-row"]').length).toBeGreaterThan(0));
+      const unavailableCard = screen.getByRole('button', { name: '♠ 2' });
+      expect(unavailableCard).toHaveAttribute('aria-disabled', 'true');
+      fireEvent.click(unavailableCard);
+      expect(unavailableCard).toHaveAttribute('aria-pressed', 'false');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
   });
 
   it('keeps the play action in the fixed footer action row on the human turn', async () => {
