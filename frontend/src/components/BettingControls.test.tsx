@@ -84,8 +84,8 @@ describe('BettingControls', () => {
     expect(screen.getByRole('button', { name: 'フォールド' }).querySelector('kbd')).toHaveTextContent('F');
   });
 
-  it('lays out the bet controls and actions in a wrapping desktop row with hints below', () => {
-    render(<BettingControls {...makeProps({ hasOutstandingBet: true })} />);
+  it('keeps all action labels within their minimum width in both betting states', () => {
+    const { rerender } = render(<BettingControls {...makeProps({ hasOutstandingBet: true })} />);
     const controls = screen.getByTestId('betting-key-hints').parentElement;
     expect(controls?.className.split(' ')).toEqual(expect.arrayContaining(['sm:items-center']));
     expect(screen.getByTestId('betting-key-hints').className.split(' ')).toEqual(
@@ -97,8 +97,18 @@ describe('BettingControls', () => {
     for (const name of [/^コール(?:\s|$)/, 'レイズ', 'フォールド', 'オールイン'] as const) {
       const classes = screen.getByRole('button', { name }).className.split(' ');
       expect(classes).toEqual(
-        expect.arrayContaining(['flex-1', 'min-w-[56px]', 'whitespace-nowrap', 'sm:flex-none', 'sm:min-w-[80px]']),
+        expect.arrayContaining(['flex-1', 'min-w-fit', 'whitespace-nowrap', 'sm:flex-none', 'sm:min-w-[80px]']),
       );
+      expect(classes).not.toContain('min-w-[56px]');
+    }
+
+    rerender(<BettingControls {...makeProps()} />);
+    for (const name of ['ベット', 'チェック', 'フォールド', 'オールイン'] as const) {
+      const classes = screen.getByRole('button', { name }).className.split(' ');
+      expect(classes).toEqual(
+        expect.arrayContaining(['flex-1', 'min-w-fit', 'whitespace-nowrap', 'sm:flex-none', 'sm:min-w-[80px]']),
+      );
+      expect(classes).not.toContain('min-w-[56px]');
     }
   });
 
