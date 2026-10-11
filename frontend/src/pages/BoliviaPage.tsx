@@ -12,6 +12,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
+import { MobileHandGrid } from '../components/MobileHandGrid';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -691,36 +692,54 @@ function BoliviaPageContent() {
               </div>
             }
           >
-            {humanPlayer && (
-              <div className="flex flex-wrap gap-1 mb-2" data-tutorial="sa-player-hand">
-                {humanPlayer.cards.map((card, idx) => (
-                  <button
-                    type="button"
-                    key={`${card.design}-${card.value}-${idx}`}
-                    onClick={() => {
-                      if (!groupedIndices.has(idx)) toggleCard(idx);
-                    }}
-                    aria-label={
-                      groupedIndices.has(idx)
-                        ? `${cardAlt(card)} (${t('inMeldGroup', { n: meldGroups.findIndex((group) => group.includes(idx)) + 1 })})`
-                        : cardAlt(card)
-                    }
-                    aria-pressed={selectedCardIndices.includes(idx)}
-                    aria-disabled={groupedIndices.has(idx) || undefined}
-                    className={`transition-transform aria-disabled:opacity-50 aria-disabled:cursor-not-allowed ${focusRingCard}`}
-                    style={{
-                      background: 'none',
-                      padding: 0,
-                      borderRadius: 8,
-                      ...selectedCardStyle(selectedCardIndices.includes(idx)),
-                      boxSizing: 'border-box',
-                    }}
-                  >
-                    <AnimatedCard card={card} width={cardWidth} />
-                  </button>
-                ))}
-              </div>
-            )}
+            {humanPlayer &&
+              (isMobile ? (
+                <MobileHandGrid
+                  cards={humanPlayer.cards}
+                  selectedIndices={selectedCardIndices}
+                  onToggle={(idx) => {
+                    if (!groupedIndices.has(idx)) toggleCard(idx);
+                  }}
+                  cardWidth={cardWidth}
+                  dataTutorial="sa-player-hand"
+                  validIndices={humanPlayer.cards.map((_, idx) => idx).filter((idx) => !groupedIndices.has(idx))}
+                  cardStatusFor={(idx) =>
+                    groupedIndices.has(idx)
+                      ? t('inMeldGroup', { n: meldGroups.findIndex((group) => group.includes(idx)) + 1 })
+                      : undefined
+                  }
+                  stackRows
+                />
+              ) : (
+                <div className="flex flex-wrap gap-1 mb-2" data-tutorial="sa-player-hand">
+                  {humanPlayer.cards.map((card, idx) => (
+                    <button
+                      type="button"
+                      key={`${card.design}-${card.value}-${idx}`}
+                      onClick={() => {
+                        if (!groupedIndices.has(idx)) toggleCard(idx);
+                      }}
+                      aria-label={
+                        groupedIndices.has(idx)
+                          ? `${cardAlt(card)} (${t('inMeldGroup', { n: meldGroups.findIndex((group) => group.includes(idx)) + 1 })})`
+                          : cardAlt(card)
+                      }
+                      aria-pressed={selectedCardIndices.includes(idx)}
+                      aria-disabled={groupedIndices.has(idx) || undefined}
+                      className={`transition-transform aria-disabled:opacity-50 aria-disabled:cursor-not-allowed ${focusRingCard}`}
+                      style={{
+                        background: 'none',
+                        padding: 0,
+                        borderRadius: 8,
+                        ...selectedCardStyle(selectedCardIndices.includes(idx)),
+                        boxSizing: 'border-box',
+                      }}
+                    >
+                      <AnimatedCard card={card} width={cardWidth} />
+                    </button>
+                  ))}
+                </div>
+              ))}
           </GameFooter>
         </>
       )}

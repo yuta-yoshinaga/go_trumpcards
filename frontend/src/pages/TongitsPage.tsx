@@ -11,6 +11,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
+import { MobileHandGrid } from '../components/MobileHandGrid';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
@@ -139,7 +140,7 @@ function TongitsPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('tongits', state);
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('tongits');
   const cliConfig: CliGameConfig<TongitsResponse, Parameters<typeof tongitsApi.exec>> = useMemo(
     () => ({
@@ -515,40 +516,50 @@ function TongitsPageContent() {
               </div>
             }
           >
-            {humanPlayer && (
-              <div className="flex flex-wrap gap-1 mb-2" data-tutorial="tongits-player-hand">
-                {humanPlayer.cards.map((card, idx) => {
-                  const isCardSelected = selectedCardIndices.includes(idx);
-                  const isMeldCard = !isCardSelected && meldHighlight.has(idx);
-                  return (
-                    <button
-                      type="button"
-                      key={`${card.design}-${card.value}-${idx}`}
-                      onClick={() => toggleCard(idx)}
-                      aria-label={cardAlt(card)}
-                      aria-pressed={isCardSelected}
-                      data-meld={isMeldCard ? 'true' : undefined}
-                      data-testid={`tongits-hand-${idx.toString()}`}
-                      className={`transition-transform ${focusRingCard}`}
-                      style={{
-                        background: 'none',
-                        padding: 0,
-                        borderRadius: 8,
-                        // Selection wins; otherwise green-highlight cards that already form a meld.
-                        ...(isCardSelected
-                          ? selectedCardStyle(true)
-                          : isMeldCard
-                            ? playableCardStyle(true)
-                            : selectedCardStyle(false)),
-                        boxSizing: 'border-box',
-                      }}
-                    >
-                      <AnimatedCard card={card} width={cardWidth} />
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+            {humanPlayer &&
+              (isMobile ? (
+                <MobileHandGrid
+                  cards={humanPlayer.cards}
+                  selectedIndices={selectedCardIndices}
+                  onToggle={toggleCard}
+                  cardWidth={cardWidth}
+                  dataTutorial="tongits-player-hand"
+                  stackRows
+                />
+              ) : (
+                <div className="flex flex-wrap gap-1 mb-2" data-tutorial="tongits-player-hand">
+                  {humanPlayer.cards.map((card, idx) => {
+                    const isCardSelected = selectedCardIndices.includes(idx);
+                    const isMeldCard = !isCardSelected && meldHighlight.has(idx);
+                    return (
+                      <button
+                        type="button"
+                        key={`${card.design}-${card.value}-${idx}`}
+                        onClick={() => toggleCard(idx)}
+                        aria-label={cardAlt(card)}
+                        aria-pressed={isCardSelected}
+                        data-meld={isMeldCard ? 'true' : undefined}
+                        data-testid={`tongits-hand-${idx.toString()}`}
+                        className={`transition-transform ${focusRingCard}`}
+                        style={{
+                          background: 'none',
+                          padding: 0,
+                          borderRadius: 8,
+                          // Selection wins; otherwise green-highlight cards that already form a meld.
+                          ...(isCardSelected
+                            ? selectedCardStyle(true)
+                            : isMeldCard
+                              ? playableCardStyle(true)
+                              : selectedCardStyle(false)),
+                          boxSizing: 'border-box',
+                        }}
+                      >
+                        <AnimatedCard card={card} width={cardWidth} />
+                      </button>
+                    );
+                  })}
+                </div>
+              ))}
           </GameFooter>
         </>
       )}
