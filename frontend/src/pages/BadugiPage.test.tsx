@@ -82,6 +82,19 @@ describe('BadugiPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('keeps the hand in the footer and places settings and keyboard shortcuts in the play area', async () => {
+    mockExec.mockResolvedValue(baseState());
+    renderWithProviders(<BadugiPage />);
+
+    const footer = await screen.findByTestId('game-footer-content');
+    const playArea = footer.parentElement?.previousElementSibling as HTMLElement;
+    expect(footer.querySelector('[data-tutorial="bg-player-hand"]')).toBeInTheDocument();
+    expect(footer.querySelector('[data-tutorial="bg-reset-button"]')).not.toBeInTheDocument();
+    expect(within(footer).queryByTestId('badugi-kbd-shortcuts')).not.toBeInTheDocument();
+    expect(playArea.querySelector('[data-tutorial="bg-reset-button"]')).toBeInTheDocument();
+    expect(within(playArea).getByTestId('badugi-kbd-shortcuts')).toBeInTheDocument();
+  });
+
   it('renders the pot and dealer label', async () => {
     mockExec.mockResolvedValue(baseState({ pot: 120, dealerIdx: 2 }));
     renderWithProviders(<BadugiPage />);

@@ -373,6 +373,29 @@ function VintPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+
+            <ErrorAlert message={error} onRetry={retry} />
+
+            <label className="flex items-center gap-1 text-ds-text-primary text-xs w-full justify-center cursor-pointer min-h-[44px]">
+              <input
+                type="checkbox"
+                checked={frontendHintEnabled}
+                onChange={(e) => setFrontendHintEnabled(e.target.checked)}
+              />
+              {tc('hint.toggle', { ns: 'tutorial' })}
+            </label>
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            {isGameEnd && (
+              <div className="text-ds-text-primary text-sm font-semibold">{humanWon ? t('win') : t('lose')}</div>
+            )}
+            <GameResetButton
+              isGameEnd={isGameEnd}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+              dataTutorial="vint-reset-button"
+            />
           </div>
 
           {/* Footer */}
@@ -477,8 +500,6 @@ function VintPageContent() {
               </div>
             </div>
 
-            <ErrorAlert message={error} onRetry={retry} />
-
             {isHumanBid && (
               <div className="text-ds-text-muted text-xs mb-2" data-testid="vint-bid-notice">
                 {t('bidNotice')}
@@ -489,27 +510,6 @@ function VintPageContent() {
                 {t('playNotice')}
               </div>
             )}
-
-            <label className="flex items-center gap-1 text-ds-text-primary text-xs w-full justify-center cursor-pointer min-h-[44px]">
-              <input
-                type="checkbox"
-                checked={frontendHintEnabled}
-                onChange={(e) => setFrontendHintEnabled(e.target.checked)}
-              />
-              {tc('hint.toggle', { ns: 'tutorial' })}
-            </label>
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            {isGameEnd && (
-              <div className="text-ds-text-primary text-sm font-semibold">{humanWon ? t('win') : t('lose')}</div>
-            )}
-            <GameResetButton
-              isGameEnd={isGameEnd}
-              onReset={handleManualReset}
-              requestConfirm={requestConfirm}
-              loading={loading}
-              dataTutorial="vint-reset-button"
-            />
           </GameFooter>
         </>
       )}
