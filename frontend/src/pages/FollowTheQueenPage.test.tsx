@@ -549,6 +549,28 @@ describe('FollowTheQueenPage', () => {
     expect(screen.getByAltText('♥ K')).toBeInTheDocument();
   });
 
+  it('shows seven face-down placeholders for an undealt, active human hand and none when folded', async () => {
+    mockExec.mockResolvedValue({
+      ...thirdStreetState,
+      players: [humanPlayer({ doorCards: [], holeCards: [] }), cpuPlayer(1), cpuPlayer(2)],
+    });
+    const { unmount } = renderWithProviders(<FollowTheQueenPage />);
+    const hand = await screen.findByTestId('game-footer-content');
+    const humanHand = hand.querySelector('[data-tutorial="scs-player-hand"]') as HTMLElement;
+    expect(within(humanHand).getAllByTestId('animated-card-back')).toHaveLength(7);
+    unmount();
+
+    mockExec.mockResolvedValue({
+      ...thirdStreetState,
+      players: [humanPlayer({ doorCards: [], holeCards: [], folded: true }), cpuPlayer(1), cpuPlayer(2)],
+    });
+    renderWithProviders(<FollowTheQueenPage />);
+    const foldedHand = (await screen.findByTestId('game-footer-content')).querySelector(
+      '[data-tutorial="scs-player-hand"]',
+    ) as HTMLElement;
+    expect(within(foldedHand).queryAllByTestId('animated-card-back')).toHaveLength(0);
+  });
+
   it('places the human door and hole card groups side by side', async () => {
     mockExec.mockResolvedValue(thirdStreetState);
     renderWithProviders(<FollowTheQueenPage />);

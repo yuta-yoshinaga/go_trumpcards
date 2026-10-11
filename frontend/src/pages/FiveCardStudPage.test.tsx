@@ -288,6 +288,27 @@ describe('FiveCardStudPage', () => {
     expect(screen.queryByLabelText('♠ A、役の構成札')).not.toBeInTheDocument();
   });
 
+  it('shows two face-down placeholders for an undealt active hand and none when folded', async () => {
+    mockExec.mockResolvedValue({
+      ...secondStreetState,
+      players: [humanPlayer({ doorCards: [], holeCards: [] }), cpuPlayer(1), cpuPlayer(2), cpuPlayer(3)],
+    });
+    const { unmount } = renderWithProviders(<FiveCardStudPage />);
+    const footer = await screen.findByTestId('game-footer-content');
+    const humanHand = footer.querySelector('[data-tutorial="fcs-player-hand"]') as HTMLElement;
+    expect(within(humanHand).getAllByTestId('animated-card-back')).toHaveLength(2);
+    unmount();
+
+    mockExec.mockResolvedValue({
+      ...secondStreetState,
+      players: [humanPlayer({ doorCards: [], holeCards: [], folded: true }), cpuPlayer(1), cpuPlayer(2), cpuPlayer(3)],
+    });
+    renderWithProviders(<FiveCardStudPage />);
+    const foldedFooter = await screen.findByTestId('game-footer-content');
+    const foldedHand = foldedFooter.querySelector('[data-tutorial="fcs-player-hand"]') as HTMLElement;
+    expect(within(foldedHand).queryAllByTestId('animated-card-back')).toHaveLength(0);
+  });
+
   it('lays out the human door and hole card groups in a shared wrapping row', async () => {
     mockExec.mockResolvedValue(secondStreetState);
     renderWithProviders(<FiveCardStudPage />);
