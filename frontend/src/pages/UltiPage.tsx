@@ -574,6 +574,7 @@ function UltiPageContent() {
                 toggleCard={toggleCard}
                 cardWidth={cardWidth}
                 isMobile={isMobile}
+                stackRows
                 dataTutorialPrefix="ulti"
                 validIndices={canPlay ? state.playableIndices : undefined}
                 restrictedTooltip={t('playButton')}
