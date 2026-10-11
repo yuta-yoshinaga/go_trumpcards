@@ -514,6 +514,32 @@ function OhHellPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+
+            <ErrorAlert message={error ?? hintError} onRetry={retry} />
+
+            {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
+                付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
+                読み上げられないことがある (#5955, #6663)。 */}
+            <div data-testid="ohhell-hint-live" role="status" aria-live="polite">
+              {hint && (
+                <div className="text-ds-warning text-sm mb-2">
+                  {hint.bid != null
+                    ? `${t('hintBid')}: ${hint.bid} (${t(`hintReason.${hint.reason}`)})`
+                    : `${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`}
+                </div>
+              )}
+            </div>
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+            <div className="flex items-center">
+              <GameResetButton
+                isGameEnd={!!isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="oh-reset-button"
+              />
+            </div>
+            <CardNavShortcutsPanel data-testid="oh-hell-kbd-shortcuts" />
           </div>
 
           {/* Footer */}
@@ -647,32 +673,6 @@ function OhHellPageContent() {
                   })}
                 </div>
               ))}
-
-            <ErrorAlert message={error ?? hintError} onRetry={retry} />
-
-            {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
-                付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
-                読み上げられないことがある (#5955, #6663)。 */}
-            <div data-testid="ohhell-hint-live" role="status" aria-live="polite">
-              {hint && (
-                <div className="text-ds-warning text-sm mb-2">
-                  {hint.bid != null
-                    ? `${t('hintBid')}: ${hint.bid} (${t(`hintReason.${hint.reason}`)})`
-                    : `${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`}
-                </div>
-              )}
-            </div>
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-            <div className="flex items-center">
-              <GameResetButton
-                isGameEnd={!!isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="oh-reset-button"
-              />
-            </div>
-            <CardNavShortcutsPanel data-testid="oh-hell-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

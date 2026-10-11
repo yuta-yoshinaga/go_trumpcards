@@ -287,6 +287,29 @@ function SpadesPageContent() {
 
           {/* Scrollable area */}
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+            {isHumanBidTurn && (
+              <fieldset className="m-0 border-0 p-0" aria-label={t('bidPhase')}>
+                <div className="grid grid-cols-7 gap-1 justify-center">
+                  {[0, ...Array.from({ length: 13 }, (_, i) => i + 1)].map((v) => (
+                    <button
+                      key={v}
+                      type="button"
+                      className={
+                        v === bidValue
+                          ? `${btnSecondary} min-w-[44px] ring-2 ring-ds-warning`
+                          : `${btnSecondary} min-w-[44px]`
+                      }
+                      aria-pressed={bidValue === v}
+                      onClick={() => setBidValue(v)}
+                      disabled={loading}
+                    >
+                      {v === 0 ? t('nilButton') : v}
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+            )}
+
             {/* Round/Trick info */}
             <div className="text-ds-text-primary text-center mb-2">
               <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
@@ -527,6 +550,38 @@ function SpadesPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+
+            <ErrorAlert message={error ?? hintError} onRetry={retry} />
+
+            {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
+                付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
+                読み上げられないことがある (#5955, #6663)。 */}
+            <div data-testid="spades-hint-live" role="status" aria-live="polite">
+              {hint && (
+                <div className="text-ds-warning text-sm mb-2">
+                  {hint.bid != null
+                    ? `${t('hintBid')}: ${hint.bid} (${t(`hintReason.${hint.reason}`)})`
+                    : `${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`}
+                </div>
+              )}
+            </div>
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            <div data-tutorial="sp-play-button">
+              {(isHumanBidTurn || isHumanTurn) && (
+                <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
+                  {tc('button.hint')}
+                </button>
+              )}
+              <GameResetButton
+                isGameEnd={!!isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="sp-reset-button"
+              />
+            </div>
+            <CardNavShortcutsPanel data-testid="spades-kbd-shortcuts" />
           </div>
 
           {/* Footer */}
@@ -571,28 +626,6 @@ function SpadesPageContent() {
               ) : null
             }
           >
-            {isHumanBidTurn && (
-              <fieldset className="m-0 border-0 p-0" aria-label={t('bidPhase')}>
-                <div className="grid grid-cols-7 gap-1 justify-center">
-                  {[0, ...Array.from({ length: 13 }, (_, i) => i + 1)].map((v) => (
-                    <button
-                      key={v}
-                      type="button"
-                      className={
-                        v === bidValue
-                          ? `${btnSecondary} min-w-[44px] ring-2 ring-ds-warning`
-                          : `${btnSecondary} min-w-[44px]`
-                      }
-                      aria-pressed={bidValue === v}
-                      onClick={() => setBidValue(v)}
-                      disabled={loading}
-                    >
-                      {v === 0 ? t('nilButton') : v}
-                    </button>
-                  ))}
-                </div>
-              </fieldset>
-            )}
             {/* Human cards */}
             {humanPlayer && (
               <PlayerHandSection
@@ -606,38 +639,6 @@ function SpadesPageContent() {
                 restrictedTooltip={t('restrictedCard')}
               />
             )}
-
-            <ErrorAlert message={error ?? hintError} onRetry={retry} />
-
-            {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
-                付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
-                読み上げられないことがある (#5955, #6663)。 */}
-            <div data-testid="spades-hint-live" role="status" aria-live="polite">
-              {hint && (
-                <div className="text-ds-warning text-sm mb-2">
-                  {hint.bid != null
-                    ? `${t('hintBid')}: ${hint.bid} (${t(`hintReason.${hint.reason}`)})`
-                    : `${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`}
-                </div>
-              )}
-            </div>
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            <div data-tutorial="sp-play-button">
-              {(isHumanBidTurn || isHumanTurn) && (
-                <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
-                  {tc('button.hint')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={!!isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="sp-reset-button"
-              />
-            </div>
-            <CardNavShortcutsPanel data-testid="spades-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

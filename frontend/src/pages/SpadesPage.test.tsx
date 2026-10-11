@@ -61,6 +61,20 @@ beforeEach(() => {
 });
 
 describe('SpadesPage', () => {
+  it('keeps only the human hand in the footer content', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<SpadesPage />);
+
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const playArea = footerContent.closest('footer')?.previousElementSibling;
+    expect(playArea).not.toBeNull();
+    expect(within(footerContent).getByAltText('\u2660 A')).toBeInTheDocument();
+    expect(within(footerContent).queryByRole('button', { name: '\u30cb\u30eb' })).not.toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('spades-hint-live')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByRole('button', { name: '\u30cb\u30eb' })).toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('spades-hint-live')).toBeInTheDocument();
+  });
+
   it('marks the resolved trick winner when the winner is not the previous leader', async () => {
     mockExec.mockResolvedValue(
       makeSpadesState({

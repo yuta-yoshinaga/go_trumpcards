@@ -79,6 +79,20 @@ describe('fmtScore', () => {
 });
 
 describe('CallBreakPage', () => {
+  it('keeps bid choices in the play area and the hand in the footer', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    const { container } = renderWithProviders(<CallBreakPage />);
+
+    const footer = await screen.findByTestId('game-footer-content');
+    const playArea = container.querySelector('.flex-1.overflow-y-auto');
+    expect(playArea).not.toBeNull();
+    expect(within(footer).queryByTestId('bid-option-1')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('bid-option-1')).toBeInTheDocument();
+    expect(within(footer).queryByTestId('callbreak-hint-live')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('callbreak-hint-live')).toBeInTheDocument();
+    expect(within(footer).getByAltText('♠ A')).toBeInTheDocument();
+  });
+
   it('names the mobile and desktop score tables with the localized scores caption', async () => {
     const originalWidth = window.innerWidth;
     window.innerWidth = 1024;

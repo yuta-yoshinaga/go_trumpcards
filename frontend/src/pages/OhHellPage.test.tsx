@@ -167,6 +167,18 @@ describe('OhHellPage', () => {
     expect(within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '出す' })).toBeInTheDocument();
   });
 
+  it('keeps the hand in the footer and places shortcuts and reset in the play area', async () => {
+    const { container } = renderWithProviders(<OhHellPage />);
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const playArea = container.querySelector('.flex-1.overflow-y-auto');
+    expect(playArea).not.toBeNull();
+    expect(within(footerContent).getByAltText('\u2660 A')).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('oh-hell-kbd-shortcuts')).not.toBeInTheDocument();
+    expect(footerContent.querySelector('[data-tutorial="oh-reset-button"]')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('oh-hell-kbd-shortcuts')).toBeInTheDocument();
+    expect(playArea?.querySelector('[data-tutorial="oh-reset-button"]')).toBeInTheDocument();
+  });
+
   it('includes each player name in the trick card accessible name', async () => {
     mockExec.mockResolvedValue(trickEndState);
     renderWithProviders(<OhHellPage />);
