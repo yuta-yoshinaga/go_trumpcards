@@ -19,6 +19,34 @@ describe('GameMessageBox', () => {
     expect(screen.getByText('テスト結果')).toBeInTheDocument();
   });
 
+  it.each(['playing', 'alaska.playing'])('hides the playing status box for %s', (messageCode) => {
+    const { container } = render(<GameMessageBox message="プレイ中" messageCode={messageCode} />);
+    expect(container.querySelector('.glass-panel')).not.toBeInTheDocument();
+  });
+
+  it('keeps the always-visible live region empty for the playing status', () => {
+    const { container } = render(
+      <GameMessageBox message="プレイ中" messageCode="alaska.playing" alwaysVisible bareWhenEmpty />,
+    );
+    const region = screen.getByRole('status');
+    expect(region).toBeInTheDocument();
+    expect(region).toBeEmptyDOMElement();
+    expect(container.querySelector('.glass-panel')).not.toBeInTheDocument();
+  });
+
+  it.each([
+    { message: 'fallback', messageCode: 'blackjack.result.win' },
+    { message: 'カスタムメッセージ', messageCode: undefined },
+  ])('continues to show non-playing messages %#', ({ message, messageCode }) => {
+    render(<GameMessageBox message={message} messageCode={messageCode} />);
+    expect(screen.getByText(messageCode ? 'あなたの勝ちです。' : message)).toBeInTheDocument();
+  });
+
+  it('keeps instructional playing messages visible', () => {
+    render(<GameMessageBox message="カードを移動してください" messageCode="cruel.playing" />);
+    expect(screen.getByText('同スートの降順でカードを並べ、Aから順に組札へ送りましょう')).toBeInTheDocument();
+  });
+
   it('has role="status" and aria-live="polite" by default', () => {
     render(<GameMessageBox message="勝ちました" />);
     const el = screen.getByRole('status');
