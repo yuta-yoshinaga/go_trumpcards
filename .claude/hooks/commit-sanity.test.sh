@@ -6,6 +6,14 @@
 # blocks everything, which would get it switched off within a day.
 set -uo pipefail
 
+# Minimal-path acceptance runs omit the user's local jq directory as well as
+# goimports. Keep jq available to exercise the hook, while leaving goimports
+# absent from the PATH seen by the hook.
+if ! command -v jq >/dev/null 2>&1 && [ -x "$HOME/.local/bin/jq" ]; then
+  PATH="$HOME/.local/bin:/usr/bin:/bin"
+  export PATH
+fi
+
 HOOK="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/commit-sanity.sh"
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
@@ -68,6 +76,16 @@ run block 'staged conflict markers' 'git commit -m "x"'
 
 # goimports gate compares the staged blob. An unstaged working-tree edit cannot
 # change the commit's formatting decision.
+if ! command -v goimports >/dev/null 2>&1; then
+  printf 'skip  goimports formatting/syntax cases: goimports is not installed\n'
+  git read-tree --empty
+  printf 'package fmtfixture\n' > missing.go
+  git add missing.go
+  out=$(printf '{"tool_input":{"command":"git commit -m x"}}' | bash "$HOOK")
+  printf '%s' "$out" | grep -q 'goimports is not installed' || { echo 'FAIL missing goimports was not denied'; exit 1; }
+  echo '  ok    missing goimports denies staged Go file'
+  exit 0
+fi
 git read-tree --empty
 printf 'package fmtfixture\n\nimport (\n"strings"\n"fmt"\n)\n\nfunc f() { fmt.Println(strings.TrimSpace(" x ")) }\n' > staged.go
 goimports -local github.com/yuta-yoshinaga/go_trumpcards -w staged.go
@@ -77,6 +95,11 @@ run pass 'formatted staged Go file' 'git commit -m "x"'
 printf 'package fmtfixture\n\nimport (\n"strings"\n"fmt"\n)\n\nfunc f() { fmt.Println(strings.TrimSpace(" x ")) }\n' > staged.go
 git add staged.go
 run block 'unformatted staged Go file' 'git commit -m "x"'
+
+printf 'package fmtfixture\nfunc broken( {\n' > syntax.go
+git add syntax.go
+run block 'syntax error in staged Go file cannot be verified' 'git commit -m "x"'
+git rm --cached -q syntax.go
 
 goimports -local github.com/yuta-yoshinaga/go_trumpcards -w staged.go
 git add staged.go

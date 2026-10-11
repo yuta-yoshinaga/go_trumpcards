@@ -27,6 +27,7 @@
 # Every guard in this repo used the kill switch until 2026-08-16; that is what
 # was behind the recurring "a hook block ended my turn" failures.
 set -uo pipefail
+cd "$(git rev-parse --show-toplevel)" || exit 1
 
 payload=$(cat)
 cmd=$(printf '%s' "$payload" | jq -r '.tool_input.command // ""')
@@ -79,25 +80,37 @@ fi
 # edits may bypass PostToolUse formatting, while unstaged edits must not affect
 # what this commit records.
 unformatted=''
+unverifiable=''
+go_files=$(git diff --cached --name-only -- '*.go')
+if [ -n "$go_files" ] && ! command -v goimports >/dev/null 2>&1; then
+  jq -nc '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"deny",permissionDecisionReason:"Blocked: staged Go files cannot be checked because goimports is not installed. Install it with `go install golang.org/x/tools/cmd/goimports@latest`."}}'
+  exit 0
+fi
 tmp=$(mktemp --suffix=.go)
 while IFS= read -r -d '' file; do
   [ -n "$file" ] || continue
   if ! git show ":$file" >"$tmp"; then
     continue
   fi
-  diff=$(goimports -local github.com/yuta-yoshinaga/go_trumpcards -srcdir "$(dirname "$file")" -d "$tmp" 2>/dev/null || true)
+  if diff=$(goimports -local github.com/yuta-yoshinaga/go_trumpcards -srcdir "$(dirname "$file")" -d "$tmp" 2>&1); then
+    :
+  else
+    unverifiable+="${file}"$'\n'
+    continue
+  fi
   if [ -n "$diff" ]; then
     unformatted+="${file}"$'\n'
   fi
 done < <(git diff --cached --name-only -z -- '*.go')
 rm -f "$tmp"
 
-if [ -n "$unformatted" ]; then
-  jq -nc --arg files "${unformatted%$'\n'}" '{
+if [ -n "$unformatted" ] || [ -n "$unverifiable" ]; then
+  files=${unformatted}${unverifiable}
+  jq -nc --arg files "${files%$'\n'}" '{
     hookSpecificOutput: {
       hookEventName: "PreToolUse",
       permissionDecision: "deny",
-      permissionDecisionReason: ("Blocked: staged Go files are not formatted by goimports with the repository local prefix:\n" + $files)
+      permissionDecisionReason: ("Blocked: staged Go files are not formatted or could not be verified by goimports with the repository local prefix:\n" + $files)
     }
   }'
   exit 0

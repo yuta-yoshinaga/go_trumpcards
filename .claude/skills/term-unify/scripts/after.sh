@@ -7,7 +7,7 @@ if (($# < 2)); then echo "usage: after.sh OLD NEW [file ...]" >&2; exit 2; fi
 old=$1 new=$2; shift 2
 files=("$@")
 if ((${#files[@]} == 0)); then
-  mapfile -t files < <(git diff --name-only -- frontend/src/i18n/locales internal/i18n/locales)
+  mapfile -t files < <(git diff HEAD --name-only -- frontend/src/i18n/locales internal/i18n/locales)
 fi
 ((${#files[@]})) || { echo 'FAIL: no locale files in scope' >&2; exit 1; }
 failed=0
@@ -15,7 +15,7 @@ failed=0
 while IFS=$'\t' read -r added deleted path; do
   [[ -n "$path" ]] || continue
   if [[ "$added" != "$deleted" ]]; then echo "FAIL: line count changed: $path (+$added -$deleted)" >&2; failed=1; fi
-done < <(git diff --numstat -- "${files[@]}")
+done < <(git diff HEAD --numstat -- "${files[@]}")
 # Repetition check on Japanese locale files in the selected scope.
 for file in "${files[@]}"; do
   [[ "$file" == */ja/*.json ]] || continue

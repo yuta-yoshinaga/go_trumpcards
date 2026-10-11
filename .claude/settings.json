@@ -9,25 +9,25 @@
         "hooks": [
           {
             "type": "command",
-            "command": "hook=.claude/hooks/commit-sanity.sh; if [ -f \"$hook\" ]; then bash \"$hook\"; else echo \"{}\"; fi",
+            "command": "hook=\"${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel)}/.claude/hooks/commit-sanity.sh\"; if [ -f \"$hook\" ]; then bash \"$hook\"; else echo \"{}\"; fi",
             "timeout": 15,
             "statusMessage": "Checking staged content for conflict markers..."
           },
           {
             "type": "command",
-            "command": "hook=.claude/hooks/git-restore-guard.sh; if [ -f \"$hook\" ]; then bash \"$hook\"; else echo \"{}\"; fi",
+            "command": "hook=\"${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel)}/.claude/hooks/git-restore-guard.sh\"; if [ -f \"$hook\" ]; then bash \"$hook\"; else echo \"{}\"; fi",
             "timeout": 15,
             "statusMessage": "Checking for uncommitted changes a restore would discard..."
           },
           {
             "type": "command",
-            "command": "hook=.claude/hooks/proc-kill-guard.sh; if [ -f \"$hook\" ]; then bash \"$hook\"; else echo \"{}\"; fi",
+            "command": "hook=\"${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel)}/.claude/hooks/proc-kill-guard.sh\"; if [ -f \"$hook\" ]; then bash \"$hook\"; else echo \"{}\"; fi",
             "timeout": 15,
             "statusMessage": "Checking for process-pattern commands that could kill their shell..."
           },
           {
             "type": "command",
-            "command": "hook=.claude/hooks/worktree-branch-guard.sh; if [ -f \"$hook\" ]; then bash \"$hook\"; else echo \"{}\"; fi",
+            "command": "hook=\"${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel)}/.claude/hooks/worktree-branch-guard.sh\"; if [ -f \"$hook\" ]; then bash \"$hook\"; else echo \"{}\"; fi",
             "timeout": 15,
             "statusMessage": "Checking for branch updates affecting another worktree..."
           },
@@ -57,7 +57,7 @@
           },
           {
             "type": "command",
-            "command": "hook=.claude/hooks/doc-drift-commit.sh; if [ -f \"$hook\" ]; then bash \"$hook\"; else echo \"{}\"; fi",
+            "command": "hook=\"${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel)}/.claude/hooks/doc-drift-commit.sh\"; if [ -f \"$hook\" ]; then bash \"$hook\"; else echo \"{}\"; fi",
             "timeout": 10,
             "statusMessage": "Checking for documentation drift..."
           },
@@ -69,7 +69,7 @@
           },
           {
             "type": "command",
-            "command": "hook=.claude/hooks/pr-claim-check.sh; if [ -f \"$hook\" ]; then bash \"$hook\"; else echo \"{}\"; fi",
+            "command": "hook=\"${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel)}/.claude/hooks/pr-claim-check.sh\"; if [ -f \"$hook\" ]; then bash \"$hook\"; else echo \"{}\"; fi",
             "timeout": 15,
             "statusMessage": "Checking PR text quotes against the repo..."
           }
@@ -92,7 +92,7 @@
           },
           {
             "type": "command",
-            "command": "hook=.claude/hooks/vacuous-assert-guard.sh; if [ -f \"$hook\" ]; then bash \"$hook\"; else echo \"{}\"; fi",
+            "command": "hook=\"${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel)}/.claude/hooks/vacuous-assert-guard.sh\"; if [ -f \"$hook\" ]; then bash \"$hook\"; else echo \"{}\"; fi",
             "timeout": 10,
             "statusMessage": "Checking for vacuous text assertions..."
           }

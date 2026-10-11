@@ -38,7 +38,8 @@ if [ -n "$new_route" ] && ! has_path api/openapi.yaml; then
   reason+=$'\n- api/openapi.yaml (a Web API route registration was added)'
 fi
 
-# R3: adding a registry literal changes the canonical game list. Existing
+# R3: only inspect one-line `{Name: ..., Category: ...}` literals; multiline
+# entries are intentionally out of scope. Adding a registry literal changes the canonical game list. Existing
 # entry edits do not match this added-line-only check.
 new_game=0
 while IFS= read -r line; do

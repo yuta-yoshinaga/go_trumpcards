@@ -48,3 +48,5 @@ bash .claude/hooks/term-unify-scripts.test.sh
 ```
 
 Report the game, all four surfaces checked, the three before/after counts, line preservation, repetition result, and verification commands with their actual outcomes.
+
+件数は行数で数える。新語が旧語を含む改名 (例 手札→手札の山) では旧語 0 件の判定が成立しないので、その場合は手で確認する。
