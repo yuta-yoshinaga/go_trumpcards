@@ -425,6 +425,7 @@ function ShengJiPageContent() {
 
             {/* Footer */}
             <GameFooter
+              tall
               className={`${gameTheme.shengji.footer} px-4 py-2.5`}
               actions={
                 isDeclare || isKitty || isPlay || isHandEnd ? (

@@ -348,6 +348,7 @@ describe('ShengJiPage', () => {
     );
     renderWithProviders(<ShengJiPage />);
     await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    expect(screen.getByRole('contentinfo').className).toContain('max-h-[60vh]');
     const play = screen.getByRole('button', { name: '出す' });
     expect(play).not.toHaveAttribute('aria-disabled', 'true');
     fireEvent.click(screen.getByTestId('hand-card-0'));
