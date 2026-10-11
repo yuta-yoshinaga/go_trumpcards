@@ -66,4 +66,21 @@ printf '<<<<<<< HEAD\nconst a = 1;\n=======\nconst a = 2;\n>>>>>>> feature\n' > 
 git add conflicted.ts
 run block 'staged conflict markers' 'git commit -m "x"'
 
+# goimports gate compares the staged blob. An unstaged working-tree edit cannot
+# change the commit's formatting decision.
+git read-tree --empty
+printf 'package fmtfixture\n\nimport (\n"strings"\n"fmt"\n)\n\nfunc f() { fmt.Println(strings.TrimSpace(" x ")) }\n' > staged.go
+goimports -local github.com/yuta-yoshinaga/go_trumpcards -w staged.go
+git add staged.go
+run pass 'formatted staged Go file' 'git commit -m "x"'
+
+printf 'package fmtfixture\n\nimport (\n"strings"\n"fmt"\n)\n\nfunc f() { fmt.Println(strings.TrimSpace(" x ")) }\n' > staged.go
+git add staged.go
+run block 'unformatted staged Go file' 'git commit -m "x"'
+
+goimports -local github.com/yuta-yoshinaga/go_trumpcards -w staged.go
+git add staged.go
+printf 'package fmtfixture\n\nimport "fmt"\n' > staged.go
+run pass 'unstaged formatting change does not affect staged blob' 'git commit -m "x"'
+
 exit "$fail"

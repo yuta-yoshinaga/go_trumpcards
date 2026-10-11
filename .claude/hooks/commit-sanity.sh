@@ -75,4 +75,32 @@ if [ -n "$conflicted" ]; then
   exit 0
 fi
 
+# Check the indexed Go blobs, not working-tree files: Bash edits and delegated
+# edits may bypass PostToolUse formatting, while unstaged edits must not affect
+# what this commit records.
+unformatted=''
+tmp=$(mktemp --suffix=.go)
+while IFS= read -r -d '' file; do
+  [ -n "$file" ] || continue
+  if ! git show ":$file" >"$tmp"; then
+    continue
+  fi
+  diff=$(goimports -local github.com/yuta-yoshinaga/go_trumpcards -srcdir "$(dirname "$file")" -d "$tmp" 2>/dev/null || true)
+  if [ -n "$diff" ]; then
+    unformatted+="${file}"$'\n'
+  fi
+done < <(git diff --cached --name-only -z -- '*.go')
+rm -f "$tmp"
+
+if [ -n "$unformatted" ]; then
+  jq -nc --arg files "${unformatted%$'\n'}" '{
+    hookSpecificOutput: {
+      hookEventName: "PreToolUse",
+      permissionDecision: "deny",
+      permissionDecisionReason: ("Blocked: staged Go files are not formatted by goimports with the repository local prefix:\n" + $files)
+    }
+  }'
+  exit 0
+fi
+
 echo '{}'
