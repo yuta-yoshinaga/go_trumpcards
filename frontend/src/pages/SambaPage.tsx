@@ -12,6 +12,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
+import { MobileHandGrid } from '../components/MobileHandGrid';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -729,44 +730,59 @@ function SambaPageContent() {
               ) : null
             }
           >
-            {humanPlayer && (
-              <div className="flex flex-wrap gap-1 mb-2" data-tutorial="sa-player-hand">
-                {humanPlayer.cards.map((card, idx) => {
-                  const isSelected = selectedCardIndices.includes(idx);
-                  const isGrouped = meldGroups.some((group) => group.includes(idx));
-                  return (
-                    <button
-                      type="button"
-                      key={`${card.design}-${card.value}-${idx}`}
-                      onClick={() => {
-                        if (!isGrouped) toggleCard(idx);
-                      }}
-                      aria-label={cardAlt(card)}
-                      aria-pressed={isSelected || isGrouped}
-                      aria-disabled={isGrouped || undefined}
-                      aria-describedby={
-                        [
-                          isGrouped ? 'sa-meld-card-assigned' : undefined,
-                          isHumanTurn && meldPointInfo?.needInitial ? 'sa-meld-points' : undefined,
-                        ]
-                          .filter(Boolean)
-                          .join(' ') || undefined
-                      }
-                      className={`transition-transform ${focusRingCard}`}
-                      style={{
-                        background: 'none',
-                        padding: 0,
-                        borderRadius: 8,
-                        ...selectedCardStyle(isSelected || isGrouped),
-                        boxSizing: 'border-box',
-                      }}
-                    >
-                      <AnimatedCard card={card} width={cardWidth} />
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+            {humanPlayer &&
+              (isMobile ? (
+                <MobileHandGrid
+                  cards={humanPlayer.cards}
+                  selectedIndices={[...selectedCardIndices, ...meldGroups.flat()]}
+                  onToggle={(idx) => {
+                    if (!meldGroups.some((group) => group.includes(idx))) toggleCard(idx);
+                  }}
+                  cardWidth={cardWidth}
+                  dataTutorial="sa-player-hand"
+                  validIndices={humanPlayer.cards.flatMap((_, idx) =>
+                    meldGroups.some((group) => group.includes(idx)) ? [] : [idx],
+                  )}
+                  stackRows
+                />
+              ) : (
+                <div className="flex flex-wrap gap-1 mb-2" data-tutorial="sa-player-hand">
+                  {humanPlayer.cards.map((card, idx) => {
+                    const isSelected = selectedCardIndices.includes(idx);
+                    const isGrouped = meldGroups.some((group) => group.includes(idx));
+                    return (
+                      <button
+                        type="button"
+                        key={`${card.design}-${card.value}-${idx}`}
+                        onClick={() => {
+                          if (!isGrouped) toggleCard(idx);
+                        }}
+                        aria-label={cardAlt(card)}
+                        aria-pressed={isSelected || isGrouped}
+                        aria-disabled={isGrouped || undefined}
+                        aria-describedby={
+                          [
+                            isGrouped ? 'sa-meld-card-assigned' : undefined,
+                            isHumanTurn && meldPointInfo?.needInitial ? 'sa-meld-points' : undefined,
+                          ]
+                            .filter(Boolean)
+                            .join(' ') || undefined
+                        }
+                        className={`transition-transform ${focusRingCard}`}
+                        style={{
+                          background: 'none',
+                          padding: 0,
+                          borderRadius: 8,
+                          ...selectedCardStyle(isSelected || isGrouped),
+                          boxSizing: 'border-box',
+                        }}
+                      >
+                        <AnimatedCard card={card} width={cardWidth} />
+                      </button>
+                    );
+                  })}
+                </div>
+              ))}
 
             <div id="sa-meld-points" role="status" aria-live="polite" data-testid="sa-meld-points">
               {isHumanTurn && meldPointInfo && (

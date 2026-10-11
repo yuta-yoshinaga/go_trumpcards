@@ -38,6 +38,45 @@ describe('SambaPage', () => {
     localStorage.clear();
   });
 
+  it('uses stacked MobileHandGrid rows for a large mobile hand', async () => {
+    const base = makeSambaState();
+    mockExec.mockResolvedValue(
+      makeSambaState({
+        players: [
+          {
+            ...base.players[0],
+            cards: Array.from({ length: 16 }, (_, i) => ({ design: 'SPADE' as const, value: (i % 13) + 1 })),
+          },
+          ...base.players.slice(1),
+        ],
+      }),
+    );
+    renderWithProviders(<SambaPage />);
+
+    const rows = await screen.findAllByTestId('hand-row');
+    expect(rows.length).toBeGreaterThanOrEqual(2);
+    expect(Number.parseFloat((rows[1] as HTMLElement).style.marginTop)).toBeLessThan(0);
+  });
+
+  it('selects tappable mobile cards and keeps staged meld cards unavailable', async () => {
+    mobileState.isMobile = true;
+    mockExec.mockResolvedValue(meldPhaseState);
+    renderWithProviders(<SambaPage />);
+    const cards = await screen.findAllByTestId('hand-row');
+    const buttons = cards.flatMap((row) => Array.from(row.querySelectorAll('button')));
+    fireEvent.click(buttons[0]);
+    expect(buttons[0]).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(buttons[1]);
+    fireEvent.click(buttons[2]);
+    fireEvent.click(screen.getByRole('button', { name: '選択カードをグループに追加' }));
+
+    await waitFor(() => expect(buttons[0]).toHaveAttribute('aria-disabled', 'true'));
+    fireEvent.click(buttons[0]);
+    expect(buttons[0]).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(buttons[3]);
+    expect(buttons[3]).toHaveAttribute('aria-pressed', 'true');
+  });
+
   it('collapses opponents melds on mobile while keeping the human team visible', async () => {
     const base = makeSambaState();
     const opponentMeld = {
@@ -396,11 +435,20 @@ describe('SambaPage', () => {
     expect(info).toHaveTextContent('初回メルド必要点: 90');
     expect(info).toHaveTextContent('選択合計: 0');
     expect(info).toHaveTextContent('あと90点不足しています');
+  });
+
+  it('describes meld points from desktop hand cards during the initial meld', async () => {
+    mobileState.isMobile = false;
+    mockExec.mockResolvedValue({ ...meldPhaseState, minMeld: 90 });
+    renderWithProviders(<SambaPage />);
+
+    await screen.findByTestId('sa-meld-points');
     const hand = document.querySelector('[data-tutorial="sa-player-hand"] button');
     expect(hand).toHaveAttribute('aria-describedby', 'sa-meld-points');
   });
 
   it('does not describe meld points after the initial meld is complete', async () => {
+    mobileState.isMobile = false;
     const stateAfterInitialMeld = makeSambaState({
       phase: 1,
       messageCode: 'samba.meldPhase',
@@ -413,6 +461,29 @@ describe('SambaPage', () => {
     const hand = document.querySelector('[data-tutorial="sa-player-hand"] button');
     expect(hand).not.toHaveAttribute('aria-describedby');
     expect(meldButton).not.toHaveAttribute('aria-describedby');
+  });
+
+  it('does not add meld-point announcements to mobile card labels before or after the initial meld', async () => {
+    const pointsLabel = '初回メルド必要点';
+    mockExec.mockResolvedValue(meldPhaseState);
+    const { unmount } = renderWithProviders(<SambaPage />);
+    const beforeCards = await screen.findAllByTestId('hand-row');
+    const beforeCard = beforeCards[0]?.querySelector('button');
+    expect(beforeCard).toBeInTheDocument();
+    expect(beforeCard?.getAttribute('aria-label')).not.toContain(pointsLabel);
+    unmount();
+
+    const stateAfterInitialMeld = makeSambaState({
+      phase: 1,
+      messageCode: 'samba.meldPhase',
+      players: [{ ...meldPhaseState.players[0], hasInitMeld: true }, ...meldPhaseState.players.slice(1)],
+    });
+    mockExec.mockResolvedValue(stateAfterInitialMeld);
+    renderWithProviders(<SambaPage />);
+    const afterCards = await screen.findAllByTestId('hand-row');
+    const afterCard = afterCards[0]?.querySelector('button');
+    expect(afterCard).toBeInTheDocument();
+    expect(afterCard?.getAttribute('aria-label')).not.toContain(pointsLabel);
   });
 
   it('announces that the initial-meld requirement is met when selected points reach the minimum', async () => {
