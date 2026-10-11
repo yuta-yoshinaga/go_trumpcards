@@ -403,7 +403,7 @@ describe('ShortDeckPage', () => {
     mockExec.mockResolvedValue(preFlopWithBetState);
     renderWithProviders(<ShortDeckPage />);
     await waitFor(() => expect(screen.getByText('CPU行動:')).toBeInTheDocument());
-    expect(screen.getByText(/Player 1: ベット/)).toBeInTheDocument();
+    expect(screen.getByText(/CPU 1: ベット/)).toBeInTheDocument();
   });
 
   it('does not show CPU actions log when cpuActions is empty', async () => {

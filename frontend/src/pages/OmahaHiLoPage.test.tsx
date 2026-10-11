@@ -609,7 +609,7 @@ describe('OmahaHiLoPage', () => {
     mockExec.mockResolvedValue(preFlopWithBetState);
     renderWithProviders(<OmahaHiLoPage />);
     await waitFor(() => expect(screen.getByText('CPU行動:')).toBeInTheDocument());
-    expect(screen.getByText(/Player 1: ベット/)).toBeInTheDocument();
+    expect(screen.getByText(/CPU 1: ベット/)).toBeInTheDocument();
   });
 
   it('does not show CPU actions log when cpuActions is empty', async () => {
@@ -622,7 +622,7 @@ describe('OmahaHiLoPage', () => {
   it('shows amount in CPU action when amount > 0', async () => {
     mockExec.mockResolvedValue(preFlopWithBetState);
     renderWithProviders(<OmahaHiLoPage />);
-    await waitFor(() => expect(screen.getByText(/Player 1: ベット \(40\)/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/CPU 1: ベット \(40\)/)).toBeInTheDocument());
   });
 
   it('does not show amount when action amount is 0', async () => {
@@ -632,7 +632,7 @@ describe('OmahaHiLoPage', () => {
     });
     renderWithProviders(<OmahaHiLoPage />);
     await waitFor(() => expect(screen.getByText('CPU行動:')).toBeInTheDocument());
-    expect(screen.getByText(/Player 1: チェック/)).toBeInTheDocument();
+    expect(screen.getByText(/CPU 1: チェック/)).toBeInTheDocument();
     expect(screen.queryByText(/\(0\)/)).not.toBeInTheDocument();
   });
 
@@ -642,7 +642,7 @@ describe('OmahaHiLoPage', () => {
       cpuActions: [{ playerIdx: 1, action: 99, amount: 0 }],
     });
     renderWithProviders(<OmahaHiLoPage />);
-    await waitFor(() => expect(screen.getByText(/Player 1: 不明/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/CPU 1: 不明/)).toBeInTheDocument());
   });
 
   // ---- round results ----

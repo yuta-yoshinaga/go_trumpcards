@@ -25,7 +25,7 @@ export function CpuActionToast({ actions }: CpuActionToastProps) {
 
   const actionLines = actions?.map((a, i) => (
     <div key={`${i}-${a.playerIdx}-${a.action}`}>
-      {t('player.player', { idx: a.playerIdx })}: {bettingActionName(a.action)}
+      {t('player.cpu', { id: a.playerIdx })}: {bettingActionName(a.action)}
       {a.amount > 0 && ` (${a.amount})`}
     </div>
   ));
@@ -36,9 +36,11 @@ export function CpuActionToast({ actions }: CpuActionToastProps) {
         {actionLines}
       </div>
       {visible && actions && actions.length > 0 && (
-        <Toast onDismiss={dismiss} live="off" testId="cpu-action-toast">
-          {actionLines}
-        </Toast>
+        <div className="sticky top-0 z-20 h-0" data-testid="cpu-action-toast-anchor">
+          <Toast onDismiss={dismiss} live="off" testId="cpu-action-toast">
+            {actionLines}
+          </Toast>
+        </div>
       )}
     </>
   );
