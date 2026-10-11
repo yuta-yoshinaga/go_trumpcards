@@ -113,6 +113,22 @@ describe('ViraPage', () => {
     expect(screen.getByTestId('bid-4')).toBeInTheDocument();
   });
 
+  it('keeps bid choices and supporting controls in the play area while the hand stays in the footer', async () => {
+    renderWithProviders(<ViraPage />);
+
+    const footer = await screen.findByTestId('game-footer-content');
+    const bidChoices = document.querySelector<HTMLElement>('[data-tutorial="vira-bid-choices"]');
+    if (!bidChoices) throw new Error('Bid choices should render on the human bid turn');
+    const playArea = bidChoices.closest('.flex-1.overflow-y-auto');
+
+    expect(playArea).not.toBeNull();
+    expect(footer.querySelector('[data-tutorial="vira-bid-choices"]')).not.toBeInTheDocument();
+    expect(playArea?.querySelector('[data-tutorial="vira-bid-choices"]')).toBeInTheDocument();
+    expect(within(footer).queryByTestId('vira-hint-live')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('vira-hint-live')).toBeInTheDocument();
+    expect(footer.querySelector('[data-tutorial="vira-player-hand"]')).toBeInTheDocument();
+  });
+
   it('explains Vira bid buttons, targets, ranking, and declarer roles in the tutorial', async () => {
     localStorage.clear();
     renderWithProviders(<ViraPage />);
@@ -514,7 +530,7 @@ describe('ViraPage pot settlement', () => {
     expect(within(actions).getByRole('button', { name: '出す' })).toBeInTheDocument();
   });
 
-  it('keeps bid choices in the scrollable footer content and pass in pinned actions', async () => {
+  it('keeps bid choices out of the pinned footer actions and pass in pinned actions', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<ViraPage />);
 

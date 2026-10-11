@@ -285,6 +285,61 @@ function ViraPageContent() {
           />
 
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+            {isBidPhase && (
+              <div className="mb-2">
+                {/* The running bid stays visible while the CPUs bid; otherwise the auction is invisible until it is over (#4835). */}
+                <div className="text-xs font-semibold text-ds-text-primary" data-testid="vira-highest-bid">
+                  {t('bidHighest', {
+                    name: highestBid > 0 ? t(`bid.${CONTRACT_KEYS[highestBid]}`) : t('bidNone'),
+                  })}
+                </div>
+                <div className="text-xs text-ds-text-muted" data-testid="vira-bid-status">
+                  <span className="font-semibold text-ds-text-primary">{t('bidStatusTitle')}</span>
+                  {state.players.map((player) => (
+                    <div key={player.id}>
+                      {playerName(player.id, player.isHuman)}:{' '}
+                      {state.bidDone[player.id] ? t(`bid.${CONTRACT_KEYS[state.bids[player.id]]}`) : t('bidNotYet')}
+                    </div>
+                  ))}
+                </div>
+                {isHumanBidTurn && (
+                  <div className="grid grid-cols-3 sm:grid-cols-5 gap-1 items-center" data-tutorial="vira-bid-choices">
+                    <span className="text-xs text-ds-text-muted self-center mr-1">{t('bidPrompt')}</span>
+                    {BIDS.filter((bid) => bid.value !== ViraContract.PASS).map((b) => {
+                      // A non-pass bid must beat the current highest.
+                      const tooLow = b.value <= highestBid;
+                      const disabled = loading || tooLow;
+                      const isMisere = b.value === ViraContract.MISERE;
+                      const reason = tooLow ? t('bidTooLow') : undefined;
+                      return (
+                        <span key={b.value} title={reason} className="inline-flex">
+                          <button
+                            type="button"
+                            className={`px-3 py-2 rounded-lg text-white text-sm disabled:opacity-40 ${
+                              isMisere ? 'bg-ds-warning ring-1 ring-ds-warning' : 'bg-ds-info'
+                            }`}
+                            onClick={() => handleBid(b.value)}
+                            disabled={disabled}
+                            aria-disabled={disabled}
+                            aria-label={reason ? `${t(b.key)} — ${reason}` : undefined}
+                            aria-describedby={isMisere ? 'vira-misere-desc' : undefined}
+                            data-testid={`bid-${b.value}`}
+                          >
+                            {t(b.key)}
+                            {isMisere && <span className="ml-1 text-[10px] opacity-80">{t('misereBadge')}</span>}
+                          </button>
+                          {isMisere && (
+                            <span id="vira-misere-desc" className="sr-only">
+                              {t('misereDesc')}
+                            </span>
+                          )}
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
             <div className="text-ds-text-primary text-center mb-2" data-tutorial="vira-info">
               <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
               <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
@@ -432,6 +487,33 @@ function ViraPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+
+            <ErrorAlert message={error} onRetry={retry} />
+
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+              られないことがある (#5955)。
+            */}
+            <div data-testid="vira-hint-live" role="status" aria-live="polite">
+              {state.hint && isRequestedHint(state) && (
+                <div className="text-ds-warning text-sm mb-2">
+                  {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
+                  {state.hint.cardIndices &&
+                    state.hint.cardIndices.length > 0 &&
+                    ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
+                </div>
+              )}
+            </div>
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            <GameResetButton
+              isGameEnd={isGameEnd}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+              dataTutorial="vira-reset-button"
+            />
           </div>
 
           {/* Footer */}
@@ -476,61 +558,6 @@ function ViraPageContent() {
               ) : null
             }
           >
-            {isBidPhase && (
-              <div className="mb-2">
-                {/* The running bid stays visible while the CPUs bid; otherwise the auction is invisible until it is over (#4835). */}
-                <div className="text-xs font-semibold text-ds-text-primary" data-testid="vira-highest-bid">
-                  {t('bidHighest', {
-                    name: highestBid > 0 ? t(`bid.${CONTRACT_KEYS[highestBid]}`) : t('bidNone'),
-                  })}
-                </div>
-                <div className="text-xs text-ds-text-muted" data-testid="vira-bid-status">
-                  <span className="font-semibold text-ds-text-primary">{t('bidStatusTitle')}</span>
-                  {state.players.map((player) => (
-                    <div key={player.id}>
-                      {playerName(player.id, player.isHuman)}:{' '}
-                      {state.bidDone[player.id] ? t(`bid.${CONTRACT_KEYS[state.bids[player.id]]}`) : t('bidNotYet')}
-                    </div>
-                  ))}
-                </div>
-                {isHumanBidTurn && (
-                  <div className="grid grid-cols-3 sm:grid-cols-5 gap-1 items-center" data-tutorial="vira-bid-choices">
-                    <span className="text-xs text-ds-text-muted self-center mr-1">{t('bidPrompt')}</span>
-                    {BIDS.filter((bid) => bid.value !== ViraContract.PASS).map((b) => {
-                      // A non-pass bid must beat the current highest.
-                      const tooLow = b.value <= highestBid;
-                      const disabled = loading || tooLow;
-                      const isMisere = b.value === ViraContract.MISERE;
-                      const reason = tooLow ? t('bidTooLow') : undefined;
-                      return (
-                        <span key={b.value} title={reason} className="inline-flex">
-                          <button
-                            type="button"
-                            className={`px-3 py-2 rounded-lg text-white text-sm disabled:opacity-40 ${
-                              isMisere ? 'bg-ds-warning ring-1 ring-ds-warning' : 'bg-ds-info'
-                            }`}
-                            onClick={() => handleBid(b.value)}
-                            disabled={disabled}
-                            aria-disabled={disabled}
-                            aria-label={reason ? `${t(b.key)} — ${reason}` : undefined}
-                            aria-describedby={isMisere ? 'vira-misere-desc' : undefined}
-                            data-testid={`bid-${b.value}`}
-                          >
-                            {t(b.key)}
-                            {isMisere && <span className="ml-1 text-[10px] opacity-80">{t('misereBadge')}</span>}
-                          </button>
-                          {isMisere && (
-                            <span id="vira-misere-desc" className="sr-only">
-                              {t('misereDesc')}
-                            </span>
-                          )}
-                        </span>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            )}
             {humanPlayer && (
               <PlayerHandSection
                 humanPlayer={humanPlayer}
@@ -543,33 +570,6 @@ function ViraPageContent() {
                 restrictedTooltip={t('playButton')}
               />
             )}
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            {/*
-              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
-              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
-              られないことがある (#5955)。
-            */}
-            <div data-testid="vira-hint-live" role="status" aria-live="polite">
-              {state.hint && isRequestedHint(state) && (
-                <div className="text-ds-warning text-sm mb-2">
-                  {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
-                  {state.hint.cardIndices &&
-                    state.hint.cardIndices.length > 0 &&
-                    ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
-                </div>
-              )}
-            </div>
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            <GameResetButton
-              isGameEnd={isGameEnd}
-              onReset={handleManualReset}
-              requestConfirm={requestConfirm}
-              loading={loading}
-              dataTutorial="vira-reset-button"
-            />
           </GameFooter>
         </>
       )}

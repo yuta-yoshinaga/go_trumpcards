@@ -184,6 +184,20 @@ describe('ScartoPage', () => {
     expect(screen.getAllByText('親（ディーラー）').length).toBeGreaterThan(0);
   });
 
+  it('keeps the hand in the footer and places hint and reset content in the play area', async () => {
+    renderWithProviders(<ScartoPage />);
+    await screen.findByRole('button', { name: 'D ♥' });
+
+    const footerContent = screen.getByTestId('game-footer-content');
+    const playArea = footerContent.parentElement?.previousElementSibling;
+    expect(playArea).not.toBeNull();
+    expect(within(footerContent).getByRole('button', { name: 'D ♥' })).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('scarto-hint-live')).not.toBeInTheDocument();
+    expect(within(footerContent).queryByRole('button', { name: 'リセット' })).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('scarto-hint-live')).toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByRole('button', { name: 'リセット' })).toBeInTheDocument();
+  });
+
   it('shows the card point reference during play without revealing CPU hands', async () => {
     renderWithProviders(<ScartoPage />);
     fireEvent.click(await screen.findByText('ルール'));

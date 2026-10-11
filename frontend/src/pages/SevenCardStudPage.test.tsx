@@ -706,6 +706,16 @@ describe('SevenCardStudPage', () => {
     });
     renderWithProviders(<SevenCardStudPage />);
     await waitFor(() => expect(screen.getByTestId('muck-controls')).toBeInTheDocument());
+    const footerContent = screen.getByTestId('game-footer-content');
+    const playRegion = document.querySelector('.flex-1.overflow-y-auto');
+    expect(playRegion).not.toBeNull();
+    expect(within(playRegion as HTMLElement).getByTestId('muck-controls')).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('muck-controls')).not.toBeInTheDocument();
+    expect(
+      within(footerContent).getByText('あなたの手札').closest('[data-tutorial="scs-player-hand"]'),
+    ).toBeInTheDocument();
+    expect(playRegion?.querySelector('[data-tutorial="scs-reset-button"]')).toBeInTheDocument();
+    expect(footerContent.querySelector('[data-tutorial="scs-reset-button"]')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'マック' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'ショー' })).toBeInTheDocument();
   });
