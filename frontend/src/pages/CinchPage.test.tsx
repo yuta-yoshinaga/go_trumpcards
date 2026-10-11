@@ -77,12 +77,35 @@ beforeEach(() => {
 });
 
 describe('CinchPage', () => {
-  it('keeps bidding controls in the fixed footer actions row', async () => {
+  it('keeps only the hand and turn prompt in the footer content', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<CinchPage />);
-    const actions = await screen.findByTestId('game-footer-actions');
-    expect(within(actions).getByTestId('cinch-bid-buttons')).toBeInTheDocument();
-    expect(within(actions).getByRole('button', { name: /パス/ })).toBeInTheDocument();
+
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const footer = footerContent.parentElement;
+    const playArea = footer?.parentElement?.querySelector('div.flex-1.overflow-y-auto');
+
+    expect(playArea).not.toBeNull();
+    expect(within(footerContent).getByTestId('cinch-prompt-live')).toBeInTheDocument();
+    expect(within(footerContent).getByAltText('♥ Q')).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('cinch-bid-strength')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('cinch-bid-strength')).toBeInTheDocument();
+    // The estimate the bid is based on sits right under the bid buttons, not after the board.
+    expect(screen.getByTestId('cinch-bid-buttons').nextElementSibling).toBe(screen.getByTestId('cinch-bid-strength'));
+    expect(within(playArea as HTMLElement).getByTestId('cinch-bid-buttons')).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-actions')).not.toBeInTheDocument();
+  });
+
+  it('keeps bidding controls in the play area outside the fixed footer actions row', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<CinchPage />);
+    const bidButtons = await screen.findByTestId('cinch-bid-buttons');
+    const actions = screen.queryByTestId('game-footer-actions');
+    const playArea = bidButtons.closest('div.flex-1.overflow-y-auto');
+    expect(playArea).not.toBeNull();
+    expect(within(playArea as HTMLElement).getByTestId('cinch-bid-buttons')).toBeInTheDocument();
+    expect(actions).not.toBeInTheDocument();
+    expect(within(bidButtons).getByRole('button', { name: /パス/ })).toBeInTheDocument();
   });
 
   it('renders skeleton when no state', () => {

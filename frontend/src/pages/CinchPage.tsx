@@ -229,6 +229,69 @@ function CinchPageContent() {
           />
 
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+            {canBid && (
+              <div data-tutorial="cinch-action-buttons">
+                <div className="flex flex-wrap gap-2" data-testid="cinch-bid-buttons">
+                  <button type="button" className={btnSecondary} onClick={() => handleBid(0)} disabled={loading}>
+                    {t('bidPass')}
+                  </button>
+                  {bidChoices.map((b) => (
+                    <button
+                      key={b}
+                      type="button"
+                      className={btnPrimary}
+                      onClick={() => handleBid(b)}
+                      disabled={loading}
+                    >
+                      {b}
+                    </button>
+                  ))}
+                </div>
+                {/* Shown right under the bid buttons: it is what the bid is based on. */}
+                {bidStrength && (
+                  <div
+                    className="mb-2 mx-auto max-w-xl p-2 rounded bg-black/30 text-ds-text-muted text-xs text-center"
+                    data-testid="cinch-bid-strength"
+                  >
+                    <div className="text-ds-text-primary" data-testid="cinch-bid-strength-range">
+                      {t('bidStrength.range', { min: bidStrength.minPoints, max: bidStrength.maxPoints })}
+                    </div>
+                    <div data-testid="cinch-bid-strength-best">
+                      {t('bidStrength.best', {
+                        symbol: suitSymbolAt(bidStrength.bestSuit, '-'),
+                        suit: suitLabel(bidStrength.bestSuit),
+                        points: bidStrength.pointsBySuit[bidStrength.bestSuit],
+                      })}
+                    </div>
+                    <div
+                      className="mt-1 grid grid-cols-2 gap-x-3 text-left sm:grid-cols-4"
+                      data-testid="cinch-bid-strength-suits"
+                    >
+                      {TRUMP_SUITS.map((suit) => (
+                        <div key={suit}>
+                          <span className="text-ds-text-primary">
+                            {suitSymbolAt(suit, '-')} {suitLabel(suit)}
+                          </span>
+                          <div>
+                            {t('bidStrength.suitEstimate', {
+                              points: bidStrength.pointsBySuit[suit],
+                              trumps: bidStrength.trumpCountBySuit[suit],
+                              control: bidStrength.controlBySuit[suit],
+                            })}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-1">{t('bidStrength.controlMethod')}</div>
+                    <div className="mt-1">
+                      <span className="text-ds-text-primary">{t('bidStrength.legendTitle')}:</span>{' '}
+                      {t('bidStrength.legend')}
+                    </div>
+                    <div className="mt-1 italic">{t('bidStrength.note')}</div>
+                  </div>
+                )}
+              </div>
+            )}
             <div className="text-ds-text-primary text-center mb-2">
               <span className="mr-4">{t('deal', { n: state.roundNumber })}</span>
               <span className="mr-4">{t('trick', { n: state.trickNumber, total: state.totalTricks })}</span>
@@ -377,32 +440,46 @@ function CinchPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+
+            <div data-testid="cinch-trump-selection-live" role="status" aria-live="polite">
+              {state.trumpSuit >= 1 && (
+                <div className="mb-1 text-center text-sm text-ds-accent font-semibold">
+                  {t('trumpConfirmed', { suit: suitLabel(state.trumpSuit) })}
+                </div>
+              )}
+            </div>
+            <ErrorAlert message={error} onRetry={retry} />
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+              られないことがある (#5955)。
+            */}
+            <div data-testid="cinch-hint-live" role="status" aria-live="polite">
+              {state.hint && isRequestedHint(state) && (
+                <div className="text-ds-warning text-sm mb-2">
+                  {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
+                  {state.hint.cardIndices &&
+                    state.hint.cardIndices.length > 0 &&
+                    ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
+                </div>
+              )}
+            </div>
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+            <GameResetButton
+              isGameEnd={isGameEnd}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+              dataTutorial="cinch-reset-button"
+            />
           </div>
 
           {/* Footer */}
           <GameFooter
             className={`${gameTheme.cinch.footer} px-4 py-2.5`}
             actions={
-              canBid || canNameTrump || canPlay || isRoundEnd ? (
+              canNameTrump || canPlay || isRoundEnd ? (
                 <div className="flex flex-wrap gap-2 items-center" data-tutorial="cinch-action-buttons">
-                  {canBid && (
-                    <div className="flex flex-wrap gap-2" data-testid="cinch-bid-buttons">
-                      <button type="button" className={btnSecondary} onClick={() => handleBid(0)} disabled={loading}>
-                        {t('bidPass')}
-                      </button>
-                      {bidChoices.map((b) => (
-                        <button
-                          key={b}
-                          type="button"
-                          className={btnPrimary}
-                          onClick={() => handleBid(b)}
-                          disabled={loading}
-                        >
-                          {b}
-                        </button>
-                      ))}
-                    </div>
-                  )}
                   {canNameTrump && (
                     <div className="flex flex-wrap gap-2" data-testid="cinch-trump-buttons">
                       {TRUMP_SUITS.map((suit) => (
@@ -462,55 +539,6 @@ function CinchPageContent() {
                 </div>
               )}
             </div>
-            <div data-testid="cinch-trump-selection-live" role="status" aria-live="polite">
-              {state.trumpSuit >= 1 && (
-                <div className="mb-1 text-center text-sm text-ds-accent font-semibold">
-                  {t('trumpConfirmed', { suit: suitLabel(state.trumpSuit) })}
-                </div>
-              )}
-            </div>
-            {canBid && bidStrength && (
-              <div
-                className="mb-2 mx-auto max-w-xl p-2 rounded bg-black/30 text-ds-text-muted text-xs text-center"
-                data-testid="cinch-bid-strength"
-              >
-                <div className="text-ds-text-primary" data-testid="cinch-bid-strength-range">
-                  {t('bidStrength.range', { min: bidStrength.minPoints, max: bidStrength.maxPoints })}
-                </div>
-                <div data-testid="cinch-bid-strength-best">
-                  {t('bidStrength.best', {
-                    symbol: suitSymbolAt(bidStrength.bestSuit, '-'),
-                    suit: suitLabel(bidStrength.bestSuit),
-                    points: bidStrength.pointsBySuit[bidStrength.bestSuit],
-                  })}
-                </div>
-                <div
-                  className="mt-1 grid grid-cols-2 gap-x-3 text-left sm:grid-cols-4"
-                  data-testid="cinch-bid-strength-suits"
-                >
-                  {TRUMP_SUITS.map((suit) => (
-                    <div key={suit}>
-                      <span className="text-ds-text-primary">
-                        {suitSymbolAt(suit, '-')} {suitLabel(suit)}
-                      </span>
-                      <div>
-                        {t('bidStrength.suitEstimate', {
-                          points: bidStrength.pointsBySuit[suit],
-                          trumps: bidStrength.trumpCountBySuit[suit],
-                          control: bidStrength.controlBySuit[suit],
-                        })}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-1">{t('bidStrength.controlMethod')}</div>
-                <div className="mt-1">
-                  <span className="text-ds-text-primary">{t('bidStrength.legendTitle')}:</span>{' '}
-                  {t('bidStrength.legend')}
-                </div>
-                <div className="mt-1 italic">{t('bidStrength.note')}</div>
-              </div>
-            )}
             {humanPlayer && (
               <PlayerHandSection
                 humanPlayer={humanPlayer}
@@ -523,33 +551,6 @@ function CinchPageContent() {
                 restrictedTooltip={t('playButton')}
               />
             )}
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            {/*
-              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
-              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
-              られないことがある (#5955)。
-            */}
-            <div data-testid="cinch-hint-live" role="status" aria-live="polite">
-              {state.hint && isRequestedHint(state) && (
-                <div className="text-ds-warning text-sm mb-2">
-                  {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
-                  {state.hint.cardIndices &&
-                    state.hint.cardIndices.length > 0 &&
-                    ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
-                </div>
-              )}
-            </div>
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            <GameResetButton
-              isGameEnd={isGameEnd}
-              onReset={handleManualReset}
-              requestConfirm={requestConfirm}
-              loading={loading}
-              dataTutorial="cinch-reset-button"
-            />
           </GameFooter>
         </>
       )}

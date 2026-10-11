@@ -312,6 +312,41 @@ function WattenPageContent() {
           />
 
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+            {canDeclare && (
+              <div className="mb-3 flex flex-col gap-1">
+                <fieldset className="grid grid-cols-3 sm:grid-cols-6 gap-1 border-0 p-0 m-0 min-w-0">
+                  <legend className="text-ds-text-muted text-sm">{t('chooseSchlag')}</legend>
+                  {SCHLAG_CHOICES.map((c) => (
+                    <button
+                      key={c.value}
+                      type="button"
+                      className={selectedRank === c.value ? btnPrimary : btnSecondary}
+                      onClick={() => setSelectedRank(c.value)}
+                      disabled={loading}
+                      aria-pressed={selectedRank === c.value}
+                    >
+                      {c.label}
+                    </button>
+                  ))}
+                </fieldset>
+                <fieldset className="grid grid-cols-4 sm:grid-cols-8 gap-1 border-0 p-0 m-0 min-w-0">
+                  <legend className="text-ds-text-muted text-sm">{t('chooseCritical')}</legend>
+                  {SUIT_CHOICES.map((c) => (
+                    <button
+                      key={c.code}
+                      type="button"
+                      className={selectedSuit === c.code ? btnPrimary : btnSecondary}
+                      onClick={() => setSelectedSuit(c.code)}
+                      disabled={loading}
+                      aria-label={t(SUIT_KEYS[c.code])}
+                      aria-pressed={selectedSuit === c.code}
+                    >
+                      {c.symbol}
+                    </button>
+                  ))}
+                </fieldset>
+              </div>
+            )}
             <div className="text-ds-text-primary text-center mb-2">
               <span className="mr-4">{t('deal', { n: state.roundNumber })}</span>
               <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
@@ -458,6 +493,55 @@ function WattenPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+
+            {canDeclare && (
+              <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm" data-testid="watten-trump-panel">
+                <div className="text-ds-text-primary mb-1">{t('trumpPanel.title')}</div>
+                <p className="mb-2 text-xs leading-relaxed">{t('trumpPanel.rule')}</p>
+                {humanTrumps.length > 0 ? (
+                  <>
+                    <div className="text-ds-accent font-semibold mb-1" data-testid="watten-trump-count">
+                      {t('trumpPanel.summary', { count: humanTrumps.length })}
+                    </div>
+                    <ul className="flex flex-wrap gap-x-3 gap-y-0.5">
+                      {humanTrumps.map((tc) => (
+                        <li key={`${tc.card.design}-${tc.card.value}`} className="whitespace-nowrap">
+                          <span className="text-ds-text-primary">{cardAlt(tc.card)}</span>{' '}
+                          <span className="text-ds-text-muted">— {t(`trumpCat.${tc.category}`)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                ) : (
+                  <div className="text-xs" data-testid="watten-trump-count">
+                    {t('trumpPanel.none')}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+              られないことがある (#5955)。
+            */}
+            <div data-testid="watten-hint-live" role="status" aria-live="polite">
+              {state.hint && isRequestedHint(state) && (
+                <div className="text-ds-warning text-sm mb-2">
+                  {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
+                  {state.hint.cardIndex !== undefined && ` ([${state.hint.cardIndex}])`}
+                </div>
+              )}
+            </div>
+            <ErrorAlert message={error} onRetry={retry} />
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+            <GameResetButton
+              isGameEnd={isGameEnd}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+              dataTutorial="watten-reset-button"
+            />
           </div>
 
           {/* Footer */}
@@ -542,41 +626,6 @@ function WattenPageContent() {
               ) : null
             }
           >
-            {canDeclare && (
-              <div className="flex flex-col gap-1">
-                <fieldset className="grid grid-cols-3 sm:grid-cols-6 gap-1 border-0 p-0 m-0 min-w-0">
-                  <legend className="text-ds-text-muted text-sm">{t('chooseSchlag')}</legend>
-                  {SCHLAG_CHOICES.map((c) => (
-                    <button
-                      key={c.value}
-                      type="button"
-                      className={selectedRank === c.value ? btnPrimary : btnSecondary}
-                      onClick={() => setSelectedRank(c.value)}
-                      disabled={loading}
-                      aria-pressed={selectedRank === c.value}
-                    >
-                      {c.label}
-                    </button>
-                  ))}
-                </fieldset>
-                <fieldset className="grid grid-cols-4 sm:grid-cols-8 gap-1 border-0 p-0 m-0 min-w-0">
-                  <legend className="text-ds-text-muted text-sm">{t('chooseCritical')}</legend>
-                  {SUIT_CHOICES.map((c) => (
-                    <button
-                      key={c.code}
-                      type="button"
-                      className={selectedSuit === c.code ? btnPrimary : btnSecondary}
-                      onClick={() => setSelectedSuit(c.code)}
-                      disabled={loading}
-                      aria-label={t(SUIT_KEYS[c.code])}
-                      aria-pressed={selectedSuit === c.code}
-                    >
-                      {c.symbol}
-                    </button>
-                  ))}
-                </fieldset>
-              </div>
-            )}
             {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
                 変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。 */}
             <div data-testid="watten-prompt-live" role="status" aria-live="polite">
@@ -589,31 +638,6 @@ function WattenPageContent() {
                 </div>
               )}
             </div>
-            {canDeclare && (
-              <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm" data-testid="watten-trump-panel">
-                <div className="text-ds-text-primary mb-1">{t('trumpPanel.title')}</div>
-                <p className="mb-2 text-xs leading-relaxed">{t('trumpPanel.rule')}</p>
-                {humanTrumps.length > 0 ? (
-                  <>
-                    <div className="text-ds-accent font-semibold mb-1" data-testid="watten-trump-count">
-                      {t('trumpPanel.summary', { count: humanTrumps.length })}
-                    </div>
-                    <ul className="flex flex-wrap gap-x-3 gap-y-0.5">
-                      {humanTrumps.map((tc) => (
-                        <li key={`${tc.card.design}-${tc.card.value}`} className="whitespace-nowrap">
-                          <span className="text-ds-text-primary">{cardAlt(tc.card)}</span>{' '}
-                          <span className="text-ds-text-muted">— {t(`trumpCat.${tc.category}`)}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </>
-                ) : (
-                  <div className="text-xs" data-testid="watten-trump-count">
-                    {t('trumpPanel.none')}
-                  </div>
-                )}
-              </div>
-            )}
             {humanPlayer && (
               <PlayerHandSection
                 humanPlayer={humanPlayer}
@@ -633,31 +657,6 @@ function WattenPageContent() {
                 trumpAccessibleLabel={t('trumpCardDescription')}
               />
             )}
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            {/*
-              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
-              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
-              られないことがある (#5955)。
-            */}
-            <div data-testid="watten-hint-live" role="status" aria-live="polite">
-              {state.hint && isRequestedHint(state) && (
-                <div className="text-ds-warning text-sm mb-2">
-                  {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
-                  {state.hint.cardIndex !== undefined && ` ([${state.hint.cardIndex}])`}
-                </div>
-              )}
-            </div>
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            <GameResetButton
-              isGameEnd={isGameEnd}
-              onReset={handleManualReset}
-              requestConfirm={requestConfirm}
-              loading={loading}
-              dataTutorial="watten-reset-button"
-            />
           </GameFooter>
         </>
       )}
