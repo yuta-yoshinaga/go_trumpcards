@@ -424,6 +424,31 @@ function DaifugoPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+
+            <ErrorAlert message={error} onRetry={retry} />
+
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            <div className="text-center">
+              <GameResetButton
+                isGameEnd={!!state.gameEndFlag}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="df-reset-button"
+                className="min-w-[90px]"
+              />
+              <button
+                type="button"
+                className={`${btnSecondary} min-w-[90px]`}
+                disabled={loading || selectedIndices.length === 0}
+                onClick={clearSelection}
+                data-testid="daifugo-clear-selection"
+              >
+                {t('clearSelectionButton')}
+              </button>
+            </div>
+            <CardNavShortcutsPanel data-testid="daifugo-kbd-shortcuts" />
           </div>
 
           <GameFooter
@@ -493,10 +518,6 @@ function DaifugoPageContent() {
               </div>
             )}
 
-            <ErrorAlert message={error} onRetry={retry} />
-
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
             <div className="text-center">
               {countMismatch && (
                 <p className="mb-1.5 text-xs text-ds-error-text" role="alert" data-testid="daifugo-count-warning">
@@ -517,25 +538,7 @@ function DaifugoPageContent() {
                   {t('noPlayableCombinations')}
                 </p>
               )}
-              <GameResetButton
-                isGameEnd={!!state.gameEndFlag}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="df-reset-button"
-                className="min-w-[90px]"
-              />
-              <button
-                type="button"
-                className={`${btnSecondary} min-w-[90px]`}
-                disabled={loading || selectedIndices.length === 0}
-                onClick={clearSelection}
-                data-testid="daifugo-clear-selection"
-              >
-                {t('clearSelectionButton')}
-              </button>
             </div>
-            <CardNavShortcutsPanel data-testid="daifugo-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

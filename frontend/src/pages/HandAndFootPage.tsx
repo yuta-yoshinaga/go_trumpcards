@@ -454,6 +454,16 @@ function HandAndFootPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+
+            <ErrorAlert message={error} onRetry={retry} />
+
+            <GameResetButton
+              isGameEnd={isGameEnd}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+            />
+            <CardNavShortcutsPanel data-testid="hand-and-foot-kbd-shortcuts" />
           </div>
 
           <GameFooter
@@ -593,14 +603,6 @@ function HandAndFootPageContent() {
               </div>
             )}
 
-            <ErrorAlert message={error} onRetry={retry} />
-
-            <GameResetButton
-              isGameEnd={isGameEnd}
-              onReset={handleManualReset}
-              requestConfirm={requestConfirm}
-              loading={loading}
-            />
             <div
               id="hf-draw-discard-reason"
               data-testid="hf-draw-discard-reason"
@@ -610,7 +612,6 @@ function HandAndFootPageContent() {
             >
               {drawDiscardReason && <span className="text-xs text-ds-text-muted">{drawDiscardReason}</span>}
             </div>
-            <CardNavShortcutsPanel data-testid="hand-and-foot-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

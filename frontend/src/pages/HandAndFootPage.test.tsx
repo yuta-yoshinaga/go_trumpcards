@@ -149,6 +149,26 @@ const gameEndState: HandAndFootResponse = {
 };
 
 describe('HandAndFootPage', () => {
+  it('keeps the hand and live draw guidance in the footer and utility panels in the play area', async () => {
+    mockExec.mockResolvedValue(drawPhaseState);
+    renderWithProviders(<HandAndFootPage />);
+
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const playArea = footerContent.closest('footer')?.previousElementSibling;
+    expect(playArea).toBeInstanceOf(HTMLElement);
+    expect(footerContent.querySelector('[data-tutorial="hf-player-hand"]')).toBeInTheDocument();
+    expect(within(footerContent).getByTestId('hf-draw-discard-reason')).toHaveAttribute('aria-live', 'polite');
+    expect(within(playArea as HTMLElement).queryByTestId('hf-draw-discard-reason')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByRole('button', { name: 'リセット' })).toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('hand-and-foot-kbd-shortcuts')).toBeInTheDocument();
+    mockExec.mockRejectedValueOnce(new Error('request failed'));
+    fireEvent.click(within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '山札から引く' }));
+    expect(await within(playArea as HTMLElement).findByRole('alert')).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '山札から引く' }),
+    ).toBeInTheDocument();
+  });
+
   it('uses player names as row headers and keeps the score column headers', async () => {
     mockExec.mockResolvedValue(drawPhaseState);
     renderWithProviders(<HandAndFootPage />);

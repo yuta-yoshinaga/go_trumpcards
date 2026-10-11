@@ -130,6 +130,21 @@ describe('DaifugoPage', () => {
     expect(within(actions).getByRole('button', { name: 'パス' })).toBeInTheDocument();
   });
 
+  it('keeps phase choices and page controls in the play area while the hand stays in the footer', async () => {
+    mockExec.mockResolvedValue({ ...humanTurnState, pendingAction: 'queenBomber' });
+    const { container } = renderWithProviders(<DaifugoPage />);
+    const footer = await screen.findByTestId('game-footer-content');
+    const playArea = container.querySelector('.flex-1.overflow-y-auto');
+    expect(playArea).not.toBeNull();
+
+    const movedControl = screen.getByTestId('daifugo-clear-selection');
+    const hand = container.querySelector('[data-tutorial="df-player-hand"]');
+
+    expect(within(footer).queryByTestId('daifugo-clear-selection')).not.toBeInTheDocument();
+    expect(playArea).toContainElement(movedControl);
+    expect(footer.contains(hand)).toBe(true);
+  });
+
   it.each([
     ['sevenPass', '【7渡し】CPU 1にカードを1枚渡してください'],
     ['tenDiscard', '【10捨て】捨てるカードを1枚選択してください'],
