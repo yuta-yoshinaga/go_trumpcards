@@ -175,12 +175,10 @@ beforeEach(() => {
 });
 
 describe('SevenCardStudPage', () => {
-  it('keeps the standard Stud footer at the default height', async () => {
+  it('opts the Stud footer into the taller mobile cap', async () => {
     mockExec.mockResolvedValue(thirdStreetState);
     renderWithProviders(<SevenCardStudPage />);
-    expect((await screen.findByTestId('game-footer-content')).closest('footer')?.className).not.toContain(
-      'max-h-[60vh]',
-    );
+    expect((await screen.findByTestId('game-footer-content')).closest('footer')?.className).toContain('max-h-[60vh]');
   });
 
   it('groups the human door and hole cards side by side', async () => {

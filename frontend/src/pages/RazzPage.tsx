@@ -555,6 +555,8 @@ function RazzPageContent() {
           {/* Sticky footer: player hand + buttons */}
           <GameFooter
             className={`${gameTheme.razz.footer} px-5 py-3`}
+            // The hand plus its low-hand lines and BettingControls outgrow the 45vh cap on phones (#11655).
+            tall
             actions={
               <>
                 {/* Betting controls */}
