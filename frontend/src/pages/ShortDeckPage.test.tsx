@@ -232,6 +232,18 @@ beforeEach(() => {
 });
 
 describe('ShortDeckPage', () => {
+  it('keeps the hand in the footer and moves the hand-rank reference into the play area', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    const { container } = renderWithProviders(<ShortDeckPage />);
+
+    const footerContent = await screen.findByTestId('game-footer-content');
+    expect(within(footerContent).getByText('あなたの手札')).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('sd-handrank-reference')).not.toBeInTheDocument();
+    const playArea = container.querySelector('.flex-1.overflow-y-auto');
+    expect(playArea).not.toBeNull();
+    expect(within(playArea as HTMLElement).getByTestId('sd-handrank-reference')).toBeInTheDocument();
+  });
+
   it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<ShortDeckPage />);

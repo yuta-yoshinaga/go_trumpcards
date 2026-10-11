@@ -742,6 +742,25 @@ describe('CourchevelPage', () => {
     expect(screen.getByAltText('♣ 5')).toBeInTheDocument();
   });
 
+  it('keeps the phase action in the actions row while moving settings out of footer content', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<CourchevelPage />);
+    await waitFor(() => expect(screen.getByTestId('courchevel-hole-cards')).toBeInTheDocument());
+
+    const footerContent = screen.getByTestId('game-footer-content');
+    const communityCards = document.querySelector('[data-tutorial="bo-community-cards"]');
+    const playArea = communityCards?.closest('div.relative.flex-1');
+    const settings = screen.getByTestId('learning-mode-toggle');
+
+    expect(within(footerContent).getByTestId('courchevel-hole-cards')).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('learning-mode-toggle')).not.toBeInTheDocument();
+    expect(playArea).toContainElement(settings);
+    expect(within(footerContent).queryByRole('button', { name: 'ベット' })).not.toBeInTheDocument();
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: 'ベット' }),
+    ).toBeInTheDocument();
+  });
+
   // ---- mobile hole-card layout (#3007) ----
   it('keeps the 5 hole cards on a single scrollable row on mobile (no wrap)', async () => {
     const original = window.innerWidth;

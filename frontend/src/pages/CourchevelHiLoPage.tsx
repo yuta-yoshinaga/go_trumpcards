@@ -476,6 +476,60 @@ function CourchevelHiLoPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+
+            <ErrorAlert message={error} onRetry={retry} />
+
+            {/* Hint */}
+            {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
+
+            {/* Settings + Reset */}
+            <details className="mb-1" open={learningMode || undefined}>
+              <summary className="cursor-pointer select-none text-ds-text-primary text-sm font-bold py-1">
+                {tc('settings.title')}
+              </summary>
+              <div className="flex flex-col gap-2 py-1">
+                <div className="flex items-center gap-2" data-testid="learning-mode-toggle">
+                  <label
+                    htmlFor="learningModeCheckbox"
+                    className="text-ds-text-primary text-sm cursor-pointer flex items-center gap-2 min-h-[44px]"
+                  >
+                    {t('learning.toggle')}
+                    <input
+                      id="learningModeCheckbox"
+                      type="checkbox"
+                      checked={learningMode}
+                      onChange={(e) => setLearningMode(e.target.checked)}
+                    />
+                  </label>
+                </div>
+                {learningMode && state?.equity && state.potOdds != null && (
+                  <EquityDisplay
+                    equity={state.equity}
+                    potOdds={state.potOdds}
+                    lowProbability={state.equity.lowProbability}
+                  />
+                )}
+                <div className="flex items-center gap-3">
+                  <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
+                    <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
+                    {tc('hint.toggle', { ns: 'tutorial' })}
+                  </label>
+                  <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
+                    <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
+                    {t('settings.cpuMetaAI')}
+                  </label>
+                </div>
+              </div>
+            </details>
+            <GameResetButton
+              isGameEnd={phase === OmahaPhase.SHOWDOWN || phase === OmahaPhase.END}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+              dataTutorial="bohl-reset-button"
+              className="min-w-[90px]"
+            />
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="courchevelhilo-kbd-shortcuts" />
           </div>
 
           {/* Sticky footer: player hand + buttons */}
@@ -665,60 +719,6 @@ function CourchevelHiLoPageContent() {
               messageParams={state?.messageParams}
               alwaysVisible
             />
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            {/* Hint */}
-            {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
-
-            {/* Settings + Reset */}
-            <details className="mb-1" open={learningMode || undefined}>
-              <summary className="cursor-pointer select-none text-ds-text-primary text-sm font-bold py-1">
-                {tc('settings.title')}
-              </summary>
-              <div className="flex flex-col gap-2 py-1">
-                <div className="flex items-center gap-2" data-testid="learning-mode-toggle">
-                  <label
-                    htmlFor="learningModeCheckbox"
-                    className="text-ds-text-primary text-sm cursor-pointer flex items-center gap-2 min-h-[44px]"
-                  >
-                    {t('learning.toggle')}
-                    <input
-                      id="learningModeCheckbox"
-                      type="checkbox"
-                      checked={learningMode}
-                      onChange={(e) => setLearningMode(e.target.checked)}
-                    />
-                  </label>
-                </div>
-                {learningMode && state?.equity && state.potOdds != null && (
-                  <EquityDisplay
-                    equity={state.equity}
-                    potOdds={state.potOdds}
-                    lowProbability={state.equity.lowProbability}
-                  />
-                )}
-                <div className="flex items-center gap-3">
-                  <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
-                    <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
-                    {tc('hint.toggle', { ns: 'tutorial' })}
-                  </label>
-                  <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
-                    <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
-                    {t('settings.cpuMetaAI')}
-                  </label>
-                </div>
-              </div>
-            </details>
-            <GameResetButton
-              isGameEnd={phase === OmahaPhase.SHOWDOWN || phase === OmahaPhase.END}
-              onReset={handleManualReset}
-              requestConfirm={requestConfirm}
-              loading={loading}
-              dataTutorial="bohl-reset-button"
-              className="min-w-[90px]"
-            />
-            <ActionShortcutsPanel bindings={actionBindings} data-testid="courchevelhilo-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

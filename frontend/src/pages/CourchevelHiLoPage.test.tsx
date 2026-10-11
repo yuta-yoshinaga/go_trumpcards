@@ -841,6 +841,20 @@ describe('CourchevelHiLoPage', () => {
     await waitFor(() => expect(screen.getByText('あなたの番です')).toBeInTheDocument());
   });
 
+  it('keeps only the hand and live message in the footer content', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<CourchevelHiLoPage />);
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const playArea = screen.getByTestId('courchevelhilo-kbd-shortcuts').closest('.relative.flex-1.overflow-y-auto');
+
+    expect(footerContent.querySelector('[data-tutorial="bohl-player-hand"]')).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('learning-mode-toggle')).not.toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('courchevelhilo-kbd-shortcuts')).not.toBeInTheDocument();
+    expect(playArea).not.toBeNull();
+    expect(within(playArea as HTMLElement).getByTestId('learning-mode-toggle')).toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('courchevelhilo-kbd-shortcuts')).toBeInTheDocument();
+  });
+
   // ---- canAct / betting controls ----
   it('shows bet/check buttons when canAct and no outstanding bet', async () => {
     mockExec.mockResolvedValue(preFlopState);

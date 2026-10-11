@@ -153,6 +153,18 @@ beforeEach(() => {
 });
 
 describe('FrenchTarotPage', () => {
+  it('keeps the hand in the footer and supporting controls in the play area', async () => {
+    renderWithProviders(<FrenchTarotPage />);
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const playArea = footerContent.parentElement?.previousElementSibling;
+    expect(playArea).not.toBeNull();
+    expect(footerContent.querySelector('[data-tutorial="frenchtarot-player-hand"]')).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('frenchtarot-hint-live')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('frenchtarot-hint-live')).toBeInTheDocument();
+    expect(within(footerContent).queryByRole('button', { name: 'リセット' })).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByRole('button', { name: 'リセット' })).toBeInTheDocument();
+  });
+
   it('keeps the pass action in the fixed footer actions row while bidding', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<FrenchTarotPage />);

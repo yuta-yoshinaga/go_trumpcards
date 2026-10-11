@@ -298,6 +298,33 @@ function BatakPageContent() {
           />
 
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+            {isHumanBidTurn && (
+              <div className="mb-2 flex flex-col items-center gap-1">
+                <span className="text-ds-text-primary" data-testid="batak-high-bid">
+                  {t('highBid', { n: state.highBid })}
+                </span>
+                {minLegalBid > 0 && (
+                  <fieldset
+                    className="grid max-w-[16rem] grid-cols-7 gap-1 border-0 p-0"
+                    aria-label={t('bidSelectLabel')}
+                  >
+                    {Array.from({ length: 13 - minLegalBid + 1 }, (_, i) => minLegalBid + i).map((n) => (
+                      <button
+                        key={n}
+                        type="button"
+                        onClick={() => setBidValue(n)}
+                        disabled={loading}
+                        aria-pressed={effectiveBidValue === n}
+                        data-testid={`bid-option-${n}`}
+                        className={`h-9 w-9 rounded-lg font-medium text-sm transition-all ${effectiveBidValue === n ? 'bg-ds-accent text-white ring-2 ring-ds-accent' : 'bg-white/20 text-ds-text-primary hover:bg-white/30'}`}
+                      >
+                        {n}
+                      </button>
+                    ))}
+                  </fieldset>
+                )}
+              </div>
+            )}
             <div className="text-ds-text-primary text-center mb-2">
               <span className="mr-4">{t('round', { n: state.roundNumber, max: state.config.maxRounds })}</span>
               <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
@@ -518,6 +545,58 @@ function BatakPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+            {humanPlayer && (
+              <>
+                <div className="mb-1 text-ds-text-muted text-xs" role="status" data-testid="batak-spades-break-footer">
+                  {state.spadesBroken ? t('spadesBroken') : t('spadesNotBroken')}
+                </div>
+                {humanPlayer.bid >= 0 && (
+                  <div className="mb-1 text-ds-text-muted text-xs">
+                    <div>
+                      {humanPlayer.id === state.declarerIdx ? `(${t('declarerBadge')}) ` : ''}
+                      {humanPlayer.bid === 0 ? t('bidPass') : t('bid', { n: humanPlayer.bid })} /{' '}
+                      {t('tricksWon', { n: humanPlayer.trickCount })}
+                    </div>
+                    {humanPlayer.id === state.declarerIdx && humanPlayer.bid > 0 && (
+                      <BidProgressBar
+                        bid={humanPlayer.bid}
+                        tricksWon={humanPlayer.trickCount}
+                        ariaLabel={t('bidProgressAria', { name: playerName(humanPlayer.id, true) })}
+                        testId={`bid-progress-${humanPlayer.id.toString()}`}
+                      />
+                    )}
+                  </div>
+                )}
+              </>
+            )}
+            <ErrorAlert message={error ?? hintError} onRetry={retry} />
+            {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
+                付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
+                読み上げられないことがある (#5955, #6663)。 */}
+            <div data-testid="batak-hint-live" role="status" aria-live="polite">
+              {hint && (
+                <div className="text-ds-warning text-sm mb-2">
+                  {hint.bid != null
+                    ? `${t('hintBid')}: ${hint.bid === 0 ? t('bidPass') : hint.bid} (${t(`hintReason.${hint.reason}`)})`
+                    : (() => {
+                        const card = hint.cardIndex !== undefined ? humanPlayer?.cards[hint.cardIndex] : undefined;
+                        const name = card ? cardAlt(card) : '-';
+                        return `${t('hintPlay')}: ${name} [${hint.cardIndex ?? '-'}] (${t(`hintReason.${hint.reason}`)})`;
+                      })()}
+                </div>
+              )}
+            </div>
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+            <div className="flex gap-2 items-center">
+              <GameResetButton
+                isGameEnd={!!isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="batak-reset-button"
+              />
+            </div>
+            <CardNavShortcutsPanel data-testid="batak-kbd-shortcuts" />
           </div>
 
           <GameFooter
@@ -582,29 +661,6 @@ function BatakPageContent() {
           >
             {isHumanBidTurn && (
               <div className="mb-2 flex flex-col items-center gap-1">
-                <span className="text-ds-text-primary" data-testid="batak-high-bid">
-                  {t('highBid', { n: state.highBid })}
-                </span>
-                {minLegalBid > 0 && (
-                  <fieldset
-                    className="grid max-w-[16rem] grid-cols-7 gap-1 border-0 p-0"
-                    aria-label={t('bidSelectLabel')}
-                  >
-                    {Array.from({ length: 13 - minLegalBid + 1 }, (_, i) => minLegalBid + i).map((n) => (
-                      <button
-                        key={n}
-                        type="button"
-                        onClick={() => setBidValue(n)}
-                        disabled={loading}
-                        aria-pressed={effectiveBidValue === n}
-                        data-testid={`bid-option-${n}`}
-                        className={`h-9 w-9 rounded-lg font-medium text-sm transition-all ${effectiveBidValue === n ? 'bg-ds-accent text-white ring-2 ring-ds-accent' : 'bg-white/20 text-ds-text-primary hover:bg-white/30'}`}
-                      >
-                        {n}
-                      </button>
-                    ))}
-                  </fieldset>
-                )}
                 <span className="sr-only" role="status" aria-live="polite" data-testid="batak-bid-selected">
                   {bidSelectedLabel}
                 </span>
@@ -614,71 +670,18 @@ function BatakPageContent() {
               </div>
             )}
             {humanPlayer && (
-              <>
-                <div className="mb-1 text-ds-text-muted text-xs" role="status" data-testid="batak-spades-break-footer">
-                  {state.spadesBroken ? t('spadesBroken') : t('spadesNotBroken')}
-                </div>
-                {humanPlayer.bid >= 0 && (
-                  <div className="mb-1 text-ds-text-muted text-xs">
-                    <div>
-                      {humanPlayer.id === state.declarerIdx ? `(${t('declarerBadge')}) ` : ''}
-                      {humanPlayer.bid === 0 ? t('bidPass') : t('bid', { n: humanPlayer.bid })} /{' '}
-                      {t('tricksWon', { n: humanPlayer.trickCount })}
-                    </div>
-                    {humanPlayer.id === state.declarerIdx && humanPlayer.bid > 0 && (
-                      <BidProgressBar
-                        bid={humanPlayer.bid}
-                        tricksWon={humanPlayer.trickCount}
-                        ariaLabel={t('bidProgressAria', { name: playerName(humanPlayer.id, true) })}
-                        testId={`bid-progress-${humanPlayer.id.toString()}`}
-                      />
-                    )}
-                  </div>
-                )}
-                <PlayerHandSection
-                  humanPlayer={humanPlayer}
-                  selectedCardIndices={selectedCardIndices}
-                  toggleCard={toggleCard}
-                  cardWidth={cardWidth}
-                  isMobile={isMobile}
-                  dataTutorialPrefix="batak"
-                  validIndices={isHumanTurn ? state.validPlayIndices : undefined}
-                  restrictedTooltip={t('restrictedTooltip')}
-                  cardTitleFor={isHumanTurn ? cardTitleFor : undefined}
-                />
-              </>
-            )}
-
-            <ErrorAlert message={error ?? hintError} onRetry={retry} />
-
-            {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
-                付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
-                読み上げられないことがある (#5955, #6663)。 */}
-            <div data-testid="batak-hint-live" role="status" aria-live="polite">
-              {hint && (
-                <div className="text-ds-warning text-sm mb-2">
-                  {hint.bid != null
-                    ? `${t('hintBid')}: ${hint.bid === 0 ? t('bidPass') : hint.bid} (${t(`hintReason.${hint.reason}`)})`
-                    : (() => {
-                        const card = hint.cardIndex !== undefined ? humanPlayer?.cards[hint.cardIndex] : undefined;
-                        const name = card ? cardAlt(card) : '-';
-                        return `${t('hintPlay')}: ${name} [${hint.cardIndex ?? '-'}] (${t(`hintReason.${hint.reason}`)})`;
-                      })()}
-                </div>
-              )}
-            </div>
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            <div className="flex gap-2 items-center">
-              <GameResetButton
-                isGameEnd={!!isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="batak-reset-button"
+              <PlayerHandSection
+                humanPlayer={humanPlayer}
+                selectedCardIndices={selectedCardIndices}
+                toggleCard={toggleCard}
+                cardWidth={cardWidth}
+                isMobile={isMobile}
+                dataTutorialPrefix="batak"
+                validIndices={isHumanTurn ? state.validPlayIndices : undefined}
+                restrictedTooltip={t('restrictedTooltip')}
+                cardTitleFor={isHumanTurn ? cardTitleFor : undefined}
               />
-            </div>
-            <CardNavShortcutsPanel data-testid="batak-kbd-shortcuts" />
+            )}
           </GameFooter>
         </>
       )}

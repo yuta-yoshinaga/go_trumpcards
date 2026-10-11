@@ -220,6 +220,16 @@ function LooPageContent() {
           />
 
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+            <div data-testid="loo-decision-counts-live" role="status" aria-live="polite">
+              {isDecidePhase && (
+                <div
+                  className="mb-2 mx-auto max-w-md text-center text-sm text-ds-text-muted"
+                  data-testid="loo-decision-counts"
+                >
+                  {t('decisionCounts', decisionCounts)}
+                </div>
+              )}
+            </div>
             <div className="text-ds-text-primary text-center mb-2">
               <span className="mr-4">{t('deal', { n: state.roundNumber })}</span>
               <span className="mr-4">{t('trick', { n: state.trickNumber, total: state.totalTricks })}</span>
@@ -374,6 +384,43 @@ function LooPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+
+            <div data-testid="loo-pot-risk-live" role="status" aria-live="polite" className="sr-only">
+              {canDecide && (
+                <div data-testid="loo-pot-risk">
+                  {t('potRisk.label')} {t('potRisk.win', { pot: maxWin, perTrick })}{' '}
+                  {t('potRisk.loss', { penalty: looPenalty })}
+                </div>
+              )}
+            </div>
+            <ErrorAlert message={error} onRetry={retry} />
+
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+              られないことがある (#5955)。
+            */}
+            <div data-testid="loo-hint-live" role="status" aria-live="polite">
+              {state.hint && isRequestedHint(state) && (
+                <div className="text-ds-warning text-sm mb-2">
+                  {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
+                  {state.hint.cardIndices &&
+                    state.hint.cardIndices.length > 0 &&
+                    ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
+                </div>
+              )}
+            </div>
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            <div className="flex flex-wrap gap-2 items-center">
+              <GameResetButton
+                isGameEnd={false}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="loo-reset-button"
+              />
+            </div>
           </div>
 
           {/* Footer */}
@@ -430,14 +477,6 @@ function LooPageContent() {
               ) : null
             }
           >
-            <div data-testid="loo-pot-risk-live" role="status" aria-live="polite" className="sr-only">
-              {canDecide && (
-                <div data-testid="loo-pot-risk">
-                  {t('potRisk.label')} {t('potRisk.win', { pot: maxWin, perTrick })}{' '}
-                  {t('potRisk.loss', { penalty: looPenalty })}
-                </div>
-              )}
-            </div>
             {isDecidePhase && !canDecide && (
               <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="loo-decide-cpu">
                 {t('decideCpu', { id: state.decidePlayerIdx })}
@@ -449,16 +488,6 @@ function LooPageContent() {
               {canDecide && (
                 <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="loo-decide-prompt">
                   {t('decidePrompt')}
-                </div>
-              )}
-            </div>
-            <div data-testid="loo-decision-counts-live" role="status" aria-live="polite">
-              {isDecidePhase && (
-                <div
-                  className="mb-2 mx-auto max-w-md text-center text-sm text-ds-text-muted"
-                  data-testid="loo-decision-counts"
-                >
-                  {t('decisionCounts', decisionCounts)}
                 </div>
               )}
             </div>
@@ -474,35 +503,6 @@ function LooPageContent() {
                 restrictedTooltip={t('playButton')}
               />
             )}
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            {/*
-              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
-              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
-              られないことがある (#5955)。
-            */}
-            <div data-testid="loo-hint-live" role="status" aria-live="polite">
-              {state.hint && isRequestedHint(state) && (
-                <div className="text-ds-warning text-sm mb-2">
-                  {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
-                  {state.hint.cardIndices &&
-                    state.hint.cardIndices.length > 0 &&
-                    ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
-                </div>
-              )}
-            </div>
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            <div className="flex flex-wrap gap-2 items-center">
-              <GameResetButton
-                isGameEnd={false}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="loo-reset-button"
-              />
-            </div>
           </GameFooter>
         </>
       )}
