@@ -84,7 +84,7 @@ describe('BettingControls', () => {
     expect(screen.getByRole('button', { name: 'フォールド' }).querySelector('kbd')).toHaveTextContent('F');
   });
 
-  it('keeps all action labels within their minimum width in both betting states', () => {
+  it('lays out the controls in a wrapping row whose action buttons never shrink below their labels', () => {
     const { rerender } = render(<BettingControls {...makeProps({ hasOutstandingBet: true })} />);
     const controls = screen.getByTestId('betting-key-hints').parentElement;
     expect(controls?.className.split(' ')).toEqual(expect.arrayContaining(['sm:items-center']));

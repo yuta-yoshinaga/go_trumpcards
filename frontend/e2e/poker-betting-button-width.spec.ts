@@ -15,10 +15,19 @@ test('poker action button labels fit at 375px', async ({ page }) => {
       label: element.textContent?.trim() ?? '',
       clientWidth: element.clientWidth,
       scrollWidth: element.scrollWidth,
+      box: element.getBoundingClientRect().toJSON() as { left: number; right: number; top: number; bottom: number },
     })),
   );
   expect(widths.length).toBeGreaterThan(0);
   for (const { label, clientWidth, scrollWidth } of widths) {
     expect(scrollWidth, `${label} should fit inside its button`).toBeLessThanOrEqual(clientWidth);
+  }
+  // The other reported symptom: neighbouring buttons drawn over each other.
+  for (const [i, a] of widths.entries()) {
+    for (const b of widths.slice(i + 1)) {
+      const overlap =
+        a.box.left < b.box.right && b.box.left < a.box.right && a.box.top < b.box.bottom && b.box.top < a.box.bottom;
+      expect(overlap, `${a.label} and ${b.label} should not overlap`).toBe(false);
+    }
   }
 });
