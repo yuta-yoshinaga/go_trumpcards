@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 # Bound idle daemons so interrupted runs cannot leave Chrome processes indefinitely.
+# An override must exceed the longest gap between one game's commands (a page load plus
+# the 900 ms settle wait), or the daemon exits mid-game; keep it at 30000 or more.
 export AGENT_BROWSER_IDLE_TIMEOUT_MS="${AGENT_BROWSER_IDLE_TIMEOUT_MS:-120000}"
 
 usage() {
@@ -8,7 +10,7 @@ usage() {
 Usage: play-area-overflow.sh [-p port] [-n deals] [-j sessions] [-o out.tsv] [game ...]
 
 Measure games on an already running go_trumpcards web server. Defaults: port 8080,
-3 mobile reloads per game, 4 parallel browser sessions, and stdout TSV output.
+3 mobile reloads per game, 3 parallel browser sessions (max 4), and stdout TSV output.
 EOF
 }
 
@@ -38,9 +40,28 @@ fi
 mapfile -t all_games < <(grep -oP "path:\s*'/\K[^']*" "$routes" | sed "s/^$/$root_game/")
 
 tmp=$(mktemp -d)
+kill_tree() {
+  # Read the children before killing the parent: once it dies they are reparented to init.
+  local child children
+  children=$(pgrep -P "$1" || true)
+  kill "$1" 2>/dev/null || true
+  for child in $children; do kill_tree "$child"; done
+}
 cleanup() {
   trap - EXIT INT TERM HUP
-  for game in "${games[@]}"; do agent-browser --session "overflow-$game-$$" close >/dev/null 2>&1 || true; done
+  # Stop in-flight workers first, or they keep measuring after $tmp is gone and can
+  # reopen a session that this function has already closed. Each worker runs its body in
+  # a nested subshell, so the whole tree has to go, not just the job's own PID.
+  local job
+  for job in $(jobs -p); do kill_tree "$job"; done
+  wait 2>/dev/null || true
+  # Close only sessions a worker opened and did not close: `close` on a session that was
+  # never opened starts a fresh daemon, which a full run would do once per game.
+  local marker
+  for marker in "$tmp"/*.open; do
+    [[ -e $marker ]] || continue
+    agent-browser --session "overflow-$(basename "$marker" .open)-$$" close >/dev/null 2>&1 || true
+  done
   for file in "$tmp"/*; do [[ -e $file ]] && unlink "$file"; done
   rmdir "$tmp" 2>/dev/null || true
 }
@@ -90,11 +111,13 @@ worker() {
   # Close this game's browser as soon as it is measured, on failure too. errexit must stay
   # live inside the subshell, so it cannot be tested by `if`/`||` (that context disables -e).
   local result
+  : > "$tmp/$game.open"
   set +e
   (set -e; worker_body)
   result=$?
   set -e
   agent-browser --session "$session" close >/dev/null 2>&1 || true
+  unlink "$tmp/$game.open"
   return "$result"
 }
 

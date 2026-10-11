@@ -10,6 +10,7 @@ cat > "$tmp/bin/agent-browser" <<'MOCK'
 #!/usr/bin/env bash
 printf '%s %s\n' "${AGENT_BROWSER_IDLE_TIMEOUT_MS-unset}" "$*" >> "$MOCK_LOG"
 [[ ${MOCK_FAIL_OPEN:-0} == 1 && " $* " == *" open "* ]] && exit 1
+if [[ ${MOCK_HANG:-0} == 1 && " $* " == *" wait "* ]]; then echo $$ > "$MOCK_LOG.hang"; exec sleep 30; fi
 if [[ " $* " == *" eval "* ]]; then
   if [[ $* == *'document.documentElement.scrollWidth'* ]]; then echo 375
   elif [[ $* == *'overflow-blackjack-'* ]]; then echo '"nopa"'
@@ -30,6 +31,10 @@ grep -q 'mobile>300: 0, desktop>600: 0, scrollWidth>375: 0' "$tmp/stderr"
 blackjack_close=$(grep -n 'overflow-blackjack-.* close$' "$tmp/log" | head -1 | cut -d: -f1)
 minibridge_first=$(grep -n 'overflow-minibridge-.* set viewport' "$tmp/log" | head -1 | cut -d: -f1)
 [[ -n $blackjack_close && -n $minibridge_first && $blackjack_close -lt $minibridge_first ]]
+# The EXIT cleanup must not close sessions again: `close` on an unknown session starts a
+# new daemon, so each session gets exactly one close (the worker's).
+[[ $(grep -c 'overflow-blackjack-.* close$' "$tmp/log") -eq 1 ]]
+[[ $(grep -c 'overflow-minibridge-.* close$' "$tmp/log") -eq 1 ]]
 
 echo 'play-area-overflow: OK (serial game output and summary)'
 : > "$tmp/log"
@@ -66,3 +71,22 @@ status=$?
 set -e
 [[ $status -ne 0 ]]
 echo 'play-area-overflow: OK (session cleanup, idle timeout, limits, failure cleanup)'
+
+# SIGTERM mid-game: the script exits promptly with 143, stops the worker, and closes the
+# session the worker had open.
+: > "$tmp/log"
+MOCK_HANG=1 PATH="$tmp/bin:$PATH" bash "$script_dir/play-area-overflow.sh" -n 1 -j 1 blackjack >/dev/null 2>&1 &
+script_pid=$!
+for ((i = 0; i < 100; i++)); do [[ -s $tmp/log.hang ]] && break; sleep 0.1; done
+[[ -s $tmp/log.hang ]]
+kill -TERM "$script_pid"
+set +e
+wait "$script_pid"
+status=$?
+set -e
+hung=$(cat "$tmp/log.hang")
+for ((i = 0; i < 20; i++)); do kill -0 "$hung" 2>/dev/null || break; sleep 0.1; done
+if kill -0 "$hung" 2>/dev/null; then kill "$hung"; echo 'worker tree survived SIGTERM' >&2; exit 1; fi
+[[ $status -eq 143 ]]
+grep -q 'overflow-blackjack-.* close$' "$tmp/log"
+echo 'play-area-overflow: OK (no duplicate close, SIGTERM cleanup)'
