@@ -21,6 +21,10 @@ else
       exit 3
     fi
     bucket=$(jq -r '.bucket' <<<"$codecov")
+    if [[ "$bucket" == pending ]]; then
+      echo "WAIT: codecov/patch is still pending on PR $pr" >&2
+      exit 3
+    fi
     if [[ "$bucket" != pass ]]; then
       echo "REFUSED: codecov/patch is $bucket" >&2
       exit 1

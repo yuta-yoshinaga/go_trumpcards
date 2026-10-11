@@ -51,7 +51,7 @@ The flows require `dele`, `gh`, `jq`, `flock`, `bun`, `go`, and `golangci-lint`,
 - `sweep.sh`: land eligible reviewed batch PRs and report blocked ones.
 - `sweep.sh` reports `UNSWEPT` for open PRs outside `BATCH_BRANCH_RE`; set `BATCH_UNSWEPT_IGNORE="<pr ...>"` to ignore intentional non-batch PRs.
 - `triage.sh`: inspect automated review feedback and mark clean reviews as read.
-- `land.sh`: require the PR to be listed in `reviewed.txt`, require a passing `codecov/patch` result when the PR changes production Go or TypeScript, then run the merge gate and squash-merge. `BATCH_SKIP_CODECOV=1` bypasses the coverage check; unreviewed PRs are never bypassed.
+- `land.sh`: require the PR to be listed in `reviewed.txt`, require a passing `codecov/patch` result when the PR changes production Go or TypeScript, then run the merge gate and squash-merge. Missing or pending coverage exits 3 to wait. `BATCH_SKIP_CODECOV=1` bypasses the coverage check; unreviewed PRs are never bypassed.
 - `waitfor.sh`: wait for a shell condition up to a timeout.
 - `waitdone.sh`: wait for a slot's `rcg` result written after its latest start.
 - `drain.sh`: repeatedly sweep the selected batch until it is clear or blocked.

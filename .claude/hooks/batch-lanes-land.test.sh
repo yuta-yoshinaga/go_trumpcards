@@ -55,6 +55,10 @@ if GH_FILES='internal/foo.go' GH_CHECKS='[]' GH_STATE=OPEN bash "$SCRIPTS/land.s
 [ "${rc:-0}" = 3 ] || fail "missing codecov/patch did not return 3"
 grep -q 'WAIT: codecov/patch has not reported on PR 7' "$tmp/codecov-wait.out" || fail "land.sh did not report missing codecov"
 [ ! -e "$GH_MERGE_LOG" ] || fail "land.sh merged before codecov/patch reported"
+if GH_FILES='internal/foo.go' GH_CHECKS='[{"name":"codecov/patch","bucket":"pending"}]' GH_STATE=OPEN bash "$SCRIPTS/land.sh" 7 >"$tmp/codecov-pending.out" 2>&1; then fail "land.sh accepted pending codecov/patch"; else rc=$?; fi
+[ "${rc:-0}" = 3 ] || fail "pending codecov/patch did not return 3"
+grep -q 'WAIT: codecov/patch is still pending on PR 7' "$tmp/codecov-pending.out" || fail "land.sh did not report pending codecov"
+[ ! -e "$GH_MERGE_LOG" ] || fail "land.sh merged while codecov/patch was pending"
 if GH_FILES='internal/foo.go' GH_CHECKS='[{"name":"codecov/patch","bucket":"fail"}]' GH_STATE=OPEN bash "$SCRIPTS/land.sh" 7 >"$tmp/codecov-fail.out" 2>&1; then fail "land.sh accepted failing codecov/patch"; fi
 grep -q 'REFUSED: codecov/patch is fail' "$tmp/codecov-fail.out" || fail "land.sh did not report failing codecov"
 [ ! -e "$GH_MERGE_LOG" ] || fail "land.sh merged with failing codecov/patch"
