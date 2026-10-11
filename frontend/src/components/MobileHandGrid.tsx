@@ -9,31 +9,11 @@ import {
 } from '../styles/cardStyles';
 import type { Card } from '../types/card';
 import { cardAlt } from '../utils/cardAlt';
+import { BUTTON_EXTRA, computeOverlap, rowCountFor, stackedRowMarginTop } from '../utils/handOverlap';
 import { splitBalanced } from '../utils/splitBalanced';
 import { CardImage } from './CardImage';
 import { CardRoleBadge } from './CardRoleBadge';
 
-/** Minimum number of cards before splitting into 2 rows. */
-const TWO_ROW_THRESHOLD = 4;
-/** Horizontal padding (px) on the hand container (px-4 = 16px each side). */
-const CONTAINER_PADDING = 32;
-/** Base width of each card button including border (cardWidth + 6px border). */
-const BUTTON_EXTRA = 6;
-/** Default gap (px) between cards when they fit without overlap. */
-const DEFAULT_CARD_GAP = 2;
-/** Maximum overlap ratio — each card stays at least 30% visible. */
-const MAX_OVERLAP_RATIO = 0.7;
-/** Minimum visible width (px) per card to meet WCAG 2.5.8 tap-target guidelines. */
-const MIN_CARD_EXPOSURE_PX = 44;
-/** Card image height relative to its width (the 250x375 assets, 2:3). */
-const CARD_HEIGHT_RATIO = 1.5;
-/** Vertical border around a card button, added to the image height. */
-const CARD_BORDER_Y = 2;
-/**
- * Height of an upper row left visible when `stackRows` overlaps the next row onto it: the rank
- * corner plus a 44px tap target (MIN_CARD_EXPOSURE_PX) with a little room.
- */
-const STACKED_ROW_VISIBLE_PX = 52;
 /** Animation stagger delay per card (seconds) for the deal-in animation. */
 const DEAL_IN_STAGGER_S = 0.12;
 
@@ -126,17 +106,10 @@ export function MobileHandGrid({
   const isTrump = (idx: number): boolean => trumpIndices?.includes(idx) ?? false;
   const isLegal = (idx: number): boolean => legalIndices?.includes(idx) ?? false;
 
-  const initialRows = cards.length >= TWO_ROW_THRESHOLD ? 2 : 1;
-  let rowCount = initialRows;
-  while (rowCount < cards.length) {
-    const largestRow = Math.ceil(cards.length / rowCount);
-    if (!computeOverlap(largestRow, buttonWidth, viewportWidth).useScroll) break;
-    rowCount += 1;
-  }
+  const rowCount = rowCountFor(cards.length, buttonWidth, viewportWidth);
   const rows = splitBalanced(cards, rowCount);
   const shouldStackRows = stackRows && rows.length >= 2;
-  const cardHeight = cardWidth * CARD_HEIGHT_RATIO + CARD_BORDER_Y;
-  const rowMarginTop = -(cardHeight - STACKED_ROW_VISIBLE_PX);
+  const rowMarginTop = stackedRowMarginTop(cardWidth);
 
   return (
     <div className="mb-2" data-tutorial={dataTutorial}>
@@ -228,27 +201,4 @@ export function MobileHandGrid({
       })}
     </div>
   );
-}
-
-/** Result of overlap computation including scroll-fallback flag. */
-interface OverlapResult {
-  /** Negative margin-left in px (or positive gap). */
-  overlap: number;
-  /** True when cards cannot fit with minimum tap-target exposure. */
-  useScroll: boolean;
-}
-
-/** Compute negative margin-left overlap so cards fit within the viewport. */
-function computeOverlap(cardCount: number, buttonWidth: number, viewportWidth: number): OverlapResult {
-  if (cardCount <= 1) return { overlap: 0, useScroll: false };
-  const availableWidth = viewportWidth - CONTAINER_PADDING;
-  const totalNeeded = cardCount * buttonWidth;
-  if (totalNeeded <= availableWidth) return { overlap: DEFAULT_CARD_GAP, useScroll: false };
-  const rawOverlap = -((totalNeeded - availableWidth) / (cardCount - 1));
-  const maxNegative = -buttonWidth * MAX_OVERLAP_RATIO;
-  const minExposureOverlap = -(buttonWidth - MIN_CARD_EXPOSURE_PX);
-  if (rawOverlap < minExposureOverlap) {
-    return { overlap: DEFAULT_CARD_GAP, useScroll: true };
-  }
-  return { overlap: Math.max(rawOverlap, maxNegative), useScroll: false };
 }

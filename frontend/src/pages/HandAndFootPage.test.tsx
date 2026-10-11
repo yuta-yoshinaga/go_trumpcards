@@ -4,6 +4,7 @@ import { handandfootApi } from '../api/gameApi';
 import * as cardDimensions from '../hooks/useCardDimensions';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { HandAndFootPlayerData, HandAndFootResponse, HandAndFootTeamData } from '../types/card';
+import { HandAndFootPhase } from '../types/phases';
 import { HandAndFootPage } from './HandAndFootPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -218,6 +219,47 @@ describe('HandAndFootPage', () => {
     expect(scoreDetails).not.toHaveAttribute('open');
     expect(within(scoreDetails as HTMLElement).getByRole('table')).not.toBeVisible();
     expect(within(scoreDetails as HTMLElement).getByRole('rowheader', { name: 'あなた' })).not.toBeVisible();
+  });
+
+  it('uses stacked mobile hand rows and lets cards toggle outside the human turn', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    vi.spyOn(cardDimensions, 'useIsMobile').mockReturnValue(true);
+    const cards = Array.from({ length: 15 }, (_, i) => ({ design: 'SPADE' as const, value: (i % 13) + 1 }));
+    try {
+      mockExec.mockResolvedValue({
+        ...drawPhaseState,
+        players: [{ ...basePlayers[0], cards, cardCount: cards.length }, basePlayers[1]],
+      });
+      const { unmount } = renderWithProviders(<HandAndFootPage />);
+      await waitFor(() => expect(document.querySelector('[data-testid="hand-row"]')).not.toBeNull());
+      const hand = document.querySelector<HTMLElement>('[data-tutorial="hf-player-hand"]');
+      expect(hand).toHaveAttribute('data-tutorial', 'hf-player-hand');
+      const rows = hand?.querySelectorAll<HTMLElement>('[data-testid="hand-row"]');
+      expect(rows?.length).toBeGreaterThanOrEqual(2);
+      for (const row of Array.from(rows ?? []).slice(1)) expect(row.style.marginTop).toMatch(/^-/);
+
+      const cardsInHand = hand?.querySelectorAll('button') ?? [];
+      fireEvent.click(cardsInHand[0]);
+      expect(cardsInHand[0]).toHaveAttribute('aria-pressed', 'true');
+      unmount();
+
+      mockExec.mockResolvedValue({
+        ...drawPhaseState,
+        phase: HandAndFootPhase.ROUND_END,
+        players: [{ ...basePlayers[0], cards, cardCount: cards.length }, basePlayers[1]],
+      });
+      renderWithProviders(<HandAndFootPage />);
+      await waitFor(() => expect(document.querySelector('[data-testid="hand-row"]')).not.toBeNull());
+      const nonTurnHand = document.querySelector<HTMLElement>('[data-tutorial="hf-player-hand"]');
+      const nonTurnCard = nonTurnHand?.querySelector('button');
+      expect(nonTurnCard).toHaveAttribute('aria-pressed', 'false');
+      fireEvent.click(nonTurnCard as HTMLElement);
+      expect(nonTurnCard).toHaveAttribute('aria-pressed', 'true');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
   });
 
   it('opens the score table on desktop', async () => {

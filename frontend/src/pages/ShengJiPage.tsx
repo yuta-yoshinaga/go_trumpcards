@@ -10,6 +10,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
+import { MobileHandGrid } from '../components/MobileHandGrid';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -101,7 +102,7 @@ function ShengJiPageContent() {
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('shengji');
 
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('shengji', SHENGJI_PHASE_KEYS);
   // **ヒントは前から算出されていた。**getShengJiHint も hintFactories への
   // 登録もあるのに、このページが一度も読んでいなかった (#4774)。
@@ -509,23 +510,38 @@ function ShengJiPageContent() {
             >
               <div className="mb-2" data-tutorial="shengji-hand">
                 <div className="text-ds-text-muted text-xs mb-1">{t('yourHand')}</div>
-                <div className="flex flex-wrap gap-1">
-                  {(human?.cards ?? []).map((c, i) => (
-                    <button
-                      key={`hand-${c.design}-${c.value}-${i}`}
-                      type="button"
-                      aria-pressed={selected.includes(i)}
-                      onClick={() => canSelect && toggle(i)}
-                      disabled={!canSelect}
-                      className={`rounded transition-all ${selected.includes(i) ? 'ring-2 ring-ds-info -translate-y-2' : ''} ${
-                        canSelect ? 'cursor-pointer hover:opacity-90' : 'cursor-default'
-                      }`}
-                      data-testid={`hand-card-${i}`}
-                    >
-                      <CardImage card={c} width={cardWidth} />
-                    </button>
-                  ))}
-                </div>
+                {isMobile ? (
+                  <MobileHandGrid
+                    cards={human?.cards ?? []}
+                    selectedIndices={selected}
+                    onToggle={(idx) => canSelect && toggle(idx)}
+                    cardWidth={cardWidth}
+                    validIndices={
+                      /* 空配列はどの札も選べない（MobileHandGrid は validIndices に無い札を aria-disabled にする）。 */ canSelect
+                        ? undefined
+                        : []
+                    }
+                    stackRows
+                  />
+                ) : (
+                  <div className="flex flex-wrap gap-1">
+                    {(human?.cards ?? []).map((c, i) => (
+                      <button
+                        key={`hand-${c.design}-${c.value}-${i}`}
+                        type="button"
+                        aria-pressed={selected.includes(i)}
+                        onClick={() => canSelect && toggle(i)}
+                        disabled={!canSelect}
+                        className={`rounded transition-all ${selected.includes(i) ? 'ring-2 ring-ds-info -translate-y-2' : ''} ${
+                          canSelect ? 'cursor-pointer hover:opacity-90' : 'cursor-default'
+                        }`}
+                        data-testid={`hand-card-${i}`}
+                      >
+                        <CardImage card={c} width={cardWidth} />
+                      </button>
+                    ))}
+                  </div>
+                )}
                 {isPlay && selected.length > 0 && (
                   <div className="mt-2 text-center text-xs" data-testid="shengji-combo-preview">
                     {selectedCombo === null ? (

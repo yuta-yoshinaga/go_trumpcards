@@ -1,9 +1,11 @@
 import { useTranslation } from 'react-i18next';
-import { useCardDimensions } from '../../hooks/useCardDimensions';
+import { useCardDimensions, useWindowWidth } from '../../hooks/useCardDimensions';
 import { focusRingCard, playableRingStyle, selectedCardStyle } from '../../styles/cardStyles';
 import type { DaifugoPlayerData } from '../../types/card';
 import { cardAlt } from '../../utils/cardAlt';
+import { BUTTON_EXTRA, computeOverlap, rowCountFor, stackedRowMarginTop } from '../../utils/handOverlap';
 import { playerName } from '../../utils/playerUtils';
+import { splitBalanced } from '../../utils/splitBalanced';
 import { CardImage } from '../CardImage';
 import { StatusBadge } from '../StatusBadge';
 import { playerAreaClass } from './DaifugoCpuArea';
@@ -36,11 +38,17 @@ export function DaifugoHumanArea({
   playableIndices,
 }: HumanPlayerAreaProps) {
   const { t } = useTranslation('daifugo');
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
+  const viewportWidth = useWindowWidth();
   // Only mark during the human's turn: the indices are computed for whoever is
   // to move, and a stale set on a CPU turn would point at the wrong cards.
   const playable = isCurrentTurn && playableIndices ? new Set(playableIndices) : null;
   const hasPlayableInfo = playable !== null;
+  const cards = player.cards ?? [];
+  const buttonWidth = cardWidth + BUTTON_EXTRA;
+  const rowCount = isMobile ? rowCountFor(cards.length, buttonWidth, viewportWidth) : 1;
+  const rows = isMobile ? splitBalanced(cards, rowCount) : [{ items: cards, start: 0 }];
+  const rowMarginTop = stackedRowMarginTop(cardWidth);
   const conditionalClass = player.isFinished
     ? 'opacity-50'
     : isCurrentTurn
@@ -64,47 +72,61 @@ export function DaifugoHumanArea({
           {isCurrentTurn && <span className="ml-2 text-game-text-highlight">{t('selectToPlay')}</span>}
         </div>
       )}
-      <div className="flex flex-wrap gap-1">
-        {player.cards?.map((card, i) => (
-          <button
-            key={`${card.design}-${card.value}`}
-            type="button"
-            data-card-index={i}
-            data-playable={playable?.has(i) ? 'true' : undefined}
-            aria-label={
-              playable
-                ? t(playable.has(i) ? 'actions.playableAria' : 'actions.notPlayableAria', { card: cardAlt(card) })
-                : undefined
-            }
-            aria-disabled={playable && !playable.has(i) ? true : undefined}
-            aria-describedby={playable && !playable.has(i) ? 'daifugo-unplayable-reason' : undefined}
-            aria-pressed={selectedIndices.includes(i)}
-            disabled={!isCurrentTurn}
-            draggable={isCurrentTurn}
-            className={`${focusRingCard} touch-none aria-disabled:opacity-50`}
-            onClick={() => {
-              if (playable && !playable.has(i)) return;
-              onToggle(i);
-            }}
-            onPointerDown={isCurrentTurn && onSwipeStart ? () => onSwipeStart(i) : undefined}
-            onDragStart={(e) => {
-              e.dataTransfer.setData('cardIndex', String(i));
-              onDragCard(i);
-            }}
-            style={{
-              background: 'none',
-              padding: 0,
-              cursor: isCurrentTurn ? 'pointer' : 'default',
-              borderRadius: 8,
-              ...selectedCardStyle(selectedIndices.includes(i)),
-              // The ring uses `outline`, so it stacks on the selection border
-              // rather than replacing it -- a playable card can also be selected.
-              ...(playable?.has(i) ? playableRingStyle() : {}),
-              boxSizing: 'border-box',
-            }}
+      <div className={isMobile ? '' : 'flex flex-wrap gap-1'}>
+        {rows.map(({ items: rowCards, start }, rowIdx) => (
+          <div
+            key={`row-${rowIdx}`}
+            data-testid={isMobile ? 'hand-row' : undefined}
+            className={isMobile ? 'flex justify-center' : 'contents'}
+            style={isMobile ? { marginTop: rowIdx > 0 ? rowMarginTop : undefined } : undefined}
           >
-            <CardImage card={card} width={cardWidth} />
-          </button>
+            {rowCards.map((card, rowCardIdx) => {
+              const i = start + rowCardIdx;
+              const overlap = isMobile ? computeOverlap(rowCards.length, buttonWidth, viewportWidth).overlap : 0;
+              return (
+                <button
+                  key={`${card.design}-${card.value}`}
+                  type="button"
+                  data-card-index={i}
+                  data-playable={playable?.has(i) ? 'true' : undefined}
+                  aria-label={
+                    playable
+                      ? t(playable.has(i) ? 'actions.playableAria' : 'actions.notPlayableAria', { card: cardAlt(card) })
+                      : undefined
+                  }
+                  aria-disabled={playable && !playable.has(i) ? true : undefined}
+                  aria-describedby={playable && !playable.has(i) ? 'daifugo-unplayable-reason' : undefined}
+                  aria-pressed={selectedIndices.includes(i)}
+                  disabled={!isCurrentTurn}
+                  draggable={isCurrentTurn}
+                  className={`${focusRingCard} touch-none aria-disabled:opacity-50`}
+                  onClick={() => {
+                    if (playable && !playable.has(i)) return;
+                    onToggle(i);
+                  }}
+                  onPointerDown={isCurrentTurn && onSwipeStart ? () => onSwipeStart(i) : undefined}
+                  onDragStart={(e) => {
+                    e.dataTransfer.setData('cardIndex', String(i));
+                    onDragCard(i);
+                  }}
+                  style={{
+                    background: 'none',
+                    padding: 0,
+                    cursor: isCurrentTurn ? 'pointer' : 'default',
+                    borderRadius: 8,
+                    ...selectedCardStyle(selectedIndices.includes(i)),
+                    // The ring uses `outline`, so it stacks on the selection border
+                    // rather than replacing it -- a playable card can also be selected.
+                    ...(playable?.has(i) ? playableRingStyle() : {}),
+                    boxSizing: 'border-box',
+                    ...(isMobile ? { marginLeft: rowCardIdx === 0 ? 0 : overlap } : {}),
+                  }}
+                >
+                  <CardImage card={card} width={cardWidth} />
+                </button>
+              );
+            })}
+          </div>
         ))}
         {hasPlayableInfo && (
           <span id="daifugo-unplayable-reason" className="sr-only">
