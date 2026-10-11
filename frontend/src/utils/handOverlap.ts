@@ -12,8 +12,8 @@ export const MAX_OVERLAP_RATIO = 0.7;
 export const MIN_CARD_EXPOSURE_PX = 44;
 /** Card image height relative to its width (the 250x375 assets, 2:3). */
 export const CARD_HEIGHT_RATIO = 1.5;
-/** Vertical border around a card button, added to the image height. */
-export const CARD_BORDER_Y = 2;
+/** Vertical border around a card button: 3px on each side from selectedCardStyle. */
+export const CARD_BORDER_Y = 6;
 /** Height of an upper row left visible when rows overlap, including its 44px tap target. */
 export const STACKED_ROW_VISIBLE_PX = 52;
 

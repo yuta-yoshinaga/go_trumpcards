@@ -448,7 +448,9 @@ function ScartoPageContent() {
           </div>
 
           {/* Footer */}
+          {/* Tarot-size hands outgrow the 45vh cap on phones (#11655). */}
           <GameFooter
+            tall
             className={`${gameTheme.scarto.footer} px-4 py-2.5`}
             actions={
               canScarto || canPlay || isTrickEnd || isRoundEnd ? (
@@ -512,6 +514,7 @@ function ScartoPageContent() {
                 cardWidth={cardWidth}
                 isMobile={isMobile}
                 dataTutorialPrefix="scarto"
+                stackRows
                 validIndices={handValidIndices}
                 restrictedTooltip={canScarto ? t('scartoRestricted') : t('playButton')}
                 cardTitleFor={canScarto ? scartoTitleFor : undefined}

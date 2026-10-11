@@ -353,7 +353,9 @@ function TarocchiniPageContent() {
           </div>
 
           {/* Footer */}
+          {/* Tarot-size hands outgrow the 45vh cap on phones (#11655). */}
           <GameFooter
+            tall
             className={`${gameTheme.tarocchini.footer} px-4 py-2.5`}
             actions={
               (canScarto || canPlay || isTrickEnd || isRoundEnd) && (
@@ -423,6 +425,7 @@ function TarocchiniPageContent() {
                 cardWidth={cardWidth}
                 isMobile={isMobile}
                 dataTutorialPrefix="tarocchini"
+                stackRows
                 validIndices={canPlay ? state.playableIndices : scartoValidIndices}
                 restrictedTooltip={canScarto ? t('scartoRestricted') : t('playButton')}
               />

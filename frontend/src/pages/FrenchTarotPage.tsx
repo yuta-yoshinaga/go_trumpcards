@@ -496,7 +496,9 @@ function FrenchTarotPageContent() {
           </div>
 
           {/* Footer */}
+          {/* Tarot-size hands outgrow the 45vh cap on phones (#11655). */}
           <GameFooter
+            tall
             className={`${gameTheme.frenchtarot.footer} px-4 py-2.5`}
             actions={
               canBid || canDiscard || canPlay || isTrickEnd || isRoundEnd ? (
@@ -581,6 +583,7 @@ function FrenchTarotPageContent() {
                 cardWidth={cardWidth}
                 isMobile={isMobile}
                 dataTutorialPrefix="frenchtarot"
+                stackRows
                 validIndices={handValidIndices}
                 restrictedTooltip={canDiscard ? t('chienRestricted') : t('playButton')}
                 cardTitleFor={canDiscard ? ecartTitleFor : undefined}

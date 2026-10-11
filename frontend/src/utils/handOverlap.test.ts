@@ -45,6 +45,6 @@ describe('rowCountFor', () => {
 
 describe('stackedRowMarginTop', () => {
   it('leaves the configured visible part of the preceding row', () => {
-    expect(stackedRowMarginTop(40)).toBe(-(40 * 1.5 + 2 - 52));
+    expect(stackedRowMarginTop(40)).toBe(-14);
   });
 });
