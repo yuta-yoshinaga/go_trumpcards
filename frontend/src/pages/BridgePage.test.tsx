@@ -189,6 +189,21 @@ describe('BridgePage', () => {
     expect(within(actions).getByTestId('br-bid-submit')).toBeInTheDocument();
   });
 
+  it('keeps the hand in the footer and places hint support in the play area', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    const { container } = renderWithProviders(<BridgePage />);
+
+    const footer = await screen.findByTestId('game-footer-content');
+    const hintLive = container.querySelector('[data-testid="bridge-hint-live"]');
+    const playArea = hintLive?.closest('.flex-1.overflow-y-auto');
+    expect(footer.querySelector('[data-tutorial="br-player-hand"]')).toBeInTheDocument();
+    expect(footer.querySelector('[data-testid="bridge-hint-live"]')).toBeNull();
+    expect(footer.querySelector('[data-testid="bridge-kbd-shortcuts"]')).toBeNull();
+    expect(playArea).toHaveAttribute('class', expect.stringContaining('flex-1 overflow-y-auto'));
+    expect(playArea?.querySelector('[data-testid="bridge-hint-live"]')).toBe(hintLive);
+    expect(playArea?.querySelector('[data-testid="bridge-kbd-shortcuts"]')).toBeInTheDocument();
+  });
+
   it('marks illegal cards unavailable and ignores their clicks', async () => {
     mockExec.mockResolvedValue(playPhaseState);
     renderWithProviders(<BridgePage />);

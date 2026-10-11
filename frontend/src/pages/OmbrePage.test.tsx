@@ -124,6 +124,24 @@ describe('OmbrePage', () => {
     expect(screen.getAllByText('オンブル').length).toBeGreaterThan(1);
   });
 
+  it('keeps support controls and hint live region in the play area', async () => {
+    renderWithProviders(<OmbrePage />);
+
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const footer = footerContent.closest('footer');
+    const playArea = footer?.previousElementSibling;
+    const resetButton = document.querySelector<HTMLButtonElement>('[data-tutorial="ombre-reset-button"]');
+    const hintLive = screen.getByTestId('ombre-hint-live');
+
+    expect(playArea).not.toBeNull();
+    expect(footerContent).toContainElement(screen.getByAltText('♥ Q'));
+    if (!resetButton) throw new Error('Expected the reset button to render');
+    expect(footerContent).not.toContainElement(resetButton);
+    expect(footerContent).not.toContainElement(hintLive);
+    expect(playArea).toContainElement(resetButton);
+    expect(playArea).toContainElement(hintLive);
+  });
+
   it('renders the bid phase with entrar, solo and pass buttons', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<OmbrePage />);

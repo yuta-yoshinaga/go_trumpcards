@@ -522,6 +522,23 @@ function DoubtPageContent() {
                 )}
               </div>
             </div>
+
+            <ErrorAlert message={error} onRetry={retry} />
+
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            {/* Action buttons */}
+            <div className="text-center">
+              <GameResetButton
+                isGameEnd={!!state.gameEndFlag}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="dt-reset-button"
+                className="min-w-[90px]"
+              />
+            </div>
+            <CardNavShortcutsPanel data-testid="doubt-kbd-shortcuts" />
           </div>
 
           {/* Sticky footer: human player hand + action buttons */}
@@ -613,23 +630,6 @@ function DoubtPageContent() {
                 {/* Claimed value buttons (shown when cards are selected) */}
               </div>
             )}
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            {/* Action buttons */}
-            <div className="text-center">
-              <GameResetButton
-                isGameEnd={!!state.gameEndFlag}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="dt-reset-button"
-                className="min-w-[90px]"
-              />
-            </div>
-            <CardNavShortcutsPanel data-testid="doubt-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

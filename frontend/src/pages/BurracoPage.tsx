@@ -552,6 +552,32 @@ function BurracoPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+
+            {humanPlayer && humanPlayer.cards.length > 0 && (
+              <fieldset className="flex flex-wrap justify-center gap-1.5 mb-2 border-0 p-0 m-0">
+                <legend className="sr-only">{t('sort.label')}</legend>
+                {BURRACO_SORT_MODES.map(({ mode, labelKey }) => (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => handleSortMode(mode)}
+                    className={sortMode === mode ? `${btnPrimary} min-w-[64px]` : `${btnSecondary} min-w-[64px]`}
+                    aria-pressed={sortMode === mode}
+                    data-testid={`bu-sort-${mode}`}
+                  >
+                    {t(labelKey)}
+                  </button>
+                ))}
+              </fieldset>
+            )}
+            <ErrorAlert message={error} onRetry={retry} />
+            <GameResetButton
+              isGameEnd={isGameEnd}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+            />
+            <CardNavShortcutsPanel data-testid="burraco-kbd-shortcuts" />
           </div>
 
           <GameFooter
@@ -651,23 +677,6 @@ function BurracoPageContent() {
               </div>
             }
           >
-            {humanPlayer && humanPlayer.cards.length > 0 && (
-              <fieldset className="flex flex-wrap justify-center gap-1.5 mb-2 border-0 p-0 m-0">
-                <legend className="sr-only">{t('sort.label')}</legend>
-                {BURRACO_SORT_MODES.map(({ mode, labelKey }) => (
-                  <button
-                    key={mode}
-                    type="button"
-                    onClick={() => handleSortMode(mode)}
-                    className={sortMode === mode ? `${btnPrimary} min-w-[64px]` : `${btnSecondary} min-w-[64px]`}
-                    aria-pressed={sortMode === mode}
-                    data-testid={`bu-sort-${mode}`}
-                  >
-                    {t(labelKey)}
-                  </button>
-                ))}
-              </fieldset>
-            )}
             {humanPlayer && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="ca-player-hand">
                 {sortedHandForDisplay(humanPlayer.cards, sortMode).map(({ card, index: idx }) => (
@@ -697,14 +706,6 @@ function BurracoPageContent() {
                 ))}
               </div>
             )}
-            <ErrorAlert message={error} onRetry={retry} />
-            <GameResetButton
-              isGameEnd={isGameEnd}
-              onReset={handleManualReset}
-              requestConfirm={requestConfirm}
-              loading={loading}
-            />
-            <CardNavShortcutsPanel data-testid="burraco-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

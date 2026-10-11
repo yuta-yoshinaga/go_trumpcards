@@ -132,6 +132,20 @@ describe('BurracoPage', () => {
     expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeInTheDocument();
   });
 
+  it('keeps the hand in the footer and places hand utilities in the play area', async () => {
+    renderWithProviders(<BurracoPage />);
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const playArea = footerContent.parentElement?.previousElementSibling;
+    expect(playArea).not.toBeNull();
+    expect(within(footerContent).getAllByTestId(/^bu-hand-card-/)).toHaveLength(basePlayers[0].cards.length);
+    expect(within(footerContent).queryByTestId('bu-sort-suit')).not.toBeInTheDocument();
+    expect(screen.getByTestId('bu-sort-suit')).toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('bu-sort-suit')).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('burraco-kbd-shortcuts')).not.toBeInTheDocument();
+    expect(screen.getByTestId('burraco-kbd-shortcuts')).toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('burraco-kbd-shortcuts')).toBeInTheDocument();
+  });
+
   it('renders the discard pile viewer with all pile cards', async () => {
     mockExec.mockResolvedValue({
       ...drawPhaseState,

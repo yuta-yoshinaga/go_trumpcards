@@ -525,6 +525,27 @@ describe('IndianRummyPage', () => {
     expect(screen.queryByAltText('♦ 5')).not.toBeInTheDocument();
   });
 
+  it('keeps only the hand in the footer and places reset and shortcuts in the play area', async () => {
+    mockExec.mockResolvedValue(discardPhaseState);
+    renderWithProviders(<IndianRummyPage />);
+    await waitFor(() => expect(screen.getByTestId('indianrummy-hand-status')).toBeInTheDocument());
+
+    const footer = screen.getByTestId('game-footer-content');
+    const playArea = footer.parentElement?.previousElementSibling;
+    const handStatus = screen.getByTestId('indianrummy-hand-status');
+    expect(footer).not.toContainElement(handStatus);
+    expect(playArea).toContainElement(handStatus);
+    expect(playArea).toHaveClass('overflow-y-auto');
+    expect(within(footer).getByAltText('♠ A').closest('[data-tutorial="ir-player-hand"]')).toBeInTheDocument();
+
+    const resetButton = document.querySelector<HTMLButtonElement>('[data-tutorial="ir-reset-button"]');
+    const shortcuts = screen.getByTestId('indian-rummy-kbd-shortcuts');
+    for (const element of [resetButton, shortcuts]) {
+      expect(footer).not.toContainElement(element);
+      expect(playArea).toContainElement(element);
+    }
+  });
+
   it('card selection toggles aria-pressed', async () => {
     renderWithProviders(<IndianRummyPage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());

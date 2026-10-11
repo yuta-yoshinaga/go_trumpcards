@@ -285,6 +285,11 @@ function MichiganPageContent() {
           />
 
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+            {isResultPhase && !isGameEnd && (
+              <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                {t('nextRound')}
+              </button>
+            )}
             <div className="text-ds-text-primary text-center mb-2" data-tutorial="michigan-info">
               <span className="mr-4">{t('round', { n: state.roundNumber, total: state.config.targetRounds })}</span>
               <span className="mr-4">{t('ante', { amount: state.ante })}</span>
@@ -414,6 +419,20 @@ function MichiganPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+
+            <ErrorAlert message={error} onRetry={retry} />
+
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            <div className="flex flex-wrap gap-2 items-center">
+              <GameResetButton
+                isGameEnd={isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="michigan-reset-button"
+              />
+            </div>
           </div>
 
           {/* Footer */}
@@ -532,30 +551,10 @@ function MichiganPageContent() {
               </div>
             )}
 
-            <ErrorAlert message={error} onRetry={retry} />
-
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
             <div className="flex flex-col gap-2" data-tutorial="michigan-action-buttons">
               {isPlayPhase && isHumanTurn && !isGameEnd && (
                 <div className="text-ds-text-muted text-sm">{t('playPrompt')}</div>
               )}
-
-              <div className="flex flex-wrap gap-2 items-center">
-                {isResultPhase && !isGameEnd && (
-                  <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                    {t('nextRound')}
-                  </button>
-                )}
-
-                <GameResetButton
-                  isGameEnd={isGameEnd}
-                  onReset={handleManualReset}
-                  requestConfirm={requestConfirm}
-                  loading={loading}
-                  dataTutorial="michigan-reset-button"
-                />
-              </div>
             </div>
           </GameFooter>
         </>
