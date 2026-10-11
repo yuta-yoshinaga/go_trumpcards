@@ -3,7 +3,7 @@
  *
  * These values must stay in sync with the backend domain constants:
  *   - Baccarat:    internal/domain/Baccarat.go    (BaccaratPhaseBet, BaccaratPhaseEnd)
- *   - BlackJack:   internal/domain/BlackJack.go   (BJPhaseBet, BJPhaseDeal, BJPhaseInsurance, BJPhaseAction, BJPhaseEnd)
+ *   - BlackJack:   internal/domain/BlackJack.go   (BJPhaseBet, BJPhaseDeal, BJPhaseInsurance, BJPhaseAction, BJPhaseEnd, BJPhaseEarlySurrender)
  *   - CrazyEights: internal/domain/CrazyEights.go (CrazyEightsPhasePlay, CrazyEightsPhaseChooseSuit, CrazyEightsPhaseRoundEnd, CrazyEightsPhaseGameEnd)
  *   - Cribbage:    internal/domain/Cribbage.go    (CribbagePhaseDiscard, CribbagePhaseCut, CribbagePhasePegging, CribbagePhaseShow, CribbagePhaseRoundEnd, CribbagePhaseGameEnd)
  *   - Doubt:       internal/domain/Doubt.go       (DoubtPhasePlay, DoubtPhaseDoubt, DoubtPhaseEnd)

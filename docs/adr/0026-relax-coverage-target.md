@@ -4,6 +4,8 @@
 
 Accepted
 
+Supersedes [ADR-0009](0009-tdd-and-coverage.md)
+
 ## Date
 
 2026-03-23
