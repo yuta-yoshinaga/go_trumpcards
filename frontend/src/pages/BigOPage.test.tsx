@@ -270,6 +270,28 @@ beforeEach(() => {
 });
 
 describe('BigOPage', () => {
+  it('keeps phase choices and supporting settings in the play area while the hand stays in the footer', async () => {
+    const rebuyState: OmahaResponse = {
+      ...preFlopState,
+      phase: 7,
+      rebuyPhaseType: 1,
+      rebuyChips: 1000,
+      rebuyMaxCount: 3,
+      rebuyCounts: [0, 0, 0, 0],
+    };
+    mockExec.mockResolvedValue(rebuyState);
+    renderWithProviders(<BigOPage />);
+
+    const footer = await screen.findByTestId('game-footer-content');
+    const playArea = document.querySelector('.relative.flex-1.overflow-y-auto');
+    expect(playArea).not.toBeNull();
+    await waitFor(() => expect(within(playArea as HTMLElement).getByTestId('rebuy-controls')).toBeInTheDocument());
+    expect(within(footer).queryByTestId('rebuy-controls')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByText('設定')).toBeInTheDocument();
+    expect(within(footer).queryByText('設定')).not.toBeInTheDocument();
+    expect(within(footer).getByTestId('bigo-hole-cards')).toBeInTheDocument();
+  });
+
   it('announces newly revealed community cards', async () => {
     mockExec.mockResolvedValue(flopState);
     renderWithProviders(<BigOPage />);

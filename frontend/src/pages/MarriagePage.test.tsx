@@ -287,6 +287,21 @@ describe('MarriagePage', () => {
     expect(actions.querySelector('[data-tutorial="marriage-draw-area"]')).toBeInTheDocument();
   });
 
+  it('keeps the hand in the footer while rendering reset controls in the play area', async () => {
+    renderWithProviders(<MarriagePage />);
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const footer = footerContent.parentElement;
+    const playArea = footer?.previousElementSibling;
+    const resetButton = screen.getByRole('button', { name: 'リセット' });
+
+    expect(within(footerContent).getByRole('button', { name: '♠ A' })).toBeInTheDocument();
+    expect(footerContent.querySelector('[data-tutorial="marriage-reset-button"]')).not.toBeInTheDocument();
+    expect(playArea).toContainElement(resetButton);
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '山札から引く' }),
+    ).toBeInTheDocument();
+  });
+
   it('marks wild-rank cards in the human hand with a WILD badge', async () => {
     const wildInHandState: MarriageResponse = {
       ...drawPhaseState,

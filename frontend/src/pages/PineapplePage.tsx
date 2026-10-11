@@ -469,6 +469,17 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
         <>
           {/* Scrollable: community cards + CPU players */}
           <div className={`flex-1 overflow-y-auto pt-4 px-5 lg:px-8 ${lgCardAreaConstraint}`}>
+            {/* Crazy Pineapple and Irish Poker discard after the flop betting round
+                (unlike plain Pineapple's immediate discard) — forewarn the player during
+                the flop bet so they can factor the upcoming discard into their decision. */}
+            {(variant === 'crazypineapple' || variant === 'irishpoker') && phase === PineapplePhase.FLOP && (
+              <div
+                data-testid="cp-discard-upcoming-banner"
+                className="mb-2 rounded border border-ds-info bg-ds-surface px-3 py-1.5 text-center text-ds-info text-sm"
+              >
+                {t('discardUpcoming')}
+              </div>
+            )}
             {/* Community cards + CPU players (poker table layout on desktop, accordion on mobile) */}
             {(() => {
               const communityCardsContent = (
@@ -564,6 +575,76 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
               actionLog={actionLog}
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
+            />
+            <ErrorAlert message={error} onRetry={retry} />
+
+            {/* Hint */}
+            {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
+
+            {/* Settings + Reset */}
+            {variant === 'irishpoker' && (
+              <details className="mb-1" data-tutorial="pn-betting-info">
+                <summary className="cursor-pointer select-none text-ds-text-primary text-sm font-bold py-1">
+                  {t('bettingInfo.title')}
+                </summary>
+                <div className="py-1">
+                  <p className="text-ds-text-muted text-xs mb-2">{t('bettingInfo.description')}</p>
+                  {state?.equity && state.potOdds != null && (
+                    <EquityDisplay equity={state.equity} potOdds={state.potOdds} />
+                  )}
+                </div>
+              </details>
+            )}
+            <details className="mb-1" data-tutorial="pn-learning-mode" open={learningMode || undefined}>
+              <summary className="cursor-pointer select-none text-ds-text-primary text-sm font-bold py-1">
+                {tc('settings.title')}
+              </summary>
+              <div className="flex flex-col gap-2 py-1">
+                {variant !== 'irishpoker' && (
+                  <div className="flex items-center gap-2" data-testid="learning-mode-toggle">
+                    <label
+                      htmlFor="learningModeCheckbox"
+                      className="text-ds-text-primary text-sm cursor-pointer flex items-center gap-2 min-h-[44px]"
+                    >
+                      {t('learning.toggle')}
+                      <input
+                        id="learningModeCheckbox"
+                        type="checkbox"
+                        checked={learningMode}
+                        onChange={(e) => setLearningMode(e.target.checked)}
+                      />
+                    </label>
+                  </div>
+                )}
+                {variant !== 'irishpoker' && learningMode && state?.equity && state.potOdds != null && (
+                  <EquityDisplay equity={state.equity} potOdds={state.potOdds} />
+                )}
+                <div className="flex items-center gap-3">
+                  <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
+                    <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
+                    {tc('hint.toggle', { ns: 'tutorial' })}
+                  </label>
+                  {variant !== 'irishpoker' && (
+                    <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
+                      <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
+                      {t('settings.cpuMetaAI')}
+                    </label>
+                  )}
+                </div>
+              </div>
+            </details>
+            <GameResetButton
+              isGameEnd={phase === PineapplePhase.SHOWDOWN || phase === PineapplePhase.END}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+              dataTutorial="pn-reset-button"
+              className="min-w-[90px]"
+            />
+            <ActionShortcutsPanel
+              bindings={availableActionBindings}
+              includeCardNav
+              data-testid="pineapple-kbd-shortcuts"
             />
           </div>
 
@@ -771,17 +852,6 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
               ) : null
             }
           >
-            {/* Crazy Pineapple and Irish Poker discard after the flop betting round
-                (unlike plain Pineapple's immediate discard) — forewarn the player during
-                the flop bet so they can factor the upcoming discard into their decision. */}
-            {(variant === 'crazypineapple' || variant === 'irishpoker') && phase === PineapplePhase.FLOP && (
-              <div
-                data-testid="cp-discard-upcoming-banner"
-                className="mb-2 rounded border border-ds-info bg-ds-surface px-3 py-1.5 text-center text-ds-info text-sm"
-              >
-                {t('discardUpcoming')}
-              </div>
-            )}
             {/* Human player */}
             {humanPlayer && (
               <div className="mb-2" data-tutorial="pn-player-hand">
@@ -968,8 +1038,6 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
               alwaysVisible
             />
 
-            <ErrorAlert message={error} onRetry={retry} />
-
             {/* The cp-discard-candidate / cp-discard-recommended badges are
                 visual only. This region is variant-exclusive with
                 irishpoker-discard-preview-announce, so only one of the two
@@ -989,75 +1057,6 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                       hand: t(`hand.${cpSelectedPreview.handKey}`),
                     }))}
             </div>
-
-            {/* Hint */}
-            {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
-
-            {/* Settings + Reset */}
-            {variant === 'irishpoker' && (
-              <details className="mb-1" data-tutorial="pn-betting-info">
-                <summary className="cursor-pointer select-none text-ds-text-primary text-sm font-bold py-1">
-                  {t('bettingInfo.title')}
-                </summary>
-                <div className="py-1">
-                  <p className="text-ds-text-muted text-xs mb-2">{t('bettingInfo.description')}</p>
-                  {state?.equity && state.potOdds != null && (
-                    <EquityDisplay equity={state.equity} potOdds={state.potOdds} />
-                  )}
-                </div>
-              </details>
-            )}
-            <details className="mb-1" data-tutorial="pn-learning-mode" open={learningMode || undefined}>
-              <summary className="cursor-pointer select-none text-ds-text-primary text-sm font-bold py-1">
-                {tc('settings.title')}
-              </summary>
-              <div className="flex flex-col gap-2 py-1">
-                {variant !== 'irishpoker' && (
-                  <div className="flex items-center gap-2" data-testid="learning-mode-toggle">
-                    <label
-                      htmlFor="learningModeCheckbox"
-                      className="text-ds-text-primary text-sm cursor-pointer flex items-center gap-2 min-h-[44px]"
-                    >
-                      {t('learning.toggle')}
-                      <input
-                        id="learningModeCheckbox"
-                        type="checkbox"
-                        checked={learningMode}
-                        onChange={(e) => setLearningMode(e.target.checked)}
-                      />
-                    </label>
-                  </div>
-                )}
-                {variant !== 'irishpoker' && learningMode && state?.equity && state.potOdds != null && (
-                  <EquityDisplay equity={state.equity} potOdds={state.potOdds} />
-                )}
-                <div className="flex items-center gap-3">
-                  <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
-                    <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
-                    {tc('hint.toggle', { ns: 'tutorial' })}
-                  </label>
-                  {variant !== 'irishpoker' && (
-                    <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
-                      <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
-                      {t('settings.cpuMetaAI')}
-                    </label>
-                  )}
-                </div>
-              </div>
-            </details>
-            <GameResetButton
-              isGameEnd={phase === PineapplePhase.SHOWDOWN || phase === PineapplePhase.END}
-              onReset={handleManualReset}
-              requestConfirm={requestConfirm}
-              loading={loading}
-              dataTutorial="pn-reset-button"
-              className="min-w-[90px]"
-            />
-            <ActionShortcutsPanel
-              bindings={availableActionBindings}
-              includeCardNav
-              data-testid="pineapple-kbd-shortcuts"
-            />
           </GameFooter>
         </>
       )}
