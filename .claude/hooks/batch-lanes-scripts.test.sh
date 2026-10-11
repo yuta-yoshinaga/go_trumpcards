@@ -29,6 +29,13 @@ grep -qF '[ -f "$t.test.ts" ] || [ -f "$t.test.tsx" ]' "$SCRIPTS/receipt.sh" || 
 grep -qP '(?<!\\)`' "$SCRIPTS/mkprompt.sh" && fail "mkprompt.sh has an unescaped backtick: its heredoc is unquoted, so bash runs the quoted text as a command and drops it from every lane prompt"
 sed -n '/^cat <<P$/,/^P$/p' "$SCRIPTS/mkprompt.sh" | grep -qP '(?<!\\)\$(?!n\b|body\b)' && fail "mkprompt.sh has a bare dollar in its unquoted heredoc; bash expands it to empty and removes a word from the instructions"
 grep -q 'dele' "$ROOT/.claude/skills/batch-lanes/SKILL.md" || fail "SKILL.md does not document dele"
+biome="$SCRIPTS/biomeignore.sh"
+move_out=$(printf '%s\n' 'diff --git a/a.ts b/a.ts' '+++ b/a.ts' '+// biome-ignore lint/suspicious/noExplicitAny' '-// biome-ignore lint/suspicious/noExplicitAny' | bash "$biome")
+[ -z "$move_out" ] || fail "biome-ignore move was warned: $move_out"
+grow_out=$(printf '%s\n' 'diff --git a/a.ts b/a.ts' '+++ b/a.ts' '+// biome-ignore lint/suspicious/noExplicitAny' | bash "$biome")
+grep -qx 'WARN NEW_BIOME_IGNORE a.ts (+1 -0)' <<<"$grow_out" || fail "biome-ignore increase was missed: $grow_out"
+allow_out=$(printf '%s\n' 'diff --git a/a.ts b/a.ts' '+++ b/a.ts' '+// biome-ignore lint/suspicious/noExplicitAny' | ALLOW_BIOME_IGNORE='a.ts' bash "$biome")
+[ -z "$allow_out" ] || fail "ALLOW_BIOME_IGNORE did not suppress warning: $allow_out"
 # repeattests.sh: lists added, edited and untracked Go tests per package, and warns when a
 # rerun of them fails (a shuffle-dependent test would otherwise fail on develop).
 (
@@ -174,6 +181,37 @@ echo changed > "$tmp/other/file"
 if PATH="$PATH" BATCH_REPO="$tmp/repo" BATCH_WT_ROOT="$tmp" \
   bash "$SCRIPTS/fx.sh" fix target >"$tmp/fx-dirty.out" 2>&1; then fail "fx.sh accepted a dirty worktree on target"; fi
 grep -q "$tmp/other" "$tmp/fx-dirty.out" || fail "fx.sh did not report the dirty worktree path"
+
+# ship.sh refuses a file changed on develop after the lane branched, before staging or commit.
+(
+  seed="$tmp/ship-seed"; origin="$tmp/ship-origin.git"; lane="$tmp/wt-ib9"; state="$tmp/ship-state"
+  mkdir -p "$seed" "$state"
+  git init -q "$seed"; git -C "$seed" config user.email test@example.com; git -C "$seed" config user.name test
+  printf 'initial\n' > "$seed/A"; printf 'initial\n' > "$seed/B"
+  git -C "$seed" add A B; git -C "$seed" commit -qm initial; initial=$(git -C "$seed" rev-parse HEAD); git -C "$seed" branch -M develop
+  git init -q --bare "$origin"; git -C "$origin" symbolic-ref HEAD refs/heads/develop
+  git -C "$seed" remote add origin "$origin"; git -C "$seed" push -q origin develop
+  git clone -q -b develop "$origin" "$lane"; git -C "$lane" config user.email test@example.com; git -C "$lane" config user.name test
+  printf 'develop update\n' >> "$seed/A"; git -C "$seed" commit -qam 'develop updates A'; git -C "$seed" push -q origin develop
+  printf 'lane update\n' >> "$lane/A"
+  export BATCH_REPO="$ROOT" BATCH_WT_ROOT="$tmp" BATCH_STATE="$state" CLAIM_SKIP=1
+  hash=$(bash "$SCRIPTS/treehash.sh" 9); printf '%s' "$hash" > "$state/gate9.ok"
+  if bash "$SCRIPTS/ship.sh" 9 123 'test ship' 'claim-check: skip' >"$tmp/ship-overlap.out" 2>&1; then fail "ship.sh accepted overlapping stale-base file"; fi
+  grep -q 'REFUSED: develop changed these files after this lane branched' "$tmp/ship-overlap.out" || fail "ship.sh did not explain stale-base overlap: $(cat "$tmp/ship-overlap.out")"
+  [ -z "$(git -C "$lane" status --porcelain)" ] && fail "ship.sh staged or committed stale-base changes"
+  git clone -q "$origin" "$tmp/wt-ib10"
+  git -C "$tmp/wt-ib10" checkout -qb lane-disjoint "$initial"
+  git -C "$tmp/wt-ib10" config user.email test@example.com; git -C "$tmp/wt-ib10" config user.name test
+  printf 'lane update\n' >> "$tmp/wt-ib10/B"
+  hash=$(bash "$SCRIPTS/treehash.sh" 10); printf '%s' "$hash" > "$state/gate10.ok"
+  set +e
+  bash "$SCRIPTS/ship.sh" 10 123 'test ship' 'claim-check: skip' >"$tmp/ship-disjoint.out" 2>&1
+  ship_rc=$?
+  set -e
+  [ "$ship_rc" -ne 0 ] || fail "ship.sh unexpectedly completed without gh stub"
+  ! grep -q 'REFUSED: develop changed these files' "$tmp/ship-disjoint.out" || fail "ship.sh rejected a disjoint file change"
+  git -C "$tmp/wt-ib10" log -1 --format=%s | grep -qx 'test ship' || fail "ship.sh did not pass stale-base check and commit disjoint change"
+) || exit 1
 
 # e2echeck should ignore removed locale text found only on comment lines.
 for case_name in comment locator; do
