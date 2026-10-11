@@ -128,6 +128,57 @@ describe('CanastaPage', () => {
     mockExec.mockResolvedValue(drawPhaseState);
   });
 
+  it('stacks mobile hand rows when the hand spans multiple rows', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      mockExec.mockResolvedValue({
+        ...drawPhaseState,
+        players: [
+          {
+            ...basePlayers[0],
+            cards: Array.from({ length: 15 }, (_, i) => ({ design: 'SPADE' as const, value: (i % 13) + 1 })),
+          },
+          basePlayers[1],
+        ],
+      });
+      renderWithProviders(<CanastaPage />);
+      await screen.findByTestId('phase-indicator');
+      const hand = document.querySelector<HTMLElement>('[data-tutorial="ca-player-hand"]');
+      expect(hand).not.toBeNull();
+      if (!hand) throw new Error('Expected the Canasta player hand');
+      await waitFor(() => expect(hand.querySelectorAll('[data-testid="hand-row"]').length).toBeGreaterThanOrEqual(2));
+      for (const row of Array.from(hand.querySelectorAll<HTMLElement>('[data-testid="hand-row"]')).slice(1)) {
+        expect(row.style.marginTop).toMatch(/^-/);
+      }
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it('allows selecting a mobile hand card', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      renderWithProviders(<CanastaPage />);
+      const hand = await screen.findByTestId('phase-indicator');
+      expect(hand).toBeInTheDocument();
+      const card = screen
+        .getAllByRole('button', { pressed: false })
+        .find((button) => button.hasAttribute('aria-pressed'));
+      expect(card).toBeDefined();
+      if (!card) throw new Error('Expected an unselected hand card');
+      fireEvent.click(card);
+      expect(card).toHaveAttribute('aria-pressed', 'true');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
   it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<CanastaPage />);
