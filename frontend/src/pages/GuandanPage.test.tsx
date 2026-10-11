@@ -63,6 +63,12 @@ describe('GuandanPage', () => {
     mockExec.mockResolvedValue(makeState());
   });
 
+  it('opts into the taller mobile footer for its 27-card hand', async () => {
+    renderWithProviders(<GuandanPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.getByRole('contentinfo').className).toContain('max-h-[60vh]');
+  });
+
   it('resets on mount', async () => {
     renderWithProviders(<GuandanPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
