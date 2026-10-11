@@ -19,6 +19,11 @@ test('poker action button labels fit at 375px', async ({ page }) => {
     })),
   );
   expect(widths.length).toBeGreaterThan(0);
+  const actionButtonTops = widths.map(({ box }) => box.top);
+  expect(
+    Math.max(...actionButtonTops) - Math.min(...actionButtonTops),
+    'all poker action buttons should fit on one row',
+  ).toBeLessThanOrEqual(4);
   for (const { label, clientWidth, scrollWidth } of widths) {
     expect(scrollWidth, `${label} should fit inside its button`).toBeLessThanOrEqual(clientWidth);
   }
