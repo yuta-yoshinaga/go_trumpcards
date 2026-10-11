@@ -249,6 +249,30 @@ function GutsPageContent() {
               <div className="text-ds-text-muted text-center mb-2 text-sm font-semibold">{t('declareNotice')}</div>
             )}
 
+            {declareGuide && (
+              <div
+                className="mb-2 p-2 rounded bg-ds-surface text-sm"
+                data-testid="guts-declare-guide"
+                role="status"
+                aria-live="polite"
+              >
+                <div className="text-ds-text-primary font-semibold">
+                  {t('guide.handLabel')}: <span className="text-base">{handName(declareGuide.handKey)}</span>
+                </div>
+                <div className="text-ds-text-muted">
+                  {t('guide.tierLabel')}:{' '}
+                  <span data-testid="guts-guide-tier">{t(`guide.tier.${declareGuide.tier}`)}</span>
+                </div>
+                <div className="text-ds-text-primary" data-testid="guts-guide-probability">
+                  {t('guide.probability', { percent: declareGuide.winChance })}
+                </div>
+                <div className="text-ds-text-muted text-xs">{t('guide.assumptions')}</div>
+                <div className="text-ds-error-text text-xs" data-testid="guts-guide-risk">
+                  {t('guide.matchRisk', { amount: declareGuide.maxPayment })}
+                </div>
+              </div>
+            )}
+
             {/* Players */}
             <div className="mb-2 p-2 rounded bg-black/30" data-tutorial="guts-players">
               <div className="mb-1 text-ds-text-primary text-sm">{t('playersTitle')}</div>
@@ -348,6 +372,20 @@ function GutsPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+
+            <ErrorAlert message={error} onRetry={retry} />
+
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            <div className="flex gap-2 items-center justify-center">
+              <GameResetButton
+                isGameEnd={isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="guts-reset-button"
+              />
+            </div>
           </div>
 
           {/* Footer */}
@@ -402,44 +440,6 @@ function GutsPageContent() {
                 {t('handLabel')}
               </div>
             )}
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            {declareGuide && (
-              <div
-                className="mb-2 p-2 rounded bg-ds-surface text-sm"
-                data-testid="guts-declare-guide"
-                role="status"
-                aria-live="polite"
-              >
-                <div className="text-ds-text-primary font-semibold">
-                  {t('guide.handLabel')}: <span className="text-base">{handName(declareGuide.handKey)}</span>
-                </div>
-                <div className="text-ds-text-muted">
-                  {t('guide.tierLabel')}:{' '}
-                  <span data-testid="guts-guide-tier">{t(`guide.tier.${declareGuide.tier}`)}</span>
-                </div>
-                <div className="text-ds-text-primary" data-testid="guts-guide-probability">
-                  {t('guide.probability', { percent: declareGuide.winChance })}
-                </div>
-                <div className="text-ds-text-muted text-xs">{t('guide.assumptions')}</div>
-                <div className="text-ds-error-text text-xs" data-testid="guts-guide-risk">
-                  {t('guide.matchRisk', { amount: declareGuide.maxPayment })}
-                </div>
-              </div>
-            )}
-
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            <div className="flex gap-2 items-center justify-center">
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="guts-reset-button"
-              />
-            </div>
           </GameFooter>
         </>
       )}

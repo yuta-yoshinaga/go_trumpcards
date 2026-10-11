@@ -513,6 +513,31 @@ function PiedmonteseTarotPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+
+            <ErrorAlert message={error} onRetry={retry} />
+
+            {/* ライブ領域は常設。hint がある間だけ現れる div に付けると読み上げられない (#5955)。 */}
+            <div data-testid="piedmontesetarot-hint-live" role="status" aria-live="polite">
+              {state.hint && isRequestedHint(state) && (
+                <div className="text-ds-warning text-sm mb-2">
+                  {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
+                  {state.hint.cardIndices &&
+                    state.hint.cardIndices.length > 0 &&
+                    ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
+                </div>
+              )}
+            </div>
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            <div className="flex items-center gap-2">
+              <GameResetButton
+                isGameEnd={isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="piedmontesetarot-reset-button"
+              />
+            </div>
           </div>
 
           <GameFooter
@@ -589,31 +614,6 @@ function PiedmonteseTarotPageContent() {
                 cardTitleFor={canScarto ? scartoTitleFor : undefined}
               />
             )}
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            {/* ライブ領域は常設。hint がある間だけ現れる div に付けると読み上げられない (#5955)。 */}
-            <div data-testid="piedmontesetarot-hint-live" role="status" aria-live="polite">
-              {state.hint && isRequestedHint(state) && (
-                <div className="text-ds-warning text-sm mb-2">
-                  {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
-                  {state.hint.cardIndices &&
-                    state.hint.cardIndices.length > 0 &&
-                    ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
-                </div>
-              )}
-            </div>
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            <div className="flex items-center gap-2">
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="piedmontesetarot-reset-button"
-              />
-            </div>
           </GameFooter>
         </>
       )}

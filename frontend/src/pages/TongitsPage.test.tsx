@@ -65,6 +65,19 @@ beforeEach(() => {
 });
 
 describe('TongitsPage', () => {
+  it('keeps the hand in the footer and places reset and shortcuts in the play area', async () => {
+    renderWithProviders(<TongitsPage />);
+
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const playArea = footerContent.closest('footer')?.previousElementSibling;
+    expect(playArea).not.toBeNull();
+    expect(within(footerContent).getByTestId('tongits-hand-0')).toBeInTheDocument();
+    expect(footerContent.querySelector('[data-tutorial="tongits-reset-button"]')).not.toBeInTheDocument();
+    expect(playArea?.querySelector('[data-tutorial="tongits-reset-button"]')).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('tongits-kbd-shortcuts')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('tongits-kbd-shortcuts')).toBeInTheDocument();
+  });
+
   it('labels the score table with a translated caption and keeps its column headers', async () => {
     renderWithProviders(<TongitsPage />);
 
