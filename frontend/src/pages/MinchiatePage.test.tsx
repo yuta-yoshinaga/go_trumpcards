@@ -41,6 +41,37 @@ beforeEach(() => {
 });
 
 describe('MinchiatePage', () => {
+  it('stacks the mobile hand rows when the hand spans at least two rows', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      const cards = Array.from({ length: 13 }, (_, i) => ({
+        design: 'SPADE' as const,
+        value: (i % 14) + 1,
+        glyph: '♠',
+        label: `Card ${i}`,
+        color: 'black' as const,
+        deck: 'tarot' as const,
+      }));
+      mockExec.mockResolvedValue(
+        makeMinchiateState({
+          players: [{ ...playState.players[0], cards, cardCount: cards.length }, ...playState.players.slice(1)],
+        }),
+      );
+      renderWithProviders(<MinchiatePage />);
+      await screen.findByTestId('phase-indicator');
+      const hand = document.querySelector<HTMLElement>('[data-tutorial="minchiate-player-hand"]');
+      expect(hand).not.toBeNull();
+      if (!hand) throw new Error('Expected the Minchiate player hand');
+      await waitFor(() => expect(hand.querySelectorAll('[data-testid="hand-row"]').length).toBeGreaterThanOrEqual(2));
+      const rows = hand.querySelectorAll<HTMLElement>('[data-testid="hand-row"]');
+      for (const row of Array.from(rows).slice(1)) expect(row.style.marginTop).toMatch(/^-/);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
   it('keeps the hand and scarto progress in the footer', async () => {
     mockExec.mockResolvedValue(scartoState);
     renderWithProviders(<MinchiatePage />);

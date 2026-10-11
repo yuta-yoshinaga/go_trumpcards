@@ -456,6 +456,7 @@ function MinchiatePageContent() {
                 cardWidth={cardWidth}
                 isMobile={isMobile}
                 dataTutorialPrefix="minchiate"
+                stackRows
                 validIndices={canPlay ? state.playableIndices : undefined}
                 restrictedTooltip={t('playButton')}
               />

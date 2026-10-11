@@ -25,6 +25,15 @@ const DEFAULT_CARD_GAP = 2;
 const MAX_OVERLAP_RATIO = 0.7;
 /** Minimum visible width (px) per card to meet WCAG 2.5.8 tap-target guidelines. */
 const MIN_CARD_EXPOSURE_PX = 44;
+/** Card image height relative to its width (the 250x375 assets, 2:3). */
+const CARD_HEIGHT_RATIO = 1.5;
+/** Vertical border around a card button, added to the image height. */
+const CARD_BORDER_Y = 2;
+/**
+ * Height of an upper row left visible when `stackRows` overlaps the next row onto it: the rank
+ * corner plus a 44px tap target (MIN_CARD_EXPOSURE_PX) with a little room.
+ */
+const STACKED_ROW_VISIBLE_PX = 52;
 /** Animation stagger delay per card (seconds) for the deal-in animation. */
 const DEAL_IN_STAGGER_S = 0.12;
 
@@ -78,6 +87,12 @@ export interface MobileHandGridProps {
    * cards get an additive success ring so the player can see the legal plays.
    */
   legalIndices?: number[];
+  /**
+   * Overlap the rows of a hand that needs two or more rows: each later row is pulled up over the
+   * row above, leaving the top 52px of those cards (rank corner plus a 44px tap target) visible.
+   * Off by default; for pages whose hand would otherwise outgrow the mobile footer (#11655).
+   */
+  stackRows?: boolean;
 }
 
 /**
@@ -101,6 +116,7 @@ export function MobileHandGrid({
   trumpTitle,
   trumpAccessibleLabel,
   legalIndices,
+  stackRows,
 }: MobileHandGridProps) {
   const viewportWidth = useWindowWidth();
   const reduced = useReducedMotion();
@@ -118,6 +134,9 @@ export function MobileHandGrid({
     rowCount += 1;
   }
   const rows = splitBalanced(cards, rowCount);
+  const shouldStackRows = stackRows && rows.length >= 2;
+  const cardHeight = cardWidth * CARD_HEIGHT_RATIO + CARD_BORDER_Y;
+  const rowMarginTop = -(cardHeight - STACKED_ROW_VISIBLE_PX);
 
   return (
     <div className="mb-2" data-tutorial={dataTutorial}>
@@ -129,7 +148,10 @@ export function MobileHandGrid({
             key={`row-${rowIdx}`}
             data-testid="hand-row"
             className="flex justify-center"
-            style={{ marginBottom: rowIdx === 0 && rows.length > 1 ? 4 : 0 }}
+            style={{
+              marginTop: shouldStackRows && rowIdx > 0 ? rowMarginTop : undefined,
+              marginBottom: !shouldStackRows && rowIdx === 0 && rows.length > 1 ? 4 : 0,
+            }}
           >
             {rowCards.map((card, i) => {
               const globalIdx = start + i;
