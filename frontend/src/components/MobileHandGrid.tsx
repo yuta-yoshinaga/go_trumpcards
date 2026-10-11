@@ -78,6 +78,12 @@ export interface MobileHandGridProps {
    * cards get an additive success ring so the player can see the legal plays.
    */
   legalIndices?: number[];
+  /**
+   * Overlap the rows of a hand that needs two or more rows: each later row is pulled up over the
+   * row above, leaving the top 52px of those cards (rank corner plus a 44px tap target) visible.
+   * Off by default; for pages whose hand would otherwise outgrow the mobile footer (#11655).
+   */
+  stackRows?: boolean;
 }
 
 /**
@@ -101,6 +107,7 @@ export function MobileHandGrid({
   trumpTitle,
   trumpAccessibleLabel,
   legalIndices,
+  stackRows,
 }: MobileHandGridProps) {
   const viewportWidth = useWindowWidth();
   const reduced = useReducedMotion();
@@ -118,6 +125,9 @@ export function MobileHandGrid({
     rowCount += 1;
   }
   const rows = splitBalanced(cards, rowCount);
+  const shouldStackRows = stackRows && rows.length >= 2;
+  const cardHeight = cardWidth * 1.5 + 2;
+  const rowMarginTop = -(cardHeight - 52);
 
   return (
     <div className="mb-2" data-tutorial={dataTutorial}>
@@ -129,7 +139,10 @@ export function MobileHandGrid({
             key={`row-${rowIdx}`}
             data-testid="hand-row"
             className="flex justify-center"
-            style={{ marginBottom: rowIdx === 0 && rows.length > 1 ? 4 : 0 }}
+            style={{
+              marginTop: shouldStackRows && rowIdx > 0 ? rowMarginTop : undefined,
+              marginBottom: !shouldStackRows && rowIdx === 0 && rows.length > 1 ? 4 : 0,
+            }}
           >
             {rowCards.map((card, i) => {
               const globalIdx = start + i;

@@ -258,6 +258,21 @@ describe('PlayerHandSection (mobile)', () => {
     expect(screen.getAllByRole('button')).toHaveLength(5);
   });
 
+  it('passes stackRows through to the mobile grid', () => {
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      const { container } = render(
+        <PlayerHandSection {...baseProps} humanPlayer={{ cards: makeCards(13) }} isMobile stackRows />,
+      );
+      const rows = container.querySelectorAll<HTMLElement>('[data-testid="hand-row"]');
+      expect(rows.length).toBeGreaterThanOrEqual(2);
+      expect(rows[1].style.marginTop).toMatch(/^-/);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });
+    }
+  });
+
   it('calls toggleCard when a card is tapped in mobile mode', () => {
     const toggleCard = vi.fn();
     render(<PlayerHandSection {...baseProps} isMobile={true} toggleCard={toggleCard} />);

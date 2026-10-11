@@ -77,6 +77,12 @@ export interface PlayerHandSectionProps {
    * layouts.
    */
   cardBadgeFor?: (idx: number) => { glyph: string; title: string } | null;
+  /**
+   * Overlap the rows of a hand that needs two or more rows: each later row is pulled up over the
+   * row above, leaving the top 52px of those cards (rank corner plus a 44px tap target) visible.
+   * Off by default; for pages whose hand would otherwise outgrow the mobile footer (#11655).
+   */
+  stackRows?: boolean;
 }
 
 /** Minimum visible card width in the desktop overlap layout. */
@@ -104,6 +110,7 @@ export function PlayerHandSection({
   trumpAccessibleLabel,
   legalIndices,
   cardBadgeFor,
+  stackRows,
 }: PlayerHandSectionProps) {
   const viewportWidth = useWindowWidth();
   const observerRef = useRef<ResizeObserver | null>(null);
@@ -141,6 +148,7 @@ export function PlayerHandSection({
         trumpAccessibleLabel={trumpAccessibleLabel}
         legalIndices={legalIndices}
         cardBadgeFor={cardBadgeFor}
+        stackRows={stackRows}
       />
     );
   }

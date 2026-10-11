@@ -62,6 +62,47 @@ describe('MobileHandGrid', () => {
     expect(rows[1].querySelectorAll('button')).toHaveLength(6);
   });
 
+  it('keeps rows unstacked by default', () => {
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      const { container } = render(
+        <MobileHandGrid cards={makeCards(13)} selectedIndices={[]} onToggle={() => {}} cardWidth={40} />,
+      );
+      const rows = container.querySelectorAll<HTMLElement>('[data-testid="hand-row"]');
+      expect(rows.length).toBeGreaterThanOrEqual(2);
+      for (const row of Array.from(rows).slice(1)) expect(row.style.marginTop).not.toMatch(/-/);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });
+    }
+  });
+
+  it('stacks rows when requested and leaves 52px of the preceding row visible', () => {
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      const { container } = render(
+        <MobileHandGrid cards={makeCards(13)} selectedIndices={[]} onToggle={() => {}} cardWidth={40} stackRows />,
+      );
+      const rows = container.querySelectorAll<HTMLElement>('[data-testid="hand-row"]');
+      expect(rows.length).toBeGreaterThanOrEqual(2);
+      expect(rows[0].style.marginBottom).toBe('0px');
+      const expectedMargin = -(40 * 1.5 + 2 - 52);
+      for (const row of Array.from(rows).slice(1)) expect(row.style.marginTop).toBe(`${expectedMargin}px`);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });
+    }
+  });
+
+  it('does not stack a single row even when requested', () => {
+    const { container } = render(
+      <MobileHandGrid cards={makeCards(3)} selectedIndices={[]} onToggle={() => {}} cardWidth={40} stackRows />,
+    );
+    const rows = container.querySelectorAll<HTMLElement>('[data-testid="hand-row"]');
+    expect(rows).toHaveLength(1);
+    expect(rows[0].style.marginTop).toBe('');
+  });
+
   it('splits even card count evenly', () => {
     const cards = makeCards(10);
     const { container } = render(
