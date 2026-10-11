@@ -13,15 +13,20 @@ import { navigateTo } from './helpers';
  * overflow instead, which overstates the problem once only the hand is left.
  *
  * Hand sizes depend on the shuffled deal (#4373), so one load per page is intentional; the
- * pages were checked at their worst of 4–8 deals when this guard was added. A failure means
- * "a deal or a layout change hides a card", never "retry".
+ * pages were checked at their worst of 4–10 deals when this guard was added. Only the bottom
+ * edge is checked; horizontal overflow is out of scope (MobileHandGrid fits rows to the width).
+ * A failure means "a deal or a layout change hides a card", never "retry".
  */
 test.use({ viewport: { width: 375, height: 667 } });
 
 /** Height of a card's top strip that must stay visible: rank corner plus a 44px tap target. */
 const VISIBLE_PX = 52;
 
-/** Pages whose footer content overflowed at the start of #11655 (and the very large hands). */
+/**
+ * Pages whose footer content overflowed at the start of #11655 (and the very large hands), minus
+ * the ones whose hand lives in the play area rather than the footer (Crazy Four Poker, Double
+ * Attack, Double Exposure, Free Bet, Michigan, Spanish 21, Trente et Quarante).
+ */
 const PAGES: readonly string[] = [
   '/badugi',
   '/batak',
@@ -42,18 +47,14 @@ const PAGES: readonly string[] = [
   '/continentalrummy',
   '/courchevel',
   '/courchevelhilo',
-  '/crazyfourpoker',
   '/crazypineapple',
   '/daifugo',
   '/deucetoseven',
-  '/doubleattack',
-  '/doubleexposure',
   '/doubt',
   '/dramaha',
   '/fivecardstud',
   '/followthequeen',
   '/fortyfives',
-  '/freebet',
   '/frenchtarot',
   '/ganjifa',
   '/guandan',
@@ -69,7 +70,6 @@ const PAGES: readonly string[] = [
   '/loo',
   '/machiavelli',
   '/marriage',
-  '/michigan',
   '/mighty',
   '/minchiate',
   '/mus',
@@ -95,11 +95,9 @@ const PAGES: readonly string[] = [
   '/sixbidsolo',
   '/soko',
   '/spades',
-  '/spanish21',
   '/tarneeb',
   '/tarocchini',
   '/tongits',
-  '/trenteetquarante',
   '/ulti',
   '/vint',
   '/vira',
@@ -110,27 +108,38 @@ for (const path of PAGES) {
   test(`${path} keeps every footer hand card reachable on a phone`, async ({ page }) => {
     await navigateTo(page, path);
     // Cards deal in with a staggered slide-up animation; measure their resting positions, not
-    // the last cards still sliding into place.
-    // Infinite animations (e.g. a pulsing highlight) never finish, so only finite ones are awaited.
+    // the last cards still sliding into place. A not-yet-started (pending) animation counts as
+    // unfinished; infinite ones (e.g. a pulsing highlight) never finish, so they are not awaited.
     await page.waitForFunction(() =>
       document
         .getAnimations()
         .every(
-          (a) => a.playState !== 'running' || a.effect?.getComputedTiming().iterations === Number.POSITIVE_INFINITY,
+          (a) =>
+            a.playState === 'finished' ||
+            a.playState === 'idle' ||
+            a.effect?.getComputedTiming().iterations === Number.POSITIVE_INFINITY,
         ),
     );
-    const hidden = await page.evaluate((visiblePx) => {
+    const result = await page.evaluate((visiblePx) => {
       const footer = document.querySelector('[data-testid="game-footer-content"]');
-      if (!footer) return [];
+      if (!footer) return { found: false, cards: 0, hidden: [] as number[] };
       const bottom = footer.getBoundingClientRect().bottom;
-      return [...footer.querySelectorAll('img, svg[role="img"]')]
+      // Cards are <img> (CardImage) or <div role="img"> (CardFace, e.g. tarot decks).
+      const boxes = [...footer.querySelectorAll('img, [role="img"]')]
         .map((el) => el.getBoundingClientRect())
-        .filter((box) => box.width >= 20 && box.height >= 30 && box.top + visiblePx > bottom)
-        .map((box) => Math.round(box.top));
+        .filter((box) => box.width >= 20 && box.height >= 30);
+      return {
+        found: true,
+        cards: boxes.length,
+        hidden: boxes.filter((box) => box.top + visiblePx > bottom).map((box) => Math.round(box.top)),
+      };
     }, VISIBLE_PX);
+    // Floors: a missing footer or a selector that matches no card must fail, not pass vacuously.
+    expect(result.found, `${path}: game-footer-content not found`).toBe(true);
+    expect(result.cards, `${path}: no hand cards found in the footer content`).toBeGreaterThan(0);
     expect(
-      hidden,
-      `${path}: cards whose top ${VISIBLE_PX}px is below the footer content (tops: ${hidden.join(', ')})`,
+      result.hidden,
+      `${path}: cards whose top ${VISIBLE_PX}px is below the footer content (tops: ${result.hidden.join(', ')})`,
     ).toEqual([]);
   });
 }
