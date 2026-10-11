@@ -65,11 +65,19 @@ describe('QuadrillePage', () => {
   });
 
   it('renders the play phase with the human cards and the Quadrille badge', async () => {
-    renderWithProviders(<QuadrillePage />);
+    const { container } = renderWithProviders(<QuadrillePage />);
     await waitFor(() => {
       expect(screen.getByAltText('♥ Q')).toBeInTheDocument();
       expect(screen.getByAltText('♠ A')).toBeInTheDocument();
     });
+    const footerContent = screen.getByTestId('game-footer-content');
+    const playArea = container.querySelector('.flex-1.overflow-y-auto');
+    expect(playArea).not.toBeNull();
+    expect(footerContent.querySelector('[data-tutorial="quadrille-player-hand"]')).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('quadrille-hint-live')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('quadrille-hint-live')).toBeInTheDocument();
+    expect(within(footerContent).queryByRole('button', { name: 'リセット' })).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByRole('button', { name: 'リセット' })).toBeInTheDocument();
     // The human (seat 0) is the default Quadrille — the badge renders (heading also reads カドリール).
     expect(screen.getAllByText('カドリール').length).toBeGreaterThan(1);
   });

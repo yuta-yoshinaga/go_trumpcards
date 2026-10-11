@@ -260,10 +260,15 @@ describe('MichiganPage', () => {
     const actions = await screen.findByTestId('game-footer-actions');
     expect(within(actions).getByRole('button', { name: '賭ける' })).toBeInTheDocument();
     expect(within(actions).getByRole('button', { name: '♥ A の賭け金 2 チップから 1 枚減らす' })).toBeInTheDocument();
-    expect(
-      screen.getByTestId('game-footer-content').querySelector('[data-tutorial="michigan-action-buttons"]'),
-    ).toBeInTheDocument();
-    expect(screen.getByTestId('game-footer-content')).toHaveTextContent('4 つのブードル');
+    expect(actions.querySelector('[data-tutorial="michigan-action-buttons"]')).toBeInTheDocument();
+    const footerContent = screen.getByTestId('game-footer-content');
+    const playArea = footerContent.parentElement?.previousElementSibling;
+    expect(footerContent.querySelector('[data-tutorial="michigan-hand"]')).toBeInTheDocument();
+    expect(playArea).not.toBeNull();
+    expect(footerContent).toHaveTextContent('チップを 4 つのブードルに分配');
+    expect(playArea).not.toHaveTextContent('チップを 4 つのブードルに分配');
+    expect(footerContent.querySelector('[data-tutorial="michigan-reset-button"]')).not.toBeInTheDocument();
+    expect(playArea?.querySelector('[data-tutorial="michigan-reset-button"]')).toBeInTheDocument();
   });
 
   it('names each bet control with its card and current bet amount', async () => {
@@ -434,6 +439,10 @@ describe('MichiganPage', () => {
     mockExec.mockResolvedValue(resultState);
     renderWithProviders(<MichiganPage />);
     const btn = await screen.findByRole('button', { name: '次のラウンド' });
+    const footerContent = screen.getByTestId('game-footer-content');
+    const playArea = footerContent.parentElement?.previousElementSibling;
+    expect(playArea).not.toBeNull();
+    expect(playArea?.firstElementChild).toContainElement(btn);
     mockExec.mockClear();
     fireEvent.click(btn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));

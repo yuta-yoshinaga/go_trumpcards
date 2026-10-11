@@ -276,6 +276,25 @@ function IndianRummyPageContent() {
           />
 
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+            {/* **CUI は毎ターン出している。**カードを選んでいない思案中でも、いまの
+                デッドウッドとピュアシーケンス充足を確認できるようにする (#4824)。 */}
+            {isDiscardPhase && isHumanTurn && humanPlayer && (
+              // 読み上げは declarePreview 側の live region に任せる。隣り合う
+              // live region が 2 つあると同じ変化を二重に告知する。
+              <div className="mt-2 text-sm text-ds-text-muted" data-testid="indianrummy-hand-status">
+                {t('deadwoodShort', { score: humanPlayer.deadwood })}
+                <span className={`ml-2 ${humanPlayer.hasPureSequence ? 'text-ds-success' : 'text-ds-warning'}`}>
+                  {humanPlayer.hasPureSequence ? t('pureSequenceBadge') : t('pureSequenceMissing')}
+                </span>
+                {/* **A も 10 点。** ジンラミー系に慣れたプレイヤーほど A=1 を
+                    期待するので、合計だけ見せられると数字を逆算できない。
+                    ワイルドが 0 点であることも同時に言う (#5501)。 */}
+                <div className="text-xs" data-testid="indianrummy-points-legend">
+                  {t('pointsLegend')}
+                </div>
+              </div>
+            )}
+
             <div className="text-ds-text-primary text-center mb-2">
               <span className="mr-4">{t('round', { n: state.roundNumber, total: state.targetRounds })}</span>
               <span>{t('drawPile', { count: state.drawPileCount })}</span>
@@ -401,6 +420,19 @@ function IndianRummyPageContent() {
               </div>
             </div>
 
+            <ErrorAlert message={error} onRetry={retry} />
+
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            <GameResetButton
+              isGameEnd={!!isGameEnd}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+              dataTutorial="ir-reset-button"
+            />
+            <CardNavShortcutsPanel arrowSelection data-testid="indian-rummy-kbd-shortcuts" />
+
             <GameMessageBox
               message={state.message}
               messageCode={state.messageCode}
@@ -505,29 +537,6 @@ function IndianRummyPageContent() {
               </div>
             )}
 
-            <ErrorAlert message={error} onRetry={retry} />
-
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            {/* **CUI は毎ターン出している。**カードを選んでいない思案中でも、いまの
-                デッドウッドとピュアシーケンス充足を確認できるようにする (#4824)。 */}
-            {isDiscardPhase && isHumanTurn && humanPlayer && (
-              // 読み上げは declarePreview 側の live region に任せる。隣り合う
-              // live region が 2 つあると同じ変化を二重に告知する。
-              <div className="mt-2 text-sm text-ds-text-muted" data-testid="indianrummy-hand-status">
-                {t('deadwoodShort', { score: humanPlayer.deadwood })}
-                <span className={`ml-2 ${humanPlayer.hasPureSequence ? 'text-ds-success' : 'text-ds-warning'}`}>
-                  {humanPlayer.hasPureSequence ? t('pureSequenceBadge') : t('pureSequenceMissing')}
-                </span>
-                {/* **A も 10 点。** ジンラミー系に慣れたプレイヤーほど A=1 を
-                    期待するので、合計だけ見せられると数字を逆算できない。
-                    ワイルドが 0 点であることも同時に言う (#5501)。 */}
-                <div className="text-xs" data-testid="indianrummy-points-legend">
-                  {t('pointsLegend')}
-                </div>
-              </div>
-            )}
-
             <div role="status" aria-live="polite" data-testid="indianrummy-declare-preview">
               {isDiscardPhase && isHumanTurn && declarePreview && (
                 <div
@@ -560,15 +569,6 @@ function IndianRummyPageContent() {
                 </div>
               )}
             </div>
-
-            <GameResetButton
-              isGameEnd={!!isGameEnd}
-              onReset={handleManualReset}
-              requestConfirm={requestConfirm}
-              loading={loading}
-              dataTutorial="ir-reset-button"
-            />
-            <CardNavShortcutsPanel arrowSelection data-testid="indian-rummy-kbd-shortcuts" />
           </GameFooter>
         </>
       )}
