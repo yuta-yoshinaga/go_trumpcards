@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
+# Bound idle daemons so interrupted runs cannot leave Chrome processes indefinitely.
+export AGENT_BROWSER_IDLE_TIMEOUT_MS="${AGENT_BROWSER_IDLE_TIMEOUT_MS:-120000}"
 
 usage() {
   cat <<'EOF'
@@ -10,7 +12,7 @@ Measure games on an already running go_trumpcards web server. Defaults: port 808
 EOF
 }
 
-port=8080 deals=3 sessions=4 output=-
+port=8080 deals=3 sessions=3 output=-
 while getopts ':p:n:j:o:h' opt; do
   case "$opt" in
     p) port=$OPTARG ;;
@@ -24,6 +26,7 @@ while getopts ':p:n:j:o:h' opt; do
 done
 shift $((OPTIND - 1))
 [[ $port =~ ^[0-9]+$ && $deals =~ ^[1-9][0-9]*$ && $sessions =~ ^[1-9][0-9]*$ ]] || { echo 'port must be numeric; deals and sessions must be positive integers' >&2; exit 2; }
+((sessions <= 4)) || { echo 'sessions must be between 1 and 4' >&2; exit 2; }
 command -v agent-browser >/dev/null || { echo 'agent-browser is required' >&2; exit 127; }
 
 routes=frontend/src/constants/gameRoutes.ts
@@ -36,11 +39,15 @@ mapfile -t all_games < <(grep -oP "path:\s*'/\K[^']*" "$routes" | sed "s/^$/$roo
 
 tmp=$(mktemp -d)
 cleanup() {
+  trap - EXIT INT TERM HUP
   for game in "${games[@]}"; do agent-browser --session "overflow-$game-$$" close >/dev/null 2>&1 || true; done
   for file in "$tmp"/*; do [[ -e $file ]] && unlink "$file"; done
   rmdir "$tmp" 2>/dev/null || true
 }
 trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+trap 'exit 129' HUP
 base="http://localhost:$port"
 keys=$(printf '%s\n' "${all_games[@]}" "${games[@]}" | sort -u | sed 's/.*/tutorial_completed_&/; s/.*/"&": "true"/' | paste -sd, -)
 init="for (const [k,v] of Object.entries({$keys})) localStorage.setItem(k,v)"
@@ -55,29 +62,40 @@ eval_value() {
 }
 worker() {
   local game=$1 session="overflow-$1-$$" path url mobile=nopa desktop width value i
-  path="/#/$game"; [[ $game == "$root_game" ]] && path=/
-  url="$base$path"
-  agent-browser --session "$session" set viewport 375 667 >/dev/null
-  agent-browser --session "$session" open "$url" >/dev/null
-  agent-browser --session "$session" eval "$init" >/dev/null
-  for ((i=0; i<deals; i++)); do
+  worker_body() {
+    path="/#/$game"; [[ $game == "$root_game" ]] && path=/
+    url="$base$path"
+    agent-browser --session "$session" set viewport 375 667 >/dev/null
     agent-browser --session "$session" open "$url" >/dev/null
-    agent-browser --session "$session" reload >/dev/null
+    agent-browser --session "$session" eval "$init" >/dev/null
+    for ((i=0; i<deals; i++)); do
+      agent-browser --session "$session" open "$url" >/dev/null
+      agent-browser --session "$session" reload >/dev/null
+      agent-browser --session "$session" wait '[aria-live="polite"]' >/dev/null
+      agent-browser --session "$session" wait 900 >/dev/null
+      value=$(eval_value --session "$session" eval "(()=>{const e=document.querySelector('main [aria-busy] > div.flex-1.overflow-y-auto');return e?e.scrollHeight-e.clientHeight:'nopa'})()")
+      [[ $value == nopa || $value =~ ^[0-9]+$ ]] || { echo "$game: invalid mobile measurement: $value" >&2; return 1; }
+      if [[ $value =~ ^[0-9]+$ ]] && { [[ $mobile == nopa ]] || (( value > mobile )); }; then mobile=$value; fi
+    done
+    agent-browser --session "$session" set viewport 1280 800 >/dev/null
+    agent-browser --session "$session" open "$url" >/dev/null
     agent-browser --session "$session" wait '[aria-live="polite"]' >/dev/null
     agent-browser --session "$session" wait 900 >/dev/null
-    value=$(eval_value --session "$session" eval "(()=>{const e=document.querySelector('main [aria-busy] > div.flex-1.overflow-y-auto');return e?e.scrollHeight-e.clientHeight:'nopa'})()")
-    [[ $value == nopa || $value =~ ^[0-9]+$ ]] || { echo "$game: invalid mobile measurement: $value" >&2; return 1; }
-    if [[ $value =~ ^[0-9]+$ ]] && { [[ $mobile == nopa ]] || (( value > mobile )); }; then mobile=$value; fi
-  done
-  agent-browser --session "$session" set viewport 1280 800 >/dev/null
-  agent-browser --session "$session" open "$url" >/dev/null
-  agent-browser --session "$session" wait '[aria-live="polite"]' >/dev/null
-  agent-browser --session "$session" wait 900 >/dev/null
-  desktop=$(eval_value --session "$session" eval "(()=>{const e=document.querySelector('main [aria-busy] > div.flex-1.overflow-y-auto');return e?e.scrollHeight-e.clientHeight:'nopa'})()")
-  agent-browser --session "$session" set viewport 375 667 >/dev/null
-  width=$(eval_value --session "$session" eval 'document.documentElement.scrollWidth')
-  [[ ( $desktop == nopa || $desktop =~ ^[0-9]+$ ) && $width =~ ^[0-9]+$ ]] || { echo "$game: invalid desktop/width measurement: $desktop/$width" >&2; return 1; }
-  printf '%s\t%s\t%s\t%s\n' "$game" "$mobile" "$desktop" "$width" > "$tmp/$game.tsv"
+    desktop=$(eval_value --session "$session" eval "(()=>{const e=document.querySelector('main [aria-busy] > div.flex-1.overflow-y-auto');return e?e.scrollHeight-e.clientHeight:'nopa'})()")
+    agent-browser --session "$session" set viewport 375 667 >/dev/null
+    width=$(eval_value --session "$session" eval 'document.documentElement.scrollWidth')
+    [[ ( $desktop == nopa || $desktop =~ ^[0-9]+$ ) && $width =~ ^[0-9]+$ ]] || { echo "$game: invalid desktop/width measurement: $desktop/$width" >&2; return 1; }
+    printf '%s\t%s\t%s\t%s\n' "$game" "$mobile" "$desktop" "$width" > "$tmp/$game.tsv"
+  }
+  # Close this game's browser as soon as it is measured, on failure too. errexit must stay
+  # live inside the subshell, so it cannot be tested by `if`/`||` (that context disables -e).
+  local result
+  set +e
+  (set -e; worker_body)
+  result=$?
+  set -e
+  agent-browser --session "$session" close >/dev/null 2>&1 || true
+  return "$result"
 }
 
 active=0 failed=0
