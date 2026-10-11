@@ -282,6 +282,9 @@ describe('DramahaPage', () => {
     const playArea = document.querySelector('div.relative.flex-1.overflow-y-auto');
     expect(playArea).not.toBeNull();
     expect(within(footerContent).getByTestId('dramaha-hole-card-0')).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('dramaha-hands')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('dramaha-hands')).toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('dramaha-split-rule-badge')).toBeInTheDocument();
     expect(within(footerContent).queryByRole('alert')).not.toBeInTheDocument();
     expect(within(footerContent).queryByText('設定')).not.toBeInTheDocument();
     expect(within(playArea as HTMLElement).getByText('設定')).toBeInTheDocument();

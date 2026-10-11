@@ -371,6 +371,45 @@ function DramahaPageContent() {
         <>
           {/* Scrollable: community cards + CPU players */}
           <div className={`relative flex-1 overflow-y-auto pt-4 px-5 lg:px-8 ${lgCardAreaConstraint}`}>
+            {humanPlayer && (
+              <>
+                <div
+                  className={`mb-1 inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-semibold ${badgeInfoColors}`}
+                  data-testid="dramaha-split-rule-badge"
+                  data-tutorial="dr-split-rule"
+                  title={t('splitRuleAria')}
+                >
+                  <span aria-hidden="true">🔀</span>
+                  {t('splitRule')}
+                </div>
+                {/* Both halves, side by side. Showing one alone would hide half
+                    of what the player is playing for. */}
+                <div className="mb-1 flex flex-wrap gap-2" data-testid="dramaha-hands">
+                  <div className="flex items-center gap-1" data-testid="dramaha-omaha-hand">
+                    <span className="text-ds-text-primary text-xs">
+                      {t('omahaHand')} <span className="text-ds-text-muted">({t('omahaHandRule')})</span>
+                    </span>
+                    <span
+                      className={`inline-block text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}
+                      data-testid="dramaha-omaha-hand-name"
+                    >
+                      {hands.omaha ? t(`hand.${hands.omaha.key}`) : t('handsUnavailable')}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1" data-testid="dramaha-draw-hand">
+                    <span className="text-ds-text-primary text-xs">
+                      {t('drawHand')} <span className="text-ds-text-muted">({t('drawHandRule')})</span>
+                    </span>
+                    <span
+                      className={`inline-block text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}
+                      data-testid="dramaha-draw-hand-name"
+                    >
+                      {hands.draw ? t(`hand.${hands.draw.key}`) : t('handsUnavailable')}
+                    </span>
+                  </div>
+                </div>
+              </>
+            )}
             {/* Community cards + CPU players (poker table layout on desktop, accordion on mobile) */}
             {(() => {
               const communityCardsContent = (
@@ -729,70 +768,40 @@ function DramahaPageContent() {
                   )}
                   {humanPlayer.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
                 </div>
-                <div
-                  className={`mb-1 inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-semibold ${badgeInfoColors}`}
-                  data-testid="dramaha-split-rule-badge"
-                  data-tutorial="dr-split-rule"
-                  title={t('splitRuleAria')}
-                >
-                  <span aria-hidden="true">🔀</span>
-                  {t('splitRule')}
-                </div>
-                {/* Both halves, side by side. Showing one alone would hide half
-                    of what the player is playing for. */}
-                <div className="mb-1 flex flex-wrap gap-2" data-testid="dramaha-hands">
-                  <div className="flex items-center gap-1" data-testid="dramaha-omaha-hand">
-                    <span className="text-ds-text-primary text-xs">
-                      {t('omahaHand')} <span className="text-ds-text-muted">({t('omahaHandRule')})</span>
-                    </span>
-                    <span
-                      className={`inline-block text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}
-                      data-testid="dramaha-omaha-hand-name"
-                    >
-                      {hands.omaha ? t(`hand.${hands.omaha.key}`) : t('handsUnavailable')}
-                    </span>
+                {humanPlayer.cards?.length ? (
+                  <div className="flex flex-wrap gap-1.5 mb-2">
+                    {humanPlayer.cards.map((card, idx) => {
+                      const isSelected = selectedDraw.includes(idx);
+                      const inBest = showdownBest5.holeSet.has(idx);
+                      const dim = showdownBest5.holeSet.size > 0 && !inBest;
+                      return (
+                        <button
+                          type="button"
+                          key={`${card.design}-${card.value}`}
+                          onClick={() => toggleDraw(idx)}
+                          disabled={!canDraw || loading}
+                          aria-pressed={canDraw ? isSelected : undefined}
+                          className={`transition-all ${canDraw ? 'cursor-pointer' : 'cursor-default'} ${
+                            inBest ? 'rounded-lg ring-2 ring-ds-success motion-safe:animate-pulse' : ''
+                          } ${dim ? 'opacity-50' : ''}`}
+                          style={selectedCardStyle(canDraw && isSelected)}
+                          data-best5-hole={inBest || undefined}
+                          data-testid={`dramaha-hole-card-${idx}`}
+                        >
+                          <AnimatedCard card={card} width={cardWidth} />
+                        </button>
+                      );
+                    })}
                   </div>
-                  <div className="flex items-center gap-1" data-testid="dramaha-draw-hand">
-                    <span className="text-ds-text-primary text-xs">
-                      {t('drawHand')} <span className="text-ds-text-muted">({t('drawHandRule')})</span>
-                    </span>
-                    <span
-                      className={`inline-block text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}
-                      data-testid="dramaha-draw-hand-name"
-                    >
-                      {hands.draw ? t(`hand.${hands.draw.key}`) : t('handsUnavailable')}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex flex-wrap gap-1.5 mb-2">
-                  {humanPlayer.cards?.length
-                    ? humanPlayer.cards.map((card, idx) => {
-                        const isSelected = selectedDraw.includes(idx);
-                        const inBest = showdownBest5.holeSet.has(idx);
-                        const dim = showdownBest5.holeSet.size > 0 && !inBest;
-                        return (
-                          <button
-                            type="button"
-                            key={`${card.design}-${card.value}`}
-                            onClick={() => toggleDraw(idx)}
-                            disabled={!canDraw || loading}
-                            aria-pressed={canDraw ? isSelected : undefined}
-                            className={`transition-all ${canDraw ? 'cursor-pointer' : 'cursor-default'} ${
-                              inBest ? 'rounded-lg ring-2 ring-ds-success motion-safe:animate-pulse' : ''
-                            } ${dim ? 'opacity-50' : ''}`}
-                            style={selectedCardStyle(canDraw && isSelected)}
-                            data-best5-hole={inBest || undefined}
-                            data-testid={`dramaha-hole-card-${idx}`}
-                          >
-                            <AnimatedCard card={card} width={cardWidth} />
-                          </button>
-                        );
-                      })
-                    : !humanPlayer.folded &&
-                      Array.from({ length: DRAMAHA_HOLE_CARDS }).map((_, i) => (
+                ) : (
+                  !humanPlayer.folded && (
+                    <div className="flex flex-wrap gap-1.5 mb-2">
+                      {Array.from({ length: DRAMAHA_HOLE_CARDS }).map((_, i) => (
                         <AnimatedCardBack key={i} width={cardWidth} />
                       ))}
-                </div>
+                    </div>
+                  )
+                )}
               </div>
             )}
 
