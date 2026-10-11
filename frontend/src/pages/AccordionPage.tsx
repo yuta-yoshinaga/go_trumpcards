@@ -420,9 +420,9 @@ function AccordionPageContent() {
                       aria-label={`${baseLabel}${mergeSuffix}`}
                       aria-pressed={isSelected}
                     >
-                      {top && <AnimatedCard card={top} width={cardWidth} />}
-                      <span className="absolute top-0 left-0 text-[10px] bg-black/40 text-ds-text-primary rounded-br px-1">
-                        {idx}
+                      <span className="flex flex-col items-center">
+                        {top && <AnimatedCard card={top} width={cardWidth} />}
+                        <span className="text-[10px] text-ds-text-primary">{idx}</span>
                       </span>
                       {pile.size > 1 && (
                         <span className="absolute bottom-0 right-0 text-[10px] bg-black/60 text-ds-text-primary rounded-tl px-1">

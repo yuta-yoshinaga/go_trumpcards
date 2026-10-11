@@ -433,7 +433,7 @@ function MichiganPageContent() {
                       {t('placeBets')}
                     </button>
                   </div>
-                  <div className="grid grid-cols-4 gap-1 items-start">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 items-start" data-testid="michigan-bet-grid">
                     {state.boodles.map((b, i) => (
                       <div
                         key={`bet-${i}`}
@@ -459,7 +459,7 @@ function MichiganPageContent() {
                         <div className="flex items-center gap-1">
                           <button
                             type="button"
-                            className={btnDanger}
+                            className={`${btnDanger} h-11`}
                             onClick={() => adjustBet(i, -1)}
                             disabled={loading || (bets[i] ?? 0) <= 0}
                             aria-label={t('betMinusAria', { card: cardAlt(b.card), amount: bets[i] })}
@@ -469,7 +469,7 @@ function MichiganPageContent() {
                           <span className="w-6 text-center text-ds-text-primary">{bets[i] ?? 0}</span>
                           <button
                             type="button"
-                            className={btnSuccess}
+                            className={`${btnSuccess} h-11`}
                             onClick={() => adjustBet(i, 1)}
                             disabled={loading || betRemaining <= 0}
                             aria-label={t('betPlusAria', { card: cardAlt(b.card), amount: bets[i] })}

@@ -454,16 +454,16 @@ function CalculationPageContent() {
                             {t('empty')}
                           </div>
                         )}
-                        {nextRankLabel && (
-                          <span
-                            data-testid={`calc-foundation-next-${idx}`}
-                            aria-hidden="true"
-                            className="absolute -top-1 -right-1 px-1.5 py-0.5 rounded-md bg-black/60 text-ds-text-on-accent text-[10px] font-bold leading-none ring-1 ring-white/30"
-                          >
-                            {t('nextRankBadge', { rank: nextRankLabel })}
-                          </span>
-                        )}
                       </div>
+                      {nextRankLabel && (
+                        <span
+                          data-testid={`calc-foundation-next-${idx}`}
+                          aria-hidden="true"
+                          className="mt-0.5 px-1.5 py-0.5 rounded-md bg-ds-surface text-ds-text-primary text-[10px] font-bold leading-none"
+                        >
+                          {t('nextRankBadge', { rank: nextRankLabel })}
+                        </span>
+                      )}
                       <span className="text-[11px] text-ds-text-muted mt-0.5">
                         {pile.length}/{FOUNDATION_PILE_FULL}
                       </span>

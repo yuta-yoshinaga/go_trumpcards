@@ -54,6 +54,19 @@ beforeEach(() => {
 });
 
 describe('AccordionPage', () => {
+  it('renders the pile index in a label row outside the card image', async () => {
+    renderWithProviders(<AccordionPage />);
+    const pile = await screen.findByRole('button', { name: /^0:/ });
+    const image = pile.querySelector('img');
+    const indexLabel = Array.from(pile.querySelectorAll('span')).find(
+      (span) => span.textContent === '0' && !span.querySelector('img'),
+    );
+    expect(indexLabel).toBeInTheDocument();
+    // Overlaid on the card it covered the rank corner; it now sits in the flow below it.
+    expect(indexLabel).not.toHaveClass('absolute');
+    expect(image?.compareDocumentPosition(indexLabel as Node)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+  });
+
   it('keeps piles in one horizontal row and scrolls a keyboard-selected pile into view', async () => {
     const originalScrollIntoView = Element.prototype.scrollIntoView;
     const scrollIntoView = vi.fn();

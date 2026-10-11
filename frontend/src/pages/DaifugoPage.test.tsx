@@ -117,6 +117,13 @@ beforeEach(() => {
 });
 
 describe('DaifugoPage', () => {
+  it('gives the hint settings panel the common settings heading', async () => {
+    const { container } = renderWithProviders(<DaifugoPage />);
+    await screen.findByRole('button', { name: 'パス' });
+    const hintToggle = container.querySelector('#frontendHint');
+    expect(hintToggle?.closest('details')?.querySelector('summary')).toHaveTextContent('設定');
+  });
+
   it('keeps the pass action in the fixed footer action row on the human turn', async () => {
     renderWithProviders(<DaifugoPage />);
     const actions = await screen.findByTestId('game-footer-actions');

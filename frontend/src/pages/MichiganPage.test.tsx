@@ -65,6 +65,12 @@ beforeEach(() => {
 });
 
 describe('MichiganPage', () => {
+  it('lays out bet counters in a two-column mobile grid', async () => {
+    renderWithProviders(<MichiganPage />);
+    const grid = await screen.findByTestId('michigan-bet-grid');
+    expect(grid).toHaveClass('grid-cols-2', 'sm:grid-cols-4');
+  });
+
   it('shows every player round bet, including zero, in a consistent position', async () => {
     mockExec.mockResolvedValue(
       makeMichiganState({
