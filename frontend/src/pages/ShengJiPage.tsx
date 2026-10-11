@@ -398,6 +398,23 @@ function ShengJiPageContent() {
               </label>
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
+              <ErrorAlert message={error} onRetry={retry} />
+
+              <div>
+                {isGameEnd && (
+                  <span className="text-ds-text-primary text-sm font-semibold mr-1">
+                    {humanWon ? t('win') : t('lose')}
+                  </span>
+                )}
+                <GameResetButton
+                  isGameEnd={isGameEnd}
+                  onReset={handleManualReset}
+                  requestConfirm={requestConfirm}
+                  loading={loading}
+                  dataTutorial="shengji-reset-button"
+                />
+              </div>
+
               <ActionLogSection
                 isEndPhase={isGameEnd}
                 actionLog={actionLog}
@@ -524,23 +541,6 @@ function ShengJiPageContent() {
                     )}
                   </div>
                 )}
-              </div>
-
-              <ErrorAlert message={error} onRetry={retry} />
-
-              <div>
-                {isGameEnd && (
-                  <span className="text-ds-text-primary text-sm font-semibold mr-1">
-                    {humanWon ? t('win') : t('lose')}
-                  </span>
-                )}
-                <GameResetButton
-                  isGameEnd={isGameEnd}
-                  onReset={handleManualReset}
-                  requestConfirm={requestConfirm}
-                  loading={loading}
-                  dataTutorial="shengji-reset-button"
-                />
               </div>
             </GameFooter>
           </>

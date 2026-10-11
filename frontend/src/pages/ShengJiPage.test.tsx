@@ -135,6 +135,30 @@ describe('ShengJiPage', () => {
     expect(players[2]).toHaveTextContent('宣言側');
   });
 
+  it('keeps controls in footer actions and moves errors and reset controls to the play area', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: ShengJiPhase.DECLARE, declarableSuits: { '3': 2 } }));
+    renderWithProviders(<ShengJiPage />);
+    await waitFor(() => expect(screen.getByTestId('shengji-declare-3')).toBeInTheDocument());
+
+    const footerContent = within(screen.getByTestId('game-footer-content'));
+    const footerActions = within(screen.getByTestId('game-footer-actions'));
+    const playArea = screen.getByTestId('game-footer-content').closest('footer')?.previousElementSibling;
+    expect(footerActions.getByTestId('shengji-declare-3')).toBeInTheDocument();
+    expect(playArea).toHaveAttribute('class', expect.stringContaining('flex-1 overflow-y-auto'));
+
+    mockExec.mockRejectedValueOnce(new Error('declare failed'));
+    fireEvent.click(screen.getByTestId('shengji-declare-3'));
+    await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument());
+
+    const playAreaContent = within(playArea as HTMLElement);
+    expect(playAreaContent.getByRole('alert')).toBeInTheDocument();
+    expect(playArea?.querySelector('[data-tutorial="shengji-reset-button"]')).toBeInTheDocument();
+    expect(footerContent.queryByRole('alert')).not.toBeInTheDocument();
+    expect(
+      screen.getByTestId('game-footer-content').querySelector('[data-tutorial="shengji-reset-button"]'),
+    ).toBeNull();
+  });
+
   describe('declaring', () => {
     const declareState = (overrides?: Partial<ShengJiResponse>) =>
       makeState({ phase: ShengJiPhase.DECLARE, declarableSuits: { '3': 2, '2': 1 }, ...overrides });

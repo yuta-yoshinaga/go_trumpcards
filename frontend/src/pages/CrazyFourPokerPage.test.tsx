@@ -97,12 +97,38 @@ beforeEach(() => {
 });
 
 describe('CrazyFourPokerPage', () => {
+  it('keeps the player hand and wager information in the play area and decision controls in footer actions', async () => {
+    mockApi.mockResolvedValue(dealt());
+    renderWithProviders(<CrazyFourPokerPage />);
+
+    const footer = await screen.findByTestId('game-footer-content');
+    const playArea = screen.getByTestId('card-area');
+
+    const actions = screen.getByTestId('game-footer-actions');
+
+    expect(within(actions).getByTestId('c4p-play-1')).toBeInTheDocument();
+    expect(within(actions).getByRole('button', { name: '降りる' })).toBeInTheDocument();
+    expect(within(playArea).queryByTestId('c4p-play-1')).not.toBeInTheDocument();
+    expect(within(footer).getByTestId('c4p-multiplier-notice')).toBeInTheDocument();
+    expect(within(footer).queryByTestId('c4p-player-hand')).not.toBeInTheDocument();
+    expect(within(playArea).getByTestId('c4p-player-hand')).toBeInTheDocument();
+    expect(within(playArea).getByTestId('c4p-player-rank')).toBeInTheDocument();
+    expect(
+      within(playArea.querySelector('[data-tutorial="c4p-hand"]') as HTMLElement).getByTestId('c4p-player-rank'),
+    ).toBeInTheDocument();
+  });
+
   // **賭ける前に見えなければ意味がない** (#5775)。倍率はサーバの配当表そのまま。
   it('shows the Queens Up payout table while betting', async () => {
     mockApi.mockResolvedValue(base);
     renderWithProviders(<CrazyFourPokerPage />);
 
-    const table = await screen.findByTestId('c4p-queensup-payouts');
+    const footer = await screen.findByTestId('game-footer-content');
+    const playArea = screen.getByTestId('card-area');
+    const table = within(playArea).getByTestId('c4p-queensup-payouts');
+    expect(within(footer).queryByTestId('c4p-queensup-payouts')).not.toBeInTheDocument();
+    expect(within(playArea).getByTestId('c4p-superbonus-payouts')).toBeInTheDocument();
+    expect(within(playArea).getByTestId('c4p-wager-summary')).toBeInTheDocument();
     expect(table).toHaveTextContent('Four of a Kind');
     expect(table).toHaveTextContent('50倍');
     expect(table).toHaveTextContent('Pair');

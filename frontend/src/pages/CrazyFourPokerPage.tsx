@@ -274,6 +274,86 @@ function CrazyFourPokerPageContent() {
       ) : (
         <>
           <div data-testid="card-area" className={`overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+            <ErrorAlert message={error} onRetry={retry} />
+            <SettingsPanel
+              title={tc('settings.title')}
+              groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
+            />
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            {isBetPhase && !gameOver && (
+              <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="c4p-bet">
+                <p className="text-ds-text-muted text-sm">{t('betGuide')}</p>
+                <ChipBetInput
+                  id="crazyfourpoker-ante"
+                  label={t('label.ante')}
+                  value={effectiveAnte}
+                  onChange={setAnte}
+                  max={maxAnte}
+                  min={0}
+                  step={CRAZY_FOUR_POKER_ANTE_UNIT}
+                />
+                {/* **アンティと Super Bonus を引いた残りしか置けない。** 上限を
+                      チップ全額にすると、合計が持ち金を超える組み合わせを選べてしまう。 */}
+                <ChipBetInput
+                  id="crazyfourpoker-queensup"
+                  label={t('label.queensUp')}
+                  value={effectiveQueensUp}
+                  onChange={setQueensUp}
+                  max={maxQueensUp}
+                  min={0}
+                  step={CRAZY_FOUR_POKER_ANTE_UNIT}
+                />
+                <section className="text-ds-text-primary text-sm text-center" data-testid="c4p-wager-summary">
+                  <h2 className="font-bold">{t('wagerSummary.title')}</h2>
+                  <p>{t('wagerSummary.ante', { amount: effectiveAnte })}</p>
+                  <p>{t('wagerSummary.superBonus', { amount: effectiveAnte })}</p>
+                  <p>{t('wagerSummary.required', { amount: effectiveAnte * 2 })}</p>
+                  <p>{t('wagerSummary.optional', { amount: effectiveQueensUp })}</p>
+                  <p className="font-bold">
+                    {t('wagerSummary.total', { amount: effectiveAnte * 2 + effectiveQueensUp })}
+                  </p>
+                </section>
+                {/* **賭ける前に見えなければ意味がない** (#5775)。何が当たれば
+                      何倍かを知って額を決めるもの。倍率はサーバの配当表そのまま。 */}
+                {/* **Super Bonus はアンティに必ず付く。** 任意の Queens Up は
+                      表が見えて、必須の側だけ見えないのは逆。 */}
+                <table className="text-xs text-ds-text-muted mx-auto" data-testid="c4p-superbonus-payouts">
+                  <caption className="sr-only">{t('label.superBonusPayouts')}</caption>
+                  <tbody>
+                    {state.superBonusPayouts?.map((row) => (
+                      <tr key={`sb-${row.hand}-${row.name}`}>
+                        <td className="pr-3 text-left">{row.name}</td>
+                        <td className="text-right">{t('label.payoutOdds', { n: row.odds })}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <table className="text-xs text-ds-text-muted mx-auto" data-testid="c4p-queensup-payouts">
+                  <caption className="sr-only">{t('label.queensUpPayouts')}</caption>
+                  <tbody>
+                    {state.queensUpPayouts.map((row) => (
+                      <tr key={row.hand}>
+                        <td className="pr-3 text-left">{row.name}</td>
+                        <td className="text-right">{t('label.payoutOdds', { n: row.multiplier })}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            <div className="flex gap-2 justify-center pb-2">
+              <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
+                {tc('actionLog.view')}
+              </button>
+              <GameResetButton
+                isGameEnd={gameOver}
+                onReset={() => execApi('reset')}
+                requestConfirm={requestConfirm}
+                loading={loading}
+              />
+            </div>
             <GameMessageBox
               message={state.message}
               messageCode={state.messageCode}
@@ -387,100 +467,17 @@ function CrazyFourPokerPageContent() {
               ) : null
             }
           >
-            <ErrorAlert message={error} onRetry={retry} />
-            <SettingsPanel
-              title={tc('settings.title')}
-              groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
-            />
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            <div className="flex flex-col items-center gap-2 pb-2">
-              {isBetPhase && !gameOver && (
-                <div className="flex flex-col items-center gap-2" data-tutorial="c4p-bet">
-                  <p className="text-ds-text-muted text-sm">{t('betGuide')}</p>
-                  <ChipBetInput
-                    id="crazyfourpoker-ante"
-                    label={t('label.ante')}
-                    value={effectiveAnte}
-                    onChange={setAnte}
-                    max={maxAnte}
-                    min={0}
-                    step={CRAZY_FOUR_POKER_ANTE_UNIT}
-                  />
-                  {/* **アンティと Super Bonus を引いた残りしか置けない。** 上限を
-                      チップ全額にすると、合計が持ち金を超える組み合わせを選べてしまう。 */}
-                  <ChipBetInput
-                    id="crazyfourpoker-queensup"
-                    label={t('label.queensUp')}
-                    value={effectiveQueensUp}
-                    onChange={setQueensUp}
-                    max={maxQueensUp}
-                    min={0}
-                    step={CRAZY_FOUR_POKER_ANTE_UNIT}
-                  />
-                  <section className="text-ds-text-primary text-sm text-center" data-testid="c4p-wager-summary">
-                    <h2 className="font-bold">{t('wagerSummary.title')}</h2>
-                    <p>{t('wagerSummary.ante', { amount: effectiveAnte })}</p>
-                    <p>{t('wagerSummary.superBonus', { amount: effectiveAnte })}</p>
-                    <p>{t('wagerSummary.required', { amount: effectiveAnte * 2 })}</p>
-                    <p>{t('wagerSummary.optional', { amount: effectiveQueensUp })}</p>
-                    <p className="font-bold">
-                      {t('wagerSummary.total', { amount: effectiveAnte * 2 + effectiveQueensUp })}
-                    </p>
-                  </section>
-                  {/* **賭ける前に見えなければ意味がない** (#5775)。何が当たれば
-                      何倍かを知って額を決めるもの。倍率はサーバの配当表そのまま。 */}
-                  {/* **Super Bonus はアンティに必ず付く。** 任意の Queens Up は
-                      表が見えて、必須の側だけ見えないのは逆。 */}
-                  <table className="text-xs text-ds-text-muted mx-auto" data-testid="c4p-superbonus-payouts">
-                    <caption className="sr-only">{t('label.superBonusPayouts')}</caption>
-                    <tbody>
-                      {state.superBonusPayouts?.map((row) => (
-                        <tr key={`sb-${row.hand}-${row.name}`}>
-                          <td className="pr-3 text-left">{row.name}</td>
-                          <td className="text-right">{t('label.payoutOdds', { n: row.odds })}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  <table className="text-xs text-ds-text-muted mx-auto" data-testid="c4p-queensup-payouts">
-                    <caption className="sr-only">{t('label.queensUpPayouts')}</caption>
-                    <tbody>
-                      {state.queensUpPayouts.map((row) => (
-                        <tr key={row.hand}>
-                          <td className="pr-3 text-left">{row.name}</td>
-                          <td className="text-right">{t('label.payoutOdds', { n: row.multiplier })}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-
-              {isDecidePhase && (
-                <>
-                  <p className="text-ds-text-muted text-sm">{t('decideGuide')}</p>
-                  <p
-                    className={`text-sm font-bold ${state.hasAcesOrBetter ? 'text-ds-success' : 'text-ds-text-muted'}`}
-                    data-testid="c4p-multiplier-notice"
-                  >
-                    {state.hasAcesOrBetter ? t('acesNotice') : t('normalNotice')}
-                  </p>
-                </>
-              )}
-
-              <div className="flex gap-2">
-                <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
-                  {tc('actionLog.view')}
-                </button>
-                <GameResetButton
-                  isGameEnd={gameOver}
-                  onReset={() => execApi('reset')}
-                  requestConfirm={requestConfirm}
-                  loading={loading}
-                />
+            {isDecidePhase && (
+              <div className="flex flex-col items-center gap-2 pb-2">
+                <p className="text-ds-text-muted text-sm">{t('decideGuide')}</p>
+                <p
+                  className={`text-sm font-bold ${state.hasAcesOrBetter ? 'text-ds-success' : 'text-ds-text-muted'}`}
+                  data-testid="c4p-multiplier-notice"
+                >
+                  {state.hasAcesOrBetter ? t('acesNotice') : t('normalNotice')}
+                </p>
               </div>
-            </div>
+            )}
           </GameFooter>
         </>
       )}
