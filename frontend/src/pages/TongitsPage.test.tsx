@@ -108,6 +108,19 @@ describe('TongitsPage', () => {
     }
   });
 
+  it('renders the desktop hand and toggles a card selection', async () => {
+    renderWithProviders(<TongitsPage />);
+
+    const footer = await screen.findByTestId('game-footer-content');
+    const hand = footer.querySelector('[data-tutorial="tongits-player-hand"]');
+    expect(hand).toBeInTheDocument();
+    if (!hand) throw new Error('Expected the Tongits player hand');
+    const cardButton = within(hand as HTMLElement).getByTestId('tongits-hand-0');
+    expect(cardButton).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(cardButton);
+    expect(cardButton).toHaveAttribute('aria-pressed', 'true');
+  });
+
   it('keeps the hand in the footer and places reset and shortcuts in the play area', async () => {
     renderWithProviders(<TongitsPage />);
 
