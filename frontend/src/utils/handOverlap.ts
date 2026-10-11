@@ -17,6 +17,22 @@ export const CARD_BORDER_Y = 2;
 /** Height of an upper row left visible when rows overlap, including its 44px tap target. */
 export const STACKED_ROW_VISIBLE_PX = 52;
 
+/** Determine the smallest balanced row count that avoids requiring horizontal scrolling. */
+export function rowCountFor(cardCount: number, buttonWidth: number, viewportWidth: number): number {
+  let rowCount = cardCount >= TWO_ROW_THRESHOLD ? 2 : 1;
+  while (rowCount < cardCount) {
+    const largestRow = Math.ceil(cardCount / rowCount);
+    if (!computeOverlap(largestRow, buttonWidth, viewportWidth).useScroll) break;
+    rowCount += 1;
+  }
+  return rowCount;
+}
+
+/** Calculate the negative top margin that leaves the configured visible portion of a stacked row. */
+export function stackedRowMarginTop(cardWidth: number): number {
+  return -(cardWidth * CARD_HEIGHT_RATIO + CARD_BORDER_Y - STACKED_ROW_VISIBLE_PX);
+}
+
 /** Result of overlap computation including scroll-fallback flag. */
 export interface OverlapResult {
   /** Negative margin-left in px (or positive gap). */

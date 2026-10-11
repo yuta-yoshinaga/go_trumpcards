@@ -9,14 +9,7 @@ import {
 } from '../styles/cardStyles';
 import type { Card } from '../types/card';
 import { cardAlt } from '../utils/cardAlt';
-import {
-  BUTTON_EXTRA,
-  CARD_BORDER_Y,
-  CARD_HEIGHT_RATIO,
-  computeOverlap,
-  STACKED_ROW_VISIBLE_PX,
-  TWO_ROW_THRESHOLD,
-} from '../utils/handOverlap';
+import { BUTTON_EXTRA, computeOverlap, rowCountFor, stackedRowMarginTop } from '../utils/handOverlap';
 import { splitBalanced } from '../utils/splitBalanced';
 import { CardImage } from './CardImage';
 import { CardRoleBadge } from './CardRoleBadge';
@@ -113,17 +106,10 @@ export function MobileHandGrid({
   const isTrump = (idx: number): boolean => trumpIndices?.includes(idx) ?? false;
   const isLegal = (idx: number): boolean => legalIndices?.includes(idx) ?? false;
 
-  const initialRows = cards.length >= TWO_ROW_THRESHOLD ? 2 : 1;
-  let rowCount = initialRows;
-  while (rowCount < cards.length) {
-    const largestRow = Math.ceil(cards.length / rowCount);
-    if (!computeOverlap(largestRow, buttonWidth, viewportWidth).useScroll) break;
-    rowCount += 1;
-  }
+  const rowCount = rowCountFor(cards.length, buttonWidth, viewportWidth);
   const rows = splitBalanced(cards, rowCount);
   const shouldStackRows = stackRows && rows.length >= 2;
-  const cardHeight = cardWidth * CARD_HEIGHT_RATIO + CARD_BORDER_Y;
-  const rowMarginTop = -(cardHeight - STACKED_ROW_VISIBLE_PX);
+  const rowMarginTop = stackedRowMarginTop(cardWidth);
 
   return (
     <div className="mb-2" data-tutorial={dataTutorial}>

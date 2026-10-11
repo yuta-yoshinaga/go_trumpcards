@@ -3,14 +3,7 @@ import { useCardDimensions, useWindowWidth } from '../../hooks/useCardDimensions
 import { focusRingCard, playableRingStyle, selectedCardStyle } from '../../styles/cardStyles';
 import type { DaifugoPlayerData } from '../../types/card';
 import { cardAlt } from '../../utils/cardAlt';
-import {
-  BUTTON_EXTRA,
-  CARD_BORDER_Y,
-  CARD_HEIGHT_RATIO,
-  computeOverlap,
-  STACKED_ROW_VISIBLE_PX,
-  TWO_ROW_THRESHOLD,
-} from '../../utils/handOverlap';
+import { BUTTON_EXTRA, computeOverlap, rowCountFor, stackedRowMarginTop } from '../../utils/handOverlap';
 import { playerName } from '../../utils/playerUtils';
 import { splitBalanced } from '../../utils/splitBalanced';
 import { CardImage } from '../CardImage';
@@ -53,14 +46,9 @@ export function DaifugoHumanArea({
   const hasPlayableInfo = playable !== null;
   const cards = player.cards ?? [];
   const buttonWidth = cardWidth + BUTTON_EXTRA;
-  let rowCount = isMobile && cards.length >= TWO_ROW_THRESHOLD ? 2 : 1;
-  while (isMobile && rowCount < cards.length) {
-    const largestRow = Math.ceil(cards.length / rowCount);
-    if (!computeOverlap(largestRow, buttonWidth, viewportWidth).useScroll) break;
-    rowCount += 1;
-  }
+  const rowCount = isMobile ? rowCountFor(cards.length, buttonWidth, viewportWidth) : 1;
   const rows = isMobile ? splitBalanced(cards, rowCount) : [{ items: cards, start: 0 }];
-  const rowMarginTop = -(cardWidth * CARD_HEIGHT_RATIO + CARD_BORDER_Y - STACKED_ROW_VISIBLE_PX);
+  const rowMarginTop = stackedRowMarginTop(cardWidth);
   const conditionalClass = player.isFinished
     ? 'opacity-50'
     : isCurrentTurn

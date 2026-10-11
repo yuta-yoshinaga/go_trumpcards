@@ -515,7 +515,11 @@ function ShengJiPageContent() {
                     selectedIndices={selected}
                     onToggle={(idx) => canSelect && toggle(idx)}
                     cardWidth={cardWidth}
-                    validIndices={canSelect ? undefined : []}
+                    validIndices={
+                      /* 空配列はどの札も選べない（MobileHandGrid は validIndices に無い札を aria-disabled にする）。 */ canSelect
+                        ? undefined
+                        : []
+                    }
                     stackRows
                   />
                 ) : (
