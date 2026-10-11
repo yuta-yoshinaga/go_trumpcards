@@ -604,10 +604,27 @@ describe('LiteraturePage', () => {
     expect(within(actions).getByRole('button', { name: '宣言する' })).toBeInTheDocument();
 
     const content = screen.getByTestId('game-footer-content');
-    expect(within(content).getByLabelText(/相手/)).toBeInTheDocument();
-    expect(within(content).getByLabelText(/^札/)).toBeInTheDocument();
-    expect(within(content).getByLabelText(/^組/)).toBeInTheDocument();
+    const playArea = content.parentElement?.previousElementSibling as HTMLElement;
+    expect(within(playArea).getByLabelText(/相手/)).toBeInTheDocument();
+    expect(within(playArea).getByLabelText(/^札/)).toBeInTheDocument();
+    expect(within(playArea).getByLabelText(/^組/)).toBeInTheDocument();
+    expect(within(content).queryByLabelText(/相手/)).not.toBeInTheDocument();
     expect(within(content).queryByRole('button', { name: '要求する' })).not.toBeInTheDocument();
     expect(within(content).queryByRole('button', { name: '宣言する' })).not.toBeInTheDocument();
+  });
+
+  it('keeps only the hand in the footer and puts choices and reference info in the play area', async () => {
+    localStorage.setItem('cli-mode-literature', 'false');
+    renderWithProviders(<LiteraturePage />);
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const footer = footerContent.parentElement;
+    const playArea = footer?.previousElementSibling;
+    expect(playArea).not.toBeNull();
+
+    expect(footerContent.querySelector('[data-tutorial="literature-hand"]')).toBeInTheDocument();
+    expect(within(footerContent).queryByLabelText(/相手/)).not.toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('literature-halfsuits')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByLabelText(/相手/)).toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('literature-halfsuits')).toBeInTheDocument();
   });
 });

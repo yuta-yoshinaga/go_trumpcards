@@ -41,6 +41,22 @@ beforeEach(() => {
 });
 
 describe('MinchiatePage', () => {
+  it('keeps the hand and scarto progress in the footer', async () => {
+    mockExec.mockResolvedValue(scartoState);
+    renderWithProviders(<MinchiatePage />);
+
+    const footer = await screen.findByTestId('game-footer-content');
+    const playArea = screen.getByTestId('minchiate-trump-count-note').closest('.flex-1.overflow-y-auto');
+    expect(playArea).not.toBeNull();
+    expect(footer.querySelector('[data-tutorial="minchiate-player-hand"]')).not.toBeNull();
+    expect(within(footer).getByTestId('minchiate-scarto-progress')).toBeInTheDocument();
+    expect(within(playArea as HTMLElement).queryByTestId('minchiate-scarto-progress')).not.toBeInTheDocument();
+    expect(within(footer).queryByTestId('minchiate-hint-live')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('minchiate-hint-live')).toBeInTheDocument();
+    expect(footer.querySelector('[data-tutorial="minchiate-reset-button"]')).toBeNull();
+    expect(playArea?.querySelector('[data-tutorial="minchiate-reset-button"]')).not.toBeNull();
+  });
+
   it('keeps the tutorial action target present during a CPU turn with no actions', async () => {
     mockExec.mockResolvedValue(cpuTurnState);
     const { container } = renderWithProviders(<MinchiatePage />);

@@ -212,6 +212,56 @@ function BauernschnapsenPageContent() {
       />
 
       <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+        {isHumanContractTurn && (
+          <>
+            <div data-testid="bauernschnapsen-contract-controls" className="mb-2">
+              <div className="grid grid-cols-3 gap-1">
+                <button
+                  type="button"
+                  className={`${btnPrimary} min-h-[36px]`}
+                  onClick={() => handleContract(0, 1)}
+                  disabled={loading}
+                  title={t('contractPassHelp')}
+                >
+                  {t('contractPass')}
+                </button>
+                {TRUMP_CONTRACTS.map((c) =>
+                  TRUMP_SUITS.map((suit) => (
+                    <button
+                      key={`${c}-${suit}`}
+                      type="button"
+                      className={`${btnPrimary} min-h-[36px]`}
+                      onClick={() => handleContract(c, suit)}
+                      disabled={loading}
+                      title={t(`${CONTRACT_LABEL_KEYS[c]}Help`)}
+                      aria-describedby={
+                        c === 1 ? 'bauernschnapsen-contract-rufer-help' : 'bauernschnapsen-contract-farbenzwang-help'
+                      }
+                    >
+                      {`${t(CONTRACT_LABEL_KEYS[c])} ${t(SUIT_LABEL_KEYS[suit])}`}
+                    </button>
+                  )),
+                )}
+                <button
+                  type="button"
+                  className={`${btnPrimary} min-h-[36px]`}
+                  onClick={() => handleContract(3, 1)}
+                  disabled={loading}
+                  title={t('contractBettelHelp')}
+                  aria-describedby="bauernschnapsen-contract-bettel-help"
+                >
+                  {t('contractBettel')}
+                </button>
+              </div>
+            </div>
+            <section aria-label={t('declareContract')} className="mb-2 space-y-1 text-ds-text-muted text-sm">
+              <div className="text-sm mb-1">{t('declareContract')}</div>
+              <p id="bauernschnapsen-contract-rufer-help">{t('contractRuferHelp')}</p>
+              <p id="bauernschnapsen-contract-farbenzwang-help">{t('contractFarbenzwangHelp')}</p>
+              <p id="bauernschnapsen-contract-bettel-help">{t('contractBettelHelp')}</p>
+            </section>
+          </>
+        )}
         {/* Round / trick / trump / contract. There is no stock and no turn-up
             card in this game: all 20 cards are dealt, and the trump comes from
             the winning declaration rather than from a face-up card. */}
@@ -323,6 +373,27 @@ function BauernschnapsenPageContent() {
           showActionLog={showActionLog}
           hideActionLog={hideActionLog}
         />
+
+        <ErrorAlert message={error ?? hintError} onRetry={retry} />
+
+        {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
+            付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
+            読み上げられないことがある (#5955, #6663)。 */}
+        <div data-testid="bauernschnapsen-hint-live" role="status" aria-live="polite">
+          {hint && (
+            <div className="text-ds-warning text-sm mb-2">
+              {`${t('hintPlay')}: [${hint.cardIndex ?? '-'}] (${t(`hintReason.${hint.reason}`, { defaultValue: hint.reason })})`}
+            </div>
+          )}
+        </div>
+
+        <GameResetButton
+          isGameEnd={!!isGameEnd}
+          onReset={handleManualReset}
+          requestConfirm={requestConfirm}
+          loading={loading}
+          dataTutorial="gg-reset-button"
+        />
       </div>
 
       <GameFooter
@@ -368,56 +439,6 @@ function BauernschnapsenPageContent() {
           </div>
         }
       >
-        {isHumanContractTurn && (
-          <>
-            <div data-testid="bauernschnapsen-contract-controls" className="mb-2">
-              <div className="grid grid-cols-3 gap-1">
-                <button
-                  type="button"
-                  className={`${btnPrimary} min-h-[36px]`}
-                  onClick={() => handleContract(0, 1)}
-                  disabled={loading}
-                  title={t('contractPassHelp')}
-                >
-                  {t('contractPass')}
-                </button>
-                {TRUMP_CONTRACTS.map((c) =>
-                  TRUMP_SUITS.map((suit) => (
-                    <button
-                      key={`${c}-${suit}`}
-                      type="button"
-                      className={`${btnPrimary} min-h-[36px]`}
-                      onClick={() => handleContract(c, suit)}
-                      disabled={loading}
-                      title={t(`${CONTRACT_LABEL_KEYS[c]}Help`)}
-                      aria-describedby={
-                        c === 1 ? 'bauernschnapsen-contract-rufer-help' : 'bauernschnapsen-contract-farbenzwang-help'
-                      }
-                    >
-                      {`${t(CONTRACT_LABEL_KEYS[c])} ${t(SUIT_LABEL_KEYS[suit])}`}
-                    </button>
-                  )),
-                )}
-                <button
-                  type="button"
-                  className={`${btnPrimary} min-h-[36px]`}
-                  onClick={() => handleContract(3, 1)}
-                  disabled={loading}
-                  title={t('contractBettelHelp')}
-                  aria-describedby="bauernschnapsen-contract-bettel-help"
-                >
-                  {t('contractBettel')}
-                </button>
-              </div>
-            </div>
-            <section aria-label={t('declareContract')} className="mb-2 space-y-1 text-ds-text-muted text-sm">
-              <div className="text-sm mb-1">{t('declareContract')}</div>
-              <p id="bauernschnapsen-contract-rufer-help">{t('contractRuferHelp')}</p>
-              <p id="bauernschnapsen-contract-farbenzwang-help">{t('contractFarbenzwangHelp')}</p>
-              <p id="bauernschnapsen-contract-bettel-help">{t('contractBettelHelp')}</p>
-            </section>
-          </>
-        )}
         {humanPlayer && (
           <PlayerHandSection
             humanPlayer={humanPlayer}
@@ -431,27 +452,6 @@ function BauernschnapsenPageContent() {
             restrictedTooltip={t('mustFollow')}
           />
         )}
-
-        <ErrorAlert message={error ?? hintError} onRetry={retry} />
-
-        {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
-            付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
-            読み上げられないことがある (#5955, #6663)。 */}
-        <div data-testid="bauernschnapsen-hint-live" role="status" aria-live="polite">
-          {hint && (
-            <div className="text-ds-warning text-sm mb-2">
-              {`${t('hintPlay')}: [${hint.cardIndex ?? '-'}] (${t(`hintReason.${hint.reason}`, { defaultValue: hint.reason })})`}
-            </div>
-          )}
-        </div>
-
-        <GameResetButton
-          isGameEnd={!!isGameEnd}
-          onReset={handleManualReset}
-          requestConfirm={requestConfirm}
-          loading={loading}
-          dataTutorial="gg-reset-button"
-        />
       </GameFooter>
     </GamePageShell>
   );
