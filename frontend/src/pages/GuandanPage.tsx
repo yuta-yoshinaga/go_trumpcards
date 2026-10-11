@@ -404,6 +404,8 @@ function GuandanPageContent() {
           {/* Footer */}
           <GameFooter
             className={`${gameTheme.guandan.footer} px-4 py-2.5`}
+            // 27 cards need four stacked rows; the 45vh cap leaves them about 18px short (#11655).
+            tall
             actions={
               isTribute || isPlay || isHandEnd ? (
                 <div className="flex flex-wrap gap-2 items-center" data-tutorial="guandan-actions">
