@@ -94,6 +94,28 @@ beforeEach(() => {
 });
 
 describe('FreeBetPage', () => {
+  it('賭けの選択肢と参照・リセットをプレイ領域に置き、フッターには残さない', async () => {
+    mockApi.mockResolvedValue(withState({ chips: 240 }));
+    renderWithProviders(<FreeBetPage />);
+
+    const playArea = await screen.findByTestId('card-area');
+    const footerContent = screen.getByTestId('game-footer-content');
+    expect(within(playArea).getByTestId('fb-bet-summary')).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('fb-bet-summary')).not.toBeInTheDocument();
+    expect(within(playArea).getByRole('button', { name: 'リセット' })).toBeInTheDocument();
+    expect(within(footerContent).queryByRole('button', { name: 'リセット' })).not.toBeInTheDocument();
+  });
+
+  it('プレイ中の無料通知をプレイ領域に置き、フッターには残さない', async () => {
+    mockApi.mockResolvedValue(playing());
+    renderWithProviders(<FreeBetPage />);
+
+    const playArea = await screen.findByTestId('card-area');
+    const footerContent = screen.getByTestId('game-footer-content');
+    expect(within(playArea).getByTestId('fb-free-notice')).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('fb-free-notice')).not.toBeInTheDocument();
+  });
+
   it('操作対象の手札を読み上げ、activeHand の変更に追従する', async () => {
     mockApi.mockResolvedValueOnce(playing({ hands: [hand(), hand()], activeHand: 0 }));
     mockApi.mockResolvedValueOnce(playing({ hands: [hand(), hand()], activeHand: 1 }));

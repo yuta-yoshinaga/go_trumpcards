@@ -307,6 +307,23 @@ function SambaPageContent() {
           />
 
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+            {isDiscardPhase && isHumanTurn && (
+              <>
+                <div
+                  className={`w-full text-xs ${canGoOut ? 'text-ds-success' : 'text-ds-warning'}`}
+                  data-testid="sa-go-out-progress"
+                >
+                  {t('goOutProgress', { completed: completedMelds, required: goOutRequiredMelds })}
+                </div>
+                <div
+                  id="sa-go-out-guidance"
+                  className="w-full text-xs text-ds-warning"
+                  data-testid="sa-go-out-guidance"
+                >
+                  {goOutUnavailableReason}
+                </div>
+              </>
+            )}
             <div className="text-ds-text-primary text-center mb-2">
               <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
               <span>
@@ -568,6 +585,16 @@ function SambaPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+
+            <ErrorAlert message={error} onRetry={retry} />
+
+            <GameResetButton
+              isGameEnd={isGameEnd}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+            />
+            <CardNavShortcutsPanel data-testid="samba-kbd-shortcuts" />
           </div>
 
           <GameFooter
@@ -756,34 +783,6 @@ function SambaPageContent() {
                 </div>
               )}
             </div>
-
-            {isDiscardPhase && isHumanTurn && (
-              <>
-                <div
-                  className={`w-full text-xs ${canGoOut ? 'text-ds-success' : 'text-ds-warning'}`}
-                  data-testid="sa-go-out-progress"
-                >
-                  {t('goOutProgress', { completed: completedMelds, required: goOutRequiredMelds })}
-                </div>
-                <div
-                  id="sa-go-out-guidance"
-                  className="w-full text-xs text-ds-warning"
-                  data-testid="sa-go-out-guidance"
-                >
-                  {goOutUnavailableReason}
-                </div>
-              </>
-            )}
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            <GameResetButton
-              isGameEnd={isGameEnd}
-              onReset={handleManualReset}
-              requestConfirm={requestConfirm}
-              loading={loading}
-            />
-            <CardNavShortcutsPanel data-testid="samba-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

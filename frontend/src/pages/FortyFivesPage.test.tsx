@@ -110,6 +110,20 @@ describe('FortyFivesPage', () => {
     expect(actions.getByTestId('bid-0')).toBeInTheDocument();
   });
 
+  it('keeps the hand in the footer and places supporting content in the play area', async () => {
+    const { container } = renderWithProviders(<FortyFivesPage />);
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const footer = screen.getByTestId('game-footer-actions').parentElement;
+    const playArea = container.querySelector('.flex-1.overflow-y-auto');
+    expect(playArea).not.toBeNull();
+    expect(footer).toContainElement(footerContent);
+    expect(footerContent.querySelector('[data-tutorial="fortyfives-player-hand"]')).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('ff-bid-history')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('ff-bid-history')).toBeInTheDocument();
+    expect(footerContent.querySelector('[data-tutorial="fortyfives-reset-button"]')).not.toBeInTheDocument();
+    expect(playArea?.querySelector('[data-tutorial="fortyfives-reset-button"]')).toBeInTheDocument();
+  });
+
   it('marks the current player during bidding and play, but not between tricks', async () => {
     mockExec.mockResolvedValue(makeFortyFivesState({ currentPlayerIdx: 1 }));
     const { unmount } = renderWithProviders(<FortyFivesPage />);

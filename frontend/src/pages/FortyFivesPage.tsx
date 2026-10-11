@@ -386,6 +386,47 @@ function FortyFivesPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+
+            <ErrorAlert message={error} onRetry={retry} />
+
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+              られないことがある (#5955)。
+            */}
+            <div data-testid="fortyfives-hint-live" role="status" aria-live="polite">
+              {state.hint && isRequestedHint(state) && (
+                <div className="text-ds-warning text-sm mb-2">
+                  {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
+                  {state.hint.cardIndices &&
+                    state.hint.cardIndices.length > 0 &&
+                    ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
+                </div>
+              )}
+            </div>
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            <div className="text-xs text-ds-text-muted mb-2" data-testid="ff-bid-history">
+              <span className="font-semibold mr-1">{t('bidHistoryTitle')}:</span>
+              <span>
+                {state.players
+                  .map(
+                    (p, i) =>
+                      `${playerName(p.id, p.isHuman)}=${state.bidDone[i] ? bidName(state.bids[i]) : t('bidNotYet')}`,
+                  )
+                  .join(t('listSeparator'))}
+              </span>
+            </div>
+
+            <div className="flex flex-wrap gap-2 items-center">
+              <GameResetButton
+                isGameEnd={isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="fortyfives-reset-button"
+              />
+            </div>
           </div>
 
           {/* Footer */}
@@ -465,47 +506,6 @@ function FortyFivesPageContent() {
                 trumpTitle={t('topTrumpTitle')}
               />
             )}
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            {/*
-              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
-              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
-              られないことがある (#5955)。
-            */}
-            <div data-testid="fortyfives-hint-live" role="status" aria-live="polite">
-              {state.hint && isRequestedHint(state) && (
-                <div className="text-ds-warning text-sm mb-2">
-                  {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
-                  {state.hint.cardIndices &&
-                    state.hint.cardIndices.length > 0 &&
-                    ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
-                </div>
-              )}
-            </div>
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            <div className="text-xs text-ds-text-muted mb-2" data-testid="ff-bid-history">
-              <span className="font-semibold mr-1">{t('bidHistoryTitle')}:</span>
-              <span>
-                {state.players
-                  .map(
-                    (p, i) =>
-                      `${playerName(p.id, p.isHuman)}=${state.bidDone[i] ? bidName(state.bids[i]) : t('bidNotYet')}`,
-                  )
-                  .join(t('listSeparator'))}
-              </span>
-            </div>
-
-            <div className="flex flex-wrap gap-2 items-center">
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="fortyfives-reset-button"
-              />
-            </div>
           </GameFooter>
         </>
       )}

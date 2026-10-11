@@ -145,6 +145,35 @@ function FreeBetPageContent() {
       ) : (
         <>
           <div data-testid="card-area" className={`overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+            {isPlayPhase && (
+              <div className="flex flex-col items-center gap-2">
+                <p className="text-ds-text-muted text-sm">{t('playGuide')}</p>
+                <p className="text-ds-text-muted text-xs" data-testid="fb-free-notice">
+                  {t('freeNotice')}
+                </p>
+              </div>
+            )}
+            {isBetPhase && !gameOver && (
+              <div className="flex flex-col items-center gap-2">
+                <p className="text-ds-text-muted text-sm">{t('betGuide')}</p>
+                <div
+                  data-testid="fb-bet-summary"
+                  className="rounded bg-ds-surface-elevated px-3 py-2 text-ds-text-primary text-sm tabular-nums"
+                >
+                  <p>{t('betSummary.balance', { amount: state.chips })}</p>
+                  <p>{t('betSummary.ante', { amount: ante })}</p>
+                  <p>{t('betSummary.remaining', { amount: Math.max(0, state.chips - ante) })}</p>
+                  <p className="text-ds-text-muted">{t('betSummary.freeBets')}</p>
+                </div>
+                <ChipBetInput
+                  id="freebet-ante"
+                  label={t('label.ante')}
+                  value={ante}
+                  onChange={setAnte}
+                  max={state.chips}
+                />
+              </div>
+            )}
             <GameMessageBox
               message={state.message}
               messageCode={state.messageCode}
@@ -242,6 +271,26 @@ function FreeBetPageContent() {
             )}
 
             {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
+            <ErrorAlert message={error} onRetry={retry} />
+            <SettingsPanel
+              title={tc('settings.title')}
+              groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
+            />
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            <div className="flex flex-col items-center gap-2 pb-2">
+              <div className="flex gap-2">
+                <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
+                  {tc('actionLog.view')}
+                </button>
+                <GameResetButton
+                  isGameEnd={gameOver}
+                  onReset={() => execApi('reset')}
+                  requestConfirm={requestConfirm}
+                  loading={loading}
+                />
+              </div>
+            </div>
           </div>
 
           <GameFooter
@@ -327,57 +376,7 @@ function FreeBetPageContent() {
                 </div>
               ) : null
             }
-          >
-            {isBetPhase && !gameOver && (
-              <div className="flex flex-col items-center gap-2">
-                <p className="text-ds-text-muted text-sm">{t('betGuide')}</p>
-                <div
-                  data-testid="fb-bet-summary"
-                  className="rounded bg-ds-surface-elevated px-3 py-2 text-ds-text-primary text-sm tabular-nums"
-                >
-                  <p>{t('betSummary.balance', { amount: state.chips })}</p>
-                  <p>{t('betSummary.ante', { amount: ante })}</p>
-                  <p>{t('betSummary.remaining', { amount: Math.max(0, state.chips - ante) })}</p>
-                  <p className="text-ds-text-muted">{t('betSummary.freeBets')}</p>
-                </div>
-                <ChipBetInput
-                  id="freebet-ante"
-                  label={t('label.ante')}
-                  value={ante}
-                  onChange={setAnte}
-                  max={state.chips}
-                />
-              </div>
-            )}
-            {isPlayPhase && (
-              <div className="flex flex-col items-center gap-2">
-                <p className="text-ds-text-muted text-sm">{t('playGuide')}</p>
-                <p className="text-ds-text-muted text-xs" data-testid="fb-free-notice">
-                  {t('freeNotice')}
-                </p>
-              </div>
-            )}
-            <ErrorAlert message={error} onRetry={retry} />
-            <SettingsPanel
-              title={tc('settings.title')}
-              groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
-            />
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            <div className="flex flex-col items-center gap-2 pb-2">
-              <div className="flex gap-2">
-                <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
-                  {tc('actionLog.view')}
-                </button>
-                <GameResetButton
-                  isGameEnd={gameOver}
-                  onReset={() => execApi('reset')}
-                  requestConfirm={requestConfirm}
-                  loading={loading}
-                />
-              </div>
-            </div>
-          </GameFooter>
+          ></GameFooter>
         </>
       )}
     </GamePageShell>

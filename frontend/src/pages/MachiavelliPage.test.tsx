@@ -137,6 +137,26 @@ describe('MachiavelliPage', () => {
     });
   });
 
+  it('keeps the hand in the footer and places deadwood and shortcuts in the play area', async () => {
+    const { container } = renderWithProviders(<MachiavelliPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+    const footerContent = screen.getByTestId('game-footer-content');
+    const playArea = container.querySelector('.flex-1.overflow-y-auto');
+    const hand = container.querySelector<HTMLElement>('[data-tutorial="mv-player-hand"]');
+    const deadwood = screen.getByTestId('mv-own-deadwood');
+    const drawPileLive = screen.getByTestId('machiavelli-draw-pile-live');
+    const shortcuts = screen.getByTestId('machiavelli-kbd-shortcuts');
+
+    expect(footerContent).toContainElement(hand);
+    expect(footerContent).not.toContainElement(deadwood);
+    expect(footerContent).not.toContainElement(shortcuts);
+    expect(playArea).toContainElement(deadwood);
+    expect(deadwood.parentElement).toBe(playArea);
+    expect(deadwood.previousElementSibling).toBe(drawPileLive);
+    expect(playArea).toContainElement(shortcuts);
+  });
+
   it('sorts the hand by rank and suit while selection and rearrange references stay on the same card', async () => {
     renderWithProviders(<MachiavelliPage />);
     await waitFor(() => expect(screen.getByAltText('♥ J')).toBeInTheDocument());

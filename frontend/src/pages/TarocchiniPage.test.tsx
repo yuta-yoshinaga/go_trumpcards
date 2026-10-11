@@ -36,6 +36,17 @@ beforeEach(() => {
 });
 
 describe('TarocchiniPage', () => {
+  it('keeps the hand in the footer and supporting notices in the play area', async () => {
+    const { container } = renderWithProviders(<TarocchiniPage />);
+    const footer = await screen.findByTestId('game-footer-content');
+    const playArea = container.querySelector('.flex-1.overflow-y-auto');
+
+    expect(footer.querySelector('[data-tutorial="tarocchini-player-hand"]')).toBeInTheDocument();
+    expect(footer.querySelector('[data-tutorial="tarocchini-reset-button"]')).not.toBeInTheDocument();
+    expect(playArea).toContainElement(screen.getByTestId('tarocchini-hint-live'));
+    expect(playArea).toContainElement(container.querySelector('[data-tutorial="tarocchini-reset-button"]'));
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<TarocchiniPage />);

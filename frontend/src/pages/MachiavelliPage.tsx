@@ -339,6 +339,16 @@ function MachiavelliPageContent() {
                 : t('drawPileAnnouncement', { count: state.drawPileCount })}
             </div>
 
+            {/* **デッドウッドはそのまま失点になる。**サーバは人間の分も毎回
+                送っているのに、画面は revealCpu の下で CPU の分しか出しておらず、
+                自分の持ち点はラウンドが終わるまで見えなかった (#6501)。
+                ドローかメルドかは、この数字を見て決めるもの。 */}
+            {humanPlayer && (
+              <div className="text-ds-text-muted text-xs mb-1" data-testid="mv-own-deadwood">
+                {t('deadwoodShort', { score: humanPlayer.deadwood })}
+              </div>
+            )}
+
             <div className={lgTwoColGrid}>
               {/* Left: shared table melds */}
               <div>
@@ -612,6 +622,31 @@ function MachiavelliPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+
+            <ErrorAlert message={error} onRetry={retry} />
+
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            <div className="flex gap-2 items-center flex-wrap">
+              {isHumanTurn && (
+                <button
+                  type="button"
+                  className={btnOutline}
+                  onClick={() => setHandSorted((sorted) => !sorted)}
+                  aria-pressed={handSorted}
+                >
+                  {t(handSorted ? 'handOrder.deal' : 'handOrder.rankSuit')}
+                </button>
+              )}
+              <GameResetButton
+                isGameEnd={!!isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="mv-reset-button"
+              />
+            </div>
+            <CardNavShortcutsPanel data-testid="machiavelli-kbd-shortcuts" />
           </div>
 
           <GameFooter
@@ -657,15 +692,6 @@ function MachiavelliPageContent() {
               ) : null
             }
           >
-            {/* **デッドウッドはそのまま失点になる。**サーバは人間の分も毎回
-                送っているのに、画面は revealCpu の下で CPU の分しか出しておらず、
-                自分の持ち点はラウンドが終わるまで見えなかった (#6501)。
-                ドローかメルドかは、この数字を見て決めるもの。 */}
-            {humanPlayer && (
-              <div className="text-ds-text-muted text-xs mb-1" data-testid="mv-own-deadwood">
-                {t('deadwoodShort', { score: humanPlayer.deadwood })}
-              </div>
-            )}
             {humanPlayer && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="mv-player-hand">
                 {displayHand.map(({ card, index }) => {
@@ -696,31 +722,6 @@ function MachiavelliPageContent() {
                 })}
               </div>
             )}
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            <div className="flex gap-2 items-center flex-wrap">
-              {isHumanTurn && (
-                <button
-                  type="button"
-                  className={btnOutline}
-                  onClick={() => setHandSorted((sorted) => !sorted)}
-                  aria-pressed={handSorted}
-                >
-                  {t(handSorted ? 'handOrder.deal' : 'handOrder.rankSuit')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={!!isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="mv-reset-button"
-              />
-            </div>
-            <CardNavShortcutsPanel data-testid="machiavelli-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

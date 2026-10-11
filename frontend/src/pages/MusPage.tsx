@@ -318,6 +318,65 @@ function MusPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+
+            {humanPlayer &&
+              humanPlayer.cards.length === 4 &&
+              (() => {
+                const evalResult = evalMusHand(humanPlayer.cards);
+                const paresValue = t(`handSummary.${PARES_VALUE_KEYS[evalResult.paresCategory]}`);
+                const juegoValue =
+                  evalResult.points === 31
+                    ? t('handSummary.juegoBest')
+                    : evalResult.hasJuego
+                      ? t('handSummary.juegoYes', { points: evalResult.points })
+                      : t('handSummary.juegoPunto', { points: evalResult.points });
+                const paresActive = state.phase === MusPhase.PARES;
+                const juegoActive = state.phase === MusPhase.JUEGO;
+                return (
+                  <div
+                    className="mt-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                    data-testid="mus-hand-summary"
+                  >
+                    <div className="mb-1 text-ds-text-primary">{t('handSummary.title')}</div>
+                    {/* Grande and Chica are two of the four betting rounds, and the
+                        panel said nothing during either of them (#4721). */}
+                    <div
+                      className={state.phase === MusPhase.GRANDE ? 'text-ds-warning font-semibold' : ''}
+                      data-testid="mus-summary-grande"
+                    >
+                      {/* The panel only renders on a full four-card hand, so the ranks
+                          are never null here. */}
+                      {t('handSummary.grande')}: {t('handSummary.rankValue', { rank: evalResult.highestRank })}
+                    </div>
+                    <div
+                      className={state.phase === MusPhase.CHICA ? 'text-ds-warning font-semibold' : ''}
+                      data-testid="mus-summary-chica"
+                    >
+                      {t('handSummary.chica')}: {t('handSummary.rankValue', { rank: evalResult.lowestRank })}
+                    </div>
+                    <div className={paresActive ? 'text-ds-warning font-semibold' : ''} data-testid="mus-summary-pares">
+                      {t('handSummary.pares')}: {paresValue}
+                    </div>
+                    <div className={juegoActive ? 'text-ds-warning font-semibold' : ''} data-testid="mus-summary-juego">
+                      {t('handSummary.juego')}: {juegoValue}
+                    </div>
+                  </div>
+                );
+              })()}
+
+            <ErrorAlert message={error} onRetry={retry} />
+
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            <div className="flex items-center">
+              <GameResetButton
+                isGameEnd={isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="mus-reset-button"
+              />
+            </div>
           </div>
 
           {/* Footer */}
@@ -465,65 +524,6 @@ function MusPageContent() {
                 dataTutorialPrefix="mus"
               />
             )}
-
-            {humanPlayer &&
-              humanPlayer.cards.length === 4 &&
-              (() => {
-                const evalResult = evalMusHand(humanPlayer.cards);
-                const paresValue = t(`handSummary.${PARES_VALUE_KEYS[evalResult.paresCategory]}`);
-                const juegoValue =
-                  evalResult.points === 31
-                    ? t('handSummary.juegoBest')
-                    : evalResult.hasJuego
-                      ? t('handSummary.juegoYes', { points: evalResult.points })
-                      : t('handSummary.juegoPunto', { points: evalResult.points });
-                const paresActive = state.phase === MusPhase.PARES;
-                const juegoActive = state.phase === MusPhase.JUEGO;
-                return (
-                  <div
-                    className="mt-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
-                    data-testid="mus-hand-summary"
-                  >
-                    <div className="mb-1 text-ds-text-primary">{t('handSummary.title')}</div>
-                    {/* Grande and Chica are two of the four betting rounds, and the
-                        panel said nothing during either of them (#4721). */}
-                    <div
-                      className={state.phase === MusPhase.GRANDE ? 'text-ds-warning font-semibold' : ''}
-                      data-testid="mus-summary-grande"
-                    >
-                      {/* The panel only renders on a full four-card hand, so the ranks
-                          are never null here. */}
-                      {t('handSummary.grande')}: {t('handSummary.rankValue', { rank: evalResult.highestRank })}
-                    </div>
-                    <div
-                      className={state.phase === MusPhase.CHICA ? 'text-ds-warning font-semibold' : ''}
-                      data-testid="mus-summary-chica"
-                    >
-                      {t('handSummary.chica')}: {t('handSummary.rankValue', { rank: evalResult.lowestRank })}
-                    </div>
-                    <div className={paresActive ? 'text-ds-warning font-semibold' : ''} data-testid="mus-summary-pares">
-                      {t('handSummary.pares')}: {paresValue}
-                    </div>
-                    <div className={juegoActive ? 'text-ds-warning font-semibold' : ''} data-testid="mus-summary-juego">
-                      {t('handSummary.juego')}: {juegoValue}
-                    </div>
-                  </div>
-                );
-              })()}
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            <div className="flex items-center">
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="mus-reset-button"
-              />
-            </div>
           </GameFooter>
         </>
       )}

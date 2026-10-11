@@ -167,6 +167,40 @@ function TrenteEtQuarantePageContent() {
               .filter(Boolean)
               .join(' ')}
           >
+            {isBetPhase && (
+              <div data-tutorial="teq-bet-controls">
+                {/* biome-ignore lint/a11y/useSemanticElements: a flex row of bet buttons; fieldset would break the layout */}
+                <div
+                  className="flex flex-wrap justify-center items-start gap-2"
+                  role="group"
+                  aria-label={t('label.betType')}
+                >
+                  {BET_OPTIONS.map((opt) => {
+                    const selected = betType === opt.type;
+                    return (
+                      <div key={opt.type} className="flex flex-col items-center w-24">
+                        <button
+                          type="button"
+                          aria-pressed={selected}
+                          title={t(opt.descKey)}
+                          className={`w-full ${selected ? `${btnPrimary} ring-2 ring-white` : btnSecondary}`}
+                          onClick={() => setBetType(opt.type)}
+                          disabled={loading}
+                          data-testid={`teq-bet-${opt.type}`}
+                        >
+                          {selected && <span aria-hidden="true">✓ </span>}
+                          {t(opt.labelKey)}
+                        </button>
+                        <span className="mt-0.5 text-[10px] leading-tight text-ds-text-muted text-center">
+                          {t(opt.descKey)}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             <GameMessageBox
               message={state.message}
               messageCode={state.messageCode}
@@ -295,6 +329,39 @@ function TrenteEtQuarantePageContent() {
             </details>
 
             {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
+            <ErrorAlert message={error} onRetry={retry} />
+            <SettingsPanel
+              title={tc('settings.title')}
+              groups={[
+                {
+                  items: [
+                    {
+                      type: 'select' as const,
+                      id: 'defaultBet',
+                      label: t('settings.defaultBet'),
+                      value: String(config.defaultBet),
+                      options: BET_OPTIONS.map((opt) => ({ value: String(opt.type), label: t(opt.labelKey) })),
+                      onSelect: (v: string) => handleConfigChange('defaultBet', v),
+                    },
+                  ],
+                },
+              ]}
+            />
+            <div className="flex justify-center pb-2">
+              {isResultPhase && (
+                <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
+                  {tc('actionLog.view')}
+                </button>
+              )}
+              <GameResetButton
+                isGameEnd={false}
+                onReset={reset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="teq-reset-button"
+              />
+            </div>
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="trente-et-quarante-kbd-shortcuts" />
           </div>
 
           <GameFooter
@@ -360,74 +427,7 @@ function TrenteEtQuarantePageContent() {
                 </>
               ) : null
             }
-          >
-            {isBetPhase && (
-              <div data-tutorial="teq-bet-controls">
-                {/* biome-ignore lint/a11y/useSemanticElements: a flex row of bet buttons; fieldset would break the layout */}
-                <div
-                  className="flex flex-wrap justify-center items-start gap-2"
-                  role="group"
-                  aria-label={t('label.betType')}
-                >
-                  {BET_OPTIONS.map((opt) => {
-                    const selected = betType === opt.type;
-                    return (
-                      <div key={opt.type} className="flex flex-col items-center w-24">
-                        <button
-                          type="button"
-                          aria-pressed={selected}
-                          title={t(opt.descKey)}
-                          className={`w-full ${selected ? `${btnPrimary} ring-2 ring-white` : btnSecondary}`}
-                          onClick={() => setBetType(opt.type)}
-                          disabled={loading}
-                          data-testid={`teq-bet-${opt.type}`}
-                        >
-                          {selected && <span aria-hidden="true">✓ </span>}
-                          {t(opt.labelKey)}
-                        </button>
-                        <span className="mt-0.5 text-[10px] leading-tight text-ds-text-muted text-center">
-                          {t(opt.descKey)}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-            <ErrorAlert message={error} onRetry={retry} />
-            <SettingsPanel
-              title={tc('settings.title')}
-              groups={[
-                {
-                  items: [
-                    {
-                      type: 'select' as const,
-                      id: 'defaultBet',
-                      label: t('settings.defaultBet'),
-                      value: String(config.defaultBet),
-                      options: BET_OPTIONS.map((opt) => ({ value: String(opt.type), label: t(opt.labelKey) })),
-                      onSelect: (v: string) => handleConfigChange('defaultBet', v),
-                    },
-                  ],
-                },
-              ]}
-            />
-            <div className="flex justify-center pb-2">
-              {isResultPhase && (
-                <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
-                  {tc('actionLog.view')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={false}
-                onReset={reset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="teq-reset-button"
-              />
-            </div>
-            <ActionShortcutsPanel bindings={actionBindings} data-testid="trente-et-quarante-kbd-shortcuts" />
-          </GameFooter>
+          ></GameFooter>
         </>
       )}
     </GamePageShell>

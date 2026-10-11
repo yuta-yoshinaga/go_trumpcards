@@ -264,6 +264,37 @@ function CallBreakPageContent() {
           />
 
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+            {isHumanBidTurn && (
+              <div className="flex flex-col items-center gap-2 pb-2">
+                <fieldset
+                  className="grid max-w-[16rem] grid-cols-7 gap-1 border-0 p-0"
+                  aria-label={t('bidSelectLabel')}
+                >
+                  {Array.from({ length: 13 }, (_, i) => i + 1).map((n) => (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => setBidSelection({ roundNumber: state.roundNumber, value: n })}
+                      disabled={loading}
+                      aria-pressed={bidValue === n}
+                      data-testid={`bid-option-${n}`}
+                      className={`h-9 w-9 rounded-lg font-medium text-sm transition-all ${
+                        bidValue === n
+                          ? 'bg-ds-accent text-white ring-2 ring-ds-accent'
+                          : 'bg-white/20 text-ds-text-primary hover:bg-white/30'
+                      }`}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                </fieldset>
+                {/* Announce the current bid selection to screen readers, since the
+                    grid's aria-pressed alone isn't read back as a running value. */}
+                <span className="sr-only" role="status" aria-live="polite" data-testid="cb-bid-selected">
+                  {t('bidSelected', { n: bidValue })}
+                </span>
+              </div>
+            )}
             <span className="sr-only" role="status" aria-live="polite" data-testid="callbreak-trick-winner-status">
               {isTrickEnd && state.players[state.leadPlayerIdx]
                 ? t('trickWinnerAnnouncement', {
@@ -455,74 +486,7 @@ function CallBreakPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
-          </div>
 
-          <GameFooter
-            dataTutorial="cb-play-button"
-            className={`${gameTheme.callbreak.footer} px-4 py-2.5`}
-            actions={
-              isHumanBidTurn || isHumanTurn || isTrickEnd || isRoundEnd ? (
-                <div className="flex gap-2 items-center">
-                  {isHumanBidTurn && (
-                    <button type="button" className={btnPrimary} onClick={() => handleBid(bidValue)} disabled={loading}>
-                      {t('bidButtonSelected', { n: bidValue })}
-                    </button>
-                  )}
-                  {isHumanTurn && (
-                    <button
-                      type="button"
-                      className={btnPrimary}
-                      onClick={handlePlay}
-                      disabled={loading || selectedCardIndices.length !== 1}
-                    >
-                      {t('playButton')}
-                    </button>
-                  )}
-                  {isTrickEnd && (
-                    <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                      {t('nextTrick')}
-                    </button>
-                  )}
-                  {isRoundEnd && (
-                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                      {t('nextRound')}
-                    </button>
-                  )}
-                </div>
-              ) : null
-            }
-          >
-            {isHumanBidTurn && (
-              <div className="flex flex-col items-center gap-2 pb-2">
-                <fieldset
-                  className="grid max-w-[16rem] grid-cols-7 gap-1 border-0 p-0"
-                  aria-label={t('bidSelectLabel')}
-                >
-                  {Array.from({ length: 13 }, (_, i) => i + 1).map((n) => (
-                    <button
-                      key={n}
-                      type="button"
-                      onClick={() => setBidSelection({ roundNumber: state.roundNumber, value: n })}
-                      disabled={loading}
-                      aria-pressed={bidValue === n}
-                      data-testid={`bid-option-${n}`}
-                      className={`h-9 w-9 rounded-lg font-medium text-sm transition-all ${
-                        bidValue === n
-                          ? 'bg-ds-accent text-white ring-2 ring-ds-accent'
-                          : 'bg-white/20 text-ds-text-primary hover:bg-white/30'
-                      }`}
-                    >
-                      {n}
-                    </button>
-                  ))}
-                </fieldset>
-                {/* Announce the current bid selection to screen readers, since the
-                    grid's aria-pressed alone isn't read back as a running value. */}
-                <span className="sr-only" role="status" aria-live="polite" data-testid="cb-bid-selected">
-                  {t('bidSelected', { n: bidValue })}
-                </span>
-              </div>
-            )}
             {humanPlayer && (
               <>
                 <div className="mb-1 text-ds-text-muted text-xs" role="status" data-testid="cb-spades-break-footer">
@@ -541,17 +505,6 @@ function CallBreakPageContent() {
                     />
                   </div>
                 )}
-                <PlayerHandSection
-                  humanPlayer={humanPlayer}
-                  selectedCardIndices={selectedCardIndices}
-                  toggleCard={toggleCard}
-                  cardWidth={cardWidth}
-                  isMobile={isMobile}
-                  dataTutorialPrefix="cb"
-                  validIndices={isHumanTurn ? state.validPlayIndices : undefined}
-                  restrictedTooltip={t('mustTrumpSpadeTooltip')}
-                  cardTitleFor={isHumanTurn ? cardTitleFor : undefined}
-                />
               </>
             )}
 
@@ -590,6 +543,56 @@ function CallBreakPageContent() {
               />
             </div>
             <CardNavShortcutsPanel data-testid="call-break-kbd-shortcuts" />
+          </div>
+
+          <GameFooter
+            dataTutorial="cb-play-button"
+            className={`${gameTheme.callbreak.footer} px-4 py-2.5`}
+            actions={
+              isHumanBidTurn || isHumanTurn || isTrickEnd || isRoundEnd ? (
+                <div className="flex gap-2 items-center">
+                  {isHumanBidTurn && (
+                    <button type="button" className={btnPrimary} onClick={() => handleBid(bidValue)} disabled={loading}>
+                      {t('bidButtonSelected', { n: bidValue })}
+                    </button>
+                  )}
+                  {isHumanTurn && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handlePlay}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                    >
+                      {t('playButton')}
+                    </button>
+                  )}
+                  {isTrickEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                      {t('nextTrick')}
+                    </button>
+                  )}
+                  {isRoundEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                      {t('nextRound')}
+                    </button>
+                  )}
+                </div>
+              ) : null
+            }
+          >
+            {humanPlayer && (
+              <PlayerHandSection
+                humanPlayer={humanPlayer}
+                selectedCardIndices={selectedCardIndices}
+                toggleCard={toggleCard}
+                cardWidth={cardWidth}
+                isMobile={isMobile}
+                dataTutorialPrefix="cb"
+                validIndices={isHumanTurn ? state.validPlayIndices : undefined}
+                restrictedTooltip={t('mustTrumpSpadeTooltip')}
+                cardTitleFor={isHumanTurn ? cardTitleFor : undefined}
+              />
+            )}
           </GameFooter>
         </>
       )}

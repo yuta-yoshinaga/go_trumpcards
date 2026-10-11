@@ -241,6 +241,17 @@ function NapPageContent() {
           />
 
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+            {isBidPhase && isHumanBidTurn && (
+              <div className="mb-2 flex flex-wrap gap-2 items-center">
+                <span className="text-xs text-ds-text-muted self-center mr-1">{t('bidPrompt')}</span>
+                <span className="text-xs text-ds-text-muted self-center mr-1" data-testid="nap-highest-bid">
+                  {highestBid > 0 && highestBidLabelKey
+                    ? t('bidHighest', { bid: t(highestBidLabelKey), player: highestBidderName })
+                    : t('bidNone')}
+                </span>
+                <span className="basis-full text-xs text-ds-text-muted">{t('bidStakeLegend')}</span>
+              </div>
+            )}
             <div className="text-ds-text-primary text-center mb-2" data-tutorial="nap-info">
               <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
               <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
@@ -401,6 +412,34 @@ function NapPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+
+            <ErrorAlert message={error} onRetry={retry} />
+
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+              られないことがある (#5955)。
+            */}
+            <div data-testid="nap-hint-live" role="status" aria-live="polite">
+              {state.hint && isRequestedHint(state) && (
+                <div className="text-ds-warning text-sm mb-2">
+                  {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
+                  {state.hint.cardIndices &&
+                    state.hint.cardIndices.length > 0 &&
+                    ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
+                </div>
+              )}
+            </div>
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+            <div className="flex flex-wrap gap-2 items-center">
+              <GameResetButton
+                isGameEnd={isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="nap-reset-button"
+              />
+            </div>
           </div>
 
           {/* Footer */}
@@ -485,46 +524,6 @@ function NapPageContent() {
                 restrictedTooltip={t('playButton')}
               />
             )}
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            {/*
-              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
-              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
-              られないことがある (#5955)。
-            */}
-            <div data-testid="nap-hint-live" role="status" aria-live="polite">
-              {state.hint && isRequestedHint(state) && (
-                <div className="text-ds-warning text-sm mb-2">
-                  {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
-                  {state.hint.cardIndices &&
-                    state.hint.cardIndices.length > 0 &&
-                    ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
-                </div>
-              )}
-            </div>
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            {isBidPhase && isHumanBidTurn && (
-              <div className="mb-2 flex flex-wrap gap-2 items-center">
-                <span className="text-xs text-ds-text-muted self-center mr-1">{t('bidPrompt')}</span>
-                <span className="text-xs text-ds-text-muted self-center mr-1" data-testid="nap-highest-bid">
-                  {highestBid > 0 && highestBidLabelKey
-                    ? t('bidHighest', { bid: t(highestBidLabelKey), player: highestBidderName })
-                    : t('bidNone')}
-                </span>
-                <span className="basis-full text-xs text-ds-text-muted">{t('bidStakeLegend')}</span>
-              </div>
-            )}
-            <div className="flex flex-wrap gap-2 items-center">
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="nap-reset-button"
-              />
-            </div>
           </GameFooter>
         </>
       )}

@@ -395,6 +395,98 @@ function IndianPokerPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+            {hintEnabled && equityPct !== null && !humanFolded && (
+              <div
+                className="mt-1 text-xs text-ds-text-primary"
+                data-testid="indianpoker-equity-meter"
+                aria-live="polite"
+              >
+                <div className="mb-0.5 flex items-center justify-between">
+                  <span>{t('equity.label')}</span>
+                  <span className="font-semibold tabular-nums">{equityPct}%</span>
+                </div>
+                <div
+                  className="h-1.5 w-full overflow-hidden rounded bg-black/30"
+                  role="progressbar"
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={equityPct}
+                  aria-label={t('equity.label')}
+                >
+                  <div
+                    className={`h-full transition-all ${equityPct >= 60 ? 'bg-ds-success' : equityPct >= 35 ? 'bg-ds-warning' : 'bg-ds-error'}`}
+                    style={{ width: `${equityPct}%` }}
+                  />
+                </div>
+              </div>
+            )}
+            <ErrorAlert message={error} onRetry={retry} />
+
+            {/* Hint */}
+            {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
+
+            {/* Settings */}
+            <SettingsPanel
+              title={t('settings.ante')}
+              groups={[
+                {
+                  items: [
+                    {
+                      type: 'select' as const,
+                      id: 'indianpoker-ante',
+                      label: t('settings.anteAmount'),
+                      value: ante,
+                      options: [
+                        { value: 5, label: '5' },
+                        { value: 10, label: '10' },
+                        { value: 20, label: '20' },
+                        { value: 50, label: '50' },
+                      ],
+                      onSelect: (v: string) => setAnte(Number(v)),
+                    },
+                    {
+                      type: 'select' as const,
+                      id: 'indianpoker-betting-limit',
+                      label: t('settings.bettingLimit'),
+                      value: bettingLimit,
+                      options: [
+                        { value: 0, label: tc('betting.fixed') },
+                        { value: 1, label: tc('betting.potLimit') },
+                        { value: 2, label: tc('betting.noLimit') },
+                      ],
+                      onSelect: (v: string) => setBettingLimit(Number(v)),
+                    },
+                    {
+                      type: 'checkbox' as const,
+                      id: 'indianpoker-hint',
+                      label: tc('hint.toggle', { ns: 'tutorial' }),
+                      checked: hintEnabled,
+                      onToggle: setHintEnabled,
+                    },
+                    {
+                      type: 'checkbox' as const,
+                      id: 'indianpoker-meta-ai',
+                      label: t('settings.metaAI'),
+                      checked: cpuMetaAI,
+                      onToggle: setCpuMetaAI,
+                    },
+                  ],
+                },
+              ]}
+            />
+
+            {/* Reset */}
+            <div className="text-center flex items-center justify-center gap-3">
+              <GameResetButton
+                isGameEnd={phase === IndianPokerPhase.SHOWDOWN || phase === IndianPokerPhase.END}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="ip-reset-button"
+                className="min-w-[90px]"
+              />
+            </div>
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="indian-poker-kbd-shortcuts" />
           </div>
 
           {/* Sticky footer: player card + buttons */}
@@ -477,31 +569,6 @@ function IndianPokerPageContent() {
                     </span>
                   ) : null}
                 </div>
-                {hintEnabled && equityPct !== null && !humanFolded && (
-                  <div
-                    className="mt-1 text-xs text-ds-text-primary"
-                    data-testid="indianpoker-equity-meter"
-                    aria-live="polite"
-                  >
-                    <div className="mb-0.5 flex items-center justify-between">
-                      <span>{t('equity.label')}</span>
-                      <span className="font-semibold tabular-nums">{equityPct}%</span>
-                    </div>
-                    <div
-                      className="h-1.5 w-full overflow-hidden rounded bg-black/30"
-                      role="progressbar"
-                      aria-valuemin={0}
-                      aria-valuemax={100}
-                      aria-valuenow={equityPct}
-                      aria-label={t('equity.label')}
-                    >
-                      <div
-                        className={`h-full transition-all ${equityPct >= 60 ? 'bg-ds-success' : equityPct >= 35 ? 'bg-ds-warning' : 'bg-ds-error'}`}
-                        style={{ width: `${equityPct}%` }}
-                      />
-                    </div>
-                  </div>
-                )}
               </div>
             )}
 
@@ -512,74 +579,6 @@ function IndianPokerPageContent() {
               messageParams={state.messageParams}
               alwaysVisible
             />
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            {/* Hint */}
-            {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
-
-            {/* Settings */}
-            <SettingsPanel
-              title={t('settings.ante')}
-              groups={[
-                {
-                  items: [
-                    {
-                      type: 'select' as const,
-                      id: 'indianpoker-ante',
-                      label: t('settings.anteAmount'),
-                      value: ante,
-                      options: [
-                        { value: 5, label: '5' },
-                        { value: 10, label: '10' },
-                        { value: 20, label: '20' },
-                        { value: 50, label: '50' },
-                      ],
-                      onSelect: (v: string) => setAnte(Number(v)),
-                    },
-                    {
-                      type: 'select' as const,
-                      id: 'indianpoker-betting-limit',
-                      label: t('settings.bettingLimit'),
-                      value: bettingLimit,
-                      options: [
-                        { value: 0, label: tc('betting.fixed') },
-                        { value: 1, label: tc('betting.potLimit') },
-                        { value: 2, label: tc('betting.noLimit') },
-                      ],
-                      onSelect: (v: string) => setBettingLimit(Number(v)),
-                    },
-                    {
-                      type: 'checkbox' as const,
-                      id: 'indianpoker-hint',
-                      label: tc('hint.toggle', { ns: 'tutorial' }),
-                      checked: hintEnabled,
-                      onToggle: setHintEnabled,
-                    },
-                    {
-                      type: 'checkbox' as const,
-                      id: 'indianpoker-meta-ai',
-                      label: t('settings.metaAI'),
-                      checked: cpuMetaAI,
-                      onToggle: setCpuMetaAI,
-                    },
-                  ],
-                },
-              ]}
-            />
-
-            {/* Reset */}
-            <div className="text-center flex items-center justify-center gap-3">
-              <GameResetButton
-                isGameEnd={phase === IndianPokerPhase.SHOWDOWN || phase === IndianPokerPhase.END}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="ip-reset-button"
-                className="min-w-[90px]"
-              />
-            </div>
-            <ActionShortcutsPanel bindings={actionBindings} data-testid="indian-poker-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

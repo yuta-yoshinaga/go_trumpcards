@@ -183,6 +183,19 @@ describe('CanastaPage', () => {
     expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeInTheDocument();
   });
 
+  it('keeps the hand in the footer and puts reset and keyboard shortcuts in the play area', async () => {
+    renderWithProviders(<CanastaPage />);
+
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const playArea = document.querySelector('.flex-1.overflow-y-auto');
+    expect(playArea).not.toBeNull();
+    expect(footerContent.querySelector('[data-tutorial="ca-player-hand"]')).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('canasta-kbd-shortcuts')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('canasta-kbd-shortcuts')).toBeInTheDocument();
+    expect(within(footerContent).queryByRole('button', { name: 'リセット' })).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByRole('button', { name: 'リセット' })).toBeInTheDocument();
+  });
+
   it('keeps the human meld tutorial target visible when no melds or red threes exist', async () => {
     mockExec.mockResolvedValue(drawPhaseState);
     renderWithProviders(<CanastaPage />);

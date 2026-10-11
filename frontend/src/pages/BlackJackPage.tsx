@@ -508,6 +508,36 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
               .filter(Boolean)
               .join(' ')}
           >
+            {/* Hint banner */}
+            {hintEnabled && suggestedAction !== BJ_SUGGEST_NONE && (
+              <div className="mb-2">
+                <div className="bg-ds-warning/90 text-ds-text-on-accent text-center text-sm font-bold px-3 py-1 rounded">
+                  {t('suggestion')} {suggestionLabels[suggestedAction]}
+                </div>
+                {bjHintResult && <HintTooltip reason={t(bjHintResult.reason)} confidence={bjHintResult.confidence} />}
+              </div>
+            )}
+            {phase === BjPhase.BET && playerChips > 0 && (
+              <>
+                <div data-tutorial="bj-bet-controls">{renderBetControls('support')}</div>
+                <div className="flex items-center justify-center gap-2 mt-2">
+                  <label htmlFor="bj-auto-advance" className="text-ds-text-primary text-sm">
+                    {t('autoAdvance')}
+                  </label>
+                  <select
+                    id="bj-auto-advance"
+                    value={autoAdvance}
+                    onChange={(e) => setAutoAdvance(Number(e.target.value))}
+                    className="px-3 py-2 rounded text-sm min-h-[44px]"
+                  >
+                    <option value={0}>OFF</option>
+                    <option value={3}>{t('autoAdvanceSec', { sec: 3 })}</option>
+                    <option value={5}>{t('autoAdvanceSec', { sec: 5 })}</option>
+                    <option value={10}>{t('autoAdvanceSec', { sec: 10 })}</option>
+                  </select>
+                </div>
+              </>
+            )}
             {phase === BjPhase.BET && (
               <div className="flex flex-col items-center justify-center py-6 gap-4">
                 <p className="text-ds-text-muted text-lg">{t('betGuide')}</p>
@@ -622,6 +652,110 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
                 ))}
               </div>
             )}
+            {/* Insurance info */}
+            {state.insuranceBet > 0 && (
+              <div className="text-ds-warning text-sm mb-1">
+                {t('insurance')} {state.insuranceBet}
+              </div>
+            )}
+
+            {/* Side bet info */}
+            {phase !== BjPhase.BET && state.perfectPairsBet > 0 && (
+              <div className="text-ds-warning text-sm mb-1" data-testid="side-bet-info-pp">
+                {t('sideBetLabel.pp')} {state.perfectPairsBet}
+              </div>
+            )}
+            {phase !== BjPhase.BET && state.twentyOnePlus3Bet > 0 && (
+              <div className="text-ds-warning text-sm mb-1" data-testid="side-bet-info-t3">
+                {t('sideBetLabel.t3')} {state.twentyOnePlus3Bet}
+              </div>
+            )}
+
+            {/* Side bet results */}
+            {sideBetResults.length > 0 && (
+              <div className="mb-2">
+                {sideBetResults.map((r) => (
+                  <div
+                    key={r.betType}
+                    data-testid={
+                      variant === 'spanish21' && phase === BjPhase.END
+                        ? `spanish21-side-bet-breakdown-${r.betType}`
+                        : undefined
+                    }
+                    className={`text-sm text-center px-3 py-1 rounded mb-1 ${r.payout > 0 ? 'bg-ds-warning/90 text-ds-text-on-accent font-bold' : 'bg-ds-surface-elevated/70 text-ds-text-primary'}`}
+                  >
+                    {variant === 'spanish21' && phase === BjPhase.END ? (
+                      <>
+                        <div>
+                          {r.betType === BJ_SIDE_BET_PERFECT_PAIRS
+                            ? t('sideBet.perfectPairs')
+                            : t('sideBet.twentyOnePlus3')}
+                        </div>
+                        <div>{t('sideBet.breakdownBet', { amount: r.betAmount })}</div>
+                        {r.resultName && <div>{t('sideBet.breakdownCondition', { condition: r.resultName })}</div>}
+                        <div>{t('sideBet.breakdownPayout', { amount: r.payout > 0 ? r.betAmount + r.payout : 0 })}</div>
+                      </>
+                    ) : (
+                      <>
+                        {r.betType === BJ_SIDE_BET_PERFECT_PAIRS
+                          ? t('sideBet.perfectPairs')
+                          : t('sideBet.twentyOnePlus3')}
+                        :{' '}
+                        {r.payout > 0
+                          ? t('sideBet.win', { name: r.resultName, payout: r.payout })
+                          : t('sideBet.lose', { name: r.resultName, amount: r.betAmount })}
+                      </>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Variant bonus badges (Spanish 21): 7-7-7 / 6-7-8 / 5+card 21 achievements. */}
+            {phase === BjPhase.END && (state?.bonuses?.length ?? 0) > 0 && (
+              <div
+                className="mb-2 flex flex-wrap justify-center gap-1"
+                data-testid="bj-bonus-badges"
+                data-tutorial="bj-bonus-badges"
+              >
+                {state?.bonuses?.map((key, i) => (
+                  <span
+                    // Multi-hand rounds can repeat the same bonus key, so include the index.
+                    key={`${key}-${i}`}
+                    data-testid="bj-bonus-badge"
+                    className="rounded-full border border-ds-warning bg-ds-surface px-3 py-0.5 text-ds-warning text-sm font-bold motion-safe:animate-pulse-once"
+                  >
+                    🎉 {t(bonusBadgeKey(key))}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Action log */}
+            <ActionLogSection
+              isEndPhase={phase === BjPhase.END}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
+
+            <ErrorAlert message={error} onRetry={retry} />
+
+            {phase === BjPhase.END && (
+              <div className="text-center" data-tutorial="bj-reset-button">
+                <BjEndPhaseControls
+                  loading={loading}
+                  onReset={handleReset}
+                  onRequestReset={requestResetConfirm}
+                  autoAdvanceSeconds={autoAdvance > 0 ? autoAdvance : undefined}
+                />
+              </div>
+            )}
+
+            <ActionShortcutsPanel
+              bindings={[...actionBindings, ...insuranceBindings, ...earlySurrenderBindings]}
+              data-testid="black-jack-kbd-shortcuts"
+            />
           </div>
 
           {/* Sticky footer: player hand + result + buttons */}
@@ -702,27 +836,6 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
               )
             }
           >
-            {phase === BjPhase.BET && playerChips > 0 && (
-              <>
-                <div data-tutorial="bj-bet-controls">{renderBetControls('support')}</div>
-                <div className="flex items-center justify-center gap-2 mt-2">
-                  <label htmlFor="bj-auto-advance" className="text-ds-text-primary text-sm">
-                    {t('autoAdvance')}
-                  </label>
-                  <select
-                    id="bj-auto-advance"
-                    value={autoAdvance}
-                    onChange={(e) => setAutoAdvance(Number(e.target.value))}
-                    className="px-3 py-2 rounded text-sm min-h-[44px]"
-                  >
-                    <option value={0}>OFF</option>
-                    <option value={3}>{t('autoAdvanceSec', { sec: 3 })}</option>
-                    <option value={5}>{t('autoAdvanceSec', { sec: 5 })}</option>
-                    <option value={10}>{t('autoAdvanceSec', { sec: 10 })}</option>
-                  </select>
-                </div>
-              </>
-            )}
             {/* Player hands */}
             {phase !== BjPhase.BET && hands.length > 0 && (
               <div className="mb-2" data-tutorial="bj-player-hand">
@@ -788,65 +901,6 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
               </div>
             )}
 
-            {/* Insurance info */}
-            {state.insuranceBet > 0 && (
-              <div className="text-ds-warning text-sm mb-1">
-                {t('insurance')} {state.insuranceBet}
-              </div>
-            )}
-
-            {/* Side bet info */}
-            {phase !== BjPhase.BET && state.perfectPairsBet > 0 && (
-              <div className="text-ds-warning text-sm mb-1" data-testid="side-bet-info-pp">
-                {t('sideBetLabel.pp')} {state.perfectPairsBet}
-              </div>
-            )}
-            {phase !== BjPhase.BET && state.twentyOnePlus3Bet > 0 && (
-              <div className="text-ds-warning text-sm mb-1" data-testid="side-bet-info-t3">
-                {t('sideBetLabel.t3')} {state.twentyOnePlus3Bet}
-              </div>
-            )}
-
-            {/* Side bet results */}
-            {sideBetResults.length > 0 && (
-              <div className="mb-2">
-                {sideBetResults.map((r) => (
-                  <div
-                    key={r.betType}
-                    data-testid={
-                      variant === 'spanish21' && phase === BjPhase.END
-                        ? `spanish21-side-bet-breakdown-${r.betType}`
-                        : undefined
-                    }
-                    className={`text-sm text-center px-3 py-1 rounded mb-1 ${r.payout > 0 ? 'bg-ds-warning/90 text-ds-text-on-accent font-bold' : 'bg-ds-surface-elevated/70 text-ds-text-primary'}`}
-                  >
-                    {variant === 'spanish21' && phase === BjPhase.END ? (
-                      <>
-                        <div>
-                          {r.betType === BJ_SIDE_BET_PERFECT_PAIRS
-                            ? t('sideBet.perfectPairs')
-                            : t('sideBet.twentyOnePlus3')}
-                        </div>
-                        <div>{t('sideBet.breakdownBet', { amount: r.betAmount })}</div>
-                        {r.resultName && <div>{t('sideBet.breakdownCondition', { condition: r.resultName })}</div>}
-                        <div>{t('sideBet.breakdownPayout', { amount: r.payout > 0 ? r.betAmount + r.payout : 0 })}</div>
-                      </>
-                    ) : (
-                      <>
-                        {r.betType === BJ_SIDE_BET_PERFECT_PAIRS
-                          ? t('sideBet.perfectPairs')
-                          : t('sideBet.twentyOnePlus3')}
-                        :{' '}
-                        {r.payout > 0
-                          ? t('sideBet.win', { name: r.resultName, payout: r.payout })
-                          : t('sideBet.lose', { name: r.resultName, amount: r.betAmount })}
-                      </>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-
             <div
               className="sr-only"
               data-testid="bj-bonus-announcement"
@@ -889,36 +943,6 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
               {endAnnouncement}
             </div>
 
-            {/* Variant bonus badges (Spanish 21): 7-7-7 / 6-7-8 / 5+card 21 achievements. */}
-            {phase === BjPhase.END && (state?.bonuses?.length ?? 0) > 0 && (
-              <div
-                className="mb-2 flex flex-wrap justify-center gap-1"
-                data-testid="bj-bonus-badges"
-                data-tutorial="bj-bonus-badges"
-              >
-                {state?.bonuses?.map((key, i) => (
-                  <span
-                    // Multi-hand rounds can repeat the same bonus key, so include the index.
-                    key={`${key}-${i}`}
-                    data-testid="bj-bonus-badge"
-                    className="rounded-full border border-ds-warning bg-ds-surface px-3 py-0.5 text-ds-warning text-sm font-bold motion-safe:animate-pulse-once"
-                  >
-                    🎉 {t(bonusBadgeKey(key))}
-                  </span>
-                ))}
-              </div>
-            )}
-
-            {/* Hint banner */}
-            {hintEnabled && suggestedAction !== BJ_SUGGEST_NONE && (
-              <div className="mb-2">
-                <div className="bg-ds-warning/90 text-ds-text-on-accent text-center text-sm font-bold px-3 py-1 rounded">
-                  {t('suggestion')} {suggestionLabels[suggestedAction]}
-                </div>
-                {bjHintResult && <HintTooltip reason={t(bjHintResult.reason)} confidence={bjHintResult.confidence} />}
-              </div>
-            )}
-
             {/* Result message */}
             <div data-tutorial="bj-result-message">
               <GameMessageBox
@@ -928,32 +952,6 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
                 severity={phase === BjPhase.END ? 'alert' : 'info'}
               />
             </div>
-
-            {/* Action log */}
-            <ActionLogSection
-              isEndPhase={phase === BjPhase.END}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            {phase === BjPhase.END && (
-              <div className="text-center" data-tutorial="bj-reset-button">
-                <BjEndPhaseControls
-                  loading={loading}
-                  onReset={handleReset}
-                  onRequestReset={requestResetConfirm}
-                  autoAdvanceSeconds={autoAdvance > 0 ? autoAdvance : undefined}
-                />
-              </div>
-            )}
-
-            <ActionShortcutsPanel
-              bindings={[...actionBindings, ...insuranceBindings, ...earlySurrenderBindings]}
-              data-testid="black-jack-kbd-shortcuts"
-            />
           </GameFooter>
         </>
       )}

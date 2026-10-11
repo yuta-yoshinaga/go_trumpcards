@@ -431,6 +431,48 @@ function TarneebPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+            <ErrorAlert message={error ?? hintError} onRetry={retry} />
+
+            <RoundScoreAnnouncement
+              active={isRoundEnd || isGameEnd}
+              entries={state.teamScores.map((cumulativeScore, i) => ({
+                name: i === humanPlayer?.team ? t('yourTeam') : t('opponentTeam'),
+                roundScore: teamBreakdown[i].roundScore,
+                cumulativeScore,
+              }))}
+            />
+
+            {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
+                付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
+                読み上げられないことがある (#5955, #6663)。 */}
+            <div data-testid="tarneeb-hint-live" role="status" aria-live="polite">
+              {hint && (
+                <div className="text-ds-warning text-sm mb-2">
+                  {hint.bid != null
+                    ? `${t('hintBid')}: ${hint.bid} (${t(`hintReason.${hint.reason}`)})`
+                    : hint.trumpSuit != null
+                      ? `${t('hintTrump')}: ${TRUMP_LABELS[hint.trumpSuit] ?? '?'} (${t(`hintReason.${hint.reason}`)})`
+                      : `${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`}
+                </div>
+              )}
+            </div>
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            <div data-tutorial="tn-play-button">
+              {(isHumanBidTurn || isHumanTrumpTurn || isHumanTurn) && (
+                <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
+                  {tc('button.hint')}
+                </button>
+              )}
+              <GameResetButton
+                isGameEnd={!!isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="tn-reset-button"
+              />
+            </div>
+            <CardNavShortcutsPanel data-testid="tarneeb-kbd-shortcuts" />
           </div>
 
           <GameFooter
@@ -531,52 +573,9 @@ function TarneebPageContent() {
               />
             )}
 
-            <ErrorAlert message={error ?? hintError} onRetry={retry} />
-
-            <RoundScoreAnnouncement
-              active={isRoundEnd || isGameEnd}
-              entries={state.teamScores.map((cumulativeScore, i) => ({
-                name: i === humanPlayer?.team ? t('yourTeam') : t('opponentTeam'),
-                roundScore: teamBreakdown[i].roundScore,
-                cumulativeScore,
-              }))}
-            />
-
             <div data-testid="tarneeb-bid-live" role="status" aria-live="polite">
               {isHumanBidTurn && t('selectedBid', { n: bidValue })}
             </div>
-
-            {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
-                付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
-                読み上げられないことがある (#5955, #6663)。 */}
-            <div data-testid="tarneeb-hint-live" role="status" aria-live="polite">
-              {hint && (
-                <div className="text-ds-warning text-sm mb-2">
-                  {hint.bid != null
-                    ? `${t('hintBid')}: ${hint.bid} (${t(`hintReason.${hint.reason}`)})`
-                    : hint.trumpSuit != null
-                      ? `${t('hintTrump')}: ${TRUMP_LABELS[hint.trumpSuit] ?? '?'} (${t(`hintReason.${hint.reason}`)})`
-                      : `${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`}
-                </div>
-              )}
-            </div>
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            <div data-tutorial="tn-play-button">
-              {(isHumanBidTurn || isHumanTrumpTurn || isHumanTurn) && (
-                <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
-                  {tc('button.hint')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={!!isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="tn-reset-button"
-              />
-            </div>
-            <CardNavShortcutsPanel data-testid="tarneeb-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

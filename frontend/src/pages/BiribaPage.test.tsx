@@ -191,6 +191,26 @@ describe('BiribaPage', () => {
     expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeInTheDocument();
   });
 
+  it('keeps the hand in the footer and places its other controls in the play area', async () => {
+    renderWithProviders(<BiribaPage />);
+    const footer = await screen.findByTestId('game-footer-content');
+    const playArea = footer.closest('footer')?.previousElementSibling as HTMLElement;
+
+    mockExec.mockRejectedValueOnce(new Error('draw failed'));
+    fireEvent.click(within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '山札から引く' }));
+    const alert = await within(playArea).findByRole('alert');
+
+    expect(within(footer).getByTestId('bu-hand-card-0')).toBeInTheDocument();
+    expect(within(footer).queryByTestId('bu-sort-rank')).not.toBeInTheDocument();
+    expect(within(footer).queryByTestId('biriba-kbd-shortcuts')).not.toBeInTheDocument();
+    expect(playArea.querySelector('[data-testid="bu-sort-rank"]')).not.toBeNull();
+    expect(playArea.querySelector('[data-testid="biriba-kbd-shortcuts"]')).not.toBeNull();
+    expect(playArea.contains(alert)).toBe(true);
+    expect(within(playArea).getByRole('button', { name: 'リセット' })).toBeInTheDocument();
+    expect(within(footer).queryByRole('alert')).not.toBeInTheDocument();
+    expect(within(footer).queryByRole('button', { name: 'リセット' })).not.toBeInTheDocument();
+  });
+
   it('renders the discard pile viewer with all pile cards', async () => {
     mockExec.mockResolvedValue({
       ...drawPhaseState,
@@ -420,10 +440,12 @@ describe('BiribaPage', () => {
   it('shows 次のゲーム at game-end and fires reset directly (no confirm)', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<BiribaPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+    const footer = await screen.findByTestId('game-footer-content');
+    const playArea = within(footer.closest('footer')?.previousElementSibling as HTMLElement);
+    await waitFor(() => expect(playArea.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
 
     mockExec.mockClear();
-    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
+    fireEvent.click(playArea.getByRole('button', { name: '次のゲーム' }));
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
         cpuDifficulty: 1,

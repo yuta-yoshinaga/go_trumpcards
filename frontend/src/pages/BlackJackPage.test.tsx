@@ -273,6 +273,10 @@ describe('BlackJackPage', () => {
   it('shows bet amount input in bet phase', async () => {
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(screen.getByLabelText('ベット額:')).toBeInTheDocument());
+    const footerContent = screen.getByTestId('game-footer-content');
+    const cardArea = screen.getByTestId('card-area');
+    expect(footerContent.querySelector('[data-tutorial="bj-bet-controls"]')).toBeNull();
+    expect(cardArea.querySelector('[data-tutorial="bj-bet-controls"]')).toBeInTheDocument();
   });
 
   it('calls bet command when bet button is clicked', async () => {
@@ -292,6 +296,20 @@ describe('BlackJackPage', () => {
     expect(
       within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: 'ヒット' }),
     ).toBeInTheDocument();
+  });
+
+  it('keeps the player hand in the footer and moves supporting information into the play area', async () => {
+    mockExec.mockResolvedValue({ ...actionPhaseState, insuranceBet: 10 });
+    renderWithProviders(<BlackJackPage />);
+
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const cardArea = await screen.findByTestId('card-area');
+    await waitFor(() => expect(footerContent.querySelector('[data-tutorial="bj-player-hand"]')).not.toBeNull());
+    expect(footerContent.querySelector('[data-tutorial="bj-player-hand"]')).toBeInTheDocument();
+    expect(within(footerContent).queryByText(/インシュランス: 10/)).not.toBeInTheDocument();
+    expect(within(cardArea).getByText(/インシュランス: 10/)).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('black-jack-kbd-shortcuts')).not.toBeInTheDocument();
+    expect(within(cardArea).getByTestId('black-jack-kbd-shortcuts')).toBeInTheDocument();
   });
 
   it('shows double down button when 2 cards and sufficient chips', async () => {
@@ -863,6 +881,14 @@ describe('BlackJackPage', () => {
     mockExec.mockResolvedValue({ ...actionPhaseState, hintEnabled: true, suggestedAction: 7 });
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(screen.getByText('推奨: ダブルダウン')).toBeInTheDocument());
+    const cardArea = screen.getByTestId('card-area');
+    const hintBanner = screen.getByText('推奨: ダブルダウン').parentElement?.parentElement;
+    const dealerHand = cardArea.querySelector('[data-tutorial="bj-dealer-hand"]');
+    expect(cardArea.contains(hintBanner ?? null)).toBe(true);
+    expect(dealerHand).not.toBeNull();
+    if (hintBanner && dealerHand) {
+      expect(hintBanner.compareDocumentPosition(dealerHand) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    }
   });
 
   it('highlights split button when hint suggests split', async () => {
@@ -1988,7 +2014,7 @@ describe('BlackJackPage', () => {
     mockExec.mockResolvedValue(betPhaseState);
     const { container } = renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(screen.getByText('配当表')).toBeInTheDocument());
-    const details = container.querySelector('details');
+    const details = container.querySelector('[data-tutorial="bj-payout-ref"]');
     expect(details).toBeInTheDocument();
     const summary = details?.querySelector('summary');
     expect(summary).toHaveTextContent('配当表');

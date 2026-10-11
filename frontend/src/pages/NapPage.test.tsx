@@ -131,6 +131,24 @@ describe('NapPage', () => {
     expect(footerContent.closest('footer')).toHaveAttribute('data-tutorial', 'nap-action-buttons');
   });
 
+  it('keeps only the hand in the footer content and places bid guidance and hint live region in the play area', async () => {
+    mockExec.mockResolvedValue({
+      ...bidPhaseState,
+      hint: { cardIndices: [0], reason: 'x' },
+      messageCode: 'nap.hintRequested',
+    });
+    renderWithProviders(<NapPage />);
+
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const playArea = footerContent.parentElement?.previousElementSibling;
+    expect(playArea).toHaveClass('flex-1', 'overflow-y-auto');
+    expect(within(footerContent).getAllByAltText(/♠|♥|♦|♣/).length).toBeGreaterThan(0);
+    expect(within(footerContent).queryByTestId('nap-hint-live')).not.toBeInTheDocument();
+    expect(within(footerContent).queryByText(/ボタンの数字:/)).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('nap-hint-live')).toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByText(/ボタンの数字:/)).toBeInTheDocument();
+  });
+
   it('keeps every hand card unavailable during the bidding phase', async () => {
     renderWithProviders(<NapPage />);
 
