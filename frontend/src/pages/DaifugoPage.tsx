@@ -288,7 +288,7 @@ function DaifugoPageContent() {
             <DaifugoSettingsPanel config={configInput} onChange={handleConfigChange} />
             <ReplaySpeedSettingsPanel />
             <SettingsPanel
-              title=""
+              title={tc('settings.title')}
               groups={[
                 {
                   items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)],

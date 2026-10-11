@@ -88,6 +88,18 @@ describe('CalculationPage', () => {
     expect(f0).toBeInTheDocument();
   });
 
+  it('renders next-rank badges outside the foundation card image', async () => {
+    renderWithProviders(<CalculationPage />);
+    const badge = await screen.findByTestId('calc-foundation-next-0');
+    const foundationButton = badge.closest('button');
+    const cardImage = foundationButton?.querySelector('img');
+    expect(foundationButton).toContainElement(badge);
+    // Overlaid on the card it covered the rank corner; it now sits outside the card box.
+    expect(badge).not.toHaveClass('absolute');
+    expect(cardImage?.parentElement).not.toContainElement(badge);
+    expect(badge).toHaveTextContent('次:2');
+  });
+
   it('keeps empty foundation names and identifies a completed foundation', async () => {
     const fullPile = Array.from({ length: 13 }, (_, index) => card('SPADE', index + 1));
     mockExec.mockResolvedValue({
