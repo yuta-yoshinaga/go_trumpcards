@@ -79,6 +79,33 @@ beforeEach(() => {
 });
 
 describe('WattenPage', () => {
+  it('keeps the hand in the footer and puts declare choices and trump guidance in the play area', async () => {
+    mockExec.mockResolvedValue(declarePhaseState);
+    renderWithProviders(<WattenPage />);
+
+    const footer = await screen.findByTestId('game-footer-content');
+    const playArea = footer.parentElement?.previousElementSibling;
+    expect(playArea).toBeInTheDocument();
+    expect(footer.querySelector('[data-tutorial="watten-player-hand"]')).toBeInTheDocument();
+    expect(within(footer).queryByRole('button', { name: '7' })).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByRole('button', { name: '7' })).toBeInTheDocument();
+    expect(within(footer).queryByTestId('watten-trump-panel')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('watten-trump-panel')).toBeInTheDocument();
+    expect(within(footer).queryByTestId('watten-hint-live')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('watten-hint-live')).toBeInTheDocument();
+  });
+
+  it('shows the no-trumps reference when the hand has no trump cards', async () => {
+    const noTrumpState = makeWattenState({
+      ...declarePhaseState,
+      players: declarePhaseState.players.map((player) => (player.isHuman ? { ...player, cards: [] } : player)),
+    });
+    mockExec.mockResolvedValue(noTrumpState);
+    renderWithProviders(<WattenPage />);
+
+    expect(await screen.findByTestId('watten-trump-count')).toHaveTextContent('永久最強札は常に有効です');
+  });
+
   it('shows the latest completed trick with its winner and card owners', async () => {
     mockExec.mockResolvedValue(
       makeWattenState({

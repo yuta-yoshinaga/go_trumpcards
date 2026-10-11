@@ -78,16 +78,34 @@ describe('KingPage', () => {
     expect(screen.getByRole('button', { name: /^ノートリック —/ })).toBeInTheDocument();
   });
 
-  it('keeps contract buttons at the start of footer content without rendering footer actions', async () => {
+  it('keeps only the prompt and hand in the footer while choices and game info stay in the play area', async () => {
+    mockExec.mockResolvedValue(selectPhaseState);
+    renderWithProviders(<KingPage />);
+
+    const footer = await screen.findByTestId('game-footer-content');
+    const playArea = footer.parentElement?.previousElementSibling;
+    expect(playArea).not.toBeNull();
+    expect(within(footer).queryByTestId('king-contract-buttons')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('king-contract-buttons')).toBeInTheDocument();
+    const settings = screen.getByText('設定', { selector: 'summary' }).closest('details');
+    expect(settings).toBeInTheDocument();
+    expect(playArea).not.toContainElement(settings);
+    expect(within(footer).queryByTestId('king-contract-descriptions')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('king-contract-descriptions')).toBeInTheDocument();
+    expect(within(footer).getByTestId('king-prompt-live')).toBeInTheDocument();
+    expect(within(footer).getByAltText('♥ Q')).toBeInTheDocument();
+  });
+
+  it('keeps contract descriptions linked to choices in the play area without footer actions', async () => {
     mockExec.mockResolvedValue(selectPhaseState);
     renderWithProviders(<KingPage />);
     const content = await screen.findByTestId('game-footer-content');
-    const contractButtons = within(content).getByTestId('king-contract-buttons');
-    expect(content.firstElementChild).toBe(contractButtons);
+    const contractButtons = screen.getByTestId('king-contract-buttons');
     expect(within(contractButtons).getByTestId('king-contract-0')).toBeInTheDocument();
     expect(screen.queryByTestId('game-footer-actions')).not.toBeInTheDocument();
     const descriptions = screen.getByTestId('king-contract-descriptions');
-    expect(content).toContainElement(descriptions);
+    expect(content).not.toContainElement(contractButtons);
+    expect(content).not.toContainElement(descriptions);
     expect(descriptions).toHaveTextContent('契約の説明');
     expect(descriptions).toHaveTextContent(i18n.t('king:contractDesc.0'));
     expect(within(contractButtons).getByTestId('king-contract-0')).toHaveAttribute(
@@ -408,7 +426,7 @@ describe('KingPage', () => {
     renderWithProviders(<KingPage />);
     const trumpContractBtn = await screen.findByTestId('king-contract-6');
     fireEvent.click(trumpContractBtn);
-    const actions = await screen.findByTestId('game-footer-actions');
+    const actions = screen.getByTestId('game-footer-actions');
     expect(within(actions).getByTestId('king-trump-buttons')).toBeInTheDocument();
   });
 

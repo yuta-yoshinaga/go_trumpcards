@@ -305,6 +305,7 @@ function MightyPageContent() {
             }
             headline={t('role.partnerRevealed')}
           />
+
           {/* Settings */}
           <SettingsPanel
             title={t('settings.title')}
@@ -346,6 +347,128 @@ function MightyPageContent() {
 
           {/* Scrollable area */}
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+            {/* Phase selections stay scrollable above the hand. */}
+            {(isHumanBidTurn || isHumanDeclarer) && (
+              <div className="flex flex-col items-center gap-2 mb-2">
+                {isHumanBidTurn && (
+                  <>
+                    <div className="text-center mb-2" data-tutorial="mighty-bid-controls">
+                      <div className="text-ds-warning">{t('bidPhase', { min: state.config.minBid })}</div>
+                      <div className="text-ds-text-muted text-sm" data-testid="mighty-notrump-explain">
+                        {t('settings.noTrumpExtraExplain', { points: state.config.noTrumpExtra })}
+                      </div>
+                    </div>
+                    <fieldset
+                      className="grid grid-cols-7 gap-1 border-0 p-0"
+                      aria-label={t('bidSelectLabel')}
+                      data-testid="mighty-bid-grid"
+                    >
+                      {Array.from(
+                        { length: MIGHTY_MAX_BID - state.config.minBid + 1 },
+                        (_, i) => i + state.config.minBid,
+                      ).map((n) => (
+                        <button
+                          key={n}
+                          type="button"
+                          onClick={() => setBidValue(n)}
+                          disabled={loading || n < bidEffectiveMin || n <= state.highestBid}
+                          aria-pressed={bidValue === n}
+                          data-testid={`bid-option-${n}`}
+                          className={`min-h-[36px] min-w-[36px] rounded-lg font-medium text-sm transition-all disabled:cursor-not-allowed disabled:opacity-40 ${bidValue === n ? 'bg-ds-accent text-white ring-2 ring-ds-accent' : 'bg-white/20 text-ds-text-primary hover:bg-white/30'}`}
+                        >
+                          {n}
+                        </button>
+                      ))}
+                    </fieldset>
+                    <label className="flex items-center gap-1 text-ds-text-primary text-sm min-h-[44px]">
+                      <input
+                        type="checkbox"
+                        checked={bidNoTrumpToggle}
+                        onChange={(e) => setBidNoTrumpToggle(e.target.checked)}
+                        aria-label={t('noTrumpToggle')}
+                      />
+                      {t('noTrumpToggle')}
+                    </label>
+                  </>
+                )}
+                {isHumanDeclarer && (
+                  <>
+                    <div className="text-ds-warning text-center mb-2" data-tutorial="mighty-trump-friend">
+                      {t('trumpAndFriendPhase')}
+                    </div>
+                    <fieldset className="flex flex-wrap gap-1 border-0 p-0">
+                      <legend className="sr-only">{t('trumpSuit')}</legend>
+                      <button
+                        type="button"
+                        aria-pressed={trumpSuitValue === -1}
+                        data-testid="trump-suit--1"
+                        onClick={() => setTrumpSuitValue(-1)}
+                        disabled={loading}
+                        className={suitToggleClass(trumpSuitValue === -1)}
+                      >
+                        {t('noTrump')}
+                      </button>
+                      {[1, 2, 3, 4].map((s) => (
+                        <button
+                          key={s}
+                          type="button"
+                          aria-pressed={trumpSuitValue === s}
+                          aria-label={t(`suitName.${SUIT_KEYS[s]}`)}
+                          data-testid={`trump-suit-${s}`}
+                          onClick={() => setTrumpSuitValue(s)}
+                          disabled={loading}
+                          className={suitToggleClass(trumpSuitValue === s)}
+                        >
+                          {suitSymbolAt(s)}
+                        </button>
+                      ))}
+                    </fieldset>
+                    <fieldset className="flex flex-wrap gap-1 border-0 p-0">
+                      <legend className="sr-only">{t('partnerSuit')}</legend>
+                      <button
+                        type="button"
+                        aria-pressed={partnerSuitValue === 0}
+                        data-testid="partner-suit-0"
+                        onClick={() => setPartnerSuitValue(0)}
+                        disabled={loading}
+                        className={suitToggleClass(partnerSuitValue === 0)}
+                      >
+                        JOKER
+                      </button>
+                      {[1, 2, 3, 4].map((s) => (
+                        <button
+                          key={s}
+                          type="button"
+                          aria-pressed={partnerSuitValue === s}
+                          aria-label={t(`suitName.${SUIT_KEYS[s]}`)}
+                          data-testid={`partner-suit-${s}`}
+                          onClick={() => setPartnerSuitValue(s)}
+                          disabled={loading}
+                          className={suitToggleClass(partnerSuitValue === s)}
+                        >
+                          {suitSymbolAt(s)}
+                        </button>
+                      ))}
+                    </fieldset>
+                    {partnerSuitValue > 0 && (
+                      <select
+                        value={partnerValueValue}
+                        onChange={(e) => setPartnerValueValue(Number(e.target.value))}
+                        className="px-2 py-1 rounded bg-white/20 text-ds-text-primary"
+                        aria-label={t('partnerValue')}
+                      >
+                        {Array.from({ length: 13 }, (_, i) => i + 1).map((v) => (
+                          <option key={v} value={v}>
+                            {valueName(v)}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+
             {/* Round/Trick info */}
             <div className="text-ds-text-primary text-center mb-2">
               <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
@@ -593,6 +716,69 @@ function MightyPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+
+            <GameResetButton
+              isGameEnd={!!isGameEnd}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+              dataTutorial="mighty-reset-button"
+            />
+            {(isHumanBidTurn || isHumanTurn || isHumanDeclarer || isHumanExchange) && (
+              <button
+                type="button"
+                className={`${btnSuccess} mb-2`}
+                onClick={handleHint}
+                disabled={loading || hintLoading}
+              >
+                {tc('button.hint')}
+              </button>
+            )}
+            <ErrorAlert message={error ?? hintError} onRetry={retry} />
+
+            {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
+                付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
+                読み上げられないことがある (#5955, #6663)。 */}
+            <div data-testid="mighty-hint-live" role="status" aria-live="polite">
+              {hint && (
+                <div className="text-ds-warning text-sm mb-2">
+                  {hint.bid != null
+                    ? `${t('hintBid')}: ${hint.bid}${hint.bidNoTrump ? ` (${t('noTrump')})` : ''} (${t(`hintReason.${hint.reason}`)})`
+                    : hint.trumpSuit != null
+                      ? `${t('hintTrump')}: ${hint.trumpSuit === -1 ? t('noTrump') : t(`suitName.${SUIT_KEYS[hint.trumpSuit]}`)} (${t(`hintReason.${hint.reason}`)})`
+                      : hint.discardIndices != null
+                        ? `${t('hintDiscard')}: [${hint.discardIndices.join(', ')}] (${t(`hintReason.${hint.reason}`)})`
+                        : `${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`}
+                </div>
+              )}
+            </div>
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            {/* Joker suit picker dialog */}
+            <Modal
+              open={jokerSuitPickerOpen}
+              onClose={() => setJokerSuitPickerOpen(false)}
+              ariaLabel={t('demandSuit')}
+              panelClassName="glass-panel rounded-lg shadow-xl p-4 flex gap-2 items-center flex-wrap max-w-sm mx-4"
+            >
+              <span className="text-ds-text-primary text-sm mr-2">{t('demandSuit')}:</span>
+              {[1, 2, 3, 4].map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  className={btnPrimary}
+                  onClick={() => {
+                    handleJokerLead(s);
+                    setJokerSuitPickerOpen(false);
+                  }}
+                  disabled={loading}
+                >
+                  {t(`suitName.${SUIT_KEYS[s]}`)}
+                </button>
+              ))}
+            </Modal>
+
+            <CardNavShortcutsPanel data-testid="mighty-kbd-shortcuts" />
           </div>
 
           {/* Footer */}
@@ -695,144 +881,6 @@ function MightyPageContent() {
               ) : null
             }
           >
-            <GameResetButton
-              isGameEnd={!!isGameEnd}
-              onReset={handleManualReset}
-              requestConfirm={requestConfirm}
-              loading={loading}
-              dataTutorial="mighty-reset-button"
-            />
-            {/* Phase selections stay scrollable above the hand. */}
-            {(isHumanBidTurn || isHumanDeclarer) && (
-              <div className="flex flex-col items-center gap-2 mb-2">
-                {isHumanBidTurn && (
-                  <>
-                    <div className="text-center mb-2" data-tutorial="mighty-bid-controls">
-                      <div className="text-ds-warning">{t('bidPhase', { min: state.config.minBid })}</div>
-                      <div className="text-ds-text-muted text-sm" data-testid="mighty-notrump-explain">
-                        {t('settings.noTrumpExtraExplain', { points: state.config.noTrumpExtra })}
-                      </div>
-                    </div>
-                    <fieldset
-                      className="grid grid-cols-7 gap-1 border-0 p-0"
-                      aria-label={t('bidSelectLabel')}
-                      data-testid="mighty-bid-grid"
-                    >
-                      {Array.from(
-                        { length: MIGHTY_MAX_BID - state.config.minBid + 1 },
-                        (_, i) => i + state.config.minBid,
-                      ).map((n) => (
-                        <button
-                          key={n}
-                          type="button"
-                          onClick={() => setBidValue(n)}
-                          disabled={loading || n < bidEffectiveMin || n <= state.highestBid}
-                          aria-pressed={bidValue === n}
-                          data-testid={`bid-option-${n}`}
-                          className={`min-h-[36px] min-w-[36px] rounded-lg font-medium text-sm transition-all disabled:cursor-not-allowed disabled:opacity-40 ${bidValue === n ? 'bg-ds-accent text-white ring-2 ring-ds-accent' : 'bg-white/20 text-ds-text-primary hover:bg-white/30'}`}
-                        >
-                          {n}
-                        </button>
-                      ))}
-                    </fieldset>
-                    <label className="flex items-center gap-1 text-ds-text-primary text-sm min-h-[44px]">
-                      <input
-                        type="checkbox"
-                        checked={bidNoTrumpToggle}
-                        onChange={(e) => setBidNoTrumpToggle(e.target.checked)}
-                        aria-label={t('noTrumpToggle')}
-                      />
-                      {t('noTrumpToggle')}
-                    </label>
-                  </>
-                )}
-                {isHumanDeclarer && (
-                  <>
-                    <div className="text-ds-warning text-center mb-2" data-tutorial="mighty-trump-friend">
-                      {t('trumpAndFriendPhase')}
-                    </div>
-                    <fieldset className="flex flex-wrap gap-1 border-0 p-0">
-                      <legend className="sr-only">{t('trumpSuit')}</legend>
-                      <button
-                        type="button"
-                        aria-pressed={trumpSuitValue === -1}
-                        data-testid="trump-suit--1"
-                        onClick={() => setTrumpSuitValue(-1)}
-                        disabled={loading}
-                        className={suitToggleClass(trumpSuitValue === -1)}
-                      >
-                        {t('noTrump')}
-                      </button>
-                      {[1, 2, 3, 4].map((s) => (
-                        <button
-                          key={s}
-                          type="button"
-                          aria-pressed={trumpSuitValue === s}
-                          aria-label={t(`suitName.${SUIT_KEYS[s]}`)}
-                          data-testid={`trump-suit-${s}`}
-                          onClick={() => setTrumpSuitValue(s)}
-                          disabled={loading}
-                          className={suitToggleClass(trumpSuitValue === s)}
-                        >
-                          {suitSymbolAt(s)}
-                        </button>
-                      ))}
-                    </fieldset>
-                    <fieldset className="flex flex-wrap gap-1 border-0 p-0">
-                      <legend className="sr-only">{t('partnerSuit')}</legend>
-                      <button
-                        type="button"
-                        aria-pressed={partnerSuitValue === 0}
-                        data-testid="partner-suit-0"
-                        onClick={() => setPartnerSuitValue(0)}
-                        disabled={loading}
-                        className={suitToggleClass(partnerSuitValue === 0)}
-                      >
-                        JOKER
-                      </button>
-                      {[1, 2, 3, 4].map((s) => (
-                        <button
-                          key={s}
-                          type="button"
-                          aria-pressed={partnerSuitValue === s}
-                          aria-label={t(`suitName.${SUIT_KEYS[s]}`)}
-                          data-testid={`partner-suit-${s}`}
-                          onClick={() => setPartnerSuitValue(s)}
-                          disabled={loading}
-                          className={suitToggleClass(partnerSuitValue === s)}
-                        >
-                          {suitSymbolAt(s)}
-                        </button>
-                      ))}
-                    </fieldset>
-                    {partnerSuitValue > 0 && (
-                      <select
-                        value={partnerValueValue}
-                        onChange={(e) => setPartnerValueValue(Number(e.target.value))}
-                        className="px-2 py-1 rounded bg-white/20 text-ds-text-primary"
-                        aria-label={t('partnerValue')}
-                      >
-                        {Array.from({ length: 13 }, (_, i) => i + 1).map((v) => (
-                          <option key={v} value={v}>
-                            {valueName(v)}
-                          </option>
-                        ))}
-                      </select>
-                    )}
-                  </>
-                )}
-              </div>
-            )}
-            {(isHumanBidTurn || isHumanTurn || isHumanDeclarer || isHumanExchange) && (
-              <button
-                type="button"
-                className={`${btnSuccess} mb-2`}
-                onClick={handleHint}
-                disabled={loading || hintLoading}
-              >
-                {tc('button.hint')}
-              </button>
-            )}
             {/* Human cards */}
             {humanPlayer &&
               (isMobile ? (
@@ -878,52 +926,6 @@ function MightyPageContent() {
                   })}
                 </div>
               ))}
-
-            <ErrorAlert message={error ?? hintError} onRetry={retry} />
-
-            {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
-                付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
-                読み上げられないことがある (#5955, #6663)。 */}
-            <div data-testid="mighty-hint-live" role="status" aria-live="polite">
-              {hint && (
-                <div className="text-ds-warning text-sm mb-2">
-                  {hint.bid != null
-                    ? `${t('hintBid')}: ${hint.bid}${hint.bidNoTrump ? ` (${t('noTrump')})` : ''} (${t(`hintReason.${hint.reason}`)})`
-                    : hint.trumpSuit != null
-                      ? `${t('hintTrump')}: ${hint.trumpSuit === -1 ? t('noTrump') : t(`suitName.${SUIT_KEYS[hint.trumpSuit]}`)} (${t(`hintReason.${hint.reason}`)})`
-                      : hint.discardIndices != null
-                        ? `${t('hintDiscard')}: [${hint.discardIndices.join(', ')}] (${t(`hintReason.${hint.reason}`)})`
-                        : `${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`}
-                </div>
-              )}
-            </div>
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            {/* Joker suit picker dialog */}
-            <Modal
-              open={jokerSuitPickerOpen}
-              onClose={() => setJokerSuitPickerOpen(false)}
-              ariaLabel={t('demandSuit')}
-              panelClassName="glass-panel rounded-lg shadow-xl p-4 flex gap-2 items-center flex-wrap max-w-sm mx-4"
-            >
-              <span className="text-ds-text-primary text-sm mr-2">{t('demandSuit')}:</span>
-              {[1, 2, 3, 4].map((s) => (
-                <button
-                  key={s}
-                  type="button"
-                  className={btnPrimary}
-                  onClick={() => {
-                    handleJokerLead(s);
-                    setJokerSuitPickerOpen(false);
-                  }}
-                  disabled={loading}
-                >
-                  {t(`suitName.${SUIT_KEYS[s]}`)}
-                </button>
-              ))}
-            </Modal>
-
-            <CardNavShortcutsPanel data-testid="mighty-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

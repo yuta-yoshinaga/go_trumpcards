@@ -1141,12 +1141,30 @@ describe('MightyPage aria-labels are translated', () => {
     expect(within(actions).getByRole('button', { name: '出す' })).toBeInTheDocument();
   });
 
-  it('keeps bid selection in the scrollable footer content', async () => {
+  it('keeps bid selection in the scrollable play area', async () => {
     mockCall.mockResolvedValue(bidPhaseState);
     renderWithProviders(<MightyPage />);
     const actions = await screen.findByTestId('game-footer-actions');
     expect(within(actions).getByRole('button', { name: 'ビッド' })).toBeInTheDocument();
-    expect(within(actions).queryByTestId('mighty-bid-grid')).not.toBeInTheDocument();
-    expect(screen.getByTestId('mighty-bid-grid')).toBeInTheDocument();
+    const footer = screen.getByTestId('game-footer-content');
+    const playArea = footer.parentElement?.parentElement?.querySelector('.flex-1.overflow-y-auto');
+    expect(within(footer).queryByTestId('mighty-bid-grid')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('mighty-bid-grid')).toBeInTheDocument();
+  });
+
+  it('keeps choices and reference panels in the play area while the hand stays in the footer', async () => {
+    mockCall.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<MightyPage />);
+    const footer = await screen.findByTestId('game-footer-content');
+    const playArea = footer.parentElement?.parentElement?.querySelector('.flex-1.overflow-y-auto');
+    expect(playArea).not.toBeNull();
+    expect(within(footer).queryByTestId('mighty-bid-grid')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('mighty-bid-grid')).toBeInTheDocument();
+    expect(within(footer).queryByTestId('mighty-hint-live')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('mighty-hint-live')).toBeInTheDocument();
+    const settings = screen.getByText('設定', { selector: 'summary' }).closest('details');
+    expect(settings).toBeInTheDocument();
+    expect(playArea).not.toContainElement(settings);
+    expect(footer.querySelector('[data-tutorial="mighty-player-hand"]')).toBeInTheDocument();
   });
 });
