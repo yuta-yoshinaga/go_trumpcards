@@ -755,40 +755,46 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
                       </span>
                     )}
                 </div>
-                {/* Door cards */}
-                <div className="text-ds-text-muted text-xs mb-0.5">{t('doorCards')}</div>
-                <div
-                  className={`flex flex-wrap gap-1.5 mb-1 ${humanPlayer.id === bringInPlayerId ? bringInCardClass : ''}`}
-                >
-                  {humanPlayer.doorCards?.length
-                    ? humanPlayer.doorCards.map((card) => (
-                        <AnimatedCard
-                          key={`${card.design}-${card.value}`}
-                          card={card}
-                          width={cardWidth}
-                          style={placeholderCardStyle}
-                        />
-                      ))
-                    : !humanPlayer.folded &&
-                      Array.from({ length: 4 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
-                </div>
-                {/* Hole cards */}
-                <div className="text-ds-text-muted text-xs mb-0.5">{t('holeCards')}</div>
-                <div
-                  className="flex flex-wrap gap-1.5 mb-2"
-                  {...(gameKey === 'chicago' ? { 'data-tutorial': 'chicago-hole-cards' } : {})}
-                >
-                  {humanPlayer.holeCards?.length
-                    ? humanPlayer.holeCards.map((card) => (
-                        <AnimatedCard
-                          key={`${card.design}-${card.value}`}
-                          card={card}
-                          width={cardWidth}
-                          style={placeholderCardStyle}
-                        />
-                      ))
-                    : !humanPlayer.folded &&
-                      Array.from({ length: 3 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
+                <div className="flex flex-wrap items-start gap-x-3 mb-2">
+                  <div>
+                    {/* Door cards */}
+                    <div className="text-ds-text-muted text-xs mb-0.5">{t('doorCards')}</div>
+                    <div
+                      className={`flex flex-wrap gap-1.5 ${humanPlayer.id === bringInPlayerId ? bringInCardClass : ''}`}
+                    >
+                      {humanPlayer.doorCards?.length
+                        ? humanPlayer.doorCards.map((card) => (
+                            <AnimatedCard
+                              key={`${card.design}-${card.value}`}
+                              card={card}
+                              width={cardWidth}
+                              style={placeholderCardStyle}
+                            />
+                          ))
+                        : !humanPlayer.folded &&
+                          Array.from({ length: 4 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
+                    </div>
+                  </div>
+                  <div>
+                    {/* Hole cards */}
+                    <div className="text-ds-text-muted text-xs mb-0.5">{t('holeCards')}</div>
+                    <div
+                      className="flex flex-wrap gap-1.5"
+                      {...(gameKey === 'chicago' ? { 'data-tutorial': 'chicago-hole-cards' } : {})}
+                    >
+                      {humanPlayer.holeCards?.length
+                        ? humanPlayer.holeCards.map((card) => (
+                            <AnimatedCard
+                              key={`${card.design}-${card.value}`}
+                              card={card}
+                              width={cardWidth}
+                              style={placeholderCardStyle}
+                            />
+                          ))
+                        : !humanPlayer.folded &&
+                          Array.from({ length: 3 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
