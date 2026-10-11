@@ -1212,6 +1212,28 @@ describe('BigOHiLoPage', () => {
     expect(screen.getByRole('button', { name: 'スキップ' })).toBeInTheDocument();
   });
 
+  it('keeps the hand in the footer and places phase controls and reset in the play area', async () => {
+    const rebuyState: OmahaResponse = {
+      ...preFlopState,
+      phase: 7,
+      rebuyPhaseType: 1,
+      rebuyChips: 1000,
+      rebuyMaxCount: 3,
+      rebuyCounts: [0, 0, 0, 0],
+    };
+    mockExec.mockResolvedValue(rebuyState);
+    renderWithProviders(<BigOHiLoPage />);
+
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const playArea = footerContent.closest('footer')?.previousElementSibling;
+    expect(playArea).toHaveAttribute('class', expect.stringContaining('flex-1 overflow-y-auto'));
+    expect(footerContent.querySelector('[data-tutorial="bohl-player-hand"]')).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('rebuy-controls')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('rebuy-controls')).toBeInTheDocument();
+    expect(footerContent.querySelector('[data-tutorial="bohl-reset-button"]')).not.toBeInTheDocument();
+    expect(playArea?.querySelector('[data-tutorial="bohl-reset-button"]')).toBeInTheDocument();
+  });
+
   it('calls rebuy command when rebuy accept button is clicked', async () => {
     const rebuyState: OmahaResponse = {
       ...preFlopState,

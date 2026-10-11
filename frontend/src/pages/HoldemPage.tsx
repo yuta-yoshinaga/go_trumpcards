@@ -409,6 +409,89 @@ function HoldemPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+            <ErrorAlert message={error} onRetry={retry} />
+
+            {/* Hint */}
+            {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
+
+            {/* Settings + Reset */}
+            <details className="mb-1" data-tutorial="he-learning-mode" open={learningMode || undefined}>
+              <summary className="cursor-pointer select-none text-ds-text-primary text-sm font-bold py-1">
+                {tc('settings.title')}
+              </summary>
+              <div className="flex flex-col gap-2 py-1">
+                <div className="flex items-center gap-2" data-testid="learning-mode-toggle">
+                  <label
+                    htmlFor="learningModeCheckbox"
+                    className="text-ds-text-primary text-sm cursor-pointer flex items-center gap-2 min-h-[44px]"
+                  >
+                    {t('learning.toggle')}
+                    <input
+                      id="learningModeCheckbox"
+                      type="checkbox"
+                      checked={learningMode}
+                      onChange={(e) => setLearningMode(e.target.checked)}
+                    />
+                  </label>
+                </div>
+                {learningMode && state?.equity && state.potOdds != null && (
+                  <EquityDisplay equity={state.equity} potOdds={state.potOdds} />
+                )}
+                <div className="flex items-center gap-3">
+                  <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
+                    <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
+                    {tc('hint.toggle', { ns: 'tutorial' })}
+                  </label>
+                  <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
+                    <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
+                    {t('settings.cpuMetaAI')}
+                  </label>
+                </div>
+                <div className="flex flex-col gap-2 border-t border-ds-border pt-2" data-testid="tournament-settings">
+                  <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
+                    <input
+                      type="checkbox"
+                      data-testid="tournament-mode-toggle"
+                      checked={tournamentMode}
+                      onChange={(e) => setTournamentMode(e.target.checked)}
+                    />
+                    {t('settings.tournamentMode')}
+                  </label>
+                  {tournamentMode && (
+                    <div className="flex flex-col gap-2 pl-5">
+                      <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
+                        <input
+                          type="checkbox"
+                          data-testid="tournament-rebuy-toggle"
+                          checked={rebuyEnabled}
+                          onChange={(e) => setRebuyEnabled(e.target.checked)}
+                        />
+                        {t('settings.rebuyEnabled')}
+                      </label>
+                      <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
+                        <input
+                          type="checkbox"
+                          data-testid="tournament-addon-toggle"
+                          checked={addonEnabled}
+                          onChange={(e) => setAddonEnabled(e.target.checked)}
+                        />
+                        {t('settings.addonEnabled')}
+                      </label>
+                    </div>
+                  )}
+                  <p className="text-ds-text-muted text-xs">{t('settings.tournamentNote')}</p>
+                </div>
+              </div>
+            </details>
+            <GameResetButton
+              isGameEnd={phase === HoldemPhase.SHOWDOWN || phase === HoldemPhase.END}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+              dataTutorial="he-reset-button"
+              className="min-w-[90px]"
+            />
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="holdem-kbd-shortcuts" />
           </div>
 
           {/* Sticky footer: player hand + buttons */}
@@ -596,90 +679,6 @@ function HoldemPageContent() {
               alwaysVisible
               severity={phase === HoldemPhase.END || phase === HoldemPhase.SHOWDOWN ? 'alert' : 'info'}
             />
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            {/* Hint */}
-            {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
-
-            {/* Settings + Reset */}
-            <details className="mb-1" data-tutorial="he-learning-mode" open={learningMode || undefined}>
-              <summary className="cursor-pointer select-none text-ds-text-primary text-sm font-bold py-1">
-                {tc('settings.title')}
-              </summary>
-              <div className="flex flex-col gap-2 py-1">
-                <div className="flex items-center gap-2" data-testid="learning-mode-toggle">
-                  <label
-                    htmlFor="learningModeCheckbox"
-                    className="text-ds-text-primary text-sm cursor-pointer flex items-center gap-2 min-h-[44px]"
-                  >
-                    {t('learning.toggle')}
-                    <input
-                      id="learningModeCheckbox"
-                      type="checkbox"
-                      checked={learningMode}
-                      onChange={(e) => setLearningMode(e.target.checked)}
-                    />
-                  </label>
-                </div>
-                {learningMode && state?.equity && state.potOdds != null && (
-                  <EquityDisplay equity={state.equity} potOdds={state.potOdds} />
-                )}
-                <div className="flex items-center gap-3">
-                  <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
-                    <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
-                    {tc('hint.toggle', { ns: 'tutorial' })}
-                  </label>
-                  <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
-                    <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
-                    {t('settings.cpuMetaAI')}
-                  </label>
-                </div>
-                <div className="flex flex-col gap-2 border-t border-ds-border pt-2" data-testid="tournament-settings">
-                  <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
-                    <input
-                      type="checkbox"
-                      data-testid="tournament-mode-toggle"
-                      checked={tournamentMode}
-                      onChange={(e) => setTournamentMode(e.target.checked)}
-                    />
-                    {t('settings.tournamentMode')}
-                  </label>
-                  {tournamentMode && (
-                    <div className="flex flex-col gap-2 pl-5">
-                      <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
-                        <input
-                          type="checkbox"
-                          data-testid="tournament-rebuy-toggle"
-                          checked={rebuyEnabled}
-                          onChange={(e) => setRebuyEnabled(e.target.checked)}
-                        />
-                        {t('settings.rebuyEnabled')}
-                      </label>
-                      <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
-                        <input
-                          type="checkbox"
-                          data-testid="tournament-addon-toggle"
-                          checked={addonEnabled}
-                          onChange={(e) => setAddonEnabled(e.target.checked)}
-                        />
-                        {t('settings.addonEnabled')}
-                      </label>
-                    </div>
-                  )}
-                  <p className="text-ds-text-muted text-xs">{t('settings.tournamentNote')}</p>
-                </div>
-              </div>
-            </details>
-            <GameResetButton
-              isGameEnd={phase === HoldemPhase.SHOWDOWN || phase === HoldemPhase.END}
-              onReset={handleManualReset}
-              requestConfirm={requestConfirm}
-              loading={loading}
-              dataTutorial="he-reset-button"
-              className="min-w-[90px]"
-            />
-            <ActionShortcutsPanel bindings={actionBindings} data-testid="holdem-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

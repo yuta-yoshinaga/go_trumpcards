@@ -335,6 +335,26 @@ describe('PineapplePage', () => {
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
   });
 
+  it('keeps the hand in the footer and places the discard notice in the play area', async () => {
+    mockCrazyExec.mockResolvedValue({
+      ...preFlopState,
+      phase: PineapplePhase.FLOP,
+      communityCards: [
+        { design: 'SPADE', value: 10 },
+        { design: 'HEART', value: 5 },
+        { design: 'DIAMOND', value: 8 },
+      ],
+    });
+    renderWithProviders(<PineapplePage variant="crazypineapple" />);
+
+    await screen.findByTestId('cp-discard-upcoming-banner');
+    const footer = screen.getByTestId('game-footer-content');
+    const playArea = footer.parentElement?.previousElementSibling;
+    expect(within(footer).getByText('あなたの手札')).toBeInTheDocument();
+    expect(within(footer).queryByTestId('cp-discard-upcoming-banner')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('cp-discard-upcoming-banner')).toBeInTheDocument();
+  });
+
   it('shows only the outstanding bet difference as the call amount', async () => {
     mockCrazyExec.mockResolvedValue({
       ...preFlopState,

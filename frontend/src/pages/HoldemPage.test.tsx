@@ -232,6 +232,20 @@ beforeEach(() => {
 });
 
 describe('HoldemPage', () => {
+  it('keeps the hand in the footer and places settings and shortcuts in the play area', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<HoldemPage />);
+
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const playArea = footerContent.closest('footer')?.parentElement?.querySelector(':scope > .flex-1.overflow-y-auto');
+
+    expect(footerContent.querySelector('[data-tutorial="he-player-hand"]')).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('tournament-settings')).not.toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('holdem-kbd-shortcuts')).not.toBeInTheDocument();
+    expect(playArea).toContainElement(screen.getByTestId('tournament-settings'));
+    expect(playArea).toContainElement(screen.getByTestId('holdem-kbd-shortcuts'));
+  });
+
   it('announces newly revealed community cards', async () => {
     mockExec.mockResolvedValue(flopState);
     renderWithProviders(<HoldemPage />);

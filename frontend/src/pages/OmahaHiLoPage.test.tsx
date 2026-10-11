@@ -270,6 +270,20 @@ beforeEach(() => {
 });
 
 describe('OmahaHiLoPage', () => {
+  it('keeps only the hand in the footer and places settings and reset in the play area', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<OmahaHiLoPage />);
+
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const playArea = footerContent.closest('footer')?.previousElementSibling;
+    expect(playArea).not.toBeNull();
+    expect(footerContent.querySelector('[data-tutorial="ohl-player-hand"]')).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('learning-mode-toggle')).not.toBeInTheDocument();
+    expect(footerContent.querySelector('[data-tutorial="ohl-reset-button"]')).not.toBeInTheDocument();
+    expect(playArea).toContainElement(screen.getByTestId('learning-mode-toggle'));
+    expect(playArea?.querySelector('[data-tutorial="ohl-reset-button"]')).toBeInTheDocument();
+  });
+
   it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<OmahaHiLoPage />);

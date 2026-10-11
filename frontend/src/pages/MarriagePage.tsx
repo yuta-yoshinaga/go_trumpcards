@@ -474,6 +474,45 @@ function MarriagePageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+
+            <ErrorAlert message={error} onRetry={retry} />
+
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            {/* **CUI は毎ターン出している。**カードを選んでいない思案中でも、いまの
+                デッドウッドとピュアシーケンス充足を確認できるようにする (#4824)。 */}
+            {isDiscardPhase && isHumanTurn && humanPlayer && (
+              // 読み上げは declarePreview 側の live region に任せる。隣り合う
+              // live region が 2 つあると同じ変化を二重に告知する。
+              <div className="mt-2 text-sm text-ds-text-muted" data-testid="marriage-hand-status">
+                {t('deadwoodShort', { score: humanPlayer.deadwood })}
+                {humanPlayer.maal > 0 && (
+                  <span className="ml-2" data-testid="marriage-maal">
+                    {t('maalShort', { score: humanPlayer.maal })}
+                  </span>
+                )}
+                <span className={`ml-2 ${humanPlayer.hasPureSequence ? 'text-ds-success' : 'text-ds-warning'}`}>
+                  {humanPlayer.hasPureSequence ? t('pureSequenceBadge') : t('pureSequenceMissing')}
+                </span>
+                {/* **A も 10 点。** ジンラミー系に慣れたプレイヤーほど A=1 を
+                    期待するので、合計だけ見せられると数字を逆算できない。
+                    ワイルドが 0 点であることも同時に言う (#5501)。 */}
+                <div className="text-xs" data-testid="marriage-points-legend">
+                  {t('pointsLegend')}
+                </div>
+              </div>
+            )}
+
+            <div className="flex gap-2 items-center flex-wrap">
+              <GameResetButton
+                isGameEnd={!!isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="marriage-reset-button"
+              />
+            </div>
+            <CardNavShortcutsPanel data-testid="indian-rummy-kbd-shortcuts" />
           </div>
 
           <GameFooter
@@ -563,34 +602,6 @@ function MarriagePageContent() {
               </div>
             )}
 
-            <ErrorAlert message={error} onRetry={retry} />
-
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            {/* **CUI は毎ターン出している。**カードを選んでいない思案中でも、いまの
-                デッドウッドとピュアシーケンス充足を確認できるようにする (#4824)。 */}
-            {isDiscardPhase && isHumanTurn && humanPlayer && (
-              // 読み上げは declarePreview 側の live region に任せる。隣り合う
-              // live region が 2 つあると同じ変化を二重に告知する。
-              <div className="mt-2 text-sm text-ds-text-muted" data-testid="marriage-hand-status">
-                {t('deadwoodShort', { score: humanPlayer.deadwood })}
-                {humanPlayer.maal > 0 && (
-                  <span className="ml-2" data-testid="marriage-maal">
-                    {t('maalShort', { score: humanPlayer.maal })}
-                  </span>
-                )}
-                <span className={`ml-2 ${humanPlayer.hasPureSequence ? 'text-ds-success' : 'text-ds-warning'}`}>
-                  {humanPlayer.hasPureSequence ? t('pureSequenceBadge') : t('pureSequenceMissing')}
-                </span>
-                {/* **A も 10 点。** ジンラミー系に慣れたプレイヤーほど A=1 を
-                    期待するので、合計だけ見せられると数字を逆算できない。
-                    ワイルドが 0 点であることも同時に言う (#5501)。 */}
-                <div className="text-xs" data-testid="marriage-points-legend">
-                  {t('pointsLegend')}
-                </div>
-              </div>
-            )}
-
             {isDiscardPhase && isHumanTurn && declarePreview && (
               <div
                 role="status"
@@ -642,17 +653,6 @@ function MarriagePageContent() {
                 )}
               </div>
             )}
-
-            <div className="flex gap-2 items-center flex-wrap">
-              <GameResetButton
-                isGameEnd={!!isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="marriage-reset-button"
-              />
-            </div>
-            <CardNavShortcutsPanel data-testid="indian-rummy-kbd-shortcuts" />
           </GameFooter>
         </>
       )}
