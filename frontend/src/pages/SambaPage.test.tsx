@@ -95,6 +95,20 @@ describe('SambaPage', () => {
     expect(screen.queryByTestId('sa-opponent-meld-details')).not.toBeInTheDocument();
   });
 
+  it('keeps only the hand and its selection feedback in the footer content', async () => {
+    const { container } = renderWithProviders(<SambaPage />);
+    const footer = await screen.findByTestId('game-footer-content');
+    const playArea = container.querySelector('.flex-1.overflow-y-auto');
+
+    expect(playArea).not.toBeNull();
+    expect(footer.querySelector('[data-tutorial="sa-player-hand"]')).not.toBeNull();
+    expect(within(footer).getByTestId('sa-meld-points')).toBeInTheDocument();
+    expect(within(footer).queryByTestId('samba-kbd-shortcuts')).not.toBeInTheDocument();
+    expect(within(footer).queryByRole('button', { name: 'リセット' })).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('samba-kbd-shortcuts')).toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByRole('button', { name: 'リセット' })).toBeInTheDocument();
+  });
+
   it('shows an opponent meld and counts only melds (not red threes) in the summary', async () => {
     const base = makeSambaState();
     const meld = {
@@ -469,6 +483,18 @@ describe('SambaPage', () => {
       'title',
       '上がるにはチームで完成メルドが2個必要です',
     );
+  });
+
+  it('keeps go-out progress in the play area during the discard phase', async () => {
+    mockExec.mockResolvedValue(discardPhaseState);
+    const { container } = renderWithProviders(<SambaPage />);
+    const progress = await screen.findByTestId('sa-go-out-progress');
+    const footer = await screen.findByTestId('game-footer-content');
+    const playArea = container.querySelector('.flex-1.overflow-y-auto');
+
+    expect(playArea).not.toBeNull();
+    expect(within(footer).queryByTestId('sa-go-out-progress')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('sa-go-out-progress')).toBe(progress);
   });
 
   it.each([
