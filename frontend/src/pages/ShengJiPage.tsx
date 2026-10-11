@@ -269,6 +269,16 @@ function ShengJiPageContent() {
         ) : (
           <>
             <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+              {isDeclare && (
+                <p className="text-ds-text-muted text-xs" data-testid="shengji-declare-rules">
+                  {t('declareRules')}
+                </p>
+              )}
+              {isKitty && (
+                <p className="text-ds-text-muted text-xs" data-testid="shengji-kitty-rules">
+                  {t('kittyRules', { count: state.kittySizeMax })}
+                </p>
+              )}
               {/* The trump group and who collects the points are the two things you cannot play without. */}
               <div className="mb-2 p-2 rounded bg-black/20 text-sm" data-testid="shengji-info">
                 <div data-tutorial="shengji-info">
@@ -433,9 +443,6 @@ function ShengJiPageContent() {
                   <div className="flex flex-wrap gap-2 items-center" data-tutorial="shengji-actions">
                     {isDeclare && (
                       <>
-                        <span className="text-ds-text-muted text-xs" data-testid="shengji-declare-rules">
-                          {t('declareRules')}
-                        </span>
                         {declarableSuits.map(({ suit, strength }) => (
                           <button
                             key={`declare-${suit}`}
@@ -461,9 +468,6 @@ function ShengJiPageContent() {
                     )}
                     {isKitty && (
                       <>
-                        <span className="text-ds-text-muted text-xs" data-testid="shengji-kitty-rules">
-                          {t('kittyRules', { count: state.kittySizeMax })}
-                        </span>
                         <button
                           type="button"
                           className={btnSuccess}
