@@ -781,4 +781,20 @@ describe('BatakPage trick winner badge', () => {
     expect(screen.getByTestId('bid-option-6')).toBeInTheDocument();
     expect(actions).not.toContainElement(screen.getByTestId('bid-option-6'));
   });
+
+  it('keeps bid choices and keyboard help in the play area while the hand stays in the footer', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<BatakPage />);
+
+    const bidChoice = await screen.findByTestId('bid-option-6');
+    const playArea = document.querySelector('.flex-1.overflow-y-auto.pt-3');
+    const footerContent = screen.getByTestId('game-footer-content');
+    const keyboardHelp = screen.getByTestId('batak-kbd-shortcuts');
+
+    expect(playArea).toContainElement(bidChoice);
+    expect(playArea).toContainElement(keyboardHelp);
+    expect(footerContent).not.toContainElement(bidChoice);
+    expect(footerContent).not.toContainElement(keyboardHelp);
+    expect(footerContent).toContainElement(screen.getByAltText('♠ A'));
+  });
 });
