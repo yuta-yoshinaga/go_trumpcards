@@ -7,21 +7,25 @@ export AGENT_BROWSER_IDLE_TIMEOUT_MS="${AGENT_BROWSER_IDLE_TIMEOUT_MS:-120000}"
 
 usage() {
   cat <<'EOF'
-Usage: play-area-overflow.sh [-p port] [-n deals] [-j sessions] [-o out.tsv] [game ...]
+Usage: play-area-overflow.sh [-p port] [-n deals] [-j sessions] [-o out.tsv] [-x] [game ...]
 
 Measure games on an already running go_trumpcards web server. Defaults: port 8080,
 3 mobile reloads per game, 3 parallel browser sessions (max 4), and stdout TSV output.
 mobile_footer measures nested scrolling inside the game footer on each mobile reload.
+hidden_cards counts footer cards with fewer than 52 visible pixels (max across reloads);
+footer_cards counts detected footer cards (min across reloads). -x allows measuring a
+server whose process cwd differs from this checkout.
 EOF
 }
 
-port=8080 deals=3 sessions=3 output=-
-while getopts ':p:n:j:o:h' opt; do
+port=8080 deals=3 sessions=3 output=- allow_other=0
+while getopts ':p:n:j:o:xh' opt; do
   case "$opt" in
     p) port=$OPTARG ;;
     n) deals=$OPTARG ;;
     j) sessions=$OPTARG ;;
     o) output=$OPTARG ;;
+    x) allow_other=1 ;;
     h) usage; exit 0 ;;
     :) echo "missing value for -$OPTARG" >&2; usage >&2; exit 2 ;;
     \?) echo "unknown option: -$OPTARG" >&2; usage >&2; exit 2 ;;
@@ -31,6 +35,30 @@ shift $((OPTIND - 1))
 [[ $port =~ ^[0-9]+$ && $deals =~ ^[1-9][0-9]*$ && $sessions =~ ^[1-9][0-9]*$ ]] || { echo 'port must be numeric; deals and sessions must be positive integers' >&2; exit 2; }
 ((sessions <= 4)) || { echo 'sessions must be between 1 and 4' >&2; exit 2; }
 command -v agent-browser >/dev/null || { echo 'agent-browser is required' >&2; exit 127; }
+command -v ss >/dev/null || { echo "ss (iproute2) is required to identify the server" >&2; exit 127; }
+top=$(git rev-parse --show-toplevel)
+listening=$(ss -ltnpH "sport = :$port" 2>/dev/null || true)
+[[ -n $listening ]] || { echo "no server is listening on port $port" >&2; exit 2; }
+pid=$(sed -n 's/.*pid=\([0-9][0-9]*\).*/\1/p;T;q' <<<"$listening")
+cwd=''
+[[ -z $pid ]] || cwd=$(readlink "/proc/$pid/cwd" 2>/dev/null || true)
+if [[ -z $pid || -z $cwd ]]; then
+  if ((allow_other)); then echo "warning: cannot identify the server process on port $port (-x)" >&2
+  else echo "cannot identify the server process on port $port" >&2; exit 2; fi
+else
+  if [[ $cwd != "$top" && $allow_other -eq 0 ]]; then echo "server on port $port (pid $pid) runs from $cwd, not $top; it serves that tree's public/ — pass -x to measure it anyway" >&2; exit 2; fi
+  public_mtime=$(stat -c %y "$cwd/public/index.html" 2>/dev/null || echo missing)
+  echo "server: pid $pid cwd $cwd public/index.html $public_mtime" >&2
+  if [[ ! -e $cwd/public/index.html ]]; then
+    echo "warning: $cwd/public/index.html does not exist; build with (cd frontend && bun run build)" >&2
+  else
+    # One file under frontend/src newer than the build is enough; -quit avoids a pipe that
+    # pipefail would turn into a failure once the reader closes early (SIGPIPE).
+    if [[ -n $(find "$cwd/frontend/src" -type f -newer "$cwd/public/index.html" -print -quit 2>/dev/null) ]]; then
+      echo 'warning: public/ is older than frontend/src; rebuild with (cd frontend && bun run build)' >&2
+    fi
+  fi
+fi
 
 routes=frontend/src/constants/gameRoutes.ts
 root_game=$(grep -A1 -P "path:\s*'/'," "$routes" | grep -oP "labelKey:\s*'nav\.\K[^']*")
@@ -74,7 +102,7 @@ base="http://localhost:$port"
 keys=$(printf '%s\n' "${all_games[@]}" "${games[@]}" | sort -u | sed 's/.*/tutorial_completed_&/; s/.*/"&": "true"/' | paste -sd, -)
 init="for (const [k,v] of Object.entries({$keys})) localStorage.setItem(k,v)"
 
-printf 'game\tmobile_worst\tmobile_footer\tdesktop\tscrollWidth\n' > "$tmp/results"
+printf 'game\tmobile_worst\tmobile_footer\tdesktop\tscrollWidth\thidden_cards\tfooter_cards\n' > "$tmp/results"
 eval_value() {
   local value
   value=$(agent-browser "$@" | tail -1)
@@ -83,7 +111,7 @@ eval_value() {
   printf '%s\n' "$value"
 }
 worker() {
-  local game=$1 session="overflow-$1-$$" path url mobile=nopa mobile_footer=nofooter desktop width value footer_value i
+  local game=$1 session="overflow-$1-$$" path url mobile=nopa mobile_footer=nofooter desktop width value footer_value hidden_cards=nofooter footer_cards=nofooter cards_value hidden_value i
   worker_body() {
     path="/#/$game"; [[ $game == "$root_game" ]] && path=/
     url="$base$path"
@@ -95,10 +123,18 @@ worker() {
       agent-browser --session "$session" reload >/dev/null
       agent-browser --session "$session" wait '[aria-live="polite"]' >/dev/null
       agent-browser --session "$session" wait 900 >/dev/null
+      agent-browser --session "$session" wait --fn "document.getAnimations().every(a => a.playState==='finished' || a.playState==='idle' || a.effect?.getComputedTiming().iterations===Infinity)" >/dev/null
       value=$(eval_value --session "$session" eval "(()=>{const e=document.querySelector('main [aria-busy] > div.flex-1.overflow-y-auto');return e?e.scrollHeight-e.clientHeight:'nopa'})()")
       [[ $value == nopa || $value =~ ^[0-9]+$ ]] || { echo "$game: invalid mobile measurement: $value" >&2; return 1; }
       if [[ $value =~ ^[0-9]+$ ]] && { [[ $mobile == nopa ]] || (( value > mobile )); }; then mobile=$value; fi
       footer_value=$(eval_value --session "$session" eval "(()=>{const e=document.querySelector('[data-testid=\"game-footer-content\"]');return e?e.scrollHeight-e.clientHeight:'nofooter'})()")
+      cards_value=$(eval_value --session "$session" eval "(()=>{const f=document.querySelector('[data-testid=\"game-footer-content\"]');if(!f)return 'nofooter';const b=f.getBoundingClientRect().bottom;const boxes=[...f.querySelectorAll('img, [role=\"img\"]')].map(e=>e.getBoundingClientRect()).filter(r=>r.width>=20&&r.height>=30);return boxes.filter(r=>r.top+52>b).length+'/'+boxes.length})()")
+      [[ $cards_value == nofooter || $cards_value =~ ^[0-9]+/[0-9]+$ ]] || { echo "$game: invalid hidden/cards measurement: $cards_value" >&2; return 1; }
+      if [[ $cards_value != nofooter ]]; then
+        hidden_value=${cards_value%%/*}; cards_value=${cards_value#*/}
+        if [[ $hidden_cards == nofooter ]] || ((hidden_value > hidden_cards)); then hidden_cards=$hidden_value; fi
+        if [[ $footer_cards == nofooter ]] || ((cards_value < footer_cards)); then footer_cards=$cards_value; fi
+      fi
       [[ $footer_value == nofooter || $footer_value =~ ^[0-9]+$ ]] || { echo "$game: invalid mobile footer measurement: $footer_value" >&2; return 1; }
       if [[ $footer_value =~ ^[0-9]+$ ]] && { [[ $mobile_footer == nofooter ]] || (( footer_value > mobile_footer )); }; then mobile_footer=$footer_value; fi
     done
@@ -110,7 +146,8 @@ worker() {
     agent-browser --session "$session" set viewport 375 667 >/dev/null
     width=$(eval_value --session "$session" eval 'document.documentElement.scrollWidth')
     [[ ( $desktop == nopa || $desktop =~ ^[0-9]+$ ) && $width =~ ^[0-9]+$ ]] || { echo "$game: invalid desktop/width measurement: $desktop/$width" >&2; return 1; }
-    printf '%s\t%s\t%s\t%s\t%s\n' "$game" "$mobile" "$mobile_footer" "$desktop" "$width" > "$tmp/$game.tsv"
+    if [[ $footer_cards == 0 ]]; then echo "warning: $game: no cards counted in game-footer-content; hidden_cards=0 checks nothing" >&2; fi
+    printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$game" "$mobile" "$mobile_footer" "$desktop" "$width" "$hidden_cards" "$footer_cards" > "$tmp/$game.tsv"
   }
   # Close this game's browser as soon as it is measured, on failure too. errexit must stay
   # live inside the subshell, so it cannot be tested by `if`/`||` (that context disables -e).
@@ -136,4 +173,4 @@ while ((active)); do wait -n || failed=1; active=$((active - 1)); done
 for game in "${games[@]}"; do cat "$tmp/$game.tsv" >> "$tmp/results"; done
 if [[ $output == - ]]; then cat "$tmp/results"; else cp "$tmp/results" "$output"; fi
 
-awk -F '\t' 'NR>1 {if ($2 ~ /^[0-9]+$/ && $2>300) m++; if ($3 ~ /^[0-9]+$/ && $3>40) f++; if ($4 ~ /^[0-9]+$/ && $4>600) d++; if ($5 ~ /^[0-9]+$/ && $5>375) w++} END {printf "mobile>300: %d, mobile_footer>40: %d, desktop>600: %d, scrollWidth>375: %d\n", m, f, d, w}' "$tmp/results" >&2
+awk -F '\t' 'NR>1 {if ($2 ~ /^[0-9]+$/ && $2>300) m++; if ($3 ~ /^[0-9]+$/ && $3>40) f++; if ($4 ~ /^[0-9]+$/ && $4>600) d++; if ($5 ~ /^[0-9]+$/ && $5>375) w++; if ($6 ~ /^[0-9]+$/ && $6>0) h++; if ($7==0) c++} END {printf "mobile>300: %d, mobile_footer>40: %d, desktop>600: %d, scrollWidth>375: %d, hidden_cards>0: %d, footer_cards=0: %d\n", m, f, d, w, h, c}' "$tmp/results" >&2
