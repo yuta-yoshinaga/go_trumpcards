@@ -177,6 +177,25 @@ beforeEach(() => {
 });
 
 describe('PokerPage', () => {
+  it('keeps exchange controls in footer actions and exchange information in the play area', async () => {
+    mockExec.mockResolvedValue(exchangeState);
+    renderWithProviders(<PokerPage />);
+
+    await screen.findByRole('button', { name: '交換' });
+    const footer = screen.getByTestId('game-footer-content');
+    const actions = screen.getByTestId('game-footer-actions');
+    const playArea = screen.getByTestId('pk-stand-hint').closest('[class*="overflow-y-auto"]');
+    expect(playArea).not.toBeNull();
+    expect(footer.querySelector('[data-tutorial="pk-player-hand"]')).toBeInTheDocument();
+    expect(within(actions).getByRole('button', { name: '交換' })).toBeInTheDocument();
+    expect(within(actions).getByRole('button', { name: 'スタンド' })).toBeInTheDocument();
+    expect(within(footer).getByTestId('pk-exchange-confirmability')).toBeInTheDocument();
+    expect(within(footer).queryByTestId('pk-exchange-selected')).not.toBeInTheDocument();
+    expect(within(footer).queryByTestId('pk-stand-hint')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('pk-exchange-selected')).toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('pk-stand-hint')).toBeInTheDocument();
+  });
+
   it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<PokerPage />);
