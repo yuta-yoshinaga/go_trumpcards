@@ -150,6 +150,11 @@ const gameEndState: HandAndFootResponse = {
 };
 
 describe('HandAndFootPage', () => {
+  it('allows the taller mobile footer', async () => {
+    mockExec.mockResolvedValue(drawPhaseState);
+    renderWithProviders(<HandAndFootPage />);
+    expect((await screen.findByTestId('game-footer-content')).closest('footer')?.className).toContain('max-h-[60vh]');
+  });
   it('keeps the hand and live draw guidance in the footer and utility panels in the play area', async () => {
     mockExec.mockResolvedValue(drawPhaseState);
     renderWithProviders(<HandAndFootPage />);

@@ -17,9 +17,22 @@ export const CARD_BORDER_Y = 2;
 /** Height of an upper row left visible when rows overlap, including its 44px tap target. */
 export const STACKED_ROW_VISIBLE_PX = 52;
 
-/** Determine the smallest balanced row count that avoids requiring horizontal scrolling. */
-export function rowCountFor(cardCount: number, buttonWidth: number, viewportWidth: number): number {
-  let rowCount = cardCount >= TWO_ROW_THRESHOLD ? 2 : 1;
+/**
+ * Determine the smallest balanced row count that avoids requiring horizontal scrolling.
+ * `allowSingleRow` lets stacked hand layouts keep a fitting hand in one row, including at the normal two-row threshold.
+ */
+export function rowCountFor(
+  cardCount: number,
+  buttonWidth: number,
+  viewportWidth: number,
+  options: { allowSingleRow?: boolean } = {},
+): number {
+  let rowCount =
+    options.allowSingleRow && !computeOverlap(cardCount, buttonWidth, viewportWidth).useScroll
+      ? 1
+      : cardCount >= TWO_ROW_THRESHOLD
+        ? 2
+        : 1;
   while (rowCount < cardCount) {
     const largestRow = Math.ceil(cardCount / rowCount);
     if (!computeOverlap(largestRow, buttonWidth, viewportWidth).useScroll) break;

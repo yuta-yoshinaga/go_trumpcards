@@ -49,6 +49,29 @@ beforeEach(() => {
 });
 
 describe('QuadrillePage', () => {
+  it('stacks later mobile hand rows', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    try {
+      const state = makeQuadrilleState({
+        players: makeQuadrilleState().players.map((player) =>
+          player.isHuman
+            ? { ...player, cards: Array.from({ length: 8 }, (_, i) => ({ design: 'SPADE' as const, value: i + 1 })) }
+            : player,
+        ),
+      });
+      mockExec.mockResolvedValue(state);
+      const { container } = renderWithProviders(<QuadrillePage />);
+      await screen.findByRole('button', { name: /♠ 8/ });
+      const rows = container.querySelectorAll<HTMLElement>(
+        '[data-tutorial="quadrille-player-hand"] [data-testid="hand-row"]',
+      );
+      expect(rows.length).toBeGreaterThan(1);
+      expect(Number.parseFloat(rows[1].style.marginTop)).toBeLessThan(0);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+    }
+  });
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<QuadrillePage />);

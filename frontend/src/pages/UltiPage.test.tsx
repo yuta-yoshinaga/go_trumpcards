@@ -59,6 +59,11 @@ beforeEach(() => {
 });
 
 describe('UltiPage', () => {
+  it('allows the taller mobile footer', async () => {
+    renderWithProviders(<UltiPage />);
+    expect((await screen.findByTestId('game-footer-content')).closest('footer')?.className).toContain('max-h-[60vh]');
+  });
+
   it('stacks mobile hand rows for the human player', async () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });

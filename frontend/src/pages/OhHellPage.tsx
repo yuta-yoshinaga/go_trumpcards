@@ -625,6 +625,7 @@ function OhHellPageContent() {
                   selectedIndices={selectedCardIndices}
                   onToggle={toggleCard}
                   cardWidth={cardWidth}
+                  stackRows
                   dataTutorial="oh-player-hand"
                   legalIndices={isHumanTurn ? state.validPlayIndices : undefined}
                   validIndices={isHumanTurn ? state.validPlayIndices : undefined}

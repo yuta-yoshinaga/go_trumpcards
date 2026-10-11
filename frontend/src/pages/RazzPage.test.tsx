@@ -190,6 +190,11 @@ describe('RazzPage', () => {
   });
 
   // ---- mount & reset ----
+  it('opts into the taller mobile footer', async () => {
+    renderWithProviders(<RazzPage />);
+    expect((await screen.findByTestId('game-footer-content')).closest('footer')?.className).toContain('max-h-[60vh]');
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<RazzPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

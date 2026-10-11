@@ -26,6 +26,18 @@ describe('rowCountFor', () => {
     expect(rowCountFor(TWO_ROW_THRESHOLD, 46, 375)).toBe(2);
   });
 
+  it('allows one row when the cards fit and single rows are allowed', () => {
+    expect(rowCountFor(5, 46, 375, { allowSingleRow: true })).toBe(1);
+  });
+
+  it('keeps multiple rows when cards do not fit, even when single rows are allowed', () => {
+    expect(rowCountFor(5, 200, 375, { allowSingleRow: true })).toBe(rowCountFor(5, 200, 375));
+  });
+
+  it('keeps the two-row default when single rows are not allowed', () => {
+    expect(rowCountFor(5, 46, 375)).toBe(2);
+  });
+
   it('adds rows when the largest row still requires scrolling', () => {
     expect(rowCountFor(20, 106, 375)).toBeGreaterThanOrEqual(3);
   });

@@ -167,6 +167,10 @@ beforeEach(() => {
 });
 
 describe('SevensPage', () => {
+  it('allows the taller mobile footer', async () => {
+    renderWithProviders(<SevensPage />);
+    expect((await screen.findByTestId('game-footer-content')).closest('footer')?.className).toContain('max-h-[60vh]');
+  });
   it('keeps the hand in the footer and moves settings into the play area', async () => {
     renderWithProviders(<SevensPage />);
     const footerContent = await screen.findByTestId('game-footer-content');
