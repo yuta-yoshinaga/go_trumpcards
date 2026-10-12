@@ -1,11 +1,14 @@
 import type { ReactElement } from 'react';
 import { useCallback, useRef, useState } from 'react';
 import { useCardDimensions } from '../hooks/useCardDimensions';
-import { fanOverlap, fanRows } from '../utils/cardFan';
+import { DESKTOP_MIN_CARD_EXPOSURE_PX, fanOverlap, fanRows } from '../utils/cardFan';
 import { MIN_CARD_EXPOSURE_PX } from '../utils/handOverlap';
 import { splitBalanced } from '../utils/splitBalanced';
 
-/** Render keyed card elements in balanced rows that overlap to fit the measured width. */
+/**
+ * Render keyed card elements in balanced rows that overlap to fit the measured width.
+ * The width is the root's clientWidth, so callers must not give the root horizontal padding.
+ */
 export function CardFan({
   itemWidth,
   children,
@@ -36,7 +39,7 @@ export function CardFan({
         {children}
       </div>
     );
-  const exposure = isMobile ? MIN_CARD_EXPOSURE_PX : 28;
+  const exposure = isMobile ? MIN_CARD_EXPOSURE_PX : DESKTOP_MIN_CARD_EXPOSURE_PX;
   const rows = splitBalanced(children, fanRows(children.length, itemWidth, width, exposure));
   return (
     <div {...rootProps}>

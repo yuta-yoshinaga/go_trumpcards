@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import { createElement } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { CardFan } from './CardFan';
 
@@ -46,5 +47,30 @@ describe('CardFan', () => {
     observedWidth = 300;
     render(<CardFan itemWidth={106}>{cards()}</CardFan>);
     expect(document.querySelector('.flex.flex-nowrap')?.parentElement?.children.length).toBeGreaterThan(1);
+  });
+  it('uses touch exposure on mobile and desktop exposure at the desktop breakpoint', () => {
+    observedWidth = 400;
+    window.innerWidth = 375;
+    const { unmount } = render(
+      <CardFan itemWidth={46} data-testid="mobile-fan">
+        {cards()}
+      </CardFan>,
+    );
+    expect(screen.getByTestId('mobile-fan').children).toHaveLength(2);
+
+    unmount();
+    window.innerWidth = 800;
+    render(
+      <CardFan itemWidth={46} data-testid="desktop-fan">
+        {cards()}
+      </CardFan>,
+    );
+    expect(screen.getByTestId('desktop-fan').children).toHaveLength(1);
+  });
+  it('renders children without keys after measuring width', () => {
+    observedWidth = 1008;
+    const unkeyedCards = Array.from({ length: 2 }, () => createElement('button', { type: 'button' }, 'card'));
+    render(<CardFan itemWidth={106}>{unkeyedCards}</CardFan>);
+    expect(screen.getAllByRole('button', { name: 'card' })).toHaveLength(2);
   });
 });

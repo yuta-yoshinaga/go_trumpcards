@@ -245,7 +245,7 @@ function ZhengPageContent() {
                         <span>— {p.cardCount}</span>
                       )}
                     </div>
-                    <CardBackFan count={Math.min(p.cardCount, 13)} width={cardWidth * 0.45} />
+                    <CardBackFan count={Math.min(p.cardCount, 14)} width={cardWidth * 0.45} />
                   </div>
                 ))}
             </div>

@@ -1,3 +1,10 @@
+/**
+ * Minimum visible width of an overlapped card on desktop. A pointer target, not a touch target:
+ * 28px clears WCAG 2.5.8's 24px minimum while letting a 27-card hand fit one 1008px row; touch
+ * layouts keep the 44px MIN_CARD_EXPOSURE_PX instead. Same value as PlayerHandSection's desktop overlap.
+ */
+export const DESKTOP_MIN_CARD_EXPOSURE_PX = 28;
+
 /** Return the smallest balanced row count whose widest row fits at the requested exposure. */
 export function fanRows(count: number, itemWidth: number, availableWidth: number, minExposure: number): number {
   if (count <= 1 || availableWidth <= 0) return 1;

@@ -8,8 +8,16 @@ describe('card fan layout', () => {
   it('overlaps cards to fit one row', () => {
     expect(fanOverlap(13, 106, 1008, 28, 8)).toBeLessThan(0);
   });
+  it('does not overlap rows with zero or one card', () => {
+    expect(fanOverlap(1, 106, 1008, 28, 8)).toBe(0);
+    expect(fanOverlap(0, 106, 1008, 28, 8)).toBe(0);
+  });
   it('uses multiple rows when exposure requires it', () => {
     expect(fanRows(13, 106, 300, 28)).toBeGreaterThan(1);
+  });
+  it('fits 13 cards at desktop exposure but needs two rows at touch exposure', () => {
+    expect(fanRows(13, 46, 400, 44)).toBe(2);
+    expect(fanRows(13, 46, 400, 28)).toBe(1);
   });
   it('handles empty/single hands and zero available width', () => {
     expect(fanRows(0, 50, 100, 28)).toBe(1);
