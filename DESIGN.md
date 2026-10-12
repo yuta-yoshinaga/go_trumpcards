@@ -129,6 +129,8 @@ Muted text must not be placed directly on felt. Use `--text-primary` or `--text-
 | `felt-casino` `#0D5016` | 7.37:1 | 3.37:1 | 7.47:1 |
 | `felt-blue` `#1A2C5C` | 10.29:1 | 4.71:1 | 10.43:1 |
 
+This table shows six representative colors; contrast was calculated for all 73 `--color-game-bg-*` colors in `frontend/src/index.css`, and 70 meet AA (green-bright, klaverjas, and ulti do not).
+
 ### Contrast ratios (light mode)
 | Combination | Ratio | WCAG |
 |-------------|-------|------|

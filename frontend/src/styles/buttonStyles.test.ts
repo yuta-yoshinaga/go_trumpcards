@@ -6,6 +6,7 @@ import {
   btnOutline,
   btnPokerAccent,
   btnPokerAllIn,
+  btnPokerMuted,
   btnPokerPrimary,
   btnPrimary,
   btnSecondary,
@@ -85,6 +86,7 @@ describe('buttonStyles', () => {
   it('uses AA text contrast for colored action buttons from the CSS token values', () => {
     const css = readFileSync('src/index.css', 'utf8');
     const token = (name: string) => {
+      if (name === 'white') return '#ffffff';
       const value = css.match(new RegExp(`--color-${name}:\\s*(#[0-9a-fA-F]{6})`))?.[1];
       if (!value) throw new Error(`Missing color token ${name}`);
       return value;
@@ -104,17 +106,19 @@ describe('buttonStyles', () => {
       return (light + 0.05) / (dark + 0.05);
     };
     const cases = [
-      [btnSuccess, 'ds-success'],
-      [btnPokerPrimary, 'poker-call'],
-      [btnPokerAccent, 'poker-raise'],
-      [btnPokerAllIn, 'poker-allin'],
+      [btnSuccess, 'ds-text-on-accent', 'ds-success'],
+      [btnPokerPrimary, 'ds-text-on-accent', 'poker-call'],
+      [btnPokerAccent, 'ds-text-on-accent', 'poker-raise'],
+      [btnPokerAllIn, 'ds-text-on-accent', 'poker-allin'],
+      [btnDanger, 'white', 'ds-error'],
+      [btnPokerMuted, 'white', 'poker-fold'],
     ] as const;
-    for (const [button, background] of cases) {
-      expect(button).toContain('text-ds-text-on-accent');
+    for (const [button, foreground, background] of cases) {
+      expect(button).toContain(`text-${foreground}`);
       const hoverBackground = button.match(/hover:bg-([^\s]+)/)?.[1];
       expect(hoverBackground).toBeDefined();
-      expect(contrast(token('ds-text-on-accent'), token(background))).toBeGreaterThanOrEqual(4.5);
-      expect(contrast(token('ds-text-on-accent'), token(hoverBackground ?? ''))).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(token(foreground), token(background))).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(token(foreground), token(hoverBackground ?? ''))).toBeGreaterThanOrEqual(4.5);
     }
   });
 });
