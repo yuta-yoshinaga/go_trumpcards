@@ -12,11 +12,12 @@ vi.mock('../api/gameApi', () => ({
   actionLogApi: { samba: vi.fn() },
 }));
 const mockExec = vi.mocked(sambaApi.exec);
-const mobileState = vi.hoisted(() => ({ isMobile: true }));
+const mobileState = vi.hoisted(() => ({ isMobile: true, largeDesktop: false }));
 
 vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
   useIsMobile: () => mobileState.isMobile,
+  useBreakpoint: () => (mobileState.largeDesktop ? 'largeDesktop' : 'desktop'),
 }));
 
 const drawPhaseState = makeSambaState();
@@ -29,6 +30,7 @@ const cpuTurnState = makeSambaState({ currentPlayerIdx: 1 });
 
 describe('SambaPage', () => {
   it('renders the game message in the footer message slot', async () => {
+    mobileState.isMobile = false;
     mockExec.mockResolvedValue({
       ...drawPhaseState,
       message: 'Footer message test',
@@ -42,7 +44,59 @@ describe('SambaPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mobileState.isMobile = true;
+    mobileState.largeDesktop = false;
     mockExec.mockResolvedValue(drawPhaseState);
+  });
+
+  it('uses a single-row CardFan hand on large desktop', async () => {
+    mobileState.isMobile = false;
+    mobileState.largeDesktop = true;
+    renderWithProviders(<SambaPage />);
+    expect(await screen.findByTestId('sa-player-hand')).toBeInTheDocument();
+    expect(screen.getByTestId('sa-player-hand').querySelectorAll('button')).toHaveLength(
+      drawPhaseState.players[0].cards.length,
+    );
+    fireEvent.click(within(screen.getByTestId('sa-player-hand')).getAllByRole('button')[0]);
+    expect(within(screen.getByTestId('sa-player-hand')).getAllByRole('button')[0]).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+  });
+
+  it('omits the large-desktop meld footer when the human team has no melds or red threes', async () => {
+    mobileState.isMobile = false;
+    mobileState.largeDesktop = true;
+    renderWithProviders(<SambaPage />);
+    await screen.findByTestId('sa-player-hand');
+    expect(screen.queryByTestId('sa-footer-melds')).not.toBeInTheDocument();
+  });
+
+  it('places teammate melds beside the large-desktop hand in a bounded scroll area', async () => {
+    const base = makeSambaState();
+    const teammate = base.players[2];
+    mockExec.mockResolvedValue(
+      makeSambaState({
+        players: [
+          base.players[0],
+          base.players[1],
+          { ...teammate, red3s: [{ design: 'HEART', value: 3 }], red3Count: 1 },
+          base.players[3],
+        ],
+      }),
+    );
+
+    mobileState.isMobile = false;
+    mobileState.largeDesktop = true;
+    renderWithProviders(<SambaPage />);
+    const meldArea = await screen.findByTestId('sa-footer-melds');
+    const hand = await screen.findByTestId('sa-player-hand');
+    const row = screen.getByTestId('sa-footer-hand-row');
+    expect(meldArea.style.maxHeight).toBeTruthy();
+    expect(meldArea).toHaveClass('shrink-0', 'max-w-[30%]', 'overflow-y-auto');
+    expect(meldArea.parentElement).toBe(row);
+    expect(hand.parentElement).toBe(row);
+    expect(meldArea).toHaveTextContent('赤3');
+    expect(meldArea.closest('[data-testid="game-footer-content"]')).toBeInTheDocument();
   });
 
   afterEach(() => {
@@ -50,6 +104,7 @@ describe('SambaPage', () => {
   });
 
   it('renders the game message in the play area on mobile', async () => {
+    mobileState.isMobile = true;
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
     window.dispatchEvent(new Event('resize'));
