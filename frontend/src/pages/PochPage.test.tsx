@@ -10,10 +10,14 @@ import { PochPage } from './PochPage';
 
 const mobileState = vi.hoisted(() => ({ isMobile: true }));
 
-vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
-  useIsMobile: () => mobileState.isMobile,
-}));
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useIsMobile: () => mobileState.isMobile,
+    useCardDimensions: () => ({ ...actual.useCardDimensions(), isMobile: mobileState.isMobile }),
+  };
+});
 
 vi.mock('../api/gameApi', () => ({
   pochApi: { exec: vi.fn() },
@@ -467,5 +471,28 @@ describe('PochPage', () => {
       expect(screen.getByTestId('poch-pochen-result')).toHaveTextContent('席3');
       expect(screen.getByTestId('poch-staking')).not.toHaveTextContent('あなたが');
     });
+  });
+});
+
+describe('PochPage opponent card backs by viewport', () => {
+  beforeEach(() => {
+    mobileState.isMobile = true;
+    vi.clearAllMocks();
+    mockExec.mockResolvedValue(makeState());
+  });
+
+  it('renders a fan with each opponent hand count on desktop', async () => {
+    mobileState.isMobile = false;
+    renderWithProviders(<PochPage />);
+    const fans = await screen.findAllByTestId('card-back-fan');
+    expect(fans).toHaveLength(3);
+    for (const fan of fans) expect(fan.querySelectorAll('img')).toHaveLength(3);
+  });
+
+  it('keeps the full-size individual backs on mobile', async () => {
+    renderWithProviders(<PochPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('card-back-fan')).not.toBeInTheDocument();
+    expect(screen.getAllByAltText('カード裏面')).toHaveLength(9);
   });
 });

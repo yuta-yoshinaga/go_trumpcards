@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import type { mushiApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardBackFan } from '../components/CardBackFan';
 import { CardBack, CardImage } from '../components/CardImage';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
@@ -15,7 +16,7 @@ import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
@@ -61,6 +62,7 @@ function MushiPageContent() {
   );
   const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   const { cardWidth } = useCardDimensions();
+  const isMobile = useIsMobile();
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -180,9 +182,13 @@ function MushiPageContent() {
                         role="img"
                         aria-label={t('opponentHandAriaLabel', { n: o.cardCount })}
                       >
-                        {Array.from({ length: o.cardCount }, (_, i) => (
-                          <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
-                        ))}
+                        {isMobile ? (
+                          Array.from({ length: o.cardCount }, (_, i) => (
+                            <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
+                          ))
+                        ) : (
+                          <CardBackFan count={o.cardCount} width={Math.round(cardWidth * 0.45)} />
+                        )}
                       </div>
                     )}
                   </div>

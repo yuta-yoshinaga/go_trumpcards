@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import type { desmocheApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardBackFan } from '../components/CardBackFan';
 import { CardBack } from '../components/CardImage';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { CpuAccordion } from '../components/CpuAccordion';
@@ -209,9 +210,13 @@ function DesmochePageContent() {
                       role="img"
                       aria-label={t('opponentHandAriaLabel', { name: `CPU${o.id.toString()}`, n: o.cardCount })}
                     >
-                      {Array.from({ length: o.cardCount }, (_, i) => (
-                        <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
-                      ))}
+                      {isMobile ? (
+                        Array.from({ length: o.cardCount }, (_, i) => (
+                          <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
+                        ))
+                      ) : (
+                        <CardBackFan count={o.cardCount} width={Math.round(cardWidth * 0.45)} />
+                      )}
                     </div>
                   </div>
                 ))}

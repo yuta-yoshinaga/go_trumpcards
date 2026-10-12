@@ -6,6 +6,17 @@ import { renderWithProviders } from '../test/renderWithProviders';
 import type { BuraPlayer, BuraResponse, Card, CardDesign } from '../types/card';
 import { BuraPage } from './BuraPage';
 
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useIsMobile: () => mobileState.isMobile,
+    useCardDimensions: () => ({ ...actual.useCardDimensions(), isMobile: mobileState.isMobile }),
+  };
+});
+
 vi.mock('../api/gameApi', () => ({
   buraApi: { exec: vi.fn() },
   actionLogApi: { bura: vi.fn() },
@@ -65,6 +76,7 @@ describe('BuraPage', () => {
   });
 
   beforeEach(() => {
+    mobileState.isMobile = true;
     vi.clearAllMocks();
     mockExec.mockResolvedValue(makeState());
   });
@@ -368,5 +380,28 @@ describe('BuraPage declare tooltip', () => {
     renderWithProviders(<BuraPage />);
     const claim = await screen.findByRole('button', { name: /点を宣言/ });
     expect(claim).toHaveAttribute('title', '到達していなければその場で負けます');
+  });
+});
+
+describe('BuraPage opponent card backs by viewport', () => {
+  beforeEach(() => {
+    mobileState.isMobile = true;
+    vi.clearAllMocks();
+    mockExec.mockResolvedValue(makeState());
+  });
+
+  it('renders a fan with each opponent hand count on desktop', async () => {
+    mobileState.isMobile = false;
+    renderWithProviders(<BuraPage />);
+    const fans = await screen.findAllByTestId('card-back-fan');
+    expect(fans).toHaveLength(1);
+    for (const fan of fans) expect(fan.querySelectorAll('img')).toHaveLength(3);
+  });
+
+  it('keeps the full-size individual backs on mobile', async () => {
+    renderWithProviders(<BuraPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('card-back-fan')).not.toBeInTheDocument();
+    expect(screen.getAllByAltText('カード裏面')).toHaveLength(3);
   });
 });

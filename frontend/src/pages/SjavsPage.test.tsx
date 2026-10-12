@@ -7,6 +7,17 @@ import type { Card, CardDesign, SjavsPlayer, SjavsResponse } from '../types/card
 import { SjavsPhase } from '../types/phases';
 import { SjavsPage } from './SjavsPage';
 
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useIsMobile: () => mobileState.isMobile,
+    useCardDimensions: () => ({ ...actual.useCardDimensions(), isMobile: mobileState.isMobile }),
+  };
+});
+
 vi.mock('../api/gameApi', () => ({
   sjavsApi: { exec: vi.fn() },
   actionLogApi: { sjavs: vi.fn() },
@@ -61,6 +72,7 @@ function makeState(overrides?: Partial<SjavsResponse>): SjavsResponse {
 
 describe('SjavsPage', () => {
   beforeEach(() => {
+    mobileState.isMobile = true;
     vi.clearAllMocks();
     // **ヒントのトグルは localStorage に残る。**消さないと次のテストが
     // 「チェック済みで始まり、クリックで off になる」ので、印が出ない理由が
@@ -433,5 +445,28 @@ describe('SjavsPage', () => {
       await waitFor(() => expect(mockExec).toHaveBeenCalled());
       expect(screen.queryByTestId('sjavs-trump-0')).not.toBeInTheDocument();
     });
+  });
+});
+
+describe('SjavsPage opponent card backs by viewport', () => {
+  beforeEach(() => {
+    mobileState.isMobile = true;
+    vi.clearAllMocks();
+    mockExec.mockResolvedValue(makeState());
+  });
+
+  it('renders a fan with each opponent hand count on desktop', async () => {
+    mobileState.isMobile = false;
+    renderWithProviders(<SjavsPage />);
+    const fans = await screen.findAllByTestId('card-back-fan');
+    expect(fans).toHaveLength(3);
+    for (const fan of fans) expect(fan.querySelectorAll('img')).toHaveLength(8);
+  });
+
+  it('keeps the full-size individual backs on mobile', async () => {
+    renderWithProviders(<SjavsPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('card-back-fan')).not.toBeInTheDocument();
+    expect(screen.getAllByAltText('カード裏面')).toHaveLength(24);
   });
 });

@@ -29,6 +29,17 @@ vi.mock('../hooks/useCliMode', async () => {
 });
 
 const mockExec = vi.fn();
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useIsMobile: () => mobileState.isMobile,
+    useCardDimensions: () => ({ ...actual.useCardDimensions(), isMobile: mobileState.isMobile }),
+  };
+});
+
 vi.mock('../api/gameApi', () => ({
   fiftyoneApi: { exec: (...args: unknown[]) => mockExec(...args) },
 }));
@@ -91,6 +102,7 @@ const gameEndState: FiftyOneResponse = {
 
 describe('FiftyOnePage', () => {
   beforeEach(() => {
+    mobileState.isMobile = true;
     vi.clearAllMocks();
     mockExec.mockResolvedValue(baseState);
   });
@@ -547,5 +559,30 @@ describe('FiftyOnePage keyboard shortcuts', () => {
 
     // 'p' -> exchange
     expect(panel).toHaveTextContent('カードを交換する');
+  });
+});
+
+describe('FiftyOnePage opponent card backs by viewport', () => {
+  beforeEach(() => {
+    mobileState.isMobile = true;
+    vi.clearAllMocks();
+    mockExec.mockResolvedValue(baseState);
+  });
+
+  it('renders a fan with each opponent hand count on desktop', async () => {
+    mobileState.isMobile = false;
+    const { FiftyOnePage } = await import('./FiftyOnePage');
+    renderWithProviders(<FiftyOnePage />);
+    const fans = await screen.findAllByTestId('card-back-fan');
+    expect(fans).toHaveLength(3);
+    for (const fan of fans) expect(fan.querySelectorAll('img')).toHaveLength(5);
+  });
+
+  it('keeps the full-size individual backs on mobile', async () => {
+    const { FiftyOnePage } = await import('./FiftyOnePage');
+    renderWithProviders(<FiftyOnePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('card-back-fan')).not.toBeInTheDocument();
+    expect(screen.getAllByAltText('カード裏面')).toHaveLength(15);
   });
 });

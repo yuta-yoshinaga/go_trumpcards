@@ -7,6 +7,17 @@ import type { MushiCard, MushiPlayer, MushiResponse } from '../types/card';
 import { cardAlt } from '../utils/cardAlt';
 import { MushiPage } from './MushiPage';
 
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useIsMobile: () => mobileState.isMobile,
+    useCardDimensions: () => ({ ...actual.useCardDimensions(), isMobile: mobileState.isMobile }),
+  };
+});
+
 vi.mock('../api/gameApi', () => ({
   mushiApi: { exec: vi.fn() },
   actionLogApi: { mushi: vi.fn() },
@@ -78,6 +89,7 @@ function makeState(overrides?: Partial<MushiResponse>): MushiResponse {
 
 describe('MushiPage', () => {
   beforeEach(() => {
+    mobileState.isMobile = true;
     vi.clearAllMocks();
     mockExec.mockResolvedValue(makeState());
   });
@@ -345,5 +357,28 @@ describe('MushiPage card points', () => {
     );
 
     expect(pointsNodes).toHaveLength(0);
+  });
+});
+
+describe('MushiPage opponent card backs by viewport', () => {
+  beforeEach(() => {
+    mobileState.isMobile = true;
+    vi.clearAllMocks();
+    mockExec.mockResolvedValue(makeState());
+  });
+
+  it('renders a fan with each opponent hand count on desktop', async () => {
+    mobileState.isMobile = false;
+    renderWithProviders(<MushiPage />);
+    const fans = await screen.findAllByTestId('card-back-fan');
+    expect(fans).toHaveLength(1);
+    for (const fan of fans) expect(fan.querySelectorAll('img')).toHaveLength(2);
+  });
+
+  it('keeps the full-size individual backs on mobile', async () => {
+    renderWithProviders(<MushiPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('card-back-fan')).not.toBeInTheDocument();
+    expect(screen.getAllByAltText('カード裏面')).toHaveLength(2);
   });
 });
