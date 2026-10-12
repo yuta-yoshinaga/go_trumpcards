@@ -85,6 +85,10 @@ PY
   [ "$(count 'Generated with [Claude Code]' "$noref")" = 1 ] || fail "full body without a footer did not get one: $noref"
   partof=$(ship_pr_body 42 $'Part of #42\n\n## Summary\n- slice' '' '')
   [ "$(count 'Closes #42' "$partof")" = 0 ] || fail "Part of body was given a Closes line: $partof"
+  refs=$(ship_pr_body 42 $'## Summary\n- slice one\n\nRefs #42 (more slices follow)' '' '')
+  [ "$(count 'Closes #42' "$refs")" = 0 ] || fail "Refs body was given a Closes line: $refs"
+  refsplain=$(ship_pr_body 42 '- slice one. Refs #42' '' '')
+  [ "$(count 'Closes #42' "$refsplain")" = 0 ] || fail "Refs summary was given a Closes line: $refsplain"
   other=$(ship_pr_body 42 $'Closes #420\n\n## Summary' '' '')
   grep -qx 'Closes #42' <<<"$other" || fail "Closes #420 was taken as a reference to #42: $other"
   plainref=$(ship_pr_body 42 $'- did it\n\nPart of #42' '' '')
@@ -247,4 +251,78 @@ printf '99 101\n' > "$tmp/result"
 rcg_result_is_fresh "$tmp/start" "$tmp/result" && fail "waitdone accepted a prior gate result"
 printf '100 101\n' > "$tmp/result"
 rcg_result_is_fresh "$tmp/start" "$tmp/result" || fail "waitdone rejected the current gate result"
+
+# combined.sh: isolate a detached scratch tree, filter open PR branches, report conflicts, and honor -k.
+combined="$SCRIPTS/combined.sh"
+mkdir -p "$tmp/combined-bin"
+cat >"$tmp/combined-bin/gh" <<'STUB'
+#!/usr/bin/env bash
+printf '%s\n' "${COMBINED_BRANCHES:-}"
+STUB
+cat >"$tmp/combined-bin/bun" <<'STUB'
+#!/usr/bin/env bash
+exit 0
+STUB
+cat >"$tmp/combined-bin/bunx" <<'STUB'
+#!/usr/bin/env bash
+printf '%s\n' "$*" >> "$COMBINED_BUNX_LOG"
+exit 0
+STUB
+chmod +x "$tmp/combined-bin/gh" "$tmp/combined-bin/bun" "$tmp/combined-bin/bunx"
+
+make_combined_repo() {
+  local repo="$1" origin="$2" shared="$3"
+  mkdir -p "$repo/frontend/node_modules" "$repo/frontend"
+  printf '{"name":"fixture","version":"1.0.0"}\n' > "$repo/frontend/package.json"
+  git init -q "$repo"
+  git -C "$repo" config user.email test@example.com
+  git -C "$repo" config user.name test
+  printf 'base\n' > "$repo/$shared"
+  git -C "$repo" add . && git -C "$repo" -c user.name=test -c user.email=test@example.com commit -qm base
+  git -C "$repo" branch -M develop
+  git init -q --bare "$origin"
+  git -C "$origin" symbolic-ref HEAD refs/heads/develop
+  git -C "$repo" remote add origin "$origin"
+  git -C "$repo" push -q -u origin develop
+}
+add_combined_branch() {
+  local repo="$1" spec="$2" file="$3"
+  git -C "$repo" checkout -q -b "$spec" origin/develop
+  printf '%s\n' "$spec" > "$repo/$file"
+  git -C "$repo" add "$file" && git -C "$repo" -c user.name=test -c user.email=test@example.com commit -qm "$spec"
+  git -C "$repo" push -q origin "$spec"
+  git -C "$repo" checkout -q develop
+}
+combined_repo="$tmp/combined-repo"
+make_combined_repo "$combined_repo" "$tmp/combined-origin.git" base
+add_combined_branch "$combined_repo" feat/11-one feat-one
+add_combined_branch "$combined_repo" chore/12-skip skip
+add_combined_branch "$combined_repo" feat/13-two feat-two
+git -C "$combined_repo" fetch -q origin
+if PATH="$tmp/combined-bin:$PATH" BATCH_REPO="$combined_repo" BATCH_WT_ROOT="$tmp" \
+  bash "$combined" frontend/e2e/guard.spec.ts >"$tmp/combined-missing.out" 2>&1; then
+  fail "combined.sh accepted an unset BATCH_BRANCH_RE"
+fi
+grep -q BATCH_BRANCH_RE "$tmp/combined-missing.out" || fail "combined.sh did not explain missing BATCH_BRANCH_RE"
+export COMBINED_BUNX_LOG="$tmp/combined-bunx.log"
+PATH="$tmp/combined-bin:$PATH" BATCH_REPO="$combined_repo" BATCH_WT_ROOT="$tmp" \
+  BATCH_BRANCH_RE='^feat/' COMBINED_BRANCHES=$'feat/11-one\nchore/12-skip\nfeat/13-two' \
+  bash "$combined" -k -r 2 frontend/e2e/guard.spec.ts >"$tmp/combined-filter.out" || fail "combined.sh failed on clean merges"
+grep -q '^MERGED: feat/11-one feat/13-two$' "$tmp/combined-filter.out" || fail "combined.sh merged an unexpected branch: $(cat "$tmp/combined-filter.out")"
+[ -d "$tmp/wt-combined" ] || fail "combined.sh -k removed its worktree"
+grep -q 'playwright test frontend/e2e/guard.spec.ts --repeat-each=2 --reporter=line' "$tmp/combined-bunx.log" || fail "combined.sh did not pass repeat/spec arguments"
+git -C "$tmp/wt-combined" worktree remove --force "$tmp/wt-combined"
+
+conflict_repo="$tmp/combined-conflict-repo"
+make_combined_repo "$conflict_repo" "$tmp/conflict-origin.git" shared
+add_combined_branch "$conflict_repo" feat/21-first shared
+add_combined_branch "$conflict_repo" feat/22-conflict shared
+git -C "$conflict_repo" fetch -q origin
+if PATH="$tmp/combined-bin:$PATH" BATCH_REPO="$conflict_repo" BATCH_WT_ROOT="$tmp" \
+  BATCH_BRANCH_RE='^feat/' COMBINED_BRANCHES=$'feat/21-first\nfeat/22-conflict' \
+  bash "$combined" frontend/e2e/guard.spec.ts >"$tmp/combined-conflict.out" 2>&1; then
+  fail "combined.sh returned success after a merge conflict"
+fi
+grep -q '^CONFLICT feat/22-conflict shared$' "$tmp/combined-conflict.out" || fail "combined.sh did not report conflict branch/files: $(cat "$tmp/combined-conflict.out")"
+[ ! -e "$tmp/wt-combined" ] || fail "combined.sh did not remove scratch worktree without -k"
 echo "batch-lanes script tests passed"

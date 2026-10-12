@@ -13,7 +13,7 @@ rc=$?
 f="$BATCH_STATE/rc$slot.txt"
 printf '%s %s\n' "$started" "$(date +%s%N)" > "$BATCH_STATE/rcg$slot.result"
 [[ $rc -eq 0 ]] || { echo "GATE: receipt failed"; exit "$rc"; }
-grep -E "==|FAIL|WARN|CHECK|TYPE|Tests |LINT|GOIMPORTS|MUTANT|MISSING" $f
+grep -E "==|FAIL|WARN|NOTE|CHECK|TYPE|Tests |LINT|GOIMPORTS|MUTANT|MISSING" $f
 grep -q '^CHECK=ok' $f || { echo "GATE: check failed"; exit 1; }
 grep -q '^TYPE=ok' $f || { echo "GATE: typecheck failed"; exit 1; }
 grep -qE 'FAIL|MUTANT_LEFT|MISSING_TEST|GOIMPORTS:|LINT: [1-9]|WARN' $f && { echo "GATE: failure/warning present"; exit 1; }
