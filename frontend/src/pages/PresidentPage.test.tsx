@@ -550,4 +550,9 @@ describe('PresidentPage SettingsPanel tooltips', () => {
       });
     }
   });
+
+  it('renders CPU hands in compact card back fans', async () => {
+    renderWithProviders(<PresidentPage />);
+    expect(await screen.findAllByTestId('card-back-fan')).not.toHaveLength(0);
+  });
 });
