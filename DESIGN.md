@@ -66,8 +66,8 @@
 |-------|-----|-------|
 | `--felt-green` | `#1A5C1A` | Standard game table |
 | `--felt-green-dark` | `#163E16` | Darker felt variant |
-| `--felt-green-bright` | `#008000` | Bright felt (solitaire) |
-| `--felt-green-poker` | `#1A6B1A` | Poker table |
+| `--felt-green-bright` | `#006A00` | Bright felt (solitaire) |
+| `--felt-green-poker` | `#196919` | Poker table |
 | `--felt-casino` | `#0D5016` | Casino games |
 | `--felt-blue` | `#1A2C5C` | Blue variant (hearts, spades) |
 
@@ -118,18 +118,18 @@ These use design system tokens for game UX color-coding. They are scoped to poke
 
 ### Text on felt (dark mode)
 
-Muted text must not be placed directly on felt. In the game UI, `data-felt` scopes `text-ds-text-muted` to `--text-on-felt`; inside opaque surfaces (`bg-ds-surface`, `bg-ds-surface-elevated`, `bg-ds-bg`, or explicit `data-surface`) it resolves back to the original `--text-muted`. Translucent `.glass-panel` and `.glass-panel--dark` retain the on-felt color. At 80% opacity, `.glass-panel--dark` composites to approximately `#193a2c` over the brightest felt (`#008000`), where `#8b9aaf` has only 4.34:1 contrast, below WCAG AA's 4.5:1 threshold. New game pages get this behavior automatically by using `GamePageShell`. On `game-bg-green-bright`, `game-bg-klaverjas`, and `game-bg-ulti`, place secondary text on an opaque surface. Colored action buttons use dark `--text-on-accent` text.
+Muted text must not be placed directly on felt. In the game UI, `data-felt` scopes `text-ds-text-muted` to `--text-on-felt`; inside opaque surfaces (`bg-ds-surface`, `bg-ds-surface-elevated`, `bg-ds-bg`, or explicit `data-surface`) it resolves back to the original `--text-muted`. Translucent `.glass-panel` and `.glass-panel--dark` retain the on-felt color. At 80% opacity, `.glass-panel--dark` composites to approximately `#19362c` over the brightest felt (`#006a00`), where `#8b9aaf` has 4.57:1 contrast. New game pages get this behavior automatically by using `GamePageShell`. Eleven felt colors were darkened in #11722 (lightness only, hue kept) so that primary and on-felt text meet WCAG AA both on the bare felt and under a translucent `.glass-panel`: `game-bg-green-bright`, `game-bg-klaverjas`, `game-bg-ulti`, `game-bg-twentynine`, `game-bg-carioca`, `game-bg-indianrummy` (by 17–30%) and `game-bg-green-poker`, `game-bg-sueca`, `game-bg-fortyfives`, `game-bg-spoilfive`, `game-bg-michigan` (by 2–10%). Colored action buttons use dark `--text-on-accent` text.
 
 | Felt | Primary `#E8E0D4` | Muted `#8B9AAF` | On-felt `#DDE3EA` |
 |------|-----------------:|----------------:|-------------------:|
 | `felt-green` `#1A5C1A` | 6.20:1 | 2.83:1 | 6.27:1 |
 | `felt-green-dark` `#163E16` | 9.25:1 | 4.23:1 | 9.37:1 |
-| `felt-green-bright` `#008000` | 3.93:1 | 1.80:1 | 3.98:1 |
-| `felt-green-poker` `#1A6B1A` | 5.07:1 | 2.32:1 | 5.14:1 |
+| `felt-green-bright` `#006A00` | 5.24:1 | 2.40:1 | 5.31:1 |
+| `felt-green-poker` `#196919` | 5.22:1 | 2.39:1 | 5.28:1 |
 | `felt-casino` `#0D5016` | 7.37:1 | 3.37:1 | 7.47:1 |
 | `felt-blue` `#1A2C5C` | 10.29:1 | 4.71:1 | 10.43:1 |
 
-This table shows six representative colors; contrast was calculated for all 73 `--color-game-bg-*` colors in `frontend/src/index.css`, and 70 meet AA (green-bright, klaverjas, and ulti do not).
+This table shows six representative colors; contrast was calculated for all 73 `--color-game-bg-*` colors in `frontend/src/index.css`. Every non-dark felt color meets AA for on-felt and primary text, bare and under a `.glass-panel`; `frontend/src/index.test.ts` checks every `--color-game-bg-*` both ways.
 
 ### Contrast ratios (light mode)
 | Combination | Ratio | WCAG |
@@ -279,4 +279,5 @@ content outside its play area.
 | 2026-04-04 | Warm ivory over pure white | Reduces eye strain for long game sessions while maintaining AAA contrast ratio (12.8:1). |
 | 2026-07-15 | Knockout Whist leader/round-winner badges use `badge*Colors` opaque tokens; eliminated rows use `opacity-70` (not `opacity-40`) | The old `bg-white/20` / `bg-ds-warning/30` badges and `opacity-40` strike-through failed WCAG AA on the dark panel; opaque badge helpers and a lighter dim keep state readable for low-vision users. |
 | 2026-07-24 | Shared `ErrorAlert` retry button uses an opaque `bg-white text-ds-error` surface (hover `bg-ds-text-primary text-ds-error-hover`) instead of `bg-white/20 hover:bg-white/30` | The alpha-suffixed surface took its effective color from the game-table felt beneath the red banner, collapsing to a ghost rectangle at the moment users most need the retry affordance. Opaque white/red is ~5.7:1 and the deepened-red hover ~5.4:1, both WCAG AA, on the error banner regardless of table theme. Standard pattern for actions on error banners. |
-| 2026-10-12 | #11722: colored action buttons use dark `--text-on-accent`; `--text-on-felt` is the direct-felt secondary text color | White failed AA on several action backgrounds, and muted text failed AA on most felt colors. Muted is prohibited directly on felt; bright-green, Klaverjas, and Ulti secondary text belongs on an opaque surface. Translucent glass panels keep the on-felt color. |
+| 2026-10-12 | #11722: colored action buttons use dark `--text-on-accent`; `--text-on-felt` is the direct-felt secondary text color | White failed AA on several action backgrounds, and muted text failed AA on most felt colors. Muted is prohibited directly on felt; translucent glass panels keep the on-felt color. |
+| 2026-10-13 | #11722: darken bright green, Klaverjas, and Ulti felt colors to meet AA | Their previous colors failed AA for primary and on-felt text; the adjusted colors preserve hue and meet 4.5:1 for both. |
