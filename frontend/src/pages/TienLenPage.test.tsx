@@ -363,4 +363,9 @@ describe('TienLenPage', () => {
     await screen.findByTestId('pass-button');
     expect(screen.getByText('— 7')).toBeInTheDocument();
   });
+
+  it('renders CPU hands in compact card back fans', async () => {
+    renderWithProviders(<TienLenPage />);
+    expect(await screen.findAllByTestId('card-back-fan')).not.toHaveLength(0);
+  });
 });

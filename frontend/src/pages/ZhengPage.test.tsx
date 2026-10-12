@@ -428,4 +428,9 @@ describe('ZhengPage', () => {
     expect(screen.queryByTestId('zheng-pass-disabled-reason')).not.toBeInTheDocument();
     expect(screen.getByTestId('pass-button')).not.toHaveAttribute('title');
   });
+
+  it('renders CPU hands in compact card back fans', async () => {
+    renderWithProviders(<ZhengPage />);
+    expect(await screen.findAllByTestId('card-back-fan')).not.toHaveLength(0);
+  });
 });
