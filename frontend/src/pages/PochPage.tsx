@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { pochApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardBackFan } from '../components/CardBackFan';
 import { CardBack } from '../components/CardImage';
 import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -290,18 +291,22 @@ function PochPageContent() {
                         }),
                       })}
                     >
-                      {state.gameEndFlag
-                        ? o.cards.map((card, i) => (
-                            <AnimatedCard
-                              key={`opp-${o.id.toString()}-c${i.toString()}`}
-                              card={card}
-                              width={cardWidth}
-                              draggable={false}
-                            />
-                          ))
-                        : Array.from({ length: o.cardCount }, (_, i) => (
-                            <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
-                          ))}
+                      {state.gameEndFlag ? (
+                        o.cards.map((card, i) => (
+                          <AnimatedCard
+                            key={`opp-${o.id.toString()}-c${i.toString()}`}
+                            card={card}
+                            width={cardWidth}
+                            draggable={false}
+                          />
+                        ))
+                      ) : isMobile ? (
+                        Array.from({ length: o.cardCount }, (_, i) => (
+                          <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
+                        ))
+                      ) : (
+                        <CardBackFan count={o.cardCount} width={Math.round(cardWidth * 0.45)} />
+                      )}
                     </div>
                   </div>
                 ))}
