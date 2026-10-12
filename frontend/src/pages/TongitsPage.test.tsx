@@ -72,6 +72,18 @@ describe('TongitsPage', () => {
     expect(await screen.findByTestId('game-footer-message')).toHaveTextContent('Your turn notice');
   });
 
+  it('renders the game message in the play area on mobile', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue(state({ message: 'Mobile notice' }));
+    renderWithProviders(<TongitsPage />);
+    expect(await screen.findByText('Mobile notice')).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+    window.dispatchEvent(new Event('resize'));
+  });
+
   it('stacks mobile hand rows in the footer', async () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });

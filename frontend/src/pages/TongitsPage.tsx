@@ -196,6 +196,9 @@ function TongitsPageContent() {
   const isRoundEnd = state.phase === TongitsPhase.ROUND_END;
   const isGameEnd = state.phase === TongitsPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = (isDrawPhase || isDiscardPhase) && state.players[state.currentPlayerIdx]?.isHuman === true;
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
 
   // When exactly three cards are selected, highlight the selected meld candidates.
   const meldHighlight = (() => {
@@ -404,13 +407,13 @@ function TongitsPageContent() {
               </div>
             </div>
 
+            {isMobile && messageBox}
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
-
             <ErrorAlert message={error} onRetry={retry} />
 
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
@@ -429,13 +432,7 @@ function TongitsPageContent() {
 
           <GameFooter
             className={`${gameTheme.tongits.footer} px-4 py-2.5`}
-            message={
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-              />
-            }
+            message={isMobile ? undefined : messageBox}
             actions={
               <div className="flex gap-2 items-center flex-wrap">
                 {isDrawPhase && isHumanTurn && (

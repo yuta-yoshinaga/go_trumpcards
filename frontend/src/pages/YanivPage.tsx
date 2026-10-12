@@ -80,7 +80,7 @@ function YanivPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('yaniv');
   const { state, loading, error, exec: execApi, retry } = useGameApi(yanivApi.exec);
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
   const [cpuDifficulty, setCpuDifficulty] = useState(1);
   const [scoreLimit, setScoreLimit] = useState(200);
   const [selected, setSelected] = useState<number[]>([]);
@@ -200,6 +200,9 @@ function YanivPageContent() {
   const discardWarning = discardCheck?.reasonKey ? t(discardCheck.reasonKey) : null;
   const selectedTotal = selectedCards.reduce((total, card) => total + yanivCardValue(card), 0);
   const hasSelectionPreview = isDiscard && isHumanTurn && selectedCards.length > 0;
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
 
   return (
     <GamePageShell
@@ -407,6 +410,7 @@ function YanivPageContent() {
               </div>
             </div>
 
+            {isMobile && messageBox}
             {state.roundScoreHistory.length > 0 && (
               <section aria-label={t('label.roundHistory')} className="overflow-x-auto rounded-lg bg-ds-surface p-3">
                 <h2 className="mb-2 text-sm font-medium text-ds-text-primary">{t('label.roundHistory')}</h2>
@@ -470,16 +474,7 @@ function YanivPageContent() {
             ]}
           />
 
-          <GameFooter
-            className={`${gameTheme.yaniv.footer} px-4 py-2.5`}
-            message={
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-              />
-            }
-          >
+          <GameFooter className={`${gameTheme.yaniv.footer} px-4 py-2.5`} message={isMobile ? undefined : messageBox}>
             {discardWarning && (
               <div role="status" data-testid="discard-warning" className="mb-2 text-center text-xs text-ds-warning">
                 ⚠️ {discardWarning}

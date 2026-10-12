@@ -176,6 +176,11 @@ function MadrassoPageContent() {
     return <GameSkeleton gameKey="madrasso" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 5 }} />;
 
   const humanPlayer = state.players.find((p) => p.isHuman);
+  const messageBox = (
+    <div data-tutorial="tr-point-info">
+      <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+    </div>
+  );
   const isPlayPhase = state.phase === MadrassoPhase.PLAY;
   const isTrickEnd = state.phase === MadrassoPhase.TRICK_END;
   const isRoundEnd = state.phase === MadrassoPhase.ROUND_END;
@@ -399,6 +404,7 @@ function MadrassoPageContent() {
               </div>
             </div>
 
+            {isMobile && messageBox}
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -410,15 +416,7 @@ function MadrassoPageContent() {
           {/* Footer */}
           <GameFooter
             className={`${gameTheme.madrasso.footer} px-4 py-2.5`}
-            message={
-              <div data-tutorial="tr-point-info">
-                <GameMessageBox
-                  message={state.message}
-                  messageCode={state.messageCode}
-                  messageParams={state.messageParams}
-                />
-              </div>
-            }
+            message={isMobile ? undefined : messageBox}
           >
             {humanPlayer && (
               <PlayerHandSection

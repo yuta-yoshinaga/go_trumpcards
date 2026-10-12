@@ -43,6 +43,18 @@ describe('MadrassoPage', () => {
     expect(footerMessage.querySelector('[data-tutorial="tr-point-info"]')).not.toBeNull();
   });
 
+  it('renders the game message in the play area on mobile', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue(makeMadrassoState({ message: 'Mobile notice' }));
+    renderWithProviders(<MadrassoPage />);
+    expect(await screen.findByText('Mobile notice')).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+    window.dispatchEvent(new Event('resize'));
+  });
+
   it('labels cumulative deals against the target separately from round card points', async () => {
     mockExec.mockResolvedValue(
       makeMadrassoState({
