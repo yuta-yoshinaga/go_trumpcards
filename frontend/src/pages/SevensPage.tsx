@@ -19,6 +19,7 @@ import { SevensCpuArea } from '../components/sevens/SevensCpuArea';
 import { SevensHumanArea } from '../components/sevens/SevensHumanArea';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { useBreakpoint } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -66,6 +67,8 @@ export const SevensPage = withTutorial(SevensPageContent, 'sevens', SV_TUTORIAL_
 function SevensPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('sevens');
+  // CPU details are reference info; keeping them closed at large desktop lets the 4-row board fit 1280x800 (#11702).
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const {
     state,
     placedJoker,
@@ -392,7 +395,7 @@ function SevensPageContent() {
                 </div>
               )}
 
-            <CpuAccordion playerCount={cpuPlayers.length}>
+            <CpuAccordion playerCount={cpuPlayers.length} openOnDesktop={!isLargeDesktop}>
               <div className="flex flex-wrap sm:flex-nowrap gap-2.5 mb-2.5">
                 {cpuPlayers.map((player) => (
                   <SevensCpuArea key={player.id} player={player} isCurrentTurn={state.currentTurn === player.id} />

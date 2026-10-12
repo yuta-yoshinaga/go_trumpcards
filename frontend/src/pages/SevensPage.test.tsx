@@ -288,7 +288,8 @@ describe('SevensPage', () => {
     });
   });
 
-  it('collapses CPU areas on mobile and opens them on desktop', async () => {
+  it('keeps CPU areas open below large desktop and collapsed by default on large desktop', async () => {
+    const originalWidth = window.innerWidth;
     const { unmount } = renderWithProviders(<SevensPage />);
     await screen.findByText('CPU 1');
     const mobileAccordion = screen.getByTestId('cpu-accordion');
@@ -297,10 +298,26 @@ describe('SevensPage', () => {
 
     unmount();
     mobileState.isMobile = false;
+    window.innerWidth = 800;
+    window.dispatchEvent(new Event('resize'));
     renderWithProviders(<SevensPage />);
     const desktopAccordion = await screen.findByTestId('cpu-accordion');
     expect(desktopAccordion).toHaveAttribute('open');
     expect(within(desktopAccordion).getByText('CPU 1')).toBeVisible();
+
+    unmount();
+    mobileState.isMobile = false;
+    Object.defineProperty(window, 'innerWidth', { value: 1280, configurable: true });
+    window.dispatchEvent(new Event('resize'));
+    renderWithProviders(<SevensPage />);
+    const largeDesktopAccordion = await screen.findByTestId('cpu-accordion');
+    expect(largeDesktopAccordion).not.toHaveAttribute('open');
+    expect(within(largeDesktopAccordion).getByText('CPU 1')).not.toBeVisible();
+    fireEvent.click(within(largeDesktopAccordion).getByText('CPU対戦相手 (3)'));
+    expect(largeDesktopAccordion).toHaveAttribute('open');
+    expect(within(largeDesktopAccordion).getByText('CPU 1')).toBeVisible();
+    Object.defineProperty(window, 'innerWidth', { value: originalWidth, configurable: true });
+    window.dispatchEvent(new Event('resize'));
   });
 
   it('renders the board section', async () => {
