@@ -156,6 +156,29 @@ describe('PanPage', () => {
     expect(within(footerMessage).getByRole('status')).toHaveTextContent('Footer message test');
   });
 
+  it('renders the game message in the play area on mobile', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      message: 'Mobile play-area message',
+      messageCode: 'test.untranslated',
+    });
+    try {
+      renderWithProviders(<PanPage />);
+      await screen.findByText('Mobile play-area message');
+      const status = screen.getByText('Mobile play-area message').closest('[role="status"]');
+      if (!status) throw new Error('Mobile message must be inside its live region');
+      expect(status).toHaveTextContent('Mobile play-area message');
+      expect(status.closest('[data-testid="game-footer-message"]')).toBeNull();
+      expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
   it('collapses CPU details on mobile while keeping them in the DOM', async () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });

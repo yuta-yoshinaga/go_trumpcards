@@ -185,6 +185,10 @@ function PanPageContent() {
       />
     );
 
+  const messageBox = (
+    <GameMessageBox message={state?.message} messageCode={state?.messageCode} messageParams={state?.messageParams} />
+  );
+
   const humanPlayer = state.players.find((p) => p.isHuman);
   const isDrawPhase = state.phase === PanPhase.DRAW;
   const isPlayPhase = state.phase === PanPhase.PLAY;
@@ -468,6 +472,8 @@ function PanPageContent() {
               </div>
             )}
 
+            {isMobile && messageBox}
+
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -477,13 +483,7 @@ function PanPageContent() {
           </div>
 
           <GameFooter
-            message={
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-              />
-            }
+            message={isMobile ? undefined : messageBox}
             className={`${gameTheme.pan.footer} px-4 py-2.5`}
             actions={
               (isDrawPhase && isHumanTurn) || (isPlayPhase && isHumanTurn) || isRoundEnd ? (

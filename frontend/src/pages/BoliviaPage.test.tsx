@@ -29,6 +29,7 @@ const cpuTurnState = makeBoliviaState({ currentPlayerIdx: 1 });
 
 describe('BoliviaPage', () => {
   it('renders the game message in the footer message slot', async () => {
+    mobileState.isMobile = false;
     mockExec.mockResolvedValue({
       ...drawPhaseState,
       message: 'Footer message test',
@@ -37,6 +38,22 @@ describe('BoliviaPage', () => {
     renderWithProviders(<BoliviaPage />);
     const footerMessage = await screen.findByTestId('game-footer-message');
     expect(within(footerMessage).getByRole('status')).toHaveTextContent('Footer message test');
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    mobileState.isMobile = true;
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      message: 'Mobile play-area message',
+      messageCode: 'test.untranslated',
+    });
+    renderWithProviders(<BoliviaPage />);
+    await screen.findByText('Mobile play-area message');
+    const status = screen.getByText('Mobile play-area message').closest('[role="status"]');
+    if (!status) throw new Error('Mobile message must be inside its live region');
+    expect(status).toHaveTextContent('Mobile play-area message');
+    expect(status.closest('[data-testid="game-footer-message"]')).toBeNull();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
   });
 
   beforeEach(() => {

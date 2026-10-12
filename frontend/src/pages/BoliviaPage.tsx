@@ -108,6 +108,10 @@ function BoliviaPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('bolivia', state);
 
+  const messageBox = (
+    <GameMessageBox message={state?.message} messageCode={state?.messageCode} messageParams={state?.messageParams} />
+  );
+
   const humanPlayer = state?.players.find((p) => p.isHuman);
   const humanCardCount = humanPlayer?.cards?.length ?? 0;
   const groupedIndices = new Set(meldGroups.flat());
@@ -554,6 +558,8 @@ function BoliviaPageContent() {
 
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
+            {isMobile && messageBox}
+
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -571,13 +577,7 @@ function BoliviaPageContent() {
           </div>
 
           <GameFooter
-            message={
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-              />
-            }
+            message={isMobile ? undefined : messageBox}
             className={`${gameTheme.bolivia.footer} px-4 py-2.5`}
             actions={
               <div className="flex gap-2 items-center flex-wrap" data-tutorial="sa-actions">

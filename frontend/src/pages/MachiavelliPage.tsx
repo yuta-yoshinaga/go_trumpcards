@@ -87,7 +87,7 @@ const MV_TUTORIAL_STEPS: TutorialStep[] = [
 export const MachiavelliPage = withTutorial(MachiavelliPageContent, 'machiavelli', MV_TUTORIAL_STEPS);
 /** Inner content of the Machiavelli page, wrapped by TutorialProvider. */
 function MachiavelliPageContent() {
-  const isMobile = useIsMobile();
+  const isMobileViewport = useIsMobile();
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('machiavelli');
   const {
@@ -127,7 +127,7 @@ function MachiavelliPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('machiavelli', state);
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('machiavelli');
   const cliConfig: CliGameConfig<MachiavelliResponse, Parameters<typeof machiavelliApi.exec>> = useMemo(
@@ -193,6 +193,10 @@ function MachiavelliPageContent() {
         layout={{ kind: 'trick-taking', opponents: 1, centerCard: true, trickArea: true, footerHandSize: 13 }}
       />
     );
+
+  const messageBox = (
+    <GameMessageBox message={state?.message} messageCode={state?.messageCode} messageParams={state?.messageParams} />
+  );
 
   const humanPlayer = state.players.find((p) => p.isHuman);
   const isTurnPhase = state.phase === MachiavelliPhase.TURN;
@@ -358,7 +362,7 @@ function MachiavelliPageContent() {
                     <div className="text-ds-text-muted text-sm">{t('tableEmpty')}</div>
                   ) : (
                     <div
-                      className={`${isMobile ? 'grid grid-cols-2 gap-2' : 'flex flex-col gap-2'}`}
+                      className={`${isMobileViewport ? 'grid grid-cols-2 gap-2' : 'flex flex-col gap-2'}`}
                       data-testid="machiavelli-meld-list"
                     >
                       {state.table.map((meld, meldIdx) => {
@@ -366,7 +370,7 @@ function MachiavelliPageContent() {
                         const layoffButton = isHumanTurn ? (
                           <button
                             type="button"
-                            className={`${btnPrimary} ${isMobile ? 'min-h-11 min-w-11 text-xs' : ''}`}
+                            className={`${btnPrimary} ${isMobileViewport ? 'min-h-11 min-w-11 text-xs' : ''}`}
                             onClick={() => handleLayoff(meldIdx)}
                             disabled={loading || selectedCardIndices.length !== 1}
                             aria-label={t('a11y.layoffTo', { meld: meldAria(meld) })}
@@ -380,11 +384,11 @@ function MachiavelliPageContent() {
                             key={`meld-${meldIdx}-${meld.kind}-${meld.cards.map((c) => `${c.design}${c.value}`).join('')}`}
                             role="group"
                             aria-label={meldAria(meld)}
-                            className={`${isMobile ? 'flex flex-col gap-1' : 'flex items-center gap-2 flex-wrap'} rounded transition-colors ${
+                            className={`${isMobileViewport ? 'flex flex-col gap-1' : 'flex items-center gap-2 flex-wrap'} rounded transition-colors ${
                               canLayoff ? 'ring-2 ring-ds-accent/70 p-1' : ''
                             }`}
                           >
-                            {isMobile ? (
+                            {isMobileViewport ? (
                               <div className="flex items-center justify-between gap-2">
                                 <span
                                   className="text-ds-text-muted text-xs whitespace-nowrap min-w-16 truncate"
@@ -405,19 +409,21 @@ function MachiavelliPageContent() {
                               </span>
                             )}
                             <div
-                              className={`flex ${isMobile ? 'flex-wrap min-w-0' : 'flex-wrap gap-1'}`}
-                              style={isMobile ? { paddingLeft: meldCardWidth * 0.55 } : undefined}
+                              className={`flex ${isMobileViewport ? 'flex-wrap min-w-0' : 'flex-wrap gap-1'}`}
+                              style={isMobileViewport ? { paddingLeft: meldCardWidth * 0.55 } : undefined}
                             >
                               {meld.cards.map((card, idx) => (
                                 <AnimatedCard
                                   key={`meld-${meldIdx}-card-${card.design}-${card.value}-${idx}`}
                                   card={card}
                                   width={meldCardWidth}
-                                  style={isMobile && idx > 0 ? { marginLeft: -(meldCardWidth * 0.55) } : undefined}
+                                  style={
+                                    isMobileViewport && idx > 0 ? { marginLeft: -(meldCardWidth * 0.55) } : undefined
+                                  }
                                 />
                               ))}
                             </div>
-                            {!isMobile && layoffButton}
+                            {!isMobileViewport && layoffButton}
                           </div>
                         );
                       })}
@@ -461,7 +467,7 @@ function MachiavelliPageContent() {
                   className="my-3 p-2 rounded bg-black/30"
                   data-tutorial="mv-score-table"
                   data-testid="mv-score-table"
-                  open={!isMobile || undefined}
+                  open={!isMobileViewport || undefined}
                 >
                   <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('scores')}</summary>
                   <table className="w-full text-sm text-ds-text-muted">
@@ -610,6 +616,8 @@ function MachiavelliPageContent() {
               </div>
             )}
 
+            {isMobile && messageBox}
+
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -644,13 +652,7 @@ function MachiavelliPageContent() {
           </div>
 
           <GameFooter
-            message={
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-              />
-            }
+            message={isMobile ? undefined : messageBox}
             className={`${gameTheme.machiavelli.footer} px-4 py-2.5`}
             actions={
               isHumanTurn ? (

@@ -107,6 +107,10 @@ function BurracoPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('burraco', state);
 
+  const messageBox = (
+    <GameMessageBox message={state?.message} messageCode={state?.messageCode} messageParams={state?.messageParams} />
+  );
+
   const humanPlayer = state?.players.find((p) => p.isHuman);
   const humanSeat = state?.players.find((player) => player.isHuman)?.id ?? 0;
   // ヒントが無効なとき・サーバがヒントを返さない場面 (CPU の手番など) では空。
@@ -540,6 +544,8 @@ function BurracoPageContent() {
 
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
+            {isMobile && messageBox}
+
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -575,13 +581,7 @@ function BurracoPageContent() {
           </div>
 
           <GameFooter
-            message={
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-              />
-            }
+            message={isMobile ? undefined : messageBox}
             className={`${gameTheme.burraco.footer} px-4 py-2.5`}
             actions={
               <div className="flex gap-2 items-center flex-wrap" data-tutorial="ca-actions">

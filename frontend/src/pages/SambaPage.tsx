@@ -72,7 +72,7 @@ const SA_TUTORIAL_STEPS: TutorialStep[] = [
 export const SambaPage = withTutorial(SambaPageContent, 'samba', SA_TUTORIAL_STEPS);
 /** Inner content of the Samba page. */
 function SambaPageContent() {
-  const isMobile = useIsMobile();
+  const isMobileViewport = useIsMobile();
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('samba');
   const {
@@ -98,13 +98,17 @@ function SambaPageContent() {
     handleNextRound,
   } = useSambaGame();
 
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('samba', SAMBA_PHASE_KEYS);
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('samba', state);
+
+  const messageBox = (
+    <GameMessageBox message={state?.message} messageCode={state?.messageCode} messageParams={state?.messageParams} />
+  );
 
   const humanPlayer = state?.players.find((p) => p.isHuman);
   const humanCardCount = humanPlayer?.cards?.length ?? 0;
@@ -440,7 +444,7 @@ function SambaPageContent() {
                 ) && (
                   <details
                     data-testid="sa-opponent-meld-details"
-                    open={!isMobile || undefined}
+                    open={!isMobileViewport || undefined}
                     className="my-2 p-2 rounded bg-ds-surface"
                   >
                     <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
@@ -514,7 +518,7 @@ function SambaPageContent() {
                 {/* Score table */}
                 <details
                   data-testid="sa-score-details"
-                  open={!isMobile || undefined}
+                  open={!isMobileViewport || undefined}
                   className="my-3 p-2 rounded bg-black/30"
                 >
                   <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
@@ -574,6 +578,8 @@ function SambaPageContent() {
 
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
+            {isMobile && messageBox}
+
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -593,13 +599,7 @@ function SambaPageContent() {
           </div>
 
           <GameFooter
-            message={
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-              />
-            }
+            message={isMobile ? undefined : messageBox}
             className={`${gameTheme.samba.footer} px-4 py-2.5`}
             actions={
               isHumanTurn || isRoundEnd ? (
@@ -732,7 +732,7 @@ function SambaPageContent() {
             }
           >
             {humanPlayer &&
-              (isMobile ? (
+              (isMobileViewport ? (
                 <MobileHandGrid
                   cards={humanPlayer.cards}
                   selectedIndices={[...selectedCardIndices, ...meldGroups.flat()]}
