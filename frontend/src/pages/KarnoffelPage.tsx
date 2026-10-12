@@ -111,12 +111,16 @@ function KarnoffelPageContent() {
   );
   const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
   const breakpoint = useBreakpoint();
   const phaseNames = usePhaseNames('karnoffel', KARNOFFEL_PHASE_KEYS);
 
   if (!state)
     return <GameSkeleton gameKey="karnoffel" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 5 }} />;
+
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
 
   const human = state.players.find((p) => p.isHuman);
   // Hoisted so a seat-less state exercises the empty case rather than leaving it
@@ -362,7 +366,7 @@ function KarnoffelPageContent() {
                 </div>
               </div>
             )}
-
+            {isMobile && messageBox}
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -373,13 +377,7 @@ function KarnoffelPageContent() {
 
           {/* Footer */}
           <GameFooter
-            message={
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-              />
-            }
+            message={isMobile ? undefined : messageBox}
             className={`${gameTheme.karnoffel.footer} px-4 py-2.5`}
           >
             <div className="mb-2" data-tutorial="karnoffel-hand">

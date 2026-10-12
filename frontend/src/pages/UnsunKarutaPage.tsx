@@ -155,6 +155,10 @@ function UnsunKarutaPageContent() {
   if (!state)
     return <GameSkeleton gameKey="unsunkaruta" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 9 }} />;
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   const humanPlayer = state.players.find((p) => p.isHuman);
   const isHumanTurn = state.isHumanTurn;
   const isPlayPhase = state.phase === UnsunKarutaPhase.PLAY;
@@ -348,7 +352,7 @@ function UnsunKarutaPageContent() {
                 )}
               </div>
             </div>
-
+            {isMobile && messageBox}
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -358,13 +362,7 @@ function UnsunKarutaPageContent() {
           </div>
 
           <GameFooter
-            message={
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-              />
-            }
+            message={isMobile ? undefined : messageBox}
             className={`${gameTheme.unsunkaruta.footer} px-4 py-2.5`}
           >
             {/* **フォロー義務は宣言で生まれる。** 出ているかどうかを書かないと、

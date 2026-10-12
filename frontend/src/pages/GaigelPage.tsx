@@ -129,6 +129,10 @@ function GaigelPageContent() {
   if (!state)
     return <GameSkeleton gameKey="gaigel" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 5 }} />;
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   const humanPlayer = state.players.find((p) => p.isHuman);
   const isPlayPhase = state.phase === GaigelPhase.PLAY;
   const isTrickEnd = state.phase === GaigelPhase.TRICK_END;
@@ -361,7 +365,7 @@ function GaigelPageContent() {
         />
 
         <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
+        {isMobile && messageBox}
         <ActionLogSection
           isEndPhase={isGameEnd}
           actionLog={actionLog}
@@ -370,12 +374,7 @@ function GaigelPageContent() {
         />
       </div>
 
-      <GameFooter
-        message={
-          <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
-        }
-        className={`${gameTheme.gaigel.footer} px-4 py-2.5`}
-      >
+      <GameFooter message={isMobile ? undefined : messageBox} className={`${gameTheme.gaigel.footer} px-4 py-2.5`}>
         {humanPlayer && (
           <PlayerHandSection
             humanPlayer={humanPlayer}

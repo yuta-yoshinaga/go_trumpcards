@@ -70,11 +70,40 @@ beforeEach(() => {
 
 describe('QuodlibetPage', () => {
   it('renders the game message inside the footer message region', async () => {
+    mockUseCardDimensions.mockReturnValue({
+      cardWidth: 40,
+      cardHeight: 60,
+      cardOverlap: 20,
+      cpuCardWidth: 34,
+      footerCardWidth: 36,
+      solitaireMinColWidth: 52,
+      isMobile: false,
+    });
     mockExec.mockResolvedValue(makeQuodlibetState({ message: 'Footer message' }));
     renderWithProviders(<QuodlibetPage />);
 
     const footerMessage = await screen.findByTestId('game-footer-message');
     expect(footerMessage.querySelector('[role="status"], [role="alert"]')).toHaveTextContent('Footer message');
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    mockUseCardDimensions.mockReturnValue({
+      cardWidth: 40,
+      cardHeight: 60,
+      cardOverlap: 20,
+      cpuCardWidth: 34,
+      footerCardWidth: 36,
+      solitaireMinColWidth: 52,
+      isMobile: true,
+    });
+    mockExec.mockResolvedValue(makeQuodlibetState({ message: 'Mobile message' }));
+    renderWithProviders(<QuodlibetPage />);
+
+    const messageText = await screen.findByText('Mobile message');
+    const message = messageText.closest('[role="status"]');
+    expect(message).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+    expect(message?.closest('footer')).not.toBeInTheDocument();
   });
 
   it('collapses scores and CPU hands on mobile and opens them on desktop', async () => {

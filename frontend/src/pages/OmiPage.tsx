@@ -223,6 +223,10 @@ function OmiPageContent() {
   if (!state)
     return <GameSkeleton gameKey="omi" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 8 }} />;
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   const humanPlayer = state.players.find((p) => p.isHuman);
   const humanTeam = humanPlayer?.team ?? 0;
   const humanIdx = state.players.findIndex((p) => p.isHuman);
@@ -426,6 +430,7 @@ function OmiPageContent() {
             {/* Message */}
 
             {/* Action log */}
+            {isMobile && messageBox}
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -435,16 +440,7 @@ function OmiPageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter
-            message={
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-              />
-            }
-            className={`${gameTheme.omi.footer} px-4 py-2.5`}
-          >
+          <GameFooter message={isMobile ? undefined : messageBox} className={`${gameTheme.omi.footer} px-4 py-2.5`}>
             {/* Human cards */}
             {humanPlayer && (
               <div

@@ -196,6 +196,10 @@ function WattenPageContent() {
   if (!state)
     return <GameSkeleton gameKey="watten" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 5 }} />;
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   const humanPlayer = state.players.find((p) => p.isHuman);
   const humanIdx = state.players.findIndex((p) => p.isHuman);
 
@@ -480,7 +484,7 @@ function WattenPageContent() {
                 )}
               </div>
             </div>
-
+            {isMobile && messageBox}
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -540,13 +544,7 @@ function WattenPageContent() {
 
           {/* Footer */}
           <GameFooter
-            message={
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-              />
-            }
+            message={isMobile ? undefined : messageBox}
             className={`${gameTheme.watten.footer} px-4 py-2.5`}
             actions={
               canDeclare || canPlay || canRespond || isRoundEnd ? (
