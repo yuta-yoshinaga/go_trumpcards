@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { reversisApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardFan } from '../components/CardFan';
 import { CardImage } from '../components/CardImage';
 import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -276,7 +277,7 @@ function ReversisPageContent() {
                 <div className="text-ds-text-muted text-sm mb-1">
                   {t('header.you')}: {human.cardCount}
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <CardFan itemWidth={cardWidth}>
                   {human.cards.map((card, idx) => (
                     <button
                       key={`${card.design}-${card.value}-${idx}`}
@@ -317,7 +318,7 @@ function ReversisPageContent() {
                       </span>
                     </button>
                   ))}
-                </div>
+                </CardFan>
               </div>
             )}
 

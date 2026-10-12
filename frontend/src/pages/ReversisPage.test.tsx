@@ -67,6 +67,14 @@ beforeEach(() => {
 });
 
 describe('ReversisPage', () => {
+  it('renders every human hand card through the hand fan', async () => {
+    const { container } = renderWithProviders(<ReversisPage />);
+    await screen.findAllByRole('button', { name: /を出す/ });
+    const hand = container.querySelector('[data-tutorial="reversis-hand"]');
+    expect(hand).not.toBeNull();
+    expect(hand?.querySelectorAll('button')).toHaveLength(3);
+  });
+
   it('keeps the original points label off turn', async () => {
     mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1 }));
     renderWithProviders(<ReversisPage />);

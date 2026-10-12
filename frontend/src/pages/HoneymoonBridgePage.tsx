@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { honeymoonbridgeApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardFan } from '../components/CardFan';
 import { CardImage } from '../components/CardImage';
 import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -405,12 +406,12 @@ function HoneymoonBridgePageContent() {
                 <div className="text-ds-text-muted text-sm mb-1">
                   {t('header.you')}: {human.cardCount}
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  {isHumanTurn && legalRing.size < human.cards.length && (
-                    <span id="hb-illegal-play-reason" className="sr-only">
-                      {t('actions.illegalPlayReason')}
-                    </span>
-                  )}
+                {isHumanTurn && legalRing.size < human.cards.length && (
+                  <span id="hb-illegal-play-reason" className="sr-only">
+                    {t('actions.illegalPlayReason')}
+                  </span>
+                )}
+                <CardFan itemWidth={cardWidth}>
                   {human.cards.map((card, idx) => {
                     const illegalPlay = isHumanTurn && !legalRing.has(idx);
                     return (
@@ -439,7 +440,7 @@ function HoneymoonBridgePageContent() {
                       </button>
                     );
                   })}
-                </div>
+                </CardFan>
               </div>
             )}
 
