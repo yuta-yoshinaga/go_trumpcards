@@ -56,7 +56,7 @@ const CRESCENT_TUTORIAL_STEPS: TutorialStep[] = [
     advanceOn: 'next',
   },
   {
-    target: '[data-tutorial=crescent-tableau]',
+    target: '[data-tutorial="crescent-tableau"]',
     messageKey: 'tutorial.tableau',
     placement: 'top',
     advanceOn: 'next',
@@ -443,6 +443,15 @@ function CrescentPageContent() {
     </div>
   );
 
+  const rulesNote = (
+    <details className="mb-1 text-center text-ds-text-muted text-xs">
+      <summary className="cursor-pointer">{t('rulesSummary')}</summary>
+      <div className="text-ds-text-muted" data-testid="cr-rules-note">
+        {t('rulesNote')}
+      </div>
+    </details>
+  );
+
   return (
     <GamePageShell
       title={tc('nav.crescent')}
@@ -510,23 +519,11 @@ function CrescentPageContent() {
                 </div>
                 {/* 他のソリティアと違う規則なので常設で出す。初回だけのチュートリアルに
                     書いてあっても、読み飛ばした後は盤面に手掛かりが無い (#6386)。 */}
-                <details className="mb-1 text-center text-ds-text-muted text-xs">
-                  <summary className="cursor-pointer">{t('rulesSummary')}</summary>
-                  <div className="text-ds-text-muted" data-testid="cr-rules-note">
-                    {t('rulesNote')}
-                  </div>
-                </details>
+                {rulesNote}
                 {tableauGrid}
               </>
             )}
-            {isLargeDesktop && (
-              <details className="mb-1 text-center text-ds-text-muted text-xs">
-                <summary className="cursor-pointer">{t('rulesSummary')}</summary>
-                <div className="text-ds-text-muted" data-testid="cr-rules-note">
-                  {t('rulesNote')}
-                </div>
-              </details>
-            )}
+            {isLargeDesktop && rulesNote}
 
             {/* Hint display */}
             {/*
