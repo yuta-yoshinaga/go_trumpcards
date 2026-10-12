@@ -216,6 +216,10 @@ function QuadrillePageContent() {
     setSelectedTrump(null);
   };
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.quadrille')}
@@ -407,6 +411,8 @@ function QuadrillePageContent() {
               </div>
             </div>
 
+            {isMobile && messageBox}
+
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -444,13 +450,7 @@ function QuadrillePageContent() {
 
           {/* Footer */}
           <GameFooter
-            message={
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-              />
-            }
+            message={isMobile ? undefined : messageBox}
             className={`${gameTheme.quadrille.footer} px-4 py-2.5`}
             actions={
               canCallKing || canBid || canPlay || isTrickEnd || isRoundEnd ? (

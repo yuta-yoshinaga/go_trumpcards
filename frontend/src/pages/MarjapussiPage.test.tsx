@@ -452,10 +452,19 @@ describe('MarjapussiPage', () => {
   });
 
   it('renders the game message in the footer message region', async () => {
+    mobileState.isMobile = false;
     mockExec.mockResolvedValue(makeMarjapussiState({ message: 'footer placement check' }));
     renderWithProviders(<MarjapussiPage />);
 
     const footerMessage = await screen.findByTestId('game-footer-message');
     expect(footerMessage).toHaveTextContent('footer placement check');
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    mobileState.isMobile = true;
+    mockExec.mockResolvedValue(makeMarjapussiState({ message: 'mobile placement check' }));
+    renderWithProviders(<MarjapussiPage />);
+    const message = await screen.findByText('mobile placement check');
+    expect(message.closest('[data-testid="game-footer-message"]')).toBeNull();
   });
 });

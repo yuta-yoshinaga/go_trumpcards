@@ -223,6 +223,10 @@ function MarjapussiPageContent() {
   const team0Score = state.teamScores[0];
   const team1Score = state.teamScores[1];
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.marjapussi')}
@@ -484,6 +488,8 @@ function MarjapussiPageContent() {
               </div>
             </div>
 
+            {isMobile && messageBox}
+
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -494,13 +500,7 @@ function MarjapussiPageContent() {
 
           {/* Footer */}
           <GameFooter
-            message={
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-              />
-            }
+            message={isMobile ? undefined : messageBox}
             className={`${gameTheme.marjapussi.footer} px-4 py-2.5`}
           >
             <div className="sr-only" role="status" aria-live="polite" data-testid="marjapussi-score-live">

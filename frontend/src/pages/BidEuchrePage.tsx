@@ -120,7 +120,7 @@ function BidEuchrePageContent() {
   );
   const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('bideuchre', BIDEUCHRE_PHASE_KEYS);
 
   if (!state)
@@ -178,6 +178,10 @@ function BidEuchrePageContent() {
   };
 
   const result = state.lastResult;
+
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
 
   return (
     <GamePageShell
@@ -318,6 +322,8 @@ function BidEuchrePageContent() {
               </div>
             )}
 
+            {isMobile && messageBox}
+
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -328,13 +334,7 @@ function BidEuchrePageContent() {
 
           {/* Footer */}
           <GameFooter
-            message={
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-              />
-            }
+            message={isMobile ? undefined : messageBox}
             className={`${gameTheme.bideuchre.footer} px-4 py-2.5`}
           >
             <div className="mb-2" data-tutorial="bideuchre-hand">

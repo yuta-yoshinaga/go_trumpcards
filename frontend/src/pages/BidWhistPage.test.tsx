@@ -627,4 +627,12 @@ describe('BidWhistPage', () => {
     const footerMessage = await screen.findByTestId('game-footer-message');
     expect(footerMessage).toHaveTextContent('footer placement check');
   });
+
+  it('renders the game message in the play area on mobile', async () => {
+    mobileState.isMobile = true;
+    mockExec.mockResolvedValue(makeState({ message: 'mobile placement check' }));
+    renderWithProviders(<BidWhistPage />);
+    const message = await screen.findByText('mobile placement check');
+    expect(message.closest('[data-testid="game-footer-message"]')).toBeNull();
+  });
 });

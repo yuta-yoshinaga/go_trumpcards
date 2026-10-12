@@ -197,6 +197,17 @@ function FortyFivesPageContent() {
     reset();
   };
 
+  const messageBox = (
+    <GameMessageBox
+      message={state.message}
+      messageCode={state.messageCode}
+      messageParams={state.messageParams}
+      alwaysVisible
+      bareWhenEmpty
+      testId="forty-fives-game-message"
+    />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.fortyfives')}
@@ -370,6 +381,8 @@ function FortyFivesPageContent() {
               </div>
             </div>
 
+            {isMobile && messageBox}
+
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -421,16 +434,7 @@ function FortyFivesPageContent() {
 
           {/* Footer */}
           <GameFooter
-            message={
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-                alwaysVisible
-                bareWhenEmpty
-                testId="forty-fives-game-message"
-              />
-            }
+            message={isMobile ? undefined : messageBox}
             className={`${gameTheme.fortyfives.footer} px-4 py-2.5`}
             actions={
               (isBidPhase && isHumanBidTurn) || canPlay || isTrickEnd || isRoundEnd ? (

@@ -208,6 +208,10 @@ function WhistPageContent() {
   const isGameEnd = state.phase === WhistPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.whist')}
@@ -421,6 +425,8 @@ function WhistPageContent() {
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             {/* Action log */}
+            {isMobile && messageBox}
+
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -430,16 +436,7 @@ function WhistPageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter
-            className={`${gameTheme.whist.footer} px-4 py-2.5`}
-            message={
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-              />
-            }
-          >
+          <GameFooter className={`${gameTheme.whist.footer} px-4 py-2.5`} message={isMobile ? undefined : messageBox}>
             {/* Human cards */}
             {humanPlayer && (
               <div className="mb-1 text-ds-text-muted text-sm" data-testid="whist-human-team">
