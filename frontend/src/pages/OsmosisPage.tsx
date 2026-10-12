@@ -17,7 +17,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { isRejectedAction, useGameApi } from '../hooks/useGameApi';
@@ -27,6 +27,7 @@ import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useMountReset } from '../hooks/useMountReset';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { btnDanger, btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
+import { DESKTOP_COMPACT_CARD_WIDTH } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, OsmosisResponse } from '../types/card';
 import { OsmosisPhase } from '../types/phases';
@@ -116,10 +117,11 @@ function OsmosisPageContent() {
     },
   });
   const { cardWidth, cardHeight, isMobile } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   // Keep the four foundation rows compact on phones so the active stacks and
   // draw controls stay closer together. Desktop card sizes remain unchanged.
-  const boardCardWidth = isMobile ? 30 : cardWidth;
-  const boardCardHeight = isMobile ? 45 : cardHeight;
+  const boardCardWidth = isLargeDesktop ? DESKTOP_COMPACT_CARD_WIDTH : isMobile ? 30 : cardWidth;
+  const boardCardHeight = isLargeDesktop ? Math.round(DESKTOP_COMPACT_CARD_WIDTH * 1.5) : isMobile ? 45 : cardHeight;
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -292,189 +294,201 @@ function OsmosisPageContent() {
             <span id={selectSourceHintId} className="sr-only">
               {tc('label.selectSourceFirst')}
             </span>
-            {/* Foundation rows */}
-            <div className="mb-3 flex flex-col gap-2" data-tutorial="os-foundation">
-              <span className="text-xs text-ds-text-muted">{t('foundation')}</span>
-              {state.foundation.map((pile, i) => {
-                const fZone: OsmosisMoveZone = { zone: 'foundation', col: i };
-                const allowed = osmosisAllowedRanks(state.foundation, state.baseRank, i);
-                // Click selection flags every invalid row; a drag only warns on the
-                // row currently hovered (the drop target).
-                const canPlace =
-                  selectedCard != null && osmosisCanPlace(state.foundation, state.baseRank, i, selectedCard);
-                const clickBlocked = selectedCard != null && !canPlace;
-                const clickAllowed = canPlace;
-                const isDropHover = dnd.isDropTarget(fZone);
-                const dragBlocked =
-                  isDropHover &&
-                  draggedCard != null &&
-                  !osmosisCanPlace(state.foundation, state.baseRank, i, draggedCard);
-                const blocked = clickBlocked || dragBlocked;
-                return (
-                  <DropZone
-                    key={`f-${i}`}
-                    isDropTarget={isDropHover && !dragBlocked}
-                    onDragOver={dnd.handleDragOver(fZone)}
-                    onDrop={dnd.handleDrop(fZone)}
-                    onDragLeave={dnd.handleDragLeave}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => handleFoundationClick(i)}
-                      disabled={!isPlaying || loading}
-                      aria-disabled={!selected || undefined}
-                      aria-label={
-                        pile.length > 0
-                          ? t(clickAllowed ? 'foundationAriaWithCardPlaceable' : 'foundationAriaWithCard', {
-                              num: i,
-                              card: cardAlt(pile[pile.length - 1]),
-                            })
-                          : t(clickAllowed ? 'foundationAriaEmptyPlaceable' : 'foundationAriaEmpty', { num: i })
-                      }
-                      // Read the available action in the name; explain blocked rows with
-                      // aria-describedby because title and border color are not reliable cues.
-                      aria-describedby={
-                        [
-                          !selected ? selectSourceHintId : undefined,
-                          blocked ? `os-foundation-blocked-${i.toString()}` : undefined,
-                        ]
-                          .filter(Boolean)
-                          .join(' ') || undefined
-                      }
-                      title={blocked ? t('cannotPlaceHere') : undefined}
-                      className={`flex w-full items-center gap-2 rounded border p-1 text-left ${focusRingWhite} ${
-                        blocked
-                          ? 'border-ds-error'
-                          : clickAllowed
-                            ? 'border-ds-success'
-                            : selected || dnd.isDragging
-                              ? 'border-ds-info'
-                              : 'border-white/30'
-                      } ${hintedMove?.toCol === i ? HINT_RING : ''}`}
-                    >
-                      <span className="w-5 text-xs text-ds-text-muted">#{i}</span>
-                      <div className="relative" style={{ width: boardCardWidth, height: boardCardHeight }}>
-                        {pile.length > 0 ? (
-                          <AnimatedCard card={pile[pile.length - 1]} width={boardCardWidth} draggable={false} />
-                        ) : (
-                          <span className="absolute inset-0 flex items-center justify-center text-xs text-ds-text-muted/80">
-                            {t('foundation')}
+            <div
+              className={isLargeDesktop ? 'flex flex-wrap items-start gap-4' : ''}
+              data-testid={isLargeDesktop ? 'os-board-row' : undefined}
+            >
+              <div className={isLargeDesktop ? 'order-2 flex-1 min-w-0' : ''}>
+                {/* Foundation rows */}
+                <div className={`mb-3 flex flex-col gap-2 ${isLargeDesktop ? '' : ''}`} data-tutorial="os-foundation">
+                  <span className="text-xs text-ds-text-muted">{t('foundation')}</span>
+                  {state.foundation.map((pile, i) => {
+                    const fZone: OsmosisMoveZone = { zone: 'foundation', col: i };
+                    const allowed = osmosisAllowedRanks(state.foundation, state.baseRank, i);
+                    // Click selection flags every invalid row; a drag only warns on the
+                    // row currently hovered (the drop target).
+                    const canPlace =
+                      selectedCard != null && osmosisCanPlace(state.foundation, state.baseRank, i, selectedCard);
+                    const clickBlocked = selectedCard != null && !canPlace;
+                    const clickAllowed = canPlace;
+                    const isDropHover = dnd.isDropTarget(fZone);
+                    const dragBlocked =
+                      isDropHover &&
+                      draggedCard != null &&
+                      !osmosisCanPlace(state.foundation, state.baseRank, i, draggedCard);
+                    const blocked = clickBlocked || dragBlocked;
+                    return (
+                      <DropZone
+                        key={`f-${i}`}
+                        isDropTarget={isDropHover && !dragBlocked}
+                        onDragOver={dnd.handleDragOver(fZone)}
+                        onDrop={dnd.handleDrop(fZone)}
+                        onDragLeave={dnd.handleDragLeave}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => handleFoundationClick(i)}
+                          disabled={!isPlaying || loading}
+                          aria-disabled={!selected || undefined}
+                          aria-label={
+                            pile.length > 0
+                              ? t(clickAllowed ? 'foundationAriaWithCardPlaceable' : 'foundationAriaWithCard', {
+                                  num: i,
+                                  card: cardAlt(pile[pile.length - 1]),
+                                })
+                              : t(clickAllowed ? 'foundationAriaEmptyPlaceable' : 'foundationAriaEmpty', { num: i })
+                          }
+                          // Read the available action in the name; explain blocked rows with
+                          // aria-describedby because title and border color are not reliable cues.
+                          aria-describedby={
+                            [
+                              !selected ? selectSourceHintId : undefined,
+                              blocked ? `os-foundation-blocked-${i.toString()}` : undefined,
+                            ]
+                              .filter(Boolean)
+                              .join(' ') || undefined
+                          }
+                          title={blocked ? t('cannotPlaceHere') : undefined}
+                          className={`flex w-full items-center gap-2 rounded border p-1 text-left ${focusRingWhite} ${
+                            blocked
+                              ? 'border-ds-error'
+                              : clickAllowed
+                                ? 'border-ds-success'
+                                : selected || dnd.isDragging
+                                  ? 'border-ds-info'
+                                  : 'border-white/30'
+                          } ${hintedMove?.toCol === i ? HINT_RING : ''}`}
+                        >
+                          <span className="w-5 text-xs text-ds-text-muted">#{i}</span>
+                          <div className="relative" style={{ width: boardCardWidth, height: boardCardHeight }}>
+                            {pile.length > 0 ? (
+                              <AnimatedCard card={pile[pile.length - 1]} width={boardCardWidth} draggable={false} />
+                            ) : (
+                              <span className="absolute inset-0 flex items-center justify-center text-xs text-ds-text-muted/80">
+                                {t('foundation')}
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-xs text-ds-text-muted">({pile.length})</span>
+                          {clickAllowed && (
+                            <span className="rounded bg-ds-success px-1 py-0.5 text-[10px] text-white">
+                              {t('placeable')}
+                            </span>
+                          )}
+                          <span className="text-xs text-ds-text-muted" data-testid={`os-allowed-${i}`}>
+                            {i === 0 && <span className="text-ds-warning">★ </span>}
+                            {allowed.length === 0
+                              ? '—'
+                              : i === 0 && pile.length > 0
+                                ? t('anyRank')
+                                : allowed.map((r) => RANK_LABELS[r]).join(' ')}
+                          </span>
+                        </button>
+                        {blocked && (
+                          <span id={`os-foundation-blocked-${i.toString()}`} className="sr-only">
+                            {t('cannotPlaceHere')}
                           </span>
                         )}
-                      </div>
-                      <span className="text-xs text-ds-text-muted">({pile.length})</span>
-                      {clickAllowed && (
-                        <span className="rounded bg-ds-success px-1 py-0.5 text-[10px] text-white">
-                          {t('placeable')}
-                        </span>
-                      )}
-                      <span className="text-xs text-ds-text-muted" data-testid={`os-allowed-${i}`}>
-                        {i === 0 && <span className="text-ds-warning">★ </span>}
-                        {allowed.length === 0
-                          ? '—'
-                          : i === 0 && pile.length > 0
-                            ? t('anyRank')
-                            : allowed.map((r) => RANK_LABELS[r]).join(' ')}
-                      </span>
-                    </button>
-                    {blocked && (
-                      <span id={`os-foundation-blocked-${i.toString()}`} className="sr-only">
-                        {t('cannotPlaceHere')}
-                      </span>
-                    )}
-                  </DropZone>
-                );
-              })}
-            </div>
-
-            {/* Reserve columns */}
-            <div className="mb-3 flex gap-2" data-tutorial="os-reserve">
-              {state.reserve.map((pile, i) => {
-                const top = pile.length > 0 ? pile[pile.length - 1] : null;
-                const zone: OsmosisMoveZone = { zone: 'reserve', col: i };
-                return (
-                  <div key={`r-${i}`} className="flex flex-col items-center gap-1">
-                    <span className="text-xs text-ds-text-muted">#{i}</span>
-                    {top ? (
-                      <button
-                        type="button"
-                        draggable={isPlaying && !loading}
-                        onDragStart={dnd.handleDragStart(zone)}
-                        onDragEnd={dnd.handleDragEnd}
-                        onClick={() => handleSelectSource(zone)}
-                        disabled={!isPlaying || loading}
-                        aria-label={`${t('reserve')} ${i}: ${cardAlt(top)}`}
-                        aria-pressed={isSelected(zone)}
-                        className={`p-0 border-2 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
-                          isSelected(zone) ? 'border-ds-info' : 'border-transparent'
-                        } ${dnd.isDragSource(zone) ? 'opacity-50' : ''} ${
-                          hintedMove?.fromZone === 'reserve' && hintedMove.fromCol === i ? HINT_RING : ''
-                        }`}
-                      >
-                        <AnimatedCard card={top} width={boardCardWidth} draggable={false} />
-                      </button>
-                    ) : (
-                      <div
-                        className="rounded border border-dashed border-white/30"
-                        style={{ width: boardCardWidth, height: boardCardHeight }}
-                      />
-                    )}
-                    <span className="text-xs text-ds-text-muted">({pile.length})</span>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Stock / Waste */}
-            <div className="mb-3 flex gap-3" data-tutorial="os-stock-waste">
-              <div className="flex flex-col items-center">
-                <button
-                  type="button"
-                  onClick={handleDraw}
-                  disabled={!isPlaying || loading}
-                  className="rounded border border-white/30"
-                  aria-label={t('stockAriaLabel', { count: state.stockCount })}
-                  style={{ width: boardCardWidth, height: boardCardHeight }}
-                >
-                  {state.stockCount > 0 ? (
-                    <AnimatedCardBack width={boardCardWidth} />
-                  ) : (
-                    <span className="text-xs text-ds-text-muted/80">{t('empty')}</span>
-                  )}
-                </button>
-                <span className="mt-1 text-xs text-ds-text-muted">
-                  {t('stock')}: {state.stockCount}
-                </span>
+                      </DropZone>
+                    );
+                  })}
+                </div>
               </div>
 
-              <div className="flex flex-col items-center">
-                <div style={{ width: boardCardWidth, height: boardCardHeight }}>
-                  {topWaste ? (
+              {/* Reserve columns */}
+              <div className={isLargeDesktop ? 'order-1 flex flex-col gap-3' : ''}>
+                <div
+                  className={`mb-3 ${isLargeDesktop ? 'grid grid-cols-2 gap-2' : 'flex gap-2'}`}
+                  data-tutorial="os-reserve"
+                >
+                  {state.reserve.map((pile, i) => {
+                    const top = pile.length > 0 ? pile[pile.length - 1] : null;
+                    const zone: OsmosisMoveZone = { zone: 'reserve', col: i };
+                    return (
+                      <div key={`r-${i}`} className="flex flex-col items-center gap-1">
+                        <span className="text-xs text-ds-text-muted">#{i}</span>
+                        {top ? (
+                          <button
+                            type="button"
+                            draggable={isPlaying && !loading}
+                            onDragStart={dnd.handleDragStart(zone)}
+                            onDragEnd={dnd.handleDragEnd}
+                            onClick={() => handleSelectSource(zone)}
+                            disabled={!isPlaying || loading}
+                            aria-label={`${t('reserve')} ${i}: ${cardAlt(top)}`}
+                            aria-pressed={isSelected(zone)}
+                            className={`p-0 border-2 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
+                              isSelected(zone) ? 'border-ds-info' : 'border-transparent'
+                            } ${dnd.isDragSource(zone) ? 'opacity-50' : ''} ${
+                              hintedMove?.fromZone === 'reserve' && hintedMove.fromCol === i ? HINT_RING : ''
+                            }`}
+                          >
+                            <AnimatedCard card={top} width={boardCardWidth} draggable={false} />
+                          </button>
+                        ) : (
+                          <div
+                            className="rounded border border-dashed border-white/30"
+                            style={{ width: boardCardWidth, height: boardCardHeight }}
+                          />
+                        )}
+                        <span className="text-xs text-ds-text-muted">({pile.length})</span>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Stock / Waste */}
+                <div className={`mb-3 flex gap-3 ${isLargeDesktop ? 'gap-2' : ''}`} data-tutorial="os-stock-waste">
+                  <div className="flex flex-col items-center">
                     <button
                       type="button"
-                      draggable={isPlaying && !loading}
-                      onDragStart={dnd.handleDragStart({ zone: 'waste' })}
-                      onDragEnd={dnd.handleDragEnd}
-                      onClick={() => handleSelectSource({ zone: 'waste' })}
+                      onClick={handleDraw}
                       disabled={!isPlaying || loading}
-                      aria-label={`${t('waste')}: ${cardAlt(topWaste)}`}
-                      aria-pressed={isSelected({ zone: 'waste' })}
-                      className={`p-0 border-2 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
-                        isSelected({ zone: 'waste' }) ? 'border-ds-info' : 'border-transparent'
-                      } ${dnd.isDragSource({ zone: 'waste' }) ? 'opacity-50' : ''} ${
-                        hintedMove?.fromZone === 'waste' ? HINT_RING : ''
-                      }`}
-                    >
-                      <AnimatedCard card={topWaste} width={boardCardWidth} draggable={false} />
-                    </button>
-                  ) : (
-                    <div
-                      className="rounded border border-dashed border-white/30"
+                      className="rounded border border-white/30"
+                      aria-label={t('stockAriaLabel', { count: state.stockCount })}
                       style={{ width: boardCardWidth, height: boardCardHeight }}
-                    />
-                  )}
+                    >
+                      {state.stockCount > 0 ? (
+                        <AnimatedCardBack width={boardCardWidth} />
+                      ) : (
+                        <span className="text-xs text-ds-text-muted/80">{t('empty')}</span>
+                      )}
+                    </button>
+                    <span className="mt-1 text-xs text-ds-text-muted">
+                      {t('stock')}: {state.stockCount}
+                    </span>
+                  </div>
+
+                  <div className="flex flex-col items-center">
+                    <div style={{ width: boardCardWidth, height: boardCardHeight }}>
+                      {topWaste ? (
+                        <button
+                          type="button"
+                          draggable={isPlaying && !loading}
+                          onDragStart={dnd.handleDragStart({ zone: 'waste' })}
+                          onDragEnd={dnd.handleDragEnd}
+                          onClick={() => handleSelectSource({ zone: 'waste' })}
+                          disabled={!isPlaying || loading}
+                          aria-label={`${t('waste')}: ${cardAlt(topWaste)}`}
+                          aria-pressed={isSelected({ zone: 'waste' })}
+                          className={`p-0 border-2 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
+                            isSelected({ zone: 'waste' }) ? 'border-ds-info' : 'border-transparent'
+                          } ${dnd.isDragSource({ zone: 'waste' }) ? 'opacity-50' : ''} ${
+                            hintedMove?.fromZone === 'waste' ? HINT_RING : ''
+                          }`}
+                        >
+                          <AnimatedCard card={topWaste} width={boardCardWidth} draggable={false} />
+                        </button>
+                      ) : (
+                        <div
+                          className="rounded border border-dashed border-white/30"
+                          style={{ width: boardCardWidth, height: boardCardHeight }}
+                        />
+                      )}
+                    </div>
+                    <span className="mt-1 text-xs text-ds-text-muted">{t('waste')}</span>
+                  </div>
                 </div>
-                <span className="mt-1 text-xs text-ds-text-muted">{t('waste')}</span>
               </div>
             </div>
 

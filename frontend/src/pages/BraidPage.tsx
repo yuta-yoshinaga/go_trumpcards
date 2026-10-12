@@ -20,13 +20,14 @@ import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useBraidGame } from '../hooks/useBraidGame';
-import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
+import { DESKTOP_COMPACT_CARD_WIDTH } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { BraidMoveZone, BraidResponse } from '../types/card';
 import { BraidPhase } from '../types/phases';
@@ -112,6 +113,7 @@ function BraidPageContent() {
   );
   const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const windowWidth = useWindowWidth();
 
   const dims = useMemo(() => {
@@ -124,6 +126,9 @@ function BraidPageContent() {
     const co = Math.round(cw * 0.32);
     return { cw, ch, co };
   }, [isMobile, windowWidth, cardWidth, cardHeight, cardOverlap]);
+  // At 1280px the 10 top slots fit in 872px (10 × 80px + 9 × 8px).
+  const topCardWidth = isLargeDesktop ? DESKTOP_COMPACT_CARD_WIDTH : dims.cw;
+  const topCardHeight = isLargeDesktop ? Math.round(DESKTOP_COMPACT_CARD_WIDTH * 1.5) : dims.ch;
 
   const isPlayingForKbd = state?.phase === BraidPhase.PLAYING;
 
@@ -364,8 +369,14 @@ function BraidPageContent() {
             <span id={selectSourceHintId} className="sr-only">
               {tc('label.selectSourceFirst')}
             </span>
-            <div className="flex flex-wrap justify-center items-start gap-1 sm:gap-6 mb-1 sm:mb-3">
-              <div className="flex flex-wrap justify-center gap-1 sm:gap-2" data-tutorial="br-foundation">
+            <div
+              className={`flex flex-wrap justify-center items-start mb-1 sm:mb-3 ${isLargeDesktop ? 'gap-2' : 'gap-1 sm:gap-6'}`}
+              data-testid={isLargeDesktop ? 'br-top-row' : undefined}
+            >
+              <div
+                className={`flex flex-wrap justify-center ${isLargeDesktop ? 'gap-2' : 'gap-1 sm:gap-2'}`}
+                data-tutorial="br-foundation"
+              >
                 {Array.from({ length: FOUNDATIONS }, (_, idx) => {
                   const pile = state.foundation[idx] ?? [];
                   const foundationZone: BraidMoveZone = { zone: 'foundation', col: idx };
@@ -390,7 +401,7 @@ function BraidPageContent() {
                           >
                             <AnimatedCard
                               card={pile[pile.length - 1]}
-                              width={dims.cw}
+                              width={topCardWidth}
                               draggable={false}
                               dealDelay={isAutoCompleting ? idx * 0.1 : 0}
                             />
@@ -403,7 +414,7 @@ function BraidPageContent() {
                             aria-disabled={!selectedSource || undefined}
                             aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('emptyFoundationAriaLabel', { idx })}
-                            style={{ width: dims.cw, height: dims.ch }}
+                            style={{ width: topCardWidth, height: topCardHeight }}
                             data-hint-slot={isHintTo('foundation', idx) ? 'to' : undefined}
                             className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite} ${hintRingClass('foundation', idx)}`}
                           >
@@ -416,7 +427,7 @@ function BraidPageContent() {
                 })}
               </div>
 
-              <div className="flex gap-2 items-start" data-tutorial="br-stock">
+              <div className={`flex items-start ${isLargeDesktop ? 'gap-2' : 'gap-2'}`} data-tutorial="br-stock">
                 <div className="text-center">
                   <div className="text-game-text-muted text-xs mb-1">{t('stock')}</div>
                   <button
@@ -431,7 +442,7 @@ function BraidPageContent() {
                             redeals: t('redealsLeft', { count: state.redealsLeft }),
                           })
                     }
-                    style={{ width: dims.cw, height: dims.ch }}
+                    style={{ width: topCardWidth, height: topCardHeight }}
                     className={`rounded border-2 border-white/30 bg-white/10 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                   >
                     {state.stockCount}
@@ -458,13 +469,13 @@ function BraidPageContent() {
                       onDragEnd={dnd.handleDragEnd}
                       className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste', undefined) ? 'ring-2 ring-ds-warning' : ''}`}
                     >
-                      <AnimatedCard card={wasteTop} width={dims.cw} draggable={false} />
+                      <AnimatedCard card={wasteTop} width={topCardWidth} draggable={false} />
                     </button>
                   ) : (
                     <div
                       role="img"
                       aria-label={t('emptyWasteAriaLabel')}
-                      style={{ width: dims.cw, height: dims.ch }}
+                      style={{ width: topCardWidth, height: topCardHeight }}
                       className="rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center"
                     >
                       {t('empty')}
