@@ -413,4 +413,11 @@ describe('KillePage', () => {
     expect(events).toHaveAttribute('aria-live', 'polite');
     expect(events).toBeEmptyDOMElement();
   });
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue({ ...makeState(), message: 'Footer guidance' });
+    renderWithProviders(<KillePage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage.querySelector('[role="status"], [role="alert"]')).toHaveTextContent('Footer guidance');
+  });
 });

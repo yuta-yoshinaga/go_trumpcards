@@ -838,4 +838,11 @@ describe('IndianRummyPage points legend', () => {
     // ワイルドが 0 点であることも同じ行で言う (tutorial.wildJoker と矛盾しない)。
     expect(legend.textContent).toMatch(/0/);
   });
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, message: 'Footer guidance' });
+    renderWithProviders(<IndianRummyPage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage.querySelector('[role="status"], [role="alert"]')).toHaveTextContent('Footer guidance');
+  });
 });

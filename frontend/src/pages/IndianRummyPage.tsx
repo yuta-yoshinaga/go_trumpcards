@@ -433,12 +433,6 @@ function IndianRummyPageContent() {
             />
             <CardNavShortcutsPanel arrowSelection data-testid="indian-rummy-kbd-shortcuts" />
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -449,6 +443,13 @@ function IndianRummyPageContent() {
 
           <GameFooter
             className={`${gameTheme.indianrummy.footer} px-4 py-2.5`}
+            message={
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            }
             actions={
               (isDrawPhase && isHumanTurn) || (isDiscardPhase && isHumanTurn) || isRoundEnd ? (
                 <div className="flex gap-2 items-center flex-wrap">

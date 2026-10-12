@@ -394,12 +394,6 @@ function KlaberjassPageContent() {
               </div>
             )}
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -409,7 +403,16 @@ function KlaberjassPageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.klaberjass.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.klaberjass.footer} px-4 py-2.5`}
+            message={
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            }
+          >
             <div className="mb-2" data-tutorial="klaberjass-hand">
               <div className="text-ds-text-muted text-xs mb-1">{t('yourHand')}</div>
               <div className="flex flex-wrap gap-1">

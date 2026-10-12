@@ -406,4 +406,11 @@ describe('SutdaPage', () => {
       expect(screen.queryByTestId('sutda-raise')).not.toBeInTheDocument();
     });
   });
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue({ ...betState, message: 'Footer guidance' });
+    renderWithProviders(<SutdaPage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage.querySelector('[role="status"], [role="alert"]')).toHaveTextContent('Footer guidance');
+  });
 });

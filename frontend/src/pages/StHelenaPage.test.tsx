@@ -924,4 +924,11 @@ describe('StHelenaPage keyboard shortcuts', () => {
       expect(screen.queryByTestId('cr-gameover-summary')).not.toBeInTheDocument();
     });
   });
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue({ ...playingState, message: 'Footer guidance' });
+    renderWithProviders(<StHelenaPage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage.querySelector('[role="status"], [role="alert"]')).toHaveTextContent('Footer guidance');
+  });
 });

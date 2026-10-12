@@ -471,4 +471,11 @@ describe('KlaberjassPage', () => {
     renderWithProviders(<KlaberjassPage />);
     await waitFor(() => expect(screen.queryByTestId('klaberjass-bid-notice')).not.toBeInTheDocument());
   });
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue({ ...makeState(), message: 'Footer guidance' });
+    renderWithProviders(<KlaberjassPage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage.querySelector('[role="status"], [role="alert"]')).toHaveTextContent('Footer guidance');
+  });
 });

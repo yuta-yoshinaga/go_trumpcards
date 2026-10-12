@@ -313,12 +313,6 @@ function SutdaPageContent() {
               </div>
             )}
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -327,7 +321,16 @@ function SutdaPageContent() {
             />
           </div>
 
-          <GameFooter className={`${gameTheme.sutda.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.sutda.footer} px-4 py-2.5`}
+            message={
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            }
+          >
             {/* **自分の役は常に見える。** 伏せているのは相手の札であって、自分の
                 2 枚が何の役かは配られた時点で分かっている。 */}
             {humanPlayer && (

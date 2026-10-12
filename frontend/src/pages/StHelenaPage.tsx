@@ -595,12 +595,6 @@ function StHelenaPageContent() {
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
             </div>
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
             {/* **どこまで進んでいたかを自分で数えさせない。**8 組札 (昇順4 + 降順4)
                 は Congress より複雑なので、なおさら数えにくい (#5590)。
                 Congress / CrazyQuilt と同じ形。 */}
@@ -630,7 +624,16 @@ function StHelenaPageContent() {
             ]}
           />
 
-          <GameFooter className={`${gameTheme.sthelena.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.sthelena.footer} px-4 py-2.5`}
+            message={
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            }
+          >
             <ErrorAlert message={error ?? hintError} onRetry={retry} />
             <div className="flex gap-2 items-center flex-wrap">
               {isPlaying && (

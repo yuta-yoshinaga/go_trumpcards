@@ -550,4 +550,11 @@ describe('BostonPage', () => {
     expect(within(playArea as HTMLElement).getByLabelText('ヒント表示')).toBeInTheDocument();
     expect(playArea?.querySelector('[data-tutorial="boston-reset-button"]')).toBeInTheDocument();
   });
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue({ ...makeState(), message: 'Footer guidance' });
+    renderWithProviders(<BostonPage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage.querySelector('[role="status"], [role="alert"]')).toHaveTextContent('Footer guidance');
+  });
 });

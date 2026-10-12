@@ -365,12 +365,6 @@ function BostonPageContent() {
               </div>
             )}
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -404,6 +398,13 @@ function BostonPageContent() {
           {/* Footer */}
           <GameFooter
             className={`${gameTheme.boston.footer} px-4 py-2.5`}
+            message={
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            }
             actions={
               <div className="flex flex-wrap gap-2 items-center" data-tutorial="boston-actions">
                 {isHumanBid && (

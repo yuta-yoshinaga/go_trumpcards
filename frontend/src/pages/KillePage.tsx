@@ -398,12 +398,6 @@ function KillePageContent() {
               </div>
             </details>
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -413,7 +407,16 @@ function KillePageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.kille.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.kille.footer} px-4 py-2.5`}
+            message={
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            }
+          >
             <div className="mb-2" data-tutorial="kille-card">
               <div className="text-ds-text-muted text-xs mb-1">{t('yourCard')}</div>
               {humanPlayer?.card ? (

@@ -457,12 +457,6 @@ function DehlaPakadPageContent() {
               </div>
             </div>
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -471,7 +465,16 @@ function DehlaPakadPageContent() {
             />
           </div>
 
-          <GameFooter className={`${gameTheme.dehlapakad.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.dehlapakad.footer} px-4 py-2.5`}
+            message={
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            }
+          >
             {humanPlayer && (
               <PlayerHandSection
                 humanPlayer={humanPlayer}
