@@ -39,8 +39,9 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 const FOUNDATION_LABELS = ['Q♠↓', 'Q♠↓', 'J♦↑', 'J♦↑'] as const;
 /** Sixteen slots, one card each -- they never stack. */
 const TABLEAU_SLOTS = 16;
-/** Slots per row in the 4x4 board. */
+/** Tableau piles per row below 1024px: the original 4x4 board. */
 const DESKTOP_SLOTS_PER_ROW = 4;
+/** Tableau piles per row at large desktop: 2 rows of 8 so the board fits 800px-high screens (#11702). */
 const LARGE_DESKTOP_SLOTS_PER_ROW = 8;
 /** Foundation completion goal: four foundations with thirteen cards each. */
 const FOUNDATION_GOAL = 4 * 13;

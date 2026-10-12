@@ -159,6 +159,7 @@ function EightOffPageContent() {
   } = useGameHint('eightoff', state);
   const { cardHeight, cardOverlap, cardWidth } = useCardDimensions();
   const isLargeDesktop = useBreakpoint() === 'largeDesktop';
+  const topRowGap = isLargeDesktop ? 'gap-1' : 'gap-2';
   const topCardWidth = isLargeDesktop ? DESKTOP_COMPACT_CARD_WIDTH : cardWidth;
   const topCardHeight = isLargeDesktop ? Math.round(DESKTOP_COMPACT_CARD_WIDTH * 1.5) : cardHeight;
   // CLI mode
@@ -350,7 +351,7 @@ function EightOffPageContent() {
         <>
           <LandscapeBanner message={t('landscapeBanner')} />
 
-          {/* 12 x 80 + 11 x 4 = 1004px; keep enough content width for the top row. */}
+          {/* 12 x 80 + 11 x 4 = 1004px: one row from about 1036px wide (with sm:px-4); narrower, it wraps. */}
           <div className={`flex-1 overflow-y-auto pt-3 ${isLargeDesktop ? 'px-2 sm:px-4' : 'px-4 lg:px-8'}`}>
             <span id={selectSourceHintId} className="sr-only">
               {tc('label.selectSourceFirst')}
@@ -360,11 +361,11 @@ function EightOffPageContent() {
             </div>
             {/* Free cells + Foundation row */}
             <div
-              className={`flex ${isLargeDesktop ? 'gap-1' : 'gap-2'} mb-3 items-start flex-wrap`}
+              className={`flex ${topRowGap} mb-3 items-start flex-wrap`}
               data-testid={isLargeDesktop ? 'eo-top-row' : undefined}
             >
               {/* Free cells */}
-              <div className={`flex ${isLargeDesktop ? 'gap-1' : 'gap-2'}`} data-tutorial="eo-free-cells">
+              <div className={`flex ${topRowGap}`} data-tutorial="eo-free-cells">
                 {state.freeCells.map((card: Card | null, idx: number) => {
                   const freeCellZone: EightOffMoveZone = { zone: 'freecell', cell: idx };
                   return (
@@ -430,7 +431,7 @@ function EightOffPageContent() {
               {!isLargeDesktop && <div className="w-4" />}
 
               {/* Foundation piles */}
-              <div className={`flex ${isLargeDesktop ? 'gap-1' : 'gap-2'}`} data-tutorial="eo-foundation">
+              <div className={`flex ${topRowGap}`} data-tutorial="eo-foundation">
                 {state.foundation.map((pile: Card[], idx: number) => {
                   const foundationZone: EightOffMoveZone = { zone: 'foundation', col: idx };
                   return (
