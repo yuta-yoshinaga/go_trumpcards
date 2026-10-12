@@ -1,3 +1,7 @@
+function hasNode(node: React.ReactNode): boolean {
+  return node != null && node !== false;
+}
+
 /** Props for {@link GameFooter}. */
 export interface GameFooterProps {
   className?: string;
@@ -11,6 +15,8 @@ export interface GameFooterProps {
    * keep this layout and omit the (otherwise empty, padded) action row.
    */
   actions?: React.ReactNode;
+  /** Persistent guidance rendered immediately before footer actions or legacy content. */
+  message?: React.ReactNode;
   /** On mobile, expands the footer cap from 45vh to 60vh for pages with very large hands. Unchanged at sm and above; defaults to false. */
   tall?: boolean;
   /** Stable tutorial anchor rendered on the footer even when its actions are absent. */
@@ -35,7 +41,7 @@ export interface GameFooterProps {
  * In the legacy form without `actions`, the mobile cap is lifted from `sm` up,
  * where the viewport is tall enough that it would only add a pointless inner scrollbar.
  */
-export function GameFooter({ className, children, actions, dataTutorial, tall = false }: GameFooterProps) {
+export function GameFooter({ className, children, actions, message, dataTutorial, tall = false }: GameFooterProps) {
   if (actions !== undefined) {
     return (
       <footer
@@ -56,7 +62,12 @@ export function GameFooter({ className, children, actions, dataTutorial, tall = 
         <div className="min-h-0 overflow-y-auto" data-testid="game-footer-content">
           {children}
         </div>
-        {actions != null && actions !== false && (
+        {hasNode(message) && (
+          <div className="shrink-0" data-testid="game-footer-message">
+            {message}
+          </div>
+        )}
+        {hasNode(actions) && (
           <div className="shrink-0 pt-2" data-testid="game-footer-actions">
             {actions}
           </div>
@@ -76,6 +87,7 @@ export function GameFooter({ className, children, actions, dataTutorial, tall = 
         .join(' ')}
       style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 12px)' }}
     >
+      {hasNode(message) && <div data-testid="game-footer-message">{message}</div>}
       {children}
     </footer>
   );

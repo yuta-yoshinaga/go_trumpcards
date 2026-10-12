@@ -430,7 +430,7 @@ function CourtPiecePageContent() {
                     <button
                       key={s.value}
                       type="button"
-                      className="px-3 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
+                      className="px-3 py-2 rounded-lg bg-ds-info text-ds-text-on-accent text-sm disabled:opacity-40"
                       onClick={() => handleDeclareTrump(s.value)}
                       disabled={loading}
                       aria-label={t('declareTrumpAria', { suit: t(s.key) })}

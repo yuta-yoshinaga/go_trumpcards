@@ -443,7 +443,7 @@ function BeziquePageContent() {
                       <button
                         key={`${m.type}-${m.suit}`}
                         type="button"
-                        className="px-3 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
+                        className="px-3 py-2 rounded-lg bg-ds-info text-ds-text-on-accent text-sm disabled:opacity-40"
                         onClick={() => setSelectedMeldIndex(i)}
                         disabled={loading}
                         data-testid={`meld-${i}`}

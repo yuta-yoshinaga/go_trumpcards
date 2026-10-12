@@ -23,7 +23,7 @@ import {
   CALLBREAK_MAX_ROUNDS_OPTIONS,
   useCallBreakGame,
 } from '../hooks/useCallBreakGame';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -34,6 +34,7 @@ import i18n from '../i18n';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
+import { scoreTableClass } from '../styles/scoreTableStyles';
 import type { CallBreakResponse } from '../types/card';
 import { CallBreakPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
@@ -118,6 +119,7 @@ const CALLBREAK_PHASE_KEYS: Readonly<Record<number, string>> = {
 export const CallBreakPage = withTutorial(CallBreakPageContent, 'callbreak', CB_TUTORIAL_STEPS);
 /** Inner content of the Call Break page, wrapped by TutorialProvider. */
 function CallBreakPageContent() {
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('callbreak');
   const {
@@ -387,7 +389,13 @@ function CallBreakPageContent() {
                   >
                     <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('scores')}</summary>
                     <div className="overflow-x-auto -mx-2 px-2">
-                      <table className="w-full text-sm text-ds-text-muted min-w-[360px] mt-1">
+                      <table
+                        className={scoreTableClass(
+                          isLargeDesktop,
+                          'w-full text-sm text-ds-text-muted min-w-[360px]',
+                          'mt-1',
+                        )}
+                      >
                         <caption className="sr-only">{t('scores')}</caption>
                         <thead>
                           <tr>
@@ -419,7 +427,9 @@ function CallBreakPageContent() {
                   <div className="my-3 p-2 rounded bg-black/30 relative" data-tutorial="cb-score-table">
                     <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
                     <div className="overflow-x-auto -mx-2 px-2">
-                      <table className="w-full text-sm text-ds-text-muted min-w-[360px]">
+                      <table
+                        className={scoreTableClass(isLargeDesktop, 'w-full text-sm text-ds-text-muted min-w-[360px]')}
+                      >
                         <caption className="sr-only">{t('scores')}</caption>
                         <thead>
                           <tr>

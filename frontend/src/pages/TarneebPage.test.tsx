@@ -426,4 +426,19 @@ describe('TarneebPage', () => {
       expect(region).not.toHaveTextContent('{{');
     });
   });
+  it('fits the score table at large desktop widths', async () => {
+    const innerWidthSpy = vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(1280);
+    try {
+      const { container } = renderWithProviders(<TarneebPage />);
+      await waitFor(() =>
+        expect(container.querySelector('[data-tutorial="tn-score-table"] table')).toBeInTheDocument(),
+      );
+      const table = container.querySelector('[data-tutorial="tn-score-table"] table');
+      expect(table?.className).toContain('table-fixed');
+      expect(table?.className).not.toContain('min-w-[');
+      expect(table?.querySelector('tbody td')?.getAttribute('title')).toBe('あなたのチーム');
+    } finally {
+      innerWidthSpy.mockRestore();
+    }
+  });
 });

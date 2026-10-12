@@ -530,7 +530,7 @@ function BeggarMyNeighbourPageContent() {
                 type="button"
                 onClick={handleStep}
                 disabled={loading || isGameEnd || autoPlaying}
-                className="px-6 py-2 rounded-lg bg-ds-info hover:bg-ds-info text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-6 py-2 rounded-lg bg-ds-info hover:bg-ds-info text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed"
                 data-testid="step-button"
                 data-tutorial="bmn-step-button"
               >
@@ -545,7 +545,7 @@ function BeggarMyNeighbourPageContent() {
                 disabled={isGameEnd}
                 aria-disabled={!autoPlaying && loading}
                 aria-pressed={autoPlaying}
-                className="px-6 py-2 rounded-lg bg-ds-success hover:bg-ds-success-hover text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed aria-disabled:opacity-40 aria-disabled:cursor-not-allowed"
+                className="px-6 py-2 rounded-lg bg-ds-success hover:bg-ds-success-hover text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed aria-disabled:opacity-40 aria-disabled:cursor-not-allowed"
                 data-testid="autoplay-button"
                 data-tutorial="bmn-autoplay-button"
               >

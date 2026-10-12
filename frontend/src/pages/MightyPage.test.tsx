@@ -1167,4 +1167,18 @@ describe('MightyPage aria-labels are translated', () => {
     expect(playArea).not.toContainElement(settings);
     expect(footer.querySelector('[data-tutorial="mighty-player-hand"]')).toBeInTheDocument();
   });
+  it('fits the score table at large desktop widths', async () => {
+    const innerWidthSpy = vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(1280);
+    try {
+      const { container } = renderWithProviders(<MightyPage />);
+      await waitFor(() =>
+        expect(container.querySelector('[data-tutorial="mighty-score-table"] table')).toBeInTheDocument(),
+      );
+      const table = container.querySelector('[data-tutorial="mighty-score-table"] table');
+      expect(table?.className).toContain('table-fixed');
+      expect(table?.className).not.toContain('min-w-[');
+    } finally {
+      innerWidthSpy.mockRestore();
+    }
+  });
 });

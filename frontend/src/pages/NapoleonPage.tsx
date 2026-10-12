@@ -19,7 +19,7 @@ import { ScrollFadeHint } from '../components/ScrollFadeHint';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -37,6 +37,7 @@ import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
+import { scoreTableClass } from '../styles/scoreTableStyles';
 import type { NapoleonResponse } from '../types/card';
 import { NapoleonPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
@@ -118,6 +119,7 @@ const MAX_BID = 17;
 export const NapoleonPage = withTutorial(NapoleonPageContent, 'napoleon', NP_TUTORIAL_STEPS);
 /** Inner content of the Napoleon page, wrapped by TutorialProvider. */
 function NapoleonPageContent() {
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('napoleon');
   const {
@@ -521,7 +523,13 @@ function NapoleonPageContent() {
                   >
                     <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('scores')}</summary>
                     <div className="overflow-x-auto -mx-2 px-2">
-                      <table className="w-full text-sm text-ds-text-muted min-w-[420px] mt-1">
+                      <table
+                        className={scoreTableClass(
+                          isLargeDesktop,
+                          'w-full text-sm text-ds-text-muted min-w-[420px]',
+                          'mt-1',
+                        )}
+                      >
                         <thead>
                           <tr>
                             <th scope="col" className="text-left">
@@ -562,7 +570,9 @@ function NapoleonPageContent() {
                   <div className="my-3 p-2 rounded bg-black/30 relative" data-tutorial="np-score-table">
                     <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
                     <div className="overflow-x-auto -mx-2 px-2">
-                      <table className="w-full text-sm text-ds-text-muted min-w-[420px]">
+                      <table
+                        className={scoreTableClass(isLargeDesktop, 'w-full text-sm text-ds-text-muted min-w-[420px]')}
+                      >
                         <thead>
                           <tr>
                             <th scope="col" className="text-left">

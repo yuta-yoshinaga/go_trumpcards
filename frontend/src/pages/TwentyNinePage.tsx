@@ -503,7 +503,7 @@ function TwentyNinePageContent() {
                       <span key={b.value} title={reason} data-testid={`bid-wrap-${b.value}`}>
                         <button
                           type="button"
-                          className="px-3 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
+                          className="px-3 py-2 rounded-lg bg-ds-info text-ds-text-on-accent text-sm disabled:opacity-40"
                           onClick={() => handleBid(b.value)}
                           disabled={disabled}
                           aria-disabled={disabled}

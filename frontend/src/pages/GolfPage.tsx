@@ -244,7 +244,7 @@ function GolfPageContent() {
               data-testid="combo-badge"
               className={`px-2 py-0.5 rounded-full text-xs font-bold ${
                 combo >= 5
-                  ? 'bg-ds-error text-ds-text-on-accent'
+                  ? 'bg-ds-error text-white'
                   : combo >= 3
                     ? 'bg-ds-warning text-ds-text-on-accent'
                     : 'bg-ds-info text-ds-text-on-accent'

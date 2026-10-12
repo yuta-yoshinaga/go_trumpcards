@@ -552,4 +552,18 @@ describe('NinetyNinePage trick winner badge', () => {
     await waitFor(() => expect(screen.getAllByRole('img').length).toBeGreaterThan(0));
     expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument();
   });
+  it('fits the score table at large desktop widths', async () => {
+    const innerWidthSpy = vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(1280);
+    try {
+      const { container } = renderWithProviders(<NinetyNinePage />);
+      await waitFor(() =>
+        expect(container.querySelector('[data-tutorial="nn-score-table"] table')).toBeInTheDocument(),
+      );
+      const table = container.querySelector('[data-tutorial="nn-score-table"] table');
+      expect(table?.className).toContain('table-fixed');
+      expect(table?.className).not.toContain('min-w-[');
+    } finally {
+      innerWidthSpy.mockRestore();
+    }
+  });
 });

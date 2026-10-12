@@ -414,7 +414,7 @@ function PitchPageContent() {
                             {isLead && (
                               <span
                                 data-testid="pt-trick-lead-badge"
-                                className="absolute -top-1 -left-1 rounded bg-ds-info px-1 py-0.5 text-[9px] font-bold leading-none text-white shadow"
+                                className="absolute -top-1 -left-1 rounded bg-ds-info px-1 py-0.5 text-[9px] font-bold leading-none text-ds-text-on-accent shadow"
                               >
                                 {t('leadBadge')}
                               </span>
