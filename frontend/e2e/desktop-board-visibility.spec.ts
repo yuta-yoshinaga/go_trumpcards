@@ -31,6 +31,7 @@ const PAGES = [
   '/citadel',
   '/russiansolitaire',
   '/clocksolitaire',
+  '/openfacechinese',
   '/canasta',
 ] as const;
 
