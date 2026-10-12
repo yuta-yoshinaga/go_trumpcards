@@ -1,7 +1,12 @@
+// @ts-expect-error Node typings are intentionally excluded from frontend app code.
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   btnDanger,
   btnOutline,
+  btnPokerAccent,
+  btnPokerAllIn,
+  btnPokerPrimary,
   btnPrimary,
   btnSecondary,
   btnSuccess,
@@ -62,7 +67,7 @@ describe('buttonStyles', () => {
 
   it('btnOutline uses design system border and text tokens', () => {
     expect(btnOutline).toContain('ds-border-subtle');
-    expect(btnOutline).toContain('ds-text-muted');
+    expect(btnOutline).toContain('ds-text-on-felt');
     expect(btnOutline).toContain('bg-transparent');
     expect(btnOutline).toContain('hover:bg-ds-surface-elevated');
   });
@@ -75,5 +80,41 @@ describe('buttonStyles', () => {
     });
     const unique = new Set(bgs);
     expect(unique.size).toBe(variants.length);
+  });
+
+  it('uses AA text contrast for colored action buttons from the CSS token values', () => {
+    const css = readFileSync('src/index.css', 'utf8');
+    const token = (name: string) => {
+      const value = css.match(new RegExp(`--color-${name}:\\s*(#[0-9a-fA-F]{6})`))?.[1];
+      if (!value) throw new Error(`Missing color token ${name}`);
+      return value;
+    };
+    const luminance = (hex: string) => {
+      const parts = hex.slice(1).match(/.{2}/g);
+      if (parts?.length !== 3) throw new Error(`Invalid color ${hex}`);
+      const channels = parts.map((part) => parseInt(part, 16) / 255);
+      const linear = channels.map((channel) =>
+        channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4,
+      );
+      const [red, green, blue] = linear;
+      return 0.2126 * (red ?? 0) + 0.7152 * (green ?? 0) + 0.0722 * (blue ?? 0);
+    };
+    const contrast = (foreground: string, background: string) => {
+      const [light, dark] = [luminance(foreground), luminance(background)].sort((a, b) => b - a);
+      return (light + 0.05) / (dark + 0.05);
+    };
+    const cases = [
+      [btnSuccess, 'ds-success'],
+      [btnPokerPrimary, 'poker-call'],
+      [btnPokerAccent, 'poker-raise'],
+      [btnPokerAllIn, 'poker-allin'],
+    ] as const;
+    for (const [button, background] of cases) {
+      expect(button).toContain('text-ds-text-on-accent');
+      const hoverBackground = button.match(/hover:bg-([^\s]+)/)?.[1];
+      expect(hoverBackground).toBeDefined();
+      expect(contrast(token('ds-text-on-accent'), token(background))).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(token('ds-text-on-accent'), token(hoverBackground ?? ''))).toBeGreaterThanOrEqual(4.5);
+    }
   });
 });

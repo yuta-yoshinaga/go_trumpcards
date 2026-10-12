@@ -522,7 +522,7 @@ function BidWhistPageContent() {
                           disabled={disabled}
                           aria-disabled={disabled}
                           aria-label={reason ? `${t(d.key)} — ${reason}` : undefined}
-                          className="px-3 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
+                          className="px-3 py-2 rounded-lg bg-ds-info text-ds-text-on-accent text-sm disabled:opacity-40"
                           data-testid={`bid-dir-${d.id}`}
                         >
                           {t(d.key)}
@@ -556,7 +556,7 @@ function BidWhistPageContent() {
                       aria-label={t('trumpSuitButtonAriaLabel', { glyph: s.glyph, suit: tc(SUIT_I18N_KEYS[s.id]) })}
                       onClick={() => declareTrump(s.id)}
                       disabled={loading}
-                      className="px-3 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
+                      className="px-3 py-2 rounded-lg bg-ds-info text-ds-text-on-accent text-sm disabled:opacity-40"
                       data-testid={`trump-${s.id}`}
                     >
                       {s.glyph}
@@ -570,7 +570,7 @@ function BidWhistPageContent() {
                   type="button"
                   onClick={handleExchange}
                   disabled={loading || !canExchange}
-                  className="px-4 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
+                  className="px-4 py-2 rounded-lg bg-ds-info text-ds-text-on-accent text-sm disabled:opacity-40"
                   data-testid="exchange-button"
                 >
                   {t('exchangeButton', { count: selectedCardIndices.length })}
@@ -582,7 +582,7 @@ function BidWhistPageContent() {
                   type="button"
                   onClick={handlePlay}
                   disabled={loading || selectedIdx === undefined}
-                  className="px-4 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
+                  className="px-4 py-2 rounded-lg bg-ds-info text-ds-text-on-accent text-sm disabled:opacity-40"
                   data-testid="play-button"
                 >
                   {t('playButton')}
@@ -596,7 +596,7 @@ function BidWhistPageContent() {
                   type="button"
                   onClick={requestHint}
                   disabled={loading}
-                  className="px-4 py-2 rounded-lg bg-ds-success text-white text-sm disabled:opacity-40"
+                  className="px-4 py-2 rounded-lg bg-ds-success text-ds-text-on-accent text-sm disabled:opacity-40"
                   data-testid="bidwhist-hint-button"
                 >
                   {t('hintButton')}
@@ -608,7 +608,7 @@ function BidWhistPageContent() {
                   type="button"
                   onClick={nextTrick}
                   disabled={loading}
-                  className="px-4 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
+                  className="px-4 py-2 rounded-lg bg-ds-info text-ds-text-on-accent text-sm disabled:opacity-40"
                   data-testid="next-button"
                 >
                   {t('nextTrickButton')}
@@ -620,7 +620,7 @@ function BidWhistPageContent() {
                   type="button"
                   onClick={nextRound}
                   disabled={loading}
-                  className="px-4 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
+                  className="px-4 py-2 rounded-lg bg-ds-info text-ds-text-on-accent text-sm disabled:opacity-40"
                   data-testid="nextround-button"
                 >
                   {t('nextRoundButton')}

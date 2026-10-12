@@ -306,7 +306,7 @@ function BasraPageContent() {
                         ) : isCandidate ? (
                           <span
                             aria-hidden="true"
-                            className="absolute -top-1 -right-1 rounded-full bg-ds-success text-white text-[10px] leading-none px-1 py-0.5"
+                            className="absolute -top-1 -right-1 rounded-full bg-ds-success text-ds-text-on-accent text-[10px] leading-none px-1 py-0.5"
                           >
                             ✓
                           </span>

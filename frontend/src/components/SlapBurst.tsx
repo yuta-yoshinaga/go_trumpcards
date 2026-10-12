@@ -43,7 +43,8 @@ export function SlapBurst({ triggerKey, outcome, label, testId }: SlapBurstProps
 
   if (!visible) return null;
 
-  const colorClass = outcome === 'correct' ? 'bg-ds-success text-ds-text-on-accent' : 'bg-ds-error text-white';
+  const colorClass =
+    outcome === 'correct' ? 'bg-ds-success text-ds-text-on-accent' : 'bg-ds-error text-ds-text-on-accent';
 
   return (
     <div
