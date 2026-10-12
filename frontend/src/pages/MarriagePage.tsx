@@ -462,12 +462,6 @@ function MarriagePageContent() {
               </div>
             </div>
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -516,6 +510,13 @@ function MarriagePageContent() {
           </div>
 
           <GameFooter
+            message={
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            }
             className={`${marriageTheme.footer} px-4 py-2.5`}
             actions={
               (isDrawPhase && isHumanTurn) || (isDiscardPhase && isHumanTurn) || isRoundEnd ? (

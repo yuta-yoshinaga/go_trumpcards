@@ -28,6 +28,17 @@ const gameEndState = makeBoliviaState({ phase: 4, gameEndFlag: true, winnerIdx: 
 const cpuTurnState = makeBoliviaState({ currentPlayerIdx: 1 });
 
 describe('BoliviaPage', () => {
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      message: 'Footer message test',
+      messageCode: 'test.untranslated',
+    });
+    renderWithProviders(<BoliviaPage />);
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(within(footerMessage).getByRole('status')).toHaveTextContent('Footer message test');
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     mockExec.mockResolvedValue(drawPhaseState);

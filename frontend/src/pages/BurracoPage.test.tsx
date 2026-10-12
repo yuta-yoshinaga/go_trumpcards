@@ -102,6 +102,17 @@ const gameEndState: BurracoResponse = {
 };
 
 describe('BurracoPage', () => {
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      message: 'Footer message test',
+      messageCode: 'test.untranslated',
+    });
+    renderWithProviders(<BurracoPage />);
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(within(footerMessage).getByRole('status')).toHaveTextContent('Footer message test');
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     mockExec.mockResolvedValue(drawPhaseState);

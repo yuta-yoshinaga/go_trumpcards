@@ -115,6 +115,17 @@ const gameEndState: BiribaResponse = {
 };
 
 describe('BiribaPage', () => {
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      message: 'Footer message test',
+      messageCode: 'test.untranslated',
+    });
+    renderWithProviders(<BiribaPage />);
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(within(footerMessage).getByRole('status')).toHaveTextContent('Footer message test');
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     mobileState.isMobile = false;

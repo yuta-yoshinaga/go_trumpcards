@@ -149,6 +149,13 @@ beforeEach(() => {
 });
 
 describe('PanPage', () => {
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, message: 'Footer message test' });
+    renderWithProviders(<PanPage />);
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(within(footerMessage).getByRole('status')).toHaveTextContent('Footer message test');
+  });
+
   it('collapses CPU details on mobile while keeping them in the DOM', async () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });

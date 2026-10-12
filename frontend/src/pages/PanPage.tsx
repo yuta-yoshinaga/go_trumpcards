@@ -468,12 +468,6 @@ function PanPageContent() {
               </div>
             )}
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -483,6 +477,13 @@ function PanPageContent() {
           </div>
 
           <GameFooter
+            message={
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            }
             className={`${gameTheme.pan.footer} px-4 py-2.5`}
             actions={
               (isDrawPhase && isHumanTurn) || (isPlayPhase && isHumanTurn) || isRoundEnd ? (

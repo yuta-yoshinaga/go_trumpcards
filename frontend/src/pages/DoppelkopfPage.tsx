@@ -373,11 +373,6 @@ function DoppelkopfPageContent() {
             </div>
 
             {/* Message */}
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
 
             <ActionLogSection
               isEndPhase={isGameEnd}
@@ -388,7 +383,16 @@ function DoppelkopfPageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.doppelkopf.footer} px-4 py-2.5`}>
+          <GameFooter
+            message={
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            }
+            className={`${gameTheme.doppelkopf.footer} px-4 py-2.5`}
+          >
             {humanPlayer && (
               <PlayerHandSection
                 humanPlayer={humanPlayer}

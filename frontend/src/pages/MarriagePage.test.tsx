@@ -212,6 +212,13 @@ beforeEach(() => {
 });
 
 describe('MarriagePage', () => {
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, message: 'Footer message test' });
+    renderWithProviders(<MarriagePage />);
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(within(footerMessage).getByRole('status')).toHaveTextContent('Footer message test');
+  });
+
   it('renders desktop hand cards through PlayerHandSection', async () => {
     renderWithProviders(<MarriagePage />);
     const footer = await screen.findByTestId('game-footer-content');

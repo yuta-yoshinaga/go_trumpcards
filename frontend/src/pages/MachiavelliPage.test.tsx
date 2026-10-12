@@ -113,6 +113,13 @@ beforeEach(() => {
 });
 
 describe('MachiavelliPage', () => {
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue({ ...turnState, message: 'Footer message test' });
+    renderWithProviders(<MachiavelliPage />);
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(within(footerMessage).getByRole('status')).toHaveTextContent('Footer message test');
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<MachiavelliPage />);

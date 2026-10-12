@@ -507,12 +507,6 @@ function BiribaPageContent() {
               </div>
             </div>
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <ActionLogSection
@@ -550,6 +544,13 @@ function BiribaPageContent() {
           </div>
 
           <GameFooter
+            message={
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            }
             className={`${gameTheme.biriba.footer} px-4 py-2.5`}
             actions={
               <div className="flex gap-2 items-center flex-wrap" data-tutorial="ca-actions">

@@ -610,12 +610,6 @@ function MachiavelliPageContent() {
               </div>
             )}
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -650,6 +644,13 @@ function MachiavelliPageContent() {
           </div>
 
           <GameFooter
+            message={
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            }
             className={`${gameTheme.machiavelli.footer} px-4 py-2.5`}
             actions={
               isHumanTurn ? (

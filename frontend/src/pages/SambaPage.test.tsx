@@ -28,6 +28,17 @@ const gameEndState = makeSambaState({ phase: 4, gameEndFlag: true, winnerIdx: 0 
 const cpuTurnState = makeSambaState({ currentPlayerIdx: 1 });
 
 describe('SambaPage', () => {
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      message: 'Footer message test',
+      messageCode: 'test.untranslated',
+    });
+    renderWithProviders(<SambaPage />);
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(within(footerMessage).getByRole('status')).toHaveTextContent('Footer message test');
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     mobileState.isMobile = true;

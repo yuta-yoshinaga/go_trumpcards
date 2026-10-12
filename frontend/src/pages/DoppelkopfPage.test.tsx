@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { doppelkopfApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -76,6 +76,13 @@ beforeEach(() => {
 });
 
 describe('DoppelkopfPage', () => {
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, message: 'Footer message test' });
+    renderWithProviders(<DoppelkopfPage />);
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(within(footerMessage).getByRole('status')).toHaveTextContent('Footer message test');
+  });
+
   it('keeps the human player summary outside the CPU accordion', async () => {
     renderWithProviders(<DoppelkopfPage />);
     const accordion = await screen.findByTestId('cpu-accordion');
