@@ -121,6 +121,14 @@ function SchnapsenPageContent() {
     return <GameSkeleton gameKey="schnapsen" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 5 }} />;
   }
 
+  const trumpLabel = (
+    <span className="text-ds-text-muted text-sm" data-testid="schnapsen-trump-label">
+      {state.trumpCard
+        ? t('header.trump')
+        : t('header.trumpNoneWithSuit', { suit: suitSymbol(SUIT_TO_DESIGN[state.trumpSuit] ?? '') })}
+    </span>
+  );
+
   const human = state.players.find((p) => p.isHuman);
   const cpu = state.players.find((p) => !p.isHuman);
   const isPlayPhase = state.phase === SchnapsenPhase.PLAY;
@@ -208,24 +216,14 @@ function SchnapsenPageContent() {
               >
                 {state.trumpCard ? (
                   <RotatedTrumpStock
-                    label={
-                      <span className="text-ds-text-muted text-sm" data-testid="schnapsen-trump-label">
-                        {state.trumpCard
-                          ? t('header.trump')
-                          : t('header.trumpNoneWithSuit', { suit: suitSymbol(SUIT_TO_DESIGN[state.trumpSuit] ?? '') })}
-                      </span>
-                    }
+                    label={trumpLabel}
                     trumpCard={<CardImage card={state.trumpCard} width={Math.round(cardWidth * 0.7)} />}
                     stockRemaining={state.stockRemaining}
                     cardWidth={cardWidth}
                     deckTestId="schnapsen-stock-deck"
                   />
                 ) : (
-                  <span className="text-ds-text-muted text-sm" data-testid="schnapsen-trump-label">
-                    {state.trumpCard
-                      ? t('header.trump')
-                      : t('header.trumpNoneWithSuit', { suit: suitSymbol(SUIT_TO_DESIGN[state.trumpSuit] ?? '') })}
-                  </span>
+                  trumpLabel
                 )}
               </div>
             </div>

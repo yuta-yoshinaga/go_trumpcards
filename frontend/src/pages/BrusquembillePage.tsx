@@ -171,6 +171,12 @@ function BrusquembillePageContent() {
     );
   }
 
+  const trumpLabel = (
+    <span className="text-ds-text-muted text-sm" data-testid="brusquembille-trump-label">
+      {state.trumpCard ? t('header.trump') : t('header.trumpNone')}
+    </span>
+  );
+
   // 合法手の判定はバックエンドに任せる。ここで規則を書き直すと二重管理になる。
   const validSet = new Set(state.validIndices ?? []);
   const isPlayable = (idx: number): boolean => validSet.size === 0 || validSet.has(idx);
@@ -268,20 +274,14 @@ function BrusquembillePageContent() {
           >
             {state.trumpCard ? (
               <RotatedTrumpStock
-                label={
-                  <span className="text-ds-text-muted text-sm" data-testid="brusquembille-trump-label">
-                    {state.trumpCard ? t('header.trump') : t('header.trumpNone')}
-                  </span>
-                }
+                label={trumpLabel}
                 trumpCard={<AnimatedCard card={state.trumpCard} width={Math.round(cardWidth * 0.7)} />}
                 stockRemaining={state.stockRemaining}
                 cardWidth={cardWidth}
                 deckTestId="brusquembille-stock-deck"
               />
             ) : (
-              <span className="text-ds-text-muted text-sm" data-testid="brusquembille-trump-label">
-                {state.trumpCard ? t('header.trump') : t('header.trumpNone')}
-              </span>
+              trumpLabel
             )}
           </div>
         </div>

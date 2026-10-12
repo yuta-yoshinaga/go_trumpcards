@@ -128,6 +128,12 @@ function BriscolaPageContent() {
     return <GameSkeleton gameKey="briscola" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 3 }} />;
   }
 
+  const trumpLabel = (
+    <span className="text-ds-text-muted text-sm" data-testid="briscola-trump-label">
+      {state.trumpSuit > 0 ? t('header.trump', { suit: SUIT_LABELS[state.trumpSuit] }) : t('header.trumpNone')}
+    </span>
+  );
+
   const human = state.players.find((p) => p.isHuman);
   const cpu = state.players.find((p) => !p.isHuman);
   const isPlayPhase = state.phase === BriscolaPhase.PLAY;
@@ -209,24 +215,14 @@ function BriscolaPageContent() {
           >
             {state.trumpCard ? (
               <RotatedTrumpStock
-                label={
-                  <span className="text-ds-text-muted text-sm" data-testid="briscola-trump-label">
-                    {state.trumpSuit > 0
-                      ? t('header.trump', { suit: SUIT_LABELS[state.trumpSuit] })
-                      : t('header.trumpNone')}
-                  </span>
-                }
+                label={trumpLabel}
                 trumpCard={<AnimatedCard card={state.trumpCard} width={Math.round(cardWidth * 0.7)} />}
                 stockRemaining={state.stockRemaining}
                 cardWidth={cardWidth}
                 deckTestId="briscola-stock-deck"
               />
             ) : (
-              <span className="text-ds-text-muted text-sm" data-testid="briscola-trump-label">
-                {state.trumpSuit > 0
-                  ? t('header.trump', { suit: SUIT_LABELS[state.trumpSuit] })
-                  : t('header.trumpNone')}
-              </span>
+              trumpLabel
             )}
           </div>
         </div>
