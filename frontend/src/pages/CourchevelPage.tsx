@@ -302,6 +302,7 @@ function CourchevelPageContent() {
                     player={player}
                     showCards={isShowdown}
                     faceDownCount={5}
+                    compactFaceDown={isLargeDesktop}
                     showHandName={isShowdown}
                     usedHoleIdx={cpuUsedHoleIdx}
                     extraInfo={

@@ -442,6 +442,7 @@ function DramahaPageContent() {
                   player={player}
                   showCards={isShowdown}
                   faceDownCount={DRAMAHA_HOLE_CARDS}
+                  compactFaceDown={isLargeDesktop}
                   showHandName={false}
                   extraInfo={
                     <>
