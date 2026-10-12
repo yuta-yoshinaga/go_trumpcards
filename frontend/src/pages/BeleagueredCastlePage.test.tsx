@@ -72,6 +72,26 @@ describe('BeleagueredCastlePage', () => {
     vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
   });
 
+  it('compacts foundations on large desktop and keeps their develop size at 800px', async () => {
+    const originalWidth = window.innerWidth;
+    mockExec.mockResolvedValue(playingState);
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1280 });
+    const large = renderWithProviders(<BeleagueredCastlePage />);
+    const largeCard = (await screen.findAllByRole('button', { name: /組札 1枚/ }))[0];
+    expect(largeCard).toBeDefined();
+    expect(largeCard.querySelector('img')).toHaveStyle({ width: '80px' });
+    large.unmount();
+
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 800 });
+    const desktop = renderWithProviders(<BeleagueredCastlePage />);
+    const desktopCard = (await screen.findAllByRole('button', { name: /組札 1枚/ }))[0];
+    expect(desktopCard).toBeDefined();
+    expect(desktopCard.querySelector('img')).toHaveStyle({ width: '60px' });
+    desktop.unmount();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: originalWidth });
+    window.dispatchEvent(new Event('resize'));
+  });
+
   it('calls reset on initial render', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BeleagueredCastlePage />);
@@ -105,6 +125,8 @@ describe('BeleagueredCastlePage', () => {
     mockExec.mockResolvedValue(progressState);
     renderWithProviders(<BeleagueredCastlePage />);
     expect(await screen.findByTestId('bc-foundation-progress-0')).toHaveTextContent('5/13');
+    expect(screen.getByTestId('bc-foundation-progress-0')).toHaveClass('text-game-text-muted');
+    expect(screen.getByTestId('bc-foundation-progress-0').textContent).not.toContain('✓');
     expect(screen.getByTestId('bc-foundation-progress-1')).toHaveTextContent('1/13');
     expect(screen.getByTestId('bc-foundation-progress-2')).toHaveTextContent('2/13');
     expect(screen.getByTestId('bc-foundation-progress-3')).toHaveTextContent('1/13');

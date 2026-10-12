@@ -85,6 +85,23 @@ afterEach(() => {
 });
 
 describe('ClockSolitairePage', () => {
+  it('tightens the clock radius on large desktop and keeps the develop radius at 800px', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    const large = renderWithProviders(<ClockSolitairePage />);
+    const largeFace = await screen.findByTestId('clock-face');
+    expect(largeFace).toHaveStyle({ width: '430px', height: '480px' });
+    large.unmount();
+
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 800 });
+    const desktop = renderWithProviders(<ClockSolitairePage />);
+    const desktopFace = await screen.findByTestId('clock-face');
+    expect(desktopFace).toHaveStyle({ width: '436px', height: '460px' });
+    desktop.unmount();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+    window.dispatchEvent(new Event('resize'));
+  });
+
   it('fits the clock face to narrow viewports and updates after resizing', async () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: 320 });

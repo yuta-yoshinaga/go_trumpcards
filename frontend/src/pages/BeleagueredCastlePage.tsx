@@ -19,7 +19,7 @@ import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useBeleagueredCastleGame } from '../hooks/useBeleagueredCastleGame';
-import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useDestinationPreview } from '../hooks/useDestinationPreview';
@@ -27,6 +27,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
+import { DESKTOP_COMPACT_CARD_WIDTH } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { BeleagueredCastleResponse } from '../types/card';
 import { BeleagueredCastlePhase } from '../types/phases';
@@ -129,6 +130,7 @@ function BeleagueredCastlePageContent() {
     clearLog,
   });
   const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
+  const breakpoint = useBreakpoint();
   const windowWidth = useWindowWidth();
 
   const dims = useMemo(() => {
@@ -145,6 +147,8 @@ function BeleagueredCastlePageContent() {
   }, [isMobile, windowWidth, cardWidth, cardHeight, cardOverlap]);
 
   const isPlayingForKbd = state?.phase === BeleagueredCastlePhase.PLAYING;
+  const foundationCardWidth = breakpoint === 'largeDesktop' ? DESKTOP_COMPACT_CARD_WIDTH : dims.cw;
+  const foundationCardHeight = breakpoint === 'largeDesktop' ? 120 : dims.ch;
 
   const dispatchMove = useCallback(
     (source: BeleagueredCastleMoveZone, target: BeleagueredCastleMoveZone) => {
@@ -377,6 +381,7 @@ function BeleagueredCastlePageContent() {
                 {[0, 1, 2, 3].map(renderTableauColumn)}
               </div>
 
+              {/* 4 foundations × (120px card + 20px label) = 560px, fitting the 800px viewport. */}
               <div className="flex flex-col items-center gap-1 sm:gap-2 mb-3" data-tutorial="bc-foundation">
                 {state.foundation.map((pile, idx) => {
                   const foundationZone: BeleagueredCastleMoveZone = { zone: 'foundation', col: idx };
@@ -387,7 +392,20 @@ function BeleagueredCastlePageContent() {
                       data-legal-target={legalTargets.foundation.has(idx) ? 'true' : undefined}
                       data-preview-target={legalTargets.foundation.has(idx) && preview.isPreview ? 'true' : undefined}
                     >
-                      <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
+                      <div
+                        className={`text-game-text-muted text-xs${breakpoint === 'largeDesktop' ? ' mb-0 flex h-5 items-center gap-1' : ' mb-1'}`}
+                      >
+                        {FOUNDATION_SUITS[idx]}
+                        {breakpoint === 'largeDesktop' && (
+                          <span
+                            data-testid={`bc-foundation-progress-${idx.toString()}`}
+                            className={`tabular-nums ${pile.length === 13 ? 'text-ds-success' : 'text-game-text-muted'}`}
+                          >
+                            {pile.length === 13 && <span aria-hidden="true">✓ </span>}
+                            {t('foundationProgress', { count: pile.length })}
+                          </span>
+                        )}
+                      </div>
                       <DropZone
                         isDropTarget={dnd.isDropTarget(foundationZone)}
                         onDragOver={dnd.handleDragOver(foundationZone)}
@@ -412,7 +430,7 @@ function BeleagueredCastlePageContent() {
                           >
                             <AnimatedCard
                               card={pile[pile.length - 1]}
-                              width={dims.cw}
+                              width={foundationCardWidth}
                               draggable={false}
                               dealDelay={isAutoCompleting ? idx * 0.15 : 0}
                             />
@@ -428,20 +446,22 @@ function BeleagueredCastlePageContent() {
                             aria-disabled={!selectedSource || undefined}
                             aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
-                            style={{ width: dims.cw, height: dims.ch }}
+                            style={{ width: foundationCardWidth, height: foundationCardHeight }}
                             className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                           >
                             A
                           </button>
                         )}
                       </DropZone>
-                      <div
-                        data-testid={`bc-foundation-progress-${idx.toString()}`}
-                        className={`text-xs mt-1 tabular-nums ${pile.length === 13 ? 'text-ds-success' : 'text-game-text-muted'}`}
-                      >
-                        {pile.length === 13 && <span aria-hidden="true">✓ </span>}
-                        {t('foundationProgress', { count: pile.length })}
-                      </div>
+                      {breakpoint !== 'largeDesktop' && (
+                        <div
+                          data-testid={`bc-foundation-progress-${idx.toString()}`}
+                          className={`text-xs mt-1 tabular-nums ${pile.length === 13 ? 'text-ds-success' : 'text-game-text-muted'}`}
+                        >
+                          {pile.length === 13 && <span aria-hidden="true">✓ </span>}
+                          {t('foundationProgress', { count: pile.length })}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
