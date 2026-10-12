@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, waitForLoaded } from './helpers';
+import { clickHandCard, navigateTo, waitForLoaded } from './helpers';
 
 test.describe('Samba E2E', () => {
   test('navigates, resets, and plays through phase transitions', async ({ page }) => {
@@ -69,7 +69,7 @@ test.describe('Samba E2E', () => {
         interactions++;
         const cardCount = await handCards.count();
         if (cardCount > 0) {
-          await handCards.first().click();
+          await clickHandCard(handCards.first());
         }
         await discardButton.click();
         await waitForLoaded(page);

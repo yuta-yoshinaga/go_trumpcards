@@ -8,11 +8,12 @@ import type { Card, CardDesign, LobaPlayer, LobaResponse } from '../types/card';
 import { LobaPhase } from '../types/phases';
 import { LobaPage } from './LobaPage';
 
-const mobileState = vi.hoisted(() => ({ isMobile: true }));
+const mobileState = vi.hoisted(() => ({ isMobile: true, largeDesktop: false }));
 
 vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
   useIsMobile: () => mobileState.isMobile,
+  useBreakpoint: () => (mobileState.largeDesktop ? 'largeDesktop' : 'desktop'),
 }));
 
 vi.mock('../api/gameApi', () => ({
@@ -75,8 +76,19 @@ describe('LobaPage', () => {
     );
   });
 
+  it('wraps melds on large desktop while retaining the narrow layout elsewhere', async () => {
+    mobileState.largeDesktop = true;
+    const { unmount } = renderWithProviders(<LobaPage />);
+    await waitFor(() => expect(screen.getByTestId('loba-meld').parentElement).toHaveClass('flex-wrap'));
+    unmount();
+    mobileState.largeDesktop = false;
+    renderWithProviders(<LobaPage />);
+    await waitFor(() => expect(screen.getByTestId('loba-meld').parentElement).toHaveClass('sm:flex-col'));
+  });
+
   beforeEach(() => {
     mobileState.isMobile = true;
+    mobileState.largeDesktop = false;
     vi.clearAllMocks();
     // ヒントのトグルは localStorage に残る。消さないと次のテストが
     // チェック済みで始まり、クリックで off になる。
