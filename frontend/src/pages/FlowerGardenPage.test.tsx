@@ -142,6 +142,43 @@ describe('FlowerGardenPage', () => {
     expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 
+  it('enables foundation targets after selecting a tableau card', async () => {
+    mockExec.mockResolvedValue({ ...playingState, foundation: [[], ...playingState.foundation.slice(1)] });
+    renderWithProviders(<FlowerGardenPage />);
+    const foundation = await screen.findByRole('button', { name: '空の組札 (スペード)' });
+    expect(foundation).toHaveAttribute('aria-disabled', 'true');
+    expect(foundation).toHaveAttribute('aria-describedby');
+    fireEvent.click(foundation);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+
+    fireEvent.click(screen.getByRole('button', { name: '♣ 6、列1・位置0' }));
+    expect(foundation).not.toHaveAttribute('aria-disabled');
+    expect(foundation).not.toHaveAttribute('aria-describedby');
+    fireEvent.click(foundation);
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith(
+        'move',
+        { zone: 'tableau', col: 1, cardIndex: 0 },
+        { zone: 'foundation', col: 0 },
+      ),
+    );
+  });
+
+  it('marks an empty foundation as a legal highlighted target for its next card', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau([[{ card: card('SPADE', 1), faceUp: true }]]),
+      foundation: [[], ...playingState.foundation.slice(1)],
+    });
+    renderWithProviders(<FlowerGardenPage />);
+    const target = await screen.findByRole('button', { name: '空の組札 (スペード)' });
+    expect(target).not.toHaveAttribute('data-target-candidate');
+    fireEvent.click(screen.getByRole('button', { name: '♠ A、列0・位置0' }));
+    expect(target).toHaveAttribute('data-target-candidate', 'true');
+    expect(target.className).toContain('ring-ds-success');
+  });
+
   it('names empty and occupied foundations with translated suit names in Japanese and English', async () => {
     const state: FlowerGardenResponse = {
       ...playingState,
@@ -230,6 +267,7 @@ describe('FlowerGardenPage', () => {
   });
 
   it('lays the 16-card bouquet out as a responsive grid (4 cols mobile, 8 cols sm+)', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 800 });
     mockExec.mockResolvedValue(playingState);
     const { container } = renderWithProviders(<FlowerGardenPage />);
     await waitFor(() => expect(screen.getByText('#0')).toBeInTheDocument());
@@ -242,6 +280,34 @@ describe('FlowerGardenPage', () => {
     for (let i = 0; i < 16; i++) {
       expect(screen.getByText(`#${i}`)).toBeInTheDocument();
     }
+  });
+
+  it('uses a single bouquet fan and places compact foundations beside the beds at large desktop', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    mockExec.mockResolvedValue(playingState);
+    const { container } = renderWithProviders(<FlowerGardenPage />);
+    await waitFor(() => expect(screen.getByText('#0')).toBeInTheDocument());
+    const fan = screen.getByTestId('fg-bouquet-fan');
+    expect(fan.children).toHaveLength(16);
+    for (const child of Array.from(fan.children)) {
+      expect(child.querySelector('button, [role="img"]')).not.toBeNull();
+      expect(child.querySelector('span')).toHaveTextContent(/^#\d+$/);
+    }
+    const tableau = container.querySelector('[data-tutorial="fg-tableau"]');
+    expect(tableau).toHaveStyle({ width: '640px' });
+    expect(tableau?.children).toHaveLength(6);
+    expect(tableau?.parentElement).toHaveClass('flex', 'flex-wrap', 'justify-center', 'items-start', 'gap-4');
+    expect(container.querySelector('[data-tutorial="fg-foundation"]')?.parentElement).toBe(tableau?.parentElement);
+    expect(container.querySelectorAll('[data-tutorial="fg-foundation"] button')).toHaveLength(4);
+  });
+
+  it('keeps the develop bouquet grid at 800px', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 800 });
+    mockExec.mockResolvedValue(playingState);
+    const { container } = renderWithProviders(<FlowerGardenPage />);
+    await waitFor(() => expect(screen.getByText('#0')).toBeInTheDocument());
+    expect(container.querySelector('[data-tutorial="fg-reserve"] .grid')).toHaveClass('grid-cols-4', 'sm:grid-cols-8');
+    expect(screen.queryByTestId('fg-bouquet-fan')).not.toBeInTheDocument();
   });
 
   it('uses compact reserve cards on mobile', async () => {
