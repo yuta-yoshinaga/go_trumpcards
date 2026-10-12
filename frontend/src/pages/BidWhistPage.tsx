@@ -409,12 +409,6 @@ function BidWhistPageContent() {
                 })}
               </CardFan>
             </div>
-
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
             {/* サーバーのヒント。押したときだけ出す (#4814)。isRequestedHint は
                 HintOutput が付ける `hintRequested` を待つので、常時表示にはならない。 */}
             {state.hint && isRequestedHint(state) && (
@@ -459,7 +453,16 @@ function BidWhistPageContent() {
             ]}
           />
 
-          <GameFooter className={`${gameTheme.bidwhist.footer} px-4 py-2.5`}>
+          <GameFooter
+            message={
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            }
+            className={`${gameTheme.bidwhist.footer} px-4 py-2.5`}
+          >
             <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="bw-actions">
               {isHumanBidTurn && (
                 <>

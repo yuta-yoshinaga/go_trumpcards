@@ -484,13 +484,6 @@ function MarjapussiPageContent() {
               </div>
             </div>
 
-            {/* Message */}
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -500,7 +493,16 @@ function MarjapussiPageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.marjapussi.footer} px-4 py-2.5`}>
+          <GameFooter
+            message={
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            }
+            className={`${gameTheme.marjapussi.footer} px-4 py-2.5`}
+          >
             <div className="sr-only" role="status" aria-live="polite" data-testid="marjapussi-score-live">
               {teamScoreAnnouncement}
             </div>

@@ -418,13 +418,6 @@ function WhistPageContent() {
               </div>
             </div>
 
-            {/* Message */}
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             {/* Action log */}
@@ -437,7 +430,16 @@ function WhistPageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.whist.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.whist.footer} px-4 py-2.5`}
+            message={
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            }
+          >
             {/* Human cards */}
             {humanPlayer && (
               <div className="mb-1 text-ds-text-muted text-sm" data-testid="whist-human-team">

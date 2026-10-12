@@ -462,4 +462,12 @@ describe('QuadrillePage king call', () => {
     // 催促が**その領域の中**にあること。隣に置いただけの実装は属性の検査を通る。
     expect(live).toContainElement(await screen.findByTestId('quadrille-bid-prompt'));
   });
+
+  it('renders the game message in the footer message region', async () => {
+    mockExec.mockResolvedValue(makeQuadrilleState({ message: 'footer placement check' }));
+    renderWithProviders(<QuadrillePage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage).toHaveTextContent('footer placement check');
+  });
 });

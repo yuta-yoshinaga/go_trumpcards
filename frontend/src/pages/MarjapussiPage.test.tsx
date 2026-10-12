@@ -450,4 +450,12 @@ describe('MarjapussiPage', () => {
       );
     });
   });
+
+  it('renders the game message in the footer message region', async () => {
+    mockExec.mockResolvedValue(makeMarjapussiState({ message: 'footer placement check' }));
+    renderWithProviders(<MarjapussiPage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage).toHaveTextContent('footer placement check');
+  });
 });

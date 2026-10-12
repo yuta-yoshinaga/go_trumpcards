@@ -326,12 +326,6 @@ function BouillottePageContent() {
               </div>
             )}
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -341,7 +335,16 @@ function BouillottePageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.bouillotte.footer} px-4 py-2.5`}>
+          <GameFooter
+            message={
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            }
+            className={`${gameTheme.bouillotte.footer} px-4 py-2.5`}
+          >
             {humanPlayer && humanPlayer.cards.length > 0 ? (
               <div className="mb-2" data-tutorial="bouillotte-hand">
                 <div className="text-ds-text-muted text-xs mb-0.5">

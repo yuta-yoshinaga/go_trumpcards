@@ -619,4 +619,12 @@ describe('BidWhistPage', () => {
     renderWithProviders(<BidWhistPage />);
     expect(await screen.findAllByTestId('card-back-fan')).not.toHaveLength(0);
   });
+
+  it('renders the game message in the footer message region', async () => {
+    mockExec.mockResolvedValue(makeState({ message: 'footer placement check' }));
+    renderWithProviders(<BidWhistPage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage).toHaveTextContent('footer placement check');
+  });
 });

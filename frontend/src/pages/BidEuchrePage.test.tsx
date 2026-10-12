@@ -480,4 +480,12 @@ describe('BidEuchrePage', () => {
     await waitFor(() => expect(screen.getByTestId('bideuchre-play-notice')).toBeInTheDocument());
     expect(screen.queryByTestId('bideuchre-ntlow-play-note')).not.toBeInTheDocument();
   });
+
+  it('renders the game message in the footer message region', async () => {
+    mockExec.mockResolvedValue(makeState({ message: 'footer placement check' }));
+    renderWithProviders(<BidEuchrePage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage).toHaveTextContent('footer placement check');
+  });
 });

@@ -407,13 +407,6 @@ function QuadrillePageContent() {
               </div>
             </div>
 
-            {/* Message */}
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -451,6 +444,13 @@ function QuadrillePageContent() {
 
           {/* Footer */}
           <GameFooter
+            message={
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            }
             className={`${gameTheme.quadrille.footer} px-4 py-2.5`}
             actions={
               canCallKing || canBid || canPlay || isTrickEnd || isRoundEnd ? (

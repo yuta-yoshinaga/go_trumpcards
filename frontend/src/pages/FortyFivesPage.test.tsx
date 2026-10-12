@@ -425,4 +425,12 @@ describe('FortyFivesPage', () => {
     renderWithProviders(<FortyFivesPage />);
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
   });
+
+  it('renders the game message in the footer message region', async () => {
+    mockExec.mockResolvedValue(makeFortyFivesState({ message: 'footer placement check' }));
+    renderWithProviders(<FortyFivesPage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage).toHaveTextContent('footer placement check');
+  });
 });

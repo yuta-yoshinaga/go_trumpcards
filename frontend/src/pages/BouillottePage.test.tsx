@@ -407,4 +407,12 @@ describe('BouillottePage', () => {
       expect(screen.queryByRole('button', { name: /レイズ/ })).not.toBeInTheDocument();
     });
   });
+
+  it('renders the game message in the footer message region', async () => {
+    mockExec.mockResolvedValue(makeBouillotteState({ message: 'footer placement check' }));
+    renderWithProviders(<BouillottePage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage).toHaveTextContent('footer placement check');
+  });
 });

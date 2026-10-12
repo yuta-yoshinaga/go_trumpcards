@@ -59,6 +59,14 @@ beforeEach(() => {
 });
 
 describe('WhistPage', () => {
+  it('renders the game message in the footer message region', async () => {
+    mockExec.mockResolvedValue(makeState({ message: 'あなたの手番です' }));
+    renderWithProviders(<WhistPage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage).toHaveTextContent('あなたの手番です');
+  });
+
   it('announces trump beside its card name while preserving other card names', async () => {
     mockExec.mockResolvedValue(makeState({ trumpSuit: 1 }));
     renderWithProviders(<WhistPage />);
