@@ -89,6 +89,13 @@ afterEach(async () => {
 });
 
 describe('FiveHundredPage', () => {
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue(makeState({ message: 'Your turn notice' }));
+    renderWithProviders(<FiveHundredPage />);
+
+    expect(await screen.findByTestId('game-footer-message')).toHaveTextContent('Your turn notice');
+  });
+
   it('collapses CPU seats on mobile and opens them on desktop', async () => {
     renderWithProviders(<FiveHundredPage />);
     const mobileAccordion = await screen.findByTestId('cpu-accordion');

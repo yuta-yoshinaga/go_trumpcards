@@ -399,15 +399,6 @@ function MadrassoPageContent() {
               </div>
             </div>
 
-            {/* Message */}
-            <div data-tutorial="tr-point-info">
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-              />
-            </div>
-
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -417,7 +408,18 @@ function MadrassoPageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.madrasso.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.madrasso.footer} px-4 py-2.5`}
+            message={
+              <div data-tutorial="tr-point-info">
+                <GameMessageBox
+                  message={state.message}
+                  messageCode={state.messageCode}
+                  messageParams={state.messageParams}
+                />
+              </div>
+            }
+          >
             {humanPlayer && (
               <PlayerHandSection
                 humanPlayer={humanPlayer}

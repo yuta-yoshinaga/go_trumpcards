@@ -61,6 +61,13 @@ beforeEach(() => {
 });
 
 describe('YanivPage', () => {
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue(makeState({ message: 'Your turn notice' }));
+    renderWithProviders(<YanivPage />);
+
+    expect(await screen.findByTestId('game-footer-message')).toHaveTextContent('Your turn notice');
+  });
+
   it('collapses CPU seats on mobile while keeping their details available', async () => {
     mobileState.isMobile = true;
     renderWithProviders(<YanivPage />);

@@ -73,6 +73,13 @@ const gameOverState: SalicLawResponse = {
 };
 
 describe('SalicLawPage', () => {
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue({ ...playingState, message: 'Your turn notice' });
+    renderWithProviders(<SalicLawPage />);
+
+    expect(await screen.findByTestId('game-footer-message')).toHaveTextContent('Your turn notice');
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.removeItem('cli-mode-saliclaw');

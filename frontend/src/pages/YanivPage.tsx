@@ -407,11 +407,6 @@ function YanivPageContent() {
               </div>
             </div>
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
             {state.roundScoreHistory.length > 0 && (
               <section aria-label={t('label.roundHistory')} className="overflow-x-auto rounded-lg bg-ds-surface p-3">
                 <h2 className="mb-2 text-sm font-medium text-ds-text-primary">{t('label.roundHistory')}</h2>
@@ -475,7 +470,16 @@ function YanivPageContent() {
             ]}
           />
 
-          <GameFooter className={`${gameTheme.yaniv.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.yaniv.footer} px-4 py-2.5`}
+            message={
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            }
+          >
             {discardWarning && (
               <div role="status" data-testid="discard-warning" className="mb-2 text-center text-xs text-ds-warning">
                 ⚠️ {discardWarning}

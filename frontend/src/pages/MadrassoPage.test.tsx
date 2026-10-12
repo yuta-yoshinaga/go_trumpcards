@@ -34,6 +34,15 @@ beforeEach(() => {
 });
 
 describe('MadrassoPage', () => {
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue(makeMadrassoState({ message: 'Your turn notice' }));
+    renderWithProviders(<MadrassoPage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage).toHaveTextContent('Your turn notice');
+    expect(footerMessage.querySelector('[data-tutorial="tr-point-info"]')).not.toBeNull();
+  });
+
   it('labels cumulative deals against the target separately from round card points', async () => {
     mockExec.mockResolvedValue(
       makeMadrassoState({

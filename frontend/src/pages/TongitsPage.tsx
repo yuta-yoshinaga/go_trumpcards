@@ -404,12 +404,6 @@ function TongitsPageContent() {
               </div>
             </div>
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -435,6 +429,13 @@ function TongitsPageContent() {
 
           <GameFooter
             className={`${gameTheme.tongits.footer} px-4 py-2.5`}
+            message={
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            }
             actions={
               <div className="flex gap-2 items-center flex-wrap">
                 {isDrawPhase && isHumanTurn && (

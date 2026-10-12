@@ -65,6 +65,13 @@ beforeEach(() => {
 });
 
 describe('TongitsPage', () => {
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue(state({ message: 'Your turn notice' }));
+    renderWithProviders(<TongitsPage />);
+
+    expect(await screen.findByTestId('game-footer-message')).toHaveTextContent('Your turn notice');
+  });
+
   it('stacks mobile hand rows in the footer', async () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });

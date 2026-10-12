@@ -83,6 +83,13 @@ beforeEach(() => {
 });
 
 describe('TwentyNinePage', () => {
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue(makeTwentyNineState({ message: 'Your turn notice' }));
+    renderWithProviders(<TwentyNinePage />);
+
+    expect(await screen.findByTestId('game-footer-message')).toHaveTextContent('Your turn notice');
+  });
+
   it('collapses CPU details and bid history on mobile', async () => {
     mobileState.isMobile = true;
     renderWithProviders(<TwentyNinePage />);

@@ -417,11 +417,6 @@ function FiveHundredPageContent() {
               </span>
             </div>
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
           </div>
 
@@ -455,7 +450,16 @@ function FiveHundredPageContent() {
             ]}
           />
 
-          <GameFooter className={`${gameTheme.fivehundred.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.fivehundred.footer} px-4 py-2.5`}
+            message={
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            }
+          >
             <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="fh-actions">
               {isHumanBidTurn && (
                 <>
