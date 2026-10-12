@@ -344,7 +344,7 @@ function CanfieldPageContent() {
             ]}
           />
 
-          <LandscapeBanner message={phaseName} />
+          <LandscapeBanner message={t('landscapeBanner')} />
 
           <p className="mb-2 text-center text-xs text-ds-text-muted" data-testid="cf-base-rank-rule" role="note">
             {t('baseRankRule')}
