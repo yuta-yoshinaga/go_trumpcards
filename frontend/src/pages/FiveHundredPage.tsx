@@ -509,7 +509,7 @@ function FiveHundredPageContent() {
                         tricks: bidTricks,
                         value: fivehundredBidValue(bidTricks, s.id),
                       })}
-                      className={`flex flex-col items-center rounded-lg bg-ds-info px-3 py-1.5 text-sm text-white disabled:opacity-40 ${bidIsUnder(fivehundredBidValue(bidTricks, s.id)) ? 'opacity-40 cursor-not-allowed' : ''}`}
+                      className={`flex flex-col items-center rounded-lg bg-ds-info px-3 py-1.5 text-sm text-ds-text-on-accent disabled:opacity-40 ${bidIsUnder(fivehundredBidValue(bidTricks, s.id)) ? 'opacity-40 cursor-not-allowed' : ''}`}
                     >
                       <span aria-hidden="true">{s.glyph}</span>
                       <span aria-hidden="true" className="text-[10px] text-white">
@@ -527,7 +527,7 @@ function FiveHundredPageContent() {
                     aria-disabled={bidIsUnder(fivehundredBidValue(bidTricks, -1))}
                     aria-describedby={bidIsUnder(fivehundredBidValue(bidTricks, -1)) ? 'fh-underbid-reason' : undefined}
                     data-testid="fh-bid-nt"
-                    className={`flex flex-col items-center rounded-lg bg-ds-info px-3 py-1.5 text-sm text-white disabled:opacity-40 ${bidIsUnder(fivehundredBidValue(bidTricks, -1)) ? 'opacity-40 cursor-not-allowed' : ''}`}
+                    className={`flex flex-col items-center rounded-lg bg-ds-info px-3 py-1.5 text-sm text-ds-text-on-accent disabled:opacity-40 ${bidIsUnder(fivehundredBidValue(bidTricks, -1)) ? 'opacity-40 cursor-not-allowed' : ''}`}
                   >
                     <span>NT</span>
                     <span className="text-[10px] text-white">
@@ -577,7 +577,7 @@ function FiveHundredPageContent() {
                   type="button"
                   onClick={handleExchange}
                   disabled={loading || selectedCardIndices.length !== 3}
-                  className="px-4 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
+                  className="px-4 py-2 rounded-lg bg-ds-info text-ds-text-on-accent text-sm disabled:opacity-40"
                   data-testid="exchange-button"
                 >
                   {t('exchangeButton', { count: selectedCardIndices.length })}
@@ -596,7 +596,7 @@ function FiveHundredPageContent() {
                         disabled={loading}
                         aria-label={t('nominateSuitAria', { suit: t(`suitName.${s.nameKey}`) })}
                         data-testid={`fh-nominate-suit-${s.id}`}
-                        className="px-3 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
+                        className="px-3 py-2 rounded-lg bg-ds-info text-ds-text-on-accent text-sm disabled:opacity-40"
                       >
                         <span aria-hidden="true">{s.glyph}</span>
                       </button>
@@ -607,7 +607,7 @@ function FiveHundredPageContent() {
                     type="button"
                     onClick={() => handlePlay()}
                     disabled={loading || selectedIdx === undefined}
-                    className="px-4 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
+                    className="px-4 py-2 rounded-lg bg-ds-info text-ds-text-on-accent text-sm disabled:opacity-40"
                     data-testid="play-button"
                   >
                     {t('playButton')}
@@ -619,7 +619,7 @@ function FiveHundredPageContent() {
                   type="button"
                   onClick={nextTrick}
                   disabled={loading}
-                  className="px-4 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
+                  className="px-4 py-2 rounded-lg bg-ds-info text-ds-text-on-accent text-sm disabled:opacity-40"
                   data-testid="next-button"
                 >
                   {t('nextTrickButton')}
@@ -661,7 +661,7 @@ function FiveHundredPageContent() {
                   type="button"
                   onClick={nextRound}
                   disabled={loading}
-                  className="px-4 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
+                  className="px-4 py-2 rounded-lg bg-ds-info text-ds-text-on-accent text-sm disabled:opacity-40"
                   data-testid="nextround-button"
                 >
                   {t('nextRoundButton')}

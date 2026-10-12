@@ -281,7 +281,9 @@ function SixCardGolfPageContent() {
                       key={cIdx}
                       data-testid={`scg-column-score-${cIdx}`}
                       className={`rounded px-1 py-0.5 text-center font-medium text-xs ${
-                        col.isPair ? 'bg-ds-success text-white' : 'bg-ds-surface-elevated text-ds-text-muted'
+                        col.isPair
+                          ? 'bg-ds-success text-ds-text-on-accent'
+                          : 'bg-ds-surface-elevated text-ds-text-muted'
                       }`}
                     >
                       {col.isPair
@@ -363,7 +365,7 @@ function SixCardGolfPageContent() {
                 {canDrawDiscard && (
                   <button
                     type="button"
-                    className={`mt-1 px-3 py-1 rounded bg-ds-success hover:bg-ds-success-hover text-white text-sm ${focusRingWhite}`}
+                    className={`mt-1 px-3 py-1 rounded bg-ds-success hover:bg-ds-success-hover text-ds-text-on-accent text-sm ${focusRingWhite}`}
                     onClick={handleDrawDiscard}
                     disabled={loading}
                   >
@@ -407,7 +409,7 @@ function SixCardGolfPageContent() {
             <div className="flex justify-center">
               <button
                 type="button"
-                className={`px-4 py-2 rounded bg-ds-success hover:bg-ds-success-hover text-white ${focusRingWhite}`}
+                className={`px-4 py-2 rounded bg-ds-success hover:bg-ds-success-hover text-ds-text-on-accent ${focusRingWhite}`}
                 onClick={handleNextRound}
                 disabled={loading}
               >

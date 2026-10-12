@@ -392,6 +392,7 @@ describe('TichuPage', () => {
     );
     renderWithProviders(<TichuPage />);
     await waitFor(() => expect(screen.getByTestId('tichu-bomb-badge-0')).toBeInTheDocument());
+    expect(screen.getByTestId('tichu-bomb-badge-0')).toHaveClass('bg-ds-error', 'text-white');
     // All four sevens are badged; the nine is not.
     expect(screen.getByTestId('tichu-bomb-badge-3')).toBeInTheDocument();
     expect(screen.queryByTestId('tichu-bomb-badge-4')).not.toBeInTheDocument();

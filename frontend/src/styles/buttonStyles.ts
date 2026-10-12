@@ -6,22 +6,22 @@ export const btnPrimary = `${base} text-ds-text-on-accent bg-ds-accent hover:bg-
 /** Warning (orange) button style. */
 export const btnWarning = `${base} text-ds-text-on-accent bg-ds-warning hover:bg-ds-warning-hover`;
 /** Success (green) button style. */
-export const btnSuccess = `${base} text-white bg-ds-success hover:bg-ds-success-hover`;
+export const btnSuccess = `${base} text-ds-text-on-accent bg-ds-success hover:bg-ds-success-hover`;
 /** Danger (red) button style. */
 export const btnDanger = `${base} text-white bg-ds-error hover:bg-ds-error-hover`;
 /** Secondary (surface) button style. */
 export const btnSecondary = `${base} text-ds-text-primary bg-ds-surface-elevated hover:bg-ds-surface-elevated-hover`;
 
 /** Poker primary (emerald) — call/check action. */
-export const btnPokerPrimary = `${base} text-white bg-poker-call hover:bg-poker-call-hover`;
+export const btnPokerPrimary = `${base} text-ds-text-on-accent bg-poker-call hover:bg-poker-call-hover`;
 /** Poker accent (sky) — raise/bet action. */
-export const btnPokerAccent = `${base} text-white bg-poker-raise hover:bg-poker-raise-hover`;
+export const btnPokerAccent = `${base} text-ds-text-on-accent bg-poker-raise hover:bg-poker-raise-hover`;
 /** Poker all-in (amber) — high-stakes action. */
-export const btnPokerAllIn = `${base} text-white bg-poker-allin hover:bg-poker-allin-hover`;
+export const btnPokerAllIn = `${base} text-ds-text-on-accent bg-poker-allin hover:bg-poker-allin-hover`;
 /** Poker muted (gray) — fold action. */
 export const btnPokerMuted = `${base} text-white bg-poker-fold hover:bg-poker-fold-hover`;
 /** Outline button — minimal visual weight for reset etc. */
-export const btnOutline = `${base} text-ds-text-muted border border-ds-border-subtle bg-transparent hover:bg-ds-surface-elevated`;
+export const btnOutline = `${base} text-ds-text-on-felt border border-ds-border-subtle bg-transparent hover:bg-ds-surface-elevated`;
 
 /** Gold accent focus ring style for keyboard navigation. */
 export const focusRingAccent =

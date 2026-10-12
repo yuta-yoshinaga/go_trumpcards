@@ -23,6 +23,15 @@ describe('SlapBurst', () => {
     expect(screen.getByText('PAIR!')).toBeInTheDocument();
   });
 
+  it('uses dark text for success and white text for error', () => {
+    const { rerender } = render(<SlapBurst triggerKey={1} outcome="correct" label="PAIR!" />);
+    expect(screen.getByTestId('slap-burst').firstElementChild).toHaveClass('bg-ds-success', 'text-ds-text-on-accent');
+
+    rerender(<SlapBurst triggerKey={2} outcome="wrong" label="MISS!" />);
+    expect(screen.getByTestId('slap-burst').firstElementChild).toHaveClass('bg-ds-error', 'text-white');
+    expect(screen.getByTestId('slap-burst').firstElementChild).not.toHaveClass('text-ds-text-on-accent');
+  });
+
   it('auto-dismisses after the burst timeout', () => {
     render(<SlapBurst triggerKey={1} outcome="correct" label="PAIR!" />);
     expect(screen.getByTestId('slap-burst')).toBeInTheDocument();
