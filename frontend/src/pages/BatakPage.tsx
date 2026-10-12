@@ -251,6 +251,10 @@ function BatakPageContent() {
     return reason ? t(reasonKeys[reason]) : undefined;
   };
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.batak')}
@@ -541,13 +545,7 @@ function BatakPageContent() {
               </div>
             </div>
 
-            <div>
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-              />
-            </div>
+            <div>{isMobile && messageBox}</div>
 
             <ActionLogSection
               isEndPhase={isGameEnd}
@@ -610,6 +608,7 @@ function BatakPageContent() {
           </div>
 
           <GameFooter
+            message={isMobile ? undefined : messageBox}
             className={`${gameTheme.batak.footer} px-4 py-2.5`}
             actions={
               <div className="flex gap-2 items-center" data-tutorial="batak-play-button">

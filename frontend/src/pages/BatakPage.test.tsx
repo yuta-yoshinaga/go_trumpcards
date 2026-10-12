@@ -1,5 +1,5 @@
 import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { batakApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import i18n from '../i18n';
@@ -74,7 +74,30 @@ beforeEach(() => {
   mockExec.mockResolvedValue(playPhaseState);
 });
 
+afterEach(() => {
+  mobileFlag.value = false;
+  Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1024 });
+});
+
 describe('BatakPage', () => {
+  it('renders turn guidance in the footer on desktop', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1024 });
+    mockExec.mockResolvedValue({ ...playPhaseState, message: 'Footer guidance' });
+    renderWithProviders(<BatakPage />);
+    const message = await screen.findByText('Footer guidance');
+    expect(message.closest('[data-testid="game-footer-message"]')).toBeInTheDocument();
+  });
+
+  it('keeps turn guidance in the play area on mobile', async () => {
+    mobileFlag.value = true;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 375 });
+    mockExec.mockResolvedValue({ ...playPhaseState, message: 'Mobile guidance' });
+    renderWithProviders(<BatakPage />);
+    const message = await screen.findByText('Mobile guidance');
+    expect(message.closest('[role="status"]')).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<BatakPage />);

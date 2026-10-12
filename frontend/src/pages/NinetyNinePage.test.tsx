@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, ninetyNineApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { NinetyNineResponse } from '../types/card';
@@ -117,7 +117,28 @@ beforeEach(() => {
   mockExec.mockResolvedValue(playPhaseState);
 });
 
+afterEach(() => {
+  Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1024 });
+});
+
 describe('NinetyNinePage', () => {
+  it('renders turn guidance in the footer on desktop', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1024 });
+    mockExec.mockResolvedValue({ ...playPhaseState, message: 'Footer guidance' });
+    renderWithProviders(<NinetyNinePage />);
+    const message = await screen.findByText('Footer guidance');
+    expect(message.closest('[data-testid="game-footer-message"]')).toBeInTheDocument();
+  });
+
+  it('keeps turn guidance in the play area on mobile', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 375 });
+    mockExec.mockResolvedValue({ ...playPhaseState, message: 'Mobile guidance' });
+    renderWithProviders(<NinetyNinePage />);
+    const message = await screen.findByText('Mobile guidance');
+    expect(message.closest('[role="status"]')).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+  });
+
   it('shows only the human player’s buried cards after the bid phase', async () => {
     mockExec.mockResolvedValue(playPhaseState);
     renderWithProviders(<NinetyNinePage />);

@@ -145,7 +145,7 @@ function OpenFaceChinesePageContent() {
   useMountReset(exec);
 
   const phaseNames = usePhaseNames('openfacechinese', OFC_PHASE_KEYS);
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
 
   // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
   // だけフック数が変わってページが骨組みのまま固まる (#4561)。
@@ -281,6 +281,10 @@ function OpenFaceChinesePageContent() {
       </fieldset>
     );
   };
+
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
 
   return (
     <GamePageShell
@@ -560,11 +564,7 @@ function OpenFaceChinesePageContent() {
               <div className="mt-3 text-center text-ds-text-primary text-sm font-semibold">{t('roundEndTitle')}</div>
             )}
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
+            {isMobile && messageBox}
 
             <ActionLogSection
               isEndPhase={isGameEnd}
@@ -575,7 +575,10 @@ function OpenFaceChinesePageContent() {
           </div>
 
           {/* Footer: next round / reset */}
-          <GameFooter className={`${gameTheme.openfacechinese.footer} px-4 py-2.5`}>
+          <GameFooter
+            message={isMobile ? undefined : messageBox}
+            className={`${gameTheme.openfacechinese.footer} px-4 py-2.5`}
+          >
             <ErrorAlert message={error} onRetry={retry} />
             <div className="flex flex-wrap gap-2 items-center">
               {isGameEnd && <span className="text-ds-text-primary text-sm font-semibold mr-1">{t('gameEnd')}</span>}

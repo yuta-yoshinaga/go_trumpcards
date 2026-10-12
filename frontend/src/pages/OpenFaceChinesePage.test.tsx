@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { openfacechineseApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -102,7 +102,28 @@ beforeEach(() => {
   vi.mocked(useCliMode).mockReturnValue(cliModeDisabled);
 });
 
+afterEach(() => {
+  Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1024 });
+});
+
 describe('OpenFaceChinesePage', () => {
+  it('renders turn guidance in the footer on desktop', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1024 });
+    mockExec.mockResolvedValue({ ...placingState, message: 'Footer guidance' });
+    renderWithProviders(<OpenFaceChinesePage />);
+    const message = await screen.findByText('Footer guidance');
+    expect(message.closest('[data-testid="game-footer-message"]')).toBeInTheDocument();
+  });
+
+  it('keeps turn guidance in the play area on mobile', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 375 });
+    mockExec.mockResolvedValue({ ...placingState, message: 'Mobile guidance' });
+    renderWithProviders(<OpenFaceChinesePage />);
+    const message = await screen.findByText('Mobile guidance');
+    expect(message.closest('[role="status"]')).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<OpenFaceChinesePage />);
@@ -168,7 +189,7 @@ describe('OpenFaceChinesePage', () => {
 
   it('collapses only the CPU board on mobile and leaves it open on desktop', async () => {
     const originalWidth = window.innerWidth;
-    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 375 });
     const { unmount } = renderWithProviders(<OpenFaceChinesePage />);
     const mobileCpu = await screen.findByTestId('cpu-accordion');
     expect(mobileCpu).not.toHaveAttribute('open');

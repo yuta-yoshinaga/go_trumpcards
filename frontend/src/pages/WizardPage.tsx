@@ -295,6 +295,10 @@ function WizardPageContent() {
       )
     : [];
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.wizard')}
@@ -581,13 +585,7 @@ function WizardPageContent() {
             </div>
 
             {/* Message */}
-            <div>
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-              />
-            </div>
+            <div>{isMobile && messageBox}</div>
 
             {/* Action log */}
             <ActionLogSection
@@ -599,7 +597,7 @@ function WizardPageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.wizard.footer} px-4 py-2.5`}>
+          <GameFooter message={isMobile ? undefined : messageBox} className={`${gameTheme.wizard.footer} px-4 py-2.5`}>
             {/* Human cards */}
             {humanPlayer &&
               (isMobile ? (

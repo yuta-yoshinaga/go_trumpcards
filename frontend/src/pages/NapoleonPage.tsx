@@ -260,6 +260,10 @@ function NapoleonPageContent() {
 
   const trumpLabel = state.trumpSuit > 0 ? t(`suitName.${SUIT_KEYS[state.trumpSuit]}`) : '';
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.napoleon')}
@@ -621,11 +625,7 @@ function NapoleonPageContent() {
             </div>
 
             {/* Message */}
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
+            {isMobile && messageBox}
 
             {/* Action log */}
             <ActionLogSection
@@ -638,6 +638,7 @@ function NapoleonPageContent() {
 
           {/* Footer */}
           <GameFooter
+            message={isMobile ? undefined : messageBox}
             className={`${gameTheme.napoleon.footer} px-4 py-2.5`}
             actions={
               (isHumanBidTurn || isHumanTurn || isHumanNapoleon || isHumanExchange || isTrickEnd || isRoundEnd) && (

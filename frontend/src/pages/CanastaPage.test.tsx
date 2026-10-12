@@ -138,7 +138,38 @@ const meldDisplayState: CanastaResponse = {
   ],
 };
 
+afterEach(() => {
+  Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1024 });
+});
+
 describe('CanastaPage', () => {
+  it('renders turn guidance in the footer on desktop', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1024 });
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      message: 'Footer guidance',
+      messageCode: undefined,
+      messageParams: undefined,
+    });
+    renderWithProviders(<CanastaPage />);
+    const message = await screen.findByText('Footer guidance');
+    expect(message.closest('[data-testid="game-footer-message"]')).toBeInTheDocument();
+  });
+
+  it('keeps turn guidance in the play area on mobile', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 375 });
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      message: 'Mobile guidance',
+      messageCode: undefined,
+      messageParams: undefined,
+    });
+    renderWithProviders(<CanastaPage />);
+    const message = await screen.findByText('Mobile guidance');
+    expect(message.closest('[role="status"]')).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     mockExec.mockResolvedValue(drawPhaseState);

@@ -217,6 +217,10 @@ function CallBreakPageContent() {
     return reason ? t(reasonKeys[reason]) : undefined;
   };
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.callbreak')}
@@ -483,11 +487,7 @@ function CallBreakPageContent() {
                   </span>
                 ))}
               </div>
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-              />
+              {isMobile && messageBox}
             </div>
 
             <ActionLogSection
@@ -556,6 +556,7 @@ function CallBreakPageContent() {
           </div>
 
           <GameFooter
+            message={isMobile ? undefined : messageBox}
             dataTutorial="cb-play-button"
             className={`${gameTheme.callbreak.footer} px-4 py-2.5`}
             actions={
