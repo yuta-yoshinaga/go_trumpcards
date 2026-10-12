@@ -157,11 +157,30 @@ describe('HandAndFootPage', () => {
       window.dispatchEvent(new Event('resize'));
       mockExec.mockResolvedValue({
         ...drawPhaseState,
-        teams: [{ ...baseTeams[0], melds: [{ cards: [], isNatural: true, isCanasta: false, rank: 7 }] }, baseTeams[1]],
+        teams: [
+          {
+            ...baseTeams[0],
+            melds: [
+              {
+                cards: [
+                  { design: 'SPADE', value: 7 },
+                  { design: 'CLOVER', value: 7 },
+                ],
+                isNatural: true,
+                isCanasta: false,
+                rank: 7,
+              },
+            ],
+          },
+          baseTeams[1],
+        ],
       });
       const { unmount } = renderWithProviders(<HandAndFootPage />);
       const meld = await screen.findByTestId('hf-discard-pile');
       expect(meld.parentElement).toHaveClass('flex', 'flex-wrap');
+      const meldFan = screen.getByTestId('hf-meld-fan-0-0');
+      expect(meldFan).toBeInTheDocument();
+      expect(within(meldFan).getAllByTestId('animated-card')).toHaveLength(2);
       unmount();
 
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 800 });
