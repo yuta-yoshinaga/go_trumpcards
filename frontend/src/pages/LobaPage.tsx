@@ -17,7 +17,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
@@ -78,6 +78,7 @@ function LobaPageContent() {
   );
   const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   const { cardWidth, isMobile } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -220,7 +221,9 @@ function LobaPageContent() {
               {state.melds.length === 0 ? (
                 <div className="text-center text-game-text-muted text-xs">{t('noMelds')}</div>
               ) : (
-                <div className="flex flex-wrap sm:flex-col gap-1 items-center justify-center">
+                <div
+                  className={`flex gap-1 items-center justify-center ${isLargeDesktop ? 'flex-wrap' : 'flex-wrap sm:flex-col'}`}
+                >
                   {state.melds.map((m, i) => (
                     <button
                       key={`meld-${i.toString()}`}
