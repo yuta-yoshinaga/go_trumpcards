@@ -138,6 +138,10 @@ function QuodlibetPageContent() {
   if (!state)
     return <GameSkeleton gameKey="quodlibet" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 8 }} />;
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   const humanPlayer = state.players.find((p) => p.isHuman);
   const isHumanTurn = state.isHumanTurn;
   const isContractPhase = state.phase === QuodlibetPhase.SELECT_CONTRACT;
@@ -406,13 +410,7 @@ function QuodlibetPageContent() {
                 )}
               </div>
             </div>
-
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
+            {isMobile && messageBox}
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -421,7 +419,10 @@ function QuodlibetPageContent() {
             />
           </div>
 
-          <GameFooter className={`${gameTheme.quodlibet.footer} px-4 py-2.5`}>
+          <GameFooter
+            message={isMobile ? undefined : messageBox}
+            className={`${gameTheme.quodlibet.footer} px-4 py-2.5`}
+          >
             {humanPlayer && (
               <PlayerHandSection
                 humanPlayer={humanPlayer}

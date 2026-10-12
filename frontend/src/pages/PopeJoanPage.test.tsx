@@ -9,11 +9,15 @@ import type { CardDesign, PopeJoanPlayer, PopeJoanResponse } from '../types/card
 import { PopeJoanPhase } from '../types/phases';
 import { PopeJoanPage } from './PopeJoanPage';
 
-const mobileState = vi.hoisted(() => ({ isMobile: true }));
+const mobileState = vi.hoisted(() => ({
+  isMobile: true,
+  breakpoint: 'mobile' as 'mobile' | 'desktop' | 'largeDesktop',
+}));
 
 vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
   useIsMobile: () => mobileState.isMobile,
+  useBreakpoint: () => mobileState.breakpoint,
 }));
 
 vi.mock('../api/gameApi', () => ({
@@ -74,6 +78,7 @@ function pickHand(i: number) {
 describe('PopeJoanPage', () => {
   beforeEach(() => {
     mobileState.isMobile = true;
+    mobileState.breakpoint = 'mobile';
     vi.clearAllMocks();
     mockExec.mockResolvedValue(makeState());
   });
@@ -106,6 +111,54 @@ describe('PopeJoanPage', () => {
     expect(cpuDetails).not.toHaveAttribute('open');
     const cpuHands = cpuDetails.querySelector('[role="img"]');
     expect(cpuHands).not.toBeVisible();
+  });
+
+  it('uses CardFan for the hand and keeps the turn-up beside the board on large desktop', async () => {
+    mobileState.breakpoint = 'largeDesktop';
+    renderWithProviders(<PopeJoanPage />);
+    await screen.findAllByTestId('popejoan-compartment');
+    expect(screen.getByTestId('pj-card-fan')).toBeInTheDocument();
+    const board = document.querySelector('[data-tutorial="pj-board"]');
+    const turnUpAndBoard = board?.parentElement;
+    expect(turnUpAndBoard).toHaveClass('flex', 'items-start');
+    expect(turnUpAndBoard?.children).toHaveLength(2);
+    expect(turnUpAndBoard?.lastElementChild).toBe(board);
+  });
+
+  it.each(['mobile', 'largeDesktop'] as const)('handles an empty hand on %s', async (breakpoint) => {
+    mobileState.breakpoint = breakpoint;
+    mockExec.mockResolvedValue(
+      makeState({
+        players: makeState().players.map((player) => ({ ...player, isHuman: false })),
+        turnUp: undefined,
+      }),
+    );
+    renderWithProviders(<PopeJoanPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    if (breakpoint === 'largeDesktop') expect(screen.getByTestId('pj-card-fan')).toBeInTheDocument();
+    else expect(screen.queryByTestId('pj-card-fan')).not.toBeInTheDocument();
+  });
+
+  it('does not allow selecting a card while another player has the turn', async () => {
+    mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1 }));
+    renderWithProviders(<PopeJoanPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    const cards = screen.getAllByRole('button').filter((button) => button.dataset.hintAction === 'play');
+    const cardButton = cards[0];
+    expect(cardButton).toBeDefined();
+    if (!cardButton) throw new Error('expected a hand card');
+    fireEvent.click(cardButton);
+    expect(cardButton).toHaveAttribute('aria-pressed', 'false');
+    expect(cardButton).toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('rings the card suggested by the enabled frontend hint', async () => {
+    localStorage.setItem('hint_enabled_popejoan', 'true');
+    mockExec.mockResolvedValue(makeState({ hint: { cardIndex: 0, reason: 'popejoan.hint.lead' } }));
+    renderWithProviders(<PopeJoanPage />);
+    const cardButton = (await screen.findAllByRole('button')).find((button) => button.dataset.hintAction === 'play');
+    expect(cardButton?.className).toContain('ring-ds-warning');
+    localStorage.removeItem('hint_enabled_popejoan');
   });
 
   it('resets on mount', async () => {
@@ -352,18 +405,26 @@ describe('PopeJoanPage', () => {
   // **並びに従う義務がある。**出せない札を押せてしまうと、サーバに弾かれて
   // 初めて分かる (#4934)。
   describe('playable-card restriction', () => {
-    it('disables and dims the cards that cannot legally be played', async () => {
-      mockExec.mockResolvedValue(makeState({ validPlays: [0] }));
-      renderWithProviders(<PopeJoanPage />);
-      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    it.each(['mobile', 'largeDesktop'] as const)(
+      'disables and dims cards that cannot legally be played at %s',
+      async (breakpoint) => {
+        mobileState.breakpoint = breakpoint;
+        mockExec.mockResolvedValue(makeState({ validPlays: [0] }));
+        renderWithProviders(<PopeJoanPage />);
+        await waitFor(() => expect(mockExec).toHaveBeenCalled());
 
-      const buttons = screen.getAllByRole('button').filter((b) => b.hasAttribute('data-hint-action'));
-      expect(buttons.length).toBeGreaterThan(1);
-      expect(buttons[0]).not.toBeDisabled();
-      expect(buttons[0]).not.toHaveAttribute('data-unplayable');
-      expect(buttons[1]).toBeDisabled();
-      expect(buttons[1]).toHaveAttribute('data-unplayable', 'true');
-    });
+        const buttons = screen.getAllByRole('button').filter((b) => b.hasAttribute('data-hint-action'));
+        expect(buttons.length).toBeGreaterThan(1);
+        expect(buttons[0]).not.toBeDisabled();
+        expect(buttons[0]).not.toHaveAttribute('data-unplayable');
+        expect(buttons[1]).toBeDisabled();
+        expect(buttons[1]).toHaveAttribute('data-unplayable', 'true');
+        fireEvent.click(buttons[0]!);
+        expect(buttons[0]).toHaveAttribute('aria-pressed', 'true');
+        fireEvent.click(buttons[0]!);
+        expect(buttons[0]).toHaveAttribute('aria-pressed', 'false');
+      },
+    );
 
     // **空リストは「一枚も出せない」ではなく「情報が無い」。**空で全部塞ぐと
     // 盤面が操作不能になる。
@@ -374,6 +435,16 @@ describe('PopeJoanPage', () => {
 
       for (const b of screen.getAllByRole('button').filter((x) => x.hasAttribute('data-hint-action'))) {
         expect(b).not.toBeDisabled();
+      }
+    });
+
+    it('does not restrict anything when the play list is missing', async () => {
+      mockExec.mockResolvedValue(makeState({ validPlays: undefined as unknown as number[] }));
+      renderWithProviders(<PopeJoanPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+      for (const button of screen.getAllByRole('button').filter((item) => item.hasAttribute('data-hint-action'))) {
+        expect(button).not.toBeDisabled();
       }
     });
   });

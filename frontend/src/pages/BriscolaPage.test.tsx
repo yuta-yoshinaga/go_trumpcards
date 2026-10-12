@@ -280,7 +280,8 @@ describe('BriscolaPage', () => {
     mockExec.mockResolvedValue(makeState({ trumpCard: undefined, stockRemaining: 0, trumpSuit: 1 }));
     renderWithProviders(<BriscolaPage />);
     const label = await screen.findByTestId('briscola-trump-label');
-    expect(label).toHaveTextContent('♠');
+    expect(label).toHaveTextContent('切り札 (ブリスコラ): ♠');
+    expect(screen.queryByTestId('rotated-trump-card')).not.toBeInTheDocument();
     // The physical card is no longer on the table, only the 3 hand cards remain
     expect(screen.getAllByTestId('animated-card')).toHaveLength(3);
   });
@@ -290,13 +291,15 @@ describe('BriscolaPage', () => {
     renderWithProviders(<BriscolaPage />);
     const label = await screen.findByTestId('briscola-trump-label');
     expect(label).toHaveTextContent('切り札なし');
+    expect(screen.queryByTestId('rotated-trump-card')).not.toBeInTheDocument();
   });
 
   it('renders trump card and trump suit label in normal state with trumpCard present', async () => {
     mockExec.mockResolvedValue(makeState({ trumpSuit: 1, trumpCard: card('SPADE', 13) }));
     renderWithProviders(<BriscolaPage />);
     const label = await screen.findByTestId('briscola-trump-label');
-    expect(label).toHaveTextContent('♠');
+    expect(label).toHaveTextContent('切り札 (ブリスコラ): ♠');
+    expect(screen.getByTestId('rotated-trump-card')).toBeInTheDocument();
     expect(screen.getAllByTestId('animated-card')).toHaveLength(4);
   });
 

@@ -5,6 +5,7 @@
     "gameOver": "Game Over"
   },
   "title": "Canfield",
+  "landscapeBanner": "Landscape mode recommended",
   "stock": "Stock",
   "stockCountAriaLabel": "Stock, {{count}} cards remaining",
   "stockEmptyAriaLabel": "Stock, empty",

@@ -133,6 +133,39 @@ describe('OpenFaceChinesePage', () => {
     expect(screen.queryByText(/次のラウンドは13枚/)).not.toBeInTheDocument();
   });
 
+  it('places the pending card and human board in the same large desktop grid', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    renderWithProviders(<OpenFaceChinesePage />);
+    const humanBoard = await screen.findByTestId('player-0');
+    const layout = screen.getByTestId('ofc-large-desktop-layout');
+    expect(layout).toHaveClass('grid', 'grid-cols-[220px_minmax(0,1fr)_minmax(0,1fr)]');
+    expect(layout).toContainElement(humanBoard);
+    expect(layout).toContainElement(document.querySelector('[data-tutorial="ofc-place"]'));
+    expect(layout).toContainElement(screen.getByTestId('cpu-accordion'));
+    const rowsTarget = document.querySelector('[data-tutorial="ofc-rows"]');
+    expect(rowsTarget).toBe(humanBoard.parentElement);
+    expect(rowsTarget).toHaveClass('col-start-2', 'row-start-1');
+    expect(layout.querySelector('.contents')).not.toHaveAttribute('data-tutorial', 'ofc-rows');
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
+  it('starts CPU grid rows at one regardless of player order', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    mockExec.mockResolvedValue(
+      makeState({
+        config: { cpuDifficulty: 0, playerCount: 3, targetRounds: 1 },
+        players: [makePlayer({ id: 1, isHuman: false }), makePlayer({ id: 0 }), makePlayer({ id: 2, isHuman: false })],
+      }),
+    );
+    renderWithProviders(<OpenFaceChinesePage />);
+    await screen.findByTestId('player-0');
+    expect(screen.getByTestId('player-1').closest('[style]')).toHaveStyle({ gridRowStart: '1' });
+    expect(screen.getByTestId('player-2').closest('[style]')).toHaveStyle({ gridRowStart: '2' });
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
   it('collapses only the CPU board on mobile and leaves it open on desktop', async () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
@@ -407,6 +440,15 @@ describe('OpenFaceChinesePage', () => {
     expect(hint).toHaveTextContent('強い組み合わせはボトムに寄せましょう');
   });
 
+  it('falls back to the back row label for an unknown hinted row', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ hint: { row: 99, reason: 'strong_back' }, messageCode: 'openfacechinese.hintRequested' }),
+    );
+    renderWithProviders(<OpenFaceChinesePage />);
+
+    expect(await screen.findByTestId('ofc-hint')).toHaveTextContent('ボトム');
+  });
+
   it('disables the place button for a full row', async () => {
     // Human top row already holds its 3-card maximum.
     mockExec.mockResolvedValue(
@@ -526,6 +568,41 @@ describe('OpenFaceChinesePage foul-risk warning', () => {
     // **付かないことも確かめる。**全部に印を付ける実装でも「付く」だけなら通る。
     expect(screen.getByTestId('place-middle')).not.toHaveAttribute('data-foul-risk');
     expect(screen.getByTestId('place-back')).not.toHaveAttribute('data-foul-risk');
+  });
+
+  it.each([
+    {
+      row: 'middle',
+      state: makeState({
+        currentCard: card('CLOVER', 3),
+        players: [
+          makePlayer({
+            front: [card('SPADE', 1), card('HEART', 1), card('CLOVER', 1)],
+            middle: [card('SPADE', 2), card('HEART', 4), card('CLOVER', 7), card('DIAMOND', 9)],
+            back: [],
+          }),
+          makePlayer({ id: 1, isHuman: false }),
+        ],
+      }),
+    },
+    {
+      row: 'back',
+      state: makeState({
+        currentCard: card('CLOVER', 3),
+        players: [
+          makePlayer({
+            front: [],
+            middle: [card('SPADE', 1), card('HEART', 1), card('CLOVER', 9), card('DIAMOND', 7), card('SPADE', 5)],
+            back: [card('SPADE', 2), card('HEART', 4), card('CLOVER', 7), card('DIAMOND', 9)],
+          }),
+          makePlayer({ id: 1, isHuman: false }),
+        ],
+      }),
+    },
+  ] as const)('marks a $row placement that would foul', async ({ row, state }) => {
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<OpenFaceChinesePage />);
+    expect(await screen.findByTestId(`place-${row}`)).toHaveAttribute('data-foul-risk', 'true');
   });
 
   // **色は SR に届かない。**文言でも知らせる。

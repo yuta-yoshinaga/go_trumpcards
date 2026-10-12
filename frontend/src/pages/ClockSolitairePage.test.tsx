@@ -85,6 +85,19 @@ afterEach(() => {
 });
 
 describe('ClockSolitairePage', () => {
+  it('renders all pile labels and progress badges above the clock cards', async () => {
+    renderWithProviders(<ClockSolitairePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    for (let i = 0; i < 13; i++) {
+      expect(screen.getByTestId(`clock-pile-label-${i.toString()}`)).toBeVisible();
+      expect(screen.getByTestId(`clock-pile-progress-${i.toString()}`)).toBeVisible();
+    }
+    expect(screen.getByTestId('clock-pile-label-0')).toHaveClass('z-20');
+    expect(screen.getByTestId('clock-pile-progress-0')).toHaveClass('z-20');
+    expect(screen.getByTestId('clock-pile-progress-11')).toHaveStyle({ top: '8px' });
+  });
+
   it('tightens the clock radius on large desktop and keeps the develop radius at 800px', async () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
