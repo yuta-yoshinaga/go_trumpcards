@@ -88,6 +88,14 @@ beforeEach(() => {
 });
 
 describe('BelotePage', () => {
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue(makeState({ message: 'Footer message location' }));
+    renderWithProviders(<BelotePage />);
+
+    const messageSlot = await screen.findByTestId('game-footer-message');
+    expect(messageSlot).toHaveTextContent('Footer message location');
+  });
+
   it('shows localized player names in fixed-width team score headers', async () => {
     renderWithProviders(<BelotePage />);
 

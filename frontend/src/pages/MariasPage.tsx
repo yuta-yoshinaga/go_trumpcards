@@ -367,13 +367,6 @@ function MariasPageContent() {
               </div>
             </div>
 
-            {/* Message */}
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -383,7 +376,16 @@ function MariasPageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.marias.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.marias.footer} px-4 py-2.5`}
+            message={
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            }
+          >
             {marriagePoints > 0 && (
               <div
                 className="mb-1 text-center text-sm text-ds-accent font-semibold"

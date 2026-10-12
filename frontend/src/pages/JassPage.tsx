@@ -407,8 +407,6 @@ function JassPageContent() {
           ]}
         />
 
-        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
-
         <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
         <ActionLogSection
@@ -419,7 +417,12 @@ function JassPageContent() {
         />
       </div>
 
-      <GameFooter className={`${gameTheme.jass.footer} px-4 py-2.5`}>
+      <GameFooter
+        className={`${gameTheme.jass.footer} px-4 py-2.5`}
+        message={
+          <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+        }
+      >
         {humanPlayer && (
           <>
             {humanPlayer.id === state.dealerIdx && (

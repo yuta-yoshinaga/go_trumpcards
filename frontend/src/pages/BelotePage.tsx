@@ -427,8 +427,6 @@ function BelotePageContent() {
           ]}
         />
 
-        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
-
         <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
         <ActionLogSection
@@ -439,7 +437,12 @@ function BelotePageContent() {
         />
       </div>
 
-      <GameFooter className={`${gameTheme.belote.footer} px-4 py-2.5`}>
+      <GameFooter
+        className={`${gameTheme.belote.footer} px-4 py-2.5`}
+        message={
+          <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+        }
+      >
         {humanPlayer && (
           <PlayerHandSection
             humanPlayer={humanPlayer}

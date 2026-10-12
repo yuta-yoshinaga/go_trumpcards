@@ -152,6 +152,14 @@ beforeEach(() => {
 });
 
 describe('ScartoPage', () => {
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue(makeScartoState({ message: 'Footer message location' }));
+    renderWithProviders(<ScartoPage />);
+
+    const messageSlot = await screen.findByTestId('game-footer-message');
+    expect(messageSlot).toHaveTextContent('Footer message location');
+  });
+
   it('uses the taller mobile footer cap', async () => {
     renderWithProviders(<ScartoPage />);
     const content = await screen.findByTestId('game-footer-content');

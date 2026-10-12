@@ -589,13 +589,6 @@ function BridgePageContent() {
               </div>
             </div>
 
-            {/* Message */}
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
             {/* Action log */}
             <ActionLogSection
               isEndPhase={isGameEnd}
@@ -639,6 +632,13 @@ function BridgePageContent() {
           {/* Footer */}
           <GameFooter
             className={`${gameTheme.bridge.footer} px-4 py-2.5`}
+            message={
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            }
             actions={
               isHumanBidTurn || isHumanTurn || isTrickEnd || isRoundEnd ? (
                 <div className="flex gap-1 items-center flex-wrap" data-tutorial="br-play-button">

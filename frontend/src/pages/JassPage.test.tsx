@@ -87,6 +87,14 @@ beforeEach(() => {
 });
 
 describe('JassPage', () => {
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue(makeState({ message: 'Footer message location' }));
+    renderWithProviders(<JassPage />);
+
+    const messageSlot = await screen.findByTestId('game-footer-message');
+    expect(messageSlot).toHaveTextContent('Footer message location');
+  });
+
   it('collapses CPU details and the score table on mobile', async () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });

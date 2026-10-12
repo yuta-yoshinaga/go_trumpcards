@@ -69,6 +69,14 @@ beforeEach(() => {
 });
 
 describe('CatchTenPage', () => {
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue(makeState({ message: 'Footer message location' }));
+    renderWithProviders(<CatchTenPage />);
+
+    const messageSlot = await screen.findByTestId('game-footer-message');
+    expect(messageSlot).toHaveTextContent('Footer message location');
+  });
+
   it('shows each player’s current trick count in Japanese and English', async () => {
     mockExec.mockResolvedValue(
       makeState({ players: makeState().players.map((player, index) => ({ ...player, trickCount: index + 1 })) }),

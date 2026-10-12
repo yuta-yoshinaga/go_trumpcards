@@ -182,6 +182,14 @@ beforeEach(() => {
 });
 
 describe('BridgePage', () => {
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, message: 'Footer message location' });
+    renderWithProviders(<BridgePage />);
+
+    const messageSlot = await screen.findByTestId('game-footer-message');
+    expect(messageSlot).toHaveTextContent('Footer message location');
+  });
+
   it('keeps bidding controls in the fixed footer actions row', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<BridgePage />);

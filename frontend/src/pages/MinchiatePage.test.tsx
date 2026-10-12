@@ -41,6 +41,14 @@ beforeEach(() => {
 });
 
 describe('MinchiatePage', () => {
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue(makeMinchiateState({ message: 'Footer message location' }));
+    renderWithProviders(<MinchiatePage />);
+
+    const messageSlot = await screen.findByTestId('game-footer-message');
+    expect(messageSlot).toHaveTextContent('Footer message location');
+  });
+
   it('uses the taller mobile footer cap', async () => {
     renderWithProviders(<MinchiatePage />);
     const content = await screen.findByTestId('game-footer-content');

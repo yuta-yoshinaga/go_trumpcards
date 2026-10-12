@@ -56,6 +56,14 @@ beforeEach(() => {
 });
 
 describe('TutePage', () => {
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue(makeTuteState({ message: 'Footer message location' }));
+    renderWithProviders(<TutePage />);
+
+    const messageSlot = await screen.findByTestId('game-footer-message');
+    expect(messageSlot).toHaveTextContent('Footer message location');
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<TutePage />);

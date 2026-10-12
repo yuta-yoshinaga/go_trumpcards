@@ -62,6 +62,14 @@ beforeEach(() => {
 });
 
 describe('MariasPage', () => {
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue(makeMariasState({ message: 'Footer message location' }));
+    renderWithProviders(<MariasPage />);
+
+    const messageSlot = await screen.findByTestId('game-footer-message');
+    expect(messageSlot).toHaveTextContent('Footer message location');
+  });
+
   it('collapses CPU details and round progress on mobile while keeping totals visible', async () => {
     mockUseIsMobile.mockReturnValue(true);
     mockUseCardDimensions.mockReturnValue({
