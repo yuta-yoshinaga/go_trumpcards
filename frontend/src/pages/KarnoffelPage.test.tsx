@@ -14,7 +14,7 @@ vi.mock('../api/gameApi', () => ({
 
 const mobileState = { isMobile: false, breakpoint: 'largeDesktop' as 'mobile' | 'desktop' | 'largeDesktop' };
 vi.mock('../hooks/useCardDimensions', () => ({
-  useCardDimensions: () => ({ cardWidth: 40 }),
+  useCardDimensions: () => ({ cardWidth: 40, isMobile: mobileState.isMobile }),
   useIsMobile: () => mobileState.isMobile,
   useBreakpoint: () => mobileState.breakpoint,
 }));
@@ -74,6 +74,26 @@ function handButtons() {
 }
 
 describe('KarnoffelPage', () => {
+  it('renders the game message inside the footer message region', async () => {
+    mockExec.mockResolvedValue(makeState({ message: 'Footer message' }));
+    renderWithProviders(<KarnoffelPage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage.querySelector('[role="status"], [role="alert"]')).toHaveTextContent('Footer message');
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    mobileState.isMobile = true;
+    mockExec.mockResolvedValue(makeState({ message: 'Mobile message' }));
+    renderWithProviders(<KarnoffelPage />);
+
+    const messageText = await screen.findByText('Mobile message');
+    const message = messageText.closest('[role="status"]');
+    expect(message).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+    expect(message?.closest('footer')).not.toBeInTheDocument();
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     mobileState.isMobile = false;

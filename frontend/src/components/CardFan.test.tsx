@@ -31,6 +31,16 @@ describe('CardFan', () => {
     expect(container.firstElementChild).toHaveClass('flex-wrap', 'gap-2');
     vi.stubGlobal('ResizeObserver', MockResizeObserver);
   });
+  it('adds the data-tutorial attribute when dataTutorial is provided', () => {
+    vi.stubGlobal('ResizeObserver', undefined);
+    render(
+      <CardFan itemWidth={106} dataTutorial="ca-player-hand">
+        {cards()}
+      </CardFan>,
+    );
+    expect(document.querySelector('[data-tutorial="ca-player-hand"]')).toBeInTheDocument();
+    vi.stubGlobal('ResizeObserver', MockResizeObserver);
+  });
   it('overlaps one wide row and preserves card elements', () => {
     observedWidth = 1008;
     render(

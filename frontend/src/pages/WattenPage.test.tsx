@@ -79,6 +79,27 @@ beforeEach(() => {
 });
 
 describe('WattenPage', () => {
+  it('renders the game message inside the footer message region', async () => {
+    mockExec.mockResolvedValue(makeWattenState({ message: 'Footer message' }));
+    renderWithProviders(<WattenPage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage.querySelector('[role="status"], [role="alert"]')).toHaveTextContent('Footer message');
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue(makeWattenState({ message: 'Mobile message' }));
+    renderWithProviders(<WattenPage />);
+
+    const messageText = await screen.findByText('Mobile message');
+    const message = messageText.closest('[role="status"]');
+    expect(message).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+    expect(message?.closest('footer')).not.toBeInTheDocument();
+  });
+
   it('keeps the hand in the footer and puts declare choices and trump guidance in the play area', async () => {
     mockExec.mockResolvedValue(declarePhaseState);
     renderWithProviders(<WattenPage />);

@@ -109,6 +109,8 @@ describe('BrusquembillePage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '♠ A を出す' })).toBeInTheDocument());
     // 3 hand cards + 1 face-up trump card are rendered as animated cards.
     expect(screen.getAllByTestId('animated-card')).toHaveLength(4);
+    expect(screen.getByTestId('rotated-trump-card')).toBeInTheDocument();
+    expect(screen.getByTestId('brusquembille-trump-label')).toHaveTextContent('トランプ (ブリュスカンビーユ)');
   });
 
   it('fires play with the selected card index when a card is clicked', async () => {
@@ -306,10 +308,12 @@ describe('BrusquembillePage', () => {
     expect(await screen.findByText('引き分け (40 - 40 - 40)')).toBeInTheDocument();
   });
 
-  it('hides trump card label when stock is exhausted', async () => {
-    mockExec.mockResolvedValue(makeState({ trumpCard: undefined, stockRemaining: 0 }));
+  it('shows the exhausted label without a rotated card when the trump card is absent', async () => {
+    mockExec.mockResolvedValue(makeState({ trumpCard: undefined, trumpSuit: 0, stockRemaining: 0 }));
     renderWithProviders(<BrusquembillePage />);
-    await waitFor(() => expect(screen.getByText(/トランプ: 使い切り/)).toBeInTheDocument());
+    const label = await screen.findByTestId('brusquembille-trump-label');
+    expect(label).toHaveTextContent('トランプ: 使い切り');
+    expect(screen.queryByTestId('rotated-trump-card')).not.toBeInTheDocument();
   });
 
   it('marks play buttons unavailable when it is not the human turn', async () => {

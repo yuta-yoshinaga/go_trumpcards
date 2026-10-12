@@ -55,6 +55,12 @@ beforeEach(() => {
 });
 
 describe('CanfieldPage', () => {
+  it('shows the landscape recommendation instead of the phase name in the banner', async () => {
+    renderWithProviders(<CanfieldPage />);
+    const bannerMessage = await screen.findByText('横画面での表示を推奨します');
+    expect(bannerMessage.parentElement).toHaveTextContent(/^横画面での表示を推奨します$/);
+  });
+
   it('fans the latest three waste cards while keeping only the top card interactive', async () => {
     mockExec.mockResolvedValue({
       ...playingState,

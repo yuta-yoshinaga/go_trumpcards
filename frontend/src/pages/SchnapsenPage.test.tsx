@@ -233,8 +233,25 @@ describe('SchnapsenPage', () => {
   it('keeps showing the trump suit once the trump card is gone', async () => {
     mockExec.mockResolvedValue(makeState({ trumpCard: undefined, trumpSuit: 3, stockRemaining: 0, isEndgame: true }));
     renderWithProviders(<SchnapsenPage />);
-    await waitFor(() => expect(screen.getByText(/切り札: ♥/)).toBeInTheDocument());
+    const label = await screen.findByTestId('schnapsen-trump-label');
+    expect(label).toHaveTextContent('切り札: ♥（山札なし）');
+    expect(screen.queryByTestId('rotated-trump-card')).not.toBeInTheDocument();
     expect(screen.queryByText('切り札: 山札なし')).not.toBeInTheDocument();
+  });
+
+  it('shows the trump label and rotated card while the stock is open', async () => {
+    mockExec.mockResolvedValue(makeState({ trumpCard: card('SPADE', 13), trumpSuit: 1, stockRemaining: 9 }));
+    renderWithProviders(<SchnapsenPage />);
+    expect(await screen.findByTestId('schnapsen-trump-label')).toHaveTextContent('切り札表示カード');
+    expect(screen.getByTestId('rotated-trump-card')).toBeInTheDocument();
+  });
+
+  it('shows the no-trump-suit label when the trump card is absent and trumpSuit is zero', async () => {
+    mockExec.mockResolvedValue(makeState({ trumpCard: undefined, trumpSuit: 0, stockRemaining: 0, isEndgame: true }));
+    renderWithProviders(<SchnapsenPage />);
+    const label = await screen.findByTestId('schnapsen-trump-label');
+    expect(label).toHaveTextContent('切り札: （山札なし）');
+    expect(screen.queryByTestId('rotated-trump-card')).not.toBeInTheDocument();
   });
 
   it('disables play buttons when it is not the human turn', async () => {

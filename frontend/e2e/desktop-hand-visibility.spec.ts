@@ -36,6 +36,7 @@ const PAGES = [
   { path: '/bura', hand: '[data-tutorial="bura-hand"]' },
   { path: '/karnoffel', hand: '[data-tutorial="karnoffel-hand"]' },
   { path: '/binokel', hand: '[data-tutorial="bn-player-hand"]' },
+  { path: '/popejoan', hand: '[data-tutorial="pj-hand"]' },
 ];
 const VISIBLE_PX = 52;
 

@@ -5,6 +5,7 @@
     "gameOver": "ゲームオーバー"
   },
   "title": "オズモシス",
+  "landscapeBanner": "横画面での表示を推奨します",
   "stock": "山札",
   "waste": "ウェイスト",
   "reserve": "リザーブ",

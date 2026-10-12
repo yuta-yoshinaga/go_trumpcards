@@ -15,10 +15,14 @@ vi.mock('../api/gameApi', () => ({
 const mockExec = vi.mocked(binokelApi.exec);
 const mobileState = vi.hoisted(() => ({ isMobile: true }));
 
-vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
-  useIsMobile: () => mobileState.isMobile,
-}));
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useIsMobile: () => mobileState.isMobile,
+    useCardDimensions: () => ({ ...actual.useCardDimensions(), isMobile: mobileState.isMobile }),
+  };
+});
 
 const makePlayers = (overrides?: Partial<BinokelResponse['players'][number]>[]) =>
   [0, 1, 2].map((id) => ({
@@ -193,6 +197,27 @@ afterEach(() => {
 });
 
 describe('BinokelPage', () => {
+  it('renders the game message inside the footer message region', async () => {
+    mobileState.isMobile = false;
+    mockExec.mockResolvedValue({ ...playPhaseState, message: 'Footer message' });
+    renderWithProviders(<BinokelPage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage.querySelector('[role="status"], [role="alert"]')).toHaveTextContent('Footer message');
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    mobileState.isMobile = true;
+    mockExec.mockResolvedValue({ ...playPhaseState, message: 'Mobile message' });
+    renderWithProviders(<BinokelPage />);
+
+    const messageText = await screen.findByText('Mobile message');
+    const message = messageText.closest('[role="status"]');
+    expect(message).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+    expect(message?.closest('footer')).not.toBeInTheDocument();
+  });
+
   it('collapses CPU seats and meld reference on mobile while keeping the human seat visible', async () => {
     renderWithProviders(<BinokelPage />);
     const cpu = await screen.findByTestId('cpu-accordion');
