@@ -2,11 +2,11 @@ import { expect, test } from '@playwright/test';
 import { navigateTo, TIMEOUT_TRANSITION } from './helpers';
 import { measureTextContrast } from './textContrast';
 
-const pages = ['/cucumber', '/anaconda', '/deuceswild', '/spades', '/holdem', '/klondike'];
+const pages = ['/cucumber', '/anaconda', '/deuceswild', '/spades', '/holdem', '/klondike'] as const;
 
 // Measured at 375x667 after #11722 (stable over three runs). Lower a ceiling when a page improves;
 // raising one needs a reason in the PR.
-const overallViolationCeilings: Partial<Record<(typeof pages)[number], number>> = {
+const overallViolationCeilings: Record<(typeof pages)[number], number> = {
   '/cucumber': 1,
   '/anaconda': 1,
   '/deuceswild': 5,
@@ -22,12 +22,13 @@ test.describe('text contrast regression guard', () => {
     test(`${path} has no muted or colored-button AA violations`, async ({ page }) => {
       await navigateTo(page, path);
       await expect(page.locator('[aria-busy="false"]')).toBeVisible({ timeout: TIMEOUT_TRANSITION });
-      const violations = await page.evaluate(measureTextContrast);
+      const { violations, checked } = await page.evaluate(measureTextContrast);
       const muted = violations.filter(({ kind }) => kind === 'muted');
       const coloredButtons = violations.filter(({ kind }) => kind === 'colored-button');
 
       expect(muted, `${path} muted text violations`).toEqual([]);
       expect(coloredButtons, `${path} colored button violations`).toEqual([]);
+      expect(checked, `${path} text nodes checked`).toBeGreaterThanOrEqual(10);
       const ceiling = overallViolationCeilings[path];
       if (ceiling !== undefined) {
         expect(violations.length, `${path} overall AA violations`).toBeLessThanOrEqual(ceiling);

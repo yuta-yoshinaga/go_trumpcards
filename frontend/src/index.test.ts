@@ -21,10 +21,23 @@ describe('felt color contrast', () => {
   const css = readFileSync('src/index.css', 'utf8');
 
   it('keeps every non-dark game felt, bare or under a glass panel, at AA for primary and on-felt text', () => {
-    const backgroundColors = [...css.matchAll(/--color-game-bg-([\w-]+):\s*(#[0-9a-fA-F]{6})/g)]
-      .filter(([, name]) => !name?.endsWith('-dark'))
-      .map(([, name, hex]) => [name, hex] as const);
+    const declarations = [...css.matchAll(/--color-game-bg-([\w-]+):\s*([^;]+);/g)].filter(
+      ([, name]) => !name?.endsWith('-dark'),
+    );
+    const backgroundColors = declarations
+      .filter(([, , value]) => /^#[0-9a-fA-F]{6}$/.test(value?.trim() ?? ''))
+      .map(([, name, value]) => [name, value?.trim()] as const);
+    expect(backgroundColors.length, 'every non-dark game background must be a 6-digit hex color').toBe(
+      declarations.length,
+    );
     expect(backgroundColors.length).toBeGreaterThan(0);
+
+    const readTextColor = (token: string) => {
+      const value = css.match(new RegExp(`${token}:\\s*(#[0-9a-fA-F]{6})\\s*;`))?.[1];
+      expect(value, `${token} must be defined as a 6-digit hex color`).toBeDefined();
+      return value as string;
+    };
+    const textColors = [readTextColor('--color-ds-text-primary'), readTextColor('--color-ds-text-on-felt')];
 
     const luminance = (hex: string) => {
       const channels = hex.slice(1).match(/.{2}/g);
@@ -51,7 +64,7 @@ describe('felt color contrast', () => {
     };
     for (const [name, background] of backgroundColors) {
       for (const surface of [background ?? '', underGlass(background ?? '')]) {
-        for (const text of ['#E8E0D4', '#DDE3EA']) {
+        for (const text of textColors) {
           expect(contrast(text, surface), `${name} (${surface}) with ${text}`).toBeGreaterThanOrEqual(4.5);
         }
       }

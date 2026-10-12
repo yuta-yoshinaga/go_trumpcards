@@ -5,12 +5,19 @@ export interface TextContrastViolation {
   kind: 'muted' | 'colored-button' | 'other';
 }
 
+/** Counts and findings produced by the rendered text contrast scan. */
+export interface TextContrastResult {
+  violations: TextContrastViolation[];
+  skipped: number;
+  checked: number;
+}
+
 /** Measure visible text contrast against its composited DOM background. */
-export function measureTextContrast(): TextContrastViolation[] {
+export function measureTextContrast(): TextContrastResult {
   const canvas = document.createElement('canvas');
   canvas.width = canvas.height = 1;
   const context = canvas.getContext('2d', { willReadFrequently: true });
-  if (!context) return [];
+  if (!context) return { violations: [], skipped: 0, checked: 0 };
 
   const parseColor = (value: string) => {
     if (!value || value === 'transparent') return null;
@@ -70,6 +77,8 @@ export function measureTextContrast(): TextContrastViolation[] {
     right: NonNullable<ReturnType<typeof parseColor>>,
   ) => left.r === right.r && left.g === right.g && left.b === right.b;
   const violations: TextContrastViolation[] = [];
+  let skipped = 0;
+  let checked = 0;
   const seen = new Set<Element>();
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   let node: Node | null;
@@ -94,9 +103,23 @@ export function measureTextContrast(): TextContrastViolation[] {
     }
     if (opacity < 0.1) continue;
 
+    let hasBackgroundImage = false;
+    let backgroundAncestor: Element | null = element;
+    while (backgroundAncestor) {
+      if (getComputedStyle(backgroundAncestor).backgroundImage !== 'none') {
+        hasBackgroundImage = true;
+        break;
+      }
+      backgroundAncestor = backgroundAncestor.parentElement;
+    }
+    if (hasBackgroundImage) {
+      skipped++;
+      continue;
+    }
     const foreground = parseColor(style.color);
     const background = backgroundOf(element);
     if (!foreground || !background) continue;
+    checked++;
     foreground.a *= opacity;
     const renderedForeground = foreground.a < 1 ? blend(foreground, background) : foreground;
     const foregroundLuminance = luminance(renderedForeground);
@@ -116,5 +139,5 @@ export function measureTextContrast(): TextContrastViolation[] {
         : 'other';
     violations.push({ ratio, text: text.slice(0, 80), kind });
   }
-  return violations;
+  return { violations, skipped, checked };
 }
