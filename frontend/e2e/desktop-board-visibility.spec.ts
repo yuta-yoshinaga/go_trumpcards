@@ -74,9 +74,19 @@ for (const path of PAGES) {
 
 test('/agnes keeps every large desktop move button visible', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
-  await navigateTo(page, '/agnes');
+  // The bar lists only the moves that are legal now, so a deal with none renders it empty.
+  // Re-deal until one has a move, so the hit test below always has buttons to check.
   const moveBar = page.getByTestId('agnes-move-bar');
-  await expect(moveBar).toBeVisible();
+  await navigateTo(page, '/agnes');
+  for (let deal = 0; deal < 10; deal++) {
+    if (deal > 0) {
+      // Each mount resets the game, so a reload is a fresh deal.
+      await page.reload();
+      await waitForLoaded(page);
+    }
+    await expect(moveBar).toBeAttached();
+    if ((await moveBar.getByRole('button').count()) > 0) break;
+  }
   await expect(moveBar.getByRole('button').first()).toBeVisible();
 
   const result = await page.evaluate(() => {
