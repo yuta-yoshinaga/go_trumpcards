@@ -72,6 +72,16 @@ function pickHand(i: number) {
 }
 
 describe('NainJaunePage', () => {
+  it('keeps every hand card in the hand fan', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<NainJaunePage />);
+    const hand = await waitFor(() => {
+      const element = document.querySelector('[data-tutorial="nj-hand"]');
+      expect(element).not.toBeNull();
+      return element as HTMLElement;
+    });
+    expect(hand.querySelectorAll('button[data-hint-action="play"]')).toHaveLength(3);
+  });
   beforeEach(() => {
     mobileState.isMobile = true;
     vi.clearAllMocks();

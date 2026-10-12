@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardBackFan } from '../components/CardBackFan';
+import { CardFan } from '../components/CardFan';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -9,7 +11,6 @@ import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
-import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -276,11 +277,7 @@ function ScoponePageContent() {
                       {tc('player.cpu', { id: p.id })} ({t('label.team', { team: p.team })}) —{' '}
                       {t('label.cpuStats', { cards: p.handCount, captured: p.capturedCount, scopa: p.scopaCount })}
                     </div>
-                    <div className="flex gap-0.5 justify-center">
-                      {Array.from({ length: Math.min(p.handCount, 10) }, (_, i) => (
-                        <AnimatedCardBack key={i} width={cardWidth * 0.4} />
-                      ))}
-                    </div>
+                    <CardBackFan count={Math.min(p.handCount, 10)} width={cardWidth * 0.4} />
                   </div>
                 ))}
             </div>
@@ -363,7 +360,7 @@ function ScoponePageContent() {
                   scopa: human.scopaCount,
                 })}
               </div>
-              <div className="flex flex-wrap justify-center gap-2">
+              <CardFan itemWidth={cardWidth + 6}>
                 {human.cards.map((c, i) => (
                   <button
                     key={i}
@@ -379,7 +376,7 @@ function ScoponePageContent() {
                     <AnimatedCard card={c} width={cardWidth} />
                   </button>
                 ))}
-              </div>
+              </CardFan>
             </div>
 
             {/* Round-end score breakdown */}

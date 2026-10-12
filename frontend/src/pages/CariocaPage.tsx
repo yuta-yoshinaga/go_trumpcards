@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { cariocaApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardFan } from '../components/CardFan';
 import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
@@ -570,7 +571,7 @@ function CariocaPageContent() {
                     </button>
                   ))}
                 </fieldset>
-                <div className="flex flex-wrap gap-1">
+                <CardFan itemWidth={cardWidth + 6}>
                   {sortedHandForDisplay(humanPlayer.cards, sortMode).map(({ card: c, index: idx }) => {
                     const isSelected = selectedCards.includes(idx);
                     const isInSlot = contractSlots.some((slot) => slot.includes(idx));
@@ -589,7 +590,7 @@ function CariocaPageContent() {
                       </button>
                     );
                   })}
-                </div>
+                </CardFan>
               </section>
             )}
           </div>

@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { kalookiApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardFan } from '../components/CardFan';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -498,7 +499,7 @@ function KalookiPageContent() {
                     </span>
                   )}
                 </div>
-                <div className="flex flex-wrap gap-1">
+                <CardFan itemWidth={cardWidth + 6}>
                   {humanPlayer.cards.map((c: Card, idx: number) => {
                     const isSelected = selectedCards.includes(idx);
                     const groupIdx = meldGroups.findIndex((g) => g.includes(idx));
@@ -528,7 +529,7 @@ function KalookiPageContent() {
                       </button>
                     );
                   })}
-                </div>
+                </CardFan>
               </section>
             )}
 

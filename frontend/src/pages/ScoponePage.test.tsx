@@ -41,6 +41,18 @@ describe('ScoponePage', () => {
     expect(screen.getByTestId('hand-card-2')).toBeInTheDocument();
   });
 
+  it('keeps every human card in the hand fan', async () => {
+    renderWithProviders(<ScoponePage />);
+    const hand = await waitFor(() => {
+      const element = document.querySelector('[data-tutorial="sp-player-hand"]');
+      expect(element).not.toBeNull();
+      return element as HTMLElement;
+    });
+    expect(hand.querySelectorAll('button[data-testid^="hand-card-"]')).toHaveLength(
+      makeScoponeState().players.find((player) => player.isHuman)?.cards.length ?? 0,
+    );
+  });
+
   it('renders table cards', async () => {
     renderWithProviders(<ScoponePage />);
     await waitFor(() => expect(screen.getByTestId('table-card-0')).toBeInTheDocument());
