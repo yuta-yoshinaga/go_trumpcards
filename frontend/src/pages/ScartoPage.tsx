@@ -216,6 +216,10 @@ function ScartoPageContent() {
     reset();
   };
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.scarto')}
@@ -403,6 +407,7 @@ function ScartoPageContent() {
               </div>
             </div>
 
+            {isMobile && messageBox}
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -445,13 +450,7 @@ function ScartoPageContent() {
           <GameFooter
             tall
             className={`${gameTheme.scarto.footer} px-4 py-2.5`}
-            message={
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-              />
-            }
+            message={!isMobile && messageBox}
             actions={
               canScarto || canPlay || isTrickEnd || isRoundEnd ? (
                 <div className="flex flex-wrap gap-2 items-center" data-tutorial="scarto-action-buttons">

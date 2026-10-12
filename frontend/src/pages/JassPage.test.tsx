@@ -20,6 +20,18 @@ vi.mock('../providers/SoundProvider', () => ({
   useOptionalSound: () => mockSoundValue,
 }));
 
+const mobileState = vi.hoisted(() => ({ isMobile: undefined as boolean | undefined }));
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useCardDimensions: () => {
+      const dimensions = actual.useCardDimensions();
+      return mobileState.isMobile === undefined ? dimensions : { ...dimensions, isMobile: mobileState.isMobile };
+    },
+  };
+});
+
 const mockExec = vi.mocked(jassApi.exec);
 
 const card = (design: string, value: number): Card => ({ design, value }) as unknown as Card;
@@ -81,6 +93,7 @@ const gameEndState = makeState({
 });
 
 beforeEach(() => {
+  mobileState.isMobile = undefined;
   mockExec.mockReset();
   mockPlaySound.mockClear();
   mockExec.mockResolvedValue(initialState);
@@ -93,6 +106,17 @@ describe('JassPage', () => {
 
     const messageSlot = await screen.findByTestId('game-footer-message');
     expect(messageSlot).toHaveTextContent('Footer message location');
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    mockExec.mockResolvedValue(makeState({ message: 'Footer message location' }));
+    mobileState.isMobile = true;
+    renderWithProviders(<JassPage />);
+
+    const messageText = await screen.findByText('Footer message location');
+    const message = messageText.closest('[role="status"]');
+    expect(message).toHaveTextContent('Footer message location');
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
   });
 
   it('collapses CPU details and the score table on mobile', async () => {

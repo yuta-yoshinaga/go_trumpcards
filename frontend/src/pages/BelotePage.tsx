@@ -188,6 +188,10 @@ function BelotePageContent() {
             : 0;
   const callableSuits = allSuits.filter((s) => s !== faceUpSuitNum);
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.belote')}
@@ -429,6 +433,7 @@ function BelotePageContent() {
 
         <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
+        {isMobile && messageBox}
         <ActionLogSection
           isEndPhase={isGameEnd}
           actionLog={actionLog}
@@ -437,12 +442,7 @@ function BelotePageContent() {
         />
       </div>
 
-      <GameFooter
-        className={`${gameTheme.belote.footer} px-4 py-2.5`}
-        message={
-          <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
-        }
-      >
+      <GameFooter className={`${gameTheme.belote.footer} px-4 py-2.5`} message={!isMobile && messageBox}>
         {humanPlayer && (
           <PlayerHandSection
             humanPlayer={humanPlayer}

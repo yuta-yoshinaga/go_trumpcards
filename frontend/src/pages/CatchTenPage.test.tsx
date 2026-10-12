@@ -77,6 +77,17 @@ describe('CatchTenPage', () => {
     expect(messageSlot).toHaveTextContent('Footer message location');
   });
 
+  it('renders the game message in the play area on mobile', async () => {
+    mockExec.mockResolvedValue(makeState({ message: 'Footer message location' }));
+    mobileFlag.value = true;
+    renderWithProviders(<CatchTenPage />);
+
+    const messageText = await screen.findByText('Footer message location');
+    const message = messageText.closest('[role="status"]');
+    expect(message).toHaveTextContent('Footer message location');
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+  });
+
   it('shows each player’s current trick count in Japanese and English', async () => {
     mockExec.mockResolvedValue(
       makeState({ players: makeState().players.map((player, index) => ({ ...player, trickCount: index + 1 })) }),

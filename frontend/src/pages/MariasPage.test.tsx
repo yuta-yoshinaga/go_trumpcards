@@ -10,6 +10,7 @@ vi.mock('../api/gameApi', () => ({
   mariasApi: { exec: vi.fn() },
   actionLogApi: { marias: vi.fn() },
 }));
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
 vi.mock('../hooks/useCardDimensions', async () => ({
   ...(await vi.importActual('../hooks/useCardDimensions')),
   useIsMobile: vi.fn(() => true),
@@ -20,7 +21,7 @@ vi.mock('../hooks/useCardDimensions', async () => ({
     cpuCardWidth: 34,
     footerCardWidth: 36,
     solitaireMinColWidth: 52,
-    isMobile: true,
+    isMobile: mobileState.isMobile,
   })),
 }));
 
@@ -57,17 +58,30 @@ const gameEndState = makeMariasState({
 const cpuTurnState = makeMariasState({ currentPlayerIdx: 1, isHumanTurn: false });
 
 beforeEach(() => {
+  mobileState.isMobile = true;
   mockExec.mockReset();
   mockExec.mockResolvedValue(playPhaseState);
 });
 
 describe('MariasPage', () => {
   it('renders the game message in the footer message slot', async () => {
+    mobileState.isMobile = false;
     mockExec.mockResolvedValue(makeMariasState({ message: 'Footer message location' }));
     renderWithProviders(<MariasPage />);
 
     const messageSlot = await screen.findByTestId('game-footer-message');
     expect(messageSlot).toHaveTextContent('Footer message location');
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    mockExec.mockResolvedValue(makeMariasState({ message: 'Footer message location' }));
+    mobileState.isMobile = true;
+    renderWithProviders(<MariasPage />);
+
+    const messageText = await screen.findByText('Footer message location');
+    const message = messageText.closest('[role="status"]');
+    expect(message).toHaveTextContent('Footer message location');
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
   });
 
   it('collapses CPU details and round progress on mobile while keeping totals visible', async () => {

@@ -13,6 +13,18 @@ vi.mock('../api/gameApi', () => ({
   actionLogApi: { kaiser: vi.fn() },
 }));
 
+const mobileState = vi.hoisted(() => ({ isMobile: undefined as boolean | undefined }));
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useCardDimensions: () => {
+      const d = actual.useCardDimensions();
+      return mobileState.isMobile === undefined ? d : { ...d, isMobile: mobileState.isMobile };
+    },
+  };
+});
+
 const mockExec = vi.mocked(kaiserApi.exec);
 
 const card = (design: CardDesign, value: number) => ({ design, value });
@@ -138,8 +150,20 @@ describe('KaiserPage', () => {
   });
 
   beforeEach(() => {
+    mobileState.isMobile = undefined;
     vi.clearAllMocks();
     mockExec.mockResolvedValue(makeState());
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    mockExec.mockResolvedValue(makeState({ message: 'Mobile message' }));
+    mobileState.isMobile = true;
+    renderWithProviders(<KaiserPage />);
+
+    const messageText = await screen.findByText('Mobile message');
+    const message = messageText.closest('[role="status"]');
+    expect(message).toHaveTextContent('Mobile message');
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
   });
 
   it('resets on mount', async () => {

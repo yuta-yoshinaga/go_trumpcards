@@ -10,6 +10,18 @@ vi.mock('../api/gameApi', () => ({
   actionLogApi: { scarto: vi.fn() },
 }));
 
+const mobileState = vi.hoisted(() => ({ isMobile: undefined as boolean | undefined }));
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useCardDimensions: () => {
+      const dimensions = actual.useCardDimensions();
+      return mobileState.isMobile === undefined ? dimensions : { ...dimensions, isMobile: mobileState.isMobile };
+    },
+  };
+});
+
 const mockExec = vi.mocked(scartoApi.exec);
 
 const suit = (value: number, design: 'HEART' | 'SPADE' | 'CLOVER' | 'DIAMOND', glyph: string, label: string) => ({
@@ -145,6 +157,7 @@ const drawState = makeScartoState({
 const cpuTurnState = makeScartoState({ currentPlayerIdx: 1, isHumanTurn: false });
 
 beforeEach(() => {
+  mobileState.isMobile = undefined;
   window.innerWidth = 375;
   window.dispatchEvent(new Event('resize'));
   mockExec.mockReset();
@@ -153,11 +166,23 @@ beforeEach(() => {
 
 describe('ScartoPage', () => {
   it('renders the game message in the footer message slot', async () => {
+    mobileState.isMobile = false;
     mockExec.mockResolvedValue(makeScartoState({ message: 'Footer message location' }));
     renderWithProviders(<ScartoPage />);
 
     const messageSlot = await screen.findByTestId('game-footer-message');
     expect(messageSlot).toHaveTextContent('Footer message location');
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    mockExec.mockResolvedValue(makeScartoState({ message: 'Footer message location' }));
+    mobileState.isMobile = true;
+    renderWithProviders(<ScartoPage />);
+
+    const messageText = await screen.findByText('Footer message location');
+    const message = messageText.closest('[role="status"]');
+    expect(message).toHaveTextContent('Footer message location');
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
   });
 
   it('uses the taller mobile footer cap', async () => {

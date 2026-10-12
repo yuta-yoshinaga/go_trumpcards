@@ -162,6 +162,10 @@ function JassPageContent() {
         }, [])
       : [];
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.jass')}
@@ -409,6 +413,7 @@ function JassPageContent() {
 
         <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
+        {isMobile && messageBox}
         <ActionLogSection
           isEndPhase={isGameEnd}
           actionLog={actionLog}
@@ -417,12 +422,7 @@ function JassPageContent() {
         />
       </div>
 
-      <GameFooter
-        className={`${gameTheme.jass.footer} px-4 py-2.5`}
-        message={
-          <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
-        }
-      >
+      <GameFooter className={`${gameTheme.jass.footer} px-4 py-2.5`} message={!isMobile && messageBox}>
         {humanPlayer && (
           <>
             {humanPlayer.id === state.dealerIdx && (

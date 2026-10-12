@@ -270,6 +270,10 @@ function CatchTenPageContent() {
     </>
   );
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.catchten')}
@@ -475,6 +479,7 @@ function CatchTenPageContent() {
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             {/* Action log */}
+            {isMobile && messageBox}
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -484,16 +489,7 @@ function CatchTenPageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter
-            className={`${gameTheme.catchten.footer} px-4 py-2.5`}
-            message={
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-              />
-            }
-          >
+          <GameFooter className={`${gameTheme.catchten.footer} px-4 py-2.5`} message={!isMobile && messageBox}>
             {/* Human cards */}
             {humanPlayer && (
               <div className="mb-1 text-ds-text-muted text-sm" data-testid="catchten-human-team">
