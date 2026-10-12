@@ -7,7 +7,7 @@ import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, PyramidCard, PyramidResponse } from '../types/card';
-import { PyramidPage } from './PyramidPage';
+import { compactPyramidRowStep, PyramidPage } from './PyramidPage';
 
 vi.mock('../api/gameApi', () => ({
   pyramidApi: { exec: vi.fn() },
@@ -80,12 +80,57 @@ const withHintState: PyramidResponse = {
   hint: { type: 'pair', row1: 2, col1: 0, row2: 2, col2: 1 },
 };
 
+describe('compactPyramidRowStep', () => {
+  it('clamps to 56 when the available height is small', () => {
+    expect(compactPyramidRowStep(7, 600, 80)).toBe(56);
+  });
+
+  it('clamps to the scaled develop step when the play area has room', () => {
+    expect(compactPyramidRowStep(7, 100, 70)).toBe(70);
+  });
+
+  it('uses the upper bound for zero or one row', () => {
+    expect(compactPyramidRowStep(0, 300, 70)).toBe(70);
+    expect(compactPyramidRowStep(1, 300, 70)).toBe(70);
+  });
+});
+
 beforeEach(() => {
   mockExec.mockResolvedValue(playingState);
   vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
 });
 
 describe('PyramidPage', () => {
+  it('uses compact cards and places stock/waste beside the pyramid on large desktop', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });
+    try {
+      renderWithProviders(<PyramidPage />);
+      const pyramidCard = await screen.findByRole('img', { name: '♠ K' });
+      expect(pyramidCard).toHaveStyle({ width: '80px' });
+      expect(document.querySelector('[data-tutorial="py-pyramid"]')?.parentElement).toBe(
+        document.querySelector('[data-tutorial="py-stock-waste"]')?.parentElement,
+      );
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    }
+  });
+
+  it('keeps develop card sizing and layout at 800px', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 800 });
+    try {
+      renderWithProviders(<PyramidPage />);
+      const pyramidCard = await screen.findByRole('img', { name: '♠ K' });
+      expect(pyramidCard).toHaveStyle({ width: '60px' });
+      expect(document.querySelector('[data-tutorial="py-pyramid"]')?.parentElement).toBe(
+        document.querySelector('[data-tutorial="py-stock-waste"]')?.parentElement,
+      );
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    }
+  });
+
   it('announces the waste count when its top card receives focus', async () => {
     mockExec.mockResolvedValue({ ...playingState, waste: [card('CLOVER', 3), card('SPADE', 13)] });
     renderWithProviders(<PyramidPage />);
