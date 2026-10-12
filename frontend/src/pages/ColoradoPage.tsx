@@ -16,7 +16,7 @@ import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
+import { useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { isRejectedAction, useGameApi } from '../hooks/useGameApi';
@@ -25,6 +25,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useMountReset } from '../hooks/useMountReset';
 import { btnDanger, btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
+import { DESKTOP_COMPACT_CARD_WIDTH } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { ColoradoMoveZone, ColoradoResponse } from '../types/card';
 import { ColoradoPhase } from '../types/phases';
@@ -145,10 +146,9 @@ function ColoradoPageContent() {
   );
   const { handleCommand } = useCliGame(runApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  const { cardWidth, cardHeight } = useCardDimensions();
   const isMobile = useIsMobile();
-  const playCardWidth = isMobile ? MOBILE_PLAY_CARD_WIDTH : cardWidth;
-  const playCardHeight = isMobile ? Math.round(playCardWidth * 1.5) : cardHeight;
+  const playCardWidth = isMobile ? MOBILE_PLAY_CARD_WIDTH : DESKTOP_COMPACT_CARD_WIDTH;
+  const playCardHeight = Math.round(playCardWidth * 1.5);
 
   const handleManualReset = useCallback(() => {
     void runApi('reset');
@@ -302,134 +302,148 @@ function ColoradoPageContent() {
               {tc('label.selectSourceFirst')}
             </span>
             <div className="mb-1 text-xs text-ds-text-muted">{t('foundations')}</div>
-            <div className="flex gap-1 mb-2 flex-nowrap sm:gap-2 sm:mb-5 sm:flex-wrap" data-tutorial="co-foundations">
-              {Array.from({ length: FOUNDATION_CNT }, (_, idx) => {
-                const pile = state.foundation[idx] ?? [];
-                const top = pile[pile.length - 1];
-                const ascending = state.foundationAscending[idx] ?? idx < FOUNDATION_CNT / 2;
-                const nextRank = coloradoNextRank(top?.value, pile.length, ascending);
-                const nextRankLabel = nextRank !== null ? valueName(nextRank) : null;
-                const dirLabel = ascending ? t('ascending') : t('descending');
-                return (
-                  <button
-                    key={`f-${idx.toString()}`}
-                    type="button"
-                    className={`flex flex-col items-center p-0 sm:p-1 rounded ${focusRingWhite} ${hintFoundation === idx ? 'ring-2 ring-ds-success animate-pulse' : ''} ${source && source.kind !== 'stock' ? 'cursor-pointer' : 'cursor-default'}`}
-                    onClick={placeOnFoundation}
-                    disabled={!isPlaying || loading}
-                    aria-disabled={source === null || source.kind === 'stock' || undefined}
-                    aria-describedby={source === null ? selectSourceHintId : undefined}
-                    data-testid={`co-foundation-${idx.toString()}`}
-                    aria-label={
-                      nextRankLabel
-                        ? `${t('foundation')} ${idx} ${dirLabel} ${t('nextRankAria', { rank: nextRankLabel })}`
-                        : `${t('foundation')} ${idx} ${dirLabel} ${t('foundationCompleteAria')}`
-                    }
-                  >
-                    <span className="text-[11px] mb-0.5 text-ds-text-muted">
-                      {ascending ? '↑' : '↓'}F{idx}
-                    </span>
-                    <div className="relative" style={{ width: playCardWidth, height: playCardHeight }}>
-                      {top ? (
-                        <AnimatedCard card={top} width={playCardWidth} />
-                      ) : (
-                        <div
-                          style={{ width: playCardWidth, height: playCardHeight }}
-                          className="rounded border-2 border-dashed border-white/30 flex items-center justify-center text-ds-text-muted text-xs"
-                        >
-                          {t('empty')}
-                        </div>
-                      )}
-                      {nextRankLabel && (
-                        <span
-                          data-testid={`co-foundation-next-${idx.toString()}`}
-                          aria-hidden="true"
-                          className="absolute -top-1 -right-1 px-1.5 py-0.5 rounded-md bg-black/60 text-ds-text-on-accent text-[10px] font-bold leading-none ring-1 ring-white/30"
-                        >
-                          {t('nextRankBadge', { rank: nextRankLabel })}
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-[11px] text-ds-text-muted mt-0.5">
-                      {pile.length}/{FOUNDATION_PILE_FULL}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="flex gap-3 flex-wrap items-start mb-2 sm:mb-5" data-tutorial="co-stock">
-              <div className="flex flex-col items-center">
-                <div className="text-[11px] mb-0.5 text-ds-text-muted">
-                  {t('stock')}:{' '}
-                  <span id="co-stock-count" data-testid="co-stock-count">
-                    {t('stockCount', { count: state.stockCount })}
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleDraw}
-                  disabled={!isPlaying || loading || state.stockCount === 0}
-                  aria-label={t('drawAria')}
-                  aria-describedby="co-stock-count"
-                  data-testid="co-draw-button"
-                  className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${hintStock ? 'ring-2 ring-ds-success animate-pulse' : ''}`}
-                >
-                  {state.stockCount > 0 ? (
-                    <AnimatedCardBack width={playCardWidth} />
-                  ) : (
-                    <div
-                      style={{ width: playCardWidth, height: playCardHeight }}
-                      className="rounded border-2 border-dashed border-white/30 flex items-center justify-center text-ds-text-muted text-xs"
+            <div
+              className={`${isMobile ? 'contents' : 'flex gap-2 mb-2 flex-nowrap'} sm:mb-5`}
+              data-testid="co-top-row"
+            >
+              <div
+                className={`flex gap-1 ${isMobile ? 'mb-2 flex-nowrap sm:gap-2 sm:mb-5 sm:flex-wrap' : 'flex-nowrap'}`}
+                data-tutorial="co-foundations"
+              >
+                {Array.from({ length: FOUNDATION_CNT }, (_, idx) => {
+                  const pile = state.foundation[idx] ?? [];
+                  const top = pile[pile.length - 1];
+                  const ascending = state.foundationAscending[idx] ?? idx < FOUNDATION_CNT / 2;
+                  const nextRank = coloradoNextRank(top?.value, pile.length, ascending);
+                  const nextRankLabel = nextRank !== null ? valueName(nextRank) : null;
+                  const dirLabel = ascending ? t('ascending') : t('descending');
+                  return (
+                    <button
+                      key={`f-${idx.toString()}`}
+                      type="button"
+                      className={`flex flex-col items-center p-0 sm:p-1 rounded ${focusRingWhite} ${hintFoundation === idx ? 'ring-2 ring-ds-success animate-pulse' : ''} ${source && source.kind !== 'stock' ? 'cursor-pointer' : 'cursor-default'}`}
+                      onClick={placeOnFoundation}
+                      disabled={!isPlaying || loading}
+                      aria-disabled={source === null || source.kind === 'stock' || undefined}
+                      aria-describedby={source === null ? selectSourceHintId : undefined}
+                      data-testid={`co-foundation-${idx.toString()}`}
+                      aria-label={
+                        nextRankLabel
+                          ? `${t('foundation')} ${idx} ${dirLabel} ${t('nextRankAria', { rank: nextRankLabel })}`
+                          : `${t('foundation')} ${idx} ${dirLabel} ${t('foundationCompleteAria')}`
+                      }
                     >
-                      {t('empty')}
-                    </div>
-                  )}
-                </button>
-                {hasGap && state.stockCount > 0 && (
-                  <button
-                    type="button"
-                    className={`${btnOutline} mt-1 text-[11px] px-2 py-0.5 ${source?.kind === 'stock' ? 'ring-2 ring-ds-warning' : ''}`}
-                    onClick={toggleStock}
-                    aria-pressed={source?.kind === 'stock'}
-                    disabled={!isPlaying || loading}
-                    data-testid="co-stock-fill-button"
-                  >
-                    {t('fillGap')}
-                  </button>
-                )}
+                      <span className="text-[11px] mb-0.5 text-ds-text-muted">
+                        {ascending ? '↑' : '↓'}F{idx}
+                      </span>
+                      <div className="relative" style={{ width: playCardWidth, height: playCardHeight }}>
+                        {top ? (
+                          <AnimatedCard card={top} width={playCardWidth} />
+                        ) : (
+                          <div
+                            style={{ width: playCardWidth, height: playCardHeight }}
+                            className="rounded border-2 border-dashed border-white/30 flex items-center justify-center text-ds-text-muted text-xs"
+                          >
+                            {t('empty')}
+                          </div>
+                        )}
+                        {nextRankLabel && (
+                          <span
+                            data-testid={`co-foundation-next-${idx.toString()}`}
+                            aria-hidden="true"
+                            className="absolute -top-1 -right-1 px-1.5 py-0.5 rounded-md bg-black/60 text-ds-text-on-accent text-[10px] font-bold leading-none ring-1 ring-white/30"
+                          >
+                            {t('nextRankBadge', { rank: nextRankLabel })}
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[11px] text-ds-text-muted mt-0.5">
+                        {pile.length}/{FOUNDATION_PILE_FULL}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
 
-              <div className="flex flex-col items-center">
-                <div className="text-[11px] mb-0.5 text-ds-text-muted">{t('waste')}</div>
-                <span id="co-waste-count" data-testid="co-waste-count" className="text-xs text-ds-text-muted">
-                  {t('wasteCount', { count: state.waste.length })}
-                </span>
-                <button
-                  type="button"
-                  onClick={toggleWaste}
-                  disabled={!isPlaying || loading || !wasteTop}
-                  aria-pressed={source?.kind === 'waste'}
-                  aria-describedby="co-waste-count"
-                  data-testid="co-waste-button"
-                  className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${source?.kind === 'waste' ? 'ring-2 ring-ds-warning' : ''} ${hintWaste ? 'ring-2 ring-ds-success animate-pulse' : ''}`}
-                >
-                  {wasteTop ? (
-                    <AnimatedCard card={wasteTop} width={playCardWidth} />
-                  ) : (
-                    <div
-                      style={{ width: playCardWidth, height: playCardHeight }}
-                      className="rounded border-2 border-dashed border-white/30 flex items-center justify-center text-ds-text-muted text-xs"
+              <div
+                className={`flex gap-3 flex-wrap items-start ${isMobile ? 'mb-2 sm:mb-5' : 'flex-nowrap'}`}
+                data-tutorial="co-stock"
+              >
+                <div className="flex flex-col items-center">
+                  <div className="text-[11px] mb-0.5 text-ds-text-muted">
+                    {t('stock')}:{' '}
+                    <span id="co-stock-count" data-testid="co-stock-count">
+                      {t('stockCount', { count: state.stockCount })}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleDraw}
+                    disabled={!isPlaying || loading || state.stockCount === 0}
+                    aria-label={t('drawAria')}
+                    aria-describedby="co-stock-count"
+                    data-testid="co-draw-button"
+                    className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${hintStock ? 'ring-2 ring-ds-success animate-pulse' : ''}`}
+                  >
+                    {state.stockCount > 0 ? (
+                      <AnimatedCardBack width={playCardWidth} />
+                    ) : (
+                      <div
+                        style={{ width: playCardWidth, height: playCardHeight }}
+                        className="rounded border-2 border-dashed border-white/30 flex items-center justify-center text-ds-text-muted text-xs"
+                      >
+                        {t('empty')}
+                      </div>
+                    )}
+                  </button>
+                  {hasGap && state.stockCount > 0 && (
+                    <button
+                      type="button"
+                      className={`${btnOutline} mt-1 text-[11px] px-2 py-0.5 ${source?.kind === 'stock' ? 'ring-2 ring-ds-warning' : ''}`}
+                      onClick={toggleStock}
+                      aria-pressed={source?.kind === 'stock'}
+                      disabled={!isPlaying || loading}
+                      data-testid="co-stock-fill-button"
                     >
-                      {t('empty')}
-                    </div>
+                      {t('fillGap')}
+                    </button>
                   )}
-                </button>
+                </div>
+
+                <div className="flex flex-col items-center">
+                  <div className="text-[11px] mb-0.5 text-ds-text-muted">{t('waste')}</div>
+                  <span id="co-waste-count" data-testid="co-waste-count" className="text-xs text-ds-text-muted">
+                    {t('wasteCount', { count: state.waste.length })}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={toggleWaste}
+                    disabled={!isPlaying || loading || !wasteTop}
+                    aria-pressed={source?.kind === 'waste'}
+                    aria-describedby="co-waste-count"
+                    data-testid="co-waste-button"
+                    className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${source?.kind === 'waste' ? 'ring-2 ring-ds-warning' : ''} ${hintWaste ? 'ring-2 ring-ds-success animate-pulse' : ''}`}
+                  >
+                    {wasteTop ? (
+                      <AnimatedCard card={wasteTop} width={playCardWidth} />
+                    ) : (
+                      <div
+                        style={{ width: playCardWidth, height: playCardHeight }}
+                        className="rounded border-2 border-dashed border-white/30 flex items-center justify-center text-ds-text-muted text-xs"
+                      >
+                        {t('empty')}
+                      </div>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
 
             <div className="mb-2 text-xs text-ds-text-muted">{t('tableau')}</div>
-            <div className="flex gap-2 flex-wrap items-start" data-tutorial="co-tableau">
+            <div
+              className={`items-start ${isMobile ? 'flex flex-wrap gap-2' : 'grid grid-cols-10 gap-2'}`}
+              data-tutorial="co-tableau"
+            >
               {Array.from({ length: TABLEAU_CNT }, (_, idx) => {
                 const pile = state.tableau[idx] ?? [];
                 const top = pile[pile.length - 1];

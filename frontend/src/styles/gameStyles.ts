@@ -1,6 +1,9 @@
 /** Base CSS class for player area containers. */
 export const playerAreaBase = 'glass-panel rounded-[10px]';
 
+/** Compact desktop card width for #11702; respects the #929 minimum of 80px. */
+export const DESKTOP_COMPACT_CARD_WIDTH = 80;
+
 /** Tailwind classes that constrain and center the card area on large-desktop screens. */
 export const lgCardAreaConstraint = 'lg:max-w-6xl lg:mx-auto lg:w-full';
 

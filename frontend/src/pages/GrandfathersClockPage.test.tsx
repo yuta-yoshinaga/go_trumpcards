@@ -87,6 +87,37 @@ describe('GrandfathersClockPage', () => {
     expect(screen.getByText(/手数: 3/)).toBeInTheDocument();
   });
 
+  it('keeps the twelve compact clock slots on one desktop row', async () => {
+    const original = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    mockExec.mockResolvedValue(playingState);
+    try {
+      renderWithProviders(<GrandfathersClockPage />);
+      await screen.findByTestId('gc-autocomplete-status');
+      const clock = document.querySelector('[data-tutorial="gc-clock"]') as HTMLElement;
+      expect(clock).toHaveClass('flex-nowrap');
+      expect(clock.querySelectorAll('[role="img"], button')).toHaveLength(12);
+      expect(clock.querySelector('img')).toHaveStyle({ width: '80px' });
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: original });
+    }
+  });
+
+  it('wraps clock slots and sizes them to the mobile viewport', async () => {
+    const original = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    mockExec.mockResolvedValue(playingState);
+    try {
+      renderWithProviders(<GrandfathersClockPage />);
+      await screen.findByTestId('gc-autocomplete-status');
+      const clock = document.querySelector('[data-tutorial="gc-clock"]') as HTMLElement;
+      expect(clock).toHaveClass('flex-wrap');
+      expect(clock.querySelector('img')).toHaveStyle({ width: '40px' });
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: original });
+    }
+  });
+
   it('enables redo only when the server reports redo history', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<GrandfathersClockPage />);

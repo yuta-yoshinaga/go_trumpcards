@@ -24,6 +24,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useMountReset } from '../hooks/useMountReset';
 import { btnDanger, btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
+import { DESKTOP_COMPACT_CARD_WIDTH } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, SlyFoxResponse } from '../types/card';
 import { SlyFoxPhase } from '../types/phases';
@@ -134,9 +135,9 @@ function SlyFoxPageContent() {
   );
   const { handleCommand } = useCliGame(runApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  const { cardWidth, cardHeight, isMobile } = useCardDimensions();
-  const playCardWidth = isMobile ? MOBILE_PLAY_CARD_WIDTH : cardWidth;
-  const playCardHeight = isMobile ? Math.round(playCardWidth * 1.5) : cardHeight;
+  const { isMobile } = useCardDimensions();
+  const playCardWidth = isMobile ? MOBILE_PLAY_CARD_WIDTH : DESKTOP_COMPACT_CARD_WIDTH;
+  const playCardHeight = Math.round(playCardWidth * 1.5);
 
   const handleManualReset = useCallback(() => {
     void runApi('reset');
@@ -288,109 +289,120 @@ function SlyFoxPageContent() {
 
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
             <div className="mb-2 text-xs text-ds-text-muted">{t('foundations')}</div>
-            <div className="flex gap-1 sm:gap-2 mb-5 flex-nowrap sm:flex-wrap" data-tutorial="co-foundations">
-              {Array.from({ length: FOUNDATION_CNT }, (_, idx) => {
-                const pile = state.foundation[idx] ?? [];
-                const top = pile[pile.length - 1];
-                const ascending = state.foundationAscending[idx] ?? idx < FOUNDATION_CNT / 2;
-                const nextRank = slyfoxNextRank(top?.value, pile.length, ascending);
-                const nextRankLabel = nextRank !== null ? valueName(nextRank) : null;
-                const dirLabel = ascending ? t('ascending') : t('descending');
-                return (
-                  <button
-                    key={`f-${idx.toString()}`}
-                    type="button"
-                    className={`flex flex-col items-center p-0 sm:p-1 rounded ${focusRingWhite} ${hintFoundation === idx ? 'ring-2 ring-ds-success animate-pulse' : ''} ${source ? 'cursor-pointer' : 'cursor-default'}`}
-                    onClick={() => clickFoundation(idx)}
-                    disabled={!isPlaying || loading || source === null}
-                    data-testid={`co-foundation-${idx.toString()}`}
-                    aria-label={
-                      top
-                        ? nextRankLabel
-                          ? t('foundationTopAria', {
-                              index: idx,
-                              direction: dirLabel,
-                              card: cardAlt(top),
-                              rank: nextRankLabel,
-                            })
-                          : t('foundationTopCompleteAria', { index: idx, direction: dirLabel, card: cardAlt(top) })
-                        : t('foundationEmptyAria', { index: idx, direction: dirLabel, rank: nextRankLabel })
-                    }
-                  >
-                    <span className="text-[11px] mb-0.5 text-ds-text-muted">
-                      {ascending ? '↑' : '↓'}F{idx}
-                    </span>
-                    <div className="relative" style={{ width: playCardWidth, height: playCardHeight }}>
-                      {top ? (
-                        <AnimatedCard card={top} width={playCardWidth} />
-                      ) : (
-                        <div
-                          style={{ width: playCardWidth, height: playCardHeight }}
-                          className="rounded border-2 border-dashed border-white/30 flex items-center justify-center text-ds-text-muted text-xs"
-                        >
-                          {t('empty')}
-                        </div>
-                      )}
-                      {nextRankLabel && (
-                        <span
-                          data-testid={`co-foundation-next-${idx.toString()}`}
-                          aria-hidden="true"
-                          className="absolute -top-1 -right-1 px-1.5 py-0.5 rounded-md bg-black/60 text-ds-text-on-accent text-[10px] font-bold leading-none ring-1 ring-white/30"
-                        >
-                          {t('nextRankBadge', { rank: nextRankLabel })}
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-[11px] text-ds-text-muted mt-0.5">
-                      {pile.length}/{FOUNDATION_PILE_FULL}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="flex gap-3 flex-wrap items-start mb-5" data-tutorial="co-stock">
-              <div className="flex flex-col items-center">
-                <div className="text-[11px] mb-0.5 text-ds-text-muted">
-                  {t('stock')} ({state.stockCount})
-                </div>
-                <button
-                  type="button"
-                  onClick={toggleDealing}
-                  disabled={!isPlaying || loading || state.stockCount === 0}
-                  aria-label={t('dealAria')}
-                  aria-pressed={source?.kind === 'dealing'}
-                  data-testid="co-deal-button"
-                  className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${source?.kind === 'dealing' ? 'ring-2 ring-ds-warning' : ''} ${hintStock ? 'ring-2 ring-ds-success animate-pulse' : ''}`}
-                >
-                  {state.stockCount > 0 ? (
-                    <AnimatedCardBack width={playCardWidth} />
-                  ) : (
-                    <div
-                      style={{ width: playCardWidth, height: playCardHeight }}
-                      className="rounded border-2 border-dashed border-white/30 flex items-center justify-center text-ds-text-muted text-xs"
+            <div className={`${isMobile ? 'contents' : 'flex gap-2 mb-2 flex-nowrap'}`} data-testid="co-top-row">
+              <div
+                className={`flex gap-1 ${isMobile ? 'mb-5 flex-nowrap sm:gap-2 sm:flex-wrap' : 'flex-nowrap'}`}
+                data-tutorial="co-foundations"
+              >
+                {Array.from({ length: FOUNDATION_CNT }, (_, idx) => {
+                  const pile = state.foundation[idx] ?? [];
+                  const top = pile[pile.length - 1];
+                  const ascending = state.foundationAscending[idx] ?? idx < FOUNDATION_CNT / 2;
+                  const nextRank = slyfoxNextRank(top?.value, pile.length, ascending);
+                  const nextRankLabel = nextRank !== null ? valueName(nextRank) : null;
+                  const dirLabel = ascending ? t('ascending') : t('descending');
+                  return (
+                    <button
+                      key={`f-${idx.toString()}`}
+                      type="button"
+                      className={`flex flex-col items-center p-0 sm:p-1 rounded ${focusRingWhite} ${hintFoundation === idx ? 'ring-2 ring-ds-success animate-pulse' : ''} ${source ? 'cursor-pointer' : 'cursor-default'}`}
+                      onClick={() => clickFoundation(idx)}
+                      disabled={!isPlaying || loading || source === null}
+                      data-testid={`co-foundation-${idx.toString()}`}
+                      aria-label={
+                        top
+                          ? nextRankLabel
+                            ? t('foundationTopAria', {
+                                index: idx,
+                                direction: dirLabel,
+                                card: cardAlt(top),
+                                rank: nextRankLabel,
+                              })
+                            : t('foundationTopCompleteAria', { index: idx, direction: dirLabel, card: cardAlt(top) })
+                          : t('foundationEmptyAria', { index: idx, direction: dirLabel, rank: nextRankLabel })
+                      }
                     >
-                      {t('empty')}
-                    </div>
-                  )}
-                </button>
-                {/* **周の進みはここにしか出ない。**閉じている理由が盤から読めないと
+                      <span className="text-[11px] mb-0.5 text-ds-text-muted">
+                        {ascending ? '↑' : '↓'}F{idx}
+                      </span>
+                      <div className="relative" style={{ width: playCardWidth, height: playCardHeight }}>
+                        {top ? (
+                          <AnimatedCard card={top} width={playCardWidth} />
+                        ) : (
+                          <div
+                            style={{ width: playCardWidth, height: playCardHeight }}
+                            className="rounded border-2 border-dashed border-white/30 flex items-center justify-center text-ds-text-muted text-xs"
+                          >
+                            {t('empty')}
+                          </div>
+                        )}
+                        {nextRankLabel && (
+                          <span
+                            data-testid={`co-foundation-next-${idx.toString()}`}
+                            aria-hidden="true"
+                            className="absolute -top-1 -right-1 px-1.5 py-0.5 rounded-md bg-black/60 text-ds-text-on-accent text-[10px] font-bold leading-none ring-1 ring-white/30"
+                          >
+                            {t('nextRankBadge', { rank: nextRankLabel })}
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[11px] text-ds-text-muted mt-0.5">
+                        {pile.length}/{FOUNDATION_PILE_FULL}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div
+                className={`flex gap-3 items-start ${isMobile ? 'flex-wrap mb-5' : 'flex-nowrap'}`}
+                data-tutorial="co-stock"
+              >
+                <div className="flex flex-col items-center">
+                  <div className="text-[11px] mb-0.5 text-ds-text-muted">
+                    {t('stock')} ({state.stockCount})
+                  </div>
+                  <button
+                    type="button"
+                    onClick={toggleDealing}
+                    disabled={!isPlaying || loading || state.stockCount === 0}
+                    aria-label={t('dealAria')}
+                    aria-pressed={source?.kind === 'dealing'}
+                    data-testid="co-deal-button"
+                    className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${source?.kind === 'dealing' ? 'ring-2 ring-ds-warning' : ''} ${hintStock ? 'ring-2 ring-ds-success animate-pulse' : ''}`}
+                  >
+                    {state.stockCount > 0 ? (
+                      <AnimatedCardBack width={playCardWidth} />
+                    ) : (
+                      <div
+                        style={{ width: playCardWidth, height: playCardHeight }}
+                        className="rounded border-2 border-dashed border-white/30 flex items-center justify-center text-ds-text-muted text-xs"
+                      >
+                        {t('empty')}
+                      </div>
+                    )}
+                  </button>
+                  {/* **周の進みはここにしか出ない。**閉じている理由が盤から読めないと
                     「なぜリザーブが押せないのか」が分からない。 */}
-                <div
-                  className="text-[11px] mt-1 text-ds-text-muted text-center"
-                  data-testid="co-cycle-status"
-                  role="status"
-                  aria-live="polite"
-                >
-                  {reserveLocked
-                    ? t('cycleLocked', { dealt: state.dealtThisCycle, cycle: state.dealCycle, left: dealsLeft })
-                    : t('cycleOpen')}
+                  <div
+                    className="text-[11px] mt-1 text-ds-text-muted text-center"
+                    data-testid="co-cycle-status"
+                    role="status"
+                    aria-live="polite"
+                  >
+                    {reserveLocked
+                      ? t('cycleLocked', { dealt: state.dealtThisCycle, cycle: state.dealCycle, left: dealsLeft })
+                      : t('cycleOpen')}
+                  </div>
                 </div>
               </div>
             </div>
 
             <div className="mb-2 text-xs text-ds-text-muted">{t('tableau')}</div>
-            <div className="flex gap-1 sm:gap-2 flex-wrap items-start" data-tutorial="co-tableau">
+            <div
+              className={`items-start ${isMobile ? 'flex flex-wrap gap-1 sm:gap-2' : 'grid grid-cols-10 gap-2'}`}
+              data-tutorial="co-tableau"
+            >
               {Array.from({ length: TABLEAU_CNT }, (_, idx) => {
                 const pile = state.tableau[idx] ?? [];
                 const top = pile[pile.length - 1];

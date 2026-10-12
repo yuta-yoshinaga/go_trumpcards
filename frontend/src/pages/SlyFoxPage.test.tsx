@@ -102,20 +102,36 @@ describe('SlyFoxPage', () => {
     }
   });
 
-  it('keeps the existing card size on desktop', async () => {
+  it('uses the compact card size on desktop', async () => {
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 800 });
     try {
       renderWithProviders(<SlyFoxPage />);
 
       const foundations = await screen.findByTestId('co-foundation-0');
-      expect(foundations.querySelector('img')).toHaveStyle({ width: '60px' });
-      expect(screen.getByTestId('co-tableau-0').querySelector('img')).toHaveStyle({ width: '60px' });
+      expect(foundations.querySelector('img')).toHaveStyle({ width: '80px' });
+      expect(screen.getByTestId('co-tableau-0').querySelector('img')).toHaveStyle({ width: '80px' });
     } finally {
       Object.defineProperty(window, 'innerWidth', {
         writable: true,
         configurable: true,
         value: originalInnerWidth,
       });
+    }
+  });
+
+  it('groups foundations and stock in one compact desktop row with ten tableau columns', async () => {
+    const original = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    try {
+      renderWithProviders(<SlyFoxPage />);
+      const foundations = await screen.findByTestId('co-foundation-0');
+      const topRow = screen.getByTestId('co-top-row');
+      expect(topRow).toContainElement(foundations);
+      expect(topRow).toContainElement(screen.getByTestId('co-deal-button'));
+      expect(foundations.querySelector('img')).toHaveStyle({ width: '80px' });
+      expect(document.querySelector('[data-tutorial="co-tableau"]')).toHaveClass('grid-cols-10');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: original });
     }
   });
 
@@ -173,6 +189,27 @@ describe('SlyFoxPage', () => {
     // The empty piles still show their opening rank, one per direction.
     expect(screen.getByTestId('co-foundation-next-1')).toHaveTextContent('A');
     expect(screen.getByTestId('co-foundation-next-5')).toHaveTextContent('K');
+  });
+
+  it('uses fallback piles and directions for foundations missing from the response', async () => {
+    mockExec.mockResolvedValue(makeState({ foundation: [[card('SPADE', 1)]], foundationAscending: [true] }));
+    renderWithProviders(<SlyFoxPage />);
+    await screen.findByTestId('co-foundation-7');
+    expect(screen.getByTestId('co-foundation-1')).toHaveTextContent('↑F1');
+    expect(screen.getByTestId('co-foundation-7')).toHaveTextContent('↓F7');
+    expect(screen.getByTestId('co-foundation-1')).toHaveAccessibleName(/昇順/);
+    expect(screen.getByTestId('co-foundation-7')).toHaveAccessibleName(/降順/);
+  });
+
+  it('highlights the hinted foundation', async () => {
+    const hinted = makeState({
+      hint: { fromZone: 'tableau', fromIdx: 4, toZone: 'foundation', toIdx: 0 },
+      messageCode: 'slyfox.hintAvailable',
+    });
+    mockExec.mockImplementation(async (command) => (command === 'hint' ? hinted : makeState()));
+    renderWithProviders(<SlyFoxPage />);
+    fireEvent.click(await screen.findByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(screen.getByTestId('co-foundation-0')).toHaveClass('ring-2', 'ring-ds-success'));
   });
 
   it('includes the foundation top card in localized names and keeps empty and complete states', async () => {

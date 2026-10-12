@@ -26,6 +26,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGrandfathersClockGame } from '../hooks/useGrandfathersClockGame';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
+import { DESKTOP_COMPACT_CARD_WIDTH } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { GrandfathersClockMoveZone, GrandfathersClockResponse } from '../types/card';
 import { GrandfathersClockPhase } from '../types/phases';
@@ -108,7 +109,6 @@ function GrandfathersClockPageContent() {
   const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
   const windowWidth = useWindowWidth();
-
   const dims = useMemo(() => {
     if (!isMobile) return { cw: cardWidth, ch: cardHeight, co: cardOverlap };
     const padX = 16;
@@ -119,6 +119,8 @@ function GrandfathersClockPageContent() {
     const co = Math.round(cw * 0.32);
     return { cw, ch, co };
   }, [isMobile, windowWidth, cardWidth, cardHeight, cardOverlap]);
+  const clockCardWidth = isMobile ? dims.cw : DESKTOP_COMPACT_CARD_WIDTH;
+  const clockCardHeight = isMobile ? dims.ch : Math.round(DESKTOP_COMPACT_CARD_WIDTH * 1.5);
 
   const isPlayingForKbd = state?.phase === GrandfathersClockPhase.PLAYING;
 
@@ -316,7 +318,10 @@ function GrandfathersClockPageContent() {
       ) : (
         <>
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
-            <div className="flex flex-wrap justify-center gap-1 sm:gap-2 mb-3" data-tutorial="gc-clock">
+            <div
+              className={`flex justify-center gap-1 mb-3 ${isMobile ? 'flex-wrap sm:gap-2' : 'flex-nowrap lg:-mx-8'}`}
+              data-tutorial="gc-clock"
+            >
               {state.foundation.map((face, idx) => {
                 const faceZone: GrandfathersClockMoveZone = { zone: 'foundation', col: idx };
                 const top = face.cards.length > 0 ? face.cards[face.cards.length - 1] : null;
@@ -356,7 +361,7 @@ function GrandfathersClockPageContent() {
                         >
                           <AnimatedCard
                             card={top}
-                            width={dims.cw}
+                            width={clockCardWidth}
                             draggable={false}
                             dealDelay={isAutoCompleting ? idx * 0.05 : 0}
                           />
@@ -369,7 +374,7 @@ function GrandfathersClockPageContent() {
                             hour: CLOCK_HOURS[idx],
                             target: face.targetRank,
                           })}
-                          style={{ width: dims.cw, height: dims.ch }}
+                          style={{ width: clockCardWidth, height: clockCardHeight }}
                           className="rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center"
                         >
                           {t('empty')}

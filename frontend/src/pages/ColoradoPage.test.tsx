@@ -103,6 +103,24 @@ describe('ColoradoPage', () => {
     expect(pile).toHaveAccessibleName('場札 3 空き山。山札か捨て札から埋められます');
   });
 
+  it('groups foundations and stock in one compact desktop row with ten tableau columns', async () => {
+    const original = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    mobileState.isMobile = false;
+    try {
+      renderWithProviders(<ColoradoPage />);
+      const foundations = await screen.findByTestId('co-foundation-0');
+      const topRow = screen.getByTestId('co-top-row');
+      expect(topRow).toContainElement(foundations);
+      expect(topRow).toContainElement(screen.getByTestId('co-draw-button'));
+      expect(foundations.querySelector('img')).toHaveStyle({ width: '80px' });
+      expect(document.querySelector('[data-tutorial="co-tableau"]')).toHaveClass('grid-cols-10');
+    } finally {
+      mobileState.isMobile = true;
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: original });
+    }
+  });
+
   it('keeps a move status region in the DOM before the board loads', () => {
     mockExec.mockReturnValue(new Promise(() => {}));
     renderWithProviders(<ColoradoPage />);
@@ -205,6 +223,33 @@ describe('ColoradoPage', () => {
     // The empty piles still show their opening rank, one per direction.
     expect(screen.getByTestId('co-foundation-next-1')).toHaveTextContent('A');
     expect(screen.getByTestId('co-foundation-next-5')).toHaveTextContent('K');
+  });
+
+  it('uses fallback piles and directions for foundations missing from the response', async () => {
+    mockExec.mockResolvedValue(makeState({ foundation: [[card('SPADE', 1)]], foundationAscending: [true] }));
+    renderWithProviders(<ColoradoPage />);
+    await screen.findByTestId('co-foundation-7');
+    expect(screen.getByTestId('co-foundation-1')).toHaveTextContent('↑F1');
+    expect(screen.getByTestId('co-foundation-7')).toHaveTextContent('↓F7');
+    expect(screen.getByTestId('co-foundation-1')).toHaveAccessibleName(/昇順/);
+    expect(screen.getByTestId('co-foundation-7')).toHaveAccessibleName(/降順/);
+  });
+
+  it('labels a completed foundation as complete', async () => {
+    const full = Array.from({ length: 13 }, (_, index) => card('SPADE', index + 1));
+    mockExec.mockResolvedValue(makeState({ foundation: [full] }));
+    renderWithProviders(<ColoradoPage />);
+    expect(await screen.findByTestId('co-foundation-0')).toHaveAccessibleName(/完成/);
+  });
+
+  it('highlights the selected waste source', async () => {
+    renderWithProviders(<ColoradoPage />);
+    const waste = await screen.findByTestId('co-waste-button');
+    fireEvent.click(waste);
+    await waitFor(() => {
+      expect(waste).toHaveAttribute('aria-pressed', 'true');
+      expect(waste).toHaveClass('ring-2', 'ring-ds-warning');
+    });
   });
 
   it('fits all foundations in one row with compact cards on mobile', async () => {
