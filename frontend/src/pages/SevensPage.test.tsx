@@ -1,5 +1,5 @@
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, sevensApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -13,6 +13,7 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockExec = vi.mocked(sevensApi.exec);
+const originalInnerWidth = window.innerWidth;
 
 const mobileState = vi.hoisted(() => ({ isMobile: true }));
 
@@ -166,6 +167,11 @@ beforeEach(() => {
   mockExec.mockResolvedValue(humanTurnState);
 });
 
+afterEach(() => {
+  Object.defineProperty(window, 'innerWidth', { value: originalInnerWidth, configurable: true, writable: true });
+  window.dispatchEvent(new Event('resize'));
+});
+
 describe('SevensPage', () => {
   it('allows the taller mobile footer', async () => {
     renderWithProviders(<SevensPage />);
@@ -289,7 +295,6 @@ describe('SevensPage', () => {
   });
 
   it('keeps CPU areas open below large desktop and collapsed by default on large desktop', async () => {
-    const originalWidth = window.innerWidth;
     const { unmount } = renderWithProviders(<SevensPage />);
     await screen.findByText('CPU 1');
     const mobileAccordion = screen.getByTestId('cpu-accordion');
@@ -316,8 +321,6 @@ describe('SevensPage', () => {
     fireEvent.click(within(largeDesktopAccordion).getByText('CPU対戦相手 (3)'));
     expect(largeDesktopAccordion).toHaveAttribute('open');
     expect(within(largeDesktopAccordion).getByText('CPU 1')).toBeVisible();
-    Object.defineProperty(window, 'innerWidth', { value: originalWidth, configurable: true });
-    window.dispatchEvent(new Event('resize'));
   });
 
   it('renders the board section', async () => {

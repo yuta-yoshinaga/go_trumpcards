@@ -42,6 +42,8 @@ const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦', '♠', '♣', '♥', '♦'
 /** The quilt is 8x8. */
 const QUILT_SIZE = 8;
 const TOTAL_CARDS = 104;
+const ROW_GAP_PX = 4;
+const QUILT_VISIBLE_EDGE_PX = 52;
 
 const CG_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -459,10 +461,10 @@ function CrazyQuiltPageContent() {
                 <div
                   key={`row-${row.toString()}`}
                   className="grid gap-0.5 sm:gap-1 justify-center"
-                  // 78px cards + 4px row gap - 30px overlap = 52px step; the 52px visible top edge is the floor.
+                  // Preserve a 52px visible card edge while deriving overlap from card height and row gap.
                   style={{
                     gridTemplateColumns: `repeat(${QUILT_SIZE}, minmax(0, 1fr))`,
-                    marginTop: isLargeDesktop && row > 0 ? -30 : undefined,
+                    marginTop: isLargeDesktop && row > 0 ? -(dims.ch + ROW_GAP_PX - QUILT_VISIBLE_EDGE_PX) : undefined,
                   }}
                   data-testid={`cq-quilt-row-${row}`}
                 >
