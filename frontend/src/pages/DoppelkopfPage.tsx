@@ -139,6 +139,10 @@ function DoppelkopfPageContent() {
   if (!state)
     return <GameSkeleton gameKey="doppelkopf" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 6 }} />;
 
+  const messageBox = (
+    <GameMessageBox message={state?.message} messageCode={state?.messageCode} messageParams={state?.messageParams} />
+  );
+
   const humanPlayer = state.players.find((p) => p.isHuman);
   const humanIdx = state.players.findIndex((p) => p.isHuman);
   const isHumanTurn = state.currentPlayerIdx === humanIdx;
@@ -373,11 +377,7 @@ function DoppelkopfPageContent() {
             </div>
 
             {/* Message */}
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
+            {isMobile && messageBox}
 
             <ActionLogSection
               isEndPhase={isGameEnd}
@@ -388,7 +388,10 @@ function DoppelkopfPageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.doppelkopf.footer} px-4 py-2.5`}>
+          <GameFooter
+            message={isMobile ? undefined : messageBox}
+            className={`${gameTheme.doppelkopf.footer} px-4 py-2.5`}
+          >
             {humanPlayer && (
               <PlayerHandSection
                 humanPlayer={humanPlayer}

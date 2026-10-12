@@ -203,6 +203,10 @@ function MarriagePageContent() {
       />
     );
 
+  const messageBox = (
+    <GameMessageBox message={state?.message} messageCode={state?.messageCode} messageParams={state?.messageParams} />
+  );
+
   const humanPlayer = state.players.find((p) => p.isHuman);
   const previewHandCards = humanPlayer?.cards.filter((_, index) => index !== selectedCardIndices[0]) ?? [];
   const handMeldLabels = new Map<number, { label: string; number: number }>();
@@ -462,11 +466,7 @@ function MarriagePageContent() {
               </div>
             </div>
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
+            {isMobile && messageBox}
 
             <ActionLogSection
               isEndPhase={isGameEnd}
@@ -516,6 +516,7 @@ function MarriagePageContent() {
           </div>
 
           <GameFooter
+            message={isMobile ? undefined : messageBox}
             className={`${marriageTheme.footer} px-4 py-2.5`}
             actions={
               (isDrawPhase && isHumanTurn) || (isDiscardPhase && isHumanTurn) || isRoundEnd ? (

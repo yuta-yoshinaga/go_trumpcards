@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { doppelkopfApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -76,6 +76,36 @@ beforeEach(() => {
 });
 
 describe('DoppelkopfPage', () => {
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, message: 'Footer message test' });
+    renderWithProviders(<DoppelkopfPage />);
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(within(footerMessage).getByRole('status')).toHaveTextContent('Footer message test');
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      message: 'Mobile play-area message',
+      messageCode: 'test.untranslated',
+    });
+    try {
+      renderWithProviders(<DoppelkopfPage />);
+      await screen.findByText('Mobile play-area message');
+      const status = screen.getByText('Mobile play-area message').closest('[role="status"]');
+      if (!status) throw new Error('Mobile message must be inside its live region');
+      expect(status).toHaveTextContent('Mobile play-area message');
+      expect(status.closest('[data-testid="game-footer-message"]')).toBeNull();
+      expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
   it('keeps the human player summary outside the CPU accordion', async () => {
     renderWithProviders(<DoppelkopfPage />);
     const accordion = await screen.findByTestId('cpu-accordion');

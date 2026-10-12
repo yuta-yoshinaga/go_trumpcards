@@ -98,8 +98,8 @@ function BiribaPageContent() {
     handleNextRound,
   } = useBiribaGame();
 
-  const { cardWidth } = useCardDimensions();
-  const isMobile = useIsMobile();
+  const { cardWidth, isMobile } = useCardDimensions();
+  const isMobileViewport = useIsMobile();
   const { playSound } = useSound();
   const phaseNames = usePhaseNames('biriba', BIRIBA_PHASE_KEYS);
   const {
@@ -107,6 +107,10 @@ function BiribaPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('biriba', state);
+
+  const messageBox = (
+    <GameMessageBox message={state?.message} messageCode={state?.messageCode} messageParams={state?.messageParams} />
+  );
 
   const humanPlayer = state?.players.find((p) => p.isHuman);
   const selectedMeldCards = humanPlayer?.cards.filter((_, index) => selectedCardIndices.includes(index)) ?? [];
@@ -143,7 +147,7 @@ function BiribaPageContent() {
   const isDiscardPhase = state?.phase === BiribaPhase.DISCARD;
   const isRoundEnd = state?.phase === BiribaPhase.ROUND_END;
   const isGameEnd = state?.phase === BiribaPhase.GAME_END || !!state?.gameEndFlag;
-  const [discardPileViewerOpen, setDiscardPileViewerOpen] = useState(!isMobile);
+  const [discardPileViewerOpen, setDiscardPileViewerOpen] = useState(!isMobileViewport);
 
   // Biriba uses the Canasta discard-pile mechanism: two natural cards matching
   // the top card are required to take the pile.
@@ -421,7 +425,7 @@ function BiribaPageContent() {
               {/* Right: info sidebar */}
               <div>
                 {/* Score table */}
-                <details className="my-3 p-2 rounded bg-black/30" open={!isMobile || undefined}>
+                <details className="my-3 p-2 rounded bg-black/30" open={!isMobileViewport || undefined}>
                   <summary className="cursor-pointer select-none text-sm text-ds-text-muted">
                     {t('score.round')}
                   </summary>
@@ -507,13 +511,9 @@ function BiribaPageContent() {
               </div>
             </div>
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            {isMobile && messageBox}
 
             <ActionLogSection
               isEndPhase={isGameEnd}
@@ -550,6 +550,7 @@ function BiribaPageContent() {
           </div>
 
           <GameFooter
+            message={isMobile ? undefined : messageBox}
             className={`${gameTheme.biriba.footer} px-4 py-2.5`}
             actions={
               <div className="flex gap-2 items-center flex-wrap" data-tutorial="ca-actions">

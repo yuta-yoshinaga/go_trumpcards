@@ -101,6 +101,9 @@ function SambaPageContent() {
 
   const { cardWidth } = useCardDimensions();
   const isLargeDesktop = useBreakpoint() === 'largeDesktop';
+  const messageBox = (
+    <GameMessageBox message={state?.message} messageCode={state?.messageCode} messageParams={state?.messageParams} />
+  );
   const phaseNames = usePhaseNames('samba', SAMBA_PHASE_KEYS);
   const {
     hint: frontendHint,
@@ -612,11 +615,7 @@ function SambaPageContent() {
               </div>
             </div>
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
+            {isMobile && messageBox}
 
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
@@ -639,6 +638,7 @@ function SambaPageContent() {
           </div>
 
           <GameFooter
+            message={isMobile ? undefined : messageBox}
             className={`${gameTheme.samba.footer} px-4 py-2.5`}
             actions={
               isHumanTurn || isRoundEnd ? (
