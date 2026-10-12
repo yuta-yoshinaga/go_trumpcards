@@ -1899,4 +1899,14 @@ describe('BigOHiLoPage', () => {
     renderWithProviders(<BigOHiLoPage />);
     expect(await screen.findByTestId('bigohilo-live-low')).toHaveTextContent('ロー不成立');
   });
+
+  it('compresses face-down CPU cards on large desktop', async () => {
+    mockUseIsLargeDesktop.mockReturnValue(true);
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<BigOHiLoPage />);
+
+    const cpuCount = preFlopState.players.filter((player) => !player.isHuman).length;
+    await waitFor(() => expect(screen.getAllByTestId('compact-card-count')).toHaveLength(cpuCount));
+    expect(screen.getAllByTestId('compact-card-count')[0]).toHaveTextContent('5');
+  });
 });

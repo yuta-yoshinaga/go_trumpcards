@@ -377,6 +377,7 @@ function BigOHiLoPageContent() {
                   player={player}
                   showCards={isShowdown}
                   faceDownCount={5}
+                  compactFaceDown={isLargeDesktop}
                   showHandName={isShowdown}
                   extraInfo={
                     player.totalHands > 0 ? (

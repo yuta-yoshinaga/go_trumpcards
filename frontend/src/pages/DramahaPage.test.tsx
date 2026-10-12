@@ -2035,4 +2035,14 @@ describe('DramahaPage showdown split', () => {
     const panel = await screen.findByTestId('dramaha-kbd-shortcuts');
     expect(panel).toBeInTheDocument();
   });
+
+  it('compresses face-down CPU cards on large desktop', async () => {
+    mockUseIsLargeDesktop.mockReturnValue(true);
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<DramahaPage />);
+
+    const cpuCount = preFlopState.players.filter((player) => !player.isHuman).length;
+    await waitFor(() => expect(screen.getAllByTestId('compact-card-count')).toHaveLength(cpuCount));
+    expect(screen.getAllByTestId('compact-card-count')[0]).toHaveTextContent('5');
+  });
 });
