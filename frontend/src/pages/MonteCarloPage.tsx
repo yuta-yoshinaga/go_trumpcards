@@ -331,7 +331,7 @@ function MonteCarloPageContent() {
                             <AnimatedCard card={cell.card} width={effectiveCardWidth} />
                           ) : (
                             <div
-                              style={{ width: effectiveCardWidth, height: Math.round(effectiveCardWidth * 1.4) }}
+                              style={{ width: effectiveCardWidth, height: Math.round(effectiveCardWidth * 1.5) }}
                               className="rounded border-2 border-dashed border-white/30"
                               aria-hidden="true"
                             />

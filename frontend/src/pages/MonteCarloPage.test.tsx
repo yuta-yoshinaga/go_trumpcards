@@ -69,6 +69,19 @@ beforeEach(() => {
 });
 
 describe('MonteCarloPage', () => {
+  it('matches the large desktop placeholder height to the rendered cards', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });
+    mockExec.mockResolvedValue({ ...playingState, board: emptyBoard() });
+    try {
+      renderWithProviders(<MonteCarloPage />);
+      const placeholder = await screen.findByTestId('mc-cell-0-0');
+      expect(placeholder.firstElementChild).toHaveStyle({ width: '80px', height: '120px' });
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    }
+  });
+
   it('uses 80px cards on large desktop', async () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });

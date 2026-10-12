@@ -72,6 +72,18 @@ const PY_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
+/** Play-area clientHeight measured at 1280x800; this keeps the row step compact on taller screens. */
+const PYRAMID_PLAY_AREA_HEIGHT = 583;
+const PYRAMID_VERTICAL_PADDING = 8;
+
+/** Calculates the compact row step, bounded by the minimum tap spacing and scaled develop step. */
+export function compactPyramidRowStep(rows: number, cardHeight: number, scaledDevelopStep: number): number {
+  const upperBound = Math.max(56, scaledDevelopStep);
+  if (rows <= 1) return upperBound;
+  const availableStep = Math.floor((PYRAMID_PLAY_AREA_HEIGHT - cardHeight - PYRAMID_VERTICAL_PADDING) / (rows - 1));
+  return Math.max(56, Math.min(scaledDevelopStep, availableStep));
+}
+
 /** Renders the Pyramid Solitaire game page with pyramid, stock/waste, and controls. */
 export const PyramidPage = withTutorial(PyramidPageContent, 'pyramid', PY_TUTORIAL_STEPS);
 /** Inner content of the Pyramid page, wrapped by TutorialProvider. */
@@ -209,22 +221,18 @@ function PyramidPageContent() {
   const ROW_OVERLAP_RATIO = isMobile ? 0.3 : 0.35;
   const effectiveCardHeight = isLargeDesktop ? Math.round(DESKTOP_COMPACT_CARD_WIDTH * 1.5) : cardHeight;
   const currentRowStep = cardHeight - cardHeight * ROW_OVERLAP_RATIO;
-  const compactRowStep = Math.max(
-    56,
-    Math.min(
-      currentRowStep * (DESKTOP_COMPACT_CARD_WIDTH / cardWidth),
-      Math.floor((583 - effectiveCardHeight - 8) / 6),
-    ),
-  );
+  const scaledDevelopStep = currentRowStep * (DESKTOP_COMPACT_CARD_WIDTH / cardWidth);
+  const compactRowStep = compactPyramidRowStep(state.pyramid.length, effectiveCardHeight, scaledDevelopStep);
   const rowStep = isLargeDesktop ? compactRowStep : cardHeight * (1 - ROW_OVERLAP_RATIO);
   const rowOverlap = effectiveCardHeight - rowStep;
   // px-4 on the scrollable container = 16px * 2 = 32px total horizontal padding
   const CONTAINER_PADDING = 32;
-  const effectiveCardWidth = isLargeDesktop
-    ? DESKTOP_COMPACT_CARD_WIDTH
-    : isMobile
-      ? Math.floor((windowWidth - CONTAINER_PADDING - cardGap * (maxCols - 1)) / maxCols)
-      : cardWidth;
+  let effectiveCardWidth: number = cardWidth;
+  if (isLargeDesktop) {
+    effectiveCardWidth = DESKTOP_COMPACT_CARD_WIDTH;
+  } else if (isMobile) {
+    effectiveCardWidth = Math.floor((windowWidth - CONTAINER_PADDING - cardGap * (maxCols - 1)) / maxCols);
+  }
   const pyramidWidth = maxCols * (effectiveCardWidth + cardGap) - cardGap;
 
   return (

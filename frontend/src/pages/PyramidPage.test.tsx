@@ -7,7 +7,7 @@ import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, PyramidCard, PyramidResponse } from '../types/card';
-import { PyramidPage } from './PyramidPage';
+import { compactPyramidRowStep, PyramidPage } from './PyramidPage';
 
 vi.mock('../api/gameApi', () => ({
   pyramidApi: { exec: vi.fn() },
@@ -79,6 +79,21 @@ const withHintState: PyramidResponse = {
   ...playingState,
   hint: { type: 'pair', row1: 2, col1: 0, row2: 2, col2: 1 },
 };
+
+describe('compactPyramidRowStep', () => {
+  it('clamps to 56 when the available height is small', () => {
+    expect(compactPyramidRowStep(7, 600, 80)).toBe(56);
+  });
+
+  it('clamps to the scaled develop step when the play area has room', () => {
+    expect(compactPyramidRowStep(7, 100, 70)).toBe(70);
+  });
+
+  it('uses the upper bound for zero or one row', () => {
+    expect(compactPyramidRowStep(0, 300, 70)).toBe(70);
+    expect(compactPyramidRowStep(1, 300, 70)).toBe(70);
+  });
+});
 
 beforeEach(() => {
   mockExec.mockResolvedValue(playingState);
