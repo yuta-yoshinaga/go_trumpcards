@@ -51,6 +51,12 @@ beforeEach(() => {
 });
 
 describe('OsmosisPage', () => {
+  it('shows the landscape recommendation instead of the phase name in the banner', async () => {
+    renderWithProviders(<OsmosisPage />);
+    const bannerMessage = await screen.findByText('横画面での表示を推奨します');
+    expect(bannerMessage.parentElement).toHaveTextContent(/^横画面での表示を推奨します$/);
+  });
+
   it('places reserve and foundations in one large-desktop board row', async () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
