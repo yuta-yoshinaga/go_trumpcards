@@ -145,6 +145,9 @@ describe('PitchPage', () => {
   it('renders play phase with player hand', async () => {
     mockApi.mockResolvedValue(playState);
     renderWithProviders(<PitchPage />);
+
+    expect(await screen.findByTestId('pitch-game-pips-badge')).toBeInTheDocument();
+    expect(document.querySelector('[data-tutorial="pt-player-hand"]')).toHaveClass('lg:sticky', 'lg:bottom-0');
     await waitFor(() => expect(screen.getByRole('button', { name: /出す/ })).toBeInTheDocument());
   });
 

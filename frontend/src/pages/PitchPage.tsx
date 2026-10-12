@@ -478,7 +478,10 @@ function PitchPageContent() {
 
             {/* Player hand (always visible) */}
             {human && human.cards.length > 0 && (
-              <div data-tutorial="pt-player-hand" className="flex flex-col gap-2 mb-3 text-ds-text-primary">
+              <div
+                data-tutorial="pt-player-hand"
+                className="flex flex-col gap-2 mb-3 text-ds-text-primary lg:sticky lg:bottom-0 lg:z-10 lg:bg-game-bg-blue lg:pt-2 lg:shadow-lg"
+              >
                 <div className="text-xs uppercase opacity-60 flex items-center gap-2 flex-wrap">
                   <span>
                     {findPlayerName(state.players, humanIdx)} ({t('cards', { count: human.cards.length })})

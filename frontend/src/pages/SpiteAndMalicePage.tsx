@@ -442,6 +442,7 @@ function SpiteAndMalicePageContent() {
               selectedIdx={selectionIsHand ? selection.idx : null}
               onSelect={handleSelectHand}
               dataTutorial="sam-hand"
+              className="lg:sticky lg:bottom-0 lg:z-10 lg:bg-game-bg-green lg:pt-2 lg:shadow-lg"
               hintEnabled={hintEnabled}
               currentHint={currentHint}
               label={t('label.hand')}
@@ -720,6 +721,7 @@ function HandRow({
   selectedIdx,
   onSelect,
   dataTutorial,
+  className,
   hintEnabled,
   currentHint,
   label,
@@ -732,6 +734,7 @@ function HandRow({
   selectedIdx: number | null;
   onSelect: (idx: number) => void;
   dataTutorial: string;
+  className: string;
   hintEnabled: boolean;
   currentHint: { targetAction: string } | null;
   label: string;
@@ -740,7 +743,7 @@ function HandRow({
   wildLabel: string;
 }) {
   return (
-    <div className="flex flex-col items-center" data-tutorial={dataTutorial}>
+    <div className={`flex flex-col items-center ${className}`} data-tutorial={dataTutorial}>
       <span className="text-sm text-ds-text-muted mb-1">{label}</span>
       <div className="flex gap-2 flex-wrap justify-center">
         {hand.length === 0 ? (

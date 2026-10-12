@@ -94,6 +94,13 @@ beforeEach(() => {
 });
 
 describe('SpiteAndMalicePage', () => {
+  it('sticks the player hand to the desktop play-area bottom', async () => {
+    renderWithProviders(<SpiteAndMalicePage />);
+    await waitFor(() =>
+      expect(document.querySelector('[data-tutorial="sam-hand"]')).toHaveClass('lg:sticky', 'lg:bottom-0'),
+    );
+  });
+
   const foundationButtons = () => screen.getAllByRole('button', { name: /組札|Foundation/ });
 
   it('collapses CPU information and rules on mobile, while keeping the CPU section open on desktop', async () => {
