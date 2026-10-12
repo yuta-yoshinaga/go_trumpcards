@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { binokelApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardFan } from '../components/CardFan';
 import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
@@ -727,67 +728,69 @@ function BinokelPageContent() {
           >
             {/* Hand */}
             {humanPlayer && humanPlayer.cards.length > 0 && (
-              <div className="flex flex-wrap gap-1 mb-2" data-tutorial="bn-player-hand">
-                {humanPlayer.cards.map((card, idx) => {
-                  const isValid = state.validPlayIndices?.includes(idx);
-                  const cardKey = `${card.design}-${card.value}`;
-                  const inHighlightedMeld = highlightedCardKeys.has(cardKey);
-                  const meldTitle = cardKeyToMeldTitle.get(cardKey);
-                  const isInMeld = meldTitle !== undefined;
-                  const dimmedByMeldFocus = highlightedMeldIdx !== null && !inHighlightedMeld;
-                  const isSelectedForDiscard = selectedCardIndices.includes(idx);
+              <div className="mb-2" data-tutorial="bn-player-hand">
+                <CardFan itemWidth={cardWidth} data-testid="bn-player-hand">
+                  {humanPlayer.cards.map((card, idx) => {
+                    const isValid = state.validPlayIndices?.includes(idx);
+                    const cardKey = `${card.design}-${card.value}`;
+                    const inHighlightedMeld = highlightedCardKeys.has(cardKey);
+                    const meldTitle = cardKeyToMeldTitle.get(cardKey);
+                    const isInMeld = meldTitle !== undefined;
+                    const dimmedByMeldFocus = highlightedMeldIdx !== null && !inHighlightedMeld;
+                    const isSelectedForDiscard = selectedCardIndices.includes(idx);
 
-                  const handleClick = () => {
-                    if (isDabbTurn) {
-                      toggleCardSelection(idx);
-                    } else if (isPlayTurn && isValid) {
-                      handlePlay(idx);
-                    }
-                  };
+                    const handleClick = () => {
+                      if (isDabbTurn) {
+                        toggleCardSelection(idx);
+                      } else if (isPlayTurn && isValid) {
+                        handlePlay(idx);
+                      }
+                    };
 
-                  const isClickable = isDabbTurn || (isPlayTurn && isValid);
-                  const isDisabled = loading || !isClickable;
+                    const isClickable = isDabbTurn || (isPlayTurn && isValid);
+                    const isDisabled = loading || !isClickable;
 
-                  return (
-                    <button
-                      type="button"
-                      key={`${card.design}-${card.value}-${idx}`}
-                      onClick={handleClick}
-                      disabled={isDisabled}
-                      aria-label={cardAlt(card)}
-                      aria-pressed={isDabbTurn ? isSelectedForDiscard : undefined}
-                      data-meld-highlighted={inHighlightedMeld ? 'true' : undefined}
-                      data-in-meld={isInMeld ? 'true' : undefined}
-                      data-selected-discard={isSelectedForDiscard ? 'true' : undefined}
-                      title={meldTitle}
-                      className={`relative transition-all${
-                        isSelectedForDiscard
-                          ? ' -translate-y-3 ring-4 ring-ds-warning'
-                          : inHighlightedMeld
-                            ? ' -translate-y-2 ring-4 ring-ds-accent'
-                            : ''
-                      }${dimmedByMeldFocus ? ' opacity-40' : ''}`}
-                      style={{
-                        background: 'none',
-                        padding: 0,
-                        borderRadius: 8,
-                        opacity: dimmedByMeldFocus ? undefined : isPlayTurn && !isValid ? 0.5 : 1,
-                        boxSizing: 'border-box',
-                      }}
-                    >
-                      <AnimatedCard card={card} width={cardWidth} />
-                      {isInMeld && (
-                        <span
-                          aria-hidden="true"
-                          className="absolute top-0.5 right-0.5 px-1 rounded-full bg-ds-accent text-ds-text-on-accent text-[10px] font-bold shadow-sm pointer-events-none"
-                          data-testid={`bn-meld-card-badge-${idx}`}
-                        >
-                          M
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
+                    return (
+                      <button
+                        type="button"
+                        key={`${card.design}-${card.value}-${idx}`}
+                        onClick={handleClick}
+                        disabled={isDisabled}
+                        aria-label={cardAlt(card)}
+                        aria-pressed={isDabbTurn ? isSelectedForDiscard : undefined}
+                        data-meld-highlighted={inHighlightedMeld ? 'true' : undefined}
+                        data-in-meld={isInMeld ? 'true' : undefined}
+                        data-selected-discard={isSelectedForDiscard ? 'true' : undefined}
+                        title={meldTitle}
+                        className={`relative transition-all${
+                          isSelectedForDiscard
+                            ? ' -translate-y-3 ring-4 ring-ds-warning'
+                            : inHighlightedMeld
+                              ? ' -translate-y-2 ring-4 ring-ds-accent'
+                              : ''
+                        }${dimmedByMeldFocus ? ' opacity-40' : ''}`}
+                        style={{
+                          background: 'none',
+                          padding: 0,
+                          borderRadius: 8,
+                          opacity: dimmedByMeldFocus ? undefined : isPlayTurn && !isValid ? 0.5 : 1,
+                          boxSizing: 'border-box',
+                        }}
+                      >
+                        <AnimatedCard card={card} width={cardWidth} />
+                        {isInMeld && (
+                          <span
+                            aria-hidden="true"
+                            className="absolute top-0.5 right-0.5 px-1 rounded-full bg-ds-accent text-ds-text-on-accent text-[10px] font-bold shadow-sm pointer-events-none"
+                            data-testid={`bn-meld-card-badge-${idx}`}
+                          >
+                            M
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </CardFan>
               </div>
             )}
 

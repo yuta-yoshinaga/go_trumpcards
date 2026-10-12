@@ -327,6 +327,9 @@ describe('BinokelPage', () => {
     const handContainer = container.querySelector('[data-tutorial="bn-player-hand"]') as HTMLElement;
     const cardButtons = within(handContainer).getAllByRole('button');
     expect(cardButtons).toHaveLength(18);
+    expect(
+      within(handContainer.querySelector('[data-testid="bn-player-hand"]') as HTMLElement).getAllByRole('button'),
+    ).toHaveLength(18);
 
     // 0 selected -> disabled
     expect(discardBtn).toBeDisabled();
@@ -620,6 +623,20 @@ describe('BinokelPage', () => {
     await waitFor(() => {
       expect(screen.getByRole('button', { name: '♠ A' })).toBeInTheDocument();
     });
+  });
+
+  it('plays a legal card and dims cards outside the legal-play indices', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, validPlayIndices: [0] });
+    renderWithProviders(<BinokelPage />);
+
+    const legalCard = await screen.findByRole('button', { name: '♠ A' });
+    const illegalCard = screen.getByRole('button', { name: '♥ J' });
+    expect(legalCard).toHaveStyle({ opacity: '1' });
+    expect(illegalCard).toHaveStyle({ opacity: '0.5' });
+
+    fireEvent.click(legalCard);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0));
+    expect(mockExec).not.toHaveBeenCalledWith('play', 1);
   });
 
   it('shows scored melds as plain text in the meld area during play phase', async () => {
@@ -959,6 +976,8 @@ describe('BinokelPage meld reference', () => {
     expect(within(footerContent).queryByTestId('bid-option-150')).not.toBeInTheDocument();
     expect(within(playArea as HTMLElement).getByTestId('bid-option-150')).toBeInTheDocument();
     expect(footerContent.querySelector('[data-tutorial="bn-player-hand"]')).toBeInTheDocument();
+    const handFan = footerContent.querySelector('[data-testid="bn-player-hand"]') as HTMLElement;
+    expect(within(handFan).getAllByRole('button')).toHaveLength(1);
     expect(footerContent.querySelector('[data-tutorial="bn-reset-button"]')).not.toBeInTheDocument();
     expect(playArea?.querySelector('[data-tutorial="bn-reset-button"]')).toBeInTheDocument();
   });

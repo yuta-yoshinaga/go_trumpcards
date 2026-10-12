@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { karnoffelApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -12,10 +12,11 @@ vi.mock('../api/gameApi', () => ({
   actionLogApi: { karnoffel: vi.fn() },
 }));
 
-const mobileState = { isMobile: false };
+const mobileState = { isMobile: false, breakpoint: 'largeDesktop' as 'mobile' | 'desktop' | 'largeDesktop' };
 vi.mock('../hooks/useCardDimensions', () => ({
   useCardDimensions: () => ({ cardWidth: 40 }),
   useIsMobile: () => mobileState.isMobile,
+  useBreakpoint: () => mobileState.breakpoint,
 }));
 
 const mockExec = vi.mocked(karnoffelApi.exec);
@@ -76,10 +77,11 @@ describe('KarnoffelPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mobileState.isMobile = false;
+    mobileState.breakpoint = 'largeDesktop';
     mockExec.mockResolvedValue(makeState());
   });
 
-  it('collapses reference details on mobile and keeps them open on desktop', async () => {
+  it('keeps reference details closed and places the seat, trick, and CPU panels by breakpoint', async () => {
     mobileState.isMobile = true;
     const { unmount } = renderWithProviders(<KarnoffelPage />);
     await screen.findByTestId('karnoffel-scores');
@@ -111,17 +113,47 @@ describe('KarnoffelPage', () => {
 
     unmount();
     mobileState.isMobile = false;
+    mobileState.breakpoint = 'largeDesktop';
+    mockExec.mockResolvedValueOnce(makeState({ trick: [card('HEART', 5)] }));
     renderWithProviders(<KarnoffelPage />);
     await screen.findByTestId('karnoffel-scores');
-    for (const detail of document.querySelectorAll('details')) expect(detail).toHaveAttribute('open');
-    expect(screen.getByTestId('karnoffel-ladder')).toBeVisible();
-    expect(screen.getByText('設定', { exact: true }).closest('details')).toHaveAttribute('open');
+    const referenceDetails = [
+      screen.getByText('設定', { exact: true }).closest('details'),
+      screen.getByTestId('karnoffel-chosen-note-summary').closest('details'),
+      screen.getByTestId('karnoffel-ladder-summary').closest('details'),
+    ];
+    expect(referenceDetails).toHaveLength(3);
+    for (const detail of referenceDetails) expect(detail).not.toHaveAttribute('open');
+    expect(screen.getByTestId('karnoffel-ladder')).not.toBeVisible();
+    expect(screen.getByTestId('karnoffel-chosen-note')).not.toBeVisible();
+    const row = screen.getByTestId('karnoffel-seat-trick-row');
+    const humanSeat = screen.getByTestId('karnoffel-human-player');
+    const trick = screen.getByTestId('karnoffel-trick');
+    const desktopAccordion = screen.getByTestId('cpu-accordion');
+    expect(row).toHaveClass('flex', 'flex-wrap', 'items-start', 'gap-4');
+    expect(row).toContainElement(humanSeat);
+    expect(row).toContainElement(trick);
+    expect(humanSeat.compareDocumentPosition(trick) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(row.compareDocumentPosition(desktopAccordion) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
     for (const player of screen.getAllByTestId('karnoffel-player')) expect(player).toBeVisible();
-    const desktopAccordion = screen.getByTestId('cpu-accordion');
     expect(
       screen.getAllByTestId('karnoffel-player').filter((player) => desktopAccordion.contains(player)),
     ).toHaveLength(3);
+
+    cleanup();
+    mobileState.breakpoint = 'desktop';
+    mockExec.mockResolvedValueOnce(makeState({ trick: [card('HEART', 5)] }));
+    renderWithProviders(<KarnoffelPage />);
+    await screen.findByTestId('karnoffel-scores');
+    const smallSeat = screen.getByTestId('karnoffel-human-player');
+    const smallAccordion = screen.getByTestId('cpu-accordion');
+    const smallTrick = screen.getByTestId('karnoffel-trick');
+    expect(smallSeat).toHaveClass('grid-cols-2');
+    expect(screen.getByTestId('karnoffel-human-player')).not.toHaveClass('grid-cols-4');
+    expect(smallSeat.compareDocumentPosition(smallAccordion) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(smallAccordion.compareDocumentPosition(smallTrick) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.queryByTestId('karnoffel-seat-trick-row')).not.toBeInTheDocument();
   });
 
   it('resets on mount', async () => {
@@ -407,5 +439,18 @@ describe('KarnoffelPage', () => {
     expect(trick.querySelector('[data-testid="karnoffel-trick-rank-1"]')).toHaveTextContent('悪魔（追随・最弱）');
     expect(screen.getByRole('img', { name: '席0: あなた、♥ J、カルニッフェル' })).toBeInTheDocument();
     expect(screen.getByRole('img', { name: '席1: CPU 1、♥ 7、悪魔（追随・最弱）' })).toBeInTheDocument();
+  });
+
+  it('labels a leading devil, a following devil, and an unranked trick card accessibly', async () => {
+    mockExec.mockResolvedValue(makeState({ trick: [card('HEART', 7), card('HEART', 7), card('CLOVER', 4)] }));
+    renderWithProviders(<KarnoffelPage />);
+
+    const trick = await screen.findByTestId('karnoffel-trick');
+    expect(trick.querySelector('[data-testid="karnoffel-trick-rank-0"]')).toHaveTextContent('悪魔（リード）');
+    expect(trick.querySelector('[data-testid="karnoffel-trick-rank-1"]')).toHaveTextContent('悪魔（追随・最弱）');
+    expect(trick.querySelector('[data-testid="karnoffel-trick-rank-2"]')).not.toBeInTheDocument();
+    expect(screen.getByRole('img', { name: '席0: あなた、♥ 7、悪魔（リード）' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: '席1: CPU 1、♥ 7、悪魔（追随・最弱）' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: '席2: CPU 2、♣ 4' })).toBeInTheDocument();
   });
 });
