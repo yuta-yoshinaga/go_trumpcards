@@ -427,7 +427,7 @@ function BraidPageContent() {
                 })}
               </div>
 
-              <div className={`flex items-start ${isLargeDesktop ? 'gap-2' : 'gap-2'}`} data-tutorial="br-stock">
+              <div className="flex gap-2 items-start" data-tutorial="br-stock">
                 <div className="text-center">
                   <div className="text-game-text-muted text-xs mb-1">{t('stock')}</div>
                   <button

@@ -56,8 +56,13 @@ describe('OsmosisPage', () => {
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
     renderWithProviders(<OsmosisPage />);
     const row = await screen.findByTestId('os-board-row');
-    expect(row.querySelector('[data-tutorial="os-reserve"]')?.parentElement?.className).toContain('order-1');
-    expect(row.querySelector('[data-tutorial="os-foundation"]')?.parentElement?.className).toContain('order-2');
+    const boardSections = row.querySelectorAll('[data-tutorial="os-reserve"], [data-tutorial="os-foundation"]');
+    expect(boardSections).toHaveLength(2);
+    expect(boardSections[0]).toHaveAttribute('data-tutorial', 'os-reserve');
+    expect(boardSections[1]).toHaveAttribute('data-tutorial', 'os-foundation');
+    expect([...row.querySelectorAll<HTMLElement>('*')].some((element) => /\border-/.test(element.className))).toBe(
+      false,
+    );
     expect(screen.getByRole('button', { name: /^組札 0/ }).querySelector('.relative')).toHaveStyle({
       width: '80px',
       height: '120px',
