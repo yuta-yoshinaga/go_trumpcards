@@ -131,6 +131,8 @@ function KarnoffelPageContent() {
 
   const playerLabel = (id: number, isHuman: boolean): string => (isHuman ? t('you') : t('cpu', { id }));
   const suitLabel = (s: number): string => t(`suitName.${s}`);
+  const rankForPosition = (baseRankKey: string | null, isLead: boolean) =>
+    baseRankKey === 'devil' ? (isLead ? 'devilLead' : 'devilFollow') : baseRankKey;
   const renderPlayer = (p: (typeof state.players)[number]) => (
     <div
       key={`player-${p.id}`}
@@ -189,6 +191,52 @@ function KarnoffelPageContent() {
   };
 
   const result = state.lastResult;
+  const renderTrick = () =>
+    state.trick.length > 0 && (
+      <div
+        className={`mb-2 flex ${breakpoint === 'largeDesktop' ? 'flex-1' : ''} items-center gap-2`}
+        data-testid="karnoffel-trick"
+      >
+        <span className="text-ds-text-muted text-sm">{t('trick')}</span>
+        {state.trick.map((c, i) => {
+          const seatIdx = (state.trickLeaderIdx + i) % state.players.length;
+          const isHuman = state.players.some((p) => p.id === seatIdx && p.isHuman);
+          const name = t('seatPlayer', { idx: seatIdx, name: playerLabel(seatIdx, isHuman) });
+          const baseRankKey = karnoffelRankKey(c, state.chosenSuit);
+          const rankKey = rankForPosition(baseRankKey, i === 0);
+          const accessibleName = rankKey
+            ? `${name}${t('listSeparator')}${cardAlt(c)}${t('listSeparator')}${t(`rankBadge.${rankKey}`)}`
+            : `${name}${t('listSeparator')}${cardAlt(c)}`;
+          return (
+            <div key={`trick-${c.design}-${c.value}-${i}`} className="flex flex-col items-center">
+              <span className="mb-1 text-ds-text-muted text-xs" aria-hidden="true">
+                {name}
+              </span>
+              <span className="relative inline-block">
+                <CardImage card={c} width={cardWidth} ariaLabel={accessibleName} />
+                {rankKey && (
+                  <span
+                    aria-hidden="true"
+                    data-testid={`karnoffel-trick-rank-${i}`}
+                    className={`absolute left-0 right-0 bottom-0 rounded-b px-0.5 text-[9px] font-bold text-center truncate ${badgeWarningColors}`}
+                  >
+                    {t(`rankBadge.${rankKey}`)}
+                  </span>
+                )}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  const cpuAccordion = (
+    <CpuAccordion playerCount={state.players.filter((player) => !player.isHuman).length}>
+      {/* CPUの表向き札は全員ぶん見える。切札の根拠がここにある。 */}
+      <div className="grid grid-cols-2 gap-1 sm:grid-cols-4">
+        {state.players.filter((player) => !player.isHuman).map(renderPlayer)}
+      </div>
+    </CpuAccordion>
+  );
 
   return (
     <GamePageShell
@@ -278,97 +326,23 @@ function KarnoffelPageContent() {
             <div className="mb-2" data-testid="karnoffel-players" data-tutorial="karnoffel-players">
               <div className="mb-1 text-ds-text-primary text-sm">{t('playersTitle')}</div>
               {breakpoint === 'largeDesktop' ? (
-                <div className="flex flex-wrap items-start gap-4" data-testid="karnoffel-seat-trick-row">
-                  <div className="grid grid-cols-1 gap-1" data-testid="karnoffel-human-player">
-                    {state.players.filter((player) => player.isHuman).map(renderPlayer)}
-                  </div>
-                  {state.trick.length > 0 && (
-                    <div className="mb-2 flex flex-1 items-center gap-2" data-testid="karnoffel-trick">
-                      <span className="text-ds-text-muted text-sm">{t('trick')}</span>
-                      {state.trick.map((c, i) => {
-                        const seatIdx = (state.trickLeaderIdx + i) % state.players.length;
-                        const isHuman = state.players.some((p) => p.id === seatIdx && p.isHuman);
-                        const name = t('seatPlayer', { idx: seatIdx, name: playerLabel(seatIdx, isHuman) });
-                        const baseRankKey = karnoffelRankKey(c, state.chosenSuit);
-                        const rankKey = baseRankKey === 'devil' ? (i === 0 ? 'devilLead' : 'devilFollow') : baseRankKey;
-                        const accessibleName = rankKey
-                          ? `${name}${t('listSeparator')}${cardAlt(c)}${t('listSeparator')}${t(`rankBadge.${rankKey}`)}`
-                          : `${name}${t('listSeparator')}${cardAlt(c)}`;
-                        return (
-                          <div key={`trick-${c.design}-${c.value}-${i}`} className="flex flex-col items-center">
-                            <span className="mb-1 text-ds-text-muted text-xs" aria-hidden="true">
-                              {name}
-                            </span>
-                            <span className="relative inline-block">
-                              <CardImage card={c} width={cardWidth} ariaLabel={accessibleName} />
-                              {rankKey && (
-                                <span
-                                  aria-hidden="true"
-                                  data-testid={`karnoffel-trick-rank-${i}`}
-                                  className={`absolute left-0 right-0 bottom-0 rounded-b px-0.5 text-[9px] font-bold text-center truncate ${badgeWarningColors}`}
-                                >
-                                  {t(`rankBadge.${rankKey}`)}
-                                </span>
-                              )}
-                            </span>
-                          </div>
-                        );
-                      })}
+                <>
+                  <div className="flex flex-wrap items-start gap-4" data-testid="karnoffel-seat-trick-row">
+                    <div className="grid grid-cols-1 gap-1" data-testid="karnoffel-human-player">
+                      {state.players.filter((player) => player.isHuman).map(renderPlayer)}
                     </div>
-                  )}
-                </div>
+                    {renderTrick()}
+                  </div>
+                  {cpuAccordion}
+                </>
               ) : (
                 <>
                   <div className="grid grid-cols-2 gap-1 sm:grid-cols-4" data-testid="karnoffel-human-player">
                     {state.players.filter((player) => player.isHuman).map(renderPlayer)}
                   </div>
-                  <CpuAccordion playerCount={state.players.filter((player) => !player.isHuman).length}>
-                    <div className="grid grid-cols-2 gap-1 sm:grid-cols-4">
-                      {state.players.filter((player) => !player.isHuman).map(renderPlayer)}
-                    </div>
-                  </CpuAccordion>
-                  {state.trick.length > 0 && (
-                    <div className="mb-2 flex items-center gap-2" data-testid="karnoffel-trick">
-                      <span className="text-ds-text-muted text-sm">{t('trick')}</span>
-                      {state.trick.map((c, i) => {
-                        const seatIdx = (state.trickLeaderIdx + i) % state.players.length;
-                        const isHuman = state.players.some((p) => p.id === seatIdx && p.isHuman);
-                        const name = t('seatPlayer', { idx: seatIdx, name: playerLabel(seatIdx, isHuman) });
-                        const baseRankKey = karnoffelRankKey(c, state.chosenSuit);
-                        const rankKey = baseRankKey === 'devil' ? (i === 0 ? 'devilLead' : 'devilFollow') : baseRankKey;
-                        const accessibleName = rankKey
-                          ? `${name}${t('listSeparator')}${cardAlt(c)}${t('listSeparator')}${t(`rankBadge.${rankKey}`)}`
-                          : `${name}${t('listSeparator')}${cardAlt(c)}`;
-                        return (
-                          <div key={`trick-${c.design}-${c.value}-${i}`} className="flex flex-col items-center">
-                            <span className="mb-1 text-ds-text-muted text-xs" aria-hidden="true">
-                              {name}
-                            </span>
-                            <span className="relative inline-block">
-                              <CardImage card={c} width={cardWidth} ariaLabel={accessibleName} />
-                              {rankKey && (
-                                <span
-                                  aria-hidden="true"
-                                  data-testid={`karnoffel-trick-rank-${i}`}
-                                  className={`absolute left-0 right-0 bottom-0 rounded-b px-0.5 text-[9px] font-bold text-center truncate ${badgeWarningColors}`}
-                                >
-                                  {t(`rankBadge.${rankKey}`)}
-                                </span>
-                              )}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
+                  {cpuAccordion}
+                  {renderTrick()}
                 </>
-              )}
-              {breakpoint === 'largeDesktop' && (
-                <CpuAccordion playerCount={state.players.filter((player) => !player.isHuman).length}>
-                  <div className="grid grid-cols-2 gap-1 sm:grid-cols-4">
-                    {state.players.filter((player) => !player.isHuman).map(renderPlayer)}
-                  </div>
-                </CpuAccordion>
               )}
             </div>
 
@@ -411,12 +385,7 @@ function KarnoffelPageContent() {
                 {humanCards.map((c, i) => {
                   // The ladder text names the titled cards, but which card in hand
                   // holds a title depends on the suit chosen this deal (#4773).
-                  const rankKey =
-                    karnoffelRankKey(c, state.chosenSuit) === 'devil'
-                      ? state.trick.length === 0
-                        ? 'devilLead'
-                        : 'devilFollow'
-                      : karnoffelRankKey(c, state.chosenSuit);
+                  const rankKey = rankForPosition(karnoffelRankKey(c, state.chosenSuit), state.trick.length === 0);
                   const cardName = rankKey ? `${cardAlt(c)} (${t(`rankBadge.${rankKey}`)})` : cardAlt(c);
                   const accessibleName = isPlay
                     ? `${cardName}, ${t(canPlay(i) ? 'playableThisTurn' : 'notPlayableThisTurn')}`
