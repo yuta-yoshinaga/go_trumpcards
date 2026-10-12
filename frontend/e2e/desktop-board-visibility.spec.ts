@@ -4,7 +4,16 @@ import { navigateTo } from './helpers';
 /** #11702: use the same 52px visible-card rule as #11655 for desktop boards. */
 test.use({ viewport: { width: 1280, height: 800 } });
 
-const PAGES = ['/grandfathersclock', '/bigben', '/colorado', '/slyfox'] as const;
+const PAGES = [
+  '/grandfathersclock',
+  '/bigben',
+  '/colorado',
+  '/slyfox',
+  '/penguin',
+  '/kingalbert',
+  '/americantoad',
+  '/terrace',
+] as const;
 
 for (const path of PAGES) {
   test(`${path} keeps every board card visible on desktop`, async ({ page }) => {

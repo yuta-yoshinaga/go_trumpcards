@@ -19,7 +19,7 @@ import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useAmericanToadGame } from '../hooks/useAmericanToadGame';
-import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useDestinationPreview } from '../hooks/useDestinationPreview';
@@ -27,6 +27,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
+import { DESKTOP_COMPACT_CARD_WIDTH } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { AmericanToadMoveZone, AmericanToadResponse } from '../types/card';
 import { AMERICANTOAD_MAX_PASSES } from '../types/games/americantoad';
@@ -105,6 +106,7 @@ function AmericanToadPageContent() {
   );
   const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const windowWidth = useWindowWidth();
   const tableauCardRefs = useRef(new Map<string, HTMLButtonElement>());
 
@@ -122,6 +124,9 @@ function AmericanToadPageContent() {
     const co = Math.round(cw * 0.32);
     return { cw, ch, co };
   }, [isMobile, windowWidth, cardWidth, cardHeight, cardOverlap]);
+
+  const topCardWidth = isLargeDesktop ? DESKTOP_COMPACT_CARD_WIDTH : dims.cw;
+  const topCardHeight = isLargeDesktop ? Math.round(topCardWidth * 1.5) : dims.ch;
 
   const isPlayingForKbd = state?.phase === AmericanToadPhase.PLAYING;
 
@@ -371,7 +376,14 @@ function AmericanToadPageContent() {
       ) : (
         <>
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
-            <div className="flex flex-wrap justify-center items-start gap-3 sm:gap-6 mb-3">
+            <div
+              className={
+                isLargeDesktop
+                  ? 'flex flex-wrap justify-center items-start gap-2'
+                  : 'flex flex-wrap justify-center items-start gap-3 sm:gap-6 mb-3'
+              }
+              data-testid={isLargeDesktop ? 'at-top-row' : undefined}
+            >
               <div className="text-center" data-tutorial="at-reserve">
                 <div className="text-game-text-muted text-xs mb-1">{t('reserve')}</div>
                 {reserveTop ? (
@@ -387,13 +399,13 @@ function AmericanToadPageContent() {
                     {...preview.previewProps(reserveZone)}
                     className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('reserve', undefined, undefined) ? 'ring-2 ring-ds-warning' : ''}`}
                   >
-                    <AnimatedCard card={reserveTop} width={dims.cw} draggable={false} />
+                    <AnimatedCard card={reserveTop} width={topCardWidth} draggable={false} />
                   </button>
                 ) : (
                   <div
                     role="img"
                     aria-label={t('emptyReserveAriaLabel')}
-                    style={{ width: dims.cw, height: dims.ch }}
+                    style={{ width: topCardWidth, height: topCardHeight }}
                     className="rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center"
                   >
                     {t('empty')}
@@ -435,7 +447,7 @@ function AmericanToadPageContent() {
                           >
                             <AnimatedCard
                               card={pile[pile.length - 1]}
-                              width={dims.cw}
+                              width={topCardWidth}
                               draggable={false}
                               dealDelay={isAutoCompleting ? idx * 0.1 : 0}
                             />
@@ -448,7 +460,7 @@ function AmericanToadPageContent() {
                             aria-disabled={!selectedSource || undefined}
                             aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx], idx })}
-                            style={{ width: dims.cw, height: dims.ch }}
+                            style={{ width: topCardWidth, height: topCardHeight }}
                             className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                           >
                             {state.baseRank}
@@ -474,7 +486,7 @@ function AmericanToadPageContent() {
                           ? t('emptyStockAriaLabel')
                           : t('stockAriaLabel', { count: state.stockCount })
                     }
-                    style={{ width: dims.cw, height: dims.ch }}
+                    style={{ width: topCardWidth, height: topCardHeight }}
                     className={`rounded border-2 border-white/30 bg-white/10 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite} ${state.canRedeal ? 'ring-2 ring-ds-warning' : ''}`}
                   >
                     {state.canRedeal ? '↻' : state.stockCount}
@@ -502,13 +514,13 @@ function AmericanToadPageContent() {
                       onDragEnd={dnd.handleDragEnd}
                       className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste', undefined, undefined) ? 'ring-2 ring-ds-warning' : ''}`}
                     >
-                      <AnimatedCard card={wasteTop} width={dims.cw} draggable={false} />
+                      <AnimatedCard card={wasteTop} width={topCardWidth} draggable={false} />
                     </button>
                   ) : (
                     <div
                       role="img"
                       aria-label={t('emptyWasteAriaLabel')}
-                      style={{ width: dims.cw, height: dims.ch }}
+                      style={{ width: topCardWidth, height: topCardHeight }}
                       className="rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center"
                     >
                       {t('empty')}
