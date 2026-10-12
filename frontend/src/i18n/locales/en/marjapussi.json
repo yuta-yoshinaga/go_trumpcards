@@ -56,10 +56,6 @@
   },
   "nextTrick": "Next Trick",
   "nextRound": "Next Round",
-  "playPhase": {
-    "lead": "Your turn — pick a card to lead.",
-    "follow": "Your turn — follow the led suit (trump when void)."
-  },
   "trickEnd": "Trick complete — continue.",
   "roundEnd": "Round complete — go to the next round.",
   "result": {

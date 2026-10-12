@@ -506,9 +506,6 @@ function MarjapussiPageContent() {
             <div className="sr-only" role="status" aria-live="polite" data-testid="marjapussi-score-live">
               {teamScoreAnnouncement}
             </div>
-            {/* Live region is always mounted */}
-            <div data-testid="marjapussi-prompt-live" role="status" aria-live="polite"></div>
-
             {marriages.length > 0 && (
               <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="marjapussi-marriage">
                 {t('marriageAvailable', {

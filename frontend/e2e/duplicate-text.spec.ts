@@ -5,6 +5,8 @@ const viewports = [
   { name: 'mobile', width: 375, height: 667 },
   { name: 'desktop', width: 1280, height: 800 },
 ];
+const guidanceSelector =
+  '[role="status"].glass-panel, [role="alert"].glass-panel, [role="status"] .glass-panel, [role="alert"] .glass-panel';
 
 for (const viewport of viewports) {
   test.describe(`duplicate visible text (${viewport.name})`, () => {
@@ -13,10 +15,8 @@ for (const viewport of viewports) {
     for (const path of ['/cucumber', '/comet', '/teenpatti', '/threecardbrag', '/julepe']) {
       test(`${path} does not repeat game guidance elsewhere`, async ({ page }) => {
         await navigateTo(page, path);
-        const duplicates = await page.locator('main').evaluate((main) => {
-          const boxes = main.querySelectorAll<HTMLElement>(
-            '[role="status"].glass-panel, [role="alert"].glass-panel, [role="status"] .glass-panel, [role="alert"] .glass-panel',
-          );
+        const duplicates = await page.locator('main').evaluate((main, selector) => {
+          const boxes = main.querySelectorAll<HTMLElement>(selector);
           const messages = [...boxes].map((box) => box.innerText.trim().replace(/\s+/g, ' ')).filter(Boolean);
           const visibleText = [...main.querySelectorAll<HTMLElement>('*')].filter((element) => {
             const style = getComputedStyle(element);
@@ -29,18 +29,14 @@ for (const viewport of viewports) {
           });
           const duplicates = messages.flatMap((message) => {
             const repeated = visibleText.some((element) => {
-              if (
-                element.closest(
-                  '[role="status"].glass-panel, [role="alert"].glass-panel, [role="status"] .glass-panel, [role="alert"] .glass-panel',
-                )
-              )
-                return false;
+              if (element.closest(selector)) return false;
+              // Only compare leaf elements with the exact guidance text; concatenated or paraphrased text is out of scope.
               return element.children.length === 0 && element.innerText.trim().replace(/\s+/g, ' ') === message;
             });
             return repeated ? [message] : [];
           });
           return { messages, duplicates };
-        });
+        }, guidanceSelector);
         expect(duplicates.messages, `Expected a non-empty GameMessageBox guidance message on ${path}`).not.toEqual([]);
         expect(duplicates.duplicates, `GameMessageBox guidance is repeated elsewhere on ${path}`).toEqual([]);
       });

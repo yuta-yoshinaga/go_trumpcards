@@ -25,7 +25,6 @@
   "handLabel": "Your hand",
   "playersTitle": "Players",
   "playerRowLabel": "{{name}} — status: {{status}}",
-  "bettingNotice": "Your turn — call, raise (vie), or fold.",
   "badge": {
     "active": "In",
     "folded": "Folded",

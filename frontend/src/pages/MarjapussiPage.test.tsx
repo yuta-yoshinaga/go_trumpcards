@@ -392,15 +392,6 @@ describe('MarjapussiPage', () => {
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
   });
 
-  it('announces the prompt from an always-mounted live region', async () => {
-    renderWithProviders(<MarjapussiPage />);
-    const live = await screen.findByTestId('marjapussi-prompt-live');
-    expect(live).toHaveAttribute('role', 'status');
-    expect(live).toHaveAttribute('aria-live', 'polite');
-    expect(live).not.toHaveTextContent('あなたの番です');
-    expect(screen.queryByTestId('marjapussi-play-prompt')).not.toBeInTheDocument();
-  });
-
   it('does not announce team scores on the first render', async () => {
     renderWithProviders(<MarjapussiPage />);
 
