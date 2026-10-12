@@ -82,6 +82,13 @@ describe('BeleagueredCastlePage', () => {
     expect(largeCard.querySelector('img')).toHaveStyle({ width: '80px' });
     large.unmount();
 
+    mockExec.mockResolvedValue({ ...playingState, foundation: [[], [], [], []] });
+    const emptyFoundations = renderWithProviders(<BeleagueredCastlePage />);
+    const [emptyFoundation] = await screen.findAllByRole('button', { name: /空の組札/ });
+    expect(emptyFoundation).toHaveStyle({ height: '120px' });
+    emptyFoundations.unmount();
+
+    mockExec.mockResolvedValue(playingState);
     Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 800 });
     const desktop = renderWithProviders(<BeleagueredCastlePage />);
     const desktopCard = (await screen.findAllByRole('button', { name: /組札 1枚/ }))[0];

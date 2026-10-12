@@ -147,8 +147,9 @@ function BeleagueredCastlePageContent() {
   }, [isMobile, windowWidth, cardWidth, cardHeight, cardOverlap]);
 
   const isPlayingForKbd = state?.phase === BeleagueredCastlePhase.PLAYING;
-  const foundationCardWidth = breakpoint === 'largeDesktop' ? DESKTOP_COMPACT_CARD_WIDTH : dims.cw;
-  const foundationCardHeight = breakpoint === 'largeDesktop' ? 120 : dims.ch;
+  const compact = breakpoint === 'largeDesktop';
+  const foundationCardWidth = compact ? DESKTOP_COMPACT_CARD_WIDTH : dims.cw;
+  const foundationCardHeight = compact ? Math.round(DESKTOP_COMPACT_CARD_WIDTH * 1.5) : dims.ch;
 
   const dispatchMove = useCallback(
     (source: BeleagueredCastleMoveZone, target: BeleagueredCastleMoveZone) => {
@@ -393,10 +394,10 @@ function BeleagueredCastlePageContent() {
                       data-preview-target={legalTargets.foundation.has(idx) && preview.isPreview ? 'true' : undefined}
                     >
                       <div
-                        className={`text-game-text-muted text-xs${breakpoint === 'largeDesktop' ? ' mb-0 flex h-5 items-center gap-1' : ' mb-1'}`}
+                        className={`text-game-text-muted text-xs${compact ? ' mb-0 flex h-5 items-center gap-1' : ' mb-1'}`}
                       >
                         {FOUNDATION_SUITS[idx]}
-                        {breakpoint === 'largeDesktop' && (
+                        {compact && (
                           <span
                             data-testid={`bc-foundation-progress-${idx.toString()}`}
                             className={`tabular-nums ${pile.length === 13 ? 'text-ds-success' : 'text-game-text-muted'}`}
@@ -453,7 +454,7 @@ function BeleagueredCastlePageContent() {
                           </button>
                         )}
                       </DropZone>
-                      {breakpoint !== 'largeDesktop' && (
+                      {!compact && (
                         <div
                           data-testid={`bc-foundation-progress-${idx.toString()}`}
                           className={`text-xs mt-1 tabular-nums ${pile.length === 13 ? 'text-ds-success' : 'text-game-text-muted'}`}

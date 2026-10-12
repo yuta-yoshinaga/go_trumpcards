@@ -135,8 +135,9 @@ function CitadelPageContent() {
   }, [isMobile, windowWidth, cardWidth, cardHeight, cardOverlap]);
 
   const isPlayingForKbd = state?.phase === CitadelPhase.PLAYING;
-  const foundationCardWidth = breakpoint === 'largeDesktop' ? DESKTOP_COMPACT_CARD_WIDTH : dims.cw;
-  const foundationCardHeight = breakpoint === 'largeDesktop' ? 120 : dims.ch;
+  const compact = breakpoint === 'largeDesktop';
+  const foundationCardWidth = compact ? DESKTOP_COMPACT_CARD_WIDTH : dims.cw;
+  const foundationCardHeight = compact ? Math.round(DESKTOP_COMPACT_CARD_WIDTH * 1.5) : dims.ch;
 
   const dispatchMove = useCallback(
     (source: CitadelMoveZone, target: CitadelMoveZone) => {
@@ -363,7 +364,6 @@ function CitadelPageContent() {
             </span>
             <div className={isMobile ? 'overflow-x-auto p-1' : ''} data-testid="citadel-board-scroll">
               <div className={`flex gap-2 sm:gap-3 items-start ${isMobile ? 'w-max' : 'w-full'}`}>
-                {/* 4 foundations × (120px card + 20px label) = 560px, fitting the 800px viewport. */}
                 <div
                   className={`flex gap-1 sm:gap-2 ${isMobile ? 'flex-none' : 'flex-1 min-w-0'}`}
                   data-tutorial="bc-tableau"
@@ -371,6 +371,7 @@ function CitadelPageContent() {
                   {[0, 1, 2, 3].map(renderTableauColumn)}
                 </div>
 
+                {/* 4 foundations × (120px card + 20px label) = 560px, fitting the 800px viewport. */}
                 <div
                   className={`flex flex-col items-center gap-1 sm:gap-2 mb-3 ${isMobile ? 'flex-none' : ''}`}
                   data-tutorial="bc-foundation"
@@ -385,10 +386,10 @@ function CitadelPageContent() {
                         data-preview-target={legalTargets.foundation.has(idx) && preview.isPreview ? 'true' : undefined}
                       >
                         <div
-                          className={`text-game-text-muted text-xs${breakpoint === 'largeDesktop' ? ' mb-0 flex h-5 items-center gap-1' : ' mb-1'}`}
+                          className={`text-game-text-muted text-xs${compact ? ' mb-0 flex h-5 items-center gap-1' : ' mb-1'}`}
                         >
                           {FOUNDATION_SUITS[idx]}
-                          {breakpoint === 'largeDesktop' && (
+                          {compact && (
                             <span className="tabular-nums">{t('foundationProgress', { count: pile.length })}</span>
                           )}
                         </div>
