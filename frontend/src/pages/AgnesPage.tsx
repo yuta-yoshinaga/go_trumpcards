@@ -17,7 +17,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -92,6 +92,7 @@ function AgnesPageContent() {
   } = useGamePageSetup('agnes');
   const { state, setState, loading, error, exec: execApi, retry } = useGameApi(agnesApi.exec);
   const { cardWidth, cardHeight, isMobile } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -347,7 +348,7 @@ function AgnesPageContent() {
             </div>
 
             {/* Stock (deal) */}
-            <div className="mb-3 flex gap-3" data-tutorial="ag-stock">
+            <div className="mb-3 flex items-start gap-3" data-tutorial="ag-stock">
               <div className="flex flex-col items-center">
                 <button
                   type="button"
@@ -367,6 +368,47 @@ function AgnesPageContent() {
                   {t('stock')}: {state.stockCount}
                 </span>
               </div>
+              {isPlaying && isLargeDesktop && (
+                <fieldset className="flex flex-wrap items-start gap-2 border-0 p-0" data-testid="agnes-move-bar">
+                  <legend className="sr-only">{t('tableau')}</legend>
+                  {state.tableau.flatMap((col, fromCol) => {
+                    const sourceCard = endFaceUpCard(col);
+                    if (!sourceCard) return [];
+                    const moves = [];
+                    if (agnesCanPlaceOnFoundation(sourceCard, state.foundation, state.baseRank)) {
+                      moves.push(
+                        <button
+                          key={`f-${fromCol}`}
+                          type="button"
+                          aria-label={t('moveToFoundationAriaLabel', { col: fromCol })}
+                          className={`${btnOutline} ${focusRingWhite} text-xs min-h-[44px]`}
+                          onClick={() => handleMoveTableauToFoundation(fromCol)}
+                          disabled={loading}
+                        >
+                          #{fromCol} {t('moveToFoundation')}
+                        </button>,
+                      );
+                    }
+                    state.tableau.forEach((targetCol, toCol) => {
+                      if (toCol !== fromCol && agnesCanPlaceOnTableau(sourceCard, targetCol)) {
+                        moves.push(
+                          <button
+                            key={`t-${fromCol}-${toCol}`}
+                            type="button"
+                            aria-label={t('moveToColAriaLabel', { fromCol, toCol })}
+                            className={`${btnOutline} ${focusRingWhite} text-xs min-h-[44px]`}
+                            onClick={() => handleMoveTableauToTableau(fromCol, col.length - 1, toCol)}
+                            disabled={loading}
+                          >
+                            #{fromCol} {t('moveToCol', { col: toCol })}
+                          </button>,
+                        );
+                      }
+                    });
+                    return moves;
+                  })}
+                </fieldset>
+              )}
             </div>
 
             {/* Tableau */}
@@ -374,6 +416,7 @@ function AgnesPageContent() {
               {state.tableau.map((col, i) => {
                 const tZone: AgnesMoveZone = { zone: 'tableau', col: i };
                 const endIndex = col.length - 1;
+                const stackHeight = col.length > 0 ? endIndex * 24 + cardHeight : cardHeight;
                 const isDragSourceColumn = dnd.dragSource?.zone === 'tableau' && dnd.dragSource.col === i;
                 const isEligible =
                   dnd.isDragging &&
@@ -381,7 +424,7 @@ function AgnesPageContent() {
                   draggedCard !== null &&
                   agnesCanPlaceOnTableau(draggedCard, col);
                 return (
-                  <div key={`t-${i}`} className="flex flex-col gap-1">
+                  <div key={`t-${i}`} className="relative flex flex-col gap-1">
                     <span className="text-xs text-ds-text-muted">#{i}</span>
                     <DropZone
                       className={isEligible ? 'border-2 border-ds-success rounded' : ''}
@@ -392,7 +435,7 @@ function AgnesPageContent() {
                     >
                       <div
                         className="relative"
-                        style={{ width: cardWidth, minHeight: cardHeight }}
+                        style={{ width: cardWidth, minHeight: stackHeight }}
                         data-eligible={isEligible ? 'true' : undefined}
                       >
                         {col.length === 0 ? (
@@ -462,8 +505,7 @@ function AgnesPageContent() {
                             })}
                           </div>
                         );
-                        // On mobile, collapse the dense per-column action buttons behind a
-                        // details disclosure so they don't crowd below the 44px tap-target min.
+                        if (isLargeDesktop) return null;
                         return isMobile ? (
                           <details className="mt-1 w-full" data-testid={`ag-col-actions-${i}`}>
                             <summary className="text-xs text-ds-text-muted cursor-pointer min-h-[44px] flex items-center justify-center">

@@ -1,10 +1,20 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { agnesApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { AgnesResponse, Card, CardDesign } from '../types/card';
 import { AgnesPage } from './AgnesPage';
+
+const breakpointState = { value: 'desktop' as 'mobile' | 'desktop' | 'largeDesktop' };
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useBreakpoint: () => breakpointState.value,
+    useCardDimensions: () => ({ ...actual.useCardDimensions(), isMobile: breakpointState.value === 'mobile' }),
+  };
+});
 
 vi.mock('../api/gameApi', () => ({
   agnesApi: { exec: vi.fn() },
@@ -54,6 +64,7 @@ const gameOverState: AgnesResponse = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  breakpointState.value = 'desktop';
   mockExec.mockResolvedValue(playingState);
 });
 
@@ -386,25 +397,64 @@ describe('AgnesPage', () => {
     expect(screen.getByRole('button', { name: '配る' })).toBeDisabled();
   });
 
-  it('collapses per-column actions behind a details disclosure on mobile', async () => {
-    const orig = window.innerWidth;
-    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
-    window.dispatchEvent(new Event('resize'));
-    try {
-      renderWithProviders(<AgnesPage />);
-      const details = await screen.findByTestId('ag-col-actions-0');
-      expect(details.tagName.toLowerCase()).toBe('details');
-      expect(details).not.toHaveAttribute('open');
-    } finally {
-      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: orig });
-      window.dispatchEvent(new Event('resize'));
-    }
-  });
-
-  it('shows per-column actions directly (no disclosure) on desktop', async () => {
+  it('uses a details disclosure on mobile and inline per-column actions on tablet', async () => {
+    breakpointState.value = 'mobile';
+    renderWithProviders(<AgnesPage />);
+    expect(await screen.findByTestId('ag-col-actions-0')).not.toHaveAttribute('open');
+    cleanup();
+    breakpointState.value = 'desktop';
     renderWithProviders(<AgnesPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    expect(screen.queryByTestId('ag-col-actions-0')).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByTestId('ag-col-actions-0')).not.toBeInTheDocument());
+    expect(screen.getByRole('button', { name: /列0から組札へ移動/ })).toBeInTheDocument();
+  });
+
+  it('shows only legal moves in the large desktop move bar and dispatches the selected move', async () => {
+    breakpointState.value = 'largeDesktop';
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: playingState.tableau.map((column, index) => (index === 4 ? [up('HEART', 4)] : column)),
+    });
+    renderWithProviders(<AgnesPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const bar = screen.getByTestId('agnes-move-bar');
+    expect(bar.parentElement).toHaveAttribute('data-tutorial', 'ag-stock');
+    expect(within(bar).getByRole('button', { name: '列4から列5へ移動' })).toBeInTheDocument();
+    expect(within(bar).getByRole('button', { name: '列5から組札へ移動' })).toBeInTheDocument();
+    expect(within(bar).getByRole('button', { name: '列6から列0へ移動' })).toBeInTheDocument();
+    expect(within(bar).queryByRole('button', { name: '列0から列2へ移動' })).not.toBeInTheDocument();
+    expect(
+      within(bar)
+        .getAllByRole('button')
+        .map((button) => button.getAttribute('aria-label')),
+    ).toEqual(['列4から列5へ移動', '列5から組札へ移動', '列6から列0へ移動']);
+    mockExec.mockClear();
+    fireEvent.click(within(bar).getByRole('button', { name: '列6から列0へ移動' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith(
+        'move',
+        { zone: 'tableau', col: 6, cardIndex: 0 },
+        { zone: 'tableau', col: 0 },
+      ),
+    );
+  });
+
+  it('omits move bar actions for empty columns and columns ending face down', async () => {
+    breakpointState.value = 'largeDesktop';
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: playingState.tableau.map((column, index) => {
+        if (index === 0) return [];
+        if (index === 1) return [up('HEART', 8), down()];
+        return column;
+      }),
+    });
+    renderWithProviders(<AgnesPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const bar = screen.getByTestId('agnes-move-bar');
+    expect(within(bar).queryByRole('button', { name: /^列0から/ })).not.toBeInTheDocument();
+    expect(within(bar).queryByRole('button', { name: /^列1から/ })).not.toBeInTheDocument();
   });
 
   // --- Auto-complete (issue #3289) ---
