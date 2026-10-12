@@ -31,6 +31,7 @@ const PAGES = [
   '/citadel',
   '/russiansolitaire',
   '/clocksolitaire',
+  '/canasta',
 ] as const;
 
 for (const path of PAGES) {
