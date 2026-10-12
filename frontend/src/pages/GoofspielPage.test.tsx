@@ -57,6 +57,13 @@ beforeEach(() => {
 });
 
 describe('GoofspielPage', () => {
+  it('renders every human hand card through the hand fan', async () => {
+    const { container } = renderWithProviders(<GoofspielPage />);
+    await waitFor(() =>
+      expect(container.querySelector('[data-tutorial="gs-hand"]')?.querySelectorAll('button')).toHaveLength(3),
+    );
+  });
+
   it('explains what each tie rule does', async () => {
     renderWithProviders(<GoofspielPage />);
     const select = await screen.findByTestId('gs-tie-select');

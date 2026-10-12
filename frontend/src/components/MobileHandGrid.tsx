@@ -29,6 +29,8 @@ export interface MobileHandGridProps {
   cardWidth: number;
   /** Optional data-tutorial attribute for tutorial system. */
   dataTutorial?: string;
+  /** Optional prefix for per-card test ids; the global card index is appended. */
+  cardTestIdPrefix?: string;
   /**
    * Optional whitelist of card indices legal to play this turn.
    * Indices outside this list render dimmed and ignore taps.
@@ -86,6 +88,7 @@ export function MobileHandGrid({
   onToggle,
   cardWidth,
   dataTutorial,
+  cardTestIdPrefix,
   validIndices,
   restrictedTooltip,
   cardTitleFor,
@@ -156,6 +159,7 @@ export function MobileHandGrid({
                   title={cardTitleFor?.(globalIdx) ?? (restricted ? restrictedTooltip : trump ? trumpTitle : undefined)}
                   data-trump={trump || undefined}
                   data-legal={legal || undefined}
+                  data-testid={cardTestIdPrefix ? `${cardTestIdPrefix}${globalIdx}` : undefined}
                   className={`${focusRingCard} ${legal ? 'rounded-lg ring-2 ring-ds-success' : ''} ${restricted ? 'opacity-50 cursor-not-allowed' : ''} ${dimmed ? 'opacity-60' : ''}`}
                   style={{
                     background: 'none',

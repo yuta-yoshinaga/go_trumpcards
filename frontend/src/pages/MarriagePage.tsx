@@ -12,8 +12,8 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
-import { MobileHandGrid } from '../components/MobileHandGrid';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { PlayerHandSection } from '../components/PlayerHandSection';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -31,7 +31,6 @@ import {
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { badgeSuccessColors, badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
-import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card } from '../types/card';
@@ -568,61 +567,28 @@ function MarriagePageContent() {
               ) : null
             }
           >
-            {humanPlayer &&
-              (isMobile ? (
-                <MobileHandGrid
-                  cards={humanPlayer.cards}
-                  selectedIndices={selectedCardIndices}
-                  onToggle={toggleCard}
-                  cardWidth={cardWidth}
-                  dataTutorial="marriage-player-hand"
-                  trumpIndices={humanPlayer.cards.flatMap((card, idx) => (isWildCard(card) ? [idx] : []))}
-                  trumpAccessibleLabel={t('wildBadge')}
-                  cardBadgeFor={(idx) => {
-                    const meld = handMeldLabels.get(idx);
-                    return meld
-                      ? {
-                          glyph: String(meld.number),
-                          title: t('declarePreview.cardBelongsTo', { meld: meld.label }),
-                        }
-                      : null;
-                  }}
-                  stackRows
-                />
-              ) : (
-                <div className="flex flex-wrap gap-1 mb-2" data-tutorial="marriage-player-hand">
-                  {humanPlayer.cards.map((card, idx) => (
-                    <button
-                      type="button"
-                      key={`${card.design}-${card.value}-${idx}`}
-                      onClick={() => toggleCard(idx)}
-                      aria-label={`${cardAlt(card)}${isWildCard(card) ? ` ${t('wildAria')}` : ''}${handMeldLabels.has(idx) ? ` ${t('declarePreview.cardBelongsTo', { meld: handMeldLabels.get(idx)?.label })}` : ''}`}
-                      aria-pressed={selectedCardIndices.includes(idx)}
-                      className={`relative transition-transform ${focusRingCard} ${
-                        isWildCard(card) ? 'ring-2 ring-ds-info' : ''
-                      }`}
-                      style={{
-                        background: 'none',
-                        padding: 0,
-                        borderRadius: 8,
-                        ...selectedCardStyle(selectedCardIndices.includes(idx)),
-                        boxSizing: 'border-box',
-                      }}
-                    >
-                      <AnimatedCard card={card} width={cardWidth} />
-                      {wildBadge(card)}
-                      {handMeldLabels.has(idx) && (
-                        <span
-                          aria-hidden="true"
-                          className="absolute bottom-0.5 left-0.5 rounded bg-ds-accent px-1 text-[9px] font-bold text-ds-text-on-accent"
-                        >
-                          {handMeldLabels.get(idx)?.number}
-                        </span>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              ))}
+            {humanPlayer && (
+              <PlayerHandSection
+                humanPlayer={humanPlayer}
+                selectedCardIndices={selectedCardIndices}
+                toggleCard={toggleCard}
+                cardWidth={cardWidth}
+                isMobile={isMobile}
+                dataTutorialPrefix="marriage"
+                trumpIndices={humanPlayer.cards.flatMap((card, idx) => (isWildCard(card) ? [idx] : []))}
+                trumpAccessibleLabel={t('wildBadge')}
+                cardBadgeFor={(idx) => {
+                  const meld = handMeldLabels.get(idx);
+                  return meld
+                    ? {
+                        glyph: String(meld.number),
+                        title: t('declarePreview.cardBelongsTo', { meld: meld.label }),
+                      }
+                    : null;
+                }}
+                stackRows
+              />
+            )}
 
             {isDiscardPhase && isHumanTurn && declarePreview && (
               <div

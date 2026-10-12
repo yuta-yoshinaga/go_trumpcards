@@ -102,6 +102,14 @@ describe('PlayerHandSection (desktop)', () => {
     expect(screen.getAllByRole('button')).toHaveLength(5);
   });
 
+  it('adds indexed test ids on desktop when configured and omits them otherwise', () => {
+    const { rerender } = render(<PlayerHandSection {...baseProps} isMobile={false} />);
+    for (const button of screen.getAllByRole('button')) expect(button).not.toHaveAttribute('data-testid');
+    rerender(<PlayerHandSection {...baseProps} isMobile={false} cardTestIdPrefix="hand-card-" />);
+    expect(screen.getByTestId('hand-card-0')).toHaveAttribute('data-hand-card-index', '0');
+    expect(screen.getByTestId('hand-card-4')).toHaveAttribute('data-hand-card-index', '4');
+  });
+
   it('applies data-tutorial attribute from prefix', () => {
     const { container } = render(<PlayerHandSection {...baseProps} isMobile={false} />);
     expect(container.querySelector('[data-tutorial="ht-player-hand"]')).toBeInTheDocument();
@@ -256,6 +264,14 @@ describe('PlayerHandSection (mobile)', () => {
   it('renders all cards via MobileHandGrid', () => {
     render(<PlayerHandSection {...baseProps} isMobile={true} />);
     expect(screen.getAllByRole('button')).toHaveLength(5);
+  });
+
+  it('forwards the test id prefix to MobileHandGrid', () => {
+    const { rerender } = render(<PlayerHandSection {...baseProps} isMobile />);
+    for (const button of screen.getAllByRole('button')) expect(button).not.toHaveAttribute('data-testid');
+    rerender(<PlayerHandSection {...baseProps} isMobile cardTestIdPrefix="hand-card-" />);
+    expect(screen.getByTestId('hand-card-0')).toBeInTheDocument();
+    expect(screen.getByTestId('hand-card-4')).toBeInTheDocument();
   });
 
   it('passes stackRows through to the mobile grid', () => {

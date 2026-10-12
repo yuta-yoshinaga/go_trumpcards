@@ -74,6 +74,14 @@ beforeEach(() => {
 });
 
 describe('MendikotPage', () => {
+  it('renders every human hand card through the hand fan', async () => {
+    const { container } = renderWithProviders(<MendikotPage />);
+    await screen.findAllByRole('button', { name: /を出す/ });
+    const hand = container.querySelector('[data-tutorial="md-hand"]');
+    expect(hand).not.toBeNull();
+    expect(hand?.querySelectorAll('button')).toHaveLength(3);
+  });
+
   it('announces playable cards while retaining each card name', async () => {
     mockExec.mockResolvedValue(makeState({ validPlays: [1] }));
     renderWithProviders(<MendikotPage />);

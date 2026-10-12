@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { gameButton, isVisibleWithin, navigateTo, TIMEOUT_GAME_LOOP, waitForLoaded } from './helpers';
+import { clickHandCard, gameButton, isVisibleWithin, navigateTo, TIMEOUT_GAME_LOOP, waitForLoaded } from './helpers';
 
 test.describe('Guandan E2E', () => {
   test('explains the level cards and plays a combination', async ({ page }) => {
@@ -18,7 +18,7 @@ test.describe('Guandan E2E', () => {
     const play = page.getByRole('button', { name: '出す' });
     if (await isVisibleWithin(play, TIMEOUT_GAME_LOOP)) {
       await expect(play).toBeDisabled();
-      await page.getByTestId('hand-card-0').click();
+      await clickHandCard(page.getByTestId('hand-card-0'));
       await expect(play).toBeEnabled();
       await play.click();
       await waitForLoaded(page);

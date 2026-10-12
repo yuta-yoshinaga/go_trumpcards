@@ -150,6 +150,14 @@ const gameEndState: HandAndFootResponse = {
 };
 
 describe('HandAndFootPage', () => {
+  it('renders desktop hand cards through PlayerHandSection', async () => {
+    mockExec.mockResolvedValue(drawPhaseState);
+    renderWithProviders(<HandAndFootPage />);
+    const footer = await screen.findByTestId('game-footer-content');
+    const hand = footer.querySelector('[data-tutorial="hf-player-hand"]');
+    expect(hand?.querySelector('[data-hand-card-index="0"]')).toBeInTheDocument();
+  });
+
   it('allows the taller mobile footer', async () => {
     mockExec.mockResolvedValue(drawPhaseState);
     renderWithProviders(<HandAndFootPage />);

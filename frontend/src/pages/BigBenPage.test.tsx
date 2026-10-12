@@ -90,6 +90,52 @@ describe('BigBenPage', () => {
     await waitFor(() => expect(screen.getAllByLabelText(/文字盤\d+ \(\d+時\)/).length).toBe(12));
   });
 
+  it('wraps the twelve compact clock slots at large desktop', async () => {
+    const original = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    mockExec.mockResolvedValue(playingState);
+    try {
+      renderWithProviders(<BigBenPage />);
+      await screen.findByLabelText(/文字盤0/);
+      const clock = document.querySelector('[data-tutorial="gc-clock"]') as HTMLElement;
+      expect(clock).toHaveClass('flex-wrap');
+      expect(clock.querySelectorAll('button, [role="img"]')).toHaveLength(12);
+      expect(clock.querySelector('img')).toHaveStyle({ width: '80px' });
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: original });
+    }
+  });
+
+  it('keeps develop card sizing and clock markup at desktop width', async () => {
+    const original = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 800 });
+    mockExec.mockResolvedValue(playingState);
+    try {
+      renderWithProviders(<BigBenPage />);
+      await screen.findByLabelText(/文字盤0/);
+      const clock = document.querySelector('[data-tutorial="gc-clock"]') as HTMLElement;
+      expect(clock).toHaveClass('flex-wrap');
+      expect(clock.querySelector('img')).toHaveStyle({ width: '60px' });
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: original });
+    }
+  });
+
+  it('wraps clock slots and sizes them to the mobile viewport', async () => {
+    const original = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    mockExec.mockResolvedValue(playingState);
+    try {
+      renderWithProviders(<BigBenPage />);
+      await screen.findByLabelText(/文字盤0/);
+      const clock = document.querySelector('[data-tutorial="gc-clock"]') as HTMLElement;
+      expect(clock).toHaveClass('flex-wrap');
+      expect(clock.querySelector('img')).toHaveStyle({ width: '40px' });
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: original });
+    }
+  });
+
   // The target rank is what the player plans against, so it has to be on screen
   // rather than implied by the clock position.
   // **9 時始まり。**クローン元は 1 時始まりで、添字 0 が A を求めた。時刻の
