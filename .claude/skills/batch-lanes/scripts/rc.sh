@@ -27,7 +27,26 @@ if [[ "${ALLOW_PATCH_GAPS:-}" != 1 ]] && git -C "$wt" diff --name-only HEAD -- f
     while IFS= read -r line; do
       [[ "$line" == *"NO TEST FILE"* ]] && continue
       [[ "$line" =~ ^[^:]+:[0-9]+:.*\[[^]]*\] ]] || [[ "$line" == *"NO RESULT"* ]] || continue
-      printf 'WARN PATCH_BRANCH_GAP %s\n' "$line" >> "$BATCH_STATE/rc$1.txt"
+      if [[ "$line" == *" | "* ]]; then
+        gap_file="${line%%:*}"
+        gap_text="${line#* | }"
+        gap_text="$(sed 's/^[[:space:]]*//; s/[[:space:]]*$//' <<< "$gap_text")"
+        develop_file="$(git -C "$wt" show "origin/develop:frontend/$gap_file" 2>/dev/null | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')" || develop_file=""
+        preexisting=0
+        # An empty or very short text would prefix-match unrelated develop lines and hide a new gap.
+        if [[ -n "$develop_file" && ${#gap_text} -ge 8 ]]; then
+          while IFS= read -r develop_line; do
+            [[ "${develop_line:0:${#gap_text}}" == "$gap_text" ]] && { preexisting=1; break; }
+          done <<< "$develop_file"
+        fi
+        if [[ $preexisting -eq 1 ]]; then
+          printf 'NOTE PATCH_BRANCH_GAP_PREEXISTING %s\n' "$line" >> "$BATCH_STATE/rc$1.txt"
+        else
+          printf 'WARN PATCH_BRANCH_GAP %s\n' "$line" >> "$BATCH_STATE/rc$1.txt"
+        fi
+      else
+        printf 'WARN PATCH_BRANCH_GAP %s\n' "$line" >> "$BATCH_STATE/rc$1.txt"
+      fi
     done <<< "$gap_output"
   fi
 fi

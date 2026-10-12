@@ -13,9 +13,10 @@ rc=$?
 f="$BATCH_STATE/rc$slot.txt"
 printf '%s %s\n' "$started" "$(date +%s%N)" > "$BATCH_STATE/rcg$slot.result"
 [[ $rc -eq 0 ]] || { echo "GATE: receipt failed"; exit "$rc"; }
-grep -E "==|FAIL|WARN|CHECK|TYPE|Tests |LINT|GOIMPORTS|MUTANT|MISSING" $f
+grep -E "==|FAIL|WARN|NOTE|CHECK|TYPE|Tests |LINT|GOIMPORTS|MUTANT|MISSING" $f
 grep -q '^CHECK=ok' $f || { echo "GATE: check failed"; exit 1; }
 grep -q '^TYPE=ok' $f || { echo "GATE: typecheck failed"; exit 1; }
-grep -qE 'FAIL|MUTANT_LEFT|MISSING_TEST|GOIMPORTS:|LINT: [1-9]|WARN' $f && { echo "GATE: failure/warning present"; exit 1; }
+# NOTE lines quote source text, which may itself contain FAIL or WARN; they never fail the gate.
+grep -v '^NOTE ' $f | grep -qE 'FAIL|MUTANT_LEFT|MISSING_TEST|GOIMPORTS:|LINT: [1-9]|WARN' && { echo "GATE: failure/warning present"; exit 1; }
 "$B/treehash.sh" "$slot" > "$BATCH_STATE/gate$slot.ok"
 echo "GATE: ok"

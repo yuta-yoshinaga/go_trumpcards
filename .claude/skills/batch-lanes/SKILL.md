@@ -25,6 +25,7 @@ Helper scripts for Claude while `improve-batch` delegates several issues into se
 6. `fx.sh` and `gofx.sh`: prepare a fixup worktree and delegate a fix prompt.
 7. `fixpush.sh`: push a gated fix and reply on the PR.
 8. `drain.sh`: wait for the selected batch PRs to merge.
+9. Before the closing PR of a batch, run `combined.sh` with the batch's guard specs to catch failures that appear only when slices are combined.
 
 Set `BATCH_BRANCH_RE` to a regular expression matching the batch branches before running `triage.sh`, `sweep.sh`, or `drain.sh`. Set `BATCH_REPO` to the repository worktree, `BATCH_WT_ROOT` to the parent directory for `wt-ib<slot>` worktrees, or `BATCH_STATE` to override state storage. By default, worktrees are created beside the repository and all state files live in `<git-common-dir>/batch-lanes`, shared by linked worktrees and outside version control. Prompt files are passed by path; scripts do not infer a filename from an issue or PR number. Set `CLAUDE_SESSION_URL` to include a session reference in commit and PR metadata.
 
@@ -36,6 +37,7 @@ The flows require `dele`, `gh`, `jq`, `flock`, `bun`, `go`, and `golangci-lint`,
 
 - `common.sh`: resolve repository, worktree, and shared state paths and validate required environment.
 - `setup_wt.sh`: fetch `develop` and prepare a clean issue worktree.
+- `combined.sh`: merge matching open batch branches into a scratch build and repeat the supplied Playwright guard specs; this catches deal-dependent failures like the Mushi and Desmoche failures found only after combining slices.
 - `go.sh`: run `dele` for a prompt file in an issue worktree and save a fresh per-run log.
 - `gofx.sh`: run `dele` for a prompt file in a fixup worktree after checking a PR branch.
 - `fx.sh`: check out an existing remote PR branch in a fixup worktree.
