@@ -80,6 +80,14 @@ describe('DesmochePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('sticks the hand to the bottom of the desktop play area', async () => {
+    renderWithProviders(<DesmochePage />);
+    await waitFor(() => expect(document.querySelector('[data-tutorial="ds-hand"] button')).not.toBeNull());
+    const hand = document.querySelector('[data-tutorial="ds-hand"]');
+    expect(hand?.className).toContain('lg:sticky');
+    expect(hand?.className).toContain('lg:bottom-0');
+  });
+
   it('sends a changed difficulty in the reset request', async () => {
     renderWithProviders(<DesmochePage />);
     await screen.findByTestId('desmoche-meld');

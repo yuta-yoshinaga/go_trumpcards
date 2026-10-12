@@ -13,6 +13,23 @@ const PAGES = [
   '/kingalbert',
   '/americantoad',
   '/terrace',
+  '/crescent',
+  '/sthelena',
+  '/pyramid',
+  '/montecarlo',
+  '/eightoff',
+  '/matrimony',
+  '/royalcotillion',
+  '/flowergarden',
+  '/alaska',
+  '/braid',
+  '/osmosis',
+  '/crazyquilt',
+  '/sevens',
+  '/beleagueredcastle',
+  '/citadel',
+  '/russiansolitaire',
+  '/clocksolitaire',
 ] as const;
 
 for (const path of PAGES) {
