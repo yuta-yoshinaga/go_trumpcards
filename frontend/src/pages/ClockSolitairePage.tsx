@@ -291,7 +291,8 @@ function ClockSolitairePageContent() {
   if (!state) return <GameSkeleton gameKey="clocksolitaire" layout={{ kind: 'centered', rows: [4, 5, 4] }} />;
 
   const availableBoardWidth = Math.max(cardWidth + 16, viewportWidth - 32);
-  // Reducing the 180px radius to 157px lifts the lowest card 23px into view.
+  // The 157px large-desktop radius lifts the lowest card into view; label and progress offsets
+  // below are tuned from that radius and the card dimensions to keep them between piles.
   const radius = Math.min(
     cardWidth * 5,
     breakpoint === 'largeDesktop' ? 157 : 180,
@@ -394,7 +395,18 @@ function ClockSolitairePageContent() {
                       }}
                     >
                       <legend className="sr-only">{pileLabel}</legend>
-                      <span className="mb-0.5 text-xs font-bold text-ds-text-muted">{CLOCK_LABELS[i]}</span>
+                      <span
+                        data-testid={`clock-pile-label-${i.toString()}`}
+                        className="absolute z-20 whitespace-nowrap text-xs font-bold text-ds-text-muted"
+                        style={{
+                          // 82px places the hour label inside the 157px desktop radius, relative to card center.
+                          left: cardWidth / 2 + pos.x * 82,
+                          top: cardHeight / 2 + pos.y * 82,
+                          transform: 'translate(-50%, -50%)',
+                        }}
+                      >
+                        {CLOCK_LABELS[i]}
+                      </span>
                       {pile && pile.length > 0 ? (
                         <div
                           className={`relative rounded ${isFlightTarget ? 'ring-2 ring-ds-warning animate-pulse' : ''}`}
@@ -414,7 +426,15 @@ function ClockSolitairePageContent() {
                           ) : (
                             <AnimatedCardBack width={cardWidth} />
                           )}
-                          <span className="absolute -bottom-4 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] text-ds-text-muted">
+                          <span
+                            data-testid={`clock-pile-progress-${i.toString()}`}
+                            className="absolute z-20 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] text-ds-text-muted"
+                            style={{
+                              // 105px keeps progress near each card edge; twelve o'clock uses 8px to stay below its label.
+                              top: i === 11 ? 8 : cardHeight / 2 + pos.y * 105,
+                              left: cardWidth / 2 + pos.x * 105,
+                            }}
+                          >
                             <ClockPileFaceUpSuits pile={pile} testId={`clock-pile-suits-${i.toString()}`} />
                             {faceUpCount}/4
                           </span>
@@ -447,7 +467,9 @@ function ClockSolitairePageContent() {
                     status: t(state.faceUpCount[12] >= 4 ? 'pileComplete' : 'pileIncomplete'),
                   })}
                 </legend>
-                <span className="mb-0.5 text-xs font-bold text-ds-warning">K</span>
+                <span data-testid="clock-pile-label-12" className="mb-0.5 text-xs font-bold text-ds-warning">
+                  K
+                </span>
                 {(() => {
                   const centerPile = state.piles[12];
                   const centerTopCard = centerPile?.[centerPile.length - 1]?.card ?? null;
@@ -474,7 +496,10 @@ function ClockSolitairePageContent() {
                       ) : (
                         <AnimatedCardBack width={cardWidth} />
                       )}
-                      <span className="absolute -bottom-4 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] text-ds-text-muted">
+                      <span
+                        data-testid="clock-pile-progress-12"
+                        className="absolute z-20 -bottom-4 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] text-ds-text-muted"
+                      >
                         <ClockPileFaceUpSuits pile={centerPile} testId="clock-pile-suits-12" />
                         {state.faceUpCount[12]}/4
                       </span>

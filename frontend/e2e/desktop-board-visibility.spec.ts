@@ -6,6 +6,7 @@ test.use({ viewport: { width: 1280, height: 800 } });
 
 const PAGES = [
   '/grandfathersclock',
+  '/agnes',
   '/bigben',
   '/colorado',
   '/slyfox',
@@ -30,6 +31,7 @@ const PAGES = [
   '/citadel',
   '/russiansolitaire',
   '/clocksolitaire',
+  '/canasta',
 ] as const;
 
 for (const path of PAGES) {
@@ -68,6 +70,42 @@ for (const path of PAGES) {
     expect(result.hidden, `${path}: board cards hidden below their play area`).toEqual([]);
   });
 }
+
+test('/agnes keeps every large desktop move button visible', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await navigateTo(page, '/agnes');
+  const moveBar = page.getByTestId('agnes-move-bar');
+  await expect(moveBar).toBeVisible();
+  await expect(moveBar.getByRole('button').first()).toBeVisible();
+
+  const result = await page.evaluate(() => {
+    const controls = [...document.querySelectorAll('[data-testid="agnes-move-bar"] button')];
+    return controls.map((element) => {
+      const box = element.getBoundingClientRect();
+      const hit = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
+      return hit === element || element.contains(hit);
+    });
+  });
+  expect(result.length).toBeGreaterThan(0);
+  expect(result.every(Boolean)).toBe(true);
+});
+
+test('/clocksolitaire keeps every clock label and progress badge on top', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await navigateTo(page, '/clocksolitaire');
+  const result = await page.evaluate(() => {
+    const controls = [
+      ...document.querySelectorAll('[data-testid^="clock-pile-label-"], [data-testid^="clock-pile-progress-"]'),
+    ];
+    return controls.map((element) => {
+      const box = element.getBoundingClientRect();
+      const hit = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
+      return hit === element || element.contains(hit);
+    });
+  });
+  expect(result).toHaveLength(26);
+  expect(result.every(Boolean)).toBe(true);
+});
 
 const POKER_BOARDS = [
   { path: '/omaha', selector: '[data-tutorial="oh-community-cards"]', initial: 0 },
