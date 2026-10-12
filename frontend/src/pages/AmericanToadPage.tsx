@@ -19,7 +19,7 @@ import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useAmericanToadGame } from '../hooks/useAmericanToadGame';
-import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useDestinationPreview } from '../hooks/useDestinationPreview';
@@ -106,6 +106,7 @@ function AmericanToadPageContent() {
   );
   const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const windowWidth = useWindowWidth();
   const tableauCardRefs = useRef(new Map<string, HTMLButtonElement>());
 
@@ -124,8 +125,8 @@ function AmericanToadPageContent() {
     return { cw, ch, co };
   }, [isMobile, windowWidth, cardWidth, cardHeight, cardOverlap]);
 
-  const topCardWidth = isMobile ? dims.cw : DESKTOP_COMPACT_CARD_WIDTH;
-  const topCardHeight = Math.round(topCardWidth * 1.5);
+  const topCardWidth = isLargeDesktop ? DESKTOP_COMPACT_CARD_WIDTH : dims.cw;
+  const topCardHeight = isLargeDesktop ? Math.round(topCardWidth * 1.5) : dims.ch;
 
   const isPlayingForKbd = state?.phase === AmericanToadPhase.PLAYING;
 
@@ -377,11 +378,11 @@ function AmericanToadPageContent() {
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
             <div
               className={
-                isMobile
-                  ? 'flex flex-wrap justify-center items-start gap-3 sm:gap-6 mb-3'
-                  : 'flex flex-nowrap justify-center items-start gap-2'
+                isLargeDesktop
+                  ? 'flex flex-wrap justify-center items-start gap-2'
+                  : 'flex flex-wrap justify-center items-start gap-3 sm:gap-6 mb-3'
               }
-              data-testid={isMobile ? undefined : 'at-top-row'}
+              data-testid={isLargeDesktop ? 'at-top-row' : undefined}
             >
               <div className="text-center" data-tutorial="at-reserve">
                 <div className="text-game-text-muted text-xs mb-1">{t('reserve')}</div>

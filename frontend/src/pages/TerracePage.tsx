@@ -18,7 +18,7 @@ import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
@@ -104,6 +104,7 @@ function TerracePageContent() {
   );
   const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const windowWidth = useWindowWidth();
 
   const dims = useMemo(() => {
@@ -117,8 +118,8 @@ function TerracePageContent() {
     return { cw, ch, co };
   }, [isMobile, windowWidth, cardWidth, cardHeight, cardOverlap]);
 
-  const topCardWidth = isMobile ? dims.cw : DESKTOP_COMPACT_CARD_WIDTH;
-  const topCardHeight = Math.round(topCardWidth * 1.5);
+  const topCardWidth = isLargeDesktop ? DESKTOP_COMPACT_CARD_WIDTH : dims.cw;
+  const topCardHeight = isLargeDesktop ? Math.round(DESKTOP_COMPACT_CARD_WIDTH * 1.5) : dims.ch;
 
   const isPlayingForKbd = state?.phase === TerracePhase.PLAYING;
 
@@ -295,11 +296,11 @@ function TerracePageContent() {
 
             <div
               className={
-                isMobile
-                  ? 'flex flex-wrap justify-center items-start gap-3 sm:gap-6 mb-3'
-                  : 'flex flex-nowrap justify-center items-start gap-2'
+                isLargeDesktop
+                  ? 'flex flex-wrap justify-center items-start gap-2'
+                  : 'flex flex-wrap justify-center items-start gap-3 sm:gap-6 mb-3'
               }
-              data-testid={isMobile ? undefined : 'tr-top-row'}
+              data-testid={isLargeDesktop ? 'tr-top-row' : undefined}
             >
               <div className="text-center" data-tutorial="tr-terrace">
                 <div className="text-game-text-muted text-xs mb-1">{t('terrace')}</div>

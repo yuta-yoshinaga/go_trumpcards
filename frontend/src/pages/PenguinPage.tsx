@@ -18,7 +18,7 @@ import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
@@ -177,9 +177,10 @@ function PenguinPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('penguin', state);
-  const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
-  const topZoneCardWidth = isMobile ? cardWidth : DESKTOP_COMPACT_CARD_WIDTH;
-  const topZoneCardHeight = isMobile ? cardHeight : Math.round(DESKTOP_COMPACT_CARD_WIDTH * 1.5);
+  const { cardHeight, cardOverlap, cardWidth } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
+  const topZoneCardWidth = isLargeDesktop ? DESKTOP_COMPACT_CARD_WIDTH : cardWidth;
+  const topZoneCardHeight = isLargeDesktop ? Math.round(DESKTOP_COMPACT_CARD_WIDTH * 1.5) : cardHeight;
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('penguin');
   const cliConfig: CliGameConfig<PenguinResponse, Parameters<typeof penguinApi.exec>> = useMemo(
@@ -273,6 +274,17 @@ function PenguinPageContent() {
   const emptyColLabel = emptyColBlocked
     ? `${t('emptyColumnAriaLabel', { rank: emptyColPlaceholder })} — ${t('emptyColLimitTooltip', { limit: emptyColLimit, size: selectedStackSize })}`
     : t('emptyColumnAriaLabel', { rank: emptyColPlaceholder });
+  const baseRankLegend = (
+    <div
+      className={`text-game-text-muted text-[10px] ${isLargeDesktop ? 'mx-auto mb-3' : 'mt-1'} max-w-[12rem] text-center`}
+      data-testid="pg-base-rank-legend"
+    >
+      {t('baseRankLegend', {
+        rank: baseRankLabel(state.baseRank),
+        prev: prevRankLabel(state.baseRank),
+      })}
+    </div>
+  );
 
   const isSourceSelected = (zone: string, col?: number, cell?: number, cardIndex?: number) =>
     selectedSource !== null &&
@@ -335,12 +347,14 @@ function PenguinPageContent() {
             {/* Free cells + Foundation row */}
             <div
               className={
-                isMobile ? 'flex gap-2 mb-3 items-start flex-wrap' : 'flex flex-nowrap justify-center items-start gap-2'
+                isLargeDesktop
+                  ? 'flex flex-wrap justify-center items-start gap-2'
+                  : 'flex gap-2 mb-3 items-start flex-wrap'
               }
-              data-testid={isMobile ? undefined : 'pg-top-row'}
+              data-testid={isLargeDesktop ? 'pg-top-row' : undefined}
             >
               {/* Free cells */}
-              <div className="flex gap-2" data-tutorial="pg-free-cells">
+              <div className={`flex ${isLargeDesktop ? 'gap-1' : 'gap-2'}`} data-tutorial="pg-free-cells">
                 {state.freeCells.map((card: Card | null, idx: number) => {
                   const freeCellZone: PenguinMoveZone = { zone: 'freecell', cell: idx };
                   return (
@@ -402,11 +416,11 @@ function PenguinPageContent() {
                 })}
               </div>
 
-              <div className="w-4" />
+              <div className={isLargeDesktop ? 'w-1' : 'w-4'} />
 
               {/* Foundation piles */}
               <div className="flex flex-col items-center">
-                <div className="flex gap-2" data-tutorial="pg-foundation">
+                <div className={`flex ${isLargeDesktop ? 'gap-1' : 'gap-2'}`} data-tutorial="pg-foundation">
                   {state.foundation.map((pile: Card[], idx: number) => {
                     const foundationZone: PenguinMoveZone = { zone: 'foundation', col: idx };
                     return (
@@ -459,30 +473,10 @@ function PenguinPageContent() {
                     );
                   })}
                 </div>
-                {isMobile && (
-                  <div
-                    className="text-game-text-muted text-[10px] mt-1 max-w-[12rem] text-center"
-                    data-testid="pg-base-rank-legend"
-                  >
-                    {t('baseRankLegend', {
-                      rank: baseRankLabel(state.baseRank),
-                      prev: prevRankLabel(state.baseRank),
-                    })}
-                  </div>
-                )}
+                {!isLargeDesktop && baseRankLegend}
               </div>
             </div>
-            {!isMobile && (
-              <div
-                className="text-game-text-muted text-[10px] mb-3 max-w-[12rem] text-center"
-                data-testid="pg-base-rank-legend"
-              >
-                {t('baseRankLegend', {
-                  rank: baseRankLabel(state.baseRank),
-                  prev: prevRankLabel(state.baseRank),
-                })}
-              </div>
-            )}
+            {isLargeDesktop && baseRankLegend}
 
             {/* Tableau */}
             <div className="relative">

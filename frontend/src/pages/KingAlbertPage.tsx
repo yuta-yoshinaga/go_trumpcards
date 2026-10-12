@@ -18,7 +18,7 @@ import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
@@ -133,6 +133,7 @@ function KingAlbertPageContent() {
     clearLog,
   });
   const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const windowWidth = useWindowWidth();
 
   const dims = useMemo(() => {
@@ -147,8 +148,8 @@ function KingAlbertPageContent() {
     const co = Math.round(cw * 0.32);
     return { cw, ch, co };
   }, [isMobile, windowWidth, cardWidth, cardHeight, cardOverlap]);
-  const topZoneCardWidth = isMobile ? dims.cw : DESKTOP_COMPACT_CARD_WIDTH;
-  const topZoneCardHeight = isMobile ? dims.ch : Math.round(DESKTOP_COMPACT_CARD_WIDTH * 1.5);
+  const topZoneCardWidth = isLargeDesktop ? DESKTOP_COMPACT_CARD_WIDTH : dims.cw;
+  const topZoneCardHeight = isLargeDesktop ? Math.round(DESKTOP_COMPACT_CARD_WIDTH * 1.5) : dims.ch;
 
   const isPlayingForKbd = state?.phase === KingAlbertPhase.PLAYING;
 
@@ -363,7 +364,7 @@ function KingAlbertPageContent() {
           onDragEnd={dnd.handleDragEnd}
           className={`p-0 border-0 bg-transparent rounded cursor-pointer ${focusRingWhite} ${isSourceSelected('reserve', cellIdx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(reserveZone) ? 'opacity-50' : ''}`}
         >
-          <AnimatedCard card={reserveCard} width={dims.cw} draggable={false} />
+          <AnimatedCard card={reserveCard} width={topZoneCardWidth} draggable={false} />
         </button>
         {slotLabel}
       </div>
@@ -412,23 +413,32 @@ function KingAlbertPageContent() {
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
             <div
               className={
-                isMobile
-                  ? 'flex gap-2 sm:gap-3 items-start justify-center mb-3'
-                  : 'flex flex-nowrap justify-center items-start gap-2'
+                isLargeDesktop
+                  ? 'flex flex-wrap justify-center items-start gap-1'
+                  : 'flex gap-2 sm:gap-3 items-start justify-center mb-3'
               }
-              data-testid={isMobile ? undefined : 'ka-top-row'}
+              data-testid={isLargeDesktop ? 'ka-top-row' : undefined}
             >
               <div
                 className={
-                  isMobile ? 'flex flex-wrap gap-1 sm:gap-2 items-start' : 'flex flex-nowrap gap-2 items-start'
+                  isLargeDesktop ? 'flex flex-col items-center gap-1' : 'flex flex-wrap gap-1 sm:gap-2 items-start'
                 }
                 data-tutorial="ka-reserve"
               >
-                <span className="self-center text-game-text-muted text-xs mr-1">{t('reserve')}</span>
-                {state.reserve.map((_, idx) => renderReserveCell(idx))}
+                <span className={`text-game-text-muted text-xs ${isLargeDesktop ? 'mb-1' : 'self-center mr-1'}`}>
+                  {t('reserve')}
+                </span>
+                {isLargeDesktop ? (
+                  <div className="flex gap-1">{state.reserve.map((_, idx) => renderReserveCell(idx))}</div>
+                ) : (
+                  state.reserve.map((_, idx) => renderReserveCell(idx))
+                )}
               </div>
 
-              <div className="flex items-start gap-1 sm:gap-2" data-tutorial="ka-foundation">
+              <div
+                className={`flex items-start ${isLargeDesktop ? 'gap-1' : 'gap-1 sm:gap-2'}`}
+                data-tutorial="ka-foundation"
+              >
                 {state.foundation.map((pile, idx) => {
                   const foundationZone: KingAlbertMoveZone = { zone: 'foundation', col: idx };
                   return (
