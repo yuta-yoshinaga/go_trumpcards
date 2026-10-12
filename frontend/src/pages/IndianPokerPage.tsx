@@ -92,6 +92,7 @@ function IndianPokerPageContent() {
   const { playSound } = useSound();
   const isMobile = useIsMobile();
   const isLargeDesktop = useBreakpoint() === 'largeDesktop';
+  const compactCpuRow = isMobile || isLargeDesktop;
   const { state, loading, error, exec: execApi, retry } = useGameApi(indianpokerApi.exec);
   const [betAmount, setBetAmount] = useState(20);
   const [ante, setAnte] = useState(10);
@@ -329,14 +330,11 @@ function IndianPokerPageContent() {
               </div>
             </section>
             {/* CPU players - show cards face-up (opponents can see each other's cards) */}
-            <div
-              data-tutorial="ip-cpu-cards"
-              className={isMobile || isLargeDesktop ? 'grid grid-cols-3 gap-2 mb-3' : ''}
-            >
+            <div data-tutorial="ip-cpu-cards" className={compactCpuRow ? 'grid grid-cols-3 gap-2 mb-3' : ''}>
               {state.players
                 ?.filter((p) => !p.isHuman)
                 .map((p) => (
-                  <div key={p.id} className={isMobile || isLargeDesktop ? 'text-center' : 'mb-3'}>
+                  <div key={p.id} className={compactCpuRow ? 'text-center' : 'mb-3'}>
                     <div className={`text-ds-text-primary text-sm mb-1 ${isMobile ? 'truncate' : ''}`}>
                       {tc('player.cpu', { id: p.id })}
                       {/* The whole game is reading the opponent, since your own
@@ -357,7 +355,7 @@ function IndianPokerPageContent() {
                       {p.folded && <span className="ml-1 text-ds-error-text text-xs">[{tc('status.folded')}]</span>}
                       {p.allIn && <span className="ml-1 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
                     </div>
-                    <div className={isMobile || isLargeDesktop ? 'flex justify-center' : 'flex flex-wrap gap-1'}>
+                    <div className={compactCpuRow ? 'flex justify-center' : 'flex flex-wrap gap-1'}>
                       {p.card ? (
                         <span
                           className={`relative inline-flex ${winningPlayerIdxs.has(p.id) ? 'rounded ring-2 ring-ds-warning' : ''}`}

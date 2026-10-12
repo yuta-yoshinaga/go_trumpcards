@@ -46,6 +46,20 @@ export async function waitForLoaded(page: Page) {
   await page.waitForSelector('[aria-busy="false"]', { timeout: TIMEOUT_LOADED });
 }
 
+/** Wait for finite card animations to finish before measuring the board. */
+export async function waitForAnimations(page: Page) {
+  await page.waitForFunction(() =>
+    document
+      .getAnimations()
+      .every(
+        (animation) =>
+          animation.playState === 'finished' ||
+          animation.playState === 'idle' ||
+          animation.effect?.getComputedTiming().iterations === Number.POSITIVE_INFINITY,
+      ),
+  );
+}
+
 /** Navigate to a hash-routed page and wait for it to load. Suppresses the tutorial suggestion dialog. */
 export async function navigateTo(page: Page, path: string) {
   // Suppress the first-visit tutorial suggestion dialog to avoid blocking game interaction

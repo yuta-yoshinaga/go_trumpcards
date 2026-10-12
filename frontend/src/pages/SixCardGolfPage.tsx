@@ -165,6 +165,127 @@ function SixCardGolfPageContent() {
   const playerName = (playerIdx: number) =>
     state.players[playerIdx].isHuman ? t('label.human') : t('label.cpu', { id: String(playerIdx) });
 
+  const stock = (
+    <div className="flex items-center gap-3 justify-center" data-tutorial="scg-stock">
+      <div className="text-center">
+        <div className="text-xs mb-1">
+          {t('label.stock')} ({state.drawPileCount})
+        </div>
+        {canDrawDiscard && (
+          <button
+            type="button"
+            data-testid="scg-draw-stock"
+            className={`px-3 py-1 rounded bg-ds-accent hover:bg-ds-accent-hover text-ds-text-on-accent text-sm ${focusRingWhite}`}
+            onClick={handleDrawStock}
+            disabled={loading}
+          >
+            {t('button.drawStock')}
+          </button>
+        )}
+      </div>
+      {state.discardTop && (
+        <div
+          className={`text-center rounded-md p-1 ${canDrawDiscard ? 'ring-2 ring-ds-success bg-ds-surface/40' : ''}`}
+          data-testid="scg-discard-draw-option"
+        >
+          <div className="text-xs mb-1">{t('label.discard')}</div>
+          <AnimatedCard card={state.discardTop} width={cardWidth} />
+          {!canDrawDiscard && (
+            <div className="text-xs font-medium text-ds-text-muted">{t('label.discardUnavailable')}</div>
+          )}
+          {canDrawDiscard && (
+            <button
+              type="button"
+              className={`mt-1 px-3 py-1 rounded bg-ds-success hover:bg-ds-success-hover text-white text-sm ${focusRingWhite}`}
+              onClick={handleDrawDiscard}
+              disabled={loading}
+            >
+              {t('button.drawDiscard')}
+            </button>
+          )}
+        </div>
+      )}
+      {state.drawnCard && phase === SCG_PHASE_DRAW_PENDING && (
+        <div className="text-center">
+          <div className="text-xs mb-1">{t('label.drawnCard')}</div>
+          <AnimatedCard card={state.drawnCard} width={cardWidth} />
+          <button
+            type="button"
+            className={`mt-1 px-3 py-1 rounded bg-ds-error hover:bg-ds-error-hover text-white text-sm ${focusRingWhite}`}
+            onClick={handleDiscard}
+            disabled={loading}
+          >
+            {t('button.discard')}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+  const boards = (
+    <>
+      {state.players.map((player, pIdx) => (
+        <div
+          key={player.id}
+          data-testid={`scg-seat-${player.id}`}
+          className={`rounded-lg p-2 ${pIdx === state.currentPlayerIdx ? 'ring-2 ring-ds-warning' : ''}`}
+        >
+          <div className="text-sm font-bold mb-1">
+            {player.isHuman ? t('label.human') : t('label.cpu', { id: String(pIdx) })}
+            {player.allFaceUp && <span className="ml-1 text-ds-warning">&#9733;</span>}
+          </div>
+          <div className="grid grid-cols-3 gap-1" data-tutorial={pIdx === humanIdx ? 'scg-grid' : undefined}>
+            {player.grid.map((slot: SixCardGolfSlot, sIdx: number) => (
+              <GridSlotButton
+                key={`${player.id}-${sIdx}`}
+                slot={slot}
+                pos={sIdx}
+                name={
+                  slot.faceUp && slot.card
+                    ? t('gridSlotFaceUpAria', { card: cardAlt(slot.card), pos: sIdx })
+                    : t('gridSlotFaceDownAria', { pos: sIdx })
+                }
+                actionNames={{
+                  initial: t('gridSlotAction.initial'),
+                  swap: t('gridSlotAction.swap'),
+                  flip: t('gridSlotAction.flip'),
+                }}
+                cardWidth={cardWidth}
+                isHumanGrid={player.isHuman}
+                hinted={hintEnabled && player.isHuman && hint?.targetPos === sIdx}
+                phase={phase}
+                canFlip={state.canFlip}
+                isHumanTurn={isHumanTurn}
+                loading={loading}
+                onFlipInitial={handleFlipInitial}
+                onSwap={handleSwap}
+                onFlip={handleFlip}
+              />
+            ))}
+          </div>
+          {player.isHuman && (
+            <div className="mt-1 grid grid-cols-3 gap-1" data-testid="scg-column-scores">
+              {sixCardGolfColumnScores(player.grid).map((col, cIdx) => (
+                <span
+                  key={cIdx}
+                  data-testid={`scg-column-score-${cIdx}`}
+                  className={`rounded px-1 py-0.5 text-center font-medium text-xs ${
+                    col.isPair ? 'bg-ds-success text-white' : 'bg-ds-surface-elevated text-ds-text-muted'
+                  }`}
+                >
+                  {col.isPair
+                    ? t('label.columnScorePair')
+                    : col.hasHidden
+                      ? t('label.columnScoreUncertain', { score: col.score })
+                      : t('label.columnScore', { score: col.score })}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
+    </>
+  );
+
   return (
     <GamePageShell
       title={tc('nav.sixcardgolf')}
@@ -235,124 +356,18 @@ function SixCardGolfPageContent() {
             ))}
           </div>
 
-          {/* Stock / Discard / Drawn Card */}
-          <div className="flex items-center gap-3 justify-center" data-tutorial="scg-stock">
-            <div className="text-center">
-              <div className="text-xs mb-1">
-                {t('label.stock')} ({state.drawPileCount})
-              </div>
-              {canDrawDiscard && (
-                <button
-                  type="button"
-                  className={`px-3 py-1 rounded bg-ds-accent hover:bg-ds-accent-hover text-ds-text-on-accent text-sm ${focusRingWhite}`}
-                  onClick={handleDrawStock}
-                  disabled={loading}
-                >
-                  {t('button.drawStock')}
-                </button>
-              )}
+          {isLargeDesktop ? (
+            <div className="flex flex-wrap items-start justify-center gap-2">
+              {stock}
+              {boards}
             </div>
-            {state.discardTop && (
-              <div
-                className={`text-center rounded-md p-1 ${canDrawDiscard ? 'ring-2 ring-ds-success bg-ds-surface/40' : ''}`}
-                data-testid="scg-discard-draw-option"
-              >
-                <div className="text-xs mb-1">{t('label.discard')}</div>
-                <AnimatedCard card={state.discardTop} width={cardWidth} />
-                {!canDrawDiscard && (
-                  <div className="text-xs font-medium text-ds-text-muted">{t('label.discardUnavailable')}</div>
-                )}
-                {canDrawDiscard && (
-                  <button
-                    type="button"
-                    className={`mt-1 px-3 py-1 rounded bg-ds-success hover:bg-ds-success-hover text-white text-sm ${focusRingWhite}`}
-                    onClick={handleDrawDiscard}
-                    disabled={loading}
-                  >
-                    {t('button.drawDiscard')}
-                  </button>
-                )}
-              </div>
-            )}
-            {state.drawnCard && phase === SCG_PHASE_DRAW_PENDING && (
-              <div className="text-center">
-                <div className="text-xs mb-1">{t('label.drawnCard')}</div>
-                <AnimatedCard card={state.drawnCard} width={cardWidth} />
-                <button
-                  type="button"
-                  className={`mt-1 px-3 py-1 rounded bg-ds-error hover:bg-ds-error-hover text-white text-sm ${focusRingWhite}`}
-                  onClick={handleDiscard}
-                  disabled={loading}
-                >
-                  {t('button.discard')}
-                </button>
-              </div>
-            )}
-          </div>
+          ) : (
+            <>
+              {boards}
+              {stock}
+            </>
+          )}
 
-          {/* Player Grids */}
-          <div className={isLargeDesktop ? 'flex flex-wrap items-start justify-center gap-2' : 'contents'}>
-            {state.players.map((player, pIdx) => (
-              <div
-                key={player.id}
-                data-testid={`scg-seat-${player.id}`}
-                className={`rounded-lg p-2 ${pIdx === state.currentPlayerIdx ? 'ring-2 ring-ds-warning' : ''}`}
-              >
-                <div className="text-sm font-bold mb-1">
-                  {player.isHuman ? t('label.human') : t('label.cpu', { id: String(pIdx) })}
-                  {player.allFaceUp && <span className="ml-1 text-ds-warning">&#9733;</span>}
-                </div>
-                <div className="grid grid-cols-3 gap-1" data-tutorial={pIdx === humanIdx ? 'scg-grid' : undefined}>
-                  {player.grid.map((slot: SixCardGolfSlot, sIdx: number) => (
-                    <GridSlotButton
-                      key={`${player.id}-${sIdx}`}
-                      slot={slot}
-                      pos={sIdx}
-                      name={
-                        slot.faceUp && slot.card
-                          ? t('gridSlotFaceUpAria', { card: cardAlt(slot.card), pos: sIdx })
-                          : t('gridSlotFaceDownAria', { pos: sIdx })
-                      }
-                      actionNames={{
-                        initial: t('gridSlotAction.initial'),
-                        swap: t('gridSlotAction.swap'),
-                        flip: t('gridSlotAction.flip'),
-                      }}
-                      cardWidth={cardWidth}
-                      isHumanGrid={player.isHuman}
-                      hinted={hintEnabled && player.isHuman && hint?.targetPos === sIdx}
-                      phase={phase}
-                      canFlip={state.canFlip}
-                      isHumanTurn={isHumanTurn}
-                      loading={loading}
-                      onFlipInitial={handleFlipInitial}
-                      onSwap={handleSwap}
-                      onFlip={handleFlip}
-                    />
-                  ))}
-                </div>
-                {player.isHuman && (
-                  <div className="mt-1 grid grid-cols-3 gap-1" data-testid="scg-column-scores">
-                    {sixCardGolfColumnScores(player.grid).map((col, cIdx) => (
-                      <span
-                        key={cIdx}
-                        data-testid={`scg-column-score-${cIdx}`}
-                        className={`rounded px-1 py-0.5 text-center font-medium text-xs ${
-                          col.isPair ? 'bg-ds-success text-white' : 'bg-ds-surface-elevated text-ds-text-muted'
-                        }`}
-                      >
-                        {col.isPair
-                          ? t('label.columnScorePair')
-                          : col.hasHidden
-                            ? t('label.columnScoreUncertain', { score: col.score })
-                            : t('label.columnScore', { score: col.score })}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
           {state.gameEndFlag && (
             <section aria-label={t('label.scoreHistory')} className="rounded-lg bg-ds-surface p-3">
               <h2 className="mb-2 font-bold">{t('label.scoreHistory')}</h2>

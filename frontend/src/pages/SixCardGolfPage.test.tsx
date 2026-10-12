@@ -60,13 +60,17 @@ beforeEach(() => {
 });
 
 describe('SixCardGolfPage', () => {
-  it('uses contents for player boards outside large desktop', async () => {
+  it('places the player boards before the stock area at intermediate widths', async () => {
     const previousWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: 800 });
     const { container } = renderWithProviders(<SixCardGolfPage />);
     await screen.findByTestId('scg-seat-0');
     const humanSeat = container.querySelector('[data-testid="scg-seat-0"]');
-    expect(humanSeat?.parentElement).toHaveClass('contents');
+    const stockArea = container.querySelector('[data-tutorial="scg-stock"]');
+    expect(stockArea).not.toBeNull();
+    expect(humanSeat).not.toBeNull();
+    if (!stockArea || !humanSeat) throw new Error('Expected the stock area and human board to render');
+    expect(humanSeat.compareDocumentPosition(stockArea) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: previousWidth });
   });
 
