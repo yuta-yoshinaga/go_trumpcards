@@ -26,6 +26,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useTerraceGame } from '../hooks/useTerraceGame';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
+import { DESKTOP_COMPACT_CARD_WIDTH } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { TerraceMoveZone, TerraceResponse } from '../types/card';
 import { TerracePhase } from '../types/phases';
@@ -115,6 +116,9 @@ function TerracePageContent() {
     const co = Math.round(cw * 0.32);
     return { cw, ch, co };
   }, [isMobile, windowWidth, cardWidth, cardHeight, cardOverlap]);
+
+  const topCardWidth = isMobile ? dims.cw : DESKTOP_COMPACT_CARD_WIDTH;
+  const topCardHeight = Math.round(topCardWidth * 1.5);
 
   const isPlayingForKbd = state?.phase === TerracePhase.PLAYING;
 
@@ -289,7 +293,14 @@ function TerracePageContent() {
               <p className="text-ds-warning text-sm text-center mb-2">{t('chooseBaseBanner')}</p>
             )}
 
-            <div className="flex flex-wrap justify-center items-start gap-3 sm:gap-6 mb-3">
+            <div
+              className={
+                isMobile
+                  ? 'flex flex-wrap justify-center items-start gap-3 sm:gap-6 mb-3'
+                  : 'flex flex-nowrap justify-center items-start gap-2'
+              }
+              data-testid={isMobile ? undefined : 'tr-top-row'}
+            >
               <div className="text-center" data-tutorial="tr-terrace">
                 <div className="text-game-text-muted text-xs mb-1">{t('terrace')}</div>
                 {terraceTop ? (
@@ -305,13 +316,13 @@ function TerracePageContent() {
                     onDragEnd={dnd.handleDragEnd}
                     className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('reserve', undefined) ? 'ring-2 ring-ds-warning' : ''}`}
                   >
-                    <AnimatedCard card={terraceTop} width={dims.cw} draggable={false} />
+                    <AnimatedCard card={terraceTop} width={topCardWidth} draggable={false} />
                   </button>
                 ) : (
                   <div
                     role="img"
                     aria-label={t('emptyTerraceAriaLabel')}
-                    style={{ width: dims.cw, height: dims.ch }}
+                    style={{ width: topCardWidth, height: topCardHeight }}
                     className="rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center"
                   >
                     {t('empty')}
@@ -348,7 +359,7 @@ function TerracePageContent() {
                           >
                             <AnimatedCard
                               card={pile[pile.length - 1]}
-                              width={dims.cw}
+                              width={topCardWidth}
                               draggable={false}
                               dealDelay={isAutoCompleting ? idx * 0.1 : 0}
                             />
@@ -361,7 +372,7 @@ function TerracePageContent() {
                             aria-disabled={!selectedSource || undefined}
                             aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('emptyFoundationAriaLabel', { idx })}
-                            style={{ width: dims.cw, height: dims.ch }}
+                            style={{ width: topCardWidth, height: topCardHeight }}
                             className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                           >
                             {state.awaitingBaseRank ? '?' : state.baseRank}
@@ -385,7 +396,7 @@ function TerracePageContent() {
                         ? t('emptyStockAriaLabel')
                         : t('stockAriaLabel', { count: state.stockCount })
                     }
-                    style={{ width: dims.cw, height: dims.ch }}
+                    style={{ width: topCardWidth, height: topCardHeight }}
                     className={`rounded border-2 border-white/30 bg-white/10 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                   >
                     {state.stockCount}
@@ -410,14 +421,14 @@ function TerracePageContent() {
                         onDragEnd={dnd.handleDragEnd}
                         className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste', undefined) ? 'ring-2 ring-ds-warning' : ''}`}
                       >
-                        <AnimatedCard card={wasteTop} width={dims.cw} draggable={false} />
+                        <AnimatedCard card={wasteTop} width={topCardWidth} draggable={false} />
                       </button>
                     </>
                   ) : (
                     <div
                       role="img"
                       aria-label={t('emptyWasteAriaLabel')}
-                      style={{ width: dims.cw, height: dims.ch }}
+                      style={{ width: topCardWidth, height: topCardHeight }}
                       className="rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center"
                     >
                       {t('empty')}

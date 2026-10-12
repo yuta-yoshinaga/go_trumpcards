@@ -26,6 +26,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useKingAlbertGame } from '../hooks/useKingAlbertGame';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
+import { DESKTOP_COMPACT_CARD_WIDTH } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, KingAlbertResponse } from '../types/card';
 import { KingAlbertPhase } from '../types/phases';
@@ -146,6 +147,8 @@ function KingAlbertPageContent() {
     const co = Math.round(cw * 0.32);
     return { cw, ch, co };
   }, [isMobile, windowWidth, cardWidth, cardHeight, cardOverlap]);
+  const topZoneCardWidth = isMobile ? dims.cw : DESKTOP_COMPACT_CARD_WIDTH;
+  const topZoneCardHeight = isMobile ? dims.ch : Math.round(DESKTOP_COMPACT_CARD_WIDTH * 1.5);
 
   const isPlayingForKbd = state?.phase === KingAlbertPhase.PLAYING;
 
@@ -341,7 +344,7 @@ function KingAlbertPageContent() {
             // 「reserve 0 へ」と言われた枠が「空のリザーブ枠 1」と読まれる (#6394)。
             aria-label={t('emptyReserveSlot', { idx: cellIdx })}
             className="rounded border border-dashed border-white/10"
-            style={{ width: dims.cw, height: dims.ch }}
+            style={{ width: topZoneCardWidth, height: topZoneCardHeight }}
           />
           {slotLabel}
         </div>
@@ -407,8 +410,20 @@ function KingAlbertPageContent() {
       ) : (
         <>
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
-            <div className="flex gap-2 sm:gap-3 items-start justify-center mb-3">
-              <div className="flex flex-wrap gap-1 sm:gap-2 items-start" data-tutorial="ka-reserve">
+            <div
+              className={
+                isMobile
+                  ? 'flex gap-2 sm:gap-3 items-start justify-center mb-3'
+                  : 'flex flex-nowrap justify-center items-start gap-2'
+              }
+              data-testid={isMobile ? undefined : 'ka-top-row'}
+            >
+              <div
+                className={
+                  isMobile ? 'flex flex-wrap gap-1 sm:gap-2 items-start' : 'flex flex-nowrap gap-2 items-start'
+                }
+                data-tutorial="ka-reserve"
+              >
                 <span className="self-center text-game-text-muted text-xs mr-1">{t('reserve')}</span>
                 {state.reserve.map((_, idx) => renderReserveCell(idx))}
               </div>
@@ -445,7 +460,7 @@ function KingAlbertPageContent() {
                           >
                             <AnimatedCard
                               card={pile[pile.length - 1]}
-                              width={dims.cw}
+                              width={topZoneCardWidth}
                               draggable={false}
                               dealDelay={isAutoCompleting ? idx * 0.15 : 0}
                             />
@@ -458,7 +473,7 @@ function KingAlbertPageContent() {
                             aria-disabled={!selectedSource || undefined}
                             aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
-                            style={{ width: dims.cw, height: dims.ch }}
+                            style={{ width: topZoneCardWidth, height: topZoneCardHeight }}
                             // 空の枠は A の唯一の行き先。ここを暗いままにすると、
                             // 「置ける先には光る」が片側だけ嘘になる。
                             data-target-candidate={legalTargets.foundation.has(idx) || undefined}

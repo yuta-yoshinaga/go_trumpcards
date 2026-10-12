@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, penguinApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
@@ -99,6 +99,34 @@ beforeEach(() => {
 });
 
 describe('PenguinPage', () => {
+  it('groups free cells and foundations in the compact desktop top row', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    try {
+      renderWithProviders(<PenguinPage />);
+      act(() => window.dispatchEvent(new Event('resize')));
+      const row = await screen.findByTestId('pg-top-row');
+      expect(row).toContainElement(row.querySelector('[data-tutorial="pg-free-cells"]'));
+      expect(row).toContainElement(row.querySelector('[data-tutorial="pg-foundation"]'));
+      expect(screen.getByTestId('pg-freecell-empty-3')).toHaveStyle({ width: '80px', height: '120px' });
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+    }
+  });
+
+  it('keeps the mobile free cell and foundation layout without a top row', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 390 });
+    try {
+      renderWithProviders(<PenguinPage />);
+      await screen.findByTestId('phase-indicator');
+      expect(screen.queryByTestId('pg-top-row')).not.toBeInTheDocument();
+      expect(document.querySelector('[data-tutorial="pg-free-cells"]')?.parentElement).toHaveClass('flex', 'flex-wrap');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+    }
+  });
+
   it('keeps an empty free-cell target focusable and explains that a source is needed', async () => {
     renderWithProviders(<PenguinPage />);
     const target = await screen.findByTestId('pg-freecell-empty-3');

@@ -67,6 +67,33 @@ describe('AmericanToadPage', () => {
     vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
   });
 
+  it('groups the desktop top zones into one compact row', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    mockExec.mockResolvedValue(playingState);
+    const { unmount } = renderWithProviders(<AmericanToadPage />);
+    const topRow = await screen.findByTestId('at-top-row');
+    expect(topRow.querySelector('[data-tutorial="at-reserve"]')).toBeInTheDocument();
+    expect(topRow.querySelector('[data-tutorial="at-foundation"]')).toBeInTheDocument();
+    expect(topRow).toHaveClass('flex', 'flex-nowrap', 'justify-center', 'items-start', 'gap-2');
+    unmount();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
+  it('keeps the mobile top zones in their existing wrapped layout', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    mockExec.mockResolvedValue(playingState);
+    const { container, unmount } = renderWithProviders(<AmericanToadPage />);
+    await waitFor(() => expect(container.querySelector('[data-testid="at-top-row"]')).toBeNull());
+    const oldRow = container.querySelector('.flex.flex-wrap.justify-center.items-start.gap-3');
+    expect(oldRow).not.toBeNull();
+    expect(oldRow?.querySelector('[data-tutorial="at-reserve"]')).toBeInTheDocument();
+    expect(oldRow?.querySelector('[data-tutorial="at-foundation"]')).toBeInTheDocument();
+    unmount();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
   it('calls reset on initial render', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<AmericanToadPage />);

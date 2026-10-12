@@ -27,6 +27,7 @@ import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { usePenguinGame } from '../hooks/usePenguinGame';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
+import { DESKTOP_COMPACT_CARD_WIDTH } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, PenguinHint, PenguinResponse } from '../types/card';
 import { PenguinPhase } from '../types/phases';
@@ -176,7 +177,9 @@ function PenguinPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('penguin', state);
-  const { cardHeight, cardOverlap, cardWidth } = useCardDimensions();
+  const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
+  const topZoneCardWidth = isMobile ? cardWidth : DESKTOP_COMPACT_CARD_WIDTH;
+  const topZoneCardHeight = isMobile ? cardHeight : Math.round(DESKTOP_COMPACT_CARD_WIDTH * 1.5);
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('penguin');
   const cliConfig: CliGameConfig<PenguinResponse, Parameters<typeof penguinApi.exec>> = useMemo(
@@ -330,7 +333,12 @@ function PenguinPageContent() {
 
           <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
             {/* Free cells + Foundation row */}
-            <div className="flex gap-2 mb-3 items-start flex-wrap">
+            <div
+              className={
+                isMobile ? 'flex gap-2 mb-3 items-start flex-wrap' : 'flex flex-nowrap justify-center items-start gap-2'
+              }
+              data-testid={isMobile ? undefined : 'pg-top-row'}
+            >
               {/* Free cells */}
               <div className="flex gap-2" data-tutorial="pg-free-cells">
                 {state.freeCells.map((card: Card | null, idx: number) => {
@@ -371,7 +379,7 @@ function PenguinPageContent() {
                             onDragEnd={dnd.handleDragEnd}
                             className={`p-0 border-0 bg-transparent cursor-pointer rounded ${isSourceSelected('freecell', undefined, idx) ? 'ring-2 ring-ds-warning' : isHintSourceFreecell(idx) ? 'ring-2 ring-ds-info animate-pulse' : focusRingWhite} ${dnd.isDragSource(freeCellZone) ? 'opacity-50' : ''}`}
                           >
-                            <AnimatedCard card={card} width={cardWidth} draggable={false} />
+                            <AnimatedCard card={card} width={topZoneCardWidth} draggable={false} />
                           </button>
                         ) : (
                           <button
@@ -382,7 +390,7 @@ function PenguinPageContent() {
                             aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('emptyFreecellAriaLabel', { idx: String(idx) })}
                             data-testid={`pg-freecell-empty-${idx.toString()}`}
-                            style={{ width: cardWidth, height: cardHeight }}
+                            style={{ width: topZoneCardWidth, height: topZoneCardHeight }}
                             className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}${isHintTarget('freecell', idx) ? ' ring-2 ring-ds-success animate-pulse' : ''}`}
                           >
                             {t('empty')}
@@ -426,7 +434,7 @@ function PenguinPageContent() {
                             >
                               <AnimatedCard
                                 card={pile[pile.length - 1]}
-                                width={cardWidth}
+                                width={topZoneCardWidth}
                                 draggable={false}
                                 dealDelay={isAutoCompleting ? idx * 0.15 : 0}
                               />
@@ -440,7 +448,7 @@ function PenguinPageContent() {
                               aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                               aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
                               data-testid={`pg-foundation-empty-${idx.toString()}`}
-                              style={{ width: cardWidth, height: cardHeight }}
+                              style={{ width: topZoneCardWidth, height: topZoneCardHeight }}
                               className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}${isHintTarget('foundation', idx) ? ' ring-2 ring-ds-success animate-pulse' : ''}`}
                             >
                               {baseRankLabel(state.baseRank)}
@@ -451,17 +459,30 @@ function PenguinPageContent() {
                     );
                   })}
                 </div>
-                <div
-                  className="text-game-text-muted text-[10px] mt-1 max-w-[12rem] text-center"
-                  data-testid="pg-base-rank-legend"
-                >
-                  {t('baseRankLegend', {
-                    rank: baseRankLabel(state.baseRank),
-                    prev: prevRankLabel(state.baseRank),
-                  })}
-                </div>
+                {isMobile && (
+                  <div
+                    className="text-game-text-muted text-[10px] mt-1 max-w-[12rem] text-center"
+                    data-testid="pg-base-rank-legend"
+                  >
+                    {t('baseRankLegend', {
+                      rank: baseRankLabel(state.baseRank),
+                      prev: prevRankLabel(state.baseRank),
+                    })}
+                  </div>
+                )}
               </div>
             </div>
+            {!isMobile && (
+              <div
+                className="text-game-text-muted text-[10px] mb-3 max-w-[12rem] text-center"
+                data-testid="pg-base-rank-legend"
+              >
+                {t('baseRankLegend', {
+                  rank: baseRankLabel(state.baseRank),
+                  prev: prevRankLabel(state.baseRank),
+                })}
+              </div>
+            )}
 
             {/* Tableau */}
             <div className="relative">
