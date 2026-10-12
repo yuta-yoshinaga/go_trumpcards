@@ -130,7 +130,7 @@ export function CpuPlayerCard({
                   <CardImage card={card} width={cpuCardWidth} style={{ border: '3px solid transparent' }} />
                   {used && usedHoleLabel && (
                     <span
-                      className="absolute -top-2 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-ds-success text-xs font-bold text-white"
+                      className="absolute -top-2 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-ds-success text-xs font-bold text-ds-text-on-accent"
                       data-testid="cpu-hole-used-indicator"
                       role="img"
                       aria-label={usedHoleLabel}

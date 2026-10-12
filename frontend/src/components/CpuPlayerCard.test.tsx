@@ -224,7 +224,7 @@ describe('CpuPlayerCard', () => {
     const indicator = within(used).getByTestId('cpu-hole-used-indicator');
     expect(indicator).toHaveTextContent('✓');
     expect(indicator).toHaveAttribute('aria-label', '使用');
-    expect(indicator).toHaveClass('text-white');
+    expect(indicator).toHaveClass('text-ds-text-on-accent');
   });
 
   it('uses the on-accent text color for Hi/Lo usage badges', () => {

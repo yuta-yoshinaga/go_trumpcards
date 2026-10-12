@@ -83,7 +83,7 @@ const PRESIDENT_RANK_BG: Readonly<Record<number, string>> = {
   1: 'bg-ds-warning text-ds-text-on-accent',
   2: 'bg-ds-info text-ds-text-on-accent',
   3: 'bg-ds-surface text-ds-text-muted',
-  4: 'bg-ds-error text-ds-text-on-accent',
+  4: 'bg-ds-error text-white',
 };
 
 /** Stamp-style rank badge that springs in when a player finishes. */
@@ -423,7 +423,7 @@ function PresidentPageContent() {
                 type="button"
                 onClick={handlePlay}
                 disabled={loading || !canPlay}
-                className="px-4 py-2 rounded-lg bg-ds-info hover:bg-ds-info text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                className="px-4 py-2 rounded-lg bg-ds-info hover:bg-ds-info text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                 data-testid="play-button"
               >
                 {t('button.play')}

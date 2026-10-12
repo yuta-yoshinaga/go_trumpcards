@@ -504,7 +504,7 @@ function EgyptianRatscrewPageContent() {
                 type="button"
                 onClick={handleStep}
                 disabled={loading || isGameEnd || !state.isHumanTurn}
-                className="min-h-[44px] min-w-[44px] px-6 py-2 rounded-lg bg-ds-info hover:bg-ds-info text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+                className="min-h-[44px] min-w-[44px] px-6 py-2 rounded-lg bg-ds-info hover:bg-ds-info text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed"
                 data-testid="step-button"
                 data-tutorial="er-step-button"
               >

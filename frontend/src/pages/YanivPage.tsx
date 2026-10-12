@@ -233,7 +233,7 @@ function YanivPageContent() {
               data-testid="yaniv-round-result"
               className={
                 caller
-                  ? `rounded-lg p-3 text-center font-medium ${state.isAsaf ? 'bg-ds-error text-white' : 'bg-ds-success text-white'}`
+                  ? `rounded-lg p-3 text-center font-medium ${state.isAsaf ? 'bg-ds-error text-white' : 'bg-ds-success text-ds-text-on-accent'}`
                   : 'sr-only'
               }
             >
@@ -329,7 +329,7 @@ function YanivPageContent() {
                           {active && (
                             <span
                               data-testid={`pickup-badge-${i}`}
-                              className="absolute -top-1 -right-1 rounded bg-ds-info text-white text-[9px] font-bold px-1 pointer-events-none"
+                              className="absolute -top-1 -right-1 rounded bg-ds-info text-ds-text-on-accent text-[9px] font-bold px-1 pointer-events-none"
                             >
                               {t('pickup.badge')}
                             </span>
@@ -363,7 +363,11 @@ function YanivPageContent() {
                   data-testid="hand-total-badge"
                   title={t('handTotalHelp')}
                   className={`inline-block rounded px-1.5 font-bold ${
-                    human.handTotal <= 5 ? 'bg-ds-success text-white' : human.handTotal <= 10 ? 'bg-ds-warning/40' : ''
+                    human.handTotal <= 5
+                      ? 'bg-ds-success text-ds-text-on-accent'
+                      : human.handTotal <= 10
+                        ? 'bg-ds-warning/40'
+                        : ''
                   }`}
                 >
                   {human.handTotal}
@@ -489,7 +493,7 @@ function YanivPageContent() {
                 onClick={handleDiscard}
                 disabled={loading || !isHumanTurn || !isDiscard || selected.length === 0}
                 title={discardWarning ?? undefined}
-                className="px-4 py-2 rounded-lg bg-ds-success text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                className="px-4 py-2 rounded-lg bg-ds-success text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                 data-testid="discard-button"
               >
                 {t('button.discard')}
@@ -511,7 +515,7 @@ function YanivPageContent() {
                 type="button"
                 onClick={handleDrawStock}
                 disabled={loading || !isHumanTurn || !isDraw}
-                className="px-4 py-2 rounded-lg bg-ds-info text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                className="px-4 py-2 rounded-lg bg-ds-info text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                 data-testid="draw-stock-button"
               >
                 {t('button.drawStock')}

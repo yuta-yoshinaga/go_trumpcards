@@ -403,7 +403,7 @@ function ZhengPageContent() {
                 type="button"
                 onClick={handlePlay}
                 disabled={loading || !canPlay}
-                className="px-4 py-2 rounded-lg bg-ds-info hover:bg-ds-info text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                className="px-4 py-2 rounded-lg bg-ds-info hover:bg-ds-info text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                 data-testid="play-button"
               >
                 {t('playButton')}

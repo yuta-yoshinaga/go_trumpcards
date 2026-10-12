@@ -2,6 +2,21 @@ import { expect, test } from '@playwright/test';
 import { gameButton, navigateTo, waitForLoaded } from './helpers';
 
 test.describe('Napoleon E2E', () => {
+  test('score table fits its scroll area at 1280×800', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await navigateTo(page, '/napoleon');
+    const section = page.locator('[data-tutorial="np-score-table"]');
+    const table = section.locator('table').last();
+    await expect(table).toBeVisible();
+    const dimensions = await table.evaluate((element) => {
+      let ancestor = element.parentElement;
+      while (ancestor && getComputedStyle(ancestor).overflowX === 'visible') ancestor = ancestor.parentElement;
+      if (!ancestor) throw new Error('score table has no horizontal overflow ancestor');
+      return { scrollWidth: ancestor.scrollWidth, clientWidth: ancestor.clientWidth };
+    });
+    expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth);
+  });
+
   test('navigates, resets, and plays through phase transitions', async ({ page }) => {
     await navigateTo(page, '/napoleon');
 

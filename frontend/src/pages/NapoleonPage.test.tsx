@@ -767,6 +767,7 @@ describe('NapoleonPage', () => {
   });
 
   it('score table has horizontal scroll wrapper', async () => {
+    const innerWidthSpy = vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(375);
     const { container } = renderWithProviders(<NapoleonPage />);
     await waitFor(() => expect(screen.getByText('\u30b9\u30b3\u30a2')).toBeInTheDocument());
     const scoreSection = container.querySelector('[data-tutorial="np-score-table"]');
@@ -774,6 +775,7 @@ describe('NapoleonPage', () => {
     expect(scrollWrapper).toBeInTheDocument();
     const table = scrollWrapper?.querySelector('table');
     expect(table?.className).toContain('min-w-[420px]');
+    innerWidthSpy.mockRestore();
   });
 
   it('score table renders ScrollFadeHint on mobile', async () => {
@@ -1412,5 +1414,19 @@ describe('NapoleonPage point limit', () => {
     } as unknown as NapoleonResponse);
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
     await waitFor(() => expect(region).toHaveTextContent('推奨捨て札'));
+  });
+  it('fits the score table at large desktop widths', async () => {
+    const innerWidthSpy = vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(1280);
+    try {
+      const { container } = renderWithProviders(<NapoleonPage />);
+      await waitFor(() =>
+        expect(container.querySelector('[data-tutorial="np-score-table"] table')).toBeInTheDocument(),
+      );
+      const table = container.querySelector('[data-tutorial="np-score-table"] table');
+      expect(table?.className).toContain('table-fixed');
+      expect(table?.className).not.toContain('min-w-[');
+    } finally {
+      innerWidthSpy.mockRestore();
+    }
   });
 });
