@@ -71,7 +71,11 @@ describe('AlaskaPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: /♠ K/ })).toBeInTheDocument());
     const tableau = document.querySelector('[data-tutorial="rs-tableau"]');
     const foundations = document.querySelector('[data-tutorial="rs-foundation"]');
-    expect(tableau?.parentElement).toHaveClass('flex', 'flex-wrap', 'justify-center', 'items-start', 'gap-4');
+    const largeDesktopRow = tableau?.parentElement;
+    const rule = screen.getByTestId('alaska-facedown-rule');
+    expect(largeDesktopRow).toHaveClass('flex', 'flex-wrap', 'justify-center', 'items-start', 'gap-4');
+    expect(largeDesktopRow?.contains(rule)).toBe(false);
+    expect(Array.from(largeDesktopRow?.children ?? [])).toEqual([tableau, foundations]);
     expect(
       Boolean(
         tableau && foundations && tableau.compareDocumentPosition(foundations) & Node.DOCUMENT_POSITION_FOLLOWING,

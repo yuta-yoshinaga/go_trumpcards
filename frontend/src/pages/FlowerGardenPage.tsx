@@ -40,6 +40,8 @@ import { flowerGardenLegalTargets } from '../utils/flowerGardenLegalTargets';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
+// Keep in sync with the sm:gap-2 spacing on the bed row below.
+const BED_GAP_PX = 8;
 const FOUNDATION_SUIT_I18N_KEYS = [
   'common.suit.spade',
   'common.suit.club',
@@ -470,6 +472,7 @@ function FlowerGardenPageContent() {
                 <span className="text-game-text-muted text-xs">{t('reserveSelectionHint')}</span>
                 {/* 16 bouquet cards laid out as a grid (4 cols on mobile, 8 on sm+) so every
                     slot stays clearly visible instead of cramming into one wrapping row (#3283). */}
+                {/* Add the card button's 6px border to each card's fan width. */}
                 {isLargeDesktop ? (
                   <CardFan itemWidth={dims.cw + 6} className="w-full" data-testid="fg-bouquet-fan">
                     {state.reserve.map((_, idx) => renderReserveCell(idx))}
@@ -497,7 +500,7 @@ function FlowerGardenPageContent() {
               <div
                 className="flex gap-1 sm:gap-2"
                 data-tutorial="fg-tableau"
-                style={isLargeDesktop ? { width: 6 * dims.cw + 5 * 8 } : undefined}
+                style={isLargeDesktop ? { width: 6 * dims.cw + 5 * BED_GAP_PX } : undefined}
               >
                 {[0, 1, 2, 3, 4, 5].map(renderTableauColumn)}
               </div>

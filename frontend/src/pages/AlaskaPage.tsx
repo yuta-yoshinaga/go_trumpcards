@@ -280,6 +280,65 @@ function AlaskaPageContent() {
 
   if (!state) return <GameSkeleton gameKey="alaska" layout={{ kind: 'tableau', topRow: 6, tableau: 7 }} />;
 
+  const renderFoundation = (i: number, cardWidth: number, cardHeight: number) => {
+    const pile = state.foundation[i];
+    const topCard = pile.length > 0 ? pile[pile.length - 1] : null;
+    const target = selectedSource !== null;
+    return (
+      <DropZone
+        key={i}
+        onDrop={dnd.handleDrop({ zone: 'foundation', col: i })}
+        onDragOver={dnd.handleDragOver({ zone: 'foundation', col: i })}
+        onDragLeave={dnd.handleDragLeave}
+        isDropTarget={dnd.isDropTarget({ zone: 'foundation', col: i })}
+      >
+        <button
+          type="button"
+          className={`${focusRingWhite} rounded-lg transition-colors ${target ? 'hover:ring-2 hover:ring-ds-warning cursor-pointer' : ''}`}
+          onClick={() => target && handleSelectTarget('foundation', i)}
+          disabled={!isPlaying}
+          aria-disabled={!target || undefined}
+          aria-describedby={!target ? selectSourceHintId : undefined}
+          aria-label={
+            topCard
+              ? t('foundationAriaLabel', {
+                  suit: FOUNDATION_SUITS[i],
+                  count: pile.length,
+                  topCard: cardAlt(topCard),
+                  nextCondition:
+                    topCard.value < 13
+                      ? t('foundationNextCard', {
+                          card: `${FOUNDATION_SUITS[i]} ${valueName(topCard.value + 1)}`,
+                        })
+                      : t('foundationComplete'),
+                })
+              : t('emptyFoundationAriaLabel', {
+                  suit: FOUNDATION_SUITS[i],
+                  nextCondition: t('foundationNextCard', { card: `${FOUNDATION_SUITS[i]} A` }),
+                })
+          }
+          style={{ width: cardWidth, height: cardHeight }}
+        >
+          {topCard ? (
+            <AnimatedCard card={topCard} width={cardWidth} />
+          ) : (
+            <div
+              className="border-2 border-dashed border-game-border rounded-lg flex items-center justify-center text-game-text-muted"
+              style={{ width: cardWidth, height: cardHeight }}
+            >
+              {FOUNDATION_SUITS[i]}
+            </div>
+          )}
+        </button>
+      </DropZone>
+    );
+  };
+  const renderFoundations = (cardWidth: number, cardHeight: number, className: string) => (
+    <div className={className} data-tutorial="rs-foundation">
+      {state.foundation.map((_, i) => renderFoundation(i, cardWidth, cardHeight))}
+    </div>
+  );
+
   const isPlaying = state.phase === AlaskaPhase.PLAYING;
   const isGameClear = state.phase === AlaskaPhase.GAME_CLEAR;
   const isGameOver = state.phase === AlaskaPhase.GAME_OVER;
@@ -349,86 +408,35 @@ function AlaskaPageContent() {
 
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
             {/* Foundation row */}
-            {!isLargeDesktop && (
-              <div className="flex gap-1 sm:gap-2 mb-3 items-start justify-center" data-tutorial="rs-foundation">
-                {state.foundation.map((pile, i) => {
-                  const topCard = pile.length > 0 ? pile[pile.length - 1] : null;
-                  const isTarget = selectedSource !== null;
-                  return (
-                    <DropZone
-                      key={i}
-                      onDrop={dnd.handleDrop({ zone: 'foundation', col: i })}
-                      onDragOver={dnd.handleDragOver({ zone: 'foundation', col: i })}
-                      onDragLeave={dnd.handleDragLeave}
-                      isDropTarget={dnd.isDropTarget({ zone: 'foundation', col: i })}
-                    >
-                      <button
-                        type="button"
-                        className={`${focusRingWhite} rounded-lg transition-colors ${
-                          isTarget ? 'hover:ring-2 hover:ring-ds-warning cursor-pointer' : ''
-                        }`}
-                        onClick={() => isTarget && handleSelectTarget('foundation', i)}
-                        disabled={!isPlaying}
-                        aria-disabled={!isTarget || undefined}
-                        aria-describedby={!isTarget ? selectSourceHintId : undefined}
-                        aria-label={
-                          topCard
-                            ? t('foundationAriaLabel', {
-                                suit: FOUNDATION_SUITS[i],
-                                count: pile.length,
-                                topCard: cardAlt(topCard),
-                                nextCondition:
-                                  topCard.value < 13
-                                    ? t('foundationNextCard', {
-                                        card: `${FOUNDATION_SUITS[i]} ${valueName(topCard.value + 1)}`,
-                                      })
-                                    : t('foundationComplete'),
-                              })
-                            : t('emptyFoundationAriaLabel', {
-                                suit: FOUNDATION_SUITS[i],
-                                nextCondition: t('foundationNextCard', { card: `${FOUNDATION_SUITS[i]} A` }),
-                              })
-                        }
-                        style={{ width: foundationWidth, height: foundationHeight }}
-                      >
-                        {topCard ? (
-                          <AnimatedCard card={topCard} width={rs.cw} />
-                        ) : (
-                          <div
-                            className="border-2 border-dashed border-game-border rounded-lg flex items-center justify-center text-game-text-muted"
-                            style={{ width: foundationWidth, height: foundationHeight }}
-                          >
-                            {FOUNDATION_SUITS[i]}
-                          </div>
-                        )}
-                      </button>
-                    </DropZone>
-                  );
-                })}
+            {!isLargeDesktop &&
+              renderFoundations(
+                foundationWidth,
+                foundationHeight,
+                'flex gap-1 sm:gap-2 mb-3 items-start justify-center',
+              )}
+
+            {!rulesDismissed && (
+              <div
+                className="flex items-center justify-center gap-1 mb-1"
+                data-testid="alaska-facedown-rule"
+                role="note"
+              >
+                {/* Yukon との唯一の違いである「同スート降順」を伝える。裏向きは動かせない
+                    という汎用ルールしか出ていなかった (#4789)。testid は既存のまま。 */}
+                <p className="text-game-text-muted text-xs text-center">{t('tableauRule')}</p>
+                <button
+                  type="button"
+                  onClick={() => setRulesDismissed(true)}
+                  aria-label={t('dismissRule')}
+                  className={`shrink-0 px-2 py-1 text-game-text-muted hover:text-game-text text-sm leading-none ${focusRingWhite} rounded`}
+                >
+                  ×
+                </button>
               </div>
             )}
 
             {/* Tableau */}
             <TableauLayout {...tableauLayoutProps}>
-              {!rulesDismissed && (
-                <div
-                  className="flex items-center justify-center gap-1 mb-1"
-                  data-testid="alaska-facedown-rule"
-                  role="note"
-                >
-                  {/* Yukon との唯一の違いである「同スート降順」を伝える。裏向きは動かせない
-                    という汎用ルールしか出ていなかった (#4789)。testid は既存のまま。 */}
-                  <p className="text-game-text-muted text-xs text-center">{t('tableauRule')}</p>
-                  <button
-                    type="button"
-                    onClick={() => setRulesDismissed(true)}
-                    aria-label={t('dismissRule')}
-                    className={`shrink-0 px-2 py-1 text-game-text-muted hover:text-game-text text-sm leading-none ${focusRingWhite} rounded`}
-                  >
-                    ×
-                  </button>
-                </div>
-              )}
               <div className="flex gap-1 sm:gap-2 justify-center" data-tutorial="rs-tableau">
                 {state.tableau.map((col, colIdx) => (
                   <div key={colIdx} className="flex flex-col items-center" style={{ width: rs.cw }}>
@@ -580,62 +588,7 @@ function AlaskaPageContent() {
                   </div>
                 ))}
               </div>
-              {isLargeDesktop && (
-                <div className="flex flex-col gap-1" data-tutorial="rs-foundation">
-                  {state.foundation.map((pile, i) => {
-                    const topCard = pile.length > 0 ? pile[pile.length - 1] : null;
-                    const target = selectedSource !== null;
-                    return (
-                      <DropZone
-                        key={i}
-                        onDrop={dnd.handleDrop({ zone: 'foundation', col: i })}
-                        onDragOver={dnd.handleDragOver({ zone: 'foundation', col: i })}
-                        onDragLeave={dnd.handleDragLeave}
-                        isDropTarget={dnd.isDropTarget({ zone: 'foundation', col: i })}
-                      >
-                        <button
-                          type="button"
-                          className={`${focusRingWhite} rounded-lg transition-colors ${target ? 'hover:ring-2 hover:ring-ds-warning cursor-pointer' : ''}`}
-                          onClick={() => target && handleSelectTarget('foundation', i)}
-                          disabled={!isPlaying}
-                          aria-disabled={!target || undefined}
-                          aria-describedby={!target ? selectSourceHintId : undefined}
-                          aria-label={
-                            topCard
-                              ? t('foundationAriaLabel', {
-                                  suit: FOUNDATION_SUITS[i],
-                                  count: pile.length,
-                                  topCard: cardAlt(topCard),
-                                  nextCondition:
-                                    topCard.value < 13
-                                      ? t('foundationNextCard', {
-                                          card: `${FOUNDATION_SUITS[i]} ${valueName(topCard.value + 1)}`,
-                                        })
-                                      : t('foundationComplete'),
-                                })
-                              : t('emptyFoundationAriaLabel', {
-                                  suit: FOUNDATION_SUITS[i],
-                                  nextCondition: t('foundationNextCard', { card: `${FOUNDATION_SUITS[i]} A` }),
-                                })
-                          }
-                          style={{ width: foundationWidth, height: foundationHeight }}
-                        >
-                          {topCard ? (
-                            <AnimatedCard card={topCard} width={foundationWidth} />
-                          ) : (
-                            <div
-                              className="border-2 border-dashed border-game-border rounded-lg flex items-center justify-center text-game-text-muted"
-                              style={{ width: foundationWidth, height: foundationHeight }}
-                            >
-                              {FOUNDATION_SUITS[i]}
-                            </div>
-                          )}
-                        </button>
-                      </DropZone>
-                    );
-                  })}
-                </div>
-              )}
+              {isLargeDesktop && renderFoundations(foundationWidth, foundationHeight, 'flex flex-col gap-1')}
             </TableauLayout>
           </div>
 
