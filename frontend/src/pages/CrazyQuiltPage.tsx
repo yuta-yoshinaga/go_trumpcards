@@ -41,8 +41,9 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦', '♠', '♣', '♥', '♦'] as const;
 /** The quilt is 8x8. */
 const QUILT_SIZE = 8;
-const QUILT_CELLS = QUILT_SIZE * QUILT_SIZE;
 const TOTAL_CARDS = 104;
+const ROW_GAP_PX = 4;
+const QUILT_VISIBLE_EDGE_PX = 52;
 
 const CG_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -282,8 +283,8 @@ function CrazyQuiltPageContent() {
           <span id={selectSourceHintId} className="sr-only">
             {tc('label.selectSourceFirst')}
           </span>
-          <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
-            <div className="flex flex-wrap justify-center items-start gap-3 sm:gap-6 mb-3">
+          <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8 min-[1024px]:pt-0">
+            <div className="flex flex-wrap justify-center items-start gap-3 sm:gap-6 mb-3 min-[1024px]:mb-0">
               <div
                 className="flex flex-nowrap sm:flex-wrap justify-center gap-1 sm:gap-2"
                 data-tutorial="cg-foundation"
@@ -386,7 +387,7 @@ function CrazyQuiltPageContent() {
                   </button>
                   {/* CUI の redealLine と同じ情報。残り回数が見えないと、山札が
                       空になった瞬間に打ち切りなのか組み直せるのか判断できない。 */}
-                  <div className="text-game-text-muted text-xs mt-1" data-testid="crazyquilt-redeals">
+                  <div className="text-game-text-muted text-xs mt-1 min-[1024px]:mt-0" data-testid="crazyquilt-redeals">
                     {t('redealLine', { count: state.redealsLeft })}
                   </div>
                 </div>
@@ -439,7 +440,7 @@ function CrazyQuiltPageContent() {
 
             {isPlaying && (
               <div
-                className="text-center text-ds-text-muted text-sm mb-3"
+                className="text-center text-ds-text-muted text-sm mb-3 min-[1024px]:mb-0"
                 role="progressbar"
                 aria-label={t('foundationProgressLabel')}
                 aria-valuemin={0}
@@ -452,12 +453,24 @@ function CrazyQuiltPageContent() {
             )}
 
             <div
-              className="grid gap-0.5 sm:gap-1 justify-center"
-              style={{ gridTemplateColumns: `repeat(${QUILT_SIZE}, minmax(0, 1fr))` }}
+              className="flex flex-col items-center gap-y-0.5 sm:gap-y-1"
               data-tutorial="cg-tableau"
               data-testid="cq-quilt"
             >
-              {Array.from({ length: QUILT_CELLS }, (_, i) => i).map(renderCell)}
+              {Array.from({ length: QUILT_SIZE }, (_, row) => (
+                <div
+                  key={`row-${row.toString()}`}
+                  className="grid gap-0.5 sm:gap-1 justify-center"
+                  // Preserve a 52px visible card edge while deriving overlap from card height and row gap.
+                  style={{
+                    gridTemplateColumns: `repeat(${QUILT_SIZE}, minmax(0, 1fr))`,
+                    marginTop: isLargeDesktop && row > 0 ? -(dims.ch + ROW_GAP_PX - QUILT_VISIBLE_EDGE_PX) : undefined,
+                  }}
+                  data-testid={`cq-quilt-row-${row}`}
+                >
+                  {Array.from({ length: QUILT_SIZE }, (_, col) => row * QUILT_SIZE + col).map(renderCell)}
+                </div>
+              ))}
             </div>
 
             {/*

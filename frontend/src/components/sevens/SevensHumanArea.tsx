@@ -7,6 +7,7 @@ import type { Card, SevensPlayerData } from '../../types/card';
 import { valueName } from '../../utils/cardUtils';
 import { playerName } from '../../utils/playerUtils';
 import { isCardPlayable, playerAreaClass } from '../../utils/sevensUtils';
+import { CardFan } from '../CardFan';
 import { CardImage } from '../CardImage';
 import { StatusBadge } from '../StatusBadge';
 
@@ -88,7 +89,7 @@ function HumanArea({
             ))}
         </div>
       )}
-      <div className="flex flex-wrap gap-1">
+      <CardFan itemWidth={cardWidth + 6} data-testid="sv-hand-card-fan">
         {player.cards?.map((card: Card, i: number) => {
           const playable =
             isCurrentTurn &&
@@ -145,7 +146,7 @@ function HumanArea({
             </button>
           );
         })}
-      </div>
+      </CardFan>
       <span id={disabledReasonId} className="sr-only">
         {disabledReason}
       </span>

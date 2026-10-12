@@ -164,11 +164,20 @@ describe('CrazyQuiltPage', () => {
     window.innerWidth = 800;
     renderWithProviders(<CrazyQuiltPage />);
     expect(await screen.findByTestId('cq-cell-0')).toHaveStyle({ width: '60px', height: '84px' });
+    expect(Array.from(document.querySelectorAll('[data-testid="cq-quilt-row-1"]')).at(-1)).not.toHaveStyle({
+      marginTop: '-26px',
+    });
 
     window.innerWidth = 1280;
     window.dispatchEvent(new Event('resize'));
     renderWithProviders(<CrazyQuiltPage />);
     await waitFor(() => expect(screen.getByTestId('cq-cell-0')).toHaveStyle({ width: '52px', height: '78px' }));
+    expect(Array.from(document.querySelectorAll('[data-testid="cq-quilt-row-0"]')).at(-1)).not.toHaveStyle({
+      marginTop: '-26px',
+    });
+    expect(Array.from(document.querySelectorAll('[data-testid="cq-quilt-row-1"]')).at(-1)).toHaveStyle({
+      marginTop: '-30px',
+    });
 
     window.innerWidth = originalWidth;
     window.dispatchEvent(new Event('resize'));

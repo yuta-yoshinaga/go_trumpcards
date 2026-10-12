@@ -73,6 +73,14 @@ describe('SevensHumanArea', () => {
     }
   });
 
+  it('renders all hand cards inside the CardFan root', () => {
+    const player = makePlayer({ cards: [spade7, spade8, heart3, joker] });
+    render(<SevensHumanArea {...defaultProps} player={player} />);
+    const fan = screen.getByTestId('sv-hand-card-fan');
+    expect(fan.querySelectorAll('button')).toHaveLength(player.cards?.length);
+    expect(fan).toContainElement(screen.getAllByRole('button')[0]);
+  });
+
   it('playable card has playable-card testid and title', () => {
     render(<SevensHumanArea {...defaultProps} />);
     // spade8 is adjacent to placed spade7, so it should be playable
