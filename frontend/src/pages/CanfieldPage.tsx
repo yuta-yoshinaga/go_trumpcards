@@ -537,6 +537,8 @@ function CanfieldPageContent() {
                                   type="button"
                                   aria-label={t('tableauCardAriaLabel', {
                                     card: cardAlt(tc.card),
+                                    listSeparator: t('listSeparator'),
+                                    tableau: t('tableau'),
                                     col: i,
                                     index: j,
                                   })}

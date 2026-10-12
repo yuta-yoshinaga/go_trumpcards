@@ -89,6 +89,13 @@ describe('BassetPage', () => {
     expect(screen.getByText('賭けなし')).toBeInTheDocument();
   });
 
+  it('falls back to the translated turn phase for an unknown phase value', async () => {
+    mockExec.mockResolvedValue(makeState({ ...bettingState, phase: 0 }));
+    renderWithProviders(<BassetPage />);
+
+    expect(await screen.findByTestId('phase-indicator')).toHaveTextContent('進行');
+  });
+
   it('shows remaining cards by rank and refreshes the counts after a deal', async () => {
     const initialCounts: number[] = Array.from({ length: 14 }, (_, i) => (i === 0 ? 0 : 4));
     const updatedCounts = [...initialCounts];
@@ -298,7 +305,8 @@ describe('BassetPage', () => {
   it('shows the game-end state', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<BassetPage />);
-    expect(await screen.findByTestId('phase-indicator')).toHaveTextContent('gameEnd');
+    expect(await screen.findByTestId('phase-indicator')).toHaveTextContent('ゲーム終了');
+    expect(screen.getByTestId('phase-indicator')).not.toHaveTextContent('gameEnd');
     expect(screen.queryByRole('button', { name: '賭ける' })).not.toBeInTheDocument();
   });
 

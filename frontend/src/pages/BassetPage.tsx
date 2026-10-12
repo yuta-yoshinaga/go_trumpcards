@@ -24,7 +24,13 @@ import type { CliGameConfig } from '../utils/cli/types';
 
 const STEPS: TutorialStep[] = [];
 const BassetPhase = { BETTING: 1, TURN: 2, DECISION: 3, ROUND_END: 4, GAME_END: 5 } as const;
-const PHASES: Record<number, string> = { 1: 'betting', 2: 'turn', 3: 'decision', 4: 'roundEnd', 5: 'gameEnd' };
+const PHASES: Record<number, string> = {
+  1: 'phase.betting',
+  2: 'phase.turn',
+  3: 'phase.decision',
+  4: 'phase.roundEnd',
+  5: 'phase.gameEnd',
+};
 const RANK_LABELS = Array.from({ length: 13 }, (_, index) => valueName(index + 1));
 
 /** Renders the Basset page and its paroli decision controls. */
@@ -55,7 +61,7 @@ function BassetPageContent() {
     <GamePageShell
       title={tc('nav.basset')}
       gameThemeBg={gameTheme.basset.bg}
-      phaseName={t(PHASES[state.phase] ?? 'turn')}
+      phaseName={t(PHASES[state.phase] ?? 'phase.turn')}
       gamePath="/basset"
       gameEndFlag={ended}
       loading={loading}

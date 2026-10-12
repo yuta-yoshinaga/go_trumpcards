@@ -475,7 +475,7 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
       headerExtra={
         <>
           <span>
-            {t('player')} {state.player.chips} chips
+            {t('player')} {state.player.chips} {t('chips')}
           </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
@@ -492,7 +492,7 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
             </span>
           )}
           <span>
-            {tc('label.dealer')} {state.dealer.chips} chips
+            {tc('label.dealer')} {state.dealer.chips} {t('chips')}
           </span>
         </>
       }
@@ -618,7 +618,7 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
                 {cpuPlayers.map((cpu, cpuIdx) => (
                   <div key={cpuIdx} className="mb-3">
                     <h2 className="text-ds-accent mt-0 mb-1">
-                      {tc('player.cpu', { id: cpuIdx + 1 })} ({cpu.chips} chips)
+                      {tc('player.cpu', { id: cpuIdx + 1 })} ({cpu.chips} {t('chips')})
                       {cpu.insuranceBet > 0 && (
                         <span className="text-ds-warning text-sm ml-2">
                           [{t('insurance')} {cpu.insuranceBet}]

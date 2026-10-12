@@ -10,6 +10,7 @@
   "player": "プレイヤー:",
   "deck": "デッキ:",
   "deckUnit": "{{count}}デッキ",
+  "chips": "チップ",
   "dealerHand": "ディーラー手札",
   "score": "スコア",
   "hitAnnouncement": "{{card}}を引きました。現在のスコアは{{score}}です。",

@@ -7,6 +7,8 @@
   "foundation": "Foundation",
   "tableau": "Tableau",
   "moveCount": "Moves",
+  "foundationProgress_one": "{{count}} card",
+  "foundationProgress_other": "{{count}} cards",
   "giveup": "Give Up",
   "empty": "Empty",
   "foundationAriaLabel": "{{suit}} foundation {{count}} cards",

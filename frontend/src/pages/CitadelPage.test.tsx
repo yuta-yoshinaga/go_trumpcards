@@ -108,6 +108,13 @@ describe('CitadelPage', () => {
     await waitFor(() => expect(screen.getAllByLabelText(/組札 1枚/).length).toBe(4));
   });
 
+  it('renders translated foundation progress without an unresolved key', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<CitadelPage />);
+    expect(await screen.findAllByText('1枚')).toHaveLength(4);
+    expect(screen.queryByText('foundationProgress')).not.toBeInTheDocument();
+  });
+
   it('keeps mobile cards at least 40px wide inside a horizontally scrollable board', async () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 320 });
