@@ -115,6 +115,30 @@ describe('RoyalCotillionPage', () => {
     window.dispatchEvent(new Event('resize'));
   });
 
+  it('uses eight tableau columns on large desktop and keeps four at 800px', async () => {
+    const previousWidth = window.innerWidth;
+    try {
+      window.innerWidth = 1280;
+      window.dispatchEvent(new Event('resize'));
+      mockExec.mockResolvedValue(playingState);
+      const { unmount } = renderWithProviders(<RoyalCotillionPage />);
+      expect(await screen.findByTestId('rc-tableau')).toHaveStyle({
+        gridTemplateColumns: 'repeat(8, minmax(0, 1fr))',
+      });
+      unmount();
+
+      window.innerWidth = 800;
+      window.dispatchEvent(new Event('resize'));
+      renderWithProviders(<RoyalCotillionPage />);
+      expect(await screen.findByTestId('rc-tableau')).toHaveStyle({
+        gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+      });
+    } finally {
+      window.innerWidth = previousWidth;
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
   it('shows the waste count and describes the waste card for assistive technology', async () => {
     mockExec.mockResolvedValue({ ...playingState, waste: [card('DIAMOND', 4), card('HEART', 8)] });
     renderWithProviders(<RoyalCotillionPage />);

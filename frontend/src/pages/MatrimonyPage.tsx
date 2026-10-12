@@ -18,7 +18,7 @@ import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
@@ -39,8 +39,10 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 const FOUNDATION_LABELS = ['Q♠↓', 'Q♠↓', 'J♦↑', 'J♦↑'] as const;
 /** Sixteen slots, one card each -- they never stack. */
 const TABLEAU_SLOTS = 16;
-/** Slots per row in the 4x4 board. */
-const SLOTS_PER_ROW = 4;
+/** Tableau piles per row below 1024px: the original 4x4 board. */
+const DESKTOP_SLOTS_PER_ROW = 4;
+/** Tableau piles per row at large desktop: 2 rows of 8 so the board fits 800px-high screens (#11702). */
+const LARGE_DESKTOP_SLOTS_PER_ROW = 8;
 /** Foundation completion goal: four foundations with thirteen cards each. */
 const FOUNDATION_GOAL = 4 * 13;
 
@@ -116,18 +118,20 @@ function MatrimonyPageContent() {
   );
   const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
+  const slotsPerRow = isLargeDesktop ? LARGE_DESKTOP_SLOTS_PER_ROW : DESKTOP_SLOTS_PER_ROW;
   const windowWidth = useWindowWidth();
 
   const dims = useMemo(() => {
     if (!isMobile) return { cw: cardWidth, ch: cardHeight, co: cardOverlap };
     const padX = 16;
     const gapPx = 4;
-    const colW = Math.floor((windowWidth - padX - (SLOTS_PER_ROW - 1) * gapPx) / SLOTS_PER_ROW);
+    const colW = Math.floor((windowWidth - padX - (slotsPerRow - 1) * gapPx) / slotsPerRow);
     const cw = Math.min(Math.max(colW, 30), cardWidth);
     const ch = Math.round(cw * 1.5);
     const co = Math.round(cw * 0.32);
     return { cw, ch, co };
-  }, [isMobile, windowWidth, cardWidth, cardHeight, cardOverlap]);
+  }, [isMobile, windowWidth, slotsPerRow, cardWidth, cardHeight, cardOverlap]);
 
   const isPlayingForKbd = state?.phase === MatrimonyPhase.PLAYING;
 
@@ -173,7 +177,7 @@ function MatrimonyPageContent() {
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!isPlayingForKbd && !loading });
 
   if (!state) {
-    return <GameSkeleton gameKey="matrimony" layout={{ kind: 'tableau', topRow: 8, tableau: SLOTS_PER_ROW }} />;
+    return <GameSkeleton gameKey="matrimony" layout={{ kind: 'tableau', topRow: 8, tableau: slotsPerRow }} />;
   }
 
   const isPlaying = state.phase === MatrimonyPhase.PLAYING;
@@ -398,7 +402,7 @@ function MatrimonyPageContent() {
             <section
               aria-label={t('tableauGroupAriaLabel')}
               className="grid gap-1 sm:gap-2 justify-center"
-              style={{ gridTemplateColumns: `repeat(${SLOTS_PER_ROW}, minmax(0, 1fr))` }}
+              style={{ gridTemplateColumns: `repeat(${slotsPerRow}, minmax(0, 1fr))` }}
               data-tutorial="cg-tableau"
               data-testid="matrimony-tableau"
             >

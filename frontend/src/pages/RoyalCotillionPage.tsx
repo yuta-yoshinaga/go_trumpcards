@@ -18,7 +18,7 @@ import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
@@ -43,7 +43,7 @@ const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦', '♠', '♣', '♥', '♦'
 const TABLEAU_SLOTS = 16;
 /** Four reserve piles of three; an emptied one is never refilled. */
 const RESERVE_PILES = 4;
-/** Desktop uses a 4x4 board; mobile uses two compact rows of eight. */
+/** Standard desktop uses a 4x4 board; large desktop and mobile use two rows of eight. */
 const DESKTOP_SLOTS_PER_ROW = 4;
 const MOBILE_SLOTS_PER_ROW = 8;
 const TOTAL_CARDS = 104;
@@ -119,8 +119,9 @@ function RoyalCotillionPageContent() {
   );
   const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const windowWidth = useWindowWidth();
-  const slotsPerRow = isMobile ? MOBILE_SLOTS_PER_ROW : DESKTOP_SLOTS_PER_ROW;
+  const slotsPerRow = isMobile || isLargeDesktop ? MOBILE_SLOTS_PER_ROW : DESKTOP_SLOTS_PER_ROW;
 
   const dims = useMemo(() => {
     if (!isMobile) {
