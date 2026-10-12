@@ -321,7 +321,10 @@ function PenguinPageContent() {
           <span>
             {t('baseRank')}: {baseRankLabel(state.baseRank)}
           </span>
-          <span data-testid="pg-supermove-badge" title={t('supermoveBadgeTooltip')}>
+          <span
+            data-testid="pg-supermove-badge"
+            title={t('supermoveBadgeTooltip', { cells: emptyFreeCells, cols: emptyTableauCols })}
+          >
             {t('supermoveBadge', {
               limit: supermoveLimit,
               cells: emptyFreeCells,

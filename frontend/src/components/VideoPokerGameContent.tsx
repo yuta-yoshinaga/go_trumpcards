@@ -86,26 +86,26 @@ function PayoutTable({
     <details className="mb-3 text-center" open={open} onToggle={(e) => setOpen(e.currentTarget.open)}>
       <summary className="text-ds-warning text-sm cursor-pointer lg:text-base">{t('payoutTable.title')}</summary>
       <table
-        className="mt-1 mx-auto border-collapse text-ds-text-muted text-xs lg:text-sm"
+        className="mt-1 mx-auto w-full table-fixed border-collapse text-ds-text-muted text-xs sm:w-auto sm:table-auto lg:text-sm"
         aria-label={t('payoutTable.title')}
       >
         <thead>
           <tr>
-            <th scope="col" className="px-1.5 py-0.5 text-left font-medium">
+            <th scope="col" className="w-[30%] px-0.5 py-0.5 text-left font-medium sm:w-auto sm:px-1.5">
               {t('payoutTable.hand')}
             </th>
             {bets.map((b) => (
               <th
                 key={b}
                 scope="col"
-                className={`px-1.5 py-0.5 text-right ${b === betAmount ? 'text-ds-warning font-bold' : ''}`}
+                className={`px-0.5 py-0.5 text-right whitespace-nowrap sm:px-1.5 ${b === betAmount ? 'text-ds-warning font-bold' : ''}`}
                 aria-current={b === betAmount ? 'true' : undefined}
               >
                 {b}
               </th>
             ))}
             {handCounts && (
-              <th scope="col" className="px-1.5 py-0.5 text-right font-medium">
+              <th scope="col" className="px-0.5 py-0.5 text-right font-medium whitespace-nowrap sm:px-1.5">
                 {t('payoutTable.count')}
               </th>
             )}
@@ -121,17 +121,20 @@ function PayoutTable({
                 className={isWin ? 'bg-ds-success/20 text-ds-text-primary font-bold' : ''}
                 aria-current={isWin ? 'true' : undefined}
               >
-                <th scope="row" className="px-1.5 py-0.5 text-left whitespace-nowrap">
+                <th scope="row" className="px-0.5 py-0.5 text-left whitespace-normal sm:px-1.5 sm:whitespace-nowrap">
                   {t(`payoutTable.name.${row.key}`)}
                 </th>
                 {bets.map((b) => (
-                  <td key={b} className={`px-1.5 py-0.5 text-right ${b === betAmount ? 'text-ds-warning' : ''}`}>
+                  <td
+                    key={b}
+                    className={`px-0.5 py-0.5 text-right whitespace-nowrap sm:px-1.5 ${b === betAmount ? 'text-ds-warning' : ''}`}
+                  >
                     {videoPokerPayoutCell(row, b)}
                   </td>
                 ))}
                 {handCounts && (
                   <td
-                    className="px-1.5 py-0.5 text-right text-ds-text-primary tabular-nums"
+                    className="px-0.5 py-0.5 text-right text-ds-text-primary tabular-nums whitespace-nowrap sm:px-1.5"
                     data-testid={`vp-payout-count-${row.key}`}
                   >
                     {handCounts[row.key] ?? 0}

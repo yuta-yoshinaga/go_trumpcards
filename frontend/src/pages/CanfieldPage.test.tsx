@@ -98,6 +98,13 @@ describe('CanfieldPage', () => {
     await waitFor(() => expect(screen.getByText('ベースランク: 5')).toBeInTheDocument());
   });
 
+  it('renders tableau card aria labels with all translated values', async () => {
+    renderWithProviders(<CanfieldPage />);
+    const cardButton = await screen.findByRole('button', { name: '♠ 7、場札 0、位置 0' });
+    expect(cardButton).toHaveAccessibleName('♠ 7、場札 0、位置 0');
+    expect(cardButton.getAttribute('aria-label')).not.toContain('{{');
+  });
+
   it('explains the base-rank foundation cycle', async () => {
     renderWithProviders(<CanfieldPage />);
     expect(await screen.findByTestId('cf-base-rank-rule')).toHaveTextContent('Kの次はAへ循環');
