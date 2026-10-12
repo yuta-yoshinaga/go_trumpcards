@@ -90,6 +90,30 @@ describe('MatrimonyPage', () => {
     }
   });
 
+  it('uses eight tableau columns on large desktop and four at 800px', async () => {
+    const originalWidth = window.innerWidth;
+    try {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });
+      window.dispatchEvent(new Event('resize'));
+      mockExec.mockResolvedValue(playingState);
+      const { unmount } = renderWithProviders(<MatrimonyPage />);
+      expect(await screen.findByTestId('matrimony-tableau')).toHaveStyle({
+        gridTemplateColumns: 'repeat(8, minmax(0, 1fr))',
+      });
+      unmount();
+
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 800 });
+      window.dispatchEvent(new Event('resize'));
+      renderWithProviders(<MatrimonyPage />);
+      expect(await screen.findByTestId('matrimony-tableau')).toHaveStyle({
+        gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+      });
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
   it('shows and announces each foundation starting rank in Japanese and English', async () => {
     mockExec.mockResolvedValue(playingState);
     const originalLanguage = i18n.language;
