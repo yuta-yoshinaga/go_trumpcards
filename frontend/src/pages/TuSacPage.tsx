@@ -293,11 +293,7 @@ function TuSacPageContent() {
                   )}
                 </span>
               </div>
-              <CardFan
-                itemWidth={cardWidth + 6}
-                data-testid="tusac-hand"
-                className="flex justify-center gap-1 flex-wrap"
-              >
+              <CardFan itemWidth={cardWidth + 6} data-testid="tusac-hand">
                 {(human?.cards ?? []).map((card, i) => (
                   <button
                     key={`hand-${i}-${card.design}-${card.value}`}
