@@ -46,6 +46,7 @@ import { isTableauAllFaceUp } from '../utils/solitaireUtils';
 
 /** Upper bound on auto-complete sweep iterations (one per card) to guard against loops. */
 const AGNES_AUTO_MAX_STEPS = 52;
+const AGNES_CARD_OVERLAP = 24;
 
 /** Tutorial steps for the Agnes Sorel solitaire game. */
 const AG_TUTORIAL_STEPS: TutorialStep[] = [
@@ -369,7 +370,11 @@ function AgnesPageContent() {
                 </span>
               </div>
               {isPlaying && isLargeDesktop && (
-                <fieldset className="flex flex-wrap items-start gap-2 border-0 p-0" data-testid="agnes-move-bar">
+                <fieldset
+                  className="flex flex-wrap items-start gap-2 overflow-y-auto border-0 p-0"
+                  style={{ maxHeight: cardHeight }}
+                  data-testid="agnes-move-bar"
+                >
                   <legend className="sr-only">{t('tableau')}</legend>
                   {state.tableau.flatMap((col, fromCol) => {
                     const sourceCard = endFaceUpCard(col);
@@ -416,7 +421,7 @@ function AgnesPageContent() {
               {state.tableau.map((col, i) => {
                 const tZone: AgnesMoveZone = { zone: 'tableau', col: i };
                 const endIndex = col.length - 1;
-                const stackHeight = col.length > 0 ? endIndex * 24 + cardHeight : cardHeight;
+                const stackHeight = col.length > 0 ? endIndex * AGNES_CARD_OVERLAP + cardHeight : cardHeight;
                 const isDragSourceColumn = dnd.dragSource?.zone === 'tableau' && dnd.dragSource.col === i;
                 const isEligible =
                   dnd.isDragging &&
@@ -450,7 +455,11 @@ function AgnesPageContent() {
                             const draggable = isEnd && tcard.faceUp && isPlaying && !loading;
                             const cardZone: AgnesMoveZone = { zone: 'tableau', col: i, cardIndex: j };
                             return (
-                              <div key={`t-${i}-${j}`} className="absolute" style={{ top: j * 24, left: 0 }}>
+                              <div
+                                key={`t-${i}-${j}`}
+                                className="absolute"
+                                style={{ top: j * AGNES_CARD_OVERLAP, left: 0 }}
+                              >
                                 {tcard.faceUp && tcard.card ? (
                                   <button
                                     type="button"

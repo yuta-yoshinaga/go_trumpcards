@@ -419,6 +419,8 @@ describe('AgnesPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     const bar = screen.getByTestId('agnes-move-bar');
     expect(bar.parentElement).toHaveAttribute('data-tutorial', 'ag-stock');
+    expect(bar).toHaveClass('overflow-y-auto');
+    expect(bar).toHaveStyle({ maxHeight: '150px' });
     expect(within(bar).getByRole('button', { name: '列4から列5へ移動' })).toBeInTheDocument();
     expect(within(bar).getByRole('button', { name: '列5から組札へ移動' })).toBeInTheDocument();
     expect(within(bar).getByRole('button', { name: '列6から列0へ移動' })).toBeInTheDocument();
