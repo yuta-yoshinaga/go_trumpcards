@@ -249,6 +249,11 @@ describe('PenguinPage', () => {
     renderWithProviders(<PenguinPage />);
     const badge = await screen.findByTestId('pg-supermove-badge');
     expect(badge).toHaveTextContent('最大移動: 8枚');
+    expect(badge).toHaveAttribute(
+      'title',
+      '一度に動かせる最大枚数（空きセル4・空き列5）。空きが増えるほど多く動かせます',
+    );
+    expect(badge.getAttribute('title')).not.toContain('{{');
   });
 
   it('supermove-limit badge updates when free space shrinks', async () => {

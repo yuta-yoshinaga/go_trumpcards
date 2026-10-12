@@ -17,7 +17,7 @@ import { ScrollFadeHint } from '../components/ScrollFadeHint';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -33,6 +33,7 @@ import {
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
+import { scoreTableClass } from '../styles/scoreTableStyles';
 import type { TarneebResponse } from '../types/card';
 import { TarneebPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
@@ -115,6 +116,7 @@ export const TarneebPage = withTutorial(TarneebPageContent, 'tarneeb', TARNEEB_T
 
 /** Inner Tarneeb content. */
 function TarneebPageContent() {
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('tarneeb');
   const {
@@ -344,7 +346,9 @@ function TarneebPageContent() {
                 <div className="my-3 p-2 rounded bg-black/30 relative" data-tutorial="tn-score-table">
                   <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
                   <div className="overflow-x-auto -mx-2 px-2">
-                    <table className="w-full text-sm text-ds-text-muted min-w-[340px]">
+                    <table
+                      className={scoreTableClass(isLargeDesktop, 'w-full text-sm text-ds-text-muted min-w-[340px]')}
+                    >
                       <thead>
                         <tr>
                           <th scope="col" className="text-left">
@@ -363,7 +367,9 @@ function TarneebPageContent() {
                           const { roundScore, roundTricks } = teamBreakdown[i];
                           return (
                             <tr key={i} className={isYourTeam ? 'text-ds-accent' : ''}>
-                              <td>{isYourTeam ? t('yourTeam') : t('opponentTeam')}</td>
+                              <td title={isYourTeam ? t('yourTeam') : t('opponentTeam')}>
+                                {isYourTeam ? t('yourTeam') : t('opponentTeam')}
+                              </td>
                               <td className="text-center">{roundTricks}</td>
                               <td className="text-center">{roundScore}</td>
                               <td className="text-center">{score}</td>

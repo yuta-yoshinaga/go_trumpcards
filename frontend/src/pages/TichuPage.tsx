@@ -427,7 +427,7 @@ function TichuPageContent() {
                       <AnimatedCard card={c} width={cardWidth * 0.9} />
                       {isBomb && (
                         <span
-                          className="absolute -top-1 -right-1 text-[10px] rounded-full bg-ds-error px-1 text-ds-text-on-accent"
+                          className="absolute -top-1 -right-1 text-[10px] rounded-full bg-ds-error px-1 text-white"
                           aria-hidden="true"
                           data-testid={`tichu-bomb-badge-${i}`}
                         >

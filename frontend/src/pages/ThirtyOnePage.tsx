@@ -468,7 +468,7 @@ function ThirtyOnePageContent() {
                 type="button"
                 onClick={handleDrawStock}
                 disabled={loading || !isHumanTurn || !isDraw}
-                className="px-4 py-2 rounded-lg bg-ds-info text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                className="px-4 py-2 rounded-lg bg-ds-info text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                 data-testid="draw-stock-button"
                 aria-keyshortcuts="s"
               >
@@ -479,7 +479,7 @@ function ThirtyOnePageContent() {
                 type="button"
                 onClick={handleDrawDiscard}
                 disabled={loading || !isHumanTurn || !isDraw || !state.discardTop}
-                className="px-4 py-2 rounded-lg bg-ds-info text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                className="px-4 py-2 rounded-lg bg-ds-info text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                 data-testid="draw-discard-button"
                 aria-keyshortcuts="d"
               >
@@ -501,7 +501,7 @@ function ThirtyOnePageContent() {
                 type="button"
                 onClick={handleDiscard}
                 disabled={loading || !isHumanTurn || !isDiscard || selectedCardIdx === null}
-                className="px-4 py-2 rounded-lg bg-ds-success text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                className="px-4 py-2 rounded-lg bg-ds-success text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                 data-testid="discard-button"
                 aria-keyshortcuts="x"
               >

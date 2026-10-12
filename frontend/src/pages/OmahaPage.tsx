@@ -265,6 +265,7 @@ function OmahaPageContent() {
                   player={player}
                   showCards={isShowdown}
                   faceDownCount={4}
+                  compactFaceDown={isLargeDesktop}
                   showHandName={isShowdown}
                   extraInfo={
                     player.totalHands > 0 ? (

@@ -451,7 +451,7 @@ describe('TriPeaksPage', () => {
     mockCombo.mockReturnValue(5);
     renderWithProviders(<TriPeaksPage />);
     const badge = await screen.findByTestId('combo-badge');
-    expect(badge.className).toContain('bg-ds-error');
+    expect(badge).toHaveClass('bg-ds-error', 'text-white');
   });
 
   // --- Per-peak remaining indicator (issue #3085) ---

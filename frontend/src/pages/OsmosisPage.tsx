@@ -316,7 +316,9 @@ function OsmosisPageContent() {
                 </div>
                 <span className="text-xs text-ds-text-muted">({pile.length})</span>
                 {clickAllowed && (
-                  <span className="rounded bg-ds-success px-1 py-0.5 text-[10px] text-white">{t('placeable')}</span>
+                  <span className="rounded bg-ds-success px-1 py-0.5 text-[10px] text-ds-text-on-accent">
+                    {t('placeable')}
+                  </span>
                 )}
                 <span className="text-xs text-ds-text-muted" data-testid={`os-allowed-${i}`}>
                   {i === 0 && <span className="text-ds-warning">★ </span>}

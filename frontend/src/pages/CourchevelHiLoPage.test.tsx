@@ -1907,4 +1907,14 @@ describe('CourchevelHiLoPage', () => {
     expect(awards[0]).toHaveTextContent('Main pot 80: eligible [CPU 1, CPU 2] → winners Hi: CPU 2 (+80)');
     await i18n.changeLanguage('ja');
   });
+
+  it('compresses face-down CPU cards on large desktop', async () => {
+    mockUseIsLargeDesktop.mockReturnValue(true);
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<CourchevelHiLoPage />);
+
+    const cpuCount = preFlopState.players.filter((player) => !player.isHuman).length;
+    await waitFor(() => expect(screen.getAllByTestId('compact-card-count')).toHaveLength(cpuCount));
+    expect(screen.getAllByTestId('compact-card-count')[0]).toHaveTextContent('5');
+  });
 });

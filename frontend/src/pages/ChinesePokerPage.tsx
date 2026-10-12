@@ -364,7 +364,9 @@ function ChinesePokerPageContent() {
                       {assignments[i] && (
                         <span
                           className={`absolute -top-2 -right-1 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center ${
-                            assignments[i] === 'front' ? 'bg-ds-info text-white' : 'bg-ds-success text-white'
+                            assignments[i] === 'front'
+                              ? 'bg-ds-info text-ds-text-on-accent'
+                              : 'bg-ds-success text-ds-text-on-accent'
                           }`}
                         >
                           {badgeText(assignments[i])}
