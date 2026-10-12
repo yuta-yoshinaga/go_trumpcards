@@ -327,7 +327,7 @@ function BristolPageContent() {
             ]}
           />
 
-          <LandscapeBanner message={phaseName} />
+          <LandscapeBanner message={t('landscapeBanner')} />
 
           <div className="flex-1 overflow-y-auto px-4 pt-3 lg:px-8">
             <span id={selectSourceHintId} className="sr-only">

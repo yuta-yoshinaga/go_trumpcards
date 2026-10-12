@@ -13,11 +13,13 @@ export function CardFan({
   itemWidth,
   children,
   className,
+  dataTutorial,
   'data-testid': testId,
 }: {
   itemWidth: number;
   children: ReactElement[];
   className?: string;
+  dataTutorial?: string;
   'data-testid'?: string;
 }) {
   const [width, setWidth] = useState(0);
@@ -32,7 +34,7 @@ export function CardFan({
     setWidth(element.clientWidth);
   }, []);
   const { isMobile } = useCardDimensions();
-  const rootProps = { ref, className, 'data-testid': testId };
+  const rootProps = { ref, className, 'data-testid': testId, 'data-tutorial': dataTutorial };
   if (width === 0)
     return (
       <div {...rootProps} className={`flex flex-wrap justify-center gap-2 ${className ?? ''}`}>

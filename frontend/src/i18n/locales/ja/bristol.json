@@ -5,6 +5,7 @@
     "gameOver": "ゲームオーバー"
   },
   "title": "ブリストル",
+  "landscapeBanner": "横画面での表示を推奨します",
   "stock": "山札",
   "tableau": "場札",
   "tableauColAria": "降順ビルド列 {{num}}、{{card}}（{{count}}枚）",
