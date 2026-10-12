@@ -214,6 +214,7 @@ describe('StHelenaPage', () => {
     );
     const tableau = container.querySelector('[data-tutorial="sthelena-tableau"]');
     expect(tableau).toHaveClass('grid-cols-8');
+    expect(tableau).toHaveClass('lg:gap-y-0');
     expect(container.querySelector('[data-testid="sthelena-band-bottom"]')?.parentElement).toHaveClass('col-span-8');
     const cards = Array.from(
       container
@@ -221,8 +222,7 @@ describe('StHelenaPage', () => {
         ?.parentElement?.querySelectorAll<HTMLButtonElement>('button') ?? [],
     );
     const top = Number.parseInt(cards.at(-1)?.parentElement?.style.top ?? '0', 10);
-    expect(top / 7).toBeGreaterThanOrEqual(14);
-    expect(top / 7).toBeLessThan(20);
+    expect(top / 7).toBe(10);
     expect(
       screen.getAllByAltText('♠ A').some((element) => element.getAttribute('style')?.includes('width: 60px')),
     ).toBe(true);

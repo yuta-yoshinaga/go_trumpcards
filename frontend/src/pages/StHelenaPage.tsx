@@ -18,7 +18,7 @@ import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
@@ -167,12 +167,13 @@ function StHelenaPageContent() {
   } = useGameHint('sthelena', state);
 
   const { isMobile } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const tableauDim = useResponsiveTableau(8, {
     ...mobileTableauConfig(isMobile, FIXED_TABLEAU_DEPTH.sthelena),
     maxColCards: FIXED_TABLEAU_DEPTH.sthelena,
     // Desktop already uses 60px cards here; a 14px step (not 20) lets the lower piles fit 1280x800 (#11702).
-    minVerticalOverlap: isMobile ? 12 : 14,
-    reservedHeightPx: isMobile ? 520 : 630,
+    minVerticalOverlap: isMobile ? 12 : isLargeDesktop ? 10 : 14,
+    reservedHeightPx: isMobile ? 520 : isLargeDesktop ? 640 : 630,
     maxCardWidthPx: 60,
     compressDesktop: true,
   });
@@ -467,7 +468,10 @@ function StHelenaPageContent() {
                 beside, so rendering them as one undifferentiated grid would hide the
                 only thing that decides where a card can go. (The clone source draws a
                 sixteen-column crescent arc; that silhouette belongs to Crescent.) */}
-            <div className="grid grid-cols-8 gap-1 sm:gap-2 mb-3" data-tutorial="sthelena-tableau">
+            <div
+              className={`grid grid-cols-8 gap-1 sm:gap-2 ${isLargeDesktop ? 'lg:gap-y-0' : ''} mb-3`}
+              data-tutorial="sthelena-tableau"
+            >
               {STHELENA_BANDS.map((band) => (
                 <div
                   key={band.key}
