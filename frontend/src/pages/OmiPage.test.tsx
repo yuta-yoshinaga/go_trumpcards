@@ -149,6 +149,27 @@ beforeEach(() => {
 });
 
 describe('OmiPage', () => {
+  it('renders the game message inside the footer message region', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, message: 'Footer message' });
+    renderWithProviders(<OmiPage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage.querySelector('[role="status"], [role="alert"]')).toHaveTextContent('Footer message');
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue({ ...playPhaseState, message: 'Mobile message' });
+    renderWithProviders(<OmiPage />);
+
+    const messageText = await screen.findByText('Mobile message');
+    const message = messageText.closest('[role="status"]');
+    expect(message).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+    expect(message?.closest('footer')).not.toBeInTheDocument();
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<OmiPage />);

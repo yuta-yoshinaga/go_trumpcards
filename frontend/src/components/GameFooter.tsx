@@ -15,7 +15,7 @@ export interface GameFooterProps {
    * keep this layout and omit the (otherwise empty, padded) action row.
    */
   actions?: React.ReactNode;
-  /** Persistent guidance rendered immediately before footer actions or legacy content. */
+  /** Persistent guidance rendered immediately before footer actions or legacy content. Callers should omit it on mobile so it does not reduce the hand area. */
   message?: React.ReactNode;
   /** On mobile, expands the footer cap from 45vh to 60vh for pages with very large hands. Unchanged at sm and above; defaults to false. */
   tall?: boolean;
