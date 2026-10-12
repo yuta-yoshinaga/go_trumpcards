@@ -29,7 +29,7 @@ import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { CanastaResponse, Card } from '../types/card';
+import type { CanastaPlayerData, CanastaResponse, Card } from '../types/card';
 import { CanastaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { canastaDrawDiscardProblem } from '../utils/canastaDrawDiscard';
@@ -62,6 +62,84 @@ const CA_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="ca-meld-area"]', messageKey: 'tutorial.meldArea', placement: 'top', advanceOn: 'next' },
   { target: '[data-tutorial="ca-actions"]', messageKey: 'tutorial.actionButtons', placement: 'top', advanceOn: 'next' },
 ];
+
+/** Render one player's melds and red threes. */
+function CanastaMeldArea({
+  player,
+  playerIndex,
+  cardWidth,
+  t,
+  tutorialTarget,
+  className,
+  maxHeight,
+}: {
+  player: CanastaPlayerData;
+  playerIndex: number;
+  cardWidth: number;
+  t: (key: string) => string;
+  tutorialTarget?: string;
+  className?: string;
+  maxHeight?: number;
+}) {
+  const hasMeldContent = player.melds.length > 0 || player.red3s.length > 0;
+  return (
+    <div
+      className={`${hasMeldContent ? 'my-2 p-2 rounded bg-black/30 ' : ''}${className ?? ''}`}
+      data-tutorial={tutorialTarget}
+      style={maxHeight === undefined ? undefined : { maxHeight }}
+    >
+      <div className="text-ds-text-muted text-sm mb-1">
+        {playerName(player.id, player.isHuman)} - {t('melds')}
+        {player.hasCanasta && <span className="ml-2 text-ds-warning">★</span>}
+      </div>
+      {player.melds.map((meld, meldIndex) => {
+        const meldWidth = cardWidth * 0.6;
+        const canastaLabel = meld.isCanasta ? (meld.isNatural ? t('naturalCanasta') : t('mixedCanasta')) : null;
+        return (
+          <details key={meldIndex} className="mb-1" data-testid={`ca-meld-${playerIndex}-${meldIndex}`}>
+            <summary className="flex items-center gap-2 cursor-pointer list-none marker:hidden" title={t('meldExpand')}>
+              <div className="relative flex items-center shrink-0">
+                {meld.cards.map((card, cardIndex) => (
+                  <div
+                    key={`meld-stack-${playerIndex}-${meldIndex}-${cardIndex}`}
+                    style={{ marginLeft: cardIndex === 0 ? 0 : -meldWidth * 0.72, zIndex: cardIndex }}
+                  >
+                    <AnimatedCard card={card} width={meldWidth} silent />
+                  </div>
+                ))}
+              </div>
+              <span
+                className="text-xs font-bold px-1.5 py-0.5 rounded-full bg-black/50 text-ds-text-primary"
+                data-testid={`ca-meld-badge-${playerIndex}-${meldIndex}`}
+              >
+                {meld.cards.length}
+              </span>
+              {canastaLabel && <span className="text-xs font-bold text-ds-warning">★ {canastaLabel}</span>}
+            </summary>
+            <div className="flex flex-wrap gap-1 mt-1 pl-2">
+              {meld.cards.map((card, cardIndex) => (
+                <AnimatedCard
+                  key={`meld-${playerIndex}-${meldIndex}-${cardIndex}`}
+                  card={card}
+                  width={meldWidth}
+                  silent
+                />
+              ))}
+            </div>
+          </details>
+        );
+      })}
+      {player.red3s.length > 0 && (
+        <div className="flex flex-wrap gap-1 mt-1">
+          <span className="text-xs text-ds-error-text self-center mr-1">{t('red3s')}</span>
+          {player.red3s.map((card, red3Index) => (
+            <AnimatedCard key={`red3-${playerIndex}-${red3Index}`} card={card} width={cardWidth * 0.6} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 /** Canasta game page. */
 export const CanastaPage = withTutorial(CanastaPageContent, 'canasta', CA_TUTORIAL_STEPS);
@@ -319,67 +397,14 @@ function CanastaPageContent() {
                   const hasMeldContent = p.melds.length > 0 || p.red3s.length > 0;
                   if (!hasMeldContent && !p.isHuman) return null;
                   return (
-                    <div
+                    <CanastaMeldArea
                       key={pi}
-                      className={hasMeldContent ? 'my-2 p-2 rounded bg-black/30' : ''}
-                      data-tutorial={pi === 0 ? 'ca-meld-area' : undefined}
-                    >
-                      <div className="text-ds-text-muted text-sm mb-1">
-                        {playerName(p.id, p.isHuman)} - {t('melds')}
-                        {p.hasCanasta && <span className="ml-2 text-ds-warning">★</span>}
-                      </div>
-                      {p.melds.map((m, mi) => {
-                        // Same-rank cards are collapsed into an overlapping stack so a meld
-                        // occupies ~one card of height; the <details> expands to the full spread.
-                        const meldW = cardWidth * 0.6;
-                        const canastaLabel = m.isCanasta
-                          ? m.isNatural
-                            ? t('naturalCanasta')
-                            : t('mixedCanasta')
-                          : null;
-                        return (
-                          <details key={mi} className="mb-1" data-testid={`ca-meld-${pi}-${mi}`}>
-                            <summary
-                              className="flex items-center gap-2 cursor-pointer list-none marker:hidden"
-                              title={t('meldExpand')}
-                            >
-                              <div className="relative flex items-center shrink-0">
-                                {m.cards.map((card, ci) => (
-                                  <div
-                                    key={`meld-stack-${pi}-${mi}-${ci}`}
-                                    style={{ marginLeft: ci === 0 ? 0 : -meldW * 0.72, zIndex: ci }}
-                                  >
-                                    <AnimatedCard card={card} width={meldW} silent />
-                                  </div>
-                                ))}
-                              </div>
-                              <span
-                                className="text-xs font-bold px-1.5 py-0.5 rounded-full bg-black/50 text-ds-text-primary"
-                                data-testid={`ca-meld-badge-${pi}-${mi}`}
-                              >
-                                {m.cards.length}
-                              </span>
-                              {canastaLabel && (
-                                <span className="text-xs font-bold text-ds-warning">★ {canastaLabel}</span>
-                              )}
-                            </summary>
-                            <div className="flex flex-wrap gap-1 mt-1 pl-2">
-                              {m.cards.map((card, ci) => (
-                                <AnimatedCard key={`meld-${pi}-${mi}-${ci}`} card={card} width={meldW} silent />
-                              ))}
-                            </div>
-                          </details>
-                        );
-                      })}
-                      {p.red3s.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          <span className="text-xs text-ds-error-text self-center mr-1">{t('red3s')}</span>
-                          {p.red3s.map((card, ri) => (
-                            <AnimatedCard key={`red3-${pi}-${ri}`} card={card} width={cardWidth * 0.6} />
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                      player={p}
+                      playerIndex={pi}
+                      cardWidth={cardWidth}
+                      t={t}
+                      tutorialTarget={pi === 0 ? 'ca-meld-area' : undefined}
+                    />
                   );
                 })}
               </div>
@@ -587,47 +612,15 @@ function CanastaPageContent() {
           >
             <div className={isLargeDesktop ? 'flex items-start gap-4' : undefined}>
               {isLargeDesktop && humanPlayer && (
-                <div className="hidden lg:block shrink-0 max-w-[30%] overflow-y-auto" data-tutorial="ca-meld-area">
-                  <div className="text-ds-text-muted text-sm mb-1">
-                    {playerName(humanPlayer.id, true)} - {t('melds')}
-                    {humanPlayer.hasCanasta && <span className="ml-2 text-ds-warning">★</span>}
-                  </div>
-                  {humanPlayer.melds.map((m, mi) => {
-                    const meldW = cardWidth * 0.6;
-                    const label = m.isCanasta ? (m.isNatural ? t('naturalCanasta') : t('mixedCanasta')) : null;
-                    return (
-                      <details key={mi} className="mb-1" data-testid={`ca-meld-0-${mi}`}>
-                        <summary
-                          className="flex items-center gap-2 cursor-pointer list-none marker:hidden"
-                          title={t('meldExpand')}
-                        >
-                          <div className="relative flex items-center shrink-0">
-                            {m.cards.map((card, ci) => (
-                              <div
-                                key={`footer-meld-${mi}-${ci}`}
-                                style={{ marginLeft: ci === 0 ? 0 : -meldW * 0.72, zIndex: ci }}
-                              >
-                                <AnimatedCard card={card} width={meldW} silent />
-                              </div>
-                            ))}
-                          </div>
-                          <span
-                            data-testid={`ca-meld-badge-0-${mi}`}
-                            className="text-xs font-bold px-1.5 py-0.5 rounded-full bg-black/50 text-ds-text-primary"
-                          >
-                            {m.cards.length}
-                          </span>
-                          {label && <span className="text-xs font-bold text-ds-warning">★ {label}</span>}
-                        </summary>
-                        <div className="flex flex-wrap gap-1 mt-1 pl-2">
-                          {m.cards.map((card, ci) => (
-                            <AnimatedCard key={`footer-meld-expanded-${mi}-${ci}`} card={card} width={meldW} silent />
-                          ))}
-                        </div>
-                      </details>
-                    );
-                  })}
-                </div>
+                <CanastaMeldArea
+                  player={humanPlayer}
+                  playerIndex={0}
+                  cardWidth={cardWidth}
+                  t={t}
+                  tutorialTarget="ca-meld-area"
+                  className="shrink-0 max-w-[30%] overflow-y-auto"
+                  maxHeight={cardWidth * 1.4}
+                />
               )}
               <div className={isLargeDesktop ? 'min-w-0 flex-1' : undefined}>
                 {humanPlayer &&
@@ -641,30 +634,28 @@ function CanastaPageContent() {
                       stackRows
                     />
                   ) : isLargeDesktop ? (
-                    <div data-tutorial="ca-player-hand">
-                      <CardFan itemWidth={cardWidth + 6} data-testid="ca-player-hand">
-                        {humanPlayer.cards.map((card, idx) => (
-                          <button
-                            type="button"
-                            key={`${card.design}-${card.value}-${idx}`}
-                            onClick={() => toggleCard(idx)}
-                            aria-label={cardAlt(card)}
-                            aria-pressed={selectedCardIndices.includes(idx)}
-                            data-testid={`hand-card-${idx}`}
-                            className={`transition-transform ${focusRingCard}`}
-                            style={{
-                              background: 'none',
-                              padding: 0,
-                              borderRadius: 8,
-                              ...selectedCardStyle(selectedCardIndices.includes(idx)),
-                              boxSizing: 'border-box',
-                            }}
-                          >
-                            <AnimatedCard card={card} width={cardWidth} />
-                          </button>
-                        ))}
-                      </CardFan>
-                    </div>
+                    <CardFan itemWidth={cardWidth + 6} data-testid="ca-player-hand" dataTutorial="ca-player-hand">
+                      {humanPlayer.cards.map((card, idx) => (
+                        <button
+                          type="button"
+                          key={`${card.design}-${card.value}-${idx}`}
+                          onClick={() => toggleCard(idx)}
+                          aria-label={cardAlt(card)}
+                          aria-pressed={selectedCardIndices.includes(idx)}
+                          data-testid={`hand-card-${idx}`}
+                          className={`transition-transform ${focusRingCard}`}
+                          style={{
+                            background: 'none',
+                            padding: 0,
+                            borderRadius: 8,
+                            ...selectedCardStyle(selectedCardIndices.includes(idx)),
+                            boxSizing: 'border-box',
+                          }}
+                        >
+                          <AnimatedCard card={card} width={cardWidth} />
+                        </button>
+                      ))}
+                    </CardFan>
                   ) : (
                     <div className="flex flex-wrap gap-1 mb-2" data-tutorial="ca-player-hand">
                       {humanPlayer.cards.map((card, idx) => (

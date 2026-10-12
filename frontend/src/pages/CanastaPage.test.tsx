@@ -173,6 +173,66 @@ describe('CanastaPage', () => {
     }
   });
 
+  it('renders human red threes and their Japanese label in the large desktop meld area', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      mockExec.mockResolvedValue({
+        ...meldPhaseState,
+        players: [{ ...basePlayers[0], red3Count: 1, red3s: [{ design: 'HEART', value: 3 }] }, basePlayers[1]],
+      });
+      renderWithProviders(<CanastaPage />);
+      await screen.findByTestId('phase-indicator');
+      const footer = document.querySelector('[data-testid="game-footer-content"]');
+      const meldArea = footer?.querySelector('[data-tutorial="ca-meld-area"]');
+      expect(meldArea).toHaveTextContent('赤3');
+      expect(meldArea?.querySelectorAll('[data-testid="animated-card"]')).toHaveLength(1);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it('does not mark the CPU meld area as the tutorial target on non-large desktop', async () => {
+    breakpointState.enabled = true;
+    try {
+      mockExec.mockResolvedValue({
+        ...meldPhaseState,
+        players: [
+          basePlayers[0],
+          {
+            ...basePlayers[1],
+            melds: [
+              {
+                rank: 7,
+                isNatural: true,
+                isCanasta: false,
+                cards: [
+                  { design: 'SPADE', value: 7 },
+                  { design: 'HEART', value: 7 },
+                  { design: 'CLOVER', value: 7 },
+                ],
+              },
+            ],
+          },
+        ],
+      });
+      renderWithProviders(<CanastaPage />);
+      await screen.findByTestId('phase-indicator');
+
+      const meldAreas = document.querySelectorAll('[data-tutorial="ca-meld-area"]');
+      expect(meldAreas).toHaveLength(1);
+      const cpuMeldArea = document.querySelector('[data-testid="ca-meld-1-0"]')?.parentElement;
+      expect(cpuMeldArea).toBeInTheDocument();
+      expect(cpuMeldArea).toHaveTextContent('CPU');
+      expect(cpuMeldArea).not.toHaveAttribute('data-tutorial', 'ca-meld-area');
+      expect(cpuMeldArea?.querySelector('[data-testid="ca-meld-1-0"]')).toBeInTheDocument();
+    } finally {
+      breakpointState.enabled = false;
+    }
+  });
+
   it('renders the standard card hand on tablet', async () => {
     breakpointState.enabled = true;
     try {
