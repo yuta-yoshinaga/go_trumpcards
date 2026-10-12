@@ -101,6 +101,14 @@ beforeEach(() => {
 });
 
 describe('CariocaPage', () => {
+  it('sticks the hand to the bottom of the desktop play area', async () => {
+    renderWithProviders(<CariocaPage />);
+    await screen.findByText(/Your hand|あなたの手札/);
+    const hand = document.querySelector('[data-tutorial="ca-hand"]');
+    expect(hand?.className).toContain('lg:sticky');
+    expect(hand?.className).toContain('lg:bottom-0');
+  });
+
   it('keeps every hand card in the hand fan', async () => {
     renderWithProviders(<CariocaPage />);
     await waitFor(() => expect(document.querySelector('[data-tutorial="ca-hand"] button')).not.toBeNull());

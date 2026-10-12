@@ -301,7 +301,10 @@ function ChineseTenPageContent() {
               ))}
             </div>
 
-            <div className="text-center" data-tutorial="ct-hand">
+            <div
+              className="text-center lg:sticky lg:bottom-0 lg:z-10 lg:bg-game-bg-green lg:pt-2 lg:shadow-[0_-8px_16px_rgba(0,0,0,0.35)]"
+              data-tutorial="ct-hand"
+            >
               <div className="text-game-text-muted text-xs mb-1">{t('yourHand')}</div>
               <div
                 className={`flex justify-center ${viewportWidth >= LG_BREAKPOINT ? 'flex-nowrap' : 'flex-wrap gap-1'}`}

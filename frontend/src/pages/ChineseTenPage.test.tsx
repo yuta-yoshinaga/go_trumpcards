@@ -73,6 +73,13 @@ function makeState(overrides?: Partial<ChineseTenResponse>): ChineseTenResponse 
 }
 
 describe('ChineseTenPage', () => {
+  it('sticks the hand to the bottom of the desktop play area', async () => {
+    renderWithProviders(<ChineseTenPage />);
+    const hand = await screen.findByText('あなたの手札');
+    expect(hand.closest('[data-tutorial="ct-hand"]')?.className).toContain('lg:sticky');
+    expect(hand.closest('[data-tutorial="ct-hand"]')?.className).toContain('lg:bottom-0');
+  });
+
   beforeEach(() => {
     mobileState.isMobile = true;
     vi.clearAllMocks();

@@ -548,7 +548,10 @@ function CariocaPageContent() {
             </details>
 
             {humanPlayer && (
-              <section className="px-4 py-2" data-tutorial="ca-hand">
+              <section
+                className="px-4 py-2 lg:sticky lg:bottom-0 lg:z-10 lg:bg-game-bg-carioca lg:pt-2 lg:shadow-[0_-8px_16px_rgba(0,0,0,0.35)]"
+                data-tutorial="ca-hand"
+              >
                 <div className="text-white text-sm mb-1">
                   {t('yourHand')} ({humanPlayer.cardCount})
                   {contractSlots.length > 0 && (
