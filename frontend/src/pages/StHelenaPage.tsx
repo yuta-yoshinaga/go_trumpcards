@@ -170,7 +170,8 @@ function StHelenaPageContent() {
   const tableauDim = useResponsiveTableau(8, {
     ...mobileTableauConfig(isMobile, FIXED_TABLEAU_DEPTH.sthelena),
     maxColCards: FIXED_TABLEAU_DEPTH.sthelena,
-    minVerticalOverlap: isMobile ? 12 : 20,
+    // Desktop already uses 60px cards here; a 14px step (not 20) lets the lower piles fit 1280x800 (#11702).
+    minVerticalOverlap: isMobile ? 12 : 14,
     reservedHeightPx: isMobile ? 520 : 630,
     maxCardWidthPx: 60,
     compressDesktop: true,
