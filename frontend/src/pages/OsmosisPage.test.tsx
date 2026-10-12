@@ -51,6 +51,36 @@ beforeEach(() => {
 });
 
 describe('OsmosisPage', () => {
+  it('places reserve and foundations in one large-desktop board row', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    renderWithProviders(<OsmosisPage />);
+    const row = await screen.findByTestId('os-board-row');
+    const boardSections = row.querySelectorAll('[data-tutorial="os-reserve"], [data-tutorial="os-foundation"]');
+    expect(boardSections).toHaveLength(2);
+    expect(boardSections[0]).toHaveAttribute('data-tutorial', 'os-reserve');
+    expect(boardSections[1]).toHaveAttribute('data-tutorial', 'os-foundation');
+    expect([...row.querySelectorAll<HTMLElement>('*')].some((element) => /\border-/.test(element.className))).toBe(
+      false,
+    );
+    expect(screen.getByRole('button', { name: /^組札 0/ }).querySelector('.relative')).toHaveStyle({
+      width: '80px',
+      height: '120px',
+    });
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
+  it('keeps the develop markup at 800px', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 800 });
+    renderWithProviders(<OsmosisPage />);
+    await screen.findByTestId('os-allowed-0');
+    expect(screen.queryByTestId('os-board-row')).not.toBeInTheDocument();
+    expect(document.querySelector('[data-tutorial="os-foundation"]')?.className).toContain('flex-col');
+    expect(document.querySelector('[data-tutorial="os-reserve"]')?.className).toContain('flex');
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
   it('renders heading', async () => {
     renderWithProviders(<OsmosisPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -477,6 +507,19 @@ describe('OsmosisPage', () => {
     expect(
       screen.getAllByRole('button').every((button) => !button.getAttribute('aria-label')?.includes('undefined')),
     ).toBe(true);
+  });
+
+  it('renders an empty reserve slot while keeping cards in other reserve columns', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      reserve: [[], [card('HEART', 9)], ...playingState.reserve.slice(2)],
+    });
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const reserve = document.querySelector('[data-tutorial="os-reserve"]');
+    expect(reserve?.querySelector('.border-dashed')).toHaveStyle({ width: '80px', height: '120px' });
+    expect(screen.getByRole('button', { name: 'リザーブ 1: ♥ 9' })).toBeInTheDocument();
   });
 
   it('selects the same reserve top card that its name announces', async () => {

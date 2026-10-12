@@ -72,6 +72,29 @@ describe('BraidPage', () => {
     vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
   });
 
+  it('fits the foundations, stock, and waste in one compact row on large desktop', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BraidPage />);
+    const row = await screen.findByTestId('br-top-row');
+    expect(row.querySelector('[data-tutorial="br-foundation"]')?.parentElement).toBe(row);
+    expect(row.querySelector('[data-tutorial="br-stock"]')?.parentElement).toBe(row);
+    expect(row.querySelector('[data-tutorial="br-foundation"] button')).toHaveStyle({ width: '80px', height: '120px' });
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
+  it('keeps the develop layout at 800px', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 800 });
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BraidPage />);
+    await screen.findByText('山札');
+    expect(screen.queryByTestId('br-top-row')).not.toBeInTheDocument();
+    expect(screen.getByText('山札').closest('[data-tutorial="br-stock"]')).toBeInTheDocument();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
   it('calls reset on initial render', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BraidPage />);
