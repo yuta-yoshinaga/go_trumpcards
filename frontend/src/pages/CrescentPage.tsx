@@ -18,7 +18,7 @@ import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useIsMobile } from '../hooks/useCardDimensions';
+import { useBreakpoint, useIsMobile, useWindowHeight } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useCrescentGame } from '../hooks/useCrescentGame';
@@ -33,6 +33,7 @@ const MOBILE_CARD_OVERLAP_PX = 14;
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { badgeSuccessColors, badgeWarningColors } from '../styles/badgeStyles';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
+import { DESKTOP_COMPACT_CARD_WIDTH } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, CrescentResponse } from '../types/card';
 import { CrescentPhase } from '../types/phases';
@@ -158,7 +159,24 @@ function CrescentPageContent() {
   } = useGameHint('crescent', state);
 
   const isMobile = useIsMobile();
-  const responsiveTableauDim = useResponsiveTableau(8, mobileTableauConfig(isMobile, FIXED_TABLEAU_DEPTH.crescent));
+  const breakpoint = useBreakpoint();
+  const windowHeight = useWindowHeight();
+  const isLargeDesktop = breakpoint === 'largeDesktop';
+  const longestPile = Math.max(FIXED_TABLEAU_DEPTH.crescent, ...(state?.tableau.map((pile) => pile.length) ?? []));
+  const responsiveTableauDim = useResponsiveTableau(
+    8,
+    isLargeDesktop
+      ? {
+          maxCardWidthPx: DESKTOP_COMPACT_CARD_WIDTH,
+          compressDesktop: true,
+          maxColCards: longestPile,
+          minVerticalOverlap: 14,
+          // About 280px of chrome (header, footer, details) remains, with two rows
+          // each carrying a 20px label, so reserved = (H + 320) / 2 (#11702).
+          reservedHeightPx: Math.round((windowHeight + 320) / 2),
+        }
+      : mobileTableauConfig(isMobile, longestPile),
+  );
   // Crescent has two rows of eight piles. Keep its mobile cards compact so both
   // rows and the foundation controls leave more of the play area for the stacks.
   const compactMobileCardWidth = Math.min(responsiveTableauDim.cw, MOBILE_CARD_WIDTH_PX);
@@ -169,7 +187,10 @@ function CrescentPageContent() {
         ch: Math.round(compactMobileCardWidth * 1.5),
         co: MOBILE_CARD_OVERLAP_PX,
       }
-    : { ...responsiveTableauDim, co: Math.min(responsiveTableauDim.co, 30) };
+    : {
+        ...responsiveTableauDim,
+        co: isLargeDesktop ? responsiveTableauDim.co : Math.min(responsiveTableauDim.co, 30),
+      };
   const foundationCardWidth = tableauDim.cw;
   // The 8-column mobile grid makes the per-column arc translate Y create a zigzag
   // instead of a crescent silhouette. Skip the offset there. We read the breakpoint
@@ -273,6 +294,164 @@ function CrescentPageContent() {
           ),
         ];
 
+  const renderFoundation = (idx: number) => {
+    const col = idx % 4;
+    const directionKey = idx < 4 ? 'asc' : 'desc';
+    const foundationZone: CrescentMoveZone = { zone: 'foundation', col: idx };
+    const pile = state.foundation[idx] ?? [];
+    const suit = FOUNDATION_SUITS[col];
+    return (
+      <div key={`f-${idx}`} className="text-center">
+        <div className="text-xs mb-1">
+          <span
+            data-testid={`foundation-dir-${idx}`}
+            className={`inline-block rounded px-1 font-bold ${directionKey === 'asc' ? badgeSuccessColors : badgeWarningColors}`}
+          >
+            {suit} {directionKey === 'asc' ? '↑' : '↓'}
+          </span>
+        </div>
+        <DropZone
+          isDropTarget={dnd.isDropTarget(foundationZone)}
+          onDragOver={dnd.handleDragOver(foundationZone)}
+          onDrop={dnd.handleDrop(foundationZone)}
+          onDragLeave={dnd.handleDragLeave}
+          className={targetRingClass(isFoundationTarget(idx), dnd.isDropTarget(foundationZone))}
+        >
+          {pile.length > 0 ? (
+            <button
+              type="button"
+              onClick={() => handleSelectTarget(foundationZone)}
+              disabled={!isPlaying || loading || isAutoCompleting}
+              aria-disabled={!selectedSource || undefined}
+              aria-describedby={!selectedSource ? selectSourceHintId : undefined}
+              aria-label={t('foundationAriaLabel', {
+                suit,
+                direction: t(`direction.${directionKey}`),
+                count: pile.length,
+                top: cardAlt(pile[pile.length - 1]),
+              })}
+              className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${selectedCard !== null && !isFoundationTarget(idx) ? 'opacity-40' : ''}`}
+            >
+              <AnimatedCard card={pile[pile.length - 1]} width={foundationCardWidth} draggable={false} />
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => handleSelectTarget(foundationZone)}
+              disabled={!isPlaying || loading}
+              aria-disabled={!selectedSource || undefined}
+              aria-describedby={!selectedSource ? selectSourceHintId : undefined}
+              aria-label={t('emptyFoundationAriaLabel', { suit, direction: directionKey })}
+              style={{ width: foundationCardWidth, height: tableauDim.ch }}
+              className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+            >
+              {directionKey === 'asc' ? 'A' : 'K'}
+            </button>
+          )}
+        </DropZone>
+      </div>
+    );
+  };
+
+  const tableauGrid = (
+    <div className="grid grid-cols-8 gap-1 sm:gap-2 mb-3" data-tutorial="crescent-tableau">
+      {state.tableau.map((col, colIdx) => {
+        // Distance from the center of an 8-column row: yields 0..3 then back to 0.
+        const centerDist = Math.abs((colIdx % 8) - 3.5);
+        // Top half (cols 0..7) curves up away from the foundation; bottom half curves down.
+        const arcDirection = colIdx < 8 ? -1 : 1;
+        const arcOffset = isMobile ? 0 : Math.round(centerDist * arcDirection * 6);
+        const tableauColZone: CrescentMoveZone = { zone: 'tableau', col: colIdx };
+        return (
+          <div
+            key={`col-${colIdx.toString()}`}
+            className="min-w-0"
+            data-crescent-arc={arcOffset}
+            style={arcOffset === 0 ? undefined : { transform: `translateY(${arcOffset}px)` }}
+          >
+            {/* Column-number badge mirrors the CUI "タブロー列{{col}}" labelling so hints
+                        and logs that reference a column index map to a visible marker (#2618). */}
+            <div
+              className="mx-auto mb-0.5 w-fit rounded-full bg-black/20 px-1.5 text-[10px] leading-tight text-ds-text-muted select-none"
+              aria-hidden="true"
+              data-testid={`crescent-col-badge-${colIdx.toString()}`}
+            >
+              {`[${colIdx.toString()}]`}
+            </div>
+            <DropZone
+              isDropTarget={dnd.isDropTarget(tableauColZone)}
+              onDragOver={dnd.handleDragOver(tableauColZone)}
+              onDrop={dnd.handleDrop(tableauColZone)}
+              onDragLeave={dnd.handleDragLeave}
+              className={`relative block ${targetRingClass(isTableauTarget(colIdx), dnd.isDropTarget(tableauColZone))}`}
+            >
+              <div className="relative" style={{ minHeight: tableauDim.ch }}>
+                {col.length === 0 ? (
+                  <div
+                    style={{ height: tableauDim.ch }}
+                    className="w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center"
+                  >
+                    {t('empty')}
+                  </div>
+                ) : (
+                  col.map((tc, cardIdx) => {
+                    const isTop = cardIdx === col.length - 1;
+                    return (
+                      <div
+                        key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
+                        className="absolute left-0 right-0"
+                        style={{ top: cardIdx * tableauDim.co }}
+                      >
+                        {tc.faceUp && tc.card ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (!isTop) return;
+                              if (selectedSource) {
+                                handleSelectTarget(tableauColZone);
+                              } else {
+                                handleSelectSource(tableauColZone);
+                              }
+                            }}
+                            disabled={!isPlaying || loading || !isTop}
+                            aria-label={t('tableauCardAriaLabel', { col: colIdx, card: cardAlt(tc.card) })}
+                            aria-pressed={isTop && isSourceSelected('tableau', colIdx)}
+                            draggable={isPlaying && !loading && isTop}
+                            onDragStart={isTop ? dnd.handleDragStart(tableauColZone) : undefined}
+                            onDragEnd={dnd.handleDragEnd}
+                            className={`p-0 border-0 bg-transparent w-full rounded ${isTop ? 'cursor-pointer' : 'cursor-default'} ${focusRingWhite} ${isTop && isSourceSelected('tableau', colIdx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(tableauColZone) && isTop ? 'opacity-50' : ''} ${isTop && selectedCard !== null && !isTableauTarget(colIdx) && !isSourceSelected('tableau', colIdx) ? 'opacity-40' : ''}`}
+                          >
+                            <AnimatedCard
+                              card={tc.card}
+                              width={tableauDim.cw}
+                              draggable={false}
+                              style={{ width: '100%' }}
+                              wrapperClassName="block w-full"
+                            />
+                          </button>
+                        ) : null}
+                      </div>
+                    );
+                  })
+                )}
+                {col.length > 0 && <div style={{ height: (col.length - 1) * tableauDim.co + tableauDim.ch }} />}
+              </div>
+            </DropZone>
+          </div>
+        );
+      })}
+    </div>
+  );
+
+  const rulesNote = (
+    <details className="mb-1 text-center text-ds-text-muted text-xs">
+      <summary className="cursor-pointer">{t('rulesSummary')}</summary>
+      <div className="text-ds-text-muted" data-testid="cr-rules-note">
+        {t('rulesNote')}
+      </div>
+    </details>
+  );
+
   return (
     <GamePageShell
       title={tc('nav.crescent')}
@@ -323,169 +502,28 @@ function CrescentPageContent() {
           <LandscapeBanner message={t('landscapeBanner')} />
 
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
-            {/* Foundations: all eight piles share one row to keep the tableau in view. */}
-            <div className="flex gap-1 sm:gap-2 justify-center mb-4" data-tutorial="crescent-foundations">
-              {Array.from({ length: 8 }, (_, idx) => {
-                const col = idx % 4;
-                const directionKey = idx < 4 ? 'asc' : 'desc';
-                const foundationZone: CrescentMoveZone = { zone: 'foundation', col: idx };
-                const pile = state.foundation[idx] ?? [];
-                const suit = FOUNDATION_SUITS[col];
-                return (
-                  <div key={`f-${idx}`} className="text-center">
-                    <div className="text-xs mb-1">
-                      <span
-                        data-testid={`foundation-dir-${idx}`}
-                        className={`inline-block rounded px-1 font-bold ${
-                          directionKey === 'asc' ? badgeSuccessColors : badgeWarningColors
-                        }`}
-                      >
-                        {suit} {directionKey === 'asc' ? '↑' : '↓'}
-                      </span>
-                    </div>
-                    <DropZone
-                      isDropTarget={dnd.isDropTarget(foundationZone)}
-                      onDragOver={dnd.handleDragOver(foundationZone)}
-                      onDrop={dnd.handleDrop(foundationZone)}
-                      onDragLeave={dnd.handleDragLeave}
-                      className={targetRingClass(isFoundationTarget(idx), dnd.isDropTarget(foundationZone))}
-                    >
-                      {pile.length > 0 ? (
-                        <button
-                          type="button"
-                          onClick={() => handleSelectTarget(foundationZone)}
-                          disabled={!isPlaying || loading || isAutoCompleting}
-                          aria-disabled={!selectedSource || undefined}
-                          aria-describedby={!selectedSource ? selectSourceHintId : undefined}
-                          aria-label={t('foundationAriaLabel', {
-                            suit,
-                            direction: t(`direction.${directionKey}`),
-                            count: pile.length,
-                            top: cardAlt(pile[pile.length - 1]),
-                          })}
-                          className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${selectedCard !== null && !isFoundationTarget(idx) ? 'opacity-40' : ''}`}
-                        >
-                          <AnimatedCard card={pile[pile.length - 1]} width={foundationCardWidth} draggable={false} />
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => handleSelectTarget(foundationZone)}
-                          disabled={!isPlaying || loading}
-                          aria-disabled={!selectedSource || undefined}
-                          aria-describedby={!selectedSource ? selectSourceHintId : undefined}
-                          aria-label={t('emptyFoundationAriaLabel', { suit, direction: directionKey })}
-                          style={{ width: foundationCardWidth, height: tableauDim.ch }}
-                          className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
-                        >
-                          {directionKey === 'asc' ? 'A' : 'K'}
-                        </button>
-                      )}
-                    </DropZone>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* 他のソリティアと違う規則なので常設で出す。初回だけのチュートリアルに
-                書いてあっても、読み飛ばした後は盤面に手掛かりが無い (#6386)。 */}
-            <details className="mb-1 text-center text-ds-text-muted text-xs">
-              <summary className="cursor-pointer">{t('rulesSummary')}</summary>
-              <div className="text-ds-text-muted" data-testid="cr-rules-note">
-                {t('rulesNote')}
+            {isLargeDesktop ? (
+              <div className="flex flex-wrap justify-center items-start gap-2" data-tutorial="crescent-foundations">
+                <div className="flex flex-col gap-1">
+                  {Array.from({ length: 4 }, (_, idx) => renderFoundation(idx))}
+                </div>
+                {tableauGrid}
+                <div className="flex flex-col gap-1">
+                  {Array.from({ length: 4 }, (_, idx) => renderFoundation(idx + 4))}
+                </div>
               </div>
-            </details>
-
-            {/* Tableau (16 piles, 8-col mobile / desktop).
-                Desktop adds a translateY arch per column to suggest the crescent shape (#1937).
-                Mobile keeps a flat grid because an 8-col layout would turn the arch into a zigzag. */}
-            <div className="grid grid-cols-8 gap-1 sm:gap-2 mb-3" data-tutorial="crescent-tableau">
-              {state.tableau.map((col, colIdx) => {
-                // Distance from the center of an 8-column row: yields 0..3 then back to 0.
-                const centerDist = Math.abs((colIdx % 8) - 3.5);
-                // Top half (cols 0..7) curves up away from the foundation; bottom half curves down.
-                const arcDirection = colIdx < 8 ? -1 : 1;
-                const arcOffset = isMobile ? 0 : Math.round(centerDist * arcDirection * 6);
-                const tableauColZone: CrescentMoveZone = { zone: 'tableau', col: colIdx };
-                return (
-                  <div
-                    key={`col-${colIdx.toString()}`}
-                    className="min-w-0"
-                    data-crescent-arc={arcOffset}
-                    style={arcOffset === 0 ? undefined : { transform: `translateY(${arcOffset}px)` }}
-                  >
-                    {/* Column-number badge mirrors the CUI "タブロー列{{col}}" labelling so hints
-                        and logs that reference a column index map to a visible marker (#2618). */}
-                    <div
-                      className="mx-auto mb-0.5 w-fit rounded-full bg-black/20 px-1.5 text-[10px] leading-tight text-ds-text-muted select-none"
-                      aria-hidden="true"
-                      data-testid={`crescent-col-badge-${colIdx.toString()}`}
-                    >
-                      {`[${colIdx.toString()}]`}
-                    </div>
-                    <DropZone
-                      isDropTarget={dnd.isDropTarget(tableauColZone)}
-                      onDragOver={dnd.handleDragOver(tableauColZone)}
-                      onDrop={dnd.handleDrop(tableauColZone)}
-                      onDragLeave={dnd.handleDragLeave}
-                      className={`relative block ${targetRingClass(isTableauTarget(colIdx), dnd.isDropTarget(tableauColZone))}`}
-                    >
-                      <div className="relative" style={{ minHeight: tableauDim.ch }}>
-                        {col.length === 0 ? (
-                          <div
-                            style={{ height: tableauDim.ch }}
-                            className="w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center"
-                          >
-                            {t('empty')}
-                          </div>
-                        ) : (
-                          col.map((tc, cardIdx) => {
-                            const isTop = cardIdx === col.length - 1;
-                            return (
-                              <div
-                                key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
-                                className="absolute left-0 right-0"
-                                style={{ top: cardIdx * tableauDim.co }}
-                              >
-                                {tc.faceUp && tc.card ? (
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      if (!isTop) return;
-                                      if (selectedSource) {
-                                        handleSelectTarget(tableauColZone);
-                                      } else {
-                                        handleSelectSource(tableauColZone);
-                                      }
-                                    }}
-                                    disabled={!isPlaying || loading || !isTop}
-                                    aria-label={t('tableauCardAriaLabel', { col: colIdx, card: cardAlt(tc.card) })}
-                                    aria-pressed={isTop && isSourceSelected('tableau', colIdx)}
-                                    draggable={isPlaying && !loading && isTop}
-                                    onDragStart={isTop ? dnd.handleDragStart(tableauColZone) : undefined}
-                                    onDragEnd={dnd.handleDragEnd}
-                                    className={`p-0 border-0 bg-transparent w-full rounded ${isTop ? 'cursor-pointer' : 'cursor-default'} ${focusRingWhite} ${isTop && isSourceSelected('tableau', colIdx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(tableauColZone) && isTop ? 'opacity-50' : ''} ${isTop && selectedCard !== null && !isTableauTarget(colIdx) && !isSourceSelected('tableau', colIdx) ? 'opacity-40' : ''}`}
-                                  >
-                                    <AnimatedCard
-                                      card={tc.card}
-                                      width={tableauDim.cw}
-                                      draggable={false}
-                                      style={{ width: '100%' }}
-                                      wrapperClassName="block w-full"
-                                    />
-                                  </button>
-                                ) : null}
-                              </div>
-                            );
-                          })
-                        )}
-                        {col.length > 0 && <div style={{ height: (col.length - 1) * tableauDim.co + tableauDim.ch }} />}
-                      </div>
-                    </DropZone>
-                  </div>
-                );
-              })}
-            </div>
+            ) : (
+              <>
+                <div className="flex gap-1 sm:gap-2 justify-center mb-4" data-tutorial="crescent-foundations">
+                  {Array.from({ length: 8 }, (_, idx) => renderFoundation(idx))}
+                </div>
+                {/* 他のソリティアと違う規則なので常設で出す。初回だけのチュートリアルに
+                    書いてあっても、読み飛ばした後は盤面に手掛かりが無い (#6386)。 */}
+                {rulesNote}
+                {tableauGrid}
+              </>
+            )}
+            {isLargeDesktop && rulesNote}
 
             {/* Hint display */}
             {/*

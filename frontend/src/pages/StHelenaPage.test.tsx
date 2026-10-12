@@ -199,7 +199,7 @@ describe('StHelenaPage', () => {
     expect(top / 19).toBe(12);
   });
 
-  it('compresses desktop cards and stacks to fit the compact two-row tableau', async () => {
+  it('uses 60px cards and a compressed step on large desktop', async () => {
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });
     Object.defineProperty(window, 'innerHeight', { writable: true, configurable: true, value: 800 });
     window.dispatchEvent(new Event('resize'));
@@ -221,10 +221,32 @@ describe('StHelenaPage', () => {
         ?.parentElement?.querySelectorAll<HTMLButtonElement>('button') ?? [],
     );
     const top = Number.parseInt(cards.at(-1)?.parentElement?.style.top ?? '0', 10);
-    expect(top / 7).toBe(20);
-    expect(container.querySelector('[data-testid="sthelena-col-badge-0"]')?.parentElement).not.toHaveStyle({
-      width: '100px',
-    });
+    expect(top / 7).toBeGreaterThanOrEqual(14);
+    expect(top / 7).toBeLessThan(20);
+    expect(
+      screen.getAllByAltText('♠ A').some((element) => element.getAttribute('style')?.includes('width: 60px')),
+    ).toBe(true);
+  });
+
+  it('keeps develop card width and step at desktop width', async () => {
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 800 });
+    window.dispatchEvent(new Event('resize'));
+    const deepStack = Array.from({ length: 8 }, (_, index) => ({
+      card: card('SPADE', (index % 13) + 1),
+      faceUp: true,
+    }));
+    mockExec.mockResolvedValue({ ...playingState, tableau: makeTableau({ 0: deepStack }) });
+    const { container } = renderWithProviders(<StHelenaPage />);
+    await screen.findByAltText('♠ 8');
+    expect(
+      screen.getAllByAltText('♠ A').some((element) => element.getAttribute('style')?.includes('width: 60px')),
+    ).toBe(true);
+    const cards = Array.from(
+      container.querySelector('[data-testid="sthelena-col-badge-0"]')?.parentElement?.querySelectorAll('button') ?? [],
+    );
+    const top = Number.parseInt(cards.at(-1)?.parentElement?.style.top ?? '0', 10);
+    expect(top / 7).toBeGreaterThanOrEqual(14);
+    expect(top / 7).toBeLessThan(20);
   });
 
   it('announces the first-deal destinations with zero-based column numbers', async () => {
