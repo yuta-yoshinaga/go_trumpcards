@@ -86,6 +86,36 @@ beforeEach(() => {
 });
 
 describe('PyramidPage', () => {
+  it('uses compact cards and places stock/waste beside the pyramid on large desktop', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });
+    try {
+      renderWithProviders(<PyramidPage />);
+      const pyramidCard = await screen.findByRole('img', { name: '♠ K' });
+      expect(pyramidCard).toHaveStyle({ width: '80px' });
+      expect(document.querySelector('[data-tutorial="py-pyramid"]')?.parentElement).toBe(
+        document.querySelector('[data-tutorial="py-stock-waste"]')?.parentElement,
+      );
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    }
+  });
+
+  it('keeps develop card sizing and layout at 800px', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 800 });
+    try {
+      renderWithProviders(<PyramidPage />);
+      const pyramidCard = await screen.findByRole('img', { name: '♠ K' });
+      expect(pyramidCard).toHaveStyle({ width: '60px' });
+      expect(document.querySelector('[data-tutorial="py-pyramid"]')?.parentElement).toBe(
+        document.querySelector('[data-tutorial="py-stock-waste"]')?.parentElement,
+      );
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    }
+  });
+
   it('announces the waste count when its top card receives focus', async () => {
     mockExec.mockResolvedValue({ ...playingState, waste: [card('CLOVER', 3), card('SPADE', 13)] });
     renderWithProviders(<PyramidPage />);

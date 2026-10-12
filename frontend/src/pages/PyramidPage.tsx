@@ -18,7 +18,7 @@ import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
@@ -27,6 +27,7 @@ import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { usePyramidGame } from '../hooks/usePyramidGame';
 import { pyramidWinRate, usePyramidStats } from '../hooks/usePyramidStats';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
+import { DESKTOP_COMPACT_CARD_WIDTH } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { PyramidResponse } from '../types/card';
 import { PyramidPhase } from '../types/phases';
@@ -113,6 +114,7 @@ function PyramidPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('pyramid', state);
   const { cardHeight, cardWidth, isMobile } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const windowWidth = useWindowWidth();
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('pyramid');
@@ -205,12 +207,24 @@ function PyramidPageContent() {
   const cardGap = 4;
   /** Fraction of card height used for vertical overlap between rows (less on mobile for bigger tap targets) */
   const ROW_OVERLAP_RATIO = isMobile ? 0.3 : 0.35;
-  const rowOverlap = cardHeight * ROW_OVERLAP_RATIO;
+  const effectiveCardHeight = isLargeDesktop ? Math.round(DESKTOP_COMPACT_CARD_WIDTH * 1.5) : cardHeight;
+  const currentRowStep = cardHeight - cardHeight * ROW_OVERLAP_RATIO;
+  const compactRowStep = Math.max(
+    56,
+    Math.min(
+      currentRowStep * (DESKTOP_COMPACT_CARD_WIDTH / cardWidth),
+      Math.floor((583 - effectiveCardHeight - 8) / 6),
+    ),
+  );
+  const rowStep = isLargeDesktop ? compactRowStep : cardHeight * (1 - ROW_OVERLAP_RATIO);
+  const rowOverlap = effectiveCardHeight - rowStep;
   // px-4 on the scrollable container = 16px * 2 = 32px total horizontal padding
   const CONTAINER_PADDING = 32;
-  const effectiveCardWidth = isMobile
-    ? Math.floor((windowWidth - CONTAINER_PADDING - cardGap * (maxCols - 1)) / maxCols)
-    : cardWidth;
+  const effectiveCardWidth = isLargeDesktop
+    ? DESKTOP_COMPACT_CARD_WIDTH
+    : isMobile
+      ? Math.floor((windowWidth - CONTAINER_PADDING - cardGap * (maxCols - 1)) / maxCols)
+      : cardWidth;
   const pyramidWidth = maxCols * (effectiveCardWidth + cardGap) - cardGap;
 
   return (
@@ -249,7 +263,13 @@ function PyramidPageContent() {
           <LandscapeBanner message={t('landscapeBanner')} />
 
           {/* Scrollable area */}
-          <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
+          <div
+            className={
+              isLargeDesktop
+                ? 'flex-1 overflow-y-auto pt-3 px-4 lg:px-8 lg:flex lg:flex-wrap lg:justify-center lg:items-start lg:gap-6'
+                : 'flex-1 overflow-y-auto pt-3 px-4 lg:px-8'
+            }
+          >
             {/* Pyramid */}
             <div data-tutorial="py-pyramid" className="flex flex-col items-center mb-3">
               {state.pyramid.map((row, rowIdx) => {
@@ -261,7 +281,8 @@ function PyramidPageContent() {
                     key={`row-${rowIdx.toString()}`}
                     className="relative"
                     style={{
-                      height: rowIdx < state.pyramid.length - 1 ? cardHeight - rowOverlap : cardHeight,
+                      height:
+                        rowIdx < state.pyramid.length - 1 ? effectiveCardHeight - rowOverlap : effectiveCardHeight,
                       width: pyramidWidth,
                     }}
                   >
@@ -272,7 +293,7 @@ function PyramidPageContent() {
                           <div
                             key={`pc-${rowIdx.toString()}-${colIdx.toString()}`}
                             className="absolute"
-                            style={{ left, width: effectiveCardWidth, height: cardHeight }}
+                            style={{ left, width: effectiveCardWidth, height: effectiveCardHeight }}
                           />
                         );
                       }
@@ -354,7 +375,7 @@ function PyramidPageContent() {
                   />
                 ) : (
                   <div
-                    style={{ width: effectiveCardWidth, height: cardHeight }}
+                    style={{ width: effectiveCardWidth, height: effectiveCardHeight }}
                     className="rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center"
                   >
                     {t('empty')}
@@ -393,7 +414,7 @@ function PyramidPageContent() {
                   </button>
                 ) : (
                   <div
-                    style={{ width: effectiveCardWidth, height: cardHeight }}
+                    style={{ width: effectiveCardWidth, height: effectiveCardHeight }}
                     className="rounded border border-white/20 flex items-center justify-center text-game-text-muted text-xs"
                   >
                     {t('empty')}

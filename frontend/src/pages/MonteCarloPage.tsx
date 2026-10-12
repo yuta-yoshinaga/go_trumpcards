@@ -11,7 +11,7 @@ import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { isRejectedAction, useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
@@ -20,6 +20,7 @@ import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnOutline, btnPrimary, focusRingWhite } from '../styles/buttonStyles';
+import { DESKTOP_COMPACT_CARD_WIDTH } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { MonteCarloResponse } from '../types/card';
 import { MonteCarloPhase } from '../types/phases';
@@ -84,6 +85,8 @@ function MonteCarloPageContent() {
     cancelGiveUp,
   } = useGamePageSetup('montecarlo');
   const { cardWidth } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
+  const effectiveCardWidth = isLargeDesktop ? DESKTOP_COMPACT_CARD_WIDTH : cardWidth;
   const { playSound } = useSound();
   const pendingPairToast = useRef(false);
   const {
@@ -266,7 +269,11 @@ function MonteCarloPageContent() {
             <div className="flex justify-center mb-3" data-testid="mc-board-wrapper" data-tutorial="mc-board">
               <div
                 className="grid gap-1"
-                style={{ gridTemplateColumns: `repeat(${SIZE}, minmax(0, 1fr))` }}
+                style={{
+                  gridTemplateColumns: isLargeDesktop
+                    ? `repeat(${SIZE}, ${effectiveCardWidth}px)`
+                    : `repeat(${SIZE}, minmax(0, 1fr))`,
+                }}
                 data-testid="mc-board"
               >
                 {(() => {
@@ -321,10 +328,10 @@ function MonteCarloPageContent() {
                           } ${dimmed ? 'opacity-40' : ''} ${isHintTarget ? 'ring-2 ring-ds-warning' : ''}`}
                         >
                           {cell.card ? (
-                            <AnimatedCard card={cell.card} width={cardWidth} />
+                            <AnimatedCard card={cell.card} width={effectiveCardWidth} />
                           ) : (
                             <div
-                              style={{ width: cardWidth, height: Math.round(cardWidth * 1.4) }}
+                              style={{ width: effectiveCardWidth, height: Math.round(effectiveCardWidth * 1.4) }}
                               className="rounded border-2 border-dashed border-white/30"
                               aria-hidden="true"
                             />
