@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import type { handandfootApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardFan } from '../components/CardFan';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
 import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -16,7 +17,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { PlayerHandSection } from '../components/PlayerHandSection';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -73,6 +74,7 @@ export const HandAndFootPage = withTutorial(HandAndFootPageContent, 'handandfoot
 /** Inner content of the Hand and Foot page. */
 function HandAndFootPageContent() {
   const isMobile = useIsMobile();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('handandfoot');
   const {
@@ -284,7 +286,7 @@ function HandAndFootPageContent() {
 
             <div className={lgTwoColGrid}>
               {/* Left: game play area */}
-              <div>
+              <div className={isLargeDesktop ? 'flex flex-wrap items-start gap-2' : undefined}>
                 <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
                 {/* Discard pile top */}
@@ -317,14 +319,14 @@ function HandAndFootPageContent() {
                   return (
                     <div
                       key={team.team}
-                      className="my-2 p-2 rounded bg-black/30"
+                      className={`my-2 p-2 rounded bg-black/30 ${isLargeDesktop ? 'flex flex-col' : ''}`}
                       data-tutorial={ti === 0 ? 'hf-meld-area' : undefined}
                     >
                       <div className="text-ds-text-muted text-sm mb-1">
                         {t('team', { n: team.team })} - {t('melds')}
                       </div>
                       {team.melds.map((m, mi) => (
-                        <div key={mi} className="flex flex-wrap gap-1 mb-1">
+                        <div key={mi} className={`flex ${isLargeDesktop ? 'flex-nowrap' : 'flex-wrap'} gap-1 mb-1`}>
                           <span className="text-xs text-ds-text-muted self-center mr-1">
                             {m.isCanasta
                               ? m.isNatural
@@ -332,13 +334,21 @@ function HandAndFootPageContent() {
                                 : t('mixedCanasta')
                               : `(${m.cards.length})`}
                           </span>
-                          {m.cards.map((card, ci) => (
-                            <AnimatedCard key={`meld-${ti}-${mi}-${ci}`} card={card} width={cardWidth * 0.6} />
-                          ))}
+                          {isLargeDesktop ? (
+                            <CardFan itemWidth={cardWidth * 0.6} className="min-w-0 flex-1">
+                              {m.cards.map((card, ci) => (
+                                <AnimatedCard key={`meld-${ti}-${mi}-${ci}`} card={card} width={cardWidth * 0.6} />
+                              ))}
+                            </CardFan>
+                          ) : (
+                            m.cards.map((card, ci) => (
+                              <AnimatedCard key={`meld-${ti}-${mi}-${ci}`} card={card} width={cardWidth * 0.6} />
+                            ))
+                          )}
                         </div>
                       ))}
                       {team.red3s.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1">
+                        <div className={`flex ${isLargeDesktop ? 'flex-nowrap' : 'flex-wrap'} gap-1 mt-1`}>
                           <span className="text-xs text-ds-error-text self-center mr-1">{t('red3s')}</span>
                           {team.red3s.map((card, ri) => (
                             <AnimatedCard key={`red3-${ti}-${ri}`} card={card} width={cardWidth * 0.6} />

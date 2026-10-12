@@ -150,6 +150,57 @@ const gameEndState: HandAndFootResponse = {
 };
 
 describe('HandAndFootPage', () => {
+  it('places meld blocks in a wrapping row only at large desktop widths', async () => {
+    const originalWidth = window.innerWidth;
+    try {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });
+      window.dispatchEvent(new Event('resize'));
+      mockExec.mockResolvedValue({
+        ...drawPhaseState,
+        teams: [{ ...baseTeams[0], melds: [{ cards: [], isNatural: true, isCanasta: false, rank: 7 }] }, baseTeams[1]],
+      });
+      const { unmount } = renderWithProviders(<HandAndFootPage />);
+      const meld = await screen.findByTestId('hf-discard-pile');
+      expect(meld.parentElement).toHaveClass('flex', 'flex-wrap');
+      unmount();
+
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 800 });
+      window.dispatchEvent(new Event('resize'));
+      renderWithProviders(<HandAndFootPage />);
+      expect((await screen.findByTestId('hf-discard-pile')).parentElement).not.toHaveClass('flex-wrap');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it('uses a non-wrapping red threes row only at large desktop widths', async () => {
+    const originalWidth = window.innerWidth;
+    const stateWithRedThrees: HandAndFootResponse = {
+      ...drawPhaseState,
+      teams: [{ ...baseTeams[0], red3s: [{ design: 'HEART', value: 3 }] }, baseTeams[1]],
+    };
+
+    try {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });
+      window.dispatchEvent(new Event('resize'));
+      mockExec.mockResolvedValue(stateWithRedThrees);
+      const { unmount } = renderWithProviders(<HandAndFootPage />);
+      const redThreesLabel = await screen.findByText('赤3');
+      expect(redThreesLabel.parentElement).toHaveClass('flex', 'flex-nowrap', 'gap-1', 'mt-1');
+      unmount();
+
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 800 });
+      window.dispatchEvent(new Event('resize'));
+      mockExec.mockResolvedValue(stateWithRedThrees);
+      renderWithProviders(<HandAndFootPage />);
+      expect((await screen.findByText('赤3')).parentElement).toHaveClass('flex', 'flex-wrap', 'gap-1', 'mt-1');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
   it('renders desktop hand cards through PlayerHandSection', async () => {
     mockExec.mockResolvedValue(drawPhaseState);
     renderWithProviders(<HandAndFootPage />);
