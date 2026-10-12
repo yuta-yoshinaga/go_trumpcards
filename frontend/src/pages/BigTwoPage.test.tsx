@@ -316,4 +316,9 @@ describe('BigTwoPage', () => {
     // The value each label maps to must not shift: 0=Easy, 1=Normal, 2=Hard.
     expect(Array.from(select.options).map((o) => o.value)).toEqual(['0', '1', '2']);
   });
+
+  it('renders CPU hands in compact card back fans', async () => {
+    renderWithProviders(<BigTwoPage />);
+    expect(await screen.findAllByTestId('card-back-fan')).not.toHaveLength(0);
+  });
 });

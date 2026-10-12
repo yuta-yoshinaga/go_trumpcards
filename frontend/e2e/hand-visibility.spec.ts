@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { navigateTo } from './helpers';
 
 /**
- * Every hand card stays reachable without scrolling the footer at 375×667 (#11655).
+ * Every hand card stays reachable without scrolling the footer at 375×667 (#11655) and 1280×800 (#11701).
  *
  * Since #11611 pins `actions` to the bottom of `GameFooter`, the rest of the footer
  * (`game-footer-content`) is a nested scroller inside the mobile cap, and a hand placed there
@@ -17,8 +17,6 @@ import { navigateTo } from './helpers';
  * edge is checked; horizontal overflow is out of scope (MobileHandGrid fits rows to the width).
  * A failure means "a deal or a layout change hides a card", never "retry".
  */
-test.use({ viewport: { width: 375, height: 667 } });
-
 /** Height of a card's top strip that must stay visible: rank corner plus a 44px tap target. */
 const VISIBLE_PX = 52;
 
@@ -104,42 +102,58 @@ const PAGES: readonly string[] = [
   '/watten',
 ];
 
-for (const path of PAGES) {
-  test(`${path} keeps every footer hand card reachable on a phone`, async ({ page }) => {
-    await navigateTo(page, path);
-    // Cards deal in with a staggered slide-up animation; measure their resting positions, not
-    // the last cards still sliding into place. A not-yet-started (pending) animation counts as
-    // unfinished; infinite ones (e.g. a pulsing highlight) never finish, so they are not awaited.
-    await page.waitForFunction(() =>
-      document
-        .getAnimations()
-        .every(
-          (a) =>
-            a.playState === 'finished' ||
-            a.playState === 'idle' ||
-            a.effect?.getComputedTiming().iterations === Number.POSITIVE_INFINITY,
-        ),
-    );
-    const result = await page.evaluate((visiblePx) => {
-      const footer = document.querySelector('[data-testid="game-footer-content"]');
-      if (!footer) return { found: false, cards: 0, hidden: [] as number[] };
-      const bottom = footer.getBoundingClientRect().bottom;
-      // Cards are <img> (CardImage) or <div role="img"> (CardFace, e.g. tarot decks).
-      const boxes = [...footer.querySelectorAll('img, [role="img"]')]
-        .map((el) => el.getBoundingClientRect())
-        .filter((box) => box.width >= 20 && box.height >= 30);
-      return {
-        found: true,
-        cards: boxes.length,
-        hidden: boxes.filter((box) => box.top + visiblePx > bottom).map((box) => Math.round(box.top)),
-      };
-    }, VISIBLE_PX);
-    // Floors: a missing footer or a selector that matches no card must fail, not pass vacuously.
-    expect(result.found, `${path}: game-footer-content not found`).toBe(true);
-    expect(result.cards, `${path}: no hand cards found in the footer content`).toBeGreaterThan(0);
-    expect(
-      result.hidden,
-      `${path}: cards whose top ${VISIBLE_PX}px is below the footer content (tops: ${result.hidden.join(', ')})`,
-    ).toEqual([]);
-  });
+async function checkHandVisibility(page: import('@playwright/test').Page, path: string) {
+  await navigateTo(page, path);
+  // Cards deal in with a staggered slide-up animation; measure their resting positions, not
+  // the last cards still sliding into place. A not-yet-started (pending) animation counts as
+  // unfinished; infinite ones (e.g. a pulsing highlight) never finish, so they are not awaited.
+  await page.waitForFunction(() =>
+    document
+      .getAnimations()
+      .every(
+        (a) =>
+          a.playState === 'finished' ||
+          a.playState === 'idle' ||
+          a.effect?.getComputedTiming().iterations === Number.POSITIVE_INFINITY,
+      ),
+  );
+  const result = await page.evaluate((visiblePx) => {
+    const footer = document.querySelector('[data-testid="game-footer-content"]');
+    if (!footer) return { found: false, cards: 0, hidden: [] as number[] };
+    const bottom = footer.getBoundingClientRect().bottom;
+    // Cards are <img> (CardImage) or <div role="img"> (CardFace, e.g. tarot decks).
+    const boxes = [...footer.querySelectorAll('img, [role="img"]')]
+      .map((el) => el.getBoundingClientRect())
+      .filter((box) => box.width >= 20 && box.height >= 30);
+    return {
+      found: true,
+      cards: boxes.length,
+      hidden: boxes.filter((box) => box.top + visiblePx > bottom).map((box) => Math.round(box.top)),
+    };
+  }, VISIBLE_PX);
+  // Floors: a missing footer or a selector that matches no card must fail, not pass vacuously.
+  expect(result.found, `${path}: game-footer-content not found`).toBe(true);
+  expect(result.cards, `${path}: no hand cards found in the footer content`).toBeGreaterThan(0);
+  expect(
+    result.hidden,
+    `${path}: cards whose top ${VISIBLE_PX}px is below the footer content (tops: ${result.hidden.join(', ')})`,
+  ).toEqual([]);
 }
+
+test.describe('phone 375x667', () => {
+  test.use({ viewport: { width: 375, height: 667 } });
+  for (const path of PAGES) {
+    test(`${path} keeps every footer hand card reachable on a phone`, async ({ page }) => {
+      await checkHandVisibility(page, path);
+    });
+  }
+});
+
+test.describe('desktop 1280x800', () => {
+  test.use({ viewport: { width: 1280, height: 800 } });
+  for (const path of PAGES) {
+    test(`${path} keeps every footer hand card reachable on a desktop`, async ({ page }) => {
+      await checkHandVisibility(page, path);
+    });
+  }
+});

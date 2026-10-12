@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { rookApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardBackFan } from '../components/CardBackFan';
+import { CardFan } from '../components/CardFan';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -10,7 +12,6 @@ import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
-import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -312,11 +313,7 @@ function RookPageContent() {
                       {p.isDeclarer && <span className="font-bold text-ds-warning">★</span>}
                       {p.passed && <span className="opacity-60">{t('passed')}</span>}
                     </div>
-                    <div className="flex gap-0.5 justify-center">
-                      {Array.from({ length: Math.min(p.cardCount, 13) }, (_, i) => (
-                        <AnimatedCardBack key={i} width={cardWidth * 0.4} />
-                      ))}
-                    </div>
+                    <CardBackFan count={Math.min(p.cardCount, 13)} width={cardWidth * 0.4} />
                   </div>
                 ))}
             </div>
@@ -359,7 +356,7 @@ function RookPageContent() {
                   {t('recommendedDiscardHint')}
                 </div>
               )}
-              <div className="flex flex-wrap justify-center gap-2">
+              <CardFan itemWidth={cardWidth + 6}>
                 {human.cards.map((c, i) => {
                   const selected = selectedCardIndices.includes(i);
                   // **追随は強制。**出せない札を押せてしまうと、拒否されて
@@ -397,7 +394,7 @@ function RookPageContent() {
                     </button>
                   );
                 })}
-              </div>
+              </CardFan>
             </div>
 
             <GameMessageBox

@@ -102,6 +102,12 @@ describe('ShengJiPage', () => {
     }
   });
 
+  it('renders desktop hand cards through PlayerHandSection', async () => {
+    renderWithProviders(<ShengJiPage />);
+    const cardButton = await screen.findByTestId('hand-card-0');
+    expect(cardButton).toHaveAttribute('data-hand-card-index', '0');
+  });
+
   it('toggles mobile card selection and ignores taps when cards cannot be selected', async () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
@@ -140,6 +146,18 @@ describe('ShengJiPage', () => {
   it('resets on mount', async () => {
     renderWithProviders(<ShengJiPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('renders without a human player and shows no hand cards', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ players: makeState().players.map((player) => ({ ...player, isHuman: false })) }),
+    );
+
+    renderWithProviders(<ShengJiPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    await waitFor(() => expect(screen.getByTestId('shengji-info')).toBeInTheDocument());
+    expect(screen.queryByTestId('hand-card-0')).toBeNull();
   });
 
   it('marks and announces the provisional trick winner', async () => {
@@ -693,7 +711,7 @@ describe('ShengJiPage', () => {
       }),
     );
     renderWithProviders(<ShengJiPage />);
-    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeDisabled());
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toHaveAttribute('aria-disabled', 'true'));
   });
 });
 

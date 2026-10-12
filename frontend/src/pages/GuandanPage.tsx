@@ -11,7 +11,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
-import { MobileHandGrid } from '../components/MobileHandGrid';
+import { PlayerHandSection } from '../components/PlayerHandSection';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -464,34 +464,17 @@ function GuandanPageContent() {
             </div>
             <div className="mb-2" data-tutorial="guandan-hand">
               <div className="text-ds-text-muted text-xs mb-1">{t('yourHand')}</div>
-              {isMobile ? (
-                <MobileHandGrid
-                  cards={human?.cards ?? []}
-                  selectedIndices={selected}
-                  onToggle={(i) => (isPlay || isTribute) && handleToggle(i)}
-                  cardWidth={cardWidth}
-                  validIndices={isPlay || isTribute ? (human?.cards ?? []).map((_, i) => i) : []}
-                  stackRows
-                />
-              ) : (
-                <div className="flex flex-wrap gap-1">
-                  {(human?.cards ?? []).map((c, i) => (
-                    <button
-                      key={`hand-${c.design}-${c.value}-${i}`}
-                      type="button"
-                      onClick={() => (isPlay || isTribute) && handleToggle(i)}
-                      disabled={!isPlay && !isTribute}
-                      aria-pressed={selected.includes(i)}
-                      className={`rounded transition-all ${selected.includes(i) ? 'ring-2 ring-ds-info -translate-y-2' : ''} ${
-                        isPlay || isTribute ? 'cursor-pointer hover:opacity-90' : 'cursor-default'
-                      }`}
-                      data-testid={`hand-card-${i}`}
-                    >
-                      <CardImage card={c} width={cardWidth} />
-                    </button>
-                  ))}
-                </div>
-              )}
+              <PlayerHandSection
+                humanPlayer={{ cards: human?.cards ?? [] }}
+                selectedCardIndices={selected}
+                toggleCard={(i) => (isPlay || isTribute) && handleToggle(i)}
+                cardWidth={cardWidth}
+                isMobile={isMobile}
+                dataTutorialPrefix="guandan"
+                validIndices={isPlay || isTribute ? (human?.cards ?? []).map((_, i) => i) : []}
+                cardTestIdPrefix="hand-card-"
+                stackRows
+              />
               {isPlay && selected.length > 0 && (
                 <div className="mt-2 text-center text-xs" data-testid="guandan-combo-preview" aria-hidden="true">
                   {selectedCombo === null ? (

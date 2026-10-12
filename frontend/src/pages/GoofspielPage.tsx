@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { goofspielApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardFan } from '../components/CardFan';
 import { CardImage } from '../components/CardImage';
 import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -392,7 +393,7 @@ function GoofspielPageContent() {
                 <div className="text-ds-text-muted text-sm mb-1">
                   {t('header.you')}: {human.cardCount}
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <CardFan itemWidth={cardWidth} className="flex-wrap">
                   {human.cards.map((card, idx) => (
                     <button
                       key={`${card.design}-${card.value}-${idx}`}
@@ -405,7 +406,7 @@ function GoofspielPageContent() {
                       <CardImage card={card} width={cardWidth} />
                     </button>
                   ))}
-                </div>
+                </CardFan>
               </div>
             )}
 

@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { mendikotApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardFan } from '../components/CardFan';
 import { CardImage } from '../components/CardImage';
 import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -304,7 +305,7 @@ function MendikotPageContent() {
                 <div className="text-ds-text-muted text-sm mb-1">
                   {t('header.you')}: {human.cardCount}
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <CardFan itemWidth={cardWidth}>
                   {human.cards.map((card, idx) => (
                     <button
                       key={`${card.design}-${card.value}-${idx}`}
@@ -325,7 +326,7 @@ function MendikotPageContent() {
                       <CardImage card={card} width={cardWidth} />
                     </button>
                   ))}
-                </div>
+                </CardFan>
               </div>
             )}
 

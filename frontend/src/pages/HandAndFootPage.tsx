@@ -12,8 +12,8 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
-import { MobileHandGrid } from '../components/MobileHandGrid';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { PlayerHandSection } from '../components/PlayerHandSection';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
@@ -26,14 +26,12 @@ import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useHandAndFootGame } from 
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { badgeInfoColors } from '../styles/badgeStyles';
 import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
-import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { HandAndFootResponse } from '../types/card';
 import { HandAndFootPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { canastaFamilySelectionPoints } from '../utils/canastaFamilyScore';
-import { cardAlt } from '../utils/cardAlt';
 import { HANDANDFOOT_HELP, parseHandAndFootCommand } from '../utils/cli/commands/handandfootCommands';
 import { formatHandAndFootState } from '../utils/cli/formatters/handandfootFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -582,39 +580,17 @@ function HandAndFootPageContent() {
               ) : null
             }
           >
-            {humanPlayer &&
-              (isMobile ? (
-                <MobileHandGrid
-                  cards={humanPlayer.cards}
-                  selectedIndices={selectedCardIndices}
-                  onToggle={toggleCard}
-                  cardWidth={cardWidth}
-                  dataTutorial="hf-player-hand"
-                  stackRows
-                />
-              ) : (
-                <div className="flex flex-wrap gap-1 mb-2" data-tutorial="hf-player-hand">
-                  {humanPlayer.cards.map((card, idx) => (
-                    <button
-                      type="button"
-                      key={`${card.design}-${card.value}-${idx}`}
-                      onClick={() => toggleCard(idx)}
-                      aria-label={cardAlt(card)}
-                      aria-pressed={selectedCardIndices.includes(idx)}
-                      className={`transition-transform ${focusRingCard}`}
-                      style={{
-                        background: 'none',
-                        padding: 0,
-                        borderRadius: 8,
-                        ...selectedCardStyle(selectedCardIndices.includes(idx)),
-                        boxSizing: 'border-box',
-                      }}
-                    >
-                      <AnimatedCard card={card} width={cardWidth} />
-                    </button>
-                  ))}
-                </div>
-              ))}
+            {humanPlayer && (
+              <PlayerHandSection
+                humanPlayer={humanPlayer}
+                selectedCardIndices={selectedCardIndices}
+                toggleCard={toggleCard}
+                cardWidth={cardWidth}
+                isMobile={isMobile}
+                dataTutorialPrefix="hf"
+                stackRows
+              />
+            )}
 
             <div
               id="hf-draw-discard-reason"

@@ -614,4 +614,9 @@ describe('BidWhistPage', () => {
     if (!humanRow) throw new Error('Human hand row was not rendered');
     expect(within(humanRow).getByTestId('bidwhist-dealer-badge')).toBeInTheDocument();
   });
+
+  it('renders CPU hands in compact card back fans', async () => {
+    renderWithProviders(<BidWhistPage />);
+    expect(await screen.findAllByTestId('card-back-fan')).not.toHaveLength(0);
+  });
 });

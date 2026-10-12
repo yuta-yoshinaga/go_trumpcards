@@ -92,6 +92,14 @@ beforeEach(() => {
 });
 
 describe('HoneymoonBridgePage', () => {
+  it('renders every human hand card through the hand fan', async () => {
+    const { container } = renderWithProviders(<HoneymoonBridgePage />);
+    await screen.findAllByRole('button', { name: /を出す/ });
+    const hand = container.querySelector('[data-tutorial="hb-hand"]');
+    expect(hand).not.toBeNull();
+    expect(hand?.querySelectorAll('button')).toHaveLength(5);
+  });
+
   it('collapses the rules and CPU seats on mobile, and opens them on desktop', async () => {
     const { unmount } = renderWithProviders(<HoneymoonBridgePage />);
     const mobileRules = await screen.findByText('ルール');

@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardBackFan } from '../components/CardBackFan';
+import { CardFan } from '../components/CardFan';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { ExchangeLog } from '../components/common/ExchangeLog';
@@ -13,7 +15,6 @@ import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { LiveAnnouncement } from '../components/LiveAnnouncement';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
-import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -291,11 +292,7 @@ function PresidentPageContent() {
                         </span>
                       )}
                     </div>
-                    <div className="flex gap-0.5 justify-center" aria-hidden="true">
-                      {Array.from({ length: Math.min(p.cardCount, 13) }, (_, i) => (
-                        <AnimatedCardBack key={i} width={cardWidth * 0.45} />
-                      ))}
-                    </div>
+                    <CardBackFan count={Math.min(p.cardCount, 13)} width={cardWidth * 0.45} />
                   </div>
                 ))}
             </div>
@@ -342,7 +339,7 @@ function PresidentPageContent() {
                   <RankStamp rank={human.rank} label={t(PRESIDENT_RANK_KEYS[human.rank] ?? 'rank.unknown')} />
                 )}
               </div>
-              <div className="flex flex-wrap justify-center gap-2">
+              <CardFan itemWidth={cardWidth + 6}>
                 {human.cards.map((c, i) => (
                   <button
                     key={i}
@@ -358,7 +355,7 @@ function PresidentPageContent() {
                     <AnimatedCard card={c} width={cardWidth} />
                   </button>
                 ))}
-              </div>
+              </CardFan>
             </div>
 
             <GameMessageBox

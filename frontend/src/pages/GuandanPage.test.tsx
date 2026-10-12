@@ -74,6 +74,24 @@ describe('GuandanPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('renders without a human player and shows no hand cards', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ players: makeState().players.map((player) => ({ ...player, isHuman: false })) }),
+    );
+
+    renderWithProviders(<GuandanPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    await waitFor(() => expect(screen.getByTestId('guandan-info')).toBeInTheDocument());
+    expect(screen.queryByTestId('hand-card-0')).toBeNull();
+  });
+
+  it('renders desktop hand cards through PlayerHandSection', async () => {
+    renderWithProviders(<GuandanPage />);
+    const cardButton = await screen.findByTestId('hand-card-0');
+    expect(cardButton).toHaveAttribute('data-hand-card-index', '0');
+  });
+
   // **レベル札が A より強いことがこのゲームの肝。**画面に書いていないと読めない。
   it('says the level cards beat aces and which of them are wild', async () => {
     renderWithProviders(<GuandanPage />);
@@ -438,7 +456,7 @@ describe('GuandanPage', () => {
       }),
     );
     renderWithProviders(<GuandanPage />);
-    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeDisabled());
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toHaveAttribute('aria-disabled', 'true'));
   });
 
   // **ヒント経路はページ側からも踏む。**ファクトリ単体テストだけだと

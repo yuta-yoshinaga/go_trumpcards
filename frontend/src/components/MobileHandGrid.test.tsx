@@ -215,6 +215,25 @@ describe('MobileHandGrid', () => {
     expect(screen.queryAllByRole('button')).toHaveLength(0);
   });
 
+  it('adds indexed test ids when cardTestIdPrefix is set and omits them otherwise', () => {
+    const cards = makeCards(5);
+    const { rerender } = render(
+      <MobileHandGrid cards={cards} selectedIndices={[]} onToggle={() => {}} cardWidth={40} />,
+    );
+    for (const button of screen.getAllByRole('button')) expect(button).not.toHaveAttribute('data-testid');
+    rerender(
+      <MobileHandGrid
+        cards={cards}
+        selectedIndices={[]}
+        onToggle={() => {}}
+        cardWidth={40}
+        cardTestIdPrefix="hand-card-"
+      />,
+    );
+    expect(screen.getByTestId('hand-card-0')).toBeInTheDocument();
+    expect(screen.getByTestId(`hand-card-${cards.length - 1}`)).toBeInTheDocument();
+  });
+
   it('renders single card without overlap (computeOverlap cardCount <= 1)', () => {
     const cards = makeCards(1);
     render(<MobileHandGrid cards={cards} selectedIndices={[]} onToggle={() => {}} cardWidth={40} />);
