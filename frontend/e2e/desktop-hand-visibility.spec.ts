@@ -17,6 +17,10 @@ const PAGES = [
   { path: '/honeymoonbridge', hand: '[data-tutorial="hb-hand"]' },
   { path: '/reversis', hand: '[data-tutorial="reversis-hand"]' },
   { path: '/goofspiel', hand: '[data-tutorial="gs-hand"]' },
+  { path: '/scopone', hand: '[data-tutorial="sp-player-hand"]' },
+  { path: '/kalooki', hand: '[data-tutorial="kalooki-hand"]' },
+  { path: '/contractrummy', hand: '[data-testid="cr-hand"]' },
+  { path: '/nainjaune', hand: '[data-tutorial="nj-hand"]' },
 ];
 const VISIBLE_PX = 52;
 

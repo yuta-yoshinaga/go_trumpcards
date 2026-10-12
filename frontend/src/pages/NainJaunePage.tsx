@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { nainjauneApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardFan } from '../components/CardFan';
 import { CardBack } from '../components/CardImage';
 import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -314,7 +315,7 @@ function NainJaunePageContent() {
                 {' · '}
                 {t('yourPoints', { n: human?.points ?? 0 })}
               </div>
-              <div className="flex gap-1 justify-center flex-wrap">
+              <CardFan itemWidth={cardWidth + 6}>
                 {(human?.cards ?? []).map((card, i) => {
                   // **並びに従う義務がある。**出せない札を押せてしまうと、
                   // サーバに弾かれて初めて分かる (#4935)。空リストは「情報が
@@ -343,7 +344,7 @@ function NainJaunePageContent() {
                     </button>
                   );
                 })}
-              </div>
+              </CardFan>
               {isHumanTurn && (
                 <div className="text-[10px] text-ds-text-muted mt-1">
                   {/* 止まっているかどうかで出せる札がまるで違う。 */}

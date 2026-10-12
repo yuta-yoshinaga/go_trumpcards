@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { contractrummyApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
+import { CardFan } from '../components/CardFan';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -560,7 +561,7 @@ function ContractRummyPageContent() {
                     </span>
                   )}
                 </div>
-                <div className="flex flex-wrap gap-1">
+                <CardFan itemWidth={cardWidth + 6}>
                   {humanPlayer.cards.map((c: Card, idx: number) => {
                     const isSelected = selectedCards.includes(idx);
                     const slotOfCard = contractSlots.findIndex((slot) => slot.includes(idx));
@@ -593,7 +594,7 @@ function ContractRummyPageContent() {
                       </button>
                     );
                   })}
-                </div>
+                </CardFan>
               </section>
             )}
           </div>
