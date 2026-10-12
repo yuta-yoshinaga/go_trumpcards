@@ -214,6 +214,7 @@ describe('StHelenaPage', () => {
     );
     const tableau = container.querySelector('[data-tutorial="sthelena-tableau"]');
     expect(tableau).toHaveClass('grid-cols-8');
+    expect(tableau).toHaveClass('lg:gap-y-0');
     expect(container.querySelector('[data-testid="sthelena-band-bottom"]')?.parentElement).toHaveClass('col-span-8');
     const cards = Array.from(
       container
@@ -221,8 +222,7 @@ describe('StHelenaPage', () => {
         ?.parentElement?.querySelectorAll<HTMLButtonElement>('button') ?? [],
     );
     const top = Number.parseInt(cards.at(-1)?.parentElement?.style.top ?? '0', 10);
-    expect(top / 7).toBeGreaterThanOrEqual(14);
-    expect(top / 7).toBeLessThan(20);
+    expect(top / 7).toBe(10);
     expect(
       screen.getAllByAltText('♠ A').some((element) => element.getAttribute('style')?.includes('width: 60px')),
     ).toBe(true);
@@ -923,5 +923,26 @@ describe('StHelenaPage keyboard shortcuts', () => {
       await waitFor(() => expect(mockExec).toHaveBeenCalled());
       expect(screen.queryByTestId('cr-gameover-summary')).not.toBeInTheDocument();
     });
+  });
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue({ ...playingState, message: 'Footer guidance' });
+    renderWithProviders(<StHelenaPage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage.querySelector('[role="status"], [role="alert"]')).toHaveTextContent('Footer guidance');
+  });
+  it('renders the game message in the play area instead of the footer on mobile', async () => {
+    mockExec.mockResolvedValue({ ...playingState, message: 'Mobile guidance' });
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    renderWithProviders(<StHelenaPage />);
+
+    const messageText = await screen.findByText('Mobile guidance');
+    const message = messageText.closest('[role="status"], [role="alert"]');
+    expect(message?.closest('.flex-1.overflow-y-auto')).not.toBeNull();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    window.dispatchEvent(new Event('resize'));
   });
 });

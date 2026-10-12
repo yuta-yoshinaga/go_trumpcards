@@ -163,6 +163,10 @@ function DehlaPakadPageContent() {
     reset();
   };
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.dehlapakad')}
@@ -457,11 +461,7 @@ function DehlaPakadPageContent() {
               </div>
             </div>
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
+            {isMobile && messageBox}
 
             <ActionLogSection
               isEndPhase={isGameEnd}
@@ -471,7 +471,10 @@ function DehlaPakadPageContent() {
             />
           </div>
 
-          <GameFooter className={`${gameTheme.dehlapakad.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.dehlapakad.footer} px-4 py-2.5`}
+            message={isMobile ? undefined : messageBox}
+          >
             {humanPlayer && (
               <PlayerHandSection
                 humanPlayer={humanPlayer}
