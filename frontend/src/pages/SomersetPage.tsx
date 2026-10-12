@@ -464,12 +464,6 @@ function SomersetPageContent() {
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
             </div>
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
             {isGameOver && (
               <p data-testid="somerset-gameover-summary" className="text-ds-text-muted text-sm text-center mt-1">
                 {t('gameOverSummary', {
@@ -508,7 +502,16 @@ function SomersetPageContent() {
             ]}
           />
 
-          <GameFooter className={`${gameTheme.somerset.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.somerset.footer} px-4 py-2.5`}
+            message={
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            }
+          >
             <ErrorAlert message={error ?? hintError} onRetry={retry} />
             <div className="flex gap-2 items-center flex-wrap">
               <div data-testid="somerset-stats-panel" className="w-full text-game-text-muted text-xs">
