@@ -181,6 +181,10 @@ function SuecaPageContent() {
     reset();
   };
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.sueca')}
@@ -431,6 +435,7 @@ function SuecaPageContent() {
               </div>
             )}
 
+            {isMobile && messageBox}
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -440,16 +445,7 @@ function SuecaPageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter
-            className={`${gameTheme.sueca.footer} px-4 py-2.5`}
-            message={
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-              />
-            }
-          >
+          <GameFooter className={`${gameTheme.sueca.footer} px-4 py-2.5`} message={!isMobile && messageBox}>
             {humanPlayer && (
               <PlayerHandSection
                 humanPlayer={humanPlayer}

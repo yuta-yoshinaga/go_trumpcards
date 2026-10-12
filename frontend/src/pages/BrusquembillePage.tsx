@@ -9,7 +9,7 @@ import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
-import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
+import { RotatedTrumpStock } from '../components/RotatedTrumpStock';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -171,6 +171,12 @@ function BrusquembillePageContent() {
     );
   }
 
+  const trumpLabel = (
+    <span className="text-ds-text-muted text-sm" data-testid="brusquembille-trump-label">
+      {state.trumpCard ? t('header.trump') : t('header.trumpNone')}
+    </span>
+  );
+
   // 合法手の判定はバックエンドに任せる。ここで規則を書き直すと二重管理になる。
   const validSet = new Set(state.validIndices ?? []);
   const isPlayable = (idx: number): boolean => validSet.size === 0 || validSet.has(idx);
@@ -266,54 +272,17 @@ function BrusquembillePageContent() {
             data-testid="brusquembille-stock"
             data-tutorial="brusquembille-trump"
           >
-            <span className="text-ds-text-muted text-sm">
-              {state.trumpCard ? t('header.trump') : t('header.trumpNone')}
-            </span>
             {state.trumpCard ? (
-              <div
-                className="relative"
-                style={{
-                  width: Math.round(cardWidth * 1.1),
-                  height: Math.round(cardWidth * 0.95),
-                }}
-              >
-                {/* Face-up trump card rotated 90° — sits at the bottom of the stock,
-                    half visible to the right of the deck. */}
-                <div
-                  className="absolute left-0 top-1/2"
-                  style={{
-                    transform: 'translateY(-50%) rotate(90deg)',
-                    transformOrigin: 'left center',
-                  }}
-                >
-                  <AnimatedCard card={state.trumpCard} width={Math.round(cardWidth * 0.7)} />
-                </div>
-                {/* Card-back stack — width tapers down as cards are drawn so the
-                    physical "thinning deck" reads at a glance. */}
-                {state.stockRemaining > 0 && (
-                  <div
-                    className="absolute left-1/2 top-1/2 -translate-y-1/2"
-                    style={{ transform: 'translate(0,-50%)' }}
-                    data-testid="brusquembille-stock-deck"
-                  >
-                    <div className="relative">
-                      {Array.from({ length: Math.min(state.stockRemaining, 4) }, (_, i) => (
-                        <div
-                          key={`back-${i.toString()}`}
-                          className="absolute"
-                          style={{
-                            top: i * -1.5,
-                            left: i * 1.5,
-                          }}
-                        >
-                          <AnimatedCardBack width={Math.round(cardWidth * 0.7)} />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : null}
+              <RotatedTrumpStock
+                label={trumpLabel}
+                trumpCard={<AnimatedCard card={state.trumpCard} width={Math.round(cardWidth * 0.7)} />}
+                stockRemaining={state.stockRemaining}
+                cardWidth={cardWidth}
+                deckTestId="brusquembille-stock-deck"
+              />
+            ) : (
+              trumpLabel
+            )}
           </div>
         </div>
 

@@ -118,7 +118,7 @@ function BouillottePageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('bouillotte', state);
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('bouillotte', BOUILLOTTE_PHASE_KEYS);
 
   if (!state)
@@ -174,6 +174,10 @@ function BouillottePageContent() {
     hideActionLog();
     reset();
   };
+
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
 
   return (
     <GamePageShell
@@ -326,11 +330,7 @@ function BouillottePageContent() {
               </div>
             )}
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
+            {isMobile && messageBox}
 
             <ActionLogSection
               isEndPhase={isGameEnd}
@@ -341,7 +341,10 @@ function BouillottePageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.bouillotte.footer} px-4 py-2.5`}>
+          <GameFooter
+            message={isMobile ? undefined : messageBox}
+            className={`${gameTheme.bouillotte.footer} px-4 py-2.5`}
+          >
             {humanPlayer && humanPlayer.cards.length > 0 ? (
               <div className="mb-2" data-tutorial="bouillotte-hand">
                 <div className="text-ds-text-muted text-xs mb-0.5">

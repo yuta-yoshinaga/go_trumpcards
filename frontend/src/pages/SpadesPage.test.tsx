@@ -13,6 +13,18 @@ vi.mock('../api/gameApi', () => ({
   actionLogApi: { spades: vi.fn() },
 }));
 
+const mobileState = vi.hoisted(() => ({ isMobile: undefined as boolean | undefined }));
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useCardDimensions: () => {
+      const d = actual.useCardDimensions();
+      return mobileState.isMobile === undefined ? d : { ...d, isMobile: mobileState.isMobile };
+    },
+  };
+});
+
 const mockExec = vi.mocked(spadesApi.exec);
 
 const playPhaseState = makeSpadesState();
@@ -57,10 +69,22 @@ const spadesBrokenState = makeSpadesState({ spadesBroken: true });
 const cpuTurnState = makeSpadesState({ currentPlayerIdx: 1 });
 
 beforeEach(() => {
+  mobileState.isMobile = undefined;
   mockExec.mockResolvedValue(playPhaseState);
 });
 
 describe('SpadesPage', () => {
+  it('renders the game message in the play area on mobile', async () => {
+    mockExec.mockResolvedValue(makeSpadesState({ message: 'Mobile message' }));
+    mobileState.isMobile = true;
+    renderWithProviders(<SpadesPage />);
+
+    const messageText = await screen.findByText('Mobile message');
+    const message = messageText.closest('[role="status"]');
+    expect(message).toHaveTextContent('Mobile message');
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+  });
+
   it('keeps only the human hand in the footer content', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<SpadesPage />);

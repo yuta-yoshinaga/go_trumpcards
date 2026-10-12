@@ -179,6 +179,10 @@ function MariasPageContent() {
     reset();
   };
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.marias')}
@@ -367,13 +371,7 @@ function MariasPageContent() {
               </div>
             </div>
 
-            {/* Message */}
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
+            {isMobile && messageBox}
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -383,7 +381,7 @@ function MariasPageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.marias.footer} px-4 py-2.5`}>
+          <GameFooter className={`${gameTheme.marias.footer} px-4 py-2.5`} message={!isMobile && messageBox}>
             {marriagePoints > 0 && (
               <div
                 className="mb-1 text-center text-sm text-ds-accent font-semibold"

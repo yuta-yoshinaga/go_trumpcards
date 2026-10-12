@@ -12,7 +12,7 @@ import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
+import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -88,7 +88,7 @@ export const BostonPage = withTutorial(BostonPageContent, 'boston', BOSTON_TUTOR
 
 /** Inner content of the Boston page, wrapped by TutorialProvider. */
 function BostonPageContent() {
-  const isMobile = useIsMobile();
+  const { cardWidth, isMobile } = useCardDimensions();
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('boston');
   const { state, loading, error, exec, retry } = useGameApi(bostonApi.exec);
@@ -121,7 +121,6 @@ function BostonPageContent() {
   );
   const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  const { cardWidth } = useCardDimensions();
   const phaseNames = usePhaseNames('boston', BOSTON_PHASE_KEYS);
 
   const handlePlay = useCallback(() => {
@@ -200,6 +199,10 @@ function BostonPageContent() {
     setBidLevel(null);
     exec('reset');
   };
+
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
 
   return (
     <GamePageShell
@@ -365,11 +368,7 @@ function BostonPageContent() {
               </div>
             )}
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
+            {isMobile && messageBox}
 
             <ActionLogSection
               isEndPhase={isGameEnd}
@@ -404,6 +403,7 @@ function BostonPageContent() {
           {/* Footer */}
           <GameFooter
             className={`${gameTheme.boston.footer} px-4 py-2.5`}
+            message={isMobile ? undefined : messageBox}
             actions={
               <div className="flex flex-wrap gap-2 items-center" data-tutorial="boston-actions">
                 {isHumanBid && (

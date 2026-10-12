@@ -5,6 +5,7 @@
     "gameOver": "ゲームオーバー"
   },
   "title": "キャンフィールド",
+  "landscapeBanner": "横画面での表示を推奨します",
   "stock": "山札",
   "stockCountAriaLabel": "山札、残り{{count}}枚",
   "stockEmptyAriaLabel": "山札、空",

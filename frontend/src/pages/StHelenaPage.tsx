@@ -18,7 +18,7 @@ import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useIsMobile } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
@@ -166,13 +166,14 @@ function StHelenaPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('sthelena', state);
 
-  const isMobile = useIsMobile();
+  const { isMobile } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const tableauDim = useResponsiveTableau(8, {
     ...mobileTableauConfig(isMobile, FIXED_TABLEAU_DEPTH.sthelena),
     maxColCards: FIXED_TABLEAU_DEPTH.sthelena,
     // Desktop already uses 60px cards here; a 14px step (not 20) lets the lower piles fit 1280x800 (#11702).
-    minVerticalOverlap: isMobile ? 12 : 14,
-    reservedHeightPx: isMobile ? 520 : 630,
+    minVerticalOverlap: isMobile ? 12 : isLargeDesktop ? 10 : 14,
+    reservedHeightPx: isMobile ? 520 : isLargeDesktop ? 640 : 630,
     maxCardWidthPx: 60,
     compressDesktop: true,
   });
@@ -314,6 +315,10 @@ function StHelenaPageContent() {
           isTableauTarget(colIdx) ? [t('tableauDestination', { col: colIdx })] : [],
         );
   const legalDestinationLabels = [...foundationDestinationLabels, ...tableauDestinationLabels];
+
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
 
   return (
     <GamePageShell
@@ -463,7 +468,10 @@ function StHelenaPageContent() {
                 beside, so rendering them as one undifferentiated grid would hide the
                 only thing that decides where a card can go. (The clone source draws a
                 sixteen-column crescent arc; that silhouette belongs to Crescent.) */}
-            <div className="grid grid-cols-8 gap-1 sm:gap-2 mb-3" data-tutorial="sthelena-tableau">
+            <div
+              className={`grid grid-cols-8 gap-1 sm:gap-2 ${isLargeDesktop ? 'lg:gap-y-0' : ''} mb-3`}
+              data-tutorial="sthelena-tableau"
+            >
               {STHELENA_BANDS.map((band) => (
                 <div
                   key={band.key}
@@ -595,12 +603,6 @@ function StHelenaPageContent() {
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
             </div>
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
             {/* **どこまで進んでいたかを自分で数えさせない。**8 組札 (昇順4 + 降順4)
                 は Congress より複雑なので、なおさら数えにくい (#5590)。
                 Congress / CrazyQuilt と同じ形。 */}
@@ -612,6 +614,8 @@ function StHelenaPageContent() {
                 })}
               </p>
             )}
+
+            {isMobile && messageBox}
 
             <ActionLogSection
               isEndPhase={isEnded}
@@ -630,7 +634,10 @@ function StHelenaPageContent() {
             ]}
           />
 
-          <GameFooter className={`${gameTheme.sthelena.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.sthelena.footer} px-4 py-2.5`}
+            message={isMobile ? undefined : messageBox}
+          >
             <ErrorAlert message={error ?? hintError} onRetry={retry} />
             <div className="flex gap-2 items-center flex-wrap">
               {isPlaying && (

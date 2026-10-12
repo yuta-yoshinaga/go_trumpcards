@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { sambaApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardFan } from '../components/CardFan';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
 import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -16,7 +17,7 @@ import { MobileHandGrid } from '../components/MobileHandGrid';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -99,6 +100,7 @@ function SambaPageContent() {
   } = useSambaGame();
 
   const { cardWidth } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const phaseNames = usePhaseNames('samba', SAMBA_PHASE_KEYS);
   const {
     hint: frontendHint,
@@ -259,6 +261,104 @@ function SambaPageContent() {
     );
   }
 
+  const humanTeamMelds = state.players
+    .filter((p) => p.team === state.players[0]?.team)
+    .map((p, pi) => {
+      if (p.melds.length === 0 && p.red3s.length === 0) return null;
+      return (
+        <div
+          key={p.id}
+          className="my-2 p-2 rounded bg-ds-surface"
+          data-tutorial={p.isHuman ? 'sa-meld-area' : undefined}
+        >
+          <div className="text-ds-text-muted text-sm mb-1">
+            {playerName(p.id, p.isHuman)} ({t('teamLabel', { n: p.team })}) - {t('melds')}
+            {p.hasCanasta && <span className="ml-2 text-ds-warning">★</span>}
+            {p.hasSamba && <span className="ml-1 text-ds-accent">▲</span>}
+          </div>
+          {p.melds.map((m, mi) => {
+            // Progress toward the 7-card canasta (set) / samba (sequence)
+            // milestone, derived purely from `cards.length` and `kind`.
+            const remaining = SAMBA_CANASTA_SIZE - m.cards.length;
+            const toSamba = m.kind === 1;
+            const complete = remaining <= 0;
+            return (
+              <div key={mi} className="flex flex-wrap gap-1 mb-1">
+                <span className="text-xs text-ds-text-muted self-center mr-1">
+                  {m.kind === 1
+                    ? m.isSamba
+                      ? t('samba')
+                      : t('sequence')
+                    : m.isCanasta
+                      ? m.isNatural
+                        ? t('naturalCanasta')
+                        : t('mixedCanasta')
+                      : `(${m.cards.length})`}
+                </span>
+                <span
+                  data-testid={`sa-meld-progress-${pi}-${mi}`}
+                  className={`text-xs self-center mr-1 ${
+                    complete ? 'text-ds-success font-bold motion-safe:animate-pulse' : 'text-ds-info'
+                  }`}
+                >
+                  {complete
+                    ? t(toSamba ? 'meldProgress.sambaComplete' : 'meldProgress.canastaComplete')
+                    : t(toSamba ? 'meldProgress.toSamba' : 'meldProgress.toCanasta', { n: remaining })}
+                </span>
+                {m.cards.map((card, ci) => (
+                  <AnimatedCard key={`meld-${pi}-${mi}-${ci}`} card={card} width={cardWidth * 0.6} />
+                ))}
+              </div>
+            );
+          })}
+          {p.red3s.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-1">
+              <span className="text-xs text-ds-error-text self-center mr-1">{t('red3s')}</span>
+              {p.red3s.map((card, ri) => (
+                <AnimatedCard key={`red3-${pi}-${ri}`} card={card} width={cardWidth * 0.6} />
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    });
+  const visibleHumanTeamMelds = humanTeamMelds.filter((meld) => meld !== null);
+
+  const renderHandCard = (card: Card, idx: number) => {
+    const isSelected = selectedCardIndices.includes(idx);
+    const isGrouped = meldGroups.some((group) => group.includes(idx));
+    return (
+      <button
+        type="button"
+        key={`${card.design}-${card.value}-${idx}`}
+        onClick={() => {
+          if (!isGrouped) toggleCard(idx);
+        }}
+        aria-label={cardAlt(card)}
+        aria-pressed={isSelected || isGrouped}
+        aria-disabled={isGrouped || undefined}
+        aria-describedby={
+          [
+            isGrouped ? 'sa-meld-card-assigned' : undefined,
+            isHumanTurn && meldPointInfo?.needInitial ? 'sa-meld-points' : undefined,
+          ]
+            .filter(Boolean)
+            .join(' ') || undefined
+        }
+        className={`transition-transform ${focusRingCard}`}
+        style={{
+          background: 'none',
+          padding: 0,
+          borderRadius: 8,
+          ...selectedCardStyle(isSelected || isGrouped),
+          boxSizing: 'border-box',
+        }}
+      >
+        <AnimatedCard card={card} width={cardWidth} />
+      </button>
+    );
+  };
+
   return (
     <GamePageShell
       title={tc('nav.samba')}
@@ -374,67 +474,7 @@ function SambaPageContent() {
                 )}
 
                 {/* Human-team melds stay visible; opponents' melds are available on demand. */}
-                {state.players
-                  .filter((p) => p.team === state.players[0]?.team)
-                  .map((p, pi) => {
-                    if (p.melds.length === 0 && p.red3s.length === 0) return null;
-                    return (
-                      <div
-                        key={p.id}
-                        className="my-2 p-2 rounded bg-ds-surface"
-                        data-tutorial={p.isHuman ? 'sa-meld-area' : undefined}
-                      >
-                        <div className="text-ds-text-muted text-sm mb-1">
-                          {playerName(p.id, p.isHuman)} ({t('teamLabel', { n: p.team })}) - {t('melds')}
-                          {p.hasCanasta && <span className="ml-2 text-ds-warning">★</span>}
-                          {p.hasSamba && <span className="ml-1 text-ds-accent">▲</span>}
-                        </div>
-                        {p.melds.map((m, mi) => {
-                          // Progress toward the 7-card canasta (set) / samba (sequence)
-                          // milestone, derived purely from `cards.length` and `kind`.
-                          const remaining = SAMBA_CANASTA_SIZE - m.cards.length;
-                          const toSamba = m.kind === 1;
-                          const complete = remaining <= 0;
-                          return (
-                            <div key={mi} className="flex flex-wrap gap-1 mb-1">
-                              <span className="text-xs text-ds-text-muted self-center mr-1">
-                                {m.kind === 1
-                                  ? m.isSamba
-                                    ? t('samba')
-                                    : t('sequence')
-                                  : m.isCanasta
-                                    ? m.isNatural
-                                      ? t('naturalCanasta')
-                                      : t('mixedCanasta')
-                                    : `(${m.cards.length})`}
-                              </span>
-                              <span
-                                data-testid={`sa-meld-progress-${pi}-${mi}`}
-                                className={`text-xs self-center mr-1 ${
-                                  complete ? 'text-ds-success font-bold motion-safe:animate-pulse' : 'text-ds-info'
-                                }`}
-                              >
-                                {complete
-                                  ? t(toSamba ? 'meldProgress.sambaComplete' : 'meldProgress.canastaComplete')
-                                  : t(toSamba ? 'meldProgress.toSamba' : 'meldProgress.toCanasta', { n: remaining })}
-                              </span>
-                              {m.cards.map((card, ci) => (
-                                <AnimatedCard key={`meld-${pi}-${mi}-${ci}`} card={card} width={cardWidth * 0.6} />
-                              ))}
-                            </div>
-                          );
-                        })}
-                        {p.red3s.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            <span className="text-xs text-ds-error-text self-center mr-1">{t('red3s')}</span>
-                            {p.red3s.map((card, ri) => (
-                              <AnimatedCard key={`red3-${pi}-${ri}`} card={card} width={cardWidth * 0.6} />
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
+                {!isLargeDesktop && humanTeamMelds}
                 {state.players.some(
                   (p) => p.team !== state.players[0]?.team && (p.melds.length > 0 || p.red3s.length > 0),
                 ) && (
@@ -730,59 +770,44 @@ function SambaPageContent() {
               ) : null
             }
           >
-            {humanPlayer &&
-              (isMobile ? (
-                <MobileHandGrid
-                  cards={humanPlayer.cards}
-                  selectedIndices={[...selectedCardIndices, ...meldGroups.flat()]}
-                  onToggle={(idx) => {
-                    if (!meldGroups.some((group) => group.includes(idx))) toggleCard(idx);
-                  }}
-                  cardWidth={cardWidth}
-                  dataTutorial="sa-player-hand"
-                  validIndices={humanPlayer.cards.flatMap((_, idx) =>
-                    meldGroups.some((group) => group.includes(idx)) ? [] : [idx],
-                  )}
-                  stackRows
-                />
-              ) : (
-                <div className="flex flex-wrap gap-1 mb-2" data-tutorial="sa-player-hand">
-                  {humanPlayer.cards.map((card, idx) => {
-                    const isSelected = selectedCardIndices.includes(idx);
-                    const isGrouped = meldGroups.some((group) => group.includes(idx));
-                    return (
-                      <button
-                        type="button"
-                        key={`${card.design}-${card.value}-${idx}`}
-                        onClick={() => {
-                          if (!isGrouped) toggleCard(idx);
-                        }}
-                        aria-label={cardAlt(card)}
-                        aria-pressed={isSelected || isGrouped}
-                        aria-disabled={isGrouped || undefined}
-                        aria-describedby={
-                          [
-                            isGrouped ? 'sa-meld-card-assigned' : undefined,
-                            isHumanTurn && meldPointInfo?.needInitial ? 'sa-meld-points' : undefined,
-                          ]
-                            .filter(Boolean)
-                            .join(' ') || undefined
-                        }
-                        className={`transition-transform ${focusRingCard}`}
-                        style={{
-                          background: 'none',
-                          padding: 0,
-                          borderRadius: 8,
-                          ...selectedCardStyle(isSelected || isGrouped),
-                          boxSizing: 'border-box',
-                        }}
-                      >
-                        <AnimatedCard card={card} width={cardWidth} />
-                      </button>
-                    );
-                  })}
+            <div
+              className={isLargeDesktop ? 'flex items-start gap-4' : undefined}
+              data-testid={isLargeDesktop ? 'sa-footer-hand-row' : undefined}
+            >
+              {isLargeDesktop && visibleHumanTeamMelds.length > 0 && (
+                <div
+                  className="shrink-0 max-w-[30%] overflow-y-auto"
+                  data-testid="sa-footer-melds"
+                  style={{ maxHeight: cardWidth * 1.4 }}
+                >
+                  {visibleHumanTeamMelds}
                 </div>
-              ))}
+              )}
+              {humanPlayer &&
+                (isMobile ? (
+                  <MobileHandGrid
+                    cards={humanPlayer.cards}
+                    selectedIndices={[...selectedCardIndices, ...meldGroups.flat()]}
+                    onToggle={(idx) => {
+                      if (!meldGroups.some((group) => group.includes(idx))) toggleCard(idx);
+                    }}
+                    cardWidth={cardWidth}
+                    dataTutorial="sa-player-hand"
+                    validIndices={humanPlayer.cards.flatMap((_, idx) =>
+                      meldGroups.some((group) => group.includes(idx)) ? [] : [idx],
+                    )}
+                    stackRows
+                  />
+                ) : isLargeDesktop ? (
+                  <CardFan itemWidth={cardWidth + 6} dataTutorial="sa-player-hand" data-testid="sa-player-hand">
+                    {humanPlayer.cards.map(renderHandCard)}
+                  </CardFan>
+                ) : (
+                  <div className="flex flex-wrap gap-1 mb-2" data-tutorial="sa-player-hand">
+                    {humanPlayer.cards.map(renderHandCard)}
+                  </div>
+                ))}
+            </div>
 
             <div id="sa-meld-points" role="status" aria-live="polite" data-testid="sa-meld-points">
               {isHumanTurn && meldPointInfo && (

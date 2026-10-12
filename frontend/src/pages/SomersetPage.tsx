@@ -331,6 +331,10 @@ function SomersetPageContent() {
     );
   };
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.somerset')}
@@ -474,6 +478,7 @@ function SomersetPageContent() {
               </p>
             )}
 
+            {isMobile && messageBox}
             <ActionLogSection
               isEndPhase={isEnded}
               availableDuringPlay
@@ -502,16 +507,7 @@ function SomersetPageContent() {
             ]}
           />
 
-          <GameFooter
-            className={`${gameTheme.somerset.footer} px-4 py-2.5`}
-            message={
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-              />
-            }
-          >
+          <GameFooter className={`${gameTheme.somerset.footer} px-4 py-2.5`} message={!isMobile && messageBox}>
             <ErrorAlert message={error ?? hintError} onRetry={retry} />
             <div className="flex gap-2 items-center flex-wrap">
               <div data-testid="somerset-stats-panel" className="w-full text-game-text-muted text-xs">

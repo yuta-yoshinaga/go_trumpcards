@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { popejoanApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardFan } from '../components/CardFan';
 import { CardBack } from '../components/CardImage';
 import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -16,7 +17,7 @@ import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
@@ -44,6 +45,7 @@ const PJ_TUTORIAL_STEPS: TutorialStep[] = [
 export const PopeJoanPage = withTutorial(PopeJoanPageContent, 'popejoan', PJ_TUTORIAL_STEPS);
 
 function PopeJoanPageContent() {
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('popejoan');
   const game = usePopeJoanGame();
@@ -142,6 +144,36 @@ function PopeJoanPageContent() {
         }))
     : [];
   const isHumanTurn = !ended && playing && state.currentPlayerIdx === 0;
+  const renderHandCard = (card: PopeJoanResponse['players'][number]['cards'][number], i: number) => {
+    // 並びに従う義務がある。出せない札を押せてしまうと、サーバに弾かれて初めて分かる (#4934)。
+    // 空リストは「情報が無い」なので制限しない。
+    const restricting = isHumanTurn ? (state.validPlays?.length ?? 0) > 0 : false;
+    const canPlay = !restricting || state.validPlays.includes(i);
+    return (
+      <button
+        key={`hand-${i.toString()}`}
+        type="button"
+        data-hint-action="play"
+        data-unplayable={restricting && !canPlay ? 'true' : undefined}
+        aria-pressed={handIdx === i}
+        disabled={restricting && !canPlay}
+        aria-disabled={!isHumanTurn || !canPlay}
+        onClick={() => {
+          if (!isHumanTurn) return;
+          setHandIdx(handIdx === i ? null : i);
+        }}
+        className={[
+          'rounded transition-transform',
+          restricting && !canPlay ? 'opacity-40' : '',
+          isHumanTurn ? 'hover:-translate-y-2' : 'opacity-60',
+          handIdx === i ? 'ring-2 ring-ds-accent -translate-y-2' : '',
+          frontendHintEnabled && state.hint?.cardIndex === i ? 'ring-2 ring-ds-warning' : '',
+        ].join(' ')}
+      >
+        <AnimatedCard card={card} width={cardWidth} draggable={false} />
+      </button>
+    );
+  };
 
   const phaseName = ended ? t('phase.end') : dealOver ? t('phase.dealEnd') : t('phase.play');
   const trumpCards = (human?.cards ?? []).filter((card) => card.design === suitName(state.trumpSuit));
@@ -195,37 +227,39 @@ function PopeJoanPageContent() {
               </p>
             </details>
 
-            <div className="text-center mb-3">
-              <div className="text-game-text-muted text-xs mb-1">{t('turnUp')}</div>
-              {state.turnUp ? (
-                <div className="flex justify-center">
-                  <AnimatedCard card={state.turnUp} width={cardWidth} draggable={false} />
-                </div>
-              ) : (
-                <span className="text-game-text-muted text-xs">—</span>
-              )}
-              <div className="text-game-text-muted text-xs" data-testid="popejoan-targets">
-                {t('targets')}: {hasMatrimony ? t('target.matrimony') : ''}
-                {hasMatrimony && hasIntrigue ? ' / ' : ''}
-                {hasIntrigue ? t('target.intrigue') : !hasMatrimony ? t('target.none') : ''}
-              </div>
-            </div>
-
-            {/* **8 区画は毎回すべて出す。**膨らんでいる区画がそのディールの
-                狙いどころそのものになる。 */}
-            <div className="mb-4" data-tutorial="pj-board">
-              <div className="text-game-text-muted text-xs mb-1 text-center">{t('board')}</div>
-              <div className="flex gap-2 justify-center flex-wrap">
-                {state.compartments.map((comp) => (
-                  <div
-                    key={`comp-${comp.name}`}
-                    data-testid="popejoan-compartment"
-                    className="rounded px-2 py-1 text-xs ring-1 ring-ds-border text-center min-w-14"
-                  >
-                    <div className="text-ds-text-muted">{t(`compartment.${comp.name}`)}</div>
-                    <div className="font-medium">{comp.chips}</div>
+            <div className={isLargeDesktop ? 'mb-3 flex items-start justify-center gap-8' : ''}>
+              <div className="text-center mb-3">
+                <div className="text-game-text-muted text-xs mb-1">{t('turnUp')}</div>
+                {state.turnUp ? (
+                  <div className="flex justify-center">
+                    <AnimatedCard card={state.turnUp} width={cardWidth} draggable={false} />
                   </div>
-                ))}
+                ) : (
+                  <span className="text-game-text-muted text-xs">—</span>
+                )}
+                <div className="text-game-text-muted text-xs" data-testid="popejoan-targets">
+                  {t('targets')}: {hasMatrimony ? t('target.matrimony') : ''}
+                  {hasMatrimony && hasIntrigue ? ' / ' : ''}
+                  {hasIntrigue ? t('target.intrigue') : !hasMatrimony ? t('target.none') : ''}
+                </div>
+              </div>
+
+              {/* **8 区画は毎回すべて出す。**膨らんでいる区画がそのディールの
+                狙いどころそのものになる。 */}
+              <div className="mb-4" data-tutorial="pj-board">
+                <div className="text-game-text-muted text-xs mb-1 text-center">{t('board')}</div>
+                <div className="flex gap-2 justify-center flex-wrap">
+                  {state.compartments.map((comp) => (
+                    <div
+                      key={`comp-${comp.name}`}
+                      data-testid="popejoan-compartment"
+                      className="rounded px-2 py-1 text-xs ring-1 ring-ds-border text-center min-w-14"
+                    >
+                      <div className="text-ds-text-muted">{t(`compartment.${comp.name}`)}</div>
+                      <div className="font-medium">{comp.chips}</div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -333,36 +367,13 @@ function PopeJoanPageContent() {
                 )}
                 {human?.holdsPope && ` · ${t('holdsPope')}`}
               </div>
-              <div className="flex gap-1 justify-center flex-wrap">
-                {(human?.cards ?? []).map((card, i) => {
-                  // **並びに従う義務がある。**出せない札を押せてしまうと、
-                  // サーバに弾かれて初めて分かる (#4934)。空リストは「情報が
-                  // 無い」なので制限しない。
-                  const restricting = isHumanTurn && (state.validPlays?.length ?? 0) > 0;
-                  const canPlay = !restricting || state.validPlays.includes(i);
-                  return (
-                    <button
-                      key={`hand-${i.toString()}`}
-                      type="button"
-                      data-hint-action="play"
-                      data-unplayable={restricting && !canPlay ? 'true' : undefined}
-                      aria-pressed={handIdx === i}
-                      disabled={restricting && !canPlay}
-                      aria-disabled={!isHumanTurn || !canPlay}
-                      onClick={() => isHumanTurn && canPlay && setHandIdx(handIdx === i ? null : i)}
-                      className={[
-                        'rounded transition-transform',
-                        restricting && !canPlay ? 'opacity-40' : '',
-                        isHumanTurn ? 'hover:-translate-y-2' : 'opacity-60',
-                        handIdx === i ? 'ring-2 ring-ds-accent -translate-y-2' : '',
-                        frontendHintEnabled && state.hint?.cardIndex === i ? 'ring-2 ring-ds-warning' : '',
-                      ].join(' ')}
-                    >
-                      <AnimatedCard card={card} width={cardWidth} draggable={false} />
-                    </button>
-                  );
-                })}
-              </div>
+              {isLargeDesktop ? (
+                <CardFan itemWidth={cardWidth} data-testid="pj-card-fan">
+                  {(human?.cards ?? []).map(renderHandCard)}
+                </CardFan>
+              ) : (
+                <div className="flex gap-1 justify-center flex-wrap">{(human?.cards ?? []).map(renderHandCard)}</div>
+              )}
               {isHumanTurn && (
                 <div className="text-[10px] text-ds-text-muted mt-1">
                   {state.runSuit < 0 ? t('selectLead') : t('selectFollow')}

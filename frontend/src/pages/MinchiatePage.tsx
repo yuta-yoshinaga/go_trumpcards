@@ -146,6 +146,10 @@ function MinchiatePageContent() {
     reset();
   };
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.minchiate')}
@@ -336,12 +340,7 @@ function MinchiatePageContent() {
               </div>
             </div>
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
+            {isMobile && messageBox}
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -384,6 +383,7 @@ function MinchiatePageContent() {
           <GameFooter
             tall
             className={`${gameTheme.minchiate.footer} px-4 py-2.5`}
+            message={!isMobile && messageBox}
             actions={
               <div className="flex flex-wrap gap-2 items-center" data-tutorial="minchiate-action-buttons">
                 {canScarto && (

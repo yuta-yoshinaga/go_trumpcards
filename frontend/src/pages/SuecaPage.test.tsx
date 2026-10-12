@@ -10,6 +10,18 @@ vi.mock('../api/gameApi', () => ({
   actionLogApi: { sueca: vi.fn() },
 }));
 
+const mobileState = vi.hoisted(() => ({ isMobile: undefined as boolean | undefined }));
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useCardDimensions: () => {
+      const d = actual.useCardDimensions();
+      return mobileState.isMobile === undefined ? d : { ...d, isMobile: mobileState.isMobile };
+    },
+  };
+});
+
 const mockExec = vi.mocked(suecaApi.exec);
 
 const playPhaseState = makeSuecaState();
@@ -30,11 +42,23 @@ const gameEndState = makeSuecaState({
 const cpuTurnState = makeSuecaState({ currentPlayerIdx: 1 });
 
 beforeEach(() => {
+  mobileState.isMobile = undefined;
   mockExec.mockReset();
   mockExec.mockResolvedValue(playPhaseState);
 });
 
 describe('SuecaPage', () => {
+  it('renders the game message in the play area on mobile', async () => {
+    mockExec.mockResolvedValue(makeSuecaState({ message: 'Mobile message' }));
+    mobileState.isMobile = true;
+    renderWithProviders(<SuecaPage />);
+
+    const messageText = await screen.findByText('Mobile message');
+    const message = messageText.closest('[role="status"]');
+    expect(message).toHaveTextContent('Mobile message');
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+  });
+
   it('shows cumulative team game points against the configured target', async () => {
     mockExec.mockResolvedValue(
       makeSuecaState({

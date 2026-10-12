@@ -59,6 +59,12 @@ beforeEach(() => {
 });
 
 describe('BristolPage', () => {
+  it('shows the landscape recommendation instead of the phase name in the banner', async () => {
+    renderWithProviders(<BristolPage />);
+    const bannerMessage = await screen.findByText('横画面での表示を推奨します');
+    expect(bannerMessage.parentElement).toHaveTextContent(/^横画面での表示を推奨します$/);
+  });
+
   it('renders heading', async () => {
     renderWithProviders(<BristolPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
