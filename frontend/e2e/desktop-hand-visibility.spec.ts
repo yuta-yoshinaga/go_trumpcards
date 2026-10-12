@@ -21,6 +21,21 @@ const PAGES = [
   { path: '/kalooki', hand: '[data-tutorial="kalooki-hand"]' },
   { path: '/contractrummy', hand: '[data-testid="cr-hand"]' },
   { path: '/nainjaune', hand: '[data-tutorial="nj-hand"]' },
+  { path: '/sjavs', hand: '[data-tutorial="sj-hand"]' },
+  { path: '/mushi', hand: '[data-tutorial="mushi-hand"]' },
+  { path: '/desmoche', hand: '[data-tutorial="ds-hand"]' },
+  { path: '/fiftyone', hand: '[data-tutorial="fo-player-hand"]' },
+  { path: '/tusac', hand: '[data-tutorial="tusac-hand"]' },
+  { path: '/pitch', hand: '[data-tutorial="pt-player-hand"]' },
+  { path: '/ironcross', hand: '[data-tutorial="ic-hand"]' },
+  { path: '/loba', hand: '[data-tutorial="lb-hand"]' },
+  { path: '/spiteandmalice', hand: '[data-tutorial="sam-hand"]' },
+  { path: '/chineseten', hand: '[data-tutorial="ct-hand"]' },
+  { path: '/carioca', hand: '[data-tutorial="ca-hand"]' },
+  { path: '/poch', hand: '[data-tutorial="pc-hand"]' },
+  { path: '/bura', hand: '[data-tutorial="bura-hand"]' },
+  { path: '/karnoffel', hand: '[data-tutorial="karnoffel-hand"]' },
+  { path: '/binokel', hand: '[data-tutorial="bn-player-hand"]' },
 ];
 const VISIBLE_PX = 52;
 

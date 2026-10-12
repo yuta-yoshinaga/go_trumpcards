@@ -99,6 +99,14 @@ describe('MushiPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('sticks the hand to the bottom of the desktop play area', async () => {
+    renderWithProviders(<MushiPage />);
+    await waitFor(() => expect(document.querySelector('[data-tutorial="mushi-hand"] button')).not.toBeNull());
+    const hand = document.querySelector('[data-tutorial="mushi-hand"]');
+    expect(hand?.className).toContain('lg:sticky');
+    expect(hand?.className).toContain('lg:bottom-0');
+  });
+
   it('shows the initial load error and lets the player retry into the game', async () => {
     let finishRetry: (state: MushiResponse) => void = () => {};
     mockExec.mockRejectedValueOnce(new Error('network unavailable')).mockImplementationOnce(
