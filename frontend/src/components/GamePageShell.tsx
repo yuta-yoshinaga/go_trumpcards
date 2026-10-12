@@ -180,6 +180,7 @@ export function GamePageShell({
     <div
       key={outerKey}
       className={`relative flex-1 flex flex-col min-h-0 overflow-hidden ${gameThemeBg}`}
+      data-felt
       aria-busy={loading}
     >
       <GamePageHeading title={title} />

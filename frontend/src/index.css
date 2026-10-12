@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Shared source for the muted text color on opaque surfaces and outside felt. */
+:root {
+  --ds-text-muted-surface: #8b9aaf;
+}
+
 @theme {
   --color-game-status-active: var(--color-ds-success);
   --color-game-status-waiting: var(--color-ds-warning);
@@ -212,7 +217,7 @@
   --color-ds-surface-elevated: #212d3f;
   --color-ds-surface-elevated-hover: #2a3a4f;
   --color-ds-text-primary: #e8e0d4;
-  --color-ds-text-muted: #8b9aaf;
+  --color-ds-text-muted: var(--ds-text-muted-surface);
   --color-ds-text-on-accent: #1a1a1a;
   --color-ds-text-on-felt: #dde3ea;
   --color-ds-text-inverse: #1a1a1a;
@@ -244,6 +249,16 @@
   /* Typography */
   --font-display: "Fraunces", "Noto Sans JP", serif;
   --font-body: "DM Sans", "Noto Sans JP", system-ui, sans-serif;
+}
+
+/* Muted text needs the higher-contrast on-felt color unless an opaque surface
+   establishes its own background. Glass panels are translucent and remain on-felt. */
+[data-felt] {
+  --color-ds-text-muted: var(--color-ds-text-on-felt);
+}
+
+[data-felt] :is(.bg-ds-surface, .bg-ds-surface-elevated, .bg-ds-bg, [data-surface]) {
+  --color-ds-text-muted: var(--ds-text-muted-surface);
 }
 
 html,
