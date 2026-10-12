@@ -79,6 +79,8 @@ export interface PlayerHandSectionProps {
   cardBadgeFor?: (idx: number) => { glyph: string; title: string } | null;
   /** Passed to `MobileHandGrid`; see `MobileHandGridProps.stackRows`. */
   stackRows?: boolean;
+  /** Optional prefix for per-card test ids; the card index is appended. */
+  cardTestIdPrefix?: string;
 }
 
 /** Minimum visible card width in the desktop overlap layout. */
@@ -107,6 +109,7 @@ export function PlayerHandSection({
   legalIndices,
   cardBadgeFor,
   stackRows,
+  cardTestIdPrefix,
 }: PlayerHandSectionProps) {
   const viewportWidth = useWindowWidth();
   const observerRef = useRef<ResizeObserver | null>(null);
@@ -145,6 +148,7 @@ export function PlayerHandSection({
         legalIndices={legalIndices}
         cardBadgeFor={cardBadgeFor}
         stackRows={stackRows}
+        cardTestIdPrefix={cardTestIdPrefix}
       />
     );
   }
@@ -208,6 +212,7 @@ export function PlayerHandSection({
                   data-legal={legal || undefined}
                   className={`transition-transform ${focusRingCard} ${overlapped ? '' : 'hover:z-10'} focus-visible:z-10 ${legal ? 'rounded-lg ring-2 ring-ds-success' : ''} ${restricted ? 'opacity-50 cursor-not-allowed' : ''} ${dimmed ? 'opacity-60' : ''}`}
                   data-hand-card-index={idx}
+                  data-testid={cardTestIdPrefix ? `${cardTestIdPrefix}${idx}` : undefined}
                   style={{
                     background: 'none',
                     padding: 0,

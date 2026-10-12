@@ -102,6 +102,12 @@ describe('ShengJiPage', () => {
     }
   });
 
+  it('renders desktop hand cards through PlayerHandSection', async () => {
+    renderWithProviders(<ShengJiPage />);
+    const cardButton = await screen.findByTestId('hand-card-0');
+    expect(cardButton).toHaveAttribute('data-hand-card-index', '0');
+  });
+
   it('toggles mobile card selection and ignores taps when cards cannot be selected', async () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
@@ -693,7 +699,7 @@ describe('ShengJiPage', () => {
       }),
     );
     renderWithProviders(<ShengJiPage />);
-    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeDisabled());
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toHaveAttribute('aria-disabled', 'true'));
   });
 });
 
