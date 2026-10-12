@@ -68,6 +68,13 @@ function selectCards(indices: number[]) {
 }
 
 describe('LobaPage', () => {
+  it('sticks the player hand to the desktop play-area bottom', async () => {
+    renderWithProviders(<LobaPage />);
+    await waitFor(() =>
+      expect(document.querySelector('[data-tutorial="lb-hand"]')).toHaveClass('lg:sticky', 'lg:bottom-0'),
+    );
+  });
+
   beforeEach(() => {
     mobileState.isMobile = true;
     vi.clearAllMocks();

@@ -279,7 +279,10 @@ function IronCrossPageContent() {
               <p className="text-ds-text-muted text-center text-xs mt-1">{t('crossNotice')}</p>
             </div>
 
-            <div className="mb-3" data-tutorial="ic-hand">
+            <div
+              className="mb-3 lg:sticky lg:bottom-0 lg:z-10 lg:bg-game-bg-casino lg:pt-2 lg:shadow-lg"
+              data-tutorial="ic-hand"
+            >
               <div className="text-ds-text-primary text-center text-sm font-bold mb-1">{t('label.yourHand')}</div>
               <div className="flex justify-center gap-1 flex-wrap" data-testid="ic-hand">
                 {(human?.cards ?? []).map((card, i) => (

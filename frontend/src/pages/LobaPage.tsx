@@ -261,7 +261,10 @@ function LobaPageContent() {
               </div>
             )}
 
-            <div className="text-center" data-tutorial="lb-hand">
+            <div
+              className="text-center lg:sticky lg:bottom-0 lg:z-10 lg:bg-game-bg-green lg:pt-2 lg:shadow-lg"
+              data-tutorial="lb-hand"
+            >
               <div className="text-game-text-muted text-xs mb-1">
                 {t('yourHand')}
                 {' · '}

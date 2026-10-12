@@ -178,6 +178,7 @@ describe('IronCrossPage', () => {
     renderWithProviders(<IronCrossPage />);
     await waitFor(() => expect(screen.getByTestId('ic-hand')).toBeInTheDocument());
     expect(screen.getByTestId('ic-hand').children).toHaveLength(4);
+    expect(screen.getByTestId('ic-hand').parentElement).toHaveClass('lg:sticky', 'lg:bottom-0');
   });
 
   // **十字の位置は落とさない。** 伏せている枠も出さないと、開いた札が
