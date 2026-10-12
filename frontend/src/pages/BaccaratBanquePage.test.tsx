@@ -5,6 +5,12 @@ import { renderWithProviders } from '../test/renderWithProviders';
 import { makeBaccaratBanqueState } from '../test/stateFactories';
 import { BaccaratBanquePage } from './BaccaratBanquePage';
 
+const breakpointState = vi.hoisted(() => ({ value: 'desktop' as 'mobile' | 'desktop' | 'largeDesktop' }));
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useBreakpoint: () => breakpointState.value,
+}));
+
 vi.mock('../api/gameApi', () => ({
   baccaratbanqueApi: { exec: vi.fn() },
   actionLogApi: { baccaratbanque: vi.fn() },
@@ -28,6 +34,7 @@ const resultState = makeBaccaratBanqueState({
 });
 
 beforeEach(() => {
+  breakpointState.value = 'desktop';
   mockExec.mockReset();
   mockExec.mockResolvedValue(bankerState);
 });
@@ -59,6 +66,20 @@ describe('BaccaratBanquePage', () => {
     expect(screen.getByTestId('banque-hand-left').children).toHaveLength(2);
     expect(screen.getByTestId('banque-total-banker')).toHaveTextContent('6');
     expect(screen.getByTestId('banque-total-left')).toHaveTextContent('7');
+  });
+
+  it('places the banker beside the punter seats only on large desktop', async () => {
+    breakpointState.value = 'largeDesktop';
+    const { unmount } = renderWithProviders(<BaccaratBanquePage />);
+    const desktopSeats = await screen.findByTestId('banque-desktop-seats');
+    expect(desktopSeats.firstElementChild).toHaveAttribute('data-testid', 'banque-seat-banker');
+    expect(desktopSeats.querySelector('[data-testid="banque-hand-banker"]')).toBeInTheDocument();
+    unmount();
+
+    breakpointState.value = 'desktop';
+    renderWithProviders(<BaccaratBanquePage />);
+    await screen.findByTestId('banque-seat-banker');
+    expect(screen.queryByTestId('banque-desktop-seats')).not.toBeInTheDocument();
   });
 
   // **負けても席が動かないのがこの形式の要。** 残高からは読めないので盤に書く。

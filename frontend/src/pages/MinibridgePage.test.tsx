@@ -16,12 +16,16 @@ vi.mock('../hooks/useGameHint', () => ({
   useGameHint: vi.fn(() => ({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() })),
 }));
 
-const mobileState = vi.hoisted(() => ({ isMobile: true }));
+const mobileState = vi.hoisted(() => ({
+  isMobile: true,
+  breakpoint: 'mobile' as 'mobile' | 'desktop' | 'largeDesktop',
+}));
 
 vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
   useCardDimensions: () => ({ cardWidth: mobileState.isMobile ? 36 : 60, isMobile: mobileState.isMobile }),
   useIsMobile: () => mobileState.isMobile,
+  useBreakpoint: () => mobileState.breakpoint,
 }));
 
 const mockExec = vi.mocked(minibridgeApi.exec);
@@ -90,10 +94,24 @@ const playing = (over: Partial<MinibridgeResponse> = {}) =>
 beforeEach(() => {
   vi.clearAllMocks();
   mobileState.isMobile = true;
+  mobileState.breakpoint = 'mobile';
   mockExec.mockResolvedValue(makeState());
 });
 
 describe('MinibridgePage', () => {
+  it('sticks the hand to the play area bottom only on large desktop', async () => {
+    mobileState.isMobile = false;
+    mobileState.breakpoint = 'largeDesktop';
+    const { unmount } = renderWithProviders(<MinibridgePage />);
+    const largeHand = await screen.findByTestId('mb-hand-area');
+    expect(largeHand).toHaveClass('sticky', 'bottom-0', 'z-10', 'bg-game-bg-blue');
+    unmount();
+
+    mobileState.breakpoint = 'desktop';
+    renderWithProviders(<MinibridgePage />);
+    expect(await screen.findByTestId('mb-hand-area')).not.toHaveClass('sticky');
+  });
+
   it('shows the last trick winner and lets the user continue', async () => {
     mockExec.mockResolvedValue(
       playing({
