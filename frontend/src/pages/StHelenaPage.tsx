@@ -18,7 +18,7 @@ import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useIsMobile } from '../hooks/useCardDimensions';
+import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
@@ -166,7 +166,7 @@ function StHelenaPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('sthelena', state);
 
-  const isMobile = useIsMobile();
+  const { isMobile } = useCardDimensions();
   const tableauDim = useResponsiveTableau(8, {
     ...mobileTableauConfig(isMobile, FIXED_TABLEAU_DEPTH.sthelena),
     maxColCards: FIXED_TABLEAU_DEPTH.sthelena,
@@ -314,6 +314,10 @@ function StHelenaPageContent() {
           isTableauTarget(colIdx) ? [t('tableauDestination', { col: colIdx })] : [],
         );
   const legalDestinationLabels = [...foundationDestinationLabels, ...tableauDestinationLabels];
+
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
 
   return (
     <GamePageShell
@@ -607,6 +611,8 @@ function StHelenaPageContent() {
               </p>
             )}
 
+            {isMobile && messageBox}
+
             <ActionLogSection
               isEndPhase={isEnded}
               actionLog={actionLog}
@@ -626,13 +632,7 @@ function StHelenaPageContent() {
 
           <GameFooter
             className={`${gameTheme.sthelena.footer} px-4 py-2.5`}
-            message={
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-              />
-            }
+            message={isMobile ? undefined : messageBox}
           >
             <ErrorAlert message={error ?? hintError} onRetry={retry} />
             <div className="flex gap-2 items-center flex-wrap">

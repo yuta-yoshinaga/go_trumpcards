@@ -15,10 +15,14 @@ vi.mock('../api/gameApi', () => ({
 
 const mockExec = vi.mocked(killeApi.exec);
 const mobileState = { isMobile: false };
-vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
-  useIsMobile: () => mobileState.isMobile,
-}));
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useIsMobile: () => mobileState.isMobile,
+    useCardDimensions: () => ({ ...actual.useCardDimensions(), isMobile: mobileState.isMobile }),
+  };
+});
 
 /** A Kille card: single suit, so the procedural fields carry the identity. */
 const killeCard = (value: number, label: string, color: string) => ({
@@ -419,5 +423,21 @@ describe('KillePage', () => {
 
     const footerMessage = await screen.findByTestId('game-footer-message');
     expect(footerMessage.querySelector('[role="status"], [role="alert"]')).toHaveTextContent('Footer guidance');
+  });
+  it('renders the game message in the play area instead of the footer on mobile', async () => {
+    mobileState.isMobile = true;
+    mockExec.mockResolvedValue({ ...makeState(), message: 'Mobile guidance' });
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    renderWithProviders(<KillePage />);
+
+    const messageText = await screen.findByText('Mobile guidance');
+    const message = messageText.closest('[role="status"], [role="alert"]');
+    expect(message?.closest('.flex-1.overflow-y-auto')).not.toBeNull();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    window.dispatchEvent(new Event('resize'));
+    mobileState.isMobile = false;
   });
 });

@@ -185,7 +185,7 @@ function KlaberjassPageContent() {
   );
   const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('klaberjass', KLABERJASS_PHASE_KEYS);
 
   if (!state)
@@ -220,6 +220,10 @@ function KlaberjassPageContent() {
     setSelected(null);
     exec('reset', { config: { targetScore, allowSchmeiss } });
   };
+
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
 
   return (
     <GamePageShell
@@ -394,6 +398,8 @@ function KlaberjassPageContent() {
               </div>
             )}
 
+            {isMobile && messageBox}
+
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -405,13 +411,7 @@ function KlaberjassPageContent() {
           {/* Footer */}
           <GameFooter
             className={`${gameTheme.klaberjass.footer} px-4 py-2.5`}
-            message={
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-              />
-            }
+            message={isMobile ? undefined : messageBox}
           >
             <div className="mb-2" data-tutorial="klaberjass-hand">
               <div className="text-ds-text-muted text-xs mb-1">{t('yourHand')}</div>

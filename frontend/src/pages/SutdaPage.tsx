@@ -129,7 +129,7 @@ function SutdaPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('sutda', state);
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
 
   if (!state)
     return (
@@ -160,6 +160,10 @@ function SutdaPageContent() {
     hideActionLog();
     reset();
   };
+
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
 
   return (
     <GamePageShell
@@ -313,6 +317,8 @@ function SutdaPageContent() {
               </div>
             )}
 
+            {isMobile && messageBox}
+
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -321,16 +327,7 @@ function SutdaPageContent() {
             />
           </div>
 
-          <GameFooter
-            className={`${gameTheme.sutda.footer} px-4 py-2.5`}
-            message={
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-              />
-            }
-          >
+          <GameFooter className={`${gameTheme.sutda.footer} px-4 py-2.5`} message={isMobile ? undefined : messageBox}>
             {/* **自分の役は常に見える。** 伏せているのは相手の札であって、自分の
                 2 枚が何の役かは配られた時点で分かっている。 */}
             {humanPlayer && (

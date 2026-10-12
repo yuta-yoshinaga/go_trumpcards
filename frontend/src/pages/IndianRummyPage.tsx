@@ -15,7 +15,7 @@ import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
+import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -121,8 +121,7 @@ function IndianRummyPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('indianrummy', state);
-  const { cardWidth } = useCardDimensions();
-  const isMobile = useIsMobile();
+  const { cardWidth, isMobile } = useCardDimensions();
   const [keyboardFocusIndex, setKeyboardFocusIndex] = useState<number | null>(null);
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('indianrummy');
@@ -218,6 +217,10 @@ function IndianRummyPageContent() {
         {t('wildBadge')}
       </span>
     ) : null;
+
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
 
   return (
     <GamePageShell
@@ -433,6 +436,8 @@ function IndianRummyPageContent() {
             />
             <CardNavShortcutsPanel arrowSelection data-testid="indian-rummy-kbd-shortcuts" />
 
+            {isMobile && messageBox}
+
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -443,13 +448,7 @@ function IndianRummyPageContent() {
 
           <GameFooter
             className={`${gameTheme.indianrummy.footer} px-4 py-2.5`}
-            message={
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-              />
-            }
+            message={isMobile ? undefined : messageBox}
             actions={
               (isDrawPhase && isHumanTurn) || (isDiscardPhase && isHumanTurn) || isRoundEnd ? (
                 <div className="flex gap-2 items-center flex-wrap">

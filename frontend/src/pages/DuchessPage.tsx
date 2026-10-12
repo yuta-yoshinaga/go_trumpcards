@@ -344,6 +344,10 @@ function DuchessPageContent() {
   const wasteTop = state.waste.length > 0 ? state.waste[state.waste.length - 1] : null;
   const wasteZone: DuchessMoveZone = { zone: 'waste' };
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.duchess')}
@@ -529,6 +533,8 @@ function DuchessPageContent() {
               </p>
             )}
 
+            {isMobile && messageBox}
+
             <ActionLogSection
               isEndPhase={isEnded}
               actionLog={actionLog}
@@ -542,16 +548,7 @@ function DuchessPageContent() {
             groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
           />
 
-          <GameFooter
-            className={`${gameTheme.duchess.footer} px-4 py-2.5`}
-            message={
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-              />
-            }
-          >
+          <GameFooter className={`${gameTheme.duchess.footer} px-4 py-2.5`} message={isMobile ? undefined : messageBox}>
             <ErrorAlert message={error ?? hintError} onRetry={retry} />
             <div className="flex gap-2 items-center flex-wrap">
               {isPlaying && (
