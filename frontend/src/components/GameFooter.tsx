@@ -1,3 +1,7 @@
+function hasNode(node: React.ReactNode): boolean {
+  return node != null && node !== false;
+}
+
 /** Props for {@link GameFooter}. */
 export interface GameFooterProps {
   className?: string;
@@ -58,12 +62,12 @@ export function GameFooter({ className, children, actions, message, dataTutorial
         <div className="min-h-0 overflow-y-auto" data-testid="game-footer-content">
           {children}
         </div>
-        {message != null && message !== false && (
+        {hasNode(message) && (
           <div className="shrink-0" data-testid="game-footer-message">
             {message}
           </div>
         )}
-        {actions != null && actions !== false && (
+        {hasNode(actions) && (
           <div className="shrink-0 pt-2" data-testid="game-footer-actions">
             {actions}
           </div>
@@ -83,7 +87,7 @@ export function GameFooter({ className, children, actions, message, dataTutorial
         .join(' ')}
       style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 12px)' }}
     >
-      {message != null && message !== false && <div data-testid="game-footer-message">{message}</div>}
+      {hasNode(message) && <div data-testid="game-footer-message">{message}</div>}
       {children}
     </footer>
   );
