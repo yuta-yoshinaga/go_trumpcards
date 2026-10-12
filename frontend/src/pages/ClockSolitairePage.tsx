@@ -15,7 +15,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -220,6 +220,7 @@ function ClockSolitairePageContent() {
     previousStepStateRef.current = state;
   }, [state, t]);
   const { cardWidth, cardHeight } = useCardDimensions();
+  const breakpoint = useBreakpoint();
   const viewportWidth = useWindowWidth();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('clocksolitaire', state);
 
@@ -290,7 +291,12 @@ function ClockSolitairePageContent() {
   if (!state) return <GameSkeleton gameKey="clocksolitaire" layout={{ kind: 'centered', rows: [4, 5, 4] }} />;
 
   const availableBoardWidth = Math.max(cardWidth + 16, viewportWidth - 32);
-  const radius = Math.min(cardWidth * 5, 180, (availableBoardWidth - cardWidth - 16) / 2);
+  // Reducing the 180px radius to 157px lifts the lowest card 23px into view.
+  const radius = Math.min(
+    cardWidth * 5,
+    breakpoint === 'largeDesktop' ? 157 : 180,
+    (availableBoardWidth - cardWidth - 16) / 2,
+  );
 
   // Resolve the same text GameMessageBox shows so it can also be announced in a
   // dedicated live region (the visible box is not guaranteed to be a live region).

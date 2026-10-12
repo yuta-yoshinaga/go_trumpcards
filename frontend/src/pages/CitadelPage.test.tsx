@@ -154,6 +154,33 @@ describe('CitadelPage', () => {
     }
   });
 
+  it('compacts foundations on large desktop and keeps their develop size at 800px', async () => {
+    const originalWidth = window.innerWidth;
+    mockExec.mockResolvedValue(playingState);
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1280 });
+    const large = renderWithProviders(<CitadelPage />);
+    const largeCard = (await screen.findAllByRole('button', { name: /組札 1枚/ }))[0];
+    expect(largeCard).toBeDefined();
+    expect(largeCard.querySelector('img')).toHaveStyle({ width: '80px' });
+    large.unmount();
+
+    mockExec.mockResolvedValue({ ...playingState, foundation: [[], [], [], []] });
+    const emptyFoundations = renderWithProviders(<CitadelPage />);
+    const [emptyFoundation] = await screen.findAllByRole('button', { name: /空の組札/ });
+    expect(emptyFoundation).toHaveStyle({ height: '120px' });
+    emptyFoundations.unmount();
+
+    mockExec.mockResolvedValue(playingState);
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 800 });
+    const desktop = renderWithProviders(<CitadelPage />);
+    const desktopCard = (await screen.findAllByRole('button', { name: /組札 1枚/ }))[0];
+    expect(desktopCard).toBeDefined();
+    expect(desktopCard.querySelector('img')).toHaveStyle({ width: '60px' });
+    desktop.unmount();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: originalWidth });
+    window.dispatchEvent(new Event('resize'));
+  });
+
   it('labels all eight tableau columns with their 0-based index (matching hint text)', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<CitadelPage />);

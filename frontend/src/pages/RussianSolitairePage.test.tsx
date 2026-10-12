@@ -75,6 +75,30 @@ beforeEach(() => {
 });
 
 describe('RussianSolitairePage', () => {
+  it('uses a tighter tableau step on large desktop and keeps the develop step at 800px', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1280 });
+    const large = renderWithProviders(<RussianSolitairePage />);
+    const largeCard = await screen.findByRole('button', { name: '♣ 5' });
+    expect(largeCard.closest('[style*="top"]')).toHaveStyle({ top: '56px' });
+    large.unmount();
+
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 800 });
+    const desktop = renderWithProviders(<RussianSolitairePage />);
+    const desktopCard = await screen.findByRole('button', { name: '♣ 5' });
+    expect(desktopCard.closest('[style*="top"]')).toHaveStyle({ top: '44px' });
+    desktop.unmount();
+
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 375 });
+    const mobile = renderWithProviders(<RussianSolitairePage />);
+    const mobileCard = await screen.findByRole('button', { name: '♣ 5' });
+    expect(mobileCard.closest('[style*="top"]')).toHaveStyle({ top: '38px' });
+    mobile.unmount();
+
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: originalWidth });
+    window.dispatchEvent(new Event('resize'));
+  });
+
   it('announces selected tableau cards with aria-pressed while preserving card and block names', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
