@@ -208,6 +208,7 @@ describe('GamePageShell', () => {
       </GamePageShell>,
     );
     expect(container.firstChild).toHaveClass('bg-game-bg-red');
+    expect(container.firstChild).toHaveAttribute('data-felt');
   });
 
   it('passes gamePath to ManualButton', () => {

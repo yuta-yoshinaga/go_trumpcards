@@ -14,7 +14,7 @@ import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
+import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -85,7 +85,6 @@ export const VintPage = withTutorial(VintPageContent, 'vint', VINT_TUTORIAL_STEP
 
 /** Inner content of the Vint page, wrapped by TutorialProvider. */
 function VintPageContent() {
-  const isMobile = useIsMobile();
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('vint');
   const { state, loading, error, exec, retry } = useGameApi(vintApi.exec);
@@ -134,11 +133,15 @@ function VintPageContent() {
   );
   const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('vint', VINT_PHASE_KEYS);
 
   if (!state)
     return <GameSkeleton gameKey="vint" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 13 }} />;
+
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
 
   const human = state.players.find((p) => p.isHuman);
   const isBid = state.phase === VintPhase.BID;
@@ -360,13 +363,7 @@ function VintPageContent() {
                 )}
               </div>
             )}
-
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
+            {isMobile && messageBox}
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -400,6 +397,7 @@ function VintPageContent() {
 
           {/* Footer */}
           <GameFooter
+            message={isMobile ? undefined : messageBox}
             className={`${gameTheme.vint.footer} px-4 py-2.5`}
             actions={
               isHumanBid || isHumanPlay || isHandEnd ? (

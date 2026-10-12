@@ -5,6 +5,7 @@
     "gameOver": "Game Over"
   },
   "title": "Bristol",
+  "landscapeBanner": "Landscape mode recommended",
   "stock": "Stock",
   "tableau": "Tableau",
   "tableauColAria_one": "Build-down column {{num}}, {{card}} ({{count}} card)",

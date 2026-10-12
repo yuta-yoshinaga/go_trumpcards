@@ -20,6 +20,27 @@ beforeEach(() => {
 });
 
 describe('UnsunKarutaPage', () => {
+  it('renders the game message inside the footer message region', async () => {
+    mockExec.mockResolvedValue(makeUnsunKarutaState({ message: 'Footer message' }));
+    renderWithProviders(<UnsunKarutaPage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage.querySelector('[role="status"], [role="alert"]')).toHaveTextContent('Footer message');
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue(makeUnsunKarutaState({ message: 'Mobile message' }));
+    renderWithProviders(<UnsunKarutaPage />);
+
+    const messageText = await screen.findByText('Mobile message');
+    const message = messageText.closest('[role="status"]');
+    expect(message).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+    expect(message?.closest('footer')).not.toBeInTheDocument();
+  });
+
   it('announces every card in the current trick with its player name', async () => {
     mockExec.mockResolvedValue(
       makeUnsunKarutaState({

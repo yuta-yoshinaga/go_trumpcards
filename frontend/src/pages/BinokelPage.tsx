@@ -16,7 +16,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useBinokelGame } from '../hooks/useBinokelGame';
-import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
+import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
@@ -125,8 +125,7 @@ function BinokelPageContent() {
     handleHint,
   } = useBinokelGame();
 
-  const { cardWidth } = useCardDimensions();
-  const isMobile = useIsMobile();
+  const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('binokel', BINOKEL_PHASE_KEYS);
 
   // Selected card indices for Dabb discard phase (3 cards required).
@@ -245,6 +244,10 @@ function BinokelPageContent() {
   if (!state) {
     return <GameSkeleton gameKey="binokel" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 15 }} />;
   }
+
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
 
   const phase = state.phase;
   const humanPlayer = state.players?.find((p) => p.isHuman);
@@ -564,14 +567,8 @@ function BinokelPageContent() {
                 </div>
               )}
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
+            {isMobile && messageBox}
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -632,6 +629,7 @@ function BinokelPageContent() {
           </div>
 
           <GameFooter
+            message={isMobile ? undefined : messageBox}
             className={`${gameTheme.binokel.footer} px-4 py-2.5`}
             actions={
               <div className="flex gap-2 items-center flex-wrap" data-tutorial="bn-action-buttons">
