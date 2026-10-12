@@ -610,7 +610,8 @@ function MightyPageContent() {
                       <table
                         className={scoreTableClass(
                           isLargeDesktop,
-                          'w-full text-sm text-ds-text-muted min-w-[420px] mt-1',
+                          'w-full text-sm text-ds-text-muted min-w-[420px]',
+                          'mt-1',
                         )}
                       >
                         <thead>

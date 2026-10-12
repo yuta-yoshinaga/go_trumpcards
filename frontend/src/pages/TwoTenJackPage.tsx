@@ -338,7 +338,8 @@ function TwoTenJackPageContent() {
                       <table
                         className={scoreTableClass(
                           isLargeDesktop,
-                          'w-full text-sm text-ds-text-muted min-w-[320px] mt-1',
+                          'w-full text-sm text-ds-text-muted min-w-[320px]',
+                          'mt-1',
                         )}
                       >
                         <caption className="sr-only">{t('scoresCaption')}</caption>
