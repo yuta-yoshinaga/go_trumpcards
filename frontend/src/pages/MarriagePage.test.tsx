@@ -212,6 +212,13 @@ beforeEach(() => {
 });
 
 describe('MarriagePage', () => {
+  it('renders desktop hand cards through PlayerHandSection', async () => {
+    renderWithProviders(<MarriagePage />);
+    const footer = await screen.findByTestId('game-footer-content');
+    const hand = footer.querySelector('[data-tutorial="marriage-player-hand"]');
+    expect(hand?.querySelector('[data-hand-card-index="0"]')).toBeInTheDocument();
+  });
+
   it('shows maal for a CPU with a positive maal score at round end', async () => {
     mockExec.mockResolvedValue({
       ...drawPhaseState,
@@ -320,10 +327,10 @@ describe('MarriagePage', () => {
     renderWithProviders(<MarriagePage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
     // Two of the three hand cards are wild (the rank-5 card and the printed joker).
-    expect(screen.getAllByTestId('marriage-wild-badge')).toHaveLength(2);
+    expect(document.querySelectorAll('[data-trump="true"]')).toHaveLength(2);
     // The non-wild ace carries no wild annotation in its label.
     expect(screen.getByRole('button', { name: '♠ A' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /♦ 5 .*ワイルド/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /♦ 5 .*WILD/ })).toBeInTheDocument();
   });
 
   it('marks the adjacent ranks as wild and leaves other ranks unmarked', async () => {
@@ -346,9 +353,9 @@ describe('MarriagePage', () => {
     renderWithProviders(<MarriagePage />);
     await waitFor(() => expect(screen.getByAltText('♠ 8')).toBeInTheDocument());
 
-    expect(screen.getAllByTestId('marriage-wild-badge')).toHaveLength(2);
-    expect(screen.getByRole('button', { name: /♠ 8 .*ワイルド/ })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /♥ 6 .*ワイルド/ })).toBeInTheDocument();
+    expect(document.querySelectorAll('[data-trump="true"]')).toHaveLength(2);
+    expect(screen.getByRole('button', { name: /♠ 8 .*WILD/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /♥ 6 .*WILD/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '♦ 9' })).toBeInTheDocument();
   });
 
@@ -372,9 +379,9 @@ describe('MarriagePage', () => {
     renderWithProviders(<MarriagePage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
 
-    expect(screen.getAllByTestId('marriage-wild-badge')).toHaveLength(2);
-    expect(screen.getByRole('button', { name: /♠ A .*ワイルド/ })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /♥ K .*ワイルド/ })).toBeInTheDocument();
+    expect(document.querySelectorAll('[data-trump="true"]')).toHaveLength(2);
+    expect(screen.getByRole('button', { name: /♠ A .*WILD/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /♥ K .*WILD/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '♦ J' })).toBeInTheDocument();
   });
 
@@ -398,8 +405,8 @@ describe('MarriagePage', () => {
     renderWithProviders(<MarriagePage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
 
-    expect(screen.getAllByTestId('marriage-wild-badge')).toHaveLength(1);
-    expect(screen.getByRole('button', { name: /ワイルド/ })).toBeInTheDocument();
+    expect(document.querySelectorAll('[data-trump="true"]')).toHaveLength(1);
+    expect(screen.getByRole('button', { name: /WILD/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '♠ A' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '♥ K' })).toBeInTheDocument();
   });
@@ -522,7 +529,7 @@ describe('MarriagePage', () => {
     const meldCard = screen.getByRole('button', { name: /♠ 3.*純シーケンス1/ });
     expect(meldCard).toBeInTheDocument();
     expect(meldCard).toHaveAccessibleName(/純シーケンス1/);
-    expect(meldCard.querySelector('[aria-hidden="true"]')).toHaveTextContent('1');
+    expect(meldCard.querySelector('[data-testid^="card-role-badge-"]')).toHaveTextContent('1');
     // Declare button is never blocked by the preview.
     expect(screen.getByRole('button', { name: '宣言' })).not.toBeDisabled();
   });
