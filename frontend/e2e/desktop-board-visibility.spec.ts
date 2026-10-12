@@ -6,6 +6,7 @@ test.use({ viewport: { width: 1280, height: 800 } });
 
 const PAGES = [
   '/grandfathersclock',
+  '/agnes',
   '/bigben',
   '/colorado',
   '/slyfox',
@@ -62,23 +63,40 @@ for (const path of PAGES) {
   });
 }
 
-test('sixcardgolf keeps the draw and discard cards visible after a draw and placement', async ({ page }) => {
-  await navigateTo(page, '/sixcardgolf');
-  const hand = page.getByTestId('scg-seat-0').locator('button');
-  await hand.nth(0).click();
-  await hand.nth(1).click();
-  await page.getByTestId('scg-draw-stock').click();
-  await page.getByTestId('scg-seat-0').locator('button').first().click();
-  await waitForAnimations(page);
-  const stockAndDiscard = await page.evaluate(() =>
-    ['scg-stock', 'scg-discard-draw-option'].map((testId) => {
-      const element = document.querySelector(`[data-tutorial="${testId}"], [data-testid="${testId}"]`);
-      if (!element) return false;
+test('/agnes keeps every large desktop move button visible', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await navigateTo(page, '/agnes');
+  const moveBar = page.getByTestId('agnes-move-bar');
+  await expect(moveBar).toBeVisible();
+  await expect(moveBar.getByRole('button').first()).toBeVisible();
+
+  const result = await page.evaluate(() => {
+    const controls = [...document.querySelectorAll('[data-testid="agnes-move-bar"] button')];
+    return controls.map((element) => {
       const box = element.getBoundingClientRect();
-      return box.top + 52 <= window.innerHeight && box.bottom > 0;
-    }),
-  );
-  expect(stockAndDiscard).toEqual([true, true]);
+      const hit = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
+      return hit === element || element.contains(hit);
+    });
+  });
+  expect(result.length).toBeGreaterThan(0);
+  expect(result.every(Boolean)).toBe(true);
+});
+
+test('/clocksolitaire keeps every clock label and progress badge on top', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await navigateTo(page, '/clocksolitaire');
+  const result = await page.evaluate(() => {
+    const controls = [
+      ...document.querySelectorAll('[data-testid^="clock-pile-label-"], [data-testid^="clock-pile-progress-"]'),
+    ];
+    return controls.map((element) => {
+      const box = element.getBoundingClientRect();
+      const hit = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
+      return hit === element || element.contains(hit);
+    });
+  });
+  expect(result).toHaveLength(26);
+  expect(result.every(Boolean)).toBe(true);
 });
 
 const POKER_BOARDS = [
@@ -133,3 +151,22 @@ for (const { path, selector, firstCardShownPreflop = 0 } of POKER_BOARDS) {
     expect(sawRiver, `${path}: deterministic check/call actions should reach the river`).toBe(true);
   });
 }
+
+test('sixcardgolf keeps the draw and discard cards visible after a draw and placement', async ({ page }) => {
+  await navigateTo(page, '/sixcardgolf');
+  const hand = page.getByTestId('scg-seat-0').locator('button');
+  await hand.nth(0).click();
+  await hand.nth(1).click();
+  await page.getByTestId('scg-draw-stock').click();
+  await page.getByTestId('scg-seat-0').locator('button').first().click();
+  await waitForAnimations(page);
+  const stockAndDiscard = await page.evaluate(() =>
+    ['scg-stock', 'scg-discard-draw-option'].map((testId) => {
+      const element = document.querySelector(`[data-tutorial="${testId}"], [data-testid="${testId}"]`);
+      if (!element) return false;
+      const box = element.getBoundingClientRect();
+      return box.top + 52 <= window.innerHeight && box.bottom > 0;
+    }),
+  );
+  expect(stockAndDiscard).toEqual([true, true]);
+});
