@@ -91,10 +91,7 @@ function PayoutTable({
       >
         <thead>
           <tr>
-            <th
-              scope="col"
-              className="w-[30%] px-0.5 py-0.5 text-left font-medium whitespace-normal sm:w-auto sm:px-1.5"
-            >
+            <th scope="col" className="w-[30%] px-0.5 py-0.5 text-left font-medium sm:w-auto sm:px-1.5">
               {t('payoutTable.hand')}
             </th>
             {bets.map((b) => (
