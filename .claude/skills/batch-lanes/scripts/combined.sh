@@ -36,7 +36,7 @@ cleanup() {
 }
 trap cleanup EXIT
 merged=() conflicted=()
-branches="$(gh pr list --state open --json headRefName -q '.[].headRefName')"
+branches="$(gh pr list --state open --limit 500 --json headRefName -q '.[].headRefName')"
 while IFS= read -r branch; do
   [[ -n "$branch" ]] || continue
   if [[ "$branch" =~ $BATCH_BRANCH_RE ]]; then

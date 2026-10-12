@@ -31,12 +31,11 @@ if [[ "${ALLOW_PATCH_GAPS:-}" != 1 ]] && git -C "$wt" diff --name-only HEAD -- f
         gap_file="${line%%:*}"
         gap_text="${line#* | }"
         gap_text="$(sed 's/^[[:space:]]*//; s/[[:space:]]*$//' <<< "$gap_text")"
-        develop_file="$(git -C "$wt" show "origin/develop:frontend/$gap_file" 2>/dev/null)" || develop_file=""
+        develop_file="$(git -C "$wt" show "origin/develop:frontend/$gap_file" 2>/dev/null | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')" || develop_file=""
         preexisting=0
         # An empty or very short text would prefix-match unrelated develop lines and hide a new gap.
         if [[ -n "$develop_file" && ${#gap_text} -ge 8 ]]; then
           while IFS= read -r develop_line; do
-            develop_line="$(sed 's/^[[:space:]]*//; s/[[:space:]]*$//' <<< "$develop_line")"
             [[ "${develop_line:0:${#gap_text}}" == "$gap_text" ]] && { preexisting=1; break; }
           done <<< "$develop_file"
         fi
