@@ -128,7 +128,7 @@ function SixBidSoloPageContent() {
   );
   const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('sixbidsolo', SIXBIDSOLO_PHASE_KEYS);
 
   if (!state)
@@ -180,6 +180,10 @@ function SixBidSoloPageContent() {
   };
 
   const result = state.lastResult;
+
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
 
   return (
     <GamePageShell
@@ -341,11 +345,7 @@ function SixBidSoloPageContent() {
               </div>
             )}
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
+            {isMobile && messageBox}
 
             <ActionLogSection
               isEndPhase={isGameEnd}
@@ -384,6 +384,7 @@ function SixBidSoloPageContent() {
 
           {/* Footer */}
           <GameFooter
+            message={isMobile ? undefined : messageBox}
             className={`${gameTheme.sixbidsolo.footer} px-4 py-2.5`}
             actions={
               isHumanBid || isHumanDeclare || isHumanPlay || (isHandEnd && !isGameEnd) ? (

@@ -149,6 +149,9 @@ function TwentyNinePageContent() {
     return <GameSkeleton gameKey="twentynine" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 8 }} />;
 
   const humanPlayer = state.players.find((p) => p.isHuman);
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
   const humanIdx = state.players.findIndex((p) => p.isHuman);
   const humanTeam = humanIdx % 2;
   const isHumanTurn = state.isHumanTurn;
@@ -436,13 +439,7 @@ function TwentyNinePageContent() {
               </div>
             </div>
 
-            {/* Message */}
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
+            {isMobile && messageBox}
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -452,7 +449,10 @@ function TwentyNinePageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.twentynine.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.twentynine.footer} px-4 py-2.5`}
+            message={isMobile ? undefined : messageBox}
+          >
             {humanPlayer && (
               <PlayerHandSection
                 humanPlayer={humanPlayer}

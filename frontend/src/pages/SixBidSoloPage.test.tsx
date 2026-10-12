@@ -476,4 +476,27 @@ describe('SixBidSoloPage', () => {
     renderWithProviders(<SixBidSoloPage />);
     await waitFor(() => expect(screen.queryByTestId('sixbidsolo-declare-notice')).not.toBeInTheDocument());
   });
+
+  it('renders the game message in the footer message region', async () => {
+    mockExec.mockResolvedValue(makeState({ message: 'footer placement check' }));
+    renderWithProviders(<SixBidSoloPage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage).toHaveTextContent('footer placement check');
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    mockExec.mockResolvedValue(makeState({ message: 'mobile placement check' }));
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      renderWithProviders(<SixBidSoloPage />);
+      const message = await screen.findByText('mobile placement check');
+      expect(message.closest('[data-testid="game-footer-message"]')).toBeNull();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
 });

@@ -16,7 +16,7 @@ import { KbdBadge } from '../components/KbdBadge';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
+import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -114,7 +114,6 @@ export const KillePage = withTutorial(KillePageContent, 'kille', KILLE_TUTORIAL_
 
 /** Inner content of the Kille page, wrapped by TutorialProvider. */
 function KillePageContent() {
-  const isMobile = useIsMobile();
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('kille');
   const { state, loading, error, exec, retry } = useGameApi(killeApi.exec);
@@ -151,7 +150,7 @@ function KillePageContent() {
   );
   const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('kille', KILLE_PHASE_KEYS);
 
   const kbIsHumanTurn =
@@ -205,6 +204,10 @@ function KillePageContent() {
     hideActionLog();
     exec('reset', { config: { stake } });
   };
+
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
 
   return (
     <GamePageShell
@@ -398,11 +401,7 @@ function KillePageContent() {
               </div>
             </details>
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
+            {isMobile && messageBox}
 
             <ActionLogSection
               isEndPhase={isGameEnd}
@@ -413,7 +412,7 @@ function KillePageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.kille.footer} px-4 py-2.5`}>
+          <GameFooter className={`${gameTheme.kille.footer} px-4 py-2.5`} message={isMobile ? undefined : messageBox}>
             <div className="mb-2" data-tutorial="kille-card">
               <div className="text-ds-text-muted text-xs mb-1">{t('yourCard')}</div>
               {humanPlayer?.card ? (

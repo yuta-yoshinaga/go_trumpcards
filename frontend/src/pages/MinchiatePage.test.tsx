@@ -12,6 +12,18 @@ vi.mock('../api/gameApi', () => ({
   actionLogApi: { minchiate: vi.fn() },
 }));
 
+const mobileState = vi.hoisted(() => ({ isMobile: undefined as boolean | undefined }));
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useCardDimensions: () => {
+      const dimensions = actual.useCardDimensions();
+      return mobileState.isMobile === undefined ? dimensions : { ...dimensions, isMobile: mobileState.isMobile };
+    },
+  };
+});
+
 const mockExec = vi.mocked(minchiateApi.exec);
 
 const playState = makeMinchiateState();
@@ -36,11 +48,31 @@ const roundEndState = makeMinchiateState({
 });
 
 beforeEach(() => {
+  mobileState.isMobile = undefined;
   mockExec.mockReset();
   mockExec.mockResolvedValue(playState);
 });
 
 describe('MinchiatePage', () => {
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue(makeMinchiateState({ message: 'Footer message location' }));
+    renderWithProviders(<MinchiatePage />);
+
+    const messageSlot = await screen.findByTestId('game-footer-message');
+    expect(messageSlot).toHaveTextContent('Footer message location');
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    mockExec.mockResolvedValue(makeMinchiateState({ message: 'Footer message location' }));
+    mobileState.isMobile = true;
+    renderWithProviders(<MinchiatePage />);
+
+    const messageText = await screen.findByText('Footer message location');
+    const message = messageText.closest('[role="status"]');
+    expect(message).toHaveTextContent('Footer message location');
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+  });
+
   it('uses the taller mobile footer cap', async () => {
     renderWithProviders(<MinchiatePage />);
     const content = await screen.findByTestId('game-footer-content');

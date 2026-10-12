@@ -124,7 +124,7 @@ function FiveHundredPageContent() {
     reset,
   } = useFiveHundredGame();
   useTutorialMessageParams({ targetScore: state ? state.config.targetScore : config.targetScore });
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -187,6 +187,9 @@ function FiveHundredPageContent() {
   const isTrickEnd = state.phase === FiveHundredPhase.TRICK_END;
   const isRoundEnd = state.phase === FiveHundredPhase.ROUND_END;
   const isGameEnd = state.phase === FiveHundredPhase.GAME_END || state.gameEndFlag;
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
 
   const human = state.players[0];
   const humanTeam = human.team;
@@ -417,11 +420,7 @@ function FiveHundredPageContent() {
               </span>
             </div>
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
+            {isMobile && messageBox}
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
           </div>
 
@@ -455,7 +454,10 @@ function FiveHundredPageContent() {
             ]}
           />
 
-          <GameFooter className={`${gameTheme.fivehundred.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.fivehundred.footer} px-4 py-2.5`}
+            message={isMobile ? undefined : messageBox}
+          >
             <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="fh-actions">
               {isHumanBidTurn && (
                 <>

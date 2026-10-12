@@ -176,6 +176,9 @@ function SalicLawPageContent() {
   const isGameClear = state.phase === SalicLawPhase.GAME_CLEAR;
   const isGameOver = state.phase === SalicLawPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
   const foundationCount = isGameOver ? state.foundation.reduce((sum, pile) => sum + pile.length, 0) : 0;
   const autoCompleteReady = state.canAutoComplete;
   const selectedTargets =
@@ -486,12 +489,7 @@ function SalicLawPageContent() {
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
             </div>
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
+            {isMobile && messageBox}
             {isGameOver && (
               <p data-testid="sl-gameover-summary" className="text-ds-text-muted text-sm text-center mt-1">
                 {t('gameOverSummary', {
@@ -500,7 +498,6 @@ function SalicLawPageContent() {
                 })}
               </p>
             )}
-
             <ActionLogSection
               isEndPhase={isEnded}
               availableDuringPlay
@@ -515,7 +512,10 @@ function SalicLawPageContent() {
             groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
           />
 
-          <GameFooter className={`${gameTheme.saliclaw.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.saliclaw.footer} px-4 py-2.5`}
+            message={isMobile ? undefined : messageBox}
+          >
             <ErrorAlert message={error ?? hintError} onRetry={retry} />
             <div className="flex gap-2 items-center flex-wrap">
               {isPlaying && (
