@@ -18,6 +18,18 @@ vi.mock('../hooks/useGameHint', () => ({
   useGameHint: vi.fn(() => ({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() })),
 }));
 
+const mobileState = vi.hoisted(() => ({ isMobile: undefined as boolean | undefined }));
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useCardDimensions: () => {
+      const d = actual.useCardDimensions();
+      return mobileState.isMobile === undefined ? d : { ...d, isMobile: mobileState.isMobile };
+    },
+  };
+});
+
 const mockExec = vi.mocked(somersetApi.exec);
 const mockActionLog = vi.mocked(actionLogApi.somerset);
 
@@ -75,9 +87,21 @@ describe('SomersetPage', () => {
   afterEach(() => localStorage.clear());
 
   beforeEach(() => {
+    mobileState.isMobile = undefined;
     vi.clearAllMocks();
     mockActionLog.mockResolvedValue({ entries: [] });
     vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    mockExec.mockResolvedValue({ ...gameOverState, message: 'Mobile message', messageCode: undefined });
+    mobileState.isMobile = true;
+    renderWithProviders(<SomersetPage />);
+
+    const messageText = await screen.findByText('Mobile message');
+    const message = messageText.closest('[role="status"]');
+    expect(message).toHaveTextContent('Mobile message');
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
   });
 
   it('opens the action log during play and disables game shortcuts while it is open', async () => {

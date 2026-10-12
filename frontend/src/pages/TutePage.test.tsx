@@ -56,6 +56,26 @@ beforeEach(() => {
 });
 
 describe('TutePage', () => {
+  it('renders the game message in the footer message slot', async () => {
+    mobileState.isMobile = false;
+    mockExec.mockResolvedValue(makeTuteState({ message: 'Footer message location' }));
+    renderWithProviders(<TutePage />);
+
+    const messageSlot = await screen.findByTestId('game-footer-message');
+    expect(messageSlot).toHaveTextContent('Footer message location');
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    mockExec.mockResolvedValue(makeTuteState({ message: 'Footer message location' }));
+    mobileState.isMobile = true;
+    renderWithProviders(<TutePage />);
+
+    const messageText = await screen.findByText('Footer message location');
+    const message = messageText.closest('[role="status"]');
+    expect(message).toHaveTextContent('Footer message location');
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<TutePage />);

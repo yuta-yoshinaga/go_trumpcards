@@ -133,7 +133,7 @@ function LiteraturePageContent() {
   );
   const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('literature', LITERATURE_PHASE_KEYS);
 
   // A claim is the heaviest move in the game: one wrong seat voids the set or
@@ -216,6 +216,10 @@ function LiteraturePageContent() {
     hideActionLog();
     exec('reset');
   };
+
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
 
   return (
     <GamePageShell
@@ -466,6 +470,7 @@ function LiteraturePageContent() {
               </div>
             )}
 
+            {isMobile && messageBox}
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -505,13 +510,7 @@ function LiteraturePageContent() {
           {/* Footer */}
           <GameFooter
             className={`${gameTheme.literature.footer} px-4 py-2.5`}
-            message={
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-              />
-            }
+            message={!isMobile && messageBox}
             actions={
               isHumanTurn ? (
                 <div className="flex flex-wrap gap-2" data-tutorial="literature-actions">

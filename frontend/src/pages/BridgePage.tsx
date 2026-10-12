@@ -265,6 +265,10 @@ function BridgePageContent() {
     return t('contract', { level: state.contractLevel, suit });
   };
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.bridge')}
@@ -589,14 +593,8 @@ function BridgePageContent() {
               </div>
             </div>
 
-            {/* Message */}
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
             {/* Action log */}
+            {isMobile && messageBox}
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -639,6 +637,7 @@ function BridgePageContent() {
           {/* Footer */}
           <GameFooter
             className={`${gameTheme.bridge.footer} px-4 py-2.5`}
+            message={!isMobile && messageBox}
             actions={
               isHumanBidTurn || isHumanTurn || isTrickEnd || isRoundEnd ? (
                 <div className="flex gap-1 items-center flex-wrap" data-tutorial="br-play-button">

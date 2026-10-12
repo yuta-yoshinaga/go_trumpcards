@@ -218,6 +218,12 @@ function SpadesPageContent() {
     return w.level === 'danger' ? 'text-ds-warning font-bold' : 'text-ds-warning';
   };
 
+  const messageBox = (
+    <div data-tutorial="sp-bags-info">
+      <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+    </div>
+  );
+
   return (
     <GamePageShell
       title={tc('nav.spades')}
@@ -545,6 +551,7 @@ function SpadesPageContent() {
             </div>
 
             {/* Action log */}
+            {isMobile && messageBox}
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -588,15 +595,7 @@ function SpadesPageContent() {
           {/* Footer */}
           <GameFooter
             className={`${gameTheme.spades.footer} px-4 py-2.5`}
-            message={
-              <div data-tutorial="sp-bags-info">
-                <GameMessageBox
-                  message={state.message}
-                  messageCode={state.messageCode}
-                  messageParams={state.messageParams}
-                />
-              </div>
-            }
+            message={!isMobile && messageBox}
             actions={
               isHumanBidTurn || isHumanTurn || isTrickEnd || isRoundEnd ? (
                 <div className="flex gap-2 items-center">

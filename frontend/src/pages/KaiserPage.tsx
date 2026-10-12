@@ -139,7 +139,7 @@ function KaiserPageContent() {
   );
   const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('kaiser', KAISER_PHASE_KEYS);
 
   // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
@@ -212,6 +212,10 @@ function KaiserPageContent() {
 
   const bidValues: number[] = [];
   for (let v = state.minBid; v <= state.maxBid; v++) bidValues.push(v);
+
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
 
   return (
     <GamePageShell
@@ -401,6 +405,7 @@ function KaiserPageContent() {
               </div>
             )}
 
+            {isMobile && messageBox}
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -429,13 +434,7 @@ function KaiserPageContent() {
           {/* Footer */}
           <GameFooter
             className={`${gameTheme.kaiser.footer} px-4 py-2.5`}
-            message={
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-              />
-            }
+            message={!isMobile && messageBox}
             actions={
               <div
                 className="flex flex-wrap gap-2 items-center"

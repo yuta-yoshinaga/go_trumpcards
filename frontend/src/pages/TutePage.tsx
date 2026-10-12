@@ -166,6 +166,10 @@ function TutePageContent() {
     reset();
   };
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.tute')}
@@ -328,13 +332,7 @@ function TutePageContent() {
               </div>
             </div>
 
-            {/* Message */}
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
+            {isMobile && messageBox}
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -344,7 +342,7 @@ function TutePageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.tute.footer} px-4 py-2.5`}>
+          <GameFooter className={`${gameTheme.tute.footer} px-4 py-2.5`} message={!isMobile && messageBox}>
             {humanPlayer && (
               <PlayerHandSection
                 humanPlayer={humanPlayer}

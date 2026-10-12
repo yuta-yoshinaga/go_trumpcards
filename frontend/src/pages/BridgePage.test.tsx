@@ -12,6 +12,18 @@ vi.mock('../api/gameApi', () => ({
   actionLogApi: { bridge: vi.fn() },
 }));
 
+const mobileState = vi.hoisted(() => ({ isMobile: undefined as boolean | undefined }));
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useCardDimensions: () => {
+      const dimensions = actual.useCardDimensions();
+      return mobileState.isMobile === undefined ? dimensions : { ...dimensions, isMobile: mobileState.isMobile };
+    },
+  };
+});
+
 const mockExec = vi.mocked(bridgeApi.exec);
 
 const bidPhaseState: BridgeResponse = {
@@ -178,10 +190,30 @@ const redoublableBidTurnState: BridgeResponse = {
 };
 
 beforeEach(() => {
+  mobileState.isMobile = undefined;
   mockExec.mockResolvedValue(bidPhaseState);
 });
 
 describe('BridgePage', () => {
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, message: 'Footer message location' });
+    renderWithProviders(<BridgePage />);
+
+    const messageSlot = await screen.findByTestId('game-footer-message');
+    expect(messageSlot).toHaveTextContent('Footer message location');
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, message: 'Footer message location' });
+    mobileState.isMobile = true;
+    renderWithProviders(<BridgePage />);
+
+    const messageText = await screen.findByText('Footer message location');
+    const message = messageText.closest('[role="status"]');
+    expect(message).toHaveTextContent('Footer message location');
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+  });
+
   it('keeps bidding controls in the fixed footer actions row', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<BridgePage />);

@@ -13,6 +13,18 @@ vi.mock('../api/gameApi', () => ({
   actionLogApi: { literature: vi.fn() },
 }));
 
+const mobileState = vi.hoisted(() => ({ isMobile: undefined as boolean | undefined }));
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useCardDimensions: () => {
+      const d = actual.useCardDimensions();
+      return mobileState.isMobile ? { ...d, isMobile: true } : d;
+    },
+  };
+});
+
 const mockExec = vi.mocked(literatureApi.exec);
 
 const card = (design: CardDesign, value: number) => ({ design, value });
@@ -63,8 +75,20 @@ function makeState(overrides?: Partial<LiteratureResponse>): LiteratureResponse 
 
 describe('LiteraturePage', () => {
   beforeEach(() => {
+    mobileState.isMobile = undefined;
     vi.clearAllMocks();
     mockExec.mockResolvedValue(makeState());
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    mockExec.mockResolvedValue(makeState({ message: 'Mobile message' }));
+    mobileState.isMobile = true;
+    renderWithProviders(<LiteraturePage />);
+
+    const messageText = await screen.findByText('Mobile message');
+    const message = messageText.closest('[role="status"]');
+    expect(message).toHaveTextContent('Mobile message');
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
   });
 
   it('resets on mount', async () => {
