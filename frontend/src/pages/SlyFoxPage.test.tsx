@@ -102,14 +102,14 @@ describe('SlyFoxPage', () => {
     }
   });
 
-  it('uses the compact card size on desktop', async () => {
+  it('keeps the develop card size and markup at desktop width', async () => {
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 800 });
     try {
       renderWithProviders(<SlyFoxPage />);
 
       const foundations = await screen.findByTestId('co-foundation-0');
-      expect(foundations.querySelector('img')).toHaveStyle({ width: '80px' });
-      expect(screen.getByTestId('co-tableau-0').querySelector('img')).toHaveStyle({ width: '80px' });
+      expect(foundations.querySelector('img')).toHaveStyle({ width: '60px' });
+      expect(screen.queryByTestId('co-top-row')).not.toBeInTheDocument();
     } finally {
       Object.defineProperty(window, 'innerWidth', {
         writable: true,
@@ -129,7 +129,7 @@ describe('SlyFoxPage', () => {
       expect(topRow).toContainElement(foundations);
       expect(topRow).toContainElement(screen.getByTestId('co-deal-button'));
       expect(foundations.querySelector('img')).toHaveStyle({ width: '80px' });
-      expect(document.querySelector('[data-tutorial="co-tableau"]')).toHaveClass('grid-cols-10');
+      expect(document.querySelector('[data-tutorial="co-tableau"]')).toHaveClass('flex-wrap');
     } finally {
       Object.defineProperty(window, 'innerWidth', { configurable: true, value: original });
     }

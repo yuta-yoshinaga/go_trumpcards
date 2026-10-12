@@ -90,7 +90,7 @@ describe('BigBenPage', () => {
     await waitFor(() => expect(screen.getAllByLabelText(/文字盤\d+ \(\d+時\)/).length).toBe(12));
   });
 
-  it('keeps the twelve compact clock slots on one desktop row', async () => {
+  it('wraps the twelve compact clock slots at large desktop', async () => {
     const original = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
     mockExec.mockResolvedValue(playingState);
@@ -98,9 +98,24 @@ describe('BigBenPage', () => {
       renderWithProviders(<BigBenPage />);
       await screen.findByLabelText(/文字盤0/);
       const clock = document.querySelector('[data-tutorial="gc-clock"]') as HTMLElement;
-      expect(clock).toHaveClass('flex-nowrap');
+      expect(clock).toHaveClass('flex-wrap');
       expect(clock.querySelectorAll('button, [role="img"]')).toHaveLength(12);
       expect(clock.querySelector('img')).toHaveStyle({ width: '80px' });
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: original });
+    }
+  });
+
+  it('keeps develop card sizing and clock markup at desktop width', async () => {
+    const original = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 800 });
+    mockExec.mockResolvedValue(playingState);
+    try {
+      renderWithProviders(<BigBenPage />);
+      await screen.findByLabelText(/文字盤0/);
+      const clock = document.querySelector('[data-tutorial="gc-clock"]') as HTMLElement;
+      expect(clock).toHaveClass('flex-wrap');
+      expect(clock.querySelector('img')).toHaveStyle({ width: '60px' });
     } finally {
       Object.defineProperty(window, 'innerWidth', { configurable: true, value: original });
     }

@@ -16,7 +16,7 @@ import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useIsMobile } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { isRejectedAction, useGameApi } from '../hooks/useGameApi';
@@ -146,9 +146,10 @@ function ColoradoPageContent() {
   );
   const { handleCommand } = useCliGame(runApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  const isMobile = useIsMobile();
-  const playCardWidth = isMobile ? MOBILE_PLAY_CARD_WIDTH : DESKTOP_COMPACT_CARD_WIDTH;
-  const playCardHeight = Math.round(playCardWidth * 1.5);
+  const { cardWidth, cardHeight, isMobile } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
+  const playCardWidth = isMobile ? MOBILE_PLAY_CARD_WIDTH : isLargeDesktop ? DESKTOP_COMPACT_CARD_WIDTH : cardWidth;
+  const playCardHeight = isMobile || isLargeDesktop ? Math.round(playCardWidth * 1.5) : cardHeight;
 
   const handleManualReset = useCallback(() => {
     void runApi('reset');
@@ -303,11 +304,11 @@ function ColoradoPageContent() {
             </span>
             <div className="mb-1 text-xs text-ds-text-muted">{t('foundations')}</div>
             <div
-              className={`${isMobile ? 'contents' : 'flex gap-2 mb-2 flex-nowrap'} sm:mb-5`}
-              data-testid="co-top-row"
+              className={`${isLargeDesktop ? 'flex flex-wrap justify-center gap-2 mb-2' : 'contents'} sm:mb-5`}
+              data-testid={isLargeDesktop ? 'co-top-row' : undefined}
             >
               <div
-                className={`flex gap-1 ${isMobile ? 'mb-2 flex-nowrap sm:gap-2 sm:mb-5 sm:flex-wrap' : 'flex-nowrap'}`}
+                className={`flex gap-1 ${isLargeDesktop ? 'flex-wrap' : 'mb-2 flex-nowrap sm:gap-2 sm:mb-5 sm:flex-wrap'}`}
                 data-tutorial="co-foundations"
               >
                 {Array.from({ length: FOUNDATION_CNT }, (_, idx) => {
@@ -365,10 +366,7 @@ function ColoradoPageContent() {
                 })}
               </div>
 
-              <div
-                className={`flex gap-3 flex-wrap items-start ${isMobile ? 'mb-2 sm:mb-5' : 'flex-nowrap'}`}
-                data-tutorial="co-stock"
-              >
+              <div className={`flex gap-3 flex-wrap items-start mb-2 sm:mb-5`} data-tutorial="co-stock">
                 <div className="flex flex-col items-center">
                   <div className="text-[11px] mb-0.5 text-ds-text-muted">
                     {t('stock')}:{' '}
@@ -441,7 +439,7 @@ function ColoradoPageContent() {
 
             <div className="mb-2 text-xs text-ds-text-muted">{t('tableau')}</div>
             <div
-              className={`items-start ${isMobile ? 'flex flex-wrap gap-2' : 'grid grid-cols-10 gap-2'}`}
+              className={`items-start ${isLargeDesktop ? 'flex flex-wrap justify-center gap-2' : 'flex gap-2 flex-wrap'}`}
               data-tutorial="co-tableau"
             >
               {Array.from({ length: TABLEAU_CNT }, (_, idx) => {
@@ -453,7 +451,11 @@ function ColoradoPageContent() {
                 // only while it is empty.
                 const isTarget = source?.kind === 'waste' || (source?.kind === 'stock' && isEmpty) ? true : false;
                 return (
-                  <div key={`t-${idx.toString()}`} className="flex flex-col items-center">
+                  <div
+                    key={`t-${idx.toString()}`}
+                    className="flex flex-col items-center"
+                    style={{ width: isLargeDesktop ? playCardWidth : undefined }}
+                  >
                     <div className="text-[11px] mb-0.5 text-ds-text-muted">
                       T{idx} ({pile.length})
                     </div>

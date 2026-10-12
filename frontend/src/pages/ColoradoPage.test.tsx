@@ -83,6 +83,7 @@ describe('ColoradoPage', () => {
     localStorage.clear();
     mockExec.mockResolvedValue(makeState());
     mobileState.isMobile = true;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
   });
 
   it('resets on mount', async () => {
@@ -114,15 +115,26 @@ describe('ColoradoPage', () => {
       expect(topRow).toContainElement(foundations);
       expect(topRow).toContainElement(screen.getByTestId('co-draw-button'));
       expect(foundations.querySelector('img')).toHaveStyle({ width: '80px' });
-      expect(document.querySelector('[data-tutorial="co-tableau"]')).toHaveClass('grid-cols-10');
+      expect(document.querySelector('[data-tutorial="co-tableau"]')).toHaveClass('flex-wrap');
     } finally {
       mobileState.isMobile = true;
       Object.defineProperty(window, 'innerWidth', { configurable: true, value: original });
     }
   });
 
+  it('keeps develop Colorado markup and card size at desktop width', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 800 });
+    mobileState.isMobile = false;
+    renderWithProviders(<ColoradoPage />);
+    const foundation = await screen.findByTestId('co-foundation-0');
+    expect(foundation.querySelector('img')).toHaveStyle({ width: '60px' });
+    expect(screen.queryByTestId('co-top-row')).not.toBeInTheDocument();
+    expect(document.querySelector('[data-tutorial="co-tableau"]')).toHaveClass('flex-wrap');
+  });
+
   it('keeps a move status region in the DOM before the board loads', () => {
     mockExec.mockReturnValue(new Promise(() => {}));
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
     renderWithProviders(<ColoradoPage />);
     expect(screen.getAllByRole('status').length).toBeGreaterThan(0);
   });

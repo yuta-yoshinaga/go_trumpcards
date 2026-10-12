@@ -18,7 +18,7 @@ import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
@@ -108,6 +108,7 @@ function GrandfathersClockPageContent() {
   );
   const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const windowWidth = useWindowWidth();
   const dims = useMemo(() => {
     if (!isMobile) return { cw: cardWidth, ch: cardHeight, co: cardOverlap };
@@ -119,8 +120,8 @@ function GrandfathersClockPageContent() {
     const co = Math.round(cw * 0.32);
     return { cw, ch, co };
   }, [isMobile, windowWidth, cardWidth, cardHeight, cardOverlap]);
-  const clockCardWidth = isMobile ? dims.cw : DESKTOP_COMPACT_CARD_WIDTH;
-  const clockCardHeight = isMobile ? dims.ch : Math.round(DESKTOP_COMPACT_CARD_WIDTH * 1.5);
+  const clockCardWidth = isLargeDesktop ? DESKTOP_COMPACT_CARD_WIDTH : dims.cw;
+  const clockCardHeight = isLargeDesktop ? Math.round(DESKTOP_COMPACT_CARD_WIDTH * 1.5) : dims.ch;
 
   const isPlayingForKbd = state?.phase === GrandfathersClockPhase.PLAYING;
 
@@ -317,9 +318,10 @@ function GrandfathersClockPageContent() {
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
-          <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
+          {/* 12 x 80 + 11 x 4 = 1004px; keep enough content width for the clock row. */}
+          <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4">
             <div
-              className={`flex justify-center gap-1 mb-3 ${isMobile ? 'flex-wrap sm:gap-2' : 'flex-nowrap lg:-mx-8'}`}
+              className={`flex flex-wrap justify-center gap-1 mb-3 ${isLargeDesktop ? '' : 'sm:gap-2'}`}
               data-tutorial="gc-clock"
             >
               {state.foundation.map((face, idx) => {
