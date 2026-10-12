@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { kingAlbertApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
@@ -62,6 +62,65 @@ const gameOverState: KingAlbertResponse = {
 };
 
 describe('KingAlbertPage', () => {
+  it('groups the reserve and foundations in one compact desktop row', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    try {
+      mockExec.mockResolvedValue(playingState);
+      renderWithProviders(<KingAlbertPage />);
+      act(() => window.dispatchEvent(new Event('resize')));
+      const row = await screen.findByTestId('ka-top-row');
+      expect(row).toContainElement(row.querySelector('[data-tutorial="ka-reserve"]'));
+      expect(row).toContainElement(row.querySelector('[data-tutorial="ka-foundation"]'));
+      expect(row).toHaveClass('gap-1');
+      expect(row.querySelector('[data-tutorial="ka-reserve"]')).toHaveClass('flex-col', 'gap-1');
+      expect(row.querySelector('[data-tutorial="ka-reserve"] > div')).toHaveClass('flex', 'gap-1');
+      expect(row.querySelector('[data-tutorial="ka-foundation"]')).toHaveClass('gap-1');
+      expect(screen.getByLabelText('空のリザーブ枠 1')).toHaveStyle({ width: '80px', height: '120px' });
+      expect(screen.getByTestId('ka-reserve-label-0').parentElement).toHaveClass('flex-col');
+      expect(row.querySelector('[data-tutorial="ka-reserve"] [data-testid="animated-card"] img')).toHaveStyle({
+        width: '80px',
+      });
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+    }
+  });
+
+  it('keeps the mobile reserve layout without a top row', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 390 });
+    try {
+      mockExec.mockResolvedValue(playingState);
+      renderWithProviders(<KingAlbertPage />);
+      await screen.findByTestId('ka-reserve-label-0');
+      expect(screen.queryByTestId('ka-top-row')).not.toBeInTheDocument();
+      expect(screen.getByTestId('ka-reserve-label-0').parentElement?.parentElement).toHaveClass('flex', 'flex-wrap');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+    }
+  });
+
+  it('keeps the desktop reserve and foundation layout from develop at 800px', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 800 });
+    try {
+      mockExec.mockResolvedValue(playingState);
+      const { container } = renderWithProviders(<KingAlbertPage />);
+      await screen.findByTestId('ka-reserve-label-0');
+      expect(screen.queryByTestId('ka-top-row')).not.toBeInTheDocument();
+      expect(screen.getByLabelText('空のリザーブ枠 1')).toHaveStyle({ width: '60px', height: '84px' });
+      expect(container.querySelector('[data-tutorial="ka-reserve"]')).toHaveClass(
+        'flex',
+        'flex-wrap',
+        'gap-1',
+        'sm:gap-2',
+        'items-start',
+      );
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+    }
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });

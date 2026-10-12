@@ -109,6 +109,12 @@ describe('CariocaPage', () => {
     expect(hand?.className).toContain('lg:bottom-0');
   });
 
+  it('keeps every hand card in the hand fan', async () => {
+    renderWithProviders(<CariocaPage />);
+    await waitFor(() => expect(document.querySelector('[data-tutorial="ca-hand"] button')).not.toBeNull());
+    const section = document.querySelector('[data-tutorial="ca-hand"]');
+    expect(section?.querySelectorAll('button img')).toHaveLength(baseHand.length);
+  });
   it('collapses CPU seats and explanatory rules on mobile, and opens CPU seats on desktop', async () => {
     mobileState.isMobile = true;
     renderWithProviders(<CariocaPage />);
