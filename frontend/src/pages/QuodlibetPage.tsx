@@ -407,12 +407,6 @@ function QuodlibetPageContent() {
               </div>
             </div>
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -421,7 +415,16 @@ function QuodlibetPageContent() {
             />
           </div>
 
-          <GameFooter className={`${gameTheme.quodlibet.footer} px-4 py-2.5`}>
+          <GameFooter
+            message={
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            }
+            className={`${gameTheme.quodlibet.footer} px-4 py-2.5`}
+          >
             {humanPlayer && (
               <PlayerHandSection
                 humanPlayer={humanPlayer}

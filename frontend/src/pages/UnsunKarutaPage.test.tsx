@@ -20,6 +20,14 @@ beforeEach(() => {
 });
 
 describe('UnsunKarutaPage', () => {
+  it('renders the game message inside the footer message region', async () => {
+    mockExec.mockResolvedValue(makeUnsunKarutaState({ message: 'Footer message' }));
+    renderWithProviders(<UnsunKarutaPage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage.querySelector('[role="status"], [role="alert"]')).toHaveTextContent('Footer message');
+  });
+
   it('announces every card in the current trick with its player name', async () => {
     mockExec.mockResolvedValue(
       makeUnsunKarutaState({

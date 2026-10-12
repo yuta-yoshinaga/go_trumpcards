@@ -69,6 +69,14 @@ beforeEach(() => {
 });
 
 describe('QuodlibetPage', () => {
+  it('renders the game message inside the footer message region', async () => {
+    mockExec.mockResolvedValue(makeQuodlibetState({ message: 'Footer message' }));
+    renderWithProviders(<QuodlibetPage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage.querySelector('[role="status"], [role="alert"]')).toHaveTextContent('Footer message');
+  });
+
   it('collapses scores and CPU hands on mobile and opens them on desktop', async () => {
     renderWithProviders(<QuodlibetPage />);
     await screen.findByText('ディール 1/12');

@@ -361,12 +361,6 @@ function VintPageContent() {
               </div>
             )}
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -400,6 +394,13 @@ function VintPageContent() {
 
           {/* Footer */}
           <GameFooter
+            message={
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            }
             className={`${gameTheme.vint.footer} px-4 py-2.5`}
             actions={
               isHumanBid || isHumanPlay || isHandEnd ? (

@@ -82,6 +82,14 @@ function handButtons() {
 }
 
 describe('VintPage', () => {
+  it('renders the game message inside the footer message region', async () => {
+    mockExec.mockResolvedValue(makeState({ message: 'Footer message' }));
+    renderWithProviders(<VintPage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage.querySelector('[role="status"], [role="alert"]')).toHaveTextContent('Footer message');
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     mockExec.mockResolvedValue(makeState());

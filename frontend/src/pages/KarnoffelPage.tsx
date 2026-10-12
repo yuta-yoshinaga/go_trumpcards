@@ -363,12 +363,6 @@ function KarnoffelPageContent() {
               </div>
             )}
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -378,7 +372,16 @@ function KarnoffelPageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.karnoffel.footer} px-4 py-2.5`}>
+          <GameFooter
+            message={
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            }
+            className={`${gameTheme.karnoffel.footer} px-4 py-2.5`}
+          >
             <div className="mb-2" data-tutorial="karnoffel-hand">
               <div className="text-ds-text-muted text-xs mb-1">{t('yourHand')}</div>
               <div className="flex flex-wrap gap-1">

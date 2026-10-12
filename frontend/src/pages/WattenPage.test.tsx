@@ -79,6 +79,14 @@ beforeEach(() => {
 });
 
 describe('WattenPage', () => {
+  it('renders the game message inside the footer message region', async () => {
+    mockExec.mockResolvedValue(makeWattenState({ message: 'Footer message' }));
+    renderWithProviders(<WattenPage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage.querySelector('[role="status"], [role="alert"]')).toHaveTextContent('Footer message');
+  });
+
   it('keeps the hand in the footer and puts declare choices and trump guidance in the play area', async () => {
     mockExec.mockResolvedValue(declarePhaseState);
     renderWithProviders(<WattenPage />);

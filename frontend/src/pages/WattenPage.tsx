@@ -481,12 +481,6 @@ function WattenPageContent() {
               </div>
             </div>
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -546,6 +540,13 @@ function WattenPageContent() {
 
           {/* Footer */}
           <GameFooter
+            message={
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            }
             className={`${gameTheme.watten.footer} px-4 py-2.5`}
             actions={
               canDeclare || canPlay || canRespond || isRoundEnd ? (

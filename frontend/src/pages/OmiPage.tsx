@@ -424,11 +424,6 @@ function OmiPageContent() {
             </div>
 
             {/* Message */}
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
 
             {/* Action log */}
             <ActionLogSection
@@ -440,7 +435,16 @@ function OmiPageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.omi.footer} px-4 py-2.5`}>
+          <GameFooter
+            message={
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            }
+            className={`${gameTheme.omi.footer} px-4 py-2.5`}
+          >
             {/* Human cards */}
             {humanPlayer && (
               <div

@@ -360,8 +360,6 @@ function GaigelPageContent() {
           ]}
         />
 
-        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
-
         <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
         <ActionLogSection
@@ -372,7 +370,12 @@ function GaigelPageContent() {
         />
       </div>
 
-      <GameFooter className={`${gameTheme.gaigel.footer} px-4 py-2.5`}>
+      <GameFooter
+        message={
+          <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+        }
+        className={`${gameTheme.gaigel.footer} px-4 py-2.5`}
+      >
         {humanPlayer && (
           <PlayerHandSection
             humanPlayer={humanPlayer}

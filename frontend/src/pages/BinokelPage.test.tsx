@@ -193,6 +193,14 @@ afterEach(() => {
 });
 
 describe('BinokelPage', () => {
+  it('renders the game message inside the footer message region', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, message: 'Footer message' });
+    renderWithProviders(<BinokelPage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage.querySelector('[role="status"], [role="alert"]')).toHaveTextContent('Footer message');
+  });
+
   it('collapses CPU seats and meld reference on mobile while keeping the human seat visible', async () => {
     renderWithProviders(<BinokelPage />);
     const cpu = await screen.findByTestId('cpu-accordion');

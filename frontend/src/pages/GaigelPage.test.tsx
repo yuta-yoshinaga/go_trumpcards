@@ -76,6 +76,14 @@ beforeEach(() => {
 });
 
 describe('GaigelPage', () => {
+  it('renders the game message inside the footer message region', async () => {
+    mockExec.mockResolvedValue(makeState({ message: 'Footer message' }));
+    renderWithProviders(<GaigelPage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage.querySelector('[role="status"], [role="alert"]')).toHaveTextContent('Footer message');
+  });
+
   it('calls reset on mount with default config', async () => {
     renderWithProviders(<GaigelPage />);
     await waitFor(() =>

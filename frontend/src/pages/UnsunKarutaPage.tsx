@@ -349,12 +349,6 @@ function UnsunKarutaPageContent() {
               </div>
             </div>
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -363,7 +357,16 @@ function UnsunKarutaPageContent() {
             />
           </div>
 
-          <GameFooter className={`${gameTheme.unsunkaruta.footer} px-4 py-2.5`}>
+          <GameFooter
+            message={
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            }
+            className={`${gameTheme.unsunkaruta.footer} px-4 py-2.5`}
+          >
             {/* **フォロー義務は宣言で生まれる。** 出ているかどうかを書かないと、
                 なぜこの札しか押せないのかが読めない。 */}
             {canPlay && state.mustFollow && (
