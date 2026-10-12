@@ -17,7 +17,7 @@ import { ScrollFadeHint } from '../components/ScrollFadeHint';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -28,6 +28,7 @@ import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useTwoTenJackGame } from '
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
+import { scoreTableClass } from '../styles/scoreTableStyles';
 import type { TwoTenJackResponse } from '../types/card';
 import { TwoTenJackPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
@@ -97,6 +98,7 @@ function trumpSymbol(trumpSuit: number): string {
 export const TwoTenJackPage = withTutorial(TwoTenJackPageContent, 'twotenjack', TTJ_TUTORIAL_STEPS);
 /** Inner content of the Two Ten Jack page, wrapped by TutorialProvider. */
 function TwoTenJackPageContent() {
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('twotenjack');
   const {
@@ -333,7 +335,12 @@ function TwoTenJackPageContent() {
                       </span>
                     </summary>
                     <div className="overflow-x-auto -mx-2 px-2">
-                      <table className="w-full text-sm text-ds-text-muted min-w-[320px] mt-1">
+                      <table
+                        className={scoreTableClass(
+                          isLargeDesktop,
+                          'w-full text-sm text-ds-text-muted min-w-[320px] mt-1',
+                        )}
+                      >
                         <caption className="sr-only">{t('scoresCaption')}</caption>
                         <thead>
                           <tr>
@@ -346,12 +353,12 @@ function TwoTenJackPageContent() {
                         </thead>
                         <tbody>
                           <tr className="text-ds-accent">
-                            <td>{t('team0')}</td>
+                            <td title={t('team0')}>{t('team0')}</td>
                             <td className="text-center">{team0Captured}</td>
                             <td className="text-center">{team0Total}</td>
                           </tr>
                           <tr>
-                            <td>{t('team1')}</td>
+                            <td title={t('team1')}>{t('team1')}</td>
                             <td className="text-center">{team1Captured}</td>
                             <td className="text-center">{team1Total}</td>
                           </tr>
@@ -364,7 +371,9 @@ function TwoTenJackPageContent() {
                   <div className="my-3 p-2 rounded bg-black/30 relative" data-tutorial="tt-score-table">
                     <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
                     <div className="overflow-x-auto -mx-2 px-2">
-                      <table className="w-full text-sm text-ds-text-muted min-w-[320px]">
+                      <table
+                        className={scoreTableClass(isLargeDesktop, 'w-full text-sm text-ds-text-muted min-w-[320px]')}
+                      >
                         <caption className="sr-only">{t('scoresCaption')}</caption>
                         <thead>
                           <tr>
@@ -377,12 +386,12 @@ function TwoTenJackPageContent() {
                         </thead>
                         <tbody>
                           <tr className="text-ds-accent">
-                            <td>{t('team0')}</td>
+                            <td title={t('team0')}>{t('team0')}</td>
                             <td className="text-center">{team0Captured}</td>
                             <td className="text-center">{team0Total}</td>
                           </tr>
                           <tr>
-                            <td>{t('team1')}</td>
+                            <td title={t('team1')}>{t('team1')}</td>
                             <td className="text-center">{team1Captured}</td>
                             <td className="text-center">{team1Total}</td>
                           </tr>

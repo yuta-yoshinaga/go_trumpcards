@@ -19,7 +19,7 @@ import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { BATAK_CPU_DIFFICULTY_OPTIONS, BATAK_MAX_ROUNDS_OPTIONS, useBatakGame } from '../hooks/useBatakGame';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -29,6 +29,7 @@ import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
+import { scoreTableClass } from '../styles/scoreTableStyles';
 import type { BatakResponse } from '../types/card';
 import { BatakPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
@@ -142,6 +143,7 @@ function BatakScoreBreakdownLines({
 export const BatakPage = withTutorial(BatakPageContent, 'batak', BATAK_TUTORIAL_STEPS);
 /** Inner content of the Batak page, wrapped by TutorialProvider. */
 function BatakPageContent() {
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('batak');
   const {
@@ -428,7 +430,12 @@ function BatakPageContent() {
                   >
                     <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('scores')}</summary>
                     <div className="overflow-x-auto -mx-2 px-2">
-                      <table className="w-full text-sm text-ds-text-muted min-w-[360px] mt-1">
+                      <table
+                        className={scoreTableClass(
+                          isLargeDesktop,
+                          'w-full text-sm text-ds-text-muted min-w-[360px] mt-1',
+                        )}
+                      >
                         <thead>
                           <tr>
                             <th scope="col" className="text-left">
@@ -476,7 +483,9 @@ function BatakPageContent() {
                   <div className="my-3 p-2 rounded bg-black/30 relative" data-tutorial="batak-score-table">
                     <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
                     <div className="overflow-x-auto -mx-2 px-2">
-                      <table className="w-full text-sm text-ds-text-muted min-w-[360px]">
+                      <table
+                        className={scoreTableClass(isLargeDesktop, 'w-full text-sm text-ds-text-muted min-w-[360px]')}
+                      >
                         <thead>
                           <tr>
                             <th scope="col" className="text-left">

@@ -17,7 +17,7 @@ import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardSelection } from '../hooks/useCardSelection';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -29,6 +29,7 @@ import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
+import { scoreTableClass } from '../styles/scoreTableStyles';
 import type { NinetyNineHint, NinetyNineResponse } from '../types/card';
 import { NinetyNinePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
@@ -110,6 +111,7 @@ export const NinetyNinePage = withTutorial(NinetyNinePageContent, 'ninetynine', 
 
 /** Inner content of the Ninety-Nine page, wrapped by TutorialProvider. */
 function NinetyNinePageContent() {
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('ninetynine');
   const { selected: selectedCardIndices, toggle: toggleCard, clear: clearSelection, setSelected } = useCardSelection();
@@ -393,7 +395,9 @@ function NinetyNinePageContent() {
                 <div className="my-3 p-2 rounded bg-black/30 relative" data-tutorial="nn-score-table">
                   <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
                   <div className="overflow-x-auto -mx-2 px-2">
-                    <table className="w-full text-sm text-ds-text-muted min-w-[360px]">
+                    <table
+                      className={scoreTableClass(isLargeDesktop, 'w-full text-sm text-ds-text-muted min-w-[360px]')}
+                    >
                       <thead>
                         <tr>
                           <th scope="col" className="text-left">

@@ -22,7 +22,7 @@ import { ScrollFadeHint } from '../components/ScrollFadeHint';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -34,6 +34,7 @@ import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
+import { scoreTableClass } from '../styles/scoreTableStyles';
 import type { MightyResponse } from '../types/card';
 import { MightyPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
@@ -125,6 +126,7 @@ export const MightyPage = withTutorial(MightyPageContent, 'mighty', MIGHTY_TUTOR
 
 /** Inner content of the Mighty page, wrapped by TutorialProvider. */
 function MightyPageContent() {
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('mighty');
   const {
@@ -605,7 +607,12 @@ function MightyPageContent() {
                       </div>
                     )}
                     <div className="overflow-x-auto -mx-2 px-2">
-                      <table className="w-full text-sm text-ds-text-muted min-w-[420px] mt-1">
+                      <table
+                        className={scoreTableClass(
+                          isLargeDesktop,
+                          'w-full text-sm text-ds-text-muted min-w-[420px] mt-1',
+                        )}
+                      >
                         <thead>
                           <tr>
                             <th scope="col" className="text-left">
@@ -654,7 +661,9 @@ function MightyPageContent() {
                       </div>
                     )}
                     <div className="overflow-x-auto -mx-2 px-2">
-                      <table className="w-full text-sm text-ds-text-muted min-w-[420px]">
+                      <table
+                        className={scoreTableClass(isLargeDesktop, 'w-full text-sm text-ds-text-muted min-w-[420px]')}
+                      >
                         <thead>
                           <tr>
                             <th scope="col" className="text-left">

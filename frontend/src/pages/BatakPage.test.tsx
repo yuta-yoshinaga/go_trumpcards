@@ -797,4 +797,18 @@ describe('BatakPage trick winner badge', () => {
     expect(footerContent).not.toContainElement(keyboardHelp);
     expect(footerContent).toContainElement(screen.getByAltText('♠ A'));
   });
+  it('fits the score table at large desktop widths', async () => {
+    const innerWidthSpy = vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(1280);
+    try {
+      const { container } = renderWithProviders(<BatakPage />);
+      await waitFor(() =>
+        expect(container.querySelector('[data-tutorial="batak-score-table"] table')).toBeInTheDocument(),
+      );
+      const table = container.querySelector('[data-tutorial="batak-score-table"] table');
+      expect(table?.className).toContain('table-fixed');
+      expect(table?.className).not.toContain('min-w-[');
+    } finally {
+      innerWidthSpy.mockRestore();
+    }
+  });
 });

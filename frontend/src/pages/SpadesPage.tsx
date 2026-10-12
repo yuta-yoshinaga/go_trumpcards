@@ -17,7 +17,7 @@ import { ScrollFadeHint } from '../components/ScrollFadeHint';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -35,6 +35,7 @@ import { badgeError, badgeInfo, badgeSuccess, badgeWarning } from '../styles/bad
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
+import { scoreTableClass } from '../styles/scoreTableStyles';
 import type { SpadesResponse } from '../types/card';
 import { SpadesPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
@@ -112,6 +113,7 @@ const SPADES_PHASE_KEYS: Readonly<Record<number, string>> = {
 export const SpadesPage = withTutorial(SpadesPageContent, 'spades', SP_TUTORIAL_STEPS);
 /** Inner content of the Spades page, wrapped by TutorialProvider. */
 function SpadesPageContent() {
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('spades');
   const {
@@ -423,7 +425,12 @@ function SpadesPageContent() {
                   >
                     <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('scores')}</summary>
                     <div className="overflow-x-auto -mx-2 px-2">
-                      <table className="w-full text-sm text-ds-text-muted min-w-[360px] mt-1">
+                      <table
+                        className={scoreTableClass(
+                          isLargeDesktop,
+                          'w-full text-sm text-ds-text-muted min-w-[360px] mt-1',
+                        )}
+                      >
                         <thead>
                           <tr>
                             <th scope="col" className="text-left">
@@ -475,7 +482,9 @@ function SpadesPageContent() {
                   <div className="my-3 p-2 rounded bg-black/30 relative" data-tutorial="sp-score-table">
                     <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
                     <div className="overflow-x-auto -mx-2 px-2">
-                      <table className="w-full text-sm text-ds-text-muted min-w-[360px]">
+                      <table
+                        className={scoreTableClass(isLargeDesktop, 'w-full text-sm text-ds-text-muted min-w-[360px]')}
+                      >
                         <thead>
                           <tr>
                             <th scope="col" className="text-left">

@@ -18,7 +18,7 @@ import { ScrollFadeHint } from '../components/ScrollFadeHint';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -37,6 +37,7 @@ import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
+import { scoreTableClass } from '../styles/scoreTableStyles';
 import type { OhHellResponse } from '../types/card';
 import { OhHellPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
@@ -107,6 +108,7 @@ const OH_HELL_PHASE_KEYS: Readonly<Record<number, string>> = {
 export const OhHellPage = withTutorial(OhHellPageContent, 'ohhell', OH_TUTORIAL_STEPS);
 /** Inner content of the Oh Hell page, wrapped by TutorialProvider. */
 function OhHellPageContent() {
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('ohhell');
   const {
@@ -426,7 +428,12 @@ function OhHellPageContent() {
                   >
                     <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('scores')}</summary>
                     <div className="overflow-x-auto -mx-2 px-2">
-                      <table className="w-full text-sm text-ds-text-muted min-w-[360px] mt-1">
+                      <table
+                        className={scoreTableClass(
+                          isLargeDesktop,
+                          'w-full text-sm text-ds-text-muted min-w-[360px] mt-1',
+                        )}
+                      >
                         <thead>
                           <tr>
                             <th scope="col" className="text-left">
@@ -457,7 +464,9 @@ function OhHellPageContent() {
                   <div className="my-3 p-2 rounded bg-black/30 relative" data-tutorial="oh-score-table">
                     <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
                     <div className="overflow-x-auto -mx-2 px-2">
-                      <table className="w-full text-sm text-ds-text-muted min-w-[360px]">
+                      <table
+                        className={scoreTableClass(isLargeDesktop, 'w-full text-sm text-ds-text-muted min-w-[360px]')}
+                      >
                         <thead>
                           <tr>
                             <th scope="col" className="text-left">
