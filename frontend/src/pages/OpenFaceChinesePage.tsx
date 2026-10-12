@@ -14,7 +14,7 @@ import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -124,6 +124,7 @@ export const OpenFaceChinesePage = withTutorial(OpenFaceChinesePageContent, 'ope
 
 /** Inner content of the OFC page, wrapped by TutorialProvider. */
 function OpenFaceChinesePageContent() {
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('openfacechinese');
   const { state, loading, error, exec, retry } = useGameApi(openfacechineseApi.exec);
@@ -351,186 +352,204 @@ function OpenFaceChinesePageContent() {
               {canPlace && state.currentCard ? t('pendingAnnounce', { card: cardAlt(state.currentCard) }) : ''}
             </span>
 
-            {/* Pending card to place */}
-            {canPlace && human && state.currentCard && (
-              <div
-                className="mb-3 p-3 rounded bg-black/30 text-center flex flex-col items-center gap-2"
-                data-tutorial="ofc-place"
-              >
-                <span className="text-ds-text-muted text-xs">{t('pendingTitle')}</span>
-                <CardImage card={state.currentCard} width={cardWidth} />
-                <span className="text-ds-text-primary text-sm">{t('placePrompt')}</span>
-                {/* 反則になる段は色だけでなく文言でも知らせる (色は SR に届かない)。 */}
-                <span
-                  className={anyFoulRisk ? 'text-ds-error-text text-xs' : 'sr-only'}
-                  role="status"
-                  aria-live="polite"
-                  data-testid="ofc-foul-risk-warning"
+            {/* Pending card and boards share a row on large desktop so the human board stays above the fold. */}
+            <div
+              className={isLargeDesktop ? 'grid grid-cols-[220px_minmax(0,1fr)_minmax(0,1fr)] items-start gap-3' : ''}
+              data-testid={isLargeDesktop ? 'ofc-large-desktop-layout' : undefined}
+            >
+              {/* Pending card to place */}
+              {canPlace && human && state.currentCard && (
+                <div
+                  className={`mb-3 p-3 rounded bg-black/30 text-center flex flex-col items-center gap-2 ${isLargeDesktop ? 'row-start-1 col-start-1' : ''}`}
+                  data-tutorial="ofc-place"
                 >
-                  {anyFoulRisk
-                    ? t('foulRiskWarning', {
-                        rows: (['front', 'middle', 'back'] as const)
-                          .filter((r) => foulRisk[r])
-                          .map((r) => t(`rows.${r}`))
-                          .join('・'),
-                      })
-                    : ''}
-                </span>
-                <div className="flex flex-wrap justify-center gap-2 mt-1">
-                  <button
-                    type="button"
-                    className={[btnSuccess, foulRisk.front ? 'ring-2 ring-ds-error' : ''].filter(Boolean).join(' ')}
-                    onClick={() => handlePlace(ROW_FRONT)}
-                    disabled={loading || frontFull}
-                    aria-disabled={frontFull}
-                    aria-label={t('placeRowAria', { label: placementRowLabel(ROW_FRONT, human) })}
-                    data-foul-risk={foulRisk.front ? 'true' : undefined}
-                    data-testid="place-front"
+                  <span className="text-ds-text-muted text-xs">{t('pendingTitle')}</span>
+                  <CardImage card={state.currentCard} width={cardWidth} />
+                  <span className="text-ds-text-primary text-sm">{t('placePrompt')}</span>
+                  {/* 反則になる段は色だけでなく文言でも知らせる (色は SR に届かない)。 */}
+                  <span
+                    className={anyFoulRisk ? 'text-ds-error-text text-xs' : 'sr-only'}
+                    role="status"
+                    aria-live="polite"
+                    data-testid="ofc-foul-risk-warning"
                   >
-                    {t('place.front')}
-                  </button>
-                  <button
-                    type="button"
-                    className={[btnSuccess, foulRisk.middle ? 'ring-2 ring-ds-error' : ''].filter(Boolean).join(' ')}
-                    onClick={() => handlePlace(ROW_MIDDLE)}
-                    disabled={loading || middleFull}
-                    aria-disabled={middleFull}
-                    aria-label={t('placeRowAria', { label: placementRowLabel(ROW_MIDDLE, human) })}
-                    data-foul-risk={foulRisk.middle ? 'true' : undefined}
-                    data-testid="place-middle"
-                  >
-                    {t('place.middle')}
-                  </button>
-                  <button
-                    type="button"
-                    className={[btnSuccess, foulRisk.back ? 'ring-2 ring-ds-error' : ''].filter(Boolean).join(' ')}
-                    onClick={() => handlePlace(ROW_BACK)}
-                    disabled={loading || backFull}
-                    aria-disabled={backFull}
-                    aria-label={t('placeRowAria', { label: placementRowLabel(ROW_BACK, human) })}
-                    data-foul-risk={foulRisk.back ? 'true' : undefined}
-                    data-testid="place-back"
-                  >
-                    {t('place.back')}
-                  </button>
-                  <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading}>
-                    {t('hint.button')}
-                  </button>
+                    {anyFoulRisk
+                      ? t('foulRiskWarning', {
+                          rows: (['front', 'middle', 'back'] as const)
+                            .filter((r) => foulRisk[r])
+                            .map((r) => t(`rows.${r}`))
+                            .join('・'),
+                        })
+                      : ''}
+                  </span>
+                  <div className="flex flex-wrap justify-center gap-2 mt-1">
+                    <button
+                      type="button"
+                      className={[btnSuccess, foulRisk.front ? 'ring-2 ring-ds-error' : ''].filter(Boolean).join(' ')}
+                      onClick={() => handlePlace(ROW_FRONT)}
+                      disabled={loading || frontFull}
+                      aria-disabled={frontFull}
+                      aria-label={t('placeRowAria', { label: placementRowLabel(ROW_FRONT, human) })}
+                      data-foul-risk={foulRisk.front ? 'true' : undefined}
+                      data-testid="place-front"
+                    >
+                      {t('place.front')}
+                    </button>
+                    <button
+                      type="button"
+                      className={[btnSuccess, foulRisk.middle ? 'ring-2 ring-ds-error' : ''].filter(Boolean).join(' ')}
+                      onClick={() => handlePlace(ROW_MIDDLE)}
+                      disabled={loading || middleFull}
+                      aria-disabled={middleFull}
+                      aria-label={t('placeRowAria', { label: placementRowLabel(ROW_MIDDLE, human) })}
+                      data-foul-risk={foulRisk.middle ? 'true' : undefined}
+                      data-testid="place-middle"
+                    >
+                      {t('place.middle')}
+                    </button>
+                    <button
+                      type="button"
+                      className={[btnSuccess, foulRisk.back ? 'ring-2 ring-ds-error' : ''].filter(Boolean).join(' ')}
+                      onClick={() => handlePlace(ROW_BACK)}
+                      disabled={loading || backFull}
+                      aria-disabled={backFull}
+                      aria-label={t('placeRowAria', { label: placementRowLabel(ROW_BACK, human) })}
+                      data-foul-risk={foulRisk.back ? 'true' : undefined}
+                      data-testid="place-back"
+                    >
+                      {t('place.back')}
+                    </button>
+                    <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading}>
+                      {t('hint.button')}
+                    </button>
+                  </div>
+                  <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+                  {state.hint && isRequestedHint(state) && (
+                    <p className="text-center text-sm text-ds-accent mt-1" data-testid="ofc-hint">
+                      {t('hint.text', {
+                        row: t(`rows.${rowNames[state.hint.row] ?? 'back'}`),
+                        reason: t(`hint.${state.hint.reason}`),
+                      })}
+                    </p>
+                  )}
                 </div>
-                <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-                {state.hint && isRequestedHint(state) && (
-                  <p className="text-center text-sm text-ds-accent mt-1" data-testid="ofc-hint">
-                    {t('hint.text', {
-                      row: t(`rows.${rowNames[state.hint.row] ?? 'back'}`),
-                      reason: t(`hint.${state.hint.reason}`),
-                    })}
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* Player boards */}
-            <div className="grid gap-3 sm:grid-cols-2" data-tutorial="ofc-rows">
-              {state.players.map((p) =>
-                wrapCpu(
-                  p,
-                  <div
-                    key={`player-${p.id}`}
-                    className={`p-3 rounded bg-black/20 ${p.id === state.currentPlayerIdx && isPlacing ? 'ring-1 ring-ds-warning' : ''}`}
-                    data-testid={`player-${p.id}`}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-ds-text-primary text-sm font-semibold">{playerName(p)}</span>
-                      <div className="flex items-center gap-2 text-xs">
-                        {p.fouled && (
-                          <span className="text-ds-error-text font-semibold" role="status">
-                            {t('fouled')}
-                          </span>
-                        )}
-                        {p.fantasyland && (
-                          <span className="text-ds-accent font-semibold" role="status">
-                            {t('fantasyland')}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    {p.fantasyland && (isPlacing || isRoundEnd || isGameEnd) && (
-                      <p className="text-ds-text-primary text-xs mb-2">
-                        {t(isPlacing ? 'fantasylandRound' : 'fantasylandEarned')}
-                      </p>
-                    )}
-                    <div className="flex flex-col gap-2">
-                      {renderRow(
-                        t('rows.front'),
-                        p.front,
-                        3,
-                        `front-${p.id}`,
-                        canPlace && p.isHuman ? { row: ROW_FRONT, full: frontFull } : undefined,
-                      )}
-                      {renderRow(
-                        t('rows.middle'),
-                        p.middle,
-                        5,
-                        `middle-${p.id}`,
-                        canPlace && p.isHuman ? { row: ROW_MIDDLE, full: middleFull } : undefined,
-                      )}
-                      {renderRow(
-                        t('rows.back'),
-                        p.back,
-                        5,
-                        `back-${p.id}`,
-                        canPlace && p.isHuman ? { row: ROW_BACK, full: backFull } : undefined,
-                      )}
-                    </div>
-                    {isRoundEnd && (
-                      <div className="mt-2 flex flex-col gap-1 text-xs" data-testid={`round-score-breakdown-${p.id}`}>
-                        {p.rowDetails.map((detail) => {
-                          const row = rowNames[detail.row];
-                          const rankKey = (detail.row === ROW_FRONT ? FRONT_RANK_KEYS : FIVE_CARD_RANK_KEYS)[
-                            detail.rank
-                          ];
-                          const outcome = detail.comparisons.map((comparison) => {
-                            const opponentName = playerName(
-                              playersById.get(comparison.opponentId) as OpenFaceChinesePlayer,
-                            );
-                            return t(
-                              comparison.outcome > 0 ? 'rowWin' : comparison.outcome < 0 ? 'rowLoss' : 'rowDraw',
-                              {
-                                opponent: opponentName,
-                              },
-                            );
-                          });
-                          return (
-                            <div key={detail.row} data-testid={`row-result-${p.id}-${row}`}>
-                              {t('rowScoreDetail', {
-                                row: t(`rows.${row}`),
-                                rank: t(`handRanks.${rankKey}`),
-                                result: outcome.join(t('listSeparator')),
-                                score: detail.score,
-                              })}
-                            </div>
-                          );
-                        })}
-                        <span data-testid={`round-score-total-${p.id}`}>
-                          {t('roundScoreEquation', {
-                            rows: p.rowDetails.reduce((sum, detail) => sum + detail.score, 0),
-                            scoop: p.scoopScore,
-                            royalty: p.royaltyAdjustment,
-                            round: p.roundScore,
-                          })}
-                        </span>
-                        <span className="text-ds-text-primary" data-testid={`round-score-${p.id}`}>
-                          {t('roundScore', { score: p.roundScore })}
-                        </span>
-                        {p.royalty > 0 && (
-                          <span className="text-ds-success">{t('royalty', { points: p.royalty })}</span>
-                        )}
-                        <span className="text-ds-text-muted">{t('totalScore', { score: p.totalScore })}</span>
-                      </div>
-                    )}
-                  </div>,
-                ),
               )}
+
+              {/* Player boards */}
+              <div className={isLargeDesktop ? 'contents' : 'grid gap-3 sm:grid-cols-2'} data-tutorial="ofc-rows">
+                {(isLargeDesktop
+                  ? [...state.players].sort((a, b) => Number(b.isHuman) - Number(a.isHuman))
+                  : state.players
+                ).map((p, playerIndex) => (
+                  <div
+                    className={isLargeDesktop ? (p.isHuman ? 'col-start-2 row-start-1' : 'col-start-3') : ''}
+                    style={isLargeDesktop && !p.isHuman ? { gridRowStart: String(playerIndex) } : undefined}
+                    key={`layout-${p.id}`}
+                  >
+                    {wrapCpu(
+                      p,
+                      <div
+                        key={`player-${p.id}`}
+                        className={`p-3 rounded bg-black/20 ${p.id === state.currentPlayerIdx && isPlacing ? 'ring-1 ring-ds-warning' : ''}`}
+                        data-testid={`player-${p.id}`}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-ds-text-primary text-sm font-semibold">{playerName(p)}</span>
+                          <div className="flex items-center gap-2 text-xs">
+                            {p.fouled && (
+                              <span className="text-ds-error-text font-semibold" role="status">
+                                {t('fouled')}
+                              </span>
+                            )}
+                            {p.fantasyland && (
+                              <span className="text-ds-accent font-semibold" role="status">
+                                {t('fantasyland')}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        {p.fantasyland && (isPlacing || isRoundEnd || isGameEnd) && (
+                          <p className="text-ds-text-primary text-xs mb-2">
+                            {t(isPlacing ? 'fantasylandRound' : 'fantasylandEarned')}
+                          </p>
+                        )}
+                        <div className="flex flex-col gap-2">
+                          {renderRow(
+                            t('rows.front'),
+                            p.front,
+                            3,
+                            `front-${p.id}`,
+                            canPlace && p.isHuman ? { row: ROW_FRONT, full: frontFull } : undefined,
+                          )}
+                          {renderRow(
+                            t('rows.middle'),
+                            p.middle,
+                            5,
+                            `middle-${p.id}`,
+                            canPlace && p.isHuman ? { row: ROW_MIDDLE, full: middleFull } : undefined,
+                          )}
+                          {renderRow(
+                            t('rows.back'),
+                            p.back,
+                            5,
+                            `back-${p.id}`,
+                            canPlace && p.isHuman ? { row: ROW_BACK, full: backFull } : undefined,
+                          )}
+                        </div>
+                        {isRoundEnd && (
+                          <div
+                            className="mt-2 flex flex-col gap-1 text-xs"
+                            data-testid={`round-score-breakdown-${p.id}`}
+                          >
+                            {p.rowDetails.map((detail) => {
+                              const row = rowNames[detail.row];
+                              const rankKey = (detail.row === ROW_FRONT ? FRONT_RANK_KEYS : FIVE_CARD_RANK_KEYS)[
+                                detail.rank
+                              ];
+                              const outcome = detail.comparisons.map((comparison) => {
+                                const opponentName = playerName(
+                                  playersById.get(comparison.opponentId) as OpenFaceChinesePlayer,
+                                );
+                                return t(
+                                  comparison.outcome > 0 ? 'rowWin' : comparison.outcome < 0 ? 'rowLoss' : 'rowDraw',
+                                  {
+                                    opponent: opponentName,
+                                  },
+                                );
+                              });
+                              return (
+                                <div key={detail.row} data-testid={`row-result-${p.id}-${row}`}>
+                                  {t('rowScoreDetail', {
+                                    row: t(`rows.${row}`),
+                                    rank: t(`handRanks.${rankKey}`),
+                                    result: outcome.join(t('listSeparator')),
+                                    score: detail.score,
+                                  })}
+                                </div>
+                              );
+                            })}
+                            <span data-testid={`round-score-total-${p.id}`}>
+                              {t('roundScoreEquation', {
+                                rows: p.rowDetails.reduce((sum, detail) => sum + detail.score, 0),
+                                scoop: p.scoopScore,
+                                royalty: p.royaltyAdjustment,
+                                round: p.roundScore,
+                              })}
+                            </span>
+                            <span className="text-ds-text-primary" data-testid={`round-score-${p.id}`}>
+                              {t('roundScore', { score: p.roundScore })}
+                            </span>
+                            {p.royalty > 0 && (
+                              <span className="text-ds-success">{t('royalty', { points: p.royalty })}</span>
+                            )}
+                            <span className="text-ds-text-muted">{t('totalScore', { score: p.totalScore })}</span>
+                          </div>
+                        )}
+                      </div>,
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
 
             {isRoundEnd && (

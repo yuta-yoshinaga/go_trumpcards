@@ -9,11 +9,15 @@ import type { CardDesign, PopeJoanPlayer, PopeJoanResponse } from '../types/card
 import { PopeJoanPhase } from '../types/phases';
 import { PopeJoanPage } from './PopeJoanPage';
 
-const mobileState = vi.hoisted(() => ({ isMobile: true }));
+const mobileState = vi.hoisted(() => ({
+  isMobile: true,
+  breakpoint: 'mobile' as 'mobile' | 'desktop' | 'largeDesktop',
+}));
 
 vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
   useIsMobile: () => mobileState.isMobile,
+  useBreakpoint: () => mobileState.breakpoint,
 }));
 
 vi.mock('../api/gameApi', () => ({
@@ -74,6 +78,7 @@ function pickHand(i: number) {
 describe('PopeJoanPage', () => {
   beforeEach(() => {
     mobileState.isMobile = true;
+    mobileState.breakpoint = 'mobile';
     vi.clearAllMocks();
     mockExec.mockResolvedValue(makeState());
   });
@@ -106,6 +111,18 @@ describe('PopeJoanPage', () => {
     expect(cpuDetails).not.toHaveAttribute('open');
     const cpuHands = cpuDetails.querySelector('[role="img"]');
     expect(cpuHands).not.toBeVisible();
+  });
+
+  it('uses CardFan for the hand and keeps the turn-up beside the board on large desktop', async () => {
+    mobileState.breakpoint = 'largeDesktop';
+    renderWithProviders(<PopeJoanPage />);
+    await screen.findAllByTestId('popejoan-compartment');
+    expect(screen.getByTestId('pj-card-fan')).toBeInTheDocument();
+    const board = document.querySelector('[data-tutorial="pj-board"]');
+    const turnUpAndBoard = board?.parentElement;
+    expect(turnUpAndBoard).toHaveClass('flex', 'items-start');
+    expect(turnUpAndBoard?.children).toHaveLength(2);
+    expect(turnUpAndBoard?.lastElementChild).toBe(board);
   });
 
   it('resets on mount', async () => {

@@ -133,6 +133,19 @@ describe('OpenFaceChinesePage', () => {
     expect(screen.queryByText(/次のラウンドは13枚/)).not.toBeInTheDocument();
   });
 
+  it('places the pending card and human board in the same large desktop grid', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    renderWithProviders(<OpenFaceChinesePage />);
+    const humanBoard = await screen.findByTestId('player-0');
+    const layout = screen.getByTestId('ofc-large-desktop-layout');
+    expect(layout).toHaveClass('grid', 'grid-cols-[220px_minmax(0,1fr)_minmax(0,1fr)]');
+    expect(layout).toContainElement(humanBoard);
+    expect(layout).toContainElement(document.querySelector('[data-tutorial="ofc-place"]'));
+    expect(layout).toContainElement(screen.getByTestId('cpu-accordion'));
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
   it('collapses only the CPU board on mobile and leaves it open on desktop', async () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
