@@ -138,6 +138,14 @@ describe('SomersetPage', () => {
     expect(screen.getByText(/手数: 3/)).toBeInTheDocument();
   });
 
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue(gameOverState);
+    renderWithProviders(<SomersetPage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage.querySelector('[role="status"], [role="alert"]')).toHaveTextContent('ゲームオーバー');
+  });
+
   it('renders 4 foundation suits', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<SomersetPage />);

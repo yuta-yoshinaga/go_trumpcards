@@ -86,6 +86,37 @@ describe('GameFooter', () => {
     expect(footer.className).toContain('sm:overflow-y-visible');
   });
 
+  it('renders a persistent message before actions, outside scrollable content', () => {
+    render(
+      <GameFooter message={<div role="status">案内</div>} actions={<button type="button">進む</button>}>
+        <span>手札</span>
+      </GameFooter>,
+    );
+    const footer = screen.getByRole('contentinfo');
+    const message = screen.getByTestId('game-footer-message');
+    const actions = screen.getByTestId('game-footer-actions');
+    expect(message).toContainElement(screen.getByRole('status'));
+    expect(screen.getByTestId('game-footer-content')).not.toContainElement(message);
+    expect(footer.compareDocumentPosition(message) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(message.compareDocumentPosition(actions) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it.each([null, undefined, false])('omits an empty message without adding a wrapper (%s)', (message) => {
+    render(<GameFooter message={message}>content</GameFooter>);
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+  });
+
+  it('renders a legacy message before its children', () => {
+    render(
+      <GameFooter message={<div>案内</div>}>
+        <span>手札</span>
+      </GameFooter>,
+    );
+    const message = screen.getByTestId('game-footer-message');
+    expect(message).toContainElement(screen.getByText('案内'));
+    expect(message.compareDocumentPosition(screen.getByText('手札')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it('keeps the legacy footer classes when actions are omitted', () => {
     render(
       <GameFooter>

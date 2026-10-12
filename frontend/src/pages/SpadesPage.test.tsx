@@ -686,6 +686,14 @@ describe('SpadesPage', () => {
     expect(screen.queryByText('Game end!')).not.toBeInTheDocument();
   });
 
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<SpadesPage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(within(footerMessage).getByRole('status')).toHaveTextContent('Game end!');
+  });
+
   // -- ConfirmDialog on reset --
 
   it('shows confirm dialog when reset button is clicked', async () => {

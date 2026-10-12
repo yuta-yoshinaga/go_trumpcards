@@ -544,15 +544,6 @@ function SpadesPageContent() {
               </div>
             </div>
 
-            {/* Message */}
-            <div data-tutorial="sp-bags-info">
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-              />
-            </div>
-
             {/* Action log */}
             <ActionLogSection
               isEndPhase={isGameEnd}
@@ -597,6 +588,15 @@ function SpadesPageContent() {
           {/* Footer */}
           <GameFooter
             className={`${gameTheme.spades.footer} px-4 py-2.5`}
+            message={
+              <div data-tutorial="sp-bags-info">
+                <GameMessageBox
+                  message={state.message}
+                  messageCode={state.messageCode}
+                  messageParams={state.messageParams}
+                />
+              </div>
+            }
             actions={
               isHumanBidTurn || isHumanTurn || isTrickEnd || isRoundEnd ? (
                 <div className="flex gap-2 items-center">
