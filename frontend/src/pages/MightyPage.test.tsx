@@ -1,10 +1,12 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, mightyApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { MightyHint, MightyResponse } from '../types/card';
 import { MightyPage } from './MightyPage';
+
+const mobileState = vi.hoisted(() => ({ isMobile: false }));
 
 vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
@@ -15,7 +17,7 @@ vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
     cpuCardWidth: 50,
     footerCardWidth: 54,
     solitaireMinColWidth: 0,
-    isMobile: false,
+    isMobile: mobileState.isMobile,
   })),
 }));
 
@@ -254,11 +256,43 @@ beforeEach(() => {
     cpuCardWidth: 50,
     footerCardWidth: 54,
     solitaireMinColWidth: 0,
-    isMobile: false,
+    isMobile: mobileState.isMobile,
   });
 });
 
+afterEach(() => {
+  mobileState.isMobile = false;
+  Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1024 });
+});
+
 describe('MightyPage', () => {
+  it('renders turn guidance in the footer on desktop', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1024 });
+    mockCall.mockResolvedValue({ ...playPhaseState, message: 'Footer guidance' });
+    renderWithProviders(<MightyPage />);
+    const message = await screen.findByText('Footer guidance');
+    expect(message.closest('[data-testid="game-footer-message"]')).toBeInTheDocument();
+  });
+
+  it('keeps turn guidance in the play area on mobile', async () => {
+    mobileState.isMobile = true;
+    mockUseCardDimensions.mockReturnValue({
+      cardHeight: 84,
+      cardOverlap: 22,
+      cardWidth: 60,
+      cpuCardWidth: 50,
+      footerCardWidth: 54,
+      solitaireMinColWidth: 0,
+      isMobile: true,
+    });
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 375 });
+    mockCall.mockResolvedValue({ ...playPhaseState, message: 'Mobile guidance' });
+    renderWithProviders(<MightyPage />);
+    const message = await screen.findByText('Mobile guidance');
+    expect(message.closest('[role="status"]')).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+  });
+
   it('renders skeleton when no state', () => {
     mockCall.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<MightyPage />);

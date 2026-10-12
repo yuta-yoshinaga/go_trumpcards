@@ -223,6 +223,10 @@ function OhHellPageContent() {
       )
     : null;
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.ohhell')}
@@ -509,13 +513,7 @@ function OhHellPageContent() {
             </div>
 
             {/* Message */}
-            <div>
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-              />
-            </div>
+            <div>{isMobile && messageBox}</div>
 
             {/* Action log */}
             <ActionLogSection
@@ -554,6 +552,7 @@ function OhHellPageContent() {
 
           {/* Footer */}
           <GameFooter
+            message={isMobile ? undefined : messageBox}
             className={`${gameTheme.ohhell.footer} px-4 py-2.5`}
             actions={
               (isHumanBidTurn || isHumanTurn || isTrickEnd || isRoundEnd) && (

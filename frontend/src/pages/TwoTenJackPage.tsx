@@ -198,6 +198,10 @@ function TwoTenJackPageContent() {
   const team1RoundScore = (state.players[1]?.roundScore ?? 0) + (state.players[3]?.roundScore ?? 0);
   const playersWithTeams = state.players.map((player, seatIdx) => ({ ...player, team: seatIdx % 2 }));
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.twotenjack')}
@@ -411,11 +415,7 @@ function TwoTenJackPageContent() {
               </div>
             </div>
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
+            {isMobile && messageBox}
 
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
@@ -427,7 +427,10 @@ function TwoTenJackPageContent() {
             />
           </div>
 
-          <GameFooter className={`${gameTheme.twotenjack.footer} px-4 py-2.5`}>
+          <GameFooter
+            message={isMobile ? undefined : messageBox}
+            className={`${gameTheme.twotenjack.footer} px-4 py-2.5`}
+          >
             {humanPlayer && (
               <PlayerHandSection
                 humanPlayer={humanPlayer}

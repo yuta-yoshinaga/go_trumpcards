@@ -280,6 +280,10 @@ function MightyPageContent() {
     selectedCardIndices.length === 1 && humanPlayer?.cards[selectedCardIndices[0]]?.design === 'JOKER';
   const isLeadingTrick = isPlayPhase && state.currentTrick.length === 0;
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.mighty')}
@@ -713,11 +717,7 @@ function MightyPageContent() {
             </div>
 
             {/* Message */}
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
+            {isMobile && messageBox}
 
             {/* Action log */}
             <ActionLogSection
@@ -793,6 +793,7 @@ function MightyPageContent() {
 
           {/* Footer */}
           <GameFooter
+            message={isMobile ? undefined : messageBox}
             className={`${gameTheme.mighty.footer} px-4 py-2.5`}
             actions={
               isHumanBidTurn || isHumanTurn || isHumanDeclarer || isHumanExchange || isTrickEnd || isRoundEnd ? (

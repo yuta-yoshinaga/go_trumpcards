@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, napoleonApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -200,7 +200,28 @@ beforeEach(() => {
   mockExec.mockResolvedValue(playPhaseState);
 });
 
+afterEach(() => {
+  Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1024 });
+});
+
 describe('NapoleonPage', () => {
+  it('renders turn guidance in the footer on desktop', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1024 });
+    mockExec.mockResolvedValue({ ...playPhaseState, message: 'Footer guidance' });
+    renderWithProviders(<NapoleonPage />);
+    const message = await screen.findByText('Footer guidance');
+    expect(message.closest('[data-testid="game-footer-message"]')).toBeInTheDocument();
+  });
+
+  it('keeps turn guidance in the play area on mobile', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 375 });
+    mockExec.mockResolvedValue({ ...playPhaseState, message: 'Mobile guidance' });
+    renderWithProviders(<NapoleonPage />);
+    const message = await screen.findByText('Mobile guidance');
+    expect(message.closest('[role="status"]')).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+  });
+
   it('renders np-hand-discard-label when it is human turn for kitty exchange', async () => {
     // ナポレオンが人間でキティ（余り牌）との交換フェーズなら捨てる指示を出す
     const state: NapoleonResponse = {

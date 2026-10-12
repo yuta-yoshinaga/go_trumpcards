@@ -243,6 +243,10 @@ function NinetyNinePageContent() {
     state.players[state.dealerIdx]?.isHuman ?? false,
   );
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.ninetynine')}
@@ -443,13 +447,7 @@ function NinetyNinePageContent() {
               </div>
             </div>
 
-            <div>
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-              />
-            </div>
+            <div>{isMobile && messageBox}</div>
 
             <ActionLogSection
               isEndPhase={isGameEnd}
@@ -460,6 +458,7 @@ function NinetyNinePageContent() {
           </div>
 
           <GameFooter
+            message={isMobile ? undefined : messageBox}
             className={`${gameTheme.ninetynine.footer} px-4 py-2.5`}
             actions={
               (isHumanBidTurn || isHumanTurn || isTrickEnd || isRoundEnd) && (
