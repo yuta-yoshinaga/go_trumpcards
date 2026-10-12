@@ -1668,11 +1668,12 @@ describe('OmahaPage', () => {
     expect(screen.queryByTestId('cpu-accordion')).not.toBeInTheDocument();
   });
 
-  it('compresses face-down CPU cards on large desktop while retaining community placeholders', async () => {
+  it('compresses face-down CPU cards on large desktop and keeps five community card backs', async () => {
     mockUseIsLargeDesktop.mockReturnValue(true);
     mockExec.mockResolvedValue(preFlopState);
     renderWithProviders(<OmahaPage />);
-    await waitFor(() => expect(screen.getAllByTestId('compact-card-count')).toHaveLength(3));
+    const cpuCount = preFlopState.players.filter((player) => !player.isHuman).length;
+    await waitFor(() => expect(screen.getAllByTestId('compact-card-count')).toHaveLength(cpuCount));
     expect(screen.getAllByTestId('compact-card-count')[0]).toHaveTextContent('4');
     expect(screen.getAllByAltText('カード裏面')).toHaveLength(5);
   });

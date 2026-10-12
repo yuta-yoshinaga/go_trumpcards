@@ -72,10 +72,11 @@ for (const path of PAGES) {
 const POKER_BOARDS = [
   { path: '/omaha', selector: '[data-tutorial="oh-community-cards"]', initial: 0 },
   { path: '/dramaha', selector: '[data-tutorial="dr-community-cards"]', initial: 0 },
-  { path: '/courchevel', selector: '[data-tutorial="bo-community-cards"]', initial: 1 },
+  // Courchevel exposes one community card pre-flop.
+  { path: '/courchevel', selector: '[data-tutorial="bo-community-cards"]', firstCardShownPreflop: 1 },
 ] as const;
 
-for (const { path, selector, initial } of POKER_BOARDS) {
+for (const { path, selector, firstCardShownPreflop = 0 } of POKER_BOARDS) {
   test(`${path} keeps the flop and river board visible on desktop`, async ({ page }) => {
     await navigateTo(page, path);
     const board = page.locator(selector);
@@ -95,8 +96,8 @@ for (const { path, selector, initial } of POKER_BOARDS) {
           }).length,
       );
 
-    await expect(board.locator('img')).toHaveCount(initial === 1 ? 1 : 5, { timeout: 15_000 });
-    if (initial === 1) expect(await visibleBoardCount()).toBe(1);
+    await expect(board.locator('img')).toHaveCount(firstCardShownPreflop === 1 ? 1 : 5, { timeout: 15_000 });
+    if (firstCardShownPreflop === 1) expect(await visibleBoardCount()).toBe(1);
 
     let sawFlop = false;
     let sawRiver = false;
