@@ -1,5 +1,12 @@
 import { expect, test } from '@playwright/test';
-import { isVisibleWithin, navigateTo, TIMEOUT_ACTION, TIMEOUT_TRANSITION, waitForLoaded } from './helpers';
+import {
+  clickHandCard,
+  isVisibleWithin,
+  navigateTo,
+  TIMEOUT_ACTION,
+  TIMEOUT_TRANSITION,
+  waitForLoaded,
+} from './helpers';
 
 /** Plays one full turn: draw, then discard the first card. */
 async function playTurn(page: Parameters<typeof navigateTo>[0]) {
@@ -10,7 +17,7 @@ async function playTurn(page: Parameters<typeof navigateTo>[0]) {
 
   const card = page.getByTestId('tusac-card-0');
   if (!(await isVisibleWithin(card, TIMEOUT_ACTION))) return false;
-  await card.click();
+  await clickHandCard(card);
   const discard = page.getByTestId('tusac-discard');
   if (!(await isVisibleWithin(discard, TIMEOUT_ACTION))) return false;
   await discard.click();
@@ -24,7 +31,7 @@ test.describe('Tu Sac E2E', () => {
     await expect(page.getByTestId('tusac-hand')).toBeVisible({ timeout: TIMEOUT_TRANSITION });
 
     // **自分の手札は 20 枚。**
-    await expect(page.getByTestId('tusac-hand').locator('> *')).toHaveCount(20);
+    await expect(page.getByTestId('tusac-hand').locator('[data-testid^="tusac-card-"]')).toHaveCount(20);
 
     // **相手の手札は届かない。** 枚数だけが出る。
     await expect(page.getByTestId('tusac-count-1')).toContainText('20');
@@ -62,14 +69,14 @@ test.describe('Tu Sac E2E', () => {
 
     await page.getByTestId('tusac-draw').click();
     await waitForLoaded(page);
-    await expect(page.getByTestId('tusac-hand').locator('> *')).toHaveCount(21);
+    await expect(page.getByTestId('tusac-hand').locator('[data-testid^="tusac-card-"]')).toHaveCount(21);
 
-    await page.getByTestId('tusac-card-0').click();
+    await clickHandCard(page.getByTestId('tusac-card-0'));
     await expect(page.getByTestId('tusac-selected')).toContainText('1');
     await page.getByTestId('tusac-discard').click();
     await waitForLoaded(page);
 
-    await expect(page.getByTestId('tusac-hand').locator('> *')).toHaveCount(20, {
+    await expect(page.getByTestId('tusac-hand').locator('[data-testid^="tusac-card-"]')).toHaveCount(20, {
       timeout: TIMEOUT_TRANSITION,
     });
     // 手番が戻り、また引く場面になる。
