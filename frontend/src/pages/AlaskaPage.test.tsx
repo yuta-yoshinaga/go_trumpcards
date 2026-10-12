@@ -65,6 +65,43 @@ beforeEach(() => {
 });
 
 describe('AlaskaPage', () => {
+  it('places compact foundations after the tableau and uses 12px face-down steps at large desktop', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    renderWithProviders(<AlaskaPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /♠ K/ })).toBeInTheDocument());
+    const tableau = document.querySelector('[data-tutorial="rs-tableau"]');
+    const foundations = document.querySelector('[data-tutorial="rs-foundation"]');
+    const largeDesktopRow = tableau?.parentElement;
+    const rule = screen.getByTestId('alaska-facedown-rule');
+    expect(largeDesktopRow).toHaveClass('flex', 'flex-wrap', 'justify-center', 'items-start', 'gap-4');
+    expect(largeDesktopRow?.contains(rule)).toBe(false);
+    expect(Array.from(largeDesktopRow?.children ?? [])).toEqual([tableau, foundations]);
+    expect(
+      Boolean(
+        tableau && foundations && tableau.compareDocumentPosition(foundations) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ),
+    ).toBe(true);
+    expect(foundations).toHaveClass('flex', 'flex-col', 'gap-1');
+    const secondFaceDown = screen.getByLabelText('列2、上から2枚目、裏向き').closest('.absolute');
+    expect(secondFaceDown).toHaveStyle({ top: '12px' });
+  });
+
+  it('keeps the foundation row before the tableau at 800px', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 800 });
+    renderWithProviders(<AlaskaPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /♠ K/ })).toBeInTheDocument());
+    const tableau = document.querySelector('[data-tutorial="rs-tableau"]');
+    const foundations = document.querySelector('[data-tutorial="rs-foundation"]');
+    expect(
+      Boolean(
+        tableau && foundations && foundations.compareDocumentPosition(tableau) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ),
+    ).toBe(true);
+    expect(tableau?.parentElement).not.toHaveClass('flex-wrap');
+    const secondFaceDown = screen.getByLabelText('列2、上から2枚目、裏向き').closest('.absolute');
+    expect(secondFaceDown).toHaveStyle({ top: '22px' });
+  });
+
   it('announces face-up tableau cards with zero-based column and from-top position in Japanese and English', async () => {
     renderWithProviders(<AlaskaPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /♠ K/ })).toBeInTheDocument());
@@ -142,6 +179,104 @@ describe('AlaskaPage', () => {
     expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 
+  it('routes selected cards to compact foundation and tableau targets', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    const { unmount } = renderWithProviders(<AlaskaPage />);
+    const source = await screen.findByRole('button', { name: '♥ 8、列1、上から2枚目' });
+    fireEvent.click(source);
+
+    const foundation = screen.getByRole('button', { name: /空の組札 \(♠\)/ });
+    expect(foundation).not.toHaveAttribute('aria-disabled');
+    expect(foundation).not.toHaveAttribute('aria-describedby');
+    expect(foundation.className).toContain('hover:ring-ds-warning');
+    fireEvent.click(foundation);
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith(
+        'move',
+        { zone: 'tableau', col: 1, cardIndex: 1 },
+        { zone: 'foundation', col: 0 },
+      ),
+    );
+
+    // Mount a fresh board to exercise the occupied-column target independently.
+    unmount();
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<AlaskaPage />);
+    const tableauSource = await screen.findByRole('button', { name: '♥ 8、列1、上から2枚目' });
+    fireEvent.click(tableauSource);
+    const tableauTarget = screen.getByRole('button', { name: /♣ 5/ });
+    fireEvent.click(tableauTarget);
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith(
+        'move',
+        { zone: 'tableau', col: 1, cardIndex: 1 },
+        { zone: 'tableau', col: 2 },
+      ),
+    );
+  });
+
+  it('routes selected cards to the full-size empty foundation and empty tableau target', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 800 });
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: playingState.tableau.map((column, index) => (index === 4 ? [] : column)),
+    });
+    renderWithProviders(<AlaskaPage />);
+    const source = await screen.findByRole('button', { name: '♥ 8、列1、上から2枚目' });
+    fireEvent.click(source);
+    const foundation = screen.getByRole('button', { name: /空の組札 \(♠\)/ });
+    expect(foundation.className).toContain('hover:ring-ds-warning');
+    fireEvent.click(foundation);
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith(
+        'move',
+        { zone: 'tableau', col: 1, cardIndex: 1 },
+        { zone: 'foundation', col: 0 },
+      ),
+    );
+
+    fireEvent.click(source);
+    const emptyColumn = screen.getByRole('button', { name: '空 場札 4' });
+    expect(emptyColumn).not.toHaveAttribute('aria-disabled');
+    expect(emptyColumn).not.toHaveAttribute('aria-describedby');
+    expect(emptyColumn.className).toContain('hover:ring-ds-warning');
+    fireEvent.click(emptyColumn);
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith(
+        'move',
+        { zone: 'tableau', col: 1, cardIndex: 1 },
+        { zone: 'tableau', col: 4 },
+      ),
+    );
+  });
+
+  it('highlights a hovered face-up card and the cards beneath it', async () => {
+    const state: AlaskaResponse = {
+      ...playingState,
+      tableau: [
+        [
+          { card: card('SPADE', 13), faceUp: true },
+          { card: card('HEART', 8), faceUp: true },
+          { card: card('CLOVER', 5), faceUp: true },
+        ],
+        ...playingState.tableau.slice(1),
+      ],
+    };
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<AlaskaPage />);
+    const hovered = await screen.findByRole('button', { name: '♥ 8、列0、上から2枚目 2枚まとめて移動' });
+    const below = screen.getByRole('button', { name: '♣ 5、列0、上から3枚目' });
+    const above = screen.getByRole('button', { name: '♠ K、列0、上から1枚目 3枚まとめて移動' });
+    fireEvent.mouseEnter(hovered);
+    expect(hovered).toHaveAttribute('data-block-member', 'true');
+    expect(below).toHaveAttribute('data-block-member', 'true');
+    expect(hovered.className).toContain('ring-ds-accent/70');
+    expect(below.className).toContain('ring-ds-accent/70');
+    expect(above).not.toHaveAttribute('data-block-member');
+    expect(above.className).not.toContain('ring-ds-accent/70');
+  });
+
   it('shows move count', async () => {
     renderWithProviders(<AlaskaPage />);
     await waitFor(() => expect(screen.getByText(/手数/)).toBeInTheDocument());
@@ -158,6 +293,28 @@ describe('AlaskaPage', () => {
     expect(screen.getByRole('button', { name: '♠ 組札 2枚、最後の札 ♠ 2、次は♠ 3' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '空の組札 (♣)、次は♣ A' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '♦ 組札 2枚、最後の札 ♦ K、完成' })).toBeInTheDocument();
+  });
+
+  it('renders occupied and completed foundations at large desktop', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [[card('SPADE', 1), card('SPADE', 2)], [card('CLOVER', 13)], [], []],
+    });
+    renderWithProviders(<AlaskaPage />);
+    const occupied = await screen.findByRole('button', { name: '♠ 組札 2枚、最後の札 ♠ 2、次は♠ 3' });
+    expect(occupied.children.length).toBeGreaterThan(0);
+    expect(screen.getByRole('button', { name: '♣ 組札 1枚、最後の札 ♣ K、完成' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '空の組札 (♥)、次は♥ A' })).toBeInTheDocument();
+  });
+
+  it('dims a tableau card while it is the drag source', async () => {
+    renderWithProviders(<AlaskaPage />);
+    const source = await screen.findByRole('button', { name: '♠ K、列0、上から1枚目' });
+    fireEvent.dragStart(source, { dataTransfer: { setData: vi.fn(), effectAllowed: '' } });
+    expect(source.className).toContain('opacity-50');
+    fireEvent.dragEnd(source);
+    expect(source.className).not.toContain('opacity-50');
   });
 
   it('shows the face-down rule note and gives face-down cards concise positional labels', async () => {

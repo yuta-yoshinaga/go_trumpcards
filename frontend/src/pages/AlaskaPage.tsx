@@ -1,4 +1,4 @@
-import { useCallback, useId, useMemo, useState } from 'react';
+import { Fragment, useCallback, useId, useMemo, useState } from 'react';
 import { type AlaskaMoveZone, alaskaHintApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -19,7 +19,7 @@ import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -30,6 +30,7 @@ import { useLocalStorageToggle } from '../hooks/useLocalStorageToggle';
 import { useMountReset } from '../hooks/useMountReset';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { btnDanger, btnOutline, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
+import { DESKTOP_COMPACT_CARD_WIDTH } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { AlaskaResponse } from '../types/card';
 import { AlaskaPhase } from '../types/phases';
@@ -165,6 +166,7 @@ function AlaskaPageContent() {
   });
 
   const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const windowWidth = useWindowWidth();
 
   // Responsive card dimensions
@@ -179,6 +181,11 @@ function AlaskaPageContent() {
     const co = Math.round(cw * 0.48);
     return { cw, ch, co };
   }, [isMobile, windowWidth, cardWidth, cardHeight, cardOverlap]);
+  const foundationWidth = isLargeDesktop ? DESKTOP_COMPACT_CARD_WIDTH : rs.cw;
+  const foundationHeight = isLargeDesktop ? Math.round(DESKTOP_COMPACT_CARD_WIDTH * 1.5) : rs.ch;
+  const faceDownStep = isLargeDesktop ? 12 : rs.co;
+  const TableauLayout = isLargeDesktop ? 'div' : Fragment;
+  const tableauLayoutProps = isLargeDesktop ? { className: 'flex flex-wrap justify-center items-start gap-4' } : {};
 
   // Drag-and-drop
   const dispatchMove = useCallback(
@@ -273,6 +280,65 @@ function AlaskaPageContent() {
 
   if (!state) return <GameSkeleton gameKey="alaska" layout={{ kind: 'tableau', topRow: 6, tableau: 7 }} />;
 
+  const renderFoundation = (i: number, cardWidth: number, cardHeight: number) => {
+    const pile = state.foundation[i];
+    const topCard = pile.length > 0 ? pile[pile.length - 1] : null;
+    const target = selectedSource !== null;
+    return (
+      <DropZone
+        key={i}
+        onDrop={dnd.handleDrop({ zone: 'foundation', col: i })}
+        onDragOver={dnd.handleDragOver({ zone: 'foundation', col: i })}
+        onDragLeave={dnd.handleDragLeave}
+        isDropTarget={dnd.isDropTarget({ zone: 'foundation', col: i })}
+      >
+        <button
+          type="button"
+          className={`${focusRingWhite} rounded-lg transition-colors ${target ? 'hover:ring-2 hover:ring-ds-warning cursor-pointer' : ''}`}
+          onClick={() => target && handleSelectTarget('foundation', i)}
+          disabled={!isPlaying}
+          aria-disabled={!target || undefined}
+          aria-describedby={!target ? selectSourceHintId : undefined}
+          aria-label={
+            topCard
+              ? t('foundationAriaLabel', {
+                  suit: FOUNDATION_SUITS[i],
+                  count: pile.length,
+                  topCard: cardAlt(topCard),
+                  nextCondition:
+                    topCard.value < 13
+                      ? t('foundationNextCard', {
+                          card: `${FOUNDATION_SUITS[i]} ${valueName(topCard.value + 1)}`,
+                        })
+                      : t('foundationComplete'),
+                })
+              : t('emptyFoundationAriaLabel', {
+                  suit: FOUNDATION_SUITS[i],
+                  nextCondition: t('foundationNextCard', { card: `${FOUNDATION_SUITS[i]} A` }),
+                })
+          }
+          style={{ width: cardWidth, height: cardHeight }}
+        >
+          {topCard ? (
+            <AnimatedCard card={topCard} width={cardWidth} />
+          ) : (
+            <div
+              className="border-2 border-dashed border-game-border rounded-lg flex items-center justify-center text-game-text-muted"
+              style={{ width: cardWidth, height: cardHeight }}
+            >
+              {FOUNDATION_SUITS[i]}
+            </div>
+          )}
+        </button>
+      </DropZone>
+    );
+  };
+  const renderFoundations = (cardWidth: number, cardHeight: number, className: string) => (
+    <div className={className} data-tutorial="rs-foundation">
+      {state.foundation.map((_, i) => renderFoundation(i, cardWidth, cardHeight))}
+    </div>
+  );
+
   const isPlaying = state.phase === AlaskaPhase.PLAYING;
   const isGameClear = state.phase === AlaskaPhase.GAME_CLEAR;
   const isGameOver = state.phase === AlaskaPhase.GAME_OVER;
@@ -342,64 +408,13 @@ function AlaskaPageContent() {
 
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
             {/* Foundation row */}
-            <div className="flex gap-1 sm:gap-2 mb-3 items-start justify-center" data-tutorial="rs-foundation">
-              {state.foundation.map((pile, i) => {
-                const topCard = pile.length > 0 ? pile[pile.length - 1] : null;
-                const isTarget = selectedSource !== null;
-                return (
-                  <DropZone
-                    key={i}
-                    onDrop={dnd.handleDrop({ zone: 'foundation', col: i })}
-                    onDragOver={dnd.handleDragOver({ zone: 'foundation', col: i })}
-                    onDragLeave={dnd.handleDragLeave}
-                    isDropTarget={dnd.isDropTarget({ zone: 'foundation', col: i })}
-                  >
-                    <button
-                      type="button"
-                      className={`${focusRingWhite} rounded-lg transition-colors ${
-                        isTarget ? 'hover:ring-2 hover:ring-ds-warning cursor-pointer' : ''
-                      }`}
-                      onClick={() => isTarget && handleSelectTarget('foundation', i)}
-                      disabled={!isPlaying}
-                      aria-disabled={!isTarget || undefined}
-                      aria-describedby={!isTarget ? selectSourceHintId : undefined}
-                      aria-label={
-                        topCard
-                          ? t('foundationAriaLabel', {
-                              suit: FOUNDATION_SUITS[i],
-                              count: pile.length,
-                              topCard: cardAlt(topCard),
-                              nextCondition:
-                                topCard.value < 13
-                                  ? t('foundationNextCard', {
-                                      card: `${FOUNDATION_SUITS[i]} ${valueName(topCard.value + 1)}`,
-                                    })
-                                  : t('foundationComplete'),
-                            })
-                          : t('emptyFoundationAriaLabel', {
-                              suit: FOUNDATION_SUITS[i],
-                              nextCondition: t('foundationNextCard', { card: `${FOUNDATION_SUITS[i]} A` }),
-                            })
-                      }
-                      style={{ width: rs.cw, height: rs.ch }}
-                    >
-                      {topCard ? (
-                        <AnimatedCard card={topCard} width={rs.cw} />
-                      ) : (
-                        <div
-                          className="border-2 border-dashed border-game-border rounded-lg flex items-center justify-center text-game-text-muted"
-                          style={{ width: rs.cw, height: rs.ch }}
-                        >
-                          {FOUNDATION_SUITS[i]}
-                        </div>
-                      )}
-                    </button>
-                  </DropZone>
-                );
-              })}
-            </div>
+            {!isLargeDesktop &&
+              renderFoundations(
+                foundationWidth,
+                foundationHeight,
+                'flex gap-1 sm:gap-2 mb-3 items-start justify-center',
+              )}
 
-            {/* Tableau */}
             {!rulesDismissed && (
               <div
                 className="flex items-center justify-center gap-1 mb-1"
@@ -419,134 +434,162 @@ function AlaskaPageContent() {
                 </button>
               </div>
             )}
-            <div className="flex gap-1 sm:gap-2 justify-center" data-tutorial="rs-tableau">
-              {state.tableau.map((col, colIdx) => (
-                <div key={colIdx} className="flex flex-col items-center" style={{ width: rs.cw }}>
-                  <div className="text-game-text-muted text-xs mb-1">{colIdx}</div>
-                  {col.length === 0 ? (
-                    <DropZone
-                      onDrop={dnd.handleDrop({ zone: 'tableau', col: colIdx })}
-                      onDragOver={dnd.handleDragOver({ zone: 'tableau', col: colIdx })}
-                      onDragLeave={dnd.handleDragLeave}
-                      isDropTarget={dnd.isDropTarget({ zone: 'tableau', col: colIdx })}
-                    >
-                      <button
-                        type="button"
-                        className={`border-2 border-dashed border-game-border rounded-lg flex items-center justify-center text-game-text-muted ${focusRingWhite} ${
-                          selectedSource ? 'hover:ring-2 hover:ring-ds-warning cursor-pointer' : ''
-                        }`}
-                        style={{ width: rs.cw, height: rs.ch }}
-                        onClick={() => selectedSource && handleSelectTarget('tableau', colIdx)}
-                        disabled={!isPlaying}
-                        aria-disabled={!selectedSource || undefined}
-                        aria-describedby={!selectedSource ? selectSourceHintId : undefined}
-                        aria-label={`${t('empty')} ${t('tableau')} ${colIdx}`}
+
+            {/* Tableau */}
+            <TableauLayout {...tableauLayoutProps}>
+              <div className="flex gap-1 sm:gap-2 justify-center" data-tutorial="rs-tableau">
+                {state.tableau.map((col, colIdx) => (
+                  <div key={colIdx} className="flex flex-col items-center" style={{ width: rs.cw }}>
+                    <div className="text-game-text-muted text-xs mb-1">{colIdx}</div>
+                    {col.length === 0 ? (
+                      <DropZone
+                        onDrop={dnd.handleDrop({ zone: 'tableau', col: colIdx })}
+                        onDragOver={dnd.handleDragOver({ zone: 'tableau', col: colIdx })}
+                        onDragLeave={dnd.handleDragLeave}
+                        isDropTarget={dnd.isDropTarget({ zone: 'tableau', col: colIdx })}
                       >
-                        {t('empty')}
-                      </button>
-                    </DropZone>
-                  ) : (
-                    <div className="relative" style={{ width: rs.cw, height: rs.ch + (col.length - 1) * rs.co }}>
-                      {col.map((tc, cardIdx) => {
-                        const isSelected = isSourceSelected('tableau', colIdx, cardIdx);
-                        const zone: AlaskaMoveZone = { zone: 'tableau', col: colIdx, cardIndex: cardIdx };
-                        const isDragSrc = dnd.isDragSource(zone);
-                        const isLast = cardIdx === col.length - 1;
+                        <button
+                          type="button"
+                          className={`border-2 border-dashed border-game-border rounded-lg flex items-center justify-center text-game-text-muted ${focusRingWhite} ${
+                            selectedSource ? 'hover:ring-2 hover:ring-ds-warning cursor-pointer' : ''
+                          }`}
+                          style={{ width: rs.cw, height: rs.ch }}
+                          onClick={() => selectedSource && handleSelectTarget('tableau', colIdx)}
+                          disabled={!isPlaying}
+                          aria-disabled={!selectedSource || undefined}
+                          aria-describedby={!selectedSource ? selectSourceHintId : undefined}
+                          aria-label={`${t('empty')} ${t('tableau')} ${colIdx}`}
+                        >
+                          {t('empty')}
+                        </button>
+                      </DropZone>
+                    ) : (
+                      <div
+                        className="relative"
+                        style={{
+                          width: rs.cw,
+                          height:
+                            rs.ch +
+                            col
+                              .slice(0, -1)
+                              .reduce(
+                                (height, previousCard) => height + (previousCard.faceUp ? rs.co : faceDownStep),
+                                0,
+                              ),
+                        }}
+                      >
+                        {col.map((tc, cardIdx) => {
+                          const isSelected = isSourceSelected('tableau', colIdx, cardIdx);
+                          const zone: AlaskaMoveZone = { zone: 'tableau', col: colIdx, cardIndex: cardIdx };
+                          const isDragSrc = dnd.isDragSource(zone);
+                          const isLast = cardIdx === col.length - 1;
 
-                        // Hint highlight (announced via the card aria-labels, no visible text panel)
-                        const hintFrom =
-                          requestedHint && requestedHint.fromCol === colIdx && requestedHint.cardIndex === cardIdx;
-                        const hintTo =
-                          requestedHint &&
-                          requestedHint.toZone === 'tableau' &&
-                          requestedHint.toCol === colIdx &&
-                          isLast;
-                        const hintAria = hintFrom
-                          ? ` ${t('hintFromAria', { dest: hintDest })}`
-                          : hintTo
-                            ? ` ${t('hintToAria')}`
-                            : '';
+                          // Hint highlight (announced via the card aria-labels, no visible text panel)
+                          const hintFrom =
+                            requestedHint && requestedHint.fromCol === colIdx && requestedHint.cardIndex === cardIdx;
+                          const hintTo =
+                            requestedHint &&
+                            requestedHint.toZone === 'tableau' &&
+                            requestedHint.toCol === colIdx &&
+                            isLast;
+                          const hintAria = hintFrom
+                            ? ` ${t('hintFromAria', { dest: hintDest })}`
+                            : hintTo
+                              ? ` ${t('hintToAria')}`
+                              : '';
 
-                        return (
-                          <div key={cardIdx} className="absolute" style={{ top: cardIdx * rs.co, zIndex: cardIdx }}>
-                            <DropZone
-                              onDrop={isLast ? dnd.handleDrop(zone) : noop}
-                              onDragOver={isLast ? dnd.handleDragOver(zone) : noop}
-                              onDragLeave={isLast ? dnd.handleDragLeave : undefined}
-                              isDropTarget={isLast && dnd.isDropTarget({ zone: 'tableau', col: colIdx })}
+                          return (
+                            <div
+                              key={cardIdx}
+                              className="absolute"
+                              style={{
+                                top: col
+                                  .slice(0, cardIdx)
+                                  .reduce((top, previousCard) => top + (previousCard.faceUp ? rs.co : faceDownStep), 0),
+                                zIndex: cardIdx,
+                              }}
                             >
-                              {tc.faceUp ? (
-                                (() => {
-                                  const inHoverBlock = hoveredBlock?.col === colIdx && cardIdx >= hoveredBlock.cardIdx;
-                                  return (
-                                    <button
-                                      type="button"
-                                      draggable={isPlaying}
-                                      onDragStart={dnd.handleDragStart(zone)}
-                                      onDragEnd={dnd.handleDragEnd}
-                                      onMouseEnter={() => setHoveredBlock({ col: colIdx, cardIdx })}
-                                      onMouseLeave={() => setHoveredBlock(null)}
-                                      onFocus={() => setHoveredBlock({ col: colIdx, cardIdx })}
-                                      onBlur={() => setHoveredBlock(null)}
-                                      data-block-member={inHoverBlock || undefined}
-                                      className={`${focusRingWhite} rounded-lg transition-all ${
-                                        isSelected ? 'ring-2 ring-ds-warning -translate-y-1' : ''
-                                      } ${isDragSrc ? 'opacity-50' : ''} ${
-                                        hintFrom ? 'ring-2 ring-ds-info motion-safe:animate-pulse' : ''
-                                      } ${hintTo ? 'ring-2 ring-ds-success motion-safe:animate-pulse' : ''} ${
-                                        inHoverBlock && !isSelected ? 'ring-2 ring-ds-accent/70' : ''
-                                      }`}
-                                      onClick={() => {
-                                        // Clicking the selected card again deselects it, which
-                                        // `handleSelectSource` implements by toggling. That has to be checked
-                                        // BEFORE the isLast branch: a selected card that is also last in its
-                                        // column would otherwise be treated as a move target and dispatch a move
-                                        // onto its own column, which the server rejects — so the player got a
-                                        // rejection message instead of a deselect. Found by #4439.
-                                        if (selectedSource && !isSelected && isLast) {
-                                          handleSelectTarget('tableau', colIdx);
-                                        } else {
-                                          handleSelectSource('tableau', colIdx, cardIdx);
-                                        }
-                                      }}
-                                      disabled={!isPlaying}
-                                      aria-pressed={isSelected}
-                                      // 上に乗る札は全部まとめて動く。画面はリングで
-                                      // 示していたが、読み上げには枚数が乗っていな
-                                      // かった (#5534)。末尾の1枚だけのときは言わない
-                                      // -- 「1枚まとめて」は情報にならない。
-                                      aria-label={`${t('tableauCardAriaLabel', {
-                                        card: tc.card ? cardAlt(tc.card) : '',
-                                        col: colIdx,
-                                        pos: cardIdx + 1,
-                                      })}${
-                                        col.length - cardIdx > 1
-                                          ? ` ${t('blockMoveLabel', { n: col.length - cardIdx })}`
-                                          : ''
-                                      }${hintAria}`}
-                                    >
-                                      {tc.card && <AnimatedCard card={tc.card} width={rs.cw} />}
-                                    </button>
-                                  );
-                                })()
-                              ) : (
-                                <div
-                                  role="img"
-                                  aria-label={t('faceDownCardLabel', { col: colIdx, pos: cardIdx + 1 })}
-                                  title={t('faceDownRule')}
-                                >
-                                  <AnimatedCardBack width={rs.cw} />
-                                </div>
-                              )}
-                            </DropZone>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
+                              <DropZone
+                                onDrop={isLast ? dnd.handleDrop(zone) : noop}
+                                onDragOver={isLast ? dnd.handleDragOver(zone) : noop}
+                                onDragLeave={isLast ? dnd.handleDragLeave : undefined}
+                                isDropTarget={isLast && dnd.isDropTarget({ zone: 'tableau', col: colIdx })}
+                              >
+                                {tc.faceUp ? (
+                                  (() => {
+                                    const inHoverBlock =
+                                      hoveredBlock?.col === colIdx && cardIdx >= hoveredBlock.cardIdx;
+                                    return (
+                                      <button
+                                        type="button"
+                                        draggable={isPlaying}
+                                        onDragStart={dnd.handleDragStart(zone)}
+                                        onDragEnd={dnd.handleDragEnd}
+                                        onMouseEnter={() => setHoveredBlock({ col: colIdx, cardIdx })}
+                                        onMouseLeave={() => setHoveredBlock(null)}
+                                        onFocus={() => setHoveredBlock({ col: colIdx, cardIdx })}
+                                        onBlur={() => setHoveredBlock(null)}
+                                        data-block-member={inHoverBlock || undefined}
+                                        className={`${focusRingWhite} rounded-lg transition-all ${
+                                          isSelected ? 'ring-2 ring-ds-warning -translate-y-1' : ''
+                                        } ${isDragSrc ? 'opacity-50' : ''} ${
+                                          hintFrom ? 'ring-2 ring-ds-info motion-safe:animate-pulse' : ''
+                                        } ${hintTo ? 'ring-2 ring-ds-success motion-safe:animate-pulse' : ''} ${
+                                          inHoverBlock && !isSelected ? 'ring-2 ring-ds-accent/70' : ''
+                                        }`}
+                                        onClick={() => {
+                                          // Clicking the selected card again deselects it, which
+                                          // `handleSelectSource` implements by toggling. That has to be checked
+                                          // BEFORE the isLast branch: a selected card that is also last in its
+                                          // column would otherwise be treated as a move target and dispatch a move
+                                          // onto its own column, which the server rejects — so the player got a
+                                          // rejection message instead of a deselect. Found by #4439.
+                                          if (selectedSource && !isSelected && isLast) {
+                                            handleSelectTarget('tableau', colIdx);
+                                          } else {
+                                            handleSelectSource('tableau', colIdx, cardIdx);
+                                          }
+                                        }}
+                                        disabled={!isPlaying}
+                                        aria-pressed={isSelected}
+                                        // 上に乗る札は全部まとめて動く。画面はリングで
+                                        // 示していたが、読み上げには枚数が乗っていな
+                                        // かった (#5534)。末尾の1枚だけのときは言わない
+                                        // -- 「1枚まとめて」は情報にならない。
+                                        aria-label={`${t('tableauCardAriaLabel', {
+                                          card: tc.card ? cardAlt(tc.card) : '',
+                                          col: colIdx,
+                                          pos: cardIdx + 1,
+                                        })}${
+                                          col.length - cardIdx > 1
+                                            ? ` ${t('blockMoveLabel', { n: col.length - cardIdx })}`
+                                            : ''
+                                        }${hintAria}`}
+                                      >
+                                        {tc.card && <AnimatedCard card={tc.card} width={rs.cw} />}
+                                      </button>
+                                    );
+                                  })()
+                                ) : (
+                                  <div
+                                    role="img"
+                                    aria-label={t('faceDownCardLabel', { col: colIdx, pos: cardIdx + 1 })}
+                                    title={t('faceDownRule')}
+                                  >
+                                    <AnimatedCardBack width={rs.cw} />
+                                  </div>
+                                )}
+                              </DropZone>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+              {isLargeDesktop && renderFoundations(foundationWidth, foundationHeight, 'flex flex-col gap-1')}
+            </TableauLayout>
           </div>
 
           {/* Bottom controls */}
