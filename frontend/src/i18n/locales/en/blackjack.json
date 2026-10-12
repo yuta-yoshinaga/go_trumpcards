@@ -11,6 +11,7 @@
   "deck": "Deck:",
   "deckUnit_one": "{{count}} deck",
   "deckUnit_other": "{{count}} decks",
+  "chips": "chips",
   "dealerHand": "Dealer Hand",
   "score": "Score",
   "hitAnnouncement": "Drew {{card}}. Current score: {{score}}.",

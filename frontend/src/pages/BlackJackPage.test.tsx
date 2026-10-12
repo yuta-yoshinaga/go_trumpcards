@@ -256,8 +256,8 @@ describe('BlackJackPage', () => {
 
   it('shows chip info bar', async () => {
     renderWithProviders(<BlackJackPage />);
-    await waitFor(() => expect(screen.getByText(/プレイヤー: 1000 chips/)).toBeInTheDocument());
-    expect(screen.getByText(/ディーラー: 1000 chips/)).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText(/プレイヤー: 1000 チップ/)).toBeInTheDocument());
+    expect(screen.getByText(/ディーラー: 1000 チップ/)).toBeInTheDocument();
   });
 
   it('shows bet button in bet phase', async () => {
@@ -1036,7 +1036,7 @@ describe('BlackJackPage', () => {
   it('does not show RC and TC when countingEnabled is false', async () => {
     mockExec.mockResolvedValue({ ...betPhaseState, countingEnabled: false, runningCount: 5, trueCount: 2.3 });
     renderWithProviders(<BlackJackPage />);
-    await waitFor(() => expect(screen.getByText(/プレイヤー: 1000 chips/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/プレイヤー: 1000 チップ/)).toBeInTheDocument());
     expect(screen.queryByText(/RC=/)).not.toBeInTheDocument();
   });
 
@@ -1074,7 +1074,7 @@ describe('BlackJackPage', () => {
     };
     mockExec.mockResolvedValue(stateWithCpu);
     renderWithProviders(<BlackJackPage />);
-    await waitFor(() => expect(screen.getByText(/CPU 1 \(800 chips\)/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/CPU 1 \(800 チップ\)/)).toBeInTheDocument());
     expect(screen.getByText(/スコア 18/)).toBeInTheDocument();
   });
 
@@ -1618,7 +1618,7 @@ describe('BlackJackPage', () => {
     };
     mockExec.mockResolvedValue(stateWithCpu);
     renderWithProviders(<BlackJackPage />);
-    await waitFor(() => expect(screen.getByText(/CPU 1 \(800 chips\)/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/CPU 1 \(800 チップ\)/)).toBeInTheDocument());
     expect(screen.getByText('[インシュランス: 50]')).toBeInTheDocument();
   });
 
@@ -1651,7 +1651,7 @@ describe('BlackJackPage', () => {
     };
     mockExec.mockResolvedValue(stateWithCpu);
     renderWithProviders(<BlackJackPage />);
-    await waitFor(() => expect(screen.getByText(/CPU 1 \(800 chips\)/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/CPU 1 \(800 チップ\)/)).toBeInTheDocument());
     // The CPU seat renders its insurance as the bracketed badge "[インシュランス: N]"
     // (see the sibling test above). Match that shape rather than the bare word,
     // which now also appears in the footer's keyboard-shortcut rows.
@@ -2063,6 +2063,26 @@ describe('Side Bets display', () => {
   });
 
   describe('payout ref side-bet rows', () => {
+    it.each([
+      ['blackjack', () => mockExec.mockResolvedValue(betPhaseState)],
+      ['spanish21', () => mockSpanish21Exec.mockResolvedValue(betPhaseState)],
+      ['doubleexposure', () => mockDoubleExposureExec.mockResolvedValue(betPhaseState)],
+    ] as const)('%s renders translated payout rows and deck/chip labels', async (variant, setup) => {
+      setup();
+      const { container } = renderWithProviders(<BlackJackPage variant={variant} />);
+      expect(await screen.findByText(/デッキ: 1デッキ/)).toBeInTheDocument();
+      expect(screen.getByText(/プレイヤー: 1000 チップ/)).toBeInTheDocument();
+      const summary = container.querySelector('details[data-tutorial="bj-payout-ref"] summary');
+      expect(summary).toBeInTheDocument();
+      if (!summary) throw new Error('Payout table summary was not rendered');
+      fireEvent.click(summary);
+      const list = await screen.findByTestId('bj-payout-ref-list');
+      expect(list.textContent).toContain('パーフェクトペア');
+      expect(list.textContent).toContain('ポーカー役ベット');
+      expect(list.textContent).not.toContain('{{');
+      expect(list.textContent).not.toContain('payoutRef.');
+    });
+
     it('shows Perfect Pairs payout values (6/12/25) in the payout table during bet phase', async () => {
       renderWithProviders(<BlackJackPage />);
       // Open the <details> so the list is rendered
