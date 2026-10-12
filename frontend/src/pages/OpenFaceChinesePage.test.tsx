@@ -143,6 +143,26 @@ describe('OpenFaceChinesePage', () => {
     expect(layout).toContainElement(humanBoard);
     expect(layout).toContainElement(document.querySelector('[data-tutorial="ofc-place"]'));
     expect(layout).toContainElement(screen.getByTestId('cpu-accordion'));
+    const rowsTarget = document.querySelector('[data-tutorial="ofc-rows"]');
+    expect(rowsTarget).toBe(humanBoard.parentElement);
+    expect(rowsTarget).toHaveClass('col-start-2', 'row-start-1');
+    expect(layout.querySelector('.contents')).not.toHaveAttribute('data-tutorial', 'ofc-rows');
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
+  it('starts CPU grid rows at one regardless of player order', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    mockExec.mockResolvedValue(
+      makeState({
+        config: { cpuDifficulty: 0, playerCount: 3, targetRounds: 1 },
+        players: [makePlayer({ id: 1, isHuman: false }), makePlayer({ id: 0 }), makePlayer({ id: 2, isHuman: false })],
+      }),
+    );
+    renderWithProviders(<OpenFaceChinesePage />);
+    await screen.findByTestId('player-0');
+    expect(screen.getByTestId('player-1').closest('[style]')).toHaveStyle({ gridRowStart: '1' });
+    expect(screen.getByTestId('player-2').closest('[style]')).toHaveStyle({ gridRowStart: '2' });
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
   });
 
