@@ -531,14 +531,34 @@ describe('SpadesPage', () => {
     }
   });
 
+  it('fits the score table at large desktop widths', async () => {
+    const innerWidthSpy = vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(1280);
+    try {
+      const { container } = renderWithProviders(<SpadesPage />);
+      await waitFor(() =>
+        expect(container.querySelector('[data-tutorial="sp-score-table"] table')).toBeInTheDocument(),
+      );
+      const table = container.querySelector('[data-tutorial="sp-score-table"] table');
+      expect(table?.className).toContain('table-fixed');
+      expect(table?.className).not.toContain('min-w-[');
+    } finally {
+      innerWidthSpy.mockRestore();
+    }
+  });
+
   it('score table has horizontal scroll wrapper', async () => {
-    const { container } = renderWithProviders(<SpadesPage />);
-    await waitFor(() => expect(screen.getByText('\u30b9\u30b3\u30a2')).toBeInTheDocument());
-    const scoreSection = container.querySelector('[data-tutorial="sp-score-table"]');
-    const scrollWrapper = scoreSection?.querySelector('.overflow-x-auto');
-    expect(scrollWrapper).toBeInTheDocument();
-    const table = scrollWrapper?.querySelector('table');
-    expect(table?.className).toContain('min-w-[360px]');
+    const innerWidthSpy = vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(375);
+    try {
+      const { container } = renderWithProviders(<SpadesPage />);
+      await waitFor(() => expect(screen.getByText('\u30b9\u30b3\u30a2')).toBeInTheDocument());
+      const scoreSection = container.querySelector('[data-tutorial="sp-score-table"]');
+      const scrollWrapper = scoreSection?.querySelector('.overflow-x-auto');
+      expect(scrollWrapper).toBeInTheDocument();
+      const table = scrollWrapper?.querySelector('table');
+      expect(table?.className).toContain('min-w-[360px]');
+    } finally {
+      innerWidthSpy.mockRestore();
+    }
   });
 
   it('score table renders ScrollFadeHint on mobile', async () => {

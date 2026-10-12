@@ -935,4 +935,18 @@ describe('OhHellPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(document.querySelectorAll('[data-hint-suggested="true"]')).toHaveLength(0);
   });
+  it('fits the score table at large desktop widths', async () => {
+    const innerWidthSpy = vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(1280);
+    try {
+      const { container } = renderWithProviders(<OhHellPage />);
+      await waitFor(() =>
+        expect(container.querySelector('[data-tutorial="oh-score-table"] table')).toBeInTheDocument(),
+      );
+      const table = container.querySelector('[data-tutorial="oh-score-table"] table');
+      expect(table?.className).toContain('table-fixed');
+      expect(table?.className).not.toContain('min-w-[');
+    } finally {
+      innerWidthSpy.mockRestore();
+    }
+  });
 });
