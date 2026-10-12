@@ -94,6 +94,16 @@ beforeEach(() => {
 });
 
 describe('GutsPage', () => {
+  it('shows the human turn instruction once', async () => {
+    mockExec.mockResolvedValue(
+      makeGutsState({ message: 'あなたの番です — イン（残る）かアウト（降りる）を選んでください。' }),
+    );
+    renderWithProviders(<GutsPage />);
+    expect(
+      await screen.findAllByText('あなたの番です — イン（残る）かアウト（降りる）を選んでください。'),
+    ).toHaveLength(1);
+  });
+
   it('shows the configured target rounds', async () => {
     for (const { targetRounds, text } of [
       { targetRounds: 4, text: 'ラウンド 1 / 4' },

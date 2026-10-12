@@ -270,10 +270,6 @@ function BouillottePageContent() {
               </div>
             )}
 
-            {isBettingPhase && isHumanTurn && (
-              <div className="text-ds-text-muted text-center mb-2 text-sm font-semibold">{t('bettingNotice')}</div>
-            )}
-
             {/* Players */}
             <div className="mb-2 p-2 rounded bg-black/30" data-tutorial="bouillotte-players">
               <div className="mb-1 text-ds-text-primary text-sm">{t('playersTitle')}</div>

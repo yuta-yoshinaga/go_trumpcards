@@ -116,6 +116,13 @@ beforeEach(() => {
 });
 
 describe('PitchPage', () => {
+  it('shows the bid guidance exactly once', async () => {
+    mockApi.mockResolvedValue(bidState);
+    renderWithProviders(<PitchPage />);
+
+    expect(await screen.findAllByText('ビッド宣言 (0=パス, 2-4)')).toHaveLength(1);
+  });
+
   it.each([
     [1, '♠', 'スペード'],
     [2, '♣', 'クラブ'],

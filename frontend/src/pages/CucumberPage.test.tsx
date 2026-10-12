@@ -157,15 +157,21 @@ describe('CucumberPage', () => {
     mobileState.isMobile = true;
   });
 
-  // **超えるべきランクが盤面の全て。** スートが無い以上、唯一の手がかり。
-  it('shows the rank to beat, or that you lead', async () => {
+  it('always shows the rank or lead heading and leaves the lead instruction to GameMessageBox', async () => {
     const { unmount } = renderWithProviders(<CucumberPage />);
     expect(await screen.findByTestId('cu-threshold')).toHaveTextContent('9');
     unmount();
 
-    mockExec.mockResolvedValue(makeState({ highestInTrick: 0, currentTrick: [] }));
+    mockExec.mockResolvedValue(
+      makeState({
+        highestInTrick: 0,
+        currentTrick: [],
+        message: 'リードです。どの札でも出せます。',
+      }),
+    );
     renderWithProviders(<CucumberPage />);
-    expect(await screen.findByTestId('cu-threshold')).toHaveTextContent(/リード/);
+    expect(await screen.findByTestId('cu-threshold')).toHaveTextContent('リード（どの札でも出せます）');
+    expect(screen.getByText('リードです。どの札でも出せます。')).toBeInTheDocument();
   });
 
   it('shows every hand size and penalty', async () => {
@@ -318,10 +324,20 @@ describe('CucumberPage', () => {
     expect(await screen.findByTestId('cu-status')).toHaveTextContent(/いちばん低い札/);
   });
 
-  it('says you may lead with anything', async () => {
-    mockExec.mockResolvedValue(makeState({ highestInTrick: 0, currentTrick: [], validPlays: [0, 1, 2, 3] }));
+  it('shows the lead instruction only once beside the lead heading', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        highestInTrick: 0,
+        currentTrick: [],
+        validPlays: [0, 1, 2, 3],
+        message: 'リードです。どの札でも出せます。',
+      }),
+    );
     renderWithProviders(<CucumberPage />);
-    expect(await screen.findByTestId('cu-status')).toHaveTextContent(/どの札でも出せます/);
+    await screen.findByTestId('cu-header');
+    expect(screen.getByTestId('cu-threshold')).toHaveTextContent('リード（どの札でも出せます）');
+    expect(screen.queryByTestId('cu-status')).not.toBeInTheDocument();
+    expect(screen.getAllByText('リードです。どの札でも出せます。')).toHaveLength(1);
   });
 
   it('disables the hand while it is a CPU turn', async () => {

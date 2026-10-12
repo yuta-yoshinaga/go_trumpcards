@@ -229,10 +229,6 @@ function TeenPattiPageContent() {
               <span>{t('stake', { amount: state.stake })}</span>
             </div>
 
-            {isHumanBetTurn && (
-              <div className="text-ds-text-muted text-center mb-2 text-sm font-semibold">{t('betNotice')}</div>
-            )}
-
             {/* Players */}
             <div className="mb-2 p-2 rounded bg-black/30" data-tutorial="teenpatti-players">
               <div className="mb-1 text-ds-text-primary text-sm">{t('playersTitle')}</div>

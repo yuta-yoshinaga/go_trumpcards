@@ -153,7 +153,7 @@ function JulepePageContent() {
     !p.decided ? t('status.undecided') : p.inRound ? t('status.in') : t('status.out');
 
   const undecidedCount = state.players.filter((player) => !player.decided).length;
-  const decisionAnnouncement = t('decision.undecided', { count: undecidedCount });
+  const undecidedAnnouncement = t('decision.undecided', { count: undecidedCount });
 
   const resultBanner = (() => {
     if (!isGameEnd) return null;
@@ -231,7 +231,7 @@ function JulepePageContent() {
                 role="status"
                 data-testid="rm-decision-status"
               >
-                {decisionAnnouncement}
+                {undecidedAnnouncement}
               </div>
             )}
 

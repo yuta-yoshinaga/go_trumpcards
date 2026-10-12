@@ -344,7 +344,7 @@ function CucumberPageContent() {
             />
 
             {/* **「選べる」と「決まっている」を言い分けます。** */}
-            {isHumanTurn && (
+            {isHumanTurn && state.highestInTrick > 0 && (
               <div className="mt-3 text-center text-ds-text-muted" role="status" data-testid="cu-status">
                 {state.forced
                   ? t('status.forced')

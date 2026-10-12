@@ -46,7 +46,7 @@ test.describe('Comet E2E', () => {
     await expect(handCards(page)).toHaveCount(12);
 
     // **先頭は何でも出せる。**
-    await expect(page.getByTestId('comet-need')).toContainText('好きな札');
+    await expect(page.getByRole('status').filter({ hasText: '好きな札' })).toBeVisible();
     // 連なりはまだ空。
     await expect(page.getByTestId('comet-pile')).toBeVisible({ timeout: TIMEOUT_ACTION });
   });

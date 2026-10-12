@@ -50,6 +50,13 @@ beforeEach(() => {
 });
 
 describe('TysiacPage', () => {
+  it('shows the bidding guidance exactly once', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<TysiacPage />);
+
+    expect(await screen.findAllByText('入札フェーズ — レイズ（+10）またはパス。')).toHaveLength(1);
+  });
+
   it('shows the current talon recipient', async () => {
     mockExec.mockResolvedValue(talonPhaseState);
     renderWithProviders(<TysiacPage />);

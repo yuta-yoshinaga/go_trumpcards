@@ -31,6 +31,16 @@ beforeEach(() => {
 });
 
 describe('TeenPattiPage', () => {
+  it('shows the human turn instruction once', async () => {
+    mockExec.mockResolvedValue(
+      makeTeenPattiState({ message: 'あなたの番です — シー／ベット／レイズ／フォールドを選んでください。' }),
+    );
+    renderWithProviders(<TeenPattiPage />);
+    expect(
+      await screen.findAllByText('あなたの番です — シー／ベット／レイズ／フォールドを選んでください。'),
+    ).toHaveLength(1);
+  });
+
   it('shows three face-down cards with an accessible description while the human is blind', async () => {
     renderWithProviders(<TeenPattiPage />);
     const hand = await screen.findByRole('group', { name: 'ブラインド中の手札。カードは伏せられています。' });
