@@ -13,7 +13,7 @@ import { HintTooltip } from '../components/hint/HintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -70,6 +70,7 @@ function MinibridgePageContent() {
   } = useGameApi<MinibridgeResponse, Parameters<typeof minibridgeApi.exec>>(minibridgeApi.exec);
   const { cardWidth } = useCardDimensions();
   const isMobile = useIsMobile();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const { hint, hintEnabled, setHintEnabled } = useGameHint('minibridge', state);
   const [level, setLevel] = useState(1);
   const [cpuProcessing, setCpuProcessing] = useState(false);
@@ -396,7 +397,11 @@ function MinibridgePageContent() {
             )}
 
             {human && human.cards.length > 0 && (
-              <div className="mt-4" data-tutorial="mb-hand">
+              <div
+                className={`${isLargeDesktop ? 'sticky bottom-0 z-10 bg-game-bg-blue' : ''} mt-4`}
+                data-tutorial="mb-hand"
+                data-testid="mb-hand-area"
+              >
                 <div className="text-ds-text-muted text-sm mb-1">
                   {t('header.you')}: {human.cardCount}
                   {humanIsDummy && <span className="ml-2 text-ds-accent">{t('header.cpuOperatedDummy')}</span>}
