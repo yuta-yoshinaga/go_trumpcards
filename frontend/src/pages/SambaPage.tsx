@@ -322,6 +322,42 @@ function SambaPageContent() {
         </div>
       );
     });
+  const visibleHumanTeamMelds = humanTeamMelds.filter((meld) => meld !== null);
+
+  const renderHandCard = (card: Card, idx: number) => {
+    const isSelected = selectedCardIndices.includes(idx);
+    const isGrouped = meldGroups.some((group) => group.includes(idx));
+    return (
+      <button
+        type="button"
+        key={`${card.design}-${card.value}-${idx}`}
+        onClick={() => {
+          if (!isGrouped) toggleCard(idx);
+        }}
+        aria-label={cardAlt(card)}
+        aria-pressed={isSelected || isGrouped}
+        aria-disabled={isGrouped || undefined}
+        aria-describedby={
+          [
+            isGrouped ? 'sa-meld-card-assigned' : undefined,
+            isHumanTurn && meldPointInfo?.needInitial ? 'sa-meld-points' : undefined,
+          ]
+            .filter(Boolean)
+            .join(' ') || undefined
+        }
+        className={`transition-transform ${focusRingCard}`}
+        style={{
+          background: 'none',
+          padding: 0,
+          borderRadius: 8,
+          ...selectedCardStyle(isSelected || isGrouped),
+          boxSizing: 'border-box',
+        }}
+      >
+        <AnimatedCard card={card} width={cardWidth} />
+      </button>
+    );
+  };
 
   return (
     <GamePageShell
@@ -738,13 +774,13 @@ function SambaPageContent() {
               className={isLargeDesktop ? 'flex items-start gap-4' : undefined}
               data-testid={isLargeDesktop ? 'sa-footer-hand-row' : undefined}
             >
-              {isLargeDesktop && humanTeamMelds.length > 0 && (
+              {isLargeDesktop && visibleHumanTeamMelds.length > 0 && (
                 <div
                   className="shrink-0 max-w-[30%] overflow-y-auto"
                   data-testid="sa-footer-melds"
                   style={{ maxHeight: cardWidth * 1.4 }}
                 >
-                  {humanTeamMelds}
+                  {visibleHumanTeamMelds}
                 </div>
               )}
               {humanPlayer &&
@@ -764,77 +800,11 @@ function SambaPageContent() {
                   />
                 ) : isLargeDesktop ? (
                   <CardFan itemWidth={cardWidth + 6} dataTutorial="sa-player-hand" data-testid="sa-player-hand">
-                    {humanPlayer.cards.map((card, idx) => {
-                      const isSelected = selectedCardIndices.includes(idx);
-                      const isGrouped = meldGroups.some((group) => group.includes(idx));
-                      return (
-                        <button
-                          type="button"
-                          key={`${card.design}-${card.value}-${idx}`}
-                          onClick={() => {
-                            if (!isGrouped) toggleCard(idx);
-                          }}
-                          aria-label={cardAlt(card)}
-                          aria-pressed={isSelected || isGrouped}
-                          aria-disabled={isGrouped || undefined}
-                          aria-describedby={
-                            [
-                              isGrouped ? 'sa-meld-card-assigned' : undefined,
-                              isHumanTurn && meldPointInfo?.needInitial ? 'sa-meld-points' : undefined,
-                            ]
-                              .filter(Boolean)
-                              .join(' ') || undefined
-                          }
-                          className={`transition-transform ${focusRingCard}`}
-                          style={{
-                            background: 'none',
-                            padding: 0,
-                            borderRadius: 8,
-                            ...selectedCardStyle(isSelected || isGrouped),
-                            boxSizing: 'border-box',
-                          }}
-                        >
-                          <AnimatedCard card={card} width={cardWidth} />
-                        </button>
-                      );
-                    })}
+                    {humanPlayer.cards.map(renderHandCard)}
                   </CardFan>
                 ) : (
                   <div className="flex flex-wrap gap-1 mb-2" data-tutorial="sa-player-hand">
-                    {humanPlayer.cards.map((card, idx) => {
-                      const isSelected = selectedCardIndices.includes(idx);
-                      const isGrouped = meldGroups.some((group) => group.includes(idx));
-                      return (
-                        <button
-                          type="button"
-                          key={`${card.design}-${card.value}-${idx}`}
-                          onClick={() => {
-                            if (!isGrouped) toggleCard(idx);
-                          }}
-                          aria-label={cardAlt(card)}
-                          aria-pressed={isSelected || isGrouped}
-                          aria-disabled={isGrouped || undefined}
-                          aria-describedby={
-                            [
-                              isGrouped ? 'sa-meld-card-assigned' : undefined,
-                              isHumanTurn && meldPointInfo?.needInitial ? 'sa-meld-points' : undefined,
-                            ]
-                              .filter(Boolean)
-                              .join(' ') || undefined
-                          }
-                          className={`transition-transform ${focusRingCard}`}
-                          style={{
-                            background: 'none',
-                            padding: 0,
-                            borderRadius: 8,
-                            ...selectedCardStyle(isSelected || isGrouped),
-                            boxSizing: 'border-box',
-                          }}
-                        >
-                          <AnimatedCard card={card} width={cardWidth} />
-                        </button>
-                      );
-                    })}
+                    {humanPlayer.cards.map(renderHandCard)}
                   </div>
                 ))}
             </div>

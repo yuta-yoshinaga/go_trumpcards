@@ -44,6 +44,19 @@ describe('SambaPage', () => {
     expect(screen.getByTestId('sa-player-hand').querySelectorAll('button')).toHaveLength(
       drawPhaseState.players[0].cards.length,
     );
+    fireEvent.click(within(screen.getByTestId('sa-player-hand')).getAllByRole('button')[0]);
+    expect(within(screen.getByTestId('sa-player-hand')).getAllByRole('button')[0]).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+  });
+
+  it('omits the large-desktop meld footer when the human team has no melds or red threes', async () => {
+    mobileState.isMobile = false;
+    mobileState.largeDesktop = true;
+    renderWithProviders(<SambaPage />);
+    await screen.findByTestId('sa-player-hand');
+    expect(screen.queryByTestId('sa-footer-melds')).not.toBeInTheDocument();
   });
 
   it('places teammate melds beside the large-desktop hand in a bounded scroll area', async () => {

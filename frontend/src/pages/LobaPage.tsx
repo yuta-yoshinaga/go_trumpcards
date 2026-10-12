@@ -222,7 +222,7 @@ function LobaPageContent() {
                 <div className="text-center text-game-text-muted text-xs">{t('noMelds')}</div>
               ) : (
                 <div
-                  className={`flex gap-1 items-center justify-center ${isLargeDesktop ? 'flex-wrap' : 'flex-wrap sm:flex-col'}`}
+                  className={`flex gap-1 items-center justify-center flex-wrap ${isLargeDesktop ? '' : 'sm:flex-col'}`}
                 >
                   {state.melds.map((m, i) => (
                     <button
