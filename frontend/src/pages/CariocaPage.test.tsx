@@ -101,6 +101,14 @@ beforeEach(() => {
 });
 
 describe('CariocaPage', () => {
+  it('sticks the hand to the bottom of the desktop play area', async () => {
+    renderWithProviders(<CariocaPage />);
+    await screen.findByText(/Your hand|あなたの手札/);
+    const hand = document.querySelector('[data-tutorial="ca-hand"]');
+    expect(hand?.className).toContain('lg:sticky');
+    expect(hand?.className).toContain('lg:bottom-0');
+  });
+
   it('collapses CPU seats and explanatory rules on mobile, and opens CPU seats on desktop', async () => {
     mobileState.isMobile = true;
     renderWithProviders(<CariocaPage />);

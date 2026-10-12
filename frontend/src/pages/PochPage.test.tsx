@@ -75,6 +75,14 @@ function pickHand(i: number) {
 }
 
 describe('PochPage', () => {
+  it('sticks the hand to the bottom of the desktop play area', async () => {
+    renderWithProviders(<PochPage />);
+    await screen.findAllByTestId('poch-pool');
+    const hand = document.querySelector('[data-tutorial="pc-hand"]');
+    expect(hand?.className).toContain('lg:sticky');
+    expect(hand?.className).toContain('lg:bottom-0');
+  });
+
   beforeEach(() => {
     mobileState.isMobile = true;
     vi.clearAllMocks();

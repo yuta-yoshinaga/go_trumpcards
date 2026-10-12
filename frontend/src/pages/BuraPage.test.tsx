@@ -56,6 +56,14 @@ function makeState(overrides?: Partial<BuraResponse>): BuraResponse {
 }
 
 describe('BuraPage', () => {
+  it('sticks the hand to the bottom of the desktop play area', async () => {
+    renderWithProviders(<BuraPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    const hand = document.querySelector('[data-tutorial="bura-hand"]');
+    expect(hand?.className).toContain('lg:sticky');
+    expect(hand?.className).toContain('lg:bottom-0');
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     mockExec.mockResolvedValue(makeState());

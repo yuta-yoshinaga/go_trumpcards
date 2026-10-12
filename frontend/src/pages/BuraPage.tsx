@@ -235,7 +235,10 @@ function BuraPageContent() {
               </div>
             </div>
 
-            <div className="text-center" data-tutorial="bura-hand">
+            <div
+              className="text-center lg:sticky lg:bottom-0 lg:z-10 lg:bg-game-bg-casino lg:pt-2 lg:shadow-[0_-8px_16px_rgba(0,0,0,0.35)]"
+              data-tutorial="bura-hand"
+            >
               <div className="text-game-text-muted text-xs mb-1">{t('yourHand')}</div>
               <div className="flex gap-1 justify-center flex-wrap">
                 {(human?.cards ?? []).map((card, i) => {
