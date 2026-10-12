@@ -1,6 +1,7 @@
 import { Fragment, useCallback, useMemo } from 'react';
 import type { canastaApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardFan } from '../components/CardFan';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
@@ -16,7 +17,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useCanastaGame } from '../hooks/useCanastaGame';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -89,6 +90,7 @@ function CanastaPageContent() {
   } = useCanastaGame();
 
   const { cardWidth, isMobile } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const phaseNames = usePhaseNames('canasta', CANASTA_PHASE_KEYS);
   const {
     hint: frontendHint,
@@ -313,6 +315,7 @@ function CanastaPageContent() {
 
                 {/* Player melds */}
                 {state.players.map((p, pi) => {
+                  if (isLargeDesktop && p.isHuman) return null;
                   const hasMeldContent = p.melds.length > 0 || p.red3s.length > 0;
                   if (!hasMeldContent && !p.isHuman) return null;
                   return (
@@ -582,39 +585,111 @@ function CanastaPageContent() {
               </div>
             }
           >
-            {humanPlayer &&
-              (isMobile ? (
-                <MobileHandGrid
-                  cards={humanPlayer.cards}
-                  selectedIndices={selectedCardIndices}
-                  onToggle={toggleCard}
-                  cardWidth={cardWidth}
-                  dataTutorial="ca-player-hand"
-                  stackRows
-                />
-              ) : (
-                <div className="flex flex-wrap gap-1 mb-2" data-tutorial="ca-player-hand">
-                  {humanPlayer.cards.map((card, idx) => (
-                    <button
-                      type="button"
-                      key={`${card.design}-${card.value}-${idx}`}
-                      onClick={() => toggleCard(idx)}
-                      aria-label={cardAlt(card)}
-                      aria-pressed={selectedCardIndices.includes(idx)}
-                      className={`transition-transform ${focusRingCard}`}
-                      style={{
-                        background: 'none',
-                        padding: 0,
-                        borderRadius: 8,
-                        ...selectedCardStyle(selectedCardIndices.includes(idx)),
-                        boxSizing: 'border-box',
-                      }}
-                    >
-                      <AnimatedCard card={card} width={cardWidth} />
-                    </button>
-                  ))}
+            <div className={isLargeDesktop ? 'flex items-start gap-4' : undefined}>
+              {isLargeDesktop && humanPlayer && (
+                <div className="hidden lg:block shrink-0 max-w-[30%] overflow-y-auto" data-tutorial="ca-meld-area">
+                  <div className="text-ds-text-muted text-sm mb-1">
+                    {playerName(humanPlayer.id, true)} - {t('melds')}
+                    {humanPlayer.hasCanasta && <span className="ml-2 text-ds-warning">★</span>}
+                  </div>
+                  {humanPlayer.melds.map((m, mi) => {
+                    const meldW = cardWidth * 0.6;
+                    const label = m.isCanasta ? (m.isNatural ? t('naturalCanasta') : t('mixedCanasta')) : null;
+                    return (
+                      <details key={mi} className="mb-1" data-testid={`ca-meld-0-${mi}`}>
+                        <summary
+                          className="flex items-center gap-2 cursor-pointer list-none marker:hidden"
+                          title={t('meldExpand')}
+                        >
+                          <div className="relative flex items-center shrink-0">
+                            {m.cards.map((card, ci) => (
+                              <div
+                                key={`footer-meld-${mi}-${ci}`}
+                                style={{ marginLeft: ci === 0 ? 0 : -meldW * 0.72, zIndex: ci }}
+                              >
+                                <AnimatedCard card={card} width={meldW} silent />
+                              </div>
+                            ))}
+                          </div>
+                          <span
+                            data-testid={`ca-meld-badge-0-${mi}`}
+                            className="text-xs font-bold px-1.5 py-0.5 rounded-full bg-black/50 text-ds-text-primary"
+                          >
+                            {m.cards.length}
+                          </span>
+                          {label && <span className="text-xs font-bold text-ds-warning">★ {label}</span>}
+                        </summary>
+                        <div className="flex flex-wrap gap-1 mt-1 pl-2">
+                          {m.cards.map((card, ci) => (
+                            <AnimatedCard key={`footer-meld-expanded-${mi}-${ci}`} card={card} width={meldW} silent />
+                          ))}
+                        </div>
+                      </details>
+                    );
+                  })}
                 </div>
-              ))}
+              )}
+              <div className={isLargeDesktop ? 'min-w-0 flex-1' : undefined}>
+                {humanPlayer &&
+                  (isMobile ? (
+                    <MobileHandGrid
+                      cards={humanPlayer.cards}
+                      selectedIndices={selectedCardIndices}
+                      onToggle={toggleCard}
+                      cardWidth={cardWidth}
+                      dataTutorial="ca-player-hand"
+                      stackRows
+                    />
+                  ) : isLargeDesktop ? (
+                    <div data-tutorial="ca-player-hand">
+                      <CardFan itemWidth={cardWidth + 6} data-testid="ca-player-hand">
+                        {humanPlayer.cards.map((card, idx) => (
+                          <button
+                            type="button"
+                            key={`${card.design}-${card.value}-${idx}`}
+                            onClick={() => toggleCard(idx)}
+                            aria-label={cardAlt(card)}
+                            aria-pressed={selectedCardIndices.includes(idx)}
+                            data-testid={`hand-card-${idx}`}
+                            className={`transition-transform ${focusRingCard}`}
+                            style={{
+                              background: 'none',
+                              padding: 0,
+                              borderRadius: 8,
+                              ...selectedCardStyle(selectedCardIndices.includes(idx)),
+                              boxSizing: 'border-box',
+                            }}
+                          >
+                            <AnimatedCard card={card} width={cardWidth} />
+                          </button>
+                        ))}
+                      </CardFan>
+                    </div>
+                  ) : (
+                    <div className="flex flex-wrap gap-1 mb-2" data-tutorial="ca-player-hand">
+                      {humanPlayer.cards.map((card, idx) => (
+                        <button
+                          type="button"
+                          key={`${card.design}-${card.value}-${idx}`}
+                          onClick={() => toggleCard(idx)}
+                          aria-label={cardAlt(card)}
+                          aria-pressed={selectedCardIndices.includes(idx)}
+                          className={`transition-transform ${focusRingCard}`}
+                          style={{
+                            background: 'none',
+                            padding: 0,
+                            borderRadius: 8,
+                            ...selectedCardStyle(selectedCardIndices.includes(idx)),
+                            boxSizing: 'border-box',
+                          }}
+                        >
+                          <AnimatedCard card={card} width={cardWidth} />
+                        </button>
+                      ))}
+                    </div>
+                  ))}
+              </div>
+            </div>
           </GameFooter>
         </>
       )}
