@@ -144,6 +144,36 @@ function PopeJoanPageContent() {
         }))
     : [];
   const isHumanTurn = !ended && playing && state.currentPlayerIdx === 0;
+  const renderHandCard = (card: PopeJoanResponse['players'][number]['cards'][number], i: number) => {
+    // 並びに従う義務がある。出せない札を押せてしまうと、サーバに弾かれて初めて分かる (#4934)。
+    // 空リストは「情報が無い」なので制限しない。
+    const restricting = isHumanTurn ? (state.validPlays?.length ?? 0) > 0 : false;
+    const canPlay = !restricting || state.validPlays.includes(i);
+    return (
+      <button
+        key={`hand-${i.toString()}`}
+        type="button"
+        data-hint-action="play"
+        data-unplayable={restricting && !canPlay ? 'true' : undefined}
+        aria-pressed={handIdx === i}
+        disabled={restricting && !canPlay}
+        aria-disabled={!isHumanTurn || !canPlay}
+        onClick={() => {
+          if (!isHumanTurn) return;
+          setHandIdx(handIdx === i ? null : i);
+        }}
+        className={[
+          'rounded transition-transform',
+          restricting && !canPlay ? 'opacity-40' : '',
+          isHumanTurn ? 'hover:-translate-y-2' : 'opacity-60',
+          handIdx === i ? 'ring-2 ring-ds-accent -translate-y-2' : '',
+          frontendHintEnabled && state.hint?.cardIndex === i ? 'ring-2 ring-ds-warning' : '',
+        ].join(' ')}
+      >
+        <AnimatedCard card={card} width={cardWidth} draggable={false} />
+      </button>
+    );
+  };
 
   const phaseName = ended ? t('phase.end') : dealOver ? t('phase.dealEnd') : t('phase.play');
   const trumpCards = (human?.cards ?? []).filter((card) => card.design === suitName(state.trumpSuit));
@@ -339,63 +369,10 @@ function PopeJoanPageContent() {
               </div>
               {isLargeDesktop ? (
                 <CardFan itemWidth={cardWidth} data-testid="pj-card-fan">
-                  {(human?.cards ?? []).map((card, i) => {
-                    // **並びに従う義務がある。**出せない札を押せてしまうと、
-                    // サーバに弾かれて初めて分かる (#4934)。空リストは「情報が
-                    // 無い」なので制限しない。
-                    const restricting = isHumanTurn && (state.validPlays?.length ?? 0) > 0;
-                    const canPlay = !restricting || state.validPlays.includes(i);
-                    return (
-                      <button
-                        key={`hand-${i.toString()}`}
-                        type="button"
-                        data-hint-action="play"
-                        data-unplayable={restricting && !canPlay ? 'true' : undefined}
-                        aria-pressed={handIdx === i}
-                        disabled={restricting && !canPlay}
-                        aria-disabled={!isHumanTurn || !canPlay}
-                        onClick={() => isHumanTurn && canPlay && setHandIdx(handIdx === i ? null : i)}
-                        className={[
-                          'rounded transition-transform',
-                          restricting && !canPlay ? 'opacity-40' : '',
-                          isHumanTurn ? 'hover:-translate-y-2' : 'opacity-60',
-                          handIdx === i ? 'ring-2 ring-ds-accent -translate-y-2' : '',
-                          frontendHintEnabled && state.hint?.cardIndex === i ? 'ring-2 ring-ds-warning' : '',
-                        ].join(' ')}
-                      >
-                        <AnimatedCard card={card} width={cardWidth} draggable={false} />
-                      </button>
-                    );
-                  })}
+                  {(human?.cards ?? []).map(renderHandCard)}
                 </CardFan>
               ) : (
-                <div className="flex gap-1 justify-center flex-wrap">
-                  {(human?.cards ?? []).map((card, i) => {
-                    const restricting = isHumanTurn && (state.validPlays?.length ?? 0) > 0;
-                    const canPlay = !restricting || state.validPlays.includes(i);
-                    return (
-                      <button
-                        key={`hand-${i.toString()}`}
-                        type="button"
-                        data-hint-action="play"
-                        data-unplayable={restricting && !canPlay ? 'true' : undefined}
-                        aria-pressed={handIdx === i}
-                        disabled={restricting && !canPlay}
-                        aria-disabled={!isHumanTurn || !canPlay}
-                        onClick={() => isHumanTurn && canPlay && setHandIdx(handIdx === i ? null : i)}
-                        className={[
-                          'rounded transition-transform',
-                          restricting && !canPlay ? 'opacity-40' : '',
-                          isHumanTurn ? 'hover:-translate-y-2' : 'opacity-60',
-                          handIdx === i ? 'ring-2 ring-ds-accent -translate-y-2' : '',
-                          frontendHintEnabled && state.hint?.cardIndex === i ? 'ring-2 ring-ds-warning' : '',
-                        ].join(' ')}
-                      >
-                        <AnimatedCard card={card} width={cardWidth} draggable={false} />
-                      </button>
-                    );
-                  })}
-                </div>
+                <div className="flex gap-1 justify-center flex-wrap">{(human?.cards ?? []).map(renderHandCard)}</div>
               )}
               {isHumanTurn && (
                 <div className="text-[10px] text-ds-text-muted mt-1">
