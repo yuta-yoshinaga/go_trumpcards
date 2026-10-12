@@ -74,6 +74,18 @@ describe('GuandanPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('renders without a human player and shows no hand cards', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ players: makeState().players.map((player) => ({ ...player, isHuman: false })) }),
+    );
+
+    renderWithProviders(<GuandanPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    await waitFor(() => expect(screen.getByTestId('guandan-info')).toBeInTheDocument());
+    expect(screen.queryByTestId('hand-card-0')).toBeNull();
+  });
+
   it('renders desktop hand cards through PlayerHandSection', async () => {
     renderWithProviders(<GuandanPage />);
     const cardButton = await screen.findByTestId('hand-card-0');

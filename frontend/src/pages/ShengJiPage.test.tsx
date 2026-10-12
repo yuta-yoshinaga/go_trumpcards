@@ -148,6 +148,18 @@ describe('ShengJiPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('renders without a human player and shows no hand cards', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ players: makeState().players.map((player) => ({ ...player, isHuman: false })) }),
+    );
+
+    renderWithProviders(<ShengJiPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    await waitFor(() => expect(screen.getByTestId('shengji-info')).toBeInTheDocument());
+    expect(screen.queryByTestId('hand-card-0')).toBeNull();
+  });
+
   it('marks and announces the provisional trick winner', async () => {
     mockExec.mockResolvedValue(
       makeState({
