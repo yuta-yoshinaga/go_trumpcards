@@ -30,6 +30,8 @@ const PAGES = [
   '/citadel',
   '/russiansolitaire',
   '/clocksolitaire',
+  '/indianpoker',
+  '/sixcardgolf',
 ] as const;
 
 for (const path of PAGES) {
@@ -68,3 +70,31 @@ for (const path of PAGES) {
     expect(result.hidden, `${path}: board cards hidden below their play area`).toEqual([]);
   });
 }
+
+test('sixcardgolf keeps the draw and discard cards visible after a draw and placement', async ({ page }) => {
+  await navigateTo(page, '/sixcardgolf');
+  const hand = page.getByTestId('scg-seat-0').locator('button');
+  await hand.nth(0).click();
+  await hand.nth(1).click();
+  await page.getByRole('button', { name: '山札から引く' }).click();
+  await page.getByTestId('scg-seat-0').locator('button').first().click();
+  await page.waitForFunction(() =>
+    document
+      .getAnimations()
+      .every(
+        (animation) =>
+          animation.playState === 'finished' ||
+          animation.playState === 'idle' ||
+          animation.effect?.getComputedTiming().iterations === Number.POSITIVE_INFINITY,
+      ),
+  );
+  const stockAndDiscard = await page.evaluate(() =>
+    ['scg-stock', 'scg-discard-draw-option'].map((testId) => {
+      const element = document.querySelector(`[data-tutorial="${testId}"], [data-testid="${testId}"]`);
+      if (!element) return false;
+      const box = element.getBoundingClientRect();
+      return box.top < window.innerHeight && box.bottom > 0;
+    }),
+  );
+  expect(stockAndDiscard).toEqual([true, true]);
+});

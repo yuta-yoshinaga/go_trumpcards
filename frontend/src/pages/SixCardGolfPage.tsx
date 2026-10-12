@@ -15,7 +15,7 @@ import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -99,6 +99,7 @@ function SixCardGolfPageContent() {
   const { hint, hintEnabled, setHintEnabled } = useGameHint('sixcardgolf', state);
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('sixcardgolf');
   const { cardWidth } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
 
   // Mount-time reset: useMountReset expects (...args: ['reset']) => unknown
   // but our API takes an object param, so use a direct useEffect instead.
@@ -234,105 +235,6 @@ function SixCardGolfPageContent() {
             ))}
           </div>
 
-          {/* Player Grids */}
-          {state.players.map((player, pIdx) => (
-            <div
-              key={player.id}
-              data-testid={`scg-seat-${player.id}`}
-              className={`rounded-lg p-2 ${pIdx === state.currentPlayerIdx ? 'ring-2 ring-ds-warning' : ''}`}
-            >
-              <div className="text-sm font-bold mb-1">
-                {player.isHuman ? t('label.human') : t('label.cpu', { id: String(pIdx) })}
-                {player.allFaceUp && <span className="ml-1 text-ds-warning">&#9733;</span>}
-              </div>
-              <div className="grid grid-cols-3 gap-1" data-tutorial={pIdx === humanIdx ? 'scg-grid' : undefined}>
-                {player.grid.map((slot: SixCardGolfSlot, sIdx: number) => (
-                  <GridSlotButton
-                    key={`${player.id}-${sIdx}`}
-                    slot={slot}
-                    pos={sIdx}
-                    name={
-                      slot.faceUp && slot.card
-                        ? t('gridSlotFaceUpAria', { card: cardAlt(slot.card), pos: sIdx })
-                        : t('gridSlotFaceDownAria', { pos: sIdx })
-                    }
-                    actionNames={{
-                      initial: t('gridSlotAction.initial'),
-                      swap: t('gridSlotAction.swap'),
-                      flip: t('gridSlotAction.flip'),
-                    }}
-                    cardWidth={cardWidth}
-                    isHumanGrid={player.isHuman}
-                    hinted={hintEnabled && player.isHuman && hint?.targetPos === sIdx}
-                    phase={phase}
-                    canFlip={state.canFlip}
-                    isHumanTurn={isHumanTurn}
-                    loading={loading}
-                    onFlipInitial={handleFlipInitial}
-                    onSwap={handleSwap}
-                    onFlip={handleFlip}
-                  />
-                ))}
-              </div>
-              {player.isHuman && (
-                <div className="mt-1 grid grid-cols-3 gap-1" data-testid="scg-column-scores">
-                  {sixCardGolfColumnScores(player.grid).map((col, cIdx) => (
-                    <span
-                      key={cIdx}
-                      data-testid={`scg-column-score-${cIdx}`}
-                      className={`rounded px-1 py-0.5 text-center font-medium text-xs ${
-                        col.isPair ? 'bg-ds-success text-white' : 'bg-ds-surface-elevated text-ds-text-muted'
-                      }`}
-                    >
-                      {col.isPair
-                        ? t('label.columnScorePair')
-                        : col.hasHidden
-                          ? t('label.columnScoreUncertain', { score: col.score })
-                          : t('label.columnScore', { score: col.score })}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-          {state.gameEndFlag && (
-            <section aria-label={t('label.scoreHistory')} className="rounded-lg bg-ds-surface p-3">
-              <h2 className="mb-2 font-bold">{t('label.scoreHistory')}</h2>
-              <table className="w-full text-sm">
-                <thead>
-                  <tr>
-                    <th scope="col">{t('label.round')}</th>
-                    {state.players.map((p, i) => (
-                      <th scope="col" key={p.id}>
-                        {p.isHuman ? t('label.human') : t('label.cpu', { id: String(i) })}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {state.roundScoreHistory.map((scores, roundIdx) => (
-                    <tr key={roundIdx}>
-                      <th scope="row">{roundIdx + 1}</th>
-                      {scores.map((score, i) => (
-                        <td key={i} className="text-center">
-                          {score}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                  <tr>
-                    <th scope="row">{t('label.cumulativeRow')}</th>
-                    {state.players.map((p) => (
-                      <td key={p.id} className="text-center">
-                        {p.cumulativeScore}
-                      </td>
-                    ))}
-                  </tr>
-                </tbody>
-              </table>
-            </section>
-          )}
-
           {/* Stock / Discard / Drawn Card */}
           <div className="flex items-center gap-3 justify-center" data-tutorial="scg-stock">
             <div className="text-center">
@@ -387,6 +289,107 @@ function SixCardGolfPageContent() {
               </div>
             )}
           </div>
+
+          {/* Player Grids */}
+          <div className={isLargeDesktop ? 'flex flex-wrap items-start justify-center gap-2' : 'contents'}>
+            {state.players.map((player, pIdx) => (
+              <div
+                key={player.id}
+                data-testid={`scg-seat-${player.id}`}
+                className={`rounded-lg p-2 ${pIdx === state.currentPlayerIdx ? 'ring-2 ring-ds-warning' : ''}`}
+              >
+                <div className="text-sm font-bold mb-1">
+                  {player.isHuman ? t('label.human') : t('label.cpu', { id: String(pIdx) })}
+                  {player.allFaceUp && <span className="ml-1 text-ds-warning">&#9733;</span>}
+                </div>
+                <div className="grid grid-cols-3 gap-1" data-tutorial={pIdx === humanIdx ? 'scg-grid' : undefined}>
+                  {player.grid.map((slot: SixCardGolfSlot, sIdx: number) => (
+                    <GridSlotButton
+                      key={`${player.id}-${sIdx}`}
+                      slot={slot}
+                      pos={sIdx}
+                      name={
+                        slot.faceUp && slot.card
+                          ? t('gridSlotFaceUpAria', { card: cardAlt(slot.card), pos: sIdx })
+                          : t('gridSlotFaceDownAria', { pos: sIdx })
+                      }
+                      actionNames={{
+                        initial: t('gridSlotAction.initial'),
+                        swap: t('gridSlotAction.swap'),
+                        flip: t('gridSlotAction.flip'),
+                      }}
+                      cardWidth={cardWidth}
+                      isHumanGrid={player.isHuman}
+                      hinted={hintEnabled && player.isHuman && hint?.targetPos === sIdx}
+                      phase={phase}
+                      canFlip={state.canFlip}
+                      isHumanTurn={isHumanTurn}
+                      loading={loading}
+                      onFlipInitial={handleFlipInitial}
+                      onSwap={handleSwap}
+                      onFlip={handleFlip}
+                    />
+                  ))}
+                </div>
+                {player.isHuman && (
+                  <div className="mt-1 grid grid-cols-3 gap-1" data-testid="scg-column-scores">
+                    {sixCardGolfColumnScores(player.grid).map((col, cIdx) => (
+                      <span
+                        key={cIdx}
+                        data-testid={`scg-column-score-${cIdx}`}
+                        className={`rounded px-1 py-0.5 text-center font-medium text-xs ${
+                          col.isPair ? 'bg-ds-success text-white' : 'bg-ds-surface-elevated text-ds-text-muted'
+                        }`}
+                      >
+                        {col.isPair
+                          ? t('label.columnScorePair')
+                          : col.hasHidden
+                            ? t('label.columnScoreUncertain', { score: col.score })
+                            : t('label.columnScore', { score: col.score })}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+          {state.gameEndFlag && (
+            <section aria-label={t('label.scoreHistory')} className="rounded-lg bg-ds-surface p-3">
+              <h2 className="mb-2 font-bold">{t('label.scoreHistory')}</h2>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr>
+                    <th scope="col">{t('label.round')}</th>
+                    {state.players.map((p, i) => (
+                      <th scope="col" key={p.id}>
+                        {p.isHuman ? t('label.human') : t('label.cpu', { id: String(i) })}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {state.roundScoreHistory.map((scores, roundIdx) => (
+                    <tr key={roundIdx}>
+                      <th scope="row">{roundIdx + 1}</th>
+                      {scores.map((score, i) => (
+                        <td key={i} className="text-center">
+                          {score}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                  <tr>
+                    <th scope="row">{t('label.cumulativeRow')}</th>
+                    {state.players.map((p) => (
+                      <td key={p.id} className="text-center">
+                        {p.cumulativeScore}
+                      </td>
+                    ))}
+                  </tr>
+                </tbody>
+              </table>
+            </section>
+          )}
 
           {/* Flip / Skip buttons */}
           {state.canFlip && isHumanTurn && (
