@@ -47,5 +47,6 @@ run_case() {
 run_case exact 'if (ready) {' '  if (ready) {' 'PREEXISTING src/utils/sample.ts:1:' 0
 run_case shifted $'const x = 0\nif (ready) { // old location' 'if (ready) {' 'PREEXISTING src/utils/sample.ts:1:' 0
 run_case fresh 'if (ready) {' 'if (fresh) {' 'src/utils/sample.ts:1: cond-expr [0, 1] | if (fresh) {' 1
-run_case short 'x ? a : b' 'x ? a : c' 'src/utils/sample.ts:1: cond-expr [0, 1] | x ? a : c' 1
+# 7 characters and a prefix of the develop line: only the 8-character minimum keeps it new.
+run_case short 'x ? a : b' 'x ? a' 'src/utils/sample.ts:1: cond-expr [0, 1] | x ? a' 1
 echo "patch-branch-gaps tests passed"
