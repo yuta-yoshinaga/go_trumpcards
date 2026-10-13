@@ -45,6 +45,7 @@ The flows require `dele`, `gh`, `jq`, `flock`, `bun`, `go`, and `golangci-lint`,
 - `treehash.sh`: hash the worktree state for the gate stamp.
 - `receipt.sh`: run relevant Vitest files plus frontend and backend checks for a worktree.
 - `rc.sh`: save a concise receipt with test shrink and dead-code warnings.
+- `overlap.sh`: report files changed by this lane and another active lane; set `ALLOW_OVERLAP="file ..."` to suppress known shared files.
 - `rc.sh` also records `WARN WORKER_BUILD`, `WARN UNUSED_NEW_SYMBOL`, and `WARN PATCH_BRANCH_GAP`; set `ALLOW_WORKER_BUILD=1`, `ALLOW_UNUSED="name ..."`, or `ALLOW_PATCH_GAPS=1` to allow known exceptions.
 - `rc.sh` also reruns the Go test functions the change adds or edits (`repeattests.sh`, `-count=50`) and records `WARN DEAL_DEPENDENT` when one fails, which usually means it depends on the deal. Set `REPEAT_TESTS_COUNT` to change the count, or `0` to skip.
 - `rcg.sh`: serialize receipt gates with `flock` and write a fresh slot result.
