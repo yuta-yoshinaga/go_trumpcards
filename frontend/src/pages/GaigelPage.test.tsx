@@ -76,6 +76,17 @@ beforeEach(() => {
 });
 
 describe('GaigelPage', () => {
+  it('places the player list beside the trick only at large desktop width', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1280 });
+    window.dispatchEvent(new Event('resize'));
+    renderWithProviders(<GaigelPage />);
+    const layout = await screen.findByTestId('gaigel-upper-layout');
+    expect(layout).toHaveClass('flex');
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 768 });
+    window.dispatchEvent(new Event('resize'));
+    await waitFor(() => expect(layout).not.toHaveClass('flex'));
+  });
+
   it('renders the game message inside the footer message region', async () => {
     mockExec.mockResolvedValue(makeState({ message: 'Footer message' }));
     renderWithProviders(<GaigelPage />);

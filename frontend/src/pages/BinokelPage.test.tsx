@@ -197,6 +197,23 @@ afterEach(() => {
 });
 
 describe('BinokelPage', () => {
+  it('compacts the dabb display only at large desktop width', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1280 });
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue(dabbPhaseStateHuman);
+    renderWithProviders(<BinokelPage />);
+    const dabb = await screen.findByTestId('bn-dabb-display');
+    const largeDesktopRow = screen.getByTestId('bn-player-and-dabb-row');
+    expect(largeDesktopRow).toHaveClass('flex', 'flex-wrap');
+    expect(largeDesktopRow.contains(dabb)).toBe(true);
+    expect(largeDesktopRow.contains(screen.getByText('あなた').closest('[data-tutorial="bn-player-info"]'))).toBe(true);
+    expect(dabb).toHaveClass('mb-1', 'py-1');
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 768 });
+    window.dispatchEvent(new Event('resize'));
+    await waitFor(() => expect(dabb).toHaveClass('mb-3', 'p-2'));
+    expect(screen.getByTestId('bn-player-and-dabb-row')).not.toHaveClass('flex');
+  });
+
   it('renders the game message inside the footer message region', async () => {
     mobileState.isMobile = false;
     mockExec.mockResolvedValue({ ...playPhaseState, message: 'Footer message' });

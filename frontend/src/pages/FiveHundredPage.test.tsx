@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fiveHundredApi } from '../api/gameApi';
 import i18n from '../i18n';
@@ -89,6 +89,18 @@ afterEach(async () => {
 });
 
 describe('FiveHundredPage', () => {
+  it('uses a single-row card fan only at large desktop width', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1280 });
+    act(() => window.dispatchEvent(new Event('resize')));
+    renderWithProviders(<FiveHundredPage />);
+    const cards = await screen.findByTestId('fh-hand-cards');
+    expect(cards).toHaveClass('large-desktop-hand-fan');
+    cleanup();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 768 });
+    renderWithProviders(<FiveHundredPage />);
+    expect(await screen.findByTestId('fh-hand-cards')).not.toHaveClass('large-desktop-hand-fan');
+  });
+
   it('renders the game message in the footer message slot', async () => {
     mockExec.mockResolvedValue(makeState({ message: 'Your turn notice' }));
     renderWithProviders(<FiveHundredPage />);

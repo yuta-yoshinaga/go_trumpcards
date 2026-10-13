@@ -70,6 +70,18 @@ const gameOverState: DuchessResponse = {
 };
 
 describe('DuchessPage', () => {
+  it('tightens the upper zone spacing only at large desktop width', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1280 });
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<DuchessPage />);
+    const zones = await screen.findByTestId('du-upper-zones');
+    expect(zones).toHaveClass('mb-1');
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 768 });
+    window.dispatchEvent(new Event('resize'));
+    await waitFor(() => expect(zones).toHaveClass('mb-3'));
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });

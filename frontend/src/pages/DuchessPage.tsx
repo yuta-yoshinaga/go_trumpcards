@@ -18,7 +18,7 @@ import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useDuchessGame } from '../hooks/useDuchessGame';
@@ -111,6 +111,7 @@ function DuchessPageContent() {
   );
   const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const windowWidth = useWindowWidth();
 
   const dims = useMemo(() => {
@@ -389,7 +390,10 @@ function DuchessPageContent() {
               <p className="text-ds-warning text-sm text-center mb-2">{t('chooseBaseBanner')}</p>
             )}
 
-            <div className="flex flex-wrap justify-center items-start gap-3 sm:gap-6 mb-3">
+            <div
+              className={`flex flex-wrap justify-center items-start gap-3 sm:gap-6 ${isLargeDesktop ? 'mb-1' : 'mb-3'}`}
+              data-testid="du-upper-zones"
+            >
               <div className="flex flex-wrap justify-center gap-1 sm:gap-2" data-tutorial="du-reserve">
                 {Array.from({ length: RESERVE_FANS }, (_, i) => i).map(renderReserveFan)}
               </div>

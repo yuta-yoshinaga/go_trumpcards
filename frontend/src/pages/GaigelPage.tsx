@@ -14,7 +14,7 @@ import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { CPU_DIFFICULTY_OPTIONS, TARGET_SCORE_OPTIONS, useGaigelGame } from '../hooks/useGaigelGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
@@ -116,6 +116,7 @@ function GaigelPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('gaigel', state);
   const { cardWidth, isMobile } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
 
   const phaseNames = usePhaseNames('gaigel', GAIGEL_PHASE_KEYS);
 
@@ -239,60 +240,62 @@ function GaigelPageContent() {
           </div>
         )}
 
-        {/* Player list */}
-        <div className="mb-3">
-          {state.players
-            .filter((p) => p.isHuman)
-            .map((p) => (
-              <div
-                key={p.id}
-                data-testid={`gaigel-player-${p.id}`}
-                className="mb-1 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
-              >
-                {playerName(p.id, p.isHuman)}
-                {p.id === state.dealerIdx && (
-                  <span className="ml-1 text-ds-accent" data-testid="gaigel-dealer-badge">
-                    [{t('dealerBadge')}]
-                  </span>
-                )}
-                : {t('team', { n: p.team })} | {t('cards', { count: p.cardCount })} |{' '}
-                {t('trickCount', { count: p.trickCount })}
+        <div className={isLargeDesktop ? 'flex items-start gap-4 mb-3' : undefined} data-testid="gaigel-upper-layout">
+          {/* Player list */}
+          <div className={isLargeDesktop ? 'w-1/3 shrink-0' : 'mb-3'}>
+            {state.players
+              .filter((p) => p.isHuman)
+              .map((p) => (
+                <div
+                  key={p.id}
+                  data-testid={`gaigel-player-${p.id}`}
+                  className="mb-1 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                >
+                  {playerName(p.id, p.isHuman)}
+                  {p.id === state.dealerIdx && (
+                    <span className="ml-1 text-ds-accent" data-testid="gaigel-dealer-badge">
+                      [{t('dealerBadge')}]
+                    </span>
+                  )}
+                  : {t('team', { n: p.team })} | {t('cards', { count: p.cardCount })} |{' '}
+                  {t('trickCount', { count: p.trickCount })}
+                </div>
+              ))}
+            <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+              <div>
+                {state.players
+                  .filter((p) => !p.isHuman)
+                  .map((p) => (
+                    <div
+                      key={p.id}
+                      data-testid={`gaigel-player-${p.id}`}
+                      className="mb-1 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                    >
+                      {playerName(p.id, p.isHuman)}
+                      {p.id === state.dealerIdx && (
+                        <span className="ml-1 text-ds-accent" data-testid="gaigel-dealer-badge">
+                          [{t('dealerBadge')}]
+                        </span>
+                      )}
+                      : {t('team', { n: p.team })} | {t('cards', { count: p.cardCount })} |{' '}
+                      {t('trickCount', { count: p.trickCount })}
+                    </div>
+                  ))}
               </div>
-            ))}
-          <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
-            <div>
-              {state.players
-                .filter((p) => !p.isHuman)
-                .map((p) => (
-                  <div
-                    key={p.id}
-                    data-testid={`gaigel-player-${p.id}`}
-                    className="mb-1 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
-                  >
-                    {playerName(p.id, p.isHuman)}
-                    {p.id === state.dealerIdx && (
-                      <span className="ml-1 text-ds-accent" data-testid="gaigel-dealer-badge">
-                        [{t('dealerBadge')}]
-                      </span>
-                    )}
-                    : {t('team', { n: p.team })} | {t('cards', { count: p.cardCount })} |{' '}
-                    {t('trickCount', { count: p.trickCount })}
-                  </div>
-                ))}
-            </div>
-          </CpuAccordion>
-        </div>
+            </CpuAccordion>
+          </div>
 
-        {/* Current trick */}
-        <TrickDisplay
-          currentTrick={state.currentTrick}
-          players={state.players}
-          cardWidth={cardWidth}
-          label={t('currentTrick')}
-          winnerIdx={isTrickEnd && state.trickWinnerIdx >= 0 ? state.trickWinnerIdx : undefined}
-          winnerLabel={t('winnerBadge')}
-          dataTutorial="gg-trick-display"
-        />
+          {/* Current trick */}
+          <TrickDisplay
+            currentTrick={state.currentTrick}
+            players={state.players}
+            cardWidth={cardWidth}
+            label={t('currentTrick')}
+            winnerIdx={isTrickEnd && state.trickWinnerIdx >= 0 ? state.trickWinnerIdx : undefined}
+            winnerLabel={t('winnerBadge')}
+            dataTutorial="gg-trick-display"
+          />
+        </div>
 
         {/* Team scores */}
         <div className="my-3 p-2 rounded bg-black/30" data-tutorial="gg-score-table">
