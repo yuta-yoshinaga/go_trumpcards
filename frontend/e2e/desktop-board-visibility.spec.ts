@@ -46,7 +46,12 @@ const gameRoutesSource = readFileSync(
   'utf8',
 );
 const allGamePaths = [...gameRoutesSource.matchAll(/path:\s*'([^']+)'/g)].map(([, path]) => path);
-expect(allGamePaths.length, 'game route path declarations found').toBeGreaterThanOrEqual(255);
+
+// A tight floor (383 routes today): a regex or file-layout change that drops games fails here by name
+// instead of silently shrinking the sweep.
+test('reads the full game route list for the all-games sweep', () => {
+  expect(allGamePaths.length, 'game route path declarations found').toBeGreaterThanOrEqual(360);
+});
 
 // #11700 excludes CPU-seat cards, face-up cards inside accordions, stud door cards, and discard history.
 // Samba is excluded because opposing-team meld cards can fall below the play area depending on the deal.
