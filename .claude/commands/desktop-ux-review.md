@@ -7,7 +7,7 @@ PC画面（1280x800, 一般的なラップトップ相当）で全ゲーム画�
 - [agent-browser](https://github.com/vercel-labs/agent-browser) がインストール済み（`bun install -g agent-browser && agent-browser install`）
 - Go サーバーが起動可能な状態
 - `gh` CLIでGitHubにログイン済み
-- 画像の置き場所は secret gist（`gh` がログイン済みなら追加設定不要）
+- 画像の置き場所は secret gist（`gh auth setup-git` 済みで、トークンに gist スコープがあること）
 - agent-browser の daemon は close するまで Chrome ごと残り続ける。1 回のレビューでは `--session` 名を 1 つに固定し（コマンドごとに名前を変えると daemon がその数だけ増える）、終了時に必ず `agent-browser close` する。保険として `AGENT_BROWSER_IDLE_TIMEOUT_MS=600000` を環境に入れておくと、10 分操作が無い daemon は自動で終了する。
 
 ## 手順

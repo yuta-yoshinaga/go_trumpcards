@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+(( BASH_VERSINFO[0] >= 4 )) || { echo "bash 4+ required" >&2; exit 2; }
 set -euo pipefail
 
 usage() {
@@ -20,7 +21,13 @@ while getopts ':i:t:g:R:' opt; do
 done
 shift $((OPTIND - 1))
 [[ -n $issue && -n $heading && $# -gt 0 ]] || die_usage
+declare -A seen_basenames=()
 for png in "$@"; do [[ -f $png ]] || { echo "PNG does not exist: $png" >&2; die_usage; }; done
+for png in "$@"; do
+  base=$(basename "$png")
+  [[ -z ${seen_basenames[$base]+x} ]] || { echo "duplicate PNG basename: $base" >&2; exit 2; }
+  seen_basenames[$base]=1
+done
 command -v gh >/dev/null && gh auth status >/dev/null 2>&1 || { echo 'gh must be logged in' >&2; die_usage; }
 command -v git >/dev/null || { echo 'git is required' >&2; die_usage; }
 command -v curl >/dev/null || { echo 'curl is required' >&2; die_usage; }
@@ -31,22 +38,30 @@ trap 'rm -rf "$tmp"' EXIT
 
 if [[ -z $gist ]]; then
   printf '# UX review screenshots\n\nScreenshots attached to UX review issues.\n' > "$tmp/README.md"
-  gist=$(gh gist create "$tmp/README.md" 2>/dev/null | sed -E 's#.*/##')
+  if ! gist=$(gh gist create "$tmp/README.md" 2>/dev/null | sed -E 's#.*/##'); then
+    echo 'could not create gist' >&2
+    exit 1
+  fi
   [[ -n $gist ]] || { echo 'could not create gist' >&2; exit 1; }
   echo "gist: $gist" >&2
 fi
-git clone "https://gist.github.com/${gist}.git" "$tmp/gist" >/dev/null 2>&1
+if ! git clone "https://gist.github.com/${gist}.git" "$tmp/gist" >/dev/null 2>&1; then
+  echo "could not clone gist $gist" >&2
+  exit 1
+fi
 cd "$tmp/gist"
 for png in "$@"; do cp "$png" "$(basename "$png")"; done
 git add -- .
 if ! git diff --cached --quiet; then
   name=$(git config user.name || true); email=$(git config user.email || true)
   if [[ -z $name || -z $email ]]; then
-    login=$(gh api user -q .login)
-    name=${name:-$login}; email=${email:-"${login}@users.noreply.github.com"}
+    name=${name:-$owner}; email=${email:-"${owner}@users.noreply.github.com"}
   fi
   git -c user.name="$name" -c user.email="$email" commit -m 'Add UX review screenshots' >/dev/null
-  git push >/dev/null
+  if ! git push >/dev/null 2>&1; then
+    echo "could not push to gist $gist (run gh auth setup-git; the token needs the gist scope)" >&2
+    exit 1
+  fi
 fi
 
 body="$tmp/body.md"
@@ -62,18 +77,25 @@ comment_id=${comment_url##*issuecomment-}
 html=$(gh api "repos/${repo}/issues/comments/${comment_id}" -H 'Accept: application/vnd.github.html+json' -q .body_html)
 # Read the src attribute itself: for third-party hosts GitHub points src at its camo proxy and moves the
 # original URL to data-canonical-src, and only the proxied URL is what readers actually load.
+urls=()
 mapfile -t urls < <(printf '%s' "$html" | grep -oE '<img[^>]*>' | sed -nE 's/^<img([^>]*[[:space:]])?src="([^"]+)".*/\2/p')
 failures=()
-if (( ${#urls[@]} != $# )); then failures+=("image count: expected $# got ${#urls[@]}"); fi
-for url in "${urls[@]}"; do
+url_count=0
+for url in "${urls[@]+${urls[@]}}"; do ((url_count+=1)); done
+if (( url_count != $# )); then failures+=("image count: expected $# got $url_count"); fi
+for url in "${urls[@]+${urls[@]}}"; do
   ok=0
   for attempt in 1 2 3; do
     result=$(curl -sS -L -o /dev/null -w '%{http_code} %{content_type} %{size_download}' "$url" 2>/dev/null || true)
     read -r status type size <<< "$result"
     if [[ $status == 200 && $type == image/* && $size =~ ^[0-9]+$ ]] && (( size > 0 )); then ok=1; break; fi
-    (( attempt == 3 )) || sleep 2
+    (( attempt == 3 )) || sleep "${ATTACH_RETRY_SLEEP:-2}"
   done
   (( ok )) || failures+=("$url (last response: ${result:-none})")
 done
-if (( ${#failures[@]} )); then printf 'Screenshot verification failed: %s\n' "${failures[@]}" >&2; exit 1; fi
+if (( ${#failures[@]} )); then
+  printf 'Screenshot verification failed: %s\n' "${failures[@]}" >&2
+  printf 'posted comment (fix or delete it): %s\n' "$comment_url" >&2
+  exit 1
+fi
 printf '%s\n' "$comment_url"
