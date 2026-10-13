@@ -7,7 +7,7 @@ PC画面（1280x800, 一般的なラップトップ相当）で全ゲーム画�
 - [agent-browser](https://github.com/vercel-labs/agent-browser) がインストール済み（`bun install -g agent-browser && agent-browser install`）
 - Go サーバーが起動可能な状態
 - `gh` CLIでGitHubにログイン済み
-- 画像アップロード先として catbox.moe を使用（永続的な無料ホスティング、APIキー不要）
+- 画像の置き場所は secret gist（`gh auth setup-git` 済みで、トークンに gist スコープがあること）
 - agent-browser の daemon は close するまで Chrome ごと残り続ける。1 回のレビューでは `--session` 名を 1 つに固定し（コマンドごとに名前を変えると daemon がその数だけ増える）、終了時に必ず `agent-browser close` する。保険として `AGENT_BROWSER_IDLE_TIMEOUT_MS=600000` を環境に入れておくと、10 分操作が無い daemon は自動で終了する。
 
 ## 手順
@@ -199,17 +199,14 @@ Desktop (1280x800)
 
 ### 8. スクリーンショット添付
 
-catbox.moe に画像をアップロードし、各IssueにコメントでMarkdown画像リンクを添付する。
+影響箇所に挙げたゲームの画像だけを渡す。
 
 ```sh
-# アップロード
-URL=$(curl -s -F "reqtype=fileupload" -F "fileToUpload=@/tmp/desktop-screenshots/game.png" https://catbox.moe/user/api.php)
+# 最初のIssueでsecret gistを作成（成功後、gist: <id> がstderrに表示される）
+bash .claude/commands/scripts/attach-screenshots.sh -i <ISSUE_NUMBER> -t "スクリーンショット（Desktop 1280x800）" /tmp/desktop-screenshots/bhabhi-play.png /tmp/desktop-screenshots/pitch-play.png
 
-# Issueコメントに添付
-gh issue comment <ISSUE_NUMBER> --body "## スクリーンショット（Desktop 1280x800）
-
-### ゲーム名
-![ゲーム名]($URL)"
+# 2件目以降は同じgistを再利用
+bash .claude/commands/scripts/attach-screenshots.sh -i <ISSUE_NUMBER> -t "スクリーンショット（Desktop 1280x800）" -g <GIST_ID> /tmp/desktop-screenshots/bhabhi-play.png /tmp/desktop-screenshots/pitch-play.png
 ```
 
 ### 9. クリーンアップ
@@ -252,7 +249,7 @@ rm -rf /tmp/desktop-screenshots
 
 - **HashRouter**: URLは `http://localhost:8080/#/<game>` 形式。`/` 直打ちは404になる
 - **チュートリアルダイアログ**: 初回表示時にほぼ全ゲームで表示される。スキップ状態はlocalStorageに保存される
-- **catbox.moe**: 永続的な無料ホスティング。APIキー不要。1ファイル200MBまで
+- catbox は使わない: GitHub の画像プロキシ (camo) が 503 を返し、直接 URL は 200 なので投稿前の確認では気づけない (2026-10-14)。スクリプトは投稿後のコメントの `<img src>`（GitHub が実際に読み込む URL）を検証する
 - ゲームルート一覧は `frontend/src/constants/gameRoutes.ts` で管理されており、本コマンドは同ファイルから動的に取得するため、ゲームの追加・削除時にこのコマンドファイルの更新は不要
 - モバイル版のレビュー結果と照合し、PC・モバイル共通の課題は既存Issueにデスクトップのスクリーンショットを追記する（重複Issue作成を避ける）
 
