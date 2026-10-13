@@ -7,6 +7,46 @@ fail() { echo "FAIL: $*" >&2; exit 1; }
 for script in "$SCRIPTS"/*.sh; do bash -n "$script" || fail "bash -n $script"; done
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
+# identgone.sh warns on rename-shaped removals and notes intentional deletions,
+# while ignoring numeric fragments, comments, strings and new files.
+(
+  repo="$tmp/identgone"
+  git init -q "$repo"
+  git -C "$repo" config user.email test@example.com
+  git -C "$repo" config user.name test
+  cat > "$repo/source.ts" <<'EOF'
+const isMobile = true;
+const countMismatch = true;
+const countRef = countMismatch;
+const moveBar = true;
+const obsoleteHelper = true;
+const numberValue = 1_000;
+const repeatedName = isMobile;
+// commentOnlyword and stringOnlyword
+const note = "quotedOnlyword";
+EOF
+  git -C "$repo" add source.ts && git -C "$repo" commit -qm initial
+  cat > "$repo/source.ts" <<'EOF'
+const isMobileViewport = true;
+const repeatedName = isMobileViewport;
+const countMismatchViewport = true;
+const countRef = true;
+const move = true;
+const numberValue = 2_000;
+// commentOnlyword and stringOnlyword
+const note = "quotedOnlyword";
+EOF
+  printf 'const brandNewName = true;\n' > "$repo/new.ts"
+  output=$(bash "$SCRIPTS/identgone.sh" "$repo") || fail "identgone.sh failed"
+  grep -qx 'WARN IDENT_GONE source.ts isMobile -> isMobileViewport' <<<"$output" || fail "identifier rename with matching occurrence count was not warned: $output"
+  grep -qx 'NOTE IDENT_GONE source.ts countMismatch' <<<"$output" || fail "rename-shaped identifier with mismatched occurrence count was not noted: $output"
+  grep -qx 'NOTE IDENT_GONE source.ts moveBar' <<<"$output" || fail "short substring candidate was not noted: $output"
+  grep -qx 'NOTE IDENT_GONE source.ts obsoleteHelper' <<<"$output" || fail "identifier deletion was not noted: $output"
+  ! grep -qE 'numberValue|commentOnlyword|stringOnlyword|quotedOnlyword|brandNewName' <<<"$output" || fail "identgone reported a retained, numeric, comment, string, or new-file identifier: $output"
+  output=$(ALLOW_IDENT_GONE='isMobile obsoleteHelper countMismatch moveBar' bash "$SCRIPTS/identgone.sh" "$repo") || fail "identgone.sh failed with allowlist"
+  [ -z "$output" ] || fail "ALLOW_IDENT_GONE did not suppress warning: $output"
+) || exit 1
+
 # Regression checks for review findings in the batch lane helpers.
 for script in ship.sh fixpush.sh; do
   grep -q 'PIPESTATUS' "$SCRIPTS/$script" || fail "$script does not preserve push status"
