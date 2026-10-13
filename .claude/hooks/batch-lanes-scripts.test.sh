@@ -96,6 +96,53 @@ for script in ship.sh fixpush.sh; do
   grep -q 'push_status == 0' "$SCRIPTS/$script" || fail "$script does not stop after push failure"
   grep -q 'git diff --name-only -z HEAD' "$SCRIPTS/$script" || fail "$script does not collect paths with NUL delimiters"
 done
+
+# overlap.sh checks committed lanes only when they have an open PR, and always checks dirty lanes.
+(
+  repo="$tmp/overlap-repo"; root="$tmp/overlap-wts"; state="$tmp/overlap-state"
+  ghbin="$tmp/overlap-bin"; mkdir -p "$repo" "$root" "$state" "$ghbin"
+  cat >"$ghbin/gh" <<'GH'
+#!/usr/bin/env bash
+[[ "${GH_FAIL:-0}" == 1 ]] && exit 1
+printf '%s\n' "${GH_OPEN_BRANCHES:-lane2}"
+GH
+  chmod +x "$ghbin/gh"
+  git init -q "$repo"; git -C "$repo" config user.email test@example.com; git -C "$repo" config user.name test
+  printf 'base\n' > "$repo/shared"; printf 'base\n' > "$repo/other"
+  git -C "$repo" add .; git -C "$repo" commit -qm base; git -C "$repo" branch -M develop
+  git init -q --bare "$tmp/overlap-origin.git"; git -C "$tmp/overlap-origin.git" symbolic-ref HEAD refs/heads/develop
+  git -C "$repo" remote add origin "$tmp/overlap-origin.git"; git -C "$repo" push -q -u origin develop; git -C "$repo" fetch -q origin
+  git -C "$repo" worktree add -qb lane1 "$root/wt-ib1" origin/develop
+  git -C "$repo" worktree add -qb lane2 "$root/wt-ib2" origin/develop
+  git -C "$repo" worktree add -qb lane3 "$root/wt-ib3" origin/develop
+  git -C "$repo" worktree add -qb lane4 "$root/wt-ib4" origin/develop
+  printf 'lane1\n' >> "$root/wt-ib1/shared"; git -C "$root/wt-ib1" commit -qam lane1
+  printf 'lane2\n' >> "$root/wt-ib2/shared"; git -C "$root/wt-ib2" commit -qam lane2
+  printf 'lane3\n' >> "$root/wt-ib3/shared"; git -C "$root/wt-ib3" commit -qam lane3
+  out=$(PATH="$ghbin:$PATH" BATCH_REPO="$repo" BATCH_WT_ROOT="$root" BATCH_STATE="$state" bash "$SCRIPTS/overlap.sh" 1)
+  grep -qx 'WARN LANE_OVERLAP shared slots=1,2' <<<"$out" || fail "overlap.sh missed committed overlap: $out"
+  [[ "$out" != *'slots=1,3'* ]] || fail "overlap.sh reported merged lane without open PR: $out"
+  printf 'lane1\n' > "$root/wt-ib1/other"; git -C "$root/wt-ib1" add other; git -C "$root/wt-ib1" commit -qm disjoint
+  out=$(PATH="$ghbin:$PATH" BATCH_REPO="$repo" BATCH_WT_ROOT="$root" BATCH_STATE="$state" bash "$SCRIPTS/overlap.sh" 1)
+  [[ "$out" != *other* ]] || fail "overlap.sh reported disjoint paths: $out"
+  printf 'dirty\n' >> "$root/wt-ib1/shared"; printf 'dirty\n' >> "$root/wt-ib4/shared"
+  out=$(PATH="$ghbin:$PATH" BATCH_REPO="$repo" BATCH_WT_ROOT="$root" BATCH_STATE="$state" bash "$SCRIPTS/overlap.sh" 1)
+  grep -qx 'WARN LANE_OVERLAP shared slots=1,2' <<<"$out" || fail "overlap.sh missed uncommitted overlap: $out"
+  grep -qx 'WARN LANE_OVERLAP shared slots=1,4' <<<"$out" || fail "overlap.sh missed dirty lane without PR: $out"
+  out=$(PATH="$ghbin:$PATH" ALLOW_OVERLAP=shared BATCH_REPO="$repo" BATCH_WT_ROOT="$root" BATCH_STATE="$state" bash "$SCRIPTS/overlap.sh" 1)
+  [[ -z "$out" ]] || fail "overlap.sh ignored ALLOW_OVERLAP: $out"
+  out=$(PATH="$ghbin:$PATH" GH_FAIL=1 BATCH_REPO="$repo" BATCH_WT_ROOT="$root" BATCH_STATE="$state" bash "$SCRIPTS/overlap.sh" 1)
+  grep -qx 'NOTE LANE_OVERLAP gh unavailable; committed lanes not checked' <<<"$out" || fail "overlap.sh missed gh failure note: $out"
+  grep -qx 'WARN LANE_OVERLAP shared slots=1,4' <<<"$out" || fail "overlap.sh did not limit gh failure checks to dirty lane: $out"
+  [[ "$out" != *'slots=1,2'* ]] || fail "overlap.sh checked committed lane after gh failure: $out"
+  git -C "$root/wt-ib2" switch -q --detach HEAD
+  out=$(PATH="$ghbin:$PATH" BATCH_REPO="$repo" BATCH_WT_ROOT="$root" BATCH_STATE="$state" bash "$SCRIPTS/overlap.sh" 1)
+  [[ "$out" != *'slots=1,2'* ]] || fail "overlap.sh reported detached lane: $out"
+  printf 'dirty\n' >> "$root/wt-ib2/shared"
+  out=$(PATH="$ghbin:$PATH" BATCH_REPO="$repo" BATCH_WT_ROOT="$root" BATCH_STATE="$state" bash "$SCRIPTS/overlap.sh" 1)
+  grep -qx 'WARN LANE_OVERLAP shared slots=1,2' <<<"$out" || fail "overlap.sh skipped a dirty detached lane: $out"
+) || exit 1
+grep -q 'overlap.sh" "\$1" >> "\$BATCH_STATE/rc\$1.txt"' "$SCRIPTS/rc.sh" || fail "rc.sh no longer records overlap.sh in the receipt"
 ! grep -R -nE 'git status --porcelain \| awk' "$SCRIPTS" || fail "status paths are parsed as whitespace fields"
 if grep -R -n '/tmp/' "$SCRIPTS" >"$tmp/tmp-paths.out" 2>&1; then
   fail "batch scripts contain hardcoded /tmp paths: $(cat "$tmp/tmp-paths.out")"

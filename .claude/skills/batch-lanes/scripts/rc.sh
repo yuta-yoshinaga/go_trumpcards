@@ -37,4 +37,5 @@ if [[ "${ALLOW_PATCH_GAPS:-}" != 1 ]] && git -C "$wt" diff --name-only HEAD -- f
     printf 'WARN PATCH_BRANCH_GAP patch-branch-gaps exited %s without output\n' "$gap_status" >> "$BATCH_STATE/rc$1.txt"
   fi
 fi
+bash "$B/overlap.sh" "$1" >> "$BATCH_STATE/rc$1.txt"
 echo RC_DONE >> "$BATCH_STATE/rc$1.txt"; cat "$BATCH_STATE/rc$1.txt"
