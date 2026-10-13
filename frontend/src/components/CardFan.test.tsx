@@ -58,6 +58,11 @@ describe('CardFan', () => {
     render(<CardFan itemWidth={106}>{cards()}</CardFan>);
     expect(document.querySelector('.flex.flex-nowrap')?.parentElement?.children.length).toBeGreaterThan(1);
   });
+  it('safely centers rows so overflow stays on the right', () => {
+    observedWidth = 300;
+    render(<CardFan itemWidth={106}>{cards()}</CardFan>);
+    expect(document.querySelector('.flex.flex-nowrap')).toHaveClass('justify-center-safe');
+  });
   it('uses touch exposure on mobile and desktop exposure at the desktop breakpoint', () => {
     observedWidth = 400;
     window.innerWidth = 375;

@@ -48,7 +48,7 @@ export function CardFan({
       {rows.map(({ items, start }, rowIndex) => {
         const overlap = fanOverlap(items.length, itemWidth, width, exposure, 8);
         return (
-          <div key={`fan-row-${rowIndex}`} className="flex flex-nowrap justify-center">
+          <div key={`fan-row-${rowIndex}`} className="flex flex-nowrap justify-center-safe">
             {items.map((child, index) => (
               <div
                 key={child.key ?? start + index}
