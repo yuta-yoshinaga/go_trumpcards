@@ -7,6 +7,89 @@ fail() { echo "FAIL: $*" >&2; exit 1; }
 for script in "$SCRIPTS"/*.sh; do bash -n "$script" || fail "bash -n $script"; done
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
+# identgone.sh warns on rename-shaped removals and notes intentional deletions,
+# while ignoring numeric fragments, comments, strings and new files.
+(
+  repo="$tmp/identgone"
+  git init -q "$repo"
+  git -C "$repo" config user.email test@example.com
+  git -C "$repo" config user.name test
+  cat > "$repo/source.ts" <<'EOF'
+const isMobile = true;
+const countMismatch = true;
+const countRef = countMismatch;
+const moveBar = true;
+const obsoleteHelper = true;
+const mobileCheck = true;
+const mobileCheckUse = mobileCheck;
+const behaviour = true;
+const mobileState = true;
+const useState = mobileState;
+const jsxAfter = true;
+const numberValue = 1_000;
+const repeatedName = isMobile;
+// commentOnlyword and stringOnlyword
+const note = "quotedOnlyword";
+EOF
+  git -C "$repo" add source.ts && git -C "$repo" commit -qm initial
+  cat > "$repo/source.ts" <<'EOF'
+const isMobileViewport = true;
+const repeatedName = isMobileViewport;
+const countMismatchViewport = true;
+const countRef = true;
+const move = true;
+const numberValue = 2_000;
+// commentOnlyword and stringOnlyword
+const note = "quotedOnlyword";
+<p>Don't move</p>;
+const jsxAfterRenamed = true;
+const templateText = `${mobileCheckIsMobile} ${mobileCheckIsMobile}`;
+const behavior = true;
+const mobileStat = true;
+const mobileStateful = true;
+const selectionCount = mobileStat + mobileStateful;
+EOF
+  printf 'const brandNewName = true;\n' > "$repo/new.ts"
+  output=$(bash "$SCRIPTS/identgone.sh" "$repo") || fail "identgone.sh failed"
+  grep -qx 'WARN IDENT_GONE source.ts isMobile -> isMobileViewport' <<<"$output" || fail "identifier rename with matching occurrence count was not warned: $output"
+  grep -qx 'NOTE IDENT_GONE source.ts countMismatch' <<<"$output" || fail "rename-shaped identifier with mismatched occurrence count was not noted: $output"
+  grep -qx 'NOTE IDENT_GONE source.ts moveBar' <<<"$output" || fail "short substring candidate was not noted: $output"
+  grep -qx 'NOTE IDENT_GONE source.ts obsoleteHelper' <<<"$output" || fail "identifier deletion was not noted: $output"
+  grep -qx 'WARN IDENT_GONE source.ts jsxAfter -> jsxAfterRenamed' <<<"$output" || fail "JSX apostrophe hid a later identifier rename: $output"
+  grep -qx 'WARN IDENT_GONE source.ts behaviour -> behavior' <<<"$output" || fail "long edit-distance rename was not warned: $output"
+  grep -qx 'WARN IDENT_GONE source.ts mobileState -> mobileStat' <<<"$output" || fail "closest candidate was not selected: $output"
+  ! grep -qE 'numberValue|commentOnlyword|stringOnlyword|quotedOnlyword|brandNewName' <<<"$output" || fail "identgone reported a retained, numeric, comment, string, or new-file identifier: $output"
+  ig_strings="$tmp/identgone-strings"; git init -q "$ig_strings"
+  printf "const label = 'singleQuotedWord here';\nconst other = \"doubleQuotedWord\";\nexport const x = label + other;\n" > "$ig_strings/a.ts"
+  git -C "$ig_strings" add a.ts && git -C "$ig_strings" -c user.name=t -c user.email=t@t commit -qm a
+  printf "const label = 'replacementText here';\nconst other = \"anotherText\";\nexport const x = label + other;\n" > "$ig_strings/a.ts"
+  output=$(bash "$SCRIPTS/identgone.sh" "$ig_strings")
+  [[ -z "$output" ]] || fail "identgone counted words inside single or double quoted strings: $output"
+  output=$(ALLOW_IDENT_GONE='isMobile obsoleteHelper countMismatch moveBar behaviour jsxAfter mobileCheck mobileCheckUse mobileState useState' bash "$SCRIPTS/identgone.sh" "$repo") || fail "identgone.sh failed with allowlist"
+  [ -z "$output" ] || fail "ALLOW_IDENT_GONE did not suppress warning: $output"
+) || exit 1
+
+# Deleted paths are silent; Go raw strings are ignored while Go code is scanned.
+(
+  repo="$tmp/identgone-go"
+  git init -q "$repo"
+  git -C "$repo" config user.email test@example.com
+  git -C "$repo" config user.name test
+  printf 'package sample\nvar oldGoName = true\nvar kept = `oldGoName`\n' > "$repo/sample.go"
+  printf 'const deletedName = true\n' > "$repo/deleted.ts"
+  git -C "$repo" add . && git -C "$repo" commit -qm initial
+  printf 'package sample\nvar oldGoNames = true\nvar kept = `oldGoNames`\n' > "$repo/sample.go"
+  rm "$repo/deleted.ts"
+  output=$(bash "$SCRIPTS/identgone.sh" "$repo") || fail "identgone.sh Go/deletion check failed"
+  grep -qx 'WARN IDENT_GONE sample.go oldGoName -> oldGoNames' <<<"$output" || fail "Go identifier rename was not warned: $output"
+  ! grep -q deletedName <<<"$output" || fail "deleted file produced output: $output"
+  mkdir "$tmp/no-python"
+  ln -s "$(command -v git)" "$tmp/no-python/git"
+  bash_path=$(command -v bash)
+  output=$(PATH="$tmp/no-python" "$bash_path" "$SCRIPTS/identgone.sh" "$repo") || fail "missing-python path returned nonzero"
+  [ "$output" = 'NOTE IDENT_GONE python3 unavailable' ] || fail "missing-python note incorrect: $output"
+) || exit 1
+
 # Regression checks for review findings in the batch lane helpers.
 for script in ship.sh fixpush.sh; do
   grep -q 'PIPESTATUS' "$SCRIPTS/$script" || fail "$script does not preserve push status"

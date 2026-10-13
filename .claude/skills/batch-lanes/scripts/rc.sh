@@ -9,6 +9,7 @@ git -C "$WT_ROOT/wt-ib$1" diff --numstat HEAD -- '*.test.ts' '*.test.tsx' '*_tes
 # toHaveTextContent('') matches ANY content, so it proves nothing (use toBeEmptyDOMElement).
 git -C "$WT_ROOT/wt-ib$1" diff -U0 HEAD -- '*.test.ts' '*.test.tsx' | grep -nE "^\+.*toHaveTextContent\((''|\"\")\)" \
   | sed 's/^/WARN VACUOUS_EMPTY_TEXT /' >> "$BATCH_STATE/rc$1.txt"
+bash "$B/identgone.sh" "$WT_ROOT/wt-ib$1" >> "$BATCH_STATE/rc$1.txt"
 git -C "$WT_ROOT/wt-ib$1" diff -U0 HEAD -- "*.ts" "*.tsx" | bash "$B/biomeignore.sh" >> "$BATCH_STATE/rc$1.txt"
 (cd "$WT_ROOT/wt-ib$1"/frontend && timeout 120 bun run deadcode 2>&1 | grep -E "^(Unused|Unlisted|Unresolved)" -A6 | sed "s/^/WARN DEADCODE /") >> "$BATCH_STATE/rc$1.txt"
 wt="$WT_ROOT/wt-ib$1"
