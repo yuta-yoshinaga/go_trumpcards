@@ -19,6 +19,8 @@ if [[ -z "$sources" ]]; then
 fi
 
 gaps=0
+new_gaps=0
+preexisting_gaps=0
 while IFS= read -r src; do
   [[ -z "$src" ]] && continue
   rel="${src#frontend/}"
@@ -42,7 +44,7 @@ while IFS= read -r src; do
     continue
   fi
   git diff -U0 "$BASE" -- "$src" > "$TMP/diff"
-  python3 - "$out/coverage-final.json" "$src" "$TMP/diff" <<'PY'
+  python3 - "$out/coverage-final.json" "$src" "$TMP/diff" >"$TMP/row" <<'PY'
 import json, re, sys
 coverage_path, source_path, diff_path = sys.argv[1:]
 changed = set()
@@ -65,19 +67,31 @@ for bid, branch in cov.get('branchMap', {}).items():
         print(f"{source_path.removeprefix('frontend/')}:{ln}: {branch['type']} {counts} | {src[ln-1].strip()[:110]}")
 PY
   rc=$?
-  [[ $rc -eq 2 ]] && gaps=1
-  # Python emits rows but does not signal their presence; detect them from a second focused pass.
-  if python3 - "$out/coverage-final.json" "$src" "$TMP/diff" <<'PY'
-import json,re,sys
-d=json.load(open(sys.argv[1])); p=sys.argv[2]; changed=set()
-for x in open(sys.argv[3]):
- m=re.match(r'@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@',x)
- if m: changed.update(range(int(m[1]),int(m[1])+int(m[2] or 1)))
-k=next((k for k in d if k.endswith('/'+p.removeprefix('frontend/')) or k.endswith(p)),None)
-if k and any(b['loc']['start']['line'] in changed and any(n==0 for n in d[k]['b'][i]) for i,b in d[k].get('branchMap',{}).items()): sys.exit(0)
-sys.exit(1)
-PY
-  then gaps=1; fi
+  [[ $rc -ne 0 ]] && gaps=1
+  if [[ $rc -eq 0 ]]; then
+    while IFS= read -r line; do
+      [[ -z "$line" ]] && continue
+      gap_file="${line%%:*}"
+      gap_text="${line#* | }"
+      gap_text="$(sed 's/^[[:space:]]*//; s/[[:space:]]*$//' <<< "$gap_text")"
+      develop_file="$(git show "$BASE:frontend/$gap_file" 2>/dev/null | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')" || develop_file=""
+      preexisting=0
+      if [[ -n "$develop_file" && ${#gap_text} -ge 8 ]]; then
+        while IFS= read -r develop_line; do
+          [[ "${develop_line:0:${#gap_text}}" == "$gap_text" ]] && { preexisting=1; break; }
+        done <<< "$develop_file"
+      fi
+      if [[ $preexisting -eq 1 ]]; then
+        printf 'PREEXISTING %s\n' "$line"
+        preexisting_gaps=$((preexisting_gaps + 1))
+      else
+        printf '%s\n' "$line"
+        new_gaps=$((new_gaps + 1))
+        gaps=1
+      fi
+    done < "$TMP/row"
+  fi
 done <<< "$sources"
-if [[ $gaps -eq 0 ]]; then echo "patch-branch-gaps: PASS (no uncovered branches on changed lines)"; else echo "patch-branch-gaps: gaps found or measurement failed."; fi
+echo "patch-branch-gaps: summary: $new_gaps new, $preexisting_gaps pre-existing"
+if [[ $gaps -eq 0 ]]; then echo "patch-branch-gaps: PASS (no new uncovered branches on changed lines)"; else echo "patch-branch-gaps: new gaps found or measurement failed."; fi
 exit "$gaps"

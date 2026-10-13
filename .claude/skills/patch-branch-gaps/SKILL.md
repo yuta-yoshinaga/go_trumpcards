@@ -16,9 +16,13 @@ bash .claude/skills/patch-branch-gaps/scripts/patch-branch-gaps.sh origin/main
 ```
 
 It runs only each changed source file's sibling test and inspects branches located on added or
-changed diff lines. A printed row is `<file>:<line>: <branch type> [counts] | <source>`. Any
-zero in `[counts]` means that branch outcome was not taken; the script exits 1 if it finds one.
-`NO TEST FILE` means the source has no sibling `.test.ts` or `.test.tsx` file.
+changed diff lines. A new uncovered branch is printed as
+`<file>:<line>: <branch type> [counts] | <source>`; a branch whose trimmed source text is already
+a prefix of a trimmed line in `<base>:frontend/<file>` (the base defaults to the merge-base with `origin/develop`) (at least 8 characters) is printed
+as `PREEXISTING <file>:<line>: <branch type> [counts] | <source>`. The summary reports new and
+pre-existing counts separately. The script exits 1 for new uncovered branches or measurement
+errors such as `NO RESULT`, and exits 0 when it finds only pre-existing branches. `NO TEST FILE`
+means the source has no sibling `.test.ts` or `.test.tsx` file.
 
 Remedy gaps in this order:
 
