@@ -324,7 +324,7 @@ function ColourWhistPageContent() {
             </section>
 
             {human && human.cards.length > 0 && (
-              <div data-tutorial="cw-hand">
+              <div className="lg:sticky lg:bottom-0 lg:z-10 lg:bg-game-bg-green" data-tutorial="cw-hand">
                 <div className="text-ds-text-primary text-center text-sm font-bold mb-1">{t('label.hand')}</div>
                 <div className="flex justify-center gap-1 flex-wrap" data-testid="colourwhist-hand">
                   {human.cards.map((card, i) => {

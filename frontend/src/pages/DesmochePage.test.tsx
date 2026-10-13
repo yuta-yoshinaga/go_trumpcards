@@ -7,12 +7,16 @@ import type { Card, CardDesign, DesmochePlayer, DesmocheResponse } from '../type
 import { DesmochePhase } from '../types/phases';
 import { DesmochePage } from './DesmochePage';
 
-const mobileState = vi.hoisted(() => ({ isMobile: true }));
+const mobileState = vi.hoisted(() => ({
+  isMobile: true,
+  breakpoint: 'mobile' as 'mobile' | 'desktop' | 'largeDesktop',
+}));
 
 vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
   return {
     ...actual,
+    useBreakpoint: () => mobileState.breakpoint,
     useIsMobile: () => mobileState.isMobile,
     useCardDimensions: () => ({ ...actual.useCardDimensions(), isMobile: mobileState.isMobile }),
   };
@@ -71,6 +75,7 @@ function selectCards(indices: number[]) {
 describe('DesmochePage', () => {
   beforeEach(() => {
     mobileState.isMobile = true;
+    mobileState.breakpoint = 'mobile';
     vi.clearAllMocks();
     mockExec.mockResolvedValue(makeState());
   });
@@ -81,11 +86,26 @@ describe('DesmochePage', () => {
   });
 
   it('sticks the hand to the bottom of the desktop play area', async () => {
+    mobileState.breakpoint = 'largeDesktop';
     renderWithProviders(<DesmochePage />);
     await waitFor(() => expect(document.querySelector('[data-tutorial="ds-hand"] button')).not.toBeNull());
     const hand = document.querySelector('[data-tutorial="ds-hand"]');
     expect(hand?.className).toContain('lg:sticky');
     expect(hand?.className).toContain('lg:bottom-0');
+  });
+
+  it('lays melds out in rows only on large desktop', async () => {
+    mobileState.breakpoint = 'largeDesktop';
+    mobileState.isMobile = false;
+    const { unmount } = renderWithProviders(<DesmochePage />);
+    const list = await screen.findByTestId('desmoche-meld-list');
+    expect(list.className).toContain('flex-row');
+    expect(list.className).toContain('flex-wrap');
+    unmount();
+
+    mobileState.breakpoint = 'desktop';
+    renderWithProviders(<DesmochePage />);
+    expect((await screen.findByTestId('desmoche-meld-list')).className).toContain('flex-col');
   });
 
   it('sends a changed difficulty in the reset request', async () => {

@@ -18,7 +18,7 @@ import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useDesmocheGame } from '../hooks/useDesmocheGame';
@@ -79,6 +79,7 @@ function DesmochePageContent() {
   );
   const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   const { cardWidth } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const isMobile = useIsMobile();
   const {
     hint: frontendHint,
@@ -239,7 +240,10 @@ function DesmochePageContent() {
               {state.melds.length === 0 ? (
                 <div className="text-center text-game-text-muted text-xs">{t('noMelds')}</div>
               ) : (
-                <div className="flex flex-col gap-1 items-center">
+                <div
+                  className={`flex gap-1 items-center ${isLargeDesktop ? 'flex-row flex-wrap justify-center' : 'flex-col'}`}
+                  data-testid="desmoche-meld-list"
+                >
                   {state.melds.map((m, i) => {
                     // **自分のメルドだけが上がり枚数に加算される。**色・ラベル・
                     // 警告が食い違わないよう、判定は 1 箇所から配る。

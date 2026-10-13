@@ -27,6 +27,12 @@ vi.mock('../hooks/useCliMode', () => ({
   })),
 }));
 
+const breakpointState = vi.hoisted(() => ({ value: 'desktop' as 'mobile' | 'desktop' | 'largeDesktop' }));
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useBreakpoint: () => breakpointState.value,
+}));
+
 const mockApi = vi.mocked(colourwhistApi.exec);
 const mockUseCliMode = vi.mocked(useCliMode);
 
@@ -82,6 +88,7 @@ const playState: ColourWhistResponse = {
 };
 
 beforeEach(() => {
+  breakpointState.value = 'desktop';
   vi.clearAllMocks();
   mockUseCliMode.mockReturnValue({
     cliEnabled: false,
@@ -95,6 +102,22 @@ beforeEach(() => {
 });
 
 describe('ColourWhistPage', () => {
+  it('keeps the hand wrapped and sticky at the bottom on large desktops', async () => {
+    mockApi.mockResolvedValue(playState);
+    breakpointState.value = 'largeDesktop';
+    const { unmount } = renderWithProviders(<ColourWhistPage />);
+    const hand = await screen.findByTestId('colourwhist-hand');
+    expect(hand.className).toContain('gap-1');
+    expect(hand.className).toContain('flex-wrap');
+    expect(hand.parentElement).toHaveClass('lg:sticky', 'lg:bottom-0', 'lg:z-10', 'lg:bg-game-bg-green');
+    unmount();
+
+    breakpointState.value = 'desktop';
+    renderWithProviders(<ColourWhistPage />);
+    const legacyHand = await screen.findByTestId('colourwhist-hand');
+    expect(legacyHand.className).toContain('gap-1');
+    expect(legacyHand.className).toContain('flex-wrap');
+  });
   it('shows the winning seat in the final result for either outcome', async () => {
     mockApi.mockResolvedValue({ ...bidState, gameEndFlag: true, winnerIdx: 2 });
     const { unmount } = renderWithProviders(<ColourWhistPage />);
