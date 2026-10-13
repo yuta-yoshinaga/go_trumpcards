@@ -36,11 +36,11 @@ shopt -s nullglob
 for other in "$WT_ROOT"/wt-ib*; do
   [[ -d "$other" && "$other" != "$mine" ]] || continue
   other_slot="${other##*/wt-ib}"
-  git -C "$other" symbolic-ref -q HEAD >/dev/null || continue
   dirty="$(git -C "$other" status --porcelain --untracked-files=all 2>/dev/null || true)"
   active=0
   [[ -n "$dirty" ]] && active=1
-  if (( gh_available )) && grep -Fxq "$(git -C "$other" branch --show-current 2>/dev/null || true)" <<<"$open_branches"; then
+  # A detached lane has no PR to look up, but uncommitted edits in it still count.
+  if (( gh_available )) && git -C "$other" symbolic-ref -q HEAD >/dev/null && grep -Fxq "$(git -C "$other" branch --show-current 2>/dev/null || true)" <<<"$open_branches"; then
     active=1
   fi
   (( active )) || continue

@@ -55,7 +55,11 @@ GH
   git -C "$root/wt-ib2" switch -q --detach HEAD
   out=$(PATH="$ghbin:$PATH" BATCH_REPO="$repo" BATCH_WT_ROOT="$root" BATCH_STATE="$state" bash "$SCRIPTS/overlap.sh" 1)
   [[ "$out" != *'slots=1,2'* ]] || fail "overlap.sh reported detached lane: $out"
+  printf 'dirty\n' >> "$root/wt-ib2/shared"
+  out=$(PATH="$ghbin:$PATH" BATCH_REPO="$repo" BATCH_WT_ROOT="$root" BATCH_STATE="$state" bash "$SCRIPTS/overlap.sh" 1)
+  grep -qx 'WARN LANE_OVERLAP shared slots=1,2' <<<"$out" || fail "overlap.sh skipped a dirty detached lane: $out"
 ) || exit 1
+grep -q 'overlap.sh" "\$1" >> "\$BATCH_STATE/rc\$1.txt"' "$SCRIPTS/rc.sh" || fail "rc.sh no longer records overlap.sh in the receipt"
 ! grep -R -nE 'git status --porcelain \| awk' "$SCRIPTS" || fail "status paths are parsed as whitespace fields"
 if grep -R -n '/tmp/' "$SCRIPTS" >"$tmp/tmp-paths.out" 2>&1; then
   fail "batch scripts contain hardcoded /tmp paths: $(cat "$tmp/tmp-paths.out")"
