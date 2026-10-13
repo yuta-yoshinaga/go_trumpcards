@@ -23,31 +23,17 @@ fi
 if [[ "${ALLOW_PATCH_GAPS:-}" != 1 ]] && git -C "$wt" diff --name-only HEAD -- frontend/src/{pages,components,utils,hooks,api} \
   | grep -E '^frontend/src/(pages|components|utils|hooks|api)/.*\.(ts|tsx)$' | grep -qvE '\.test\.tsx?$'; then
   gap_status=0; gap_output="$(cd "$wt" && timeout 600 bash .claude/skills/patch-branch-gaps/scripts/patch-branch-gaps.sh 2>&1)" || gap_status=$?
-  if [[ $gap_status -ne 0 ]]; then
-    while IFS= read -r line; do
-      [[ "$line" == *"NO TEST FILE"* ]] && continue
-      [[ "$line" =~ ^[^:]+:[0-9]+:.*\[[^]]*\] ]] || [[ "$line" == *"NO RESULT"* ]] || continue
-      if [[ "$line" == *" | "* ]]; then
-        gap_file="${line%%:*}"
-        gap_text="${line#* | }"
-        gap_text="$(sed 's/^[[:space:]]*//; s/[[:space:]]*$//' <<< "$gap_text")"
-        develop_file="$(git -C "$wt" show "origin/develop:frontend/$gap_file" 2>/dev/null | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')" || develop_file=""
-        preexisting=0
-        # An empty or very short text would prefix-match unrelated develop lines and hide a new gap.
-        if [[ -n "$develop_file" && ${#gap_text} -ge 8 ]]; then
-          while IFS= read -r develop_line; do
-            [[ "${develop_line:0:${#gap_text}}" == "$gap_text" ]] && { preexisting=1; break; }
-          done <<< "$develop_file"
-        fi
-        if [[ $preexisting -eq 1 ]]; then
-          printf 'NOTE PATCH_BRANCH_GAP_PREEXISTING %s\n' "$line" >> "$BATCH_STATE/rc$1.txt"
-        else
-          printf 'WARN PATCH_BRANCH_GAP %s\n' "$line" >> "$BATCH_STATE/rc$1.txt"
-        fi
-      else
-        printf 'WARN PATCH_BRANCH_GAP %s\n' "$line" >> "$BATCH_STATE/rc$1.txt"
-      fi
-    done <<< "$gap_output"
+  while IFS= read -r line; do
+    [[ "$line" == *"NO TEST FILE"* ]] && continue
+    [[ "$line" =~ ^PREEXISTING\ .+:[0-9]+: ]] && {
+      printf 'NOTE PATCH_BRANCH_GAP_PREEXISTING %s\n' "${line#PREEXISTING }" >> "$BATCH_STATE/rc$1.txt"
+      continue
+    }
+    [[ "$line" =~ ^[^:]+:[0-9]+:.*\[[^]]*\] ]] || [[ "$line" == *"NO RESULT"* ]] || continue
+    printf 'WARN PATCH_BRANCH_GAP %s\n' "$line" >> "$BATCH_STATE/rc$1.txt"
+  done <<< "$gap_output"
+  if [[ $gap_status -ne 0 && -z "$gap_output" ]]; then
+    printf 'WARN PATCH_BRANCH_GAP patch-branch-gaps exited %s without output\n' "$gap_status" >> "$BATCH_STATE/rc$1.txt"
   fi
 fi
 echo RC_DONE >> "$BATCH_STATE/rc$1.txt"; cat "$BATCH_STATE/rc$1.txt"
