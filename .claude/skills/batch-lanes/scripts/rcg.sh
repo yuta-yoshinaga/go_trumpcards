@@ -21,9 +21,12 @@ grep -v '^NOTE ' $f | grep -qE 'FAIL|MUTANT_LEFT|MISSING_TEST|GOIMPORTS:|LINT: [
 if [[ "${E2E_GATE:-1}" == 0 ]]; then
   echo "NOTE E2E_GATE skipped"
 else
+  gate_hash="$("$B/treehash.sh" "$slot")"
   flock -u 9
   "$B/e2egate.sh" "$slot" || { echo "GATE: e2e failed"; exit 1; }
   flock -x 9
+  [[ "$gate_hash" == "$("$B/treehash.sh" "$slot")" ]] || { echo "GATE: worktree changed during e2e"; exit 1; }
+  printf '%s\n' "$gate_hash" > "$BATCH_STATE/gate$slot.ok"
 fi
-"$B/treehash.sh" "$slot" > "$BATCH_STATE/gate$slot.ok"
+if [[ "${E2E_GATE:-1}" == 0 ]]; then "$B/treehash.sh" "$slot" > "$BATCH_STATE/gate$slot.ok"; fi
 echo "GATE: ok"

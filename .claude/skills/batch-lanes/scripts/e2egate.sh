@@ -41,7 +41,7 @@ if (( frontend )); then
       route="$(python3 - "$wt/frontend/src/constants/gameRoutes.ts" "$page" <<'PY'
 import re, sys
 text = open(sys.argv[1]).read()
-for path, name in re.findall(r"\{\s*path:\s*['\"]([^'\"]+)['\"],.*?page:\s*['\"]([^'\"]+)['\"]", text, re.S):
+for path, name in re.findall(r"\{[^}]*?path:\s*['\"]([^'\"]+)['\"][^}]*?page:\s*['\"]([^'\"]+)['\"]", text, re.S):
     if name == sys.argv[2]: print(path); break
 PY
 )"
@@ -72,7 +72,7 @@ if (( dry_run )); then
     if (( ${#page_specs[@]} )); then run=1; printf 'run %d: %s\n' "$run" "${page_specs[*]}"; fi
     if (( ${#sweep_specs[@]} )); then
       run=$((run+1))
-      if (( ${#run_args[@]} )); then printf 'run %d: %s --grep %s\n' "$run" "${sweep_specs[*]}" "$(IFS='|'; echo "${run_args[*]}")"
+      if (( ${#run_args[@]} )); then printf 'run %d: %s --grep %s --pass-with-no-tests\n' "$run" "${sweep_specs[*]}" "$(IFS='|'; echo "${run_args[*]}")"
       else printf 'run %d: %s\n' "$run" "${sweep_specs[*]}"; fi
     fi
   elif (( ${#run_specs[@]} )); then printf 'run 1: %s\n' "${run_specs[*]/#/e2e/}"; fi
@@ -87,11 +87,11 @@ if (( page_change )); then
   done
   args=(); for spec in "${page_specs[@]}"; do args+=("e2e/$spec"); done
   if (( ${#sweep_specs[@]} )); then
-    (( ${#args[@]} )) && args+=(---)
+    if (( ${#args[@]} )); then args+=(---); fi
     for spec in "${sweep_specs[@]}"; do args+=("e2e/$spec"); done
-    (( ${#run_args[@]} )) && args+=(--grep "$(IFS='|'; echo "${run_args[*]}")")
+    if (( ${#run_args[@]} )); then args+=(--grep "$(IFS='|'; echo "${run_args[*]}")" --pass-with-no-tests); fi
   fi
-  (( ${#args[@]} )) && "$B/e2e.sh" "$slot" "${args[@]}"
+  if (( ${#args[@]} )); then "$B/e2e.sh" "$slot" "${args[@]}"; fi
 elif (( ${#run_specs[@]} )); then
   args=(); for spec in "${run_specs[@]}"; do args+=("e2e/$spec"); done
   "$B/e2e.sh" "$slot" "${args[@]}"

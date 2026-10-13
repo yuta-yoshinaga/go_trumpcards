@@ -38,7 +38,7 @@ if [[ "${E2E_SKIP_BUILD:-0}" != 1 ]]; then
   server_pid=$!
   ready=0
   for _ in $(seq 60); do
-    if curl -fs "http://localhost:$port/" >/dev/null; then ready=1; break; fi
+    if curl --max-time 2 -fs "http://localhost:$port/" >/dev/null; then ready=1; break; fi
     kill -0 "$server_pid" 2>/dev/null || { cat "$BATCH_STATE/e2e-server-$slot.log" >&2; exit 1; }
     sleep 1
   done

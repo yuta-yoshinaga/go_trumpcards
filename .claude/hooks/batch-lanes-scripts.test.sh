@@ -330,7 +330,7 @@ make_e2egate_case() {
   local name="$1" changed="$2" repo="$tmp/e2egate-$1" wtroot="$tmp/e2egate-wts-$1"
   mkdir -p "$repo/frontend/src/pages" "$repo/frontend/src/constants" "$repo/frontend/e2e" "$wtroot"
   git init -q "$repo"; git -C "$repo" config user.email test@example.com; git -C "$repo" config user.name test
-  printf "export const gameRoutes = [{ path: '/poker', page: 'Poker' }, { path: '/', page: 'BlackJack' }];\n" > "$repo/frontend/src/constants/gameRoutes.ts"
+  printf "export const gameRoutes = [{ path: '/wrong' }, { path: '/poker', page: 'Poker' }, { path: '/', page: 'BlackJack' }];\n" > "$repo/frontend/src/constants/gameRoutes.ts"
   for spec in desktop-board-visibility desktop-hand-visibility game-message-visibility hand-visibility mobile-viewport text-contrast duplicate-text poker; do touch "$repo/frontend/e2e/$spec.spec.ts"; done
   mkdir -p "$repo/frontend/src/components" "$repo/frontend/src/i18n/locales/en"
   printf "import { helper } from './helpers';\n" > "$repo/frontend/e2e/poker.spec.ts"
@@ -354,12 +354,13 @@ make_e2egate_case() {
   elif [[ "$changed" == page ]]; then
     grep -q 'run 1: e2e/poker.spec.ts$' <<< "$output" || fail "page game spec has grep or was omitted: $output"
     grep -qF 'run 2: e2e/desktop-board-visibility.spec.ts' <<< "$output" || fail "page sweep run omitted: $output"
-    grep -qF -- '--grep /poker\b' <<< "$output" || fail "page sweep omitted route grep: $output"
+    grep -qF -- '--grep /poker\b --pass-with-no-tests' <<< "$output" || fail "page sweep omitted route grep/pass-with-no-tests: $output"
   elif [[ "$changed" == helper ]]; then
     grep -q 'run 1: e2e/poker.spec.ts' <<< "$output" || fail "helper edit omitted importing spec: $output"
     [[ $(grep -c '^run ' <<< "$output") == 1 ]] || fail "helper edit selected non-importing specs: $output"
   elif [[ "$changed" == ignored ]]; then
     [[ -z "$output" ]] || fail "test/locale changes selected specs: $output"
+    BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$SCRIPTS/e2egate.sh" 1 || fail "no-spec e2egate should exit 0"
   else [[ -z "$output" ]] || fail "unchanged frontend selected specs: $output"; fi
 }
 make_e2egate_case shared shared
