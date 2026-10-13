@@ -77,7 +77,7 @@ run_gap_gate() {
   mkdir -p "$wtroot/wt-ib1/.claude/skills/patch-branch-gaps/scripts"
   printf '\n// change\n' >> "$wtroot/wt-ib1/frontend/src/pages/sample.tsx"
   printf '#!/usr/bin/env bash\nprintf "%%s\\n" "$GAP_OUTPUT"\nexit 1\n' > "$wtroot/wt-ib1/.claude/skills/patch-branch-gaps/scripts/patch-branch-gaps.sh"
-  for script in common.sh rc.sh rcg.sh treehash.sh; do cp "$SCRIPTS/$script" "$base/scripts/"; done
+  for script in common.sh rc.sh rcg.sh treehash.sh e2egate.sh; do cp "$SCRIPTS/$script" "$base/scripts/"; done
   for stub in workerbuild unusedsym repeattests biomeignore; do printf '#!/usr/bin/env bash\nexit 0\n' > "$base/scripts/$stub.sh"; done
   printf '#!/usr/bin/env bash\necho CHECK=ok\necho TYPE=ok\n' > "$base/scripts/receipt.sh"
   chmod +x "$base/scripts/"*.sh
@@ -93,4 +93,24 @@ run_gap_gate new_text 'if (ready) {' 'src/pages/sample.tsx:1:branch [0] | if (fr
 run_gap_gate quoted_warn 'label="WARN FAIL"' 'PREEXISTING src/pages/sample.tsx:1:branch [0] | label="WARN FAIL"' 'NOTE PATCH_BRANCH_GAP_PREEXISTING' yes
 run_gap_gate short_text 'x ? a : b' 'src/pages/sample.tsx:1:branch [0] | x ?' 'WARN PATCH_BRANCH_GAP' no
 run_gap_gate new_file 'if (ready) {' 'missing.tsx:1:branch [0] | if (fresh) {' 'WARN PATCH_BRANCH_GAP' no
+
+# A gate stamp must be rejected when E2E changes the worktree after the receipt.
+race="$tmp/e2e-race"; mkdir -p "$race/repo" "$race/wts" "$race/scripts" "$race/state"
+git init -q "$race/repo"; git -C "$race/repo" config user.email test@example.com; git -C "$race/repo" config user.name test
+printf 'base\n' > "$race/repo/file"; git -C "$race/repo" add file; git -C "$race/repo" commit -qm base
+git -C "$race/repo" worktree add -q -b lane "$race/wts/wt-ib1" HEAD
+for script in common.sh treehash.sh rcg.sh; do cp "$SCRIPTS/$script" "$race/scripts/"; done
+cat > "$race/scripts/rc.sh" <<'STUB'
+#!/usr/bin/env bash
+echo CHECK=ok > "$BATCH_STATE/rc$1.txt"
+echo TYPE=ok >> "$BATCH_STATE/rc$1.txt"
+STUB
+cat > "$race/scripts/e2egate.sh" <<'STUB'
+#!/usr/bin/env bash
+printf 'changed during E2E\n' >> "$BATCH_WT_ROOT/wt-ib$1/file"
+STUB
+chmod +x "$race/scripts/"*.sh
+output="$(BATCH_REPO="$race/repo" BATCH_WT_ROOT="$race/wts" BATCH_STATE="$race/state" bash "$race/scripts/rcg.sh" 1 2>&1)" && fail "rcg accepted a worktree change during E2E"
+grep -q 'GATE: worktree changed during e2e' <<< "$output" || fail "rcg omitted worktree race error: $output"
+[[ ! -e "$race/state/gate1.ok" ]] || fail "rcg stamped a worktree changed during E2E"
 echo "batch-lanes gate tests passed"
