@@ -88,9 +88,9 @@ run_gap_gate() {
   if [[ "$want_pass" == yes ]]; then [[ $rc -eq 0 ]] || fail "$name gate should pass: $output"
   else [[ $rc -ne 0 ]] || fail "$name gate should fail: $output"; fi
 }
-run_gap_gate preexisting 'if (ready) {' 'src/pages/sample.tsx:1:branch [0] | if (ready) {' 'NOTE PATCH_BRANCH_GAP_PREEXISTING' yes
+run_gap_gate preexisting 'if (ready) {' 'PREEXISTING src/pages/sample.tsx:1:branch [0] | if (ready) {' 'NOTE PATCH_BRANCH_GAP_PREEXISTING' yes
 run_gap_gate new_text 'if (ready) {' 'src/pages/sample.tsx:1:branch [0] | if (fresh) {' 'WARN PATCH_BRANCH_GAP' no
-run_gap_gate quoted_warn 'label="WARN FAIL"' 'src/pages/sample.tsx:1:branch [0] | label="WARN FAIL"' 'NOTE PATCH_BRANCH_GAP_PREEXISTING' yes
+run_gap_gate quoted_warn 'label="WARN FAIL"' 'PREEXISTING src/pages/sample.tsx:1:branch [0] | label="WARN FAIL"' 'NOTE PATCH_BRANCH_GAP_PREEXISTING' yes
 run_gap_gate short_text 'x ? a : b' 'src/pages/sample.tsx:1:branch [0] | x ?' 'WARN PATCH_BRANCH_GAP' no
 run_gap_gate new_file 'if (ready) {' 'missing.tsx:1:branch [0] | if (fresh) {' 'WARN PATCH_BRANCH_GAP' no
 echo "batch-lanes gate tests passed"

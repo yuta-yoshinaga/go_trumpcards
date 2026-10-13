@@ -27,6 +27,12 @@
           },
           {
             "type": "command",
+            "command": "hook=\"${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel)}/.claude/hooks/unquoted-heredoc-backtick-guard.sh\"; if [ -f \"$hook\" ]; then bash \"$hook\"; else echo \"{}\"; fi",
+            "timeout": 15,
+            "statusMessage": "Checking unquoted heredoc bodies for shell command substitution..."
+          },
+          {
+            "type": "command",
             "command": "hook=\"${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel)}/.claude/hooks/worktree-branch-guard.sh\"; if [ -f \"$hook\" ]; then bash \"$hook\"; else echo \"{}\"; fi",
             "timeout": 15,
             "statusMessage": "Checking for branch updates affecting another worktree..."
