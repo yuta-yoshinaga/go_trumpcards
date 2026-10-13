@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardFan } from '../components/CardFan';
 import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
@@ -12,7 +13,7 @@ import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useFiveHundredGame } from '../hooks/useFiveHundredGame';
@@ -125,6 +126,7 @@ function FiveHundredPageContent() {
   } = useFiveHundredGame();
   useTutorialMessageParams({ targetScore: state ? state.config.targetScore : config.targetScore });
   const { cardWidth, isMobile } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -378,8 +380,8 @@ function FiveHundredPageContent() {
                 {tc('player.you')} ({t('teamShort', { team: human.team })}) · {human.trickCount}🂠
                 {human.isDeclarer && <span className="font-bold text-ds-warning"> ★</span>}
               </div>
-              <div className="flex flex-wrap justify-center gap-2">
-                {human.cards.map((c, i) => {
+              {(() => {
+                const handCards = human.cards.map((c, i) => {
                   const selected = selectedCardIndices.includes(i);
                   const selectable = isHumanPlayTurn || isHumanExchange;
                   const playable = !isHumanPlayTurn || state.validPlayIndices.includes(i);
@@ -410,8 +412,17 @@ function FiveHundredPageContent() {
                       <AnimatedCard card={c} width={cardWidth} />
                     </button>
                   );
-                })}
-              </div>
+                });
+                return isLargeDesktop ? (
+                  <CardFan itemWidth={cardWidth} className="large-desktop-hand-fan w-full" data-testid="fh-hand-cards">
+                    {handCards}
+                  </CardFan>
+                ) : (
+                  <div className="flex flex-wrap justify-center gap-2" data-testid="fh-hand-cards">
+                    {handCards}
+                  </div>
+                );
+              })()}
               <span id="fh-legal-play-reason" className="sr-only">
                 {t('legalPlayReason')}
               </span>

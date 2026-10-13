@@ -16,7 +16,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useBinokelGame } from '../hooks/useBinokelGame';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
@@ -100,6 +100,7 @@ export const BinokelPage = withTutorial(BinokelPageContent, 'binokel', BN_TUTORI
 
 /** Inner content of the Binokel page. */
 function BinokelPageContent() {
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('binokel');
   const {
@@ -365,107 +366,115 @@ function BinokelPageContent() {
               )}
             </div>
 
-            {/* Players Info: 3 individual seats */}
-            <div className="mb-3" data-tutorial="bn-player-info">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                {state.players
-                  ?.filter((p) => p.isHuman)
-                  .map((p) => {
-                    const onTurn =
-                      phase === BinokelPhase.BID
-                        ? p.id === state.bidPlayerIdx
-                        : (phase === BinokelPhase.DABB ||
-                            phase === BinokelPhase.TRUMP ||
-                            phase === BinokelPhase.MELD ||
-                            phase === BinokelPhase.PLAY) &&
-                          p.id === state.currentPlayerIdx;
-                    const isDeclarer = state.highestBidder === p.id;
-                    const bidDisplay = p.hasPassed
-                      ? t('bidStatus.passed')
-                      : p.bid > 0
-                        ? t('bidStatus.bid', { amount: p.bid })
-                        : t('bidStatus.waiting');
-                    const scoreVal = state.scores ? state.scores[p.id] : p.score;
-                    return (
-                      <div
-                        key={p.id}
-                        data-on-turn={onTurn || undefined}
-                        className={`rounded p-2 text-sm ${
-                          p.isHuman ? 'bg-ds-accent/20 text-ds-accent' : 'bg-black/30 text-ds-text-muted'
-                        } ${onTurn ? 'ring-2 ring-ds-warning' : ''}`}
-                      >
-                        <div className="font-bold flex items-center justify-between">
-                          <span>{playerName(p.id, p.isHuman)}</span>
-                          {isDeclarer && (
-                            <span className="text-xs px-1.5 py-0.5 rounded bg-ds-accent text-black font-semibold">
-                              {t('declarer')}
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-xs">
-                          {t('scores')}: {scoreVal} | {t('bid')}: {bidDisplay} | {t('meldScore')}: {p.meldScore} |{' '}
-                          {t('trickCount')}: {p.trickCount} ({t('points', { points: p.trickPoints })})
-                        </div>
-                      </div>
-                    );
-                  })}
-                <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {state.players
-                      ?.filter((p) => !p.isHuman)
-                      .map((p) => {
-                        const onTurn =
-                          phase === BinokelPhase.BID
-                            ? p.id === state.bidPlayerIdx
-                            : (phase === BinokelPhase.DABB ||
-                                phase === BinokelPhase.TRUMP ||
-                                phase === BinokelPhase.MELD ||
-                                phase === BinokelPhase.PLAY) &&
-                              p.id === state.currentPlayerIdx;
-                        const isDeclarer = state.highestBidder === p.id;
-                        const bidDisplay = p.hasPassed
-                          ? t('bidStatus.passed')
-                          : p.bid > 0
-                            ? t('bidStatus.bid', { amount: p.bid })
-                            : t('bidStatus.waiting');
-                        const scoreVal = state.scores ? state.scores[p.id] : p.score;
-                        return (
-                          <div
-                            key={p.id}
-                            data-on-turn={onTurn || undefined}
-                            className={`rounded p-2 text-sm bg-black/30 text-ds-text-muted ${onTurn ? 'ring-2 ring-ds-warning' : ''}`}
-                          >
-                            <div className="font-bold flex items-center justify-between">
-                              <span>{playerName(p.id, p.isHuman)}</span>
-                              {isDeclarer && (
-                                <span className="text-xs px-1.5 py-0.5 rounded bg-ds-accent text-black font-semibold">
-                                  {t('declarer')}
-                                </span>
-                              )}
-                            </div>
-                            <div className="text-xs">
-                              {t('scores')}: {scoreVal} | {t('bid')}: {bidDisplay} | {t('meldScore')}: {p.meldScore} |{' '}
-                              {t('trickCount')}: {p.trickCount} ({t('points', { points: p.trickPoints })})
-                            </div>
+            <div
+              className={isLargeDesktop ? 'flex flex-wrap items-start gap-2' : ''}
+              data-testid="bn-player-and-dabb-row"
+            >
+              {/* Players Info: 3 individual seats */}
+              <div className={`mb-3 ${isLargeDesktop ? 'flex-1 min-w-0' : ''}`} data-tutorial="bn-player-info">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  {state.players
+                    ?.filter((p) => p.isHuman)
+                    .map((p) => {
+                      const onTurn =
+                        phase === BinokelPhase.BID
+                          ? p.id === state.bidPlayerIdx
+                          : (phase === BinokelPhase.DABB ||
+                              phase === BinokelPhase.TRUMP ||
+                              phase === BinokelPhase.MELD ||
+                              phase === BinokelPhase.PLAY) &&
+                            p.id === state.currentPlayerIdx;
+                      const isDeclarer = state.highestBidder === p.id;
+                      const bidDisplay = p.hasPassed
+                        ? t('bidStatus.passed')
+                        : p.bid > 0
+                          ? t('bidStatus.bid', { amount: p.bid })
+                          : t('bidStatus.waiting');
+                      const scoreVal = state.scores ? state.scores[p.id] : p.score;
+                      return (
+                        <div
+                          key={p.id}
+                          data-on-turn={onTurn || undefined}
+                          className={`rounded p-2 text-sm ${
+                            p.isHuman ? 'bg-ds-accent/20 text-ds-accent' : 'bg-black/30 text-ds-text-muted'
+                          } ${onTurn ? 'ring-2 ring-ds-warning' : ''}`}
+                        >
+                          <div className="font-bold flex items-center justify-between">
+                            <span>{playerName(p.id, p.isHuman)}</span>
+                            {isDeclarer && (
+                              <span className="text-xs px-1.5 py-0.5 rounded bg-ds-accent text-black font-semibold">
+                                {t('declarer')}
+                              </span>
+                            )}
                           </div>
-                        );
-                      })}
-                  </div>
-                </CpuAccordion>
-              </div>
-            </div>
-
-            {/* Dabb Cards Display */}
-            {state.dabb && state.dabb.length > 0 && (
-              <div className="mb-3 p-2 rounded bg-black/40 text-center" data-testid="bn-dabb-display">
-                <div className="text-ds-text-muted text-sm mb-1">{t('dabbCardsLabel')}:</div>
-                <div className="flex gap-2 justify-center">
-                  {state.dabb.map((c, i) => (
-                    <AnimatedCard key={`dabb-${i}`} card={c} width={cardWidth * 0.8} />
-                  ))}
+                          <div className="text-xs">
+                            {t('scores')}: {scoreVal} | {t('bid')}: {bidDisplay} | {t('meldScore')}: {p.meldScore} |{' '}
+                            {t('trickCount')}: {p.trickCount} ({t('points', { points: p.trickPoints })})
+                          </div>
+                        </div>
+                      );
+                    })}
+                  <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {state.players
+                        ?.filter((p) => !p.isHuman)
+                        .map((p) => {
+                          const onTurn =
+                            phase === BinokelPhase.BID
+                              ? p.id === state.bidPlayerIdx
+                              : (phase === BinokelPhase.DABB ||
+                                  phase === BinokelPhase.TRUMP ||
+                                  phase === BinokelPhase.MELD ||
+                                  phase === BinokelPhase.PLAY) &&
+                                p.id === state.currentPlayerIdx;
+                          const isDeclarer = state.highestBidder === p.id;
+                          const bidDisplay = p.hasPassed
+                            ? t('bidStatus.passed')
+                            : p.bid > 0
+                              ? t('bidStatus.bid', { amount: p.bid })
+                              : t('bidStatus.waiting');
+                          const scoreVal = state.scores ? state.scores[p.id] : p.score;
+                          return (
+                            <div
+                              key={p.id}
+                              data-on-turn={onTurn || undefined}
+                              className={`rounded p-2 text-sm bg-black/30 text-ds-text-muted ${onTurn ? 'ring-2 ring-ds-warning' : ''}`}
+                            >
+                              <div className="font-bold flex items-center justify-between">
+                                <span>{playerName(p.id, p.isHuman)}</span>
+                                {isDeclarer && (
+                                  <span className="text-xs px-1.5 py-0.5 rounded bg-ds-accent text-black font-semibold">
+                                    {t('declarer')}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-xs">
+                                {t('scores')}: {scoreVal} | {t('bid')}: {bidDisplay} | {t('meldScore')}: {p.meldScore} |{' '}
+                                {t('trickCount')}: {p.trickCount} ({t('points', { points: p.trickPoints })})
+                              </div>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  </CpuAccordion>
                 </div>
               </div>
-            )}
+
+              {/* Dabb Cards Display */}
+              {state.dabb && state.dabb.length > 0 && (
+                <div
+                  className={`${isLargeDesktop ? 'mb-1 py-1' : 'mb-3 p-2'} ${isLargeDesktop ? 'flex-1 min-w-fit' : ''} rounded bg-black/40 text-center`}
+                  data-testid="bn-dabb-display"
+                >
+                  <div className="text-ds-text-muted text-sm mb-1">{t('dabbCardsLabel')}:</div>
+                  <div className="flex gap-2 justify-center">
+                    {state.dabb.map((c, i) => (
+                      <AnimatedCard key={`dabb-${i}`} card={c} width={cardWidth * 0.8} />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* CPU Dabb waiting notice */}
             {isDabbPhase && !isHumanDeclarer && state.highestBidder >= 0 && (
