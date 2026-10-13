@@ -71,9 +71,6 @@ const excludedGamePaths = new Set([
   '/samba',
   // The last discarded pair is discard history, which #11700 left out of the rule.
   '/oldmaid',
-  // Known open defect: a 13-card hand fills the footer and, on some deals, the table melds start
-  // below the play area. Excluded until its layout is reworked (reported on #11727).
-  '/machiavelli',
 ]);
 /** Waits for the deal animation, then returns the face-up board cards and those whose top 52px is hidden. */
 async function measureBoardCards(page: Page) {

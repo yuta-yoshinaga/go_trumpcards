@@ -17,10 +17,12 @@ const mockExec = vi.mocked(machiavelliApi.exec);
 vi.mock('../hooks/useCardDimensions', async () => ({
   ...(await vi.importActual<typeof import('../hooks/useCardDimensions')>('../hooks/useCardDimensions')),
   useIsMobile: vi.fn(() => false),
+  useBreakpoint: vi.fn(() => 'desktop'),
 }));
 
-const { useIsMobile } = await import('../hooks/useCardDimensions');
+const { useBreakpoint, useIsMobile } = await import('../hooks/useCardDimensions');
 const mockUseIsMobile = vi.mocked(useIsMobile);
+const mockUseBreakpoint = vi.mocked(useBreakpoint);
 
 function player(overrides: Partial<MachiavelliPlayer> = {}): MachiavelliPlayer {
   return {
@@ -110,9 +112,46 @@ const roundEndCpuCardsState: MachiavelliResponse = {
 beforeEach(() => {
   mockExec.mockResolvedValue(turnState);
   mockUseIsMobile.mockReturnValue(false);
+  mockUseBreakpoint.mockReturnValue('desktop');
 });
 
 describe('MachiavelliPage', () => {
+  it('uses CardFan and wrapping meld groups on large desktop', async () => {
+    mockUseBreakpoint.mockReturnValue('largeDesktop');
+    mockExec.mockResolvedValue({ ...turnState, table: [tableMeld, tableMeld] });
+    renderWithProviders(<MachiavelliPage />);
+    await waitFor(() => expect(screen.getByTestId('machiavelli-table')).toBeInTheDocument());
+
+    const hand = screen.getByTestId('machiavelli-hand-fan');
+    expect(hand).toHaveClass('min-w-0');
+    expect(screen.getByTestId('machiavelli-meld-list')).toHaveClass('flex-wrap', 'gap-x-4', 'gap-y-2');
+    const meldGroups = within(screen.getByTestId('machiavelli-meld-list')).getAllByRole('group');
+    expect(meldGroups).toHaveLength(2);
+    // The overlap sits on a non-shrinking wrapper so every card keeps the same full size.
+    const meldCardWrappers = within(meldGroups[0]).getAllByTestId('machiavelli-meld-card');
+    expect(meldCardWrappers[0]).toHaveClass('shrink-0');
+    expect(meldCardWrappers[0].style.marginLeft).toBe('');
+    expect(Number.parseFloat(meldCardWrappers[1].style.marginLeft)).toBeLessThan(0);
+    expect(Number.parseFloat(meldCardWrappers[2].style.marginLeft)).toBeLessThan(0);
+    const side = within(meldGroups[0]).getByTestId('machiavelli-meld-side');
+    expect(within(side).getByTestId('machiavelli-meld-label-0')).toBeInTheDocument();
+    expect(within(side).getByRole('button')).toBeInTheDocument();
+    const meldCards = within(meldGroups[0]).getAllByRole('img');
+    const imageWidths = meldCards.map((card) => (card as HTMLElement).style.width);
+    expect(new Set(imageWidths).size).toBe(1);
+  });
+
+  it('keeps the existing hand and meld layout below large desktop', async () => {
+    mockUseBreakpoint.mockReturnValue('desktop');
+    renderWithProviders(<MachiavelliPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    expect(screen.getByTestId('machiavelli-meld-list')).toHaveClass('flex', 'flex-col');
+    expect(screen.getByTestId('game-footer-content').querySelector('[data-tutorial="mv-player-hand"]')).toHaveClass(
+      'flex-wrap',
+      'gap-1',
+    );
+  });
+
   it('renders the game message in the footer message slot', async () => {
     mockExec.mockResolvedValue({ ...turnState, message: 'Footer message test' });
     renderWithProviders(<MachiavelliPage />);
