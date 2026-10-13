@@ -245,10 +245,6 @@ function GutsPageContent() {
               <span>{t('ante', { amount: state.ante })}</span>
             </div>
 
-            {isDeclarePhase && (
-              <div className="text-ds-text-muted text-center mb-2 text-sm font-semibold">{t('declareNotice')}</div>
-            )}
-
             {declareGuide && (
               <div
                 className="mb-2 p-2 rounded bg-ds-surface text-sm"

@@ -124,10 +124,16 @@ describe('JulepePage', () => {
   it('announces the undecided choice during the decision phase', async () => {
     renderWithProviders(<JulepePage />);
 
-    expect(await screen.findByTestId('rm-decision-status')).toHaveTextContent(
-      '参加するか降りるかを選んでください。未決定: 4人。',
-    );
+    expect(await screen.findByTestId('rm-decision-status')).toHaveTextContent('未決定: 4人。');
     expect(screen.getByTestId('rm-seat-0')).toHaveTextContent('未定');
+  });
+
+  it('shows the decision instruction once and retains the undecided count', async () => {
+    mockExec.mockResolvedValue(makeState({ message: '参加するか降りるかを選んでください。' }));
+    renderWithProviders(<JulepePage />);
+
+    expect(await screen.findAllByText('参加するか降りるかを選んでください。')).toHaveLength(1);
+    expect(screen.getByTestId('rm-decision-status')).toHaveTextContent('未決定: 4人。');
   });
 
   it('shows each seat the ante paid this round during the decision phase', async () => {

@@ -28,7 +28,7 @@
     "penalty": "追加支払 {{amount}}"
   },
   "decision": {
-    "undecided": "参加するか降りるかを選んでください。未決定: {{count}}人。"
+    "undecided": "未決定: {{count}}人。"
   },
   "currentTrick": "現在のトリック",
   "lastTrick": "直前のトリック",

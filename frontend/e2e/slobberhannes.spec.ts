@@ -20,12 +20,12 @@ test.describe('Slobberhannes E2E', () => {
     });
   });
 
-  // **最初のトリックは中身に関係なく罰点対象。** 盤面には出ない情報なので、
-  // 開始直後に必ず警告が出ていなければならない。
+  // **最初のトリックは中身に関係なく罰点対象。** 案内から読めることを確認する。
   test('warns that the opening trick carries a penalty', async ({ page }) => {
     await navigateTo(page, '/slobberhannes');
     await expect(page.getByTestId('sh-trick')).toContainText('1/8', { timeout: TIMEOUT_TRANSITION });
-    await expect(page.getByTestId('sh-position-warning')).toBeVisible({ timeout: TIMEOUT_TRANSITION });
+    const announcement = page.getByRole('status').filter({ hasText: '最初のトリック' });
+    await expect(announcement).toContainText('-1', { timeout: TIMEOUT_TRANSITION });
   });
 
   // 4 席すべてが得点と罰の内訳を出す。開始時は全員「無傷」。

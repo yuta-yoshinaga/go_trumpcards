@@ -93,11 +93,12 @@ describe('CometPage', () => {
     expect(screen.getByTestId('comet-dead')).toHaveTextContent('3');
   });
 
-  // **先頭は何でも出せると書く。** 「次に要るランク」と別の文言でないと、
-  // 何を出してよいのか分からない。
-  it('says the lead is free, then names the rank needed', async () => {
+  it('leaves the lead instruction to GameMessageBox and names the needed rank otherwise', async () => {
+    mockExec.mockResolvedValue(makeCometState({ message: '新しい連なりの先頭です。好きな札を出せます。' }));
     renderWithProviders(<CometPage />);
-    expect(await screen.findByTestId('comet-need')).toHaveTextContent('好きな札');
+    await screen.findByTestId('comet-pile');
+    expect(screen.queryByTestId('comet-need')).not.toBeInTheDocument();
+    expect(screen.getByText('新しい連なりの先頭です。好きな札を出せます。')).toBeInTheDocument();
 
     mockExec.mockResolvedValue(makeCometState({ need: 8, playableIdxs: [0] }));
     renderWithProviders(<CometPage />);

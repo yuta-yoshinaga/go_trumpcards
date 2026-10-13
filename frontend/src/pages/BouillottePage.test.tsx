@@ -100,6 +100,16 @@ beforeEach(() => {
 });
 
 describe('BouillottePage', () => {
+  it('shows the human turn instruction once', async () => {
+    mockExec.mockResolvedValue(
+      makeBouillotteState({ message: 'あなたの番です — コール・レイズ（ヴィ）・フォールドを選んでください。' }),
+    );
+    renderWithProviders(<BouillottePage />);
+    expect(
+      await screen.findAllByText('あなたの番です — コール・レイズ（ヴィ）・フォールドを選んでください。'),
+    ).toHaveLength(1);
+  });
+
   it('shows the configured target rounds', async () => {
     for (const { targetRounds, text } of [
       { targetRounds: 4, text: 'ラウンド 1 / 4' },

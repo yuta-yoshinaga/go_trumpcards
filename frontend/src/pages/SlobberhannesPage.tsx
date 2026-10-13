@@ -139,7 +139,6 @@ function SlobberhannesPageContent() {
   // 個別に disabled にすると e2e の「先頭の札を押す」が動く的になる。
   const legalRing = new Set(isHumanTurn ? state.validPlays : []);
 
-  const isFirstTrick = state.trickNumber === 0;
   // **♣Q だけは位置ではなく中身の罰点** (#5745)。最初/最後は番号で警告できるが、
   // ♣Q は「今場に出ているか」がリスクの本体で、取ってから penaltyMarks で
   // 気づくのでは遅い。
@@ -219,13 +218,13 @@ function SlobberhannesPageContent() {
             )}
 
             {/* 最初と最後のトリックは中身に関係なく罰点対象。盤面には出ない情報。 */}
-            {!isGameEnd && !isRoundEnd && (isFirstTrick || isLastTrick) && (
+            {!isGameEnd && !isRoundEnd && isLastTrick && (
               <div
                 className="mb-2 rounded bg-ds-surface border border-ds-warning px-2 py-1 text-ds-text-primary text-xs text-center"
                 role="status"
                 data-testid="sh-position-warning"
               >
-                {isFirstTrick ? t('warn.first') : t('warn.last')}
+                {t('warn.last')}
               </div>
             )}
 

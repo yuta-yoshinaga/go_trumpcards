@@ -28,7 +28,7 @@
     "penalty": "extra payment {{amount}}"
   },
   "decision": {
-    "undecided": "Choose whether to play or drop out. Undecided: {{count}}."
+    "undecided": "Undecided: {{count}}."
   },
   "currentTrick": "Current trick",
   "lastTrick": "Previous trick",
