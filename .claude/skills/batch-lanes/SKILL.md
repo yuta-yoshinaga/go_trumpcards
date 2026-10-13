@@ -48,6 +48,8 @@ The flows require `dele`, `gh`, `jq`, `flock`, `bun`, `go`, and `golangci-lint`,
 - `rc.sh` also records `WARN WORKER_BUILD`, `WARN UNUSED_NEW_SYMBOL`, and `WARN PATCH_BRANCH_GAP`; set `ALLOW_WORKER_BUILD=1`, `ALLOW_UNUSED="name ..."`, or `ALLOW_PATCH_GAPS=1` to allow known exceptions.
 - `rc.sh` also reruns the Go test functions the change adds or edits (`repeattests.sh`, `-count=50`) and records `WARN DEAL_DEPENDENT` when one fails, which usually means it depends on the deal. Set `REPEAT_TESTS_COUNT` to change the count, or `0` to skip.
 - `rcg.sh`: serialize receipt gates with `flock` and write a fresh slot result.
+- `e2e.sh`: build and run a lane's Playwright specs on its isolated port, with at most two lanes running concurrently.
+- `e2egate.sh`: select E2E specs from a lane's frontend diff; `--dry-run` prints the selection without starting Playwright.
 - `ship.sh`: commit a gated issue worktree and create a PR. It refuses files changed on `develop` since the lane branched; set `ALLOW_STALE_BASE=1` to bypass. The 4th argument is either summary lines (wrapped in `## Summary` / `Closes` / `## Test plan` / footer) or a complete body with its own `## ` headings, which is used as written. In that case only a missing `Closes #n` and a missing footer are added (`prbody.sh`).
 - `fixpush.sh`: commit and push a gated fix and comment on its PR.
 - `sweep.sh`: land eligible reviewed batch PRs and report blocked ones.

@@ -77,7 +77,7 @@ run_gap_gate() {
   mkdir -p "$wtroot/wt-ib1/.claude/skills/patch-branch-gaps/scripts"
   printf '\n// change\n' >> "$wtroot/wt-ib1/frontend/src/pages/sample.tsx"
   printf '#!/usr/bin/env bash\nprintf "%%s\\n" "$GAP_OUTPUT"\nexit 1\n' > "$wtroot/wt-ib1/.claude/skills/patch-branch-gaps/scripts/patch-branch-gaps.sh"
-  for script in common.sh rc.sh rcg.sh treehash.sh; do cp "$SCRIPTS/$script" "$base/scripts/"; done
+  for script in common.sh rc.sh rcg.sh treehash.sh e2egate.sh; do cp "$SCRIPTS/$script" "$base/scripts/"; done
   for stub in workerbuild unusedsym repeattests biomeignore; do printf '#!/usr/bin/env bash\nexit 0\n' > "$base/scripts/$stub.sh"; done
   printf '#!/usr/bin/env bash\necho CHECK=ok\necho TYPE=ok\n' > "$base/scripts/receipt.sh"
   chmod +x "$base/scripts/"*.sh

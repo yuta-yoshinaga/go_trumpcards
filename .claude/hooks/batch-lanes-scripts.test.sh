@@ -325,4 +325,62 @@ if PATH="$tmp/combined-bin:$PATH" BATCH_REPO="$conflict_repo" BATCH_WT_ROOT="$tm
 fi
 grep -q '^CONFLICT feat/22-conflict shared$' "$tmp/combined-conflict.out" || fail "combined.sh did not report conflict branch/files: $(cat "$tmp/combined-conflict.out")"
 [ ! -e "$tmp/wt-combined" ] || fail "combined.sh did not remove scratch worktree without -k"
+# e2egate selects page runs, full sweeps, imported helper specs, and no-op diffs.
+make_e2egate_case() {
+  local name="$1" changed="$2" repo="$tmp/e2egate-$1" wtroot="$tmp/e2egate-wts-$1"
+  mkdir -p "$repo/frontend/src/pages" "$repo/frontend/src/constants" "$repo/frontend/e2e" "$wtroot"
+  git init -q "$repo"; git -C "$repo" config user.email test@example.com; git -C "$repo" config user.name test
+  printf "export const gameRoutes = [{ path: '/poker', page: 'Poker' }, { path: '/', page: 'BlackJack' }];\n" > "$repo/frontend/src/constants/gameRoutes.ts"
+  for spec in desktop-board-visibility desktop-hand-visibility game-message-visibility hand-visibility mobile-viewport text-contrast duplicate-text poker; do touch "$repo/frontend/e2e/$spec.spec.ts"; done
+  mkdir -p "$repo/frontend/src/components" "$repo/frontend/src/i18n/locales/en"
+  printf "import { helper } from './helpers';\n" > "$repo/frontend/e2e/poker.spec.ts"
+  touch "$repo/frontend/e2e/helpers.ts" "$repo/frontend/src/components/Other.tsx" "$repo/frontend/src/i18n/locales/en/common.json" "$repo/frontend/src/components/a.test.tsx"
+  touch "$repo/frontend/src/pages/PokerPage.tsx" "$repo/frontend/src/components/GameFooter.tsx" "$repo/frontend/base.ts"
+  git -C "$repo" add .
+  tree=$(git -C "$repo" write-tree); base=$(printf base | git -C "$repo" hash-object -w --stdin)
+  commit=$(printf "base\n" | git -C "$repo" -c user.name=test -c user.email=test@example.com commit-tree "$tree")
+  git -C "$repo" update-ref refs/heads/develop "$commit"; git -C "$repo" update-ref refs/remotes/origin/develop "$commit"
+  git -C "$repo" worktree add -q -b lane "$wtroot/wt-ib1" "$commit"
+  case "$changed" in
+    shared) printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/src/components/GameFooter.tsx" ;;
+    page) printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/src/pages/PokerPage.tsx" ;;
+    component) printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/src/components/Other.tsx" ;;
+    helper) printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/e2e/helpers.ts" ;;
+    ignored) printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/src/i18n/locales/en/common.json"; printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/src/components/a.test.tsx" ;;
+  esac
+  output=$(BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$SCRIPTS/e2egate.sh" --dry-run 1) || fail "e2egate $name dry-run failed"
+  if [[ "$changed" == shared || "$changed" == component ]]; then
+    for spec in desktop-board-visibility desktop-hand-visibility game-message-visibility hand-visibility mobile-viewport text-contrast duplicate-text; do grep -q "e2e/$spec.spec.ts" <<< "$output" || fail "sweep omitted $spec: $output"; done
+  elif [[ "$changed" == page ]]; then
+    grep -q 'run 1: e2e/poker.spec.ts$' <<< "$output" || fail "page game spec has grep or was omitted: $output"
+    grep -qF 'run 2: e2e/desktop-board-visibility.spec.ts' <<< "$output" || fail "page sweep run omitted: $output"
+    grep -qF -- '--grep /poker\b' <<< "$output" || fail "page sweep omitted route grep: $output"
+  elif [[ "$changed" == helper ]]; then
+    grep -q 'run 1: e2e/poker.spec.ts' <<< "$output" || fail "helper edit omitted importing spec: $output"
+    [[ $(grep -c '^run ' <<< "$output") == 1 ]] || fail "helper edit selected non-importing specs: $output"
+  elif [[ "$changed" == ignored ]]; then
+    [[ -z "$output" ]] || fail "test/locale changes selected specs: $output"
+  else [[ -z "$output" ]] || fail "unchanged frontend selected specs: $output"; fi
+}
+make_e2egate_case shared shared
+make_e2egate_case page page
+make_e2egate_case component component
+make_e2egate_case helper helper
+make_e2egate_case ignored ignored
+make_e2egate_case empty none
+
+# e2e.sh splits --- into separate bunx calls, builds once, and reports failure after all calls.
+e2e_repo="$tmp/e2e-repo"; e2e_wts="$tmp/e2e-wts"; e2e_bin="$tmp/e2e-bin"
+mkdir -p "$e2e_repo/frontend" "$e2e_wts/wt-ib1/frontend" "$e2e_bin"
+git -C "$e2e_repo" init -q
+cat > "$e2e_bin/bunx" <<'SH'
+#!/usr/bin/env bash
+printf '%s\n' "$*" >> "$E2E_CALL_LOG"
+[[ "$*" != *second* ]]
+SH
+chmod +x "$e2e_bin/bunx"
+export E2E_CALL_LOG="$tmp/e2e-calls.log"
+if PATH="$e2e_bin:$PATH" BATCH_REPO="$e2e_repo" BATCH_WT_ROOT="$e2e_wts" BATCH_STATE="$tmp/e2e-state" E2E_SKIP_BUILD=1 bash "$SCRIPTS/e2e.sh" 1 first --- second third; then fail "e2e.sh hid a failed run"; fi
+[[ $(wc -l < "$E2E_CALL_LOG") == 2 ]] || fail "e2e.sh did not make two bunx calls: $(cat "$E2E_CALL_LOG")"
+grep -q 'first' "$E2E_CALL_LOG" && grep -q 'second third' "$E2E_CALL_LOG" || fail "e2e.sh split run args incorrectly: $(cat "$E2E_CALL_LOG")"
 echo "batch-lanes script tests passed"

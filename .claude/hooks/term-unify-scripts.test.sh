@@ -12,7 +12,7 @@ setup_repo() {
   git config user.name test
   # Reuse the caller's existing commit and objects as the baseline; never
   # create a commit in this disposable fixture repository.
-  printf '%s\n' "$ROOT/.git/objects" > .git/objects/info/alternates
+  printf '%s\n' "$(git -C "$ROOT" rev-parse --path-format=absolute --git-path objects)" > .git/objects/info/alternates
   git update-ref HEAD "$(git -C "$ROOT" rev-parse HEAD)"
   cp "$ROOT/.claude/skills/term-unify/scripts/after.sh" after.sh
   cp "$ROOT/.claude/agents/locale-value-parity-auditor.md" auditor.md

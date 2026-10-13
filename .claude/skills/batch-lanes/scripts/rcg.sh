@@ -18,5 +18,12 @@ grep -q '^CHECK=ok' $f || { echo "GATE: check failed"; exit 1; }
 grep -q '^TYPE=ok' $f || { echo "GATE: typecheck failed"; exit 1; }
 # NOTE lines quote source text, which may itself contain FAIL or WARN; they never fail the gate.
 grep -v '^NOTE ' $f | grep -qE 'FAIL|MUTANT_LEFT|MISSING_TEST|GOIMPORTS:|LINT: [1-9]|WARN' && { echo "GATE: failure/warning present"; exit 1; }
+if [[ "${E2E_GATE:-1}" == 0 ]]; then
+  echo "NOTE E2E_GATE skipped"
+else
+  flock -u 9
+  "$B/e2egate.sh" "$slot" || { echo "GATE: e2e failed"; exit 1; }
+  flock -x 9
+fi
 "$B/treehash.sh" "$slot" > "$BATCH_STATE/gate$slot.ok"
 echo "GATE: ok"
