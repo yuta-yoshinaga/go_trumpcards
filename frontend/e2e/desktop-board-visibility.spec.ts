@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, waitForLoaded } from './helpers';
+import { navigateTo, waitForAnimations, waitForLoaded } from './helpers';
 
 /** #11702: use the same 52px visible-card rule as #11655 for desktop boards. */
 test.use({ viewport: { width: 1280, height: 800 } });
@@ -31,6 +31,8 @@ const PAGES = [
   '/citadel',
   '/russiansolitaire',
   '/clocksolitaire',
+  '/indianpoker',
+  '/sixcardgolf',
   '/openfacechinese',
   '/canasta',
 ] as const;
@@ -38,16 +40,7 @@ const PAGES = [
 for (const path of PAGES) {
   test(`${path} keeps every board card visible on desktop`, async ({ page }) => {
     await navigateTo(page, path);
-    await page.waitForFunction(() =>
-      document
-        .getAnimations()
-        .every(
-          (animation) =>
-            animation.playState === 'finished' ||
-            animation.playState === 'idle' ||
-            animation.effect?.getComputedTiming().iterations === Number.POSITIVE_INFINITY,
-        ),
-    );
+    await waitForAnimations(page);
     const result = await page.evaluate(() => {
       const cards = [...document.querySelectorAll('main img, main [role="img"]')].filter((element) => {
         const label = `${element.getAttribute('alt') ?? ''} ${element.getAttribute('aria-label') ?? ''}`;
@@ -170,3 +163,22 @@ for (const { path, selector, firstCardShownPreflop = 0 } of POKER_BOARDS) {
     expect(sawRiver, `${path}: deterministic check/call actions should reach the river`).toBe(true);
   });
 }
+
+test('sixcardgolf keeps the draw and discard cards visible after a draw and placement', async ({ page }) => {
+  await navigateTo(page, '/sixcardgolf');
+  const hand = page.getByTestId('scg-seat-0').locator('button');
+  await hand.nth(0).click();
+  await hand.nth(1).click();
+  await page.getByTestId('scg-draw-stock').click();
+  await page.getByTestId('scg-seat-0').locator('button').first().click();
+  await waitForAnimations(page);
+  const stockAndDiscard = await page.evaluate(() =>
+    ['scg-stock', 'scg-discard-draw-option'].map((testId) => {
+      const element = document.querySelector(`[data-tutorial="${testId}"], [data-testid="${testId}"]`);
+      if (!element) return false;
+      const box = element.getBoundingClientRect();
+      return box.top + 52 <= window.innerHeight && box.bottom > 0;
+    }),
+  );
+  expect(stockAndDiscard).toEqual([true, true]);
+});

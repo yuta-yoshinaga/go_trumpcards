@@ -16,6 +16,12 @@ vi.mock('../hooks/useGameHint', () => ({
   useGameHint: vi.fn(() => ({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() })),
 }));
 
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useCardDimensions: () => ({ cardWidth: 60, isMobile: window.innerWidth < 640 }),
+  useBreakpoint: () => (window.innerWidth >= 1024 ? 'largeDesktop' : window.innerWidth >= 640 ? 'desktop' : 'mobile'),
+}));
+
 const mockExec = vi.mocked(sixcardgolfApi.exec);
 
 const card = (value: number): Card => ({ design: 'SPADE', value }) as unknown as Card;
@@ -54,6 +60,40 @@ beforeEach(() => {
 });
 
 describe('SixCardGolfPage', () => {
+  it('places the player boards before the stock area at intermediate widths', async () => {
+    const previousWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 800 });
+    const { container } = renderWithProviders(<SixCardGolfPage />);
+    await screen.findByTestId('scg-seat-0');
+    const humanSeat = container.querySelector('[data-testid="scg-seat-0"]');
+    const stockArea = container.querySelector('[data-tutorial="scg-stock"]');
+    expect(stockArea).not.toBeNull();
+    expect(humanSeat).not.toBeNull();
+    if (!stockArea || !humanSeat) throw new Error('Expected the stock area and human board to render');
+    expect(humanSeat.compareDocumentPosition(stockArea) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: previousWidth });
+  });
+
+  it('places the draw area before wrapped player boards on large desktop', async () => {
+    const previousWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue(makeState({ phase: 1, currentPlayerIdx: 0 }));
+    const { container } = renderWithProviders(<SixCardGolfPage />);
+
+    await screen.findByTestId('scg-seat-0');
+    const stockArea = container.querySelector('[data-tutorial="scg-stock"]');
+    const humanSeat = container.querySelector('[data-testid="scg-seat-0"]');
+    expect(stockArea).not.toBeNull();
+    expect(humanSeat).not.toBeNull();
+    if (!stockArea || !humanSeat) throw new Error('Expected the stock area and human board to render');
+    expect(stockArea).toHaveClass('justify-center');
+    expect(stockArea.compareDocumentPosition(humanSeat) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(humanSeat?.parentElement).toHaveClass('flex-wrap');
+
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: previousWidth });
+    window.dispatchEvent(new Event('resize'));
+  });
   it('shows every completed round score and cumulative totals after the game', async () => {
     mockExec.mockResolvedValue(
       makeState({
