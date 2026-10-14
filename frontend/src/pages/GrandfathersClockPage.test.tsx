@@ -373,14 +373,14 @@ describe('GrandfathersClockPage', () => {
     fireEvent.click(button);
     const liveRegion = screen.getByTestId('gc-autocomplete-status');
     expect(liveRegion).toHaveClass('sr-only');
-    expect(liveRegion).toHaveTextContent('自動完成中');
+    expect(liveRegion).toHaveTextContent('オートコンプリート中');
     expect(screen.getByTestId('gc-autocomplete-visible')).toBeInTheDocument();
     expect(button).toHaveAttribute('aria-disabled', 'true');
 
     await act(async () => {
       vi.advanceTimersByTime(3000);
     });
-    expect(liveRegion).toHaveTextContent('自動完成が完了しました');
+    expect(liveRegion).toHaveTextContent('オートコンプリートが完了しました');
     expect(screen.queryByTestId('gc-autocomplete-visible')).not.toBeInTheDocument();
     expect(button).toBeEnabled();
     vi.useRealTimers();

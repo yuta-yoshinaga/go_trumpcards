@@ -27,7 +27,7 @@ flowchart TD
     C -->|d| D[ストックから3枚引く]
     C -->|m ...| E[カード移動]
     C -->|h| F[ヒント表示]
-    C -->|ac| G[自動完成]
+    C -->|ac| G[オートコンプリート]
     C -->|u| H[元に戻す]
     D --> I{勝利判定}
     E --> I
@@ -52,7 +52,7 @@ flowchart TD
 | `m t <col> <idx> t <col>` | — | タブロー間移動 |
 | `g` / `giveup` | `g` | ギブアップ |
 | `hint` | `h` | ヒント |
-| `ac` / `autocomplete` | `ac` | 自動完成 |
+| `ac` / `autocomplete` | `ac` | オートコンプリート |
 | `u` / `undo` | `u` | 元に戻す |
 | `log` | `l` | 棋譜表示 |
 | `reset` | `r` | リセット |

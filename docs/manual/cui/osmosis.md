@@ -31,7 +31,7 @@ flowchart TD
     C -->|m w f seg| E[ウェイストを組札へ]
     C -->|m r col f seg| F[リザーブを組札へ]
     C -->|h| G[ヒント表示]
-    C -->|ac| H[自動完成]
+    C -->|ac| H[オートコンプリート]
     C -->|u| I[元に戻す]
     D --> J{勝利判定}
     E --> J
@@ -53,7 +53,7 @@ flowchart TD
 | `m r <col> f <seg>` | — | リザーブ（col列）から組札（seg段目）へ |
 | `g` / `giveup` | `g` | ギブアップ |
 | `hint` | `h` | ヒント |
-| `ac` / `autocomplete` | `ac` | 自動完成 |
+| `ac` / `autocomplete` | `ac` | オートコンプリート |
 | `u` / `undo` | `u` | 元に戻す |
 | `log` | `l` | 棋譜表示 |
 | `reset` | `r` | リセット |

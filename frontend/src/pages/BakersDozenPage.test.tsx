@@ -536,10 +536,10 @@ describe('BakersDozenPage auto-complete announcements', () => {
     expect(live).toBeEmptyDOMElement();
 
     fireEvent.click(button);
-    expect(live).toHaveTextContent('自動完成中です');
+    expect(live).toHaveTextContent('オートコンプリート中です');
     await waitFor(() => expect(resolveAutoComplete).toBeDefined());
     resolveAutoComplete?.({ ...playingState, phase: 1 });
-    await waitFor(() => expect(live).toHaveTextContent('自動完成が完了しました'));
+    await waitFor(() => expect(live).toHaveTextContent('オートコンプリートが完了しました'));
   });
 
   it('announces interruption when the auto-complete request fails', async () => {
@@ -549,8 +549,8 @@ describe('BakersDozenPage auto-complete announcements', () => {
     renderWithProviders(<BakersDozenPage />);
     fireEvent.click(await screen.findByTestId('autocomplete-button'));
     const live = screen.getByTestId('bd-autocomplete-live');
-    expect(live).toHaveTextContent('自動完成中です');
-    await waitFor(() => expect(live).toHaveTextContent('自動完成が中断されました'));
+    expect(live).toHaveTextContent('オートコンプリート中です');
+    await waitFor(() => expect(live).toHaveTextContent('オートコンプリートが中断されました'));
   });
 });
 

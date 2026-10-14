@@ -235,7 +235,7 @@ describe('FortyThievesPage', () => {
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(readyState);
-    fireEvent.click(screen.getByRole('button', { name: '自動完成' }));
+    fireEvent.click(screen.getByRole('button', { name: 'オートコンプリート' }));
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
   });
@@ -275,10 +275,10 @@ describe('FortyThievesPage', () => {
     expect(region).toBeEmptyDOMElement();
 
     fireEvent.click(screen.getByTestId('autocomplete-button'));
-    expect(region).toHaveTextContent('自動完成を開始しました');
+    expect(region).toHaveTextContent('オートコンプリートを開始しました');
     expect(screen.getByTestId('ft-hint-announcement')).toBeInTheDocument();
 
-    await vi.waitFor(() => expect(region).toHaveTextContent('自動完成が完了しました'), { timeout: 3500 });
+    await vi.waitFor(() => expect(region).toHaveTextContent('オートコンプリートが完了しました'), { timeout: 3500 });
   });
 
   it('clicking give up button opens a confirm dialog and only dispatches giveup after confirm', async () => {

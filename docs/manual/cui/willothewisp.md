@@ -56,7 +56,7 @@ flowchart TD
 | `move t <fromCol> <cardIdx> t <toCol>` | `m` | タブロー間でカードを移動 |
 | `giveup` | `g` | ギブアップ |
 | `hint` | `h` | ヒントを表示 |
-| `autocomplete` | `ac` | 自動完成 |
+| `autocomplete` | `ac` | オートコンプリート |
 | `undo` | `u` | 直前の操作を取り消す |
 | `log` | `l` | 棋譜を表示 |
 | `quit` | `q` | ゲーム終了 |

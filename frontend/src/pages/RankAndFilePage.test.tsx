@@ -275,7 +275,7 @@ describe('RankAndFilePage', () => {
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(readyState);
-    fireEvent.click(screen.getByRole('button', { name: '自動完成' }));
+    fireEvent.click(screen.getByRole('button', { name: 'オートコンプリート' }));
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
   });
@@ -709,7 +709,7 @@ describe('RankAndFilePage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
 
     expect(screen.queryByRole('button', { name: 'ヒント' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: '自動完成' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'オートコンプリート' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'ギブアップ' })).not.toBeInTheDocument();
   });
 

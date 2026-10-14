@@ -256,7 +256,7 @@ describe('EasthavenPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
     mockExec.mockResolvedValue(readyState);
-    screen.getByRole('button', { name: '自動完成' }).click();
+    screen.getByRole('button', { name: 'オートコンプリート' }).click();
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
   });
 

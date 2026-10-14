@@ -28,7 +28,7 @@
   "discard": "ディスカード",
   "discardNeedHand": "先に手札のカードを選択してください",
   "discardReady": "手札を選択済みです。ディスカードできます",
-  "autoComplete": "自動完成",
+  "autoComplete": "オートコンプリート",
   "undo": "取り消す",
   "undoAvailableHint": "直前の操作を取り消せます",
   "undoUnavailableHint": "取り消せる操作がありません",

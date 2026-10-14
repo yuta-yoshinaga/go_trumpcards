@@ -346,7 +346,7 @@ describe('WaspPage', () => {
     });
     renderWithProviders(<WaspPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    const btn = screen.getByRole('button', { name: '自動完成' });
+    const btn = screen.getByRole('button', { name: 'オートコンプリート' });
     btn.click();
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
   });
@@ -843,7 +843,7 @@ describe('WaspPage destination preview', () => {
   });
 });
 
-// #5545: 兄弟ゲーム (Spiderette / Terrace / Windmill …) は自動完成ボタンに
+// #5545: 兄弟ゲーム (Spiderette / Terrace / Windmill …) はオートコンプリートボタンに
 // 準備完了のパルスと未準備の理由を持つのに、Wasp だけが `disabled={loading}`
 // しか持たず、押していい合図も押せない理由も無かった。
 describe('WaspPage autocomplete readiness', () => {
