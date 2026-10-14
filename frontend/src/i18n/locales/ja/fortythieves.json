@@ -17,10 +17,10 @@
   "emptyTableauAriaLabel": "空の場札列 {{idx}}",
   "landscapeBanner": "横画面での表示を推奨します",
   "hint": "ヒント",
-  "autoComplete": "自動完成",
+  "autoComplete": "オートコンプリート",
   "autoCompleteNotReady": "山札が空になると使えます",
-  "autoCompleteStarted": "自動完成を開始しました",
-  "autoCompleteFinished": "自動完成が完了しました",
+  "autoCompleteStarted": "オートコンプリートを開始しました",
+  "autoCompleteFinished": "オートコンプリートが完了しました",
   "undo": "元に戻す",
   "stalemate": "手詰まりです",
   "playing": "カードを移動してください",
@@ -34,7 +34,7 @@
     "stockWaste": "山札をクリックしてカードを1枚引きます。リサイクル（再ドロー）はできません。",
     "foundation": "8つの組札に同じスートのカードをA→Kの順に積み上げます。",
     "tableau": "10列の場札。同じスートの降順でカードを1枚ずつ移動できます。空の列にはどのカードでも置けます。",
-    "controls": "ヒント・元に戻す・自動完成などの操作ボタンです。"
+    "controls": "ヒント・元に戻す・オートコンプリートなどの操作ボタンです。"
   },
   "frontendHint": {
     "waste": "捨て札",

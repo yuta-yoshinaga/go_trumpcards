@@ -14,7 +14,7 @@ test.describe('Spider E2E', () => {
     // Verify playing buttons are visible
     const hintButton = page.getByRole('button', { name: 'ヒント' });
     await expect(hintButton).toBeVisible();
-    await expect(page.getByRole('button', { name: '自動完成' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'オートコンプリート' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'ギブアップ' })).toBeVisible();
     await expect(page.getByRole('button', { name: '配る' }).last()).toBeVisible();
 
@@ -42,7 +42,7 @@ test.describe('Spider E2E', () => {
 
     // After give up, playing buttons should not be visible
     await expect(page.getByRole('button', { name: 'ヒント' })).not.toBeVisible();
-    await expect(page.getByRole('button', { name: '自動完成' })).not.toBeVisible();
+    await expect(page.getByRole('button', { name: 'オートコンプリート' })).not.toBeVisible();
     await expect(page.getByRole('button', { name: 'ギブアップ' })).not.toBeVisible();
 
     // 次のゲーム button (end state) should be visible

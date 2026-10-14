@@ -10,7 +10,7 @@ test.describe('Spiderette E2E', () => {
 
     const hintButton = page.getByRole('button', { name: 'ヒント' });
     await expect(hintButton).toBeVisible();
-    await expect(page.getByRole('button', { name: '自動完成' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'オートコンプリート' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'ギブアップ' })).toBeVisible();
     await expect(page.getByRole('button', { name: '配る' }).last()).toBeVisible();
 

@@ -365,7 +365,7 @@ describe('RussianSolitairePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
     mockExec.mockResolvedValue(readyState);
-    const btn = screen.getByRole('button', { name: '自動完成' });
+    const btn = screen.getByRole('button', { name: 'オートコンプリート' });
     btn.click();
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
   });

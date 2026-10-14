@@ -339,8 +339,8 @@ describe('DiplomatPage', () => {
     expect(liveRegion).toHaveAttribute('aria-live', 'polite');
     expect(liveRegion).toBeEmptyDOMElement();
     fireEvent.click(button);
-    expect(liveRegion).toHaveTextContent('自動完成を開始しました');
-    await waitFor(() => expect(liveRegion).toHaveTextContent('自動完成が完了しました'), { timeout: 5000 });
+    expect(liveRegion).toHaveTextContent('オートコンプリートを開始しました');
+    await waitFor(() => expect(liveRegion).toHaveTextContent('オートコンプリートが完了しました'), { timeout: 5000 });
     expect(screen.getByTestId('cg-hint-live')).toBeInTheDocument();
   });
 

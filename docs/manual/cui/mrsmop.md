@@ -46,7 +46,7 @@ flowchart TD
     B --> C{操作選択}
     C -->|move| D[タブロー間移動]
     C -->|hint| F[ヒント表示]
-    C -->|autocomplete| G[自動完成]
+    C -->|autocomplete| G[オートコンプリート]
     C -->|undo| U[直前の手を取り消す]
     C -->|giveup| H[ギブアップ]
     D --> I{同スートK〜Aが揃った}
@@ -70,7 +70,7 @@ flowchart TD
 | `move t <fromCol> <cardIdx> t <toCol>` | `m` | タブロー間でカードを移動 |
 | `giveup` | `g` | ギブアップ |
 | `hint` | `h` | ヒントを表示 |
-| `autocomplete` | `ac` | 自動完成 |
+| `autocomplete` | `ac` | オートコンプリート |
 | `undo` | `u` | 直前の操作を取り消す |
 | `log` | `l` | 棋譜を表示 |
 | `quit` | `q` | ゲーム終了 |

@@ -453,12 +453,12 @@ describe('MatrimonyPage', () => {
       const status = screen.getByTestId('auto-complete-status');
       expect(status).toHaveAttribute('role', 'status');
       expect(status).toHaveAttribute('aria-live', 'polite');
-      expect(status).toHaveTextContent('自動完成を実行中です');
+      expect(status).toHaveTextContent('オートコンプリートを実行中です');
 
       await act(async () => {
         await vi.advanceTimersByTimeAsync(3000);
       });
-      expect(status).toHaveTextContent('自動完成が終了しました。カードを移動してください');
+      expect(status).toHaveTextContent('オートコンプリートが終了しました。カードを移動してください');
     } finally {
       vi.useRealTimers();
     }

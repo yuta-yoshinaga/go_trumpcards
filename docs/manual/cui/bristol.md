@@ -31,7 +31,7 @@ flowchart TD
     C -->|m t col f| F[タブローを組札へ]
     C -->|m n fan t col| G[ファンをタブローへ降順移動]
     C -->|m n fan f| H[ファンを組札へ]
-    C -->|ac| I[自動完成]
+    C -->|ac| I[オートコンプリート]
     C -->|u| J[元に戻す]
     D --> K{勝利判定}
     E --> K
@@ -58,7 +58,7 @@ flowchart TD
 | `targets <zone> <col>` | `t` | その札を置ける先を一覧する（zone: `t`=タブロー / `n`=ファン） |
 | `g` / `giveup` | `g` | ギブアップ |
 | `hint` | `h` | ヒント |
-| `ac` / `autocomplete` | `ac` | 自動完成 |
+| `ac` / `autocomplete` | `ac` | オートコンプリート |
 | `u` / `undo` | `u` | 元に戻す |
 | `log` | `l` | 棋譜表示 |
 | `reset` | `r` | リセット |
