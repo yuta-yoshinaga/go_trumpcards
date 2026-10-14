@@ -15,7 +15,7 @@ import { PlayerHandSection } from '../components/PlayerHandSection';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
@@ -150,6 +150,7 @@ function UnsunKarutaPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('unsunkaruta', state);
   const { cardWidth, isMobile } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const phaseNames = usePhaseNames('unsunkaruta', UNSUN_PHASE_KEYS);
 
   if (!state)
@@ -252,7 +253,7 @@ function UnsunKarutaPageContent() {
                   players={state.players}
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
-                  wrap
+                  wrap={!isLargeDesktop}
                   dataTutorial="unsunkaruta-trick-display"
                   winnerIdx={isTrickEnd && state.lastTrickWinner >= 0 ? state.lastTrickWinner : undefined}
                   winnerLabel={t('trickWinnerBadge')}

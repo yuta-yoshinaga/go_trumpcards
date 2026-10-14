@@ -57,6 +57,35 @@ describe('UnsunKarutaPage', () => {
     expect(announcement).toHaveTextContent('あなた: 1 杯、CPU 2: 3 刀');
   });
 
+  it('keeps the current trick on one row at large desktop width', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1280 });
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue(
+      makeUnsunKarutaState({
+        currentTrick: Array.from({ length: 4 }, (_, playerIdx) => ({
+          playerIdx,
+          card: {
+            design: 'JOKER',
+            value: playerIdx + 1,
+            deck: 'unsun',
+            glyph: '杯',
+            label: String(playerIdx + 1),
+            color: 'red',
+          },
+        })),
+      }),
+    );
+    renderWithProviders(<UnsunKarutaPage />);
+
+    const cards = await screen.findByTestId('trick-display-cards');
+    expect(cards).not.toHaveClass('flex-wrap');
+    expect(cards.children).toHaveLength(4);
+
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: originalWidth });
+    window.dispatchEvent(new Event('resize'));
+  });
+
   it('wraps all eight cards in the current trick', async () => {
     const state = makeUnsunKarutaState({
       currentTrick: Array.from({ length: 8 }, (_, playerIdx) => ({
