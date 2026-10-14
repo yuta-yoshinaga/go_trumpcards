@@ -271,7 +271,7 @@ function SambaPageContent() {
       return (
         <div
           key={p.id}
-          className={`${isLargeDesktop ? 'my-1 min-w-0 flex-1 p-1' : 'my-2 p-2'} rounded bg-ds-surface`}
+          className={`${isLargeDesktop ? 'my-1 shrink-0 max-w-full p-1' : 'my-2 p-2'} rounded bg-ds-surface`}
           data-tutorial={p.isHuman ? 'sa-meld-area' : undefined}
         >
           <div className="text-ds-text-muted text-sm mb-1">
@@ -785,7 +785,7 @@ function SambaPageContent() {
               data-testid={isLargeDesktop ? 'sa-footer-hand-row' : undefined}
             >
               {isLargeDesktop && visibleHumanTeamMelds.length > 0 && (
-                <div className="flex shrink-0 items-start gap-2 max-w-[30%]" data-testid="sa-footer-melds">
+                <div className="flex flex-wrap shrink-0 items-start gap-2 max-w-[30%]" data-testid="sa-footer-melds">
                   {visibleHumanTeamMelds}
                 </div>
               )}

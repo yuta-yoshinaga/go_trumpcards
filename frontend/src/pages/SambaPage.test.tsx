@@ -144,6 +144,51 @@ describe('SambaPage', () => {
     expect(cards[2]).toHaveClass('inline-block', '-ml-12');
   });
 
+  it('wraps large-desktop meld boxes without shrinking while preserving other breakpoints', async () => {
+    const base = makeSambaState();
+    const meld = {
+      cards: [
+        { design: 'HEART' as const, value: 4 },
+        { design: 'CLOVER' as const, value: 4 },
+        { design: 'DIAMOND' as const, value: 4 },
+      ],
+      kind: 0,
+      isNatural: true,
+      isCanasta: false,
+      isSamba: false,
+      rank: 4,
+    };
+    mockExec.mockResolvedValue(
+      makeSambaState({
+        players: [
+          { ...base.players[0], melds: [meld] },
+          base.players[1],
+          { ...base.players[2], melds: [meld] },
+          base.players[3],
+        ],
+      }),
+    );
+    mobileState.isMobile = false;
+    mobileState.largeDesktop = true;
+    const { unmount } = renderWithProviders(<SambaPage />);
+
+    const meldArea = await screen.findByTestId('sa-footer-melds');
+    expect(meldArea).toHaveClass('flex-wrap');
+    const playerBoxes = Array.from(meldArea.children);
+    expect(playerBoxes).toHaveLength(2);
+    for (const box of playerBoxes) {
+      expect(box).toHaveClass('shrink-0', 'max-w-full');
+      expect(box).not.toHaveClass('flex-1', 'min-w-0');
+      expect(box.querySelector('.flex.flex-nowrap')).toBeInTheDocument();
+    }
+
+    unmount();
+    mobileState.largeDesktop = false;
+    renderWithProviders(<SambaPage />);
+    await screen.findByTestId('phase-indicator');
+    expect(screen.queryByTestId('sa-footer-melds')).not.toBeInTheDocument();
+  });
+
   it('wraps footer meld cards without overlap below large desktop', async () => {
     const base = makeSambaState();
     const meld = {
