@@ -71,15 +71,26 @@ describe('SambaPage', () => {
     expect(screen.queryByTestId('sa-footer-melds')).not.toBeInTheDocument();
   });
 
-  it('places teammate melds beside the large-desktop hand in a bounded scroll area', async () => {
+  it('keeps both teammates’ meld rows visible beside the large-desktop hand without scrolling', async () => {
     const base = makeSambaState();
-    const teammate = base.players[2];
+    const meld = {
+      cards: [
+        { design: 'HEART' as const, value: 4 },
+        { design: 'CLOVER' as const, value: 4 },
+        { design: 'DIAMOND' as const, value: 4 },
+      ],
+      kind: 0,
+      isNatural: true,
+      isCanasta: false,
+      isSamba: false,
+      rank: 4,
+    };
     mockExec.mockResolvedValue(
       makeSambaState({
         players: [
-          base.players[0],
+          { ...base.players[0], melds: [meld, meld] },
           base.players[1],
-          { ...teammate, red3s: [{ design: 'HEART', value: 3 }], red3Count: 1 },
+          { ...base.players[2], melds: [meld, meld] },
           base.players[3],
         ],
       }),
@@ -91,12 +102,138 @@ describe('SambaPage', () => {
     const meldArea = await screen.findByTestId('sa-footer-melds');
     const hand = await screen.findByTestId('sa-player-hand');
     const row = screen.getByTestId('sa-footer-hand-row');
-    expect(meldArea.style.maxHeight).toBeTruthy();
-    expect(meldArea).toHaveClass('shrink-0', 'max-w-[30%]', 'overflow-y-auto');
+    expect(meldArea.style.maxHeight).toBe('');
+    expect(meldArea).not.toHaveClass('overflow-y-auto');
+    expect(meldArea.querySelectorAll('[data-testid^="sa-meld-progress-"]')).toHaveLength(4);
+    expect(meldArea.querySelectorAll('[data-testid="animated-card"]')).toHaveLength(12);
     expect(meldArea.parentElement).toBe(row);
     expect(hand.parentElement).toBe(row);
-    expect(meldArea).toHaveTextContent('赤3');
     expect(meldArea.closest('[data-testid="game-footer-content"]')).toBeInTheDocument();
+  });
+
+  it('lays out footer meld cards in one overlapped row on large desktop', async () => {
+    const base = makeSambaState();
+    const meld = {
+      cards: [
+        { design: 'HEART' as const, value: 4 },
+        { design: 'CLOVER' as const, value: 4 },
+        { design: 'DIAMOND' as const, value: 4 },
+      ],
+      kind: 0,
+      isNatural: true,
+      isCanasta: false,
+      isSamba: false,
+      rank: 4,
+    };
+    mockExec.mockResolvedValue(
+      makeSambaState({ players: [{ ...base.players[0], melds: [meld] }, ...base.players.slice(1)] }),
+    );
+    mobileState.isMobile = false;
+    mobileState.largeDesktop = true;
+    renderWithProviders(<SambaPage />);
+
+    const meldArea = await screen.findByTestId('sa-footer-melds');
+    const progress = within(meldArea).getByTestId('sa-meld-progress-0-0');
+    const meldRow = progress.parentElement;
+    expect(meldRow).toHaveClass('flex', 'flex-nowrap');
+    const cards = within(meldArea).getAllByTestId('animated-card');
+    expect(cards).toHaveLength(3);
+    expect(cards[0]).toHaveClass('inline-block');
+    expect(cards[0]).not.toHaveClass('-ml-12');
+    expect(cards[1]).toHaveClass('inline-block', '-ml-12');
+    expect(cards[2]).toHaveClass('inline-block', '-ml-12');
+  });
+
+  it('wraps footer meld cards without overlap below large desktop', async () => {
+    const base = makeSambaState();
+    const meld = {
+      cards: [
+        { design: 'HEART' as const, value: 4 },
+        { design: 'CLOVER' as const, value: 4 },
+        { design: 'DIAMOND' as const, value: 4 },
+      ],
+      kind: 0,
+      isNatural: true,
+      isCanasta: false,
+      isSamba: false,
+      rank: 4,
+    };
+    mockExec.mockResolvedValue(
+      makeSambaState({ players: [{ ...base.players[0], melds: [meld] }, ...base.players.slice(1)] }),
+    );
+    mobileState.isMobile = false;
+    mobileState.largeDesktop = false;
+    renderWithProviders(<SambaPage />);
+
+    const meldRow = await screen.findByTestId('sa-meld-progress-0-0').then((el) => el.parentElement);
+    expect(meldRow).toHaveClass('flex', 'flex-wrap');
+    const cards = within(meldRow as HTMLElement).getAllByTestId('animated-card');
+    expect(cards).toHaveLength(3);
+    for (const card of cards) {
+      expect(card).not.toHaveClass('inline-block');
+      expect(card).not.toHaveClass('-ml-12');
+    }
+  });
+
+  it('lays out red threes in one overlapped row on large desktop', async () => {
+    const base = makeSambaState();
+    mockExec.mockResolvedValue(
+      makeSambaState({
+        players: [
+          {
+            ...base.players[0],
+            red3s: [
+              { design: 'HEART', value: 3 },
+              { design: 'DIAMOND', value: 3 },
+            ],
+          },
+          ...base.players.slice(1),
+        ],
+      }),
+    );
+    mobileState.isMobile = false;
+    mobileState.largeDesktop = true;
+    renderWithProviders(<SambaPage />);
+
+    const redThreesLabel = await screen.findByText(i18n.t('samba:red3s'));
+    const redThreeRow = redThreesLabel.parentElement as HTMLElement;
+    expect(redThreeRow).toHaveClass('flex', 'flex-nowrap');
+    const cards = within(redThreeRow).getAllByTestId('animated-card');
+    expect(cards).toHaveLength(2);
+    expect(cards[0]).toHaveClass('inline-block');
+    expect(cards[0]).not.toHaveClass('-ml-12');
+    expect(cards[1]).toHaveClass('inline-block', '-ml-12');
+  });
+
+  it('wraps red threes without overlap below large desktop', async () => {
+    const base = makeSambaState();
+    mockExec.mockResolvedValue(
+      makeSambaState({
+        players: [
+          {
+            ...base.players[0],
+            red3s: [
+              { design: 'HEART', value: 3 },
+              { design: 'DIAMOND', value: 3 },
+            ],
+          },
+          ...base.players.slice(1),
+        ],
+      }),
+    );
+    mobileState.isMobile = false;
+    mobileState.largeDesktop = false;
+    renderWithProviders(<SambaPage />);
+
+    const redThreesLabel = await screen.findByText(i18n.t('samba:red3s'));
+    const redThreeRow = redThreesLabel.parentElement as HTMLElement;
+    expect(redThreeRow).toHaveClass('flex', 'flex-wrap');
+    const cards = within(redThreeRow).getAllByTestId('animated-card');
+    expect(cards).toHaveLength(2);
+    for (const card of cards) {
+      expect(card).not.toHaveClass('inline-block');
+      expect(card).not.toHaveClass('-ml-12');
+    }
   });
 
   afterEach(() => {

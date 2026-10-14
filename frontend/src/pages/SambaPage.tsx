@@ -271,7 +271,7 @@ function SambaPageContent() {
       return (
         <div
           key={p.id}
-          className="my-2 p-2 rounded bg-ds-surface"
+          className={`${isLargeDesktop ? 'my-1 min-w-0 flex-1 p-1' : 'my-2 p-2'} rounded bg-ds-surface`}
           data-tutorial={p.isHuman ? 'sa-meld-area' : undefined}
         >
           <div className="text-ds-text-muted text-sm mb-1">
@@ -286,7 +286,7 @@ function SambaPageContent() {
             const toSamba = m.kind === 1;
             const complete = remaining <= 0;
             return (
-              <div key={mi} className="flex flex-wrap gap-1 mb-1">
+              <div key={mi} className={`flex ${isLargeDesktop ? 'flex-nowrap' : 'flex-wrap'} gap-1 mb-1`}>
                 <span className="text-xs text-ds-text-muted self-center mr-1">
                   {m.kind === 1
                     ? m.isSamba
@@ -309,16 +309,26 @@ function SambaPageContent() {
                     : t(toSamba ? 'meldProgress.toSamba' : 'meldProgress.toCanasta', { n: remaining })}
                 </span>
                 {m.cards.map((card, ci) => (
-                  <AnimatedCard key={`meld-${pi}-${mi}-${ci}`} card={card} width={cardWidth * 0.6} />
+                  <AnimatedCard
+                    key={`meld-${pi}-${mi}-${ci}`}
+                    card={card}
+                    width={cardWidth * 0.6}
+                    wrapperClassName={isLargeDesktop ? `inline-block ${ci > 0 ? '-ml-12' : ''}` : undefined}
+                  />
                 ))}
               </div>
             );
           })}
           {p.red3s.length > 0 && (
-            <div className="flex flex-wrap gap-1 mt-1">
+            <div className={`flex ${isLargeDesktop ? 'flex-nowrap' : 'flex-wrap'} gap-1 mt-1`}>
               <span className="text-xs text-ds-error-text self-center mr-1">{t('red3s')}</span>
               {p.red3s.map((card, ri) => (
-                <AnimatedCard key={`red3-${pi}-${ri}`} card={card} width={cardWidth * 0.6} />
+                <AnimatedCard
+                  key={`red3-${pi}-${ri}`}
+                  card={card}
+                  width={cardWidth * 0.6}
+                  wrapperClassName={isLargeDesktop ? `inline-block ${ri > 0 ? '-ml-12' : ''}` : undefined}
+                />
               ))}
             </div>
           )}
@@ -775,11 +785,7 @@ function SambaPageContent() {
               data-testid={isLargeDesktop ? 'sa-footer-hand-row' : undefined}
             >
               {isLargeDesktop && visibleHumanTeamMelds.length > 0 && (
-                <div
-                  className="shrink-0 max-w-[30%] overflow-y-auto"
-                  data-testid="sa-footer-melds"
-                  style={{ maxHeight: cardWidth * 1.4 }}
-                >
+                <div className="flex shrink-0 items-start gap-2 max-w-[30%]" data-testid="sa-footer-melds">
                   {visibleHumanTeamMelds}
                 </div>
               )}
