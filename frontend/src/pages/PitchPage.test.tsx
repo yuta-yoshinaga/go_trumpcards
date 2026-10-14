@@ -72,7 +72,7 @@ const bidState: PitchResponse = {
   leadPlayerIdx: -1,
   roundBreakdown: { high: -1, low: -1, jack: -1, game: -1 },
   validPlayIndices: [],
-  message: '',
+  message: 'ビッド宣言 (0=パス, 2-4)',
   config: baseConfig,
 };
 
