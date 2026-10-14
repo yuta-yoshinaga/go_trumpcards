@@ -89,12 +89,24 @@ describe('TarabishPage', () => {
     const layout = await screen.findByTestId('tb-play-layout');
     const trick = screen.getByTestId('tb-trick-column');
     const cpu = screen.getByTestId('cpu-accordion');
-    const cpuColumn = cpu.closest('.col-start-2');
+    const cpuColumn = cpu.closest('[data-testid="tb-side-column"]');
     expect(layout).toHaveClass('grid-cols-[minmax(0,1fr)_minmax(280px,30%)]');
     expect(trick.parentElement).toBe(layout);
     expect(cpuColumn?.parentElement).toBe(layout);
     expect(trick).toHaveClass('col-start-1');
     expect(cpuColumn).toHaveClass('min-w-0');
+  });
+
+  it('keeps the result banner in a full-width row on large desktop', async () => {
+    mobileState.breakpoint = 'largeDesktop';
+    mobileState.isMobile = false;
+    mockExec.mockResolvedValue(makeState({ phase: TarabishPhase.GAME_END, gameEndFlag: true, winnerTeam: 0 }));
+    renderWithProviders(<TarabishPage />);
+
+    const banner = await screen.findByText(/あなたのチームの勝ち/);
+    const fullRow = banner.parentElement;
+    expect(fullRow).toHaveClass('col-span-2', 'min-w-0');
+    expect(fullRow?.parentElement).toBe(screen.getByTestId('tb-play-layout'));
   });
 
   it('keeps CPU before the trick in the DOM outside large desktop', async () => {

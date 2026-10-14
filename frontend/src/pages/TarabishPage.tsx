@@ -154,6 +154,7 @@ function TarabishPageContent() {
     if (state.winnerTeam === 1) return t('result.theyWin', params);
     return t('result.tie', params);
   })();
+  const fullRow = isLargeDesktop ? 'col-span-2 min-w-0' : '';
 
   return (
     <GamePageShell
@@ -182,7 +183,7 @@ function TarabishPageContent() {
               <div
                 className={
                   isLargeDesktop
-                    ? 'col-span-2 min-w-0 text-ds-text-primary text-center mb-2'
+                    ? `${fullRow} text-ds-text-primary text-center mb-2`
                     : 'text-ds-text-primary text-center mb-2'
                 }
               >
@@ -198,7 +199,7 @@ function TarabishPageContent() {
               <div
                 className={
                   isLargeDesktop
-                    ? 'col-span-2 min-w-0 text-ds-text-primary text-center mb-2'
+                    ? `${fullRow} text-ds-text-primary text-center mb-2`
                     : 'text-ds-text-primary text-center mb-2'
                 }
                 data-testid="tb-score"
@@ -209,7 +210,7 @@ function TarabishPageContent() {
               <div
                 className={
                   isLargeDesktop
-                    ? 'col-span-2 min-w-0 text-ds-text-muted text-center mb-2'
+                    ? `${fullRow} text-ds-text-muted text-center mb-2`
                     : 'text-ds-text-muted text-center mb-2'
                 }
                 data-testid="tb-round-points"
@@ -221,6 +222,7 @@ function TarabishPageContent() {
               </div>
 
               {/* 切り札の序列はこの系統の肝。盤面からは読み取れない。 */}
+              {/* 上に全幅の行が3つあるため、右列は4行目から配置する。 */}
               <details
                 className={`${isLargeDesktop ? 'col-start-2 row-start-4 min-w-0' : ''} mb-3 rounded bg-black/30 px-3 py-2 text-ds-text-muted text-sm text-center`}
                 data-testid="tb-order-details"
@@ -283,7 +285,10 @@ function TarabishPageContent() {
                     </div>
                   ))}
               </div>
-              <div className={isLargeDesktop ? 'col-start-2 row-start-7 min-w-0' : 'contents'}>
+              <div
+                className={isLargeDesktop ? 'col-start-2 row-start-7 min-w-0' : 'contents'}
+                data-testid="tb-side-column"
+              >
                 <CpuAccordion
                   playerCount={state.players.filter((p) => !p.isHuman).length}
                   dataTutorial="tarabish-melds"
@@ -302,7 +307,7 @@ function TarabishPageContent() {
                           {': '}
                           {meldStr(p)}
                           {/* **トリック配分がそのまま点数の趨勢。**CUI の playerLine は
-                      これを毎回出しているのに、Web だけ読めなかった。 */}
+                          これを毎回出しているのに、Web だけ読めなかった。 */}
                           <span className="ml-2" data-testid={`tb-seat-tricks-${p.id.toString()}`}>
                             {t('header.tricksTaken', { count: p.trickCount })}
                           </span>
@@ -330,24 +335,26 @@ function TarabishPageContent() {
                 </div>
               </div>
 
-              {resultBanner && (
-                <div className="text-center text-xl my-4 text-ds-accent font-semibold" role="status">
-                  {resultBanner}
-                </div>
-              )}
+              <div className={isLargeDesktop ? 'col-span-2 min-w-0' : 'contents'}>
+                {resultBanner && (
+                  <div className="text-center text-xl my-4 text-ds-accent font-semibold" role="status">
+                    {resultBanner}
+                  </div>
+                )}
 
-              <ErrorAlert message={error} onRetry={retry} />
+                <ErrorAlert message={error} onRetry={retry} />
 
-              {hintEnabled && hint && (
-                <div className="mt-3 flex justify-center">
-                  <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />
-                </div>
-              )}
+                {hintEnabled && hint && (
+                  <div className="mt-3 flex justify-center">
+                    <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />
+                  </div>
+                )}
 
-              <SettingsPanel
-                title={tc('settings.title')}
-                groups={[{ items: [hintCheckboxItem(tc, hintEnabled, setHintEnabled)] }]}
-              />
+                <SettingsPanel
+                  title={tc('settings.title')}
+                  groups={[{ items: [hintCheckboxItem(tc, hintEnabled, setHintEnabled)] }]}
+                />
+              </div>
             </div>
           </div>
 
