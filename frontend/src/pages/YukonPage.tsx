@@ -204,7 +204,7 @@ function YukonPageContent() {
     setState((prev) => (prev ? { ...prev, hint: res.hint } : prev));
   }, [setState]);
 
-  // **自動完成は複数手が続けて動く。** その間に Undo やギブアップを押されると
+  // **オートコンプリートは複数手が続けて動く。** その間に Undo やギブアップを押されると
   // 表示中のアニメーションとサーバ状態がずれる。兄弟のソリティア
   // (Spiderette / Terrace / Windmill) と同じ共有フックで窓を作る (#5533)。
   const handleAutoComplete = useCallback(() => {

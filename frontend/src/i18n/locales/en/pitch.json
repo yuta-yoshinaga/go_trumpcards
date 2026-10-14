@@ -56,7 +56,6 @@
   "invalidPlayReason": "Follow the lead suit or play a trump card.",
   "nextTrick": "Next trick",
   "nextRound": "Next round",
-  "bidPhase": "Declare your bid (0=pass, 2-4)",
   "playPhase": {
     "lead": "Lead a card (first card sets trump)",
     "follow": "Play a card"

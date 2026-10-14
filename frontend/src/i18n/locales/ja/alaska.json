@@ -10,7 +10,7 @@
   "moveCount": "手数",
   "giveup": "ギブアップ",
   "hint": "ヒント",
-  "autoComplete": "自動完成",
+  "autoComplete": "オートコンプリート",
   "autoCompleteNotReady": "全カードが表向きになると利用可能です",
   "undo": "元に戻す",
   "empty": "空",

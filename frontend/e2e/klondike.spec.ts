@@ -61,7 +61,7 @@ test.describe('Klondike E2E', () => {
 
     // After give up, playing buttons should not be visible
     await expect(page.getByRole('button', { name: 'ヒント' })).not.toBeVisible();
-    await expect(page.getByRole('button', { name: '自動完成' })).not.toBeVisible();
+    await expect(page.getByRole('button', { name: 'オートコンプリート' })).not.toBeVisible();
     await expect(page.getByRole('button', { name: 'ギブアップ' })).not.toBeVisible();
 
     // 次のゲーム button (end state) should be visible

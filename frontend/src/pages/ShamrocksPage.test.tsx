@@ -45,7 +45,7 @@ describe('ShamrocksPage', () => {
 
     expect(
       await screen.findByText(
-        'ヒントで次の手を確認できます。自動完成は可能な組札への移動を進め、元に戻すは直前の手を取り消します。',
+        'ヒントで次の手を確認できます。オートコンプリートは可能な組札への移動を進め、元に戻すは直前の手を取り消します。',
       ),
     ).toBeInTheDocument();
     expect(screen.queryByTestId('autocomplete-button')).not.toBeInTheDocument();

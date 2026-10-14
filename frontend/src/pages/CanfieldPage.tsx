@@ -264,7 +264,7 @@ function CanfieldPageContent() {
   if (error) return <ErrorAlert message={error} onRetry={retry} />;
   if (!state) return null;
 
-  // 自動完成はリザーブ・山札・捨て札が空でないとサーバが弾く。押してみるまで
+  // オートコンプリートはリザーブ・山札・捨て札が空でないとサーバが弾く。押してみるまで
   // 分からなかったので、他のソリティアと同じくリング+バッジで知らせる (#4787)。
   const autoCompleteReady = canfieldAutoCompleteReady(state);
 

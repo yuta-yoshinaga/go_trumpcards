@@ -6,6 +6,7 @@ import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BigBenResponse, BigBenTableauCard, Card, CardDesign } from '../types/card';
+import { tableauDimensions } from '../utils/tableauDimensions';
 import { BigBenPage } from './BigBenPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -155,6 +156,49 @@ describe('BigBenPage', () => {
     await waitFor(() => expect(screen.getByText('#0')).toBeInTheDocument());
     for (let i = 0; i < 8; i++) {
       expect(screen.getByText(`#${i}`)).toBeInTheDocument();
+    }
+  });
+
+  it('observes the tableau row so card spacers follow the rendered column width', async () => {
+    const original = window.innerWidth;
+    const originalResizeObserver = window.ResizeObserver;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    const observe = vi.fn();
+    Object.defineProperty(window, 'ResizeObserver', {
+      configurable: true,
+      value: class {
+        private readonly callback: ResizeObserverCallback;
+        constructor(callback: ResizeObserverCallback) {
+          this.callback = callback;
+        }
+        observe(target: Element) {
+          observe(target);
+          this.callback([{ contentRect: { width: 1008 } } as ResizeObserverEntry], this as unknown as ResizeObserver);
+        }
+        disconnect() {}
+      },
+    });
+    mockExec.mockResolvedValue(playingState);
+    try {
+      renderWithProviders(<BigBenPage />);
+      await screen.findByLabelText(/文字盤0/);
+      const tableau = document.querySelector('[data-testid="gc-tableau"]');
+      expect(tableau).toBeInTheDocument();
+      expect(observe).toHaveBeenCalled();
+      expect(tableau).not.toHaveClass(/h-\[/);
+      const spacer = document.querySelector('[data-testid="gc-tableau-column-spacer"]') as HTMLElement;
+      const dims = tableauDimensions(1008, 8, 8, 0.34);
+      expect(spacer).toHaveStyle({
+        height: `${(playingState.tableau[0]!.length - 1) * dims.cardOverlap + dims.cardHeight}px`,
+      });
+      expect(spacer).toHaveStyle({ height: '219px' });
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: original });
+      if (originalResizeObserver) {
+        Object.defineProperty(window, 'ResizeObserver', { configurable: true, value: originalResizeObserver });
+      } else {
+        Reflect.deleteProperty(window, 'ResizeObserver');
+      }
     }
   });
 

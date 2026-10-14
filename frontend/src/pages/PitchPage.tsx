@@ -595,7 +595,6 @@ function PitchPageContent() {
 
             {isBidPhase && (
               <div data-tutorial="pt-bid-controls" className="flex flex-wrap gap-2 items-center justify-center pb-2">
-                <span className="text-ds-text-primary text-sm">{t('bidPhase')}</span>
                 <button
                   type="button"
                   className={btnSecondary}

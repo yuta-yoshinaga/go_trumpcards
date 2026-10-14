@@ -1,4 +1,4 @@
-import { useCallback, useId, useMemo } from 'react';
+import { useCallback, useId, useMemo, useRef } from 'react';
 import type { congressApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -22,6 +22,7 @@ import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useCongressGame } from '../hooks/useCongressGame';
+import { useElementWidth } from '../hooks/useElementWidth';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
@@ -36,9 +37,12 @@ import { formatCongressState } from '../utils/cli/formatters/congressFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { congressLegalTargets, congressSourceCard } from '../utils/congressLegalTargets';
 import { hintCheckboxItem } from '../utils/settingsItems';
+import { tableauDimensions } from '../utils/tableauDimensions';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦', '♠', '♣', '♥', '♦'] as const;
 const TABLEAU_PILES = 8;
+// Matches the tableau's sm:gap-2 spacing (8px).
+const TABLEAU_GAP = 8;
 const TOTAL_CARDS = 104;
 
 const CG_TUTORIAL_STEPS: TutorialStep[] = [
@@ -101,11 +105,22 @@ function CongressPageContent() {
     [],
   );
   const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
-  const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
+  const { cardOverlap, cardWidth, isMobile } = useCardDimensions();
+  const hasState = state !== null;
   const windowWidth = useWindowWidth();
+  const tableauRef = useRef<HTMLDivElement>(null);
+  const tableauRowWidth = useElementWidth(tableauRef, hasState && !isMobile);
 
   const dims = useMemo(() => {
-    if (!isMobile) return { cw: cardWidth, ch: cardHeight, co: cardOverlap };
+    if (!isMobile) {
+      const measured = tableauDimensions(
+        tableauRowWidth || cardWidth * TABLEAU_PILES + (TABLEAU_PILES - 1) * TABLEAU_GAP,
+        TABLEAU_PILES,
+        TABLEAU_GAP,
+        cardOverlap / cardWidth,
+      );
+      return { cw: measured.cardWidth, ch: measured.cardHeight, co: measured.cardOverlap };
+    }
     const padX = 16;
     const gapPx = 4;
     const colW = Math.floor((windowWidth - padX - (TABLEAU_PILES - 1) * gapPx) / TABLEAU_PILES);
@@ -113,7 +128,7 @@ function CongressPageContent() {
     const ch = Math.round(cw * 1.5);
     const co = Math.round(cw * 0.32);
     return { cw, ch, co };
-  }, [isMobile, windowWidth, cardWidth, cardHeight, cardOverlap]);
+  }, [isMobile, windowWidth, cardWidth, cardOverlap, tableauRowWidth]);
 
   const isPlayingForKbd = state?.phase === CongressPhase.PLAYING;
 
@@ -262,6 +277,7 @@ function CongressPageContent() {
                       <AnimatedCard
                         card={card}
                         width={dims.cw}
+                        isSelected={isTop && isSourceSelected('tableau', pileIdx)}
                         draggable={false}
                         style={{ width: '100%' }}
                         wrapperClassName="block w-full"
@@ -271,7 +287,9 @@ function CongressPageContent() {
                 );
               })
             )}
-            {cards.length > 0 && <div style={{ height: (cards.length - 1) * dims.co + dims.ch }} />}
+            {cards.length > 0 && (
+              <div data-testid="cg-tableau-column-spacer" style={{ height: (cards.length - 1) * dims.co + dims.ch }} />
+            )}
           </div>
         </DropZone>
       </div>
@@ -427,7 +445,7 @@ function CongressPageContent() {
               </div>
             </div>
 
-            <div className="flex gap-1 sm:gap-2 items-start" data-tutorial="cg-tableau">
+            <div ref={tableauRef} className="flex gap-1 sm:gap-2 items-start pt-3" data-tutorial="cg-tableau">
               {Array.from({ length: TABLEAU_PILES }, (_, i) => i).map(renderPile)}
             </div>
 

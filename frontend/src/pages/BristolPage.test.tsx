@@ -294,7 +294,7 @@ describe('BristolPage', () => {
   it('autocomplete button triggers autocomplete command', async () => {
     renderWithProviders(<BristolPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    screen.getByRole('button', { name: '自動完成' }).click();
+    screen.getByRole('button', { name: 'オートコンプリート' }).click();
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
   });
 
@@ -405,7 +405,7 @@ describe('BristolPage', () => {
     expect(draw).toHaveAttribute('aria-keyshortcuts', 'd');
     expect(draw.querySelector('kbd')?.textContent).toBe('D');
     expect(screen.getByRole('button', { name: 'ヒント' })).toHaveAttribute('aria-keyshortcuts', 'h');
-    expect(screen.getByRole('button', { name: '自動完成' })).toHaveAttribute('aria-keyshortcuts', 'a');
+    expect(screen.getByRole('button', { name: 'オートコンプリート' })).toHaveAttribute('aria-keyshortcuts', 'a');
     expect(screen.getByRole('button', { name: '元に戻す' })).toHaveAttribute('aria-keyshortcuts', 'z');
     expect(screen.getByRole('button', { name: 'ギブアップ' })).toHaveAttribute('aria-keyshortcuts', 'g');
   });

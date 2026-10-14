@@ -332,7 +332,7 @@ describe('OsmosisPage', () => {
   it('autocomplete button triggers autocomplete command', async () => {
     renderWithProviders(<OsmosisPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    screen.getByRole('button', { name: '自動完成' }).click();
+    screen.getByRole('button', { name: 'オートコンプリート' }).click();
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
   });
 
@@ -369,7 +369,7 @@ describe('OsmosisPage', () => {
     expect(draw.querySelector('kbd')?.textContent).toBe('D');
     // KbdBadge text is aria-hidden, so button accessible names stay clean.
     expect(screen.getByRole('button', { name: 'ヒント' })).toHaveAttribute('aria-keyshortcuts', 'h');
-    expect(screen.getByRole('button', { name: '自動完成' })).toHaveAttribute('aria-keyshortcuts', 'a');
+    expect(screen.getByRole('button', { name: 'オートコンプリート' })).toHaveAttribute('aria-keyshortcuts', 'a');
     expect(screen.getByRole('button', { name: '元に戻す' })).toHaveAttribute('aria-keyshortcuts', 'z');
     expect(screen.getByRole('button', { name: 'ギブアップ' })).toHaveAttribute('aria-keyshortcuts', 'g');
   });

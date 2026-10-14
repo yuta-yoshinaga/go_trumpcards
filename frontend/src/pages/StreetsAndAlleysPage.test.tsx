@@ -401,7 +401,7 @@ describe('StreetsAndAlleysPage', () => {
     const hint = screen.getByRole('button', { name: 'ヒント' });
     expect(hint).toHaveAttribute('aria-keyshortcuts', 'h');
     expect(hint.querySelector('kbd')?.textContent).toBe('H');
-    const autoComplete = screen.getByRole('button', { name: '自動完成' });
+    const autoComplete = screen.getByRole('button', { name: 'オートコンプリート' });
     expect(autoComplete).toHaveAttribute('aria-keyshortcuts', 'a');
     expect(autoComplete.querySelector('kbd')?.textContent).toBe('A');
     // KbdBadge text is aria-hidden, so the giveup button's accessible name stays clean.

@@ -389,7 +389,7 @@ describe('SultanPage', () => {
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(readyState);
-    fireEvent.click(screen.getByRole('button', { name: '自動完成' }));
+    fireEvent.click(screen.getByRole('button', { name: 'オートコンプリート' }));
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
   });
@@ -400,7 +400,7 @@ describe('SultanPage', () => {
       const readyState: SultanResponse = { ...playingState, stockCount: 0, waste: [] };
       mockExec.mockResolvedValue(readyState);
       renderWithProviders(<SultanPage />);
-      await vi.waitFor(() => expect(screen.getByRole('button', { name: '自動完成' })).toBeInTheDocument());
+      await vi.waitFor(() => expect(screen.getByRole('button', { name: 'オートコンプリート' })).toBeInTheDocument());
 
       const region = screen.getByTestId('sultan-autocomplete-live');
       expect(region).toHaveAttribute('role', 'status');
@@ -408,12 +408,12 @@ describe('SultanPage', () => {
       expect(region).toHaveClass('sr-only');
       expect(region.textContent).toBe('');
 
-      fireEvent.click(screen.getByRole('button', { name: '自動完成' }));
-      expect(region.textContent).toBe('自動完成を開始しました');
+      fireEvent.click(screen.getByRole('button', { name: 'オートコンプリート' }));
+      expect(region.textContent).toBe('オートコンプリートを開始しました');
       expect(screen.getByTestId('sultan-hint-live').textContent).toBe('');
 
       await act(async () => vi.advanceTimersByTimeAsync(3000));
-      expect(region.textContent).toBe('自動完成が完了しました');
+      expect(region.textContent).toBe('オートコンプリートが完了しました');
     } finally {
       vi.useRealTimers();
     }
@@ -513,7 +513,7 @@ describe('SultanPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
 
     expect(screen.queryByRole('button', { name: 'ヒント' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: '自動完成' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'オートコンプリート' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'ギブアップ' })).not.toBeInTheDocument();
   });
 

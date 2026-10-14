@@ -318,7 +318,7 @@ describe('CanfieldPage', () => {
     await waitFor(() => expect(screen.getByTestId('cf-hint-display')).not.toHaveTextContent('ヒントがあります'));
   });
 
-  // 自動完成はリザーブ・山札・捨て札が空のときだけ通る (#4787)。押せる/押せない
+  // オートコンプリートはリザーブ・山札・捨て札が空のときだけ通る (#4787)。押せる/押せない
   // の両側を踏まないと、常に押せる実装でも常に押せない実装でも通ってしまう。
   const readyState = { ...playingState, reserve: [], stockCount: 0, waste: [] };
 

@@ -199,10 +199,14 @@ function BhabhiPageContent() {
             </div>
 
             {/* **場札の枚数が、フォローできなかったときの罰そのもの。** */}
-            <div className="text-ds-text-muted text-sm text-center mb-3" data-testid="bh-pile" data-tutorial="bh-pile">
+            <div
+              className={`text-ds-text-muted text-sm text-center${state.leadSuit > 0 ? ' mb-3' : ''}`}
+              data-testid="bh-pile"
+              data-tutorial="bh-pile"
+            >
               {state.leadSuit > 0
                 ? t('header.led', { suit: suitSymbolAt(state.leadSuit, '?'), n: String(state.pile.length) })
-                : t('header.noLead')}
+                : ''}
             </div>
 
             <div className="flex flex-wrap justify-center gap-2 mb-4" data-tutorial="bh-seats">

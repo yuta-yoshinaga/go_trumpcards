@@ -36,7 +36,7 @@ flowchart TD
     C -->|move| D[タブロー間移動]
     C -->|deal| E[ストックから配る]
     C -->|hint| F[ヒント表示]
-    C -->|autocomplete| G[自動完成]
+    C -->|autocomplete| G[オートコンプリート]
     C -->|giveup| H[ギブアップ]
     D --> I{スート完成?}
     I -->|Yes| J{4組完成?}
@@ -56,7 +56,7 @@ flowchart TD
 | `move t <fromCol> <cardIdx> t <toCol>` | `m` | タブロー間でカードを移動 |
 | `giveup` | `g` | ギブアップ |
 | `hint` | `h` | ヒントを表示 |
-| `autocomplete` | `ac` | 自動完成（全カード表向き時） |
+| `autocomplete` | `ac` | オートコンプリート（全カード表向き時） |
 | `undo` | `u` | 直前の操作を取り消す |
 | `log` | `l` | 棋譜を表示 |
 | `quit` | `q` | ゲーム終了 |

@@ -7,6 +7,7 @@ import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { HintTooltip } from '../components/hint/HintTooltip';
@@ -172,7 +173,7 @@ function TarabishPageContent() {
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
-          <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
+          <div className="flex-1 min-h-0 overflow-y-auto pt-3 px-4 lg:px-8">
             <div className="text-ds-text-primary text-center mb-2">
               <span className="mr-4" data-testid="tb-round">
                 {t('header.round')}: {state.roundNumber}
@@ -294,15 +295,83 @@ function TarabishPageContent() {
               </div>
             )}
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
             <ErrorAlert message={error} onRetry={retry} />
 
+            {hintEnabled && hint && (
+              <div className="mt-3 flex justify-center">
+                <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />
+              </div>
+            )}
+
+            <SettingsPanel
+              title={tc('settings.title')}
+              groups={[{ items: [hintCheckboxItem(tc, hintEnabled, setHintEnabled)] }]}
+            />
+          </div>
+
+          <GameFooter
+            className={`${gameTheme.tarabish.footer} px-4 py-2.5`}
+            message={
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            }
+            actions={
+              <div className="flex flex-wrap gap-2" data-tutorial="tarabish-bid">
+                {isHumanBidTurn && (
+                  <>
+                    <button
+                      type="button"
+                      className={btnWarning}
+                      onClick={handleTake}
+                      disabled={loading}
+                      data-testid="tb-take-btn"
+                    >
+                      {t('actions.take')}
+                    </button>
+                    {/* **親は見送れない。** 押せないボタンを出さない。 */}
+                    {humanIsDealer ? (
+                      <span className="self-center text-ds-text-muted text-sm" data-testid="tb-dealer-stuck">
+                        {t('dealerStuck')}
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        className={btnSuccess}
+                        onClick={handlePass}
+                        disabled={loading}
+                        data-testid="tb-pass-btn"
+                      >
+                        {t('actions.pass')}
+                      </button>
+                    )}
+                  </>
+                )}
+                {isRoundEnd && !isGameEnd && (
+                  <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                    {t('actions.nextRound')}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={() => requestConfirm(handleReset)}
+                  disabled={loading}
+                >
+                  {t('actions.reset')}
+                </button>
+                {!isGameEnd && (
+                  <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
+                    {t('actions.giveUp')}
+                  </button>
+                )}
+              </div>
+            }
+          >
             {human && human.cards.length > 0 && (
-              <div className="mt-4" data-tutorial="tarabish-hand">
+              <div className="mb-2" data-tutorial="tarabish-hand">
                 <div className="text-ds-text-muted text-sm mb-1">
                   {t('header.you')}: {human.cardCount}
                 </div>
@@ -383,68 +452,7 @@ function TarabishPageContent() {
                 </span>
               </div>
             )}
-
-            {hintEnabled && hint && (
-              <div className="mt-3 flex justify-center">
-                <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />
-              </div>
-            )}
-
-            <div className="mt-4 flex flex-wrap gap-2" data-tutorial="tarabish-bid">
-              {isHumanBidTurn && (
-                <>
-                  <button
-                    type="button"
-                    className={btnWarning}
-                    onClick={handleTake}
-                    disabled={loading}
-                    data-testid="tb-take-btn"
-                  >
-                    {t('actions.take')}
-                  </button>
-                  {/* **親は見送れない。** 押せないボタンを出さない。 */}
-                  {humanIsDealer ? (
-                    <span className="self-center text-ds-text-muted text-sm" data-testid="tb-dealer-stuck">
-                      {t('dealerStuck')}
-                    </span>
-                  ) : (
-                    <button
-                      type="button"
-                      className={btnSuccess}
-                      onClick={handlePass}
-                      disabled={loading}
-                      data-testid="tb-pass-btn"
-                    >
-                      {t('actions.pass')}
-                    </button>
-                  )}
-                </>
-              )}
-              {isRoundEnd && !isGameEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('actions.nextRound')}
-                </button>
-              )}
-              <button
-                type="button"
-                className={btnPrimary}
-                onClick={() => requestConfirm(handleReset)}
-                disabled={loading}
-              >
-                {t('actions.reset')}
-              </button>
-              {!isGameEnd && (
-                <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
-                  {t('actions.giveUp')}
-                </button>
-              )}
-            </div>
-
-            <SettingsPanel
-              title={tc('settings.title')}
-              groups={[{ items: [hintCheckboxItem(tc, hintEnabled, setHintEnabled)] }]}
-            />
-          </div>
+          </GameFooter>
 
           <ActionLogSection
             isEndPhase={isGameEnd}

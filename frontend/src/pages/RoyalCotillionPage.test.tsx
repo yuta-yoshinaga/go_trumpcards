@@ -467,13 +467,13 @@ describe('RoyalCotillionPage', () => {
     expect(liveRegion).toBeEmptyDOMElement();
 
     fireEvent.click(screen.getByTestId('autocomplete-button'));
-    expect(liveRegion).toHaveTextContent('自動完成を開始しました');
+    expect(liveRegion).toHaveTextContent('オートコンプリートを開始しました');
     expect(screen.getByTestId('cg-hint-live')).toBeInTheDocument();
 
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, 3050));
     });
-    expect(liveRegion).toHaveTextContent('自動完成の処理が終わりました');
+    expect(liveRegion).toHaveTextContent('オートコンプリートの処理が終わりました');
   });
 
   it('shows StalemateEscapeButton when the stalemate flag is set', async () => {
