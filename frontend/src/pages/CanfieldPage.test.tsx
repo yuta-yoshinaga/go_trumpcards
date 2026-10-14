@@ -55,6 +55,15 @@ beforeEach(() => {
 });
 
 describe('CanfieldPage', () => {
+  it('shows selected card move controls in the large desktop move bar', async () => {
+    renderWithProviders(<CanfieldPage />);
+    const cardButton = (await screen.findByAltText('♠ 7')).closest('button');
+    if (!cardButton) throw new Error('Canfield tableau card is not inside a button');
+    fireEvent.click(cardButton);
+    const moveBar = await screen.findByTestId('cf-selected-move-bar');
+    expect(within(moveBar).getByTestId('cf-bar-move-to-foundation')).toBeInTheDocument();
+    expect(within(moveBar).getByTestId('cf-bar-move-to-tableau-1')).toBeInTheDocument();
+  });
   it('shows the landscape recommendation instead of the phase name in the banner', async () => {
     renderWithProviders(<CanfieldPage />);
     const bannerMessage = await screen.findByText('横画面での表示を推奨します');

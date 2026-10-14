@@ -12,7 +12,7 @@ import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { CARD_DIMENSIONS, useCardDimensions, useIsMobile, useWindowWidth } from '../hooks/useCardDimensions';
+import { CARD_DIMENSIONS, useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -83,7 +83,6 @@ function PokerSquaresPageContent() {
     cancelGiveUp,
   } = useGamePageSetup('pokersquares');
   const { cardWidth: baseCardWidth, isMobile } = useCardDimensions();
-  const isMobileViewport = useIsMobile();
   const windowWidth = useWindowWidth();
   // Keep the board compact enough to fit during play. Mobile cards use a
   // reduced width, while desktop cards stay at the standard 60px preset even
@@ -327,7 +326,7 @@ function PokerSquaresPageContent() {
           />
 
           {isPlaying && (
-            <details className="px-4 pt-2" open={!isMobileViewport}>
+            <details className="px-4 pt-2">
               <summary className="text-ds-text-primary text-sm cursor-pointer select-none inline-flex items-center gap-1.5 hover:text-ds-accent transition-colors py-1">
                 {t('scoreReference.label')}
               </summary>
