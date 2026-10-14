@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { findBadgeContrastViolations } from './lib/badge-contrast.mjs';
 import { addBgBlackRatchetViolation, countBgBlackUtilities } from './lib/bg-black-ratchet.mjs';
 import { findColoredActionTextViolations } from './lib/colored-action-text.mjs';
+import { findOpacitySuffixedTextTokens } from './lib/design-text-opacity.mjs';
 import { collectDesignTokens, findUndefinedDesignUtilities } from './lib/design-token-utilities.mjs';
 import { findErrorTextTokenViolations } from './lib/error-text-token.mjs';
 import { assertFloor } from './lib/floor.mjs';
@@ -81,6 +82,14 @@ for (const file of files) {
         });
       }
     }
+  }
+  for (const { token, index } of findOpacitySuffixedTextTokens(text)) {
+    violations.push({
+      file: relative(ROOT, file),
+      line: text.slice(0, index).split('\n').length,
+      match: token,
+      message: 'Do not use opacity-suffixed design tokens for meaningful text (see DESIGN.md Opacity rule).',
+    });
   }
 
   for (const violation of findErrorTextTokenViolations(text)) {

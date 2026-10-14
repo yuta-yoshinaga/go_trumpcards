@@ -387,7 +387,7 @@ function DaifugoPageContent() {
             )}
 
             {state.humanAction && (
-              <div className="bg-black/40 rounded-lg text-ds-success/80 py-2 px-3.5 my-2 text-xs">
+              <div className="bg-black/40 rounded-lg text-ds-success py-2 px-3.5 my-2 text-xs">
                 {actionDescription(state.players, state.humanAction)}
               </div>
             )}

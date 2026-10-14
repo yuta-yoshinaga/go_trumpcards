@@ -386,7 +386,7 @@ function MemoryPageContent() {
               {state.players.map((p, idx) => (
                 <span key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
                   {idx > 0 && (
-                    <span className="text-ds-text-muted/80 mr-3" aria-hidden="true">
+                    <span className="text-ds-text-muted mr-3" aria-hidden="true">
                       |
                     </span>
                   )}
@@ -429,7 +429,7 @@ function MemoryPageContent() {
                       {playerName(p.id, p.isHuman)}
                     </span>
                     {p.pairs.length === 0 ? (
-                      <span className="text-ds-text-muted/70">{t('noCapturedPairs')}</span>
+                      <span className="text-ds-text-muted">{t('noCapturedPairs')}</span>
                     ) : (
                       p.pairs.map((c, i) => (
                         <AnimatedCard

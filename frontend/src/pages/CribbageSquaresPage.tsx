@@ -431,7 +431,7 @@ function CribbageSquaresPageContent() {
                                 <div
                                   data-testid={`row-partial-${i}`}
                                   title={t('partialTooltip')}
-                                  className="text-[10px] text-ds-text-muted/80 leading-none mt-0.5 text-center"
+                                  className="text-[10px] text-ds-text-muted leading-none mt-0.5 text-center"
                                 >
                                   {t('partialPrefix')} {partial.join(' ')}
                                 </div>
@@ -502,7 +502,7 @@ function CribbageSquaresPageContent() {
                               <div
                                 data-testid={`col-partial-${i}`}
                                 title={t('partialTooltip')}
-                                className="text-[10px] text-ds-text-muted/80 leading-none mt-0.5"
+                                className="text-[10px] text-ds-text-muted leading-none mt-0.5"
                               >
                                 {t('partialPrefix')} {partial.join(' ')}
                               </div>

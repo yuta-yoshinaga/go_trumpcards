@@ -27,10 +27,7 @@ describe('felt color contrast', () => {
     expect(surfaceRule?.[1]).toContain('.bg-ds-surface-elevated');
     expect(surfaceRule?.[1]).toContain('.bg-ds-bg');
     expect(surfaceRule?.[1]).toContain('[data-surface]');
-    expect(surfaceRule?.[1]).toContain('.bg-white');
-    for (const fill of ['warning', 'accent', 'info', 'success', 'error']) {
-      expect(surfaceRule?.[1]).toContain(`.bg-ds-${fill}`);
-    }
+    expect(css).toMatch(/\[data-felt\] \.bg-white,[\s\S]*?\.bg-ds-error\s*\{[^}]*--ds-warning-text:/);
     for (const token of ['warning', 'info', 'accent', 'success', 'error-text']) {
       const textProperty = token === 'error-text' ? 'error-text' : `${token}-text`;
       expect(css).toMatch(
@@ -38,13 +35,44 @@ describe('felt color contrast', () => {
       );
       expect(css).toMatch(
         new RegExp(
-          `\\[data-felt\\]\\s*:is\\([^)]*\\.bg-ds-surface[^)]*\\.bg-white[^)]*\\)[^{]*\\{[^}]*--ds-${textProperty}:\\s*var\\(--color-ds-${token}\\)`,
+          `\\[data-felt\\]\\s*:is\\([^)]*\\.bg-ds-surface[^)]*\\[data-surface\\][^)]*\\)[^{]*\\{[^}]*--ds-${textProperty}:\\s*var\\(--color-ds-${token}\\)`,
         ),
       );
       expect(css).toMatch(
         new RegExp(`\\[data-felt\\]\\s+\\.text-ds-${token}\\s*\\{\\s*color:\\s*var\\(--ds-${textProperty}\\)`),
       );
+      expect(css).toMatch(
+        new RegExp(
+          `\\[data-felt\\]\\s+\\.hover\\\\:text-ds-${token}:hover[^{}]*\\{[^}]*color:\\s*var\\(--ds-${textProperty}\\)`,
+        ),
+      );
       expect(feltRules).not.toMatch(new RegExp(`--color-ds-${token}:`));
+    }
+  });
+
+  it('uses the same opaque-surface selectors for muted and state text', () => {
+    const selectors = [...css.matchAll(/\[data-felt\]\s*:is\(([^)]*)\)\s*\{/gs)].map(([, list]) =>
+      list?.replace(/\s+/g, ' ').trim(),
+    );
+    expect(selectors).toHaveLength(2);
+    expect(selectors[0]).toBe(selectors[1]);
+  });
+
+  it('maps hover color variants on felt and restores their hover colors on opaque surfaces', () => {
+    for (const [variant, onFelt, original] of [
+      ['accent-hover', 'accent-text', 'accent-hover'],
+      ['warning-hover', 'warning-text', 'warning-hover'],
+    ]) {
+      expect(css).toMatch(
+        new RegExp(
+          `\\[data-felt\\]\\s+\\.hover\\\\:text-ds-${variant}:hover\\s*\\{\\s*color:\\s*var\\(--ds-${onFelt}\\)`,
+        ),
+      );
+      expect(css).toMatch(
+        new RegExp(
+          `\\[data-felt\\]\\s*:is\\([^)]*\\)\\s*\\.hover\\\\:text-ds-${variant}:hover\\s*\\{\\s*color:\\s*var\\(--color-ds-${original}\\)`,
+        ),
+      );
     }
   });
 
@@ -103,5 +131,38 @@ describe('felt color contrast', () => {
         }
       }
     }
+  });
+
+  it('keeps on-felt accent text at AA over Pitch’s translucent accent panel', () => {
+    const readHex = (token: string) => {
+      const value = css.match(new RegExp(`${token}:\\s*(#[0-9a-fA-F]{6})\\s*;`))?.[1];
+      expect(value, `${token} must be defined as a 6-digit hex color`).toBeDefined();
+      return value as string;
+    };
+    const pitchFelt = readHex('--color-game-bg-blue');
+    const accent = readHex('--color-ds-accent');
+    // bg-ds-accent/20 composites 20% accent over 80% Pitch felt.
+    const panelBackground = `#${(pitchFelt.slice(1).match(/.{2}/g) ?? [])
+      .map((part, index) => {
+        const accentChannel = Number.parseInt(accent.slice(1).match(/.{2}/g)?.[index] ?? '00', 16);
+        return Math.round(accentChannel * 0.2 + Number.parseInt(part, 16) * 0.8)
+          .toString(16)
+          .padStart(2, '0');
+      })
+      .join('')}`;
+    const luminance = (hex: string) => {
+      const channels = hex.slice(1).match(/.{2}/g);
+      if (channels?.length !== 3) throw new Error(`Invalid color ${hex}`);
+      const linear = channels.map((part) => {
+        const channel = parseInt(part, 16) / 255;
+        return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+      });
+      const [red, green, blue] = linear;
+      return 0.2126 * (red ?? 0) + 0.7152 * (green ?? 0) + 0.0722 * (blue ?? 0);
+    };
+    const [hi, lo] = [luminance(readHex('--color-ds-accent-on-felt')), luminance(panelBackground)].sort(
+      (a, b) => b - a,
+    );
+    expect(((hi ?? 0) + 0.05) / ((lo ?? 0) + 0.05)).toBeGreaterThanOrEqual(4.5);
   });
 });

@@ -290,6 +290,8 @@ describe('PitchPage', () => {
     renderWithProviders(<PitchPage />);
     const badge = await screen.findByTestId('pitch-game-pips-badge');
     expect(badge.textContent).toMatch(/Game値: 0/);
+    expect(badge.className).toContain('text-ds-accent');
+    expect(badge.closest('.opacity-60')).toBeNull();
   });
 
   it('Game-pip badge tooltip has no trailing newline when pips = 0', async () => {
