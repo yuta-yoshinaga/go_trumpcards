@@ -2,6 +2,18 @@ import { expect, test } from '@playwright/test';
 import { isVisibleWithin, navigateTo, TIMEOUT_ACTION, TIMEOUT_TRANSITION, waitForLoaded } from './helpers';
 
 test.describe('Poker Squares E2E', () => {
+  test('keeps the score reference collapsed on desktop so the placement board has room', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await navigateTo(page, '/pokersquares');
+    const details = page.getByText('スコア表').locator('..');
+    await expect(details).not.toHaveAttribute('open');
+    const board = page.getByTestId('ps-board');
+    await expect(board).toBeVisible();
+    const bounds = await board.boundingBox();
+    if (!bounds) throw new Error('Poker Squares board has no bounding box');
+    expect(bounds.y + bounds.height).toBeLessThanOrEqual(800);
+  });
+
   test('places all 25 cards and reaches complete phase', async ({ page }) => {
     await navigateTo(page, '/pokersquares');
 
