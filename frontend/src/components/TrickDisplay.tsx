@@ -53,6 +53,8 @@ export interface TrickDisplayProps {
    * the existing games render exactly as before.
    */
   wrap?: boolean;
+  /** Horizontal distance in px between consecutive card wrappers. */
+  cardAdvancePx?: number;
   /** Optional per-card role marker, rendered in both the visual and accessible card label. */
   cardBadgeFor?: (card: Card) => { glyph: string; title: string } | null;
   /** Optional localized accessible name for each card, including its player. */
@@ -89,6 +91,7 @@ export function TrickDisplay({
   lastTrickWinner,
   winnerLabel,
   wrap = false,
+  cardAdvancePx,
   cardBadgeFor,
   cardAriaLabelFor,
   playerLabelFor,
@@ -145,6 +148,9 @@ export function TrickDisplay({
             <div
               key={cardKeyFor?.(trickCard, index) ?? `trick-${trickCard.playerIdx}`}
               className="relative text-center"
+              style={
+                cardAdvancePx !== undefined && index > 0 ? { marginLeft: cardAdvancePx - cardWidth - 8 } : undefined
+              }
               data-team={team ?? undefined}
               data-player-idx={trickCard.playerIdx}
               data-team-role={isAlly ? 'ally' : isFoe ? 'foe' : undefined}
