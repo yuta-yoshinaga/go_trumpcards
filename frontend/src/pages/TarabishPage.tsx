@@ -14,7 +14,7 @@ import { HintTooltip } from '../components/hint/HintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -68,6 +68,7 @@ function TarabishPageContent() {
     retry,
   } = useGameApi<TarabishResponse, Parameters<typeof tarabishApi.exec>>(tarabishApi.exec);
   const { cardWidth } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const { hint, hintEnabled, setHintEnabled } = useGameHint('tarabish', state);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('tarabish');
@@ -174,139 +175,180 @@ function TarabishPageContent() {
       ) : (
         <>
           <div className="flex-1 min-h-0 overflow-y-auto pt-3 px-4 lg:px-8">
-            <div className="text-ds-text-primary text-center mb-2">
-              <span className="mr-4" data-testid="tb-round">
-                {t('header.round')}: {state.roundNumber}
-              </span>
-              <span className="mr-4" data-testid="tb-trick">
-                {t('header.trick')}: {state.trickNumber + 1}/{TRICKS_PER_ROUND}
-              </span>
-              <span>{t('header.target', { target: String(state.config.target) })}</span>
-            </div>
-
-            <div className="text-ds-text-primary text-center mb-2" data-testid="tb-score">
-              {t('header.score', { t0: String(state.scores[0] ?? 0), t1: String(state.scores[1] ?? 0) })}
-            </div>
-
-            <div className="text-ds-text-muted text-center mb-2" data-testid="tb-round-points">
-              {t('header.roundPoints', {
-                t0: String(state.roundPoints[0]),
-                t1: String(state.roundPoints[1]),
-              })}
-            </div>
-
-            {/* 切り札の序列はこの系統の肝。盤面からは読み取れない。 */}
-            <details
-              className="mb-3 rounded bg-black/30 px-3 py-2 text-ds-text-muted text-sm text-center"
-              data-testid="tb-order-details"
+            <div
+              className={isLargeDesktop ? 'grid grid-cols-[minmax(0,1fr)_minmax(280px,30%)] gap-4' : 'contents'}
+              data-testid="tb-play-layout"
             >
-              <summary className="cursor-pointer select-none text-ds-text-primary" data-tutorial="tarabish-order">
-                {t('disclosure.rules')}
-              </summary>
-              <div className="mt-1" data-testid="tb-order">
-                {t('header.order')}
+              <div
+                className={
+                  isLargeDesktop
+                    ? 'col-span-2 min-w-0 text-ds-text-primary text-center mb-2'
+                    : 'text-ds-text-primary text-center mb-2'
+                }
+              >
+                <span className="mr-4" data-testid="tb-round">
+                  {t('header.round')}: {state.roundNumber}
+                </span>
+                <span className="mr-4" data-testid="tb-trick">
+                  {t('header.trick')}: {state.trickNumber + 1}/{TRICKS_PER_ROUND}
+                </span>
+                <span>{t('header.target', { target: String(state.config.target) })}</span>
               </div>
-            </details>
 
-            {/* 入札前は候補、決まったあとは切り札。 */}
-            <div className="mb-3 flex flex-wrap justify-center items-center gap-3">
-              {state.trumpTakerIdx >= 0 ? (
-                <div className="rounded bg-black/30 px-3 py-2 text-ds-text-primary text-sm" data-testid="tb-trump">
-                  {t('header.trumpTaken', {
-                    suit: suitSymbolAt(state.trumpSuit, '?'),
-                    name:
-                      state.trumpTakerIdx === 0
-                        ? t('header.you')
-                        : t('header.cpu', { idx: String(state.trumpTakerIdx) }),
-                  })}
+              <div
+                className={
+                  isLargeDesktop
+                    ? 'col-span-2 min-w-0 text-ds-text-primary text-center mb-2'
+                    : 'text-ds-text-primary text-center mb-2'
+                }
+                data-testid="tb-score"
+              >
+                {t('header.score', { t0: String(state.scores[0] ?? 0), t1: String(state.scores[1] ?? 0) })}
+              </div>
+
+              <div
+                className={
+                  isLargeDesktop
+                    ? 'col-span-2 min-w-0 text-ds-text-muted text-center mb-2'
+                    : 'text-ds-text-muted text-center mb-2'
+                }
+                data-testid="tb-round-points"
+              >
+                {t('header.roundPoints', {
+                  t0: String(state.roundPoints[0]),
+                  t1: String(state.roundPoints[1]),
+                })}
+              </div>
+
+              {/* 切り札の序列はこの系統の肝。盤面からは読み取れない。 */}
+              <details
+                className={`${isLargeDesktop ? 'col-start-2 row-start-4 min-w-0' : ''} mb-3 rounded bg-black/30 px-3 py-2 text-ds-text-muted text-sm text-center`}
+                data-testid="tb-order-details"
+              >
+                <summary className="cursor-pointer select-none text-ds-text-primary" data-tutorial="tarabish-order">
+                  {t('disclosure.rules')}
+                </summary>
+                <div className="mt-1" data-testid="tb-order">
+                  {t('header.order')}
                 </div>
-              ) : (
-                state.upCard && (
-                  <div className="flex items-center gap-2 rounded bg-black/30 p-2" data-testid="tb-upcard">
-                    <span className="text-ds-text-muted text-sm">{t('header.upCard')}</span>
-                    <CardImage card={state.upCard} width={Math.round(cardWidth * 0.8)} />
-                  </div>
-                )
-              )}
-            </div>
+              </details>
 
-            {/* メルドは自動判定。誰がいくら持っているかは盤面に出ない。 */}
-            <div className="mb-2 flex flex-wrap justify-center gap-1 sm:gap-2" data-testid="tb-human-seat">
-              {state.players
-                .filter((p) => p.isHuman)
-                .map((p) => (
-                  <div
-                    key={p.id}
-                    className="rounded bg-black/30 px-2 py-1 text-xs text-ds-text-muted sm:px-3 sm:py-2 sm:text-sm"
-                    data-testid={`tb-seat-${p.id.toString()}`}
-                  >
-                    <span className="text-ds-text-primary">{t('header.you')}</span>
-                    <span className="ml-1 text-ds-accent">{t('header.team', { team: String(p.team) })}</span>
-                    {': '}
-                    {meldStr(p)}
-                    <span className="ml-1 sm:ml-2" data-testid={`tb-seat-tricks-${p.id.toString()}`}>
-                      {t('header.tricksTaken', { count: p.trickCount })}
-                    </span>
-                    <span className="ml-1 sm:ml-2" data-testid={`tb-seat-cards-${p.id.toString()}`}>
-                      {t('header.cardsLeft', { count: p.cardCount })}
-                    </span>
+              {/* 入札前は候補、決まったあとは切り札。 */}
+              <div
+                className={`${isLargeDesktop ? 'col-start-2 row-start-5 min-w-0' : ''} mb-3 flex flex-wrap justify-center items-center gap-3`}
+              >
+                {state.trumpTakerIdx >= 0 ? (
+                  <div className="rounded bg-black/30 px-3 py-2 text-ds-text-primary text-sm" data-testid="tb-trump">
+                    {t('header.trumpTaken', {
+                      suit: suitSymbolAt(state.trumpSuit, '?'),
+                      name:
+                        state.trumpTakerIdx === 0
+                          ? t('header.you')
+                          : t('header.cpu', { idx: String(state.trumpTakerIdx) }),
+                    })}
                   </div>
-                ))}
-            </div>
-            <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length} dataTutorial="tarabish-melds">
-              <div className="mb-4 flex flex-wrap justify-center gap-2">
+                ) : (
+                  state.upCard && (
+                    <div className="flex items-center gap-2 rounded bg-black/30 p-2" data-testid="tb-upcard">
+                      <span className="text-ds-text-muted text-sm">{t('header.upCard')}</span>
+                      <CardImage card={state.upCard} width={Math.round(cardWidth * 0.8)} />
+                    </div>
+                  )
+                )}
+              </div>
+
+              {/* メルドは自動判定。誰がいくら持っているかは盤面に出ない。 */}
+              <div
+                className={`${isLargeDesktop ? 'col-start-2 row-start-6 min-w-0' : ''} mb-2 flex flex-wrap justify-center gap-1 sm:gap-2`}
+                data-testid="tb-human-seat"
+              >
                 {state.players
-                  .filter((p) => !p.isHuman)
+                  .filter((p) => p.isHuman)
                   .map((p) => (
                     <div
                       key={p.id}
-                      className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
+                      className="rounded bg-black/30 px-2 py-1 text-xs text-ds-text-muted sm:px-3 sm:py-2 sm:text-sm"
                       data-testid={`tb-seat-${p.id.toString()}`}
                     >
-                      <span className="text-ds-text-primary">{t('header.cpu', { idx: String(p.id) })}</span>
+                      <span className="text-ds-text-primary">{t('header.you')}</span>
                       <span className="ml-1 text-ds-accent">{t('header.team', { team: String(p.team) })}</span>
                       {': '}
                       {meldStr(p)}
-                      {/* **トリック配分がそのまま点数の趨勢。**CUI の playerLine は
-                      これを毎回出しているのに、Web だけ読めなかった。 */}
-                      <span className="ml-2" data-testid={`tb-seat-tricks-${p.id.toString()}`}>
+                      <span className="ml-1 sm:ml-2" data-testid={`tb-seat-tricks-${p.id.toString()}`}>
                         {t('header.tricksTaken', { count: p.trickCount })}
                       </span>
-                      <span className="ml-2" data-testid={`tb-seat-cards-${p.id.toString()}`}>
+                      <span className="ml-1 sm:ml-2" data-testid={`tb-seat-cards-${p.id.toString()}`}>
                         {t('header.cardsLeft', { count: p.cardCount })}
                       </span>
                     </div>
                   ))}
               </div>
-            </CpuAccordion>
+              <div className={isLargeDesktop ? 'col-start-2 row-start-7 min-w-0' : 'contents'}>
+                <CpuAccordion
+                  playerCount={state.players.filter((p) => !p.isHuman).length}
+                  dataTutorial="tarabish-melds"
+                >
+                  <div className="mb-4 flex flex-wrap justify-center gap-2">
+                    {state.players
+                      .filter((p) => !p.isHuman)
+                      .map((p) => (
+                        <div
+                          key={p.id}
+                          className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
+                          data-testid={`tb-seat-${p.id.toString()}`}
+                        >
+                          <span className="text-ds-text-primary">{t('header.cpu', { idx: String(p.id) })}</span>
+                          <span className="ml-1 text-ds-accent">{t('header.team', { team: String(p.team) })}</span>
+                          {': '}
+                          {meldStr(p)}
+                          {/* **トリック配分がそのまま点数の趨勢。**CUI の playerLine は
+                      これを毎回出しているのに、Web だけ読めなかった。 */}
+                          <span className="ml-2" data-testid={`tb-seat-tricks-${p.id.toString()}`}>
+                            {t('header.tricksTaken', { count: p.trickCount })}
+                          </span>
+                          <span className="ml-2" data-testid={`tb-seat-cards-${p.id.toString()}`}>
+                            {t('header.cardsLeft', { count: p.cardCount })}
+                          </span>
+                        </div>
+                      ))}
+                  </div>
+                </CpuAccordion>
+              </div>
 
-            <div data-tutorial="tarabish-trick">
-              <TrickDisplay
-                currentTrick={state.currentTrick}
-                players={state.players}
-                cardWidth={cardWidth}
-                label={t('currentTrick')}
+              <div
+                className={isLargeDesktop ? 'col-start-1 row-start-4 row-span-4 min-w-0 self-start' : 'contents'}
+                data-testid="tb-trick-column"
+              >
+                <div data-tutorial="tarabish-trick">
+                  <TrickDisplay
+                    currentTrick={state.currentTrick}
+                    players={state.players}
+                    cardWidth={cardWidth}
+                    label={t('currentTrick')}
+                    wrap={isLargeDesktop}
+                  />
+                </div>
+              </div>
+
+              {resultBanner && (
+                <div className="text-center text-xl my-4 text-ds-accent font-semibold" role="status">
+                  {resultBanner}
+                </div>
+              )}
+
+              <ErrorAlert message={error} onRetry={retry} />
+
+              {hintEnabled && hint && (
+                <div className="mt-3 flex justify-center">
+                  <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />
+                </div>
+              )}
+
+              <SettingsPanel
+                title={tc('settings.title')}
+                groups={[{ items: [hintCheckboxItem(tc, hintEnabled, setHintEnabled)] }]}
               />
             </div>
-
-            {resultBanner && (
-              <div className="text-center text-xl my-4 text-ds-accent font-semibold" role="status">
-                {resultBanner}
-              </div>
-            )}
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            {hintEnabled && hint && (
-              <div className="mt-3 flex justify-center">
-                <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />
-              </div>
-            )}
-
-            <SettingsPanel
-              title={tc('settings.title')}
-              groups={[{ items: [hintCheckboxItem(tc, hintEnabled, setHintEnabled)] }]}
-            />
           </div>
 
           <GameFooter
