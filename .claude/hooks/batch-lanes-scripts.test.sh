@@ -476,6 +476,7 @@ make_e2egate_case() {
     page) printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/src/pages/PokerPage.tsx" ;;
     component) printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/src/components/Other.tsx" ;;
     helper) printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/e2e/helpers.ts" ;;
+    spec) printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/e2e/poker.spec.ts" ;;
     ignored) printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/src/i18n/locales/en/common.json"; printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/src/components/a.test.tsx" ;;
   esac
   output=$(BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$SCRIPTS/e2egate.sh" --dry-run 1) || fail "e2egate $name dry-run failed"
@@ -485,9 +486,34 @@ make_e2egate_case() {
     grep -q 'run 1: e2e/poker.spec.ts$' <<< "$output" || fail "page game spec has grep or was omitted: $output"
     grep -qF 'run 2: e2e/desktop-board-visibility.spec.ts' <<< "$output" || fail "page sweep run omitted: $output"
     grep -qF -- '--grep /poker\b --pass-with-no-tests' <<< "$output" || fail "page sweep omitted route grep/pass-with-no-tests: $output"
+    exec_scripts="$tmp/e2egate-exec-$name"
+    mkdir -p "$exec_scripts"
+    cp "$SCRIPTS/common.sh" "$SCRIPTS/e2egate.sh" "$exec_scripts/"
+    cat > "$exec_scripts/e2e.sh" <<'STUB'
+#!/usr/bin/env bash
+printf '%s\n' "$@" > "$E2EGATE_ARGS"
+STUB
+    chmod +x "$exec_scripts/e2e.sh"
+    E2EGATE_ARGS="$tmp/e2egate-args-$name" BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$exec_scripts/e2egate.sh" 1 || fail "page e2egate execution failed"
+    expected="$tmp/e2egate-expected-$name"
+    printf '%s\n' 1 e2e/poker.spec.ts --- e2e/desktop-board-visibility.spec.ts e2e/desktop-hand-visibility.spec.ts e2e/duplicate-text.spec.ts e2e/game-message-visibility.spec.ts e2e/hand-visibility.spec.ts e2e/mobile-viewport.spec.ts e2e/text-contrast.spec.ts --grep '/poker\b' --pass-with-no-tests > "$expected"
+    diff -u "$expected" "$tmp/e2egate-args-$name" || fail "page execution passed wrong args"
+    ! grep -q 'e2e/e2e/' "$tmp/e2egate-args-$name" || fail "page execution doubled e2e prefix"
   elif [[ "$changed" == helper ]]; then
     grep -q 'run 1: e2e/poker.spec.ts' <<< "$output" || fail "helper edit omitted importing spec: $output"
     [[ $(grep -c '^run ' <<< "$output") == 1 ]] || fail "helper edit selected non-importing specs: $output"
+  elif [[ "$changed" == spec ]]; then
+    grep -q 'run 1: e2e/poker.spec.ts$' <<< "$output" || fail "spec-only edit omitted its spec: $output"
+    exec_scripts="$tmp/e2egate-exec-$name"
+    mkdir -p "$exec_scripts"
+    cp "$SCRIPTS/common.sh" "$SCRIPTS/e2egate.sh" "$exec_scripts/"
+    cat > "$exec_scripts/e2e.sh" <<'STUB'
+#!/usr/bin/env bash
+printf '%s\n' "$@" > "$E2EGATE_ARGS"
+STUB
+    chmod +x "$exec_scripts/e2e.sh"
+    E2EGATE_ARGS="$tmp/e2egate-args-$name" BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$exec_scripts/e2egate.sh" 1 || fail "spec-only e2egate execution failed"
+    [[ "$(cat "$tmp/e2egate-args-$name")" == $'1\ne2e/poker.spec.ts' ]] || fail "spec-only execution passed wrong args: $(cat "$tmp/e2egate-args-$name")"
   elif [[ "$changed" == ignored ]]; then
     [[ -z "$output" ]] || fail "test/locale changes selected specs: $output"
     BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$SCRIPTS/e2egate.sh" 1 || fail "no-spec e2egate should exit 0"
@@ -495,6 +521,7 @@ make_e2egate_case() {
 }
 make_e2egate_case shared shared
 make_e2egate_case page page
+make_e2egate_case spec spec
 make_e2egate_case component component
 make_e2egate_case helper helper
 make_e2egate_case ignored ignored
