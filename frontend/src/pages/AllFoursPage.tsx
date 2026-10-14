@@ -478,7 +478,6 @@ function AllFoursPageContent() {
 
             {isBegPhase && isHumanBegTurn && (
               <div data-tutorial="af-beg-controls" className="flex flex-wrap gap-2 items-center justify-center pb-2">
-                <span className="text-ds-text-primary text-sm">{t('begPhase')}</span>
                 <button type="button" className={btnPrimary} disabled={loading} onClick={() => handleBeg(false)}>
                   {t('standButton')}
                 </button>

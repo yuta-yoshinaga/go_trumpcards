@@ -111,6 +111,15 @@ beforeEach(() => {
 });
 
 describe('CuckooPage', () => {
+  it('shows the turn instruction only in the game message box', async () => {
+    const instruction = 'あなたの番です — キープするか隣と交換してください。';
+    mockExec.mockResolvedValue(makeState({ message: instruction }));
+    renderWithProviders(<CuckooPage />);
+
+    expect(await screen.findByText(instruction)).toBeInTheDocument();
+    expect(screen.getAllByText(instruction)).toHaveLength(1);
+  });
+
   it('shows the swap initiator in Japanese and English refusal notices', async () => {
     mockExec.mockResolvedValue(refuseState);
     renderWithProviders(<CuckooPage />);
