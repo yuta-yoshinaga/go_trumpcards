@@ -240,20 +240,17 @@ describe('KarnoffelPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 1 }));
   });
 
-  // **追随の義務は無い。**制限は「第1トリックのリードに悪魔は使えない」だけ。
-  it('says there is no follow-suit rule but the devil cannot open', async () => {
+  it('keeps the play instruction out of the footer while the phase message remains visible', async () => {
     renderWithProviders(<KarnoffelPage />);
-    await waitFor(() => expect(screen.getByTestId('karnoffel-play-notice')).toBeInTheDocument());
-    const notice = screen.getByTestId('karnoffel-play-notice');
-    expect(notice).toHaveTextContent('追随の義務はありません');
-    expect(notice).toHaveTextContent('第1トリックのリードに悪魔は使えません');
+    expect(await screen.findByRole('button', { name: '出す' })).toBeInTheDocument();
+    expect(screen.queryByTestId('karnoffel-play-notice')).not.toBeInTheDocument();
   });
 
   // その一つの制限はサーバーが決める。
   it('disables cards the server did not list as playable', async () => {
     mockExec.mockResolvedValue(makeState({ validPlays: [1, 2] }));
     renderWithProviders(<KarnoffelPage />);
-    await waitFor(() => expect(screen.getByTestId('karnoffel-play-notice')).toBeInTheDocument());
+    await screen.findByRole('button', { name: '出す' });
 
     const hand = handButtons();
     expect(hand[0]).toBeDisabled();
@@ -264,7 +261,7 @@ describe('KarnoffelPage', () => {
   it('exposes hand selection and turn legality accessibly', async () => {
     mockExec.mockResolvedValue(makeState({ validPlays: [1, 2] }));
     renderWithProviders(<KarnoffelPage />);
-    await waitFor(() => expect(screen.getByTestId('karnoffel-play-notice')).toBeInTheDocument());
+    await screen.findByRole('button', { name: '出す' });
 
     const hand = handButtons();
     expect(hand[0]).toHaveAttribute('aria-pressed', 'false');

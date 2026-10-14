@@ -322,12 +322,6 @@ function KlaverjasPageContent() {
                         >
                           <span>{t('roundResult.teamAShort', { points: state.roundCardPoints[0] })}</span>
                           <span>{t('roundResult.teamBShort', { points: state.roundCardPoints[1] })}</span>
-                          <span>
-                            {t('roundResult.roemShort', {
-                              roemA: state.roundRoem[0] ?? 0,
-                              roemB: state.roundRoem[1] ?? 0,
-                            })}
-                          </span>
                         </div>
                       )}
 

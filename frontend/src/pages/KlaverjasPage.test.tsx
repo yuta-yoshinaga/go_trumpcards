@@ -51,6 +51,20 @@ beforeEach(() => {
 });
 
 describe('KlaverjasPage', () => {
+  it('shows the live Roem total once in the desktop information panel', async () => {
+    const previousWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    mockExec.mockResolvedValue(makeKlaverjasState({ phase: 0, roundRoem: [20, 0] }));
+    renderWithProviders(<KlaverjasPage />);
+    const details = await openKlaverjasInfo();
+
+    const aggregate = within(details).getByTestId('klaverjas-round-card-points');
+    const roem = within(details).getByTestId('klaverjas-roem');
+    expect(aggregate).not.toHaveTextContent('Roem');
+    expect(roem).toHaveTextContent('Roem A=20 B=0');
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: previousWidth });
+  });
+
   it('collapses CPU status on mobile while keeping match scores visible', async () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });

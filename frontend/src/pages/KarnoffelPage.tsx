@@ -422,12 +422,6 @@ function KarnoffelPageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {isHumanPlay && (
-              <div className="text-ds-text-muted text-xs mb-2" data-testid="karnoffel-play-notice">
-                {t('playNotice')}
-              </div>
-            )}
-
             <label className="flex items-center gap-1 text-ds-text-primary text-xs w-full justify-center cursor-pointer min-h-[44px]">
               <input
                 type="checkbox"
