@@ -217,16 +217,16 @@ function MendikotPageContent() {
 
             {/* **勝敗は 10 の枚数で決まる。** 盤面から読めないので先頭に出す。 */}
             <div
-              className={isLargeDesktop ? 'grid grid-cols-[1fr_minmax(280px,30%)] gap-4' : 'contents'}
+              className={isLargeDesktop ? 'grid grid-cols-[minmax(0,1fr)_minmax(280px,30%)] gap-4' : 'contents'}
               data-testid="md-board-grid"
             >
-              <div className={isLargeDesktop ? 'col-start-2 row-start-1' : 'contents'}>
+              <div className={isLargeDesktop ? 'col-start-2 row-start-1 min-w-0' : 'contents'}>
                 <div
                   className="mb-1 rounded bg-black/30 px-3 py-2 text-ds-text-primary text-center"
                   data-testid="md-tens"
                   data-tutorial="md-tens"
                 >
-                  <div className="whitespace-nowrap">
+                  <div>
                     {t('header.tensCount', {
                       t0: String(state.teamTens[0] ?? 0),
                       t1: String(state.teamTens[1] ?? 0),
@@ -236,7 +236,7 @@ function MendikotPageContent() {
                 </div>
               </div>
 
-              <div className={isLargeDesktop ? 'col-start-2 row-start-2' : 'contents'}>
+              <div className={isLargeDesktop ? 'col-start-2 row-start-2 min-w-0' : 'contents'}>
                 <div className="mb-3 flex flex-wrap justify-center gap-x-3 text-ds-text-muted text-sm">
                   <span className="whitespace-nowrap" data-testid="md-tricks">
                     {t('header.tricksCount', {
@@ -251,13 +251,13 @@ function MendikotPageContent() {
                 </div>
               </div>
 
-              <div className={isLargeDesktop ? 'col-start-2 row-start-3' : 'contents'}>
+              <div className={isLargeDesktop ? 'col-start-2 row-start-3 min-w-0' : 'contents'}>
                 <div className="mb-2 flex flex-wrap justify-center gap-1 sm:gap-2" data-testid="md-human-seat">
                   {human && renderSeat(human)}
                 </div>
               </div>
 
-              <div className={isLargeDesktop ? 'col-start-2 row-start-4' : 'contents'}>
+              <div className={isLargeDesktop ? 'col-start-2 row-start-4 min-w-0' : 'contents'}>
                 <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length} dataTutorial="md-seats">
                   <div
                     className="grid grid-cols-2 gap-1 mb-4 sm:flex sm:flex-wrap sm:justify-center sm:gap-2"
@@ -268,13 +268,14 @@ function MendikotPageContent() {
                 </CpuAccordion>
               </div>
 
-              <div className={isLargeDesktop ? 'col-start-1 row-start-1 row-span-4 self-start' : 'contents'}>
+              <div className={isLargeDesktop ? 'col-start-1 row-start-1 row-span-4 self-start min-w-0' : 'contents'}>
                 <div data-tutorial="md-trick">
                   <TrickDisplay
                     currentTrick={state.currentTrick}
                     lastTrick={state.lastTrick}
                     players={state.players}
                     cardWidth={cardWidth}
+                    wrap={isLargeDesktop}
                     label={t('currentTrick')}
                     lastTrickWinner={state.lastTrickWinner >= 0 ? state.lastTrickWinner : undefined}
                     cardAriaLabelFor={(player, card) =>

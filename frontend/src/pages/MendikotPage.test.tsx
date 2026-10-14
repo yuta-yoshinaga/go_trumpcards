@@ -79,15 +79,22 @@ describe('MendikotPage', () => {
   it('places the trick and CPU accordion in separate columns on large desktop', async () => {
     mobileState.isMobile = false;
     mobileState.largeDesktop = true;
+    mockExec.mockResolvedValue(makeState({ currentTrick: [{ playerIdx: 0, card: card('SPADE', 2) }] }));
     const { container } = renderWithProviders(<MendikotPage />);
 
     const trick = (await screen.findByTestId('md-board-grid')).querySelector('[data-tutorial="md-trick"]');
     const accordion = await screen.findByTestId('cpu-accordion');
     const grid = screen.getByTestId('md-board-grid');
 
-    expect(grid).toHaveClass('grid', 'grid-cols-[1fr_minmax(280px,30%)]');
+    expect(grid).toHaveClass('grid', 'grid-cols-[minmax(0,1fr)_minmax(280px,30%)]');
     expect(trick?.parentElement).toHaveClass('col-start-1');
+    expect(trick?.parentElement).toHaveClass('min-w-0');
     expect(accordion.parentElement).toHaveClass('col-start-2');
+    expect(accordion.parentElement).toHaveClass('min-w-0');
+    expect(grid.querySelector('[data-testid="md-tens"]')?.parentElement).toHaveClass('min-w-0');
+    expect(grid.querySelector('[data-testid="md-tricks"]')?.closest('.col-start-2')).toHaveClass('min-w-0');
+    expect(grid.querySelector('[data-testid="md-human-seat"]')?.parentElement).toHaveClass('min-w-0');
+    expect(grid.querySelector('[data-testid="trick-display-cards"]')).toHaveClass('flex-wrap');
     expect(container.querySelector('[data-testid="md-board-grid"] [data-testid="md-tens"]')).not.toBeNull();
   });
 
