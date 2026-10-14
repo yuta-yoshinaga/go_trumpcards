@@ -20,6 +20,34 @@ describe('felt muted text CSS', () => {
 describe('felt color contrast', () => {
   const css = readFileSync('src/index.css', 'utf8');
 
+  it('maps state text utilities on felt without overriding semantic background tokens', () => {
+    const feltRules = [...css.matchAll(/\[data-felt\][^{]*\{[^}]*\}/gs)].map(([rule]) => rule).join('\n');
+    const surfaceRule = css.match(/\[data-felt\]\s*:is\(([^)]*)\)\s*\{([^}]*)\}/s);
+    expect(surfaceRule?.[1]).toContain('.bg-ds-surface');
+    expect(surfaceRule?.[1]).toContain('.bg-ds-surface-elevated');
+    expect(surfaceRule?.[1]).toContain('.bg-ds-bg');
+    expect(surfaceRule?.[1]).toContain('[data-surface]');
+    expect(surfaceRule?.[1]).toContain('.bg-white');
+    for (const fill of ['warning', 'accent', 'info', 'success', 'error']) {
+      expect(surfaceRule?.[1]).toContain(`.bg-ds-${fill}`);
+    }
+    for (const token of ['warning', 'info', 'accent', 'success', 'error-text']) {
+      const textProperty = token === 'error-text' ? 'error-text' : `${token}-text`;
+      expect(css).toMatch(
+        new RegExp(`\\[data-felt\\]\\s*\\{[^}]*--ds-${textProperty}:\\s*var\\(--color-ds-${token}-on-felt\\)`, 's'),
+      );
+      expect(css).toMatch(
+        new RegExp(
+          `\\[data-felt\\]\\s*:is\\([^)]*\\.bg-ds-surface[^)]*\\.bg-white[^)]*\\)[^{]*\\{[^}]*--ds-${textProperty}:\\s*var\\(--color-ds-${token}\\)`,
+        ),
+      );
+      expect(css).toMatch(
+        new RegExp(`\\[data-felt\\]\\s+\\.text-ds-${token}\\s*\\{\\s*color:\\s*var\\(--ds-${textProperty}\\)`),
+      );
+      expect(feltRules).not.toMatch(new RegExp(`--color-ds-${token}:`));
+    }
+  });
+
   it('keeps every non-dark game felt, bare or under a glass panel, at AA for primary and on-felt text', () => {
     const declarations = [...css.matchAll(/--color-game-bg-([\w-]+):\s*([^;]+);/g)].filter(
       ([, name]) => !name?.endsWith('-dark'),
@@ -37,7 +65,13 @@ describe('felt color contrast', () => {
       expect(value, `${token} must be defined as a 6-digit hex color`).toBeDefined();
       return value as string;
     };
-    const textColors = [readTextColor('--color-ds-text-primary'), readTextColor('--color-ds-text-on-felt')];
+    const textColors = [
+      readTextColor('--color-ds-text-primary'),
+      readTextColor('--color-ds-text-on-felt'),
+      ...['warning', 'info', 'accent', 'success', 'error-text'].map((token) =>
+        readTextColor(`--color-ds-${token}-on-felt`),
+      ),
+    ];
 
     const luminance = (hex: string) => {
       const channels = hex.slice(1).match(/.{2}/g);

@@ -118,7 +118,7 @@ These use design system tokens for game UX color-coding. They are scoped to poke
 
 ### Text on felt (dark mode)
 
-Muted text must not be placed directly on felt. In the game UI, `data-felt` scopes `text-ds-text-muted` to `--text-on-felt`; inside opaque surfaces (`bg-ds-surface`, `bg-ds-surface-elevated`, `bg-ds-bg`, or explicit `data-surface`) it resolves back to the original `--text-muted`. Translucent `.glass-panel` and `.glass-panel--dark` retain the on-felt color. At 80% opacity, `.glass-panel--dark` composites to approximately `#19362c` over the brightest felt (`#006a00`), where `#8b9aaf` has 4.57:1 contrast. New game pages get this behavior automatically by using `GamePageShell`. Eleven felt colors were darkened in #11722 (lightness only, hue kept) so that primary and on-felt text meet WCAG AA both on the bare felt and under a translucent `.glass-panel`: `game-bg-green-bright`, `game-bg-klaverjas`, `game-bg-ulti`, `game-bg-twentynine`, `game-bg-carioca`, `game-bg-indianrummy` (by 17–30%) and `game-bg-green-poker`, `game-bg-sueca`, `game-bg-fortyfives`, `game-bg-spoilfive`, `game-bg-michigan` (by 2–10%). Colored action buttons use dark `--text-on-accent` text.
+Muted text and state-colored text must not use their default colors directly on felt. In the game UI, `data-felt` scopes muted and state text utilities to their on-felt variants; inside opaque surfaces (`bg-ds-surface`, `bg-ds-surface-elevated`, `bg-ds-bg`, or explicit `data-surface`) and bright filled surfaces, state utilities resolve back to their original colors. Translucent `.glass-panel` and `.glass-panel--dark` retain the on-felt variants. At 80% opacity, `.glass-panel--dark` composites to approximately `#19362c` over the brightest felt (`#006a00`), where `#8b9aaf` has 4.57:1 contrast. New game pages get this behavior automatically by using `GamePageShell`. Eleven felt colors were darkened in #11722 (lightness only, hue kept) so that primary and on-felt text meet WCAG AA both on the bare felt and under a translucent `.glass-panel`: `game-bg-green-bright`, `game-bg-klaverjas`, `game-bg-ulti`, `game-bg-twentynine`, `game-bg-carioca`, `game-bg-indianrummy` (by 17–30%) and `game-bg-green-poker`, `game-bg-sueca`, `game-bg-fortyfives`, `game-bg-spoilfive`, `game-bg-michigan` (by 2–10%). Colored action buttons use dark `--text-on-accent` text.
 
 | Felt | Primary `#E8E0D4` | Muted `#8B9AAF` | On-felt `#DDE3EA` |
 |------|-----------------:|----------------:|-------------------:|
@@ -130,6 +130,16 @@ Muted text must not be placed directly on felt. In the game UI, `data-felt` scop
 | `felt-blue` `#1A2C5C` | 10.29:1 | 4.71:1 | 10.43:1 |
 
 This table shows six representative colors; contrast was calculated for all 73 `--color-game-bg-*` colors in `frontend/src/index.css`. Every non-dark felt color meets AA for on-felt and primary text, bare and under a `.glass-panel`; `frontend/src/index.test.ts` checks every `--color-game-bg-*` both ways.
+
+State text uses hue-preserving, lightness-raised colors on felt. The on-felt values below are the darkest 8-bit colors tested against all 73 non-dark felts, both bare and under the translucent `.glass-panel`; each combination is at least 4.5:1 (the lowest result is 4.51:1). The utility class is overridden rather than the semantic color variable, so matching background utilities remain unchanged. Gold hanafuda card corner labels use a dedicated dark ink (`#765300`, 6.98:1 on white); other gold card art keeps its existing ink.
+
+| State text | Original | On-felt |
+|------------|---------|---------|
+| Warning | `#E8923A` | `#F8DCBF` |
+| Info | `#5B8FB9` | `#D5E3ED` |
+| Accent | `#D4A853` | `#EFDFBF` |
+| Success | `#4CAF7D` | `#C9E8D8` |
+| Error text | `#F28B82` | `#FBD9D6` |
 
 ### Contrast ratios (light mode)
 | Combination | Ratio | WCAG |
