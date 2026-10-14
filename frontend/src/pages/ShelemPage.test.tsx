@@ -72,6 +72,16 @@ describe('ShelemPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('renders bidding controls in the fixed footer actions', async () => {
+    renderWithProviders(<ShelemPage />);
+    const actions = await screen.findByTestId('sh-primary-actions');
+    const hand = screen.getByText(/あなた:/).closest('[data-tutorial="sh-hand"]');
+    expect(actions.closest('[data-testid="game-footer-actions"]')).not.toBeNull();
+    expect(actions).toContainElement(screen.getByTestId('sh-bid-90-btn'));
+    expect(hand).not.toBeNull();
+    if (hand) expect(hand.closest('[data-testid="game-footer-content"]')).not.toBeNull();
+  });
+
   // **点になるのは A/10/5 だけ。** 盤面から読めないので常に出す。
   it('always states the point cards', async () => {
     renderWithProviders(<ShelemPage />);

@@ -256,13 +256,41 @@ function PutPageContent() {
           </div>
         )}
 
-        {isHumanRespond && state.putCallerIdx >= 0 && (
-          <div className="text-center text-lg my-2 text-ds-accent" role="status">
-            {t('respondPrompt', { name: t('header.cpu'), level: levelLabel(state.pendingLevel) })}
-          </div>
-        )}
-
         <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+        <div className="mt-3 flex flex-wrap gap-2" data-testid="put-primary-actions">
+          {isHumanPlayTurn && state.canDeclarePut && (
+            <button
+              type="button"
+              className={btnWarning}
+              onClick={handlePut}
+              disabled={loading}
+              data-tutorial="put-call"
+            >
+              {t('actions.put')}
+            </button>
+          )}
+          {isHumanRespond && (
+            <>
+              <button type="button" className={btnSuccess} onClick={handleAccept} disabled={loading}>
+                {t('actions.accept')}
+              </button>
+              <p className="self-center text-ds-text-muted text-sm">
+                {t('respondOutcome.accept', { stake: state.pendingLevel + 1 })}
+              </p>
+              <button type="button" className={btnDanger} onClick={handleDecline} disabled={loading}>
+                {t('actions.decline')}
+              </button>
+              <p className="self-center text-ds-text-muted text-sm">
+                {t('respondOutcome.decline', { stake: state.handStake })}
+              </p>
+              {/* **応答フェーズに引き上げボタンは置かない。** プットの宣言は
+                  1 段だけで、言われた側は受諾か降参かの二択。クローン元の
+                  トゥルコは Retruco / Vale Cuatro へ伸ばせるのでここに
+                  「引き上げる」があったが、PutMaxLevel を絞った時点で
+                  canDeclarePut は必ず false になり、押せないボタンが残る。 */}
+            </>
+          )}
+        </div>
         {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
         <ErrorAlert message={error} onRetry={retry} />
 
@@ -286,36 +314,6 @@ function PutPageContent() {
         </div>
 
         <div className="mt-4 flex flex-wrap gap-2">
-          {isHumanPlayTurn && state.canDeclarePut && (
-            <button
-              type="button"
-              className={btnWarning}
-              onClick={handlePut}
-              disabled={loading}
-              data-tutorial="put-call"
-            >
-              {t('actions.put')}
-            </button>
-          )}
-          {isHumanRespond && (
-            <>
-              <button type="button" className={btnSuccess} onClick={handleAccept} disabled={loading}>
-                {t('actions.accept')}
-              </button>
-              <p className="text-ds-text-muted text-sm">
-                {t('respondOutcome.accept', { stake: state.pendingLevel + 1 })}
-              </p>
-              <button type="button" className={btnDanger} onClick={handleDecline} disabled={loading}>
-                {t('actions.decline')}
-              </button>
-              <p className="text-ds-text-muted text-sm">{t('respondOutcome.decline', { stake: state.handStake })}</p>
-              {/* **応答フェーズに引き上げボタンは置かない。** プットの宣言は
-                  1 段だけで、言われた側は受諾か降参かの二択。クローン元の
-                  トゥルコは Retruco / Vale Cuatro へ伸ばせるのでここに
-                  「引き上げる」があったが、PutMaxLevel を絞った時点で
-                  canDeclarePut は必ず false になり、押せないボタンが残る。 */}
-            </>
-          )}
           {(isTrickEnd || isHandEnd) && (
             <button type="button" className={btnSuccess} onClick={handleNext} disabled={loading}>
               {t('actions.next')}

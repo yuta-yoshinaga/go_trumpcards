@@ -147,6 +147,36 @@ test('/agnes keeps every large desktop move button visible', async ({ page }) =>
   expect(result.every(Boolean)).toBe(true);
 });
 
+for (const { path, selector } of [
+  { path: '/shelem', selector: '[data-testid="sh-primary-actions"] button' },
+  { path: '/put', selector: '[data-testid="put-primary-actions"] button' },
+  { path: '/truco', selector: '[data-testid="truco-primary-actions"] button' },
+]) {
+  test(`${path} keeps primary controls inside the desktop play viewport`, async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await navigateTo(page, path);
+    const controls = page.locator(selector);
+    await expect(controls.first()).toBeVisible();
+    const visible = await controls.evaluateAll((elements) =>
+      elements.every((element) => {
+        const box = element.getBoundingClientRect();
+        let top = 0;
+        let bottom = window.innerHeight;
+        for (let ancestor = element.parentElement; ancestor; ancestor = ancestor.parentElement) {
+          const style = getComputedStyle(ancestor);
+          if (/^(auto|scroll|hidden)$/.test(style.overflowY) && ancestor.scrollHeight > ancestor.clientHeight) {
+            const bounds = ancestor.getBoundingClientRect();
+            top = Math.max(top, bounds.top);
+            bottom = Math.min(bottom, bounds.bottom);
+          }
+        }
+        return box.top >= top && box.bottom <= bottom;
+      }),
+    );
+    expect(visible).toBe(true);
+  });
+}
+
 test('/clocksolitaire keeps every clock label and progress badge on top', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await navigateTo(page, '/clocksolitaire');
