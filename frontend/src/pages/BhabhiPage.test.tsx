@@ -102,7 +102,9 @@ describe('BhabhiPage', () => {
   // **場札の枚数が罰の大きさそのもの。** 未リードと確定の両側を踏む。
   it('shows the pile size once somebody has led', async () => {
     const { unmount } = renderWithProviders(<BhabhiPage />);
-    expect(await screen.findByTestId('bh-pile')).toBeEmptyDOMElement();
+    const emptyPile = await screen.findByTestId('bh-pile');
+    expect(emptyPile).toBeEmptyDOMElement();
+    expect(emptyPile).not.toHaveClass('mb-3');
     unmount();
 
     mockExec.mockResolvedValue(
@@ -116,6 +118,7 @@ describe('BhabhiPage', () => {
     );
     renderWithProviders(<BhabhiPage />);
     const pile = await screen.findByTestId('bh-pile');
+    expect(pile).toHaveClass('mb-3');
     expect(pile).toHaveTextContent('♥');
     expect(pile).toHaveTextContent('2');
   });

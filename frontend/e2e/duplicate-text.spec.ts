@@ -16,7 +16,11 @@ const gameRoutesSource = readFileSync(
   resolve(dirname(fileURLToPath(import.meta.url)), '../src/constants/gameRoutes.ts'),
   'utf8',
 );
-const allGamePaths = [...gameRoutesSource.matchAll(/path:\s*'([^']+)'/g)].map(([, path]) => path);
+// This parser depends on the current gameRoutes.ts path declaration format.
+const allGamePaths = [...gameRoutesSource.matchAll(/path:\s*'([^']+)'/g)]
+  .map(([, path]) => path)
+  .filter((path) => path !== '/');
+expect(allGamePaths.length).toBeGreaterThanOrEqual(300);
 
 for (const viewport of viewports) {
   test.describe(`duplicate visible text (${viewport.name})`, () => {
