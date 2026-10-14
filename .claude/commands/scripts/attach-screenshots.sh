@@ -49,6 +49,13 @@ if ! git clone "https://gist.github.com/${gist}.git" "$tmp/gist" >/dev/null 2>&1
   echo "could not clone gist $gist" >&2
   exit 1
 fi
+for png in "$@"; do
+  base=$(basename "$png")
+  if [[ -f $tmp/gist/$base ]] && ! cmp -s "$png" "$tmp/gist/$base"; then
+    echo "gist $gist already has a different $base; rename the file (e.g. ${base%.png}-desktop.png) or use a new gist" >&2
+    exit 2
+  fi
+done
 cd "$tmp/gist"
 for png in "$@"; do cp "$png" "$(basename "$png")"; done
 git add -- .

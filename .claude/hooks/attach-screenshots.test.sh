@@ -42,7 +42,7 @@ cat > "$tmp/bin/git" <<'MOCK'
 #!/usr/bin/env bash
 printf 'git %s\n' "$*" >> "$MOCK_LOG"
 case $1 in
-  clone) [[ ${MOCK_CLONE_FAIL:-0} == 1 ]] && exit 1; mkdir -p "$3"; printf '# README\n' > "$3/README.md" ;;
+  clone) [[ ${MOCK_CLONE_FAIL:-0} == 1 ]] && exit 1; mkdir -p "$3"; printf '# README\n' > "$3/README.md"; if [[ ${MOCK_EXISTING_FILE:-0} == 1 ]]; then printf '%s' "${MOCK_EXISTING_CONTENT:-different}" > "$3/foo-play.png"; fi ;;
   push) if [[ ${MOCK_PUSH_FAIL:-0} == 1 ]]; then exit 1; fi ;;
   config) exit 1 ;;
   diff) exit 1 ;;
@@ -91,6 +91,20 @@ grep -q 'image count: expected 2 got 0' "$tmp/no-images.err"
 : > "$MOCK_LOG"
 PATH="$tmp/bin:$PATH" bash "$script" -i 1 -t Reused -g existing "$tmp/png/foo-play.png" "$tmp/png/bar.png" >/dev/null 2>/dev/null
 ! grep -q 'gh gist create' "$MOCK_LOG"
+
+: > "$MOCK_LOG"
+set +e
+MOCK_EXISTING_FILE=1 PATH="$tmp/bin:$PATH" bash "$script" -i 1 -t Different -g abc123 "$tmp/png/foo-play.png" >/dev/null 2>"$tmp/different.err"
+status=$?
+set -e
+[[ $status -eq 2 ]]
+grep -q 'gist abc123 already has a different foo-play.png;' "$tmp/different.err"
+! grep -q '^git -c .* commit ' "$MOCK_LOG"
+! grep -q '^gh issue comment ' "$MOCK_LOG"
+
+: > "$MOCK_LOG"
+MOCK_EXISTING_FILE=1 MOCK_EXISTING_CONTENT=png ATTACH_RETRY_SLEEP=0 PATH="$tmp/bin:$PATH" bash "$script" -i 1 -t Identical -g abc123 "$tmp/png/foo-play.png" "$tmp/png/bar.png" >/dev/null 2>"$tmp/identical.err"
+[[ $(grep -c '^gh issue comment ' "$MOCK_LOG") -eq 1 ]]
 
 set +e
 MOCK_CURL_503=1 ATTACH_RETRY_SLEEP=0 PATH="$tmp/bin:$PATH" bash "$script" -i 1 -t Failure -g abc123 "$tmp/png/foo-play.png" "$tmp/png/bar.png" >/dev/null 2>"$tmp/503.err"
