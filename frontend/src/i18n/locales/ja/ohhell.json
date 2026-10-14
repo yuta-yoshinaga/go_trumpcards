@@ -69,6 +69,7 @@
   },
   "hintBid": "推奨ビッド",
   "hintPlay": "推奨カード",
+  "noTrump": "なし",
   "hintReason": {
     "strategic_bid": "戦略的なビッド",
     "lead_strong": "強いカードでリード",

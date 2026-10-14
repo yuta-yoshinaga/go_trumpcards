@@ -69,6 +69,7 @@
   },
   "hintBid": "Recommended bid",
   "hintPlay": "Recommended card",
+  "noTrump": "None",
   "hintReason": {
     "strategic_bid": "Strategic bid",
     "lead_strong": "Lead with a strong card",

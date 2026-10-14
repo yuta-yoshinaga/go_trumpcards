@@ -144,6 +144,13 @@ afterEach(() => {
 });
 
 describe('OhHellPage', () => {
+  it('shows the no-trump label when the trump suit is -1', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, trumpSuit: -1 });
+    renderWithProviders(<OhHellPage />);
+    expect(await screen.findByText('切り札: なし')).toBeInTheDocument();
+    expect(screen.queryByText(/suitName/)).not.toBeInTheDocument();
+  });
+
   it('renders turn guidance in the footer on desktop', async () => {
     Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1024 });
     mockExec.mockResolvedValue({ ...playPhaseState, message: 'Footer guidance' });
