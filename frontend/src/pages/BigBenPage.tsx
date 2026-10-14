@@ -1,4 +1,4 @@
-import { useCallback, useId, useMemo } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { bigBenApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -37,8 +37,10 @@ import { BIGBEN_HELP, parseBigBenCommand } from '../utils/cli/commands/bigbenCom
 import { formatBigBenState } from '../utils/cli/formatters/bigbenFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
+import { tableauDimensions } from '../utils/tableauDimensions';
 
 const TABLEAU_COLS = 8;
+const TABLEAU_GAP = 8;
 const FACE_COUNT = 12;
 
 // Face index 0 is one o'clock, 11 is twelve. Everything the player sees stays
@@ -100,11 +102,33 @@ function BigBenPageContent() {
     [],
   );
   const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
-  const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
+  const { cardOverlap, cardWidth, isMobile } = useCardDimensions();
+  const hasState = state !== null;
   const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const windowWidth = useWindowWidth();
+  const tableauRef = useRef<HTMLDivElement>(null);
+  const [tableauRowWidth, setTableauRowWidth] = useState(0);
+  useEffect(() => {
+    const row = tableauRef.current;
+    if (!hasState || !row || typeof window.ResizeObserver === 'undefined') return;
+    const observer = new window.ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setTableauRowWidth(entry.contentRect.width);
+      }
+    });
+    observer.observe(row);
+    return () => observer.disconnect();
+  }, [hasState]);
   const dims = useMemo(() => {
-    if (!isMobile) return { cw: cardWidth, ch: cardHeight, co: cardOverlap };
+    if (!isMobile) {
+      const measured = tableauDimensions(
+        tableauRowWidth || cardWidth * TABLEAU_COLS + (TABLEAU_COLS - 1) * TABLEAU_GAP,
+        TABLEAU_COLS,
+        TABLEAU_GAP,
+        cardOverlap / cardWidth,
+      );
+      return { cw: measured.cardWidth, ch: measured.cardHeight, co: measured.cardOverlap };
+    }
     const padX = 16;
     const gapPx = 4;
     const colW = Math.floor((windowWidth - padX - (TABLEAU_COLS - 1) * gapPx) / TABLEAU_COLS);
@@ -112,7 +136,7 @@ function BigBenPageContent() {
     const ch = Math.round(cw * 1.5);
     const co = Math.round(cw * 0.32);
     return { cw, ch, co };
-  }, [isMobile, windowWidth, cardWidth, cardHeight, cardOverlap]);
+  }, [isMobile, windowWidth, cardWidth, cardOverlap, tableauRowWidth]);
   const clockCardWidth = isLargeDesktop ? DESKTOP_COMPACT_CARD_WIDTH : dims.cw;
   const clockCardHeight = isLargeDesktop ? Math.round(DESKTOP_COMPACT_CARD_WIDTH * 1.5) : dims.ch;
 
@@ -258,7 +282,9 @@ function BigBenPageContent() {
                 );
               })
             )}
-            {col.length > 0 && <div style={{ height: (col.length - 1) * dims.co + dims.ch }} />}
+            {col.length > 0 && (
+              <div data-testid="gc-tableau-column-spacer" style={{ height: (col.length - 1) * dims.co + dims.ch }} />
+            )}
           </div>
         </DropZone>
       </div>
@@ -378,7 +404,12 @@ function BigBenPageContent() {
               })}
             </div>
 
-            <div className="flex gap-1 sm:gap-2 items-start" data-tutorial="gc-tableau">
+            <div
+              ref={tableauRef}
+              className="flex gap-1 sm:gap-2 items-start"
+              data-testid="gc-tableau"
+              data-tutorial="gc-tableau"
+            >
               {Array.from({ length: TABLEAU_COLS }, (_, i) => i).map(renderTableauColumn)}
             </div>
 

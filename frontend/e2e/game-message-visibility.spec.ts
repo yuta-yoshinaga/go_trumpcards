@@ -82,6 +82,12 @@ for (const path of MESSAGE_PAGES) {
     expect(rect.y).toBeGreaterThanOrEqual(0);
     expect(rect.x + rect.width).toBeLessThanOrEqual(1280);
     expect(rect.y + rect.height).toBeLessThanOrEqual(800);
+    const messageIsExposed = await message.evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      const topmost = document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
+      return topmost === element || element.contains(topmost);
+    });
+    expect(messageIsExposed, `${path} message center should not be covered`).toBe(true);
 
     const scrollport = await message.evaluate((element) => {
       let parent = element.parentElement;

@@ -5,6 +5,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, CongressResponse } from '../types/card';
+import { tableauDimensions } from '../utils/tableauDimensions';
 import { CongressPage } from './CongressPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -94,6 +95,77 @@ describe('CongressPage', () => {
     await waitFor(() => expect(screen.getAllByLabelText(/空の組札\d+/).length).toBe(8));
     for (let i = 0; i < 8; i++) {
       expect(screen.getByText(`#${i}`)).toBeInTheDocument();
+    }
+  });
+
+  it('reserves space above the tableau for a selected card lift on desktop', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1280 });
+    mockExec.mockResolvedValue(playingState);
+    try {
+      renderWithProviders(<CongressPage />);
+      await screen.findByRole('button', { name: /^♠ 9/ });
+      expect(document.querySelector('[data-tutorial="cg-tableau"]')).toHaveClass('pt-3');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: originalWidth });
+    }
+  });
+
+  it('sizes tableau card spacers from the observed row width', async () => {
+    const originalWidth = window.innerWidth;
+    const originalResizeObserver = window.ResizeObserver;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    const observe = vi.fn();
+    Object.defineProperty(window, 'ResizeObserver', {
+      configurable: true,
+      value: class {
+        private readonly callback: ResizeObserverCallback;
+        constructor(callback: ResizeObserverCallback) {
+          this.callback = callback;
+        }
+        observe(target: Element) {
+          observe(target);
+          this.callback([{ contentRect: { width: 1008 } } as ResizeObserverEntry], this as unknown as ResizeObserver);
+        }
+        disconnect() {}
+      },
+    });
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau([[card('SPADE', 9), card('HEART', 8)]]),
+    });
+    try {
+      renderWithProviders(<CongressPage />);
+      await screen.findByTestId('cg-tableau-column-spacer');
+      const spacer = document.querySelector('[data-testid="cg-tableau-column-spacer"]') as HTMLElement;
+      const dims = tableauDimensions(1008, 8, 8, 0.34);
+      expect(observe).toHaveBeenCalled();
+      expect(spacer).toHaveStyle({ height: `${(2 - 1) * dims.cardOverlap + dims.cardHeight}px` });
+      expect(spacer).toHaveStyle({ height: '219px' });
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+      if (originalResizeObserver)
+        Object.defineProperty(window, 'ResizeObserver', { configurable: true, value: originalResizeObserver });
+      else Reflect.deleteProperty(window, 'ResizeObserver');
+    }
+  });
+
+  it('uses mobile tableau dimensions at a 375px viewport', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 375 });
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau([[card('SPADE', 9), card('HEART', 8)]]),
+    });
+    try {
+      renderWithProviders(<CongressPage />);
+      await screen.findByTestId('cg-tableau-column-spacer');
+      const spacer = document.querySelector('[data-testid="cg-tableau-column-spacer"]') as HTMLElement;
+      // (375 - 16 - 7*4) / 8 = 41px; mobile caps card width at 40px,
+      // giving 60px height and 13px overlap.
+      expect(spacer).toHaveStyle({ height: '73px' });
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: originalWidth });
     }
   });
 
