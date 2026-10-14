@@ -380,7 +380,9 @@ function WizardPageContent() {
               <span className="mr-4">{t('handSize', { n: state.handSize })}</span>
             </div>
             <div className="text-ds-text-primary text-center mb-2">
-              <span className="mr-4">{t('trump', { suit: t(`suitName.${state.trumpSuit}`) })}</span>
+              <span className="mr-4">
+                {t('trump', { suit: state.trumpSuit > 0 ? t(`suitName.${state.trumpSuit}`) : t('noTrump') })}
+              </span>
               <span>{t('dealer', { name: dealerName })}</span>
             </div>
 

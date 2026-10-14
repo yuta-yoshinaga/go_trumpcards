@@ -60,6 +60,15 @@ beforeEach(() => {
 });
 
 describe('SixCardGolfPage', () => {
+  it('uses a phase label instead of repeating the setup instruction', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 0, canFlip: true, message: '最初にめくる2枚を選んでください。' }));
+    renderWithProviders(<SixCardGolfPage />);
+
+    expect(await screen.findByText('初期めくり')).toBeInTheDocument();
+    expect(screen.getByText('最初にめくる2枚を選んでください。')).toBeInTheDocument();
+    expect(screen.queryByText('初期カードを2枚めくってください')).not.toBeInTheDocument();
+  });
+
   it('places the player boards before the stock area at intermediate widths', async () => {
     const previousWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: 800 });

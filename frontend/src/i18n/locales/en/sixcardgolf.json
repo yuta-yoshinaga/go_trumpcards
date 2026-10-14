@@ -38,7 +38,7 @@
     "flip": "reveal"
   },
   "phase": {
-    "setup": "Flip 2 initial cards",
+    "setup": "Initial flip",
     "playerTurn": "Draw a card",
     "drawPending": "Swap or discard",
     "canFlip": "Flip a card or skip",

@@ -36,10 +36,10 @@
   "begButton": "Beg",
   "giftButton": "Gift (give 1 point)",
   "runButton": "Run (re-deal)",
+  "begPhase": "Choose to Stand (keep trump) or Beg (ask for a new trump)",
   "playButton": "Play",
   "nextTrick": "Next Trick",
   "nextRound": "Next Deal",
-  "begPhase": "Choose to Stand (keep trump) or Beg (ask for a new trump)",
   "giftPhase": "Choose to Gift (give 1 point) or Run (re-deal)",
   "result": {
     "humanWin": "You win!",

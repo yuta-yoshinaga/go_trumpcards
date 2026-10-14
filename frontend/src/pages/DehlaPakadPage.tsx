@@ -167,6 +167,35 @@ function DehlaPakadPageContent() {
     <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
   );
 
+  const trumpChoices = canCallTrump && (
+    <div className="mb-2 p-2 rounded bg-black/30" data-testid="dehlapakad-trump-choices">
+      {/* **決めるのは親の右隣で、見えているのは最初の 5 枚だけ。** */}
+      <div className="text-ds-text-primary text-sm mb-1">{t('callTrump')}</div>
+      <div className="flex flex-wrap gap-3 mb-2" data-testid="dehlapakad-trump-breakdown">
+        {DEHLA_PAKAD_SUITS.map((suit, i) => (
+          <span role="img" key={suit.value} aria-label={`${t(`suit.${suit.key}`)} ${trumpSuitCounts[i]}`}>
+            {trumpGlyphs[i]}
+            {trumpSuitCounts[i]}
+          </span>
+        ))}
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {DEHLA_PAKAD_SUITS.map((s) => (
+          <button
+            key={s.value}
+            type="button"
+            className={btnPrimary}
+            onClick={() => handleSelectTrump(s.value)}
+            disabled={loading}
+            data-testid={`dehlapakad-trump-${s.value}`}
+          >
+            {t(`suit.${s.key}`)}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
   return (
     <GamePageShell
       title={tc('nav.dehlapakad')}
@@ -269,6 +298,7 @@ function DehlaPakadPageContent() {
               </details>
             )}
 
+            {!isMobile && trumpChoices}
             <div className={lgTwoColGrid}>
               <div data-tutorial="dehlapakad-centre">
                 <TrickDisplay
@@ -383,35 +413,6 @@ function DehlaPakadPageContent() {
                   </div>
                 </CpuAccordion>
 
-                {/* **決めるのは親の右隣で、見えているのは最初の 5 枚だけ。** */}
-                {canCallTrump && (
-                  <div className="mb-2 p-2 rounded bg-black/30" data-testid="dehlapakad-trump-choices">
-                    <div className="text-ds-text-primary text-sm mb-1">{t('callTrump')}</div>
-                    <div className="flex flex-wrap gap-3 mb-2" data-testid="dehlapakad-trump-breakdown">
-                      {DEHLA_PAKAD_SUITS.map((suit, i) => (
-                        <span role="img" key={suit.value} aria-label={`${t(`suit.${suit.key}`)} ${trumpSuitCounts[i]}`}>
-                          {trumpGlyphs[i]}
-                          {trumpSuitCounts[i]}
-                        </span>
-                      ))}
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {DEHLA_PAKAD_SUITS.map((s) => (
-                        <button
-                          key={s.value}
-                          type="button"
-                          className={btnPrimary}
-                          onClick={() => handleSelectTrump(s.value)}
-                          disabled={loading}
-                          data-testid={`dehlapakad-trump-${s.value}`}
-                        >
-                          {t(`suit.${s.key}`)}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
                 {/* 相手が選んでいる間の空白を埋める。PiedmonteseTarot の
                     scartoWaiting と同じ形 (#6626)。 */}
                 {isTrumpPhase && !canCallTrump && (
@@ -462,6 +463,7 @@ function DehlaPakadPageContent() {
             </div>
 
             {isMobile && messageBox}
+            {isMobile && trumpChoices}
 
             <ActionLogSection
               isEndPhase={isGameEnd}
@@ -473,7 +475,7 @@ function DehlaPakadPageContent() {
 
           <GameFooter
             className={`${gameTheme.dehlapakad.footer} px-4 py-2.5`}
-            message={isMobile ? undefined : messageBox}
+            message={!isMobile ? messageBox : undefined}
           >
             {humanPlayer && (
               <PlayerHandSection

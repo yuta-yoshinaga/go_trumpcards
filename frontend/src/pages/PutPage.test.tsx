@@ -59,6 +59,28 @@ beforeEach(() => {
 });
 
 describe('PutPage', () => {
+  it('renders the Put declaration in the primary action row above the hand', async () => {
+    renderWithProviders(<PutPage />);
+    const actions = await screen.findByTestId('put-primary-actions');
+    expect(within(actions).getByRole('button', { name: 'Put を宣言' })).toBeInTheDocument();
+  });
+
+  it('shows the response instruction once in the game message', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 1,
+        responderIdx: 0,
+        putCallerIdx: 1,
+        message: 'Put 宣言に応答してください — 受諾すると賭け点が倍になります。',
+      }),
+    );
+    renderWithProviders(<PutPage />);
+    expect(
+      await screen.findByText('Put 宣言に応答してください — 受諾すると賭け点が倍になります。'),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/CPU が Put を宣言しました/)).not.toBeInTheDocument();
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<PutPage />);
     expect(await screen.findByTestId('put-hint-toggle')).toHaveTextContent('ヒント');

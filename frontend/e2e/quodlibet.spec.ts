@@ -17,6 +17,32 @@ async function selectFirstCard(page: Parameters<typeof navigateTo>[0]): Promise<
 }
 
 test.describe('Quodlibet E2E', () => {
+  test('keeps contract choices inside the desktop play viewport', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await navigateTo(page, '/quodlibet');
+    const choices = page.getByTestId('quodlibet-contract-choices');
+    await expect(choices).toBeVisible({ timeout: TIMEOUT_ACTION });
+    await expect(page.getByTestId('game-footer-message')).toContainText(/.+/);
+    expect(
+      await choices.evaluate((el) => {
+        const box = el.getBoundingClientRect();
+        let bottom = window.innerHeight;
+        for (let node = el.parentElement; node; node = node.parentElement) {
+          const style = getComputedStyle(node);
+          if (/auto|scroll|hidden/.test(style.overflowY) && node.scrollHeight > node.clientHeight)
+            bottom = Math.min(bottom, node.getBoundingClientRect().bottom);
+        }
+        return (
+          box.top >= 0 &&
+          box.bottom <= bottom &&
+          [...el.querySelectorAll('button')].every((button) => {
+            const rect = button.getBoundingClientRect();
+            return rect.top >= 0 && rect.bottom <= bottom;
+          })
+        );
+      }),
+    ).toBe(true);
+  });
   // **席 0 が第 1 ディールの親。** 開幕は必ず人間の種目選択から始まる。
   test('opens on the human dealer choosing from the first wheel', async ({ page }) => {
     await navigateTo(page, '/quodlibet');

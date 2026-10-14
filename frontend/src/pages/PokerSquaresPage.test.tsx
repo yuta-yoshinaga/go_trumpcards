@@ -159,13 +159,13 @@ describe('PokerSquaresPage', () => {
     expect(screen.getByText('行4')).toHaveClass('sr-only');
   });
 
-  it('shows the poker hand scoring reference while playing', async () => {
+  it('keeps the poker hand scoring reference collapsed by default while playing', async () => {
     mockApi.mockResolvedValue(playingState);
     renderWithProviders(<PokerSquaresPage />);
 
     const summary = await screen.findByText('スコア表');
     const details = summary.closest('details');
-    expect(details).toHaveAttribute('open');
+    expect(details).not.toHaveAttribute('open');
     const table = await screen.findByTestId('ps-score-table');
     expect(table).toHaveTextContent('ハイカード');
     expect(table).toHaveTextContent('0');
@@ -176,7 +176,7 @@ describe('PokerSquaresPage', () => {
     expect(table.querySelectorAll('tbody tr')).toHaveLength(10);
   });
 
-  it('collapses the scoring reference on mobile and opens it on desktop', async () => {
+  it('keeps the scoring reference collapsed on mobile and desktop', async () => {
     mockUseIsMobile.mockReturnValue(true);
     mockApi.mockResolvedValue(playingState);
     const { unmount } = renderWithProviders(<PokerSquaresPage />);
@@ -188,8 +188,8 @@ describe('PokerSquaresPage', () => {
     mockUseIsMobile.mockReturnValue(false);
     renderWithProviders(<PokerSquaresPage />);
     const desktopDetails = await screen.findByText('スコア表');
-    expect(desktopDetails.closest('details')).toHaveAttribute('open');
-    expect(screen.getByTestId('ps-score-table')).toBeVisible();
+    expect(desktopDetails.closest('details')).not.toHaveAttribute('open');
+    expect(screen.getByTestId('ps-score-table')).not.toBeVisible();
   });
 
   it('keeps the board cards compact on mobile and caps large desktop cards at 60px', async () => {

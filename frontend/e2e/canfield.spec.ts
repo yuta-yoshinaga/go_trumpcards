@@ -2,6 +2,21 @@ import { expect, test } from '@playwright/test';
 import { navigateTo, waitForLoaded } from './helpers';
 
 test.describe('Canfield E2E', () => {
+  test('keeps selected tableau move controls visible on large desktop', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await navigateTo(page, '/canfield');
+    const card = page.locator('[data-tutorial="cf-tableau"] button').first();
+    await expect(card).toBeVisible();
+    await card.click();
+    const bar = page.getByTestId('cf-selected-move-bar');
+    await expect(bar).toBeVisible();
+    const bounds = await bar.boundingBox();
+    if (!bounds) throw new Error('Canfield move bar has no bounding box');
+    expect(bounds.y).toBeGreaterThanOrEqual(0);
+    expect(bounds.y + bounds.height).toBeLessThanOrEqual(800);
+    await expect(bar.getByRole('button').first()).toBeVisible();
+  });
+
   test('navigates and renders the game', async ({ page }) => {
     await navigateTo(page, '/canfield');
 

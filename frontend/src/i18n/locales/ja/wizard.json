@@ -73,6 +73,7 @@
   },
   "hintBid": "推奨ビッド",
   "hintPlay": "推奨カード",
+  "noTrump": "なし",
   "hintReason": {
     "strategic_bid": "戦略的なビッド",
     "lead_strong": "強いカードでリード",
@@ -82,7 +83,6 @@
     "discard_high": "高いカードを捨てる"
   },
   "suitName": {
-    "0": "なし",
     "1": "スペード",
     "2": "クローバー",
     "3": "ハート",

@@ -36,10 +36,10 @@
   "begButton": "ベグ",
   "giftButton": "ギフト (1点渡す)",
   "runButton": "ラン (引き直す)",
+  "begPhase": "スタンド (現トランプで開始) かベグ (切り直し要求) を選択",
   "playButton": "出す",
   "nextTrick": "次のトリック",
   "nextRound": "次のディール",
-  "begPhase": "スタンド (現トランプで開始) かベグ (切り直し要求) を選択",
   "giftPhase": "ギフト (相手に1点) かラン (引き直す) を選択",
   "result": {
     "humanWin": "あなたの勝利！",

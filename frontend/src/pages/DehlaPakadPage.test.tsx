@@ -416,13 +416,21 @@ describe('DehlaPakadPage', () => {
       expect(screen.queryByTestId('dehlapakad-trump-waiting')).not.toBeInTheDocument();
     });
   });
-  it('renders the game message in the footer message slot', async () => {
+  it('keeps desktop trump choices in the play area and the message in the footer', async () => {
     mobileState.isMobile = false;
     mockExec.mockResolvedValue({ ...trumpState, message: 'Footer guidance' });
     renderWithProviders(<DehlaPakadPage />);
 
-    const footerMessage = await screen.findByTestId('game-footer-message');
-    expect(footerMessage.querySelector('[role="status"], [role="alert"]')).toHaveTextContent('Footer guidance');
+    const message = await screen.findByText('Footer guidance');
+    const choices = screen.getByTestId('dehlapakad-trump-choices');
+    expect(screen.getByTestId('game-footer-message')).toContainElement(
+      message.closest('[role="status"], [role="alert"]'),
+    );
+    expect(choices.querySelectorAll('button')).toHaveLength(4);
+    expect(screen.getAllByText('Footer guidance')).toHaveLength(1);
+    expect(
+      choices.compareDocumentPosition(screen.getByTestId('dehlapakad-scores')) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
   });
   it('renders the game message in the play area instead of the footer on mobile', async () => {
     mobileState.isMobile = true;

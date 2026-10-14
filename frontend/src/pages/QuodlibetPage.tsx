@@ -159,6 +159,45 @@ function QuodlibetPageContent() {
     reset();
   };
 
+  const contractChoices = canChoose && (
+    <div className="mb-2 p-2 rounded bg-black/30" data-testid="quodlibet-contract-choices">
+      {/* **選べるのはこの輪の残りだけ。** 全 12 種目を並べると、
+          押せない選択肢を勧めることになる。 */}
+      <div className="text-ds-text-primary text-sm mb-1">{t('chooseContract')}</div>
+      <div className="flex flex-wrap gap-2">
+        {state.availableContracts.map((c, i) => {
+          const name = state.availableContractNames[i];
+          return (
+            <button
+              key={c}
+              type="button"
+              className={btnPrimary}
+              onClick={() => handleSelectContract(c)}
+              onMouseEnter={() => setHoveredContract(name)}
+              onMouseLeave={() => setHoveredContract(null)}
+              onFocus={() => setHoveredContract(name)}
+              onBlur={() => setHoveredContract(null)}
+              disabled={loading}
+              data-testid={`quodlibet-contract-${c}`}
+              title={t(`contractDesc.${name}`)}
+              aria-describedby="quodlibet-contract-desc"
+            >
+              {t(`contractName.${name}`)}
+            </button>
+          );
+        })}
+      </div>
+      <p
+        id="quodlibet-contract-desc"
+        role="status"
+        data-testid="quodlibet-contract-desc"
+        className="mt-2 text-ds-text-muted text-xs min-h-[1.5rem]"
+      >
+        {t(`contractDesc.${hoveredContract ?? state.availableContractNames[0] ?? ''}`)}
+      </p>
+    </div>
+  );
+
   return (
     <GamePageShell
       title={tc('nav.quodlibet')}
@@ -228,6 +267,7 @@ function QuodlibetPageContent() {
               </p>
             )}
 
+            {!isMobile && contractChoices}
             <div className={lgTwoColGrid}>
               <div>
                 {state.isShedding ? (
@@ -348,45 +388,6 @@ function QuodlibetPageContent() {
                   </div>
                 </CpuAccordion>
 
-                {/* **選べるのはこの輪の残りだけ。** 全 12 種目を並べると、
-                    押せない選択肢を勧めることになる。 */}
-                {canChoose && (
-                  <div className="mb-2 p-2 rounded bg-black/30" data-testid="quodlibet-contract-choices">
-                    <div className="text-ds-text-primary text-sm mb-1">{t('chooseContract')}</div>
-                    <div className="flex flex-wrap gap-2">
-                      {state.availableContracts.map((c, i) => {
-                        const name = state.availableContractNames[i];
-                        return (
-                          <button
-                            key={c}
-                            type="button"
-                            className={btnPrimary}
-                            onClick={() => handleSelectContract(c)}
-                            onMouseEnter={() => setHoveredContract(name)}
-                            onMouseLeave={() => setHoveredContract(null)}
-                            onFocus={() => setHoveredContract(name)}
-                            onBlur={() => setHoveredContract(null)}
-                            disabled={loading}
-                            data-testid={`quodlibet-contract-${c}`}
-                            title={t(`contractDesc.${name}`)}
-                            aria-describedby="quodlibet-contract-desc"
-                          >
-                            {t(`contractName.${name}`)}
-                          </button>
-                        );
-                      })}
-                    </div>
-                    <p
-                      id="quodlibet-contract-desc"
-                      role="status"
-                      data-testid="quodlibet-contract-desc"
-                      className="mt-2 text-ds-text-muted text-xs min-h-[1.5rem]"
-                    >
-                      {t(`contractDesc.${hoveredContract ?? state.availableContractNames[0] ?? ''}`)}
-                    </p>
-                  </div>
-                )}
-
                 {state.lastDeal && (isDealEnd || isGameEnd) && (
                   <div
                     className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
@@ -411,6 +412,8 @@ function QuodlibetPageContent() {
               </div>
             </div>
             {isMobile && messageBox}
+            {isMobile && contractChoices}
+
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -420,7 +423,7 @@ function QuodlibetPageContent() {
           </div>
 
           <GameFooter
-            message={isMobile ? undefined : messageBox}
+            message={!isMobile ? messageBox : undefined}
             className={`${gameTheme.quodlibet.footer} px-4 py-2.5`}
           >
             {humanPlayer && (
