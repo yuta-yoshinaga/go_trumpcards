@@ -217,7 +217,10 @@ describe('BidWhistPage', () => {
 
   it('passes when pass is clicked', async () => {
     renderWithProviders(<BidWhistPage />);
-    fireEvent.click(await screen.findByTestId('pass-button'));
+    const passButton = await screen.findByTestId('pass-button');
+    expect(passButton).not.toHaveClass('text-white');
+    expect(passButton).toHaveClass('text-ds-text-on-accent');
+    fireEvent.click(passButton);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('pass'));
   });
 
@@ -433,6 +436,8 @@ describe('BidWhistPage', () => {
     expect(screen.getByTestId('hand-card-3')).toHaveAttribute('data-kitty', 'true');
     expect(screen.getByTestId('hand-card-1').className).toContain('ring-ds-warning');
     expect(screen.getByTestId('kitty-badge-1')).toBeInTheDocument();
+    expect(screen.getByTestId('kitty-badge-1')).not.toHaveClass('text-white');
+    expect(screen.getByTestId('kitty-badge-1')).toHaveClass('text-ds-text-on-accent');
     // Non-kitty cards are not flagged.
     expect(screen.getByTestId('hand-card-0')).not.toHaveAttribute('data-kitty');
     expect(screen.queryByTestId('kitty-badge-0')).not.toBeInTheDocument();

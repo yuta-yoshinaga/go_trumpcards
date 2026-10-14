@@ -147,7 +147,7 @@ export function DaifugoRulesBadges({ state }: { state: DaifugoResponse }) {
       <div className="my-1 px-1">
         <button
           type="button"
-          className="inline-flex items-center gap-1 rounded-md px-3 py-1 text-xs font-bold bg-ds-warning text-white"
+          className="inline-flex items-center gap-1 rounded-md px-3 py-1 text-xs font-bold bg-ds-warning text-ds-text-on-accent"
           onClick={openModal}
           data-testid="rules-summary-button"
         >
