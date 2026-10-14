@@ -503,8 +503,8 @@ function YanivPageContent() {
                 disabled={loading || !canYaniv}
                 className={
                   canYaniv
-                    ? 'px-4 py-2 rounded-lg bg-ds-warning text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm motion-safe:animate-pulse ring-2 ring-ds-success'
-                    : 'px-4 py-2 rounded-lg bg-ds-warning text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm'
+                    ? 'px-4 py-2 rounded-lg bg-ds-warning text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm motion-safe:animate-pulse ring-2 ring-ds-success'
+                    : 'px-4 py-2 rounded-lg bg-ds-warning text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm'
                 }
                 data-testid="yaniv-button"
               >

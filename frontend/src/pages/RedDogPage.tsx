@@ -328,7 +328,7 @@ function WinningRankGhosts({ initial, thirdRank, label }: WinningRankGhostsProps
           const isHit = thirdRank === r;
           const isResolved = thirdRank != null;
           const cls = isHit
-            ? 'bg-ds-success/70 text-white border-ds-success'
+            ? 'bg-ds-success/70 text-ds-text-on-accent border-ds-success'
             : isResolved
               ? 'bg-white/5 text-ds-text-muted border-white/10 opacity-50'
               : 'bg-white/15 text-ds-text-primary border-white/30';

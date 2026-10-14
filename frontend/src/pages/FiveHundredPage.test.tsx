@@ -378,7 +378,10 @@ describe('FiveHundredPage', () => {
 
   it('shows bid controls on the human bid turn', async () => {
     renderWithProviders(<FiveHundredPage />);
-    expect(await screen.findByTestId('pass-button')).toBeEnabled();
+    const passButton = await screen.findByTestId('pass-button');
+    expect(passButton).toBeEnabled();
+    expect(passButton).not.toHaveClass('text-white');
+    expect(passButton).toHaveClass('text-ds-text-on-accent');
   });
 
   it('explains the focused bid condition and follows the selected trick count', async () => {

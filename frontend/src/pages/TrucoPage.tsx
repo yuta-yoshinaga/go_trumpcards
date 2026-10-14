@@ -177,10 +177,13 @@ function TrucoPageContent() {
             {t('header.match')} — {t('header.you')}: {youPoints} / {t('header.cpu')}: {cpuPoints} ({t('header.target')}:{' '}
             {state.matchTarget})
           </span>
-          <span className="rounded bg-ds-info px-2 py-1 text-sm" data-testid="truco-mano">
+          <span className="rounded bg-ds-info px-2 py-1 text-sm text-ds-text-on-accent" data-testid="truco-mano">
             {t('header.mano')}: {playerLabel(state.manoIdx)}
           </span>
-          <span className="ml-2 rounded bg-ds-accent px-2 py-1 text-sm" data-testid="truco-dealer">
+          <span
+            className="ml-2 rounded bg-ds-accent px-2 py-1 text-sm text-ds-text-on-accent"
+            data-testid="truco-dealer"
+          >
             {t('header.dealer')}: {playerLabel(state.dealerIdx)}
           </span>
         </div>

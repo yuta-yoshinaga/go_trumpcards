@@ -117,7 +117,7 @@ const MIGHTY_MAX_BID = 20;
 /** Tailwind classes for a suit/option toggle button (44px tap target, highlighted when selected). */
 function suitToggleClass(selected: boolean): string {
   return selected
-    ? 'min-h-[44px] min-w-[44px] rounded px-2 font-bold text-lg bg-ds-accent text-white ring-2 ring-ds-accent'
+    ? 'min-h-[44px] min-w-[44px] rounded px-2 font-bold text-lg bg-ds-accent text-ds-text-on-accent ring-2 ring-ds-accent'
     : 'min-h-[44px] min-w-[44px] rounded px-2 font-bold text-lg bg-white/20 text-ds-text-primary';
 }
 
@@ -380,7 +380,7 @@ function MightyPageContent() {
                           disabled={loading || n < bidEffectiveMin || n <= state.highestBid}
                           aria-pressed={bidValue === n}
                           data-testid={`bid-option-${n}`}
-                          className={`min-h-[36px] min-w-[36px] rounded-lg font-medium text-sm transition-all disabled:cursor-not-allowed disabled:opacity-40 ${bidValue === n ? 'bg-ds-accent text-white ring-2 ring-ds-accent' : 'bg-white/20 text-ds-text-primary hover:bg-white/30'}`}
+                          className={`min-h-[36px] min-w-[36px] rounded-lg font-medium text-sm transition-all disabled:cursor-not-allowed disabled:opacity-40 ${bidValue === n ? 'bg-ds-accent text-ds-text-on-accent ring-2 ring-ds-accent' : 'bg-white/20 text-ds-text-primary hover:bg-white/30'}`}
                         >
                           {n}
                         </button>

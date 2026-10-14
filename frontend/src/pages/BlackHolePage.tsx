@@ -244,7 +244,7 @@ function BlackHolePageContent() {
               {isRecommended && (
                 <span
                   aria-hidden="true"
-                  className="absolute -bottom-1 -left-1 rounded-full bg-ds-warning text-white text-[10px] leading-none px-1 py-0.5"
+                  className="absolute -bottom-1 -left-1 rounded-full bg-ds-warning text-ds-text-on-accent text-[10px] leading-none px-1 py-0.5"
                 >
                   ★
                 </span>

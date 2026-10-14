@@ -577,7 +577,7 @@ function FiveHundredPageContent() {
                     type="button"
                     onClick={pass}
                     disabled={loading}
-                    className="px-4 py-2 rounded-lg bg-ds-warning text-white text-sm disabled:opacity-40"
+                    className="px-4 py-2 rounded-lg bg-ds-warning text-ds-text-on-accent text-sm disabled:opacity-40"
                     data-testid="pass-button"
                   >
                     {t('passButton')}

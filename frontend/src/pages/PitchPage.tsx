@@ -423,7 +423,7 @@ function PitchPageContent() {
                               <span
                                 data-testid="pt-trick-trump-badge"
                                 title={t('trickLegend.trump')}
-                                className="absolute -top-1 -right-1 rounded-full bg-ds-warning px-1 py-0.5 text-[10px] font-bold leading-none text-white shadow"
+                                className="absolute -top-1 -right-1 rounded-full bg-ds-warning px-1 py-0.5 text-[10px] font-bold leading-none text-ds-text-on-accent shadow"
                               >
                                 {SUIT_LABELS[state.trumpSuit] ?? '?'}
                               </span>

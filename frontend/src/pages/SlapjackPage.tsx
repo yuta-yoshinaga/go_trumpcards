@@ -487,10 +487,10 @@ function SlapjackPageContent() {
                 type="button"
                 onClick={handleSlap}
                 disabled={loading || isGameEnd || state.centerPileSize === 0}
-                className={`min-h-[44px] min-w-[44px] px-6 py-2 rounded-lg text-white font-bold disabled:opacity-40 disabled:cursor-not-allowed ${
+                className={`min-h-[44px] min-w-[44px] px-6 py-2 rounded-lg font-bold disabled:opacity-40 disabled:cursor-not-allowed ${
                   state.isTopJack
-                    ? 'bg-ds-warning hover:bg-ds-warning-hover animate-pulse'
-                    : 'bg-ds-error hover:bg-ds-error'
+                    ? 'bg-ds-warning text-ds-text-on-accent hover:bg-ds-warning-hover animate-pulse'
+                    : 'bg-ds-error text-white hover:bg-ds-error'
                 }`}
                 data-testid="slap-button"
                 data-tutorial="sj-slap-button"

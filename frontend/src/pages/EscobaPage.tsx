@@ -531,7 +531,7 @@ function EscobaPageContent() {
                 type="button"
                 onClick={play}
                 disabled={loading || !canLay}
-                className="px-4 py-2 rounded-lg bg-ds-warning text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                className="px-4 py-2 rounded-lg bg-ds-warning text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                 data-testid="lay-button"
               >
                 {t('button.lay')}

@@ -402,7 +402,7 @@ function BidWhistPageContent() {
                       {fromKitty && (
                         <span
                           aria-hidden="true"
-                          className="absolute top-0 right-0 rounded-bl bg-ds-warning px-1 text-[10px] font-bold text-white leading-tight"
+                          className="absolute top-0 right-0 rounded-bl bg-ds-warning px-1 text-[10px] font-bold text-ds-text-on-accent leading-tight"
                           data-testid={`kitty-badge-${i}`}
                         >
                           {t('kittyBadge')}
@@ -537,7 +537,7 @@ function BidWhistPageContent() {
                     type="button"
                     onClick={pass}
                     disabled={loading}
-                    className="px-4 py-2 rounded-lg bg-ds-warning text-white text-sm disabled:opacity-40"
+                    className="px-4 py-2 rounded-lg bg-ds-warning text-ds-text-on-accent text-sm disabled:opacity-40"
                     data-testid="pass-button"
                   >
                     {t('passButton')}
