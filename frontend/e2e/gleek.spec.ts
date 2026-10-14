@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, TIMEOUT_GAME_LOOP, TIMEOUT_TRANSITION, waitForLoaded } from './helpers';
+import { clickHandCard, navigateTo, TIMEOUT_GAME_LOOP, TIMEOUT_TRANSITION, waitForLoaded } from './helpers';
 
 test.describe('Gleek E2E', () => {
   test('bids, discards, and plays through the phase transitions', async ({ page }) => {
@@ -40,7 +40,7 @@ test.describe('Gleek E2E', () => {
         for (let i = 0; i < 12 && !(await discardConfirm.isEnabled()); i++) {
           const card = handCards.nth(i);
           if (!(await card.isVisible())) break;
-          await card.click();
+          await clickHandCard(card);
         }
         if (await discardConfirm.isEnabled()) {
           await discardConfirm.click();
@@ -60,7 +60,7 @@ test.describe('Gleek E2E', () => {
 
       if (await playButton.isVisible()) {
         if ((await handCards.count()) > 0) {
-          await handCards.first().click();
+          await clickHandCard(handCards.first());
         }
         if (await playButton.isEnabled()) {
           await playButton.click();
