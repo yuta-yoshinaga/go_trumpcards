@@ -304,16 +304,21 @@ git -C "$tmp/repo" remote add origin "$tmp/remote.git"
 git -C "$tmp/repo" push -q origin target develop
 git -C "$tmp/repo" fetch -q origin
 git -C "$tmp/repo" worktree add -q "$tmp/other" target
-git -C "$tmp/repo" worktree add -q --detach "$tmp/wt-ibfix" origin/develop
+git -C "$tmp/repo" worktree add -q --detach "$tmp/wt-ib21" origin/develop
+if PATH="$PATH" BATCH_REPO="$tmp/repo" BATCH_WT_ROOT="$tmp" bash "$SCRIPTS/fx.sh" fx1 target >"$tmp/fx-nonnumeric.out" 2>&1; then fail "fx.sh accepted a nonnumeric slot"; else [[ $? == 2 ]] || fail "fx.sh returned the wrong status for a nonnumeric slot"; fi
+grep -q 'fx slot must be numeric' "$tmp/fx-nonnumeric.out" || fail "fx.sh did not explain numeric slots"
+[[ ! -e "$tmp/wt-ibfx1" ]] || fail "fx.sh created a worktree for a nonnumeric slot"
+if PATH="$PATH" BATCH_REPO="$tmp/repo" BATCH_WT_ROOT="$tmp" bash "$SCRIPTS/gofx.sh" fx1 123 "$tmp/prompt" >"$tmp/gofx-nonnumeric.out" 2>&1; then fail "gofx.sh accepted a nonnumeric slot"; else [[ $? == 2 ]] || fail "gofx.sh returned the wrong status for a nonnumeric slot"; fi
+grep -q 'fx slot must be numeric' "$tmp/gofx-nonnumeric.out" || fail "gofx.sh did not explain numeric slots"
 PATH="$PATH" BATCH_REPO="$tmp/repo" BATCH_WT_ROOT="$tmp" \
-  bash "$SCRIPTS/fx.sh" fix target >"$tmp/fx.out" || fail "fx.sh failed to detach a clean worktree"
+  bash "$SCRIPTS/fx.sh" 21 target >"$tmp/fx.out" || fail "fx.sh failed to detach a clean worktree"
 git -C "$tmp/other" symbolic-ref -q HEAD && fail "fx.sh left the target branch checked out elsewhere"
 git -C "$tmp/other" status --porcelain | grep -q . && fail "fx.sh dirtied the detached worktree"
-git -C "$tmp/wt-ibfix" checkout -q --detach origin/develop
+git -C "$tmp/wt-ib21" checkout -q --detach origin/develop
 git -C "$tmp/other" checkout -q target
 echo changed > "$tmp/other/file"
 if PATH="$PATH" BATCH_REPO="$tmp/repo" BATCH_WT_ROOT="$tmp" \
-  bash "$SCRIPTS/fx.sh" fix target >"$tmp/fx-dirty.out" 2>&1; then fail "fx.sh accepted a dirty worktree on target"; fi
+  bash "$SCRIPTS/fx.sh" 21 target >"$tmp/fx-dirty.out" 2>&1; then fail "fx.sh accepted a dirty worktree on target"; fi
 grep -q "$tmp/other" "$tmp/fx-dirty.out" || fail "fx.sh did not report the dirty worktree path"
 
 # ship.sh refuses a file changed on develop after the lane branched, before staging or commit.
@@ -479,13 +484,15 @@ make_e2egate_case() {
     spec) printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/e2e/poker.spec.ts" ;;
     ignored) printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/src/i18n/locales/en/common.json"; printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/src/components/a.test.tsx" ;;
   esac
-  output=$(BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$SCRIPTS/e2egate.sh" --dry-run 1) || fail "e2egate $name dry-run failed"
+  output=$(E2E_SWEEP_REPEAT=3 BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$SCRIPTS/e2egate.sh" --dry-run 1) || fail "e2egate $name dry-run failed"
   if [[ "$changed" == shared || "$changed" == component ]]; then
     for spec in desktop-board-visibility desktop-hand-visibility game-message-visibility hand-visibility mobile-viewport text-contrast duplicate-text; do grep -q "e2e/$spec.spec.ts" <<< "$output" || fail "sweep omitted $spec: $output"; done
   elif [[ "$changed" == page ]]; then
     grep -q 'run 1: e2e/poker.spec.ts$' <<< "$output" || fail "page game spec has grep or was omitted: $output"
     grep -qF 'run 2: e2e/desktop-board-visibility.spec.ts' <<< "$output" || fail "page sweep run omitted: $output"
-    grep -qF -- '--grep /poker\b --pass-with-no-tests' <<< "$output" || fail "page sweep omitted route grep/pass-with-no-tests: $output"
+    grep -qF -- '--grep /poker\b --pass-with-no-tests --repeat-each=3' <<< "$output" || fail "page sweep omitted route grep/pass-with-no-tests/repeat: $output"
+    output_once=$(E2E_SWEEP_REPEAT=1 BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$SCRIPTS/e2egate.sh" --dry-run 1) || fail "e2egate $name repeat=1 dry-run failed"
+    ! grep -q -- '--repeat-each' <<<"$output_once" || fail "repeat=1 dry-run added repeat arg: $output_once"
     exec_scripts="$tmp/e2egate-exec-$name"
     mkdir -p "$exec_scripts"
     cp "$SCRIPTS/common.sh" "$SCRIPTS/e2egate.sh" "$exec_scripts/"
@@ -494,10 +501,12 @@ make_e2egate_case() {
 printf '%s\n' "$@" > "$E2EGATE_ARGS"
 STUB
     chmod +x "$exec_scripts/e2e.sh"
-    E2EGATE_ARGS="$tmp/e2egate-args-$name" BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$exec_scripts/e2egate.sh" 1 || fail "page e2egate execution failed"
+    E2E_SWEEP_REPEAT=3 E2EGATE_ARGS="$tmp/e2egate-args-$name" BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$exec_scripts/e2egate.sh" 1 || fail "page e2egate execution failed"
     expected="$tmp/e2egate-expected-$name"
-    printf '%s\n' 1 e2e/poker.spec.ts --- e2e/desktop-board-visibility.spec.ts e2e/desktop-hand-visibility.spec.ts e2e/duplicate-text.spec.ts e2e/game-message-visibility.spec.ts e2e/hand-visibility.spec.ts e2e/mobile-viewport.spec.ts e2e/text-contrast.spec.ts --grep '/poker\b' --pass-with-no-tests > "$expected"
+    printf '%s\n' 1 e2e/poker.spec.ts --- e2e/desktop-board-visibility.spec.ts e2e/desktop-hand-visibility.spec.ts e2e/duplicate-text.spec.ts e2e/game-message-visibility.spec.ts e2e/hand-visibility.spec.ts e2e/mobile-viewport.spec.ts e2e/text-contrast.spec.ts --grep '/poker\b' --pass-with-no-tests --repeat-each=3 > "$expected"
     diff -u "$expected" "$tmp/e2egate-args-$name" || fail "page execution passed wrong args"
+    E2E_SWEEP_REPEAT=1 E2EGATE_ARGS="$tmp/e2egate-args-$name" BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$exec_scripts/e2egate.sh" 1 || fail "page e2egate repeat=1 execution failed"
+    ! grep -q -- '--repeat-each' "$tmp/e2egate-args-$name" || fail "repeat=1 added repeat arg"
     ! grep -q 'e2e/e2e/' "$tmp/e2egate-args-$name" || fail "page execution doubled e2e prefix"
   elif [[ "$changed" == helper ]]; then
     grep -q 'run 1: e2e/poker.spec.ts' <<< "$output" || fail "helper edit omitted importing spec: $output"
@@ -526,6 +535,41 @@ make_e2egate_case component component
 make_e2egate_case helper helper
 make_e2egate_case ignored ignored
 make_e2egate_case empty none
+
+# stopsrv.sh targets only the requested lane port and handles empty/invalid slots.
+stop_server_pid=
+trap '[[ -z "$stop_server_pid" ]] || kill "$stop_server_pid" 2>/dev/null || true; rm -rf "$tmp"' EXIT
+python3 -m http.server 18097 --bind 127.0.0.1 >"$tmp/http-server.log" 2>&1 & stop_server_pid=$!
+stop_test_fallback=0
+for _ in {1..20}; do
+  grep -q 'Serving HTTP on' "$tmp/http-server.log" && break
+  kill -0 "$stop_server_pid" 2>/dev/null || break
+  sleep 0.1
+done
+if ! grep -q 'Serving HTTP on' "$tmp/http-server.log"; then
+  # The sandbox can prohibit socket creation; still exercise PID targeting below.
+  sleep 60 & stop_server_pid=$!
+  stop_test_fallback=1
+fi
+stop_path="$PATH"
+ss_probe=$(ss -ltnpH 'sport = :18097' 2>&1 || true)
+if (( stop_test_fallback )) || ! grep -q 'LISTEN' <<<"$ss_probe"; then
+  mkdir -p "$tmp/stopsrv-bin"
+  cat > "$tmp/stopsrv-bin/ss" <<'SS'
+#!/usr/bin/env bash
+printf 'LISTEN 0 5 127.0.0.1:18097 0.0.0.0:* users:(("python3",pid=%s,fd=3))\n' "$STOPSERV_TEST_PID"
+SS
+  chmod +x "$tmp/stopsrv-bin/ss"
+  stop_path="$tmp/stopsrv-bin:$PATH"
+fi
+stop_out=$(PATH="$stop_path" STOPSERV_TEST_PID="$stop_server_pid" BATCH_REPO="$ROOT" BATCH_STATE="$tmp/stopsrv-state" bash "$SCRIPTS/stopsrv.sh" 97) || fail "stopsrv.sh failed to stop a lane server"
+grep -q 'stopped port=18097 pid=' <<<"$stop_out" || fail "stopsrv.sh output omitted the stopped process: $stop_out"
+for _ in {1..50}; do kill -0 "$stop_server_pid" 2>/dev/null || break; sleep 0.1; done
+! kill -0 "$stop_server_pid" 2>/dev/null || fail "stopsrv.sh left the server process alive"
+wait "$stop_server_pid" 2>/dev/null || true
+stop_server_pid=
+[[ $(BATCH_REPO="$ROOT" BATCH_STATE="$tmp/stopsrv-state" bash "$SCRIPTS/stopsrv.sh" 98) == none ]] || fail "stopsrv.sh did not report none for an idle slot"
+if BATCH_REPO="$ROOT" BATCH_STATE="$tmp/stopsrv-state" bash "$SCRIPTS/stopsrv.sh" nope >"$tmp/stopsrv-invalid.out" 2>&1; then fail "stopsrv.sh accepted a nonnumeric slot"; else [[ $? == 2 ]] || fail "stopsrv.sh returned wrong status for invalid slot"; fi
 
 # e2e.sh splits --- into separate bunx calls, builds once, and reports failure after all calls.
 e2e_repo="$tmp/e2e-repo"; e2e_wts="$tmp/e2e-wts"; e2e_bin="$tmp/e2e-bin"

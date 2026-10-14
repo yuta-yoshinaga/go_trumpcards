@@ -26,6 +26,7 @@ git -C "$repo" -c user.name=test -c user.email=test@example.com commit -qm fixtu
 printf 'it("node-only case", () => {})\n' >"$repo/node_modules/fake/only.test.ts"
 bash "$SCRIPTS/claimcheck.sh" "$repo" 'Uses `GetTrickWinnerIdx`, `state.config.pointLimit`, func TestExistingCase(t *testing.T), t.Run("nested case"), it('\''existing browser case'\''), and pkg/sample_test.go:2' || fail "valid claims rejected"
 bash "$SCRIPTS/claimcheck.sh" "$repo" 'Foo.go:3' || fail "basename file:line claim did not match a deep file"
+bash "$SCRIPTS/claimcheck.sh" "$repo" '7.23:1, 4.5:1, 比 3.1:1' || fail "contrast ratios were read as file:line claims"
 set +e
 out=$(bash "$SCRIPTS/claimcheck.sh" "$repo" 'Foo.go:5' 2>&1)
 rc=$?

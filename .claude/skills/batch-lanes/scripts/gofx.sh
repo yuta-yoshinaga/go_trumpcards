@@ -1,6 +1,7 @@
 #!/bin/bash
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
-# usage: gofx.sh <fxslot> <pr-or-tag> <prompt-file>
+# usage: gofx.sh <numeric-fxslot> <pr-or-tag> <prompt-file> — slot must be numeric (use a lane-distinct number such as 21..29)
+[[ "${1:-}" =~ ^[0-9]+$ ]] || { echo "fx slot must be numeric (rcg/e2e use port 18000+slot); use e.g. 21 for a fixup lane" >&2; exit 2; }
 # Refuses to delegate when the tag is a PR number and the worktree is not on that PR's head branch.
 cd "$WT_ROOT/wt-ib$1" || exit 1
 prompt="${3:-${BATCH_PROMPT_FILE:-}}"

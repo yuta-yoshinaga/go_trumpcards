@@ -20,7 +20,7 @@ for token in sorted(ids):
 files = subprocess.run(["git", "ls-files", "-co", "--exclude-standard", "-z"], cwd=root,
                        stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, check=True).stdout
 tracked_files = [p.decode("utf-8", "replace") for p in files.split(b"\0") if p]
-for path, line in re.findall(r"(?<![\w/])([A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*\.[A-Za-z0-9]+):(\d+)\b", text):
+for path, line in re.findall(r"(?<![\w/])([A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*\.[A-Za-z][A-Za-z0-9]*):(\d+)\b", text):
     candidates = [path] if "/" in path else [p for p in tracked_files if p.endswith("/" + path) or p == path]
     found = False
     for candidate in candidates:

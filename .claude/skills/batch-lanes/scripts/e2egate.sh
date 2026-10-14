@@ -31,6 +31,10 @@ for helper in "${helper_paths[@]}"; do
   done < <(cd "$wt/frontend/e2e" && printf '%s\n' *.spec.ts)
 done
 sweep=(desktop-board-visibility desktop-hand-visibility game-message-visibility hand-visibility mobile-viewport text-contrast duplicate-text)
+repeat="${E2E_SWEEP_REPEAT:-10}"
+[[ "$repeat" =~ ^[0-9]+$ ]] || { echo "E2E_SWEEP_REPEAT must be numeric" >&2; exit 2; }
+repeat_arg=()
+if (( page_change && ! full_sweep && repeat > 1 )); then repeat_arg+=("--repeat-each=$repeat"); fi
 declare -a run_specs=() run_args=()
 (( ${#explicit_specs[@]} )) && mapfile -t explicit_specs < <(printf '%s\n' "${explicit_specs[@]}" | sort -u)
 if (( frontend )); then
@@ -72,7 +76,7 @@ if (( dry_run )); then
     if (( ${#page_specs[@]} )); then run=1; printf 'run %d: %s\n' "$run" "${page_specs[*]}"; fi
     if (( ${#sweep_specs[@]} )); then
       run=$((run+1))
-      if (( ${#run_args[@]} )); then printf 'run %d: %s --grep %s --pass-with-no-tests\n' "$run" "${sweep_specs[*]}" "$(IFS='|'; echo "${run_args[*]}")"
+      if (( ${#run_args[@]} )); then printf 'run %d: %s --grep %s --pass-with-no-tests%s\n' "$run" "${sweep_specs[*]}" "$(IFS='|'; echo "${run_args[*]}")" "${repeat_arg[*]:+ ${repeat_arg[*]}}"
       else printf 'run %d: %s\n' "$run" "${sweep_specs[*]}"; fi
     fi
   elif (( ${#run_specs[@]} )); then printf 'run 1: %s\n' "${run_specs[*]/#/e2e/}"; fi
@@ -90,7 +94,7 @@ if (( page_change )); then
   if (( ${#sweep_specs[@]} )); then
     if (( ${#args[@]} )); then args+=(---); fi
     args+=("${sweep_specs[@]}")
-    if (( ${#run_args[@]} )); then args+=(--grep "$(IFS='|'; echo "${run_args[*]}")" --pass-with-no-tests); fi
+    if (( ${#run_args[@]} )); then args+=(--grep "$(IFS='|'; echo "${run_args[*]}")" --pass-with-no-tests "${repeat_arg[@]}"); fi
   fi
   if (( ${#args[@]} )); then "$B/e2e.sh" "$slot" "${args[@]}"; fi
 elif (( ${#run_specs[@]} )); then
