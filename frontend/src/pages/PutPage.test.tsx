@@ -7,6 +7,16 @@ import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, PutResponse } from '../types/card';
 import { PutPage } from './PutPage';
 
+const mobileState = vi.hoisted(() => ({ isMobile: false }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useCardDimensions: () => ({ ...actual.useCardDimensions(), isMobile: mobileState.isMobile }),
+  };
+});
+
 vi.mock('../api/gameApi', () => ({
   putApi: { exec: vi.fn() },
   actionLogApi: { put: vi.fn() },
@@ -55,6 +65,7 @@ function makeState(overrides: Partial<PutResponse> = {}): PutResponse {
 }
 
 beforeEach(() => {
+  mobileState.isMobile = false;
   mockExec.mockResolvedValue(makeState());
 });
 
@@ -63,6 +74,9 @@ describe('PutPage', () => {
     renderWithProviders(<PutPage />);
     const actions = await screen.findByTestId('put-primary-actions');
     expect(within(actions).getByRole('button', { name: 'Put を宣言' })).toBeInTheDocument();
+    const footer = actions.closest('footer');
+    expect(footer).not.toBeNull();
+    expect((footer as HTMLElement).querySelector('[data-tutorial="put-hand"]')).not.toBeNull();
   });
 
   it('shows the response instruction once in the game message', async () => {
@@ -79,6 +93,31 @@ describe('PutPage', () => {
       await screen.findByText('Put 宣言に応答してください — 受諾すると賭け点が倍になります。'),
     ).toBeInTheDocument();
     expect(screen.queryByText(/CPU が Put を宣言しました/)).not.toBeInTheDocument();
+  });
+
+  it('places the game message in the play area on mobile and in the footer on desktop', async () => {
+    const message = 'Put 宣言に応答してください — 受諾すると賭け点が倍になります。';
+    mockExec.mockResolvedValue(makeState({ message }));
+
+    mobileState.isMobile = true;
+    const mobile = renderWithProviders(<PutPage />);
+    const mobileMessage = await screen.findByText(message);
+    const playArea = mobile.container.querySelector('[data-tutorial="put-score"]')?.closest('.flex-1');
+    expect(playArea).not.toBeNull();
+    expect(playArea).toContainElement(mobileMessage);
+    expect(mobile.container.querySelectorAll('[role="status"]').length).toBe(1);
+    expect(mobile.container.querySelector('[data-testid="game-footer-message"]')).toBeNull();
+    mobile.unmount();
+
+    mobileState.isMobile = false;
+    const desktop = renderWithProviders(<PutPage />);
+    const desktopMessage = await screen.findByText(message);
+    const footerMessage = desktop.container.querySelector('[data-testid="game-footer-message"]');
+    expect(footerMessage).toContainElement(desktopMessage);
+    expect(desktop.container.querySelector('[data-tutorial="put-score"]')?.closest('.flex-1')).not.toContainElement(
+      desktopMessage,
+    );
+    expect(desktop.container.querySelectorAll('[role="status"]').length).toBe(1);
   });
 
   it('calls reset on mount', async () => {
