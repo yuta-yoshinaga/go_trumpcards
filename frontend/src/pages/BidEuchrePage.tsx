@@ -362,7 +362,6 @@ function BidEuchrePageContent() {
 
             {isHumanBid && (
               <div className="text-ds-text-muted text-xs mb-2" data-testid="bideuchre-bid-notice">
-                <div>{t('bidNotice')}</div>
                 {/* **親だけは同額で奪える。** */}
                 <div data-testid="bideuchre-dealer-note">{t('dealerEqualNote')}</div>
               </div>
