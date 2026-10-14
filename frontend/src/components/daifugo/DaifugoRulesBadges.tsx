@@ -103,7 +103,7 @@ function RulesBadgeModal({
         <button
           type="button"
           onClick={onClose}
-          className="text-ds-text-primary/60 hover:text-ds-text-primary text-lg leading-none"
+          className="text-ds-text-muted hover:text-ds-text-primary text-lg leading-none"
           aria-label={closeLabel}
         >
           ✕
@@ -118,7 +118,7 @@ function RulesBadgeModal({
             >
               {b.label}
             </span>
-            <span className="text-xs text-ds-text-primary/80">{b.description}</span>
+            <span className="text-xs text-ds-text-primary">{b.description}</span>
           </li>
         ))}
       </ul>

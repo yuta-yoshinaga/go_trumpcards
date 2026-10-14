@@ -308,20 +308,22 @@
 
 /* Keep this state-text surface list in sync with the muted-text surface list below.
    Restore original state colors over opaque surfaces and bright colored fills,
-   where the light on-felt variants would lose contrast. */
-[data-felt]
-:is(
-  .bg-ds-surface,
-  .bg-ds-surface-elevated,
-  .bg-ds-bg,
-  [data-surface],
-  .bg-white,
-  .bg-ds-warning,
-  .bg-ds-accent,
-  .bg-ds-info,
-  .bg-ds-success,
-  .bg-ds-error
-) {
+   where the light on-felt variants would lose contrast. Opaque surfaces are dark,
+   so other hover text stays on-felt for sufficient contrast. */
+[data-felt] :is(.bg-ds-surface, .bg-ds-surface-elevated, .bg-ds-bg, [data-surface]) {
+  --ds-warning-text: var(--color-ds-warning);
+  --ds-info-text: var(--color-ds-info);
+  --ds-accent-text: var(--color-ds-accent);
+  --ds-success-text: var(--color-ds-success);
+  --ds-error-text: var(--color-ds-error-text);
+}
+
+[data-felt] .bg-white,
+[data-felt] .bg-ds-warning,
+[data-felt] .bg-ds-accent,
+[data-felt] .bg-ds-info,
+[data-felt] .bg-ds-success,
+[data-felt] .bg-ds-error {
   --ds-warning-text: var(--color-ds-warning);
   --ds-info-text: var(--color-ds-info);
   --ds-accent-text: var(--color-ds-accent);

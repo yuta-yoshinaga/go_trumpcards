@@ -1,4 +1,4 @@
-const OPACITY_SUFFIXED_TEXT_TOKEN = /\btext-ds-[a-z]+\/\d+\b/g;
+const OPACITY_SUFFIXED_TEXT_TOKEN = /\btext-ds-[a-z][a-z-]*\/(?:\d+|\[[^\]]*\])/g;
 
 /** Finds opacity-suffixed design-system text utilities in source text. */
 export function findOpacitySuffixedTextTokens(source) {
