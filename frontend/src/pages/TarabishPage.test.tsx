@@ -5,6 +5,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, TarabishResponse } from '../types/card';
+import { TarabishPhase } from '../types/phases';
 import { TarabishPage } from './TarabishPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -153,9 +154,19 @@ describe('TarabishPage', () => {
   });
 
   it('offers both choices while bidding', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: TarabishPhase.BID,
+        currentPlayerIdx: 0,
+        dealerIdx: 2,
+        trumpTakerIdx: -1,
+      } as Partial<TarabishResponse>),
+    );
     renderWithProviders(<TarabishPage />);
     expect(await screen.findByTestId('tb-take-btn')).toBeInTheDocument();
     expect(screen.getByTestId('tb-pass-btn')).toBeInTheDocument();
+    expect(screen.getByTestId('game-footer-actions')).toContainElement(screen.getByTestId('tb-take-btn'));
+    expect(screen.getByTestId('game-footer-actions')).toContainElement(screen.getByTestId('tb-pass-btn'));
     expect(screen.getAllByRole('button', { name: /出す/ })[0]).not.toHaveAttribute('aria-disabled');
   });
 

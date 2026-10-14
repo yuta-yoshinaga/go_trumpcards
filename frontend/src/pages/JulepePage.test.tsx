@@ -117,8 +117,9 @@ describe('JulepePage', () => {
   // **配り直後は参加選択。** ここを逃すと判断の機会が無い。
   it('opens on the decision phase with both choices', async () => {
     renderWithProviders(<JulepePage />);
-    expect(await screen.findByTestId('rm-in-btn')).toBeInTheDocument();
-    expect(screen.getByTestId('rm-out-btn')).toBeInTheDocument();
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByTestId('rm-in-btn')).toBeInTheDocument();
+    expect(within(actions).getByTestId('rm-out-btn')).toBeInTheDocument();
   });
 
   it('announces the undecided choice during the decision phase', async () => {
