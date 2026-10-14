@@ -428,6 +428,10 @@ describe('MightyPage', () => {
     for (let n = 13; n <= 20; n++) {
       expect(screen.getByTestId(`bid-option-${n}`)).toBeInTheDocument();
     }
+    expect(screen.getByTestId('bid-option-13')).not.toHaveClass('text-white');
+    expect(screen.getByTestId('bid-option-13')).toHaveClass('text-ds-text-on-accent');
+    expect(screen.getByTestId('bid-option-14')).not.toHaveClass('text-white');
+    expect(screen.getByTestId('bid-option-14')).toHaveClass('text-ds-text-primary');
     expect(screen.queryByTestId('bid-option-12')).not.toBeInTheDocument();
     expect(screen.queryByTestId('bid-option-21')).not.toBeInTheDocument();
   });

@@ -415,7 +415,7 @@ function ZhengPageContent() {
                 // **理由の無い無効化は、故障と区別が付かない。**読み上げ側には
                 // announce.yourTurnLead があるのに、画面には手がかりが無かった (#6516)。
                 title={isHumanTurn && isLead ? t('passDisabledLead') : undefined}
-                className="px-4 py-2 rounded-lg bg-ds-warning hover:bg-ds-warning text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                className="px-4 py-2 rounded-lg bg-ds-warning hover:bg-ds-warning text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                 data-testid="pass-button"
               >
                 {t('passButton')}
