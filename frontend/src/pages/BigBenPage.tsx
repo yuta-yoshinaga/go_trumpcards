@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useCallback, useId, useMemo, useRef } from 'react';
 import type { bigBenApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -22,6 +22,7 @@ import { useBigBenGame } from '../hooks/useBigBenGame';
 import { useBreakpoint, useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
+import { useElementWidth } from '../hooks/useElementWidth';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
@@ -40,6 +41,7 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 import { tableauDimensions } from '../utils/tableauDimensions';
 
 const TABLEAU_COLS = 8;
+// Matches the tableau's sm:gap-2 spacing (8px).
 const TABLEAU_GAP = 8;
 const FACE_COUNT = 12;
 
@@ -107,18 +109,7 @@ function BigBenPageContent() {
   const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const windowWidth = useWindowWidth();
   const tableauRef = useRef<HTMLDivElement>(null);
-  const [tableauRowWidth, setTableauRowWidth] = useState(0);
-  useEffect(() => {
-    const row = tableauRef.current;
-    if (!hasState || !row || typeof window.ResizeObserver === 'undefined') return;
-    const observer = new window.ResizeObserver((entries) => {
-      for (const entry of entries) {
-        setTableauRowWidth(entry.contentRect.width);
-      }
-    });
-    observer.observe(row);
-    return () => observer.disconnect();
-  }, [hasState]);
+  const tableauRowWidth = useElementWidth(tableauRef, hasState && !isMobile);
   const dims = useMemo(() => {
     if (!isMobile) {
       const measured = tableauDimensions(
