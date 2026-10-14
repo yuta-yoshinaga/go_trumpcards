@@ -8,6 +8,7 @@ import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { HintTooltip } from '../components/hint/HintTooltip';
@@ -15,7 +16,7 @@ import { LiveAnnouncement } from '../components/LiveAnnouncement';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -78,6 +79,8 @@ function MendikotPageContent() {
     retry,
   } = useGameApi<MendikotResponse, Parameters<typeof mendikotApi.exec>>(mendikotApi.exec);
   const { cardWidth } = useCardDimensions();
+  const isMobile = useIsMobile();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const { hint, hintEnabled, setHintEnabled } = useGameHint('mendikot', state);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('mendikot');
@@ -210,74 +213,80 @@ function MendikotPageContent() {
               <div className="mt-1">{t('header.tricksRule')}</div>
             </details>
 
-            {/* **切り札は宣言ではなく事故で決まる** (#5755)。フォローできない
-                手番はハンド全体を左右する一度きりの選択なのに、警告が無かった。 */}
-            {state.willSetTrump && (
-              <div
-                className="mb-3 rounded bg-ds-surface border border-ds-warning px-3 py-2 text-ds-text-primary text-center"
-                role="status"
-                data-testid="md-sets-trump-warning"
-              >
-                {t('warn.setsTrump')}
-              </div>
-            )}
             <LiveAnnouncement message={state.willSetTrump ? t('warn.setsTrump') : ''} />
 
             {/* **勝敗は 10 の枚数で決まる。** 盤面から読めないので先頭に出す。 */}
             <div
-              className="mb-1 rounded bg-black/30 px-3 py-2 text-ds-text-primary text-center"
-              data-testid="md-tens"
-              data-tutorial="md-tens"
+              className={isLargeDesktop ? 'grid grid-cols-[minmax(0,1fr)_minmax(280px,30%)] gap-4' : 'contents'}
+              data-testid="md-board-grid"
             >
-              <div className="whitespace-nowrap">
-                {t('header.tensCount', {
-                  t0: String(state.teamTens[0] ?? 0),
-                  t1: String(state.teamTens[1] ?? 0),
-                  total: String(state.tensInDeck),
-                })}
+              <div className={isLargeDesktop ? 'col-start-2 row-start-1 min-w-0' : 'contents'}>
+                <div
+                  className="mb-1 rounded bg-black/30 px-3 py-2 text-ds-text-primary text-center"
+                  data-testid="md-tens"
+                  data-tutorial="md-tens"
+                >
+                  <div>
+                    {t('header.tensCount', {
+                      t0: String(state.teamTens[0] ?? 0),
+                      t1: String(state.teamTens[1] ?? 0),
+                      total: String(state.tensInDeck),
+                    })}
+                  </div>
+                </div>
               </div>
-            </div>
 
-            <div className="mb-3 flex flex-wrap justify-center gap-x-3 text-ds-text-muted text-sm">
-              <span className="whitespace-nowrap" data-testid="md-tricks">
-                {t('header.tricksCount', {
-                  t0: String(state.teamTricks[0] ?? 0),
-                  t1: String(state.teamTricks[1] ?? 0),
-                })}
-              </span>
+              <div className={isLargeDesktop ? 'col-start-2 row-start-2 min-w-0' : 'contents'}>
+                <div className="mb-3 flex flex-wrap justify-center gap-x-3 text-ds-text-muted text-sm">
+                  <span className="whitespace-nowrap" data-testid="md-tricks">
+                    {t('header.tricksCount', {
+                      t0: String(state.teamTricks[0] ?? 0),
+                      t1: String(state.teamTricks[1] ?? 0),
+                    })}
+                  </span>
 
-              <span className="whitespace-nowrap" data-testid="md-score">
-                {t('header.score', { t0: String(state.scores[0] ?? 0), t1: String(state.scores[1] ?? 0) })}
-              </span>
-            </div>
-
-            <div className="mb-2 flex flex-wrap justify-center gap-1 sm:gap-2" data-testid="md-human-seat">
-              {human && renderSeat(human)}
-            </div>
-            <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length} dataTutorial="md-seats">
-              <div
-                className="grid grid-cols-2 gap-1 mb-4 sm:flex sm:flex-wrap sm:justify-center sm:gap-2"
-                data-testid="md-seats"
-              >
-                {state.players.filter((p) => !p.isHuman).map(renderSeat)}
+                  <span className="whitespace-nowrap" data-testid="md-score">
+                    {t('header.score', { t0: String(state.scores[0] ?? 0), t1: String(state.scores[1] ?? 0) })}
+                  </span>
+                </div>
               </div>
-            </CpuAccordion>
 
-            <div data-tutorial="md-trick">
-              <TrickDisplay
-                currentTrick={state.currentTrick}
-                lastTrick={state.lastTrick}
-                players={state.players}
-                cardWidth={cardWidth}
-                label={t('currentTrick')}
-                lastTrickWinner={state.lastTrickWinner >= 0 ? state.lastTrickWinner : undefined}
-                cardAriaLabelFor={(player, card) =>
-                  t('trickCardByPlayer', {
-                    card: cardAlt(card),
-                    name: player.isHuman ? t('header.you') : t('header.cpu', { idx: String(player.id) }),
-                  })
-                }
-              />
+              <div className={isLargeDesktop ? 'col-start-2 row-start-3 min-w-0' : 'contents'}>
+                <div className="mb-2 flex flex-wrap justify-center gap-1 sm:gap-2" data-testid="md-human-seat">
+                  {human && renderSeat(human)}
+                </div>
+              </div>
+
+              <div className={isLargeDesktop ? 'col-start-2 row-start-4 min-w-0' : 'contents'}>
+                <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length} dataTutorial="md-seats">
+                  <div
+                    className="grid grid-cols-2 gap-1 mb-4 sm:flex sm:flex-wrap sm:justify-center sm:gap-2"
+                    data-testid="md-seats"
+                  >
+                    {state.players.filter((p) => !p.isHuman).map(renderSeat)}
+                  </div>
+                </CpuAccordion>
+              </div>
+
+              <div className={isLargeDesktop ? 'col-start-1 row-start-1 row-span-4 self-start min-w-0' : 'contents'}>
+                <div data-tutorial="md-trick">
+                  <TrickDisplay
+                    currentTrick={state.currentTrick}
+                    lastTrick={state.lastTrick}
+                    players={state.players}
+                    cardWidth={cardWidth}
+                    wrap={isLargeDesktop}
+                    label={t('currentTrick')}
+                    lastTrickWinner={state.lastTrickWinner >= 0 ? state.lastTrickWinner : undefined}
+                    cardAriaLabelFor={(player, card) =>
+                      t('trickCardByPlayer', {
+                        card: cardAlt(card),
+                        name: player.isHuman ? t('header.you') : t('header.cpu', { idx: String(player.id) }),
+                      })
+                    }
+                  />
+                </div>
+              </div>
             </div>
 
             {/* **決まり方で 1/2/3 点と変わる。** 言わないと得点が飛んで見える。 */}
@@ -293,13 +302,66 @@ function MendikotPageContent() {
               </div>
             )}
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
+            {isMobile && (
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            )}
             <ErrorAlert message={error} onRetry={retry} />
+          </div>
 
+          <GameFooter
+            className={`${gameTheme.mendikot.footer} px-4 py-2.5`}
+            message={
+              !isMobile ? (
+                <GameMessageBox
+                  message={state.message}
+                  messageCode={state.messageCode}
+                  messageParams={state.messageParams}
+                />
+              ) : null
+            }
+            actions={
+              <div className="flex flex-wrap gap-2" data-tutorial="md-actions">
+                {isHandEnd && !isGameEnd && (
+                  <button type="button" className={btnSuccess} onClick={handleNextHand} disabled={loading}>
+                    {t('actions.nextHand')}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={() => requestConfirm(handleReset)}
+                  disabled={loading}
+                >
+                  {t('actions.reset')}
+                </button>
+                {!isGameEnd && (
+                  <button
+                    type="button"
+                    className={btnDanger}
+                    onClick={() => requestGiveUpConfirm(handleGiveUp)}
+                    disabled={loading}
+                  >
+                    {t('actions.giveUp')}
+                  </button>
+                )}
+              </div>
+            }
+          >
+            {/* **切り札は宣言ではなく事故で決まる** (#5755)。フォローできない
+                手番はハンド全体を左右する一度きりの選択なのに、警告が無かった。 */}
+            {state.willSetTrump && (
+              <div
+                className="mb-3 rounded bg-ds-surface border border-ds-warning px-3 py-2 text-ds-text-primary text-center"
+                role="status"
+                data-testid="md-sets-trump-warning"
+              >
+                {t('warn.setsTrump')}
+              </div>
+            )}
             {human && human.cards.length > 0 && (
               <div className="mt-4" data-tutorial="md-hand">
                 <div className="text-ds-text-muted text-sm mb-1">
@@ -329,44 +391,17 @@ function MendikotPageContent() {
                 </CardFan>
               </div>
             )}
-
             {hintEnabled && hint && (
               <div className="mt-3 flex justify-center">
                 <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />
               </div>
             )}
+          </GameFooter>
 
-            <div className="mt-4 flex flex-wrap gap-2" data-tutorial="md-actions">
-              {isHandEnd && !isGameEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextHand} disabled={loading}>
-                  {t('actions.nextHand')}
-                </button>
-              )}
-              <button
-                type="button"
-                className={btnPrimary}
-                onClick={() => requestConfirm(handleReset)}
-                disabled={loading}
-              >
-                {t('actions.reset')}
-              </button>
-              {!isGameEnd && (
-                <button
-                  type="button"
-                  className={btnDanger}
-                  onClick={() => requestGiveUpConfirm(handleGiveUp)}
-                  disabled={loading}
-                >
-                  {t('actions.giveUp')}
-                </button>
-              )}
-            </div>
-
-            <SettingsPanel
-              title={tc('settings.title')}
-              groups={[{ items: [hintCheckboxItem(tc, hintEnabled, setHintEnabled)] }]}
-            />
-          </div>
+          <SettingsPanel
+            title={tc('settings.title')}
+            groups={[{ items: [hintCheckboxItem(tc, hintEnabled, setHintEnabled)] }]}
+          />
 
           <ActionLogSection
             isEndPhase={isGameEnd}

@@ -20,7 +20,7 @@ export function GoFishBooksDisplay({ books }: GoFishBooksDisplayProps) {
         {books.map((book) => (
           <span
             key={book.rank}
-            className="inline-flex items-center px-2 py-1 rounded bg-ds-success/50 text-white text-xs"
+            className="inline-flex items-center px-2 py-1 rounded bg-ds-success/50 text-ds-text-on-accent text-xs"
           >
             {valueName(book.rank)}
           </span>

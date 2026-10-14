@@ -322,7 +322,7 @@ function BatakPageContent() {
                         disabled={loading}
                         aria-pressed={effectiveBidValue === n}
                         data-testid={`bid-option-${n}`}
-                        className={`h-9 w-9 rounded-lg font-medium text-sm transition-all ${effectiveBidValue === n ? 'bg-ds-accent text-white ring-2 ring-ds-accent' : 'bg-white/20 text-ds-text-primary hover:bg-white/30'}`}
+                        className={`h-9 w-9 rounded-lg font-medium text-sm transition-all ${effectiveBidValue === n ? 'bg-ds-accent text-ds-text-on-accent ring-2 ring-ds-accent' : 'bg-white/20 text-ds-text-primary hover:bg-white/30'}`}
                       >
                         {n}
                       </button>

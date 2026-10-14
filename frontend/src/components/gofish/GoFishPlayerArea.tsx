@@ -110,7 +110,7 @@ export function GoFishPlayerArea({
               <span
                 key={book.rank}
                 data-rank={book.rank}
-                className="px-1.5 py-0.5 rounded font-medium bg-ds-success/50 text-white"
+                className="px-1.5 py-0.5 rounded font-medium bg-ds-success/50 text-ds-text-on-accent"
               >
                 {valueName(book.rank)}
               </span>

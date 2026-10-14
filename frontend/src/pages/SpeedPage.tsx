@@ -386,7 +386,7 @@ function SpeedPageContent() {
                   type="button"
                   onClick={handleFlip}
                   disabled={loading}
-                  className={`px-4 py-2 bg-ds-warning text-white rounded hover:bg-ds-warning-hover disabled:opacity-50 ring-2 ring-ds-warning${!loading ? ' animate-pulse' : ''}`}
+                  className={`px-4 py-2 bg-ds-warning text-ds-text-on-accent rounded hover:bg-ds-warning-hover disabled:opacity-50 ring-2 ring-ds-warning${!loading ? ' animate-pulse' : ''}`}
                   data-testid="flip-button"
                 >
                   {t('flipButton')}
