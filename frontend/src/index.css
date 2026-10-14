@@ -220,6 +220,12 @@
   --color-ds-text-muted: var(--ds-text-muted-surface);
   --color-ds-text-on-accent: #1a1a1a;
   --color-ds-text-on-felt: #dde3ea;
+  --color-ds-warning-on-felt: #f8dcbf;
+  --color-ds-info-on-felt: #d5e3ed;
+  --color-ds-accent-on-felt: #efdfbf;
+  --color-ds-success-on-felt: #c9e8d8;
+  --color-ds-error-text-on-felt: #fbd9d6;
+  --color-hanafuda-label: #765300;
   --color-ds-text-inverse: #1a1a1a;
   --color-ds-accent: #d4a853;
   --color-ds-accent-hover: #e0b86a;
@@ -255,6 +261,51 @@
    establishes its own background. Glass panels are translucent and remain on-felt. */
 [data-felt] {
   --color-ds-text-muted: var(--color-ds-text-on-felt);
+  --ds-warning-text: var(--color-ds-warning-on-felt);
+  --ds-info-text: var(--color-ds-info-on-felt);
+  --ds-accent-text: var(--color-ds-accent-on-felt);
+  --ds-success-text: var(--color-ds-success-on-felt);
+  --ds-error-text: var(--color-ds-error-text-on-felt);
+}
+
+/* State text uses a lightness-adjusted version on felt. Keep the semantic
+   tokens themselves unchanged so background utilities retain their colors. */
+[data-felt] .text-ds-warning {
+  color: var(--ds-warning-text);
+}
+[data-felt] .text-ds-info {
+  color: var(--ds-info-text);
+}
+[data-felt] .text-ds-accent {
+  color: var(--ds-accent-text);
+}
+[data-felt] .text-ds-success {
+  color: var(--ds-success-text);
+}
+[data-felt] .text-ds-error-text {
+  color: var(--ds-error-text);
+}
+
+/* Restore original state colors over opaque surfaces and bright colored fills,
+   where the light on-felt variants would lose contrast. */
+[data-felt]
+:is(
+  .bg-ds-surface,
+  .bg-ds-surface-elevated,
+  .bg-ds-bg,
+  [data-surface],
+  .bg-white,
+  .bg-ds-warning,
+  .bg-ds-accent,
+  .bg-ds-info,
+  .bg-ds-success,
+  .bg-ds-error
+) {
+  --ds-warning-text: var(--color-ds-warning);
+  --ds-info-text: var(--color-ds-info);
+  --ds-accent-text: var(--color-ds-accent);
+  --ds-success-text: var(--color-ds-success);
+  --ds-error-text: var(--color-ds-error-text);
 }
 
 [data-felt] :is(.bg-ds-surface, .bg-ds-surface-elevated, .bg-ds-bg, [data-surface]) {

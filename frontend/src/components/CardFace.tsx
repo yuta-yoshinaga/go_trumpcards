@@ -66,6 +66,7 @@ export function CardFace({
   const w = width ?? 80;
   const h = w * CARD_ASPECT;
   const ink = inkColor(card.color);
+  const hanafudaLabel = card.deck === 'hanafuda' && card.color === 'gold';
   const label = card.label ?? String(card.value);
   const glyph = card.glyph ?? label.charAt(0);
   const defaultAriaLabel = card.glyph ? `${label} ${card.glyph}` : label;
@@ -105,7 +106,16 @@ export function CardFace({
         ...style,
       }}
     >
-      <span style={{ ...cornerBase, top: w * 0.06, left: w * 0.08 }}>{label}</span>
+      <span
+        style={{
+          ...cornerBase,
+          top: w * 0.06,
+          left: w * 0.08,
+          ...(hanafudaLabel ? { color: 'var(--color-hanafuda-label)' } : {}),
+        }}
+      >
+        {label}
+      </span>
       <span
         aria-hidden="true"
         style={{
@@ -126,6 +136,7 @@ export function CardFace({
           bottom: w * 0.06,
           right: w * 0.08,
           transform: 'rotate(180deg)',
+          ...(hanafudaLabel ? { color: 'var(--color-hanafuda-label)' } : {}),
         }}
       >
         {label}
