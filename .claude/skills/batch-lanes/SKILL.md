@@ -39,8 +39,9 @@ The flows require `dele`, `gh`, `jq`, `flock`, `bun`, `go`, and `golangci-lint`,
 - `setup_wt.sh`: fetch `develop` and prepare a clean issue worktree.
 - `combined.sh`: merge matching open batch branches into a scratch build and repeat the supplied Playwright guard specs; this catches deal-dependent failures like the Mushi and Desmoche failures found only after combining slices.
 - `go.sh`: run `dele` for a prompt file in an issue worktree and save a fresh per-run log.
-- `gofx.sh`: run `dele` for a prompt file in a fixup worktree after checking a PR branch.
-- `fx.sh`: check out an existing remote PR branch in a fixup worktree.
+- `gofx.sh`: run `dele` for a prompt file in a fixup worktree after checking a PR branch; the slot must be numeric like `fx.sh`'s.
+- `fx.sh`: check out an existing remote PR branch in a fixup worktree; use a numeric slot distinct from active lanes, such as 21..29.
+- `stopsrv.sh`: stop server processes listening on lane ports by numeric slot (or all slots when omitted).
 - `busy.sh`: report delegation processes writing in a worktree.
 - `treehash.sh`: hash the worktree state for the gate stamp.
 - `receipt.sh`: run relevant Vitest files plus frontend and backend checks for a worktree.
