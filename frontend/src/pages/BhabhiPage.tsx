@@ -202,7 +202,7 @@ function BhabhiPageContent() {
             <div className="text-ds-text-muted text-sm text-center mb-3" data-testid="bh-pile" data-tutorial="bh-pile">
               {state.leadSuit > 0
                 ? t('header.led', { suit: suitSymbolAt(state.leadSuit, '?'), n: String(state.pile.length) })
-                : t('header.noLead')}
+                : ''}
             </div>
 
             <div className="flex flex-wrap justify-center gap-2 mb-4" data-tutorial="bh-seats">

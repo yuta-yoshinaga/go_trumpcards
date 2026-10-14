@@ -8,7 +8,6 @@
     "trick": "Trick",
     "alive": "{{n}} of {{total}} still in",
     "led": "Led: {{suit}} ({{n}} on the table -- fail to follow and you take them all)",
-    "noLead": "The table is empty. Lead whatever you like.",
     "cards": "{{n}} cards",
     "out": "out, {{rank}} to finish",
     "pickups": "{{n}} pickups",

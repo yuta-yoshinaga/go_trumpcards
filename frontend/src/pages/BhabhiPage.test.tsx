@@ -62,6 +62,13 @@ beforeEach(() => {
 });
 
 describe('BhabhiPage', () => {
+  it('shows the lead guidance exactly once', async () => {
+    mockExec.mockResolvedValue(makeState({ message: '場は空です。好きな札でリードできます。' }));
+    renderWithProviders(<BhabhiPage />);
+
+    expect(await screen.findAllByText('場は空です。好きな札でリードできます。')).toHaveLength(1);
+  });
+
   it('includes the card and player in pile card accessible names in Japanese and English', async () => {
     const previousLanguage = i18n.language;
     const pile = [{ playerIdx: 1, card: card('HEART', 5) }];
@@ -95,7 +102,7 @@ describe('BhabhiPage', () => {
   // **場札の枚数が罰の大きさそのもの。** 未リードと確定の両側を踏む。
   it('shows the pile size once somebody has led', async () => {
     const { unmount } = renderWithProviders(<BhabhiPage />);
-    expect(await screen.findByTestId('bh-pile')).toHaveTextContent(/場は空/);
+    expect(await screen.findByTestId('bh-pile')).toBeEmptyDOMElement();
     unmount();
 
     mockExec.mockResolvedValue(
@@ -178,14 +185,14 @@ describe('BhabhiPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     fireEvent.click(await screen.findByRole('button', { name: '確認' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    expect(await screen.findByTestId('bh-pile')).toHaveTextContent(/場は空/);
+    expect(await screen.findByTestId('bh-pile')).toBeEmptyDOMElement();
     expect(live).toHaveTextContent('場札は2枚です。');
 
     mockExec.mockClear();
     mockExec.mockResolvedValueOnce({ ...resetState });
     fireEvent.click(screen.getAllByRole('button', { name: /出せる札/ })[0]);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0));
-    expect(await screen.findByTestId('bh-pile')).toHaveTextContent(/場は空/);
+    expect(await screen.findByTestId('bh-pile')).toBeEmptyDOMElement();
     await waitFor(() => expect(live).toBeEmptyDOMElement());
   });
 
