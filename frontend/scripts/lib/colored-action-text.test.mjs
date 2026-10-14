@@ -28,4 +28,24 @@ describe('findColoredActionTextViolations', () => {
       ),
     ).toEqual([]);
   });
+
+  it('flags colored backgrounds with white text in template static text', () => {
+    expect(
+      findColoredActionTextViolations('<button className={`bg-ds-warning text-white ' + '$' + '{extra}`} />'),
+    ).toHaveLength(1);
+  });
+
+  it('flags accent backgrounds with hover white text in template static text', () => {
+    expect(
+      findColoredActionTextViolations('<button className={`bg-ds-accent hover:text-white ' + '$' + '{extra}`} />'),
+    ).toHaveLength(1);
+  });
+
+  it('reports a violation only once when it appears in interpolation and static text', () => {
+    expect(
+      findColoredActionTextViolations(
+        '<button className={`bg-ds-warning text-white ' + '$' + '{"bg-ds-warning text-white"}`} />',
+      ),
+    ).toHaveLength(1);
+  });
 });
