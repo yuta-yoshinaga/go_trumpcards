@@ -17,6 +17,32 @@ async function selectFirstCard(page: Parameters<typeof navigateTo>[0]): Promise<
 }
 
 test.describe('Dehla Pakad E2E', () => {
+  test('keeps trump choices inside the desktop play viewport', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await navigateTo(page, '/dehlapakad');
+    const choices = page.getByTestId('dehlapakad-trump-choices');
+    await expect(choices).toBeVisible({ timeout: TIMEOUT_ACTION });
+    await expect(page.getByTestId('game-footer-message')).toContainText(/.+/);
+    expect(
+      await choices.evaluate((el) => {
+        const box = el.getBoundingClientRect();
+        let bottom = window.innerHeight;
+        for (let node = el.parentElement; node; node = node.parentElement) {
+          const style = getComputedStyle(node);
+          if (/auto|scroll|hidden/.test(style.overflowY) && node.scrollHeight > node.clientHeight)
+            bottom = Math.min(bottom, node.getBoundingClientRect().bottom);
+        }
+        return (
+          box.top >= 0 &&
+          box.bottom <= bottom &&
+          [...el.querySelectorAll('button')].every((button) => {
+            const rect = button.getBoundingClientRect();
+            return rect.top >= 0 && rect.bottom <= bottom;
+          })
+        );
+      }),
+    ).toBe(true);
+  });
   // **開幕は人間が切り札を宣言する。** 席 3 が親なので、その右隣の席 0 が決める。
   test('opens with the human calling the trump from five cards', async ({ page }) => {
     await navigateTo(page, '/dehlapakad');
