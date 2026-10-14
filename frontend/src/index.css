@@ -258,7 +258,8 @@
 }
 
 /* Muted text needs the higher-contrast on-felt color unless an opaque surface
-   establishes its own background. Glass panels are translucent and remain on-felt. */
+   establishes its own background. The opaque-surface selector below must stay
+   in sync with the state-text selector above; glass panels remain on-felt. */
 [data-felt] {
   --color-ds-text-muted: var(--color-ds-text-on-felt);
   --ds-warning-text: var(--color-ds-warning-on-felt);
@@ -285,8 +286,28 @@
 [data-felt] .text-ds-error-text {
   color: var(--ds-error-text);
 }
+[data-felt] .hover\:text-ds-warning:hover,
+[data-felt] .hover\:text-ds-warning-hover:hover {
+  color: var(--ds-warning-text);
+}
+[data-felt] .hover\:text-ds-info:hover {
+  color: var(--ds-info-text);
+}
+[data-felt] .hover\:text-ds-accent:hover {
+  color: var(--ds-accent-text);
+}
+[data-felt] .hover\:text-ds-accent-hover:hover {
+  color: var(--ds-accent-text);
+}
+[data-felt] .hover\:text-ds-success:hover {
+  color: var(--ds-success-text);
+}
+[data-felt] .hover\:text-ds-error-text:hover {
+  color: var(--ds-error-text);
+}
 
-/* Restore original state colors over opaque surfaces and bright colored fills,
+/* Keep this state-text surface list in sync with the muted-text surface list below.
+   Restore original state colors over opaque surfaces and bright colored fills,
    where the light on-felt variants would lose contrast. */
 [data-felt]
 :is(
@@ -306,6 +327,16 @@
   --ds-accent-text: var(--color-ds-accent);
   --ds-success-text: var(--color-ds-success);
   --ds-error-text: var(--color-ds-error-text);
+}
+
+[data-felt]
+  :is(.bg-ds-surface, .bg-ds-surface-elevated, .bg-ds-bg, [data-surface])
+  .hover\:text-ds-warning-hover:hover {
+  color: var(--color-ds-warning-hover);
+}
+
+[data-felt] :is(.bg-ds-surface, .bg-ds-surface-elevated, .bg-ds-bg, [data-surface]) .hover\:text-ds-accent-hover:hover {
+  color: var(--color-ds-accent-hover);
 }
 
 [data-felt] :is(.bg-ds-surface, .bg-ds-surface-elevated, .bg-ds-bg, [data-surface]) {

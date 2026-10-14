@@ -44,7 +44,35 @@ describe('felt color contrast', () => {
       expect(css).toMatch(
         new RegExp(`\\[data-felt\\]\\s+\\.text-ds-${token}\\s*\\{\\s*color:\\s*var\\(--ds-${textProperty}\\)`),
       );
+      expect(css).toMatch(
+        new RegExp(
+          `\\[data-felt\\]\\s+\\.hover\\\\:text-ds-${token}:hover[^{}]*\\{[^}]*color:\\s*var\\(--ds-${textProperty}\\)`,
+        ),
+      );
       expect(feltRules).not.toMatch(new RegExp(`--color-ds-${token}:`));
+    }
+  });
+
+  it('documents the shared opaque-surface selector used by muted and state text', () => {
+    expect(css).toMatch(/muted.*opaque-surface selector.*state-text selector above/is);
+    expect(css).toMatch(/state-text surface list.*muted-text surface list below/is);
+  });
+
+  it('maps hover color variants on felt and restores their hover colors on opaque surfaces', () => {
+    for (const [variant, onFelt, original] of [
+      ['accent-hover', 'accent-text', 'accent-hover'],
+      ['warning-hover', 'warning-text', 'warning-hover'],
+    ]) {
+      expect(css).toMatch(
+        new RegExp(
+          `\\[data-felt\\]\\s+\\.hover\\\\:text-ds-${variant}:hover\\s*\\{\\s*color:\\s*var\\(--ds-${onFelt}\\)`,
+        ),
+      );
+      expect(css).toMatch(
+        new RegExp(
+          `\\[data-felt\\]\\s*:is\\([^)]*\\)\\s*\\.hover\\\\:text-ds-${variant}:hover\\s*\\{\\s*color:\\s*var\\(--color-ds-${original}\\)`,
+        ),
+      );
     }
   });
 
@@ -96,6 +124,17 @@ describe('felt color contrast', () => {
       const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
       return ((hi ?? 0) + 0.05) / ((lo ?? 0) + 0.05);
     };
+    const pitchFelt = readTextColor('--color-game-bg-blue');
+    const accentPanel = readTextColor('--color-ds-accent');
+    const panelBackground = `#${(pitchFelt.slice(1).match(/.{2}/g) ?? [])
+      .map((part, index) => {
+        const accentChannel = Number.parseInt(accentPanel.slice(1).match(/.{2}/g)?.[index] ?? '00', 16);
+        return Math.round(accentChannel * 0.2 + Number.parseInt(part, 16) * 0.8)
+          .toString(16)
+          .padStart(2, '0');
+      })
+      .join('')}`;
+    expect(contrast(readTextColor('--color-ds-accent-on-felt'), panelBackground)).toBeGreaterThanOrEqual(4.5);
     for (const [name, background] of backgroundColors) {
       for (const surface of [background ?? '', underGlass(background ?? '')]) {
         for (const text of textColors) {
