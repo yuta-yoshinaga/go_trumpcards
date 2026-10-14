@@ -75,6 +75,7 @@
   },
   "hintBid": "Recommended bid",
   "hintPlay": "Recommended card",
+  "noTrump": "None",
   "hintReason": {
     "strategic_bid": "Strategic bid",
     "lead_strong": "Lead with a strong card",
@@ -84,7 +85,6 @@
     "discard_high": "Discard a high card"
   },
   "suitName": {
-    "0": "None",
     "1": "Spades",
     "2": "Clubs",
     "3": "Hearts",
