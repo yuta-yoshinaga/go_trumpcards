@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import type { unsunKarutaApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -18,6 +18,7 @@ import { withTutorial } from '../components/tutorial/withTutorial';
 import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
+import { useElementWidth } from '../hooks/useElementWidth';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
@@ -151,6 +152,8 @@ function UnsunKarutaPageContent() {
   } = useGameHint('unsunkaruta', state);
   const { cardWidth, isMobile } = useCardDimensions();
   const isLargeDesktop = useBreakpoint() === 'largeDesktop';
+  const trickColumnRef = useRef<HTMLDivElement>(null);
+  const trickColumnWidth = useElementWidth(trickColumnRef, isLargeDesktop && state !== null);
   const phaseNames = usePhaseNames('unsunkaruta', UNSUN_PHASE_KEYS);
 
   if (!state)
@@ -247,13 +250,23 @@ function UnsunKarutaPageContent() {
             </div>
 
             <div className={lgTwoColGrid}>
-              <div>
+              <div ref={trickColumnRef}>
                 <TrickDisplay
                   currentTrick={state.currentTrick}
                   players={state.players}
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
                   wrap={!isLargeDesktop}
+                  cardAdvancePx={
+                    isLargeDesktop
+                      ? trickColumnWidth > 0
+                        ? Math.max(
+                            24,
+                            Math.min(cardWidth * 0.8, (trickColumnWidth - 24 - cardWidth) / (state.players.length - 1)),
+                          )
+                        : cardWidth * 0.8
+                      : undefined
+                  }
                   dataTutorial="unsunkaruta-trick-display"
                   winnerIdx={isTrickEnd && state.lastTrickWinner >= 0 ? state.lastTrickWinner : undefined}
                   winnerLabel={t('trickWinnerBadge')}
