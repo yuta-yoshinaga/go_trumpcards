@@ -220,25 +220,6 @@ function MendikotPageContent() {
               className={isLargeDesktop ? 'grid grid-cols-[1fr_minmax(280px,30%)] gap-4' : 'contents'}
               data-testid="md-board-grid"
             >
-              <div className={isLargeDesktop ? 'col-start-1 row-start-1 row-span-4' : 'contents'}>
-                <div data-tutorial="md-trick">
-                  <TrickDisplay
-                    currentTrick={state.currentTrick}
-                    lastTrick={state.lastTrick}
-                    players={state.players}
-                    cardWidth={cardWidth}
-                    label={t('currentTrick')}
-                    lastTrickWinner={state.lastTrickWinner >= 0 ? state.lastTrickWinner : undefined}
-                    cardAriaLabelFor={(player, card) =>
-                      t('trickCardByPlayer', {
-                        card: cardAlt(card),
-                        name: player.isHuman ? t('header.you') : t('header.cpu', { idx: String(player.id) }),
-                      })
-                    }
-                  />
-                </div>
-              </div>
-
               <div className={isLargeDesktop ? 'col-start-2 row-start-1' : 'contents'}>
                 <div
                   className="mb-1 rounded bg-black/30 px-3 py-2 text-ds-text-primary text-center"
@@ -255,10 +236,7 @@ function MendikotPageContent() {
                 </div>
               </div>
 
-              <div
-                className={isLargeDesktop ? 'col-start-2 row-start-2' : 'contents'}
-                data-testid="md-tricks-score-group"
-              >
+              <div className={isLargeDesktop ? 'col-start-2 row-start-2' : 'contents'}>
                 <div className="mb-3 flex flex-wrap justify-center gap-x-3 text-ds-text-muted text-sm">
                   <span className="whitespace-nowrap" data-testid="md-tricks">
                     {t('header.tricksCount', {
@@ -288,6 +266,25 @@ function MendikotPageContent() {
                     {state.players.filter((p) => !p.isHuman).map(renderSeat)}
                   </div>
                 </CpuAccordion>
+              </div>
+
+              <div className={isLargeDesktop ? 'col-start-1 row-start-1 row-span-4 self-start' : 'contents'}>
+                <div data-tutorial="md-trick">
+                  <TrickDisplay
+                    currentTrick={state.currentTrick}
+                    lastTrick={state.lastTrick}
+                    players={state.players}
+                    cardWidth={cardWidth}
+                    label={t('currentTrick')}
+                    lastTrickWinner={state.lastTrickWinner >= 0 ? state.lastTrickWinner : undefined}
+                    cardAriaLabelFor={(player, card) =>
+                      t('trickCardByPlayer', {
+                        card: cardAlt(card),
+                        name: player.isHuman ? t('header.you') : t('header.cpu', { idx: String(player.id) }),
+                      })
+                    }
+                  />
+                </div>
               </div>
             </div>
 

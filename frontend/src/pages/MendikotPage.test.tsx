@@ -101,11 +101,18 @@ describe('MendikotPage', () => {
     expect(children.map((child) => child.className)).toEqual(Array(5).fill('contents'));
     expect(grid.querySelector('[data-tutorial="md-trick"]')).not.toBeNull();
     expect(await screen.findByTestId('cpu-accordion')).toBeInTheDocument();
-    expect(
-      container
-        .querySelector('[data-testid="md-tricks"]')
-        ?.compareDocumentPosition(container.querySelector('[data-testid="md-human-seat"]') as Node),
-    ).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    const orderedElements = [
+      container.querySelector('[data-testid="md-tens"]'),
+      container.querySelector('[data-testid="md-human-seat"]'),
+      container.querySelector('[data-testid="cpu-accordion"]'),
+      container.querySelector('[data-tutorial="md-trick"]'),
+    ];
+    expect(orderedElements.every((element): element is Element => element !== null)).toBe(true);
+    for (let index = 0; index < orderedElements.length - 1; index += 1) {
+      expect(orderedElements[index]?.compareDocumentPosition(orderedElements[index + 1] as Element)).toBe(
+        Node.DOCUMENT_POSITION_FOLLOWING,
+      );
+    }
   });
 
   it('renders every human hand card through the hand fan', async () => {
