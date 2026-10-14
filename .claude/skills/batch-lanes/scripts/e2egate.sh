@@ -85,10 +85,11 @@ if (( page_change )); then
     name="${spec%.spec.ts}"
     if [[ " ${sweep[*]} " == *" $name "* ]]; then sweep_specs+=("e2e/$spec"); else page_specs+=("e2e/$spec"); fi
   done
-  args=(); for spec in "${page_specs[@]}"; do args+=("e2e/$spec"); done
+  # Both spec groups are already rooted at e2e/; pass them through unchanged.
+  args=("${page_specs[@]}")
   if (( ${#sweep_specs[@]} )); then
     if (( ${#args[@]} )); then args+=(---); fi
-    for spec in "${sweep_specs[@]}"; do args+=("e2e/$spec"); done
+    args+=("${sweep_specs[@]}")
     if (( ${#run_args[@]} )); then args+=(--grep "$(IFS='|'; echo "${run_args[*]}")" --pass-with-no-tests); fi
   fi
   if (( ${#args[@]} )); then "$B/e2e.sh" "$slot" "${args[@]}"; fi
