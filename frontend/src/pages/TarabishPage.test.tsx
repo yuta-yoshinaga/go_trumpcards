@@ -18,11 +18,15 @@ vi.mock('../hooks/useGameHint', () => ({
 }));
 
 const mockExec = vi.mocked(tarabishApi.exec);
-const mobileState = vi.hoisted(() => ({ isMobile: true }));
+const mobileState = vi.hoisted(() => ({
+  isMobile: true,
+  breakpoint: 'mobile' as 'mobile' | 'desktop' | 'largeDesktop',
+}));
 
 vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
   useIsMobile: () => mobileState.isMobile,
+  useBreakpoint: () => mobileState.breakpoint,
 }));
 
 const card = (design: string, value: number): Card => ({ design, value }) as unknown as Card;
@@ -72,10 +76,50 @@ const playing = (over: Partial<TarabishResponse> = {}) =>
 beforeEach(() => {
   vi.clearAllMocks();
   mobileState.isMobile = true;
+  mobileState.breakpoint = 'mobile';
   mockExec.mockResolvedValue(makeState());
 });
 
 describe('TarabishPage', () => {
+  it('places the trick and CPU accordion in separate columns on large desktop', async () => {
+    mobileState.breakpoint = 'largeDesktop';
+    mobileState.isMobile = false;
+    renderWithProviders(<TarabishPage />);
+
+    const layout = await screen.findByTestId('tb-play-layout');
+    const trick = screen.getByTestId('tb-trick-column');
+    const cpu = screen.getByTestId('cpu-accordion');
+    const cpuColumn = cpu.closest('[data-testid="tb-side-column"]');
+    expect(layout).toHaveClass('grid-cols-[minmax(0,1fr)_minmax(280px,30%)]');
+    expect(trick.parentElement).toBe(layout);
+    expect(cpuColumn?.parentElement).toBe(layout);
+    expect(trick).toHaveClass('col-start-1');
+    expect(cpuColumn).toHaveClass('min-w-0');
+  });
+
+  it('keeps the result banner in a full-width row on large desktop', async () => {
+    mobileState.breakpoint = 'largeDesktop';
+    mobileState.isMobile = false;
+    mockExec.mockResolvedValue(makeState({ phase: TarabishPhase.GAME_END, gameEndFlag: true, winnerTeam: 0 }));
+    renderWithProviders(<TarabishPage />);
+
+    const banner = await screen.findByText(/あなたのチームの勝ち/);
+    const fullRow = banner.parentElement;
+    expect(fullRow).toHaveClass('col-span-2', 'min-w-0');
+    expect(fullRow?.parentElement).toBe(screen.getByTestId('tb-play-layout'));
+  });
+
+  it('keeps CPU before the trick in the DOM outside large desktop', async () => {
+    mobileState.breakpoint = 'desktop';
+    mobileState.isMobile = false;
+    renderWithProviders(<TarabishPage />);
+
+    const cpu = await screen.findByTestId('cpu-accordion');
+    const trick = screen.getByTestId('tb-trick-column');
+    expect(cpu.compareDocumentPosition(trick) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.getByTestId('tb-play-layout')).toHaveClass('contents');
+  });
+
   it('keeps the original points label off turn', async () => {
     renderWithProviders(<TarabishPage />);
     const cards = await screen.findAllByRole('button', { name: /を出す/ });
