@@ -205,6 +205,7 @@ Desktop (1280x800)
 # 最初のIssueでsecret gistを作成（成功後、gist: <id> がstderrに表示される）
 bash .claude/commands/scripts/attach-screenshots.sh -i <ISSUE_NUMBER> -t "スクリーンショット（Desktop 1280x800）" /tmp/desktop-screenshots/bhabhi-play.png /tmp/desktop-screenshots/pitch-play.png
 
+# モバイルとデスクトップは同じファイル名になるので、同じ gist を使うときは片方を `<game>-desktop.png` などに改名する（同名で内容が違うとスクリプトが止まる）
 # 2件目以降は同じgistを再利用
 bash .claude/commands/scripts/attach-screenshots.sh -i <ISSUE_NUMBER> -t "スクリーンショット（Desktop 1280x800）" -g <GIST_ID> /tmp/desktop-screenshots/bhabhi-play.png /tmp/desktop-screenshots/pitch-play.png
 ```
