@@ -8,11 +8,12 @@ import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, MendikotResponse } from '../types/card';
 import { MendikotPage } from './MendikotPage';
 
-const mobileState = vi.hoisted(() => ({ isMobile: true }));
+const mobileState = vi.hoisted(() => ({ isMobile: true, largeDesktop: false }));
 
 vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
   useIsMobile: () => mobileState.isMobile,
+  useBreakpoint: () => (mobileState.largeDesktop ? 'largeDesktop' : mobileState.isMobile ? 'mobile' : 'desktop'),
 }));
 
 vi.mock('../api/gameApi', () => ({
@@ -69,17 +70,66 @@ function makeState(overrides: Partial<MendikotResponse> = {}): MendikotResponse 
 
 beforeEach(() => {
   mobileState.isMobile = true;
+  mobileState.largeDesktop = false;
   vi.clearAllMocks();
   mockExec.mockResolvedValue(makeState());
 });
 
 describe('MendikotPage', () => {
+  it('places the trick and CPU accordion in separate columns on large desktop', async () => {
+    mobileState.isMobile = false;
+    mobileState.largeDesktop = true;
+    const { container } = renderWithProviders(<MendikotPage />);
+
+    const trick = (await screen.findByTestId('md-board-grid')).querySelector('[data-tutorial="md-trick"]');
+    const accordion = await screen.findByTestId('cpu-accordion');
+    const grid = screen.getByTestId('md-board-grid');
+
+    expect(grid).toHaveClass('grid', 'grid-cols-[1fr_minmax(280px,30%)]');
+    expect(trick?.parentElement).toHaveClass('col-start-1');
+    expect(accordion.parentElement).toHaveClass('col-start-2');
+    expect(container.querySelector('[data-testid="md-board-grid"] [data-testid="md-tens"]')).not.toBeNull();
+  });
+
+  it('keeps the board content in the existing vertical flow below large desktop', async () => {
+    mobileState.isMobile = false;
+    const { container } = renderWithProviders(<MendikotPage />);
+
+    const grid = await screen.findByTestId('md-board-grid');
+    const children = Array.from(grid.children);
+    expect(grid).toHaveClass('contents');
+    expect(children.map((child) => child.className)).toEqual(Array(5).fill('contents'));
+    expect(grid.querySelector('[data-tutorial="md-trick"]')).not.toBeNull();
+    expect(await screen.findByTestId('cpu-accordion')).toBeInTheDocument();
+    expect(
+      container
+        .querySelector('[data-testid="md-tricks"]')
+        ?.compareDocumentPosition(container.querySelector('[data-testid="md-human-seat"]') as Node),
+    ).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+  });
+
   it('renders every human hand card through the hand fan', async () => {
     const { container } = renderWithProviders(<MendikotPage />);
     await screen.findAllByRole('button', { name: /を出す/ });
     const hand = container.querySelector('[data-tutorial="md-hand"]');
     expect(hand).not.toBeNull();
     expect(hand?.querySelectorAll('button')).toHaveLength(3);
+  });
+
+  it('keeps the hand, trump warning, and primary actions in the footer on desktop', async () => {
+    mobileState.isMobile = false;
+    mockExec.mockResolvedValue(makeState({ willSetTrump: true }));
+    const { container } = renderWithProviders(<MendikotPage />);
+
+    await screen.findAllByRole('button', { name: /を出す/ });
+    const footer = container.querySelector('footer');
+    expect(footer).not.toBeNull();
+    expect(footer?.querySelector('[data-tutorial="md-hand"] button')).not.toBeNull();
+    expect(footer?.querySelector('[data-testid="md-sets-trump-warning"]')).not.toBeNull();
+    expect(footer?.querySelector('[data-tutorial="md-actions"]')).not.toBeNull();
+    expect(footer?.querySelector('[data-testid="game-footer-actions"]')).toContainElement(
+      screen.getByRole('button', { name: 'リセット' }),
+    );
   });
 
   it('announces playable cards while retaining each card name', async () => {
