@@ -115,6 +115,46 @@ describe('ClockSolitairePage', () => {
     window.dispatchEvent(new Event('resize'));
   });
 
+  it('scales pile labels and progress positions with compact and full-size cards', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 });
+    const compact = renderWithProviders(<ClockSolitairePage />);
+    const compactFace = await screen.findByTestId('clock-face');
+    expect(compactFace).toHaveStyle({ width: '410px', height: '450px' });
+    expect(screen.getByTestId('clock-pile-label-0')).toHaveStyle({ left: '72.8px' });
+    expect(screen.getByTestId('clock-pile-progress-0')).toHaveStyle({ left: '82px' });
+    compact.unmount();
+
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    const fullSize = renderWithProviders(<ClockSolitairePage />);
+    const fullSizeFace = await screen.findByTestId('clock-face');
+    expect(fullSizeFace).toHaveStyle({ width: '430px', height: '480px' });
+    expect(screen.getByTestId('clock-pile-label-0')).toHaveStyle({ left: '91px' });
+    expect(screen.getByTestId('clock-pile-progress-0')).toHaveStyle({ left: '102.5px' });
+    fullSize.unmount();
+
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+    window.dispatchEvent(new Event('resize'));
+  });
+
+  it.each([
+    [640, 60],
+    [375, 40],
+  ])('keeps pile badge offsets at their original pixel positions at %i px', async (width, cardWidth) => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: width });
+    const { unmount } = renderWithProviders(<ClockSolitairePage />);
+    await screen.findByTestId('clock-face');
+
+    const posX = Math.cos(-Math.PI / 3);
+    expect(screen.getByTestId('clock-pile-label-0')).toHaveStyle({ left: `${cardWidth / 2 + posX * 82}px` });
+    expect(screen.getByTestId('clock-pile-progress-0')).toHaveStyle({ left: `${cardWidth / 2 + posX * 105}px` });
+
+    unmount();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+    window.dispatchEvent(new Event('resize'));
+  });
+
   it('fits the clock face to narrow viewports and updates after resizing', async () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: 320 });

@@ -13,74 +13,26 @@ export const DESKTOP_VIEWPORTS = [
  */
 export const KNOWN_1024_FAILURES: Record<'board' | 'hand' | 'action', ReadonlySet<string>> = {
   board: new Set([
-    '/baccaratbanque',
-    '/bakersgame',
     '/baloot',
-    '/barbu',
-    '/bisley',
     '/braid',
-    '/bridge',
     '/colorado',
     '/crescent',
-    '/daifugo',
-    '/diplomat',
-    '/doubt',
-    '/fortyandeight',
-    '/fortythieves',
-    '/freecell',
-    '/goofspiel',
-    '/gostop',
     '/grandfathersclock',
     '/kingalbert',
-    '/klaberjass',
-    '/klondike',
-    '/koikoi',
-    '/laughandliedown',
-    '/loba',
     '/machiavelli',
-    '/missmilligan',
-    '/nainjaune',
-    '/napoleon',
-    '/napoleonssquare',
-    '/omi',
-    '/penguin',
-    '/popejoan',
     '/pyramid',
-    '/rankandfile',
-    '/rikken',
-    '/rummy500',
-    '/saliclaw',
-    '/scopone',
     '/shelem',
     '/slyfox',
-    '/stalactites',
-    '/sultan',
-    '/tongits',
-    '/trex',
-    '/whitehead',
-    '/windmill',
-    '/yaniv',
-    '/zwicker',
   ]),
-  hand: new Set(['/goofspiel', '/scopone']),
-  action: new Set([
-    '/estimation',
-    '/israeliwhist',
-    '/minibridge',
-    '/openfacechinese',
-    '/polignac',
-    '/saliclaw',
-    '/sergeantmajor',
-  ]),
+  hand: new Set<string>(),
+  action: new Set<string>(),
 };
 
 /**
  * Games whose board cards already overflow sideways on develop, at the listed widths; only the
  * horizontal rule is skipped for them. Remove entries once #11811 is fixed. Do not add entries.
  */
-export const KNOWN_HORIZONTAL_FAILURES: ReadonlyMap<string, ReadonlySet<number>> = new Map([
-  ['/tripeaks', new Set([1024])],
-]);
+export const KNOWN_HORIZONTAL_FAILURES: ReadonlyMap<string, ReadonlySet<number>> = new Map();
 
 /** Minimum visible horizontal card width, passed into page.evaluate callbacks. */
 export const VISIBLE_PX_X = 20;

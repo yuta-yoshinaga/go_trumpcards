@@ -120,7 +120,7 @@ describe('LobaPage', () => {
     expect(cpuDetails.querySelector('.flex.flex-wrap')).toBeInTheDocument();
     const cpuHand = cpuDetails.querySelector('[role="img"]');
     expect(cpuHand).toBeInTheDocument();
-    expect(cpuHand?.querySelector('img')).toHaveStyle({ width: '55px' });
+    expect(cpuHand?.querySelector('img')).toHaveStyle({ width: '44px' });
     expect(cpuHand?.querySelectorAll('img')[1]).toHaveClass('-ml-5');
     const meldList = screen.getByTestId('loba-meld').parentElement;
     expect(meldList?.classList.contains('flex-wrap')).toBe(true);

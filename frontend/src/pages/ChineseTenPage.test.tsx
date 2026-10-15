@@ -134,7 +134,7 @@ describe('ChineseTenPage', () => {
 
     const playCards = screen.getAllByRole('button').filter((button) => button.dataset.hintAction === 'play');
     expect(playCards).toHaveLength(8);
-    expect(playCards[1]).toHaveStyle({ marginLeft: '-78px' });
+    expect(playCards[1]).toHaveStyle({ marginLeft: '-58px' });
   });
 
   it('opens the action log during active play', async () => {

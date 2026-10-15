@@ -2,8 +2,10 @@ import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   CARD_DIMENSIONS,
+  COMPACT_LARGE_DESKTOP_DIMENSIONS,
   useBreakpoint,
   useCardDimensions,
+  useIsCompactLargeDesktop,
   useIsLargeDesktop,
   useIsMobile,
   useWindowWidth,
@@ -148,7 +150,8 @@ describe('useCardDimensions', () => {
   it('returns largeDesktop dimensions when width equals lg breakpoint (1024px)', () => {
     setWidth(1024);
     const { result } = renderHook(() => useCardDimensions());
-    expect(result.current).toEqual({ ...CARD_DIMENSIONS.largeDesktop, isMobile: false });
+    expect(result.current).toEqual({ ...COMPACT_LARGE_DESKTOP_DIMENSIONS, isMobile: false });
+    expect(result.current.cardWidth).toBe(80);
   });
 
   it('returns largeDesktop dimensions when width is above lg breakpoint (1280px)', () => {
@@ -157,10 +160,50 @@ describe('useCardDimensions', () => {
     expect(result.current).toEqual({ ...CARD_DIMENSIONS.largeDesktop, isMobile: false });
   });
 
+  it.each([
+    [1023, 60],
+    [1024, 80],
+    [1279, 80],
+    [1280, 100],
+  ])('uses expected card width at %i px', (width, cardWidth) => {
+    setWidth(width);
+    const { result } = renderHook(() => useCardDimensions());
+    expect(result.current.cardWidth).toBe(cardWidth);
+  });
+
+  it.each([
+    [1279, 1280, 100],
+    [1280, 1279, 80],
+  ])('updates card size crossing %i to %i px', (from, to, cardWidth) => {
+    setWidth(from);
+    const { result } = renderHook(() => useCardDimensions());
+    act(() => {
+      setWidth(to);
+      window.dispatchEvent(new Event('resize'));
+    });
+    expect(result.current.cardWidth).toBe(cardWidth);
+  });
+
+  it('does not re-render for resizes within compact large desktop', () => {
+    setWidth(1100);
+    let renderCount = 0;
+    const { result } = renderHook(() => {
+      renderCount++;
+      return useIsCompactLargeDesktop();
+    });
+    const initialRenderCount = renderCount;
+    act(() => {
+      setWidth(1200);
+      window.dispatchEvent(new Event('resize'));
+    });
+    expect(result.current).toBe(true);
+    expect(renderCount).toBe(initialRenderCount);
+  });
+
   it('updates dimensions when window is resized to mobile', () => {
     setWidth(1024);
     const { result } = renderHook(() => useCardDimensions());
-    expect(result.current).toEqual({ ...CARD_DIMENSIONS.largeDesktop, isMobile: false });
+    expect(result.current).toEqual({ ...COMPACT_LARGE_DESKTOP_DIMENSIONS, isMobile: false });
 
     act(() => {
       setWidth(375);
