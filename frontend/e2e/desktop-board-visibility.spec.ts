@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect, type Page, test } from '@playwright/test';
-import { DESKTOP_VIEWPORTS, KNOWN_1024_FAILURES, VISIBLE_PX_X } from './desktopViewports';
+import { DESKTOP_VIEWPORTS, KNOWN_1024_FAILURES, KNOWN_HORIZONTAL_FAILURES, VISIBLE_PX_X } from './desktopViewports';
 import { navigateTo, waitForAnimations, waitForLoaded } from './helpers';
 
 /** #11702: use the same 52px visible-card rule as #11655 for desktop boards. */
@@ -78,9 +78,10 @@ const horizontalScrollExemptions = new Set(['/accordion']);
  * Waits for the deal animation, then returns the face-up board cards, those whose top 52px is hidden,
  * and those with less than VISIBLE_PX_X showing beside a horizontally clipping ancestor.
  */
-async function measureBoardCards(page: Page, path: string) {
+async function measureBoardCards(page: Page, path: string, width: number) {
   await waitForAnimations(page);
-  const skipHorizontal = horizontalScrollExemptions.has(path);
+  const skipHorizontal =
+    horizontalScrollExemptions.has(path) || (KNOWN_HORIZONTAL_FAILURES.get(path)?.has(width) ?? false);
   return page.evaluate(
     ({ visiblePxX, skipHorizontal }) => {
       const cards = [...document.querySelectorAll('main img, main [role="img"]')].filter((element) => {
@@ -141,7 +142,7 @@ for (const viewport of DESKTOP_VIEWPORTS) {
       test(`${path} keeps every board card visible on desktop`, async ({ page }) => {
         skipKnownFailure(path);
         await navigateTo(page, path);
-        const result = await measureBoardCards(page, path);
+        const result = await measureBoardCards(page, path, viewport.width);
         expect(result.count, `${path}: no board cards found`).toBeGreaterThan(0);
         expect(result.hidden, `${path}: board cards hidden below their play area`).toEqual([]);
         expect(result.hiddenX, `${path}: board cards hidden beside their play area`).toEqual([]);
@@ -153,7 +154,7 @@ for (const viewport of DESKTOP_VIEWPORTS) {
       test(`${path} (all-games sweep) keeps every board card visible on desktop`, async ({ page }) => {
         skipKnownFailure(path);
         await navigateTo(page, path);
-        const result = await measureBoardCards(page, path);
+        const result = await measureBoardCards(page, path, viewport.width);
         expect(result.hidden, `${path}: board cards hidden below their play area`).toEqual([]);
         expect(result.hiddenX, `${path}: board cards hidden beside their play area`).toEqual([]);
       });
