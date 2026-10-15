@@ -2,7 +2,14 @@ import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect, type Page, test } from '@playwright/test';
-import { DESKTOP_VIEWPORTS, KNOWN_1024_FAILURES, KNOWN_HORIZONTAL_FAILURES, VISIBLE_PX_X } from './desktopViewports';
+import {
+  DESKTOP_VIEWPORTS,
+  KNOWN_1024_FAILURES,
+  KNOWN_HORIZONTAL_FAILURES,
+  NARROW_DESKTOP_WIDTH,
+  VISIBLE_PX_X,
+  VISIBLE_PX_Y,
+} from './desktopViewports';
 import { navigateTo, waitForAnimations, waitForLoaded } from './helpers';
 
 /** #11702: use the same 52px visible-card rule as #11655 for desktop boards. */
@@ -83,7 +90,7 @@ async function measureBoardCards(page: Page, path: string, width: number) {
   const skipHorizontal =
     horizontalScrollExemptions.has(path) || (KNOWN_HORIZONTAL_FAILURES.get(path)?.has(width) ?? false);
   return page.evaluate(
-    ({ visiblePxX, skipHorizontal }) => {
+    ({ visiblePxX, visiblePxY, skipHorizontal }) => {
       const cards = [...document.querySelectorAll('main img, main [role="img"]')].filter((element) => {
         const label = `${element.getAttribute('alt') ?? ''} ${element.getAttribute('aria-label') ?? ''}`;
         const box = element.getBoundingClientRect();
@@ -96,11 +103,11 @@ async function measureBoardCards(page: Page, path: string, width: number) {
         let visibleBottom = window.innerHeight;
         for (let ancestor = element.parentElement; ancestor; ancestor = ancestor.parentElement) {
           const style = getComputedStyle(ancestor);
-          if (/^(auto|scroll|hidden)$/.test(style.overflowY) && ancestor.scrollHeight > ancestor.clientHeight) {
+          if (/^(auto|scroll|hidden|clip)$/.test(style.overflowY) && ancestor.scrollHeight > ancestor.clientHeight) {
             visibleBottom = Math.min(visibleBottom, ancestor.getBoundingClientRect().bottom);
           }
         }
-        return box.top + 52 > visibleBottom ? [Math.round(box.top)] : [];
+        return box.top + visiblePxY > visibleBottom ? [Math.round(box.top)] : [];
       });
       const hiddenX = skipHorizontal
         ? []
@@ -112,6 +119,7 @@ async function measureBoardCards(page: Page, path: string, width: number) {
               const style = getComputedStyle(ancestor);
               if (
                 /^(auto|scroll|hidden|clip)$/.test(style.overflowX) &&
+                // Ignore subpixel rounding noise in scroll/client width measurements.
                 ancestor.scrollWidth > ancestor.clientWidth + 1
               ) {
                 const bounds = ancestor.getBoundingClientRect();
@@ -125,7 +133,7 @@ async function measureBoardCards(page: Page, path: string, width: number) {
           });
       return { count: cards.length, hidden, hiddenX };
     },
-    { visiblePxX: VISIBLE_PX_X, skipHorizontal },
+    { visiblePxX: VISIBLE_PX_X, visiblePxY: VISIBLE_PX_Y, skipHorizontal },
   );
 }
 
@@ -135,16 +143,16 @@ for (const viewport of DESKTOP_VIEWPORTS) {
   test.describe(`${viewport.width}x${viewport.height}`, () => {
     test.use({ viewport });
     const skipKnownFailure = (path: string) => {
-      if (viewport.width === 1024 && KNOWN_1024_FAILURES.board.has(path))
+      if (viewport.width === NARROW_DESKTOP_WIDTH && KNOWN_1024_FAILURES.board.has(path))
         test.skip(true, '#11811: known 1024px visibility failure');
     };
     for (const path of PAGES) {
       test(`${path} keeps every board card visible on desktop`, async ({ page }) => {
-        skipKnownFailure(path);
         await navigateTo(page, path);
         const result = await measureBoardCards(page, path, viewport.width);
         expect(result.count, `${path}: no board cards found`).toBeGreaterThan(0);
-        expect(result.hidden, `${path}: board cards hidden below their play area`).toEqual([]);
+        if (!(viewport.width === NARROW_DESKTOP_WIDTH && KNOWN_1024_FAILURES.board.has(path)))
+          expect(result.hidden, `${path}: board cards hidden below their play area`).toEqual([]);
         expect(result.hiddenX, `${path}: board cards hidden beside their play area`).toEqual([]);
       });
     }
@@ -152,10 +160,10 @@ for (const viewport of DESKTOP_VIEWPORTS) {
     const fixedPaths = new Set<string>(PAGES);
     for (const path of allGamePaths.filter((p) => !fixedPaths.has(p) && !excludedGamePaths.has(p))) {
       test(`${path} (all-games sweep) keeps every board card visible on desktop`, async ({ page }) => {
-        skipKnownFailure(path);
         await navigateTo(page, path);
         const result = await measureBoardCards(page, path, viewport.width);
-        expect(result.hidden, `${path}: board cards hidden below their play area`).toEqual([]);
+        if (!(viewport.width === NARROW_DESKTOP_WIDTH && KNOWN_1024_FAILURES.board.has(path)))
+          expect(result.hidden, `${path}: board cards hidden below their play area`).toEqual([]);
         expect(result.hiddenX, `${path}: board cards hidden beside their play area`).toEqual([]);
       });
     }
@@ -207,7 +215,10 @@ for (const viewport of DESKTOP_VIEWPORTS) {
             let bottom = window.innerHeight;
             for (let ancestor = element.parentElement; ancestor; ancestor = ancestor.parentElement) {
               const style = getComputedStyle(ancestor);
-              if (/^(auto|scroll|hidden)$/.test(style.overflowY) && ancestor.scrollHeight > ancestor.clientHeight) {
+              if (
+                /^(auto|scroll|hidden|clip)$/.test(style.overflowY) &&
+                ancestor.scrollHeight > ancestor.clientHeight
+              ) {
                 const bounds = ancestor.getBoundingClientRect();
                 top = Math.max(top, bounds.top);
                 bottom = Math.min(bottom, bounds.bottom);
@@ -257,12 +268,16 @@ for (const viewport of DESKTOP_VIEWPORTS) {
                 let visibleBottom = window.innerHeight;
                 for (let ancestor = image.parentElement; ancestor; ancestor = ancestor.parentElement) {
                   const style = getComputedStyle(ancestor);
-                  if (/^(auto|scroll|hidden)$/.test(style.overflowY) && ancestor.scrollHeight > ancestor.clientHeight) {
+                  if (
+                    /^(auto|scroll|hidden|clip)$/.test(style.overflowY) &&
+                    ancestor.scrollHeight > ancestor.clientHeight
+                  ) {
                     visibleBottom = Math.min(visibleBottom, ancestor.getBoundingClientRect().bottom);
                   }
                 }
-                return box.width >= 20 && box.height >= 30 && box.top + 52 <= visibleBottom;
+                return box.width >= 20 && box.height >= 30 && box.top + visiblePxY <= visibleBottom;
               }).length,
+            VISIBLE_PX_Y,
           );
 
         await expect(board.locator('img')).toHaveCount(firstCardShownPreflop === 1 ? 1 : 5, { timeout: 15_000 });
@@ -299,13 +314,15 @@ for (const viewport of DESKTOP_VIEWPORTS) {
       await page.getByTestId('scg-draw-stock').click();
       await page.getByTestId('scg-seat-0').locator('button').first().click();
       await waitForAnimations(page);
-      const stockAndDiscard = await page.evaluate(() =>
-        ['scg-stock', 'scg-discard-draw-option'].map((testId) => {
-          const element = document.querySelector(`[data-tutorial="${testId}"], [data-testid="${testId}"]`);
-          if (!element) return false;
-          const box = element.getBoundingClientRect();
-          return box.top + 52 <= window.innerHeight && box.bottom > 0;
-        }),
+      const stockAndDiscard = await page.evaluate(
+        (visiblePxY) =>
+          ['scg-stock', 'scg-discard-draw-option'].map((testId) => {
+            const element = document.querySelector(`[data-tutorial="${testId}"], [data-testid="${testId}"]`);
+            if (!element) return false;
+            const box = element.getBoundingClientRect();
+            return box.top + visiblePxY <= window.innerHeight && box.bottom > 0;
+          }),
+        VISIBLE_PX_Y,
       );
       expect(stockAndDiscard).toEqual([true, true]);
     });

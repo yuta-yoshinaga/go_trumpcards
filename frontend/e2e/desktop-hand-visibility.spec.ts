@@ -1,5 +1,11 @@
 import { expect, test } from '@playwright/test';
-import { DESKTOP_VIEWPORTS, KNOWN_1024_FAILURES, VISIBLE_PX_X } from './desktopViewports';
+import {
+  DESKTOP_VIEWPORTS,
+  KNOWN_1024_FAILURES,
+  NARROW_DESKTOP_WIDTH,
+  VISIBLE_PX_X,
+  VISIBLE_PX_Y,
+} from './desktopViewports';
 import { navigateTo } from './helpers';
 
 /**
@@ -38,15 +44,11 @@ const PAGES = [
   { path: '/binokel', hand: '[data-tutorial="bn-player-hand"]' },
   { path: '/popejoan', hand: '[data-tutorial="pj-hand"]' },
 ];
-const VISIBLE_PX = 52;
-
 for (const viewport of DESKTOP_VIEWPORTS) {
   test.describe(`${viewport.width}x${viewport.height}`, () => {
     test.use({ viewport });
     for (const { path, hand } of PAGES) {
       test(`${path} keeps desktop hand cards visible`, async ({ page }) => {
-        if (viewport.width === 1024 && KNOWN_1024_FAILURES.hand.has(path))
-          test.skip(true, '#11811: known 1024px visibility failure');
         await navigateTo(page, path);
         await page.waitForFunction(() =>
           document
@@ -59,7 +61,7 @@ for (const viewport of DESKTOP_VIEWPORTS) {
             ),
         );
         const result = await page.evaluate(
-          ({ visiblePx, visiblePxX, handSelector }) => {
+          ({ visiblePxY, visiblePxX, handSelector }) => {
             const handContainer = document.querySelector(handSelector);
             if (!handContainer)
               return { missingHand: true as const, cards: 0, hidden: [] as number[], hiddenX: [] as number[] };
@@ -73,23 +75,25 @@ for (const viewport of DESKTOP_VIEWPORTS) {
                 while (ancestor) {
                   const style = getComputedStyle(ancestor);
                   if (
-                    ['auto', 'scroll', 'hidden'].includes(style.overflowY) &&
+                    ['auto', 'scroll', 'hidden', 'clip'].includes(style.overflowY) &&
                     ancestor.scrollHeight > ancestor.clientHeight
                   ) {
                     visibleBottom = Math.min(visibleBottom, ancestor.getBoundingClientRect().bottom);
                   }
                   ancestor = ancestor.parentElement;
                 }
-                return box.top + visiblePx > visibleBottom;
+                return box.top + visiblePxY > visibleBottom;
               })
               .map((box) => Math.round(box.top));
             const hiddenX = cards.flatMap((box) => {
               let visibleLeft = 0;
               let visibleRight = window.innerWidth;
-              for (let ancestor = handContainer.parentElement; ancestor; ancestor = ancestor.parentElement) {
+              // Include the hand itself because it may be its own horizontal scroll container.
+              for (let ancestor: Element | null = handContainer; ancestor; ancestor = ancestor.parentElement) {
                 const style = getComputedStyle(ancestor);
                 if (
                   ['auto', 'scroll', 'hidden', 'clip'].includes(style.overflowX) &&
+                  // Ignore subpixel rounding noise in scroll/client width measurements.
                   ancestor.scrollWidth > ancestor.clientWidth + 1
                 ) {
                   const bounds = ancestor.getBoundingClientRect();
@@ -103,11 +107,12 @@ for (const viewport of DESKTOP_VIEWPORTS) {
             });
             return { missingHand: false as const, cards: cards.length, hidden, hiddenX };
           },
-          { visiblePx: VISIBLE_PX, visiblePxX: VISIBLE_PX_X, handSelector: hand },
+          { visiblePxY: VISIBLE_PX_Y, visiblePxX: VISIBLE_PX_X, handSelector: hand },
         );
         expect(result.missingHand, `${path}: hand container ${hand} not found`).toBe(false);
         expect(result.cards, `${path}: no hand cards found`).toBeGreaterThan(0);
-        expect(result.hidden, `${path}: hidden hand cards at tops ${result.hidden.join(', ')}`).toEqual([]);
+        if (!(viewport.width === NARROW_DESKTOP_WIDTH && KNOWN_1024_FAILURES.hand.has(path)))
+          expect(result.hidden, `${path}: hidden hand cards at tops ${result.hidden.join(', ')}`).toEqual([]);
         expect(result.hiddenX, `${path}: hand cards hidden beside their play area`).toEqual([]);
       });
     }
