@@ -69,7 +69,6 @@ export const KNOWN_1024_FAILURES: Record<'board' | 'hand' | 'action', ReadonlySe
     '/minibridge',
     '/openfacechinese',
     '/polignac',
-    '/rams',
     '/saliclaw',
     '/sergeantmajor',
   ]),
@@ -80,8 +79,6 @@ export const KNOWN_1024_FAILURES: Record<'board' | 'hand' | 'action', ReadonlySe
  * horizontal rule is skipped for them. Remove entries once #11811 is fixed. Do not add entries.
  */
 export const KNOWN_HORIZONTAL_FAILURES: ReadonlyMap<string, ReadonlySet<number>> = new Map([
-  // The play area is wider than its column at both widths (scrollWidth 1140 > clientWidth 1040 at 1280).
-  ['/cruel', new Set([1280, 1024])],
   ['/tripeaks', new Set([1024])],
 ]);
 

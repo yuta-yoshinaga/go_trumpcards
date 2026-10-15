@@ -7,6 +7,18 @@ import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, CruelResponse } from '../types/card';
 import { CruelPage } from './CruelPage';
 
+const { mockTableauWidth, mockElementWidthEnabled } = vi.hoisted(() => ({
+  mockTableauWidth: { value: 0 },
+  mockElementWidthEnabled: [] as boolean[],
+}));
+
+vi.mock('../hooks/useElementWidth', () => ({
+  useElementWidth: (_ref: unknown, enabled: boolean) => {
+    mockElementWidthEnabled.push(enabled);
+    return mockTableauWidth.value;
+  },
+}));
+
 vi.mock('../api/gameApi', () => ({
   cruelApi: { exec: vi.fn() },
   actionLogApi: { cruel: vi.fn() },
@@ -64,12 +76,40 @@ const gameOverState: CruelResponse = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mockElementWidthEnabled.length = 0;
   localStorage.clear();
   mockExec.mockResolvedValue(playingState);
 });
 
 describe('CruelPage', () => {
   afterEach(() => localStorage.clear());
+
+  it('fits desktop columns to the measured tableau width', async () => {
+    mockTableauWidth.value = 784;
+    const { container } = renderWithProviders(<CruelPage />);
+    await screen.findByRole('button', { name: '♠ 5、列0' });
+    const firstColumn = container.querySelector('[data-tutorial="cruel-tableau"] > div');
+    const cardWidth = Number.parseInt(firstColumn?.getAttribute('style')?.match(/width:\s*(\d+)px/)?.[1] ?? '0', 10);
+    expect(12 * cardWidth + 11 * 8).toBeLessThanOrEqual(784);
+  });
+
+  it('enables tableau width measurement only after the board is rendered', async () => {
+    renderWithProviders(<CruelPage />);
+    expect(mockElementWidthEnabled[0]).toBe(false);
+
+    await screen.findByRole('button', { name: '♠ 5、列0' });
+    expect(mockElementWidthEnabled).toContain(true);
+  });
+
+  it('falls back to the window width before the tableau width is measured', async () => {
+    mockTableauWidth.value = 0;
+    const { container } = renderWithProviders(<CruelPage />);
+    await screen.findByRole('button', { name: '♠ 5、列0' });
+    const firstColumn = container.querySelector('[data-tutorial="cruel-tableau"] > div');
+    const cardWidth = Number.parseInt(firstColumn?.getAttribute('style')?.match(/width:\s*(\d+)px/)?.[1] ?? '0', 10);
+    const expected = Math.min(Math.max(Math.floor((Math.min(window.innerWidth, 1400) - 11 * 8) / 12), 36), 100);
+    expect(cardWidth).toBe(expected);
+  });
 
   it('keeps a foundation target focusable and explains that a source must be selected', async () => {
     renderWithProviders(<CruelPage />);
