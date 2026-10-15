@@ -391,7 +391,8 @@ function MachiavelliPageContent() {
                       data-testid="machiavelli-meld-list"
                     >
                       {state.table.map((meld, meldIdx) => {
-                        const meldCardWidth = cardWidth * 0.8;
+                        // Five or more melds fit in two rows even at 1280×800.
+                        const meldCardWidth = cardWidth * (isLargeDesktop ? 0.6 : 0.8);
                         const layoffButton = isHumanTurn ? (
                           <button
                             type="button"

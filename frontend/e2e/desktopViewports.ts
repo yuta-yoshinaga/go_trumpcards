@@ -12,7 +12,7 @@ export const DESKTOP_VIEWPORTS = [
  * The list therefore does not shrink automatically; remove entries manually once #11811 is fixed.
  */
 export const KNOWN_1024_FAILURES: Record<'board' | 'hand' | 'action', ReadonlySet<string>> = {
-  board: new Set(['/baloot', '/machiavelli']),
+  board: new Set<string>(),
   hand: new Set<string>(),
   action: new Set<string>(),
 };
