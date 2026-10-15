@@ -262,7 +262,7 @@ for (const viewport of DESKTOP_VIEWPORTS) {
         const board = page.locator(selector);
         const visibleBoardCount = async () =>
           board.locator('img').evaluateAll(
-            (images) =>
+            (images, visiblePxY) =>
               images.filter((image) => {
                 const box = image.getBoundingClientRect();
                 let visibleBottom = window.innerHeight;
