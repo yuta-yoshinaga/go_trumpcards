@@ -1,4 +1,4 @@
-import { useCallback, useId, useMemo, useRef } from 'react';
+import { useCallback, useId, useMemo } from 'react';
 import type { bigBenApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -105,11 +105,9 @@ function BigBenPageContent() {
   );
   const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   const { cardOverlap, cardWidth, isMobile } = useCardDimensions();
-  const hasState = state !== null;
   const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const windowWidth = useWindowWidth();
-  const tableauRef = useRef<HTMLDivElement>(null);
-  const tableauRowWidth = useElementWidth(tableauRef, hasState && !isMobile);
+  const [tableauRef, tableauRowWidth] = useElementWidth<HTMLDivElement>();
   const dims = useMemo(() => {
     if (!isMobile) {
       const measured = tableauDimensions(
