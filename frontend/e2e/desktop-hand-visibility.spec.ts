@@ -1,11 +1,17 @@
 import { expect, test } from '@playwright/test';
+import {
+  DESKTOP_VIEWPORTS,
+  KNOWN_1024_FAILURES,
+  NARROW_DESKTOP_WIDTH,
+  VISIBLE_PX_X,
+  VISIBLE_PX_Y,
+} from './desktopViewports';
 import { navigateTo } from './helpers';
 
 /**
  * #11700 keeps each human card visible in the 1280×800 desktop play area. This mirrors
  * hand-visibility.spec.ts (#11655), measuring the desktop play area and its scroll ancestors.
  */
-test.use({ viewport: { width: 1280, height: 800 } });
 const PAGES = [
   { path: '/bigtwo', hand: '[data-tutorial="bt-player-hand"]' },
   { path: '/tienlen', hand: '[data-tutorial="tl-player-hand"]' },
@@ -38,51 +44,77 @@ const PAGES = [
   { path: '/binokel', hand: '[data-tutorial="bn-player-hand"]' },
   { path: '/popejoan', hand: '[data-tutorial="pj-hand"]' },
 ];
-const VISIBLE_PX = 52;
-
-for (const { path, hand } of PAGES) {
-  test(`${path} keeps desktop hand cards visible`, async ({ page }) => {
-    await navigateTo(page, path);
-    await page.waitForFunction(() =>
-      document
-        .getAnimations()
-        .every(
-          (a) =>
-            a.playState === 'finished' ||
-            a.playState === 'idle' ||
-            a.effect?.getComputedTiming().iterations === Number.POSITIVE_INFINITY,
-        ),
-    );
-    const result = await page.evaluate(
-      ({ visiblePx, handSelector }) => {
-        const handContainer = document.querySelector(handSelector);
-        if (!handContainer) return { missingHand: true as const, cards: 0, hidden: [] as number[] };
-        const cards = [...handContainer.querySelectorAll('img, [role="img"]')]
-          .map((el) => el.getBoundingClientRect())
-          .filter((box) => box.width >= 20 && box.height >= 30);
-        const hidden = cards
-          .filter((box) => {
-            let visibleBottom = window.innerHeight;
-            let ancestor = handContainer.parentElement;
-            while (ancestor) {
-              const style = getComputedStyle(ancestor);
-              if (
-                ['auto', 'scroll', 'hidden'].includes(style.overflowY) &&
-                ancestor.scrollHeight > ancestor.clientHeight
-              ) {
-                visibleBottom = Math.min(visibleBottom, ancestor.getBoundingClientRect().bottom);
+for (const viewport of DESKTOP_VIEWPORTS) {
+  test.describe(`${viewport.width}x${viewport.height}`, () => {
+    test.use({ viewport });
+    for (const { path, hand } of PAGES) {
+      test(`${path} keeps desktop hand cards visible`, async ({ page }) => {
+        await navigateTo(page, path);
+        await page.waitForFunction(() =>
+          document
+            .getAnimations()
+            .every(
+              (a) =>
+                a.playState === 'finished' ||
+                a.playState === 'idle' ||
+                a.effect?.getComputedTiming().iterations === Number.POSITIVE_INFINITY,
+            ),
+        );
+        const result = await page.evaluate(
+          ({ visiblePxY, visiblePxX, handSelector }) => {
+            const handContainer = document.querySelector(handSelector);
+            if (!handContainer)
+              return { missingHand: true as const, cards: 0, hidden: [] as number[], hiddenX: [] as number[] };
+            const cards = [...handContainer.querySelectorAll('img, [role="img"]')]
+              .map((el) => el.getBoundingClientRect())
+              .filter((box) => box.width >= 20 && box.height >= 30);
+            const hidden = cards
+              .filter((box) => {
+                let visibleBottom = window.innerHeight;
+                let ancestor = handContainer.parentElement;
+                while (ancestor) {
+                  const style = getComputedStyle(ancestor);
+                  if (
+                    ['auto', 'scroll', 'hidden', 'clip'].includes(style.overflowY) &&
+                    ancestor.scrollHeight > ancestor.clientHeight
+                  ) {
+                    visibleBottom = Math.min(visibleBottom, ancestor.getBoundingClientRect().bottom);
+                  }
+                  ancestor = ancestor.parentElement;
+                }
+                return box.top + visiblePxY > visibleBottom;
+              })
+              .map((box) => Math.round(box.top));
+            const hiddenX = cards.flatMap((box) => {
+              let visibleLeft = 0;
+              let visibleRight = window.innerWidth;
+              // Include the hand itself because it may be its own horizontal scroll container.
+              for (let ancestor: Element | null = handContainer; ancestor; ancestor = ancestor.parentElement) {
+                const style = getComputedStyle(ancestor);
+                if (
+                  ['auto', 'scroll', 'hidden', 'clip'].includes(style.overflowX) &&
+                  // Ignore subpixel rounding noise in scroll/client width measurements.
+                  ancestor.scrollWidth > ancestor.clientWidth + 1
+                ) {
+                  const bounds = ancestor.getBoundingClientRect();
+                  visibleLeft = Math.max(visibleLeft, bounds.left);
+                  visibleRight = Math.min(visibleRight, bounds.right);
+                }
               }
-              ancestor = ancestor.parentElement;
-            }
-            return box.top + visiblePx > visibleBottom;
-          })
-          .map((box) => Math.round(box.top));
-        return { missingHand: false as const, cards: cards.length, hidden };
-      },
-      { visiblePx: VISIBLE_PX, handSelector: hand },
-    );
-    expect(result.missingHand, `${path}: hand container ${hand} not found`).toBe(false);
-    expect(result.cards, `${path}: no hand cards found`).toBeGreaterThan(0);
-    expect(result.hidden, `${path}: hidden hand cards at tops ${result.hidden.join(', ')}`).toEqual([]);
+              return box.left + visiblePxX > visibleRight || box.right - visiblePxX < visibleLeft
+                ? [Math.round(box.left)]
+                : [];
+            });
+            return { missingHand: false as const, cards: cards.length, hidden, hiddenX };
+          },
+          { visiblePxY: VISIBLE_PX_Y, visiblePxX: VISIBLE_PX_X, handSelector: hand },
+        );
+        expect(result.missingHand, `${path}: hand container ${hand} not found`).toBe(false);
+        expect(result.cards, `${path}: no hand cards found`).toBeGreaterThan(0);
+        if (!(viewport.width === NARROW_DESKTOP_WIDTH && KNOWN_1024_FAILURES.hand.has(path)))
+          expect(result.hidden, `${path}: hidden hand cards at tops ${result.hidden.join(', ')}`).toEqual([]);
+        expect(result.hiddenX, `${path}: hand cards hidden beside their play area`).toEqual([]);
+      });
+    }
   });
 }
