@@ -7,13 +7,14 @@ import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useBreakpoint, useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions, useIsCompactLargeDesktop, useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -34,6 +35,9 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** The five denominations, in the order the contract buttons are offered. */
 const DENOMINATIONS: readonly number[] = [1, 2, 3, 4, 0];
+
+/** Visible left edge of an overlapping card; preserves the minimum tap target. */
+const COMPACT_CARD_EDGE_PX = 44;
 
 /** Highest contract level. Level n needs 6 + n tricks, so 7 is all thirteen. */
 const MAX_LEVEL = 7;
@@ -68,8 +72,9 @@ function MinibridgePageContent() {
     exec: dispatch,
     retry,
   } = useGameApi<MinibridgeResponse, Parameters<typeof minibridgeApi.exec>>(minibridgeApi.exec);
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, cpuCardWidth } = useCardDimensions();
   const isMobile = useIsMobile();
+  const isCompactLargeDesktop = useIsCompactLargeDesktop();
   const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const { hint, hintEnabled, setHintEnabled } = useGameHint('minibridge', state);
   const [level, setLevel] = useState(1);
@@ -168,7 +173,7 @@ function MinibridgePageContent() {
   const renderSeat = (p: (typeof state.players)[number]) => (
     <div
       key={p.id}
-      className={`rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted ${
+      className={`rounded bg-black/30 ${isCompactLargeDesktop ? 'px-2 py-1 text-xs whitespace-nowrap' : 'px-3 py-2 text-sm'} text-ds-text-muted ${
         state.phase === MinibridgePhase.PLAY && isHumanTurn && p.id === state.currentPlayerIdx
           ? 'ring-2 ring-ds-accent'
           : ''
@@ -276,66 +281,53 @@ function MinibridgePageContent() {
               </CpuAccordion>
             </div>
 
-            <div
-              className="text-center mb-3 text-ds-text-primary"
-              data-testid="mb-contract"
-              data-tutorial="mb-contract"
-            >
-              {state.contractLevel > 0
-                ? t('header.contract', {
-                    level: String(state.contractLevel),
-                    suit: suitSymbolAt(state.contractSuit, state.contractSuit === 0 ? 'NT' : '?'),
-                    name:
-                      state.declarerIdx === 0 ? t('header.you') : t('header.cpu', { idx: String(state.declarerIdx) }),
-                    need: String(state.requiredTricks),
-                  })
-                : t('header.contractUndecided')}
-            </div>
+            <div className={isCompactLargeDesktop ? 'flex items-center gap-2' : undefined}>
+              <div
+                className={`text-center mb-3 text-ds-text-primary${isCompactLargeDesktop ? ' flex-1 min-w-0' : ''}`}
+                data-testid="mb-contract"
+                data-tutorial="mb-contract"
+              >
+                {state.contractLevel > 0
+                  ? t('header.contract', {
+                      level: String(state.contractLevel),
+                      suit: suitSymbolAt(state.contractSuit, state.contractSuit === 0 ? 'NT' : '?'),
+                      name:
+                        state.declarerIdx === 0 ? t('header.you') : t('header.cpu', { idx: String(state.declarerIdx) }),
+                      need: String(state.requiredTricks),
+                    })
+                  : t('header.contractUndecided')}
+              </div>
 
+              {/* **HCP は公開情報。** CPU の席だけを折りたたみ、自分の席は常時表示する。 */}
+              <div
+                className={`flex flex-wrap justify-center gap-1 mb-2 sm:gap-2${isCompactLargeDesktop ? ' flex-1 min-w-0' : ''}`}
+                data-testid="mb-human-seat"
+              >
+                {human && renderSeat(human)}
+              </div>
+            </div>
             {state.declarerByDealerTie && (
               <div className="text-center mb-3 text-ds-text-muted text-sm" role="status" data-testid="mb-tie-note">
                 {t('header.declarerByTie', { seat: String(state.dealerIdx) })}
               </div>
             )}
-
             {isContract && (
               <div className="text-center mb-3 text-ds-accent text-sm" role="status" data-testid="mb-pair-hcp">
                 {t('header.pairHcp', { n: String(pairHcp) })}
               </div>
             )}
-
-            {/* **HCP は公開情報。** CPU の席だけを折りたたみ、自分の席は常時表示する。 */}
-            <div className="flex flex-wrap justify-center gap-1 mb-2 sm:gap-2" data-testid="mb-human-seat">
-              {human && renderSeat(human)}
-            </div>
-            <div data-tutorial="mb-trick">
+            {/* This selector depends on TrickDisplay's inner div structure to tighten its spacing on compact large desktop. */}
+            <div className={isCompactLargeDesktop ? '[&>div]:my-1 [&>div]:p-2' : undefined} data-tutorial="mb-trick">
               <TrickDisplay
                 currentTrick={state.currentTrick}
                 lastTrick={state.lastTrick}
                 lastTrickWinner={state.lastTrickWinner}
                 players={state.players}
-                cardWidth={cardWidth}
+                cardWidth={isCompactLargeDesktop ? cpuCardWidth : cardWidth}
                 label={t('currentTrick')}
                 winnerLabel={t('trickWinner')}
               />
             </div>
-
-            {state.trickPaused && (
-              <div className="text-center my-3">
-                <button
-                  type="button"
-                  className={`${btnPrimary} aria-disabled:opacity-50 aria-disabled:cursor-not-allowed`}
-                  onClick={handleContinueTrick}
-                  aria-disabled={loading}
-                  aria-describedby={loading ? 'mb-continue-loading' : undefined}
-                >
-                  {t('actions.continue')}
-                </button>
-                <span id="mb-continue-loading" className="sr-only">
-                  {t('header.cpuProcessing')}
-                </span>
-              </div>
-            )}
 
             {roundResult && (
               <div className="text-center my-3 text-ds-text-primary" role="status" data-testid="mb-round-result">
@@ -387,7 +379,14 @@ function MinibridgePageContent() {
                       className={`relative disabled:opacity-50 sm:focus-visible:z-10 ${
                         isHumanDummyTurn && legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''
                       }`}
-                      style={{ marginLeft: idx > 0 ? -Math.round(cardWidth * 0.55) : undefined }}
+                      style={{
+                        marginLeft:
+                          idx > 0
+                            ? isCompactLargeDesktop
+                              ? -(cardWidth - COMPACT_CARD_EDGE_PX)
+                              : -Math.round(cardWidth * 0.55)
+                            : undefined,
+                      }}
                     >
                       <CardImage card={card} width={cardWidth} />
                     </button>
@@ -409,7 +408,7 @@ function MinibridgePageContent() {
                     <span className="ml-2 text-ds-accent">{t('header.yourTurn')}</span>
                   )}
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <div className={`flex ${isCompactLargeDesktop ? 'flex-nowrap gap-0' : 'flex-wrap gap-2'}`}>
                   {human.cards.map((card, idx) => (
                     <button
                       key={`${card.design}-${card.value}-${idx}`}
@@ -420,6 +419,9 @@ function MinibridgePageContent() {
                       className={`disabled:opacity-50 ${
                         !isHumanDummyTurn && legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''
                       }`}
+                      style={{
+                        marginLeft: isCompactLargeDesktop && idx > 0 ? -(cardWidth - COMPACT_CARD_EDGE_PX) : undefined,
+                      }}
                     >
                       <CardImage card={card} width={cardWidth} />
                     </button>
@@ -434,70 +436,91 @@ function MinibridgePageContent() {
               </div>
             )}
 
-            <div className="mt-4 flex flex-wrap gap-2 items-center" data-tutorial="mb-actions">
-              {isHumanContractTurn && (
-                <>
-                  <label className="text-ds-text-muted text-sm" htmlFor="mb-level">
-                    {t('actions.level')}
-                  </label>
-                  {/* 折りたたみに入れない：閉じた details の中はクリックできない。 */}
-                  <select
-                    id="mb-level"
-                    className="rounded bg-black/40 text-ds-text-primary px-2 py-1"
-                    value={level}
-                    onChange={(e) => setLevel(Number(e.target.value))}
-                    disabled={loading}
-                    data-testid="mb-level-select"
-                  >
-                    {Array.from({ length: MAX_LEVEL }, (_, i) => i + 1).map((lv) => (
-                      <option key={lv} value={lv}>
-                        {lv}
-                      </option>
-                    ))}
-                  </select>
-                  {/* **競りが無いので上回る必要はない。** どの組み合わせも選べる。 */}
-                  {DENOMINATIONS.map((suit) => (
-                    <button
-                      key={suit}
-                      type="button"
-                      className={btnWarning}
-                      onClick={() => handleContract(suit)}
-                      disabled={loading}
-                      data-testid={`mb-contract-${suit.toString()}-btn`}
-                    >
-                      {t('actions.contract', {
-                        level: String(level),
-                        suit: suitSymbolAt(suit, suit === 0 ? 'NT' : '?'),
-                      })}
-                    </button>
-                  ))}
-                </>
-              )}
-              {isRoundEnd && !isGameEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('actions.nextRound')}
-                </button>
-              )}
-              <button
-                type="button"
-                className={btnPrimary}
-                onClick={() => requestConfirm(handleReset)}
-                disabled={loading}
-              >
-                {t('actions.reset')}
-              </button>
-              {!isGameEnd && (
-                <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
-                  {t('actions.giveUp')}
-                </button>
-              )}
-            </div>
-
             <SettingsPanel
               title={tc('settings.title')}
               groups={[{ items: [hintCheckboxItem(tc, hintEnabled, setHintEnabled)] }]}
             />
           </div>
+
+          <GameFooter
+            className={`${gameTheme.minibridge.footer} px-4 py-2.5`}
+            actions={
+              <div className="flex flex-wrap gap-2 items-center" data-tutorial="mb-actions">
+                {state.trickPaused && (
+                  <div className="text-center">
+                    <button
+                      type="button"
+                      className={`${btnPrimary} aria-disabled:opacity-50 aria-disabled:cursor-not-allowed`}
+                      onClick={handleContinueTrick}
+                      aria-disabled={loading}
+                      aria-describedby={loading ? 'mb-continue-loading' : undefined}
+                    >
+                      {t('actions.continue')}
+                    </button>
+                    <span id="mb-continue-loading" className="sr-only">
+                      {t('header.cpuProcessing')}
+                    </span>
+                  </div>
+                )}
+                {isHumanContractTurn && (
+                  <>
+                    <label className="text-ds-text-muted text-sm" htmlFor="mb-level">
+                      {t('actions.level')}
+                    </label>
+                    {/* 折りたたみに入れない：閉じた details の中はクリックできない。 */}
+                    <select
+                      id="mb-level"
+                      className="rounded bg-black/40 text-ds-text-primary px-2 py-1"
+                      value={level}
+                      onChange={(e) => setLevel(Number(e.target.value))}
+                      disabled={loading}
+                      data-testid="mb-level-select"
+                    >
+                      {Array.from({ length: MAX_LEVEL }, (_, i) => i + 1).map((lv) => (
+                        <option key={lv} value={lv}>
+                          {lv}
+                        </option>
+                      ))}
+                    </select>
+                    {/* **競りが無いので上回る必要はない。** どの組み合わせも選べる。 */}
+                    {DENOMINATIONS.map((suit) => (
+                      <button
+                        key={suit}
+                        type="button"
+                        className={btnWarning}
+                        onClick={() => handleContract(suit)}
+                        disabled={loading}
+                        data-testid={`mb-contract-${suit.toString()}-btn`}
+                      >
+                        {t('actions.contract', {
+                          level: String(level),
+                          suit: suitSymbolAt(suit, suit === 0 ? 'NT' : '?'),
+                        })}
+                      </button>
+                    ))}
+                  </>
+                )}
+                {isRoundEnd && !isGameEnd && (
+                  <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                    {t('actions.nextRound')}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={() => requestConfirm(handleReset)}
+                  disabled={loading}
+                >
+                  {t('actions.reset')}
+                </button>
+                {!isGameEnd && (
+                  <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
+                    {t('actions.giveUp')}
+                  </button>
+                )}
+              </div>
+            }
+          />
 
           <ActionLogSection
             isEndPhase={isGameEnd}
