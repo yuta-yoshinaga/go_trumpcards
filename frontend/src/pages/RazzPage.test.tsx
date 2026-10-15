@@ -218,8 +218,8 @@ describe('RazzPage', () => {
     await screen.findByText('サードストリート');
     const cpuCard = container.querySelector('[data-tutorial="razz-cpu-area"] [data-testid="animated-card"] img');
     const humanCard = container.querySelector('[data-tutorial="razz-player-hand"] [data-testid="animated-card"] img');
-    expect(cpuCard).toHaveStyle({ width: '82px' });
-    expect(humanCard).toHaveStyle({ width: '100px' });
+    expect(cpuCard).toHaveStyle({ width: '66px' });
+    expect(humanCard).toHaveStyle({ width: '80px' });
   });
 
   it('lays CPU seats out in a wrapping desktop grid while keeping mobile seats full width', async () => {

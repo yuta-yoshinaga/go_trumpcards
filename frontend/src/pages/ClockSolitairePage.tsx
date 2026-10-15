@@ -291,8 +291,8 @@ function ClockSolitairePageContent() {
   if (!state) return <GameSkeleton gameKey="clocksolitaire" layout={{ kind: 'centered', rows: [4, 5, 4] }} />;
 
   const availableBoardWidth = Math.max(cardWidth + 16, viewportWidth - 32);
-  // The 157px large-desktop radius lifts the lowest card into view; label and progress offsets
-  // below are tuned from that radius and the card dimensions to keep them between piles.
+  // The large-desktop radius lifts the lowest card into view; label and progress offsets scale
+  // with cardWidth so both compact 80px cards and full-size 100px cards keep badges between piles.
   const radius = Math.min(
     cardWidth * 5,
     breakpoint === 'largeDesktop' ? 157 : 180,
@@ -399,9 +399,8 @@ function ClockSolitairePageContent() {
                         data-testid={`clock-pile-label-${i.toString()}`}
                         className="absolute z-20 whitespace-nowrap text-xs font-bold text-ds-text-muted"
                         style={{
-                          // 82px places the hour label inside the 157px desktop radius, relative to card center.
-                          left: cardWidth / 2 + pos.x * 82,
-                          top: cardHeight / 2 + pos.y * 82,
+                          left: cardWidth / 2 + pos.x * cardWidth * 0.82,
+                          top: cardHeight / 2 + pos.y * cardWidth * 0.82,
                           transform: 'translate(-50%, -50%)',
                         }}
                       >
@@ -430,9 +429,9 @@ function ClockSolitairePageContent() {
                             data-testid={`clock-pile-progress-${i.toString()}`}
                             className="absolute z-20 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] text-ds-text-muted"
                             style={{
-                              // 105px keeps progress near each card edge; twelve o'clock uses 8px to stay below its label.
-                              top: i === 11 ? 8 : cardHeight / 2 + pos.y * 105,
-                              left: cardWidth / 2 + pos.x * 105,
+                              // Scale progress with the card width; twelve o'clock uses 8px to stay below its label.
+                              top: i === 11 ? 8 : cardHeight / 2 + pos.y * cardWidth * 1.05,
+                              left: cardWidth / 2 + pos.x * cardWidth * 1.05,
                             }}
                           >
                             <ClockPileFaceUpSuits pile={pile} testId={`clock-pile-suits-${i.toString()}`} />
