@@ -2,14 +2,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect, type Page, test } from '@playwright/test';
-import {
-  DESKTOP_VIEWPORTS,
-  KNOWN_1024_FAILURES,
-  KNOWN_HORIZONTAL_FAILURES,
-  NARROW_DESKTOP_WIDTH,
-  VISIBLE_PX_X,
-  VISIBLE_PX_Y,
-} from './desktopViewports';
+import { DESKTOP_VIEWPORTS, VISIBLE_PX_X, VISIBLE_PX_Y } from './desktopViewports';
 import { navigateTo, waitForAnimations, waitForLoaded } from './helpers';
 
 /** #11702: use the same 52px visible-card rule as #11655 for desktop boards. */
@@ -85,10 +78,9 @@ const horizontalScrollExemptions = new Set(['/accordion']);
  * Waits for the deal animation, then returns the face-up board cards, those whose top 52px is hidden,
  * and those with less than VISIBLE_PX_X showing beside a horizontally clipping ancestor.
  */
-async function measureBoardCards(page: Page, path: string, width: number) {
+async function measureBoardCards(page: Page, path: string) {
   await waitForAnimations(page);
-  const skipHorizontal =
-    horizontalScrollExemptions.has(path) || (KNOWN_HORIZONTAL_FAILURES.get(path)?.has(width) ?? false);
+  const skipHorizontal = horizontalScrollExemptions.has(path);
   return page.evaluate(
     ({ visiblePxX, visiblePxY, skipHorizontal }) => {
       const cards = [...document.querySelectorAll('main img, main [role="img"]')].filter((element) => {
@@ -142,17 +134,12 @@ async function measureBoardCards(page: Page, path: string, width: number) {
 for (const viewport of DESKTOP_VIEWPORTS) {
   test.describe(`${viewport.width}x${viewport.height}`, () => {
     test.use({ viewport });
-    const skipKnownFailure = (path: string) => {
-      if (viewport.width === NARROW_DESKTOP_WIDTH && KNOWN_1024_FAILURES.board.has(path))
-        test.skip(true, '#11811: known 1024px visibility failure');
-    };
     for (const path of PAGES) {
       test(`${path} keeps every board card visible on desktop`, async ({ page }) => {
         await navigateTo(page, path);
-        const result = await measureBoardCards(page, path, viewport.width);
+        const result = await measureBoardCards(page, path);
         expect(result.count, `${path}: no board cards found`).toBeGreaterThan(0);
-        if (!(viewport.width === NARROW_DESKTOP_WIDTH && KNOWN_1024_FAILURES.board.has(path)))
-          expect(result.hidden, `${path}: board cards hidden below their play area`).toEqual([]);
+        expect(result.hidden, `${path}: board cards hidden below their play area`).toEqual([]);
         expect(result.hiddenX, `${path}: board cards hidden beside their play area`).toEqual([]);
       });
     }
@@ -161,9 +148,8 @@ for (const viewport of DESKTOP_VIEWPORTS) {
     for (const path of allGamePaths.filter((p) => !fixedPaths.has(p) && !excludedGamePaths.has(p))) {
       test(`${path} (all-games sweep) keeps every board card visible on desktop`, async ({ page }) => {
         await navigateTo(page, path);
-        const result = await measureBoardCards(page, path, viewport.width);
-        if (!(viewport.width === NARROW_DESKTOP_WIDTH && KNOWN_1024_FAILURES.board.has(path)))
-          expect(result.hidden, `${path}: board cards hidden below their play area`).toEqual([]);
+        const result = await measureBoardCards(page, path);
+        expect(result.hidden, `${path}: board cards hidden below their play area`).toEqual([]);
         expect(result.hiddenX, `${path}: board cards hidden beside their play area`).toEqual([]);
       });
     }
@@ -204,7 +190,6 @@ for (const viewport of DESKTOP_VIEWPORTS) {
     ]) {
       test(`${path} keeps primary controls inside the desktop play viewport`, async ({ page }) => {
         await page.setViewportSize(viewport);
-        skipKnownFailure(path);
         await navigateTo(page, path);
         const controls = page.locator(selector);
         await expect(controls.first()).toBeVisible();
@@ -257,7 +242,6 @@ for (const viewport of DESKTOP_VIEWPORTS) {
 
     for (const { path, selector, firstCardShownPreflop = 0 } of POKER_BOARDS) {
       test(`${path} keeps the flop and river board visible on desktop`, async ({ page }) => {
-        skipKnownFailure(path);
         await navigateTo(page, path);
         const board = page.locator(selector);
         const visibleBoardCount = async () =>

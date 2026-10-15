@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect, test } from '@playwright/test';
-import { DESKTOP_VIEWPORTS, KNOWN_1024_FAILURES, NARROW_DESKTOP_WIDTH } from './desktopViewports';
+import { DESKTOP_VIEWPORTS } from './desktopViewports';
 import { navigateTo } from './helpers';
 
 const guidanceSelector =
@@ -64,8 +64,6 @@ for (const viewport of DESKTOP_VIEWPORTS) {
     test.use({ viewport });
     for (const path of routes) {
       test(`${path} keeps every non-card, non-auxiliary action inside the desktop viewport`, async ({ page }) => {
-        if (viewport.width === NARROW_DESKTOP_WIDTH && KNOWN_1024_FAILURES.action.has(path))
-          test.skip(true, '#11811: known 1024px visibility failure');
         await navigateTo(page, path);
         const result = await page.evaluate(
           ({ selector, auxiliaryLabels, cardButtonSelectors, cardImageAltSource, cardImageAltFlags }) => {

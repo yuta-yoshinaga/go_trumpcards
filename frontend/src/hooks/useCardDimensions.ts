@@ -154,3 +154,15 @@ export function useIsMobile(): boolean {
 export function useIsLargeDesktop(): boolean {
   return useBreakpoint() === 'largeDesktop';
 }
+
+/**
+ * Provides fixed card dimensions for pages that use smaller-than-shared cards on large desktop.
+ * At 1024–1279px, the board has too little height for those larger cards, so this uses desktop dimensions.
+ * Values outside large desktop are unused by the calling pages.
+ */
+export function useDenseLargeDesktopCardSize(): { width: number; height: number } {
+  const isCompactLargeDesktop = useIsCompactLargeDesktop();
+  return isCompactLargeDesktop
+    ? { width: CARD_DIMENSIONS.desktop.cardWidth, height: CARD_DIMENSIONS.desktop.cardHeight }
+    : { width: DESKTOP_COMPACT_CARD_WIDTH, height: Math.round(DESKTOP_COMPACT_CARD_WIDTH * 1.5) };
+}

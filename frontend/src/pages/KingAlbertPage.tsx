@@ -19,10 +19,9 @@ import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import {
-  CARD_DIMENSIONS,
   useBreakpoint,
   useCardDimensions,
-  useIsCompactLargeDesktop,
+  useDenseLargeDesktopCardSize,
   useWindowWidth,
 } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -32,7 +31,6 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useKingAlbertGame } from '../hooks/useKingAlbertGame';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
-import { DESKTOP_COMPACT_CARD_WIDTH } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, KingAlbertResponse } from '../types/card';
 import { KingAlbertPhase } from '../types/phases';
@@ -140,7 +138,7 @@ function KingAlbertPageContent() {
   });
   const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
   const isLargeDesktop = useBreakpoint() === 'largeDesktop';
-  const isCompactLargeDesktop = useIsCompactLargeDesktop();
+  const denseCardSize = useDenseLargeDesktopCardSize();
   const windowWidth = useWindowWidth();
 
   const dims = useMemo(() => {
@@ -155,17 +153,8 @@ function KingAlbertPageContent() {
     const co = Math.round(cw * 0.32);
     return { cw, ch, co };
   }, [isMobile, windowWidth, cardWidth, cardHeight, cardOverlap]);
-  // The tableau starts below the header; 84px cards keep its deepest pile within the ~650px board budget.
-  const topZoneCardWidth = isLargeDesktop
-    ? isCompactLargeDesktop
-      ? CARD_DIMENSIONS.desktop.cardWidth
-      : DESKTOP_COMPACT_CARD_WIDTH
-    : dims.cw;
-  const topZoneCardHeight = isLargeDesktop
-    ? isCompactLargeDesktop
-      ? CARD_DIMENSIONS.desktop.cardHeight
-      : Math.round(DESKTOP_COMPACT_CARD_WIDTH * 1.5)
-    : dims.ch;
+  const topZoneCardWidth = isLargeDesktop ? denseCardSize.width : dims.cw;
+  const topZoneCardHeight = isLargeDesktop ? denseCardSize.height : dims.ch;
 
   const isPlayingForKbd = state?.phase === KingAlbertPhase.PLAYING;
 

@@ -94,7 +94,6 @@ function ShelemPageContent() {
   } = useGameApi<ShelemResponse, Parameters<typeof shelemApi.exec>>(shelemApi.exec);
   const { cardWidth: measuredCardWidth } = useCardDimensions();
   const isCompactLargeDesktop = useIsCompactLargeDesktop();
-  // The hand is below the seats and trick; 60px cards reclaim 20px per row within the ~650px board budget.
   const cardWidth = isCompactLargeDesktop ? CARD_DIMENSIONS.desktop.cardWidth : measuredCardWidth;
   const isMobile = useIsMobile();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('shelem', state);
