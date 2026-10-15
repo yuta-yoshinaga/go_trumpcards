@@ -35,6 +35,42 @@ repeat="${E2E_SWEEP_REPEAT:-10}"
 [[ "$repeat" =~ ^[0-9]+$ ]] || { echo "E2E_SWEEP_REPEAT must be numeric" >&2; exit 2; }
 repeat_arg=()
 if (( page_change && ! full_sweep && repeat > 1 )); then repeat_arg+=("--repeat-each=$repeat"); fi
+mapfile -t deleted_routes < <(python3 - "$wt" <<'PYROUTES'
+import re, subprocess, sys
+root = sys.argv[1]
+diffs = []
+for args in (["diff", "origin/develop...HEAD"], ["diff", "HEAD"]):
+    result = subprocess.run(["git", "-C", root, *args], text=True, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+    if result.returncode == 0:
+        diffs.append(result.stdout)
+# A removed route repeats unless it is re-added in the same file.
+deleted_by_file, added_by_file = {}, {}
+for diff in diffs:
+    relevant = False
+    path = None
+    for line in diff.splitlines():
+        if line.startswith("diff --git "):
+            parts = line.split()
+            path = parts[2][2:] if len(parts) >= 4 else None
+            relevant = path is not None and path.startswith("frontend/e2e/") and path.endswith(".ts")
+            continue
+        if not relevant or line.startswith("---") or not line or line[0] not in "+-":
+            continue
+        routes = re.findall(r"""['"](/[a-z0-9-]+)['"]""", line[1:])
+        target = added_by_file if line[0] == "+" else deleted_by_file
+        target.setdefault(path, set()).update(routes)
+same_file_added = {route for path, routes in deleted_by_file.items() for route in routes & added_by_file.get(path, set())}
+removed = set().union(*deleted_by_file.values()) if deleted_by_file else set()
+for route in sorted(removed - same_file_added):
+    print(route)
+PYROUTES
+)
+removed_route_args=()
+for route in "${deleted_routes[@]}"; do
+  removed_route_args+=("/$(printf '%s' "${route#/}" | sed 's/[][(){}.^$*+?|\\]/\\&/g')\\b")
+done
+removed_repeat_arg=()
+if (( ${#removed_route_args[@]} && repeat > 1 )); then removed_repeat_arg+=("--repeat-each=$repeat"); fi
 declare -a run_specs=() run_args=()
 (( ${#explicit_specs[@]} )) && mapfile -t explicit_specs < <(printf '%s\n' "${explicit_specs[@]}" | sort -u)
 if (( frontend )); then
@@ -58,46 +94,86 @@ PY
     done
   fi
   run_specs+=("${explicit_specs[@]}")
-  if (( full_sweep )); then
-    run_specs+=("${sweep[@]/%/.spec.ts}")
-  elif (( page_change )); then
+  if (( full_sweep || page_change || ${#removed_route_args[@]} )); then
     run_specs+=("${sweep[@]/%/.spec.ts}")
   fi
 fi
 mapfile -t run_specs < <(printf '%s\n' "${run_specs[@]}" | sort -u | while IFS= read -r spec; do [[ -f "$wt/frontend/e2e/$spec" ]] && printf '%s\n' "$spec"; done)
+page_specs=(); sweep_specs=(); other_specs=()
+for spec in "${run_specs[@]}"; do
+  name="${spec%.spec.ts}"
+  if [[ " ${sweep[*]} " == *" $name "* ]]; then sweep_specs+=("e2e/$spec")
+  elif (( page_change )) && [[ -f "$wt/frontend/src/pages/${name^}Page.tsx" ]]; then page_specs+=("e2e/$spec")
+  else other_specs+=("e2e/$spec")
+  fi
+done
+declare -a call_vars=()
+add_call() {
+  local var="call_args_${#call_vars[@]}"
+  declare -g -a "$var"
+  local -n args="$var"
+  args=("$@")
+  call_vars+=("$var")
+}
+if (( frontend )); then
+  if (( ${#sweep_specs[@]} )); then
+    base_args=("${page_specs[@]}" "${other_specs[@]}")
+    if (( full_sweep )); then
+      if (( ${#base_args[@]} )); then base_args+=(---); fi
+      base_args+=("${sweep_specs[@]}")
+      add_call "${base_args[@]}"
+      if (( ${#removed_route_args[@]} )); then
+        add_call "${sweep_specs[@]}" --grep "$(IFS='|'; echo "${removed_route_args[*]}")" --pass-with-no-tests "${removed_repeat_arg[@]}"
+      fi
+    else
+      if (( ${#base_args[@]} )); then base_args+=(---); fi
+      base_args+=("${sweep_specs[@]}")
+      all_route_args=("${run_args[@]}" "${removed_route_args[@]}")
+      all_repeat_arg=("${repeat_arg[@]}")
+      (( ${#removed_route_args[@]} && repeat > 1 )) && all_repeat_arg=("--repeat-each=$repeat")
+      if (( ${#all_route_args[@]} )); then base_args+=(--grep "$(IFS='|'; echo "${all_route_args[*]}")" --pass-with-no-tests "${all_repeat_arg[@]}"); fi
+      add_call "${base_args[@]}"
+    fi
+  elif (( ${#page_specs[@]} || ${#other_specs[@]} )); then
+    add_call "${page_specs[@]}" "${other_specs[@]}"
+  fi
+fi
 if (( dry_run )); then
   run=0
-  if (( page_change )); then
-    page_specs=(); sweep_specs=()
-    for spec in "${run_specs[@]}"; do
-      case "$spec" in *.spec.ts) name="${spec%.spec.ts}"; if [[ " ${sweep[*]} " == *" $name "* ]]; then sweep_specs+=("e2e/$spec"); else page_specs+=("e2e/$spec"); fi ;;
-      esac
+  display_call() {
+    local spec_name="$1" filters="$2"
+    local -n display_specs="$spec_name"
+    (( ${#display_specs[@]} )) || return 0
+    run=$((run+1)); printf 'run %d: %s' "$run" "${display_specs[*]}"
+    [[ -z "$filters" ]] || printf ' %s' "$filters"
+    printf '\n'
+  }
+  for var in "${call_vars[@]}"; do
+    declare -n local_args="$var"
+    segment=(); page_display=(); other_display=(); sweep_display=(); filters=()
+    for arg in "${local_args[@]}" ---; do
+      if [[ "$arg" == --- ]]; then
+        for spec in "${segment[@]}"; do
+          if [[ " ${page_specs[*]} " == *" $spec "* ]]; then page_display+=("$spec")
+          elif [[ " ${sweep_specs[*]} " == *" $spec "* ]]; then sweep_display+=("$spec")
+          else other_display+=("$spec"); fi
+        done
+        segment=()
+      elif [[ "$arg" == e2e/*.spec.ts ]]; then segment+=("$arg")
+      else filters+=("$arg"); fi
     done
-    if (( ${#page_specs[@]} )); then run=1; printf 'run %d: %s\n' "$run" "${page_specs[*]}"; fi
-    if (( ${#sweep_specs[@]} )); then
-      run=$((run+1))
-      if (( ${#run_args[@]} )); then printf 'run %d: %s --grep %s --pass-with-no-tests%s\n' "$run" "${sweep_specs[*]}" "$(IFS='|'; echo "${run_args[*]}")" "${repeat_arg[*]:+ ${repeat_arg[*]}}"
-      else printf 'run %d: %s\n' "$run" "${sweep_specs[*]}"; fi
+    if (( ${#sweep_display[@]} )); then
+      display_call page_display ""
+      display_call other_display ""
+      display_call sweep_display "${filters[*]}"
+    else
+      display_call page_display "${filters[*]}"
+      display_call other_display "${filters[*]}"
     fi
-  elif (( ${#run_specs[@]} )); then printf 'run 1: %s\n' "${run_specs[*]/#/e2e/}"; fi
+  done
   exit 0
 fi
-(( frontend )) || exit 0
-if (( page_change )); then
-  page_specs=(); sweep_specs=()
-  for spec in "${run_specs[@]}"; do
-    name="${spec%.spec.ts}"
-    if [[ " ${sweep[*]} " == *" $name "* ]]; then sweep_specs+=("e2e/$spec"); else page_specs+=("e2e/$spec"); fi
-  done
-  # Both spec groups are already rooted at e2e/; pass them through unchanged.
-  args=("${page_specs[@]}")
-  if (( ${#sweep_specs[@]} )); then
-    if (( ${#args[@]} )); then args+=(---); fi
-    args+=("${sweep_specs[@]}")
-    if (( ${#run_args[@]} )); then args+=(--grep "$(IFS='|'; echo "${run_args[*]}")" --pass-with-no-tests "${repeat_arg[@]}"); fi
-  fi
-  if (( ${#args[@]} )); then "$B/e2e.sh" "$slot" "${args[@]}"; fi
-elif (( ${#run_specs[@]} )); then
-  args=(); for spec in "${run_specs[@]}"; do args+=("e2e/$spec"); done
-  "$B/e2e.sh" "$slot" "${args[@]}"
-fi
+for var in "${call_vars[@]}"; do
+  declare -n local_args="$var"
+  "$B/e2e.sh" "$slot" "${local_args[@]}"
+done
