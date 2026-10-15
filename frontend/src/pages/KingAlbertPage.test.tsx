@@ -476,3 +476,28 @@ describe('KingAlbertPage reserve slot numbering', () => {
     expect(screen.queryByLabelText('空のリザーブ枠 7')).not.toBeInTheDocument();
   });
 });
+
+describe('KingAlbertPage compact large-desktop dimensions', () => {
+  it('uses 60px cards at 1024px and 80px cards at 1280px', async () => {
+    const originalWidth = window.innerWidth;
+    try {
+      mockExec.mockResolvedValue(playingState);
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 });
+      const compact = renderWithProviders(<KingAlbertPage />);
+      await screen.findByTestId('ka-top-row');
+      const compactCard = screen.getByLabelText('空のリザーブ枠 1');
+      expect(compactCard).toHaveStyle({ width: '60px' });
+      compact.unmount();
+
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+      const fullSize = renderWithProviders(<KingAlbertPage />);
+      await screen.findByTestId('ka-top-row');
+      const fullSizeCard = screen.getByLabelText('空のリザーブ枠 1');
+      expect(fullSizeCard).toHaveStyle({ width: '80px' });
+      fullSize.unmount();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+});

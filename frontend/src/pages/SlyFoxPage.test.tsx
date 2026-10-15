@@ -507,3 +507,28 @@ describe('SlyFoxPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: /再試行|retry/i })).toBeInTheDocument());
   });
 });
+
+describe('SlyFoxPage compact large-desktop dimensions', () => {
+  it('uses 60px cards at 1024px and 80px cards at 1280px', async () => {
+    const originalWidth = window.innerWidth;
+    try {
+      mockExec.mockResolvedValue(makeState());
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 });
+      const compact = renderWithProviders(<SlyFoxPage />);
+      await screen.findByTestId('co-top-row');
+      const compactCard = screen.getByTestId('co-foundation-0').querySelector('img');
+      expect(compactCard).toHaveStyle({ width: '60px' });
+      compact.unmount();
+
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+      const fullSize = renderWithProviders(<SlyFoxPage />);
+      await screen.findByTestId('co-top-row');
+      const fullSizeCard = screen.getByTestId('co-foundation-0').querySelector('img');
+      expect(fullSizeCard).toHaveStyle({ width: '80px' });
+      fullSize.unmount();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+});

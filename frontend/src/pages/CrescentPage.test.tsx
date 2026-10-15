@@ -788,3 +788,28 @@ describe('tableau rules note', () => {
     expect(note.textContent).toBe('同スートで値差±1（A↔Kはラップ）で重ねられます（空列には置けません）。');
   });
 });
+
+describe('CrescentPage compact large-desktop dimensions', () => {
+  it('uses 60px cards at 1024px and 80px cards at 1280px', async () => {
+    const originalWidth = window.innerWidth;
+    try {
+      mockExec.mockResolvedValue(playingState);
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 });
+      const compact = renderWithProviders(<CrescentPage />);
+      await screen.findByTestId('phase-indicator');
+      const compactCard = screen.getByTestId('foundation-dir-0').parentElement?.parentElement?.querySelector('img');
+      expect(compactCard).toHaveStyle({ width: '60px' });
+      compact.unmount();
+
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+      const fullSize = renderWithProviders(<CrescentPage />);
+      await screen.findByTestId('phase-indicator');
+      const fullSizeCard = screen.getByTestId('foundation-dir-0').parentElement?.parentElement?.querySelector('img');
+      expect(fullSizeCard).toHaveStyle({ width: '80px' });
+      fullSize.unmount();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+});

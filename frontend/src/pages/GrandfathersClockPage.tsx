@@ -18,7 +18,13 @@ import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useBreakpoint, useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
+import {
+  CARD_DIMENSIONS,
+  useBreakpoint,
+  useCardDimensions,
+  useIsCompactLargeDesktop,
+  useWindowWidth,
+} from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
@@ -109,6 +115,7 @@ function GrandfathersClockPageContent() {
   const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
   const isLargeDesktop = useBreakpoint() === 'largeDesktop';
+  const isCompactLargeDesktop = useIsCompactLargeDesktop();
   const windowWidth = useWindowWidth();
   const dims = useMemo(() => {
     if (!isMobile) return { cw: cardWidth, ch: cardHeight, co: cardOverlap };
@@ -120,8 +127,17 @@ function GrandfathersClockPageContent() {
     const co = Math.round(cw * 0.32);
     return { cw, ch, co };
   }, [isMobile, windowWidth, cardWidth, cardHeight, cardOverlap]);
-  const clockCardWidth = isLargeDesktop ? DESKTOP_COMPACT_CARD_WIDTH : dims.cw;
-  const clockCardHeight = isLargeDesktop ? Math.round(DESKTOP_COMPACT_CARD_WIDTH * 1.5) : dims.ch;
+  // The clock tableau begins under the header; 84px cards preserve the exposed 52px card edge within the remaining ~650px.
+  const clockCardWidth = isLargeDesktop
+    ? isCompactLargeDesktop
+      ? CARD_DIMENSIONS.desktop.cardWidth
+      : DESKTOP_COMPACT_CARD_WIDTH
+    : dims.cw;
+  const clockCardHeight = isLargeDesktop
+    ? isCompactLargeDesktop
+      ? CARD_DIMENSIONS.desktop.cardHeight
+      : Math.round(DESKTOP_COMPACT_CARD_WIDTH * 1.5)
+    : dims.ch;
 
   const isPlayingForKbd = state?.phase === GrandfathersClockPhase.PLAYING;
 

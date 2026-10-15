@@ -889,3 +889,28 @@ describe('PyramidPage no-redeal notice', () => {
     expect(screen.queryByTestId('py-no-redeal')).not.toBeInTheDocument();
   });
 });
+
+describe('PyramidPage compact large-desktop dimensions', () => {
+  it('uses 60px cards at 1024px and 80px cards at 1280px', async () => {
+    const originalWidth = window.innerWidth;
+    try {
+      mockExec.mockResolvedValue(playingState);
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 });
+      const compact = renderWithProviders(<PyramidPage />);
+      await screen.findByTestId('phase-indicator');
+      const compactCard = screen.getByRole('img', { name: '♠ K' });
+      expect(compactCard).toHaveStyle({ width: '60px' });
+      compact.unmount();
+
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+      const fullSize = renderWithProviders(<PyramidPage />);
+      await screen.findByTestId('phase-indicator');
+      const fullSizeCard = screen.getByRole('img', { name: '♠ K' });
+      expect(fullSizeCard).toHaveStyle({ width: '80px' });
+      fullSize.unmount();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+});
