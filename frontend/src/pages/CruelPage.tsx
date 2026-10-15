@@ -156,8 +156,7 @@ function CruelPageContent() {
 
   const { cardWidth, isMobile } = useCardDimensions();
   const windowWidth = useWindowWidth();
-  const tableauRef = useRef<HTMLDivElement>(null);
-  const tableauWidth = useElementWidth(tableauRef, Boolean(state) && !cliEnabled && !isMobile);
+  const [tableauRef, tableauWidth] = useElementWidth<HTMLDivElement>();
 
   // Responsive card dimensions — Cruel uses 12 narrow columns, so cards must
   // shrink to fit. We also cap maximum table width to 1400px on desktop.

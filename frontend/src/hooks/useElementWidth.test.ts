@@ -19,38 +19,49 @@ class MockResizeObserver {
 }
 
 describe('useElementWidth', () => {
-  const originalResizeObserver = window.ResizeObserver;
+  const originalResizeObserver = globalThis.ResizeObserver;
 
   afterEach(() => {
-    Object.defineProperty(window, 'ResizeObserver', { configurable: true, value: originalResizeObserver });
+    Object.defineProperty(globalThis, 'ResizeObserver', { configurable: true, value: originalResizeObserver });
     MockResizeObserver.instances = [];
   });
 
-  it('returns the floored observed width', () => {
-    Object.defineProperty(window, 'ResizeObserver', { configurable: true, value: MockResizeObserver });
-    const ref = { current: document.createElement('div') };
-    const { result } = renderHook(() => useElementWidth(ref, true));
-
-    act(() => MockResizeObserver.instances[0]?.notify(1008.9));
-
-    expect(result.current).toBe(1008);
-  });
-
-  it('does not observe when disabled', () => {
-    Object.defineProperty(window, 'ResizeObserver', { configurable: true, value: MockResizeObserver });
-    const ref = { current: document.createElement('div') };
-    renderHook(() => useElementWidth(ref, false));
+  it('starts observing when an element is attached later and returns its floored width', () => {
+    Object.defineProperty(globalThis, 'ResizeObserver', { configurable: true, value: MockResizeObserver });
+    const { result } = renderHook(() => useElementWidth<HTMLDivElement>());
 
     expect(MockResizeObserver.instances).toHaveLength(0);
+
+    act(() => result.current[0](document.createElement('div')));
+
+    expect(MockResizeObserver.instances).toHaveLength(1);
+    expect(MockResizeObserver.instances[0]?.observe).toHaveBeenCalledOnce();
+    act(() => MockResizeObserver.instances[0]?.notify(1008.9));
+    expect(result.current[1]).toBe(1008);
   });
 
-  it('disconnects on unmount', () => {
-    Object.defineProperty(window, 'ResizeObserver', { configurable: true, value: MockResizeObserver });
-    const ref = { current: document.createElement('div') };
-    const { unmount } = renderHook(() => useElementWidth(ref, true));
+  it('disconnects when the element is detached or replaced', () => {
+    Object.defineProperty(globalThis, 'ResizeObserver', { configurable: true, value: MockResizeObserver });
+    const { result, unmount } = renderHook(() => useElementWidth<HTMLDivElement>());
 
+    act(() => result.current[0](document.createElement('div')));
+    const firstObserver = MockResizeObserver.instances[0];
+    act(() => result.current[0](null));
+
+    expect(firstObserver?.disconnect).toHaveBeenCalledOnce();
+    act(() => result.current[0](document.createElement('div')));
+    const secondObserver = MockResizeObserver.instances[1];
+    act(() => result.current[0](null));
+    expect(secondObserver?.disconnect).toHaveBeenCalledOnce();
     unmount();
+  });
 
-    expect(MockResizeObserver.instances[0]?.disconnect).toHaveBeenCalledOnce();
+  it('returns zero when ResizeObserver is unavailable', () => {
+    Object.defineProperty(globalThis, 'ResizeObserver', { configurable: true, value: undefined });
+    const { result } = renderHook(() => useElementWidth<HTMLDivElement>());
+
+    act(() => result.current[0](document.createElement('div')));
+
+    expect(result.current[1]).toBe(0);
   });
 });

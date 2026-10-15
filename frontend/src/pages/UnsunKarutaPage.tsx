@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo } from 'react';
 import type { unsunKarutaApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -152,8 +152,7 @@ function UnsunKarutaPageContent() {
   } = useGameHint('unsunkaruta', state);
   const { cardWidth, isMobile } = useCardDimensions();
   const isLargeDesktop = useBreakpoint() === 'largeDesktop';
-  const trickColumnRef = useRef<HTMLDivElement>(null);
-  const trickColumnWidth = useElementWidth(trickColumnRef, isLargeDesktop && state !== null);
+  const [trickColumnRef, trickColumnWidth] = useElementWidth<HTMLDivElement>();
   const phaseNames = usePhaseNames('unsunkaruta', UNSUN_PHASE_KEYS);
 
   if (!state)

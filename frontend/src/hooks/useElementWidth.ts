@@ -1,23 +1,25 @@
-import type { RefObject } from 'react';
-import { useEffect, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
-/** Measures an element's rendered width while observation is enabled. */
-export function useElementWidth(ref: RefObject<HTMLElement | null>, enabled: boolean): number {
+/** Measures an attached element and tracks its rendered width with ResizeObserver. */
+export function useElementWidth<T extends HTMLElement>(): [ref: (node: T | null) => void, width: number] {
   const [width, setWidth] = useState(0);
+  const observerRef = useRef<ResizeObserver | null>(null);
 
-  useEffect(() => {
-    const element = ref.current;
-    if (!enabled || !element || typeof window.ResizeObserver === 'undefined') return;
+  const ref = useCallback((node: T | null) => {
+    observerRef.current?.disconnect();
+    observerRef.current = null;
+    setWidth(0);
+    if (!node || typeof ResizeObserver === 'undefined') return;
 
-    const observer = new window.ResizeObserver((entries) => {
+    const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const measuredWidth = Math.floor(entry.contentRect.width);
         setWidth((currentWidth) => (currentWidth === measuredWidth ? currentWidth : measuredWidth));
       }
     });
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, [enabled, ref]);
+    observerRef.current = observer;
+    observer.observe(node);
+  }, []);
 
-  return width;
+  return [ref, width];
 }
