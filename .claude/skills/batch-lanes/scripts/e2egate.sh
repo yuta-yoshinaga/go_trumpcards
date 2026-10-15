@@ -43,30 +43,25 @@ for args in (["diff", "origin/develop...HEAD"], ["diff", "HEAD"]):
     result = subprocess.run(["git", "-C", root, *args], text=True, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
     if result.returncode == 0:
         diffs.append(result.stdout)
-removed, added = set(), set()
+# A removed route repeats unless it is re-added in the same file.
+deleted_by_file, added_by_file = {}, {}
 for diff in diffs:
     relevant = False
+    path = None
     for line in diff.splitlines():
         if line.startswith("diff --git "):
             parts = line.split()
-            relevant = len(parts) >= 4 and parts[2].startswith("a/frontend/e2e/") and parts[2].endswith(".ts")
+            path = parts[2][2:] if len(parts) >= 4 else None
+            relevant = path is not None and path.startswith("frontend/e2e/") and path.endswith(".ts")
             continue
         if not relevant or line.startswith("---") or not line or line[0] not in "+-":
             continue
         routes = re.findall(r"""['"](/[a-z0-9-]+)['"]""", line[1:])
-        (added if line[0] == "+" else removed).update(routes)
-untracked = subprocess.run(["git", "-C", root, "ls-files", "--others", "--exclude-standard", "--", "frontend/e2e"], text=True, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
-if untracked.returncode == 0:
-    for path in untracked.stdout.splitlines():
-        if not path.endswith(".ts"):
-            continue
-        try:
-            with open(root + "/" + path, encoding="utf-8") as source:
-                for line in source:
-                    added.update(re.findall(r"""['"](/[a-z0-9-]+)['"]""", line))
-        except OSError:
-            pass
-for route in sorted(removed - added):
+        target = added_by_file if line[0] == "+" else deleted_by_file
+        target.setdefault(path, set()).update(routes)
+same_file_added = {route for path, routes in deleted_by_file.items() for route in routes & added_by_file.get(path, set())}
+removed = set().union(*deleted_by_file.values()) if deleted_by_file else set()
+for route in sorted(removed - same_file_added):
     print(route)
 PYROUTES
 )
@@ -112,44 +107,73 @@ for spec in "${run_specs[@]}"; do
   else other_specs+=("e2e/$spec")
   fi
 done
-if (( dry_run )); then
-  run=0
-  if (( ${#page_specs[@]} )); then run=$((run+1)); printf 'run %d: %s\n' "$run" "${page_specs[*]}"; fi
-  if (( ${#other_specs[@]} )); then run=$((run+1)); printf 'run %d: %s\n' "$run" "${other_specs[*]}"; fi
+declare -a call_vars=()
+add_call() {
+  local var="call_args_${#call_vars[@]}"
+  declare -g -a "$var"
+  local -n args="$var"
+  args=("$@")
+  call_vars+=("$var")
+}
+if (( frontend )); then
   if (( ${#sweep_specs[@]} )); then
-    if (( full_sweep )); then
-      run=$((run+1)); printf 'run %d: %s\n' "$run" "${sweep_specs[*]}"
-      if (( ${#removed_route_args[@]} )); then run=$((run+1)); printf 'run %d: %s --grep %s --pass-with-no-tests%s\n' "$run" "${sweep_specs[*]}" "$(IFS='|'; echo "${removed_route_args[*]}")" "${removed_repeat_arg[*]:+ ${removed_repeat_arg[*]}}"; fi
-    else
-      all_route_args=("${run_args[@]}" "${removed_route_args[@]}")
-      all_repeat_arg=("${repeat_arg[@]}")
-      (( ${#removed_route_args[@]} && repeat > 1 )) && all_repeat_arg=("--repeat-each=$repeat")
-      run=$((run+1))
-      if (( ${#all_route_args[@]} )); then printf 'run %d: %s --grep %s --pass-with-no-tests%s\n' "$run" "${sweep_specs[*]}" "$(IFS='|'; echo "${all_route_args[*]}")" "${all_repeat_arg[*]:+ ${all_repeat_arg[*]}}"
-      else printf 'run %d: %s\n' "$run" "${sweep_specs[*]}"; fi
-    fi
-  fi
-  exit 0
-fi
-(( frontend )) || exit 0
-if (( ${#page_specs[@]} || ${#sweep_specs[@]} || ${#other_specs[@]} )); then
-  base_args=("${page_specs[@]}" "${other_specs[@]}")
-  if (( ${#sweep_specs[@]} )); then
+    base_args=("${page_specs[@]}" "${other_specs[@]}")
     if (( full_sweep )); then
       if (( ${#base_args[@]} )); then base_args+=(---); fi
       base_args+=("${sweep_specs[@]}")
-      "$B/e2e.sh" "$slot" "${base_args[@]}"
-      if (( ${#removed_route_args[@]} )); then "$B/e2e.sh" "$slot" "${sweep_specs[@]}" --grep "$(IFS='|'; echo "${removed_route_args[*]}")" --pass-with-no-tests "${removed_repeat_arg[@]}"; fi
-      exit 0
+      add_call "${base_args[@]}"
+      if (( ${#removed_route_args[@]} )); then
+        add_call "${sweep_specs[@]}" --grep "$(IFS='|'; echo "${removed_route_args[*]}")" --pass-with-no-tests "${removed_repeat_arg[@]}"
+      fi
+    else
+      if (( ${#base_args[@]} )); then base_args+=(---); fi
+      base_args+=("${sweep_specs[@]}")
+      all_route_args=("${run_args[@]}" "${removed_route_args[@]}")
+      all_repeat_arg=("${repeat_arg[@]}")
+      (( ${#removed_route_args[@]} && repeat > 1 )) && all_repeat_arg=("--repeat-each=$repeat")
+      if (( ${#all_route_args[@]} )); then base_args+=(--grep "$(IFS='|'; echo "${all_route_args[*]}")" --pass-with-no-tests "${all_repeat_arg[@]}"); fi
+      add_call "${base_args[@]}"
     fi
-    if (( ${#base_args[@]} )); then base_args+=(---); fi
-    base_args+=("${sweep_specs[@]}")
-    all_route_args=("${run_args[@]}" "${removed_route_args[@]}")
-    all_repeat_arg=("${repeat_arg[@]}")
-    (( ${#removed_route_args[@]} && repeat > 1 )) && all_repeat_arg=("--repeat-each=$repeat")
-    if (( ${#all_route_args[@]} )); then base_args+=(--grep "$(IFS='|'; echo "${all_route_args[*]}")" --pass-with-no-tests "${all_repeat_arg[@]}"); fi
+  elif (( ${#page_specs[@]} || ${#other_specs[@]} )); then
+    add_call "${page_specs[@]}" "${other_specs[@]}"
   fi
-  "$B/e2e.sh" "$slot" "${base_args[@]}"
-elif (( ${#removed_route_args[@]} )); then
-  "$B/e2e.sh" "$slot" "${sweep[@]/%/.spec.ts}" --grep "$(IFS='|'; echo "${removed_route_args[*]}")" --pass-with-no-tests "${removed_repeat_arg[@]}"
 fi
+if (( dry_run )); then
+  run=0
+  display_call() {
+    local spec_name="$1" filters="$2"
+    local -n display_specs="$spec_name"
+    (( ${#display_specs[@]} )) || return 0
+    run=$((run+1)); printf 'run %d: %s' "$run" "${display_specs[*]}"
+    [[ -z "$filters" ]] || printf ' %s' "$filters"
+    printf '\n'
+  }
+  for var in "${call_vars[@]}"; do
+    declare -n local_args="$var"
+    segment=(); page_display=(); other_display=(); sweep_display=(); filters=()
+    for arg in "${local_args[@]}" ---; do
+      if [[ "$arg" == --- ]]; then
+        for spec in "${segment[@]}"; do
+          if [[ " ${page_specs[*]} " == *" $spec "* ]]; then page_display+=("$spec")
+          elif [[ " ${sweep_specs[*]} " == *" $spec "* ]]; then sweep_display+=("$spec")
+          else other_display+=("$spec"); fi
+        done
+        segment=()
+      elif [[ "$arg" == e2e/*.spec.ts ]]; then segment+=("$arg")
+      else filters+=("$arg"); fi
+    done
+    if (( ${#sweep_display[@]} )); then
+      display_call page_display ""
+      display_call other_display ""
+      display_call sweep_display "${filters[*]}"
+    else
+      display_call page_display "${filters[*]}"
+      display_call other_display "${filters[*]}"
+    fi
+  done
+  exit 0
+fi
+for var in "${call_vars[@]}"; do
+  declare -n local_args="$var"
+  "$B/e2e.sh" "$slot" "${local_args[@]}"
+done

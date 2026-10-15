@@ -575,6 +575,10 @@ STUB
   cp "$repo/frontend/src/components/shared.tsx" "$wtroot/wt-ib1/frontend/src/components/shared.tsx"
   moved=$(E2E_SWEEP_REPEAT=3 BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-removed-state" bash "$SCRIPTS/e2egate.sh" --dry-run 1) || fail "moved route dry-run failed"
   ! grep -q -- '--grep /baloot\b' <<<"$moved" || fail "route move was incorrectly repeated: $moved"
+  sed -i '/baloot/d' "$wtroot/wt-ib1/frontend/e2e/helpers.ts"
+  printf "const route = '/baloot';\n" > "$wtroot/wt-ib1/frontend/e2e/other.ts"
+  moved_file=$(E2E_SWEEP_REPEAT=3 BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-removed-state" bash "$SCRIPTS/e2egate.sh" --dry-run 1) || fail "cross-file route move dry-run failed"
+  grep -qF -- '--grep /baloot\b --pass-with-no-tests --repeat-each=3' <<<"$moved_file" || fail "cross-file route move was not repeated: $moved_file"
 ) || exit 1
 
 # fieldcheck matches every changed page to its own controller, independent of branch name.

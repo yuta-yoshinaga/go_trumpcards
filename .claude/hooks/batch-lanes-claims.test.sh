@@ -53,6 +53,13 @@ tree=$(git -C "$repo" write-tree); parent=$(git -C "$repo" rev-parse HEAD)
 commit=$(printf 'remove export\n' | git -C "$repo" -c user.name=test -c user.email=test@example.com commit-tree "$tree" -p "$parent")
 git -C "$repo" update-ref refs/heads/master "$commit"
 bash "$SCRIPTS/claimcheck.sh" "$repo" 'Removed `RemovedExport`' || fail "deleted identifier claim was rejected"
+printf '%s\n' '-- RemovedLuaThing' >> "$repo/pkg/source.go"
+git -C "$repo" add pkg/source.go
+tree=$(git -C "$repo" write-tree); parent=$(git -C "$repo" rev-parse HEAD)
+commit=$(printf 'add lua marker\n' | git -C "$repo" -c user.name=test -c user.email=test@example.com commit-tree "$tree" -p "$parent")
+git -C "$repo" update-ref refs/heads/master "$commit"
+sed -i '/-- RemovedLuaThing/d' "$repo/pkg/source.go"
+bash "$SCRIPTS/claimcheck.sh" "$repo" 'Removed `RemovedLuaThing`' || fail "deleted ---prefixed identifier claim was rejected"
 set +e
 out=$(bash "$SCRIPTS/claimcheck.sh" "$repo" 'it("node-only case")' 2>&1)
 rc=$?
