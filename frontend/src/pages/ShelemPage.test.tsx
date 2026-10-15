@@ -1,7 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { shelemApi } from '../api/gameApi';
-import { useIsMobile } from '../hooks/useCardDimensions';
+import { useIsCompactLargeDesktop, useIsMobile } from '../hooks/useCardDimensions';
 import { useGameHint } from '../hooks/useGameHint';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -21,10 +21,12 @@ vi.mock('../hooks/useGameHint', () => ({
 vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
   useIsMobile: vi.fn(() => false),
+  useIsCompactLargeDesktop: vi.fn(() => false),
 }));
 
 const mockExec = vi.mocked(shelemApi.exec);
 const mockIsMobile = vi.mocked(useIsMobile);
+const mockIsCompactLargeDesktop = vi.mocked(useIsCompactLargeDesktop);
 
 const card = (design: string, value: number): Card => ({ design, value }) as unknown as Card;
 
@@ -63,6 +65,7 @@ const playing = (over: Partial<ShelemResponse> = {}) =>
 beforeEach(() => {
   vi.clearAllMocks();
   mockIsMobile.mockReturnValue(false);
+  mockIsCompactLargeDesktop.mockReturnValue(false);
   mockExec.mockResolvedValue(makeState());
 });
 
@@ -439,5 +442,22 @@ describe('ShelemPage defender points', () => {
     renderWithProviders(<ShelemPage />);
     await waitFor(() => expect(screen.getByTestId('sh-contract')).toBeInTheDocument());
     expect(screen.queryByTestId('sh-defenders')).not.toBeInTheDocument();
+  });
+});
+
+describe('ShelemPage compact large-desktop dimensions', () => {
+  it('uses 60px cards in compact mode and 80px cards at full size', async () => {
+    mockExec.mockResolvedValue(playing());
+    mockIsCompactLargeDesktop.mockReturnValue(true);
+    const compact = renderWithProviders(<ShelemPage />);
+    await screen.findByTestId('sh-human-seat');
+    expect(compact.container.querySelector('[data-tutorial="sh-hand"] img')).toHaveStyle({ width: '60px' });
+    compact.unmount();
+
+    mockIsCompactLargeDesktop.mockReturnValue(false);
+    const fullSize = renderWithProviders(<ShelemPage />);
+    await screen.findByTestId('sh-human-seat');
+    expect(fullSize.container.querySelector('[data-tutorial="sh-hand"] img')).toHaveStyle({ width: '80px' });
+    fullSize.unmount();
   });
 });

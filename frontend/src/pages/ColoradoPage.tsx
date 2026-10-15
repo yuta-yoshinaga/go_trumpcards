@@ -16,7 +16,12 @@ import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
+import {
+  CARD_DIMENSIONS,
+  useBreakpoint,
+  useCardDimensions,
+  useIsCompactLargeDesktop,
+} from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { isRejectedAction, useGameApi } from '../hooks/useGameApi';
@@ -148,8 +153,21 @@ function ColoradoPageContent() {
 
   const { cardWidth, cardHeight, isMobile } = useCardDimensions();
   const isLargeDesktop = useBreakpoint() === 'largeDesktop';
-  const playCardWidth = isMobile ? MOBILE_PLAY_CARD_WIDTH : isLargeDesktop ? DESKTOP_COMPACT_CARD_WIDTH : cardWidth;
-  const playCardHeight = isMobile || isLargeDesktop ? Math.round(playCardWidth * 1.5) : cardHeight;
+  const isCompactLargeDesktop = useIsCompactLargeDesktop();
+  // The tableau starts below the phase header; 10 rows of 84px cards leave the bottom row's 52px visible within the ~650px board budget.
+  const playCardWidth = isMobile
+    ? MOBILE_PLAY_CARD_WIDTH
+    : isLargeDesktop
+      ? isCompactLargeDesktop
+        ? CARD_DIMENSIONS.desktop.cardWidth
+        : DESKTOP_COMPACT_CARD_WIDTH
+      : cardWidth;
+  const playCardHeight =
+    isLargeDesktop && isCompactLargeDesktop
+      ? CARD_DIMENSIONS.desktop.cardHeight
+      : isMobile || isLargeDesktop
+        ? Math.round(playCardWidth * 1.5)
+        : cardHeight;
 
   const handleManualReset = useCallback(() => {
     void runApi('reset');

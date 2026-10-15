@@ -589,3 +589,29 @@ describe('ColoradoPage', () => {
     expect(screen.queryByTestId('stalemate-escape-button')).not.toBeInTheDocument();
   });
 });
+
+describe('ColoradoPage compact large-desktop dimensions', () => {
+  it('uses 60px cards at 1024px and 80px cards at 1280px', async () => {
+    const originalWidth = window.innerWidth;
+    try {
+      mobileState.isMobile = false;
+      mockExec.mockResolvedValue(makeState());
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 });
+      const compact = renderWithProviders(<ColoradoPage />);
+      await screen.findByTestId('co-foundation-0');
+      const compactCard = screen.getByTestId('co-foundation-0').querySelector('img');
+      expect(compactCard).toHaveStyle({ width: '60px' });
+      compact.unmount();
+
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+      const fullSize = renderWithProviders(<ColoradoPage />);
+      await screen.findByTestId('co-foundation-0');
+      const fullSizeCard = screen.getByTestId('co-foundation-0').querySelector('img');
+      expect(fullSizeCard).toHaveStyle({ width: '80px' });
+      fullSize.unmount();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+});
