@@ -42,7 +42,7 @@ describe('useElementWidth', () => {
 
   it('disconnects when the element is detached or replaced', () => {
     Object.defineProperty(globalThis, 'ResizeObserver', { configurable: true, value: MockResizeObserver });
-    const { result, unmount } = renderHook(() => useElementWidth<HTMLDivElement>());
+    const { result } = renderHook(() => useElementWidth<HTMLDivElement>());
 
     act(() => result.current[0](document.createElement('div')));
     const firstObserver = MockResizeObserver.instances[0];
@@ -53,7 +53,6 @@ describe('useElementWidth', () => {
     const secondObserver = MockResizeObserver.instances[1];
     act(() => result.current[0](null));
     expect(secondObserver?.disconnect).toHaveBeenCalledOnce();
-    unmount();
   });
 
   it('returns zero when ResizeObserver is unavailable', () => {

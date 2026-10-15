@@ -8,6 +8,7 @@ export function useElementWidth<T extends HTMLElement>(): [ref: (node: T | null)
   const ref = useCallback((node: T | null) => {
     observerRef.current?.disconnect();
     observerRef.current = null;
+    // A detached or replaced node must not keep reporting the previous element's width.
     setWidth(0);
     if (!node || typeof ResizeObserver === 'undefined') return;
 
