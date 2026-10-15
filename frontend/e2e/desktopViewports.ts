@@ -23,17 +23,14 @@ export const KNOWN_1024_FAILURES: Record<'board' | 'hand' | 'action', ReadonlySe
     '/slyfox',
   ]),
   hand: new Set<string>(),
-  action: new Set(['/rams']),
+  action: new Set<string>(),
 };
 
 /**
  * Games whose board cards already overflow sideways on develop, at the listed widths; only the
  * horizontal rule is skipped for them. Remove entries once #11811 is fixed. Do not add entries.
  */
-export const KNOWN_HORIZONTAL_FAILURES: ReadonlyMap<string, ReadonlySet<number>> = new Map([
-  // The play area is wider than its column at both widths (scrollWidth 1140 > clientWidth 1040 at 1280).
-  ['/cruel', new Set([1280, 1024])],
-]);
+export const KNOWN_HORIZONTAL_FAILURES: ReadonlyMap<string, ReadonlySet<number>> = new Map();
 
 /** Minimum visible horizontal card width, passed into page.evaluate callbacks. */
 export const VISIBLE_PX_X = 20;

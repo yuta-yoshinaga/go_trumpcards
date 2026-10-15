@@ -22,6 +22,7 @@ import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { cruelWinRate, useCruelStats } from '../hooks/useCruelStats';
+import { useElementWidth } from '../hooks/useElementWidth';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
@@ -155,15 +156,18 @@ function CruelPageContent() {
 
   const { cardWidth, isMobile } = useCardDimensions();
   const windowWidth = useWindowWidth();
+  const tableauRef = useRef<HTMLDivElement>(null);
+  const tableauWidth = useElementWidth(tableauRef, Boolean(state) && !cliEnabled && !isMobile);
 
   // Responsive card dimensions — Cruel uses 12 narrow columns, so cards must
   // shrink to fit. We also cap maximum table width to 1400px on desktop.
   const cr = useMemo(() => {
     const cols = 12;
     if (!isMobile) {
-      const padX = 32;
       const gapPx = 8;
-      const colW = Math.floor((Math.min(windowWidth, 1400) - padX - (cols - 1) * gapPx) / cols);
+      // The measured content box has no horizontal padding to subtract.
+      const availableWidth = tableauWidth || windowWidth;
+      const colW = Math.floor((Math.min(availableWidth, 1400) - (cols - 1) * gapPx) / cols);
       const cw = Math.min(Math.max(colW, 36), cardWidth);
       const ch = Math.round(cw * 1.5);
       const co = Math.round(cw * 0.35);
@@ -176,7 +180,7 @@ function CruelPageContent() {
     const ch = Math.round(cw * 1.5);
     const co = Math.round(cw * 0.4);
     return { cw, ch, co };
-  }, [isMobile, windowWidth, cardWidth]);
+  }, [isMobile, windowWidth, cardWidth, tableauWidth]);
 
   // Drag-and-drop
   const dispatchMove = useCallback(
@@ -424,7 +428,7 @@ function CruelPageContent() {
             </div>
 
             {/* Tableau (12 columns, top-card-only moves). */}
-            <div className="flex gap-1 sm:gap-2 justify-center" data-tutorial="cruel-tableau">
+            <div ref={tableauRef} className="flex gap-1 sm:gap-2 justify-center" data-tutorial="cruel-tableau">
               {state.tableau.map((col, colIdx) => (
                 <div key={colIdx} className="flex flex-col items-center" style={{ width: cr.cw }}>
                   <div className="text-game-text-muted text-xs mb-1">{colIdx}</div>
