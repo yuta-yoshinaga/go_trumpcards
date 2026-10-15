@@ -156,9 +156,10 @@ export function useIsLargeDesktop(): boolean {
 }
 
 /**
- * Provides fixed card dimensions for pages that use smaller-than-shared cards on large desktop.
- * At 1024–1279px, the board has too little height for those larger cards, so this uses desktop dimensions.
- * Values outside large desktop are unused by the calling pages.
+ * Provides fixed card dimensions for pages that use smaller-than-shared cards on large desktop:
+ * 80×120 from 1280px, and the desktop preset (60×84) at 1024–1279px, where the board is too short.
+ * The returned size is meaningful only when `useBreakpoint() === 'largeDesktop'`; below 1024px it
+ * returns 80×120, which callers must not use.
  */
 export function useDenseLargeDesktopCardSize(): { width: number; height: number } {
   const isCompactLargeDesktop = useIsCompactLargeDesktop();

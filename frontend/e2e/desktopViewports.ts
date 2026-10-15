@@ -1,8 +1,7 @@
 /**
- * Widths used by the three desktop visibility guards (board, hand, and action): 1280×800 and
- * 1024×800. At `LG_BREAKPOINT`, the two-column layout begins and `useCardDimensions` reduces cards
- * to 80px (#11811). The 1024 value is repeated because specs do not load React modules to import
- * the hook's constant.
+ * Run the board, hand, and action visibility guards at 1280×800 and 1024×800.
+ * 1024px is `LG_BREAKPOINT`: the two-column layout starts and `useCardDimensions` reduces cards to
+ * 80px (#11811). Specs avoid loading React modules, so 1024 is written here as a literal.
  */
 export const DESKTOP_VIEWPORTS = [
   { width: 1280, height: 800 },
