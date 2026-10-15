@@ -623,3 +623,28 @@ describe('BraidPage braid tail label', () => {
     expect(screen.getByLabelText('ブレイドは空です')).toBeInTheDocument();
   });
 });
+
+describe('BraidPage compact large-desktop dimensions', () => {
+  it('uses 60px cards at 1024px and 80px cards at 1280px', async () => {
+    const originalWidth = window.innerWidth;
+    try {
+      mockExec.mockResolvedValue(playingState);
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 });
+      const compact = renderWithProviders(<BraidPage />);
+      await screen.findByTestId('br-top-row');
+      const compactCard = screen.getByLabelText('空の組札0');
+      expect(compactCard).toHaveStyle({ width: '60px' });
+      compact.unmount();
+
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+      const fullSize = renderWithProviders(<BraidPage />);
+      await screen.findByTestId('br-top-row');
+      const fullSizeCard = screen.getByLabelText('空の組札0');
+      expect(fullSizeCard).toHaveStyle({ width: '80px' });
+      fullSize.unmount();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+});

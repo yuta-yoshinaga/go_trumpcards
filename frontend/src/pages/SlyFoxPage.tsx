@@ -15,7 +15,12 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
+import {
+  CARD_DIMENSIONS,
+  useBreakpoint,
+  useCardDimensions,
+  useIsCompactLargeDesktop,
+} from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -137,11 +142,21 @@ function SlyFoxPageContent() {
 
   const { cardWidth, cardHeight, isMobile } = useCardDimensions();
   const isLargeDesktop = useBreakpoint() === 'largeDesktop';
-  const playCardWidth = isMobile ? MOBILE_PLAY_CARD_WIDTH : isLargeDesktop ? DESKTOP_COMPACT_CARD_WIDTH : cardWidth;
+  const isCompactLargeDesktop = useIsCompactLargeDesktop();
+  // The tableau starts under the header; 84px cards keep the deepest stack visible in the ~650px board budget.
+  const playCardWidth = isMobile
+    ? MOBILE_PLAY_CARD_WIDTH
+    : isLargeDesktop
+      ? isCompactLargeDesktop
+        ? CARD_DIMENSIONS.desktop.cardWidth
+        : DESKTOP_COMPACT_CARD_WIDTH
+      : cardWidth;
   const playCardHeight = isMobile
     ? Math.round(playCardWidth * 1.5)
     : isLargeDesktop
-      ? Math.round(playCardWidth * 1.5)
+      ? isCompactLargeDesktop
+        ? CARD_DIMENSIONS.desktop.cardHeight
+        : Math.round(playCardWidth * 1.5)
       : cardHeight;
 
   const handleManualReset = useCallback(() => {

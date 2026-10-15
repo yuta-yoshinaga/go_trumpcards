@@ -14,7 +14,7 @@ import { HintTooltip } from '../components/hint/HintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
+import { CARD_DIMENSIONS, useCardDimensions, useIsCompactLargeDesktop, useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -92,7 +92,10 @@ function ShelemPageContent() {
     exec: dispatch,
     retry,
   } = useGameApi<ShelemResponse, Parameters<typeof shelemApi.exec>>(shelemApi.exec);
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth: measuredCardWidth } = useCardDimensions();
+  const isCompactLargeDesktop = useIsCompactLargeDesktop();
+  // The hand is below the seats and trick; 60px cards reclaim 20px per row within the ~650px board budget.
+  const cardWidth = isCompactLargeDesktop ? CARD_DIMENSIONS.desktop.cardWidth : measuredCardWidth;
   const isMobile = useIsMobile();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('shelem', state);
   // 捨てる4枚は押して選ぶ。サーバに送るまではこちらで保持する。

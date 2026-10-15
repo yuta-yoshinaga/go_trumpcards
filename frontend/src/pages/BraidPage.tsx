@@ -20,7 +20,13 @@ import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useBraidGame } from '../hooks/useBraidGame';
-import { useBreakpoint, useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
+import {
+  CARD_DIMENSIONS,
+  useBreakpoint,
+  useCardDimensions,
+  useIsCompactLargeDesktop,
+  useWindowWidth,
+} from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
@@ -114,6 +120,7 @@ function BraidPageContent() {
   const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
   const isLargeDesktop = useBreakpoint() === 'largeDesktop';
+  const isCompactLargeDesktop = useIsCompactLargeDesktop();
   const windowWidth = useWindowWidth();
 
   const dims = useMemo(() => {
@@ -126,9 +133,17 @@ function BraidPageContent() {
     const co = Math.round(cw * 0.32);
     return { cw, ch, co };
   }, [isMobile, windowWidth, cardWidth, cardHeight, cardOverlap]);
-  // At 1280px the 10 top slots fit in 872px (10 × 80px + 9 × 8px).
-  const topCardWidth = isLargeDesktop ? DESKTOP_COMPACT_CARD_WIDTH : dims.cw;
-  const topCardHeight = isLargeDesktop ? Math.round(DESKTOP_COMPACT_CARD_WIDTH * 1.5) : dims.ch;
+  // The board begins below the header/phase; 60×84 cards keep its 8-row tableau within the remaining ~650px at 800px viewport height.
+  const topCardWidth = isLargeDesktop
+    ? isCompactLargeDesktop
+      ? CARD_DIMENSIONS.desktop.cardWidth
+      : DESKTOP_COMPACT_CARD_WIDTH
+    : dims.cw;
+  const topCardHeight = isLargeDesktop
+    ? isCompactLargeDesktop
+      ? CARD_DIMENSIONS.desktop.cardHeight
+      : Math.round(DESKTOP_COMPACT_CARD_WIDTH * 1.5)
+    : dims.ch;
 
   const isPlayingForKbd = state?.phase === BraidPhase.PLAYING;
 

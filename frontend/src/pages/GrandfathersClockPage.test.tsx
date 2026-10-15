@@ -477,3 +477,28 @@ describe('GrandfathersClockPage keyboard shortcuts', () => {
     expect(mockExec).not.toHaveBeenCalled();
   });
 });
+
+describe('GrandfathersClockPage compact large-desktop dimensions', () => {
+  it('uses 60px cards at 1024px and 80px cards at 1280px', async () => {
+    const originalWidth = window.innerWidth;
+    try {
+      mockExec.mockResolvedValue(playingState);
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 });
+      const compact = renderWithProviders(<GrandfathersClockPage />);
+      await screen.findByTestId('gc-autocomplete-status');
+      const compactCard = document.querySelector('[data-tutorial="gc-clock"] img');
+      expect(compactCard).toHaveStyle({ width: '60px' });
+      compact.unmount();
+
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+      const fullSize = renderWithProviders(<GrandfathersClockPage />);
+      await screen.findByTestId('gc-autocomplete-status');
+      const fullSizeCard = document.querySelector('[data-tutorial="gc-clock"] img');
+      expect(fullSizeCard).toHaveStyle({ width: '80px' });
+      fullSize.unmount();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+});

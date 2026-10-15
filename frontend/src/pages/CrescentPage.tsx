@@ -18,7 +18,13 @@ import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useBreakpoint, useIsMobile, useWindowHeight } from '../hooks/useCardDimensions';
+import {
+  CARD_DIMENSIONS,
+  useBreakpoint,
+  useIsCompactLargeDesktop,
+  useIsMobile,
+  useWindowHeight,
+} from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useCrescentGame } from '../hooks/useCrescentGame';
@@ -162,12 +168,13 @@ function CrescentPageContent() {
   const breakpoint = useBreakpoint();
   const windowHeight = useWindowHeight();
   const isLargeDesktop = breakpoint === 'largeDesktop';
+  const isCompactLargeDesktop = useIsCompactLargeDesktop();
   const longestPile = Math.max(FIXED_TABLEAU_DEPTH.crescent, ...(state?.tableau.map((pile) => pile.length) ?? []));
   const responsiveTableauDim = useResponsiveTableau(
     8,
     isLargeDesktop
       ? {
-          maxCardWidthPx: DESKTOP_COMPACT_CARD_WIDTH,
+          maxCardWidthPx: isCompactLargeDesktop ? CARD_DIMENSIONS.desktop.cardWidth : DESKTOP_COMPACT_CARD_WIDTH,
           compressDesktop: true,
           maxColCards: longestPile,
           minVerticalOverlap: 14,
@@ -180,6 +187,7 @@ function CrescentPageContent() {
   // Crescent has two rows of eight piles. Keep its mobile cards compact so both
   // rows and the foundation controls leave more of the play area for the stacks.
   const compactMobileCardWidth = Math.min(responsiveTableauDim.cw, MOBILE_CARD_WIDTH_PX);
+  // Two tableau rows start below the header; reducing to 60×84 keeps the lower crescent's 52px edge within the remaining board height.
   const tableauDim = isMobile
     ? {
         ...responsiveTableauDim,
