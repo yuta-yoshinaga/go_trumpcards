@@ -74,6 +74,18 @@ beforeEach(() => {
 });
 
 describe('BalootPage', () => {
+  it('keeps the hand and reset/give-up actions in the shared footer', async () => {
+    mockExec.mockResolvedValue(playing());
+    renderWithProviders(<BalootPage />);
+    await screen.findByRole('button', { name: /♠/ });
+    const hand = document.querySelector<HTMLElement>('[data-tutorial="baloot-hand"]');
+    const footerContent = screen.getByTestId('game-footer-content');
+    const footerActions = screen.getByTestId('game-footer-actions');
+    expect(footerContent).toContainElement(hand);
+    expect(footerActions).toContainElement(screen.getByRole('button', { name: 'リセット' }));
+    expect(footerActions).toContainElement(screen.getByRole('button', { name: '投了' }));
+  });
+
   it('collapses rules and CPU seats on mobile and opens them on desktop', async () => {
     mobileState.isMobile = true;
     mockExec.mockResolvedValue(makeState({ mode: 1, declarerIdx: 0 } as Partial<BalootResponse>));

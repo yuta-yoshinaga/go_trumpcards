@@ -7,6 +7,7 @@ import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { HintTooltip } from '../components/hint/HintTooltip';
@@ -328,65 +329,6 @@ function BalootPageContent() {
             />
             <ErrorAlert message={error} onRetry={retry} />
 
-            {human && human.cards.length > 0 && (
-              <div className="mt-4" data-tutorial="baloot-hand">
-                <div className="text-ds-text-muted text-sm mb-1">
-                  {t('header.you')}: {human.cardCount}
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {human.cards.map((card, idx) => (
-                    <button
-                      key={`${card.design}-${card.value}-${idx}`}
-                      type="button"
-                      onClick={() => {
-                        if (loading || !isHumanTurn || !legalRing.has(idx)) return;
-                        handlePlay(idx);
-                      }}
-                      disabled={loading || !isHumanTurn}
-                      aria-label={
-                        state.mode !== BalootMode.NONE
-                          ? canAnnotatePlays
-                            ? t(
-                                legalRing.has(idx)
-                                  ? 'actions.playableAriaWithPoints'
-                                  : 'actions.notPlayableAriaWithPoints',
-                                { card: cardAlt(card), points: balootCardPoints(card, state.mode, state.trumpSuit) },
-                              )
-                            : t('actions.playAriaWithPoints', {
-                                card: cardAlt(card),
-                                points: balootCardPoints(card, state.mode, state.trumpSuit),
-                              })
-                          : canAnnotatePlays
-                            ? t(legalRing.has(idx) ? 'actions.playableAria' : 'actions.notPlayableAria', {
-                                card: cardAlt(card),
-                              })
-                            : t('actions.playAria', { card: cardAlt(card) })
-                      }
-                      aria-disabled={canAnnotatePlays && !legalRing.has(idx) ? true : undefined}
-                      aria-describedby={
-                        canAnnotatePlays && !legalRing.has(idx) ? 'baloot-unplayable-reason' : undefined
-                      }
-                      className={`relative disabled:opacity-50 aria-disabled:opacity-50 ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
-                    >
-                      <CardImage card={card} width={cardWidth} />
-                      {state.mode !== BalootMode.NONE && (
-                        <span
-                          data-testid={`bl-points-${idx.toString()}`}
-                          aria-hidden="true"
-                          className="absolute top-0 right-0 rounded-bl px-1 text-[10px] leading-tight bg-black/70 text-white"
-                        >
-                          {balootCardPoints(card, state.mode, state.trumpSuit)}
-                        </span>
-                      )}
-                    </button>
-                  ))}
-                </div>
-                <span id="baloot-unplayable-reason" className="sr-only">
-                  {t('actions.notPlayableReason')}
-                </span>
-              </div>
-            )}
-
             {hintEnabled && hint && (
               <div className="mt-3 flex justify-center">
                 <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />
@@ -441,19 +383,6 @@ function BalootPageContent() {
                   {t('actions.nextRound')}
                 </button>
               )}
-              <button
-                type="button"
-                className={btnPrimary}
-                onClick={() => requestConfirm(handleReset)}
-                disabled={loading}
-              >
-                {t('actions.reset')}
-              </button>
-              {!isGameEnd && (
-                <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
-                  {t('actions.giveUp')}
-                </button>
-              )}
             </div>
 
             <SettingsPanel
@@ -461,6 +390,89 @@ function BalootPageContent() {
               groups={[{ items: [hintCheckboxItem(tc, hintEnabled, setHintEnabled)] }]}
             />
           </div>
+
+          <GameFooter
+            className={`${gameTheme.baloot.footer} px-4 py-2.5`}
+            actions={
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={() => requestConfirm(handleReset)}
+                  disabled={loading}
+                >
+                  {t('actions.reset')}
+                </button>
+                {!isGameEnd && (
+                  <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
+                    {t('actions.giveUp')}
+                  </button>
+                )}
+              </div>
+            }
+          >
+            {human && human.cards.length > 0 && (
+              <div className="mt-2" data-tutorial="baloot-hand">
+                <div className="text-ds-text-muted text-sm mb-1">
+                  {t('header.you')}: {human.cardCount}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {human.cards.map((card, idx) => (
+                    <button
+                      key={`${card.design}-${card.value}-${idx}`}
+                      type="button"
+                      onClick={() => {
+                        if (loading || !isHumanTurn || !legalRing.has(idx)) return;
+                        handlePlay(idx);
+                      }}
+                      disabled={loading || !isHumanTurn}
+                      aria-label={
+                        state.mode !== BalootMode.NONE
+                          ? canAnnotatePlays
+                            ? t(
+                                legalRing.has(idx)
+                                  ? 'actions.playableAriaWithPoints'
+                                  : 'actions.notPlayableAriaWithPoints',
+                                {
+                                  card: cardAlt(card),
+                                  points: balootCardPoints(card, state.mode, state.trumpSuit),
+                                },
+                              )
+                            : t('actions.playAriaWithPoints', {
+                                card: cardAlt(card),
+                                points: balootCardPoints(card, state.mode, state.trumpSuit),
+                              })
+                          : canAnnotatePlays
+                            ? t(legalRing.has(idx) ? 'actions.playableAria' : 'actions.notPlayableAria', {
+                                card: cardAlt(card),
+                              })
+                            : t('actions.playAria', { card: cardAlt(card) })
+                      }
+                      aria-disabled={canAnnotatePlays && !legalRing.has(idx) ? true : undefined}
+                      aria-describedby={
+                        canAnnotatePlays && !legalRing.has(idx) ? 'baloot-unplayable-reason' : undefined
+                      }
+                      className={`relative disabled:opacity-50 aria-disabled:opacity-50 ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
+                    >
+                      <CardImage card={card} width={cardWidth} />
+                      {state.mode !== BalootMode.NONE && (
+                        <span
+                          data-testid={`bl-points-${idx.toString()}`}
+                          aria-hidden="true"
+                          className="absolute top-0 right-0 rounded-bl px-1 text-[10px] leading-tight bg-black/70 text-white"
+                        >
+                          {balootCardPoints(card, state.mode, state.trumpSuit)}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+                <span id="baloot-unplayable-reason" className="sr-only">
+                  {t('actions.notPlayableReason')}
+                </span>
+              </div>
+            )}
+          </GameFooter>
 
           <ActionLogSection
             isEndPhase={isGameEnd}

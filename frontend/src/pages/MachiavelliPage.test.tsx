@@ -141,6 +141,36 @@ describe('MachiavelliPage', () => {
     expect(new Set(imageWidths).size).toBe(1);
   });
 
+  it('sizes meld cards for large desktop and desktop viewports', async () => {
+    const originalWidth = window.innerWidth;
+    const setViewportWidth = (width: number) => {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: width });
+      window.dispatchEvent(new Event('resize'));
+    };
+    const meldCard = () => within(screen.getByTestId('machiavelli-meld-list')).getAllByRole('img')[0];
+    try {
+      // At 1024px, cardWidth is 80px; at 1280px, it is 100px.
+      setViewportWidth(1024);
+      mockUseBreakpoint.mockReturnValue('largeDesktop');
+      let currentUnmount = renderWithProviders(<MachiavelliPage />).unmount;
+      await waitFor(() => expect(screen.getByTestId('machiavelli-table')).toBeInTheDocument());
+      expect(meldCard()).toHaveStyle({ width: '48px' });
+
+      currentUnmount();
+      setViewportWidth(1280);
+      currentUnmount = renderWithProviders(<MachiavelliPage />).unmount;
+      await waitFor(() => expect(meldCard()).toHaveStyle({ width: '60px' }));
+
+      currentUnmount();
+      setViewportWidth(800);
+      mockUseBreakpoint.mockReturnValue('desktop');
+      renderWithProviders(<MachiavelliPage />);
+      await waitFor(() => expect(meldCard()).toHaveStyle({ width: '48px' }));
+    } finally {
+      setViewportWidth(originalWidth);
+    }
+  });
+
   it('keeps the existing hand and meld layout below large desktop', async () => {
     mockUseBreakpoint.mockReturnValue('desktop');
     renderWithProviders(<MachiavelliPage />);
