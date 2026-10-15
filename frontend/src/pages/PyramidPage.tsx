@@ -19,10 +19,9 @@ import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import {
-  CARD_DIMENSIONS,
   useBreakpoint,
   useCardDimensions,
-  useIsCompactLargeDesktop,
+  useDenseLargeDesktopCardSize,
   useWindowWidth,
 } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -33,7 +32,6 @@ import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { usePyramidGame } from '../hooks/usePyramidGame';
 import { pyramidWinRate, usePyramidStats } from '../hooks/usePyramidStats';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
-import { DESKTOP_COMPACT_CARD_WIDTH } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { PyramidResponse } from '../types/card';
 import { PyramidPhase } from '../types/phases';
@@ -133,7 +131,7 @@ function PyramidPageContent() {
   } = useGameHint('pyramid', state);
   const { cardHeight, cardWidth, isMobile } = useCardDimensions();
   const isLargeDesktop = useBreakpoint() === 'largeDesktop';
-  const isCompactLargeDesktop = useIsCompactLargeDesktop();
+  const denseCardSize = useDenseLargeDesktopCardSize();
   const windowWidth = useWindowWidth();
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('pyramid');
@@ -226,13 +224,8 @@ function PyramidPageContent() {
   const cardGap = 4;
   /** Fraction of card height used for vertical overlap between rows (less on mobile for bigger tap targets) */
   const ROW_OVERLAP_RATIO = isMobile ? 0.3 : 0.35;
-  // The pyramid starts below the phase header; the existing row-step clamp fits all 7 rows into the ~650px board budget.
-  const pyramidCardWidth = isCompactLargeDesktop ? CARD_DIMENSIONS.desktop.cardWidth : DESKTOP_COMPACT_CARD_WIDTH;
-  const effectiveCardHeight = isLargeDesktop
-    ? isCompactLargeDesktop
-      ? CARD_DIMENSIONS.desktop.cardHeight
-      : Math.round(DESKTOP_COMPACT_CARD_WIDTH * 1.5)
-    : cardHeight;
+  const pyramidCardWidth = denseCardSize.width;
+  const effectiveCardHeight = isLargeDesktop ? denseCardSize.height : cardHeight;
   const currentRowStep = cardHeight - cardHeight * ROW_OVERLAP_RATIO;
   const scaledDevelopStep = currentRowStep * (pyramidCardWidth / cardWidth);
   const compactRowStep = compactPyramidRowStep(state.pyramid.length, effectiveCardHeight, scaledDevelopStep);

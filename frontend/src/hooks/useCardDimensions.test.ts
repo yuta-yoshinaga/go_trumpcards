@@ -5,6 +5,7 @@ import {
   COMPACT_LARGE_DESKTOP_DIMENSIONS,
   useBreakpoint,
   useCardDimensions,
+  useDenseLargeDesktopCardSize,
   useIsCompactLargeDesktop,
   useIsLargeDesktop,
   useIsMobile,
@@ -244,6 +245,37 @@ describe('useCardDimensions', () => {
     const { unmount } = renderHook(() => useCardDimensions());
     unmount();
     expect(window.removeEventListener).toHaveBeenCalledWith('resize', expect.any(Function));
+  });
+});
+
+describe('useDenseLargeDesktopCardSize', () => {
+  const originalInnerWidth = window.innerWidth;
+
+  afterEach(() => setWidth(originalInnerWidth));
+
+  it.each([1024, 1279])('uses desktop card dimensions at %i px', (width) => {
+    setWidth(width);
+    const { result } = renderHook(() => useDenseLargeDesktopCardSize());
+    expect(result.current).toEqual({ width: 60, height: 84 });
+  });
+
+  it('uses fixed dense card dimensions at 1280px', () => {
+    setWidth(1280);
+    const { result } = renderHook(() => useDenseLargeDesktopCardSize());
+    expect(result.current).toEqual({ width: 80, height: 120 });
+  });
+
+  it('updates card size when resized from 1279px to 1280px', () => {
+    setWidth(1279);
+    const { result } = renderHook(() => useDenseLargeDesktopCardSize());
+    expect(result.current).toEqual({ width: 60, height: 84 });
+
+    act(() => {
+      setWidth(1280);
+      window.dispatchEvent(new Event('resize'));
+    });
+
+    expect(result.current).toEqual({ width: 80, height: 120 });
   });
 });
 

@@ -18,13 +18,7 @@ import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import {
-  CARD_DIMENSIONS,
-  useBreakpoint,
-  useIsCompactLargeDesktop,
-  useIsMobile,
-  useWindowHeight,
-} from '../hooks/useCardDimensions';
+import { useBreakpoint, useDenseLargeDesktopCardSize, useIsMobile, useWindowHeight } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useCrescentGame } from '../hooks/useCrescentGame';
@@ -39,7 +33,6 @@ const MOBILE_CARD_OVERLAP_PX = 14;
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { badgeSuccessColors, badgeWarningColors } from '../styles/badgeStyles';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
-import { DESKTOP_COMPACT_CARD_WIDTH } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, CrescentResponse } from '../types/card';
 import { CrescentPhase } from '../types/phases';
@@ -168,13 +161,13 @@ function CrescentPageContent() {
   const breakpoint = useBreakpoint();
   const windowHeight = useWindowHeight();
   const isLargeDesktop = breakpoint === 'largeDesktop';
-  const isCompactLargeDesktop = useIsCompactLargeDesktop();
+  const denseCardSize = useDenseLargeDesktopCardSize();
   const longestPile = Math.max(FIXED_TABLEAU_DEPTH.crescent, ...(state?.tableau.map((pile) => pile.length) ?? []));
   const responsiveTableauDim = useResponsiveTableau(
     8,
     isLargeDesktop
       ? {
-          maxCardWidthPx: isCompactLargeDesktop ? CARD_DIMENSIONS.desktop.cardWidth : DESKTOP_COMPACT_CARD_WIDTH,
+          maxCardWidthPx: denseCardSize.width,
           compressDesktop: true,
           maxColCards: longestPile,
           minVerticalOverlap: 14,

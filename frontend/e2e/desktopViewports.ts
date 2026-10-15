@@ -1,27 +1,12 @@
-/** 1024px is the LG_BREAKPOINT boundary where the two-column desktop layout begins. */
-export const NARROW_DESKTOP_WIDTH = 1024;
-
+/**
+ * Run the board, hand, and action visibility guards at 1280×800 and 1024×800.
+ * 1024px is `LG_BREAKPOINT`: the two-column layout starts and `useCardDimensions` reduces cards to
+ * 80px (#11811). Specs avoid loading React modules, so 1024 is written here as a literal.
+ */
 export const DESKTOP_VIEWPORTS = [
   { width: 1280, height: 800 },
-  { width: NARROW_DESKTOP_WIDTH, height: 800 },
+  { width: 1024, height: 800 },
 ] as const;
-
-/**
- * Temporarily skip only vertical assertions for listed games at 1024px. Some failures are deal-dependent
- * and can pass on some runs (for example, /baloot), so test.fail() would mark those passing runs red.
- * The list therefore does not shrink automatically; remove entries manually once #11811 is fixed.
- */
-export const KNOWN_1024_FAILURES: Record<'board' | 'hand' | 'action', ReadonlySet<string>> = {
-  board: new Set<string>(),
-  hand: new Set<string>(),
-  action: new Set<string>(),
-};
-
-/**
- * Games whose board cards already overflow sideways on develop, at the listed widths; only the
- * horizontal rule is skipped for them. Remove entries once #11811 is fixed. Do not add entries.
- */
-export const KNOWN_HORIZONTAL_FAILURES: ReadonlyMap<string, ReadonlySet<number>> = new Map();
 
 /** Minimum visible horizontal card width, passed into page.evaluate callbacks. */
 export const VISIBLE_PX_X = 20;

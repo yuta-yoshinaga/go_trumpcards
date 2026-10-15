@@ -21,10 +21,9 @@ import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useBraidGame } from '../hooks/useBraidGame';
 import {
-  CARD_DIMENSIONS,
   useBreakpoint,
   useCardDimensions,
-  useIsCompactLargeDesktop,
+  useDenseLargeDesktopCardSize,
   useWindowWidth,
 } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -33,7 +32,6 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
-import { DESKTOP_COMPACT_CARD_WIDTH } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { BraidMoveZone, BraidResponse } from '../types/card';
 import { BraidPhase } from '../types/phases';
@@ -120,7 +118,7 @@ function BraidPageContent() {
   const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
   const isLargeDesktop = useBreakpoint() === 'largeDesktop';
-  const isCompactLargeDesktop = useIsCompactLargeDesktop();
+  const denseCardSize = useDenseLargeDesktopCardSize();
   const windowWidth = useWindowWidth();
 
   const dims = useMemo(() => {
@@ -133,17 +131,8 @@ function BraidPageContent() {
     const co = Math.round(cw * 0.32);
     return { cw, ch, co };
   }, [isMobile, windowWidth, cardWidth, cardHeight, cardOverlap]);
-  // The board begins below the header/phase; 60×84 cards keep its 8-row tableau within the remaining ~650px at 800px viewport height.
-  const topCardWidth = isLargeDesktop
-    ? isCompactLargeDesktop
-      ? CARD_DIMENSIONS.desktop.cardWidth
-      : DESKTOP_COMPACT_CARD_WIDTH
-    : dims.cw;
-  const topCardHeight = isLargeDesktop
-    ? isCompactLargeDesktop
-      ? CARD_DIMENSIONS.desktop.cardHeight
-      : Math.round(DESKTOP_COMPACT_CARD_WIDTH * 1.5)
-    : dims.ch;
+  const topCardWidth = isLargeDesktop ? denseCardSize.width : dims.cw;
+  const topCardHeight = isLargeDesktop ? denseCardSize.height : dims.ch;
 
   const isPlayingForKbd = state?.phase === BraidPhase.PLAYING;
 

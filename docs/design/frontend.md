@@ -1024,6 +1024,12 @@ classDiagram
     }
     note for useIsCompactLargeDesktop "Returns true when viewport is 1024–1279px"
 
+    class useDenseLargeDesktopCardSize {
+        +number width
+        +number height
+    }
+    note for useDenseLargeDesktopCardSize "Fixed dense card dimensions for large-desktop pages"
+
     class useActionKeyboardNav {
         +(bindings: KeyBinding[]) void
     }

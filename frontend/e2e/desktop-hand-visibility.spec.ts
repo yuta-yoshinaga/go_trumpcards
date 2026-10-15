@@ -1,11 +1,5 @@
 import { expect, test } from '@playwright/test';
-import {
-  DESKTOP_VIEWPORTS,
-  KNOWN_1024_FAILURES,
-  NARROW_DESKTOP_WIDTH,
-  VISIBLE_PX_X,
-  VISIBLE_PX_Y,
-} from './desktopViewports';
+import { DESKTOP_VIEWPORTS, VISIBLE_PX_X, VISIBLE_PX_Y } from './desktopViewports';
 import { navigateTo } from './helpers';
 
 /**
@@ -111,8 +105,7 @@ for (const viewport of DESKTOP_VIEWPORTS) {
         );
         expect(result.missingHand, `${path}: hand container ${hand} not found`).toBe(false);
         expect(result.cards, `${path}: no hand cards found`).toBeGreaterThan(0);
-        if (!(viewport.width === NARROW_DESKTOP_WIDTH && KNOWN_1024_FAILURES.hand.has(path)))
-          expect(result.hidden, `${path}: hidden hand cards at tops ${result.hidden.join(', ')}`).toEqual([]);
+        expect(result.hidden, `${path}: hidden hand cards at tops ${result.hidden.join(', ')}`).toEqual([]);
         expect(result.hiddenX, `${path}: hand cards hidden beside their play area`).toEqual([]);
       });
     }

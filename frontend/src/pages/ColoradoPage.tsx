@@ -16,12 +16,7 @@ import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import {
-  CARD_DIMENSIONS,
-  useBreakpoint,
-  useCardDimensions,
-  useIsCompactLargeDesktop,
-} from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions, useDenseLargeDesktopCardSize } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { isRejectedAction, useGameApi } from '../hooks/useGameApi';
@@ -30,7 +25,6 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useMountReset } from '../hooks/useMountReset';
 import { btnDanger, btnOutline, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
-import { DESKTOP_COMPACT_CARD_WIDTH } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { ColoradoMoveZone, ColoradoResponse } from '../types/card';
 import { ColoradoPhase } from '../types/phases';
@@ -153,21 +147,13 @@ function ColoradoPageContent() {
 
   const { cardWidth, cardHeight, isMobile } = useCardDimensions();
   const isLargeDesktop = useBreakpoint() === 'largeDesktop';
-  const isCompactLargeDesktop = useIsCompactLargeDesktop();
-  // The tableau starts below the phase header; 10 rows of 84px cards leave the bottom row's 52px visible within the ~650px board budget.
-  const playCardWidth = isMobile
-    ? MOBILE_PLAY_CARD_WIDTH
-    : isLargeDesktop
-      ? isCompactLargeDesktop
-        ? CARD_DIMENSIONS.desktop.cardWidth
-        : DESKTOP_COMPACT_CARD_WIDTH
-      : cardWidth;
-  const playCardHeight =
-    isLargeDesktop && isCompactLargeDesktop
-      ? CARD_DIMENSIONS.desktop.cardHeight
-      : isMobile || isLargeDesktop
-        ? Math.round(playCardWidth * 1.5)
-        : cardHeight;
+  const denseCardSize = useDenseLargeDesktopCardSize();
+  const playCardWidth = isMobile ? MOBILE_PLAY_CARD_WIDTH : isLargeDesktop ? denseCardSize.width : cardWidth;
+  const playCardHeight = isLargeDesktop
+    ? denseCardSize.height
+    : isMobile
+      ? Math.round(playCardWidth * 1.5)
+      : cardHeight;
 
   const handleManualReset = useCallback(() => {
     void runApi('reset');
