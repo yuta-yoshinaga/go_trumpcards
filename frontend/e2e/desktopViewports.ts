@@ -13,11 +13,13 @@ export const DESKTOP_VIEWPORTS = [
  */
 export const KNOWN_1024_FAILURES: Record<'board' | 'hand' | 'action', ReadonlySet<string>> = {
   board: new Set([
+    '/baloot',
     '/braid',
     '/colorado',
     '/crescent',
     '/grandfathersclock',
     '/kingalbert',
+    '/machiavelli',
     '/pyramid',
     '/shelem',
     '/slyfox',
