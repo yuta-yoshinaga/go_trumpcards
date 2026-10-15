@@ -515,7 +515,7 @@ describe('MinibridgePage', () => {
     expect(contract.parentElement).toHaveClass('flex');
     expect(contract).toHaveClass('flex-1');
     expect(humanSeat).toHaveClass('flex-1');
-    expect(screen.getByTestId('mb-seats')).toHaveClass('flex-nowrap');
+    expect(screen.getByTestId('mb-seats')).toHaveClass('flex-wrap');
     expect(screen.getByTestId('trick-display-cards').querySelector('img')).toHaveStyle({ width: '66px' });
     unmount();
 
@@ -525,7 +525,7 @@ describe('MinibridgePage', () => {
     const regularContract = await screen.findByTestId('mb-contract');
     expect(regularContract.parentElement).not.toHaveClass('flex');
     expect(screen.getByTestId('mb-human-seat')).not.toHaveClass('flex-1');
-    expect(screen.getByTestId('mb-seats')).not.toHaveClass('flex-nowrap');
+    expect(screen.getByTestId('mb-seats')).toHaveClass('flex-wrap');
     expect(screen.getByTestId('trick-display-cards').querySelector('img')).toHaveStyle({ width: '100px' });
   });
 

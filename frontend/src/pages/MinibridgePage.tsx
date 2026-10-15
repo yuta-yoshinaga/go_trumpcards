@@ -36,6 +36,9 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 /** The five denominations, in the order the contract buttons are offered. */
 const DENOMINATIONS: readonly number[] = [1, 2, 3, 4, 0];
 
+/** Visible left edge of an overlapping card; preserves the minimum tap target. */
+const COMPACT_CARD_EDGE_PX = 44;
+
 /** Highest contract level. Level n needs 6 + n tricks, so 7 is all thirteen. */
 const MAX_LEVEL = 7;
 
@@ -272,10 +275,7 @@ function MinibridgePageContent() {
                 dataTutorial="mb-seats"
                 className={isMobile ? 'mb-0 flex-1 basis-0 open:basis-full' : undefined}
               >
-                <div
-                  className={`flex ${isCompactLargeDesktop ? 'flex-nowrap' : 'flex-wrap'} justify-center gap-1 mb-4 sm:gap-2`}
-                  data-testid="mb-seats"
-                >
+                <div className="flex flex-wrap justify-center gap-1 mb-4 sm:gap-2" data-testid="mb-seats">
                   {state.players.filter((p) => !p.isHuman).map(renderSeat)}
                 </div>
               </CpuAccordion>
@@ -316,6 +316,7 @@ function MinibridgePageContent() {
                 {t('header.pairHcp', { n: String(pairHcp) })}
               </div>
             )}
+            {/* This selector depends on TrickDisplay's inner div structure to tighten its spacing on compact large desktop. */}
             <div className={isCompactLargeDesktop ? '[&>div]:my-1 [&>div]:p-2' : undefined} data-tutorial="mb-trick">
               <TrickDisplay
                 currentTrick={state.currentTrick}
@@ -382,7 +383,7 @@ function MinibridgePageContent() {
                         marginLeft:
                           idx > 0
                             ? isCompactLargeDesktop
-                              ? -(cardWidth - 44)
+                              ? -(cardWidth - COMPACT_CARD_EDGE_PX)
                               : -Math.round(cardWidth * 0.55)
                             : undefined,
                       }}
@@ -418,7 +419,9 @@ function MinibridgePageContent() {
                       className={`disabled:opacity-50 ${
                         !isHumanDummyTurn && legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''
                       }`}
-                      style={{ marginLeft: isCompactLargeDesktop && idx > 0 ? -(cardWidth - 44) : undefined }}
+                      style={{
+                        marginLeft: isCompactLargeDesktop && idx > 0 ? -(cardWidth - COMPACT_CARD_EDGE_PX) : undefined,
+                      }}
                     >
                       <CardImage card={card} width={cardWidth} />
                     </button>
