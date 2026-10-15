@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { minibridgeApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
@@ -19,13 +19,19 @@ vi.mock('../hooks/useGameHint', () => ({
 const mobileState = vi.hoisted(() => ({
   isMobile: true,
   breakpoint: 'mobile' as 'mobile' | 'desktop' | 'largeDesktop',
+  isCompactLargeDesktop: false,
 }));
 
 vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
-  useCardDimensions: () => ({ cardWidth: mobileState.isMobile ? 36 : 60, isMobile: mobileState.isMobile }),
+  useCardDimensions: () => ({
+    cardWidth: mobileState.isMobile ? 36 : mobileState.isCompactLargeDesktop ? 80 : 100,
+    cpuCardWidth: mobileState.isMobile ? 34 : mobileState.isCompactLargeDesktop ? 66 : 82,
+    isMobile: mobileState.isMobile,
+  }),
   useIsMobile: () => mobileState.isMobile,
   useBreakpoint: () => mobileState.breakpoint,
+  useIsCompactLargeDesktop: () => mobileState.isCompactLargeDesktop,
 }));
 
 const mockExec = vi.mocked(minibridgeApi.exec);
@@ -95,6 +101,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   mobileState.isMobile = true;
   mobileState.breakpoint = 'mobile';
+  mobileState.isCompactLargeDesktop = false;
   mockExec.mockResolvedValue(makeState());
 });
 
@@ -112,6 +119,51 @@ describe('MinibridgePage', () => {
     expect(await screen.findByTestId('mb-hand-area')).not.toHaveClass('sticky');
   });
 
+  it('overlaps both card rows on compact large desktop only', async () => {
+    mockExec.mockResolvedValue(playing());
+    mobileState.isMobile = false;
+    mobileState.breakpoint = 'largeDesktop';
+    mobileState.isCompactLargeDesktop = true;
+    const { unmount } = renderWithProviders(<MinibridgePage />);
+
+    const handRow = (await screen.findByTestId('mb-hand-area')).querySelector('.flex');
+    const dummyRow = screen.getByTestId('mb-dummy').querySelector('.flex');
+    expect(handRow).toHaveClass('flex-nowrap', 'gap-0');
+    expect(dummyRow).toHaveClass('flex-nowrap', 'gap-0');
+    expect(within(handRow as HTMLElement).getAllByRole('button')[1]).toHaveStyle({ marginLeft: '-36px' });
+    expect(within(dummyRow as HTMLElement).getAllByRole('button')[1]).toHaveStyle({ marginLeft: '-36px' });
+    unmount();
+
+    mobileState.isCompactLargeDesktop = false;
+    mockExec.mockResolvedValue(playing());
+    renderWithProviders(<MinibridgePage />);
+    const regularHandRow = (await screen.findByTestId('mb-hand-area')).querySelector('.flex');
+    expect(regularHandRow).toHaveClass('flex-wrap', 'gap-2');
+    expect(within(regularHandRow as HTMLElement).getAllByRole('button')[1]).not.toHaveStyle({ marginLeft: '-36px' });
+  });
+
+  it('keeps the hand and game message in the play area outside the footer', async () => {
+    mockExec.mockResolvedValue(playing({ message: 'プレイ中です' }));
+    renderWithProviders(<MinibridgePage />);
+    const hand = await screen.findByTestId('mb-hand-area');
+    const footer = screen.getByRole('contentinfo');
+    const message = screen.getByText('プレイ中です');
+    const playArea = hand.closest('.flex-1.overflow-y-auto');
+    expect(playArea).not.toBeNull();
+    expect(playArea).toContainElement(hand);
+    expect(playArea).toContainElement(message);
+    expect(footer).not.toContainElement(hand);
+    expect(footer).not.toContainElement(message);
+  });
+
+  it('keeps the level selector and contract buttons in the footer action row', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 0 }));
+    renderWithProviders(<MinibridgePage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByTestId('mb-level-select')).toBeInTheDocument();
+    expect(within(actions).getByTestId('mb-contract-1-btn')).toBeInTheDocument();
+  });
+
   it('shows the last trick winner and lets the user continue', async () => {
     mockExec.mockResolvedValue(
       playing({
@@ -126,6 +178,8 @@ describe('MinibridgePage', () => {
     );
     renderWithProviders(<MinibridgePage />);
     expect(await screen.findByTestId('trick-winner-badge')).toHaveTextContent('勝者');
+    const actions = screen.getByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: '次へ' })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: '次へ' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('continue'));
   });
@@ -446,6 +500,33 @@ describe('MinibridgePage', () => {
     expect(screen.getByTestId('mb-rule-details').parentElement).not.toHaveClass('flex');
     expect(screen.getByTestId('mb-rule-details')).toHaveClass('mb-3');
     expect(screen.getByTestId('cpu-accordion')).not.toHaveClass('basis-0');
+  });
+
+  it('compacts the contract, seats, and trick only on compact large desktop', async () => {
+    const state = playing({ currentTrick: [{ playerIdx: 0, card: card('SPADE', 1) }] });
+    mockExec.mockResolvedValue(state);
+    mobileState.isMobile = false;
+    mobileState.breakpoint = 'largeDesktop';
+    mobileState.isCompactLargeDesktop = true;
+    const { unmount } = renderWithProviders(<MinibridgePage />);
+
+    const contract = await screen.findByTestId('mb-contract');
+    const humanSeat = screen.getByTestId('mb-human-seat');
+    expect(contract.parentElement).toHaveClass('flex');
+    expect(contract).toHaveClass('flex-1');
+    expect(humanSeat).toHaveClass('flex-1');
+    expect(screen.getByTestId('mb-seats')).toHaveClass('flex-nowrap');
+    expect(screen.getByTestId('trick-display-cards').querySelector('img')).toHaveStyle({ width: '66px' });
+    unmount();
+
+    mockExec.mockResolvedValue(state);
+    mobileState.isCompactLargeDesktop = false;
+    renderWithProviders(<MinibridgePage />);
+    const regularContract = await screen.findByTestId('mb-contract');
+    expect(regularContract.parentElement).not.toHaveClass('flex');
+    expect(screen.getByTestId('mb-human-seat')).not.toHaveClass('flex-1');
+    expect(screen.getByTestId('mb-seats')).not.toHaveClass('flex-nowrap');
+    expect(screen.getByTestId('trick-display-cards').querySelector('img')).toHaveStyle({ width: '100px' });
   });
 
   it('shows a CPU-operated dummy hand in the human seat only once', async () => {
