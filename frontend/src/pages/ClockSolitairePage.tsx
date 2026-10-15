@@ -15,7 +15,13 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useBreakpoint, useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
+import {
+  CARD_DIMENSIONS,
+  useBreakpoint,
+  useCardDimensions,
+  useIsCompactLargeDesktop,
+  useWindowWidth,
+} from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -220,6 +226,8 @@ function ClockSolitairePageContent() {
     previousStepStateRef.current = state;
   }, [state, t]);
   const { cardWidth, cardHeight } = useCardDimensions();
+  const isCompactLargeDesktop = useIsCompactLargeDesktop();
+  const badgeScale = isCompactLargeDesktop ? cardWidth / CARD_DIMENSIONS.largeDesktop.cardWidth : 1;
   const breakpoint = useBreakpoint();
   const viewportWidth = useWindowWidth();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('clocksolitaire', state);
@@ -399,8 +407,8 @@ function ClockSolitairePageContent() {
                         data-testid={`clock-pile-label-${i.toString()}`}
                         className="absolute z-20 whitespace-nowrap text-xs font-bold text-ds-text-muted"
                         style={{
-                          left: cardWidth / 2 + pos.x * cardWidth * 0.82,
-                          top: cardHeight / 2 + pos.y * cardWidth * 0.82,
+                          left: cardWidth / 2 + pos.x * 82 * badgeScale,
+                          top: cardHeight / 2 + pos.y * 82 * badgeScale,
                           transform: 'translate(-50%, -50%)',
                         }}
                       >
@@ -429,9 +437,9 @@ function ClockSolitairePageContent() {
                             data-testid={`clock-pile-progress-${i.toString()}`}
                             className="absolute z-20 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] text-ds-text-muted"
                             style={{
-                              // Scale progress with the card width; twelve o'clock uses 8px to stay below its label.
-                              top: i === 11 ? 8 : cardHeight / 2 + pos.y * cardWidth * 1.05,
-                              left: cardWidth / 2 + pos.x * cardWidth * 1.05,
+                              // Scale offsets only for compact large-desktop cards; twelve o'clock uses 8px to stay below its label.
+                              top: i === 11 ? 8 : cardHeight / 2 + pos.y * 105 * badgeScale,
+                              left: cardWidth / 2 + pos.x * 105 * badgeScale,
                             }}
                           >
                             <ClockPileFaceUpSuits pile={pile} testId={`clock-pile-suits-${i.toString()}`} />

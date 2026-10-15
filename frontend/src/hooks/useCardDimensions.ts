@@ -42,6 +42,7 @@ export const CARD_DIMENSIONS = {
 /**
  * Compact dimensions address the roughly 784px board between 1024–1279px, where full-size cards wrap.
  * At 1024px, reducing cards to 80px allowed 48 of the 57 affected visibility checks to pass.
+ * `cardWidth` must stay aligned with `DESKTOP_COMPACT_CARD_WIDTH` in gameStyles because seven pages use that constant to size large-desktop cards.
  */
 export const COMPACT_LARGE_DESKTOP_DIMENSIONS = {
   cardHeight: 120,
@@ -51,6 +52,11 @@ export const COMPACT_LARGE_DESKTOP_DIMENSIONS = {
   footerCardWidth: 72,
   solitaireMinColWidth: 0,
 } as const;
+
+/** Returns whether a viewport uses compact large-desktop cards. */
+function isCompactLargeDesktopWidth(width: number): boolean {
+  return width >= LG_BREAKPOINT && width < XL_BREAKPOINT;
+}
 
 /** Derive breakpoint category from a pixel width. */
 function widthToBreakpoint(width: number): Breakpoint {
@@ -111,15 +117,13 @@ export function useBreakpoint(): Breakpoint {
 
 /** Returns true from 1024px up to, but not including, the full-size card breakpoint. */
 export function useIsCompactLargeDesktop(): boolean {
-  const [isCompact, setIsCompact] = useState(
-    () => window.innerWidth >= LG_BREAKPOINT && window.innerWidth < XL_BREAKPOINT,
-  );
+  const [isCompact, setIsCompact] = useState(() => isCompactLargeDesktopWidth(window.innerWidth));
   const compactRef = useRef(isCompact);
 
   useEffect(() => {
     const handleResize = () => {
       const width = window.innerWidth;
-      const next = width >= LG_BREAKPOINT && width < XL_BREAKPOINT;
+      const next = isCompactLargeDesktopWidth(width);
       if (next !== compactRef.current) {
         compactRef.current = next;
         setIsCompact(next);
@@ -137,8 +141,7 @@ export function useCardDimensions() {
   const bp = useBreakpoint();
   const isCompactLargeDesktop = useIsCompactLargeDesktop();
   const isMobile = bp === 'mobile';
-  const dimensions =
-    bp === 'largeDesktop' && isCompactLargeDesktop ? COMPACT_LARGE_DESKTOP_DIMENSIONS : CARD_DIMENSIONS[bp];
+  const dimensions = isCompactLargeDesktop ? COMPACT_LARGE_DESKTOP_DIMENSIONS : CARD_DIMENSIONS[bp];
   return { ...dimensions, isMobile };
 }
 

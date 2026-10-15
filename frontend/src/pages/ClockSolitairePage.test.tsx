@@ -137,6 +137,24 @@ describe('ClockSolitairePage', () => {
     window.dispatchEvent(new Event('resize'));
   });
 
+  it.each([
+    [640, 60],
+    [375, 40],
+  ])('keeps pile badge offsets at their original pixel positions at %i px', async (width, cardWidth) => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: width });
+    const { unmount } = renderWithProviders(<ClockSolitairePage />);
+    await screen.findByTestId('clock-face');
+
+    const posX = Math.cos(-Math.PI / 3);
+    expect(screen.getByTestId('clock-pile-label-0')).toHaveStyle({ left: `${cardWidth / 2 + posX * 82}px` });
+    expect(screen.getByTestId('clock-pile-progress-0')).toHaveStyle({ left: `${cardWidth / 2 + posX * 105}px` });
+
+    unmount();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+    window.dispatchEvent(new Event('resize'));
+  });
+
   it('fits the clock face to narrow viewports and updates after resizing', async () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: 320 });
