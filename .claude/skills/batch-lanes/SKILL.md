@@ -53,7 +53,7 @@ The flows require `dele`, `gh`, `jq`, `flock`, `bun`, `go`, and `golangci-lint`,
 - `rcg.sh`: serialize receipt gates with `flock` and write a fresh slot result.
 - `e2e.sh`: build and run a lane's Playwright specs on its isolated port, with at most two lanes running concurrently.
 - Set `E2E_SKIP_BUILD=1` to skip frontend/backend builds, server startup, and the port check; this assumes a server is already running on the lane's port.
-- `e2egate.sh`: select E2E specs from a lane's frontend diff; `--dry-run` prints the selection without starting Playwright.
+- `e2egate.sh`: select E2E specs from a lane's frontend diff; deleted route references are repeated across sweep specs; `--dry-run` prints the selection without starting Playwright.
 - `ship.sh`: commit a gated issue worktree and create a PR. It refuses files changed on `develop` since the lane branched; set `ALLOW_STALE_BASE=1` to bypass. The 4th argument is either summary lines (wrapped in `## Summary` / `Closes` / `## Test plan` / footer) or a complete body with its own `## ` headings, which is used as written. In that case only a missing `Closes #n` and a missing footer are added (`prbody.sh`).
 - `fixpush.sh`: commit and push a gated fix and comment on its PR.
 - `sweep.sh`: land eligible reviewed batch PRs and report blocked ones.
@@ -63,7 +63,7 @@ The flows require `dele`, `gh`, `jq`, `flock`, `bun`, `go`, and `golangci-lint`,
 - `waitfor.sh`: wait for a shell condition up to a timeout.
 - `waitdone.sh`: wait for a slot's `rcg` result written after its latest start.
 - `drain.sh`: repeatedly sweep the selected batch until it is clear or blocked.
-- `fieldcheck.sh`: warn when page state fields have no controller JSON field.
+- `fieldcheck.sh`: warn when each changed page reads a state field missing from its matching controller JSON output.
 - `e2echeck.py`: find removed Japanese locale text still referenced by E2E specs.
 - `rerun504.sh`: rerun completed PR jobs whose logs show an infrastructure HTTP 5xx.
 - `mkprompt.sh`: print an issue delegation prompt with the shared game-page rules.

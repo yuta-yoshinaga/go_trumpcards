@@ -41,6 +41,18 @@ set -e
 grep -q '^UNVERIFIED identifier NoSuchExport$' <<<"$out" || fail "missing identifier not reported: $out"
 grep -q '^UNVERIFIED test TestMissingCase$' <<<"$out" || fail "missing test not reported: $out"
 grep -q '^UNVERIFIED file:line pkg/missing.go:8$' <<<"$out" || fail "missing path not reported: $out"
+# A removed identifier remains verifiable from deletion lines; absent identifiers remain unverified.
+printf 'var RemovedExport = true\n' > "$repo/pkg/source.go"
+git -C "$repo" add pkg/source.go
+tree=$(git -C "$repo" write-tree); parent=$(git -C "$repo" rev-parse HEAD)
+commit=$(printf 'add export\n' | git -C "$repo" -c user.name=test -c user.email=test@example.com commit-tree "$tree" -p "$parent")
+git -C "$repo" update-ref refs/heads/master "$commit"; git -C "$repo" update-ref refs/remotes/origin/develop "$commit"
+printf 'GetTrickWinnerIdx and pointLimit\n' > "$repo/pkg/source.go"
+git -C "$repo" add pkg/source.go
+tree=$(git -C "$repo" write-tree); parent=$(git -C "$repo" rev-parse HEAD)
+commit=$(printf 'remove export\n' | git -C "$repo" -c user.name=test -c user.email=test@example.com commit-tree "$tree" -p "$parent")
+git -C "$repo" update-ref refs/heads/master "$commit"
+bash "$SCRIPTS/claimcheck.sh" "$repo" 'Removed `RemovedExport`' || fail "deleted identifier claim was rejected"
 set +e
 out=$(bash "$SCRIPTS/claimcheck.sh" "$repo" 'it("node-only case")' 2>&1)
 rc=$?
@@ -61,6 +73,7 @@ prompt=$(bash -c 'n=1; body=x; source /dev/stdin' <"$heredoc") || fail "mkprompt
 grep -q 'design "BACK"' <<<"$prompt" || fail "expanded prompt lost design BACK quotes"
 grep -q '`VERDICT: NOT_PLANNED`' <<<"$prompt" || fail "expanded prompt lost backtick-delimited text"
 grep -q '\$ref' <<<"$prompt" || fail "expanded prompt lost literal dollar text"
+grep -q '既存のコメント (TSDoc / GoDoc / 説明コメント) は、依頼された箇所以外で削除・短縮しないこと。' <<<"$prompt" || fail "expanded prompt omitted comment preservation contract"
 if grep -q '\\"' <<<"$prompt"; then fail "expanded prompt contains escaped quotes"; fi
 for script in ship.sh fixpush.sh; do
   if [[ "$script" == ship.sh ]]; then wt_path='\$WT_ROOT/wt-ib\$s'; else wt_path='\$WT_ROOT/wt-ib\$1'; fi

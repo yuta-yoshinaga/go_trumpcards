@@ -1,14 +1,27 @@
 #!/bin/bash
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
-# usage: fieldcheck.sh <worktree> — warn when added page lines read state.X that the game's controller does not send
+# usage: fieldcheck.sh <worktree> — warn when added page state fields have no controller JSON field
 cd "$1" || exit 0
-game=$(git branch --show-current | sed -E 's#^feat/[0-9]+-##')
-ctrl=$(ls internal/adapter/controller/ | grep -i "^${game}.*WebController.go$" | grep -v _test | sed 's#^#internal/adapter/controller/#')
-[ -z "$ctrl" ] && ctrl='internal/adapter/controller/*.go'
-# Embedded output bases (e.g. SolitaireWebOutputBase, WebOutputBase) carry shared fields.
-[ -n "$ctrl" ] && ctrl="$ctrl $(ls internal/adapter/controller/*output_base*.go 2>/dev/null | grep -v _test | tr '\n' ' ')"
-for f in $(git diff --name-only -- 'frontend/src/pages/*Page.tsx'); do
-  git diff -U0 -- "$f" | grep '^+' | grep -v '^+++' | grep -oE '\bstate\??\.[a-zA-Z0-9_]+' | sed -E 's/state\??\.//'
-done | sort -u | while read -r fld; do
-  grep -q "json:\"$fld[,\"]" $ctrl 2>/dev/null || echo "FIELDCHECK WARN: state.$fld read by the page, not in $ctrl"
+controller_dir=internal/adapter/controller
+mapfile -t changed_pages < <({
+  git diff --name-only origin/develop...HEAD -- 'frontend/src/pages/*Page.tsx' 2>/dev/null
+  git diff --name-only HEAD -- 'frontend/src/pages/*Page.tsx'
+  git ls-files --others --exclude-standard -- 'frontend/src/pages/*Page.tsx'
+} | sort -u)
+for f in "${changed_pages[@]}"; do
+  page=$(basename "$f" Page.tsx)
+  ctrl=$(find "$controller_dir" -maxdepth 1 -type f -iname "${page}WebController.go" ! -name '*_test.go' -print)
+  if [[ -z "$ctrl" ]]; then ctrl=$(find "$controller_dir" -maxdepth 1 -type f -name '*.go' ! -name '*_test.go' -print); fi
+  output_bases=$(find "$controller_dir" -maxdepth 1 -type f -iname '*output_base*.go' ! -name '*_test.go' -print)
+  files="$ctrl $output_bases"
+  while IFS= read -r fld; do
+    [[ -n "$fld" ]] || continue
+    if ! grep -q "json:\"$fld[,\"]" $files 2>/dev/null; then
+      echo "FIELDCHECK WARN: state.$fld read by the page, not in $files"
+    fi
+  done < <({
+    git diff -U0 origin/develop...HEAD -- "$f" 2>/dev/null
+    git diff -U0 HEAD -- "$f"
+    if [[ -f "$f" ]] && ! git ls-files --error-unmatch "$f" >/dev/null 2>&1; then sed 's/^/+/' "$f"; fi
+  } | grep '^+' | grep -v '^+++' | grep -oE '\bstate\??\.[a-zA-Z0-9_]+' | sed -E 's/state\??\.//')
 done

@@ -472,7 +472,7 @@ make_e2egate_case() {
   touch "$repo/frontend/e2e/helpers.ts" "$repo/frontend/src/components/Other.tsx" "$repo/frontend/src/i18n/locales/en/common.json" "$repo/frontend/src/components/a.test.tsx"
   touch "$repo/frontend/src/pages/PokerPage.tsx" "$repo/frontend/src/components/GameFooter.tsx" "$repo/frontend/base.ts"
   git -C "$repo" add .
-  tree=$(git -C "$repo" write-tree); base=$(printf base | git -C "$repo" hash-object -w --stdin)
+  tree=$(git -C "$repo" write-tree)
   commit=$(printf "base\n" | git -C "$repo" -c user.name=test -c user.email=test@example.com commit-tree "$tree")
   git -C "$repo" update-ref refs/heads/develop "$commit"; git -C "$repo" update-ref refs/remotes/origin/develop "$commit"
   git -C "$repo" worktree add -q -b lane "$wtroot/wt-ib1" "$commit"
@@ -536,10 +536,83 @@ make_e2egate_case helper helper
 make_e2egate_case ignored ignored
 make_e2egate_case empty none
 
+# Removed route references are repeated; moves are excluded, including during full sweeps.
+(
+  repo="$tmp/e2egate-removed"; wtroot="$tmp/e2egate-removed-wts"
+  mkdir -p "$repo/frontend/e2e" "$repo/frontend/src/components" "$wtroot"
+  git -C "$repo" init -q; git -C "$repo" config user.email test@example.com; git -C "$repo" config user.name test
+  for spec in desktop-board-visibility desktop-hand-visibility game-message-visibility hand-visibility mobile-viewport text-contrast duplicate-text; do touch "$repo/frontend/e2e/$spec.spec.ts"; done
+  printf "const route = '/baloot';\n" > "$repo/frontend/e2e/helpers.ts"
+  printf 'base\n' > "$repo/frontend/src/components/shared.tsx"
+  git -C "$repo" add .
+  tree=$(git -C "$repo" write-tree)
+  commit=$(printf 'base\n' | git -C "$repo" -c user.name=test -c user.email=test@example.com commit-tree "$tree")
+  git -C "$repo" update-ref refs/heads/develop "$commit"; git -C "$repo" update-ref refs/remotes/origin/develop "$commit"
+  git -C "$repo" worktree add -q -b lane "$wtroot/wt-ib1" "$commit"
+  sed -i '/baloot/d' "$wtroot/wt-ib1/frontend/e2e/helpers.ts"
+  output=$(E2E_SWEEP_REPEAT=3 BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-removed-state" bash "$SCRIPTS/e2egate.sh" --dry-run 1) || fail "removed route dry-run failed"
+  grep -qF -- '--grep /baloot\b --pass-with-no-tests --repeat-each=3' <<<"$output" || fail "removed route did not get repeated: $output"
+  exec_scripts="$tmp/e2egate-removed-exec"; mkdir -p "$exec_scripts"
+  cp "$SCRIPTS/common.sh" "$SCRIPTS/e2egate.sh" "$exec_scripts/"
+  cat > "$exec_scripts/e2e.sh" <<'STUB'
+#!/usr/bin/env bash
+printf '%s\n' "$@" >> "$E2EGATE_ARGS"
+printf '%s\n' '---CALL---' >> "$E2EGATE_ARGS"
+STUB
+  chmod +x "$exec_scripts/e2e.sh"
+  E2E_SWEEP_REPEAT=3 E2EGATE_ARGS="$tmp/e2egate-removed-args" BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-removed-state" bash "$exec_scripts/e2egate.sh" 1 || fail "removed route execution failed"
+  expected="$tmp/e2egate-removed-expected"
+  printf '%s\n' 1 e2e/desktop-board-visibility.spec.ts e2e/desktop-hand-visibility.spec.ts e2e/duplicate-text.spec.ts e2e/game-message-visibility.spec.ts e2e/hand-visibility.spec.ts e2e/mobile-viewport.spec.ts e2e/text-contrast.spec.ts --grep '/baloot\b' --pass-with-no-tests --repeat-each=3 ---CALL--- > "$expected"
+  diff -u "$expected" "$tmp/e2egate-removed-args" || fail "removed route execution passed wrong args"
+  printf 'common\n' >> "$wtroot/wt-ib1/frontend/src/components/shared.tsx"
+  full=$(E2E_SWEEP_REPEAT=3 BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-removed-state" bash "$SCRIPTS/e2egate.sh" --dry-run 1) || fail "full sweep with removed route dry-run failed"
+  [[ $(grep -c '^run ' <<<"$full") == 2 ]] || fail "full sweep did not add separate repeated run: $full"
+  grep -q '^run 1: .*desktop-board-visibility' <<<"$full" || fail "full sweep run missing: $full"
+  grep -qF -- '--grep /baloot\b --pass-with-no-tests --repeat-each=3' <<<"$full" || fail "full sweep omitted removed-route run: $full"
+  cp "$wtroot/wt-ib1/frontend/e2e/helpers.ts" "$tmp/e2egate-helper-backup"
+  printf "const route = '/baloot';\n" >> "$wtroot/wt-ib1/frontend/e2e/helpers.ts"
+  sed -i '1i test("other", async () => {});' "$wtroot/wt-ib1/frontend/e2e/helpers.ts"
+  cp "$repo/frontend/src/components/shared.tsx" "$wtroot/wt-ib1/frontend/src/components/shared.tsx"
+  moved=$(E2E_SWEEP_REPEAT=3 BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-removed-state" bash "$SCRIPTS/e2egate.sh" --dry-run 1) || fail "moved route dry-run failed"
+  ! grep -q -- '--grep /baloot\b' <<<"$moved" || fail "route move was incorrectly repeated: $moved"
+) || exit 1
+
+# fieldcheck matches every changed page to its own controller, independent of branch name.
+(
+  repo="$tmp/fieldcheck-repo"; mkdir -p "$repo/frontend/src/pages" "$repo/internal/adapter/controller"
+  git -C "$repo" init -q; git -C "$repo" config user.email test@example.com; git -C "$repo" config user.name test
+  cat > "$repo/internal/adapter/controller/FooWebController.go" <<'GO'
+package controller
+type Foo struct { FooField string `json:"fooField"` }
+GO
+  cat > "$repo/internal/adapter/controller/BarWebController.go" <<'GO'
+package controller
+type Bar struct { BarField string `json:"barField"` }
+GO
+  printf 'export const FooPage = () => null;\n' > "$repo/frontend/src/pages/FooPage.tsx"
+  printf 'export const BarPage = () => null;\n' > "$repo/frontend/src/pages/BarPage.tsx"
+  git -C "$repo" add .
+  tree=$(git -C "$repo" write-tree)
+  commit=$(printf 'base\n' | git -C "$repo" -c user.name=test -c user.email=test@example.com commit-tree "$tree")
+  git -C "$repo" update-ref refs/heads/unrelated-branch "$commit"; git -C "$repo" symbolic-ref HEAD refs/heads/unrelated-branch
+  printf 'const x = state.fooField;\n' >> "$repo/frontend/src/pages/FooPage.tsx"
+  printf 'const x = state.barField;\n' >> "$repo/frontend/src/pages/BarPage.tsx"
+  output=$(bash "$SCRIPTS/fieldcheck.sh" "$repo") || fail "fieldcheck valid two-page run failed"
+  [[ -z "$output" ]] || fail "fieldcheck warned on fields in their own controllers: $output"
+  printf 'const x = state.fooField;\n' >> "$repo/frontend/src/pages/BarPage.tsx"
+  output=$(bash "$SCRIPTS/fieldcheck.sh" "$repo") || fail "fieldcheck cross-controller run failed"
+  [[ $(grep -c '^FIELDCHECK WARN:' <<<"$output") == 1 ]] || fail "fieldcheck accepted a field from another page controller: $output"
+  grep -q 'state.fooField' <<<"$output" || fail "fieldcheck warning omitted cross-controller field: $output"
+  printf 'const x = state.missingField;\n' >> "$repo/frontend/src/pages/BarPage.tsx"
+  output=$(bash "$SCRIPTS/fieldcheck.sh" "$repo") || fail "fieldcheck missing-field run failed"
+  [[ $(grep -c '^FIELDCHECK WARN:' <<<"$output") == 2 ]] || fail "fieldcheck did not emit both expected warnings: $output"
+  grep -q 'state.missingField' <<<"$output" || fail "fieldcheck warning omitted missing field: $output"
+) || exit 1
+
 # stopsrv.sh targets only the requested lane port and handles empty/invalid slots.
 stop_server_pid=
 trap '[[ -z "$stop_server_pid" ]] || kill "$stop_server_pid" 2>/dev/null || true; rm -rf "$tmp"' EXIT
-python3 -m http.server 18097 --bind 127.0.0.1 >"$tmp/http-server.log" 2>&1 & stop_server_pid=$!
+python3 -u -m http.server 18097 --bind 127.0.0.1 >"$tmp/http-server.log" 2>&1 & stop_server_pid=$!
 stop_test_fallback=0
 for _ in {1..20}; do
   grep -q 'Serving HTTP on' "$tmp/http-server.log" && break
@@ -548,6 +621,8 @@ for _ in {1..20}; do
 done
 if ! grep -q 'Serving HTTP on' "$tmp/http-server.log"; then
   # The sandbox can prohibit socket creation; still exercise PID targeting below.
+  kill "$stop_server_pid" 2>/dev/null || true
+  wait "$stop_server_pid" 2>/dev/null || true
   sleep 60 & stop_server_pid=$!
   stop_test_fallback=1
 fi

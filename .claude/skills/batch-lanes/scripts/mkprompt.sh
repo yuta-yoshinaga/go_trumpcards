@@ -62,6 +62,7 @@ $body
    - Go の presenter / domain を触ったら、そのファイルの //go:build にある worker タグで GOOS=js GOARCH=wasm go build -tags <worker> -o /dev/null ./cmd/workers/<worker> を通す。別タグのファイルの関数は使わず、共有したい関数はタグ無しの共有ヘルパへ移す。
    - 新しく足した関数・export は、定義以外から使われていることを git grep で確かめる (使われないものは足さない)。
 3. 受け入れ条件 (issue の各項目) を 1 対 1 で満たすこと。範囲外の改名・整形・無関係なファイル変更をしない。
+   - 既存のコメント (TSDoc / GoDoc / 説明コメント) は、依頼された箇所以外で削除・短縮しないこと。
 
 ## 検証 (すべて通すこと)
 - \`cd frontend && bunx vitest run <変更したテストファイル>\` (**-t で絞らずファイル丸ごと**。アクセシブル名を変えると既存試験のクエリが落ちる: #9631 で 12 本)

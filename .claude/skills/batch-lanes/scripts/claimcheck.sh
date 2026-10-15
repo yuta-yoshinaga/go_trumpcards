@@ -15,8 +15,20 @@ ids = set()
 for token in re.findall(r"`([^`]+)`", text):
     if len(token) >= 4 and re.fullmatch(r"[A-Za-z_][A-Za-z0-9_.]*", token) and re.search(r"[A-Z_.]", token):
         ids.add(token.rsplit(".", 1)[-1])
+def deleted(token):
+    for args in (["diff", "origin/develop...HEAD"], ["diff", "HEAD"]):
+        result = subprocess.run(["git", "-C", root, *args], stdout=subprocess.PIPE,
+                                stderr=subprocess.DEVNULL)
+        if result.returncode != 0:
+            continue
+        for line in result.stdout.splitlines():
+            if line.startswith(b"---") or not line.startswith(b"-"):
+                continue
+            if token.encode() in line[1:]:
+                return True
+    return False
 for token in sorted(ids):
-    if not grep(token): report("identifier", token)
+    if not grep(token) and not deleted(token): report("identifier", token)
 files = subprocess.run(["git", "ls-files", "-co", "--exclude-standard", "-z"], cwd=root,
                        stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, check=True).stdout
 tracked_files = [p.decode("utf-8", "replace") for p in files.split(b"\0") if p]
