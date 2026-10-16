@@ -154,7 +154,7 @@ describe('PitchPage', () => {
     renderWithProviders(<PitchPage />);
 
     expect(await screen.findByTestId('pitch-game-pips-badge')).toBeInTheDocument();
-    expect(document.querySelector('[data-tutorial="pt-player-hand"]')).toHaveClass('lg:sticky', 'lg:bottom-0');
+    expect(document.querySelector('[data-tutorial="pt-player-hand"]')).not.toHaveClass('lg:sticky');
     await waitFor(() => expect(screen.getByRole('button', { name: /出す/ })).toBeInTheDocument());
   });
 
@@ -262,7 +262,7 @@ describe('PitchPage', () => {
     expect(screen.getAllByText(/CPU 1/).length).toBeGreaterThan(0);
   });
 
-  it('collapses the score table on mobile and opens it on desktop', async () => {
+  it('keeps the score table collapsed by default on mobile and desktop', async () => {
     const { container } = renderWithProviders(<PitchPage />);
     await screen.findByTestId('pt-score-table');
     let scoreDetails = container.querySelector('details:has([data-testid="pt-score-table"])');
@@ -274,8 +274,23 @@ describe('PitchPage', () => {
     const desktopRender = renderWithProviders(<PitchPage />);
     await screen.findByTestId('pt-score-table');
     scoreDetails = desktopRender.container.querySelector('details:has([data-testid="pt-score-table"])');
-    expect(scoreDetails).toHaveAttribute('open');
-    expect(screen.getByTestId('pt-score-table')).toBeVisible();
+    expect(scoreDetails).not.toHaveAttribute('open');
+    expect(screen.getByTestId('pt-score-table')).not.toBeVisible();
+  });
+
+  it('does not make the player hand sticky on desktop', async () => {
+    mobileState.isMobile = false;
+    mockApi.mockResolvedValue(playState);
+    renderWithProviders(<PitchPage />);
+    await waitFor(() => expect(document.querySelector('[data-tutorial="pt-player-hand"]')).not.toBeNull());
+    const hand = document.querySelector('[data-tutorial="pt-player-hand"]');
+    expect(hand).not.toHaveClass('sticky', 'lg:sticky');
+    expect(hand).toHaveClass('xl:col-start-2', 'xl:row-start-1', 'min-w-0');
+    expect(document.querySelector('[data-tutorial="pt-trick-display"]')).toHaveClass(
+      'xl:col-start-1',
+      'xl:row-start-1',
+      'min-w-0',
+    );
   });
 
   it('shows winner banner on game end', async () => {
