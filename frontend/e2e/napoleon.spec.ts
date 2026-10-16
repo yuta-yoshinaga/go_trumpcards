@@ -49,7 +49,6 @@ test.describe('Napoleon E2E', () => {
     const MAX_TURNS = 80;
     let interactions = 0;
     let playActions = 0;
-    const required = new Set<NapoleonRoundCheckpoint>(['bid', 'play', 'round-boundary']);
     const observed = new Set<NapoleonRoundCheckpoint>();
     for (let turn = 0; turn < MAX_TURNS; turn++) {
       await expect
@@ -67,7 +66,7 @@ test.describe('Napoleon E2E', () => {
       const nextTrickVisible = await nextTrickButton.isVisible();
       const nextRoundVisible = await nextRoundButton.isVisible();
 
-      // A round boundary follows the completed trick, either as the next round or the result screen.
+      // No available game action marks the end of this round's observed path or the end of the game.
       if (
         !bidVisible &&
         !passVisible &&
@@ -100,7 +99,6 @@ test.describe('Napoleon E2E', () => {
 
       // Trump declaration phase
       if (declareVisible) {
-        required.add('declare');
         observed.add('declare');
         interactions++;
         await page.locator('[data-testid^="np-adjutant-option-"]').first().click();
@@ -112,7 +110,6 @@ test.describe('Napoleon E2E', () => {
 
       // Kitty exchange phase
       if (exchangeVisible) {
-        required.add('exchange');
         observed.add('exchange');
         interactions++;
         const cardCount = await handCards.count();
@@ -144,7 +141,6 @@ test.describe('Napoleon E2E', () => {
 
       // Trick end
       if (nextTrickVisible) {
-        required.add('trick-end');
         observed.add('trick-end');
         interactions++;
         await nextTrickButton.click();
@@ -162,9 +158,11 @@ test.describe('Napoleon E2E', () => {
       }
     }
 
-    const missing = missingNapoleonRoundCheckpoints(required, observed);
-    expect(required.size, 'the expected round checkpoint set must not be empty').toBeGreaterThan(0);
-    expect(missing, `Napoleon round checkpoints not observed: ${missing.join(', ')}`).toEqual([]);
+    const missing = missingNapoleonRoundCheckpoints(observed);
+    expect(
+      missing,
+      `Napoleon round checkpoints not observed: ${missing.join(', ')}; observed phases: ${[...observed].join(', ')}`,
+    ).toEqual([]);
     expect(interactions).toBeGreaterThan(0);
     expect(playActions, 'at least one play action must be completed').toBeGreaterThan(0);
 
