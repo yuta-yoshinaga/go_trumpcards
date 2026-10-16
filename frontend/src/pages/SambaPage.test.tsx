@@ -978,6 +978,7 @@ describe('SambaPage', () => {
     mockExec.mockResolvedValue(makeSambaState({ isFrozen: true }));
     renderWithProviders(<SambaPage />);
     await waitFor(() => expect(screen.getByTestId('sa-frozen-badge')).toBeInTheDocument());
+    expect(screen.getByTestId('sa-frozen-badge')).toHaveClass('shrink-0', 'whitespace-nowrap');
     expect(screen.getByTestId('sa-discard-pile')).toHaveClass(
       'bg-ds-surface',
       'border-ds-border-subtle',
