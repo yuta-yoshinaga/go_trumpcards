@@ -185,8 +185,20 @@ function PanPageContent() {
       />
     );
 
+  const roundEndMessage =
+    state?.phase === PanPhase.ROUND_END
+      ? state.panDeclarerIdx >= 0
+        ? t('roundEndByPan', {
+            name: playerName(state.panDeclarerIdx, state.players[state.panDeclarerIdx].isHuman),
+          })
+        : t('roundEndByStockOut')
+      : undefined;
   const messageBox = (
-    <GameMessageBox message={state?.message} messageCode={state?.messageCode} messageParams={state?.messageParams} />
+    <GameMessageBox
+      message={roundEndMessage ?? state?.message}
+      messageCode={roundEndMessage ? undefined : state?.messageCode}
+      messageParams={roundEndMessage ? undefined : state?.messageParams}
+    />
   );
 
   const humanPlayer = state.players.find((p) => p.isHuman);
@@ -461,16 +473,6 @@ function PanPageContent() {
                 </details>
               </div>
             </div>
-
-            {state.phase === PanPhase.ROUND_END && (
-              <div className="text-ds-text-primary text-center my-2" data-testid="pan-round-end-reason">
-                {state.panDeclarerIdx >= 0
-                  ? t('roundEndByPan', {
-                      name: playerName(state.panDeclarerIdx, state.players[state.panDeclarerIdx].isHuman),
-                    })
-                  : t('roundEndByStockOut')}
-              </div>
-            )}
 
             {isMobile && messageBox}
 

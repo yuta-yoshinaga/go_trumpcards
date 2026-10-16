@@ -218,8 +218,20 @@ function IndianRummyPageContent() {
       </span>
     ) : null;
 
+  const roundEndMessage =
+    state.phase === IndianRummyPhase.ROUND_END
+      ? state.declarerIdx >= 0
+        ? t('roundEndByDeclaration', {
+            name: playerName(state.declarerIdx, state.players[state.declarerIdx].isHuman),
+          })
+        : t('roundEndByStockOut')
+      : undefined;
   const messageBox = (
-    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+    <GameMessageBox
+      message={roundEndMessage ?? state.message}
+      messageCode={roundEndMessage ? undefined : state.messageCode}
+      messageParams={roundEndMessage ? undefined : state.messageParams}
+    />
   );
 
   return (
