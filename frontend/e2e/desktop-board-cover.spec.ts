@@ -9,10 +9,19 @@ const gameRoutesSource = readFileSync(
   resolve(dirname(fileURLToPath(import.meta.url)), '../src/constants/gameRoutes.ts'),
   'utf8',
 );
-const routes = [...gameRoutesSource.matchAll(/path:\s*'([^']+)'/g)].map(([, path]) => path);
+const routes = [...new Set([...gameRoutesSource.matchAll(/path:\s*'([^']+)'/g)].map(([, path]) => path))];
+
+// Keep empty only while every game route is expected to render a button or card target.
+// Add a route here only with a comment explaining why that page has no measurable target.
+const ZERO_TARGET_ROUTES = new Set<string>([]);
 
 test('reads the full game route list for the cover sweep', () => {
   expect(routes.length, 'game route path declarations found').toBeGreaterThanOrEqual(360);
+  expect(new Set(routes).size, 'duplicate game routes removed').toBe(routes.length);
+  expect(
+    routes.every((path) => path.startsWith('/')),
+    'every game route starts with /',
+  ).toBe(true);
 });
 
 /** #11826: existing desktop guards check viewport bounds but miss a sticky hand painting over the board. */
@@ -37,8 +46,11 @@ async function measureCoveredElements(page: Page) {
     const covered: { label: string; y: number; coverer: string }[] = [];
     for (const element of targets) {
       const box = element.getBoundingClientRect();
+      // One point per target is an intentional tradeoff: #11826's cover painted the board's upper
+      // edge, so the top-center point (12px down) catches that regression at low test cost.
       const x = box.left + box.width / 2;
       const y = box.top + Math.min(12, box.height / 2);
+      // Off-screen targets are outside this viewport's visible board and are deliberately ignored.
       if (y < 0 || y > innerHeight || x < 0 || x > innerWidth) continue;
       const hit = document.elementFromPoint(x, y);
       if (!hit || element.contains(hit) || hit.contains(element)) continue;
@@ -75,6 +87,7 @@ async function measureCoveredElements(page: Page) {
 
 async function enterPitchPlayPhase(page: Page) {
   const playButton = page.getByRole('button', { name: '出す' });
+  // Pitch has four seats. Eight passes allow two full seat rotations for transition/render timing.
   for (let attempt = 0; attempt < 8; attempt += 1) {
     if (await playButton.isVisible().catch(() => false)) return;
     const pass = gameButton(page, 'パス');
@@ -96,6 +109,12 @@ for (const viewport of DESKTOP_VIEWPORTS) {
           type: result.count === 0 ? 'skipped page' : 'measured targets',
           description: `${path}: ${result.count} targets`,
         });
+        if (!ZERO_TARGET_ROUTES.has(path)) {
+          expect(
+            result.count,
+            `${path}: no measurable targets; the selector or page rendering may be broken`,
+          ).toBeGreaterThan(0);
+        }
         expect(result.covered, `${path}: covered targets (label, y, coverer testid/class)`).toEqual([]);
       });
     }
