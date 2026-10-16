@@ -66,6 +66,13 @@ beforeEach(() => {
 });
 
 describe('NapPage', () => {
+  it('keeps each status item unbroken in the wrapping status row', async () => {
+    renderWithProviders(<NapPage />);
+    const row = await screen.findByText(/ラウンド/).then((el) => el.closest('[data-tutorial="nap-info"]'));
+    expect(row).toHaveClass('flex', 'flex-wrap');
+    expect(row?.querySelectorAll('span.whitespace-nowrap')).toHaveLength(4);
+  });
+
   it('shows each bid, pass, and a not-yet-bid seat after the auction', async () => {
     mockExec.mockResolvedValue(
       makeNapState({

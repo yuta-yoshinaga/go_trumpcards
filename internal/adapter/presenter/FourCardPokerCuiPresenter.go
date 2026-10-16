@@ -28,7 +28,7 @@ func (p *FourCardPokerCuiPresenter) Output(g interfaces.FourCardPokerGame, lastE
 		sb.WriteString("--- " + color.Bold(i18n.T("fourcardpoker.playerHeader")) + " ---\n")
 		rank := g.GetPlayerHandRank()
 		if rank > 0 && rank < len(domain.FourCardHandNames) {
-			sb.WriteString(i18n.Tf("fourcardpoker.handLine", "hand", domain.FourCardHandNames[rank]) + "\n")
+			sb.WriteString(i18n.Tf("fourcardpoker.handLine", "hand", cuiFourCardHandName(rank)) + "\n")
 		}
 		parts := make([]string, len(playerHand))
 		for i, card := range playerHand {
@@ -63,7 +63,7 @@ func (p *FourCardPokerCuiPresenter) Output(g interfaces.FourCardPokerGame, lastE
 			sb.WriteString("--- " + color.Bold(i18n.T("fourcardpoker.dealerHeader")) + " ---\n")
 			rank := g.GetDealerHandRank()
 			if rank > 0 && rank < len(domain.FourCardHandNames) {
-				sb.WriteString(i18n.Tf("fourcardpoker.handLine", "hand", domain.FourCardHandNames[rank]) + "\n")
+				sb.WriteString(i18n.Tf("fourcardpoker.handLine", "hand", cuiFourCardHandName(rank)) + "\n")
 			}
 			parts := make([]string, len(dealerHand))
 			for i, card := range dealerHand {

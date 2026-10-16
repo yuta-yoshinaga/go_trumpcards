@@ -79,12 +79,13 @@ function pickHand(i: number) {
 }
 
 describe('PochPage', () => {
-  it('sticks the hand to the bottom of the desktop play area', async () => {
+  it('keeps the hand non-sticky and CPU reference details collapsed on desktop', async () => {
+    mobileState.isMobile = false;
     renderWithProviders(<PochPage />);
     await screen.findAllByTestId('poch-pool');
     const hand = document.querySelector('[data-tutorial="pc-hand"]');
-    expect(hand?.className).toContain('lg:sticky');
-    expect(hand?.className).toContain('lg:bottom-0');
+    expect(hand).not.toHaveClass('lg:sticky');
+    expect(screen.getByTestId('cpu-accordion')).not.toHaveAttribute('open');
   });
 
   beforeEach(() => {
@@ -122,7 +123,7 @@ describe('PochPage', () => {
     expect(screen.getByText(/宣言ではなく同ランクの組の比べ合い/)).toBeVisible();
   });
 
-  it('collapses CPU seats on mobile and opens them on desktop', async () => {
+  it('collapses CPU seats on mobile and desktop', async () => {
     renderWithProviders(<PochPage />);
     await screen.findAllByTestId('poch-pool');
     expect(screen.getByTestId('cpu-accordion')).not.toHaveAttribute('open');
@@ -131,7 +132,7 @@ describe('PochPage', () => {
     mobileState.isMobile = false;
     renderWithProviders(<PochPage />);
     await screen.findAllByTestId('poch-pool');
-    expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
+    expect(screen.getByTestId('cpu-accordion')).not.toHaveAttribute('open');
   });
 
   it('reveals CPU cards with alt text after the game ends', async () => {

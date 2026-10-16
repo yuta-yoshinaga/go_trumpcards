@@ -54,7 +54,7 @@ func (cp *CasinoHoldemCuiPresenter) Output(g interfaces.CasinoHoldemGame, lastEr
 				if phase == domain.CasinoHoldemPhaseFlop {
 					key = "casinoholdem.currentHandLine"
 				}
-				fmt.Fprintf(&sb, "%s\n", i18n.Tf(key, "hand", domain.PokerHandNames[rank]))
+				fmt.Fprintf(&sb, "%s\n", i18n.Tf(key, "hand", cuiPokerHandName(rank)))
 			}
 		}
 		parts := make([]string, len(playerHand))
@@ -70,7 +70,7 @@ func (cp *CasinoHoldemCuiPresenter) Output(g interfaces.CasinoHoldemGame, lastEr
 		if phase == domain.CasinoHoldemPhaseEnd {
 			rank := g.GetDealerHandRank()
 			if rank >= 0 && rank < len(domain.PokerHandNames) {
-				fmt.Fprintf(&sb, "%s\n", i18n.Tf("casinoholdem.handLine", "hand", domain.PokerHandNames[rank]))
+				fmt.Fprintf(&sb, "%s\n", i18n.Tf("casinoholdem.handLine", "hand", cuiPokerHandName(rank)))
 			}
 			parts := make([]string, len(dealerHand))
 			for i, card := range dealerHand {

@@ -294,15 +294,18 @@ function NinetyNinePageContent() {
           />
 
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            <div className="text-ds-text-primary text-center mb-2">
-              <span className="mr-4">{t('deal', { n: state.dealNumber })}</span>
-              <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
-              <span className="mr-4">{t('handSize', { n: state.handSize })}</span>
+            <div
+              className="text-ds-text-primary text-center mb-2 flex flex-wrap justify-center gap-x-4 gap-y-1"
+              data-testid="nn-status-row"
+            >
+              <span className="whitespace-nowrap">{t('deal', { n: state.dealNumber })}</span>
+              <span className="whitespace-nowrap">{t('trick', { n: state.trickNumber })}</span>
+              <span className="whitespace-nowrap">{t('handSize', { n: state.handSize })}</span>
             </div>
-            <div className="text-ds-text-primary text-center mb-2">
-              <span className="mr-4">{t('trump', { suit: t(`suitName.${state.trumpSuit}`) })}</span>
-              <span className="mr-4">{t('targetScore', { n: state.targetScore })}</span>
-              <span>{t('dealer', { name: dealerName })}</span>
+            <div className="text-ds-text-primary text-center mb-2 flex flex-wrap justify-center gap-x-4 gap-y-1">
+              <span className="whitespace-nowrap">{t('trump', { suit: t(`suitName.${state.trumpSuit}`) })}</span>
+              <span className="whitespace-nowrap">{t('targetScore', { n: state.targetScore })}</span>
+              <span className="whitespace-nowrap">{t('dealer', { name: dealerName })}</span>
             </div>
 
             <div className={lgTwoColGrid}>
@@ -408,8 +411,12 @@ function NinetyNinePageContent() {
                             {t('scoresPlayer')}
                           </th>
                           <th scope="col">{t('scoresBid')}</th>
-                          <th scope="col">{t('scoresTricks')}</th>
-                          <th scope="col">{t('scoresRound')}</th>
+                          <th scope="col" className="text-[10px] whitespace-nowrap">
+                            {t('scoresTricks')}
+                          </th>
+                          <th scope="col" className="text-[10px] whitespace-nowrap">
+                            {t('scoresRound')}
+                          </th>
                           <th scope="col">{t('scoresTotal')}</th>
                         </tr>
                       </thead>

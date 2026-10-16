@@ -17,7 +17,7 @@ import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -43,6 +43,19 @@ const FOUNDATION_CNT = 4;
 const FOUNDATION_PILE_FULL = 13;
 const FOUNDATION_CELLS = ['1 / 1', '1 / 3', '3 / 1', '3 / 3'];
 const TABLEAU_CELLS = ['1 / 2', '2 / 1', '2 / 2', '2 / 3', '3 / 2'];
+const FOUNDATION_GRID_CLASSES = [
+  'sm:col-start-1 sm:row-start-1 lg:col-start-2 lg:row-start-1',
+  'sm:col-start-3 sm:row-start-1 lg:col-start-4 lg:row-start-1',
+  'sm:col-start-1 sm:row-start-3 lg:col-start-2 lg:row-start-3',
+  'sm:col-start-3 sm:row-start-3 lg:col-start-4 lg:row-start-3',
+];
+const TABLEAU_GRID_CLASSES = [
+  'sm:col-start-2 sm:row-start-1 lg:col-start-3 lg:row-start-1',
+  'sm:col-start-1 sm:row-start-2 lg:col-start-2 lg:row-start-2',
+  'sm:col-start-2 sm:row-start-2 lg:col-start-3 lg:row-start-2',
+  'sm:col-start-3 sm:row-start-2 lg:col-start-4 lg:row-start-2',
+  'sm:col-start-2 sm:row-start-3 lg:col-start-3 lg:row-start-3',
+];
 
 /**
  * The rank a foundation needs next. Foundations build up **from the deal's base
@@ -146,6 +159,7 @@ function FourSeasonsPageContent() {
   const { handleCommand } = useCliGame(runApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   const { cardWidth, cardHeight } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
 
   const handleManualReset = useCallback(() => {
     void runApi('reset');
@@ -281,7 +295,7 @@ function FourSeasonsPageContent() {
           />
           <LandscapeBanner message={t('landscapeBanner')} />
 
-          <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8 sm:grid sm:grid-cols-3 sm:content-start sm:gap-3">
+          <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8 sm:grid sm:grid-cols-3 lg:grid-cols-5 sm:content-start sm:gap-3">
             <div className="mb-2 text-xs text-ds-text-muted sm:hidden">{t('foundations')}</div>
             <div className="flex gap-2 mb-5 flex-wrap sm:contents">
               {Array.from({ length: FOUNDATION_CNT }, (_, idx) => {
@@ -295,8 +309,7 @@ function FourSeasonsPageContent() {
                     data-tutorial={idx === 0 ? 'fs-foundations' : undefined}
                     data-board-cell={FOUNDATION_CELLS[idx]}
                     type="button"
-                    style={{ gridArea: FOUNDATION_CELLS[idx] }}
-                    className={`flex flex-col items-center p-1 rounded ${focusRingWhite} ${hintFoundation === idx ? 'ring-2 ring-ds-success animate-pulse' : ''} ${source ? 'cursor-pointer' : 'cursor-default'}`}
+                    className={`flex flex-col items-center p-1 rounded ${isLargeDesktop ? FOUNDATION_GRID_CLASSES[idx] : FOUNDATION_GRID_CLASSES[idx].split(' lg:')[0]} ${focusRingWhite} ${hintFoundation === idx ? 'ring-2 ring-ds-success animate-pulse' : ''} ${source ? 'cursor-pointer' : 'cursor-default'}`}
                     onClick={() => placeOn('foundation', idx)}
                     disabled={!isPlaying || loading || source === null}
                     data-testid={`fs-foundation-${idx.toString()}`}
@@ -348,7 +361,9 @@ function FourSeasonsPageContent() {
 
             <div className="mb-2 text-xs text-ds-text-muted sm:hidden">{t('cross')}</div>
             <div className="flex gap-3 flex-wrap items-start sm:contents">
-              <div className="flex flex-col items-center sm:col-start-1 sm:row-start-4">
+              <div
+                className={`flex flex-col items-center ${isLargeDesktop ? 'lg:col-start-1 lg:row-start-2' : 'sm:col-start-1 sm:row-start-4'}`}
+              >
                 <div className="text-[11px] mb-0.5 text-ds-text-muted">
                   {t('stock')} ({state.stockCount})
                 </div>
@@ -373,7 +388,9 @@ function FourSeasonsPageContent() {
                 </button>
               </div>
 
-              <div className="flex flex-col items-center sm:col-start-2 sm:row-start-4">
+              <div
+                className={`flex flex-col items-center ${isLargeDesktop ? 'lg:col-start-5 lg:row-start-2' : 'sm:col-start-2 sm:row-start-4'}`}
+              >
                 <div className="text-[11px] mb-0.5 text-ds-text-muted">{t('waste')}</div>
                 <button
                   type="button"
@@ -407,8 +424,7 @@ function FourSeasonsPageContent() {
                     key={`t-${idx.toString()}`}
                     data-tutorial={idx === 2 ? 'fs-cross' : undefined}
                     data-board-cell={TABLEAU_CELLS[idx]}
-                    style={{ gridArea: TABLEAU_CELLS[idx] }}
-                    className="flex flex-col items-center"
+                    className={`flex flex-col items-center ${isLargeDesktop ? TABLEAU_GRID_CLASSES[idx] : TABLEAU_GRID_CLASSES[idx].split(' lg:')[0]}`}
                   >
                     <div className="text-[11px] mb-0.5 text-ds-text-muted">
                       T{idx} ({pile.length})
@@ -456,7 +472,10 @@ function FourSeasonsPageContent() {
               })}
             </div>
 
-            <div data-tutorial="fs-controls" className="mt-4 sm:col-span-3 sm:row-start-5">
+            <div
+              data-tutorial="fs-controls"
+              className={`mt-4 ${isLargeDesktop ? 'lg:col-span-5 lg:row-start-4' : 'sm:col-span-3 sm:row-start-5'}`}
+            >
               <GameMessageBox
                 message={state.message}
                 messageCode={state.messageCode}

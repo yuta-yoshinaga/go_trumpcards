@@ -7,6 +7,15 @@ import type { Card, CardDesign, FourSeasonsResponse } from '../types/card';
 import { FourSeasonsPhase } from '../types/phases';
 import { FourSeasonsPage, fourseasonsNextRank, fourseasonsTableauNextRank } from './FourSeasonsPage';
 
+const breakpointState = vi.hoisted(() => ({ value: 'desktop' as 'mobile' | 'desktop' | 'largeDesktop' }));
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useBreakpoint: () => breakpointState.value,
+  };
+});
+
 /**
  * This page's own hint region.
  *
@@ -72,6 +81,7 @@ describe('fourseasonsTableauNextRank', () => {
 
 describe('FourSeasonsPage', () => {
   beforeEach(() => {
+    breakpointState.value = 'desktop';
     vi.clearAllMocks();
     localStorage.clear();
     mockExec.mockResolvedValue(makeState());
@@ -142,7 +152,8 @@ describe('FourSeasonsPage', () => {
       const button = screen.getByTestId(testId);
       const boardCell = button.closest<HTMLElement>('[data-board-cell]');
       expect(boardCell).toHaveAttribute('data-board-cell', cell);
-      expect(boardCell?.style.gridArea).toBe(cell);
+      const [row, column] = cell.split(' / ');
+      expect(boardCell).toHaveClass(`sm:row-start-${row}`, `sm:col-start-${column}`);
     }
 
     expect(document.querySelector('[data-tutorial="fs-controls"]')).toHaveClass('sm:row-start-5');
@@ -152,6 +163,25 @@ describe('FourSeasonsPage', () => {
       expect(target).not.toBeNull();
       expect(target).not.toHaveClass('contents');
     }
+  });
+
+  it('places stock and waste beside the cross on large desktop only', async () => {
+    breakpointState.value = 'largeDesktop';
+    const { unmount } = renderWithProviders(<FourSeasonsPage />);
+    await screen.findByTestId('fs-draw-button');
+    expect(screen.getByTestId('fs-draw-button').parentElement).toHaveClass('lg:col-start-1', 'lg:row-start-2');
+    expect(screen.getByTestId('fs-waste-button').parentElement).toHaveClass('lg:col-start-5', 'lg:row-start-2');
+    expect(screen.getByTestId('fs-tableau-2').closest('[data-board-cell]')).toHaveClass(
+      'lg:col-start-3',
+      'lg:row-start-2',
+    );
+    unmount();
+
+    breakpointState.value = 'mobile';
+    renderWithProviders(<FourSeasonsPage />);
+    await screen.findByTestId('fs-draw-button');
+    expect(screen.getByTestId('fs-draw-button').parentElement).not.toHaveClass('lg:col-start-1');
+    expect(screen.getByTestId('fs-waste-button').parentElement).not.toHaveClass('lg:col-start-5');
   });
 
   it('draws from the stock', async () => {

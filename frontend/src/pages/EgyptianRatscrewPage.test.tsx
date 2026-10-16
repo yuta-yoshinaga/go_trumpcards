@@ -118,6 +118,22 @@ beforeEach(() => {
 });
 
 describe('EgyptianRatscrewPage', () => {
+  it('uses on-accent text on the warning slap action', async () => {
+    mockExec.mockResolvedValueOnce(slappableState);
+    renderWithProviders(<EgyptianRatscrewPage />);
+    const slap = await screen.findByTestId('slap-button');
+    expect(slap).not.toHaveClass('text-white');
+    expect(slap).toHaveClass('text-ds-text-on-accent');
+  });
+
+  it('keeps white text on the error slap action', async () => {
+    mockExec.mockResolvedValueOnce({ ...baseState, centerPileSize: 1 });
+    renderWithProviders(<EgyptianRatscrewPage />);
+    const slap = await screen.findByTestId('slap-button');
+    expect(slap).toHaveClass('text-white');
+    expect(slap).not.toHaveClass('text-ds-text-on-accent');
+  });
+
   it('shows the chance deadline countdown and clears it when the chance ends', async () => {
     mockExec
       .mockResolvedValueOnce({ ...chanceState, isHumanTurn: true, pendingDeadlineMs: Date.now() + 2_000 })

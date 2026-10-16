@@ -321,9 +321,10 @@ function CrazyFourPokerPageContent() {
                 <table className="text-xs text-ds-text-muted mx-auto" data-testid="c4p-superbonus-payouts">
                   <caption className="sr-only">{t('label.superBonusPayouts')}</caption>
                   <tbody>
-                    {state.superBonusPayouts?.map((row) => (
+                    {/* 先頭行は 4 枚のエースの別枠 (役はフォーカードと同じ番号なので、名前はサーバの訳を使う)。 */}
+                    {state.superBonusPayouts?.map((row, i) => (
                       <tr key={`sb-${row.hand}-${row.name}`}>
-                        <td className="pr-3 text-left">{row.name}</td>
+                        <td className="pr-3 text-left">{i === 0 ? row.name : t(`rank.${row.hand}`)}</td>
                         <td className="text-right">{t('label.payoutOdds', { n: row.odds })}</td>
                       </tr>
                     ))}
@@ -334,7 +335,7 @@ function CrazyFourPokerPageContent() {
                   <tbody>
                     {state.queensUpPayouts.map((row) => (
                       <tr key={row.hand}>
-                        <td className="pr-3 text-left">{row.name}</td>
+                        <td className="pr-3 text-left">{t(`rank.${row.hand}`)}</td>
                         <td className="text-right">{t('label.payoutOdds', { n: row.multiplier })}</td>
                       </tr>
                     ))}

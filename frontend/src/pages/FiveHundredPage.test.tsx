@@ -471,6 +471,12 @@ describe('FiveHundredPage', () => {
     expect(screen.getByTestId('fh-bid-nt')).toHaveTextContent('120'); // 6NT
     expect(screen.getByTestId('fh-bid-misere')).toHaveTextContent('250');
     expect(screen.getByTestId('fh-bid-open-misere')).toHaveTextContent('520');
+    for (const id of ['fh-bid-suit-1', 'fh-bid-suit-2', 'fh-bid-suit-3', 'fh-bid-suit-4', 'fh-bid-nt']) {
+      const button = screen.getByTestId(id);
+      const score = button.querySelector('span.text-\\[10px\\]');
+      expect(button).toHaveClass('text-ds-text-on-accent');
+      expect(score).not.toHaveClass('text-white');
+    }
   });
 
   it('updates suit/NT scores live when the trick count changes (7♠=140, 7NT=220)', async () => {

@@ -190,6 +190,9 @@ func TestBaseballPokerCuiPresenter_ShowsBetGuidanceAndResult(t *testing.T) {
 // **ショーダウンでは全席の役名を出す** (#6579)。勝者の獲得額だけでは
 // 何の役で勝ったのかが最後まで分からない。
 func TestBaseballPokerCuiPresenter_ShowsHandNamesAtShowdown(t *testing.T) {
+	original := i18n.Lang()
+	t.Cleanup(func() { i18n.SetLang(original) })
+	i18n.SetLang("ja")
 	cp := new(BaseballPokerCuiPresenter)
 
 	// ショーダウン前（配り始め/ベット中）は役名を出さない（否定コントロール）。
@@ -215,7 +218,8 @@ func TestBaseballPokerCuiPresenter_ShowsHandNamesAtShowdown(t *testing.T) {
 		if g.GetResults()[i].WonAmount > 0 {
 			result = "勝者"
 		}
-		assert.Contains(t, out, "  "+p.GetName()+": "+domain.PokerHandNames[rank]+"（"+result+"）")
+		assert.Contains(t, out, "  "+p.GetName()+": "+cuiPokerHandName(rank)+"（"+result+"）")
+		assert.NotContains(t, out, "  "+p.GetName()+": "+domain.PokerHandNames[rank]+"（"+result+"）")
 	}
 	require.Positive(t, shown, "役名を出した席が 1 つも無い")
 	assert.NotContains(t, out, "baseballpoker.")

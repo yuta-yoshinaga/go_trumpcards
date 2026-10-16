@@ -17,7 +17,7 @@ import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
+import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -125,7 +125,6 @@ export const PitchPage = withTutorial(PitchPageContent, 'pitch', PT_TUTORIAL_STE
 const PITCH_NO_SCORER = -1;
 
 function PitchPageContent() {
-  const isMobile = useIsMobile();
   const { t } = useTranslation('pitch');
   const { tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('pitch');
@@ -328,7 +327,7 @@ function PitchPageContent() {
             {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
 
             {/* Score table */}
-            <details open={!isMobile || undefined} className="mb-3 rounded border border-ds-border-subtle p-2">
+            <details className="mb-3 rounded border border-ds-border-subtle p-2">
               <summary data-tutorial="pt-score-table" className="cursor-pointer select-none text-ds-text-muted text-sm">
                 {t('scores')}
               </summary>
@@ -385,178 +384,187 @@ function PitchPageContent() {
               </div>
             )}
 
-            {/* Current trick */}
-            <div
-              data-tutorial="pt-trick-display"
-              className="border border-ds-border-subtle rounded p-2 min-h-[80px] mb-3 text-ds-text-primary"
-            >
-              <div className="text-xs uppercase opacity-60 mb-1">{t('currentTrick')}</div>
-              {state.currentTrick.length === 0 ? (
-                <div className="opacity-50">—</div>
-              ) : (
-                <>
-                  <div className="flex flex-wrap gap-2">
-                    {state.currentTrick.map((tc, idx) => {
-                      const leadDesign = state.currentTrick[0]?.card.design;
-                      const trumpDesign = SUIT_NUM_TO_DESIGN[state.trumpSuit];
-                      const isLead = idx === 0;
-                      const isTrump = trumpDesign !== undefined && tc.card.design === trumpDesign;
-                      const isLeadSuit = !isTrump && tc.card.design === leadDesign;
-                      const ringClass = isTrump ? 'ring-2 ring-ds-warning' : isLeadSuit ? 'ring-2 ring-ds-info' : '';
-                      return (
-                        <div
-                          key={`${tc.playerIdx}-${tc.card.design}-${tc.card.value}`}
-                          className="flex flex-col items-center gap-0.5"
-                        >
-                          <span className="text-[10px] opacity-60">{findPlayerName(state.players, tc.playerIdx)}</span>
-                          <div className={`relative inline-block rounded ${ringClass}`}>
-                            <CardImage card={tc.card} width={cardWidth} />
-                            {isLead && (
-                              <span
-                                data-testid="pt-trick-lead-badge"
-                                className="absolute -top-1 -left-1 rounded bg-ds-info px-1 py-0.5 text-[9px] font-bold leading-none text-ds-text-on-accent shadow"
-                              >
-                                {t('leadBadge')}
-                              </span>
-                            )}
-                            {isTrump && (
-                              <span
-                                data-testid="pt-trick-trump-badge"
-                                title={t('trickLegend.trump')}
-                                className="absolute -top-1 -right-1 rounded-full bg-ds-warning px-1 py-0.5 text-[10px] font-bold leading-none text-ds-text-on-accent shadow"
-                              >
-                                {SUIT_LABELS[state.trumpSuit] ?? '?'}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <div data-testid="pt-trick-legend" className="mt-2 flex flex-wrap gap-3 text-[10px] opacity-70">
-                    <span className="inline-flex items-center gap-1">
-                      <span className="inline-block h-3 w-3 rounded-sm ring-2 ring-ds-info" />
-                      {t('trickLegend.lead')}
-                    </span>
-                    <span className="inline-flex items-center gap-1">
-                      <span className="inline-block h-3 w-3 rounded-sm ring-2 ring-ds-warning" />
-                      {t('trickLegend.trump')}
-                    </span>
-                  </div>
-                </>
-              )}
-            </div>
-
-            {/* Previous trick reviewer: lets the player recount the just-completed trick */}
-            <details className="mb-3 p-2 rounded border border-ds-border-subtle" data-testid="pt-previous-trick">
-              <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('previousTrick')}</summary>
-              <div className="mt-2">
-                {state.lastTrick.length > 0 ? (
-                  <TrickDisplay
-                    currentTrick={state.lastTrick}
-                    players={state.players}
-                    cardWidth={Math.round(cardWidth * 0.7)}
-                    label={
-                      state.lastTrickWinner >= 0
-                        ? t('previousTrickWinner', {
-                            name: playerName(
-                              state.lastTrickWinner,
-                              state.players[state.lastTrickWinner]?.isHuman === true,
-                            ),
-                          })
-                        : t('previousTrick')
-                    }
-                    winnerIdx={state.lastTrickWinner >= 0 ? state.lastTrickWinner : undefined}
-                  />
+            <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] xl:gap-x-4">
+              {/* Current trick */}
+              <div
+                data-tutorial="pt-trick-display"
+                className="xl:col-start-1 xl:row-start-1 min-w-0 border border-ds-border-subtle rounded p-2 min-h-[80px] mb-3 text-ds-text-primary"
+              >
+                <div className="text-xs uppercase opacity-60 mb-1">{t('currentTrick')}</div>
+                {state.currentTrick.length === 0 ? (
+                  <div className="opacity-50">—</div>
                 ) : (
-                  <div className="text-ds-text-muted text-sm" data-testid="pt-previous-trick-empty">
-                    {t('previousTrickEmpty')}
-                  </div>
+                  <>
+                    <div className="flex flex-wrap gap-2">
+                      {state.currentTrick.map((tc, idx) => {
+                        const leadDesign = state.currentTrick[0]?.card.design;
+                        const trumpDesign = SUIT_NUM_TO_DESIGN[state.trumpSuit];
+                        const isLead = idx === 0;
+                        const isTrump = trumpDesign !== undefined && tc.card.design === trumpDesign;
+                        const isLeadSuit = !isTrump && tc.card.design === leadDesign;
+                        const ringClass = isTrump ? 'ring-2 ring-ds-warning' : isLeadSuit ? 'ring-2 ring-ds-info' : '';
+                        return (
+                          <div
+                            key={`${tc.playerIdx}-${tc.card.design}-${tc.card.value}`}
+                            className="flex flex-col items-center gap-0.5"
+                          >
+                            <span className="text-[10px] opacity-60">
+                              {findPlayerName(state.players, tc.playerIdx)}
+                            </span>
+                            <div className={`relative inline-block rounded ${ringClass}`}>
+                              <CardImage card={tc.card} width={cardWidth} />
+                              {isLead && (
+                                <span
+                                  data-testid="pt-trick-lead-badge"
+                                  className="absolute -top-1 -left-1 rounded bg-ds-info px-1 py-0.5 text-[9px] font-bold leading-none text-ds-text-on-accent shadow"
+                                >
+                                  {t('leadBadge')}
+                                </span>
+                              )}
+                              {isTrump && (
+                                <span
+                                  data-testid="pt-trick-trump-badge"
+                                  title={t('trickLegend.trump')}
+                                  className="absolute -top-1 -right-1 rounded-full bg-ds-warning px-1 py-0.5 text-[10px] font-bold leading-none text-ds-text-on-accent shadow"
+                                >
+                                  {SUIT_LABELS[state.trumpSuit] ?? '?'}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div data-testid="pt-trick-legend" className="mt-2 flex flex-wrap gap-3 text-[10px] opacity-70">
+                      <span className="inline-flex items-center gap-1">
+                        <span className="inline-block h-3 w-3 rounded-sm ring-2 ring-ds-info" />
+                        {t('trickLegend.lead')}
+                      </span>
+                      <span className="inline-flex items-center gap-1">
+                        <span className="inline-block h-3 w-3 rounded-sm ring-2 ring-ds-warning" />
+                        {t('trickLegend.trump')}
+                      </span>
+                    </div>
+                  </>
                 )}
               </div>
-            </details>
 
-            {/* Player hand (always visible) */}
-            {human && human.cards.length > 0 && (
-              <div
-                data-tutorial="pt-player-hand"
-                className="flex flex-col gap-2 mb-3 text-ds-text-primary lg:sticky lg:bottom-0 lg:z-10 lg:bg-game-bg-blue lg:pt-2 lg:shadow-lg"
+              {/* Previous trick reviewer: lets the player recount the just-completed trick */}
+              <details
+                className="xl:col-start-1 xl:row-start-2 mb-3 p-2 rounded border border-ds-border-subtle"
+                data-testid="pt-previous-trick"
               >
-                <div className="text-xs uppercase flex items-center gap-2 flex-wrap">
-                  <span className="opacity-60">
-                    {findPlayerName(state.players, humanIdx)} ({t('cards', { count: human.cards.length })})
-                  </span>
-                  <span className="relative inline-flex" ref={pipsRef}>
-                    <button
-                      type="button"
-                      data-testid="pitch-game-pips-badge"
-                      className="normal-case inline-flex items-center justify-center min-h-[44px] min-w-[44px] rounded-full bg-ds-accent/20 text-ds-accent px-2 py-0.5 text-[11px] font-bold"
-                      aria-expanded={pipsOpen}
-                      aria-haspopup="true"
-                      onClick={() => setPipsOpen((o) => !o)}
-                      title={t('gamePipsTooltip')}
-                    >
-                      {t('gamePips', { pips: pitchHandPips(human.cards) })}
-                    </button>
-                    {pipsOpen && (
-                      <section
-                        data-testid="pitch-game-pips-popover"
-                        aria-label={t('gamePipsTooltip')}
-                        className="absolute top-full left-0 z-10 mt-1 w-max max-w-[16rem] rounded-lg bg-ds-surface border border-ds-accent/40 p-2 text-[11px] text-ds-text-primary shadow-lg"
-                      >
-                        <div className="font-bold mb-1">{t('gamePipsTooltip')}</div>
-                        <ul className="space-y-0.5">
-                          {pitchHandPipBreakdown(human.cards)
-                            .filter((b) => b.pips > 0)
-                            .map((b) => (
-                              <li key={`pip-${b.value}`} className="flex justify-between gap-3">
-                                <span>{valueLabel(b.value)}</span>
-                                <span className="font-mono">+{b.pips}</span>
-                              </li>
-                            ))}
-                        </ul>
-                        <div className="mt-1 border-t border-ds-accent/30 pt-1 flex justify-between gap-3 font-bold">
-                          <span>{t('gamePipsTotal')}</span>
-                          <span className="font-mono">{pitchHandPips(human.cards)}</span>
-                        </div>
-                      </section>
-                    )}
-                  </span>
+                <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
+                  {t('previousTrick')}
+                </summary>
+                <div className="mt-2">
+                  {state.lastTrick.length > 0 ? (
+                    <TrickDisplay
+                      currentTrick={state.lastTrick}
+                      players={state.players}
+                      cardWidth={Math.round(cardWidth * 0.7)}
+                      label={
+                        state.lastTrickWinner >= 0
+                          ? t('previousTrickWinner', {
+                              name: playerName(
+                                state.lastTrickWinner,
+                                state.players[state.lastTrickWinner]?.isHuman === true,
+                              ),
+                            })
+                          : t('previousTrick')
+                      }
+                      winnerIdx={state.lastTrickWinner >= 0 ? state.lastTrickWinner : undefined}
+                    />
+                  ) : (
+                    <div className="text-ds-text-muted text-sm" data-testid="pt-previous-trick-empty">
+                      {t('previousTrickEmpty')}
+                    </div>
+                  )}
                 </div>
-                {isHumanPlayTurn && (
-                  <span id="pitch-invalid-play-reason" className="sr-only">
-                    {t('invalidPlayReason')}
-                  </span>
-                )}
-                <div className="flex flex-wrap gap-2">
-                  {human.cards.map((c, idx) => {
-                    const isValid = state.validPlayIndices.includes(idx);
-                    const isSelected = selectedCardIdx === idx;
-                    const canSelect = isHumanPlayTurn && isValid && !loading;
-                    return (
+              </details>
+
+              {/* Player hand (always visible) */}
+              {human && human.cards.length > 0 && (
+                <div
+                  data-tutorial="pt-player-hand"
+                  className="xl:col-start-2 xl:row-start-1 min-w-0 flex flex-col gap-2 mb-3 text-ds-text-primary"
+                >
+                  <div className="text-xs uppercase flex items-center gap-2 flex-wrap">
+                    <span className="opacity-60">
+                      {findPlayerName(state.players, humanIdx)} ({t('cards', { count: human.cards.length })})
+                    </span>
+                    <span className="relative inline-flex" ref={pipsRef}>
                       <button
-                        key={`${c.design}-${c.value}-${idx}`}
                         type="button"
-                        onClick={() => canSelect && setSelectedCardIdx(isSelected ? null : idx)}
-                        disabled={!isHumanPlayTurn || loading}
-                        aria-disabled={isHumanPlayTurn && !loading && !isValid ? true : undefined}
-                        aria-describedby={
-                          isHumanPlayTurn && !loading && !isValid ? 'pitch-invalid-play-reason' : undefined
-                        }
-                        aria-label={cardAlt(c)}
-                        aria-pressed={isSelected}
-                        className={`min-w-[44px] min-h-[44px] rounded transition-all
+                        data-testid="pitch-game-pips-badge"
+                        className="normal-case inline-flex items-center justify-center min-h-[44px] min-w-[44px] rounded-full bg-ds-accent/20 text-ds-accent px-2 py-0.5 text-[11px] font-bold"
+                        aria-expanded={pipsOpen}
+                        aria-haspopup="true"
+                        onClick={() => setPipsOpen((o) => !o)}
+                        title={t('gamePipsTooltip')}
+                      >
+                        {t('gamePips', { pips: pitchHandPips(human.cards) })}
+                      </button>
+                      {pipsOpen && (
+                        <section
+                          data-testid="pitch-game-pips-popover"
+                          aria-label={t('gamePipsTooltip')}
+                          className="absolute top-full left-0 z-10 mt-1 w-max max-w-[16rem] rounded-lg bg-ds-surface border border-ds-accent/40 p-2 text-[11px] text-ds-text-primary shadow-lg"
+                        >
+                          <div className="font-bold mb-1">{t('gamePipsTooltip')}</div>
+                          <ul className="space-y-0.5">
+                            {pitchHandPipBreakdown(human.cards)
+                              .filter((b) => b.pips > 0)
+                              .map((b) => (
+                                <li key={`pip-${b.value}`} className="flex justify-between gap-3">
+                                  <span>{valueLabel(b.value)}</span>
+                                  <span className="font-mono">+{b.pips}</span>
+                                </li>
+                              ))}
+                          </ul>
+                          <div className="mt-1 border-t border-ds-accent/30 pt-1 flex justify-between gap-3 font-bold">
+                            <span>{t('gamePipsTotal')}</span>
+                            <span className="font-mono">{pitchHandPips(human.cards)}</span>
+                          </div>
+                        </section>
+                      )}
+                    </span>
+                  </div>
+                  {isHumanPlayTurn && (
+                    <span id="pitch-invalid-play-reason" className="sr-only">
+                      {t('invalidPlayReason')}
+                    </span>
+                  )}
+                  <div className="flex flex-wrap gap-2">
+                    {human.cards.map((c, idx) => {
+                      const isValid = state.validPlayIndices.includes(idx);
+                      const isSelected = selectedCardIdx === idx;
+                      const canSelect = isHumanPlayTurn && isValid && !loading;
+                      return (
+                        <button
+                          key={`${c.design}-${c.value}-${idx}`}
+                          type="button"
+                          onClick={() => canSelect && setSelectedCardIdx(isSelected ? null : idx)}
+                          disabled={!isHumanPlayTurn || loading}
+                          aria-disabled={isHumanPlayTurn && !loading && !isValid ? true : undefined}
+                          aria-describedby={
+                            isHumanPlayTurn && !loading && !isValid ? 'pitch-invalid-play-reason' : undefined
+                          }
+                          aria-label={cardAlt(c)}
+                          aria-pressed={isSelected}
+                          className={`min-w-[44px] min-h-[44px] rounded transition-all
                           ${isSelected ? 'ring-2 ring-ds-accent' : ''}
                           ${canSelect ? 'opacity-100' : 'opacity-50 cursor-not-allowed'}
                         `}
-                      >
-                        <CardImage card={c} width={cardWidth} />
-                      </button>
-                    );
-                  })}
+                        >
+                          <CardImage card={c} width={cardWidth} />
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
             {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
           </div>

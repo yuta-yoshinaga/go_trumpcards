@@ -49,6 +49,12 @@ beforeEach(() => {
 });
 
 describe('QuadrillePage', () => {
+  it('keeps the called king and trump labels on one line', async () => {
+    renderWithProviders(<QuadrillePage />);
+    expect(await screen.findByTestId('quadrille-king-line')).toHaveClass('whitespace-nowrap');
+    expect(screen.getByText(/切り札/)).toHaveClass('whitespace-nowrap');
+  });
+
   it('stacks later mobile hand rows', async () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });

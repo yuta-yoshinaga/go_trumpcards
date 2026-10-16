@@ -10,6 +10,7 @@
   "foundation": "Foundation",
   "tableau": "Tableau",
   "baseRank": "Base rank",
+  "baseRankShort": "Base",
   "moveCount": "Moves",
   "deal": "Deal",
   "giveup": "Give up",

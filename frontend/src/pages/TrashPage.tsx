@@ -15,7 +15,7 @@ import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -190,6 +190,7 @@ function TrashPageContent() {
   const { handleCommand } = useCliGame(apiCall, trashCliConfig, state, { addInput, addOutput, addError, clearLog });
 
   const { cardWidth } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
 
   const handleResetAction = useCallback(() => {
     void apiCall('reset');
@@ -286,7 +287,9 @@ function TrashPageContent() {
         <>
           <LandscapeBanner message={t('landscapeBanner', { defaultValue: '' })} />
 
-          <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8 space-y-4">
+          <div
+            className={`flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8 ${isLargeDesktop ? 'grid grid-cols-1 gap-y-4 items-start' : 'flex flex-col space-y-4'}`}
+          >
             <PlayerRow
               label={t('label.cpu')}
               badge={t('label.cpuOpen', {
@@ -299,9 +302,12 @@ function TrashPageContent() {
               onSlotClick={undefined}
               dataTutorial="tr-opponent"
               pendingTargetIdx={null}
+              className={isLargeDesktop ? 'row-start-3' : undefined}
             />
 
-            <div className="flex flex-col items-center gap-2">
+            <div
+              className={`flex flex-col items-center gap-2${isLargeDesktop ? ' row-start-2 justify-self-center' : ''}`}
+            >
               <div data-testid="tr-cpu-turn-announce">
                 {cpuTurnAnnouncement && (
                   <p className="rounded-md bg-ds-warning px-4 py-2 text-sm font-medium text-ds-text-on-accent">
@@ -344,6 +350,7 @@ function TrashPageContent() {
               onSlotClick={isAwaitWild && isHumanTurn ? handleSlotClick : undefined}
               dataTutorial="tr-player"
               pendingTargetIdx={pendingTargetIdx}
+              className={isLargeDesktop ? 'row-start-1' : undefined}
             />
           </div>
 
@@ -431,6 +438,7 @@ function PlayerRow({
   onSlotClick,
   dataTutorial,
   pendingTargetIdx,
+  className,
 }: {
   label: string;
   /** Optional progress indicator rendered next to the label (e.g. "3/10 枚オープン"). */
@@ -442,10 +450,11 @@ function PlayerRow({
   dataTutorial: string;
   /** Slot index (0..9) where a freshly drawn non-wild card should land, or null. */
   pendingTargetIdx: number | null;
+  className?: string;
 }) {
   const { t } = useTranslation('trash');
   return (
-    <div className="flex flex-col items-center" data-tutorial={dataTutorial}>
+    <div className={`flex flex-col items-center min-w-0 ${className ?? ''}`} data-tutorial={dataTutorial}>
       <span className="text-sm text-ds-text-muted mb-1">
         {label}
         {badge && (

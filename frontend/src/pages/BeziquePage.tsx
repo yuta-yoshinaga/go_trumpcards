@@ -258,14 +258,19 @@ function BeziquePageContent() {
           />
 
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            <div className="text-ds-text-primary text-center mb-2" data-tutorial="bezique-info">
-              <span className="mr-4">{t('deal', { n: state.roundNumber })}</span>
-              <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
-              <span className="mr-4">{t('trump', { suit: trumpSymbol })}</span>
-              <span className={`mr-4 ${stockLow ? 'text-ds-warning font-semibold motion-safe:animate-pulse' : ''}`}>
+            <div
+              className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-ds-text-primary text-center mb-2"
+              data-tutorial="bezique-info"
+            >
+              <span className="whitespace-nowrap">{t('deal', { n: state.roundNumber })}</span>
+              <span className="whitespace-nowrap">{t('trick', { n: state.trickNumber })}</span>
+              <span className="whitespace-nowrap">{t('trump', { suit: trumpSymbol })}</span>
+              <span
+                className={`whitespace-nowrap ${stockLow ? 'text-ds-warning font-semibold motion-safe:animate-pulse' : ''}`}
+              >
                 {t('stock', { count: state.stockRemaining })}
               </span>
-              <span>{t('target', { points: state.config.targetScore })}</span>
+              <span className="whitespace-nowrap">{t('target', { points: state.config.targetScore })}</span>
             </div>
 
             <div className="text-ds-text-muted text-center mb-2 text-xs" data-testid="bezique-trick-points">

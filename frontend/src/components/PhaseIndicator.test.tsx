@@ -16,26 +16,28 @@ describe('PhaseIndicator', () => {
   it('shows your turn indicator when isHumanTurn is true', () => {
     render(<PhaseIndicator phaseName="アクション" isHumanTurn={true} />);
     expect(screen.getByText('あなたのターン')).toBeInTheDocument();
-    const turnSpan = screen.getByText('あなたのターン');
-    expect(turnSpan).toHaveClass(
+    const turnText = screen.getByText('あなたのターン');
+    expect(turnText).not.toHaveClass('motion-safe:animate-pulse');
+    const turnBadge = turnText.parentElement;
+    expect(turnBadge).not.toBeNull();
+    expect(turnBadge).toHaveClass(
       'text-ds-success',
-      'motion-safe:animate-pulse',
       'font-bold',
       'text-base',
       'bg-ds-surface',
-      'ring-2',
-      'ring-ds-success/40',
       'px-2',
       'py-0.5',
       'rounded-full',
     );
+    const decoration = turnBadge?.querySelector('[aria-hidden="true"]');
+    expect(decoration).toHaveClass('motion-safe:animate-pulse', 'ring-2', 'ring-ds-success/40');
   });
 
   it('shows waiting indicator when isHumanTurn is false', () => {
     render(<PhaseIndicator phaseName="アクション" isHumanTurn={false} />);
     expect(screen.getByText('待機中')).toBeInTheDocument();
     const turnSpan = screen.getByText('待機中');
-    expect(turnSpan).toHaveClass('text-game-text-muted');
+    expect(turnSpan.parentElement).toHaveClass('text-game-text-muted');
   });
 
   it('does not render turn indicator when isHumanTurn is undefined', () => {

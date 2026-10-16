@@ -199,7 +199,7 @@ function KnockoutWhistPageContent() {
     return (
       <div
         key={p.id}
-        className={`py-0.5 flex items-center gap-2 ${p.eliminated ? 'opacity-70 line-through' : ''}`}
+        className={`py-0.5 flex flex-wrap items-center gap-2 ${p.eliminated ? 'opacity-70 line-through' : ''}`}
         data-eliminated={p.eliminated ? 'true' : 'false'}
       >
         <span className={p.eliminated ? '' : 'text-ds-text-muted'}>
@@ -209,19 +209,26 @@ function KnockoutWhistPageContent() {
             : ` — ${t('roundTricks', { count: p.roundTricks })} · ${t('dogbones', { count: p.dogbones })}`}
         </span>
         {state.dealerIdx === p.id && (
-          <span className={`px-1.5 py-0.5 rounded text-xs ${badgeInfoColors}`} data-testid="kw-dealer-badge">
+          <span
+            className={`px-1.5 py-0.5 rounded text-xs whitespace-nowrap ${badgeInfoColors}`}
+            data-testid="kw-dealer-badge"
+          >
             {t('dealerBadge')}
           </span>
         )}
         {showHandCount && (
-          <span data-testid="kw-player-hand-count" className="text-ds-text-muted">
+          <span data-testid="kw-player-hand-count" className="text-ds-text-muted whitespace-nowrap">
             {t('playerHandCount.current', { count: p.cardCount })}
             {showNextHandSize && ` · ${t('playerHandCount.next', { count: nextHandSize })}`}
           </span>
         )}
-        {isLeader && <span className={`px-1.5 py-0.5 rounded text-xs ${badgeInfoColors}`}>{t('leader')}</span>}
+        {isLeader && (
+          <span className={`px-1.5 py-0.5 rounded text-xs whitespace-nowrap ${badgeInfoColors}`}>{t('leader')}</span>
+        )}
         {isRoundWinner && (
-          <span className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>{t('roundWinner')}</span>
+          <span className={`px-1.5 py-0.5 rounded text-xs whitespace-nowrap ${badgeWarningColors}`}>
+            {t('roundWinner')}
+          </span>
         )}
         {isDogboneWarning && (
           <span
@@ -291,11 +298,14 @@ function KnockoutWhistPageContent() {
               </div>
             )}
 
-            <div className="text-ds-text-primary text-center mb-2">
-              <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
-              <span className="mr-4">{t('handSize', { n: state.handSize })}</span>
-              <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
-              <span className="mr-4">{t('trump', { suit: trumpSymbol })}</span>
+            <div
+              className="text-ds-text-primary text-center mb-2 flex flex-wrap justify-center gap-x-4 gap-y-1"
+              data-testid="kw-status-row"
+            >
+              <span className="whitespace-nowrap">{t('round', { n: state.roundNumber })}</span>
+              <span className="whitespace-nowrap">{t('handSize', { n: state.handSize })}</span>
+              <span className="whitespace-nowrap">{t('trick', { n: state.trickNumber })}</span>
+              <span className="whitespace-nowrap">{t('trump', { suit: trumpSymbol })}</span>
               <span>{t('activeCount', { n: state.activeCount })}</span>
             </div>
 

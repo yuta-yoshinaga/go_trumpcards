@@ -272,12 +272,14 @@ function AgnesPageContent() {
       cancelGiveUp={cancelGiveUp}
       headerExtra={
         <>
-          <span data-testid="agnes-base-rank" className="text-sm text-ds-text-muted">
-            {t('baseRank')}: {state.baseRank || '?'}
-          </span>
-          <span className="text-sm text-ds-text-muted">
-            {t('moveCount')}: {state.moveCount}
-          </span>
+          <div className="flex flex-wrap items-center gap-x-3">
+            <span data-testid="agnes-base-rank" className="whitespace-nowrap text-sm text-ds-text-muted">
+              {t('baseRank')}: {state.baseRank || '?'}
+            </span>
+            <span className="whitespace-nowrap text-sm text-ds-text-muted">
+              {t('moveCount')}: {state.moveCount}
+            </span>
+          </div>
           <span className="sr-only" role="status" aria-live="polite" data-testid="agnes-drag-target-status">
             {dnd.isDragging && draggedCard !== null
               ? state.tableau
@@ -339,7 +341,15 @@ function AgnesPageContent() {
                         <AnimatedCard card={pile[pile.length - 1]} width={cardWidth} />
                       ) : (
                         <span className="absolute inset-0 flex items-center justify-center text-xs text-ds-text-muted">
-                          {t('baseRank')}: {state.baseRank}
+                          <span className="sr-only">
+                            {t('baseRank')}: {state.baseRank}
+                          </span>
+                          <span aria-hidden="true" className="text-[10px] leading-tight break-keep sm:hidden">
+                            {t('baseRankShort')}
+                          </span>
+                          <span aria-hidden="true" className="hidden sm:inline">
+                            {t('baseRank')}: {state.baseRank}
+                          </span>
                         </span>
                       )}
                     </div>
