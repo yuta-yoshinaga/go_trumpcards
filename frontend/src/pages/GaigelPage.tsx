@@ -208,13 +208,13 @@ function GaigelPageContent() {
 
       <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
         {/* Round/Trick/Trump/Stock info */}
-        <div className="text-ds-text-primary text-center mb-2">
-          <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
-          <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
-          <span className="mr-4">
+        <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-ds-text-primary text-center mb-2">
+          <span className="whitespace-nowrap">{t('round', { n: state.roundNumber })}</span>
+          <span className="whitespace-nowrap">{t('trick', { n: state.trickNumber })}</span>
+          <span className="whitespace-nowrap">
             {state.trumpSuit > 0 ? t('trumpSuit', { suit: t(SUIT_LABEL_KEYS[state.trumpSuit]) }) : t('noTrump')}
           </span>
-          <span>{t('stock', { count: state.stockRemaining })}</span>
+          <span className="whitespace-nowrap">{t('stock', { count: state.stockRemaining })}</span>
         </div>
 
         {/* **山が尽きた瞬間にマストフォローへ切り替わる。**残り 0 枚という数字は
@@ -251,14 +251,17 @@ function GaigelPageContent() {
                   data-testid={`gaigel-player-${p.id}`}
                   className="mb-1 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
                 >
-                  {playerName(p.id, p.isHuman)}
+                  <span className="whitespace-nowrap">{playerName(p.id, p.isHuman)}</span>
                   {p.id === state.dealerIdx && (
                     <span className="ml-1 text-ds-accent" data-testid="gaigel-dealer-badge">
                       [{t('dealerBadge')}]
                     </span>
                   )}
-                  : {t('team', { n: p.team })} | {t('cards', { count: p.cardCount })} |{' '}
-                  {t('trickCount', { count: p.trickCount })}
+                  <span className="whitespace-nowrap">: {t('team', { n: p.team })}</span> |{' '}
+                  <span className="whitespace-nowrap">{t('cards', { count: p.cardCount })}</span> |{' '}
+                  <span className="whitespace-nowrap" data-testid="gaigel-player-tricks">
+                    {t('trickCount', { count: p.trickCount })}
+                  </span>
                 </div>
               ))}
             <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
@@ -271,14 +274,17 @@ function GaigelPageContent() {
                       data-testid={`gaigel-player-${p.id}`}
                       className="mb-1 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
                     >
-                      {playerName(p.id, p.isHuman)}
+                      <span className="whitespace-nowrap">{playerName(p.id, p.isHuman)}</span>
                       {p.id === state.dealerIdx && (
                         <span className="ml-1 text-ds-accent" data-testid="gaigel-dealer-badge">
                           [{t('dealerBadge')}]
                         </span>
                       )}
-                      : {t('team', { n: p.team })} | {t('cards', { count: p.cardCount })} |{' '}
-                      {t('trickCount', { count: p.trickCount })}
+                      <span className="whitespace-nowrap">: {t('team', { n: p.team })}</span> |{' '}
+                      <span className="whitespace-nowrap">{t('cards', { count: p.cardCount })}</span> |{' '}
+                      <span className="whitespace-nowrap" data-testid="gaigel-player-tricks">
+                        {t('trickCount', { count: p.trickCount })}
+                      </span>
                     </div>
                   ))}
               </div>
@@ -315,14 +321,14 @@ function GaigelPageContent() {
             </thead>
             <tbody>
               <tr>
-                <th scope="row" className="text-left">
+                <th scope="row" className="whitespace-nowrap text-left">
                   {t('scoreRows.cumulative')}
                 </th>
                 <td className="text-ds-accent">{state.teamScores[0]}</td>
                 <td className="text-center">{state.teamScores[1]}</td>
               </tr>
               <tr>
-                <th scope="row" className="text-left text-xs">
+                <th scope="row" className="whitespace-nowrap text-left text-xs">
                   {t('scoreRows.round')}
                 </th>
                 <td className="text-xs">{state.roundPoints[0]}</td>
@@ -330,7 +336,7 @@ function GaigelPageContent() {
               </tr>
               {(state.roundMarriage[0] > 0 || state.roundMarriage[1] > 0) && (
                 <tr>
-                  <th scope="row" className="text-left text-xs text-ds-warning">
+                  <th scope="row" className="whitespace-nowrap text-left text-xs text-ds-warning">
                     {t('scoreRows.marriage')}
                   </th>
                   <td className="text-xs text-ds-warning">{state.roundMarriage[0]}</td>

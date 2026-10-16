@@ -88,11 +88,19 @@ describe('AgnesPage', () => {
   it('shows base rank', async () => {
     renderWithProviders(<AgnesPage />);
     await waitFor(() => expect(screen.getByTestId('agnes-base-rank')).toHaveTextContent('ベースランク: 5'));
+    expect(screen.getByTestId('agnes-base-rank')).toHaveClass('whitespace-nowrap');
+    expect(screen.getByTestId('agnes-base-rank').parentElement).toHaveClass('flex', 'flex-wrap');
+    expect(screen.getByText('手数: 0')).toHaveClass('whitespace-nowrap');
   });
 
   it('shows the base rank in each empty foundation and keeps occupied cards visible', async () => {
     renderWithProviders(<AgnesPage />);
-    await waitFor(() => expect(screen.getAllByText('ベースランク: 5')).toHaveLength(4));
+    await waitFor(() => expect(document.querySelectorAll('[data-tutorial="ag-foundation"] .sr-only')).toHaveLength(3));
+    expect(document.querySelectorAll('[data-tutorial="ag-foundation"] .sr-only')[0]).toHaveTextContent(
+      'ベースランク: 5',
+    );
+    expect(screen.getAllByText('基準')).toHaveLength(3);
+    expect(screen.getAllByText('基準')[0]).toHaveClass('sm:hidden', 'break-keep');
     const foundation = document.querySelector('[data-tutorial="ag-foundation"]');
     expect(foundation?.querySelectorAll('[data-testid="animated-card"]')).toHaveLength(1);
   });
@@ -240,7 +248,8 @@ describe('AgnesPage', () => {
     await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument());
     // Board is still present alongside the error banner.
     expect(screen.getByText(/山札: 23/)).toBeInTheDocument();
-    expect(screen.getAllByText('ベースランク: 5')).toHaveLength(4);
+    expect(screen.getByTestId('agnes-base-rank')).toHaveTextContent('ベースランク: 5');
+    expect(document.querySelectorAll('[data-tutorial="ag-foundation"] .sr-only')).toHaveLength(3);
     expect(screen.getByRole('button', { name: '配る' })).toBeInTheDocument();
   });
 

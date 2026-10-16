@@ -231,12 +231,17 @@ function EcartePageContent() {
           />
 
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            <div className="text-ds-text-primary text-center mb-2" data-tutorial="ecarte-info">
-              <span className="mr-4">{t('deal', { n: state.roundNumber })}</span>
-              <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
-              <span className="mr-4">{t('trump', { suit: trumpSymbol })}</span>
-              <span className="mr-4">{t('stock', { count: state.stockRemaining })}</span>
-              <span>{t('target', { points: state.config.targetScore })}</span>
+            <div
+              className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-ds-text-primary text-center mb-2"
+              data-tutorial="ecarte-info"
+            >
+              <span className="whitespace-nowrap">{t('deal', { n: state.roundNumber })}</span>
+              <span className="whitespace-nowrap">{t('trick', { n: state.trickNumber })}</span>
+              <span className="whitespace-nowrap">{t('trump', { suit: trumpSymbol })}</span>
+              <span className="whitespace-nowrap" data-testid="ecarte-stock">
+                {t('stock', { count: state.stockRemaining })}
+              </span>
+              <span className="whitespace-nowrap">{t('target', { points: state.config.targetScore })}</span>
             </div>
 
             {isExchangePhase && (
@@ -281,7 +286,10 @@ function EcartePageContent() {
                         tricks: p.trickCount,
                       })}
                       {(p.id === state.dealerIdx || p.id === state.elderIdx) && (
-                        <span className="ml-1 text-ds-text-muted text-xs">
+                        <span
+                          className="ml-1 whitespace-nowrap text-ds-text-muted text-xs"
+                          data-testid={p.id === state.dealerIdx ? 'ecarte-dealer-badge' : undefined}
+                        >
                           (
                           {[
                             ...(p.id === state.dealerIdx ? [t('dealer')] : []),

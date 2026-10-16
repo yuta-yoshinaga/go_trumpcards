@@ -131,6 +131,9 @@ describe('GaigelPage', () => {
     renderWithProviders(<GaigelPage />);
     await waitFor(() => expect(screen.getByText('チームスコア')).toBeInTheDocument());
     expect(screen.getByText('山札: 28')).toBeInTheDocument();
+    expect(screen.getByTestId('gaigel-player-0').querySelector('[data-testid="gaigel-player-tricks"]')).toHaveClass(
+      'whitespace-nowrap',
+    );
   });
 
   it('shows the active target score and non-negative points remaining for each team', async () => {

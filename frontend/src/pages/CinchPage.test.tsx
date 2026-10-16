@@ -287,6 +287,8 @@ describe('CinchPage', () => {
     mockExec.mockResolvedValue(makeCinchState({ trumpSuit: 3, isHumanTurn: false }));
     renderWithProviders(<CinchPage />);
     const header = await screen.findByTestId('cinch-trump-header');
+    expect(header).toHaveClass('whitespace-nowrap');
+    expect(header.parentElement).toHaveClass('flex-wrap');
     expect(header).toHaveTextContent('ハート');
     // The ♥ symbol is wrapped in a red span.
     expect(header.querySelector('.text-ds-error-text')?.textContent).toBe('♥');
