@@ -276,7 +276,7 @@ function TutePageContent() {
                             <span key={suit} className="mr-3">
                               <span className="mr-1">{suitSymbolAt(suit, '')}</span>
                               {suit === state.trumpSuit && <span className="mr-1 text-ds-warning">★</span>}
-                              <span className={declared ? 'text-ds-text-primary' : ''}>
+                              <span className={`whitespace-nowrap ${declared ? 'text-ds-text-primary' : ''}`}>
                                 {declared ? t('declaredMarriages.declared') : t('declaredMarriages.undeclared')}
                               </span>
                             </span>

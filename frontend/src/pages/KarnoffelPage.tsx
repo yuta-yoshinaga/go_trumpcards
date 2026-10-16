@@ -175,7 +175,9 @@ function KarnoffelPageContent() {
           )}
         </span>
         <span className="ml-auto">{t('tricksWon', { n: p.tricksWon })}</span>
-        {!p.isHuman && p.cards.length === 0 && <span>{t('hiddenHand', { count: p.cardCount })}</span>}
+        {!p.isHuman && p.cards.length === 0 && (
+          <span className="whitespace-nowrap">{t('hiddenHand', { count: p.cardCount })}</span>
+        )}
       </span>
     </div>
   );

@@ -630,6 +630,13 @@ describe('OmiPage', () => {
     });
   });
 
+  it('shows dealer and trump caller labels when the human has both roles', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, dealerIdx: 0, bidPlayerIdx: 0, trumpSuit: 1 });
+    renderWithProviders(<OmiPage />);
+    await waitFor(() => expect(screen.getByText('ディーラー')).toBeInTheDocument());
+    expect(screen.getByText('切り札宣言者')).toBeInTheDocument();
+  });
+
   it('score table headers have scope="col" for accessibility', async () => {
     const { container } = renderWithProviders(<OmiPage />);
     await waitFor(() => expect(screen.getByText('チームスコア')).toBeInTheDocument());
@@ -637,6 +644,13 @@ describe('OmiPage', () => {
     ths.forEach((th) => {
       expect(th).toHaveAttribute('scope', 'col');
     });
+  });
+
+  it('keeps the score table heading on one line', async () => {
+    const { container } = renderWithProviders(<OmiPage />);
+    await waitFor(() => expect(screen.getByText('チームスコア')).toBeInTheDocument());
+    expect(screen.getByRole('columnheader', { name: 'スコア' })).toHaveClass('text-[10px]', 'whitespace-nowrap');
+    expect(container.querySelector('th[scope="col"].whitespace-nowrap')).toBeInTheDocument();
   });
 
   it('shows round tricks alongside cumulative scores for both teams', async () => {
