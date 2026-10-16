@@ -280,7 +280,11 @@ function KaiserPageContent() {
                   {state.contract === 0 && suitGlyph(state.trumpSuit)}
                 </span>
               )}
-              {state.kittySize > 0 && <span data-testid="kaiser-kitty">{t('kitty', { n: state.kittySize })}</span>}
+              {state.kittySize > 0 && (
+                <span className="whitespace-nowrap" data-testid="kaiser-kitty">
+                  {t('kitty', { n: state.kittySize })}
+                </span>
+              )}
             </div>
 
             {/* **相方が何点で入札し、誰がどこで降りたかは公開情報で、続けるか降りるかの

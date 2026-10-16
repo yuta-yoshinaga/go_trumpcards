@@ -252,11 +252,14 @@ function NapPageContent() {
                 <span className="basis-full text-xs text-ds-text-muted">{t('bidStakeLegend')}</span>
               </div>
             )}
-            <div className="text-ds-text-primary text-center mb-2" data-tutorial="nap-info">
-              <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
-              <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
-              <span className="mr-4">{t('trump', { suit: trumpSymbol })}</span>
-              <span>{t('target', { points: state.config.targetPoints })}</span>
+            <div
+              className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-ds-text-primary mb-2"
+              data-tutorial="nap-info"
+            >
+              <span className="whitespace-nowrap">{t('round', { n: state.roundNumber })}</span>
+              <span className="whitespace-nowrap">{t('trick', { n: state.trickNumber })}</span>
+              <span className="whitespace-nowrap">{t('trump', { suit: trumpSymbol })}</span>
+              <span className="whitespace-nowrap">{t('target', { points: state.config.targetPoints })}</span>
             </div>
 
             <div className="text-ds-text-muted text-center mb-2 text-sm">

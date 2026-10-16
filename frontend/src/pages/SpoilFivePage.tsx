@@ -209,7 +209,9 @@ function SpoilFivePageContent() {
           </span>
         )}
         {isLeader && (
-          <span className="px-1.5 py-0.5 rounded bg-white/20 text-ds-text-primary text-xs">{t('leader')}</span>
+          <span className="px-1.5 py-0.5 rounded bg-white/20 text-ds-text-primary text-xs whitespace-nowrap">
+            {t('leader')}
+          </span>
         )}
         {isRoundWinner && (
           <span className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>{t('roundWinner')}</span>
@@ -272,7 +274,7 @@ function SpoilFivePageContent() {
               <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
               <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
               <span className="mr-4">{t('trump', { suit: trumpSymbol })}</span>
-              <span className="mr-4" data-testid="spoilfive-target">
+              <span className="mr-4 whitespace-nowrap" data-testid="spoilfive-target">
                 {t('target', { n: state.config.targetPoints })}
               </span>
               <span className={potDelta > 0 ? 'font-semibold text-ds-warning motion-safe:animate-pulse' : ''}>

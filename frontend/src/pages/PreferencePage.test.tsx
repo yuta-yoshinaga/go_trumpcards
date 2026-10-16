@@ -84,6 +84,13 @@ beforeEach(() => {
 });
 
 describe('PreferencePage', () => {
+  it('keeps each status item unbroken in the wrapping status row', async () => {
+    renderWithProviders(<PreferencePage />);
+    const row = await screen.findByText(/ラウンド/).then((el) => el.closest('[data-tutorial="preference-info"]'));
+    expect(row).toHaveClass('flex', 'flex-wrap');
+    expect(row?.querySelectorAll('span.whitespace-nowrap')).toHaveLength(4);
+  });
+
   it('shows per-round scores and cumulative totals by player', async () => {
     mockExec.mockResolvedValue(
       makePreferenceState({
