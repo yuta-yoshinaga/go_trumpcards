@@ -97,6 +97,20 @@ beforeEach(() => {
 });
 
 describe('CrazyFourPokerPage', () => {
+  it('renders Japanese rank names in both payout tables and keeps the four aces label', async () => {
+    mockApi.mockResolvedValue(base);
+    renderWithProviders(<CrazyFourPokerPage />);
+
+    const superBonus = await screen.findByTestId('c4p-superbonus-payouts');
+    const queensUp = screen.getByTestId('c4p-queensup-payouts');
+    expect(within(superBonus).getByText('4 枚のエース')).toBeInTheDocument();
+    expect(within(superBonus).getByText('フォーカード')).toBeInTheDocument();
+    expect(within(superBonus).getByText('フラッシュ')).toBeInTheDocument();
+    expect(within(queensUp).getByText('フォーカード')).toBeInTheDocument();
+    expect(within(queensUp).getByText('ワンペア')).toBeInTheDocument();
+    expect(screen.queryByText('Four of a Kind')).not.toBeInTheDocument();
+    expect(screen.queryByText('Flush')).not.toBeInTheDocument();
+  });
   it('keeps the player hand and wager information in the play area and decision controls in footer actions', async () => {
     mockApi.mockResolvedValue(dealt());
     renderWithProviders(<CrazyFourPokerPage />);
@@ -129,9 +143,9 @@ describe('CrazyFourPokerPage', () => {
     expect(within(footer).queryByTestId('c4p-queensup-payouts')).not.toBeInTheDocument();
     expect(within(playArea).getByTestId('c4p-superbonus-payouts')).toBeInTheDocument();
     expect(within(playArea).getByTestId('c4p-wager-summary')).toBeInTheDocument();
-    expect(table).toHaveTextContent('Four of a Kind');
+    expect(table).toHaveTextContent('フォーカード');
     expect(table).toHaveTextContent('50倍');
-    expect(table).toHaveTextContent('Pair');
+    expect(table).toHaveTextContent('ワンペア');
     expect(table).toHaveTextContent('1倍');
   });
 
