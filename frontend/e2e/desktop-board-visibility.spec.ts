@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect, type Page, test } from '@playwright/test';
-import { BOARD_CARD_SELECTOR } from '../src/utils/boardCardSelector';
+import { BOARD_CARD_QUERY_SELECTOR } from '../src/utils/boardCardSelector';
 import { DESKTOP_VIEWPORTS, getDesktopCardWidthLimit, VISIBLE_PX_X, VISIBLE_PX_Y } from './desktopViewports';
 import { navigateTo, waitForAnimations, waitForLoaded } from './helpers';
 
@@ -94,7 +94,7 @@ async function measureBoardCards(page: Page, path: string) {
     ({ visiblePxX, visiblePxY, skipHorizontal, maxCardWidth, cardSelector }) => {
       // A role=img node containing card images is a visual group (for example Salic Law's retired
       // queens), not another card. Standalone role=img cards such as tarot remain in the selector.
-      const cards = [...document.querySelectorAll(`main ${cardSelector}`)].filter((element) => {
+      const cards = [...document.querySelectorAll(cardSelector)].filter((element) => {
         const label = `${element.getAttribute('alt') ?? ''} ${element.getAttribute('aria-label') ?? ''}`;
         const box = element.getBoundingClientRect();
         // CPU hands inside the shared accordion are reference only (#11700); they may scroll.
@@ -145,7 +145,7 @@ async function measureBoardCards(page: Page, path: string) {
       visiblePxY: VISIBLE_PX_Y,
       skipHorizontal,
       maxCardWidth: getDesktopCardWidthLimit(page.viewportSize()?.width ?? 1280),
-      cardSelector: BOARD_CARD_SELECTOR,
+      cardSelector: BOARD_CARD_QUERY_SELECTOR,
     },
   );
 }

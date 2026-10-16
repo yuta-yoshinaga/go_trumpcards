@@ -5,7 +5,6 @@ import { expect, test } from '@playwright/test';
 import { DESKTOP_VIEWPORTS } from './desktopViewports';
 import { navigateTo } from './helpers';
 
-/** #11825: aria-disabled primary actions remain visible because project policy (#8524/#8787) keeps the next action available in the UI until it becomes operable. */
 const guidanceSelector =
   '[role="status"].glass-panel, [role="alert"].glass-panel, [role="status"] .glass-panel, [role="alert"] .glass-panel';
 
@@ -89,6 +88,7 @@ for (const viewport of DESKTOP_VIEWPORTS) {
 
             const buttons = [...document.querySelectorAll<HTMLElement>('main button, footer button')].filter(
               (button) => {
+                // #11825: aria-disabled primary actions remain visible because project policy (#8524/#8787) keeps the next action available in the UI until it becomes operable.
                 if (button.matches(':disabled')) return false;
                 const style = getComputedStyle(button);
                 if (
