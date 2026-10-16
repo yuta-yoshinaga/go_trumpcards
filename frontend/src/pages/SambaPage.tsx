@@ -475,7 +475,7 @@ function SambaPageContent() {
                     <div className="text-ds-text-muted text-sm">{t('discardTop')}</div>
                     {state.isFrozen && (
                       <span
-                        className="absolute top-1 right-2 text-ds-info text-xs font-bold"
+                        className="absolute top-1 right-2 shrink-0 whitespace-nowrap text-ds-info text-xs font-bold"
                         data-testid="sa-frozen-badge"
                         role="img"
                         aria-label={t('frozenIndicator')}

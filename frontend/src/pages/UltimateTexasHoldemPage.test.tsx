@@ -145,6 +145,7 @@ describe('UltimateTexasHoldemPage', () => {
     expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument();
     expect(screen.getByLabelText('アンテ')).toHaveClass('min-w-0');
     expect(screen.getByText('アンテ')).toHaveClass('shrink-0', 'whitespace-nowrap');
+    expect(screen.getByText('×2 (ブラインド)')).toHaveClass('shrink-0', 'whitespace-nowrap');
   });
 
   it('renders skeleton before state loads', () => {
