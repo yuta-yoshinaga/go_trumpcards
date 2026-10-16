@@ -88,6 +88,9 @@ PY
       [[ -n "$route" ]] || continue
       route="${route#/}"; [[ -n "$route" ]] || route=blackjack
       [[ -f "$wt/frontend/e2e/$route.spec.ts" ]] && run_specs+=("$route.spec.ts")
+      for spec in "$wt/frontend/e2e/$route-"*.spec.ts; do
+        [[ -f "$spec" ]] && run_specs+=("${spec##*/}")
+      done
       if (( ! full_sweep )); then
         run_args+=("/$(printf '%s' "$route" | sed 's/[][(){}.^$*+?|\\]/\\&/g')\\b")
       fi
