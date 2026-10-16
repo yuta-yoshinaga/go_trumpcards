@@ -36,6 +36,12 @@ beforeEach(() => {
 });
 
 describe('KnockoutWhistPage', () => {
+  it('keeps status labels intact and wraps between items', async () => {
+    renderWithProviders(<KnockoutWhistPage />);
+    const row = await screen.findByTestId('kw-status-row');
+    expect(row).toHaveClass('flex-wrap');
+    expect(row.querySelectorAll('span.whitespace-nowrap').length).toBeGreaterThanOrEqual(4);
+  });
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<KnockoutWhistPage />);

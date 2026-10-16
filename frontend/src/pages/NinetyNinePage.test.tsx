@@ -122,6 +122,18 @@ afterEach(() => {
 });
 
 describe('NinetyNinePage', () => {
+  it('keeps status labels intact and wraps between items', async () => {
+    renderWithProviders(<NinetyNinePage />);
+    const row = await screen.findByTestId('nn-status-row');
+    expect(row).toHaveClass('flex-wrap');
+    expect(row.querySelectorAll('span.whitespace-nowrap').length).toBeGreaterThanOrEqual(3);
+  });
+  it('keeps trick and round score headings on one line', async () => {
+    renderWithProviders(<NinetyNinePage />);
+    const headers = await screen.findAllByRole('columnheader');
+    expect(headers.filter((header) => header.classList.contains('text-[10px]'))).toHaveLength(2);
+    expect(headers.filter((header) => header.classList.contains('whitespace-nowrap'))).toHaveLength(2);
+  });
   it('renders turn guidance in the footer on desktop', async () => {
     Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1024 });
     mockExec.mockResolvedValue({ ...playPhaseState, message: 'Footer guidance' });

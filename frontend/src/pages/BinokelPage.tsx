@@ -400,16 +400,28 @@ function BinokelPageContent() {
                           } ${onTurn ? 'ring-2 ring-ds-warning' : ''}`}
                         >
                           <div className="font-bold flex items-center justify-between">
-                            <span>{playerName(p.id, p.isHuman)}</span>
+                            <span className="min-w-0 truncate" title={playerName(p.id, p.isHuman)}>
+                              {playerName(p.id, p.isHuman)}
+                            </span>
                             {isDeclarer && (
-                              <span className="text-xs px-1.5 py-0.5 rounded bg-ds-accent text-black font-semibold">
+                              <span className="shrink-0 whitespace-nowrap text-xs px-1.5 py-0.5 rounded bg-ds-accent text-black font-semibold">
                                 {t('declarer')}
                               </span>
                             )}
                           </div>
-                          <div className="text-xs">
-                            {t('scores')}: {scoreVal} | {t('bid')}: {bidDisplay} | {t('meldScore')}: {p.meldScore} |{' '}
-                            {t('trickCount')}: {p.trickCount} ({t('points', { points: p.trickPoints })})
+                          <div className="flex flex-wrap gap-x-2 gap-y-1 text-xs">
+                            <span className="whitespace-nowrap">
+                              {t('scores')}: {scoreVal}
+                            </span>
+                            <span className="whitespace-nowrap">
+                              {t('bid')}: {bidDisplay}
+                            </span>
+                            <span className="whitespace-nowrap">
+                              {t('meldScore')}: {p.meldScore}
+                            </span>
+                            <span className="whitespace-nowrap">
+                              {t('trickCount')}: {p.trickCount} ({t('points', { points: p.trickPoints })})
+                            </span>
                           </div>
                         </div>
                       );
@@ -441,16 +453,28 @@ function BinokelPageContent() {
                               className={`rounded p-2 text-sm bg-black/30 text-ds-text-muted ${onTurn ? 'ring-2 ring-ds-warning' : ''}`}
                             >
                               <div className="font-bold flex items-center justify-between">
-                                <span>{playerName(p.id, p.isHuman)}</span>
+                                <span className="min-w-0 truncate" title={playerName(p.id, p.isHuman)}>
+                                  {playerName(p.id, p.isHuman)}
+                                </span>
                                 {isDeclarer && (
-                                  <span className="text-xs px-1.5 py-0.5 rounded bg-ds-accent text-black font-semibold">
+                                  <span className="shrink-0 whitespace-nowrap text-xs px-1.5 py-0.5 rounded bg-ds-accent text-black font-semibold">
                                     {t('declarer')}
                                   </span>
                                 )}
                               </div>
-                              <div className="text-xs">
-                                {t('scores')}: {scoreVal} | {t('bid')}: {bidDisplay} | {t('meldScore')}: {p.meldScore} |{' '}
-                                {t('trickCount')}: {p.trickCount} ({t('points', { points: p.trickPoints })})
+                              <div className="flex flex-wrap gap-x-2 gap-y-1 text-xs">
+                                <span className="whitespace-nowrap">
+                                  {t('scores')}: {scoreVal}
+                                </span>
+                                <span className="whitespace-nowrap">
+                                  {t('bid')}: {bidDisplay}
+                                </span>
+                                <span className="whitespace-nowrap">
+                                  {t('meldScore')}: {p.meldScore}
+                                </span>
+                                <span className="whitespace-nowrap">
+                                  {t('trickCount')}: {p.trickCount} ({t('points', { points: p.trickPoints })})
+                                </span>
                               </div>
                             </div>
                           );
