@@ -87,6 +87,12 @@ describe('GermanSoloPage', () => {
     expect(screen.getByText('宣言者')).toBeInTheDocument();
   });
 
+  it('falls back to the no-bid label for an unknown winning bid', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, winningBid: -1 as 0 });
+    renderWithProviders(<GermanSoloPage />);
+    expect(await screen.findByText('契約: -')).toBeInTheDocument();
+  });
+
   it('renders dealer and forehand badges on the correct seats and not on others', async () => {
     renderWithProviders(<GermanSoloPage />);
     await waitFor(() => {
@@ -153,6 +159,7 @@ describe('GermanSoloPage', () => {
     renderWithProviders(<GermanSoloPage />);
     const line = await screen.findByTestId('germansolo-contract-line');
     expect(line).toHaveTextContent('必要 8 トリック');
+    expect(screen.getByTestId('germansolo-ace-line')).toHaveClass('whitespace-nowrap');
     expect(line).toHaveTextContent('宣言側 3');
     expect(line).toHaveTextContent('守備側 1');
   });

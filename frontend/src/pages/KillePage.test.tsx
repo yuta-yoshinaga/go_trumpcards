@@ -83,6 +83,14 @@ describe('KillePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('keeps the stock count label together while wrapping the info row', async () => {
+    renderWithProviders(<KillePage />);
+    const stock = await screen.findByTestId('kille-stock');
+    expect(stock).toHaveTextContent('山札: 38枚');
+    expect(stock).toHaveClass('whitespace-nowrap');
+    expect(document.querySelector('[data-tutorial="kille-info"]')).toHaveClass('flex', 'flex-wrap');
+  });
+
   it('exchanges and stands pat', async () => {
     renderWithProviders(<KillePage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /交換する/ })).toBeInTheDocument());
