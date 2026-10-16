@@ -147,7 +147,7 @@ func (cp *BaseballPokerCuiPresenter) writeResult(sb *strings.Builder, c interfac
 		rank := p.GetHandRank()
 		hand := strconv.Itoa(rank)
 		if rank >= 0 && rank < len(domain.PokerHandNames) {
-			hand = domain.PokerHandNames[rank]
+			hand = cuiPokerHandName(rank)
 		}
 		sb.WriteString(i18n.Tf("baseballpoker.showdownHandLine",
 			"name", p.GetName(),

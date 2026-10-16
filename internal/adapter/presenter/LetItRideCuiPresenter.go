@@ -46,7 +46,7 @@ func (lp *LetItRideCuiPresenter) Output(lir interfaces.LetItRideGame, lastErr er
 		if lir.GetPhase() == domain.LetItRidePhaseEnd {
 			rank := lir.GetHandRank()
 			if rank >= 0 && rank < len(domain.PokerHandNames) {
-				fmt.Fprintf(&sb, "%s\n", i18n.Tf("letitride.handLine", "hand", domain.PokerHandNames[rank]))
+				fmt.Fprintf(&sb, "%s\n", i18n.Tf("letitride.handLine", "hand", cuiPokerHandName(rank)))
 			}
 		}
 		parts := make([]string, len(playerHand))

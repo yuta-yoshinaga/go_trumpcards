@@ -207,6 +207,9 @@ func TestCincinnatiCuiPresenter_ShowsBetGuidanceAndResult(t *testing.T) {
 // **なぜその配当になったのかを言う** (#5780)。5 枚の手札だけで成立する役も
 // 普通にあるので、金額だけでは読めない。
 func TestCincinnatiCuiPresenter_NamesTheWinningHand(t *testing.T) {
+	original := i18n.Lang()
+	t.Cleanup(func() { i18n.SetLang(original) })
+	i18n.SetLang("ja")
 	cp := new(CincinnatiCuiPresenter)
 	g := cincinnatiSettled(t)
 	out := cp.Output(g, nil)
@@ -225,7 +228,8 @@ func TestCincinnatiCuiPresenter_NamesTheWinningHand(t *testing.T) {
 		assert.Contains(t, out, i18n.Tf("cincinnati.wonLine",
 			"name", g.GetPlayers()[i].GetName(),
 			"amount", strconv.Itoa(r.WonAmount),
-			"hand", domain.PokerHandNames[rank]))
+			"hand", cuiPokerHandName(rank)))
+		assert.NotContains(t, out, domain.PokerHandNames[rank])
 	}
 	require.Positive(t, won, "獲得した席が 1 つも無い")
 }

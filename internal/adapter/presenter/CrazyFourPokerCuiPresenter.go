@@ -22,7 +22,7 @@ func crazyFourPokerQueensUpTableStr() string {
 	for _, r := range rows {
 		name := ""
 		if r.Hand >= 0 && r.Hand < len(domain.FourCardHandNames) {
-			name = domain.FourCardHandNames[r.Hand]
+			name = cuiFourCardHandName(r.Hand)
 		}
 		parts = append(parts, fmt.Sprintf("%s %d:1", name, r.Multiplier))
 	}
@@ -42,7 +42,7 @@ func crazyFourPokerSuperBonusTableStr() string {
 	for _, r := range rows {
 		name := ""
 		if r.Hand >= 0 && r.Hand < len(domain.FourCardHandNames) {
-			name = domain.FourCardHandNames[r.Hand]
+			name = cuiFourCardHandName(r.Hand)
 		}
 		parts = append(parts, fmt.Sprintf("%s %s:1", name, crazyFourPokerMultStr(r.Multiplier)))
 	}
@@ -231,7 +231,7 @@ func crazyFourPokerRankName(rank int) string {
 	if rank <= 0 || rank >= len(domain.FourCardHandNames) {
 		return i18n.T("crazyfourpoker.rankNone")
 	}
-	return domain.FourCardHandNames[rank]
+	return cuiFourCardHandName(rank)
 }
 
 // crazyFourPokerCardsStr は札の並びを 1 行の文字列にする。

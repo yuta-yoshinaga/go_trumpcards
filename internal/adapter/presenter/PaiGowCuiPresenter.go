@@ -193,7 +193,7 @@ func (pp *PaiGowCuiPresenter) phaseStr(phase int) string {
 // highHandRankStr ハイハンドランク文字列
 func (pp *PaiGowCuiPresenter) highHandRankStr(rank int) string {
 	if rank >= 0 && rank < len(domain.PokerHandNames) {
-		return domain.PokerHandNames[rank]
+		return cuiPokerHandName(rank)
 	}
 	return i18n.T("paigow.rankUnknown")
 }
