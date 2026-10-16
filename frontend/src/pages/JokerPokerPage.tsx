@@ -19,6 +19,7 @@ function JokerPokerPageContent() {
       apiExec={jokerpokerApi.exec}
       gamePath="/jokerpoker"
       cliGameConfig={CLI_GAME_CONFIG}
+      keepPayoutNamesTogether
     />
   );
 }

@@ -19,6 +19,7 @@ function VideoPokerPageContent() {
       apiExec={videopokerApi.exec}
       gamePath="/videopoker"
       cliGameConfig={CLI_GAME_CONFIG}
+      keepPayoutNamesTogether
     />
   );
 }

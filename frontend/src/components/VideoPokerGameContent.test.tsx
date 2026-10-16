@@ -104,7 +104,10 @@ const tutorialConfig: TutorialConfig = {
   steps: [],
 };
 
-function renderContent(gameName: 'videopoker' | 'deuceswild' | 'jokerpoker' = 'videopoker') {
+function renderContent(
+  gameName: 'videopoker' | 'deuceswild' | 'jokerpoker' = 'videopoker',
+  keepPayoutNamesTogether = false,
+) {
   return renderWithProviders(
     <TutorialProvider config={tutorialConfig} translateMessage={(k: string) => k}>
       <VideoPokerGameContent
@@ -112,6 +115,7 @@ function renderContent(gameName: 'videopoker' | 'deuceswild' | 'jokerpoker' = 'v
         i18nNamespace={gameName}
         apiExec={mockExec}
         gamePath={`/${gameName}`}
+        keepPayoutNamesTogether={keepPayoutNamesTogether}
         cliGameConfig={{
           parseCommand: () => ({ args: ['reset'] }),
           formatResponse: () => '',
@@ -141,6 +145,15 @@ describe('VideoPokerGameContent', () => {
     expect(within(table).getByRole('rowheader', { name: /ロイヤルフラッシュ|royal flush/i })).toHaveClass(
       'whitespace-normal',
       'sm:whitespace-nowrap',
+    );
+  });
+
+  it('keeps payout hand names together when requested by scoped pages', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderContent('videopoker', true);
+    const table = await screen.findByRole('table', { name: /配当表|payout table/i });
+    expect(within(table).getByRole('rowheader', { name: /ロイヤルフラッシュ|royal flush/i })).toHaveClass(
+      'whitespace-nowrap',
     );
   });
 

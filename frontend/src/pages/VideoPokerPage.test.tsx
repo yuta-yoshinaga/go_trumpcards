@@ -104,6 +104,7 @@ describe('VideoPokerPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     expect(screen.getByText(/チップ.*1000/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /ディール/ })).toBeInTheDocument();
+    expect(screen.getByRole('rowheader', { name: /ロイヤルフラッシュ/ })).toHaveClass('whitespace-nowrap');
   });
 
   it('renders draw phase with 5 cards', async () => {

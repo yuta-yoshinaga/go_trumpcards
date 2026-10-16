@@ -127,6 +127,8 @@ describe('HighCardFlushPage', () => {
     renderWithProviders(<HighCardFlushPage />);
     await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument();
+    expect(screen.getByText(/ストレートフラッシュボーナス/)).toHaveClass('whitespace-nowrap');
+    expect(screen.getByTestId('hcf-bet-controls')).toHaveClass('flex-wrap', '[&_label]:whitespace-nowrap');
   });
 
   it('labels player flush vs non-flush cards with text, not just glow/opacity', async () => {
