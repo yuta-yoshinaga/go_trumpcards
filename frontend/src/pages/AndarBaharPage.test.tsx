@@ -149,6 +149,7 @@ describe('AndarBaharPage', () => {
     // **先に配る列は賭ける前に見えていなければならない。** 配当が下がる側だからです。
     await waitFor(() => expect(screen.getByTestId('andarbahar-first-column')).toBeInTheDocument());
     expect(screen.getByTestId('andarbahar-first-column')).toHaveTextContent('アンダー');
+    expect(screen.getByText('アンダー', { exact: true })).toHaveClass('whitespace-nowrap');
   });
 
   it('places a bet on Andar with no side bet', async () => {

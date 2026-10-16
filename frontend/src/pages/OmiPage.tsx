@@ -337,15 +337,20 @@ function OmiPageContent() {
 
                 {/* Partnership info */}
                 {humanPlayer && (
-                  <div className="text-ds-text-muted text-sm text-center mb-2" data-tutorial="omi-team-info">
+                  <div
+                    className="flex flex-wrap justify-center gap-x-2 text-ds-text-muted text-sm text-center mb-2"
+                    data-tutorial="omi-team-info"
+                  >
                     {t('partnership', {
                       partner: playerName(
                         state.players.find((p) => !p.isHuman && p.team === humanTeam)?.id ?? -1,
                         false,
                       ),
                     })}
-                    {state.dealerIdx === humanPlayer.id ? ` | ${t('dealer')}` : ''}
-                    {state.bidPlayerIdx === humanIdx && state.trumpSuit > 0 ? ` | ${t('trumpCaller')}` : ''}
+                    {state.dealerIdx === humanPlayer.id && <span className="whitespace-nowrap">{t('dealer')}</span>}
+                    {state.bidPlayerIdx === humanIdx && state.trumpSuit > 0 && (
+                      <span className="whitespace-nowrap">{t('trumpCaller')}</span>
+                    )}
                   </div>
                 )}
 
@@ -589,11 +594,15 @@ function TeamScoreTable({
     <table className="w-full text-sm text-ds-text-muted mt-1">
       <thead>
         <tr>
-          <th scope="col" className="text-left">
+          <th scope="col" className="whitespace-nowrap text-left">
             {t('team', { n: '' })}
           </th>
-          <th scope="col">{tc('button.score')}</th>
-          <th scope="col">{t('teamTricks')}</th>
+          <th scope="col" className="whitespace-nowrap">
+            {tc('button.score')}
+          </th>
+          <th scope="col" className="whitespace-nowrap">
+            {t('teamTricks')}
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -625,8 +634,18 @@ function CpuPlayerLine({
     <>
       {playerName(player.id, player.isHuman)}: {t('cards', { count: player.cardCount })} |{' '}
       {t('team', { n: player.team })} | {t('trickCount', { count: player.trickCount })}
-      {dealerIdx === player.id ? ` | ${t('dealer')}` : ''}
-      {callerIdx === player.id && player.team !== undefined ? ` | ${t('trumpCaller')}` : ''}
+      {dealerIdx === player.id && (
+        <span className="whitespace-nowrap">
+          {' | '}
+          {t('dealer')}
+        </span>
+      )}
+      {callerIdx === player.id && player.team !== undefined && (
+        <>
+          {' | '}
+          <span className="whitespace-nowrap">{t('trumpCaller')}</span>
+        </>
+      )}
     </>
   );
 }

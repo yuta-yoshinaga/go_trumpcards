@@ -225,6 +225,11 @@ describe('FollowTheQueenPage', () => {
     await waitFor(() => expect(screen.getByText(/CPU 1/)).toBeInTheDocument());
     expect(screen.getByText(/CPU 2/)).toBeInTheDocument();
     expect(screen.getAllByText(/タイト/).length).toBeGreaterThanOrEqual(1);
+    expect(
+      Array.from(document.querySelectorAll('span.whitespace-nowrap')).filter((chips) =>
+        chips.textContent?.includes('チップ:'),
+      ),
+    ).toHaveLength(3);
   });
 
   it('keeps CPU details collapsed on mobile and opens them on desktop', async () => {

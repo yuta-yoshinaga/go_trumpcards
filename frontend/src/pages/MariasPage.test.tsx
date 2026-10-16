@@ -107,6 +107,7 @@ describe('MariasPage', () => {
     expect(cpuDetails).not.toContainElement(humanSeat);
     expect(cpuDetails).toContainElement(screen.getByText('CPU 1: ディフェンダー | 10枚 | 0トリック'));
     expect(screen.getByTestId('marias-side-totals')).toHaveTextContent('ソリスト: 0点');
+    expect(screen.getByTestId('marias-side-totals').querySelector('span')).toHaveClass('whitespace-nowrap');
     expect(screen.getByTestId('marias-side-totals')).toHaveTextContent('ディフェンダー合計: 0点');
     expect(humanSeat).toHaveTextContent('あなた: ソリスト | 10枚 | 0トリック');
   });

@@ -276,6 +276,11 @@ describe('FiveCardStudPage', () => {
     await waitFor(() => expect(screen.getByText('[フォールド]')).toBeInTheDocument());
     expect(screen.getByText('[オールイン]')).toBeInTheDocument();
     expect(screen.getAllByText(/タイト/).length).toBeGreaterThanOrEqual(1);
+    expect(
+      Array.from(document.querySelectorAll('span.whitespace-nowrap')).filter((chips) =>
+        chips.textContent?.includes('チップ:'),
+      ),
+    ).toHaveLength(2);
   });
 
   it('shows door and hole card labels and human cards', async () => {

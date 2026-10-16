@@ -442,7 +442,9 @@ export function FiveCardStudPageContent({ gameKey }: { gameKey: FcsPageGameKey }
                         <HudStats vpip={p.vpip} pfr={p.pfr} threeBet={p.threeBet} af={p.af} namespace={gameKey} />
                       )}
                       <span className="ml-2 text-xs">
-                        {tc('betting.chips')} {p.chips}
+                        <span className="whitespace-nowrap">
+                          {tc('betting.chips')} {p.chips}
+                        </span>
                       </span>
                       {p.currentBet > 0 && (
                         <span className="ml-2 text-xs">

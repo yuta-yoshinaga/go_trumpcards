@@ -323,13 +323,13 @@ function MariasPageContent() {
                         {t(isRoundEnd || isGameEnd ? 'roundResult.title' : 'roundResult.progressTitle')}
                         <span className="ml-2" data-testid="marias-side-totals">
                           <span
-                            className={(isRoundEnd || isGameEnd) && soloistWon ? 'text-ds-warning font-semibold' : ''}
+                            className={`whitespace-nowrap ${(isRoundEnd || isGameEnd) && soloistWon ? 'text-ds-warning font-semibold' : ''}`}
                           >
                             {t('roundResult.soloistTotal', { points: soloistTotal })}
                           </span>
                           {' / '}
                           <span
-                            className={(isRoundEnd || isGameEnd) && !soloistWon ? 'text-ds-warning font-semibold' : ''}
+                            className={`whitespace-nowrap ${(isRoundEnd || isGameEnd) && !soloistWon ? 'text-ds-warning font-semibold' : ''}`}
                           >
                             {t('roundResult.defenderTotal', { points: defenderTotal })}
                           </span>

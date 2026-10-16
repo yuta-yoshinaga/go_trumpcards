@@ -335,6 +335,7 @@ describe('TarabishPage', () => {
 
     expect(await screen.findByTestId('tb-seat-cards-0')).toHaveTextContent('残り手札5枚');
     expect(screen.getByTestId('tb-seat-cards-1')).toHaveTextContent('残り手札4枚');
+    expect(screen.getByTestId('tb-seat-cards-1')).toHaveClass('whitespace-nowrap');
     expect(screen.getByTestId('tb-seat-cards-2')).toHaveTextContent('残り手札2枚');
     expect(screen.getByTestId('tb-seat-cards-3')).toHaveTextContent('残り手札1枚');
   });

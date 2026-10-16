@@ -281,7 +281,7 @@ function TarabishPageContent() {
                       <span className="ml-1 sm:ml-2" data-testid={`tb-seat-tricks-${p.id.toString()}`}>
                         {t('header.tricksTaken', { count: p.trickCount })}
                       </span>
-                      <span className="ml-1 sm:ml-2" data-testid={`tb-seat-cards-${p.id.toString()}`}>
+                      <span className="ml-1 sm:ml-2 whitespace-nowrap" data-testid={`tb-seat-cards-${p.id.toString()}`}>
                         {t('header.cardsLeft', { count: p.cardCount })}
                       </span>
                     </div>
@@ -313,7 +313,7 @@ function TarabishPageContent() {
                           <span className="ml-2" data-testid={`tb-seat-tricks-${p.id.toString()}`}>
                             {t('header.tricksTaken', { count: p.trickCount })}
                           </span>
-                          <span className="ml-2" data-testid={`tb-seat-cards-${p.id.toString()}`}>
+                          <span className="ml-2 whitespace-nowrap" data-testid={`tb-seat-cards-${p.id.toString()}`}>
                             {t('header.cardsLeft', { count: p.cardCount })}
                           </span>
                         </div>

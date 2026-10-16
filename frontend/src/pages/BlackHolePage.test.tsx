@@ -278,6 +278,7 @@ describe('BlackHolePage', () => {
     mockExec.mockResolvedValue(makeState({ blackHole: [card('SPADE', 7)] }));
     renderWithProviders(<BlackHolePage />);
     const readout = await screen.findByTestId('bh-acceptable');
+    expect(readout.querySelector('span')).toHaveClass('whitespace-nowrap');
     expect(readout).toHaveTextContent('受け入れ可能: 6 / 8');
     const count = screen.getByTestId('bh-legal-count');
     expect(count).toHaveTextContent('合法手: 1');
