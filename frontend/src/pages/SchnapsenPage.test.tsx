@@ -75,9 +75,14 @@ describe('SchnapsenPage', () => {
     renderWithProviders(<SchnapsenPage />);
     await waitFor(() => expect(screen.getByText(/トリック: 1/)).toBeInTheDocument());
     expect(screen.getByText(/山札: 9/)).toBeInTheDocument();
-    expect(screen.getByText(/得点 \(66点で勝利\) — あなた: 0 \/ CPU: 0/)).toBeInTheDocument();
+    const pointsLabel = Array.from(document.querySelectorAll('.whitespace-nowrap')).find((element) =>
+      element.textContent?.includes('得点 (66点で勝利)'),
+    );
+    expect(pointsLabel).toHaveTextContent('得点 (66点で勝利) — あなた: 0 / CPU: 0');
     expect(screen.queryByText(/\{\{target\}\}/)).not.toBeInTheDocument();
     expect(screen.getByTestId('schnapsen-phase')).toHaveTextContent(/第1フェーズ/);
+    expect(pointsLabel?.className).toContain('whitespace-nowrap');
+    expect(pointsLabel?.querySelector('span.whitespace-nowrap')).toBeNull();
   });
 
   it('labels trick cards with the card and the player who played them', async () => {

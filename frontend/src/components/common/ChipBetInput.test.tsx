@@ -56,6 +56,26 @@ describe('ChipBetInput', () => {
     expect(input.className).toContain('min-h-[44px]');
   });
 
+  it('applies optional label and input classes only when provided', () => {
+    const { rerender } = render(<ChipBetInput id="bet" label="Bet" value={50} onChange={() => {}} />);
+    expect(screen.getByLabelText('Bet').className).not.toContain('min-w-0');
+    expect(screen.getByLabelText('Bet').className).not.toMatch(/\\s$/);
+
+    rerender(
+      <ChipBetInput
+        id="bet"
+        label="Bet"
+        value={50}
+        onChange={() => {}}
+        labelClassName="shrink-0"
+        inputClassName="min-w-0"
+      />,
+    );
+    expect(screen.getByLabelText('Bet').className).toContain('min-w-0');
+    expect(screen.getByText('Bet').className).toContain('shrink-0');
+    expect(screen.getByLabelText('Bet').className).not.toMatch(/\\s$/);
+  });
+
   it('passes raw numeric values through without clamping when autoClamp is false', () => {
     const onChange = vi.fn();
     render(<ChipBetInput id="bet" label="Bet" value={20} onChange={onChange} max={50} autoClamp={false} />);

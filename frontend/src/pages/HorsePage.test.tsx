@@ -37,7 +37,12 @@ describe('HorsePage', () => {
 
     expect(await screen.findByTestId('ho-forced-bets')).toHaveTextContent('スモールブラインド 5、ビッグブラインド 10');
     expect(screen.getByTestId('ho-forced-bets')).not.toHaveTextContent(/forcedBets\.|listSeparator/);
-    expect(screen.getByTestId('ho-action-context')).toHaveTextContent('プリフロップ · ベッティング手番');
+    expect(screen.getByTestId('ho-action-context')).toHaveTextContent('プリフロップベッティング手番');
+    expect(screen.getByTestId('ho-action-context')).toHaveClass('flex-wrap');
+    expect(screen.getByTestId('ho-action-context').textContent).not.toMatch(/ · /);
+    expect(screen.getByTestId('ho-action-context').querySelectorAll('span.whitespace-nowrap').length).toBeGreaterThan(
+      2,
+    );
     expect(screen.getByTestId('ho-action-context')).not.toHaveTextContent('action.betting');
     expect(within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: /コール/ })).toHaveTextContent(
       '25 チップ',

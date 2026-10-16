@@ -105,6 +105,12 @@ describe('PishtiPage', () => {
     await waitFor(() => expect(screen.getByText('プレイヤー')).toBeInTheDocument());
     expect(screen.getAllByText(/捕獲 0枚/).length).toBe(4);
     expect(screen.getAllByText('残り手札 4枚')).toHaveLength(4);
+    expect(screen.getByTestId('pishti-player-grid')).toHaveClass('grid');
+    expect(screen.getByTestId('pishti-player-grid').querySelector(':scope > span')).toHaveTextContent('プレイヤー');
+    expect(screen.getByTestId('pishti-player-grid')).toHaveTextContent('状況');
+    expect(screen.getByTestId('pishti-breakdown-headers')).toHaveTextContent('カード点 / Pişti賞 / 最多捕獲');
+    expect(screen.getAllByTestId(/pishti-breakdown-\d/)).toHaveLength(4);
+    expect(screen.getByTestId('pishti-breakdown-0')).toHaveTextContent('0 / 0 / 0');
   });
 
   it('shows zero remaining cards for every player after the game ends', async () => {
@@ -400,7 +406,7 @@ describe('PishtiPage', () => {
   // 組み直していた頃は、実際の得点源 (A / J / ♣2 / ♦10) が終局まで見えなかった。
   // ここで見るのは「渡された値をそのまま出す」こと ── **クライアントでは導出
   // できない値**を与えるので、計算に戻した実装はここで落ちる。
-  it('renders the provisional score the server sent, card points included', async () => {
+  it('renders the provisional score the server sent without repeating its breakdown', async () => {
     mockExec.mockResolvedValue(
       makeState({
         players: [
@@ -424,15 +430,13 @@ describe('PishtiPage', () => {
     renderWithProviders(<PishtiPage />);
     const humanReadout = await screen.findByTestId('pishti-provisional-0');
     expect(humanReadout).toHaveTextContent('暫定 26点');
-    expect(screen.getByTestId('pishti-breakdown-0')).toHaveTextContent(
-      'カード点 13 / Pişti賞 10 / 最多捕獲 3点（暫定）',
-    );
+    expect(screen.getByTestId('pishti-breakdown-headers')).toHaveTextContent('カード点 / Pişti賞 / 最多捕獲');
+    expect(screen.getByTestId('pishti-breakdown-0')).toHaveTextContent('13 / 10 / 3');
     // 枚数とボーナスから組み直すと 13 点になる。その数字が出ていないこと。
     expect(humanReadout).not.toHaveTextContent('暫定 13点');
     // 何も捕っていない席でも渡された値を出す。
     expect(screen.getByTestId('pishti-provisional-1')).toHaveTextContent('暫定 4点');
-    expect(screen.getByTestId('pishti-breakdown-1')).toHaveTextContent('カード点 4');
-    expect(screen.getByTestId('pishti-breakdown-1')).toHaveTextContent('最多捕獲 0点（暫定）');
+    expect(screen.getByTestId('pishti-breakdown-1')).toHaveTextContent('4 / 0 / 0');
     // The disclosure note is shown during play.
     expect(screen.getByTestId('pishti-provisional-note')).toBeInTheDocument();
   });

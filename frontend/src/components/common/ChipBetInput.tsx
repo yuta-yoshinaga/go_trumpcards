@@ -24,6 +24,10 @@ export interface ChipBetInputProps {
   ariaDisabled?: boolean;
   /** Tailwind width class for the input. Defaults to "w-24". */
   widthClass?: string;
+  /** Additional classes for the label. */
+  labelClassName?: string;
+  /** Additional classes for the input. */
+  inputClassName?: string;
   /**
    * Whether to clamp emitted values to [min, max] inside onChange. Defaults to true.
    * Set to false when the parent wants to display and validate out-of-range values
@@ -57,6 +61,8 @@ export function ChipBetInput({
   disabled,
   ariaDisabled,
   widthClass = 'w-24',
+  labelClassName = '',
+  inputClassName = '',
   autoClamp = true,
   invalid,
   describedBy,
@@ -75,7 +81,7 @@ export function ChipBetInput({
     'min-h-[44px] min-w-[44px] rounded bg-ds-surface-elevated px-3 font-bold text-ds-text-primary text-lg disabled:opacity-40 disabled:cursor-not-allowed';
   return (
     <div className="flex items-center gap-2">
-      <label htmlFor={id} className="text-ds-text-primary text-sm">
+      <label htmlFor={id} className={['text-ds-text-primary text-sm', labelClassName].filter(Boolean).join(' ')}>
         {label}
       </label>
       {showSteppers && (
@@ -120,7 +126,15 @@ export function ChipBetInput({
         onWheel={(e) => e.currentTarget.blur()}
         disabled={disabled}
         aria-disabled={ariaDisabled || undefined}
-        className={`${widthClass} px-3 py-2 rounded text-base min-h-[44px] ${ariaDisabled ? 'opacity-40 cursor-not-allowed' : ''} ${errorClasses}`}
+        className={[
+          widthClass,
+          'px-3 py-2 rounded text-base min-h-[44px]',
+          ariaDisabled && 'opacity-40 cursor-not-allowed',
+          errorClasses,
+          inputClassName,
+        ]
+          .filter(Boolean)
+          .join(' ')}
       />
       {showSteppers && (
         <button

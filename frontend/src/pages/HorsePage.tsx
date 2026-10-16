@@ -226,7 +226,7 @@ export function HorsePageContent({ gameKey }: { gameKey: HorsePageGameKey }) {
         <>
           <div className="flex-1 overflow-y-auto px-4 py-2 space-y-3">
             <div
-              className="text-center text-sm text-ds-text-muted"
+              className="text-center text-sm text-ds-text-muted flex flex-wrap justify-center gap-x-3"
               data-testid="ho-discipline"
               data-tutorial="ho-discipline"
               data-discipline-changed={gameKey === 'eightgame' && disciplineChanged ? 'true' : undefined}
@@ -244,19 +244,21 @@ export function HorsePageContent({ gameKey }: { gameKey: HorsePageGameKey }) {
               >
                 {disciplineName}
               </h2>
-              <span className="mr-3">
+              <span className="whitespace-nowrap">
                 {t('disciplineOrder', { position: state.disciplinePosition, total: state.disciplineTotal })}
               </span>
-              <span className="mr-3">
+              <span className="whitespace-nowrap">
                 {t('hand', { n: state.handInDiscipline, total: state.config.handsPerDiscipline })}
               </span>
               {roundLabel && (
-                <span className="mr-3 text-ds-accent" data-testid="ho-round">
+                <span className="whitespace-nowrap text-ds-accent" data-testid="ho-round">
                   {roundLabel}
                 </span>
               )}
-              <span className="mr-3">{t('handTotal', { n: state.handNumber })}</span>
-              <span data-testid="ho-pot">{t('pot', { pot: state.pot })}</span>
+              <span className="whitespace-nowrap">{t('handTotal', { n: state.handNumber })}</span>
+              <span className="whitespace-nowrap" data-testid="ho-pot">
+                {t('pot', { pot: state.pot })}
+              </span>
             </div>
 
             {gameKey === 'eightgame' && (
@@ -488,12 +490,15 @@ export function HorsePageContent({ gameKey }: { gameKey: HorsePageGameKey }) {
               ) : null
             }
           >
-            <div className="text-center text-xs text-ds-text-muted" data-testid="ho-action-context">
-              <span className="text-ds-text-primary">{tc(`nav.${gameKey}`)}</span>
-              <span> · {disciplineName}</span>
-              {roundLabel && <span> · {roundLabel}</span>}
-              {isDrawTurn && <span> · {t('action.draw', { n: state.drawIndex })}</span>}
-              {roundLabel && isBetTurn && <span> · {t('action.betting')}</span>}
+            <div
+              className="text-center text-xs text-ds-text-muted flex flex-wrap justify-center gap-x-1"
+              data-testid="ho-action-context"
+            >
+              <span className="whitespace-nowrap text-ds-text-primary">{tc(`nav.${gameKey}`)}</span>
+              <span className="whitespace-nowrap">{disciplineName}</span>
+              {roundLabel && <span className="whitespace-nowrap">{roundLabel}</span>}
+              {isDrawTurn && <span className="whitespace-nowrap">{t('action.draw', { n: state.drawIndex })}</span>}
+              {roundLabel && isBetTurn && <span className="whitespace-nowrap">{t('action.betting')}</span>}
             </div>
             <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="ho-actions">
               <GameResetButton

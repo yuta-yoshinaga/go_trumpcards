@@ -113,6 +113,12 @@ describe('PrimeroPage', () => {
     ).toHaveLength(1);
   });
 
+  it('keeps the participating status on one line', async () => {
+    renderWithProviders(<PrimeroPage />);
+    const statuses = await screen.findAllByText('参加中');
+    expect(statuses[0].className).toContain('whitespace-nowrap');
+  });
+
   it('shows the configured target rounds', async () => {
     for (const { targetRounds, text } of [
       { targetRounds: 4, text: 'ラウンド 1 / 4' },

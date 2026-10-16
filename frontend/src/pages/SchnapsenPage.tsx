@@ -183,7 +183,7 @@ function SchnapsenPageContent() {
               <span className="mr-4">
                 {t('header.stock')}: {state.stockRemaining}
               </span>
-              <span className="mr-4">
+              <span className="mr-4 whitespace-nowrap">
                 {t('header.points')} {t('header.winAt', { target: state.winThreshold })} — {t('header.you')}:{' '}
                 {human?.points ?? 0} / {t('header.cpu')}: {cpu?.points ?? 0}
               </span>
@@ -259,7 +259,12 @@ function SchnapsenPageContent() {
             {human && human.cards.length > 0 && (
               <div className="mt-4" data-tutorial="schnapsen-hand">
                 <div className="text-ds-text-muted text-sm mb-1">
-                  {t('header.you')}: {human.cardCount} / {t('header.tricks')}: {human.trickCount}
+                  <span className="whitespace-nowrap">
+                    {t('header.you')}: {human.cardCount}
+                  </span>{' '}
+                  <span className="whitespace-nowrap">
+                    / {t('header.tricks')}: {human.trickCount}
+                  </span>
                 </div>
                 {showLegalGuide && (
                   <div

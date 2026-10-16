@@ -360,6 +360,7 @@ describe('ThreeCardBragPage', () => {
     );
     renderWithProviders(<ThreeCardBragPage />);
     const range = await screen.findByTestId('tcb-raise-range');
+    expect(range).toHaveClass('whitespace-nowrap');
     expect(range).toHaveTextContent('範囲: 4〜40');
     // Value syncs to the stake-based minimum.
     expect(screen.getByTestId('tcb-raise-amount')).toHaveTextContent('4');

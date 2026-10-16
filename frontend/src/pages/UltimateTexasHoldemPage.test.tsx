@@ -143,6 +143,8 @@ describe('UltimateTexasHoldemPage', () => {
     renderWithProviders(<UltimateTexasHoldemPage />);
     await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument();
+    expect(screen.getByLabelText('アンテ')).toHaveClass('min-w-0');
+    expect(screen.getByText('アンテ')).toHaveClass('shrink-0', 'whitespace-nowrap');
   });
 
   it('renders skeleton before state loads', () => {
@@ -179,6 +181,8 @@ describe('UltimateTexasHoldemPage', () => {
     expect(breakdown).toHaveTextContent('ブラインド: 100');
     expect(breakdown).toHaveTextContent('トリップス: 30');
     expect(breakdown).toHaveTextContent('プレイベット: 400');
+    expect(breakdown.querySelector('div')?.className).toContain('flex-wrap');
+    expect(breakdown.querySelector('span')?.className).toContain('whitespace-nowrap');
 
     mockApi
       .mockResolvedValueOnce({ ...flopState, playBet: 400 })

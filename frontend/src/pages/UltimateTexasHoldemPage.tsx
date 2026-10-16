@@ -250,12 +250,12 @@ function UltimateTexasHoldemPageContent() {
             <h2 className="text-ds-text-primary text-center font-bold text-sm mb-1">{t('currentBets.title')}</h2>
             <div className="flex flex-wrap justify-center gap-x-4 text-ds-text-muted text-sm tabular-nums">
               {state.anteBet > 0 && (
-                <span>
+                <span className="whitespace-nowrap">
                   {t('label.ante')}: {state.anteBet}
                 </span>
               )}
               {state.blindBet > 0 && (
-                <span>
+                <span className="whitespace-nowrap">
                   {t('label.blind')}: {state.blindBet}
                 </span>
               )}
@@ -440,6 +440,8 @@ function UltimateTexasHoldemPageContent() {
               <ChipBetInput
                 id="uth-ante-amount"
                 label={t('label.ante')}
+                labelClassName="shrink-0 whitespace-nowrap"
+                inputClassName="min-w-0"
                 value={anteAmount}
                 onChange={setAnteAmount}
                 min={10}

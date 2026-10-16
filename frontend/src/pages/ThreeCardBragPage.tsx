@@ -449,7 +449,7 @@ function ThreeCardBragPageContent() {
                     >
                       {t('raiseButton', { amount: raiseCost })}
                     </button>
-                    <span className="text-ds-text-muted text-xs ml-1" data-testid="tcb-raise-range">
+                    <span className="text-ds-text-muted text-xs ml-1 whitespace-nowrap" data-testid="tcb-raise-range">
                       {canRaise ? t('raiseRange', { min: raiseMin, max: raiseMax }) : t('raiseUnavailable')}
                     </span>
                   </div>
