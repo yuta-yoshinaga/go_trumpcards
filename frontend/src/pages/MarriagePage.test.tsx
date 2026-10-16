@@ -219,6 +219,26 @@ describe('MarriagePage', () => {
     expect(within(footerMessage).getByRole('status')).toHaveTextContent('Footer message test');
   });
 
+  it('shows the round end reason without repeating the phase label', async () => {
+    mockExec.mockResolvedValue({
+      ...roundEndState,
+      declarerIdx: 0,
+      messageCode: 'marriage.roundEnd',
+    });
+    renderWithProviders(<MarriagePage />);
+
+    expect(await screen.findByText('あなたが宣言してラウンド終了')).toBeInTheDocument();
+    expect(screen.getAllByText('ラウンド終了')).toHaveLength(1);
+  });
+
+  it('shows stock exhaustion as the round end reason', async () => {
+    mockExec.mockResolvedValue({ ...roundEndState, messageCode: 'marriage.roundEnd' });
+    renderWithProviders(<MarriagePage />);
+
+    expect(await screen.findByText('山札切れでラウンド終了')).toBeInTheDocument();
+    expect(screen.getAllByText('ラウンド終了')).toHaveLength(1);
+  });
+
   it('renders the game message in the play area on mobile', async () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
