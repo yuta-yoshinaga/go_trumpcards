@@ -14,7 +14,13 @@ import { HintTooltip } from '../components/hint/HintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useBreakpoint, useCardDimensions, useIsCompactLargeDesktop, useIsMobile } from '../hooks/useCardDimensions';
+import {
+  useBreakpoint,
+  useCardDimensions,
+  useDenseLargeDesktopCardSize,
+  useIsCompactLargeDesktop,
+  useIsMobile,
+} from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -37,7 +43,7 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 const DENOMINATIONS: readonly number[] = [1, 2, 3, 4, 0];
 
 /** Visible left edge of an overlapping card; preserves the minimum tap target. */
-const COMPACT_CARD_EDGE_PX = 44;
+const COMPACT_CARD_EDGE_PX = 48;
 
 /** Highest contract level. Level n needs 6 + n tricks, so 7 is all thirteen. */
 const MAX_LEVEL = 7;
@@ -73,9 +79,11 @@ function MinibridgePageContent() {
     retry,
   } = useGameApi<MinibridgeResponse, Parameters<typeof minibridgeApi.exec>>(minibridgeApi.exec);
   const { cardWidth, cpuCardWidth } = useCardDimensions();
+  const denseCardSize = useDenseLargeDesktopCardSize();
   const isMobile = useIsMobile();
   const isCompactLargeDesktop = useIsCompactLargeDesktop();
   const isLargeDesktop = useBreakpoint() === 'largeDesktop';
+  const playCardWidth = isCompactLargeDesktop ? cardWidth : denseCardSize.width;
   const { hint, hintEnabled, setHintEnabled } = useGameHint('minibridge', state);
   const [level, setLevel] = useState(1);
   const [cpuProcessing, setCpuProcessing] = useState(false);
@@ -273,6 +281,7 @@ function MinibridgePageContent() {
               <CpuAccordion
                 playerCount={state.players.filter((p) => !p.isHuman).length}
                 dataTutorial="mb-seats"
+                openOnDesktop={false}
                 className={isMobile ? 'mb-0 flex-1 basis-0 open:basis-full' : undefined}
               >
                 <div className="flex flex-wrap justify-center gap-1 mb-4 sm:gap-2" data-testid="mb-seats">
@@ -317,17 +326,19 @@ function MinibridgePageContent() {
               </div>
             )}
             {/* This selector depends on TrickDisplay's inner div structure to tighten its spacing on compact large desktop. */}
-            <div className={isCompactLargeDesktop ? '[&>div]:my-1 [&>div]:p-2' : undefined} data-tutorial="mb-trick">
-              <TrickDisplay
-                currentTrick={state.currentTrick}
-                lastTrick={state.lastTrick}
-                lastTrickWinner={state.lastTrickWinner}
-                players={state.players}
-                cardWidth={isCompactLargeDesktop ? cpuCardWidth : cardWidth}
-                label={t('currentTrick')}
-                winnerLabel={t('trickWinner')}
-              />
-            </div>
+            {!isLargeDesktop || !humanIsDummy ? (
+              <div className={isCompactLargeDesktop ? '[&>div]:my-1 [&>div]:p-2' : undefined} data-tutorial="mb-trick">
+                <TrickDisplay
+                  currentTrick={state.currentTrick}
+                  lastTrick={state.lastTrick}
+                  lastTrickWinner={state.lastTrickWinner}
+                  players={state.players}
+                  cardWidth={isCompactLargeDesktop ? cpuCardWidth : cardWidth}
+                  label={t('currentTrick')}
+                  winnerLabel={t('trickWinner')}
+                />
+              </div>
+            ) : null}
 
             {roundResult && (
               <div className="text-center my-3 text-ds-text-primary" role="status" data-testid="mb-round-result">
@@ -361,74 +372,92 @@ function MinibridgePageContent() {
             <ErrorAlert message={error} onRetry={retry} />
 
             {/* **ダミーは契約が決まると公開され、デクレアラーが操作する。** */}
-            {state.dummyHand.length > 0 && !humanIsDummy && (
-              <div className="mt-4" data-testid="mb-dummy">
-                <div className="text-ds-text-muted text-sm mb-1">
-                  {t('header.dummyHand')}
-                  {isHumanDummyTurn && <span className="ml-2 text-ds-accent">{t('header.dummyTurn')}</span>}
+            <div
+              className="contents lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-2"
+              data-testid="mb-card-layout"
+            >
+              {isLargeDesktop && humanIsDummy && (
+                <div
+                  className={isCompactLargeDesktop ? '[&>div]:my-1 [&>div]:p-2' : undefined}
+                  data-tutorial="mb-trick"
+                  data-testid="mb-trick-layout"
+                >
+                  <TrickDisplay
+                    currentTrick={state.currentTrick}
+                    lastTrick={state.lastTrick}
+                    lastTrickWinner={state.lastTrickWinner}
+                    players={state.players}
+                    cardWidth={isCompactLargeDesktop ? cpuCardWidth : cardWidth}
+                    label={t('currentTrick')}
+                    winnerLabel={t('trickWinner')}
+                  />
                 </div>
-                <div className="flex flex-nowrap gap-0">
-                  {state.dummyHand.map((card, idx) => (
-                    // disabled:opacity-50 の札は positioned 層で描かれ、出せる札の上に重なるので全札を relative にして DOM 順で重ねる
-                    <button
-                      key={`dummy-${card.design}-${card.value}-${idx}`}
-                      type="button"
-                      onClick={() => handlePlay(idx)}
-                      disabled={loading || !isHumanDummyTurn || !legalRing.has(idx)}
-                      aria-label={t('actions.playDummyAria', { card: cardAlt(card) })}
-                      className={`relative disabled:opacity-50 sm:focus-visible:z-10 ${
-                        isHumanDummyTurn && legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''
-                      }`}
-                      style={{
-                        marginLeft:
-                          idx > 0
-                            ? isCompactLargeDesktop
-                              ? -(cardWidth - COMPACT_CARD_EDGE_PX)
-                              : -Math.round(cardWidth * 0.55)
-                            : undefined,
-                      }}
-                    >
-                      <CardImage card={card} width={cardWidth} />
-                    </button>
-                  ))}
+              )}
+              {state.dummyHand.length > 0 && !humanIsDummy && (
+                <div className="mt-4 lg:col-start-1 lg:min-w-0" data-testid="mb-dummy">
+                  <div className="text-ds-text-muted text-sm mb-1">
+                    {t('header.dummyHand')}
+                    {isHumanDummyTurn && <span className="ml-2 text-ds-accent">{t('header.dummyTurn')}</span>}
+                  </div>
+                  <div className="flex flex-nowrap gap-0">
+                    {state.dummyHand.map((card, idx) => (
+                      // disabled:opacity-50 の札は positioned 層で描かれ、出せる札の上に重なるので全札を relative にして DOM 順で重ねる
+                      <button
+                        key={`dummy-${card.design}-${card.value}-${idx}`}
+                        type="button"
+                        onClick={() => handlePlay(idx)}
+                        disabled={loading || !isHumanDummyTurn || !legalRing.has(idx)}
+                        aria-label={t('actions.playDummyAria', { card: cardAlt(card) })}
+                        className={`relative disabled:opacity-50 sm:focus-visible:z-10 ${
+                          isHumanDummyTurn && legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''
+                        }`}
+                        style={{
+                          marginLeft:
+                            idx > 0
+                              ? isLargeDesktop
+                                ? -(playCardWidth - COMPACT_CARD_EDGE_PX)
+                                : -Math.round(cardWidth * 0.55)
+                              : undefined,
+                        }}
+                      >
+                        <CardImage card={card} width={isLargeDesktop ? playCardWidth : cardWidth} />
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {human && human.cards.length > 0 && (
-              <div
-                className={`${isLargeDesktop ? 'sticky bottom-0 z-10 bg-game-bg-blue' : ''} mt-4`}
-                data-tutorial="mb-hand"
-                data-testid="mb-hand-area"
-              >
-                <div className="text-ds-text-muted text-sm mb-1">
-                  {t('header.you')}: {human.cardCount}
-                  {humanIsDummy && <span className="ml-2 text-ds-accent">{t('header.cpuOperatedDummy')}</span>}
-                  {isHumanTurn && !isHumanDummyTurn && (
-                    <span className="ml-2 text-ds-accent">{t('header.yourTurn')}</span>
-                  )}
+              {human && human.cards.length > 0 && (
+                <div className="mt-4 lg:col-start-2 lg:min-w-0" data-tutorial="mb-hand" data-testid="mb-hand-area">
+                  <div className="text-ds-text-muted text-sm mb-1">
+                    {t('header.you')}: {human.cardCount}
+                    {humanIsDummy && <span className="ml-2 text-ds-accent">{t('header.cpuOperatedDummy')}</span>}
+                    {isHumanTurn && !isHumanDummyTurn && (
+                      <span className="ml-2 text-ds-accent">{t('header.yourTurn')}</span>
+                    )}
+                  </div>
+                  <div className={`flex ${isLargeDesktop ? 'flex-nowrap gap-0' : 'flex-wrap gap-2'}`}>
+                    {human.cards.map((card, idx) => (
+                      <button
+                        key={`${card.design}-${card.value}-${idx}`}
+                        type="button"
+                        onClick={() => handlePlay(idx)}
+                        disabled={loading || !isHumanTurn || isHumanDummyTurn || !legalRing.has(idx)}
+                        aria-label={t('actions.playAria', { card: cardAlt(card) })}
+                        className={`disabled:opacity-50 ${
+                          !isHumanDummyTurn && legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''
+                        }`}
+                        style={{
+                          marginLeft: isLargeDesktop && idx > 0 ? -(playCardWidth - COMPACT_CARD_EDGE_PX) : undefined,
+                        }}
+                      >
+                        <CardImage card={card} width={isLargeDesktop ? playCardWidth : cardWidth} />
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <div className={`flex ${isCompactLargeDesktop ? 'flex-nowrap gap-0' : 'flex-wrap gap-2'}`}>
-                  {human.cards.map((card, idx) => (
-                    <button
-                      key={`${card.design}-${card.value}-${idx}`}
-                      type="button"
-                      onClick={() => handlePlay(idx)}
-                      disabled={loading || !isHumanTurn || isHumanDummyTurn || !legalRing.has(idx)}
-                      aria-label={t('actions.playAria', { card: cardAlt(card) })}
-                      className={`disabled:opacity-50 ${
-                        !isHumanDummyTurn && legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''
-                      }`}
-                      style={{
-                        marginLeft: isCompactLargeDesktop && idx > 0 ? -(cardWidth - COMPACT_CARD_EDGE_PX) : undefined,
-                      }}
-                    >
-                      <CardImage card={card} width={cardWidth} />
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+              )}
+            </div>
 
             {hintEnabled && hint && (
               <div className="mt-3 flex justify-center">
