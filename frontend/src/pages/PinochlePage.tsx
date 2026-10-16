@@ -331,10 +331,25 @@ function PinochlePageContent() {
                       {playerName(p.id, p.isHuman)}
                       {state.dealerIdx === p.id ? ` | ${t('dealer')}` : ''}
                     </div>
-                    <div>
-                      {t('team')} {p.team} | {t('bid')}: {p.bid} | {t('meldScore')}: {p.meldScore} | {t('trickPoints')}:{' '}
-                      {p.trickPoints} | {t('trickCount')}: {p.trickCount}
-                      {phase === PinochlePhase.BID && p.hasPassed && <span> | {t('passed')}</span>}
+                    <div className="flex flex-wrap gap-x-2">
+                      <span className="whitespace-nowrap">
+                        {t('team')} {p.team}
+                      </span>
+                      <span className="whitespace-nowrap">
+                        {t('bid')}: {p.bid}
+                      </span>
+                      <span className="whitespace-nowrap">
+                        {t('meldScore')}: {p.meldScore}
+                      </span>
+                      <span className="whitespace-nowrap">
+                        {t('trickPoints')}: {p.trickPoints}
+                      </span>
+                      <span className="whitespace-nowrap">
+                        {t('trickCount')}: {p.trickCount}
+                      </span>
+                      {phase === PinochlePhase.BID && p.hasPassed && (
+                        <span className="whitespace-nowrap">{t('passed')}</span>
+                      )}
                     </div>
                   </div>
                 );

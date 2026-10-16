@@ -297,7 +297,7 @@ function ContinentalRummyPageContent() {
                 <table className="w-full text-center text-sm">
                   <thead>
                     <tr>
-                      <th scope="col" className="p-1">
+                      <th scope="col" className="p-1 whitespace-nowrap">
                         {t('historyRound')}
                       </th>
                       {state.players.map((player) => (
@@ -310,10 +310,10 @@ function ContinentalRummyPageContent() {
                       <th scope="col" className="p-1" />
                       {state.players.map((player) => (
                         <Fragment key={player.id}>
-                          <th scope="col" className="p-1">
+                          <th scope="col" className="p-1 whitespace-nowrap">
                             {t('historyRoundScore')}
                           </th>
-                          <th scope="col" className="p-1">
+                          <th scope="col" className="p-1 whitespace-nowrap">
                             {t('historyCumulativeScore')}
                           </th>
                         </Fragment>
