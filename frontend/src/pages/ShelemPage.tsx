@@ -365,6 +365,14 @@ function ShelemPageContent() {
               </div>
             )}
 
+            {isMobile && (
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            )}
+
             <ErrorAlert message={error} onRetry={retry} />
             {hintEnabled && hint && (
               <div className="mt-3 flex justify-center">
@@ -380,16 +388,23 @@ function ShelemPageContent() {
 
           <GameFooter
             className={`${gameTheme.shelem.footer} px-4 py-2.5`}
+            tall={isMobile}
             message={
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-              />
+              !isMobile && (
+                <GameMessageBox
+                  message={state.message}
+                  messageCode={state.messageCode}
+                  messageParams={state.messageParams}
+                />
+              )
             }
             actions={
-              <div className="flex flex-wrap gap-2">
-                <div className="flex flex-wrap gap-2" data-tutorial="sh-actions" data-testid="sh-primary-actions">
+              <div className={`flex flex-wrap ${isMobile ? 'gap-1' : 'gap-2'}`}>
+                <div
+                  className={`flex flex-wrap ${isMobile ? 'gap-1' : 'gap-2'}`}
+                  data-tutorial="sh-actions"
+                  data-testid="sh-primary-actions"
+                >
                   {isHumanBidTurn && (
                     <>
                       {/* **上回れる額だけを出す。** サーバが必ず拒否する額は出さない。 */}
