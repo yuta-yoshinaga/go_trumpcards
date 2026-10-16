@@ -72,6 +72,7 @@ const gameOverWinState: TrashResponse = {
 };
 
 beforeEach(() => {
+  viewport.largeDesktop = false;
   vi.clearAllMocks();
   vi.useRealTimers();
   localStorage.clear();
@@ -88,8 +89,26 @@ describe('TrashPage', () => {
     const grid = playerRow?.parentElement;
     expect(grid).toHaveClass('grid', 'grid-cols-1');
     expect(playerRow).toHaveClass('row-start-1');
-    expect(grid?.querySelector('[data-tutorial="tr-opponent"]')).toBeInTheDocument();
-    viewport.largeDesktop = false;
+    const stockRow = Array.from(grid?.children ?? []).find((child) =>
+      child.contains(grid?.querySelector('[data-tutorial="tr-stock"]') ?? null),
+    );
+    expect(stockRow).toHaveClass('row-start-2');
+    expect(grid?.querySelector('[data-tutorial="tr-opponent"]')).toHaveClass('row-start-3');
+  });
+
+  it('does not use a grid on mobile and desktop layouts', async () => {
+    mockExec.mockResolvedValue(playerTurnState);
+    renderWithProviders(<TrashPage />);
+    await screen.findByText('あなたのターン');
+    const playerRow = document.querySelector('[data-tutorial="tr-player"]');
+    const layout = playerRow?.parentElement;
+    expect(layout).not.toHaveClass('grid');
+    expect(playerRow).not.toHaveClass('row-start-1');
+    const stockRow = Array.from(layout?.children ?? []).find((child) =>
+      child.contains(layout?.querySelector('[data-tutorial="tr-stock"]') ?? null),
+    );
+    expect(stockRow).not.toHaveClass('row-start-2');
+    expect(layout?.querySelector('[data-tutorial="tr-opponent"]')).not.toHaveClass('row-start-3');
   });
 
   it('shows the CPU open-slot count indicator', async () => {

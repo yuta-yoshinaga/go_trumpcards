@@ -1,6 +1,7 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, renderHook, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { duchessApi } from '../api/gameApi';
+import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameHint } from '../hooks/useGameHint';
 import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -115,8 +116,13 @@ describe('DuchessPage', () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<DuchessPage />);
     await screen.findByText('開始ランク: 5');
+    const { result } = renderHook(() => useCardDimensions());
     const wrapper = document.querySelector('[data-tutorial="du-tableau"] [style*="top"]') as HTMLElement;
-    expect(Number.parseFloat(wrapper.style.width)).toBeGreaterThan(0);
+    expect(wrapper).not.toBeNull();
+    const expectedWidth = result.current.isMobile
+      ? Math.min(Math.max(Math.floor((window.innerWidth - 16 - 3 * 4) / 4), 30), result.current.cardWidth)
+      : result.current.cardWidth;
+    expect(Number.parseFloat(wrapper.style.width)).toBe(expectedWidth);
     expect(wrapper.style.right).toBe('');
   });
 
