@@ -171,6 +171,15 @@ function MarriagePageContent() {
 
   const phaseNames = usePhaseNames('marriage', MARRIAGE_PHASE_KEYS);
 
+  const roundEndMessage =
+    state && state.phase === MarriagePhase.ROUND_END
+      ? state.declarerIdx >= 0
+        ? t('roundEndByDeclaration', {
+            name: playerName(state.declarerIdx, state.players[state.declarerIdx].isHuman),
+          })
+        : t('roundEndByStockOut')
+      : undefined;
+
   // Client-side declaration preview: when a finish card is selected during the
   // discard phase, evaluate whether the remaining 21 cards form a valid declare.
   // The backend still re-validates on submit; this only powers a non-blocking hint.
@@ -204,7 +213,11 @@ function MarriagePageContent() {
     );
 
   const messageBox = (
-    <GameMessageBox message={state?.message} messageCode={state?.messageCode} messageParams={state?.messageParams} />
+    <GameMessageBox
+      message={roundEndMessage ?? state?.message}
+      messageCode={roundEndMessage ? undefined : state?.messageCode}
+      messageParams={roundEndMessage ? undefined : state?.messageParams}
+    />
   );
 
   const humanPlayer = state.players.find((p) => p.isHuman);

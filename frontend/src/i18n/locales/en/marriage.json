@@ -59,6 +59,8 @@
   "drawPhase": "Draw a card from the stock or discard pile",
   "discardPhase": "Discard a card, or declare if your 21 cards are valid",
   "roundEnd": "Round over",
+  "roundEndByDeclaration": "{{name}} declared and the round is over",
+  "roundEndByStockOut": "The round is over because the stock ran out",
   "result": {
     "humanWin": "You win!",
     "cpuWin": "CPU {{cpuId}} wins!"
