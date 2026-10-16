@@ -5,6 +5,7 @@ SCRIPTS="$ROOT/.claude/skills/batch-lanes/scripts"
 fail() { echo "FAIL: $*" >&2; exit 1; }
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
+REAL_GIT="$(command -v git)"
 mkdir -p "$tmp/bin" "$tmp/repo" "$tmp/state"
 cat >"$tmp/bin/git" <<'STUB'
 #!/usr/bin/env bash
@@ -72,4 +73,68 @@ BATCH_BRANCH_RE='^feat/(10[1-5][0-9]{2})-' bash "$SCRIPTS/sweep.sh" >"$tmp/sweep
 grep -q '^UNSWEPT 8 fix/10523-old$' "$tmp/sweep.out" || fail "sweep.sh did not report the unmatched PR: $(cat "$tmp/sweep.out")"
 BATCH_BRANCH_RE='^feat/(10[1-5][0-9]{2})-' BATCH_UNSWEPT_IGNORE='8 999' bash "$SCRIPTS/sweep.sh" >"$tmp/sweep-ignored.out" || fail "sweep.sh failed with BATCH_UNSWEPT_IGNORE"
 ! grep -q '^UNSWEPT 8' "$tmp/sweep-ignored.out" || fail "sweep.sh reported ignored PR 8: $(cat "$tmp/sweep-ignored.out")"
+
+# land rejects dirty and unpushed PR worktrees, with an explicit pending override.
+(
+  git() { "$REAL_GIT" "$@"; }
+  repo="$tmp/real-land-repo"; origin="$tmp/real-land-origin.git"; wt="$tmp/real-land-wts/wt-ib7"
+  mkdir -p "$repo" "$(dirname "$wt")" "$tmp/real-land-state" "$tmp/real-land-bin"
+  git init -q "$repo"; git -C "$repo" config user.email test@example.com; git -C "$repo" config user.name test
+  printf 'base\n' > "$repo/file"; git -C "$repo" add file; git -C "$repo" commit -qm base; git -C "$repo" branch -M develop
+  git init -q --bare "$origin"; git -C "$origin" symbolic-ref HEAD refs/heads/develop
+  git -C "$repo" remote add origin "$origin"; git -C "$repo" push -qu origin develop
+  git -C "$repo" fetch -q origin
+  git -C "$repo" worktree add -qb feat/7-test "$wt" origin/develop
+  [ -f "$wt/file" ] || fail "land fixture worktree was not created: $(git -C "$repo" worktree list)"
+  git -C "$wt" push -qu origin HEAD:feat/7-test
+  git -C "$repo" fetch -q origin feat/7-test:refs/remotes/origin/feat/7-test
+  printf '7\n' > "$tmp/real-land-state/reviewed.txt"
+  cat > "$tmp/real-land-bin/gh" <<'GH'
+#!/usr/bin/env bash
+case "$*" in
+  'pr view 7 --json files -q .files[].path') echo README.md ;;
+  'pr view 7 --json headRefName -q .headRefName') echo feat/7-test ;;
+  'pr merge 7 --squash') echo called >> "$GH_MERGE_LOG" ;;
+  'pr view 7 --json state -q .state') echo MERGED ;;
+  'pr view 7 --json closingIssuesReferences -q .closingIssuesReferences[].number') : ;;
+  *) echo "unexpected gh call: $*" >&2; exit 2 ;;
+esac
+GH
+  cat > "$tmp/real-land-bin/merge-gate" <<'GATE'
+#!/usr/bin/env bash
+echo 'VERDICT: gate passed'
+GATE
+  chmod +x "$tmp/real-land-bin/"*
+  export GH_MERGE_LOG="$tmp/real-land-merges"
+  run_land() { PATH="$(dirname "$REAL_GIT"):$tmp/real-land-bin:$PATH" BATCH_REPO="$repo" BATCH_STATE="$tmp/real-land-state" BATCH_WT_ROOT="$(dirname "$wt")" MERGE_GATE="$tmp/real-land-bin/merge-gate" bash "$SCRIPTS/land.sh" 7; }
+  BUSY_ARGV0="codex-task -C $wt " bash -c 'exec -a "$BUSY_ARGV0" sleep 30' &
+  busy_pid=$!
+  sleep 0.1
+  if run_land >"$tmp/land-busy.out" 2>&1; then kill "$busy_pid" 2>/dev/null || true; fail 'land accepted a busy delegation worktree'; fi
+  kill "$busy_pid" 2>/dev/null || true
+  wait "$busy_pid" 2>/dev/null || true
+  grep -q 'delegation is still running' "$tmp/land-busy.out" || fail "land busy refusal reason missing: $(cat "$tmp/land-busy.out")"
+  [ ! -e "$GH_MERGE_LOG" ] || fail 'land merged while delegation was running'
+  printf 'dirty\n' >> "$wt/file"
+  if run_land >"$tmp/land-dirty.out" 2>&1; then fail 'land accepted uncommitted worktree changes'; fi
+  grep -q 'uncommitted changes' "$tmp/land-dirty.out" || fail "land dirty refusal reason missing: $(cat "$tmp/land-dirty.out")"
+  [ ! -e "$GH_MERGE_LOG" ] || fail 'land merged despite uncommitted changes'
+  git -C "$wt" show HEAD:file > "$wt/file"
+  printf 'committed\n' >> "$wt/file"; git -C "$wt" commit -qam pending
+  if run_land >"$tmp/land-unpushed.out" 2>&1; then fail 'land accepted an unpushed commit'; fi
+  grep -q 'unpushed commit' "$tmp/land-unpushed.out" || fail "land unpushed refusal reason missing: $(cat "$tmp/land-unpushed.out")"
+  [ ! -e "$GH_MERGE_LOG" ] || fail 'land merged despite an unpushed commit'
+  git -C "$wt" push -qu origin HEAD:feat/7-test
+  git -C "$repo" fetch -q origin feat/7-test:refs/remotes/origin/feat/7-test
+  run_land >"$tmp/land-clean.out" 2>&1 || fail "land rejected clean pushed worktree: $(cat "$tmp/land-clean.out")"
+  [ -e "$GH_MERGE_LOG" ] || fail 'land did not merge clean pushed worktree'
+  rm -f "$GH_MERGE_LOG"
+  printf 'dirty again\n' >> "$wt/file"
+  ALLOW_LANE_PENDING=1 run_land >"$tmp/land-override.out" 2>&1 || fail "land rejected ALLOW_LANE_PENDING: $(cat "$tmp/land-override.out")"
+  [ -e "$GH_MERGE_LOG" ] || fail 'land override did not merge'
+  rm -f "$GH_MERGE_LOG"
+  git -C "$repo" worktree remove --force "$wt"
+  run_land >"$tmp/land-no-worktree.out" 2>&1 || fail "land rejected absent PR worktree: $(cat "$tmp/land-no-worktree.out")"
+  [ -e "$GH_MERGE_LOG" ] || fail 'land did not merge when PR worktree was absent'
+) || exit 1
 echo "batch-lanes land tests passed"

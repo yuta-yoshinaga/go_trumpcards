@@ -14,6 +14,20 @@ if [[ "${CLAIM_SKIP:-}" != 1 ]] && ! "$B/claimcheck.sh" "$PWD" "$summ"; then
   exit 1
 fi
 br=$(git branch --show-current)
+if [[ "${ALLOW_BRANCH_ISSUE_MISMATCH:-}" != 1 && "$br" =~ /([0-9]+)- && "${BASH_REMATCH[1]}" != "$n" ]]; then
+  echo "REFUSED: branch $br issue ${BASH_REMATCH[1]} does not match issue $n" >&2
+  exit 1
+fi
+if [[ "${ALLOW_UNMENTIONED_ISSUE:-}" != 1 ]] && grep -Eq '#[0-9]+' <<<"$summ" && ! grep -Eq "#$n([^0-9]|$)" <<<"$summ"; then
+  echo "REFUSED: PR body mentions another issue but not #$n" >&2
+  exit 1
+fi
+while IFS= read -r line; do
+  while IFS= read -r closing; do
+    closed=${closing##*#}
+    [[ "$closed" == "$n" ]] || echo "WARN: body closes #$closed" >&2
+  done < <(grep -Eio '\b(close[sd]?|fix(e[sd])?|resolve[sd]?)\s+#[0-9]+' <<<"$line" || true)
+done <<<"$summ"
 mapfile -d '' -t files < <({ git diff --name-only -z HEAD; git ls-files -o --exclude-standard -z; } | sort -zu)
 if [[ "${ALLOW_STALE_BASE:-}" != 1 ]]; then
   if ! git fetch -q origin develop; then

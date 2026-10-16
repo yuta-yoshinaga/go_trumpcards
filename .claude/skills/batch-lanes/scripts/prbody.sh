@@ -18,7 +18,7 @@ prbody_is_full() {
 # closing PR. Adding "Closes #n" on top of it closed nothing early only because every slice
 # body was hand-edited afterwards (15 PRs in the #11700-#11702 batch, 2026-10-12).
 prbody_has_ref() {
-  grep -qiE "(closes|fixes|resolves|part of|refs) #$1([^0-9]|$)" <<<"$2"
+  grep -qiE "(close[sd]?|fix(e[sd])?|resolve[sd]?|part of|refs) #$1([^0-9]|$)" <<<"$2"
 }
 
 # ship_pr_body <issue#> <summary-or-body> <frontend test-plan line> <go test-plan line>
