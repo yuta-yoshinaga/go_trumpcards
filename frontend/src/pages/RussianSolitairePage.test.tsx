@@ -75,6 +75,35 @@ beforeEach(() => {
 });
 
 describe('RussianSolitairePage', () => {
+  it('places autocomplete status below mobile controls and inline with large desktop controls', async () => {
+    const originalWidth = window.innerWidth;
+
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 375 });
+    const mobile = renderWithProviders(<RussianSolitairePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const mobileStatus = screen.getByText('全カードが表向きになるとクリックできます');
+    const mobileButton = screen.getByTestId('autocomplete-button');
+    expect(mobileStatus.parentElement).not.toBe(mobileButton.parentElement);
+    expect(
+      (mobileButton.parentElement?.compareDocumentPosition(mobileStatus) ?? 0) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    mobile.unmount();
+
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1280 });
+    const largeDesktop = renderWithProviders(<RussianSolitairePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const desktopStatus = screen.getByText('全カードが表向きになるとクリックできます');
+    const desktopButton = screen.getByTestId('autocomplete-button');
+    const undoButton = screen.getByRole('button', { name: '元に戻す' });
+    expect(desktopStatus.parentElement).toBe(desktopButton.parentElement);
+    expect(desktopButton.compareDocumentPosition(desktopStatus)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(desktopStatus.compareDocumentPosition(undoButton)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    largeDesktop.unmount();
+
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: originalWidth });
+    window.dispatchEvent(new Event('resize'));
+  });
+
   it('uses a tighter tableau step on large desktop and keeps the develop step at 800px', async () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1280 });
