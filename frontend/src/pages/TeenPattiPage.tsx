@@ -251,7 +251,9 @@ function TeenPattiPageContent() {
                       <span className="ml-2 font-semibold">{t('turnIndicator')}</span>
                     )}
                     {p.id === state.dealerIdx && (
-                      <span className={`ml-2 px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>
+                      <span
+                        className={`ml-2 px-1.5 py-0.5 rounded text-xs whitespace-nowrap shrink-0 ${badgeWarningColors}`}
+                      >
                         {t('dealerBadge')}
                       </span>
                     )}
@@ -493,7 +495,7 @@ function TeenPattiPageContent() {
                         探るしかない (#5660)。** 姉妹の Three Card Brag は
                         tcb-raise-range で常時出しており、CUI も promptRaiseRange で
                         min/max を出している。 */}
-                    <span className="text-ds-text-muted text-xs ml-1" data-testid="tp-raise-range">
+                    <span className="text-ds-text-muted text-xs ml-1 whitespace-nowrap" data-testid="tp-raise-range">
                       {state.canRaise
                         ? t('raiseRange', { min: state.minRaise, max: state.maxRaise })
                         : t('raiseUnavailable')}

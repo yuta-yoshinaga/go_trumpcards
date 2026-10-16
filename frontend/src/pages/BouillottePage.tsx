@@ -250,11 +250,16 @@ function BouillottePageContent() {
           />
 
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            <div className="text-ds-text-primary text-center mb-2" data-tutorial="bouillotte-info">
-              <span className="mr-4">{t('round', { n: state.roundNumber, total: state.config.targetRounds })}</span>
-              <span className="mr-4">{t('pot', { amount: state.pot })}</span>
-              <span className="mr-4">{t('ante', { amount: state.ante })}</span>
-              <span>{t('currentBet', { amount: state.currentBet })}</span>
+            <div
+              className="text-ds-text-primary text-center mb-2 flex flex-wrap justify-center gap-x-4"
+              data-tutorial="bouillotte-info"
+            >
+              <span className="whitespace-nowrap">
+                {t('round', { n: state.roundNumber, total: state.config.targetRounds })}
+              </span>
+              <span className="whitespace-nowrap">{t('pot', { amount: state.pot })}</span>
+              <span className="whitespace-nowrap">{t('ante', { amount: state.ante })}</span>
+              <span className="whitespace-nowrap">{t('currentBet', { amount: state.currentBet })}</span>
             </div>
 
             {/* Retourne (shared turned-up card) */}
@@ -280,7 +285,7 @@ function BouillottePageContent() {
                 >
                   {playerLabel(p.id, p.isHuman)} — {t('chips', { amount: p.chips })} ·{' '}
                   {t('roundBet', { amount: p.roundBet })} · [{playerBadge(p)}]
-                  {p.handName ? ` · ${handName(p.handName)}` : ''}
+                  {p.handName && <span className="whitespace-nowrap"> · {handName(p.handName)}</span>}
                 </div>
               ))}
             </div>

@@ -593,7 +593,9 @@ function HoldemPageContent() {
                           : t('betComparison.noCallNeeded')}
                       </span>
                       {(state?.lastBet ?? 0) > 0 && (
-                        <span className="ml-2">{t('betComparison.minimumRaise', { amount: minRaise })}</span>
+                        <span className="ml-2 whitespace-nowrap">
+                          {t('betComparison.minimumRaise', { amount: minRaise })}
+                        </span>
                       )}
                     </div>
                     <BettingControls

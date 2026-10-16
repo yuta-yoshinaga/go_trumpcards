@@ -3,6 +3,7 @@
   "cpu": "CPU {{id}}",
   "deck": "Stock: {{count}}",
   "playersTitle": "Players",
+  "statusHeader": "Status",
   "handCount_one": "{{count}} card left",
   "handCount_other": "{{count}} cards left",
   "captured": "captured {{count}}",

@@ -110,6 +110,13 @@ describe('BouillottePage', () => {
     ).toHaveLength(1);
   });
 
+  it('keeps the player hand name on one line', async () => {
+    mockExec.mockResolvedValue(resultState);
+    renderWithProviders(<BouillottePage />);
+    await waitFor(() => expect(screen.getAllByText(/ハイカード/, { selector: 'span' }).length).toBeGreaterThan(0));
+    expect(screen.getAllByText(/ハイカード/, { selector: 'span' })[0].className).toContain('whitespace-nowrap');
+  });
+
   it('shows the configured target rounds', async () => {
     for (const { targetRounds, text } of [
       { targetRounds: 4, text: 'ラウンド 1 / 4' },
