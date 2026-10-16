@@ -15,7 +15,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -78,6 +78,7 @@ function IronCrossPageContent() {
 
   const [amount, setAmount] = useState(20);
   const { cardWidth } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const { state, loading, error, exec: execApi, retry } = useGameApi(ironcrossApi.exec);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('ironcross');
@@ -242,7 +243,10 @@ function IronCrossPageContent() {
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
-          <div data-testid="card-area" className={`overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+          <div
+            data-testid="card-area"
+            className={`overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint} ${isLargeDesktop ? 'grid grid-cols-[auto_minmax(0,1fr)] items-start gap-x-4' : ''}`}
+          >
             <GameMessageBox
               message={state.message}
               messageCode={state.messageCode}
@@ -259,7 +263,7 @@ function IronCrossPageContent() {
               **十字は十字の形で並べる。** 1 行に詰めると、どの札が縦でどの札が
               横なのかが分からなくなり、このゲームの唯一の判断が成り立たない。
             */}
-            <div className="mb-3" data-tutorial="ic-cross">
+            <div className={`mb-3 min-w-0 ${isLargeDesktop ? 'col-start-1 row-start-1' : ''}`} data-tutorial="ic-cross">
               <div className="text-ds-text-primary text-center text-sm font-bold mb-1">
                 {t('label.cross')}
                 {' · '}
@@ -267,24 +271,31 @@ function IronCrossPageContent() {
                   {t('label.revealed', { revealed: state.revealedCount, total: state.crossTotal })}
                 </span>
               </div>
-              <div className="flex flex-col items-center gap-1" data-testid="ic-cross">
-                {crossSlot(TOP)}
-                <div className="flex gap-1">
+              <div
+                className={
+                  isLargeDesktop
+                    ? 'grid grid-cols-3 grid-rows-3 gap-1 justify-items-center'
+                    : 'flex flex-col items-center gap-1'
+                }
+                data-testid="ic-cross"
+              >
+                <div className={isLargeDesktop ? 'col-start-2 row-start-1' : ''}>{crossSlot(TOP)}</div>
+                <div className={`flex gap-1 ${isLargeDesktop ? 'col-start-1 col-span-3 row-start-2' : ''}`}>
                   {crossSlot(LEFT)}
                   {crossSlot(CENTER)}
                   {crossSlot(RIGHT)}
                 </div>
-                {crossSlot(BOTTOM)}
+                <div className={isLargeDesktop ? 'col-start-2 row-start-3' : ''}>{crossSlot(BOTTOM)}</div>
               </div>
               <p className="text-ds-text-muted text-center text-xs mt-1">{t('crossNotice')}</p>
             </div>
 
-            <div
-              className="mb-3 lg:sticky lg:bottom-0 lg:z-10 lg:bg-game-bg-casino lg:pt-2 lg:shadow-lg"
-              data-tutorial="ic-hand"
-            >
+            <div className={`mb-3 min-w-0 ${isLargeDesktop ? 'col-start-2 row-start-1' : ''}`} data-tutorial="ic-hand">
               <div className="text-ds-text-primary text-center text-sm font-bold mb-1">{t('label.yourHand')}</div>
-              <div className="flex justify-center gap-1 flex-wrap" data-testid="ic-hand">
+              <div
+                className={`flex justify-center gap-1 ${isLargeDesktop ? 'flex-nowrap' : 'flex-wrap'}`}
+                data-testid="ic-hand"
+              >
                 {(human?.cards ?? []).map((card, i) => (
                   <AnimatedCard key={`hand-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
                 ))}
