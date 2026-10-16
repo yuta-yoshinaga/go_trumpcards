@@ -628,6 +628,14 @@ describe('CanastaPage', () => {
     );
   });
 
+  it('keeps the frozen status label together while the status row can wrap', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, isFrozen: true });
+    renderWithProviders(<CanastaPage />);
+    const frozenLabel = await screen.findByText('[フリーズ中]');
+    expect(frozenLabel.parentElement).toHaveClass('flex', 'flex-wrap');
+    expect(frozenLabel).toHaveClass('shrink-0', 'whitespace-nowrap');
+  });
+
   it('switches the reason to selectOneMore once the player selects one card', async () => {
     renderWithProviders(<CanastaPage />);
     await waitFor(() => expect(screen.getByTestId('ca-draw-discard-reason')).toBeInTheDocument());

@@ -318,7 +318,7 @@ function BiribaPageContent() {
                 {t('pozzettoTakenBanner', { player: pozzettoBanner })}
               </div>
             )}
-            <div className="text-ds-text-primary text-center mb-2">
+            <div className="flex flex-wrap justify-center text-ds-text-primary text-center mb-2">
               <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
               <span>
                 {t('drawPile', { count: state.drawPileCount })} / {t('discardPile', { count: state.discardPileCount })}
@@ -326,7 +326,9 @@ function BiribaPageContent() {
               <span className="ml-4" data-testid="bu-pozzetto-count">
                 {t('pozzetto', { count: state.pozzettoCount })}
               </span>
-              {state.isFrozen && <span className="ml-2 text-ds-info font-bold">[{t('frozen')}]</span>}
+              {state.isFrozen && (
+                <span className="ml-2 shrink-0 whitespace-nowrap text-ds-info font-bold">[{t('frozen')}]</span>
+              )}
             </div>
 
             <div className={lgTwoColGrid}>

@@ -282,12 +282,14 @@ function BoliviaPageContent() {
             className={`flex-1 overflow-y-auto pt-2 sm:pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}
             data-testid="sa-play-area"
           >
-            <div className="text-ds-text-primary text-center mb-1 sm:mb-2">
+            <div className="flex flex-wrap justify-center text-ds-text-primary text-center mb-1 sm:mb-2">
               <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
               <span>
                 {t('drawPile', { count: state.drawPileCount })} / {t('discardPile', { count: state.discardPileCount })}
               </span>
-              {state.isFrozen && <span className="ml-2 text-ds-info font-bold">[{t('frozen')}]</span>}
+              {state.isFrozen && (
+                <span className="ml-2 shrink-0 whitespace-nowrap text-ds-info font-bold">[{t('frozen')}]</span>
+              )}
               {/* Self-contained live region announcing freeze/thaw transitions. */}
               <span className="sr-only" role="status" aria-live="polite" data-testid="sa-frozen-announce">
                 {frozenMsg}
