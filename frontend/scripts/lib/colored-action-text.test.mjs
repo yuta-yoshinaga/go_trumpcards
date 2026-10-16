@@ -81,4 +81,45 @@ describe('findColoredActionTextViolations', () => {
       findColoredActionTextViolations(`<button className={clsx('bg-ds-success', cond && 'text-white')} />`),
     ).toHaveLength(1);
   });
+
+  it('checks standalone string literals outside className', () => {
+    expect(findColoredActionTextViolations(`const STYLES = { primary: 'bg-ds-accent text-white' };`)).toHaveLength(1);
+    expect(findColoredActionTextViolations('const styles = `bg-ds-accent text-white ' + '$' + '{tone}`;')).toHaveLength(
+      1,
+    );
+  });
+
+  it('combines optional clsx object keys and recognizes hover white text', () => {
+    expect(
+      findColoredActionTextViolations(`<div className={clsx({ 'bg-ds-accent': a, 'text-white': b })} />`),
+    ).toHaveLength(1);
+    expect(findColoredActionTextViolations(`<div className="bg-ds-accent hover:text-white" />`)).toHaveLength(1);
+  });
+
+  it('combines || and ?? alternatives conservatively', () => {
+    expect(
+      findColoredActionTextViolations(`<div className={(x || 'bg-ds-accent') + (y ?? 'text-white')} />`),
+    ).toHaveLength(1);
+  });
+
+  it('does not inherit conditional fills to children or through a child background', () => {
+    expect(
+      findColoredActionTextViolations(
+        `<div className={cond ? 'bg-ds-accent' : 'bg-ds-surface'}><span className="text-white" /></div>`,
+      ),
+    ).toEqual([]);
+    expect(
+      findColoredActionTextViolations(
+        `<div className="bg-ds-accent"><span className="bg-ds-surface text-white" /></div>`,
+      ),
+    ).toEqual([]);
+  });
+
+  it('checks JSX nested in another attribute without inheriting the parent fill', () => {
+    expect(
+      findColoredActionTextViolations(`<Button icon={<span className="bg-ds-accent text-white" />} />`),
+    ).toHaveLength(1);
+  });
+
+  // sel and !sel are modeled as independent conditions, so this conservative analysis can report a false positive.
 });

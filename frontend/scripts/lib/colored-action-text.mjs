@@ -9,6 +9,8 @@ export function findColoredActionTextViolations(source) {
   const file = ts.createSourceFile('source.tsx', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const violations = [];
   const reported = new Set();
+  const classExpressions = new Set();
+  const classExpressionRanges = [];
 
   const report = (node, match) => {
     const index = node.getStart(file);
@@ -20,6 +22,8 @@ export function findColoredActionTextViolations(source) {
   const visit = (node, inheritedColoredFill = false) => {
     if (ts.isJsxElement(node) || ts.isJsxSelfClosingElement(node)) {
       let expression;
+      let hasOwnBackground = false;
+      let ownColoredBackground = false;
       for (const attribute of (ts.isJsxElement(node) ? node.openingElement.attributes : node.attributes).properties) {
         if (ts.isJsxAttribute(attribute) && attribute.name.getText(file) === 'className') {
           expression =
@@ -27,38 +31,63 @@ export function findColoredActionTextViolations(source) {
               ? attribute.initializer.expression
               : attribute.initializer;
           if (expression) {
+            classExpressions.add(expression);
+            classExpressionRanges.push([expression.getStart(file), expression.end]);
+            const markClassLiteral = (child) => {
+              if (ts.isStringLiteralLike(child) || ts.isNoSubstitutionTemplateLiteral(child))
+                classExpressions.add(child);
+              ts.forEachChild(child, markClassLiteral);
+            };
+            markClassLiteral(expression);
             const variants = evaluate(expression);
+            const literalText = [];
+            const gatherLiterals = (child) => {
+              if (ts.isStringLiteralLike(child) || ts.isNoSubstitutionTemplateLiteral(child))
+                literalText.push(child.text);
+              ts.forEachChild(child, gatherLiterals);
+            };
+            gatherLiterals(expression);
+            const hasAlternative = (child) =>
+              (ts.isBinaryExpression(child) &&
+                [ts.SyntaxKind.BarBarToken, ts.SyntaxKind.QuestionQuestionToken].includes(child.operatorToken.kind)) ||
+              (ts.isObjectLiteralExpression(child) && child.parent && ts.isCallExpression(child.parent)) ||
+              child.getChildren(file).some((nested) => hasAlternative(nested));
+            if (hasAlternative(expression)) {
+              const literals = literalText.join(' ');
+              if (BACKGROUND.test(literals) && WHITE_TEXT.test(literals)) report(expression, literals);
+            }
+            hasOwnBackground = variants.some(({ value }) => /(?:^|\s)bg-[\w/-]+/.test(value));
+            ownColoredBackground = variants.length > 0 && variants.every(({ value }) => BACKGROUND.test(value));
             const violation = variants.find(({ value }) => BACKGROUND.test(value) && WHITE_TEXT.test(value));
             if (violation) report(expression, violation.value);
-            if (inheritedColoredFill) {
+            if (inheritedColoredFill && !variants.some(({ value }) => /(?:^|\s)bg-[\w/-]+/.test(value))) {
               const inheritedViolation = variants.find(({ value }) => WHITE_TEXT.test(value));
               if (inheritedViolation) report(expression, inheritedViolation.value);
-            }
-            if (!inheritedColoredFill && variants.length > 0 && variants.every(({ value }) => BACKGROUND.test(value))) {
-              inheritedColoredFill = true;
             }
           }
         }
       }
+      if (hasOwnBackground) inheritedColoredFill = ownColoredBackground;
 
-      if (ts.isJsxElement(node)) {
-        for (const child of node.children) {
-          if (ts.isJsxElement(child) || ts.isJsxSelfClosingElement(child)) {
-            visit(child, inheritedColoredFill);
-          } else visit(child, inheritedColoredFill);
-        }
+      // JSX embedded in a non-class attribute has an unknown rendering context.
+      for (const attribute of (ts.isJsxElement(node) ? node.openingElement.attributes : node.attributes).properties) {
+        if (!ts.isJsxAttribute(attribute) || attribute.name.getText(file) === 'className') continue;
+        ts.forEachChild(attribute, (child) => visit(child, false));
       }
+      if (ts.isJsxElement(node)) for (const child of node.children) visit(child, inheritedColoredFill);
       return;
     }
-
-    if (inheritedColoredFill && ts.isJsxAttribute(node) && node.name.getText(file) === 'className') {
-      const initializer = node.initializer;
-      const expression = initializer && ts.isJsxExpression(initializer) ? initializer.expression : initializer;
-      if (expression) {
-        const match = evaluate(expression).find(({ value }) => WHITE_TEXT.test(value));
-        if (match) report(expression, match.value);
+    if ((ts.isStringLiteralLike(node) || ts.isNoSubstitutionTemplateLiteral(node)) && !classExpressions.has(node)) {
+      if (BACKGROUND.test(node.text) && WHITE_TEXT.test(node.text)) report(node, node.text);
+    }
+    if (
+      ts.isTemplateExpression(node) &&
+      !classExpressionRanges.some(([start, end]) => start <= node.getStart(file) && node.end <= end)
+    ) {
+      const segments = [node.head, ...node.templateSpans.map((span) => span.literal)];
+      for (const segment of segments) {
+        if (BACKGROUND.test(segment.text) && WHITE_TEXT.test(segment.text)) report(segment, segment.text);
       }
-      return;
     }
     ts.forEachChild(node, (child) => visit(child, inheritedColoredFill));
   };
@@ -115,19 +144,41 @@ export function findColoredActionTextViolations(source) {
     if (ts.isArrayLiteralExpression(node))
       return node.elements.reduce((values, item) => combine(values, evaluate(item)), [{ value: '', choices: {} }]);
     if (ts.isObjectLiteralExpression(node)) {
-      return node.properties.flatMap((property) => {
-        if (ts.isPropertyAssignment(property)) {
-          const key = property.name.getText(file).replace(/^['"]|['"]$/g, '');
-          return [{ value: key, choices: {} }, ...evaluate(property.initializer)];
-        }
-        return [];
-      });
+      return node.properties.reduce(
+        (values, property) => {
+          if (ts.isPropertyAssignment(property)) {
+            const key = property.name.getText(file).replace(/^['"]|['"]$/g, '');
+            return combine(
+              values,
+              combine(
+                [
+                  { value: '', choices: {} },
+                  { value: key, choices: {} },
+                ],
+                evaluate(property.initializer),
+              ),
+            );
+          }
+          return values;
+        },
+        [{ value: '', choices: {} }],
+      );
     }
     return [{ value: '', choices: {} }];
   }
 }
 
 function combine(left, right) {
+  if (left.length * right.length > 256) {
+    // Beyond this cap, conservatively flag if colored fill and white text occur in any branch.
+    const all = [...left, ...right].map(({ value }) => value).join(' ');
+    return [
+      {
+        value: `${BACKGROUND.test(all) ? 'bg-ds-accent ' : ''}${WHITE_TEXT.test(all) ? 'text-white' : ''}`,
+        choices: {},
+      },
+    ];
+  }
   return unique(
     left.flatMap((a) =>
       right.flatMap((b) => {
