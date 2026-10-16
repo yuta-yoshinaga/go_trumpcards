@@ -338,7 +338,7 @@ function BurracoPageContent() {
                 {t('pozzettoTakenBanner', { player: pozzettoBanner })}
               </div>
             )}
-            <div className="mb-2 flex items-center justify-center gap-2 whitespace-nowrap text-[10px] text-ds-text-primary sm:gap-4 sm:text-base">
+            <div className="mb-2 flex flex-wrap items-center justify-center gap-2 text-[10px] text-ds-text-primary sm:gap-4 sm:text-base">
               <span>{t('round', { n: state.roundNumber })}</span>
               <span>
                 {t('drawPile', { count: state.drawPileCount })} / {t('discardPile', { count: state.discardPileCount })}
@@ -350,7 +350,9 @@ function BurracoPageContent() {
               >
                 {t('pozzetto', { count: state.pozzettoCount })}
               </span>
-              {state.isFrozen && <span className="text-ds-info font-bold">[{t('frozen')}]</span>}
+              {state.isFrozen && (
+                <span className="shrink-0 whitespace-nowrap text-ds-info font-bold">[{t('frozen')}]</span>
+              )}
             </div>
             <details className="mb-2 text-xs text-ds-text-muted" data-testid="bu-rules">
               <summary className="min-h-11 cursor-pointer py-2">{t('rulesLabel')}</summary>

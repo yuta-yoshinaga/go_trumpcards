@@ -408,7 +408,7 @@ describe('BurracoPage', () => {
 
     const summary = await screen.findByTestId('bu-pozzetto-count');
     const summaryRow = summary.parentElement;
-    expect(summaryRow).toHaveClass('whitespace-nowrap');
+    expect(summaryRow).toHaveClass('flex-wrap');
     const meldCards = within(screen.getByTestId('bu-meld-cards')).getAllByTestId('animated-card');
     expect(meldCards[0].querySelector('img')).toHaveStyle({ width: '36px' });
     expect(meldCards[1].querySelector('img')).toHaveStyle({ width: '36px' });
@@ -525,6 +525,14 @@ describe('BurracoPage', () => {
     );
     // Pre-emptive freeze guide shown at the top of the draw controls.
     expect(screen.getByTestId('ca-draw-freeze-guide')).toHaveTextContent(/フリーズ中/);
+  });
+
+  it('keeps the frozen status label together while the status row can wrap', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, isFrozen: true });
+    renderWithProviders(<BurracoPage />);
+    const frozenLabel = await screen.findByText('[フリーズ中]');
+    expect(frozenLabel.parentElement).toHaveClass('flex', 'flex-wrap');
+    expect(frozenLabel).toHaveClass('shrink-0', 'whitespace-nowrap');
   });
 
   it('switches the reason to selectOneMore once the player selects one card', async () => {

@@ -421,6 +421,14 @@ describe('BoliviaPage', () => {
     );
   });
 
+  it('keeps the frozen status label together while the status row can wrap', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, isFrozen: true });
+    renderWithProviders(<BoliviaPage />);
+    const frozenLabel = await screen.findByText('[フリーズ中]');
+    expect(frozenLabel.parentElement).toHaveClass('flex', 'flex-wrap');
+    expect(frozenLabel).toHaveClass('shrink-0', 'whitespace-nowrap');
+  });
+
   it('explains when a natural pair matches the discard top', async () => {
     mockExec.mockResolvedValue(makeBoliviaState({ discardTop: { design: 'SPADE', value: 7 } }));
     renderWithProviders(<BoliviaPage />);
