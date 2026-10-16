@@ -205,6 +205,17 @@ afterEach(() => {
 });
 
 describe('NapoleonPage', () => {
+  it('keeps score table column headings on one line', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    const { container } = renderWithProviders(<NapoleonPage />);
+    await waitFor(() => expect(container.querySelectorAll('th[scope="col"]').length).toBeGreaterThan(0));
+    const headings = container.querySelectorAll('th[scope="col"]');
+    for (const heading of headings) {
+      expect(heading.classList.contains('whitespace-nowrap')).toBe(true);
+      expect(heading.classList.contains('text-[10px]')).toBe(true);
+    }
+  });
+
   it('renders turn guidance in the footer on desktop', async () => {
     Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1024 });
     mockExec.mockResolvedValue({ ...playPhaseState, message: 'Footer guidance' });
@@ -1205,7 +1216,9 @@ describe('NapoleonPage', () => {
     renderWithProviders(<NapoleonPage />);
     await waitFor(() => {
       // CPU 1 has bid=0 (pass)
-      expect(screen.getByText(/CPU 1.*\u30d3\u30c3\u30c9 0/)).toBeInTheDocument();
+      const row = screen.getByText(/CPU 1/, { selector: 'span.whitespace-nowrap' }).closest('div.flex.flex-wrap');
+      expect(row).toHaveTextContent(/CPU 1.*ビッド 0/);
+      expect(row?.querySelectorAll('span.whitespace-nowrap').length).toBe(5);
     });
   });
 
@@ -1213,7 +1226,9 @@ describe('NapoleonPage', () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<NapoleonPage />);
     await waitFor(() => {
-      expect(screen.getByText(/CPU 1.*\u672a\u30d3\u30c3\u30c9/)).toBeInTheDocument();
+      const row = screen.getByText(/CPU 1/, { selector: 'span.whitespace-nowrap' }).closest('div.flex.flex-wrap');
+      expect(row).toHaveTextContent(/CPU 1.*未ビッド/);
+      expect(row?.querySelectorAll('span.whitespace-nowrap').length).toBe(5);
     });
   });
 
