@@ -26,6 +26,8 @@
   "moveCount": "Moves",
   "endTurn": "End turn",
   "discard": "Discard",
+  "discardToSide": "Discard to side {{n}}",
+  "discardToSideCompact": "Side {{n}}",
   "discardNeedHand": "Select a hand card first",
   "discardReady": "Hand card selected — ready to discard",
   "autoComplete": "Auto Complete",

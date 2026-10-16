@@ -94,11 +94,63 @@ beforeEach(() => {
 });
 
 describe('SpiteAndMalicePage', () => {
-  it('sticks the player hand to the desktop play-area bottom', async () => {
+  it('puts numbered discard actions in the footer on large desktop with visible action reasons', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
     renderWithProviders(<SpiteAndMalicePage />);
-    await waitFor(() =>
-      expect(document.querySelector('[data-tutorial="sam-hand"]')).toHaveClass('lg:sticky', 'lg:bottom-0'),
+    const hand = await waitFor(() => {
+      const element = document.querySelector<HTMLElement>('[data-tutorial="sam-hand"]');
+      if (!element) throw new Error('hand row was not rendered');
+      return element;
+    });
+    expect(hand.className).not.toContain('lg:sticky');
+    expect(hand).toHaveClass('lg:col-start-2', 'lg:row-start-1');
+    expect(document.querySelector('[data-tutorial="sam-goal"]')).toHaveClass('lg:col-start-1', 'lg:row-start-1');
+    expect(document.querySelector('[data-tutorial="sam-sides"]')?.parentElement).toHaveClass(
+      'lg:col-start-3',
+      'lg:row-start-1',
     );
+    const footer = document.querySelector('[data-testid="game-footer-actions"]');
+    expect(footer).toBeTruthy();
+    expect(within(footer as HTMLElement).getAllByRole('button', { name: /^サイド [1-4] へ捨てる$/ })).toHaveLength(4);
+    expect(within(footer as HTMLElement).getByRole('button', { name: 'サイド 1 へ捨てる' })).toHaveTextContent(
+      'サイド1',
+    );
+    const discardButton = within(footer as HTMLElement).getByRole('button', { name: 'サイド 1 へ捨てる' });
+    expect(discardButton).toHaveAttribute('aria-disabled', 'true');
+    const initialDescription = discardButton.getAttribute('aria-describedby')?.split(' ') ?? [];
+    expect(initialDescription).toContain('sam-discard-hint');
+    expect(initialDescription).toHaveLength(2);
+    expect(document.getElementById(initialDescription[1])).toBeInTheDocument();
+    expect(discardButton).toHaveTextContent('サイド1');
+    expect(screen.getByTestId('sam-discard-hint')).toHaveTextContent('先に手札');
+    fireEvent.click(screen.getByRole('button', { name: /♠ 5/ }));
+    await waitFor(() => expect(screen.getByTestId('sam-discard-hint')).toHaveTextContent('ディスカードできます'));
+    expect(discardButton).not.toHaveAttribute('aria-disabled');
+    expect(discardButton).toHaveAttribute('aria-describedby', 'sam-discard-hint');
+    expect(discardButton).toHaveTextContent('サイド1');
+    expect(within(footer as HTMLElement).getByTestId('sam-undo-btn')).toHaveAttribute(
+      'title',
+      '取り消せる操作がありません',
+    );
+    expect(within(footer as HTMLElement).getByTestId('sam-autocomplete-btn')).toHaveAttribute('title');
+    expect(
+      document.querySelector('[data-tutorial="sam-sides"]')?.querySelectorAll('[data-hint-action^="discard-"]'),
+    ).toHaveLength(0);
+  });
+
+  it('keeps numbered discard actions below each side pile on mobile', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    renderWithProviders(<SpiteAndMalicePage />);
+    const sides = await screen.findByText('サイド 1 (0)');
+    const sideRow = document.querySelector('[data-tutorial="sam-sides"]');
+    expect(sideRow).toContainElement(sides);
+    expect(within(sideRow as HTMLElement).getAllByRole('button', { name: /^サイド [1-4] へ捨てる$/ })).toHaveLength(4);
+    expect(within(sideRow as HTMLElement).getByRole('button', { name: 'サイド 1 へ捨てる' })).toHaveTextContent(
+      'サイド 1 へ捨てる',
+    );
+    expect(document.querySelector('[data-testid="game-footer-actions"]')).not.toHaveTextContent('サイド 1 へ捨てる');
+    expect(screen.getByTestId('sam-undo-hint')).not.toHaveClass('sr-only');
+    expect(screen.getByTestId('sam-autocomplete-hint')).not.toHaveClass('sr-only');
   });
 
   const foundationButtons = () => screen.getAllByRole('button', { name: /組札|Foundation/ });
@@ -190,7 +242,7 @@ describe('SpiteAndMalicePage', () => {
       'true',
     ]);
 
-    fireEvent.click(screen.getByRole('button', { name: /サイド 1/ }));
+    fireEvent.click(screen.getByRole('button', { name: /サイド 1 一番上/ }));
     expect(foundationButtons().map((button) => button.getAttribute('data-playable'))).toEqual([
       null,
       'true',
@@ -316,7 +368,7 @@ describe('SpiteAndMalicePage', () => {
   it('explains why discard is disabled until a hand card is selected', async () => {
     mockExec.mockResolvedValue(baseState);
     renderWithProviders(<SpiteAndMalicePage />);
-    const discardBtns = await screen.findAllByRole('button', { name: 'ディスカード' });
+    const discardBtns = await screen.findAllByRole('button', { name: /^サイド [1-4] へ捨てる$/ });
     expect(discardBtns[0].getAttribute('aria-describedby')).toContain('sam-discard-hint');
     // Nothing selected → the shared hint states the requirement and discard is disabled.
     expect(discardBtns[0]).not.toBeDisabled();
@@ -325,7 +377,7 @@ describe('SpiteAndMalicePage', () => {
     // Selecting a hand card (♠5) flips the hint to "ready" and enables discard.
     fireEvent.click(screen.getByRole('button', { name: /♠ 5/ }));
     await waitFor(() => expect(screen.getByTestId('sam-discard-hint')).toHaveTextContent('ディスカードできます'));
-    expect(screen.getAllByRole('button', { name: 'ディスカード' })[0]).not.toBeDisabled();
+    expect(screen.getAllByRole('button', { name: /^サイド [1-4] へ捨てる$/ })[0]).not.toBeDisabled();
   });
 
   it('localizes the hand heading, card aria-labels, and CPU goal (no raw English)', async () => {

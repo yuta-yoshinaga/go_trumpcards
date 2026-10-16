@@ -15,7 +15,7 @@ import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -220,6 +220,7 @@ function SpiteAndMalicePageContent() {
 
   const { hint: currentHint, hintEnabled, setHintEnabled } = useGameHint('spiteandmalice', state);
   const { cardWidth, isMobile } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const playCardWidth = Math.round(cardWidth * (isMobile ? 0.7 : 0.8));
 
   const handleResetAction = useCallback(() => {
@@ -419,57 +420,68 @@ function SpiteAndMalicePageContent() {
               <p className="mt-2 text-center text-xs text-ds-text-muted">{t('stockRefillInfo')}</p>
             </details>
 
-            <div className="flex items-end justify-center gap-3" data-tutorial="sam-goal">
-              <GoalPile
-                top={human.goalTop}
-                size={human.goalSize}
+            <div className="lg:grid lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:items-center lg:gap-x-4">
+              <div
+                className="flex items-end justify-center gap-3 lg:col-start-1 lg:row-start-1"
+                data-tutorial="sam-goal"
+              >
+                <GoalPile
+                  top={human.goalTop}
+                  size={human.goalSize}
+                  cardWidth={playCardWidth}
+                  selected={selection?.kind === 'goal'}
+                  onClick={handleSelectGoal}
+                  label={t('label.goal')}
+                  ariaTop={(card, count) => t('aria.goalTop', { label: t('label.goal'), card, count })}
+                  ariaEmpty={t('aria.goalEmpty', { label: t('label.goal') })}
+                  remainingLabel={(count) => t('goalRemaining', { count })}
+                  playable={
+                    isHumanTurn && !isGameOver && isGoalTopPlayableToFoundation(human.goalTop, state.foundationTops)
+                  }
+                />
+              </div>
+
+              <HandRow
+                hand={human.hand}
                 cardWidth={playCardWidth}
-                selected={selection?.kind === 'goal'}
-                onClick={handleSelectGoal}
-                label={t('label.goal')}
-                ariaTop={(card, count) => t('aria.goalTop', { label: t('label.goal'), card, count })}
-                ariaEmpty={t('aria.goalEmpty', { label: t('label.goal') })}
-                remainingLabel={(count) => t('goalRemaining', { count })}
-                playable={
-                  isHumanTurn && !isGameOver && isGoalTopPlayableToFoundation(human.goalTop, state.foundationTops)
-                }
+                selectedIdx={selectionIsHand ? selection.idx : null}
+                onSelect={handleSelectHand}
+                dataTutorial="sam-hand"
+                className="lg:col-start-2 lg:row-start-1"
+                hintEnabled={hintEnabled}
+                currentHint={currentHint}
+                label={t('label.hand')}
+                emptyLabel={t('empty')}
+                hiddenLabel={t('label.hidden')}
+                wildLabel={t('label.wild')}
               />
+
+              <div className="lg:col-start-3 lg:row-start-1">
+                <SideRow
+                  sides={human.sides}
+                  cardWidth={playCardWidth}
+                  isLargeDesktop={isLargeDesktop}
+                  canDiscard={selectionIsHand}
+                  onDiscard={handleDiscardSide}
+                  discardLabel={(n) => t('discardToSide', { n })}
+                  selectSourceHintId={selectSourceHintId}
+                  onSelect={handleSelectSide}
+                  selection={selection}
+                  dataTutorial="sam-sides"
+                  label={t('label.side')}
+                  ariaTop={(pileNo, card, count) =>
+                    t('aria.sideTop', { label: t('label.side'), n: pileNo, card, count })
+                  }
+                  ariaEmpty={(pileNo) => t('aria.sideEmpty', { label: t('label.side'), n: pileNo })}
+                />
+              </div>
             </div>
-
-            <HandRow
-              hand={human.hand}
-              cardWidth={playCardWidth}
-              selectedIdx={selectionIsHand ? selection.idx : null}
-              onSelect={handleSelectHand}
-              dataTutorial="sam-hand"
-              className="lg:sticky lg:bottom-0 lg:z-10 lg:bg-game-bg-green lg:pt-2 lg:shadow-lg"
-              hintEnabled={hintEnabled}
-              currentHint={currentHint}
-              label={t('label.hand')}
-              emptyLabel={t('empty')}
-              hiddenLabel={t('label.hidden')}
-              wildLabel={t('label.wild')}
-            />
-
-            <SideRow
-              sides={human.sides}
-              cardWidth={playCardWidth}
-              cpuLabel={false}
-              onSelect={handleSelectSide}
-              onDiscard={handleDiscardSide}
-              selection={selection}
-              dataTutorial="sam-sides"
-              label={t('label.side')}
-              ariaTop={(pileNo, card, count) => t('aria.sideTop', { label: t('label.side'), n: pileNo, card, count })}
-              ariaEmpty={(pileNo) => t('aria.sideEmpty', { label: t('label.side'), n: pileNo })}
-              discardLabel={t('discard')}
-              discardEnabled={selectionIsHand}
-              selectSourceHintId={selectSourceHintId}
-              discardHint={selectionIsHand ? t('discardReady') : t('discardNeedHand')}
-            />
           </div>
 
           <div>
+            <span id="sam-discard-hint" className="sr-only" data-testid="sam-discard-hint">
+              {selectionIsHand ? t('discardReady') : t('discardNeedHand')}
+            </span>
             <GameMessageBox
               message={state.message}
               messageCode={state.messageCode}
@@ -483,47 +495,71 @@ function SpiteAndMalicePageContent() {
               hideActionLog={hideActionLog}
             />
 
-            <GameFooter>
-              <GameResetButton
-                isGameEnd={isGameOver}
-                onReset={handleResetAction}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="sam-reset"
-              />
-
-              {!isGameOver && isHumanTurn && (
-                <div className="flex flex-col items-center">
-                  <button
-                    type="button"
-                    className={`${btnPrimary} aria-disabled:opacity-50 aria-disabled:cursor-not-allowed`}
-                    onClick={handleUndo}
-                    aria-disabled={!state.canUndo || loading}
-                    aria-describedby="sam-undo-hint"
-                    data-testid="sam-undo-btn"
-                  >
-                    {t('undo')}
-                  </button>
-                  <p id="sam-undo-hint" className="mt-1 text-xs text-ds-text-muted">
-                    {state.canUndo ? t('undoAvailableHint') : t('undoUnavailableHint')}
-                  </p>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleAutoComplete}
-                    disabled={loading || !state.canAutoComplete}
-                    data-testid="sam-autocomplete-btn"
-                  >
-                    {t('autoComplete')}
-                  </button>
-                  <p
-                    className="mt-1 max-w-sm text-center text-xs text-ds-text-muted"
-                    data-testid="sam-autocomplete-hint"
-                  >
-                    {t('autoCompleteHint')}
-                  </p>
-                </div>
-              )}
+            <GameFooter
+              actions={
+                <>
+                  {!isGameOver && isHumanTurn && (
+                    <div className="flex flex-col items-center gap-1">
+                      <div
+                        className={`flex ${isLargeDesktop ? 'flex-nowrap gap-1' : 'flex-wrap gap-2'} items-center justify-center`}
+                      >
+                        {isLargeDesktop &&
+                          human.sides.map((_, idx) => (
+                            <button
+                              key={`discard-${idx}`}
+                              type="button"
+                              data-hint-action={`discard-${idx}`}
+                              className={`${btnPrimary} aria-disabled:opacity-70 aria-disabled:cursor-not-allowed aria-disabled:saturate-50 text-xs px-2 py-1`}
+                              onClick={() => handleDiscardSide(idx)}
+                              aria-disabled={!selectionIsHand || undefined}
+                              aria-describedby={
+                                !selectionIsHand ? `sam-discard-hint ${selectSourceHintId}` : 'sam-discard-hint'
+                              }
+                              aria-label={t('discardToSide', { n: idx + 1 })}
+                            >
+                              {t('discardToSideCompact', { n: idx + 1 })}
+                            </button>
+                          ))}
+                        <button
+                          type="button"
+                          className={`${btnPrimary} aria-disabled:opacity-50 aria-disabled:cursor-not-allowed`}
+                          onClick={handleUndo}
+                          aria-disabled={!state.canUndo || loading}
+                          aria-describedby="sam-undo-hint"
+                          title={state.canUndo ? t('undoAvailableHint') : t('undoUnavailableHint')}
+                          data-testid="sam-undo-btn"
+                        >
+                          {t('undo')}
+                        </button>
+                        <button
+                          type="button"
+                          className={btnPrimary}
+                          onClick={handleAutoComplete}
+                          disabled={loading || !state.canAutoComplete}
+                          title={t('autoCompleteHint')}
+                          data-testid="sam-autocomplete-btn"
+                        >
+                          {t('autoComplete')}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  <GameResetButton
+                    isGameEnd={isGameOver}
+                    onReset={handleResetAction}
+                    requestConfirm={requestConfirm}
+                    loading={loading}
+                    dataTutorial="sam-reset"
+                  />
+                </>
+              }
+            >
+              <p id="sam-undo-hint" className={isLargeDesktop ? 'sr-only' : undefined} data-testid="sam-undo-hint">
+                {state.canUndo ? t('undoAvailableHint') : t('undoUnavailableHint')}
+              </p>
+              <p className={isLargeDesktop ? 'sr-only' : undefined} data-testid="sam-autocomplete-hint">
+                {t('autoCompleteHint')}
+              </p>
             </GameFooter>
           </div>
         </>
@@ -789,42 +825,35 @@ function HandRow({
 function SideRow({
   sides,
   cardWidth,
-  cpuLabel,
-  onSelect,
+  isLargeDesktop,
+  canDiscard,
   onDiscard,
+  discardLabel,
+  selectSourceHintId,
+  onSelect,
   selection,
   dataTutorial,
   label,
   ariaTop,
   ariaEmpty,
-  discardLabel,
-  discardEnabled,
-  selectSourceHintId,
-  discardHint,
 }: {
   sides: [Card[], Card[], Card[], Card[]];
   cardWidth: number;
-  cpuLabel: boolean;
-  onSelect: (idx: number) => void;
+  isLargeDesktop: boolean;
+  canDiscard: boolean;
   onDiscard: (idx: number) => void;
+  discardLabel: (n: number) => string;
+  selectSourceHintId: string;
+  onSelect: (idx: number) => void;
   selection: Selection;
   dataTutorial: string;
   label: string;
-  discardLabel: string;
-  discardEnabled: boolean;
-  selectSourceHintId: string;
-  discardHint: string;
   ariaTop: (n: number, card: string, count: number) => string;
   ariaEmpty: (n: number) => string;
 }) {
   return (
     <div className="flex flex-col items-center gap-2" data-tutorial={dataTutorial}>
-      <span className="text-sm text-ds-text-muted">{cpuLabel ? `CPU ${label}` : label}</span>
-      {/* Shared reason for the discard buttons' disabled state (they all gate on
-          a selected hand card), announced via aria-describedby below. */}
-      <span id="sam-discard-hint" className="sr-only" data-testid="sam-discard-hint">
-        {discardHint}
-      </span>
+      <span className="text-sm text-ds-text-muted">{label}</span>
       <div className="grid grid-cols-4 gap-2">
         {sides.map((pile, idx) => {
           const top = pile.length > 0 ? pile[pile.length - 1] : undefined;
@@ -849,16 +878,18 @@ function SideRow({
               <span className="text-[10px] text-ds-text-muted">
                 {label} {idx + 1} ({pile.length})
               </span>
-              <button
-                type="button"
-                data-hint-action={`discard-${idx}`}
-                className={`${btnPrimary} aria-disabled:opacity-70 aria-disabled:cursor-not-allowed aria-disabled:saturate-50 text-xs px-2 py-1`}
-                onClick={() => onDiscard(idx)}
-                aria-disabled={!discardEnabled || undefined}
-                aria-describedby={!discardEnabled ? `sam-discard-hint ${selectSourceHintId}` : 'sam-discard-hint'}
-              >
-                {discardLabel}
-              </button>
+              {!isLargeDesktop && (
+                <button
+                  type="button"
+                  data-hint-action={`discard-${idx}`}
+                  className={`${btnPrimary} aria-disabled:opacity-70 aria-disabled:cursor-not-allowed aria-disabled:saturate-50 text-xs px-2 py-1`}
+                  onClick={() => onDiscard(idx)}
+                  aria-disabled={!canDiscard || undefined}
+                  aria-describedby={!canDiscard ? `sam-discard-hint ${selectSourceHintId}` : 'sam-discard-hint'}
+                >
+                  {discardLabel(idx + 1)}
+                </button>
+              )}
             </div>
           );
         })}
