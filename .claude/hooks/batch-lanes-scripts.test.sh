@@ -466,7 +466,7 @@ make_e2egate_case() {
   mkdir -p "$repo/frontend/src/pages" "$repo/frontend/src/constants" "$repo/frontend/e2e" "$wtroot"
   git init -q "$repo"; git -C "$repo" config user.email test@example.com; git -C "$repo" config user.name test
   printf "export const gameRoutes = [{ path: '/wrong' }, { path: '/poker', page: 'Poker' }, { path: '/', page: 'BlackJack' }];\n" > "$repo/frontend/src/constants/gameRoutes.ts"
-  for spec in desktop-board-visibility desktop-hand-visibility game-message-visibility hand-visibility mobile-viewport text-contrast duplicate-text poker; do touch "$repo/frontend/e2e/$spec.spec.ts"; done
+  for spec in desktop-board-visibility desktop-hand-visibility game-message-visibility hand-visibility mobile-viewport text-contrast duplicate-text poker poker-paytable-mobile pokerx; do touch "$repo/frontend/e2e/$spec.spec.ts"; done
   mkdir -p "$repo/frontend/src/components" "$repo/frontend/src/i18n/locales/en"
   printf "import { helper } from './helpers';\n" > "$repo/frontend/e2e/poker.spec.ts"
   touch "$repo/frontend/e2e/helpers.ts" "$repo/frontend/src/components/Other.tsx" "$repo/frontend/src/i18n/locales/en/common.json" "$repo/frontend/src/components/a.test.tsx"
@@ -489,7 +489,9 @@ make_e2egate_case() {
     for spec in desktop-board-visibility desktop-hand-visibility game-message-visibility hand-visibility mobile-viewport text-contrast duplicate-text; do grep -q "e2e/$spec.spec.ts" <<< "$output" || fail "sweep omitted $spec: $output"; done
   elif [[ "$changed" == page ]]; then
     grep -q 'run 1: e2e/poker.spec.ts$' <<< "$output" || fail "page game spec has grep or was omitted: $output"
-    grep -qF 'run 2: e2e/desktop-board-visibility.spec.ts' <<< "$output" || fail "page sweep run omitted: $output"
+    grep -q 'run 2: e2e/poker-paytable-mobile.spec.ts$' <<< "$output" || fail "page route extra spec was omitted: $output"
+    ! grep -q 'pokerx.spec.ts' <<< "$output" || fail "page route selected a spec without a hyphen boundary: $output"
+    grep -qF 'run 3: e2e/desktop-board-visibility.spec.ts' <<< "$output" || fail "page sweep run omitted: $output"
     grep -qF -- '--grep /poker\b --pass-with-no-tests --repeat-each=3' <<< "$output" || fail "page sweep omitted route grep/pass-with-no-tests/repeat: $output"
     output_once=$(E2E_SWEEP_REPEAT=1 BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$SCRIPTS/e2egate.sh" --dry-run 1) || fail "e2egate $name repeat=1 dry-run failed"
     ! grep -q -- '--repeat-each' <<<"$output_once" || fail "repeat=1 dry-run added repeat arg: $output_once"
@@ -503,7 +505,7 @@ STUB
     chmod +x "$exec_scripts/e2e.sh"
     E2E_SWEEP_REPEAT=3 E2EGATE_ARGS="$tmp/e2egate-args-$name" BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$exec_scripts/e2egate.sh" 1 || fail "page e2egate execution failed"
     expected="$tmp/e2egate-expected-$name"
-    printf '%s\n' 1 e2e/poker.spec.ts --- e2e/desktop-board-visibility.spec.ts e2e/desktop-hand-visibility.spec.ts e2e/duplicate-text.spec.ts e2e/game-message-visibility.spec.ts e2e/hand-visibility.spec.ts e2e/mobile-viewport.spec.ts e2e/text-contrast.spec.ts --grep '/poker\b' --pass-with-no-tests --repeat-each=3 > "$expected"
+    printf '%s\n' 1 e2e/poker.spec.ts e2e/poker-paytable-mobile.spec.ts --- e2e/desktop-board-visibility.spec.ts e2e/desktop-hand-visibility.spec.ts e2e/duplicate-text.spec.ts e2e/game-message-visibility.spec.ts e2e/hand-visibility.spec.ts e2e/mobile-viewport.spec.ts e2e/text-contrast.spec.ts --grep '/poker\b' --pass-with-no-tests --repeat-each=3 > "$expected"
     diff -u "$expected" "$tmp/e2egate-args-$name" || fail "page execution passed wrong args"
     E2E_SWEEP_REPEAT=1 E2EGATE_ARGS="$tmp/e2egate-args-$name" BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$exec_scripts/e2egate.sh" 1 || fail "page e2egate repeat=1 execution failed"
     ! grep -q -- '--repeat-each' "$tmp/e2egate-args-$name" || fail "repeat=1 added repeat arg"
