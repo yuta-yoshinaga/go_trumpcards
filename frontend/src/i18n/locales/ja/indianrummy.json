@@ -48,6 +48,8 @@
   "drawPhase": "山札または捨て札から1枚引いてください",
   "discardPhase": "1枚捨てるか、13枚が有効なら宣言してください",
   "roundEnd": "ラウンド終了",
+  "roundEndByDeclaration": "{{name}}が宣言してラウンド終了",
+  "roundEndByStockOut": "山札切れでラウンド終了",
   "result": {
     "humanWin": "あなたの勝利！",
     "cpuWin": "CPU {{cpuId}} の勝利！"

@@ -149,6 +149,21 @@ beforeEach(() => {
 });
 
 describe('PanPage', () => {
+  it.each([
+    {
+      name: 'Pan declaration',
+      state: { ...roundEndState, panDeclarerIdx: 1 },
+      message: 'CPU 1がパンを宣言してラウンド終了',
+    },
+    { name: 'stock out', state: roundEndState, message: '山札切れでラウンド終了' },
+  ])('shows the $name reason in the message box without repeating the phase label', async ({ state, message }) => {
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<PanPage />);
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(within(footerMessage).getByRole('status')).toHaveTextContent(message);
+    expect(screen.getAllByText('ラウンド終了')).toHaveLength(1);
+  });
+
   it('renders the game message in the footer message slot', async () => {
     mockExec.mockResolvedValue({ ...drawPhaseState, message: 'Footer message test' });
     renderWithProviders(<PanPage />);
@@ -407,13 +422,19 @@ describe('PanPage', () => {
       players: [player(), player({ id: 1, isHuman: false })],
     });
     renderWithProviders(<PanPage />);
-    expect(await screen.findByTestId('pan-round-end-reason')).toHaveTextContent('CPU 1がパンを宣言してラウンド終了');
+    const reason = 'CPU 1がパンを宣言してラウンド終了';
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(within(footerMessage).getByRole('status')).toHaveTextContent(reason);
+    expect(screen.getAllByText(reason)).toHaveLength(1);
   });
 
   it('shows stock out as the round end reason when there was no Pan declarer', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<PanPage />);
-    expect(await screen.findByTestId('pan-round-end-reason')).toHaveTextContent('山札切れでラウンド終了');
+    const reason = '山札切れでラウンド終了';
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(within(footerMessage).getByRole('status')).toHaveTextContent(reason);
+    expect(screen.getAllByText(reason)).toHaveLength(1);
   });
 
   it('shows game end with action log button', async () => {
