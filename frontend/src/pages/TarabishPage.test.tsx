@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { tarabishApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
@@ -107,6 +107,22 @@ describe('TarabishPage', () => {
     const fullRow = banner.parentElement;
     expect(fullRow).toHaveClass('col-span-2', 'min-w-0');
     expect(fullRow?.parentElement).toBe(screen.getByTestId('tb-play-layout'));
+  });
+
+  it('expands the mobile footer while retaining the desktop action and message slots', async () => {
+    mockExec.mockResolvedValue(makeState({ message: 'テストメッセージ' }));
+    renderWithProviders(<TarabishPage />);
+    const footer = await screen.findByTestId('game-footer-actions');
+    expect(footer.closest('footer')).toHaveClass('max-h-[60vh]');
+    expect(screen.getByTestId('game-footer-message')).toContainElement(screen.getByText('テストメッセージ'));
+    expect(footer).toContainElement(screen.getByTestId('tb-take-btn'));
+
+    cleanup();
+    mobileState.isMobile = false;
+    mobileState.breakpoint = 'largeDesktop';
+    const { unmount } = renderWithProviders(<TarabishPage />);
+    expect((await screen.findByTestId('game-footer-actions')).closest('footer')).toHaveClass('max-h-[45vh]');
+    unmount();
   });
 
   it('keeps CPU before the trick in the DOM outside large desktop', async () => {

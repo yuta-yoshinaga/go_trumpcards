@@ -14,7 +14,7 @@ import { HintTooltip } from '../components/hint/HintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -75,6 +75,7 @@ function RamsPageContent() {
     retry,
   } = useGameApi<RamsResponse, Parameters<typeof ramsApi.exec>>(ramsApi.exec);
   const { cardWidth } = useCardDimensions();
+  const isMobile = useIsMobile();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('rams', state);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('rams');
@@ -294,6 +295,7 @@ function RamsPageContent() {
 
           <GameFooter
             className={`${gameTheme.rams.footer} px-4 py-2.5`}
+            tall={isMobile}
             message={
               <GameMessageBox
                 message={state.message}
