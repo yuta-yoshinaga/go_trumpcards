@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { missingNapoleonRoundCheckpoints, type NapoleonRoundCheckpoint } from '../src/utils/napoleonPhaseCoverage';
 import { gameButton, navigateTo, waitForLoaded } from './helpers';
 
 test.describe('Napoleon E2E', () => {
@@ -44,9 +45,12 @@ test.describe('Napoleon E2E', () => {
     const handCards = page.locator('button[aria-pressed]:has(img):not([aria-disabled="true"])');
     const anyResetButton = page.getByRole('button', { name: /リセット|次のゲーム/ });
 
-    // Play through several interactions to verify phase transitions
+    // Observe one complete round path, including optional phases when this deal uses them.
     const MAX_TURNS = 80;
     let interactions = 0;
+    let playActions = 0;
+    const required = new Set<NapoleonRoundCheckpoint>(['bid', 'play', 'round-boundary']);
+    const observed = new Set<NapoleonRoundCheckpoint>();
     for (let turn = 0; turn < MAX_TURNS; turn++) {
       await expect
         .poll(
@@ -63,7 +67,7 @@ test.describe('Napoleon E2E', () => {
       const nextTrickVisible = await nextTrickButton.isVisible();
       const nextRoundVisible = await nextRoundButton.isVisible();
 
-      // Game end: no action buttons visible
+      // A round boundary follows the completed trick, either as the next round or the result screen.
       if (
         !bidVisible &&
         !passVisible &&
@@ -72,11 +76,14 @@ test.describe('Napoleon E2E', () => {
         !playVisible &&
         !nextTrickVisible &&
         !nextRoundVisible
-      )
+      ) {
+        observed.add('round-boundary');
         break;
+      }
 
       // Bid phase: bid or pass
       if (bidVisible || passVisible) {
+        observed.add('bid');
         interactions++;
         if (bidVisible) {
           const bidInput = page.locator('input[aria-label="bid-input"]');
@@ -93,6 +100,8 @@ test.describe('Napoleon E2E', () => {
 
       // Trump declaration phase
       if (declareVisible) {
+        required.add('declare');
+        observed.add('declare');
         interactions++;
         await page.locator('[data-testid^="np-adjutant-option-"]').first().click();
         await expect(declareButton).toBeEnabled();
@@ -103,6 +112,8 @@ test.describe('Napoleon E2E', () => {
 
       // Kitty exchange phase
       if (exchangeVisible) {
+        required.add('exchange');
+        observed.add('exchange');
         interactions++;
         const cardCount = await handCards.count();
         if (cardCount > 0) {
@@ -117,6 +128,7 @@ test.describe('Napoleon E2E', () => {
 
       // Play phase: select a card and play
       if (playVisible) {
+        observed.add('play');
         interactions++;
         const cardCount = await handCards.count();
         if (cardCount > 0) {
@@ -124,6 +136,7 @@ test.describe('Napoleon E2E', () => {
         }
         if ((await playButton.isVisible()) && (await playButton.isEnabled())) {
           await playButton.click();
+          playActions++;
           await waitForLoaded(page);
         }
         continue;
@@ -131,6 +144,8 @@ test.describe('Napoleon E2E', () => {
 
       // Trick end
       if (nextTrickVisible) {
+        required.add('trick-end');
+        observed.add('trick-end');
         interactions++;
         await nextTrickButton.click();
         await waitForLoaded(page);
@@ -139,14 +154,19 @@ test.describe('Napoleon E2E', () => {
 
       // Round end
       if (nextRoundVisible) {
+        observed.add('round-boundary');
         interactions++;
         await nextRoundButton.click();
         await waitForLoaded(page);
+        break;
       }
     }
 
-    // Verify we had at least one interaction
+    const missing = missingNapoleonRoundCheckpoints(required, observed);
+    expect(required.size, 'the expected round checkpoint set must not be empty').toBeGreaterThan(0);
+    expect(missing, `Napoleon round checkpoints not observed: ${missing.join(', ')}`).toEqual([]);
     expect(interactions).toBeGreaterThan(0);
+    expect(playActions, 'at least one play action must be completed').toBeGreaterThan(0);
 
     // Reset and verify game restarts. Button could be either mid-game (リセット) or end (次のゲーム).
     const midVisible = await midResetButton.isVisible();
