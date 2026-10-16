@@ -18,7 +18,12 @@ import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useBreakpoint, useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
+import {
+  useBreakpoint,
+  useCardDimensions,
+  useDenseLargeDesktopCardSize,
+  useIsMobile,
+} from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useDesmocheGame } from '../hooks/useDesmocheGame';
@@ -79,7 +84,9 @@ function DesmochePageContent() {
   );
   const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   const { cardWidth } = useCardDimensions();
+  const denseCardSize = useDenseLargeDesktopCardSize();
   const isLargeDesktop = useBreakpoint() === 'largeDesktop';
+  const boardCardWidth = isLargeDesktop ? denseCardSize.width : cardWidth;
   const isMobile = useIsMobile();
   const {
     hint: frontendHint,
@@ -178,12 +185,14 @@ function DesmochePageContent() {
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
-          <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
+          <div
+            className={`flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8 ${isLargeDesktop ? 'grid grid-cols-2 grid-rows-[auto_auto_auto_auto_auto_auto] items-start gap-x-4' : ''}`}
+          >
             {/* Permanent, not tutorial-only: "exactly ten, not the nine dealt"
                 and "poker rankings play no part" are what a player gets wrong. */}
             <details
               open={!isMobile || undefined}
-              className="mb-2 p-2 rounded bg-ds-surface"
+              className={`mb-2 p-2 rounded bg-ds-surface min-w-0 ${isLargeDesktop ? 'col-start-1 row-start-1' : ''}`}
               data-testid="ds-rule-details"
               data-tutorial="ds-rule"
             >
@@ -193,49 +202,54 @@ function DesmochePageContent() {
               <p className="mt-2 text-center text-xs text-ds-warning">{t('ruleLine', { n: state.goOutSize })}</p>
             </details>
 
-            <CpuAccordion playerCount={opponents.length} dataTutorial="ds-seats" openOnDesktop={false}>
-              <div className="flex flex-wrap sm:flex-nowrap justify-center gap-4 mb-3">
-                {opponents.map((o) => (
-                  <div key={`opp-${o.id.toString()}`} className="text-center">
-                    <div className="text-game-text-muted text-xs mb-1">
-                      {t('opponentHand', { name: `CPU${o.id.toString()}`, n: o.cardCount })}
-                      {' · '}
-                      {t('melded', { n: o.meldedCount, goal: state.goOutSize })}
-                      {' · '}
-                      <span data-testid={`desmoche-score-${o.id.toString()}`}>
-                        {t('seatScore', { name: `CPU${o.id.toString()}`, score: o.score })}
-                      </span>
+            <div className={isLargeDesktop ? 'col-start-1 row-start-2 min-w-0' : ''}>
+              <CpuAccordion playerCount={opponents.length} dataTutorial="ds-seats" openOnDesktop={false}>
+                <div className="flex flex-wrap sm:flex-nowrap justify-center gap-4 mb-3">
+                  {opponents.map((o) => (
+                    <div key={`opp-${o.id.toString()}`} className="text-center">
+                      <div className="text-game-text-muted text-xs mb-1">
+                        {t('opponentHand', { name: `CPU${o.id.toString()}`, n: o.cardCount })}
+                        {' · '}
+                        {t('melded', { n: o.meldedCount, goal: state.goOutSize })}
+                        {' · '}
+                        <span data-testid={`desmoche-score-${o.id.toString()}`}>
+                          {t('seatScore', { name: `CPU${o.id.toString()}`, score: o.score })}
+                        </span>
+                      </div>
+                      <div
+                        className="flex gap-1 justify-center flex-wrap"
+                        role="img"
+                        aria-label={t('opponentHandAriaLabel', { name: `CPU${o.id.toString()}`, n: o.cardCount })}
+                      >
+                        {isMobile ? (
+                          Array.from({ length: o.cardCount }, (_, i) => (
+                            <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
+                          ))
+                        ) : (
+                          <CardBackFan count={o.cardCount} width={Math.round(cardWidth * 0.45)} />
+                        )}
+                      </div>
                     </div>
-                    <div
-                      className="flex gap-1 justify-center flex-wrap"
-                      role="img"
-                      aria-label={t('opponentHandAriaLabel', { name: `CPU${o.id.toString()}`, n: o.cardCount })}
-                    >
-                      {isMobile ? (
-                        Array.from({ length: o.cardCount }, (_, i) => (
-                          <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
-                        ))
-                      ) : (
-                        <CardBackFan count={o.cardCount} width={Math.round(cardWidth * 0.45)} />
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CpuAccordion>
+                  ))}
+                </div>
+              </CpuAccordion>
+            </div>
 
-            <div className="text-center mb-3">
+            <div className={`text-center mb-3 ${isLargeDesktop ? 'col-start-1 row-start-3' : ''}`}>
               <div className="text-game-text-muted text-xs mb-1">{t('discard')}</div>
               {state.discardTop ? (
                 <div className="flex justify-center">
-                  <AnimatedCard card={state.discardTop} width={cardWidth} draggable={false} />
+                  <AnimatedCard card={state.discardTop} width={boardCardWidth} draggable={false} />
                 </div>
               ) : (
                 <span className="text-game-text-muted text-xs">—</span>
               )}
             </div>
 
-            <div className="mb-4" data-tutorial="ds-melds">
+            <div
+              className={`mb-4 min-w-0 ${isLargeDesktop ? 'col-start-2 row-start-1 row-span-3' : ''}`}
+              data-tutorial="ds-melds"
+            >
               <div className="text-game-text-muted text-xs mb-1 text-center">{t('melds')}</div>
               {state.melds.length === 0 ? (
                 <div className="text-center text-game-text-muted text-xs">{t('noMelds')}</div>
@@ -286,7 +300,7 @@ function DesmochePageContent() {
                               meldCard?.meld === i && meldCard.card === j ? 'ring-2 ring-ds-warning' : '',
                             ].join(' ')}
                           >
-                            <AnimatedCard card={card} width={Math.round(cardWidth * 0.7)} draggable={false} />
+                            <AnimatedCard card={card} width={Math.round(boardCardWidth * 0.7)} draggable={false} />
                           </button>
                         ))}
                       </div>
@@ -308,15 +322,15 @@ function DesmochePageContent() {
               {roundResult}
             </div>
             {roundOver && (
-              <div className="text-center text-sm mb-3" data-testid="desmoche-round-result">
+              <div
+                className={`text-center text-sm mb-3 ${isLargeDesktop ? 'col-span-2 row-start-3' : ''}`}
+                data-testid="desmoche-round-result"
+              >
                 {roundResult}
               </div>
             )}
 
-            <div
-              className="text-center lg:sticky lg:bottom-0 lg:z-10 lg:bg-game-bg-green lg:pt-2 lg:shadow-lg"
-              data-tutorial="ds-hand"
-            >
+            <div className={`text-center ${isLargeDesktop ? 'col-span-2 row-start-4' : ''}`} data-tutorial="ds-hand">
               <div className="text-game-text-muted text-xs mb-1">
                 {t('yourHand')}
                 {' · '}
@@ -341,7 +355,11 @@ function DesmochePageContent() {
                       frontendHintEnabled && state.hint?.cardIndex === i ? 'ring-2 ring-ds-warning' : '',
                     ].join(' ')}
                   >
-                    <AnimatedCard card={card} width={cardWidth} draggable={false} />
+                    <AnimatedCard
+                      card={card}
+                      width={isLargeDesktop ? denseCardSize.width : cardWidth}
+                      draggable={false}
+                    />
                   </button>
                 ))}
               </div>
@@ -349,18 +367,22 @@ function DesmochePageContent() {
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
             </div>
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
+            <div className={isLargeDesktop ? 'col-span-2 row-start-5' : ''}>
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            </div>
 
-            <ActionLogSection
-              isEndPhase={ended}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
+            <div className={isLargeDesktop ? 'col-span-2 row-start-6' : ''}>
+              <ActionLogSection
+                isEndPhase={ended}
+                actionLog={actionLog}
+                showActionLog={showActionLog}
+                hideActionLog={hideActionLog}
+              />
+            </div>
           </div>
 
           <GameFooter className={`${gameTheme.desmoche.footer} px-4 py-2.5`}>

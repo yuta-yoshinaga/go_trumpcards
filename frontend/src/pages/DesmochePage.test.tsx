@@ -85,13 +85,33 @@ describe('DesmochePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
-  it('sticks the hand to the bottom of the desktop play area', async () => {
+  it('keeps the hand in the large desktop grid without making it sticky', async () => {
     mobileState.breakpoint = 'largeDesktop';
+    mobileState.isMobile = false;
     renderWithProviders(<DesmochePage />);
     await waitFor(() => expect(document.querySelector('[data-tutorial="ds-hand"] button')).not.toBeNull());
     const hand = document.querySelector('[data-tutorial="ds-hand"]');
-    expect(hand?.className).toContain('lg:sticky');
-    expect(hand?.className).toContain('lg:bottom-0');
+    expect(hand).not.toHaveClass('lg:sticky');
+    expect(hand).toHaveClass('col-span-2', 'row-start-4');
+    expect(document.querySelector('.grid-cols-2')).toBeInTheDocument();
+    expect(document.querySelector('[data-tutorial="ds-seats"]')?.parentElement).toHaveClass(
+      'col-start-1',
+      'row-start-2',
+    );
+    expect(document.querySelector('[data-tutorial="ds-melds"]')).toHaveClass(
+      'col-start-2',
+      'row-start-1',
+      'row-span-3',
+    );
+  });
+
+  it('places the round result across the large desktop grid', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: DesmochePhase.ROUND_END }));
+    mobileState.breakpoint = 'largeDesktop';
+    mobileState.isMobile = false;
+    renderWithProviders(<DesmochePage />);
+
+    expect(await screen.findByTestId('desmoche-round-result')).toHaveClass('col-span-2', 'row-start-3');
   });
 
   it('lays melds out in rows only on large desktop', async () => {
