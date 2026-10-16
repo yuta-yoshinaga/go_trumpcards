@@ -69,11 +69,18 @@ function selectCards(indices: number[]) {
 }
 
 describe('LobaPage', () => {
-  it('sticks the player hand to the desktop play-area bottom', async () => {
+  it('does not make the player hand sticky on large desktop', async () => {
+    mobileState.largeDesktop = true;
+    const { unmount } = renderWithProviders(<LobaPage />);
+    await waitFor(() => expect(document.querySelector('[data-tutorial="lb-hand"]')).toBeInTheDocument());
+    expect(document.querySelector('.grid-cols-2')).toBeInTheDocument();
+    expect(document.querySelector('[data-tutorial="lb-hand"]')).not.toHaveClass('lg:sticky');
+    expect(screen.getByTestId('cpu-accordion')).not.toHaveAttribute('open');
+    unmount();
+    mobileState.largeDesktop = false;
     renderWithProviders(<LobaPage />);
-    await waitFor(() =>
-      expect(document.querySelector('[data-tutorial="lb-hand"]')).toHaveClass('lg:sticky', 'lg:bottom-0'),
-    );
+    await waitFor(() => expect(document.querySelector('.grid-cols-2')).not.toBeInTheDocument());
+    unmount();
   });
 
   it('wraps melds on large desktop while retaining the narrow layout elsewhere', async () => {
@@ -146,11 +153,11 @@ describe('LobaPage', () => {
     expect(mockActionLog).toHaveBeenCalled();
   });
 
-  it('keeps CPU seats open on desktop', async () => {
+  it('keeps CPU seats collapsed on desktop', async () => {
     mobileState.isMobile = false;
     renderWithProviders(<LobaPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
-    expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
+    expect(screen.getByTestId('cpu-accordion')).not.toHaveAttribute('open');
     expect(screen.getByTestId('cpu-accordion').querySelector('.sm\\:grid-cols-3')).toBeInTheDocument();
     const meldList = screen.getByTestId('loba-meld').parentElement;
     expect(meldList).toHaveClass('sm:flex-col');

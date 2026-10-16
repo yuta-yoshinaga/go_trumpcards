@@ -273,7 +273,7 @@ function PochPageContent() {
               </div>
             )}
 
-            <CpuAccordion playerCount={opponents.length}>
+            <CpuAccordion playerCount={opponents.length} openOnDesktop={false}>
               <div className="flex justify-center gap-4 mb-3 flex-wrap">
                 {opponents.map((o) => (
                   <div key={`opp-${o.id.toString()}`} className="text-center">
@@ -346,10 +346,7 @@ function PochPageContent() {
               </div>
             )}
 
-            <div
-              className="text-center lg:sticky lg:bottom-0 lg:z-10 lg:bg-game-bg-casino lg:pt-2 lg:shadow-[0_-8px_16px_rgba(0,0,0,0.35)]"
-              data-tutorial="pc-hand"
-            >
+            <div className="text-center" data-tutorial="pc-hand">
               <div className="text-game-text-muted text-xs mb-1">
                 {t('yourHand')}
                 {' · '}

@@ -17,7 +17,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions, useDenseLargeDesktopCardSize } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
@@ -78,7 +78,9 @@ function LobaPageContent() {
   );
   const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   const { cardWidth, isMobile } = useCardDimensions();
+  const denseCardSize = useDenseLargeDesktopCardSize();
   const isLargeDesktop = useBreakpoint() === 'largeDesktop';
+  const handCardWidth = isLargeDesktop ? denseCardSize.width : cardWidth;
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -152,10 +154,14 @@ function LobaPageContent() {
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
-          <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
+          <div
+            className={`flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8 ${isLargeDesktop ? 'grid grid-cols-2 grid-rows-[auto_auto_1fr_auto] items-start gap-x-4' : ''}`}
+          >
             {/* Permanent, not tutorial-only: "three different suits" and "jokers
                 only in runs" are the two rules a player gets wrong. */}
-            <div className="flex flex-wrap items-start gap-2 sm:block">
+            <div
+              className={`flex flex-wrap items-start gap-2 sm:block min-w-0 ${isLargeDesktop ? 'col-start-1 row-start-1' : ''}`}
+            >
               <details
                 className="mb-2 p-2 rounded bg-ds-surface flex-1 open:basis-full sm:flex-none"
                 data-testid="lb-rule-details"
@@ -170,6 +176,7 @@ function LobaPageContent() {
 
               <CpuAccordion
                 playerCount={opponents.length}
+                openOnDesktop={false}
                 dataTutorial="lb-seats"
                 className="mb-3 flex-1 open:basis-full sm:flex-none"
               >
@@ -201,7 +208,7 @@ function LobaPageContent() {
               </CpuAccordion>
             </div>
 
-            <div className="text-center mb-1 sm:mb-3">
+            <div className={`text-center mb-1 sm:mb-3 ${isLargeDesktop ? 'col-start-1 row-start-2' : ''}`}>
               <div className="text-game-text-muted text-xs mb-0 sm:mb-1">{t('discard')}</div>
               {state.discardTop ? (
                 <div className="flex justify-center">
@@ -216,7 +223,10 @@ function LobaPageContent() {
               )}
             </div>
 
-            <div className="mb-4" data-tutorial="lb-melds">
+            <div
+              className={`mb-4 min-w-0 ${isLargeDesktop ? 'col-start-2 row-start-1 row-span-2' : ''}`}
+              data-tutorial="lb-melds"
+            >
               <div className="text-game-text-muted text-xs mb-1 text-center">{t('melds')}</div>
               {state.melds.length === 0 ? (
                 <div className="text-center text-game-text-muted text-xs">{t('noMelds')}</div>
@@ -264,10 +274,7 @@ function LobaPageContent() {
               </div>
             )}
 
-            <div
-              className="text-center lg:sticky lg:bottom-0 lg:z-10 lg:bg-game-bg-green lg:pt-2 lg:shadow-lg"
-              data-tutorial="lb-hand"
-            >
+            <div className={`text-center ${isLargeDesktop ? 'col-span-2 row-start-3' : ''}`} data-tutorial="lb-hand">
               <div className="text-game-text-muted text-xs mb-1">
                 {t('yourHand')}
                 {' · '}
@@ -291,7 +298,7 @@ function LobaPageContent() {
                       hintMeldIndices.has(i) ? 'ring-2 ring-ds-warning' : '',
                     ].join(' ')}
                   >
-                    <AnimatedCard card={card} width={cardWidth} draggable={false} />
+                    <AnimatedCard card={card} width={handCardWidth} draggable={false} />
                   </button>
                 ))}
               </div>
