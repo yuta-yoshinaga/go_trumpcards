@@ -35,6 +35,7 @@ A failure has to be read from the run's own output, not from a wrapper's exit st
 python3 .claude/skills/flake-ledger/scripts/ledger.py record \
   --test 'TestKaiserAllPassRedeal' \
   --where 'internal/domain' \
+  --signature 'redeal loop asserted 4 hands, got 3' \
   --run 'https://github.com/<owner>/<repo>/actions/runs/<id>' \
   --note 'redeal loop asserted 4 hands, got 3'
 ```
@@ -48,6 +49,10 @@ The command prints the sighting count at that location and, with it, the verdict
 |---|---|---|
 | 1 | UNCONFIRMED | **Investigate as a real failure.** Do not re-run and move on. |
 | 2+ | CONFIRMED FLAKE | Open or update a GitHub issue with all the recorded runs. |
+
+`--signature` records a deterministic repeated text or error message separately from the
+free-form `--note`. If the same signature appears in different pages or tests, investigate it
+as one shared real bug rather than a flake.
 
 ### 3. Act on the verdict, not on the re-run
 
