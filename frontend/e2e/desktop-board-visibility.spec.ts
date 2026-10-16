@@ -2,7 +2,8 @@ import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect, type Page, test } from '@playwright/test';
-import { DESKTOP_VIEWPORTS, VISIBLE_PX_X, VISIBLE_PX_Y } from './desktopViewports';
+import { BOARD_CARD_QUERY_SELECTOR } from '../src/utils/boardCardSelector';
+import { DESKTOP_VIEWPORTS, getDesktopCardWidthLimit, VISIBLE_PX_X, VISIBLE_PX_Y } from './desktopViewports';
 import { navigateTo, waitForAnimations, waitForLoaded } from './helpers';
 
 /** #11702: use the same 52px visible-card rule as #11655 for desktop boards. */
@@ -74,16 +75,26 @@ const excludedGamePaths = new Set([
 ]);
 // Accordion's 52-card row is an intentional horizontal scroller, so only the horizontal rule skips it.
 const horizontalScrollExemptions = new Set(['/accordion']);
+
+test('uses the large-desktop card widths for each desktop breakpoint', () => {
+  expect(getDesktopCardWidthLimit(1024)).toBe(120);
+  expect(getDesktopCardWidthLimit(1279)).toBe(120);
+  expect(getDesktopCardWidthLimit(1280)).toBe(150);
+});
+
 /**
  * Waits for the deal animation, then returns the face-up board cards, those whose top 52px is hidden,
- * and those with less than VISIBLE_PX_X showing beside a horizontally clipping ancestor.
+ * those with less than VISIBLE_PX_X showing beside a horizontally clipping ancestor, and cards
+ * whose rendered width exceeds the viewport's large-desktop card width by more than 1.5x.
  */
 async function measureBoardCards(page: Page, path: string) {
   await waitForAnimations(page);
   const skipHorizontal = horizontalScrollExemptions.has(path);
   return page.evaluate(
-    ({ visiblePxX, visiblePxY, skipHorizontal }) => {
-      const cards = [...document.querySelectorAll('main img, main [role="img"]')].filter((element) => {
+    ({ visiblePxX, visiblePxY, skipHorizontal, maxCardWidth, cardSelector }) => {
+      // A role=img node containing card images is a visual group (for example Salic Law's retired
+      // queens), not another card. Standalone role=img cards such as tarot remain in the selector.
+      const cards = [...document.querySelectorAll(cardSelector)].filter((element) => {
         const label = `${element.getAttribute('alt') ?? ''} ${element.getAttribute('aria-label') ?? ''}`;
         const box = element.getBoundingClientRect();
         // CPU hands inside the shared accordion are reference only (#11700); they may scroll.
@@ -123,9 +134,19 @@ async function measureBoardCards(page: Page, path: string) {
               ? [Math.round(box.left)]
               : [];
           });
-      return { count: cards.length, hidden, hiddenX };
+      const oversized = cards.flatMap((element) => {
+        const width = element.getBoundingClientRect().width;
+        return width > maxCardWidth ? [{ width: Math.round(width), alt: element.getAttribute('alt') ?? '' }] : [];
+      });
+      return { count: cards.length, hidden, hiddenX, oversized };
     },
-    { visiblePxX: VISIBLE_PX_X, visiblePxY: VISIBLE_PX_Y, skipHorizontal },
+    {
+      visiblePxX: VISIBLE_PX_X,
+      visiblePxY: VISIBLE_PX_Y,
+      skipHorizontal,
+      maxCardWidth: getDesktopCardWidthLimit(page.viewportSize()?.width ?? 1280),
+      cardSelector: BOARD_CARD_QUERY_SELECTOR,
+    },
   );
 }
 
@@ -141,6 +162,7 @@ for (const viewport of DESKTOP_VIEWPORTS) {
         expect(result.count, `${path}: no board cards found`).toBeGreaterThan(0);
         expect(result.hidden, `${path}: board cards hidden below their play area`).toEqual([]);
         expect(result.hiddenX, `${path}: board cards hidden beside their play area`).toEqual([]);
+        expect(result.oversized, `${path}: board cards wider than allowed (width and alt)`).toEqual([]);
       });
     }
 
@@ -151,6 +173,7 @@ for (const viewport of DESKTOP_VIEWPORTS) {
         const result = await measureBoardCards(page, path);
         expect(result.hidden, `${path}: board cards hidden below their play area`).toEqual([]);
         expect(result.hiddenX, `${path}: board cards hidden beside their play area`).toEqual([]);
+        expect(result.oversized, `${path}: board cards wider than allowed (width and alt)`).toEqual([]);
       });
     }
 

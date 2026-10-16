@@ -88,7 +88,8 @@ for (const viewport of DESKTOP_VIEWPORTS) {
 
             const buttons = [...document.querySelectorAll<HTMLElement>('main button, footer button')].filter(
               (button) => {
-                if (button.matches(':disabled,[aria-disabled="true"]')) return false;
+                // #11825: aria-disabled primary actions remain visible because project policy (#8524/#8787) keeps the next action available in the UI until it becomes operable.
+                if (button.matches(':disabled')) return false;
                 const style = getComputedStyle(button);
                 if (
                   style.display === 'none' ||
