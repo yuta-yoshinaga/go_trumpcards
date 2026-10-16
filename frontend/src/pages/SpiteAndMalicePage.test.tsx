@@ -94,11 +94,26 @@ beforeEach(() => {
 });
 
 describe('SpiteAndMalicePage', () => {
-  it('sticks the player hand to the desktop play-area bottom', async () => {
+  it('keeps the hand in the board layout and puts discard actions in the footer', async () => {
     renderWithProviders(<SpiteAndMalicePage />);
-    await waitFor(() =>
-      expect(document.querySelector('[data-tutorial="sam-hand"]')).toHaveClass('lg:sticky', 'lg:bottom-0'),
+    const hand = await waitFor(() => {
+      const element = document.querySelector<HTMLElement>('[data-tutorial="sam-hand"]');
+      if (!element) throw new Error('hand row was not rendered');
+      return element;
+    });
+    expect(hand.className).not.toContain('lg:sticky');
+    expect(hand).toHaveClass('lg:col-start-2', 'lg:row-start-1');
+    expect(document.querySelector('[data-tutorial="sam-goal"]')).toHaveClass('lg:col-start-1', 'lg:row-start-1');
+    expect(document.querySelector('[data-tutorial="sam-sides"]')?.parentElement).toHaveClass(
+      'lg:col-start-3',
+      'lg:row-start-1',
     );
+    const footer = document.querySelector('[data-testid="game-footer-actions"]');
+    expect(footer).toBeTruthy();
+    expect(within(footer as HTMLElement).getAllByRole('button', { name: 'ディスカード' })).toHaveLength(4);
+    expect(
+      document.querySelector('[data-tutorial="sam-sides"]')?.querySelectorAll('[data-hint-action^="discard-"]'),
+    ).toHaveLength(0);
   });
 
   const foundationButtons = () => screen.getAllByRole('button', { name: /組札|Foundation/ });
