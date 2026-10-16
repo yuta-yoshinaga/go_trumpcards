@@ -18,7 +18,7 @@ import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useDestinationPreview } from '../hooks/useDestinationPreview';
@@ -119,6 +119,7 @@ function SomersetPageContent() {
     clearLog,
   });
   const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const windowWidth = useWindowWidth();
 
   // 盤が来る前は 0。その場合 dims は骨組みにしか使われないので、下の clamp で吸収される。
@@ -374,8 +375,12 @@ function SomersetPageContent() {
                 {leftCols.map(renderTableauColumn)}
               </div>
 
-              <div className="flex flex-col items-center gap-1 sm:gap-2 mb-3" data-tutorial="somerset-foundation">
-                <div className="text-ds-text-muted text-xs">
+              <div
+                className={`${isLargeDesktop ? 'grid grid-cols-2 items-center' : 'flex flex-col items-center'} gap-1 sm:gap-2 mb-3`}
+                data-tutorial="somerset-foundation"
+                data-testid="somerset-foundations"
+              >
+                <div className={`text-ds-text-muted text-xs${isLargeDesktop ? ' col-span-2' : ''}`}>
                   {t('foundationProgress', { count: foundationCount, total: state.totalCardCount })}
                 </div>
                 {state.foundation.map((pile, idx) => {

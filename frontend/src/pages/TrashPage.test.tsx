@@ -12,6 +12,11 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockExec = vi.mocked(trashApi.exec);
+const viewport = vi.hoisted(() => ({ largeDesktop: false }));
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useBreakpoint: () => (viewport.largeDesktop ? 'largeDesktop' : 'desktop'),
+}));
 
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 
@@ -74,6 +79,19 @@ beforeEach(() => {
 });
 
 describe('TrashPage', () => {
+  it('places the player board first in a grid only on large desktop', async () => {
+    viewport.largeDesktop = true;
+    mockExec.mockResolvedValue(playerTurnState);
+    renderWithProviders(<TrashPage />);
+    await screen.findByText('あなたのターン');
+    const playerRow = document.querySelector('[data-tutorial="tr-player"]');
+    const grid = playerRow?.parentElement;
+    expect(grid).toHaveClass('grid', 'grid-cols-1');
+    expect(playerRow).toHaveClass('row-start-1');
+    expect(grid?.querySelector('[data-tutorial="tr-opponent"]')).toBeInTheDocument();
+    viewport.largeDesktop = false;
+  });
+
   it('shows the CPU open-slot count indicator', async () => {
     const mixedSlots = Array.from({ length: 10 }, (_, i) =>
       i < 3 ? { faceUp: true, card: card('HEART', i + 1) } : { faceUp: false },

@@ -111,6 +111,15 @@ describe('DuchessPage', () => {
     }
   });
 
+  it('keeps tableau card wrappers at the card dimension width', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<DuchessPage />);
+    await screen.findByText('開始ランク: 5');
+    const wrapper = document.querySelector('[data-tutorial="du-tableau"] [style*="top"]') as HTMLElement;
+    expect(Number.parseFloat(wrapper.style.width)).toBeGreaterThan(0);
+    expect(wrapper.style.right).toBe('');
+  });
+
   it('includes the top card in a non-empty foundation name and keeps empty names', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
