@@ -13,3 +13,11 @@ export const VISIBLE_PX_X = 20;
 
 /** Minimum visible vertical card height, passed into page.evaluate callbacks. */
 export const VISIBLE_PX_Y = 52;
+
+/** Returns the largest allowed rendered width for a desktop board card. */
+export function getDesktopCardWidthLimit(viewportWidth: number): number {
+  // Keep these values aligned with CARD_DIMENSIONS.largeDesktop and
+  // COMPACT_LARGE_DESKTOP_DIMENSIONS in src/hooks/useCardDimensions.ts.
+  const baseCardWidth = viewportWidth >= 1024 && viewportWidth < 1280 ? 80 : 100;
+  return baseCardWidth * 1.5;
+}
