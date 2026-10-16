@@ -72,6 +72,22 @@ function selectCards(indices: number[]) {
   }
 }
 
+/** Returns the grid cells occupied by an element from its Tailwind placement classes. */
+function occupiedGridCells(element: Element): Set<string> {
+  const classes = element.className.toString().split(/\s+/);
+  const value = (prefix: string, fallback: number) =>
+    Number(classes.find((name) => name.startsWith(prefix))?.slice(prefix.length) ?? fallback);
+  const colStart = value('col-start-', 1);
+  const rowStart = value('row-start-', 1);
+  const colSpan = value('col-span-', 1);
+  const rowSpan = value('row-span-', 1);
+  const cells = new Set<string>();
+  for (let row = rowStart; row < rowStart + rowSpan; row += 1) {
+    for (let col = colStart; col < colStart + colSpan; col += 1) cells.add(`${row}:${col}`);
+  }
+  return cells;
+}
+
 describe('DesmochePage', () => {
   beforeEach(() => {
     mobileState.isMobile = true;
@@ -92,7 +108,7 @@ describe('DesmochePage', () => {
     await waitFor(() => expect(document.querySelector('[data-tutorial="ds-hand"] button')).not.toBeNull());
     const hand = document.querySelector('[data-tutorial="ds-hand"]');
     expect(hand).not.toHaveClass('lg:sticky');
-    expect(hand).toHaveClass('col-span-2', 'row-start-4');
+    expect(hand).toHaveClass('col-span-2', 'row-start-5');
     expect(document.querySelector('.grid-cols-2')).toBeInTheDocument();
     expect(document.querySelector('[data-tutorial="ds-seats"]')?.parentElement).toHaveClass(
       'col-start-1',
@@ -105,13 +121,30 @@ describe('DesmochePage', () => {
     );
   });
 
-  it('places the round result across the large desktop grid', async () => {
+  it('gives the round result a separate grid row from the board and hand', async () => {
     mockExec.mockResolvedValue(makeState({ phase: DesmochePhase.ROUND_END }));
     mobileState.breakpoint = 'largeDesktop';
     mobileState.isMobile = false;
     renderWithProviders(<DesmochePage />);
 
-    expect(await screen.findByTestId('desmoche-round-result')).toHaveClass('col-span-2', 'row-start-3');
+    const result = await screen.findByTestId('desmoche-round-result');
+    const discard = result.parentElement?.querySelector('.text-center.mb-3');
+    const melds = document.querySelector('[data-tutorial="ds-melds"]');
+    const hand = document.querySelector('[data-tutorial="ds-hand"]');
+    expect(result).toHaveClass('col-span-2', 'row-start-4');
+    expect(document.querySelector('.grid-cols-2')?.className).toContain(
+      'grid-rows-[auto_auto_auto_auto_auto_auto_auto]',
+    );
+    expect(discard).not.toBeNull();
+    expect(melds).not.toBeNull();
+    expect(hand).not.toBeNull();
+    const placed = [result, discard, melds, hand].map((element) => occupiedGridCells(element as Element));
+    for (let left = 0; left < placed.length; left += 1) {
+      for (let right = left + 1; right < placed.length; right += 1) {
+        expect([...placed[left]].some((cell) => placed[right].has(cell))).toBe(false);
+      }
+    }
+    expect(screen.getByTestId('desmoche-round-announcement')).toHaveClass('sr-only');
   });
 
   it('lays melds out in rows only on large desktop', async () => {

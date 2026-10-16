@@ -186,7 +186,7 @@ function DesmochePageContent() {
       ) : (
         <>
           <div
-            className={`flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8 ${isLargeDesktop ? 'grid grid-cols-2 grid-rows-[auto_auto_auto_auto_auto_auto] items-start gap-x-4' : ''}`}
+            className={`flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8 ${isLargeDesktop ? 'grid grid-cols-2 grid-rows-[auto_auto_auto_auto_auto_auto_auto] items-start gap-x-4' : ''}`}
           >
             {/* Permanent, not tutorial-only: "exactly ten, not the nine dealt"
                 and "poker rankings play no part" are what a player gets wrong. */}
@@ -323,14 +323,14 @@ function DesmochePageContent() {
             </div>
             {roundOver && (
               <div
-                className={`text-center text-sm mb-3 ${isLargeDesktop ? 'col-span-2 row-start-3' : ''}`}
+                className={`text-center text-sm mb-3 ${isLargeDesktop ? 'col-span-2 row-start-4' : ''}`}
                 data-testid="desmoche-round-result"
               >
                 {roundResult}
               </div>
             )}
 
-            <div className={`text-center ${isLargeDesktop ? 'col-span-2 row-start-4' : ''}`} data-tutorial="ds-hand">
+            <div className={`text-center ${isLargeDesktop ? 'col-span-2 row-start-5' : ''}`} data-tutorial="ds-hand">
               <div className="text-game-text-muted text-xs mb-1">
                 {t('yourHand')}
                 {' · '}
@@ -355,11 +355,7 @@ function DesmochePageContent() {
                       frontendHintEnabled && state.hint?.cardIndex === i ? 'ring-2 ring-ds-warning' : '',
                     ].join(' ')}
                   >
-                    <AnimatedCard
-                      card={card}
-                      width={isLargeDesktop ? denseCardSize.width : cardWidth}
-                      draggable={false}
-                    />
+                    <AnimatedCard card={card} width={boardCardWidth} draggable={false} />
                   </button>
                 ))}
               </div>
@@ -367,7 +363,8 @@ function DesmochePageContent() {
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
             </div>
 
-            <div className={isLargeDesktop ? 'col-span-2 row-start-5' : ''}>
+            {/* Seven grid rows hold rules, seats, board, result, hand, message, then log. */}
+            <div className={isLargeDesktop ? 'col-span-2 row-start-6' : ''}>
               <GameMessageBox
                 message={state.message}
                 messageCode={state.messageCode}
@@ -375,7 +372,7 @@ function DesmochePageContent() {
               />
             </div>
 
-            <div className={isLargeDesktop ? 'col-span-2 row-start-6' : ''}>
+            <div className={isLargeDesktop ? 'col-span-2 row-start-7' : ''}>
               <ActionLogSection
                 isEndPhase={ended}
                 actionLog={actionLog}
