@@ -149,7 +149,7 @@ function BaseballPokerPageContent() {
             <AnimatedCard card={card} width={width} />
             {state.wildValues.includes(card.value) && (
               <span
-                className="absolute -top-1 -right-1 rounded bg-ds-accent px-1 text-[10px] text-ds-text-inverse"
+                className="absolute -top-1 -right-1 whitespace-nowrap rounded bg-ds-accent px-1 text-[10px] text-ds-text-inverse"
                 data-testid={`${testId}-wild-${i}`}
               >
                 {t('label.wild')}

@@ -173,6 +173,12 @@ describe('DoppelkopfPage', () => {
     );
     renderWithProviders(<DoppelkopfPage />);
     await waitFor(() => expect(screen.getByText(/CPU 1 \[Re\]/)).toBeInTheDocument());
+    expect(screen.getByTestId('dk-human-player-info')).toHaveClass('flex', 'flex-wrap');
+    expect(screen.getAllByTestId('dk-cpu-player-info')).toHaveLength(3);
+    for (const row of screen.getAllByTestId('dk-cpu-player-info')) expect(row).toHaveClass('flex', 'flex-wrap');
+    expect(screen.getByTestId('dk-human-player-info').querySelector('.whitespace-nowrap')).toHaveTextContent(
+      /0.*トリック/,
+    );
     expect(screen.queryByText(/CPU 2 \[Kontra\]/)).not.toBeInTheDocument();
   });
 

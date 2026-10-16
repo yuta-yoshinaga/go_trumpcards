@@ -178,6 +178,7 @@ describe('BaseballPokerPage', () => {
     );
     const { unmount } = renderWithProviders(<BaseballPokerPage />);
     await waitFor(() => expect(screen.getByTestId('bb-hand-wild-0')).toBeInTheDocument());
+    expect(screen.getByTestId('bb-hand-wild-0')).toHaveClass('whitespace-nowrap');
     expect(screen.queryByTestId('bb-hand-wild-1')).not.toBeInTheDocument();
     expect(screen.getByTestId('bb-hand-wild-2')).toBeInTheDocument();
     unmount();

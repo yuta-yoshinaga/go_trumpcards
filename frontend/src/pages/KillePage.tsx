@@ -247,13 +247,18 @@ function KillePageContent() {
           />
 
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            <div className="text-ds-text-primary text-center mb-2" data-tutorial="kille-info">
-              <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
-              <span className="mr-4">{t('pot', { count: state.pot })}</span>
-              <span className="mr-4">
+            <div
+              className="flex flex-wrap justify-center gap-x-4 text-ds-text-primary text-center mb-2"
+              data-tutorial="kille-info"
+            >
+              <span className="whitespace-nowrap">{t('round', { n: state.roundNumber })}</span>
+              <span className="whitespace-nowrap">{t('pot', { count: state.pot })}</span>
+              <span className="whitespace-nowrap">
                 {t('dealer')}: {playerLabel(state.dealerIdx, state.dealerIdx === 0)}
               </span>
-              <span>{t('stock', { count: state.stockCount })}</span>
+              <span className="whitespace-nowrap" data-testid="kille-stock">
+                {t('stock', { count: state.stockCount })}
+              </span>
             </div>
 
             <details
