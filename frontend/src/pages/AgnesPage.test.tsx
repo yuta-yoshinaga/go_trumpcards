@@ -93,6 +93,12 @@ describe('AgnesPage', () => {
     expect(screen.getByText('手数: 0')).toHaveClass('whitespace-nowrap');
   });
 
+  it('shows a placeholder when the base rank is zero', async () => {
+    mockExec.mockResolvedValue({ ...playingState, baseRank: 0 });
+    renderWithProviders(<AgnesPage />);
+    await waitFor(() => expect(screen.getByTestId('agnes-base-rank')).toHaveTextContent('ベースランク: ?'));
+  });
+
   it('shows the base rank in each empty foundation and keeps occupied cards visible', async () => {
     renderWithProviders(<AgnesPage />);
     await waitFor(() => expect(document.querySelectorAll('[data-tutorial="ag-foundation"] .sr-only')).toHaveLength(3));
