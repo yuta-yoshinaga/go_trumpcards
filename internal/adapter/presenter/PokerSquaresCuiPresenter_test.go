@@ -161,6 +161,9 @@ func TestPokerSquaresCuiPresenter_Output_UndoAvailability(t *testing.T) {
 }
 
 func TestPokerSquaresCuiPresenter_Output_PartialRank(t *testing.T) {
+	original := i18n.Lang()
+	t.Cleanup(func() { i18n.SetLang(original) })
+	i18n.SetLang("ja")
 	pg := new(interfaces.MockPokerSquaresGame)
 	pg.On("GetPhase").Return(domain.PokerSquaresPhasePlaying).Maybe()
 	pg.On("CanUndo").Return(true).Maybe()
@@ -199,8 +202,9 @@ func TestPokerSquaresCuiPresenter_Output_PartialRank(t *testing.T) {
 	}
 	require.Len(t, rowLines, domain.PokerSquaresGridSize)
 
-	assert.Contains(t, rowLines[1], "One Pair", "部分役があるのは行1")
-	assert.NotContains(t, rowLines[0], "One Pair", "行0は -1 なので何も付かない")
+	assert.Contains(t, rowLines[1], "ペア", "部分役があるのは行1")
+	assert.NotContains(t, rowLines[1], "One Pair")
+	assert.NotContains(t, rowLines[0], "ペア", "行0は -1 なので何も付かない")
 	assert.NotContains(t, rowLines[0], i18n.T("pokersquares.rowPartialHand"))
 
 	// 列は 1 行にまとめて出るので、列2 の区切りだけを取り出す。
@@ -212,6 +216,6 @@ func TestPokerSquaresCuiPresenter_Output_PartialRank(t *testing.T) {
 		}
 	}
 	require.NotEmpty(t, colLine)
-	assert.Contains(t, colLine, "High Card", "部分役があるのは列2")
-	assert.Equal(t, 1, strings.Count(colLine, "High Card"), "付くのは1列だけ")
+	assert.Contains(t, colLine, "ハイカード", "部分役があるのは列2")
+	assert.Equal(t, 1, strings.Count(colLine, "ハイカード"), "付くのは1列だけ")
 }

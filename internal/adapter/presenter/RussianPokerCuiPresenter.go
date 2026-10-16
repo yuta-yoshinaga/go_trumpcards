@@ -30,7 +30,7 @@ func (rp *RussianPokerCuiPresenter) Output(g interfaces.RussianPokerGame, lastEr
 		if g.GetPhase() == domain.RussianPokerPhaseEnd {
 			rank := g.GetPlayerHandRank()
 			if rank >= 0 && rank < len(domain.PokerHandNames) {
-				sb.WriteString(i18n.Tf("russianpoker.handLine", "hand", domain.PokerHandNames[rank]) + "\n")
+				sb.WriteString(i18n.Tf("russianpoker.handLine", "hand", cuiPokerHandName(rank)) + "\n")
 			}
 		}
 		parts := make([]string, len(playerHand))
@@ -47,7 +47,7 @@ func (rp *RussianPokerCuiPresenter) Output(g interfaces.RussianPokerGame, lastEr
 		if g.GetPhase() == domain.RussianPokerPhaseEnd {
 			rank := g.GetDealerHandRank()
 			if rank >= 0 && rank < len(domain.PokerHandNames) {
-				sb.WriteString(i18n.Tf("russianpoker.handLine", "hand", domain.PokerHandNames[rank]) + "\n")
+				sb.WriteString(i18n.Tf("russianpoker.handLine", "hand", cuiPokerHandName(rank)) + "\n")
 			}
 			if g.GetDealerQualified() {
 				sb.WriteString(i18n.T("russianpoker.qualified") + "\n")

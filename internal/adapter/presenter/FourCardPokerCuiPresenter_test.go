@@ -361,3 +361,24 @@ func TestFourCardPokerCuiPresenter_HintOutput(t *testing.T) {
 		assert.Equal(t, i18n.T("fourcardpoker.hintNone")+"\n", result)
 	})
 }
+
+func TestFourCardPokerCuiPresenter_Output_LocalizesHandRanks(t *testing.T) {
+	original := i18n.Lang()
+	t.Cleanup(func() { i18n.SetLang(original) })
+	i18n.SetLang("ja")
+	m := new(interfaces.MockFourCardPokerGame)
+	setupFourCardPokerCuiMockDefaults(m)
+	m.ExpectedCalls = removePaiGowMockCall(m.ExpectedCalls, "GetPhase")
+	m.ExpectedCalls = removePaiGowMockCall(m.ExpectedCalls, "GetPlayerHand")
+	m.ExpectedCalls = removePaiGowMockCall(m.ExpectedCalls, "GetDealerHand")
+	m.ExpectedCalls = removePaiGowMockCall(m.ExpectedCalls, "GetPlayerHandRank")
+	m.ExpectedCalls = removePaiGowMockCall(m.ExpectedCalls, "GetDealerHandRank")
+	m.On("GetPhase").Return(domain.FourCardPokerPhaseEnd).Maybe()
+	m.On("GetPlayerHand").Return([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 2, false)}).Maybe()
+	m.On("GetDealerHand").Return([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 3, false)}).Maybe()
+	m.On("GetPlayerHandRank").Return(domain.FourCardHandFourOfAKind).Maybe()
+	m.On("GetDealerHandRank").Return(domain.FourCardHandFourOfAKind).Maybe()
+	out := (&FourCardPokerCuiPresenter{}).Output(m, nil)
+	assert.Contains(t, out, "フォーカード")
+	assert.NotContains(t, out, "Four of a Kind")
+}

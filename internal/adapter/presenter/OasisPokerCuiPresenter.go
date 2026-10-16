@@ -31,7 +31,7 @@ func (op *OasisPokerCuiPresenter) Output(g interfaces.OasisPokerGame, lastErr er
 		if g.GetPhase() == domain.OasisPokerPhaseEnd {
 			rank := g.GetPlayerHandRank()
 			if rank >= 0 && rank < len(domain.PokerHandNames) {
-				sb.WriteString(i18n.Tf("oasispoker.handLine", "hand", domain.PokerHandNames[rank]) + "\n")
+				sb.WriteString(i18n.Tf("oasispoker.handLine", "hand", cuiPokerHandName(rank)) + "\n")
 			}
 		}
 		parts := make([]string, len(playerHand))
@@ -48,7 +48,7 @@ func (op *OasisPokerCuiPresenter) Output(g interfaces.OasisPokerGame, lastErr er
 		if g.GetPhase() == domain.OasisPokerPhaseEnd {
 			rank := g.GetDealerHandRank()
 			if rank >= 0 && rank < len(domain.PokerHandNames) {
-				sb.WriteString(i18n.Tf("oasispoker.handLine", "hand", domain.PokerHandNames[rank]) + "\n")
+				sb.WriteString(i18n.Tf("oasispoker.handLine", "hand", cuiPokerHandName(rank)) + "\n")
 			}
 			if g.GetDealerQualified() {
 				sb.WriteString(i18n.T("oasispoker.qualified") + "\n")

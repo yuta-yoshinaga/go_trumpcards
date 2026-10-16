@@ -121,7 +121,7 @@ func (cp *CincinnatiCuiPresenter) writeResult(sb *strings.Builder, c interfaces.
 		rank := players[i].GetHandRank()
 		hand := strconv.Itoa(rank)
 		if rank >= 0 && rank < len(domain.PokerHandNames) {
-			hand = domain.PokerHandNames[rank]
+			hand = cuiPokerHandName(rank)
 		}
 		sb.WriteString(color.Green(i18n.Tf("cincinnati.wonLine",
 			"name", players[i].GetName(),

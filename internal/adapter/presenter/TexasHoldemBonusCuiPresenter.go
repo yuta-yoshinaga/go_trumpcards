@@ -60,7 +60,7 @@ func (tp *TexasHoldemBonusCuiPresenter) Output(g interfaces.TexasHoldemBonusGame
 		if g.GetPhase() == domain.TexasHoldemBonusPhaseEnd {
 			rank := g.GetPlayerHandRank()
 			if rank >= 0 && rank < len(domain.PokerHandNames) {
-				fmt.Fprintf(&sb, "%s\n", i18n.Tf("texasholdembonus.handLine", "hand", domain.PokerHandNames[rank]))
+				fmt.Fprintf(&sb, "%s\n", i18n.Tf("texasholdembonus.handLine", "hand", cuiPokerHandName(rank)))
 			}
 		}
 		parts := make([]string, len(playerHand))
@@ -76,7 +76,7 @@ func (tp *TexasHoldemBonusCuiPresenter) Output(g interfaces.TexasHoldemBonusGame
 		if g.GetPhase() == domain.TexasHoldemBonusPhaseEnd {
 			rank := g.GetDealerHandRank()
 			if rank >= 0 && rank < len(domain.PokerHandNames) {
-				fmt.Fprintf(&sb, "%s\n", i18n.Tf("texasholdembonus.handLine", "hand", domain.PokerHandNames[rank]))
+				fmt.Fprintf(&sb, "%s\n", i18n.Tf("texasholdembonus.handLine", "hand", cuiPokerHandName(rank)))
 			}
 			parts := make([]string, len(dealerHand))
 			for i, card := range dealerHand {
