@@ -100,7 +100,6 @@ describe('DeucesWildPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     expect(screen.getByText(/チップ.*1000/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /ディール/ })).toBeInTheDocument();
-    expect(screen.getByRole('rowheader', { name: /フォーデューシーズ/ })).toHaveClass('whitespace-nowrap');
   });
 
   it('renders accessible h1 heading', async () => {

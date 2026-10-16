@@ -59,8 +59,6 @@ export interface VideoPokerGameContentProps {
   gamePath: string;
   /** CLI game configuration for CLI mode integration */
   cliGameConfig: Omit<CliGameConfig<VideoPokerResponse, Parameters<VideoPokerGameContentProps['apiExec']>>, 'gameName'>;
-  /** Keeps hand names intact on narrow screens for the three scoped payout pages. */
-  keepPayoutNamesTogether?: boolean;
 }
 
 /** Payout table display component. Renders a bet-by-hand grid (columns = bet 1..5)
@@ -73,7 +71,6 @@ function PayoutTable({
   betAmount,
   winningRowKey,
   handCounts,
-  keepNamesTogether,
 }: {
   t: (key: string) => string;
   gameName: 'videopoker' | 'deuceswild' | 'jokerpoker';
@@ -81,7 +78,6 @@ function PayoutTable({
   winningRowKey: string | null;
   /** Per-hand win counts to append as a trailing column, or null to hide the column. */
   handCounts: Record<string, number> | null;
-  keepNamesTogether: boolean;
 }) {
   const [open, setOpen] = useLocalStorageToggle(`paytable_open_${gameName}`, true);
   const rows = videoPokerPayoutRows(gameName);
@@ -125,10 +121,7 @@ function PayoutTable({
                 className={isWin ? 'bg-ds-success/20 text-ds-text-primary font-bold' : ''}
                 aria-current={isWin ? 'true' : undefined}
               >
-                <th
-                  scope="row"
-                  className={`px-0.5 py-0.5 text-left sm:px-1.5 ${keepNamesTogether ? 'whitespace-nowrap' : 'whitespace-normal sm:whitespace-nowrap'}`}
-                >
+                <th scope="row" className="px-0.5 py-0.5 text-left whitespace-normal sm:px-1.5 sm:whitespace-nowrap">
                   {t(`payoutTable.name.${row.key}`)}
                 </th>
                 {bets.map((b) => (
@@ -163,7 +156,6 @@ export function VideoPokerGameContent({
   apiExec,
   gamePath,
   cliGameConfig,
-  keepPayoutNamesTogether = false,
 }: VideoPokerGameContentProps) {
   const { t: tNs } = useTranslation(i18nNamespace);
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -515,7 +507,6 @@ export function VideoPokerGameContent({
               betAmount={betAmount}
               winningRowKey={isResultPhase ? videoPokerRowKey(state.handKey, state.handName) : null}
               handCounts={stats.handCounts}
-              keepNamesTogether={keepPayoutNamesTogether}
             />
 
             {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}

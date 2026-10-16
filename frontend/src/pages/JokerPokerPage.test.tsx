@@ -134,7 +134,6 @@ describe('JokerPokerPage', () => {
     expect(screen.getByTestId('vp-stats-summary')).toHaveTextContent('2 ハンド / 勝率 50% / 収支 +38');
     expect(screen.getByTestId('vp-stats-clear')).toHaveTextContent('統計クリア');
     expect(screen.getByRole('columnheader', { name: '回数' })).toBeInTheDocument();
-    expect(screen.getByRole('rowheader', { name: /ストレートフラッシュ/ })).toHaveClass('whitespace-nowrap');
   });
 
   it('calls reset on mount and renders bet phase', async () => {

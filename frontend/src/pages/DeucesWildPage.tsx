@@ -19,7 +19,6 @@ function DeucesWildPageContent() {
       apiExec={deuceswildApi.exec}
       gamePath="/deuceswild"
       cliGameConfig={CLI_GAME_CONFIG}
-      keepPayoutNamesTogether
     />
   );
 }
