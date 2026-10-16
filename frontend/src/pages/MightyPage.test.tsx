@@ -266,6 +266,17 @@ afterEach(() => {
 });
 
 describe('MightyPage', () => {
+  it('keeps score table column headings on one line', async () => {
+    mockCall.mockResolvedValue(roundEndState);
+    const { container } = renderWithProviders(<MightyPage />);
+    await waitFor(() => expect(container.querySelectorAll('th[scope="col"]').length).toBeGreaterThan(0));
+    const headings = container.querySelectorAll('th[scope="col"]');
+    for (const heading of headings) {
+      expect(heading.classList.contains('whitespace-nowrap')).toBe(true);
+      expect(heading.classList.contains('text-[10px]')).toBe(true);
+    }
+  });
+
   it('renders turn guidance in the footer on desktop', async () => {
     Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1024 });
     mockCall.mockResolvedValue({ ...playPhaseState, message: 'Footer guidance' });

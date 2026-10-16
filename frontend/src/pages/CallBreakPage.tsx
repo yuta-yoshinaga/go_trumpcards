@@ -308,10 +308,12 @@ function CallBreakPageContent() {
                   })
                 : ''}
             </span>
-            <div className="text-ds-text-primary text-center mb-2">
-              <span className="mr-4">{t('round', { n: state.roundNumber, max: state.config.maxRounds })}</span>
-              <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
-              <span>{state.spadesBroken ? t('spadesBroken') : t('spadesNotBroken')}</span>
+            <div className="text-ds-text-primary flex flex-wrap justify-center gap-x-4 gap-y-1 text-center mb-2">
+              <span className="whitespace-nowrap">
+                {t('round', { n: state.roundNumber, max: state.config.maxRounds })}
+              </span>
+              <span className="whitespace-nowrap">{t('trick', { n: state.trickNumber })}</span>
+              <span className="whitespace-nowrap">{state.spadesBroken ? t('spadesBroken') : t('spadesNotBroken')}</span>
             </div>
 
             <div className={lgTwoColGrid}>
@@ -367,13 +369,21 @@ function CallBreakPageContent() {
                     .filter((p) => !p.isHuman)
                     .map((p) => (
                       <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                        <div className="text-ds-text-muted text-sm">
-                          {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                          {t('cumulativeScore', { score: fmtScore(p.cumulativeScore) })} |{' '}
-                          {t('roundScore', { score: fmtScore(p.roundScore) })} |{' '}
-                          {p.bid >= 0
-                            ? `${t('bid', { n: p.bid })} / ${t('tricksWon', { n: p.trickCount })}`
-                            : t('bidNone')}
+                        <div className="flex flex-wrap gap-x-1 text-ds-text-muted text-sm">
+                          <span className="whitespace-nowrap">
+                            {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })}
+                          </span>
+                          <span className="whitespace-nowrap">
+                            {t('cumulativeScore', { score: fmtScore(p.cumulativeScore) })}
+                          </span>
+                          <span className="whitespace-nowrap">
+                            {t('roundScore', { score: fmtScore(p.roundScore) })}
+                          </span>
+                          <span className="whitespace-nowrap">
+                            {p.bid >= 0
+                              ? `${t('bid', { n: p.bid })} / ${t('tricksWon', { n: p.trickCount })}`
+                              : t('bidNone')}
+                          </span>
                         </div>
                         <BidProgressBar
                           bid={p.bid}
@@ -403,13 +413,21 @@ function CallBreakPageContent() {
                         <caption className="sr-only">{t('scores')}</caption>
                         <thead>
                           <tr>
-                            <th scope="col" className="text-left">
+                            <th scope="col" className="text-left whitespace-nowrap text-[10px]">
                               {t('scoresPlayer')}
                             </th>
-                            <th scope="col">{t('scoresBid')}</th>
-                            <th scope="col">{t('scoresTricks')}</th>
-                            <th scope="col">{t('scoresRound')}</th>
-                            <th scope="col">{t('scoresTotal')}</th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresBid')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresTricks')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresRound')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresTotal')}
+                            </th>
                           </tr>
                         </thead>
                         <tbody>
@@ -437,13 +455,21 @@ function CallBreakPageContent() {
                         <caption className="sr-only">{t('scores')}</caption>
                         <thead>
                           <tr>
-                            <th scope="col" className="text-left">
+                            <th scope="col" className="text-left whitespace-nowrap text-[10px]">
                               {t('scoresPlayer')}
                             </th>
-                            <th scope="col">{t('scoresBid')}</th>
-                            <th scope="col">{t('scoresTricks')}</th>
-                            <th scope="col">{t('scoresRound')}</th>
-                            <th scope="col">{t('scoresTotal')}</th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresBid')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresTricks')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresRound')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresTotal')}
+                            </th>
                           </tr>
                         </thead>
                         <tbody>
