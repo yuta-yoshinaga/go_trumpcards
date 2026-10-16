@@ -495,10 +495,10 @@ export function HorsePageContent({ gameKey }: { gameKey: HorsePageGameKey }) {
               data-testid="ho-action-context"
             >
               <span className="whitespace-nowrap text-ds-text-primary">{tc(`nav.${gameKey}`)}</span>
-              <span className="whitespace-nowrap"> · {disciplineName}</span>
-              {roundLabel && <span className="whitespace-nowrap"> · {roundLabel}</span>}
-              {isDrawTurn && <span className="whitespace-nowrap"> · {t('action.draw', { n: state.drawIndex })}</span>}
-              {roundLabel && isBetTurn && <span className="whitespace-nowrap"> · {t('action.betting')}</span>}
+              <span className="whitespace-nowrap">{disciplineName}</span>
+              {roundLabel && <span className="whitespace-nowrap">{roundLabel}</span>}
+              {isDrawTurn && <span className="whitespace-nowrap">{t('action.draw', { n: state.drawIndex })}</span>}
+              {roundLabel && isBetTurn && <span className="whitespace-nowrap">{t('action.betting')}</span>}
             </div>
             <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="ho-actions">
               <GameResetButton

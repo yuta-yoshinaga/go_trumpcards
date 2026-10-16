@@ -82,6 +82,7 @@ describe('SchnapsenPage', () => {
     expect(screen.queryByText(/\{\{target\}\}/)).not.toBeInTheDocument();
     expect(screen.getByTestId('schnapsen-phase')).toHaveTextContent(/第1フェーズ/);
     expect(pointsLabel?.className).toContain('whitespace-nowrap');
+    expect(pointsLabel?.querySelector('span.whitespace-nowrap')).toBeNull();
   });
 
   it('labels trick cards with the card and the player who played them', async () => {

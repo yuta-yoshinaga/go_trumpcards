@@ -324,7 +324,12 @@ function PishtiPageContent() {
                 data-testid="pishti-player-grid"
               >
                 <span className="whitespace-nowrap">{t('playersTitle')}</span>
-                <span className="whitespace-nowrap">{t('statusHeader')}</span>
+                <div>
+                  <span className="block whitespace-nowrap">{t('statusHeader')}</span>
+                  <span className="block" data-testid="pishti-breakdown-headers">
+                    {t('scoreBreakdownHeaders')}
+                  </span>
+                </div>
                 {state.players.map((p) => (
                   <div
                     key={`player-${p.id}`}
@@ -358,6 +363,9 @@ function PishtiPageContent() {
                           {t('finalScore', { score: p.finalScore })}
                         </span>
                       )}
+                      <span className="whitespace-nowrap" data-testid={`pishti-breakdown-${p.id}`}>
+                        {p.cardPoints} / {p.pistiBonus} / {p.mostCapturedPoints}
+                      </span>
                     </div>
                   </div>
                 ))}

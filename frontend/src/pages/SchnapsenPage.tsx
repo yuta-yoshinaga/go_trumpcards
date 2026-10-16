@@ -185,9 +185,7 @@ function SchnapsenPageContent() {
               </span>
               <span className="mr-4 whitespace-nowrap">
                 {t('header.points')} {t('header.winAt', { target: state.winThreshold })} — {t('header.you')}:{' '}
-                <span className="whitespace-nowrap">
-                  {human?.points ?? 0} / {t('header.cpu')}: {cpu?.points ?? 0}
-                </span>
+                {human?.points ?? 0} / {t('header.cpu')}: {cpu?.points ?? 0}
               </span>
               <span className="text-ds-accent" data-testid="schnapsen-phase">
                 {state.isEndgame ? t('header.phase2') : t('header.phase1')}

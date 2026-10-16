@@ -106,10 +106,11 @@ describe('PishtiPage', () => {
     expect(screen.getAllByText(/捕獲 0枚/).length).toBe(4);
     expect(screen.getAllByText('残り手札 4枚')).toHaveLength(4);
     expect(screen.getByTestId('pishti-player-grid')).toHaveClass('grid');
-    expect(screen.getByTestId('pishti-player-grid').querySelectorAll(':scope > span.whitespace-nowrap')).toHaveLength(
-      2,
-    );
-    expect(screen.queryByTestId('pishti-breakdown-0')).not.toBeInTheDocument();
+    expect(screen.getByTestId('pishti-player-grid').querySelector(':scope > span')).toHaveTextContent('プレイヤー');
+    expect(screen.getByTestId('pishti-player-grid')).toHaveTextContent('状況');
+    expect(screen.getByTestId('pishti-breakdown-headers')).toHaveTextContent('カード点 / Pişti賞 / 最多捕獲');
+    expect(screen.getAllByTestId(/pishti-breakdown-\d/)).toHaveLength(4);
+    expect(screen.getByTestId('pishti-breakdown-0')).toHaveTextContent('0 / 0 / 0');
   });
 
   it('shows zero remaining cards for every player after the game ends', async () => {
@@ -429,12 +430,13 @@ describe('PishtiPage', () => {
     renderWithProviders(<PishtiPage />);
     const humanReadout = await screen.findByTestId('pishti-provisional-0');
     expect(humanReadout).toHaveTextContent('暫定 26点');
-    expect(screen.queryByTestId('pishti-breakdown-0')).not.toBeInTheDocument();
+    expect(screen.getByTestId('pishti-breakdown-headers')).toHaveTextContent('カード点 / Pişti賞 / 最多捕獲');
+    expect(screen.getByTestId('pishti-breakdown-0')).toHaveTextContent('13 / 10 / 3');
     // 枚数とボーナスから組み直すと 13 点になる。その数字が出ていないこと。
     expect(humanReadout).not.toHaveTextContent('暫定 13点');
     // 何も捕っていない席でも渡された値を出す。
     expect(screen.getByTestId('pishti-provisional-1')).toHaveTextContent('暫定 4点');
-    expect(screen.queryByTestId('pishti-breakdown-1')).not.toBeInTheDocument();
+    expect(screen.getByTestId('pishti-breakdown-1')).toHaveTextContent('4 / 0 / 0');
     // The disclosure note is shown during play.
     expect(screen.getByTestId('pishti-provisional-note')).toBeInTheDocument();
   });
