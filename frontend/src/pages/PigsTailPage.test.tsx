@@ -194,7 +194,13 @@ describe('PigsTailPage', () => {
       ],
     });
     renderWithProviders(<PigsTailPage />);
-    expect(await screen.findByTestId('pt-center-history')).toHaveTextContent('♥3♠8');
+    const history = await screen.findByTestId('pt-center-history');
+    expect(history).toHaveTextContent('♥3♠8');
+    const activeCard = history.lastElementChild;
+    expect(activeCard).toHaveClass('bg-ds-warning', 'text-ds-text-on-accent');
+    expect(activeCard).not.toHaveClass('text-white');
+    const centerTop = screen.getByTestId('pt-center-top');
+    expect(centerTop).toHaveClass('bg-ds-warning', 'text-ds-text-on-accent');
   });
   it('renders pigtail-penalty-flash when a penalty occurs', async () => {
     // ペナルティが発生した（場札と同じマークを引いて引き取らされた）ときに画面をフラッシュさせる
