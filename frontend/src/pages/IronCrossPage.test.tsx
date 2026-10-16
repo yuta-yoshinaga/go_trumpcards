@@ -103,6 +103,8 @@ describe('IronCrossPage', () => {
     const { unmount } = renderWithProviders(<IronCrossPage />);
     await waitFor(() => expect(screen.getByTestId('card-area')).toHaveClass('grid-cols-[auto_minmax(0,1fr)]'));
     expect(screen.getByTestId('ic-cross-1').parentElement).toHaveClass('col-start-2', 'row-start-1');
+    expect(screen.getByTestId('ic-cross')).not.toHaveClass('flex');
+    expect(screen.getByTestId('ic-cross')).toHaveClass('grid', 'grid-cols-3', 'grid-rows-3');
     expect(screen.getByTestId('ic-hand')).toHaveClass('flex-nowrap');
     unmount();
     layoutState.largeDesktop = false;

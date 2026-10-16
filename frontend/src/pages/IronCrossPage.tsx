@@ -272,7 +272,11 @@ function IronCrossPageContent() {
                 </span>
               </div>
               <div
-                className={`flex flex-col items-center gap-1 ${isLargeDesktop ? 'grid grid-cols-3 grid-rows-3' : ''}`}
+                className={
+                  isLargeDesktop
+                    ? 'grid grid-cols-3 grid-rows-3 gap-1 justify-items-center'
+                    : 'flex flex-col items-center gap-1'
+                }
                 data-testid="ic-cross"
               >
                 <div className={isLargeDesktop ? 'col-start-2 row-start-1' : ''}>{crossSlot(TOP)}</div>

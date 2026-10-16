@@ -369,6 +369,7 @@ describe('LobaPage', () => {
   });
 
   it('tells a clean go-out apart at the end of a round', async () => {
+    mobileState.largeDesktop = true;
     mockExec.mockResolvedValue(
       makeState({
         phase: LobaPhase.ROUND_END,
@@ -384,6 +385,8 @@ describe('LobaPage', () => {
     );
     renderWithProviders(<LobaPage />);
     await waitFor(() => expect(screen.getByTestId('loba-round-result')).toHaveTextContent('-10'));
+    expect(screen.getByTestId('loba-round-result')).toHaveClass('row-start-3');
+    expect(document.querySelector('[data-tutorial="lb-hand"]')).toHaveClass('row-start-4');
     const announcement = screen.getByRole('status');
     expect(announcement).toHaveTextContent('あなた: +12 (合計 25)');
     expect(announcement).toHaveTextContent('CPU 2: +-10 (合計 2)');

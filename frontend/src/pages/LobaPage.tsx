@@ -155,7 +155,7 @@ function LobaPageContent() {
       ) : (
         <>
           <div
-            className={`flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8 ${isLargeDesktop ? 'grid grid-cols-2 grid-rows-[auto_auto_1fr_auto] items-start gap-x-4' : ''}`}
+            className={`flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8 ${isLargeDesktop ? 'grid grid-cols-2 grid-rows-[auto_auto_auto_auto_auto_auto_auto] items-start gap-x-4' : ''}`}
           >
             {/* Permanent, not tutorial-only: "three different suits" and "jokers
                 only in runs" are the two rules a player gets wrong. */}
@@ -267,14 +267,17 @@ function LobaPageContent() {
             </div>
 
             {roundOver && state.roundWinner >= 0 && (
-              <div className="text-center text-sm mb-3" data-testid="loba-round-result">
+              <div
+                className={`text-center text-sm mb-3 ${isLargeDesktop ? 'col-span-2 row-start-3' : ''}`}
+                data-testid="loba-round-result"
+              >
                 {state.roundClean
                   ? t('roundWinnerClean', { name: findPlayerName(state.players, state.roundWinner) })
                   : t('roundWinner', { name: findPlayerName(state.players, state.roundWinner) })}
               </div>
             )}
 
-            <div className={`text-center ${isLargeDesktop ? 'col-span-2 row-start-3' : ''}`} data-tutorial="lb-hand">
+            <div className={`text-center ${isLargeDesktop ? 'col-span-2 row-start-4' : ''}`} data-tutorial="lb-hand">
               <div className="text-game-text-muted text-xs mb-1">
                 {t('yourHand')}
                 {' · '}
@@ -321,28 +324,34 @@ function LobaPageContent() {
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
             </div>
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
+            <div className={isLargeDesktop ? 'col-span-2 row-start-5' : ''}>
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            </div>
 
-            <RoundScoreAnnouncement
-              active={roundOver || ended}
-              entries={state.players.map((p) => ({
-                name: playerName(p.id, p.isHuman),
-                roundScore: p.roundScore,
-                cumulativeScore: p.score,
-              }))}
-            />
+            <div className={isLargeDesktop ? 'col-span-2 row-start-6' : ''}>
+              <RoundScoreAnnouncement
+                active={roundOver || ended}
+                entries={state.players.map((p) => ({
+                  name: playerName(p.id, p.isHuman),
+                  roundScore: p.roundScore,
+                  cumulativeScore: p.score,
+                }))}
+              />
+            </div>
 
-            <ActionLogSection
-              isEndPhase={ended}
-              availableDuringPlay
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
+            <div className={isLargeDesktop ? 'col-span-2 row-start-7' : ''}>
+              <ActionLogSection
+                isEndPhase={ended}
+                availableDuringPlay
+                actionLog={actionLog}
+                showActionLog={showActionLog}
+                hideActionLog={hideActionLog}
+              />
+            </div>
           </div>
 
           <GameFooter className={`${gameTheme.loba.footer} px-4 py-2.5`}>
