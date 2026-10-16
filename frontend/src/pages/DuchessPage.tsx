@@ -253,8 +253,8 @@ function DuchessPageContent() {
                 return (
                   <div
                     key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
-                    className="absolute left-0 right-0"
-                    style={{ top: cardIdx * dims.co }}
+                    className="absolute left-0"
+                    style={{ top: cardIdx * dims.co, width: dims.cw }}
                   >
                     {tc2.card ? (
                       <button
