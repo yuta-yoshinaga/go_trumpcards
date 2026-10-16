@@ -67,6 +67,13 @@ beforeEach(() => {
 });
 
 describe('FortyFivesPage', () => {
+  it('keeps each status item unbroken in the wrapping status row', async () => {
+    renderWithProviders(<FortyFivesPage />);
+    const row = await screen.findByText(/ラウンド/).then((el) => el.closest('[data-tutorial="fortyfives-info"]'));
+    expect(row).toHaveClass('flex', 'flex-wrap');
+    expect(row?.querySelectorAll('span.whitespace-nowrap')).toHaveLength(4);
+  });
+
   it('keeps an empty polite status region without a decorative box', async () => {
     mockExec.mockResolvedValue(makeFortyFivesState({ message: undefined }));
     renderWithProviders(<FortyFivesPage />);

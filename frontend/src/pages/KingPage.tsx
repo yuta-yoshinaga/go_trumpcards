@@ -237,12 +237,16 @@ function KingPageContent() {
                 })}
               </div>
             )}
-            <div className="text-ds-text-primary text-center mb-2">
-              <span className="mr-4">{t('deal', { n: state.dealNumber + 1, total: state.totalDeals })}</span>
-              <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
-              <span className="mr-4">{t('contract', { name: contractName })}</span>
-              <span className="mr-4">{t('trump', { suit: trumpSymbol })}</span>
-              <span>{t('dealer', { name: playerName(state.dealerIdx, state.dealerIdx === humanIdx) })}</span>
+            <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-ds-text-primary mb-2">
+              <span className="whitespace-nowrap">
+                {t('deal', { n: state.dealNumber + 1, total: state.totalDeals })}
+              </span>
+              <span className="whitespace-nowrap">{t('trick', { n: state.trickNumber })}</span>
+              <span className="whitespace-nowrap">{t('contract', { name: contractName })}</span>
+              <span className="whitespace-nowrap">{t('trump', { suit: trumpSymbol })}</span>
+              <span className="whitespace-nowrap">
+                {t('dealer', { name: playerName(state.dealerIdx, state.dealerIdx === humanIdx) })}
+              </span>
             </div>
 
             {state.dealHistory.length > 0 && (

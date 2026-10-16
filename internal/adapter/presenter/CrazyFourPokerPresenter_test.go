@@ -102,13 +102,13 @@ func TestCrazyFourPokerCuiPresenterResultBreakdownBranches(t *testing.T) {
 		{
 			name:     "super bonus hit names the hand",
 			superBet: 50, rank: domain.FourCardHandFourOfAKind, best: []*domain.Card{card, card, card, card},
-			wantLines: []string{"Super Bonus（Four of a Kind）: 1500", "決着: あなたの勝ち（収支 -100）"},
+			wantLines: []string{"Super Bonus（フォーカード）: 1500", "決着: あなたの勝ち（収支 -100）"},
 			dontLines: []string{"Queens Up:"},
 		},
 		{
 			name:     "super miss and queens miss",
 			superBet: 50, queensBet: 20, rank: domain.FourCardHandHighCard, best: []*domain.Card{card, card, card, card},
-			wantLines: []string{"Super Bonus（High Card）: 0", "Queens Up: -20", "決着: あなたの勝ち（収支 -120）"},
+			wantLines: []string{"Super Bonus（ハイカード）: 0", "Queens Up: -20", "決着: あなたの勝ち（収支 -120）"},
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
@@ -176,9 +176,9 @@ func TestCrazyFourPokerCuiPresenterOnlyShowsPayingPairSideBets(t *testing.T) {
 			new(CrazyFourPokerCuiPresenter).writeResult(&sb, g)
 			out := sb.String()
 			if tt.superHit {
-				assert.Contains(t, out, "Super Bonus（Pair）: 50")
+				assert.Contains(t, out, "Super Bonus（ペア）: 50")
 			} else {
-				assert.Contains(t, out, "Super Bonus（Pair）: 0")
+				assert.Contains(t, out, "Super Bonus（ペア）: 0")
 			}
 			if tt.queensHit {
 				assert.Contains(t, out, "Queens Up: 20")
@@ -332,7 +332,7 @@ func TestCrazyFourPokerCuiPresenterShowsTheQueensUpPayouts(t *testing.T) {
 	assert.Contains(t, out, i18n.Tf("crazyfourpoker.queensUpPayoutLine",
 		"table", crazyFourPokerQueensUpTableStr()))
 	for _, r := range domain.CrazyFourPokerQueensUpPayout() {
-		assert.Contains(t, out, fmt.Sprintf("%s %d:1", domain.FourCardHandNames[r.Hand], r.Multiplier))
+		assert.Contains(t, out, fmt.Sprintf("%s %d:1", cuiFourCardHandName(r.Hand), r.Multiplier))
 	}
 
 	// **負のコントロール: 配り終えたあとは出さない。**
@@ -372,18 +372,18 @@ func TestCrazyFourPokerCuiPresenterShowsTheSuperBonusPayouts(t *testing.T) {
 	// 両辺が同時に変わって通ってしまう。
 	for _, want := range []string{
 		"4 枚のエース 200:1",
-		"Four of a Kind 30:1",
-		"Straight Flush 20:1",
-		"Three of a Kind 2:1",
-		"Flush 1.5:1",
-		"Straight 1:1",
+		"フォーカード 30:1",
+		"ストレートフラッシュ 20:1",
+		"スリーカード 2:1",
+		"フラッシュ 1.5:1",
+		"ストレート 1:1",
 	} {
 		assert.Contains(t, out, want)
 	}
 	// 書き下した表がドメインの表とずれていないことを別に見る。
 	for _, r := range domain.CrazyFourPokerSuperBonusPayout() {
 		assert.Contains(t, out, fmt.Sprintf("%s %s:1",
-			domain.FourCardHandNames[r.Hand], crazyFourPokerMultStr(r.Multiplier)))
+			cuiFourCardHandName(r.Hand), crazyFourPokerMultStr(r.Multiplier)))
 	}
 
 	// **負のコントロール: 配り終えたあとは出さない。**
@@ -416,4 +416,15 @@ func TestCrazyFourPokerWebPresenterServesTheSuperBonusPayouts(t *testing.T) {
 		assert.Equal(t, domain.FourCardHandNames[w.Hand], row.Name)
 		assert.Equal(t, crazyFourPokerMultStr(w.Multiplier), row.Odds)
 	}
+}
+
+func TestCrazyFourPokerCuiPresenter_Output_LocalizesHandName(t *testing.T) {
+	original := i18n.Lang()
+	t.Cleanup(func() { i18n.SetLang(original) })
+	i18n.SetLang("ja")
+	g := crazyFourPokerDecided(t)
+	out := (&CrazyFourPokerCuiPresenter{}).Output(g, nil)
+	name := cuiFourCardHandName(g.GetPlayerHandRank())
+	assert.Contains(t, out, name)
+	assert.NotContains(t, out, domain.FourCardHandNames[g.GetPlayerHandRank()])
 }

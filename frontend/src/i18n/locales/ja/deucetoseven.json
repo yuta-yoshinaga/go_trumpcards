@@ -16,7 +16,7 @@
   "madePatLowBanner": "✨ 8以下のローが完成！スタンドパット推奨",
   "cpuExchange": "CPUドロー:",
   "listSeparator": "、",
-  "cpuExchangeEntry": "Player {{idx}} (draw {{draw}}): {{count}}枚交換",
+  "cpuExchangeEntry": "プレイヤー{{idx}}（{{draw}}回目のドロー）: {{count}}枚交換",
   "exchangeCount": "交換: {{count}}枚",
   "cardSelected": "(交換選択中)",
   "raiseLimitReached": "このラウンドのレイズ上限に達しました。",

@@ -264,6 +264,10 @@ describe('CallBreakPage', () => {
     // Select bid 5 from the button group.
     fireEvent.click(screen.getByTestId('bid-option-5'));
     expect(screen.getByTestId('bid-option-5')).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('bid-option-5')).not.toHaveClass('text-white');
+    expect(screen.getByTestId('bid-option-5')).toHaveClass('text-ds-text-on-accent');
+    expect(screen.getByTestId('bid-option-1')).not.toHaveClass('text-white', 'text-ds-text-on-accent');
+    expect(screen.getByTestId('bid-option-1')).toHaveClass('text-ds-text-primary');
     // The live region reflects the current selection for screen readers.
     expect(screen.getByTestId('cb-bid-selected')).toHaveTextContent('5');
 

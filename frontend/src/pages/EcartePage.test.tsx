@@ -50,7 +50,17 @@ describe('EcartePage', () => {
     const dealerBadge = await screen.findByText('(ディーラー)');
     const elderBadge = screen.getByText('(エルダー)');
     expect(dealerBadge.parentElement).toHaveTextContent('あなた:');
+    expect(dealerBadge.parentElement?.querySelector('[data-testid="ecarte-dealer-badge"]')).toHaveClass(
+      'whitespace-nowrap',
+    );
     expect(elderBadge.parentElement).toHaveTextContent('CPU 1:');
+  });
+
+  it('keeps the stock indicator in one item in the wrapping status row', async () => {
+    renderWithProviders(<EcartePage />);
+    const stock = await screen.findByTestId('ecarte-stock');
+    expect(stock).toHaveClass('whitespace-nowrap');
+    expect(stock.parentElement).toHaveClass('flex-wrap');
   });
 
   it('updates role badges when the deal roles change and translates them in English', async () => {

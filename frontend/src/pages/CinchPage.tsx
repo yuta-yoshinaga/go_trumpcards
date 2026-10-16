@@ -292,11 +292,13 @@ function CinchPageContent() {
                 )}
               </div>
             )}
-            <div className="text-ds-text-primary text-center mb-2">
-              <span className="mr-4">{t('deal', { n: state.roundNumber })}</span>
-              <span className="mr-4">{t('trick', { n: state.trickNumber, total: state.totalTricks })}</span>
-              <span className="mr-4">{t('highBid', { bid: state.currentBid })}</span>
-              <span className="mr-4" data-testid="cinch-trump-header">
+            <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-ds-text-primary text-center mb-2">
+              <span className="whitespace-nowrap">{t('deal', { n: state.roundNumber })}</span>
+              <span className="whitespace-nowrap">
+                {t('trick', { n: state.trickNumber, total: state.totalTricks })}
+              </span>
+              <span className="whitespace-nowrap">{t('highBid', { bid: state.currentBid })}</span>
+              <span className="whitespace-nowrap" data-testid="cinch-trump-header">
                 {t('trumpLabel')}:{' '}
                 {state.trumpSuit >= 1 ? (
                   <>
@@ -306,7 +308,7 @@ function CinchPageContent() {
                   '-'
                 )}
               </span>
-              <span>{t('target', { points: state.config.pointLimit })}</span>
+              <span className="whitespace-nowrap">{t('target', { points: state.config.pointLimit })}</span>
             </div>
 
             <div className={lgTwoColGrid}>

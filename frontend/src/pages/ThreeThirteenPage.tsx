@@ -322,7 +322,7 @@ function ThreeThirteenPageContent() {
               </span>
               <span className="mr-4 font-bold text-ds-accent">{t('wildRank', { rank: state.wildRank })}</span>
               <span className="mr-4">{t('dealCount', { count: state.dealCount })}</span>
-              <span>{t('drawPile', { count: state.drawPileCount })}</span>
+              <span className="whitespace-nowrap">{t('drawPile', { count: state.drawPileCount })}</span>
             </div>
 
             <div className={lgTwoColGrid}>

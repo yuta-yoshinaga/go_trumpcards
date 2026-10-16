@@ -100,10 +100,21 @@ describe('RamsPage', () => {
   });
 
   it('renders the decision controls in the game footer action row', async () => {
+    mockExec.mockResolvedValue(makeState({ message: 'テストメッセージ' }));
     renderWithProviders(<RamsPage />);
     const actions = await screen.findByTestId('game-footer-actions');
     expect(within(actions).getByTestId('rm-in-btn')).toBeInTheDocument();
     expect(within(actions).getByTestId('rm-out-btn')).toBeInTheDocument();
+    expect(actions.closest('footer')).toHaveClass('max-h-[60vh]');
+    expect(screen.getByTestId('game-footer-message')).toContainElement(screen.getByText('テストメッセージ'));
+    expect(screen.getByTestId('game-footer-content')).toContainElement(
+      screen.getByText(/あなた:/).closest('[data-tutorial="rams-hand"]'),
+    );
+
+    cleanup();
+    mobileState.isMobile = false;
+    renderWithProviders(<RamsPage />);
+    expect((await screen.findByTestId('game-footer-actions')).closest('footer')).toHaveClass('max-h-[45vh]');
   });
 
   it('opens the action log during play and shows its entries', async () => {

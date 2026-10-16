@@ -276,7 +276,7 @@ function QuadrillePageContent() {
               <span className="mr-4">{t('winningBid', { bid: t(BID_KEYS[state.winningBid] ?? 'bidNone') })}</span>
               {/* **呼ばれた王は公開情報、持ち主は伏せる。** partnerIdx は
                   その王が場に出るまでサーバが -1 で返す。 */}
-              <span className="mr-4" data-testid="quadrille-king-line">
+              <span className="mr-4 whitespace-nowrap" data-testid="quadrille-king-line">
                 {state.roiSeul
                   ? t('roiSeul')
                   : state.calledKingSuit >= 1
@@ -288,7 +288,7 @@ function QuadrillePageContent() {
                       : t('kingCalledHidden', { suit: t(SUIT_KEYS[state.calledKingSuit] ?? 'suitNone') })
                     : t('kingUncalled')}
               </span>
-              <span>{t('trump', { suit: trumpLabel })}</span>
+              <span className="whitespace-nowrap">{t('trump', { suit: trumpLabel })}</span>
             </div>
             {isBidPhase && (
               <section data-testid="quadrille-auction" className="mx-auto mb-3 max-w-2xl rounded-lg bg-ds-surface p-3">

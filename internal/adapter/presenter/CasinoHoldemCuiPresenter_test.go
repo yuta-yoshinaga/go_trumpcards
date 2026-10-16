@@ -339,6 +339,9 @@ func TestCasinoHoldemCuiPresenter_HintOutput(t *testing.T) {
 // なのに、CUI は札を並べるだけで役を出していなかった (役は END フェーズだけ)。
 // Web は同じ場面で「現在の役」を出しているので、CUI だけ判断材料が欠けていた。
 func TestCasinoHoldemCuiPresenterShowsTheCurrentHandAtTheFlop(t *testing.T) {
+	original := i18n.Lang()
+	t.Cleanup(func() { i18n.SetLang(original) })
+	i18n.SetLang("ja")
 	// **本物のドメインで確かめる。**モックに役を答えさせると、presenter が
 	// 正しい値を読んでいるかは分かっても、その値がフロップ時点で更新されて
 	// いるかは何も確かめられない。
@@ -354,11 +357,12 @@ func TestCasinoHoldemCuiPresenterShowsTheCurrentHandAtTheFlop(t *testing.T) {
 	require.GreaterOrEqual(t, rank, 0)
 	require.Less(t, rank, len(domain.PokerHandNames))
 	// 配りに依存しないよう、ドメインが持っている役名そのものと突き合わせる。
-	assert.Contains(t, out, domain.PokerHandNames[rank])
+	assert.Contains(t, out, cuiPokerHandName(rank))
+	assert.NotContains(t, out, domain.PokerHandNames[rank])
 	// **「現在の」役だと分かる見出しで出す。**ショーダウンの確定役と同じ行だと、
 	// まだ 2 枚めくられることが読み取れない。
-	assert.Contains(t, out, i18n.Tf("casinoholdem.currentHandLine", "hand", domain.PokerHandNames[rank]))
-	assert.NotContains(t, out, i18n.Tf("casinoholdem.handLine", "hand", domain.PokerHandNames[rank]))
+	assert.Contains(t, out, i18n.Tf("casinoholdem.currentHandLine", "hand", cuiPokerHandName(rank)))
+	assert.NotContains(t, out, i18n.Tf("casinoholdem.handLine", "hand", cuiPokerHandName(rank)))
 }
 
 // ディーラーの役は伏せたまま。フロップで出すのはプレイヤー側だけで、

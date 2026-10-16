@@ -85,6 +85,33 @@ describe('ShelemPage', () => {
     if (hand) expect(hand.closest('[data-testid="game-footer-content"]')).not.toBeNull();
   });
 
+  it('keeps the mobile message in the play area while keeping hand and actions in footer slots', async () => {
+    mockIsMobile.mockReturnValue(true);
+    mockExec.mockResolvedValue(makeState({ message: 'テストメッセージ' }));
+    renderWithProviders(<ShelemPage />);
+
+    const footer = (await screen.findByTestId('game-footer-actions')).closest('footer');
+    expect(footer).toHaveClass('max-h-[60vh]');
+    const message = screen.getByText('テストメッセージ');
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+    expect(message.closest('[role="status"]')?.closest('footer')).toBeNull();
+    expect(screen.getByTestId('game-footer-actions')).toContainElement(screen.getByTestId('sh-primary-actions'));
+    expect(screen.getByTestId('game-footer-content')).toContainElement(
+      screen.getByText(/あなた:/).closest('[data-tutorial="sh-hand"]'),
+    );
+  });
+
+  it('keeps the desktop message in the footer message slot', async () => {
+    mockExec.mockResolvedValue(makeState({ message: 'デスクトップメッセージ' }));
+    renderWithProviders(<ShelemPage />);
+
+    const message = await screen.findByText('デスクトップメッセージ');
+    expect(screen.getByTestId('game-footer-message')).toContainElement(message);
+    expect(screen.getByTestId('game-footer-actions').closest('footer')).toContainElement(
+      screen.getByTestId('game-footer-message'),
+    );
+  });
+
   // **点になるのは A/10/5 だけ。** 盤面から読めないので常に出す。
   it('always states the point cards', async () => {
     renderWithProviders(<ShelemPage />);

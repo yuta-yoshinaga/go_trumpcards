@@ -18,7 +18,7 @@ vi.mock('../hooks/useGameHint', () => ({
   useGameHint: vi.fn(() => ({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() })),
 }));
 
-const mobileState = vi.hoisted(() => ({ isMobile: undefined as boolean | undefined }));
+const mobileState = vi.hoisted(() => ({ isMobile: undefined as boolean | undefined, largeDesktop: false }));
 vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
   return {
@@ -27,6 +27,7 @@ vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
       const d = actual.useCardDimensions();
       return mobileState.isMobile === undefined ? d : { ...d, isMobile: mobileState.isMobile };
     },
+    useBreakpoint: () => (mobileState.largeDesktop ? 'largeDesktop' : 'desktop'),
   };
 });
 
@@ -88,9 +89,19 @@ describe('SomersetPage', () => {
 
   beforeEach(() => {
     mobileState.isMobile = undefined;
+    mobileState.largeDesktop = false;
     vi.clearAllMocks();
     mockActionLog.mockResolvedValue({ entries: [] });
     vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
+  });
+
+  it('lays out the four foundation piles in two columns only on large desktop', async () => {
+    mobileState.largeDesktop = true;
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<SomersetPage />);
+    const foundations = await screen.findByTestId('somerset-foundations');
+    expect(foundations).toHaveClass('grid', 'grid-cols-2');
+    mobileState.largeDesktop = false;
   });
 
   it('renders the game message in the play area on mobile', async () => {

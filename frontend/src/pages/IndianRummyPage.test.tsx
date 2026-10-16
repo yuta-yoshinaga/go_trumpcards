@@ -182,6 +182,17 @@ beforeEach(() => {
 });
 
 describe('IndianRummyPage', () => {
+  it.each([
+    { name: 'declaration', state: { ...roundEndState, declarerIdx: 1 }, message: 'CPU 1が宣言してラウンド終了' },
+    { name: 'stock out', state: roundEndState, message: '山札切れでラウンド終了' },
+  ])('shows the $name reason in the message box without repeating the phase label', async ({ state, message }) => {
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<IndianRummyPage />);
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(within(footerMessage).getByRole('status')).toHaveTextContent(message);
+    expect(screen.getAllByText('ラウンド終了')).toHaveLength(1);
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<IndianRummyPage />);

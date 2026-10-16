@@ -18,7 +18,7 @@
   "standLabel": "スタンド (交換なし)",
   "completeBadugiBanner": "✨ バドゥーギ完成！スタンドパット推奨",
   "cpuExchange": "CPUドロー:",
-  "cpuExchangeEntry": "Player {{idx}} (draw {{draw}}): {{count}}枚交換",
+  "cpuExchangeEntry": "プレイヤー{{idx}}（{{draw}}回目のドロー）: {{count}}枚交換",
   "exchangeCount": "交換: {{count}}枚",
   "cardSelected": "交換対象として選択中",
   "cardNotSelected": "交換対象ではありません",

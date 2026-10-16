@@ -525,7 +525,7 @@ function FiveHundredPageContent() {
                       className={`flex flex-col items-center rounded-lg bg-ds-info px-3 py-1.5 text-sm text-ds-text-on-accent disabled:opacity-40 ${bidIsUnder(fivehundredBidValue(bidTricks, s.id)) ? 'opacity-40 cursor-not-allowed' : ''}`}
                     >
                       <span aria-hidden="true">{s.glyph}</span>
-                      <span aria-hidden="true" className="text-[10px] text-white">
+                      <span aria-hidden="true" className="text-[10px]">
                         {t('bidValueLabel', { value: fivehundredBidValue(bidTricks, s.id) })}
                       </span>
                     </button>
@@ -543,7 +543,7 @@ function FiveHundredPageContent() {
                     className={`flex flex-col items-center rounded-lg bg-ds-info px-3 py-1.5 text-sm text-ds-text-on-accent disabled:opacity-40 ${bidIsUnder(fivehundredBidValue(bidTricks, -1)) ? 'opacity-40 cursor-not-allowed' : ''}`}
                   >
                     <span>NT</span>
-                    <span className="text-[10px] text-white">
+                    <span className="text-[10px]">
                       {t('bidValueLabel', { value: fivehundredBidValue(bidTricks, -1) })}
                     </span>
                   </button>

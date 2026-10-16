@@ -128,9 +128,9 @@ describe('DeuceToSevenPage', () => {
     expect(liveRegion).toHaveAttribute('role', 'status');
     expect(liveRegion).toHaveAttribute('aria-live', 'polite');
     expect(liveRegion).toHaveClass('sr-only');
-    expect(liveRegion).toHaveTextContent('Player 1 (draw 2): 3枚交換');
+    expect(liveRegion).toHaveTextContent('プレイヤー1（2回目のドロー）: 3枚交換');
     expect(screen.getByText('CPUドロー:')).toBeInTheDocument();
-    expect(screen.getAllByText('Player 1 (draw 2): 3枚交換')).toHaveLength(2);
+    expect(screen.getAllByText('プレイヤー1（2回目のドロー）: 3枚交換')).toHaveLength(2);
   });
 
   it('keeps the CPU exchange live region mounted before any exchanges', async () => {
@@ -155,7 +155,7 @@ describe('DeuceToSevenPage', () => {
     renderWithProviders(<DeuceToSevenPage />);
 
     expect(await screen.findByTestId('d7-cpu-exchange-live')).toHaveTextContent(
-      'Player 1 (draw 1): 2枚交換、Player 2 (draw 1): 1枚交換',
+      'プレイヤー1（1回目のドロー）: 2枚交換、プレイヤー2（1回目のドロー）: 1枚交換',
     );
   });
 
@@ -167,7 +167,7 @@ describe('DeuceToSevenPage', () => {
     renderWithProviders(<DeuceToSevenPage />);
 
     const liveRegion = await screen.findByTestId('d7-cpu-exchange-live');
-    await waitFor(() => expect(liveRegion).toHaveTextContent('Player 1 (draw 1): 2枚交換'));
+    await waitFor(() => expect(liveRegion).toHaveTextContent('プレイヤー1（1回目のドロー）: 2枚交換'));
     fireEvent.click(screen.getByRole('button', { name: '交換' }));
     await waitFor(() => expect(liveRegion).toBeEmptyDOMElement());
   });
@@ -189,9 +189,9 @@ describe('DeuceToSevenPage', () => {
     renderWithProviders(<DeuceToSevenPage />);
 
     const liveRegion = await screen.findByTestId('d7-cpu-exchange-live');
-    await waitFor(() => expect(liveRegion).toHaveTextContent('Player 1 (draw 1): 2枚交換'));
+    await waitFor(() => expect(liveRegion).toHaveTextContent('プレイヤー1（1回目のドロー）: 2枚交換'));
     fireEvent.click(screen.getByRole('button', { name: '交換' }));
-    await waitFor(() => expect(liveRegion).toHaveTextContent('Player 3 (draw 1): 4枚交換'));
+    await waitFor(() => expect(liveRegion).toHaveTextContent('プレイヤー3（1回目のドロー）: 4枚交換'));
   });
 
   it('renders the draw counter badge with the current draw and the max cap', async () => {

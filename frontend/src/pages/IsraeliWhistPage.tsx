@@ -262,7 +262,7 @@ function IsraeliWhistPageContent() {
               <span className="mr-4" data-testid="iw-trick">
                 {t('header.trick')}: {state.trickNumber + 1}/{TRICKS_PER_ROUND}
               </span>
-              <span data-testid="iw-trump">
+              <span className="whitespace-nowrap" data-testid="iw-trump">
                 {state.trumpSuit > 0
                   ? t('header.trump', { suit: suitSymbolAt(state.trumpSuit, '?'), n: String(state.highBid) })
                   : t('header.auction', {
@@ -299,7 +299,7 @@ function IsraeliWhistPageContent() {
                   {' / '}
                   {t('header.took', { n: String(p.trickCount) })}
                   {' / '}
-                  {t('header.total', { n: String(p.totalScore) })}
+                  <span className="whitespace-nowrap">{t('header.total', { n: String(p.totalScore) })}</span>
                   {isRoundEnd && (
                     <span
                       className={`ml-2 ${p.roundScore < 0 ? 'text-ds-error-text' : 'text-ds-success'}`}

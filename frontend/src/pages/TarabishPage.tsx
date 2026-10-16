@@ -68,7 +68,9 @@ function TarabishPageContent() {
     retry,
   } = useGameApi<TarabishResponse, Parameters<typeof tarabishApi.exec>>(tarabishApi.exec);
   const { cardWidth } = useCardDimensions();
-  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
+  const breakpoint = useBreakpoint();
+  const isMobile = breakpoint === 'mobile';
+  const isLargeDesktop = breakpoint === 'largeDesktop';
   const { hint, hintEnabled, setHintEnabled } = useGameHint('tarabish', state);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('tarabish');
@@ -360,6 +362,7 @@ function TarabishPageContent() {
 
           <GameFooter
             className={`${gameTheme.tarabish.footer} px-4 py-2.5`}
+            tall={isMobile}
             message={
               <GameMessageBox
                 message={state.message}

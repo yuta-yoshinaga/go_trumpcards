@@ -84,6 +84,9 @@ func TestCaribbeanStudCuiPresenter_Output_ActionPhase(t *testing.T) {
 }
 
 func TestCaribbeanStudCuiPresenter_Output_EndPhase_PlayerWins(t *testing.T) {
+	original := i18n.Lang()
+	t.Cleanup(func() { i18n.SetLang(original) })
+	i18n.SetLang("ja")
 	p := new(CaribbeanStudCuiPresenter)
 	m := new(interfaces.MockCaribbeanStudGame)
 	m.On("GetChips").Return(1400).Maybe()
@@ -118,6 +121,8 @@ func TestCaribbeanStudCuiPresenter_Output_EndPhase_PlayerWins(t *testing.T) {
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "フェーズ: 終了")
+	assert.Contains(t, result, "スリーカード")
+	assert.NotContains(t, result, "Three of a Kind")
 	assert.Contains(t, result, "プレイヤーの勝ち")
 	assert.Contains(t, result, "DEALER")
 	assert.Contains(t, result, "(クオリファイ)")

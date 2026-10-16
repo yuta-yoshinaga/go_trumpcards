@@ -93,6 +93,7 @@ describe('ThreeThirteenPage', () => {
     expect(banner).toHaveTextContent('ワイルド: 4');
     expect(banner).toHaveTextContent('ラウンド 2 / 11');
     expect(screen.queryByTestId('threethirteen-final-round-badge')).not.toBeInTheDocument();
+    expect(screen.getByText('山札: 30枚')).toHaveClass('whitespace-nowrap');
   });
 
   it('identifies the CPU knocker and warns the human that this is their final turn', async () => {

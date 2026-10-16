@@ -124,7 +124,7 @@ func (pr *PokerSquaresCuiPresenter) ActionLogOutput(p interfaces.PokerSquaresGam
 // `GOOS=js GOARCH=wasm go build -tags solo` でしか出ない (CI で実測)。
 func pokerSquaresHandName(rank int) string {
 	if rank >= 0 && rank < len(domain.PokerHandNames) {
-		return domain.PokerHandNames[rank]
+		return cuiPokerHandName(rank)
 	}
 	return "Unknown"
 }

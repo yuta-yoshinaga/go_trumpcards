@@ -37,7 +37,7 @@ func (cp *CaribbeanStudCuiPresenter) Output(cs interfaces.CaribbeanStudGame, las
 		sb.WriteString("--- " + color.Bold(i18n.T("caribbeanstud.playerHeader")) + " ---\n")
 		rank := cs.GetPlayerHandRank()
 		if rank >= 0 && rank < len(domain.PokerHandNames) {
-			sb.WriteString(i18n.Tf("caribbeanstud.handLine", "hand", domain.PokerHandNames[rank]) + "\n")
+			sb.WriteString(i18n.Tf("caribbeanstud.handLine", "hand", cuiPokerHandName(rank)) + "\n")
 		}
 		parts := make([]string, len(playerHand))
 		for i, card := range playerHand {
@@ -53,7 +53,7 @@ func (cp *CaribbeanStudCuiPresenter) Output(cs interfaces.CaribbeanStudGame, las
 		if cs.GetPhase() == domain.CaribbeanStudPhaseEnd {
 			rank := cs.GetDealerHandRank()
 			if rank >= 0 && rank < len(domain.PokerHandNames) {
-				sb.WriteString(i18n.Tf("caribbeanstud.handLine", "hand", domain.PokerHandNames[rank]) + "\n")
+				sb.WriteString(i18n.Tf("caribbeanstud.handLine", "hand", cuiPokerHandName(rank)) + "\n")
 			}
 			if cs.GetDealerQualified() {
 				sb.WriteString(i18n.T("caribbeanstud.qualified") + "\n")

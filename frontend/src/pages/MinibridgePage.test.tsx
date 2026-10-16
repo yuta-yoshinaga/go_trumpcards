@@ -106,12 +106,12 @@ beforeEach(() => {
 });
 
 describe('MinibridgePage', () => {
-  it('sticks the hand to the play area bottom only on large desktop', async () => {
+  it('does not stick the hand over the play area on large desktop', async () => {
     mobileState.isMobile = false;
     mobileState.breakpoint = 'largeDesktop';
     const { unmount } = renderWithProviders(<MinibridgePage />);
     const largeHand = await screen.findByTestId('mb-hand-area');
-    expect(largeHand).toHaveClass('sticky', 'bottom-0', 'z-10', 'bg-game-bg-blue');
+    expect(largeHand).not.toHaveClass('sticky');
     unmount();
 
     mobileState.breakpoint = 'desktop';
@@ -130,16 +130,33 @@ describe('MinibridgePage', () => {
     const dummyRow = screen.getByTestId('mb-dummy').querySelector('.flex');
     expect(handRow).toHaveClass('flex-nowrap', 'gap-0');
     expect(dummyRow).toHaveClass('flex-nowrap', 'gap-0');
-    expect(within(handRow as HTMLElement).getAllByRole('button')[1]).toHaveStyle({ marginLeft: '-36px' });
-    expect(within(dummyRow as HTMLElement).getAllByRole('button')[1]).toHaveStyle({ marginLeft: '-36px' });
+    expect(within(handRow as HTMLElement).getAllByRole('button')[1]).toHaveStyle({ marginLeft: '-32px' });
+    expect(within(dummyRow as HTMLElement).getAllByRole('button')[1]).toHaveStyle({ marginLeft: '-32px' });
+    expect(screen.getByTestId('mb-dummy').parentElement).toHaveClass('lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]');
     unmount();
 
     mobileState.isCompactLargeDesktop = false;
     mockExec.mockResolvedValue(playing());
     renderWithProviders(<MinibridgePage />);
     const regularHandRow = (await screen.findByTestId('mb-hand-area')).querySelector('.flex');
-    expect(regularHandRow).toHaveClass('flex-wrap', 'gap-2');
+    expect(regularHandRow).toHaveClass('flex-nowrap', 'gap-0');
     expect(within(regularHandRow as HTMLElement).getAllByRole('button')[1]).not.toHaveStyle({ marginLeft: '-36px' });
+  });
+
+  it('adds compact spacing to the trick layout only on compact large desktop', async () => {
+    mockExec.mockResolvedValue(playing({ dummyIdx: 0 }));
+    mobileState.isMobile = false;
+    mobileState.breakpoint = 'largeDesktop';
+    mobileState.isCompactLargeDesktop = true;
+    const { unmount } = renderWithProviders(<MinibridgePage />);
+
+    expect(await screen.findByTestId('mb-trick-layout')).toHaveClass('[&>div]:my-1');
+    unmount();
+
+    mobileState.isCompactLargeDesktop = false;
+    mockExec.mockResolvedValue(playing({ dummyIdx: 0 }));
+    renderWithProviders(<MinibridgePage />);
+    expect(await screen.findByTestId('mb-trick-layout')).not.toHaveClass('[&>div]:my-1');
   });
 
   it('keeps the hand and game message in the play area outside the footer', async () => {
@@ -284,12 +301,12 @@ describe('MinibridgePage', () => {
     expect(disclosure).toContainElement(rule);
   });
 
-  it('opens the CPU seat disclosure on desktop', async () => {
+  it('keeps the CPU seat disclosure collapsed on desktop', async () => {
     mobileState.isMobile = false;
     renderWithProviders(<MinibridgePage />);
     const seats = await screen.findByTestId('mb-seats');
-    expect(seats.closest('details')).toHaveAttribute('open');
-    expect(seats).toBeVisible();
+    expect(seats.closest('details')).not.toHaveAttribute('open');
+    expect(seats).not.toBeVisible();
   });
 
   it('keeps the CPU seat details collapsed on mobile', async () => {
@@ -543,6 +560,19 @@ describe('MinibridgePage', () => {
     expect(await screen.findByText('この手札はCPUが操作するダミーです')).toBeInTheDocument();
     expect(screen.queryByTestId('mb-dummy')).not.toBeInTheDocument();
     expect(screen.getAllByAltText(cardAlt(dummyCard))).toHaveLength(1);
+  });
+
+  it('places the human dummy trick beside the hand and closes CPU seats on large desktop', async () => {
+    mockExec.mockResolvedValue(playing({ declarerIdx: 2, dummyIdx: 0 } as Partial<MinibridgeResponse>));
+    mobileState.isMobile = false;
+    mobileState.breakpoint = 'largeDesktop';
+    renderWithProviders(<MinibridgePage />);
+
+    const layout = await screen.findByTestId('mb-card-layout');
+    expect(layout).toHaveClass('lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]');
+    expect(layout).toContainElement(screen.getByTestId('mb-trick-layout'));
+    expect(layout).toContainElement(screen.getByTestId('mb-hand-area'));
+    expect(screen.getByTestId('cpu-accordion')).not.toHaveAttribute('open');
   });
 
   it('keeps the separate dummy block for a human declarer', async () => {
