@@ -315,7 +315,7 @@ function ViraPageContent() {
                         <span key={b.value} title={reason} className="inline-flex">
                           <button
                             type="button"
-                            className={`px-3 py-2 rounded-lg text-white text-sm disabled:opacity-40 ${
+                            className={`px-3 py-2 rounded-lg text-ds-text-on-accent text-sm disabled:opacity-40 ${
                               isMisere ? 'bg-ds-warning ring-1 ring-ds-warning' : 'bg-ds-info'
                             }`}
                             onClick={() => handleBid(b.value)}

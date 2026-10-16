@@ -264,7 +264,7 @@ function PigsTailPageContent() {
                   {t('label.center')} ({state.centerCount})
                 </div>
                 <div
-                  className={`${isMobile ? 'w-12 h-12 text-base' : 'w-16 h-16 text-lg'} rounded-lg bg-ds-warning/60 border-2 border-ds-warning/40 flex items-center justify-center font-bold text-ds-text-on-accent`}
+                  className={`${isMobile ? 'w-12 h-12 text-base' : 'w-16 h-16 text-lg'} rounded-lg bg-ds-warning border-2 border-ds-warning flex items-center justify-center font-bold text-ds-text-on-accent`}
                   data-testid="pt-center-top"
                 >
                   {state.centerTop ? centerCardLabel(state.centerTop) : '-'}
@@ -278,7 +278,7 @@ function PigsTailPageContent() {
                           key={`${c.design}-${c.value}-${i}`}
                           className={`px-1 py-0.5 rounded text-xs font-semibold ${
                             i === state.centerHistory.length - 1
-                              ? 'bg-ds-warning/50 text-ds-text-on-accent'
+                              ? 'bg-ds-warning text-ds-text-on-accent'
                               : 'bg-black/20 text-ds-text-muted'
                           }`}
                         >

@@ -60,6 +60,17 @@ beforeEach(() => {
 });
 
 describe('SixCardGolfPage', () => {
+  it('uses an opaque warning surface with on-accent text for the active player', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 1, currentPlayerIdx: 0 }));
+    renderWithProviders(<SixCardGolfPage />);
+    await screen.findByTestId('scg-seat-0');
+    const activeScore = screen.getByTestId('scg-player-score-0');
+    const inactiveScore = screen.getByTestId('scg-player-score-1');
+    expect(activeScore).toHaveClass('bg-ds-warning', 'text-ds-text-on-accent');
+    expect(activeScore).not.toHaveClass('text-white');
+    expect(inactiveScore).not.toHaveClass('bg-ds-warning');
+  });
+
   it('uses a phase label instead of repeating the setup instruction', async () => {
     mockExec.mockResolvedValue(makeState({ phase: 0, canFlip: true, message: '最初にめくる2枚を選んでください。' }));
     renderWithProviders(<SixCardGolfPage />);

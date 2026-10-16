@@ -316,6 +316,10 @@ describe('BinokelPage', () => {
 
     fireEvent.click(screen.getByTestId('bid-option-170'));
     expect(screen.getByTestId('bid-option-170')).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('bid-option-170')).not.toHaveClass('text-white');
+    expect(screen.getByTestId('bid-option-170')).toHaveClass('text-ds-text-on-accent');
+    expect(screen.getByTestId('bid-option-180')).not.toHaveClass('text-white', 'text-ds-text-on-accent');
+    expect(screen.getByTestId('bid-option-180')).toHaveClass('text-ds-text-primary');
     expect(screen.getByTestId('bn-bid-selected')).toHaveTextContent('170');
 
     mockExec.mockClear();

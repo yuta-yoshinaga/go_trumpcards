@@ -66,6 +66,16 @@ beforeEach(() => {
 });
 
 describe('ViraPage', () => {
+  it('uses on-accent text on both colored bid options', async () => {
+    renderWithProviders(<ViraPage />);
+    const misere = await screen.findByTestId('bid-2');
+    const solo = screen.getByTestId('bid-1');
+    expect(misere).not.toHaveClass('text-white');
+    expect(misere).toHaveClass('text-ds-text-on-accent');
+    expect(solo).not.toHaveClass('text-white');
+    expect(solo).toHaveClass('text-ds-text-on-accent');
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<ViraPage />);

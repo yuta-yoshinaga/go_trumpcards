@@ -348,7 +348,8 @@ function SixCardGolfPageContent() {
             {state.players.map((p, i) => (
               <div
                 key={p.id}
-                className={`text-xs px-2 py-1 rounded ${i === state.currentPlayerIdx ? 'bg-white/20 font-bold' : 'bg-white/10'}`}
+                data-testid={`scg-player-score-${i}`}
+                className={`text-xs px-2 py-1 rounded ${i === state.currentPlayerIdx ? 'bg-ds-warning text-ds-text-on-accent font-bold' : 'bg-white/10'}`}
               >
                 {p.isHuman ? t('label.human') : t('label.cpu', { id: String(i) })}: {t('label.cumulative')}=
                 {p.cumulativeScore} R={p.roundScore}

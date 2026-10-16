@@ -138,6 +138,16 @@ describe('SoloWhistPage', () => {
     expect(screen.getByTestId('bid-3')).toBeInTheDocument();
   });
 
+  it('uses on-accent text on both colored bid options', async () => {
+    renderWithProviders(<SoloWhistPage />);
+    const pass = await screen.findByTestId('bid-0');
+    const misere = screen.getByTestId('bid-2');
+    expect(pass).not.toHaveClass('text-white');
+    expect(pass).toHaveClass('text-ds-text-on-accent');
+    expect(misere).not.toHaveClass('text-white');
+    expect(misere).toHaveClass('text-ds-text-on-accent');
+  });
+
   it('shows every seat bid state, distinguishing unbid, pass, and localized contracts', async () => {
     mockExec.mockResolvedValue(makeSoloWhistState({ bids: [0, 0, 2, 3], bidDone: [true, false, true, true] }));
     renderWithProviders(<SoloWhistPage />);
