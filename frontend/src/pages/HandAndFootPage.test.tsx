@@ -150,6 +150,15 @@ const gameEndState: HandAndFootResponse = {
 };
 
 describe('HandAndFootPage', () => {
+  it('keeps the frozen status label together while the status row can wrap', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, isFrozen: true });
+    renderWithProviders(<HandAndFootPage />);
+
+    const frozenLabel = await screen.findByText('[フリーズ中]');
+    expect(frozenLabel.parentElement).toHaveClass('flex', 'flex-wrap');
+    expect(frozenLabel).toHaveClass('whitespace-nowrap');
+  });
+
   it('places meld blocks in a wrapping row only at large desktop widths', async () => {
     const originalWidth = window.innerWidth;
     try {
