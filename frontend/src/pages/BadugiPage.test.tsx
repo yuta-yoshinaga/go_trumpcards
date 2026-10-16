@@ -145,6 +145,13 @@ describe('BadugiPage', () => {
     await waitFor(() => expect(screen.getAllByText('ドロー 2/3').length).toBeGreaterThan(0));
   });
 
+  it('renders CPU exchange entries in Japanese', async () => {
+    mockExec.mockResolvedValue(baseState({ cpuExchanges: [{ playerIdx: 1, drawIndex: 2, exchangeCount: 3 }] }));
+    renderWithProviders(<BadugiPage />);
+    expect(await screen.findByText('プレイヤー1（2回目のドロー）: 3枚交換')).toBeInTheDocument();
+    expect(screen.queryByText(/Player 1 \(draw 2\)/)).not.toBeInTheDocument();
+  });
+
   it('annotates card aria-labels with best-subset / exchange-candidate hints during the draw phase', async () => {
     // The lift/dim assist follows the hint setting, which defaults to off.
     localStorage.setItem('hint_enabled_badugi', 'true');
