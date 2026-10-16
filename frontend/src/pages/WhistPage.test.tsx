@@ -59,6 +59,12 @@ beforeEach(() => {
 });
 
 describe('WhistPage', () => {
+  it('keeps status labels intact and wraps between items', async () => {
+    renderWithProviders(<WhistPage />);
+    const row = await screen.findByTestId('wh-status-row');
+    expect(row).toHaveClass('flex-wrap');
+    expect(row.querySelectorAll('span.whitespace-nowrap').length).toBeGreaterThanOrEqual(3);
+  });
   it('renders the game message in the footer message region', async () => {
     mockExec.mockResolvedValue(makeState({ message: 'あなたの手番です' }));
     renderWithProviders(<WhistPage />);

@@ -34,6 +34,14 @@ beforeEach(() => {
 });
 
 describe('MadrassoPage', () => {
+  it('keeps status labels intact and wraps between items', async () => {
+    renderWithProviders(<MadrassoPage />);
+    const row = await screen.findByTestId('madrasso-status-row');
+    expect(row).toHaveClass('flex-wrap');
+    expect(row.querySelectorAll('span.whitespace-nowrap').length).toBeGreaterThanOrEqual(3);
+    expect(screen.getByRole('columnheader', { name: '今ラウンド' })).toHaveClass('whitespace-nowrap', 'text-[10px]');
+    expect(screen.getByRole('rowheader', { name: 'チームA' })).toHaveClass('whitespace-nowrap');
+  });
   it('renders the game message in the footer message slot', async () => {
     mockExec.mockResolvedValue(makeMadrassoState({ message: 'Your turn notice' }));
     renderWithProviders(<MadrassoPage />);

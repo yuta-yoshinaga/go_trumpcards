@@ -264,10 +264,14 @@ function WhistPageContent() {
           {/* Scrollable area */}
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
             {/* Round/Trick/Trump info */}
-            <div className="text-ds-text-primary text-center mb-2" data-tutorial="wh-trump-info">
-              <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
-              <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
-              <span>
+            <div
+              className="text-ds-text-primary text-center mb-2 flex flex-wrap justify-center gap-x-4 gap-y-1"
+              data-tutorial="wh-trump-info"
+              data-testid="wh-status-row"
+            >
+              <span className="whitespace-nowrap">{t('round', { n: state.roundNumber })}</span>
+              <span className="whitespace-nowrap">{t('trick', { n: state.trickNumber })}</span>
+              <span className="whitespace-nowrap">
                 {state.trumpSuit > 0
                   ? `${t('trumpSuit')}: ${t(`suitNames.${String(state.trumpSuit)}`)}`
                   : t('trumpSuit')}
@@ -306,12 +310,18 @@ function WhistPageContent() {
                       {state.players
                         .filter((p) => !p.isHuman)
                         .map((p) => (
-                          <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                            {playerName(p.id, p.isHuman)}: {t('tricks', { count: p.trickCount })} |{' '}
-                            {t('cards', { count: p.cardCount })} |{' '}
-                            <span className={teamBadgeClass(p.team)}>{t('team', { n: p.team })}</span> |{' '}
-                            {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
-                            {t('roundScore', { score: p.roundScore })}
+                          <div key={p.id} className="flex flex-wrap gap-x-2 gap-y-1 py-0.5 text-sm text-ds-text-muted">
+                            <span className="whitespace-nowrap">
+                              {playerName(p.id, p.isHuman)}: {t('tricks', { count: p.trickCount })}
+                            </span>
+                            <span className="whitespace-nowrap">{t('cards', { count: p.cardCount })}</span>
+                            <span className={`${teamBadgeClass(p.team)} whitespace-nowrap`}>
+                              {t('team', { n: p.team })}
+                            </span>
+                            <span className="whitespace-nowrap">
+                              {t('cumulativeScore', { score: p.cumulativeScore })}
+                            </span>
+                            <span className="whitespace-nowrap">{t('roundScore', { score: p.roundScore })}</span>
                           </div>
                         ))}
                     </div>
@@ -321,12 +331,18 @@ function WhistPageContent() {
                     .filter((p) => !p.isHuman)
                     .map((p) => (
                       <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                        <div className="text-ds-text-muted text-sm">
-                          {playerName(p.id, p.isHuman)}: {t('tricks', { count: p.trickCount })} |{' '}
-                          {t('cards', { count: p.cardCount })} |{' '}
-                          <span className={teamBadgeClass(p.team)}>{t('team', { n: p.team })}</span> |{' '}
-                          {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
-                          {t('roundScore', { score: p.roundScore })}
+                        <div className="flex flex-wrap gap-x-2 gap-y-1 text-sm text-ds-text-muted">
+                          <span className="whitespace-nowrap">
+                            {playerName(p.id, p.isHuman)}: {t('tricks', { count: p.trickCount })}
+                          </span>
+                          <span className="whitespace-nowrap">{t('cards', { count: p.cardCount })}</span>
+                          <span className={`${teamBadgeClass(p.team)} whitespace-nowrap`}>
+                            {t('team', { n: p.team })}
+                          </span>
+                          <span className="whitespace-nowrap">
+                            {t('cumulativeScore', { score: p.cumulativeScore })}
+                          </span>
+                          <span className="whitespace-nowrap">{t('roundScore', { score: p.roundScore })}</span>
                         </div>
                       </div>
                     ))

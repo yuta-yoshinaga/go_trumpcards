@@ -197,6 +197,20 @@ afterEach(() => {
 });
 
 describe('BinokelPage', () => {
+  it('wraps player score fields between intact label and value groups', async () => {
+    renderWithProviders(<BinokelPage />);
+    const [row] = await screen.findAllByText('メルド得点: 0');
+    expect(row).toHaveClass('whitespace-nowrap');
+    expect(row.parentElement).toHaveClass('flex-wrap');
+  });
+  it('keeps the declarer badge intact and truncates the player name', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<BinokelPage />);
+    const badge = await screen.findByText('落札者');
+    expect(badge).toHaveClass('shrink-0', 'whitespace-nowrap');
+    expect(badge.previousElementSibling).toHaveClass('min-w-0', 'truncate');
+    expect(badge.previousElementSibling).toHaveAttribute('title');
+  });
   it('compacts the dabb display only at large desktop width', async () => {
     Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1280 });
     window.dispatchEvent(new Event('resize'));

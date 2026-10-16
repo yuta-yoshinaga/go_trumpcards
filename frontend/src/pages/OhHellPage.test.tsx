@@ -144,6 +144,18 @@ afterEach(() => {
 });
 
 describe('OhHellPage', () => {
+  it('keeps status labels intact and wraps between items', async () => {
+    renderWithProviders(<OhHellPage />);
+    const row = await screen.findByTestId('oh-status-row');
+    expect(row).toHaveClass('flex-wrap');
+    expect(row.querySelectorAll('span.whitespace-nowrap').length).toBeGreaterThanOrEqual(3);
+  });
+  it('keeps trick and round score headings on one line', async () => {
+    renderWithProviders(<OhHellPage />);
+    const headers = await screen.findAllByRole('columnheader');
+    expect(headers.filter((header) => header.classList.contains('text-[10px]'))).toHaveLength(2);
+    expect(headers.filter((header) => header.classList.contains('whitespace-nowrap'))).toHaveLength(2);
+  });
   it('shows the no-trump label when the trump suit is -1', async () => {
     mockExec.mockResolvedValue({ ...playPhaseState, trumpSuit: -1 });
     renderWithProviders(<OhHellPage />);

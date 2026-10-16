@@ -313,12 +313,15 @@ function BridgePageContent() {
           {/* Scrollable area */}
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
             {/* Round/Trick info */}
-            <div className="text-ds-text-primary text-center mb-2">
-              <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
-              {isPlayPhase && <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>}
-              {contractDisplay() && <span className="mr-4">{contractDisplay()}</span>}
+            <div
+              className="text-ds-text-primary text-center mb-2 flex flex-wrap justify-center gap-x-4 gap-y-1"
+              data-testid="bridge-status-row"
+            >
+              <span className="whitespace-nowrap">{t('round', { n: state.roundNumber })}</span>
+              {isPlayPhase && <span className="whitespace-nowrap">{t('trick', { n: state.trickNumber })}</span>}
+              {contractDisplay() && <span className="whitespace-nowrap">{contractDisplay()}</span>}
               {state.trumpSuit !== 0 && state.contractLevel > 0 && (
-                <span>
+                <span className="whitespace-nowrap">
                   {state.trumpSuit === 5 ? t('noTrump') : t('trumpSuit', { suit: suitLabel(state.trumpSuit) })}
                 </span>
               )}
@@ -546,9 +549,15 @@ function BridgePageContent() {
                           <th scope="col" className="text-left">
                             {t('team', { n: '' })}
                           </th>
-                          <th scope="col">{tc('button.score', { defaultValue: 'Score' })}</th>
-                          <th scope="col">{t('gamesWon')}</th>
-                          <th scope="col">{t('belowLine')}</th>
+                          <th scope="col" className="whitespace-nowrap text-[10px]">
+                            {tc('button.score', { defaultValue: 'Score' })}
+                          </th>
+                          <th scope="col" className="whitespace-nowrap text-[10px]">
+                            {t('gamesWon')}
+                          </th>
+                          <th scope="col" className="whitespace-nowrap text-[10px]">
+                            {t('belowLine')}
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
@@ -572,9 +581,15 @@ function BridgePageContent() {
                           <th scope="col" className="text-left">
                             {t('team', { n: '' })}
                           </th>
-                          <th scope="col">{tc('button.score', { defaultValue: 'Score' })}</th>
-                          <th scope="col">{t('gamesWon')}</th>
-                          <th scope="col">{t('belowLine')}</th>
+                          <th scope="col" className="whitespace-nowrap text-[10px]">
+                            {tc('button.score', { defaultValue: 'Score' })}
+                          </th>
+                          <th scope="col" className="whitespace-nowrap text-[10px]">
+                            {t('gamesWon')}
+                          </th>
+                          <th scope="col" className="whitespace-nowrap text-[10px]">
+                            {t('belowLine')}
+                          </th>
                         </tr>
                       </thead>
                       <tbody>

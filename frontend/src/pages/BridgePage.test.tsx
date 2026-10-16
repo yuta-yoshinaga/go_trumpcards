@@ -195,6 +195,17 @@ beforeEach(() => {
 });
 
 describe('BridgePage', () => {
+  it('keeps status items intact and wraps between them', async () => {
+    renderWithProviders(<BridgePage />);
+    const row = await screen.findByTestId('bridge-status-row');
+    expect(row).toHaveClass('flex-wrap');
+    expect(row.querySelectorAll('span.whitespace-nowrap').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByRole('columnheader', { name: 'ゲーム勝利数' })).toHaveClass('whitespace-nowrap', 'text-[10px]');
+    expect(screen.getByRole('columnheader', { name: 'ビロウ・ザ・ライン' })).toHaveClass(
+      'whitespace-nowrap',
+      'text-[10px]',
+    );
+  });
   it('renders the game message in the footer message slot', async () => {
     mockExec.mockResolvedValue({ ...playPhaseState, message: 'Footer message location' });
     renderWithProviders(<BridgePage />);
