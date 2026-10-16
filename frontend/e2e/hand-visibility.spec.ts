@@ -122,6 +122,11 @@ test('route list is complete', () => {
   expect(routes.length, 'game route path declarations found').toBeGreaterThanOrEqual(300);
 });
 
+test('every strict footer-hand page is a game route', () => {
+  const missingPages = FOOTER_HAND_PAGES.filter((path) => !routes.includes(path));
+  expect(missingPages, `footer-hand pages missing from game routes: ${missingPages.join(', ')}`).toEqual([]);
+});
+
 /** Enforces the 52px visibility rule, with strict presence floors for known footer-hand pages. */
 async function checkHandVisibility(page: import('@playwright/test').Page, path: string) {
   await navigateTo(page, path);
