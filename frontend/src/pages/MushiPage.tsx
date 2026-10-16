@@ -16,7 +16,12 @@ import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
+import {
+  useBreakpoint,
+  useCardDimensions,
+  useDenseLargeDesktopCardSize,
+  useIsMobile,
+} from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
@@ -62,6 +67,9 @@ function MushiPageContent() {
   );
   const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   const { cardWidth } = useCardDimensions();
+  const denseCardSize = useDenseLargeDesktopCardSize();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
+  const boardCardWidth = isLargeDesktop ? denseCardSize.width : cardWidth;
   const isMobile = useIsMobile();
   const {
     hint: frontendHint,
@@ -95,7 +103,7 @@ function MushiPageContent() {
   /** One card. Hanafuda has no PNG art, so the category label carries the identity. */
   const renderCard = (card: MushiCard, key: string, extra?: string) => (
     <div key={key} className={`text-center ${extra ?? ''}`}>
-      <AnimatedCard card={card} width={cardWidth} draggable={false} />
+      <AnimatedCard card={card} width={boardCardWidth} draggable={false} />
       {card.points > 0 && <div className="text-ds-warning text-[10px] mt-0.5 font-bold">{card.points}</div>}
       <div className="text-game-text-muted text-[10px] mt-0.5">
         {t(`category.${card.category}`)}
@@ -141,8 +149,12 @@ function MushiPageContent() {
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
-          <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
-            <div className="flex justify-center gap-6 mb-3 text-sm">
+          <div
+            className={`flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8 ${isLargeDesktop ? 'grid grid-cols-2 grid-rows-[auto_auto_auto_auto_auto_auto] items-start gap-x-4' : ''}`}
+          >
+            <div
+              className={`flex justify-center gap-6 mb-3 text-sm ${isLargeDesktop ? 'col-start-1 row-start-1' : ''}`}
+            >
               <span>
                 {t('you')}: <span className="font-bold text-ds-warning">{human?.score ?? 0}</span>
                 <span className="text-game-text-muted ml-1">({human?.capturedPoints ?? 0} pt)</span>
@@ -156,7 +168,9 @@ function MushiPageContent() {
             </div>
 
             {/* Opponent hand: backs only. The server withholds the cards. */}
-            <div className="flex justify-center gap-4 mb-3">
+            <div
+              className={`flex justify-center gap-4 mb-3 min-w-0 ${isLargeDesktop ? 'col-start-1 row-start-2' : ''}`}
+            >
               {opponents.map((o) => {
                 const revealed = ended && o.cards.length > 0;
                 return (
@@ -171,7 +185,7 @@ function MushiPageContent() {
                           <CardImage
                             key={`opp-${o.id.toString()}-c${i.toString()}`}
                             card={card}
-                            width={cardWidth}
+                            width={boardCardWidth}
                             ariaLabel={cardAlt(card)}
                           />
                         ))}
@@ -184,10 +198,10 @@ function MushiPageContent() {
                       >
                         {isMobile ? (
                           Array.from({ length: o.cardCount }, (_, i) => (
-                            <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
+                            <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={boardCardWidth} />
                           ))
                         ) : (
-                          <CardBackFan count={o.cardCount} width={Math.round(cardWidth * 0.45)} />
+                          <CardBackFan count={o.cardCount} width={Math.round(boardCardWidth * 0.45)} />
                         )}
                       </div>
                     )}
@@ -196,7 +210,10 @@ function MushiPageContent() {
               })}
             </div>
 
-            <div className="text-center mb-4" data-tutorial="mushi-field">
+            <div
+              className={`text-center mb-4 min-w-0 ${isLargeDesktop ? 'col-start-1 row-start-3' : ''}`}
+              data-tutorial="mushi-field"
+            >
               <div className="text-game-text-muted text-xs mb-1">
                 {choosing && state.pendingCard
                   ? t('choosePrompt', { card: t(`category.${state.pendingCard.category}`) })
@@ -242,7 +259,10 @@ function MushiPageContent() {
 
             {/* Captured cards are PUBLIC for both seats -- reading what the
                 opponent is collecting is the game. */}
-            <div className="mb-4" data-tutorial="mushi-captured">
+            <div
+              className={`mb-4 min-w-0 ${isLargeDesktop ? 'col-start-2 row-start-1 row-span-3' : ''}`}
+              data-tutorial="mushi-captured"
+            >
               {state.players.map((p) => (
                 <div key={`cap-${p.id.toString()}`} className="mb-2">
                   <div className="text-game-text-muted text-xs mb-0.5">
@@ -282,10 +302,7 @@ function MushiPageContent() {
               ))}
             </div>
 
-            <div
-              className="text-center lg:sticky lg:bottom-0 lg:z-10 lg:bg-game-bg-green lg:pt-2 lg:shadow-lg"
-              data-tutorial="mushi-hand"
-            >
+            <div className={`text-center ${isLargeDesktop ? 'col-span-2 row-start-4' : ''}`} data-tutorial="mushi-hand">
               <div className="text-game-text-muted text-xs mb-1">{t('yourHand')}</div>
               <div className="flex gap-1 justify-center flex-wrap">
                 {(human?.cards ?? []).map((card, i) => (
@@ -308,18 +325,22 @@ function MushiPageContent() {
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
             </div>
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
+            <div className={isLargeDesktop ? 'col-span-2 row-start-5' : ''}>
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            </div>
 
-            <ActionLogSection
-              isEndPhase={ended}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
+            <div className={isLargeDesktop ? 'col-span-2 row-start-6' : ''}>
+              <ActionLogSection
+                isEndPhase={ended}
+                actionLog={actionLog}
+                showActionLog={showActionLog}
+                hideActionLog={hideActionLog}
+              />
+            </div>
           </div>
 
           <GameFooter className={`${gameTheme.mushi.footer} px-4 py-2.5`}>

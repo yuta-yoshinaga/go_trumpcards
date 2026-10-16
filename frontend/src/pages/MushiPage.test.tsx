@@ -7,13 +7,15 @@ import type { MushiCard, MushiPlayer, MushiResponse } from '../types/card';
 import { cardAlt } from '../utils/cardAlt';
 import { MushiPage } from './MushiPage';
 
-const mobileState = vi.hoisted(() => ({ isMobile: true }));
+const mobileState = vi.hoisted(() => ({ isMobile: true, largeDesktop: false }));
 
 vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
   return {
     ...actual,
     useIsMobile: () => mobileState.isMobile,
+    useBreakpoint: () => (mobileState.largeDesktop ? 'largeDesktop' : mobileState.isMobile ? 'mobile' : 'desktop'),
+    useDenseLargeDesktopCardSize: () => ({ width: 80, height: 120 }),
     useCardDimensions: () => ({ ...actual.useCardDimensions(), isMobile: mobileState.isMobile }),
   };
 });
@@ -90,6 +92,7 @@ function makeState(overrides?: Partial<MushiResponse>): MushiResponse {
 describe('MushiPage', () => {
   beforeEach(() => {
     mobileState.isMobile = true;
+    mobileState.largeDesktop = false;
     vi.clearAllMocks();
     mockExec.mockResolvedValue(makeState());
   });
@@ -99,12 +102,29 @@ describe('MushiPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
-  it('sticks the hand to the bottom of the desktop play area', async () => {
-    renderWithProviders(<MushiPage />);
+  it('places the board and hand in a large-desktop grid without a sticky hand, leaving mobile layout unchanged', async () => {
+    mobileState.largeDesktop = true;
+    const { unmount } = renderWithProviders(<MushiPage />);
     await waitFor(() => expect(document.querySelector('[data-tutorial="mushi-hand"] button')).not.toBeNull());
     const hand = document.querySelector('[data-tutorial="mushi-hand"]');
-    expect(hand?.className).toContain('lg:sticky');
-    expect(hand?.className).toContain('lg:bottom-0');
+    expect(hand).not.toHaveClass('lg:sticky');
+    expect(hand).toHaveClass('col-span-2', 'row-start-4');
+    expect(document.querySelector('.grid-cols-2')).toHaveClass('grid-rows-[auto_auto_auto_auto_auto_auto]');
+    expect(document.querySelector('[data-tutorial="mushi-field"]')).toHaveClass('col-start-1', 'row-start-3');
+    expect(document.querySelector('[data-tutorial="mushi-captured"]')).toHaveClass(
+      'col-start-2',
+      'row-start-1',
+      'row-span-3',
+    );
+
+    unmount();
+    mobileState.largeDesktop = false;
+    mobileState.isMobile = true;
+    renderWithProviders(<MushiPage />);
+    await waitFor(() => expect(document.querySelector('[data-tutorial="mushi-hand"]')).toBeInTheDocument());
+    expect(document.querySelector('.grid-cols-2')).not.toBeInTheDocument();
+    expect(document.querySelector('[data-tutorial="mushi-hand"]')).not.toHaveClass('lg:sticky');
+    unmount();
   });
 
   it('shows the initial load error and lets the player retry into the game', async () => {
@@ -371,6 +391,7 @@ describe('MushiPage card points', () => {
 describe('MushiPage opponent card backs by viewport', () => {
   beforeEach(() => {
     mobileState.isMobile = true;
+    mobileState.largeDesktop = false;
     vi.clearAllMocks();
     mockExec.mockResolvedValue(makeState());
   });
