@@ -172,6 +172,7 @@ function RussianSolitairePageContent() {
 
   const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
   const breakpoint = useBreakpoint();
+  const isLargeDesktop = breakpoint === 'largeDesktop';
   const windowWidth = useWindowWidth();
 
   // Responsive card dimensions
@@ -606,9 +607,11 @@ function RussianSolitairePageContent() {
                   >
                     {t('autoComplete')}
                   </button>
-                  <span id={autoCompleteStatusId} className="text-ds-text-muted text-xs self-center">
-                    {autoCompleteReady ? t('autoCompleteReady') : t('autoCompleteNotReady')}
-                  </span>
+                  {isLargeDesktop ? (
+                    <span id={autoCompleteStatusId} className="text-ds-text-muted text-xs self-center">
+                      {autoCompleteReady ? t('autoCompleteReady') : t('autoCompleteNotReady')}
+                    </span>
+                  ) : null}
                   <button
                     type="button"
                     className={btnOutline}
@@ -626,6 +629,13 @@ function RussianSolitairePageContent() {
                       onEscape={handleUndoEscape}
                       disabled={loading}
                     />
+                  )}
+                  {!isLargeDesktop && (
+                    <div className="w-full">
+                      <span id={autoCompleteStatusId} className="text-ds-text-muted text-xs">
+                        {autoCompleteReady ? t('autoCompleteReady') : t('autoCompleteNotReady')}
+                      </span>
+                    </div>
                   )}
                 </>
               )}
