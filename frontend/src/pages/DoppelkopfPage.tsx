@@ -277,11 +277,15 @@ function DoppelkopfPageContent() {
                   {state.players
                     .filter((p) => p.isHuman)
                     .map((p) => (
-                      <div key={p.id} className="text-ds-text-muted text-sm sm:py-0.5">
+                      <div
+                        key={p.id}
+                        className="flex flex-wrap items-center gap-x-1 text-ds-text-muted text-sm sm:py-0.5"
+                        data-testid="dk-human-player-info"
+                      >
                         {playerName(p.id, true)}
                         {(state.teamsRevealed || p.teamKnown) && ` [${p.isRe ? t('team.re') : t('team.kontra')}]`}:{' '}
                         {t('chips', { count: p.chips })} | {t('cards', { count: p.cardCount })} |{' '}
-                        {t('tricks', { count: p.trickCount })}
+                        <span className="whitespace-nowrap">{t('tricks', { count: p.trickCount })}</span>
                       </div>
                     ))}
                 </div>
@@ -290,11 +294,15 @@ function DoppelkopfPageContent() {
                     {state.players
                       .filter((p) => !p.isHuman)
                       .map((p) => (
-                        <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
+                        <div
+                          key={p.id}
+                          className="flex flex-wrap items-center gap-x-1 text-ds-text-muted text-sm py-0.5"
+                          data-testid="dk-cpu-player-info"
+                        >
                           {playerName(p.id, p.isHuman)}
                           {(state.teamsRevealed || p.teamKnown) && ` [${p.isRe ? t('team.re') : t('team.kontra')}]`}:{' '}
                           {t('chips', { count: p.chips })} | {t('cards', { count: p.cardCount })} |{' '}
-                          {t('tricks', { count: p.trickCount })}
+                          <span className="whitespace-nowrap">{t('tricks', { count: p.trickCount })}</span>
                         </div>
                       ))}
                   </div>
