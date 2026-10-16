@@ -16,7 +16,12 @@ import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
+import {
+  useBreakpoint,
+  useCardDimensions,
+  useDenseLargeDesktopCardSize,
+  useIsMobile,
+} from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
@@ -90,6 +95,9 @@ function LaughAndLieDownPageContent() {
   );
   const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   const { cardWidth, cpuCardWidth, isMobile: isCardMobile } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
+  const denseCardSize = useDenseLargeDesktopCardSize();
+  const handCardWidth = isLargeDesktop ? denseCardSize.width : cardWidth;
   const isMobile = useIsMobile();
   const {
     hint: frontendHint,
@@ -180,7 +188,7 @@ function LaughAndLieDownPageContent() {
             </details>
 
             {/* Opponent hands: backs only. The server withholds the cards. */}
-            <CpuAccordion playerCount={opponents.length} dataTutorial="lld-seats">
+            <CpuAccordion playerCount={opponents.length} openOnDesktop={false} dataTutorial="lld-seats">
               <div className="flex flex-wrap justify-center gap-4 sm:grid sm:grid-cols-4">
                 {opponents.map((o) => (
                   <div key={`opp-${o.id.toString()}`} className="text-center">
@@ -257,7 +265,7 @@ function LaughAndLieDownPageContent() {
                   <span data-testid="lld-lastin-0">{` · ${t('lastIn', { amount: state.lastInBonus })}`}</span>
                 )}
               </div>
-              <div className="flex gap-2 justify-center flex-wrap items-start">
+              <div className={`flex ${isLargeDesktop ? 'gap-1' : 'gap-2'} justify-center flex-wrap items-start`}>
                 {(human?.cards ?? []).map((card, i) => {
                   const canPlay = isHumanTurn && playable.has(i);
                   const blockedByMatch = isHumanTurn && !playable.has(i);
@@ -288,7 +296,7 @@ function LaughAndLieDownPageContent() {
                           frontendHintEnabled && state.hint?.cardIndex === i ? 'ring-2 ring-ds-warning' : '',
                         ].join(' ')}
                       >
-                        <AnimatedCard card={card} width={cardWidth} draggable={false} />
+                        <AnimatedCard card={card} width={handCardWidth} draggable={false} />
                       </button>
                       {/* Only offered where the server said three are on the
                           table -- the page never recounts. */}
