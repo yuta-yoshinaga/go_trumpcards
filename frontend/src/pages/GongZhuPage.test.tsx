@@ -94,6 +94,12 @@ describe('GongZhuPage', () => {
     });
   });
 
+  it('keeps the exposure summary on one line', async () => {
+    mockExec.mockResolvedValue(exposePhaseState);
+    renderWithProviders(<GongZhuPage />);
+    expect(await screen.findByTestId('exposure-summary')).toHaveClass('whitespace-nowrap');
+  });
+
   it('shows heart-break state and announces its transition once, then clears it at round start', async () => {
     const unbroken = makeGongZhuState({ heartsBroken: false });
     const broken = makeGongZhuState({ phase: 3, heartsBroken: true });

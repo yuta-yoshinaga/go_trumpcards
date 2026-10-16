@@ -197,12 +197,18 @@ function LingerLongerPageContent() {
       ) : (
         <>
           <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
-            <div className="text-ds-text-primary text-center mb-2" data-testid="ll-stock" data-tutorial="ll-stock">
-              <span className="mr-4">{t('header.trick', { n: String(state.trickNumber + 1) })}</span>
-              <span className="mr-4">{t('header.stock', { n: String(state.stockSize) })}</span>
+            <div
+              className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-ds-text-primary text-center mb-2"
+              data-testid="ll-stock"
+              data-tutorial="ll-stock"
+            >
+              <span className="whitespace-nowrap">{t('header.trick', { n: String(state.trickNumber + 1) })}</span>
+              <span className="whitespace-nowrap">{t('header.stock', { n: String(state.stockSize) })}</span>
               {/* **山札の残りとは別の数字。** 山札は「あと何回補充できるか」、
                   こちらはトリックが解決するたびに増える、二度と戻らない枚数。 */}
-              <span data-testid="ll-discarded">{t('header.discarded', { n: String(state.discarded) })}</span>
+              <span className="whitespace-nowrap" data-testid="ll-discarded">
+                {t('header.discarded', { n: String(state.discarded) })}
+              </span>
             </div>
 
             <div className="mb-3 text-center text-ds-text-primary" role="status" data-testid="ll-eliminated-summary">

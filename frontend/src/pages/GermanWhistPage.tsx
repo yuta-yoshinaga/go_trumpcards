@@ -187,20 +187,20 @@ function GermanWhistPageContent() {
       ) : (
         <>
           <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
-            <div className="text-ds-text-primary text-center mb-3">
-              <span className="mr-4" data-testid="gw-trick">
+            <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-ds-text-primary text-center mb-3">
+              <span className="whitespace-nowrap" data-testid="gw-trick">
                 {t('header.trick')}: {state.trickNumber}/26 {t('header.winAt', { target: state.winThreshold })}
               </span>
-              <span className="mr-4">
+              <span className="whitespace-nowrap" data-testid="gw-stock">
                 {t('header.stock')}: {state.stockCount}
               </span>
-              <span className="mr-4">
+              <span className="whitespace-nowrap">
                 {t('header.trump')}:{' '}
                 <span role="img" aria-label={tc(TRUMP_SUIT_I18N_KEYS[state.trumpSuit as 1 | 2 | 3 | 4])}>
                   {suitSymbolAt(state.trumpSuit, '?')}
                 </span>
               </span>
-              <span className="text-ds-accent" data-testid="gw-phase">
+              <span className="whitespace-nowrap text-ds-accent" data-testid="gw-phase">
                 {isFirstHalf ? t('header.phase1') : t('header.phase2')}
               </span>
             </div>

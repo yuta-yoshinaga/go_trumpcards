@@ -177,7 +177,10 @@ function TrucoPageContent() {
             {t('header.match')} — {t('header.you')}: {youPoints} / {t('header.cpu')}: {cpuPoints} ({t('header.target')}:{' '}
             {state.matchTarget})
           </span>
-          <span className="rounded bg-ds-info px-2 py-1 text-sm text-ds-text-on-accent" data-testid="truco-mano">
+          <span
+            className="whitespace-nowrap rounded bg-ds-info px-2 py-1 text-sm text-ds-text-on-accent"
+            data-testid="truco-mano"
+          >
             {t('header.mano')}: {playerLabel(state.manoIdx)}
           </span>
           <span

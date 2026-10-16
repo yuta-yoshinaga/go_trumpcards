@@ -10,6 +10,7 @@
   "foundation": "組札",
   "tableau": "場札",
   "baseRank": "ベースランク",
+  "baseRankShort": "基準",
   "moveCount": "手数",
   "deal": "配る",
   "giveup": "ギブアップ",

@@ -115,6 +115,7 @@ describe('TrucoPage', () => {
     renderWithProviders(<TrucoPage />);
     await waitFor(() => expect(screen.getByText(/マッチ得点/)).toBeInTheDocument());
     expect(screen.getByTestId('truco-header')).toHaveTextContent(/目標/);
+    expect(screen.getByTestId('truco-mano')).toHaveClass('whitespace-nowrap');
     expect(screen.getByTestId('truco-stake')).toBeInTheDocument();
   });
 
