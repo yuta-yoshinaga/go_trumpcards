@@ -277,6 +277,10 @@ describe('TutePage', () => {
     // One suit declared, three not declared.
     expect(screen.getAllByText('宣言済')).toHaveLength(1);
     expect(screen.getAllByText('未宣言')).toHaveLength(3);
+    expect(screen.getByText('宣言済')).toHaveClass('whitespace-nowrap');
+    screen.getAllByText('未宣言').forEach((label) => {
+      expect(label).toHaveClass('whitespace-nowrap');
+    });
     expect(panel).toHaveTextContent('切り札スートは +40 点');
   });
 

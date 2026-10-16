@@ -329,7 +329,7 @@ function MariasPageContent() {
                           </span>
                           {' / '}
                           <span
-                            className={(isRoundEnd || isGameEnd) && !soloistWon ? 'text-ds-warning font-semibold' : ''}
+                            className={`whitespace-nowrap ${(isRoundEnd || isGameEnd) && !soloistWon ? 'text-ds-warning font-semibold' : ''}`}
                           >
                             {t('roundResult.defenderTotal', { points: defenderTotal })}
                           </span>

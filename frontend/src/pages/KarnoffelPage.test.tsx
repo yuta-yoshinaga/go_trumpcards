@@ -226,6 +226,16 @@ describe('KarnoffelPage', () => {
     }
   });
 
+  it('keeps hidden-hand labels on one line for CPU players without visible cards', async () => {
+    renderWithProviders(<KarnoffelPage />);
+    await waitFor(() => expect(screen.getAllByTestId('karnoffel-player')).toHaveLength(4));
+    const cpuPlayers = screen.getAllByTestId('karnoffel-player').slice(1);
+    expect(cpuPlayers).toHaveLength(3);
+    cpuPlayers.forEach((player) => {
+      expect(player.querySelector('span.whitespace-nowrap')).toBeInTheDocument();
+    });
+  });
+
   it('plays exactly one card', async () => {
     renderWithProviders(<KarnoffelPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '出す' })).toBeInTheDocument());

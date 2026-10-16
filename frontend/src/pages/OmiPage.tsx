@@ -594,13 +594,15 @@ function TeamScoreTable({
     <table className="w-full text-sm text-ds-text-muted mt-1">
       <thead>
         <tr>
-          <th scope="col" className="text-left">
+          <th scope="col" className="whitespace-nowrap text-left">
             {t('team', { n: '' })}
           </th>
-          <th scope="col" className="text-[10px] whitespace-nowrap">
+          <th scope="col" className="whitespace-nowrap">
             {tc('button.score')}
           </th>
-          <th scope="col">{t('teamTricks')}</th>
+          <th scope="col" className="whitespace-nowrap">
+            {t('teamTricks')}
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -632,9 +634,17 @@ function CpuPlayerLine({
     <>
       {playerName(player.id, player.isHuman)}: {t('cards', { count: player.cardCount })} |{' '}
       {t('team', { n: player.team })} | {t('trickCount', { count: player.trickCount })}
-      {dealerIdx === player.id ? ` | ${t('dealer')}` : ''}
+      {dealerIdx === player.id && (
+        <span className="whitespace-nowrap">
+          {' | '}
+          {t('dealer')}
+        </span>
+      )}
       {callerIdx === player.id && player.team !== undefined && (
-        <span className="whitespace-nowrap">| {t('trumpCaller')}</span>
+        <>
+          {' | '}
+          <span className="whitespace-nowrap">{t('trumpCaller')}</span>
+        </>
       )}
     </>
   );

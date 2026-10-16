@@ -637,6 +637,13 @@ describe('OmiPage', () => {
     expect(screen.getByText('切り札宣言者')).toBeInTheDocument();
   });
 
+  it('keeps separators around CPU dealer and trump caller labels', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, dealerIdx: 1, bidPlayerIdx: 1, trumpCallerIdx: 1 });
+    renderWithProviders(<OmiPage />);
+    const row = await screen.findByTestId('omi-player-row-1');
+    expect(row).toHaveTextContent('トリック: 1 | ディーラー | 切り札宣言者');
+  });
+
   it('score table headers have scope="col" for accessibility', async () => {
     const { container } = renderWithProviders(<OmiPage />);
     await waitFor(() => expect(screen.getByText('チームスコア')).toBeInTheDocument());
@@ -647,10 +654,12 @@ describe('OmiPage', () => {
   });
 
   it('keeps the score table heading on one line', async () => {
-    const { container } = renderWithProviders(<OmiPage />);
+    renderWithProviders(<OmiPage />);
     await waitFor(() => expect(screen.getByText('チームスコア')).toBeInTheDocument());
-    expect(screen.getByRole('columnheader', { name: 'スコア' })).toHaveClass('text-[10px]', 'whitespace-nowrap');
-    expect(container.querySelector('th[scope="col"].whitespace-nowrap')).toBeInTheDocument();
+    expect(screen.getAllByRole('columnheader')).toHaveLength(3);
+    screen.getAllByRole('columnheader').forEach((header) => {
+      expect(header).toHaveClass('whitespace-nowrap');
+    });
   });
 
   it('shows round tricks alongside cumulative scores for both teams', async () => {
