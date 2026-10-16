@@ -46,6 +46,14 @@ beforeEach(() => {
 });
 
 describe('KingPage', () => {
+  it('keeps status items unbroken in the wrapping status row', async () => {
+    const { container } = renderWithProviders(<KingPage />);
+    await screen.findByAltText('♥ Q');
+    const row = container.querySelector('.flex.flex-wrap.justify-center');
+    expect(row).toHaveClass('flex-wrap');
+    expect(row?.querySelectorAll('span.whitespace-nowrap')).toHaveLength(5);
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<KingPage />);

@@ -98,6 +98,13 @@ beforeEach(() => {
 });
 
 describe('SoloWhistPage', () => {
+  it('keeps each status item unbroken in the wrapping status row', async () => {
+    renderWithProviders(<SoloWhistPage />);
+    const row = await screen.findByText(/ラウンド/).then((el) => el.closest('[data-tutorial="solowhist-info"]'));
+    expect(row).toHaveClass('flex', 'flex-wrap');
+    expect(row?.querySelectorAll('span.whitespace-nowrap')).toHaveLength(4);
+  });
+
   it('shows the dealer badge only beside the dealer seat', async () => {
     renderWithProviders(<SoloWhistPage />);
     const badge = await screen.findByText('ディーラー', { selector: 'span' });

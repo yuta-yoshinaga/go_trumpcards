@@ -44,6 +44,15 @@ beforeEach(() => {
 });
 
 describe('SpoilFivePage', () => {
+  it('keeps the target and leader labels on one line', async () => {
+    mockExec.mockResolvedValue(
+      makeSpoilFiveState({ players: makeSpoilFiveState().players.map((p, i) => ({ ...p, isLeader: i === 0 })) }),
+    );
+    renderWithProviders(<SpoilFivePage />);
+    expect(await screen.findByTestId('spoilfive-target')).toHaveClass('whitespace-nowrap');
+    expect(screen.getByText('リーダー')).toHaveClass('whitespace-nowrap');
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<SpoilFivePage />);

@@ -86,6 +86,12 @@ function handButtons() {
 }
 
 describe('KaiserPage', () => {
+  it('keeps the kitty label on one line when shown', async () => {
+    mockExec.mockResolvedValue(makeState({ kittySize: 3 }));
+    renderWithProviders(<KaiserPage />);
+    expect(await screen.findByTestId('kaiser-kitty')).toHaveClass('whitespace-nowrap');
+  });
+
   // **サーバーが弾く選択肢は出さない。**設定でノートランプを切っていると
   // Bid が error を返すので、選べてしまうと押した瞬間に必ず失敗する。
   describe('the no-trump setting', () => {

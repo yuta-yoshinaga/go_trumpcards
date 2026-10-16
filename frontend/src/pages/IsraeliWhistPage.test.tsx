@@ -72,6 +72,14 @@ beforeEach(() => {
 });
 
 describe('IsraeliWhistPage', () => {
+  it('keeps the trump and total score labels unbroken', async () => {
+    renderWithProviders(<IsraeliWhistPage />);
+    const trump = await screen.findByTestId('iw-trump');
+    expect(trump).toHaveClass('whitespace-nowrap');
+    const total = screen.getByTestId('iw-seat-0').querySelector('span.whitespace-nowrap');
+    expect(total).toHaveClass('whitespace-nowrap');
+  });
+
   it('shows the dealer badge only at dealerIdx and follows the server state', async () => {
     renderWithProviders(<IsraeliWhistPage />);
     await screen.findByTestId('iw-seat-0');
