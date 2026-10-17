@@ -73,17 +73,24 @@ function makeState(overrides?: Partial<ChineseTenResponse>): ChineseTenResponse 
 }
 
 describe('ChineseTenPage', () => {
-  it('sticks the hand to the bottom of the desktop play area', async () => {
+  it('keeps the footer hand free of play-area sticky positioning', async () => {
     renderWithProviders(<ChineseTenPage />);
     const hand = await screen.findByText('あなたの手札');
-    expect(hand.closest('[data-tutorial="ct-hand"]')?.className).toContain('lg:sticky');
-    expect(hand.closest('[data-tutorial="ct-hand"]')?.className).toContain('lg:bottom-0');
+    expect(hand.closest('[data-tutorial="ct-hand"]')).toHaveClass('text-center');
+    expect(hand.closest('[data-tutorial="ct-hand"]')).not.toHaveClass('lg:sticky', 'lg:bottom-0', 'lg:z-10');
   });
 
   beforeEach(() => {
     mobileState.isMobile = true;
     vi.clearAllMocks();
     mockExec.mockResolvedValue(makeState());
+  });
+
+  it('renders the playable hand inside the game footer content', async () => {
+    renderWithProviders(<ChineseTenPage />);
+    const footer = within(await screen.findByTestId('game-footer-content'));
+    expect(footer.getByText('あなたの手札')).toBeInTheDocument();
+    expect(footer.getByRole('button', { name: /♠ A/ })).toHaveAttribute('data-hint-action', 'play');
   });
 
   it('resets on mount', async () => {
