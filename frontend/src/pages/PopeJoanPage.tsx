@@ -300,6 +300,25 @@ function PopeJoanPageContent() {
               </section>
             )}
 
+            {state.playedPile.length > 0 && (
+              <div className="text-center mb-3" data-testid="popejoan-played-pile">
+                <div className="text-game-text-muted text-xs mb-1">
+                  {t('played')}
+                  {state.runSuit < 0 && ` · ${t('runStopped')}`}
+                </div>
+                <div className="flex gap-1 justify-center flex-wrap">
+                  {state.playedPile.slice(-10).map((card, i) => (
+                    <AnimatedCard
+                      key={`pile-${i.toString()}`}
+                      card={card}
+                      width={Math.round(cardWidth * 0.7)}
+                      draggable={false}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
             <CpuAccordion playerCount={opponents.length} openOnDesktop={false}>
               <div className="flex flex-wrap sm:flex-nowrap justify-center gap-4 mb-3">
                 {opponents.map((o) => (
@@ -332,31 +351,61 @@ function PopeJoanPageContent() {
               </div>
             </CpuAccordion>
 
-            {state.playedPile.length > 0 && (
-              <div className="text-center mb-3">
-                <div className="text-game-text-muted text-xs mb-1">
-                  {t('played')}
-                  {state.runSuit < 0 && ` · ${t('runStopped')}`}
-                </div>
-                <div className="flex gap-1 justify-center flex-wrap">
-                  {state.playedPile.slice(-10).map((card, i) => (
-                    <AnimatedCard
-                      key={`pile-${i.toString()}`}
-                      card={card}
-                      width={Math.round(cardWidth * 0.7)}
-                      draggable={false}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-
             {dealOver && state.dealWinner >= 0 && (
               <div className="text-center text-sm mb-3" data-testid="popejoan-deal-result">
                 {t('dealResult', { n: state.dealWinner })}
               </div>
             )}
 
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
+
+            <ActionLogSection
+              isEndPhase={ended}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
+          </div>
+
+          <GameFooter
+            className={`${gameTheme.popejoan.footer} px-4 py-2.5`}
+            actions={
+              <div className="flex gap-2 items-center flex-wrap">
+                <GameResetButton
+                  isGameEnd={ended}
+                  onReset={game.handleReset}
+                  requestConfirm={requestConfirm}
+                  loading={loading}
+                  dataTutorial="pj-reset-button"
+                />
+              </div>
+            }
+          >
+            {isHumanTurn && (
+              <button
+                type="button"
+                className={`${btnPrimary} min-h-11`}
+                disabled={handIdx === null}
+                onClick={() => {
+                  if (handIdx !== null) {
+                    game.handlePlay(handIdx);
+                    setHandIdx(null);
+                  }
+                }}
+              >
+                {t('play')}
+              </button>
+            )}
+            {dealOver && !ended && (
+              <button type="button" className={`${btnPrimary} min-h-11`} onClick={game.handleNextDeal}>
+                {t('nextDeal')}
+              </button>
+            )}
+            <ErrorAlert message={error} onRetry={retry} />
             <div className="text-center" data-tutorial="pj-hand">
               <div className="text-game-text-muted text-xs mb-1">
                 {t('yourHand')}
@@ -380,52 +429,6 @@ function PopeJoanPageContent() {
                 </div>
               )}
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-            </div>
-
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
-            <ActionLogSection
-              isEndPhase={ended}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
-          </div>
-
-          <GameFooter className={`${gameTheme.popejoan.footer} px-4 py-2.5`}>
-            <ErrorAlert message={error} onRetry={retry} />
-            <div className="flex gap-2 items-center flex-wrap">
-              {isHumanTurn && (
-                <button
-                  type="button"
-                  className={`${btnPrimary} min-h-11`}
-                  disabled={handIdx === null}
-                  onClick={() => {
-                    if (handIdx !== null) {
-                      game.handlePlay(handIdx);
-                      setHandIdx(null);
-                    }
-                  }}
-                >
-                  {t('play')}
-                </button>
-              )}
-              {dealOver && !ended && (
-                <button type="button" className={`${btnPrimary} min-h-11`} onClick={game.handleNextDeal}>
-                  {t('nextDeal')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={ended}
-                onReset={game.handleReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="pj-reset-button"
-              />
             </div>
           </GameFooter>
         </>

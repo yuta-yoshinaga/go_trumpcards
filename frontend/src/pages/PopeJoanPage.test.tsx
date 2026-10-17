@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { popejoanApi } from '../api/gameApi';
 import { ApiError } from '../api/gameExec';
@@ -83,6 +83,16 @@ describe('PopeJoanPage', () => {
     mockExec.mockResolvedValue(makeState());
   });
 
+  it('renders the hand and play action inside the game footer', async () => {
+    renderWithProviders(<PopeJoanPage />);
+    const footer = await screen.findByTestId('game-footer-content');
+    const footerQueries = within(footer);
+    expect(footerQueries.getAllByRole('button').filter((button) => button.dataset.hintAction === 'play')).toHaveLength(
+      3,
+    );
+    expect(footerQueries.getByRole('button', { name: '出す' })).toBeInTheDocument();
+  });
+
   it('keeps rules and CPU details collapsed while their content stays in the DOM', async () => {
     renderWithProviders(<PopeJoanPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
@@ -123,6 +133,16 @@ describe('PopeJoanPage', () => {
     expect(turnUpAndBoard).toHaveClass('flex', 'items-start');
     expect(turnUpAndBoard?.children).toHaveLength(2);
     expect(turnUpAndBoard?.lastElementChild).toBe(board);
+  });
+
+  it('places the played cards before the CPU reference area', async () => {
+    mobileState.breakpoint = 'largeDesktop';
+    mockExec.mockResolvedValue(makeState({ playedPile: [card('SPADE', 5)] }));
+    renderWithProviders(<PopeJoanPage />);
+
+    const pile = await screen.findByTestId('popejoan-played-pile');
+    const cpuArea = screen.getByTestId('cpu-accordion');
+    expect(pile.compareDocumentPosition(cpuArea) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it.each(['mobile', 'largeDesktop'] as const)('handles an empty hand on %s', async (breakpoint) => {

@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import i18n from 'i18next';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { scoponeApi } from '../api/gameApi';
@@ -27,6 +27,21 @@ describe('ScoponePage', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<ScoponePage />);
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+  });
+
+  it('renders the hand inside the game footer content', async () => {
+    renderWithProviders(<ScoponePage />);
+    const footer = await screen.findByTestId('game-footer-content');
+    const footerQueries = within(footer);
+    expect(footerQueries.getAllByTestId(/^hand-card-/)).toHaveLength(3);
+  });
+
+  it('renders play actions inside the always-visible game footer actions', async () => {
+    renderWithProviders(<ScoponePage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    const actionQueries = within(actions);
+    expect(actionQueries.getByTestId('take-button')).toBeInTheDocument();
+    expect(actionQueries.getByTestId('lay-button')).toBeInTheDocument();
   });
 
   it('calls reset on mount with the short "r" command', async () => {

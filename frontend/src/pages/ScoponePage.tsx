@@ -350,35 +350,6 @@ function ScoponePageContent() {
               </div>
             </div>
 
-            {/* Human hand */}
-            <div className="text-center" data-tutorial="sp-player-hand">
-              <div className="text-xs text-ds-text-muted mb-1">
-                {tc('player.you')} ({t('label.team', { team: humanTeam })}) —{' '}
-                {t('label.humanStats', {
-                  cards: human.handCount,
-                  captured: human.capturedCount,
-                  scopa: human.scopaCount,
-                })}
-              </div>
-              <CardFan itemWidth={cardWidth + 6}>
-                {human.cards.map((c, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    aria-pressed={handIndex === i}
-                    onClick={() => isHumanTurn && setHandIndex(handIndex === i ? null : i)}
-                    disabled={!isHumanTurn}
-                    className={`rounded transition-all ${
-                      handIndex === i ? 'ring-2 ring-ds-info -translate-y-2' : ''
-                    } ${isHumanTurn ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
-                    data-testid={`hand-card-${i}`}
-                  >
-                    <AnimatedCard card={c} width={cardWidth} />
-                  </button>
-                ))}
-              </CardFan>
-            </div>
-
             {/* Round-end score breakdown */}
             {isRoundEnd && detail && (
               <div className="bg-black/25 rounded-lg p-3 text-sm" data-testid="round-detail">
@@ -437,58 +408,91 @@ function ScoponePageContent() {
             ]}
           />
 
-          <GameFooter className={`${gameTheme.scopone.footer} px-4 py-2.5`}>
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="sp-actions">
-              <button
-                type="button"
-                onClick={play}
-                disabled={loading || !canTake}
-                className="px-4 py-2 rounded-lg bg-ds-info text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
-                data-testid="take-button"
-              >
-                {t('button.take')}
-              </button>
-              <button
-                type="button"
-                onClick={play}
-                disabled={loading || !canLay}
-                className="px-4 py-2 rounded-lg bg-ds-warning text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
-                data-testid="lay-button"
-                title={mustCapture ? t('mustCapture') : undefined}
-              >
-                {t('button.lay')}
-              </button>
-              {mustCapture && (
-                <span className="text-ds-warning text-xs self-center" data-testid="scopone-must-capture">
-                  {t('mustCapture')}
-                </span>
-              )}
-              {isRoundEnd && (
-                <button
-                  type="button"
-                  onClick={handleNextRound}
-                  disabled={loading}
-                  className="px-4 py-2 rounded-lg bg-ds-info/70 text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
-                  data-testid="next-round-button"
-                >
-                  {t('button.nextRound')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={onReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="sp-reset-button"
-              />
-              <ActionLogSection
-                isEndPhase={isGameEnd}
-                actionLog={actionLog}
-                showActionLog={showActionLog}
-                hideActionLog={hideActionLog}
-              />
+          <GameFooter
+            className={`${gameTheme.scopone.footer} px-4 py-2.5`}
+            actions={
+              <>
+                <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+                <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="sp-actions">
+                  <button
+                    type="button"
+                    onClick={play}
+                    disabled={loading || !canTake}
+                    className="px-4 py-2 rounded-lg bg-ds-info text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                    data-testid="take-button"
+                  >
+                    {t('button.take')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={play}
+                    disabled={loading || !canLay}
+                    className="px-4 py-2 rounded-lg bg-ds-warning text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                    data-testid="lay-button"
+                    title={mustCapture ? t('mustCapture') : undefined}
+                  >
+                    {t('button.lay')}
+                  </button>
+                  {mustCapture && (
+                    <span className="text-ds-warning text-xs self-center" data-testid="scopone-must-capture">
+                      {t('mustCapture')}
+                    </span>
+                  )}
+                  {isRoundEnd && (
+                    <button
+                      type="button"
+                      onClick={handleNextRound}
+                      disabled={loading}
+                      className="px-4 py-2 rounded-lg bg-ds-info/70 text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                      data-testid="next-round-button"
+                    >
+                      {t('button.nextRound')}
+                    </button>
+                  )}
+                  <GameResetButton
+                    isGameEnd={isGameEnd}
+                    onReset={onReset}
+                    requestConfirm={requestConfirm}
+                    loading={loading}
+                    dataTutorial="sp-reset-button"
+                  />
+                  <ActionLogSection
+                    isEndPhase={isGameEnd}
+                    actionLog={actionLog}
+                    showActionLog={showActionLog}
+                    hideActionLog={hideActionLog}
+                  />
+                </div>
+              </>
+            }
+          >
+            {/* Human hand */}
+            <div className="text-center" data-tutorial="sp-player-hand">
+              <div className="text-xs text-ds-text-muted mb-1">
+                {tc('player.you')} ({t('label.team', { team: humanTeam })}) —{' '}
+                {t('label.humanStats', {
+                  cards: human.handCount,
+                  captured: human.capturedCount,
+                  scopa: human.scopaCount,
+                })}
+              </div>
+              <CardFan itemWidth={cardWidth + 6}>
+                {human.cards.map((c, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    aria-pressed={handIndex === i}
+                    onClick={() => isHumanTurn && setHandIndex(handIndex === i ? null : i)}
+                    disabled={!isHumanTurn}
+                    className={`rounded transition-all ${
+                      handIndex === i ? 'ring-2 ring-ds-info -translate-y-2' : ''
+                    } ${isHumanTurn ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
+                    data-testid={`hand-card-${i}`}
+                  >
+                    <AnimatedCard card={c} width={cardWidth} />
+                  </button>
+                ))}
+              </CardFan>
             </div>
           </GameFooter>
         </>
