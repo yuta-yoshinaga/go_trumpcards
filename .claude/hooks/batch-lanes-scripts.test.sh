@@ -687,7 +687,8 @@ grep -q 'first' "$E2E_CALL_LOG" && grep -q 'second third' "$E2E_CALL_LOG" || fai
   echo base > "$seed/file"; git -C "$seed" add file; git -C "$seed" commit -qm base; git -C "$seed" branch -M develop
   git init -q --bare "$origin"; git -C "$origin" symbolic-ref HEAD refs/heads/develop
   git -C "$seed" remote add origin "$origin"; git -C "$seed" push -qu origin develop
-  git clone -q "$origin" "$lane"; git -C "$lane" checkout -qb feat/31-fix; git -C "$lane" push -qu origin feat/31-fix
+  git clone -q "$origin" "$lane"; git -C "$lane" config user.email test@example.com; git -C "$lane" config user.name test
+  git -C "$lane" checkout -qb feat/31-fix; git -C "$lane" push -qu origin feat/31-fix
   cat > "$bin/gh" <<'GH'
 #!/usr/bin/env bash
 case "$*" in
