@@ -28,6 +28,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[4]
 BUCKETS = ["casino", "classic", "solo", "extra", "extra2", "extra3", "extra4", "extra5", "extra6", "extra7", "extra8", "extra9", "extra10", "extra11"]
+# Compiled build-tag matcher for every supported worker bucket.
+# Longer bucket names come first so numbered buckets are matched in full.
+TAG_RE = re.compile(r"\b(" + "|".join(sorted(BUCKETS, key=len, reverse=True)) + r")\b")
 SRC_DIRS = ["internal/domain", "internal/usecase", "internal/adapter"]
 REGISTRY = ROOT / "internal/infrastructure/games/registry.go"
 REGISTRY_TEST = ROOT / "internal/infrastructure/games/registry_test.go"

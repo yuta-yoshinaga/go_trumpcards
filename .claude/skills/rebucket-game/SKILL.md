@@ -6,7 +6,7 @@ description: Move an existing game between Cloudflare Worker size buckets (casin
 # Rebucket Game
 
 Move `<game>` from its current worker bucket to `<target>` (`casino` | `classic` | `solo` |
-`extra` | `extra2` | `extra3` | `extra4` | `extra5` | `extra6` | `extra7`). The bucket is a **binary-size bucket, not a user-facing taxonomy** — rebucketing
+`extra` | `extra2` | `extra3` | `extra4` | `extra5` | `extra6` | `extra7` | `extra8` | `extra9` | `extra10` | `extra11`). The bucket is a **binary-size bucket, not a user-facing taxonomy** — rebucketing
 changes nothing about gameplay or UI, only which TinyGo WASM binary the game compiles into.
 Missing any touchpoint ships a broken worker route, so do ALL six, in one commit.
 
@@ -93,7 +93,7 @@ stranded five of them (ADR-0037). The tag check below is what catches it; retag 
 # Bucket-boundary type check: SECONDS, and the only cheap way to catch a stranded
 # symbol. `go build ./...` CANNOT fail on one -- every file is `!js || !wasm`, so
 # the whole tree compiles regardless of which bucket a game landed in.
-for w in casino classic solo extra extra2 extra3 extra4 extra5 extra6 extra7; do
+for w in casino classic solo extra extra2 extra3 extra4 extra5 extra6 extra7 extra8 extra9 extra10 extra11; do
   GOOS=js GOARCH=wasm go build -tags "$w" -o /dev/null "./cmd/workers/$w" || echo "FAIL $w"
 done
 
