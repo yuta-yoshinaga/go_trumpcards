@@ -20,6 +20,13 @@ python3 "$LEDGER" check > "$tmp/shared.out"
 grep -q 'SHARED SIGNATURE' "$tmp/shared.out" || fail "check omitted shared signature"
 grep -q 'PageA, PageB' "$tmp/shared.out" || fail "check omitted test list"
 
+# A filtered check only reports shared signatures that include the selected test.
+python3 "$LEDGER" record --test PageC --where different-text --signature 'another failure' > "$tmp/c.out"
+python3 "$LEDGER" check --test PageC > "$tmp/page-c.out"
+if grep -q 'SHARED SIGNATURE' "$tmp/page-c.out"; then fail "filtered check showed an unrelated shared signature"; fi
+python3 "$LEDGER" check --test PageA > "$tmp/page-a.out"
+grep -q 'SHARED SIGNATURE' "$tmp/page-a.out" || fail "filtered check omitted the selected test's shared signature"
+
 # Repeating a signature in only one test is not shared.
 export FLAKE_LEDGER="$tmp/same-test.jsonl"
 python3 "$LEDGER" record --test PageA --where duplicate-text --signature 'same' > "$tmp/same1.out"
@@ -35,5 +42,10 @@ python3 "$LEDGER" record --test PageB --where duplicate-text --signature 'second
 if grep -q 'SHARED SIGNATURE' "$tmp/diff1.out" "$tmp/diff2.out"; then fail "different signatures were treated as shared"; fi
 python3 "$LEDGER" check > "$tmp/different-check.out"
 if grep -q 'SHARED SIGNATURE' "$tmp/different-check.out"; then fail "check treated different signatures as shared"; fi
+
+# Empty signatures are omitted from the stored row.
+export FLAKE_LEDGER="$tmp/empty-signature.jsonl"
+python3 "$LEDGER" record --test EmptySignature --where pkg --signature '' > "$tmp/empty.out"
+python3 -c 'import json,sys; row=json.loads(open(sys.argv[1], encoding="utf-8").readline()); assert "signature" not in row' "$FLAKE_LEDGER" || fail "empty signature key was stored"
 
 echo "flake-ledger tests passed"

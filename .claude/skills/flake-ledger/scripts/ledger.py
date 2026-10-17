@@ -77,7 +77,7 @@ def cmd_record(args: argparse.Namespace) -> int:
         "branch": args.branch or _branch(),
         "note": args.note or "",
     }
-    if args.signature is not None:
+    if args.signature:
         row["signature"] = args.signature
     with LEDGER.open("a", encoding="utf-8") as fh:
         fh.write(json.dumps(row, ensure_ascii=False) + "\n")
@@ -126,6 +126,8 @@ def cmd_check(args: argparse.Namespace) -> int:
         if signature:
             signature_tests[signature].add(r.get("test", "?"))
     shared = {sig: tests for sig, tests in signature_tests.items() if len(tests) >= 2}
+    if args.test:
+        shared = {sig: tests for sig, tests in shared.items() if args.test in tests}
 
     threshold = args.min if args.min is not None else CONFIRM_AT
     confirmed = {k: v for k, v in groups.items() if len(v) >= threshold}
