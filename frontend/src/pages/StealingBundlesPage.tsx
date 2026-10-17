@@ -371,7 +371,8 @@ function StealingBundlesPageContent() {
             className={`${gameTheme.stealingbundles.footer} px-4 py-2.5`}
             actions={
               selected !== null && isHumanTurn ? (
-                <div className="mt-3 flex flex-wrap gap-2 items-center" data-testid="sb-actions">
+                /* **選んだ札でできることだけを出す。** できない手を押させません。 */
+                <div className="flex flex-wrap gap-2 items-center" data-testid="sb-actions">
                   <span className="text-ds-text-muted text-sm">
                     {t('status.selected', { card: selectedCard ? cardAlt(selectedCard) : '' })}
                   </span>
