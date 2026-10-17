@@ -197,6 +197,12 @@ afterEach(() => {
 });
 
 describe('BinokelPage', () => {
+  it('lets the CPU accordion span the two remaining desktop player columns', async () => {
+    renderWithProviders(<BinokelPage />);
+    const cpuAccordion = await screen.findByTestId('cpu-accordion');
+    expect(cpuAccordion).toHaveClass('mb-0', 'sm:col-span-2');
+  });
+
   it('wraps player score fields between intact label and value groups', async () => {
     renderWithProviders(<BinokelPage />);
     const [row] = await screen.findAllByText('メルド得点: 0');
@@ -221,7 +227,7 @@ describe('BinokelPage', () => {
     expect(largeDesktopRow).toHaveClass('flex', 'flex-wrap');
     expect(largeDesktopRow.contains(dabb)).toBe(true);
     expect(largeDesktopRow.contains(screen.getByText('あなた').closest('[data-tutorial="bn-player-info"]'))).toBe(true);
-    expect(dabb).toHaveClass('mb-1', 'py-1');
+    expect(dabb).toHaveClass('mb-1', 'py-1', 'flex-none');
     Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 768 });
     window.dispatchEvent(new Event('resize'));
     await waitFor(() => expect(dabb).toHaveClass('mb-3', 'p-2'));
