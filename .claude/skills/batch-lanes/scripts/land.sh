@@ -32,6 +32,39 @@ else
   fi
 fi
 br=$(gh pr view "$pr" --json headRefName -q .headRefName)
+if [[ "${ALLOW_LANE_PENDING:-}" != 1 ]]; then
+  while IFS= read -r wt; do
+    [[ -n "$wt" ]] || continue
+    [[ -d "$wt" ]] || continue
+    wt_br=$(git -C "$wt" branch --show-current 2>/dev/null) || continue
+    [[ "$wt_br" == "$br" ]] || continue
+    reason=''
+    rest=${wt#"$WT_ROOT"/wt-ib}
+    if [[ "$rest" != "$wt" && "$rest" =~ ^[0-9]+$ ]]; then
+      slot=$rest
+      if "$B/busy.sh" "$slot" >/dev/null 2>&1; then
+        reason="delegation is still running (slot $slot)"
+      fi
+    fi
+    if [[ -z "$reason" ]] && [[ -n "$(git -C "$wt" status --porcelain)" ]]; then
+      reason='uncommitted changes'
+    fi
+    if [[ -z "$reason" ]]; then
+      git -C "$wt" fetch -q origin "$br" 2>/dev/null || true
+      if ! pending=$(git -C "$wt" rev-list --count "origin/$br..HEAD" 2>/dev/null); then
+        echo "REFUSED: $wt cannot compare with origin/$br" >&2
+        exit 1
+      fi
+      if [[ "$pending" =~ ^[0-9]+$ ]] && (( pending > 0 )); then
+        reason="$pending unpushed commit(s)"
+      fi
+    fi
+    if [[ -n "$reason" ]]; then
+      echo "REFUSED: $wt has $reason" >&2
+      exit 1
+    fi
+  done < <(git worktree list --porcelain | sed -n 's/^worktree //p')
+fi
 git fetch -q origin "$br"; sha=$(git rev-parse "origin/$br")
 out=$(bash "${MERGE_GATE:-.claude/skills/land-pr/scripts/merge-gate.sh}" "$pr" "$sha" 2>&1)
 echo "$out" | grep -q 'VERDICT: gate passed' || { echo "$out" | grep -vE '^\s+ok'; exit 1; }

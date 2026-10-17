@@ -666,4 +666,108 @@ export E2E_CALL_LOG="$tmp/e2e-calls.log"
 if PATH="$e2e_bin:$PATH" BATCH_REPO="$e2e_repo" BATCH_WT_ROOT="$e2e_wts" BATCH_STATE="$tmp/e2e-state" E2E_SKIP_BUILD=1 bash "$SCRIPTS/e2e.sh" 1 first --- second third; then fail "e2e.sh hid a failed run"; fi
 [[ $(wc -l < "$E2E_CALL_LOG") == 2 ]] || fail "e2e.sh did not make two bunx calls: $(cat "$E2E_CALL_LOG")"
 grep -q 'first' "$E2E_CALL_LOG" && grep -q 'second third' "$E2E_CALL_LOG" || fail "e2e.sh split run args incorrectly: $(cat "$E2E_CALL_LOG")"
+# prbody recognizes every GitHub closing keyword and issue references precisely.
+(
+  source "$SCRIPTS/prbody.sh"
+  prbody_has_ref 5 'to fix #5' || fail 'prbody_has_ref missed fix #5'
+  prbody_has_ref 5 'fixed #5' || fail 'prbody_has_ref missed fixed #5'
+  prbody_has_ref 5 'resolve #5' || fail 'prbody_has_ref missed resolve #5'
+  prbody_has_ref 5 'Part of #5' || fail 'prbody_has_ref missed Part of #5'
+  prbody_has_ref 5 'Refs #5' || fail 'prbody_has_ref missed Refs #5'
+  if prbody_has_ref 5 'Closes #50'; then fail 'prbody_has_ref accepted a longer issue number'; fi
+  if prbody_has_ref 5 'disclosed #5'; then fail 'prbody_has_ref accepted disclosed #5'; fi
+  if prbody_has_ref 5 'prefix #5'; then fail 'prbody_has_ref accepted prefix #5'; fi
+) || exit 1
+
+# fixpush validates the PR before committing and records a pushed PR exactly once.
+(
+  seed="$tmp/fix-seed"; origin="$tmp/fix-origin.git"; wts="$tmp/fix-wts"; lane="$wts/wt-ib31"; state="$tmp/fix-state"; bin="$tmp/fix-bin"
+  mkdir -p "$seed" "$wts" "$state" "$bin"
+  git init -q "$seed"; git -C "$seed" config user.email test@example.com; git -C "$seed" config user.name test
+  echo base > "$seed/file"; git -C "$seed" add file; git -C "$seed" commit -qm base; git -C "$seed" branch -M develop
+  git init -q --bare "$origin"; git -C "$origin" symbolic-ref HEAD refs/heads/develop
+  git -C "$seed" remote add origin "$origin"; git -C "$seed" push -qu origin develop
+  git clone -q "$origin" "$lane"; git -C "$lane" config user.email test@example.com; git -C "$lane" config user.name test
+  git -C "$lane" checkout -qb feat/31-fix; git -C "$lane" push -qu origin feat/31-fix
+  cat > "$bin/gh" <<'GH'
+#!/usr/bin/env bash
+case "$*" in
+  'pr view 31 --json state,headRefName -q [.state, .headRefName][]') printf '%s\n%s\n' "${FIX_STATE:-OPEN}" "${FIX_HEAD:-feat/31-fix}" ;;
+  'pr comment 31 --body '*) echo comment >> "$FIX_COMMENTS" ;;
+  *) echo "unexpected gh invocation: $*" >&2; exit 2 ;;
+esac
+GH
+  chmod +x "$bin/gh"; export FIX_COMMENTS="$tmp/fix-comments"; : > "$state/reviewed.txt"
+  run_fix() { PATH="$bin:$PATH" BATCH_REPO="$ROOT" BATCH_WT_ROOT="$wts" BATCH_STATE="$state" CLAIM_SKIP=1 bash "$SCRIPTS/fixpush.sh" 31 31 'fix change' 'reviewed'; }
+  printf changed >> "$lane/file"
+  hash=$(BATCH_REPO="$ROOT" BATCH_WT_ROOT="$wts" bash "$SCRIPTS/treehash.sh" 31); printf '%s' "$hash" > "$state/gate31.ok"
+  before=$(git -C "$lane" rev-parse HEAD)
+  if FIX_STATE=MERGED run_fix >"$tmp/fix-merged.out" 2>&1; then fail 'fixpush accepted a merged PR'; fi
+  grep -q 'follow-up PR' "$tmp/fix-merged.out" || fail "fixpush merged refusal missing: $(cat "$tmp/fix-merged.out")"
+  [ "$(git -C "$lane" rev-parse HEAD)" = "$before" ] || fail 'fixpush committed a merged PR'
+  if FIX_HEAD=other-branch run_fix >"$tmp/fix-branch.out" 2>&1; then fail 'fixpush accepted a different PR head branch'; fi
+  grep -q 'does not match PR' "$tmp/fix-branch.out" || fail "fixpush branch refusal missing: $(cat "$tmp/fix-branch.out")"
+  [ "$(git -C "$lane" rev-parse HEAD)" = "$before" ] || fail 'fixpush committed on a mismatched branch'
+  run_fix >"$tmp/fix-success.out" 2>&1 || fail "fixpush failed: $(cat "$tmp/fix-success.out")"
+  [ "$(cat "$state/reviewed.txt")" = 31 ] || fail 'fixpush did not record PR 31 once'
+  echo second-change >> "$lane/file"
+  hash=$(BATCH_REPO="$ROOT" BATCH_WT_ROOT="$wts" bash "$SCRIPTS/treehash.sh" 31); printf '%s' "$hash" > "$state/gate31.ok"
+  run_fix >"$tmp/fix-success2.out" 2>&1 || fail "fixpush second run failed: $(cat "$tmp/fix-success2.out")"
+  [ "$(wc -l < "$state/reviewed.txt")" -eq 1 ] || fail 'fixpush duplicated PR in reviewed.txt'
+  echo third-change >> "$lane/file"
+  : > "$state/reviewed.txt"
+  echo pushed >> "$lane/file"
+  hash=$(BATCH_REPO="$ROOT" BATCH_WT_ROOT="$wts" bash "$SCRIPTS/treehash.sh" 31); printf '%s' "$hash" > "$state/gate31.ok"
+  real_git=$(command -v git); mkdir "$tmp/fix-failbin"
+  cat > "$tmp/fix-failbin/git" <<'GIT'
+#!/usr/bin/env bash
+if [[ "$1" == push ]]; then exit 1; fi
+exec "$REAL_GIT" "$@"
+GIT
+  chmod +x "$tmp/fix-failbin/git"
+  before=$(git -C "$lane" rev-parse HEAD)
+  if PATH="$tmp/fix-failbin:$bin:$PATH" REAL_GIT="$real_git" BATCH_REPO="$ROOT" BATCH_WT_ROOT="$wts" BATCH_STATE="$state" CLAIM_SKIP=1 bash "$SCRIPTS/fixpush.sh" 31 31 'failed push' reviewed >"$tmp/fix-push-fail.out" 2>&1; then fail 'fixpush accepted a failed push'; fi
+  [ "$(wc -l < "$state/reviewed.txt")" -eq 0 ] || fail 'fixpush recorded reviewed PR after push failure'
+) || exit 1
+
+# ship issue/body and branch guards preserve the specified commit message behavior.
+(
+  mkdir -p "$tmp/ship-bin"
+  cat > "$tmp/ship-bin/gh" <<'GH'
+#!/usr/bin/env bash
+echo "$*" >> "$SHIP_GH_LOG"
+GH
+  chmod +x "$tmp/ship-bin/gh"; export SHIP_GH_LOG="$tmp/ship-gh.log"
+  ship_case() {
+    local name="$1" branch="$2" body="$3" allow_unmentioned="${4:-}" allow_branch="${5:-}" origin="$tmp/ship-$1-origin.git" lane="$tmp/wt-ib$1" state="$tmp/ship-$1-state"
+    mkdir -p "$state"; git init -q --bare "$origin"; git --git-dir="$origin" symbolic-ref HEAD refs/heads/develop; git init -q "$tmp/ship-$1-seed"
+    git -C "$tmp/ship-$1-seed" config user.email test@example.com; git -C "$tmp/ship-$1-seed" config user.name test
+    echo base > "$tmp/ship-$1-seed/file"; git -C "$tmp/ship-$1-seed" add file; git -C "$tmp/ship-$1-seed" commit -qm base; git -C "$tmp/ship-$1-seed" branch -M develop
+    git -C "$tmp/ship-$1-seed" remote add origin "$origin"; git -C "$tmp/ship-$1-seed" push -qu origin develop
+    git clone -q "$origin" "$lane"; git -C "$lane" checkout -qb "$branch"; git -C "$lane" config user.email test@example.com; git -C "$lane" config user.name test
+    echo change >> "$lane/file"
+    local h; h=$(BATCH_REPO="$ROOT" BATCH_WT_ROOT="$tmp" bash "$SCRIPTS/treehash.sh" "$1"); printf '%s' "$h" > "$state/gate$1.ok"
+    local before; before=$(git -C "$lane" rev-parse HEAD)
+    local out="$tmp/ship-$1.out" rc=0
+    env PATH="$tmp/ship-bin:$PATH" BATCH_REPO="$ROOT" BATCH_WT_ROOT="$tmp" BATCH_STATE="$state" CLAIM_SKIP=1 ALLOW_STALE_BASE=1 ALLOW_UNMENTIONED_ISSUE="$allow_unmentioned" ALLOW_BRANCH_ISSUE_MISMATCH="$allow_branch" bash "$SCRIPTS/ship.sh" "$1" 11851 ship "$body" >"$out" 2>&1 || rc=$?
+    echo "$rc" > "$tmp/ship-$1.rc"
+    if [ "$rc" -ne 0 ]; then [ "$(git -C "$lane" rev-parse HEAD)" = "$before" ] || fail "ship $name committed despite refusal"; fi
+  }
+  ship_case 41 feat/11851-test 'Refs #11837'
+  grep -q 'mentions another issue' "$tmp/ship-41.out" || fail 'ship did not refuse another issue reference'
+  ship_case 42 feat/11851-test 'Refs #11837' 1
+  [ "$(cat "$tmp/ship-42.rc")" = 0 ] || fail 'ship rejected ALLOW_UNMENTIONED_ISSUE'
+  ship_case 43 feat/11851-test 'Refs #11851'
+  [ "$(cat "$tmp/ship-43.rc")" = 0 ] || fail 'ship rejected matching issue reference'
+  ! git -C "$tmp/wt-ib43" log -1 --format=%B | grep -q 'Closes #11851' || fail 'ship added Closes despite matching Refs'
+  ship_case 44 feat/11851-test 'no issue reference'
+  git -C "$tmp/wt-ib44" log -1 --format=%B | grep -q 'Closes #11851' || fail 'ship omitted default Closes line'
+  ship_case 45 feat/11851-test 'see #11851; to fix #11729'
+  grep -q 'WARN: body closes #11729' "$tmp/ship-45.out" || fail 'ship omitted warning for a different closed issue'
+  ship_case 46 feat/11824-x 'summary'
+  grep -q 'does not match' "$tmp/ship-46.out" || fail 'ship did not refuse branch issue mismatch'
+  ship_case 47 feat/11824-x 'summary' '' 1
+  [ "$(cat "$tmp/ship-47.rc")" = 0 ] || fail 'ship rejected ALLOW_BRANCH_ISSUE_MISMATCH'
+) || exit 1
+
 echo "batch-lanes script tests passed"
