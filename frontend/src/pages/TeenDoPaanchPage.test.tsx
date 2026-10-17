@@ -65,6 +65,48 @@ beforeEach(() => {
 });
 
 describe('TeenDoPaanchPage', () => {
+  it('keeps the hand in the footer content and trump controls in footer actions', async () => {
+    renderWithProviders(<TeenDoPaanchPage />);
+    const content = await screen.findByTestId('game-footer-content');
+    expect(content.querySelector('[data-tutorial="td-hand"] button')).toBeInTheDocument();
+    expect(screen.getByTestId('game-footer-actions')).toContainElement(screen.getByTestId('td-trump-1-btn'));
+  });
+
+  it('moves the game message into the play area on mobile and tightens hand spacing', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });
+    mockExec.mockResolvedValue(playing({ message: 'layout message' }));
+    try {
+      renderWithProviders(<TeenDoPaanchPage />);
+      const desktopMessage = await screen.findByText('layout message');
+      expect(screen.getByTestId('game-footer-message')).toContainElement(desktopMessage);
+
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+      window.dispatchEvent(new Event('resize'));
+      await waitFor(() =>
+        expect(document.querySelector('div.flex-1.overflow-y-auto')?.textContent).toContain('layout message'),
+      );
+      const mobileMessage = screen.getByText('layout message');
+      const footer = screen.getByTestId('game-footer-content').parentElement;
+      const footerContent = screen.getByTestId('game-footer-content');
+      expect(mobileMessage).toBeInTheDocument();
+      expect(footer).not.toContainElement(mobileMessage);
+      expect(footerContent).not.toContainElement(mobileMessage);
+      const playArea = document.querySelector('div.flex-1.overflow-y-auto');
+      expect(playArea).not.toBeNull();
+      expect(playArea).toContainElement(mobileMessage);
+
+      const hand = screen.getByTestId('game-footer-content').querySelector('[data-tutorial="td-hand"]');
+      expect(hand).not.toBeNull();
+      if (!hand) throw new Error('Expected the td hand');
+      const handWrap = hand.querySelector('.flex.flex-wrap');
+      expect(handWrap).toHaveClass('gap-1');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
   it('resets on mount', async () => {
     renderWithProviders(<TeenDoPaanchPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

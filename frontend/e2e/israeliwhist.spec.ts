@@ -7,10 +7,10 @@ const legalCard = (page: Page) => page.locator('button.ring-ds-success');
 
 // **押せる宣言だけを選ぶ。** ノルマ未満と合計13になる値は disabled なので、
 // 決め打ちの番号を押すとその値に当たったときだけ落ちる。
-const openBid = (page: Page) => page.locator('[data-testid^="iw-bid-"]:not([disabled])');
+const openBid = (page: Page) => page.locator('[data-testid^="iw-bid-"][data-testid$="-btn"]:not([disabled])');
 
 // **押せる入札だけを選ぶ。** 序列で上回れないスートは無効化されている。
-const openAuction = (page: Page) => page.locator('[data-testid^="iw-auction-"]:not([disabled])');
+const openAuction = (page: Page) => page.locator('[data-testid^="iw-auction-"][data-testid$="-btn"]:not([disabled])');
 
 test.describe('Israeli Whist E2E', () => {
   test('navigates to israeliwhist and renders initial game state', async ({ page }) => {
@@ -73,7 +73,10 @@ test.describe('Israeli Whist E2E', () => {
     }
     // 宣言かプレイのどちらかに到達していること。
     await expect(
-      page.locator('[data-testid^="iw-bid-"]').first().or(page.locator('button.ring-ds-success').first()),
+      page
+        .locator('[data-testid^="iw-bid-"][data-testid$="-btn"]')
+        .first()
+        .or(page.locator('button.ring-ds-success').first()),
     ).toBeVisible({ timeout: TIMEOUT_ACTION });
   });
 

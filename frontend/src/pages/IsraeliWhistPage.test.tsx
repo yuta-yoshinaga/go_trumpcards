@@ -72,6 +72,13 @@ beforeEach(() => {
 });
 
 describe('IsraeliWhistPage', () => {
+  it('keeps the hand in the footer content and auction controls in footer actions', async () => {
+    renderWithProviders(<IsraeliWhistPage />);
+    const content = await screen.findByTestId('game-footer-content');
+    expect(content.querySelector('[data-tutorial="iw-hand"] button')).toBeInTheDocument();
+    expect(screen.getByTestId('game-footer-actions')).toContainElement(screen.getByTestId('iw-auction-1-btn'));
+  });
+
   it('keeps the trump and total score labels unbroken', async () => {
     renderWithProviders(<IsraeliWhistPage />);
     const trump = await screen.findByTestId('iw-trump');
@@ -110,6 +117,41 @@ describe('IsraeliWhistPage', () => {
     fireEvent.click(cards[0]);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0));
     expect(mockExec.mock.calls).toEqual([['play', 0]]);
+  });
+
+  it('moves the game message into the play area on mobile and tightens hand spacing', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });
+    mockExec.mockResolvedValue(playing({ message: 'layout message' }));
+    try {
+      renderWithProviders(<IsraeliWhistPage />);
+      const desktopMessage = await screen.findByText('layout message');
+      expect(screen.getByTestId('game-footer-message')).toContainElement(desktopMessage);
+
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+      window.dispatchEvent(new Event('resize'));
+      await waitFor(() =>
+        expect(document.querySelector('div.flex-1.overflow-y-auto')?.textContent).toContain('layout message'),
+      );
+      const mobileMessage = screen.getByText('layout message');
+      const footer = screen.getByTestId('game-footer-content').parentElement;
+      const footerContent = screen.getByTestId('game-footer-content');
+      expect(mobileMessage).toBeInTheDocument();
+      expect(footer).not.toContainElement(mobileMessage);
+      expect(footerContent).not.toContainElement(mobileMessage);
+      const playArea = document.querySelector('div.flex-1.overflow-y-auto');
+      expect(playArea).not.toBeNull();
+      expect(playArea).toContainElement(mobileMessage);
+
+      const hand = screen.getByTestId('game-footer-content').querySelector('[data-tutorial="iw-hand"]');
+      expect(hand).not.toBeNull();
+      if (!hand) throw new Error('Expected the iw hand');
+      const handWrap = hand.querySelector('.flex.flex-wrap');
+      expect(handWrap).toHaveClass('gap-1');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
   });
 
   it('resets on mount', async () => {
