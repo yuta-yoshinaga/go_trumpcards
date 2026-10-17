@@ -42,6 +42,18 @@ describe('ScoponePage', () => {
     const actionQueries = within(actions);
     expect(actionQueries.getByTestId('take-button')).toBeInTheDocument();
     expect(actionQueries.getByTestId('lay-button')).toBeInTheDocument();
+    expect(actionQueries.queryByTestId('hint-tooltip')).not.toBeInTheDocument();
+    expect(actionQueries.queryByTestId('scopone-must-capture')).not.toBeInTheDocument();
+  });
+
+  it('keeps hint and action log in scrollable footer content after the hand', async () => {
+    mockExec.mockResolvedValue(makeScoponeState({ gameEndFlag: true }));
+    renderWithProviders(<ScoponePage />);
+    const footer = await screen.findByTestId('game-footer-content');
+    expect(within(footer).getByRole('button', { name: '棋譜を見る' })).toBeInTheDocument();
+    const hand = footer.querySelector('[data-tutorial="sp-player-hand"]');
+    const actionLog = within(footer).getByRole('button', { name: '棋譜を見る' });
+    expect((hand?.compareDocumentPosition(actionLog) ?? 0) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it('calls reset on mount with the short "r" command', async () => {
@@ -425,7 +437,10 @@ describe('ScoponePage', () => {
     expect(screen.queryByTestId('hint-tooltip')).not.toBeInTheDocument();
 
     fireEvent.click(toggle);
-    expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
+    const hint = await screen.findByTestId('hint-tooltip');
+    expect(hint).toBeInTheDocument();
+    expect(within(await screen.findByTestId('game-footer-content')).getByTestId('hint-tooltip')).toBe(hint);
+    expect(within(screen.getByTestId('game-footer-actions')).queryByTestId('hint-tooltip')).not.toBeInTheDocument();
   });
 
   // #5661: 取れる組み合わせがあるのに「出す」を選ぶと domain が

@@ -90,7 +90,8 @@ describe('PopeJoanPage', () => {
     expect(footerQueries.getAllByRole('button').filter((button) => button.dataset.hintAction === 'play')).toHaveLength(
       3,
     );
-    expect(footerQueries.getByRole('button', { name: '出す' })).toBeInTheDocument();
+    const actions = within(await screen.findByTestId('game-footer-actions'));
+    expect(actions.getByRole('button', { name: '出す' })).toBeInTheDocument();
   });
 
   it('keeps rules and CPU details collapsed while their content stays in the DOM', async () => {

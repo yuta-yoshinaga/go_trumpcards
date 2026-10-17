@@ -375,6 +375,26 @@ function PopeJoanPageContent() {
             className={`${gameTheme.popejoan.footer} px-4 py-2.5`}
             actions={
               <div className="flex gap-2 items-center flex-wrap">
+                {isHumanTurn && (
+                  <button
+                    type="button"
+                    className={`${btnPrimary} min-h-11`}
+                    disabled={handIdx === null}
+                    onClick={() => {
+                      if (handIdx !== null) {
+                        game.handlePlay(handIdx);
+                        setHandIdx(null);
+                      }
+                    }}
+                  >
+                    {t('play')}
+                  </button>
+                )}
+                {dealOver && !ended && (
+                  <button type="button" className={`${btnPrimary} min-h-11`} onClick={game.handleNextDeal}>
+                    {t('nextDeal')}
+                  </button>
+                )}
                 <GameResetButton
                   isGameEnd={ended}
                   onReset={game.handleReset}
@@ -385,26 +405,6 @@ function PopeJoanPageContent() {
               </div>
             }
           >
-            {isHumanTurn && (
-              <button
-                type="button"
-                className={`${btnPrimary} min-h-11`}
-                disabled={handIdx === null}
-                onClick={() => {
-                  if (handIdx !== null) {
-                    game.handlePlay(handIdx);
-                    setHandIdx(null);
-                  }
-                }}
-              >
-                {t('play')}
-              </button>
-            )}
-            {dealOver && !ended && (
-              <button type="button" className={`${btnPrimary} min-h-11`} onClick={game.handleNextDeal}>
-                {t('nextDeal')}
-              </button>
-            )}
             <ErrorAlert message={error} onRetry={retry} />
             <div className="text-center" data-tutorial="pj-hand">
               <div className="text-game-text-muted text-xs mb-1">

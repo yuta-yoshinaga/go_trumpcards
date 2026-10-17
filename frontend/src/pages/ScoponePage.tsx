@@ -411,59 +411,50 @@ function ScoponePageContent() {
           <GameFooter
             className={`${gameTheme.scopone.footer} px-4 py-2.5`}
             actions={
-              <>
-                <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-                <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="sp-actions">
+              <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="sp-actions">
+                <button
+                  type="button"
+                  onClick={play}
+                  disabled={loading || !canTake}
+                  className="px-4 py-2 rounded-lg bg-ds-info text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                  data-testid="take-button"
+                >
+                  {t('button.take')}
+                </button>
+                <button
+                  type="button"
+                  onClick={play}
+                  disabled={loading || !canLay}
+                  className="px-4 py-2 rounded-lg bg-ds-warning text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                  data-testid="lay-button"
+                  title={mustCapture ? t('mustCapture') : undefined}
+                >
+                  {t('button.lay')}
+                </button>
+                {mustCapture && (
+                  <span className="text-ds-warning text-xs self-center" data-testid="scopone-must-capture">
+                    {t('mustCapture')}
+                  </span>
+                )}
+                {isRoundEnd && (
                   <button
                     type="button"
-                    onClick={play}
-                    disabled={loading || !canTake}
-                    className="px-4 py-2 rounded-lg bg-ds-info text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
-                    data-testid="take-button"
+                    onClick={handleNextRound}
+                    disabled={loading}
+                    className="px-4 py-2 rounded-lg bg-ds-info/70 text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                    data-testid="next-round-button"
                   >
-                    {t('button.take')}
+                    {t('button.nextRound')}
                   </button>
-                  <button
-                    type="button"
-                    onClick={play}
-                    disabled={loading || !canLay}
-                    className="px-4 py-2 rounded-lg bg-ds-warning text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
-                    data-testid="lay-button"
-                    title={mustCapture ? t('mustCapture') : undefined}
-                  >
-                    {t('button.lay')}
-                  </button>
-                  {mustCapture && (
-                    <span className="text-ds-warning text-xs self-center" data-testid="scopone-must-capture">
-                      {t('mustCapture')}
-                    </span>
-                  )}
-                  {isRoundEnd && (
-                    <button
-                      type="button"
-                      onClick={handleNextRound}
-                      disabled={loading}
-                      className="px-4 py-2 rounded-lg bg-ds-info/70 text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
-                      data-testid="next-round-button"
-                    >
-                      {t('button.nextRound')}
-                    </button>
-                  )}
-                  <GameResetButton
-                    isGameEnd={isGameEnd}
-                    onReset={onReset}
-                    requestConfirm={requestConfirm}
-                    loading={loading}
-                    dataTutorial="sp-reset-button"
-                  />
-                  <ActionLogSection
-                    isEndPhase={isGameEnd}
-                    actionLog={actionLog}
-                    showActionLog={showActionLog}
-                    hideActionLog={hideActionLog}
-                  />
-                </div>
-              </>
+                )}
+                <GameResetButton
+                  isGameEnd={isGameEnd}
+                  onReset={onReset}
+                  requestConfirm={requestConfirm}
+                  loading={loading}
+                  dataTutorial="sp-reset-button"
+                />
+              </div>
             }
           >
             {/* Human hand */}
@@ -493,7 +484,14 @@ function ScoponePageContent() {
                   </button>
                 ))}
               </CardFan>
+              <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
             </div>
+            <ActionLogSection
+              isEndPhase={isGameEnd}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
           </GameFooter>
         </>
       )}
