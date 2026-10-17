@@ -1,4 +1,5 @@
 import type { Card } from '../types/card';
+import { hanafudaCornerLabel, hanafudaLabel } from '../utils/hanafudaLabel';
 
 /**
  * Maps a backend color token to a concrete card-ink hex color. Procedural
@@ -66,8 +67,9 @@ export function CardFace({
   const w = width ?? 80;
   const h = w * CARD_ASPECT;
   const ink = inkColor(card.color);
-  const hanafudaLabel = card.deck === 'hanafuda' && card.color === 'gold';
-  const label = card.label ?? String(card.value);
+  const hanafudaGoldLabel = card.deck === 'hanafuda' && card.color === 'gold';
+  const label = hanafudaLabel(card) ?? card.label ?? String(card.value);
+  const cornerLabel = hanafudaCornerLabel(card) ?? label;
   const glyph = card.glyph ?? label.charAt(0);
   const defaultAriaLabel = card.glyph ? `${label} ${card.glyph}` : label;
 
@@ -111,10 +113,10 @@ export function CardFace({
           ...cornerBase,
           top: w * 0.06,
           left: w * 0.08,
-          ...(hanafudaLabel ? { color: 'var(--color-hanafuda-label)' } : {}),
+          ...(hanafudaGoldLabel ? { color: 'var(--color-hanafuda-label)' } : {}),
         }}
       >
-        {label}
+        {cornerLabel}
       </span>
       <span
         aria-hidden="true"
@@ -136,10 +138,10 @@ export function CardFace({
           bottom: w * 0.06,
           right: w * 0.08,
           transform: 'rotate(180deg)',
-          ...(hanafudaLabel ? { color: 'var(--color-hanafuda-label)' } : {}),
+          ...(hanafudaGoldLabel ? { color: 'var(--color-hanafuda-label)' } : {}),
         }}
       >
-        {label}
+        {cornerLabel}
       </span>
     </div>
   );

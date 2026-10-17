@@ -125,12 +125,12 @@ describe('GoStopPage', () => {
 
     const firstField = await screen.findByTestId('field-card-0');
     const secondField = screen.getByTestId('field-card-1');
-    expect(firstField).toHaveAccessibleName(/3月 カス 🌸.*捕獲候補ではありません/);
-    expect(secondField).toHaveAccessibleName(/8月 光 🌕.*捕獲候補ではありません/);
+    expect(firstField).toHaveAccessibleName(/桜·피 🌸.*捕獲候補ではありません/);
+    expect(secondField).toHaveAccessibleName(/芒·光 🌕.*捕獲候補ではありません/);
 
     fireEvent.click(screen.getByTestId('hand-card-0'));
-    expect(firstField).toHaveAccessibleName(/3月 カス 🌸.*捕獲候補$/);
-    expect(secondField).toHaveAccessibleName(/8月 光 🌕.*捕獲候補$/);
+    expect(firstField).toHaveAccessibleName(/桜·피 🌸.*捕獲候補$/);
+    expect(secondField).toHaveAccessibleName(/芒·光 🌕.*捕獲候補$/);
   });
 
   it('shows the go / stop buttons on the decision phase and dispatches them', async () => {

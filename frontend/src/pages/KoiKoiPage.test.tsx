@@ -160,7 +160,7 @@ describe('KoiKoiPage', () => {
 
     const candidate = screen.getByTestId('field-card-0');
     const other = screen.getByTestId('field-card-1');
-    expect(candidate).toHaveAccessibleName('3月 カス 🌸 — 捕獲候補');
+    expect(candidate).toHaveAccessibleName('桜·カス 🌸 — 捕獲候補');
     expect(candidate).toBeEnabled();
     expect(other).toBeDisabled();
   });

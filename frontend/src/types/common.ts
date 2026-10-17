@@ -21,6 +21,9 @@ export interface BaseGameResponse {
   messageParams?: Record<string, string>;
 }
 
+/** Hanafuda card category reported by the web API. */
+export type HanafudaKind = 'bright' | 'animal' | 'ribbon' | 'chaff' | 'gwang' | 'yeol' | 'tti' | 'pi';
+
 /**
  * A playing card with suit design and numeric value.
  *
@@ -41,6 +44,10 @@ export interface Card {
   label?: string;
   /** Color tint token (e.g. "red", "black", "purple", "green"). */
   color?: string;
+  /** Hanafuda month (1–12), used to localize the card label. */
+  month?: number;
+  /** Hanafuda card category, used to localize the card label. */
+  kind?: HanafudaKind;
   /** Deck family id (e.g. "wizard"); when set, the card renders procedurally. */
   deck?: string;
   /**

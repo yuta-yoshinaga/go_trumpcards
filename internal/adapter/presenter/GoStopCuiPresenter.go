@@ -20,7 +20,9 @@ func gostopCuiCardStr(c *domain.Card) string {
 	if c == nil {
 		return "??"
 	}
-	label := domain.GoStopCardLabel(c)
+	category := goStopCategoryCode(domain.GoStopCardCategory(c))
+	category = i18n.T("gostop.cat." + category)
+	label := i18n.Tf("hanafudaCardLabel", "month", hanafudaMonthName(c.GetDesign()), "category", category)
 	switch domain.GoStopCardCategory(c) {
 	case domain.GoStopGwang:
 		return color.Yellow(label)

@@ -44,6 +44,7 @@ import type {
   GoStopResponse,
   GutsResponse,
   HachiHachiResponse,
+  HanafudaKind,
   HeartsResponse,
   HorseResponse,
   KingResponse,
@@ -2893,14 +2894,33 @@ export function makeBasraState(overrides?: Partial<BasraResponse>): BasraRespons
  * The `deck` flag — not `design` — drives the procedural render path, so `design`
  * is a placeholder valid CardDesign.
  */
-const hanafudaCard = (glyph: string, label: string, color: string) => ({
-  design: 'SPADE' as const,
-  value: 0,
-  glyph,
-  label,
-  color,
-  deck: 'hanafuda',
-});
+const hanafudaCard = (glyph: string, label: string, color: string, kindOverride?: HanafudaKind) => {
+  const monthNames = ['松', '梅', '桜', '藤', '菖', '牡', '萩', '芒', '菊', '紅', '柳', '桐'];
+  const namedMonth = monthNames.findIndex((name) => label.includes(name)) + 1;
+  const numericMonth = Number(label.match(/(\d+)月/)?.[1]);
+  const month = namedMonth || (numericMonth >= 1 && numericMonth <= 12 ? numericMonth : undefined);
+  const kind: HanafudaKind =
+    kindOverride ??
+    (label.includes('光')
+      ? label.includes('열')
+        ? 'yeol'
+        : 'bright'
+      : label.includes('タネ')
+        ? 'animal'
+        : label.includes('短')
+          ? 'ribbon'
+          : 'chaff');
+  return {
+    design: 'SPADE' as const,
+    value: 0,
+    glyph,
+    label,
+    color,
+    deck: 'hanafuda',
+    ...(month ? { month } : {}),
+    kind,
+  };
+};
 
 /** Base Koi-Koi state used as the default for {@link makeKoiKoiState}. Defaults to a human Play turn. */
 const baseKoiKoiState: KoiKoiResponse = {
@@ -3062,9 +3082,9 @@ const baseGoStopState: GoStopResponse = {
       isHuman: true,
       cardCount: 10,
       cards: [
-        hanafudaCard('🌸', '3月 タネ', 'purple'),
-        hanafudaCard('🎋', '7月 カス', 'black'),
-        hanafudaCard('🐦', '2月 タネ', 'purple'),
+        hanafudaCard('🌸', '3月 カス', 'purple', 'pi'),
+        hanafudaCard('🎋', '7月 カス', 'black', 'pi'),
+        hanafudaCard('🐦', '2月 カス', 'purple', 'pi'),
       ],
       captured: [],
       capturedCount: 0,
@@ -3089,7 +3109,7 @@ const baseGoStopState: GoStopResponse = {
   phase: 0,
   roundNumber: 1,
   currentTurn: 0,
-  fieldCards: [hanafudaCard('🌸', '3月 カス', 'black'), hanafudaCard('🌕', '8月 光', 'gold')],
+  fieldCards: [hanafudaCard('🌸', '3月 カス', 'black', 'pi'), hanafudaCard('🌕', '8月 光', 'gold', 'gwang')],
   remainingDeck: 20,
   playableIndices: [0, 1, 2],
   captureOptions: { 0: [0] },

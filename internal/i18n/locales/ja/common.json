@@ -640,5 +640,22 @@
   "cliGamesNoMatches": "一致するゲームはありません",
   "cliFlagUnknown": "エラー: {{context}}不明なオプション {{flag}} です",
   "cliFlagNeedsValue": "エラー: {{context}}{{flag}} には値が必要です",
-  "cliFlagBadValue": "エラー: {{context}}{{flag}} の値「{{value}}」が不正です"
+  "cliFlagBadValue": "エラー: {{context}}{{flag}} の値「{{value}}」が不正です",
+  "hanafudaMonth1": "松",
+  "hanafudaMonth2": "梅",
+  "hanafudaMonth3": "桜",
+  "hanafudaMonth4": "藤",
+  "hanafudaMonth5": "菖",
+  "hanafudaMonth6": "牡",
+  "hanafudaMonth7": "萩",
+  "hanafudaMonth8": "芒",
+  "hanafudaMonth9": "菊",
+  "hanafudaMonth10": "紅",
+  "hanafudaMonth11": "柳",
+  "hanafudaMonth12": "桐",
+  "hanafudaCardLabel": "{{month}}·{{category}}",
+  "hanafudaCategoryBright": "光",
+  "hanafudaCategoryAnimal": "タネ",
+  "hanafudaCategoryRibbon": "短",
+  "hanafudaCategoryChaff": "カス"
 }

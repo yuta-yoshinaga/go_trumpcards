@@ -35,9 +35,12 @@ func koikoiFace(card *domain.Card) *CardFace {
 	default:
 		color = "black"
 	}
+	kind := koiKoiCategoryCode(domain.KoiKoiCardCategory(card))
 	return &CardFace{
 		Glyph: domain.KoiKoiCardGlyph(card),
 		Label: domain.KoiKoiCardLabel(card),
+		Month: card.GetDesign(),
+		Kind:  kind,
 		Color: color,
 		Deck:  "hanafuda",
 	}

@@ -11,6 +11,11 @@ package controller
 type WebOutputCard struct {
 	Design string `json:"design"`
 	Value  int    `json:"value"`
+	// Month は花札の月 (1..12) を表す。
+	Month int `json:"month,omitempty"`
+	// Kind は花札の種別コード。bright/animal/ribbon/chaff/gwang/yeol/tti/pi の 8 値で、
+	// ゴーストップだけ韓国語由来の種別名を使う。
+	Kind string `json:"kind,omitempty"`
 	// Glyph は中央に描画する記号（例 "✦"）。非52枚デッキの札のみ設定する。
 	Glyph string `json:"glyph,omitempty"`
 	// Label は隅に描画するランク／名称ラベル（例 "Wizard", "XXI"）。
