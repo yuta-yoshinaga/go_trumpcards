@@ -7,12 +7,13 @@ $B/busy.sh "$1" >/dev/null && { echo "REFUSED: a delegation is still running in 
 # usage: fixpush.sh <fxslot> <pr> "<commit subject>" "<reply to review>"
 set -e
 cd "$WT_ROOT/wt-ib$1"
-pr_state=$(gh pr view "$2" --json state -q .state)
+readarray -t pr_info < <(gh pr view "$2" --json state,headRefName -q '[.state, .headRefName][]')
+pr_state=${pr_info[0]}
+expected_br=${pr_info[1]}
 if [[ "$pr_state" != OPEN ]]; then
   echo "REFUSED: PR $2 is $pr_state; ship the fix as a follow-up PR" >&2
   exit 1
 fi
-expected_br=$(gh pr view "$2" --json headRefName -q .headRefName)
 current_br=$(git branch --show-current)
 if [[ "$current_br" != "$expected_br" ]]; then
   echo "REFUSED: current branch $current_br does not match PR $2 head $expected_br" >&2
@@ -44,6 +45,7 @@ tn=$(git show HEAD -U0 -- "*.test.ts" "*.test.tsx" "*_test.go" | grep -E "^\+\s*
 Tests added/changed in this commit (from the diff):
 $(sed "s/^/- /" <<<"$tn")" || body="$4"
 gh pr comment "$2" --body "$body ($sha)" >/dev/null
+# If the comment fails, the push already happened but reviewed.txt will not be updated; verify manually and append it.
 if ! grep -qx "$2" "$BATCH_STATE/reviewed.txt"; then
   printf '%s\n' "$2" >> "$BATCH_STATE/reviewed.txt"
 fi

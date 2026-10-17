@@ -35,11 +35,13 @@ br=$(gh pr view "$pr" --json headRefName -q .headRefName)
 if [[ "${ALLOW_LANE_PENDING:-}" != 1 ]]; then
   while IFS= read -r wt; do
     [[ -n "$wt" ]] || continue
-    wt_br=$(git -C "$wt" branch --show-current)
+    [[ -d "$wt" ]] || continue
+    wt_br=$(git -C "$wt" branch --show-current 2>/dev/null) || continue
     [[ "$wt_br" == "$br" ]] || continue
     reason=''
-    if [[ "$wt" =~ ^$WT_ROOT/wt-ib([0-9]+)$ ]]; then
-      slot=${BASH_REMATCH[1]}
+    rest=${wt#"$WT_ROOT"/wt-ib}
+    if [[ "$rest" != "$wt" && "$rest" =~ ^[0-9]+$ ]]; then
+      slot=$rest
       if "$B/busy.sh" "$slot" >/dev/null 2>&1; then
         reason="delegation is still running (slot $slot)"
       fi
@@ -48,7 +50,11 @@ if [[ "${ALLOW_LANE_PENDING:-}" != 1 ]]; then
       reason='uncommitted changes'
     fi
     if [[ -z "$reason" ]]; then
-      pending=$(git -C "$wt" rev-list --count "origin/$br..HEAD" 2>/dev/null || echo 0)
+      git -C "$wt" fetch -q origin "$br" 2>/dev/null || true
+      if ! pending=$(git -C "$wt" rev-list --count "origin/$br..HEAD" 2>/dev/null); then
+        echo "REFUSED: $wt cannot compare with origin/$br" >&2
+        exit 1
+      fi
       if [[ "$pending" =~ ^[0-9]+$ ]] && (( pending > 0 )); then
         reason="$pending unpushed commit(s)"
       fi

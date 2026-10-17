@@ -104,9 +104,14 @@ GH
 #!/usr/bin/env bash
 echo 'VERDICT: gate passed'
 GATE
+  cat > "$tmp/real-land-bin/git" <<'GIT'
+#!/usr/bin/env bash
+exec "$REAL_GIT" "$@"
+GIT
   chmod +x "$tmp/real-land-bin/"*
+  export REAL_GIT
   export GH_MERGE_LOG="$tmp/real-land-merges"
-  run_land() { PATH="$(dirname "$REAL_GIT"):$tmp/real-land-bin:$PATH" BATCH_REPO="$repo" BATCH_STATE="$tmp/real-land-state" BATCH_WT_ROOT="$(dirname "$wt")" MERGE_GATE="$tmp/real-land-bin/merge-gate" bash "$SCRIPTS/land.sh" 7; }
+  run_land() { PATH="$tmp/real-land-bin:$PATH" BATCH_REPO="$repo" BATCH_STATE="$tmp/real-land-state" BATCH_WT_ROOT="$(dirname "$wt")" MERGE_GATE="$tmp/real-land-bin/merge-gate" bash "$SCRIPTS/land.sh" 7; }
   BUSY_ARGV0="codex-task -C $wt " bash -c 'exec -a "$BUSY_ARGV0" sleep 30' &
   busy_pid=$!
   sleep 0.1
@@ -129,6 +134,11 @@ GATE
   run_land >"$tmp/land-clean.out" 2>&1 || fail "land rejected clean pushed worktree: $(cat "$tmp/land-clean.out")"
   [ -e "$GH_MERGE_LOG" ] || fail 'land did not merge clean pushed worktree'
   rm -f "$GH_MERGE_LOG"
+  git -C "$origin" update-ref -d refs/heads/feat/7-test
+  if run_land >"$tmp/land-missing-origin.out" 2>&1; then fail 'land accepted a worktree whose origin branch is missing'; fi
+  grep -q "REFUSED: $wt cannot compare with origin/feat/7-test" "$tmp/land-missing-origin.out" || fail "land did not explain missing origin branch: $(cat "$tmp/land-missing-origin.out")"
+  git -C "$wt" push -qu origin HEAD:feat/7-test
+  git -C "$repo" fetch -q origin feat/7-test:refs/remotes/origin/feat/7-test
   printf 'dirty again\n' >> "$wt/file"
   ALLOW_LANE_PENDING=1 run_land >"$tmp/land-override.out" 2>&1 || fail "land rejected ALLOW_LANE_PENDING: $(cat "$tmp/land-override.out")"
   [ -e "$GH_MERGE_LOG" ] || fail 'land override did not merge'

@@ -675,6 +675,8 @@ grep -q 'first' "$E2E_CALL_LOG" && grep -q 'second third' "$E2E_CALL_LOG" || fai
   prbody_has_ref 5 'Part of #5' || fail 'prbody_has_ref missed Part of #5'
   prbody_has_ref 5 'Refs #5' || fail 'prbody_has_ref missed Refs #5'
   if prbody_has_ref 5 'Closes #50'; then fail 'prbody_has_ref accepted a longer issue number'; fi
+  if prbody_has_ref 5 'disclosed #5'; then fail 'prbody_has_ref accepted disclosed #5'; fi
+  if prbody_has_ref 5 'prefix #5'; then fail 'prbody_has_ref accepted prefix #5'; fi
 ) || exit 1
 
 # fixpush validates the PR before committing and records a pushed PR exactly once.
@@ -689,8 +691,7 @@ grep -q 'first' "$E2E_CALL_LOG" && grep -q 'second third' "$E2E_CALL_LOG" || fai
   cat > "$bin/gh" <<'GH'
 #!/usr/bin/env bash
 case "$*" in
-  'pr view 31 --json state -q .state') echo "${FIX_STATE:-OPEN}" ;;
-  'pr view 31 --json headRefName -q .headRefName') echo "${FIX_HEAD:-feat/31-fix}" ;;
+  'pr view 31 --json state,headRefName -q [.state, .headRefName][]') printf '%s\n%s\n' "${FIX_STATE:-OPEN}" "${FIX_HEAD:-feat/31-fix}" ;;
   'pr comment 31 --body '*) echo comment >> "$FIX_COMMENTS" ;;
   *) echo "unexpected gh invocation: $*" >&2; exit 2 ;;
 esac
