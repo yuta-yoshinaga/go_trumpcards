@@ -20,7 +20,9 @@ func hachihachiCuiCardStr(c *domain.Card) string {
 	if c == nil {
 		return "??"
 	}
-	label := domain.HachiHachiCardLabel(c)
+	category := hachiHachiCategoryCode(domain.HachiHachiCardCategory(c))
+	category = hanafudaCategoryName(category)
+	label := i18n.Tf("hanafudaCardLabel", "month", hanafudaMonthName(c.GetDesign()), "category", category)
 	switch domain.HachiHachiCardCategory(c) {
 	case domain.HachiHachiBright:
 		return color.Yellow(label)

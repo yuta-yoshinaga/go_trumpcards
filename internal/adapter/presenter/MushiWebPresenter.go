@@ -35,6 +35,7 @@ func mushiFace(card *domain.Card) *CardFace {
 		color = "gold" // 雷札はカスだが役割が特別なので目立たせる
 	}
 	return &CardFace{
+		Kind:  mushiCategoryCode(domain.MushiCardCategory(card)),
 		Glyph: domain.MushiCardGlyph(card),
 		Label: domain.MushiCardName(card),
 		Color: color,

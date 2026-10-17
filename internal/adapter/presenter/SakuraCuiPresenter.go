@@ -23,7 +23,9 @@ func sakuraCuiCardStr(c *domain.Card) string {
 	if c == nil {
 		return "??"
 	}
-	label := domain.KoiKoiCardLabel(c) + "(" + strconv.Itoa(domain.SakuraCardPoints(c)) + ")"
+	category := koiKoiCategoryCode(domain.KoiKoiCardCategory(c))
+	category = hanafudaCategoryName(category)
+	label := i18n.Tf("hanafudaCardLabel", "month", hanafudaMonthName(c.GetDesign()), "category", category) + "(" + strconv.Itoa(domain.SakuraCardPoints(c)) + ")"
 	switch domain.KoiKoiCardCategory(c) {
 	case domain.KoiKoiBright:
 		return color.Yellow(label)

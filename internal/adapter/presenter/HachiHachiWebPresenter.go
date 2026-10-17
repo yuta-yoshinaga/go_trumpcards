@@ -34,9 +34,12 @@ func hachihachiFace(card *domain.Card) *CardFace {
 	default:
 		color = "black"
 	}
+	kind := hachiHachiCategoryCode(domain.HachiHachiCardCategory(card))
 	return &CardFace{
 		Glyph: domain.HachiHachiCardGlyph(card),
 		Label: domain.HachiHachiCardLabel(card),
+		Month: card.GetDesign(),
+		Kind:  kind,
 		Color: color,
 		Deck:  "hanafuda",
 	}
