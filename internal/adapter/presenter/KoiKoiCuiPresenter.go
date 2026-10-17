@@ -21,7 +21,7 @@ func koikoiCuiCardStr(c *domain.Card) string {
 		return "??"
 	}
 	category := koiKoiCategoryCode(domain.KoiKoiCardCategory(c))
-	category = i18n.T("hanafudaCategory" + strings.ToUpper(category[:1]) + category[1:])
+	category = hanafudaCategoryName(category)
 	label := i18n.Tf("hanafudaCardLabel", "month", hanafudaMonthName(c.GetDesign()), "category", category)
 	switch domain.KoiKoiCardCategory(c) {
 	case domain.KoiKoiBright:

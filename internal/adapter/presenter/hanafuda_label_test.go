@@ -35,6 +35,27 @@ func TestHanafudaCuiLabelsResolveInBothLanguages(t *testing.T) {
 	}
 }
 
+func TestHanafudaMonthNamesResolveInBothLanguages(t *testing.T) {
+	oldLang := i18n.Lang()
+	t.Cleanup(func() { i18n.SetLang(oldLang) })
+
+	for _, lang := range []string{"ja", "en"} {
+		t.Run(lang, func(t *testing.T) {
+			i18n.SetLang(lang)
+			for month := 1; month <= 12; month++ {
+				name := hanafudaMonthName(month)
+				require.NotEmpty(t, name)
+				require.NotContains(t, name, "hanafudaMonth")
+			}
+			if lang == "ja" {
+				require.Equal(t, "菊", hanafudaMonthName(9))
+			} else {
+				require.Equal(t, "Chrysanthemum", hanafudaMonthName(9))
+			}
+		})
+	}
+}
+
 func TestHanafudaWebFacesCarryMonthAndKind(t *testing.T) {
 	cases := []struct {
 		name  string

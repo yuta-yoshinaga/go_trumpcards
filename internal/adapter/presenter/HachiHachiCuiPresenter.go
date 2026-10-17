@@ -21,7 +21,7 @@ func hachihachiCuiCardStr(c *domain.Card) string {
 		return "??"
 	}
 	category := hachiHachiCategoryCode(domain.HachiHachiCardCategory(c))
-	category = i18n.T("hanafudaCategory" + strings.ToUpper(category[:1]) + category[1:])
+	category = hanafudaCategoryName(category)
 	label := i18n.Tf("hanafudaCardLabel", "month", hanafudaMonthName(c.GetDesign()), "category", category)
 	switch domain.HachiHachiCardCategory(c) {
 	case domain.HachiHachiBright:
