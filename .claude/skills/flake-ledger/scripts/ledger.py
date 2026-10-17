@@ -10,7 +10,7 @@ Ledger lives at .claude/.flake-ledger.jsonl (gitignored, local knowledge). Confi
 belong in a GitHub issue, not in this file.
 
 Usage:
-  ledger.py record --test <id> --where <loc> [--run <url>] [--branch <b>] [--note <text>]
+  ledger.py record --test <id> --where <loc> [--run <url>] [--branch <b>] [--note <text>] [--signature <text>]
   ledger.py check  [--test <id>] [--min <n>]
   ledger.py list   [--since <YYYY-MM-DD>]
 """
@@ -27,7 +27,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[4]
-LEDGER = REPO / ".claude" / ".flake-ledger.jsonl"
+LEDGER = Path(os.environ.get("FLAKE_LEDGER", REPO / ".claude" / ".flake-ledger.jsonl"))
 
 # Two sightings at the same location is the threshold at which a re-run stops being an
 # explanation. One is an observation; the ledger exists so the second can be seen as second.
@@ -77,8 +77,17 @@ def cmd_record(args: argparse.Namespace) -> int:
         "branch": args.branch or _branch(),
         "note": args.note or "",
     }
+    if args.signature:
+        row["signature"] = args.signature
     with LEDGER.open("a", encoding="utf-8") as fh:
         fh.write(json.dumps(row, ensure_ascii=False) + "\n")
+
+    if args.signature:
+        matching = [r for r in _read() if r.get("signature") == args.signature]
+        tests = sorted({r.get("test", "?") for r in matching})
+        if len(tests) >= 2:
+            print(f'SHARED SIGNATURE: "{args.signature}" seen in {len(tests)} tests: '
+                  f'{", ".join(tests)} — likely one shared bug, not a flake')
 
     same = [r for r in _read() if r.get("test") == args.test and r.get("where") == args.where]
     n = len(same)
@@ -111,11 +120,25 @@ def cmd_check(args: argparse.Namespace) -> int:
             print(f"no sightings recorded for {args.test}")
             return 0
 
+    signature_tests: dict[str, set[str]] = defaultdict(set)
+    for r in rows:
+        signature = r.get("signature")
+        if signature:
+            signature_tests[signature].add(r.get("test", "?"))
+    shared = {sig: tests for sig, tests in signature_tests.items() if len(tests) >= 2}
+    if args.test:
+        shared = {sig: tests for sig, tests in shared.items() if args.test in tests}
+
     threshold = args.min if args.min is not None else CONFIRM_AT
     confirmed = {k: v for k, v in groups.items() if len(v) >= threshold}
     single = {k: v for k, v in groups.items() if len(v) < threshold}
 
     print(f"ledger: {len(rows)} sightings across {len(groups)} test/location pairs\n")
+    if shared:
+        print("SHARED SIGNATURE (same deterministic failure across tests):")
+        for signature, tests in sorted(shared.items()):
+            count = sum(1 for r in rows if r.get("signature") == signature)
+            print(f'  {count:>2}x  "{signature}" in {len(tests)} tests: {", ".join(sorted(tests))}')
     if confirmed:
         print(f"CONFIRMED (>= {threshold} sightings at the same location):")
         for (test, where), v in sorted(confirmed.items(), key=lambda kv: -len(kv[1])):
@@ -150,6 +173,7 @@ def main() -> int:
     rec.add_argument("--run", help="CI run URL, or omit for a local run")
     rec.add_argument("--branch", help="branch (defaults to the current one)")
     rec.add_argument("--note", help="one line on what the failure looked like")
+    rec.add_argument("--signature", help="deterministic repeated text or error shared by failures")
     rec.set_defaults(func=cmd_record)
 
     chk = sub.add_parser("check", help="show which failures have repeated")
