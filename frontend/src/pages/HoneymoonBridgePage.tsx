@@ -8,6 +8,7 @@ import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { HintTooltip } from '../components/hint/HintTooltip';
@@ -401,8 +402,94 @@ function HoneymoonBridgePageContent() {
             />
             <ErrorAlert message={error} onRetry={retry} />
 
+            {hintEnabled && hint && (
+              <div className="mt-3 flex justify-center">
+                <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />
+              </div>
+            )}
+
+            <SettingsPanel
+              title={tc('settings.title')}
+              groups={[{ items: [hintCheckboxItem(tc, hintEnabled, setHintEnabled)] }]}
+            />
+          </div>
+
+          <GameFooter
+            className={`${gameTheme.honeymoonbridge.footer} px-4 py-2.5`}
+            actions={
+              <div className="mt-4 flex flex-wrap gap-2 items-center" data-tutorial="hb-actions">
+                {isHumanBidTurn && levels.length > 0 && (
+                  <>
+                    <label className="text-ds-text-muted text-sm" htmlFor="hb-level">
+                      {t('actions.level')}
+                    </label>
+                    {/* 折りたたみに入れない：閉じた details の中はクリックできない。 */}
+                    <select
+                      id="hb-level"
+                      className="rounded bg-black/40 text-ds-text-primary px-2 py-1"
+                      value={selectedLevel}
+                      onChange={(e) => setLevel(Number(e.target.value))}
+                      disabled={loading}
+                      data-testid="hb-level-select"
+                    >
+                      {levels.map((lv) => (
+                        <option key={lv} value={lv}>
+                          {lv}
+                        </option>
+                      ))}
+                    </select>
+                    {DENOMINATIONS.map((suit) => {
+                      const legal = outbids(selectedLevel, suit, state.minBidLevel, state.minBidSuit);
+                      return (
+                        <button
+                          key={suit}
+                          type="button"
+                          className={btnWarning}
+                          onClick={() => handleBid(selectedLevel, suit)}
+                          disabled={loading || !legal}
+                          aria-disabled={!legal}
+                          data-testid={`hb-bid-${suit.toString()}-btn`}
+                        >
+                          {t('actions.bid', { level: String(selectedLevel), suit: suitSymbolAt(suit, 'NT') })}
+                        </button>
+                      );
+                    })}
+                  </>
+                )}
+                {isHumanBidTurn && (
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handlePass}
+                    disabled={loading}
+                    data-testid="hb-pass-btn"
+                  >
+                    {t('actions.pass')}
+                  </button>
+                )}
+                {isRoundEnd && !isGameEnd && (
+                  <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                    {t('actions.nextRound')}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={() => requestConfirm(handleReset)}
+                  disabled={loading}
+                >
+                  {t('actions.reset')}
+                </button>
+                {!isGameEnd && (
+                  <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
+                    {t('actions.giveUp')}
+                  </button>
+                )}
+              </div>
+            }
+          >
             {human && human.cards.length > 0 && (
-              <div className="mt-4" data-tutorial="hb-hand">
+              <div data-tutorial="hb-hand">
                 <div className="text-ds-text-muted text-sm mb-1">
                   {t('header.you')}: {human.cardCount}
                 </div>
@@ -443,89 +530,7 @@ function HoneymoonBridgePageContent() {
                 </CardFan>
               </div>
             )}
-
-            {hintEnabled && hint && (
-              <div className="mt-3 flex justify-center">
-                <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />
-              </div>
-            )}
-
-            <div className="mt-4 flex flex-wrap gap-2 items-center" data-tutorial="hb-actions">
-              {isHumanBidTurn && levels.length > 0 && (
-                <>
-                  <label className="text-ds-text-muted text-sm" htmlFor="hb-level">
-                    {t('actions.level')}
-                  </label>
-                  {/* 折りたたみに入れない：閉じた details の中はクリックできない。 */}
-                  <select
-                    id="hb-level"
-                    className="rounded bg-black/40 text-ds-text-primary px-2 py-1"
-                    value={selectedLevel}
-                    onChange={(e) => setLevel(Number(e.target.value))}
-                    disabled={loading}
-                    data-testid="hb-level-select"
-                  >
-                    {levels.map((lv) => (
-                      <option key={lv} value={lv}>
-                        {lv}
-                      </option>
-                    ))}
-                  </select>
-                  {DENOMINATIONS.map((suit) => {
-                    const legal = outbids(selectedLevel, suit, state.minBidLevel, state.minBidSuit);
-                    return (
-                      <button
-                        key={suit}
-                        type="button"
-                        className={btnWarning}
-                        onClick={() => handleBid(selectedLevel, suit)}
-                        disabled={loading || !legal}
-                        aria-disabled={!legal}
-                        data-testid={`hb-bid-${suit.toString()}-btn`}
-                      >
-                        {t('actions.bid', { level: String(selectedLevel), suit: suitSymbolAt(suit, 'NT') })}
-                      </button>
-                    );
-                  })}
-                </>
-              )}
-              {isHumanBidTurn && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePass}
-                  disabled={loading}
-                  data-testid="hb-pass-btn"
-                >
-                  {t('actions.pass')}
-                </button>
-              )}
-              {isRoundEnd && !isGameEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('actions.nextRound')}
-                </button>
-              )}
-              <button
-                type="button"
-                className={btnPrimary}
-                onClick={() => requestConfirm(handleReset)}
-                disabled={loading}
-              >
-                {t('actions.reset')}
-              </button>
-              {!isGameEnd && (
-                <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
-                  {t('actions.giveUp')}
-                </button>
-              )}
-            </div>
-
-            <SettingsPanel
-              title={tc('settings.title')}
-              groups={[{ items: [hintCheckboxItem(tc, hintEnabled, setHintEnabled)] }]}
-            />
-          </div>
-
+          </GameFooter>
           <ActionLogSection
             isEndPhase={isGameEnd}
             availableDuringPlay={isBid}

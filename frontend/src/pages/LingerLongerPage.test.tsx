@@ -66,6 +66,16 @@ describe('LingerLongerPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('renders the hand in footer content and the controls in footer actions', async () => {
+    renderWithProviders(<LingerLongerPage />);
+    const content = within(await screen.findByTestId('game-footer-content'));
+    expect(await content.findAllByRole('button', { name: /を出す$/ })).toHaveLength(4);
+    expect(content.queryByRole('button', { name: /リセット/ })).not.toBeInTheDocument();
+    const actions = within(screen.getByTestId('game-footer-actions'));
+    expect(actions.getByRole('button', { name: /リセット/ })).toBeInTheDocument();
+    expect(actions.getByRole('button', { name: /投了/ })).toBeInTheDocument();
+  });
+
   it('announces when the human is eliminated', async () => {
     mockExec.mockResolvedValue(makeState({ players: [seat(0, { eliminatedAt: 1 }), seat(1), seat(2), seat(3)] }));
     renderWithProviders(<LingerLongerPage />);

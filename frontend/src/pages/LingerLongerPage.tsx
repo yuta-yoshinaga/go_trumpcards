@@ -6,6 +6,7 @@ import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { HintTooltip } from '../components/hint/HintTooltip';
@@ -297,49 +298,11 @@ function LingerLongerPageContent() {
             <LiveAnnouncement message={isEliminated ? t('result.eliminated') : ''} />
             <LiveAnnouncement message={trickAnnouncement} testId="ll-trick-announcement" />
 
-            {human && human.cards.length > 0 && (
-              <div className="mt-4" data-tutorial="ll-hand">
-                <div className="text-ds-text-muted text-sm mb-1">
-                  {t('header.you')}: {human.cardCount}
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {human.cards.map((card, idx) => (
-                    <button
-                      key={`${card.design}-${card.value}-${idx}`}
-                      type="button"
-                      onClick={() => handlePlay(idx)}
-                      disabled={loading || !isHumanTurn}
-                      aria-label={t('actions.playAria', { card: cardAlt(card) })}
-                      className={`disabled:opacity-50 ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
-                    >
-                      <CardImage card={card} width={cardWidth} />
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {hintEnabled && hint && (
               <div className="mt-3 flex justify-center">
                 <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />
               </div>
             )}
-
-            <div className="mt-4 flex flex-wrap gap-2" data-tutorial="ll-actions">
-              <button
-                type="button"
-                className={btnPrimary}
-                onClick={() => requestConfirm(handleReset)}
-                disabled={loading}
-              >
-                {t('actions.reset')}
-              </button>
-              {!isGameEnd && (
-                <button type="button" className={btnDanger} onClick={confirmGiveUpAction} disabled={loading}>
-                  {t('actions.giveUp')}
-                </button>
-              )}
-            </div>
 
             <SettingsPanel
               title={tc('settings.title')}
@@ -361,6 +324,49 @@ function LingerLongerPageContent() {
               ]}
             />
           </div>
+
+          <GameFooter
+            className={`${gameTheme.lingerlonger.footer} px-4 py-2.5`}
+            actions={
+              <div className="mt-4 flex flex-wrap gap-2" data-tutorial="ll-actions">
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={() => requestConfirm(handleReset)}
+                  disabled={loading}
+                >
+                  {t('actions.reset')}
+                </button>
+                {!isGameEnd && (
+                  <button type="button" className={btnDanger} onClick={confirmGiveUpAction} disabled={loading}>
+                    {t('actions.giveUp')}
+                  </button>
+                )}
+              </div>
+            }
+          >
+            {human && human.cards.length > 0 && (
+              <div data-tutorial="ll-hand">
+                <div className="text-ds-text-muted text-sm mb-1">
+                  {t('header.you')}: {human.cardCount}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {human.cards.map((card, idx) => (
+                    <button
+                      key={`${card.design}-${card.value}-${idx}`}
+                      type="button"
+                      onClick={() => handlePlay(idx)}
+                      disabled={loading || !isHumanTurn}
+                      aria-label={t('actions.playAria', { card: cardAlt(card) })}
+                      className={`disabled:opacity-50 ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
+                    >
+                      <CardImage card={card} width={cardWidth} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </GameFooter>
 
           <ActionLogSection
             isEndPhase={isGameEnd}

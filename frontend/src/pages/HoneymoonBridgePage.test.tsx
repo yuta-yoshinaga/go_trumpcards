@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, honeymoonbridgeApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
@@ -93,11 +93,13 @@ beforeEach(() => {
 
 describe('HoneymoonBridgePage', () => {
   it('renders every human hand card through the hand fan', async () => {
-    const { container } = renderWithProviders(<HoneymoonBridgePage />);
-    await screen.findAllByRole('button', { name: /を出す/ });
-    const hand = container.querySelector('[data-tutorial="hb-hand"]');
-    expect(hand).not.toBeNull();
-    expect(hand?.querySelectorAll('button')).toHaveLength(5);
+    mockExec.mockResolvedValue(bidding());
+    renderWithProviders(<HoneymoonBridgePage />);
+    const footer = await screen.findByTestId('game-footer-content');
+    const content = within(footer);
+    expect(await content.findAllByRole('button', { name: /を出す/ })).toHaveLength(5);
+    expect(content.queryByTestId('hb-pass-btn')).not.toBeInTheDocument();
+    expect(within(screen.getByTestId('game-footer-actions')).getByTestId('hb-pass-btn')).toBeInTheDocument();
   });
 
   it('collapses the rules and CPU seats on mobile, and opens them on desktop', async () => {
