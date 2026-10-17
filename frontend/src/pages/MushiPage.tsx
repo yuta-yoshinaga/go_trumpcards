@@ -302,7 +302,50 @@ function MushiPageContent() {
               ))}
             </div>
 
-            <div className={`text-center ${isLargeDesktop ? 'col-span-2 row-start-4' : ''}`} data-tutorial="mushi-hand">
+            <div className={isLargeDesktop ? 'col-span-2 row-start-5' : ''}>
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            </div>
+
+            <div className={isLargeDesktop ? 'col-span-2 row-start-6' : ''}>
+              <ActionLogSection
+                isEndPhase={ended}
+                actionLog={actionLog}
+                showActionLog={showActionLog}
+                hideActionLog={hideActionLog}
+              />
+            </div>
+          </div>
+
+          <GameFooter
+            className={`${gameTheme.mushi.footer} px-4 py-2.5`}
+            actions={
+              <div className="flex gap-2 items-center flex-wrap" data-tutorial="mushi-controls">
+                {roundOver && !ended && (
+                  <>
+                    <span className="text-sm text-ds-text-muted">
+                      {t('roundResult', { delta: human?.roundResult ?? 0 })}
+                    </span>
+                    <button type="button" className={btnPrimary} onClick={game.handleNextRound} disabled={loading}>
+                      {t('nextRound')}
+                    </button>
+                  </>
+                )}
+
+                <GameResetButton
+                  isGameEnd={ended}
+                  onReset={game.handleReset}
+                  requestConfirm={requestConfirm}
+                  loading={loading}
+                  dataTutorial="mushi-reset-button"
+                />
+              </div>
+            }
+          >
+            <div className="text-center" data-tutorial="mushi-hand">
               <div className="text-game-text-muted text-xs mb-1">{t('yourHand')}</div>
               <div className="flex gap-1 justify-center flex-wrap">
                 {(human?.cards ?? []).map((card, i) => (
@@ -324,47 +367,7 @@ function MushiPageContent() {
               </div>
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
             </div>
-
-            <div className={isLargeDesktop ? 'col-span-2 row-start-5' : ''}>
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-              />
-            </div>
-
-            <div className={isLargeDesktop ? 'col-span-2 row-start-6' : ''}>
-              <ActionLogSection
-                isEndPhase={ended}
-                actionLog={actionLog}
-                showActionLog={showActionLog}
-                hideActionLog={hideActionLog}
-              />
-            </div>
-          </div>
-
-          <GameFooter className={`${gameTheme.mushi.footer} px-4 py-2.5`}>
             <ErrorAlert message={error} onRetry={retry} />
-            <div className="flex gap-2 items-center flex-wrap" data-tutorial="mushi-controls">
-              {roundOver && !ended && (
-                <>
-                  <span className="text-sm text-ds-text-muted">
-                    {t('roundResult', { delta: human?.roundResult ?? 0 })}
-                  </span>
-                  <button type="button" className={btnPrimary} onClick={game.handleNextRound} disabled={loading}>
-                    {t('nextRound')}
-                  </button>
-                </>
-              )}
-
-              <GameResetButton
-                isGameEnd={ended}
-                onReset={game.handleReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="mushi-reset-button"
-              />
-            </div>
           </GameFooter>
         </>
       )}

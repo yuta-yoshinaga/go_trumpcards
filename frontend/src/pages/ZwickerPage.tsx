@@ -388,6 +388,120 @@ function ZwickerPageContent() {
               </div>
             )}
 
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
+
+            <ActionLogSection
+              isEndPhase={ended}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
+          </div>
+
+          <GameFooter
+            className={`${gameTheme.zwicker.footer} px-4 py-2.5`}
+            actions={
+              <div className="flex gap-2 items-center flex-wrap">
+                {isHumanTurn && chosen && chosen.values.length > 1 && (
+                  <div className="flex gap-2 justify-center mt-2" data-testid="zwicker-value-picker">
+                    <span className="text-[10px] text-ds-text-muted self-center">{t('pickValue')}</span>
+                    {chosen.values.map((v) => (
+                      <button
+                        key={`val-${v.toString()}`}
+                        type="button"
+                        data-testid="zwicker-value-option"
+                        aria-pressed={playedValue === v}
+                        onClick={() => setPlayedValue(v)}
+                        className={[
+                          'px-3 min-h-11 rounded text-sm',
+                          playedValue === v ? 'ring-2 ring-ds-accent' : 'ring-1 ring-ds-border',
+                        ].join(' ')}
+                      >
+                        {v}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {isHumanTurn && (
+                  <>
+                    <button
+                      type="button"
+                      data-hint-action="take"
+                      className={`${btnPrimary} min-h-11`}
+                      disabled={!canTake}
+                      onClick={() => {
+                        if (handIdx !== null && playedValue !== null) {
+                          game.handleTake(handIdx, playedValue, tableSel, buildSel);
+                          clearSelection();
+                        }
+                      }}
+                    >
+                      {t('take')}
+                    </button>
+                    <input
+                      type="number"
+                      min={1}
+                      aria-label={t('buildValue')}
+                      placeholder={t('buildValue')}
+                      value={buildValue}
+                      onChange={(e) => setBuildValue(e.target.value)}
+                      className="w-20 min-h-11 rounded px-2 text-sm ring-1 ring-ds-border bg-transparent"
+                    />
+                    <button
+                      type="button"
+                      className={`${btnSecondary} min-h-11`}
+                      disabled={!canBuild}
+                      onClick={() => {
+                        if (handIdx !== null) {
+                          game.handleBuild(handIdx, tableSel, Number(buildValue));
+                          clearSelection();
+                        }
+                      }}
+                    >
+                      {t('build')}
+                    </button>
+                    <button
+                      type="button"
+                      className={`${btnSecondary} min-h-11`}
+                      disabled={handIdx === null}
+                      onClick={() => {
+                        if (handIdx !== null) {
+                          game.handleTrail(handIdx);
+                          clearSelection();
+                        }
+                      }}
+                    >
+                      {t('trail')}
+                    </button>
+                  </>
+                )}
+                {roundOver && !ended && (
+                  <button type="button" className={`${btnPrimary} min-h-11`} onClick={game.handleNextRound}>
+                    {t('nextRound')}
+                  </button>
+                )}
+                <GameResetButton
+                  isGameEnd={ended}
+                  onReset={game.handleReset}
+                  requestConfirm={requestConfirm}
+                  loading={loading}
+                  dataTutorial="zw-reset-button"
+                />
+              </div>
+            }
+          >
+            {/* 常設のライブ領域。中身だけが変わる ── 領域ごと現れると読み上げられない。 */}
+            <span className="sr-only" role="status" aria-live="polite" data-testid="zwicker-turn-announce">
+              {liveMsg}
+            </span>
+            <span className="sr-only" role="status" aria-live="polite" data-testid="zwicker-round-announce">
+              {roundLiveMsg}
+            </span>
+            <ErrorAlert message={error} onRetry={retry} />
             <div className="text-center" data-tutorial="zw-hand">
               <div className="text-game-text-muted text-xs mb-1">
                 {t('yourHand')}
@@ -420,121 +534,8 @@ function ZwickerPageContent() {
                 ))}
               </div>
 
-              {/* A と絵札は 2 択。どちらで使うかを選ばせる。 */}
-              {isHumanTurn && chosen && chosen.values.length > 1 && (
-                <div className="flex gap-2 justify-center mt-2" data-testid="zwicker-value-picker">
-                  <span className="text-[10px] text-ds-text-muted self-center">{t('pickValue')}</span>
-                  {chosen.values.map((v) => (
-                    <button
-                      key={`val-${v.toString()}`}
-                      type="button"
-                      data-testid="zwicker-value-option"
-                      aria-pressed={playedValue === v}
-                      onClick={() => setPlayedValue(v)}
-                      className={[
-                        'px-3 min-h-11 rounded text-sm',
-                        playedValue === v ? 'ring-2 ring-ds-accent' : 'ring-1 ring-ds-border',
-                      ].join(' ')}
-                    >
-                      {v}
-                    </button>
-                  ))}
-                </div>
-              )}
-
               {isHumanTurn && <div className="text-[10px] text-ds-text-muted mt-1">{t('selectHint')}</div>}
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-            </div>
-
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
-            <ActionLogSection
-              isEndPhase={ended}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
-          </div>
-
-          <GameFooter className={`${gameTheme.zwicker.footer} px-4 py-2.5`}>
-            {/* 常設のライブ領域。中身だけが変わる ── 領域ごと現れると読み上げられない。 */}
-            <span className="sr-only" role="status" aria-live="polite" data-testid="zwicker-turn-announce">
-              {liveMsg}
-            </span>
-            <span className="sr-only" role="status" aria-live="polite" data-testid="zwicker-round-announce">
-              {roundLiveMsg}
-            </span>
-            <ErrorAlert message={error} onRetry={retry} />
-            <div className="flex gap-2 items-center flex-wrap">
-              {isHumanTurn && (
-                <>
-                  <button
-                    type="button"
-                    data-hint-action="take"
-                    className={`${btnPrimary} min-h-11`}
-                    disabled={!canTake}
-                    onClick={() => {
-                      if (handIdx !== null && playedValue !== null) {
-                        game.handleTake(handIdx, playedValue, tableSel, buildSel);
-                        clearSelection();
-                      }
-                    }}
-                  >
-                    {t('take')}
-                  </button>
-                  <input
-                    type="number"
-                    min={1}
-                    aria-label={t('buildValue')}
-                    placeholder={t('buildValue')}
-                    value={buildValue}
-                    onChange={(e) => setBuildValue(e.target.value)}
-                    className="w-20 min-h-11 rounded px-2 text-sm ring-1 ring-ds-border bg-transparent"
-                  />
-                  <button
-                    type="button"
-                    className={`${btnSecondary} min-h-11`}
-                    disabled={!canBuild}
-                    onClick={() => {
-                      if (handIdx !== null) {
-                        game.handleBuild(handIdx, tableSel, Number(buildValue));
-                        clearSelection();
-                      }
-                    }}
-                  >
-                    {t('build')}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnSecondary} min-h-11`}
-                    disabled={handIdx === null}
-                    onClick={() => {
-                      if (handIdx !== null) {
-                        game.handleTrail(handIdx);
-                        clearSelection();
-                      }
-                    }}
-                  >
-                    {t('trail')}
-                  </button>
-                </>
-              )}
-              {roundOver && !ended && (
-                <button type="button" className={`${btnPrimary} min-h-11`} onClick={game.handleNextRound}>
-                  {t('nextRound')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={ended}
-                onReset={game.handleReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="zw-reset-button"
-              />
             </div>
           </GameFooter>
         </>

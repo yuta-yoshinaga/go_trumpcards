@@ -97,6 +97,13 @@ describe('MushiPage', () => {
     mockExec.mockResolvedValue(makeState());
   });
 
+  it('renders the playable hand inside the game footer content', async () => {
+    renderWithProviders(<MushiPage />);
+    const footer = within(await screen.findByTestId('game-footer-content'));
+    expect(footer.getByText('あなたの手札')).toBeInTheDocument();
+    expect(footer.getAllByRole('button')).toHaveLength(2);
+  });
+
   it('resets on mount', async () => {
     renderWithProviders(<MushiPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
@@ -108,7 +115,7 @@ describe('MushiPage', () => {
     await waitFor(() => expect(document.querySelector('[data-tutorial="mushi-hand"] button')).not.toBeNull());
     const hand = document.querySelector('[data-tutorial="mushi-hand"]');
     expect(hand).not.toHaveClass('lg:sticky');
-    expect(hand).toHaveClass('col-span-2', 'row-start-4');
+    expect(hand).not.toHaveClass('col-span-2', 'row-start-4');
     expect(document.querySelector('.grid-cols-2')).toHaveClass('grid-rows-[auto_auto_auto_auto_auto_auto]');
     expect(document.querySelector('[data-tutorial="mushi-field"]')).toHaveClass('col-start-1', 'row-start-3');
     expect(document.querySelector('[data-tutorial="mushi-captured"]')).toHaveClass(

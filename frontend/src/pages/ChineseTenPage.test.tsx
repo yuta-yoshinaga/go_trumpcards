@@ -86,6 +86,13 @@ describe('ChineseTenPage', () => {
     mockExec.mockResolvedValue(makeState());
   });
 
+  it('renders the playable hand inside the game footer content', async () => {
+    renderWithProviders(<ChineseTenPage />);
+    const footer = within(await screen.findByTestId('game-footer-content'));
+    expect(footer.getByText('あなたの手札')).toBeInTheDocument();
+    expect(footer.getByRole('button', { name: /♠ A/ })).toHaveAttribute('data-hint-action', 'play');
+  });
+
   it('resets on mount', async () => {
     renderWithProviders(<ChineseTenPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
