@@ -6,6 +6,7 @@ import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { HintTooltip } from '../components/hint/HintTooltip';
@@ -261,81 +262,11 @@ function PigPageContent() {
               </div>
             )}
 
-            {human && human.cards.length > 0 && (
-              <div className="mt-4" data-tutorial="pig-hand">
-                {human.chosenPassCard && (
-                  <div className="mb-2 flex items-center gap-2" data-testid="pig-chosen-pass-card">
-                    <h3 className="text-ds-text-primary text-sm font-medium">{t('status.chosenPass')}</h3>
-                    <CardImage
-                      card={human.chosenPassCard}
-                      width={cardWidth}
-                      ariaLabel={t('actions.passSelectedAria', { card: cardAlt(human.chosenPassCard) })}
-                    />
-                  </div>
-                )}
-                <div className="text-ds-text-muted text-sm mb-1">
-                  {t('header.you')}: {human.cardCount}
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {human.cards.map((card, idx) => (
-                    <button
-                      key={`${card.design}-${card.value}-${idx}`}
-                      type="button"
-                      onClick={() => handlePass(idx)}
-                      aria-disabled={loading || !canPass}
-                      aria-label={t('actions.passAria', { card: cardAlt(card) })}
-                      className={`${loading || !canPass ? 'opacity-50 cursor-not-allowed' : ''} ${canPass ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
-                    >
-                      <CardImage card={card} width={cardWidth} />
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {hintEnabled && hint && (
               <div className="mt-3 flex justify-center">
                 <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />
               </div>
             )}
-
-            <div className="mt-4 flex flex-wrap gap-2" data-tutorial="pig-actions">
-              {canSignal && (
-                <button
-                  type="button"
-                  className={btnWarning}
-                  onClick={handleSignal}
-                  disabled={loading}
-                  data-testid="pig-signal-btn"
-                >
-                  {t('actions.signal')}
-                </button>
-              )}
-              {isRoundEnd && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handleNext}
-                  disabled={loading}
-                  data-testid="pig-next-btn"
-                >
-                  {t('actions.next')}
-                </button>
-              )}
-              <button
-                type="button"
-                className={btnPrimary}
-                onClick={() => requestConfirm(handleReset)}
-                disabled={loading}
-              >
-                {t('actions.reset')}
-              </button>
-              {!isGameEnd && (
-                <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
-                  {t('actions.giveUp')}
-                </button>
-              )}
-            </div>
 
             <SettingsPanel
               title={tc('settings.title')}
@@ -371,6 +302,81 @@ function PigPageContent() {
               ]}
             />
           </div>
+
+          <GameFooter
+            className={`${gameTheme.pig.footer} px-4 py-2.5`}
+            actions={
+              <div className="mt-4 flex flex-wrap gap-2" data-tutorial="pig-actions">
+                {canSignal && (
+                  <button
+                    type="button"
+                    className={btnWarning}
+                    onClick={handleSignal}
+                    disabled={loading}
+                    data-testid="pig-signal-btn"
+                  >
+                    {t('actions.signal')}
+                  </button>
+                )}
+                {isRoundEnd && (
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handleNext}
+                    disabled={loading}
+                    data-testid="pig-next-btn"
+                  >
+                    {t('actions.next')}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={() => requestConfirm(handleReset)}
+                  disabled={loading}
+                >
+                  {t('actions.reset')}
+                </button>
+                {!isGameEnd && (
+                  <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
+                    {t('actions.giveUp')}
+                  </button>
+                )}
+              </div>
+            }
+          >
+            {human && human.cards.length > 0 && (
+              <div data-tutorial="pig-hand">
+                {human.chosenPassCard && (
+                  <div className="mb-2 flex items-center gap-2" data-testid="pig-chosen-pass-card">
+                    <h3 className="text-ds-text-primary text-sm font-medium">{t('status.chosenPass')}</h3>
+                    <CardImage
+                      card={human.chosenPassCard}
+                      width={cardWidth}
+                      ariaLabel={t('actions.passSelectedAria', { card: cardAlt(human.chosenPassCard) })}
+                    />
+                  </div>
+                )}
+                <div className="text-ds-text-muted text-sm mb-1">
+                  {t('header.you')}: {human.cardCount}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {human.cards.map((card, idx) => (
+                    <button
+                      key={`${card.design}-${card.value}-${idx}`}
+                      type="button"
+                      onClick={() => handlePass(idx)}
+                      aria-disabled={loading || !canPass}
+                      aria-label={t('actions.passAria', { card: cardAlt(card) })}
+                      className={`${loading || !canPass ? 'opacity-50 cursor-not-allowed' : ''} ${canPass ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
+                    >
+                      <CardImage card={card} width={cardWidth} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </GameFooter>
 
           <ActionLogSection
             isEndPhase={isGameEnd}

@@ -7,6 +7,7 @@ import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { HintTooltip } from '../components/hint/HintTooltip';
@@ -323,8 +324,110 @@ function StealingBundlesPageContent() {
               </div>
             )}
 
+            {hintEnabled && hint && (
+              <div className="mt-3 flex justify-center">
+                <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />
+              </div>
+            )}
+
+            <div className="mt-4 flex flex-wrap gap-2">
+              <button
+                type="button"
+                className={btnPrimary}
+                onClick={() => requestConfirm(handleReset)}
+                disabled={loading}
+              >
+                {t('actions.reset')}
+              </button>
+              {!isGameEnd && (
+                <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
+                  {t('actions.giveUp')}
+                </button>
+              )}
+            </div>
+
+            <SettingsPanel
+              title={tc('settings.title')}
+              groups={[
+                {
+                  items: [
+                    {
+                      type: 'select',
+                      id: 'stealingbundles-players',
+                      label: t('actions.players'),
+                      value: String(playerCnt),
+                      options: [2, 3, 4].map((n) => ({ value: String(n), label: String(n) })),
+                      onSelect: (v: string) => setPlayerCnt(Number(v)),
+                      testId: 'sb-players-select',
+                    },
+                    hintCheckboxItem(tc, hintEnabled, setHintEnabled),
+                  ],
+                },
+              ]}
+            />
+          </div>
+
+          <GameFooter
+            className={`${gameTheme.stealingbundles.footer} px-4 py-2.5`}
+            actions={
+              selected !== null && isHumanTurn ? (
+                <div className="mt-3 flex flex-wrap gap-2 items-center" data-testid="sb-actions">
+                  <span className="text-ds-text-muted text-sm">
+                    {t('status.selected', { card: selectedCard ? cardAlt(selectedCard) : '' })}
+                  </span>
+                  {selectedTakes.length > 0 && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={() => handleTake(selected)}
+                      disabled={loading}
+                      data-testid="sb-take-btn"
+                    >
+                      {t('actions.take', {
+                        cards: selectedTakes.map((i) => cardAlt(state.tableCards[i])).join(t('listSeparator')),
+                      })}
+                    </button>
+                  )}
+                  {selectedSteals.map((victim) => (
+                    <button
+                      key={victim}
+                      type="button"
+                      className={btnWarning}
+                      onClick={() => handleSteal(selected, victim)}
+                      disabled={loading}
+                      data-testid={`sb-steal-btn-${victim.toString()}`}
+                    >
+                      {t('actions.steal', { name: seatName(victim) })}
+                    </button>
+                  ))}
+                  {canTrailSelected && (
+                    <button
+                      type="button"
+                      className={btnSecondary}
+                      onClick={() => handleTrail(selected)}
+                      disabled={loading}
+                      data-testid="sb-trail-btn"
+                    >
+                      {t('actions.trail')}
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className={btnSecondary}
+                    onClick={() => {
+                      setSelected(null);
+                      setActionAnnouncement(t('status.deselected'));
+                    }}
+                    disabled={loading}
+                  >
+                    {t('actions.cancel')}
+                  </button>
+                </div>
+              ) : null
+            }
+          >
             {human && human.cards.length > 0 && (
-              <div className="mt-4" data-tutorial="sb-hand">
+              <div data-tutorial="sb-hand">
                 <div className="text-ds-text-muted text-sm mb-1">
                   {t('header.you')}: {human.cardCount}
                 </div>
@@ -368,105 +471,7 @@ function StealingBundlesPageContent() {
                 </div>
               </div>
             )}
-
-            {/* **選んだ札でできることだけを出す。** できない手を押させません。 */}
-            {selected !== null && isHumanTurn && (
-              <div className="mt-3 flex flex-wrap gap-2 items-center" data-testid="sb-actions">
-                <span className="text-ds-text-muted text-sm">
-                  {t('status.selected', { card: selectedCard ? cardAlt(selectedCard) : '' })}
-                </span>
-                {selectedTakes.length > 0 && (
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={() => handleTake(selected)}
-                    disabled={loading}
-                    data-testid="sb-take-btn"
-                  >
-                    {t('actions.take', {
-                      cards: selectedTakes.map((i) => cardAlt(state.tableCards[i])).join(t('listSeparator')),
-                    })}
-                  </button>
-                )}
-                {selectedSteals.map((victim) => (
-                  <button
-                    key={victim}
-                    type="button"
-                    className={btnWarning}
-                    onClick={() => handleSteal(selected, victim)}
-                    disabled={loading}
-                    data-testid={`sb-steal-btn-${victim.toString()}`}
-                  >
-                    {t('actions.steal', { name: seatName(victim) })}
-                  </button>
-                ))}
-                {canTrailSelected && (
-                  <button
-                    type="button"
-                    className={btnSecondary}
-                    onClick={() => handleTrail(selected)}
-                    disabled={loading}
-                    data-testid="sb-trail-btn"
-                  >
-                    {t('actions.trail')}
-                  </button>
-                )}
-                <button
-                  type="button"
-                  className={btnSecondary}
-                  onClick={() => {
-                    setSelected(null);
-                    setActionAnnouncement(t('status.deselected'));
-                  }}
-                  disabled={loading}
-                >
-                  {t('actions.cancel')}
-                </button>
-              </div>
-            )}
-
-            {hintEnabled && hint && (
-              <div className="mt-3 flex justify-center">
-                <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />
-              </div>
-            )}
-
-            <div className="mt-4 flex flex-wrap gap-2">
-              <button
-                type="button"
-                className={btnPrimary}
-                onClick={() => requestConfirm(handleReset)}
-                disabled={loading}
-              >
-                {t('actions.reset')}
-              </button>
-              {!isGameEnd && (
-                <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
-                  {t('actions.giveUp')}
-                </button>
-              )}
-            </div>
-
-            <SettingsPanel
-              title={tc('settings.title')}
-              groups={[
-                {
-                  items: [
-                    {
-                      type: 'select',
-                      id: 'stealingbundles-players',
-                      label: t('actions.players'),
-                      value: String(playerCnt),
-                      options: [2, 3, 4].map((n) => ({ value: String(n), label: String(n) })),
-                      onSelect: (v: string) => setPlayerCnt(Number(v)),
-                      testId: 'sb-players-select',
-                    },
-                    hintCheckboxItem(tc, hintEnabled, setHintEnabled),
-                  ],
-                },
-              ]}
-            />
-          </div>
+          </GameFooter>
 
           <ActionLogSection
             isEndPhase={isGameEnd}
