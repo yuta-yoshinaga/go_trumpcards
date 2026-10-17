@@ -640,5 +640,22 @@
   "cliGamesNoMatches": "No games match your search",
   "cliFlagUnknown": "Error: {{context}}unknown option {{flag}}",
   "cliFlagNeedsValue": "Error: {{context}}{{flag}} requires a value",
-  "cliFlagBadValue": "Error: {{context}}invalid value \"{{value}}\" for {{flag}}"
+  "cliFlagBadValue": "Error: {{context}}invalid value \"{{value}}\" for {{flag}}",
+  "hanafudaMonth1": "Pine",
+  "hanafudaMonth2": "Plum",
+  "hanafudaMonth3": "Cherry",
+  "hanafudaMonth4": "Wisteria",
+  "hanafudaMonth5": "Iris",
+  "hanafudaMonth6": "Peony",
+  "hanafudaMonth7": "Clover",
+  "hanafudaMonth8": "Pampas",
+  "hanafudaMonth9": "Chrysanthemum",
+  "hanafudaMonth10": "Maple",
+  "hanafudaMonth11": "Willow",
+  "hanafudaMonth12": "Paulownia",
+  "hanafudaCardLabel": "{{month}}·{{category}}",
+  "hanafudaCategoryBright": "Bright",
+  "hanafudaCategoryAnimal": "Animal",
+  "hanafudaCategoryRibbon": "Ribbon",
+  "hanafudaCategoryChaff": "Chaff"
 }

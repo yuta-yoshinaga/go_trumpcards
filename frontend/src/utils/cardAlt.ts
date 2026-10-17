@@ -1,6 +1,7 @@
 import i18n from '../i18n';
 import type { Card } from '../types/card';
 import { valueName } from './cardUtils';
+import { hanafudaLabel } from './hanafudaLabel';
 
 const DESIGN_SYMBOLS: Record<string, string> = {
   SPADE: '♠',
@@ -40,7 +41,8 @@ export function isRedSuitDesign(design: string): boolean {
 /** Return accessible alt text for a card: procedural cards use their descriptor
  * label/glyph, "Joker" for jokers, "♠ A" style for normal cards. */
 export function cardAlt(card: Card): string {
-  if (card.label) return card.glyph ? `${card.label} ${card.glyph}` : card.label;
+  const label = hanafudaLabel(card) ?? card.label;
+  if (label) return card.glyph ? `${label} ${card.glyph}` : label;
   if (card.design === 'JOKER') return i18n.t('common:card.joker');
   return `${suitSymbol(card.design)} ${valueName(card.value)}`;
 }

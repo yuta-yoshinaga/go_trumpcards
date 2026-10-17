@@ -39618,6 +39618,15 @@ components:
         - design
         - value
       properties:
+        month:
+          type: integer
+          description: Hanafuda month (1–12).
+          minimum: 1
+          maximum: 12
+        kind:
+          type: string
+          description: Hanafuda card category.
+          enum: [bright, animal, ribbon, chaff, gwang, yeol, tti, pi]
         glyph:
           type: string
           description: "Symbol drawn in the centre of the card. Set only for cards from non-52-card decks."
