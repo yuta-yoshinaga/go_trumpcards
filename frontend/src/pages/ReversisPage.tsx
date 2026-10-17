@@ -288,7 +288,7 @@ function ReversisPageContent() {
           <GameFooter
             className={`${gameTheme.reversis.footer} px-4 py-2.5`}
             actions={
-              <div className="mt-4 flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2">
                 {isRoundEnd && !isGameEnd && (
                   <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
                     {t('actions.nextRound')}

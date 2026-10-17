@@ -328,7 +328,7 @@ function LingerLongerPageContent() {
           <GameFooter
             className={`${gameTheme.lingerlonger.footer} px-4 py-2.5`}
             actions={
-              <div className="mt-4 flex flex-wrap gap-2" data-tutorial="ll-actions">
+              <div className="flex flex-wrap gap-2" data-tutorial="ll-actions">
                 <button
                   type="button"
                   className={btnPrimary}

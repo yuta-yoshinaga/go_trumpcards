@@ -417,7 +417,7 @@ function HoneymoonBridgePageContent() {
           <GameFooter
             className={`${gameTheme.honeymoonbridge.footer} px-4 py-2.5`}
             actions={
-              <div className="mt-4 flex flex-wrap gap-2 items-center" data-tutorial="hb-actions">
+              <div className="flex flex-wrap gap-2 items-center" data-tutorial="hb-actions">
                 {isHumanBidTurn && levels.length > 0 && (
                   <>
                     <label className="text-ds-text-muted text-sm" htmlFor="hb-level">
