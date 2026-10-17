@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { vintApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -82,9 +82,65 @@ function handButtons() {
 }
 
 describe('VintPage', () => {
+  it('renders the game message inside the footer message region', async () => {
+    mockExec.mockResolvedValue(makeState({ message: 'Footer message' }));
+    renderWithProviders(<VintPage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage.querySelector('[role="status"], [role="alert"]')).toHaveTextContent('Footer message');
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue(makeState({ message: 'Mobile message' }));
+    renderWithProviders(<VintPage />);
+
+    const messageText = await screen.findByText('Mobile message');
+    const message = messageText.closest('[role="status"]');
+    expect(message).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+    expect(message?.closest('footer')).not.toBeInTheDocument();
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     mockExec.mockResolvedValue(makeState());
+  });
+
+  it('collapses rules, scores, and CPU seats on mobile', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    renderWithProviders(<VintPage />);
+
+    const rules = await screen.findByTestId('vint-rules');
+    const scores = screen.getByTestId('vint-scores');
+    const cpu = screen.getByTestId('cpu-accordion');
+    expect(rules).not.toHaveAttribute('open');
+    expect(screen.getByTestId('vint-ladder')).not.toBeVisible();
+    expect(scores).not.toHaveAttribute('open');
+    expect(within(scores).getByText(/チーム0/)).not.toBeVisible();
+    expect(cpu).not.toHaveAttribute('open');
+    const humanRow = screen.getByText('あなた').closest('[data-testid="vint-player"]');
+    expect(humanRow).not.toBeNull();
+    expect(humanRow).toBeVisible();
+    expect(humanRow?.closest('[data-testid="cpu-accordion"]')).toBeNull();
+    expect(within(cpu).getAllByTestId('vint-player')).toHaveLength(3);
+    expect(within(cpu).getAllByTestId('vint-player')[0]).not.toBeVisible();
+
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
+  it('keeps rules, scores, and CPU seats open on desktop', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    renderWithProviders(<VintPage />);
+
+    expect(await screen.findByTestId('vint-rules')).toHaveAttribute('open');
+    expect(screen.getByTestId('vint-scores')).toHaveAttribute('open');
+    expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
+
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
   });
 
   it('resets on mount', async () => {
@@ -92,16 +148,18 @@ describe('VintPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
-  // **ダミーが無いのがブリッジとの違い。**常時表示する。
+  // **ダミーが無いのがブリッジとの違い。**ルール詳細に残す。
   it('states that there is no dummy', async () => {
     renderWithProviders(<VintPage />);
+    fireEvent.click(await screen.findByText('ルール'));
     await waitFor(() => expect(screen.getByTestId('vint-no-dummy')).toBeInTheDocument());
     expect(screen.getByTestId('vint-no-dummy')).toHaveTextContent('ダミーはありません');
   });
 
-  // **♠ が最弱で NT が最強。**ブリッジと逆なので単価つきで常時表示する。
+  // **♠ が最弱で NT が最強。**ブリッジと逆なので単価つきでルール詳細に残す。
   it('shows the reversed bidding order with its trick values', async () => {
     renderWithProviders(<VintPage />);
+    fireEvent.click(await screen.findByText('ルール'));
     await waitFor(() => expect(screen.getByTestId('vint-ladder')).toBeInTheDocument());
     const ladder = screen.getByTestId('vint-ladder');
     const text = ladder.textContent ?? '';
@@ -464,5 +522,26 @@ describe('VintPage', () => {
     renderWithProviders(<VintPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     expect(screen.queryByTestId('vint-bid-history')).not.toBeInTheDocument();
+  });
+  it('places the current turn action in the pinned footer actions', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ phase: VintPhase.BID, bids: [], highBid: { player: -1, level: 0, denom: -1, trickValue: 0 } }),
+    );
+    renderWithProviders(<VintPage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByTestId('vint-bid-button')).toBeInTheDocument();
+  });
+
+  it('keeps only the hand and turn notice in the footer content', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: VintPhase.BID, bids: [] }));
+    renderWithProviders(<VintPage />);
+
+    const footer = await screen.findByTestId('game-footer-content');
+    const playArea = footer.closest('[aria-busy]')?.querySelectorAll('.overflow-y-auto')[0];
+    expect(within(footer).getByText('あなたの手札')).toBeInTheDocument();
+    expect(footer.querySelector('[data-tutorial="vint-reset-button"]')).not.toBeInTheDocument();
+    expect((playArea as HTMLElement).querySelector('[data-tutorial="vint-reset-button"]')).toBeInTheDocument();
+    expect(within(footer).queryByText('ヒント表示')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByText('ヒント表示')).toBeInTheDocument();
   });
 });

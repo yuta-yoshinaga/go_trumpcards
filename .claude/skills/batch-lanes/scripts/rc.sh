@@ -9,7 +9,8 @@ git -C "$WT_ROOT/wt-ib$1" diff --numstat HEAD -- '*.test.ts' '*.test.tsx' '*_tes
 # toHaveTextContent('') matches ANY content, so it proves nothing (use toBeEmptyDOMElement).
 git -C "$WT_ROOT/wt-ib$1" diff -U0 HEAD -- '*.test.ts' '*.test.tsx' | grep -nE "^\+.*toHaveTextContent\((''|\"\")\)" \
   | sed 's/^/WARN VACUOUS_EMPTY_TEXT /' >> "$BATCH_STATE/rc$1.txt"
-git -C "$WT_ROOT/wt-ib$1" diff -U0 HEAD -- "*.ts" "*.tsx" | grep -nE "^\+.*biome-ignore" | sed "s/^/WARN NEW_BIOME_IGNORE /" >> "$BATCH_STATE/rc$1.txt"
+bash "$B/identgone.sh" "$WT_ROOT/wt-ib$1" >> "$BATCH_STATE/rc$1.txt"
+git -C "$WT_ROOT/wt-ib$1" diff -U0 HEAD -- "*.ts" "*.tsx" | bash "$B/biomeignore.sh" >> "$BATCH_STATE/rc$1.txt"
 (cd "$WT_ROOT/wt-ib$1"/frontend && timeout 120 bun run deadcode 2>&1 | grep -E "^(Unused|Unlisted|Unresolved)" -A6 | sed "s/^/WARN DEADCODE /") >> "$BATCH_STATE/rc$1.txt"
 wt="$WT_ROOT/wt-ib$1"
 if [[ "${ALLOW_WORKER_BUILD:-}" != 1 ]]; then
@@ -23,12 +24,18 @@ fi
 if [[ "${ALLOW_PATCH_GAPS:-}" != 1 ]] && git -C "$wt" diff --name-only HEAD -- frontend/src/{pages,components,utils,hooks,api} \
   | grep -E '^frontend/src/(pages|components|utils|hooks|api)/.*\.(ts|tsx)$' | grep -qvE '\.test\.tsx?$'; then
   gap_status=0; gap_output="$(cd "$wt" && timeout 600 bash .claude/skills/patch-branch-gaps/scripts/patch-branch-gaps.sh 2>&1)" || gap_status=$?
-  if [[ $gap_status -ne 0 ]]; then
-    while IFS= read -r line; do
-      [[ "$line" == *"NO TEST FILE"* ]] && continue
-      [[ "$line" =~ ^[^:]+:[0-9]+:.*\[[^]]*\] ]] || [[ "$line" == *"NO RESULT"* ]] || continue
-      printf 'WARN PATCH_BRANCH_GAP %s\n' "$line" >> "$BATCH_STATE/rc$1.txt"
-    done <<< "$gap_output"
+  while IFS= read -r line; do
+    [[ "$line" == *"NO TEST FILE"* ]] && continue
+    [[ "$line" =~ ^PREEXISTING\ .+:[0-9]+: ]] && {
+      printf 'NOTE PATCH_BRANCH_GAP_PREEXISTING %s\n' "${line#PREEXISTING }" >> "$BATCH_STATE/rc$1.txt"
+      continue
+    }
+    [[ "$line" =~ ^[^:]+:[0-9]+:.*\[[^]]*\] ]] || [[ "$line" == *"NO RESULT"* ]] || continue
+    printf 'WARN PATCH_BRANCH_GAP %s\n' "$line" >> "$BATCH_STATE/rc$1.txt"
+  done <<< "$gap_output"
+  if [[ $gap_status -ne 0 && -z "$gap_output" ]]; then
+    printf 'WARN PATCH_BRANCH_GAP patch-branch-gaps exited %s without output\n' "$gap_status" >> "$BATCH_STATE/rc$1.txt"
   fi
 fi
+bash "$B/overlap.sh" "$1" >> "$BATCH_STATE/rc$1.txt"
 echo RC_DONE >> "$BATCH_STATE/rc$1.txt"; cat "$BATCH_STATE/rc$1.txt"

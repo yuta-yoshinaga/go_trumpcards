@@ -21,7 +21,6 @@
   "trump": "切り札: {{suit}}",
   "contract": "コントラクト: {{points}}",
   "currentBid": "入札: {{points}}",
-  "bidPhase": "入札フェーズ — レイズ（+10）またはパス。",
   "talonPhase": "タロン交換 — このカードを{{name}}に渡します。",
   "bidRaise": "レイズ +10",
   "bidRaiseTo": "レイズ（{{points}}）",

@@ -8,10 +8,10 @@ test.describe('Michigan E2E', () => {
     await navigateTo(page, '/michigan');
 
     // Bet phase: the place-bets button is preloaded with an even distribution.
-    const placeBets = page.getByRole('button', { name: /Place bets|賭ける/ });
-    await expect(placeBets.first()).toBeVisible({ timeout: TIMEOUT_ACTION });
+    const placeBets = page.getByTestId('game-footer-actions').getByRole('button', { name: /Place bets|賭ける/ });
+    await expect(placeBets).toBeVisible({ timeout: TIMEOUT_ACTION });
 
-    await placeBets.first().click();
+    await placeBets.click();
     await waitForLoaded(page);
 
     // After betting, the round proceeds — either the human gets a play turn

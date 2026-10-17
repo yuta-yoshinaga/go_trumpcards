@@ -18,7 +18,7 @@ import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCitadelGame } from '../hooks/useCitadelGame';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -27,6 +27,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
+import { DESKTOP_COMPACT_CARD_WIDTH } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { CitadelResponse } from '../types/card';
 import { CitadelPhase } from '../types/phases';
@@ -117,6 +118,7 @@ function CitadelPageContent() {
     clearLog,
   });
   const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
+  const breakpoint = useBreakpoint();
   const windowWidth = useWindowWidth();
 
   const dims = useMemo(() => {
@@ -133,6 +135,9 @@ function CitadelPageContent() {
   }, [isMobile, windowWidth, cardWidth, cardHeight, cardOverlap]);
 
   const isPlayingForKbd = state?.phase === CitadelPhase.PLAYING;
+  const compact = breakpoint === 'largeDesktop';
+  const foundationCardWidth = compact ? DESKTOP_COMPACT_CARD_WIDTH : dims.cw;
+  const foundationCardHeight = compact ? Math.round(DESKTOP_COMPACT_CARD_WIDTH * 1.5) : dims.ch;
 
   const dispatchMove = useCallback(
     (source: CitadelMoveZone, target: CitadelMoveZone) => {
@@ -366,6 +371,7 @@ function CitadelPageContent() {
                   {[0, 1, 2, 3].map(renderTableauColumn)}
                 </div>
 
+                {/* 4 foundations × (120px card + 20px label) = 560px, fitting the 800px viewport. */}
                 <div
                   className={`flex flex-col items-center gap-1 sm:gap-2 mb-3 ${isMobile ? 'flex-none' : ''}`}
                   data-tutorial="bc-foundation"
@@ -379,7 +385,14 @@ function CitadelPageContent() {
                         data-legal-target={legalTargets.foundation.has(idx) ? 'true' : undefined}
                         data-preview-target={legalTargets.foundation.has(idx) && preview.isPreview ? 'true' : undefined}
                       >
-                        <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
+                        <div
+                          className={`text-game-text-muted text-xs${compact ? ' mb-0 flex h-5 items-center gap-1' : ' mb-1'}`}
+                        >
+                          {FOUNDATION_SUITS[idx]}
+                          {compact && (
+                            <span className="tabular-nums">{t('foundationProgress', { count: pile.length })}</span>
+                          )}
+                        </div>
                         <DropZone
                           isDropTarget={dnd.isDropTarget(foundationZone)}
                           onDragOver={dnd.handleDragOver(foundationZone)}
@@ -401,7 +414,7 @@ function CitadelPageContent() {
                             >
                               <AnimatedCard
                                 card={pile[pile.length - 1]}
-                                width={dims.cw}
+                                width={foundationCardWidth}
                                 draggable={false}
                                 dealDelay={isAutoCompleting ? idx * 0.15 : 0}
                               />
@@ -414,7 +427,7 @@ function CitadelPageContent() {
                               aria-disabled={!selectedSource || undefined}
                               aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                               aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
-                              style={{ width: dims.cw, height: dims.ch }}
+                              style={{ width: foundationCardWidth, height: foundationCardHeight }}
                               className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                             >
                               A

@@ -285,6 +285,11 @@ function MichiganPageContent() {
           />
 
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+            {isResultPhase && !isGameEnd && (
+              <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                {t('nextRound')}
+              </button>
+            )}
             <div className="text-ds-text-primary text-center mb-2" data-tutorial="michigan-info">
               <span className="mr-4">{t('round', { n: state.roundNumber, total: state.config.targetRounds })}</span>
               <span className="mr-4">{t('ante', { amount: state.ante })}</span>
@@ -414,10 +419,93 @@ function MichiganPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+
+            <ErrorAlert message={error} onRetry={retry} />
+
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            <div className="flex flex-wrap gap-2 items-center">
+              <GameResetButton
+                isGameEnd={isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="michigan-reset-button"
+              />
+            </div>
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.michigan.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.michigan.footer} px-4 py-2.5`}
+            actions={
+              showBetControls ? (
+                <div className="flex flex-col gap-2" data-tutorial="michigan-action-buttons">
+                  <div className="flex items-center justify-between gap-2 text-ds-text-primary text-sm">
+                    <span>{t('betRemaining', { amount: betRemaining })}</span>
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={() => handleBet(bets)}
+                      disabled={loading || !canPlaceBets}
+                    >
+                      {t('placeBets')}
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 items-start" data-testid="michigan-bet-grid">
+                    {state.boodles.map((b, i) => (
+                      <div
+                        key={`bet-${i}`}
+                        className="flex flex-wrap items-center justify-center gap-1"
+                        data-testid={`bet-boodle-${i}`}
+                      >
+                        <div className="flex items-center gap-1">
+                          <CardImage card={b.card} width={24} />
+                          <span className="text-ds-text-primary text-xs">{cardAlt(b.card)}</span>
+                        </div>
+                        <div className="flex flex-col items-center gap-0.5">
+                          {boodleGuides[i]?.collectible && (
+                            <span className="text-ds-success text-xs" data-testid={`bet-collectible-${i}`}>
+                              {t('betCollectible')}
+                            </span>
+                          )}
+                          {boodleGuides[i]?.claimed && (
+                            <span className="text-ds-warning text-xs" data-testid={`bet-claimed-warning-${i}`}>
+                              {t('betClaimedWarning')}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            className={`${btnDanger} h-11`}
+                            onClick={() => adjustBet(i, -1)}
+                            disabled={loading || (bets[i] ?? 0) <= 0}
+                            aria-label={t('betMinusAria', { card: cardAlt(b.card), amount: bets[i] })}
+                          >
+                            −
+                          </button>
+                          <span className="w-6 text-center text-ds-text-primary">{bets[i] ?? 0}</span>
+                          <button
+                            type="button"
+                            className={`${btnSuccess} h-11`}
+                            onClick={() => adjustBet(i, 1)}
+                            disabled={loading || betRemaining <= 0}
+                            aria-label={t('betPlusAria', { card: cardAlt(b.card), amount: bets[i] })}
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null
+            }
+          >
+            {showBetControls && (
+              <div className="text-ds-text-muted text-sm mb-2">{t('betPrompt', { budget: state.betBudget })}</div>
+            )}
             {humanPlayer && humanPlayer.cards.length > 0 ? (
               <div className="mb-2" data-tutorial="michigan-hand">
                 <div className="text-ds-text-muted text-xs mb-0.5">{t('handLabel')}</div>
@@ -463,92 +551,10 @@ function MichiganPageContent() {
               </div>
             )}
 
-            <ErrorAlert message={error} onRetry={retry} />
-
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
             <div className="flex flex-col gap-2" data-tutorial="michigan-action-buttons">
-              {showBetControls && (
-                <div className="flex flex-col gap-2 p-2 rounded bg-black/20">
-                  <div className="text-ds-text-primary text-sm">
-                    {t('betPrompt', { budget: state.betBudget })} · {t('betRemaining', { amount: betRemaining })}
-                  </div>
-                  <div className="flex flex-wrap gap-3 items-start">
-                    {state.boodles.map((b, i) => (
-                      <div
-                        key={`bet-${i}`}
-                        className="flex flex-col items-center gap-1"
-                        data-testid={`bet-boodle-${i}`}
-                      >
-                        <CardImage card={b.card} width={Math.round(cardWidth * 0.6)} />
-                        <div className="flex flex-col items-center gap-0.5 min-h-[1rem]">
-                          {boodleGuides[i]?.collectible && (
-                            <span className="text-ds-success text-xs" data-testid={`bet-collectible-${i}`}>
-                              {t('betCollectible')}
-                            </span>
-                          )}
-                          {boodleGuides[i]?.claimed && (
-                            <span className="text-ds-warning text-xs" data-testid={`bet-claimed-warning-${i}`}>
-                              {t('betClaimedWarning')}
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <button
-                            type="button"
-                            className={btnDanger}
-                            onClick={() => adjustBet(i, -1)}
-                            disabled={loading || (bets[i] ?? 0) <= 0}
-                            aria-label={t('betMinusAria', { card: cardAlt(b.card), amount: bets[i] })}
-                          >
-                            −
-                          </button>
-                          <span className="w-6 text-center text-ds-text-primary">{bets[i] ?? 0}</span>
-                          <button
-                            type="button"
-                            className={btnSuccess}
-                            onClick={() => adjustBet(i, 1)}
-                            disabled={loading || betRemaining <= 0}
-                            aria-label={t('betPlusAria', { card: cardAlt(b.card), amount: bets[i] })}
-                          >
-                            +
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div>
-                    <button
-                      type="button"
-                      className={btnPrimary}
-                      onClick={() => handleBet(bets)}
-                      disabled={loading || !canPlaceBets}
-                    >
-                      {t('placeBets')}
-                    </button>
-                  </div>
-                </div>
-              )}
-
               {isPlayPhase && isHumanTurn && !isGameEnd && (
                 <div className="text-ds-text-muted text-sm">{t('playPrompt')}</div>
               )}
-
-              <div className="flex flex-wrap gap-2 items-center">
-                {isResultPhase && !isGameEnd && (
-                  <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                    {t('nextRound')}
-                  </button>
-                )}
-
-                <GameResetButton
-                  isGameEnd={isGameEnd}
-                  onReset={handleManualReset}
-                  requestConfirm={requestConfirm}
-                  loading={loading}
-                  dataTutorial="michigan-reset-button"
-                />
-              </div>
             </div>
           </GameFooter>
         </>

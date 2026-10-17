@@ -297,7 +297,7 @@ function ContinentalRummyPageContent() {
                 <table className="w-full text-center text-sm">
                   <thead>
                     <tr>
-                      <th scope="col" className="p-1">
+                      <th scope="col" className="p-1 whitespace-nowrap">
                         {t('historyRound')}
                       </th>
                       {state.players.map((player) => (
@@ -310,10 +310,10 @@ function ContinentalRummyPageContent() {
                       <th scope="col" className="p-1" />
                       {state.players.map((player) => (
                         <Fragment key={player.id}>
-                          <th scope="col" className="p-1">
+                          <th scope="col" className="p-1 whitespace-nowrap">
                             {t('historyRoundScore')}
                           </th>
-                          <th scope="col" className="p-1">
+                          <th scope="col" className="p-1 whitespace-nowrap">
                             {t('historyCumulativeScore')}
                           </th>
                         </Fragment>
@@ -372,9 +372,7 @@ function ContinentalRummyPageContent() {
             )}
 
             {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
-          </div>
 
-          <GameFooter className={`${gameTheme.continentalrummy.footer} px-4 pt-3`}>
             <ErrorAlert message={error} onRetry={retry} />
             <SettingsPanel
               title={tc('settings.title')}
@@ -412,6 +410,113 @@ function ContinentalRummyPageContent() {
             />
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
+            <div className="flex flex-col items-center gap-2 pb-2">
+              <div className="flex gap-2">
+                <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
+                  {tc('actionLog.view')}
+                </button>
+                <GameResetButton
+                  isGameEnd={gameOver}
+                  onReset={handleResetWithConfig}
+                  requestConfirm={requestConfirm}
+                  loading={loading}
+                />
+              </div>
+            </div>
+          </div>
+
+          <GameFooter
+            className={`${gameTheme.continentalrummy.footer} px-4 pt-3`}
+            actions={
+              <div className="flex flex-col items-center gap-2" data-tutorial="continentalrummy-controls">
+                {/* **引かずに上がれるなら真っ先に見せる。** 引いてしまうと
+                    10 点が 7 点に落ちるので、順番が意味を持つ。 */}
+                {canGoOutOnDeal && (
+                  <button
+                    type="button"
+                    className={btnSuccess}
+                    data-hint-action="gooutdeal"
+                    aria-keyshortcuts="o"
+                    onClick={() => execApi('gooutdeal')}
+                    disabled={loading}
+                    data-testid="cont-goout-deal"
+                  >
+                    {t('button.goOutOnDeal')}
+                    {!loading && <KbdBadge label={t('kbd.goOutOnDeal')} />}
+                  </button>
+                )}
+
+                {canDraw && (
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      data-hint-action="stock"
+                      aria-keyshortcuts="s"
+                      onClick={() => execApi('stock')}
+                      disabled={loading}
+                    >
+                      {t('button.stock')}
+                      {!loading && <KbdBadge label={t('kbd.stock')} />}
+                    </button>
+                    <button
+                      type="button"
+                      className={btnSecondary}
+                      data-hint-action="take"
+                      aria-keyshortcuts="t"
+                      onClick={() => execApi('take')}
+                      disabled={loading || !state.discardTop}
+                    >
+                      {t('button.take')}
+                      {!loading && !!state.discardTop && <KbdBadge label={t('kbd.take')} />}
+                    </button>
+                  </div>
+                )}
+
+                {/* **上がれるときは黙っていない。** 15 枚の分割は目で追いきれない
+                    ので、見落としたまま捨ててしまうのが一番つまらない負け方になる。 */}
+                {canDiscard && goOutIdx >= 0 && (
+                  <button
+                    type="button"
+                    className={btnSuccess}
+                    data-hint-action="goout"
+                    aria-keyshortcuts="g"
+                    onClick={handleGoOut}
+                    disabled={loading}
+                    data-testid="cont-goout"
+                  >
+                    {t('button.goOut')}
+                    {!loading && <KbdBadge label={t('kbd.goOut')} />}
+                  </button>
+                )}
+
+                {canDiscard && goOutIdx < 0 && (
+                  <p className="text-ds-text-muted text-sm" data-testid="cont-discard-notice">
+                    {t('discardNotice')}
+                  </p>
+                )}
+
+                {isRoundEnd && (
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    aria-keyshortcuts="n"
+                    onClick={() => execApi('next')}
+                    disabled={loading}
+                  >
+                    {t('button.next')}
+                    {!loading && <KbdBadge label={t('kbd.next')} />}
+                  </button>
+                )}
+
+                {!myTurn && !isRoundEnd && !gameOver && (
+                  <p className="text-ds-text-muted text-sm" data-testid="cont-wait-notice">
+                    {t('waitNotice')}
+                  </p>
+                )}
+              </div>
+            }
+          >
             {me && (
               <PlayerHandSection
                 humanPlayer={me}
@@ -434,106 +539,6 @@ function ContinentalRummyPageContent() {
                 restrictedTooltip={t('restrictedTooltip')}
               />
             )}
-
-            <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="continentalrummy-controls">
-              {/* **引かずに上がれるなら真っ先に見せる。** 引いてしまうと
-                  10 点が 7 点に落ちるので、順番が意味を持つ。 */}
-              {canGoOutOnDeal && (
-                <button
-                  type="button"
-                  className={btnSuccess}
-                  data-hint-action="gooutdeal"
-                  aria-keyshortcuts="o"
-                  onClick={() => execApi('gooutdeal')}
-                  disabled={loading}
-                  data-testid="cont-goout-deal"
-                >
-                  {t('button.goOutOnDeal')}
-                  {!loading && <KbdBadge label={t('kbd.goOutOnDeal')} />}
-                </button>
-              )}
-
-              {canDraw && (
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    data-hint-action="stock"
-                    aria-keyshortcuts="s"
-                    onClick={() => execApi('stock')}
-                    disabled={loading}
-                  >
-                    {t('button.stock')}
-                    {!loading && <KbdBadge label={t('kbd.stock')} />}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnSecondary}
-                    data-hint-action="take"
-                    aria-keyshortcuts="t"
-                    onClick={() => execApi('take')}
-                    disabled={loading || !state.discardTop}
-                  >
-                    {t('button.take')}
-                    {!loading && !!state.discardTop && <KbdBadge label={t('kbd.take')} />}
-                  </button>
-                </div>
-              )}
-
-              {/* **上がれるときは黙っていない。** 15 枚の分割は目で追いきれない
-                  ので、見落としたまま捨ててしまうのが一番つまらない負け方になる。 */}
-              {canDiscard && goOutIdx >= 0 && (
-                <button
-                  type="button"
-                  className={btnSuccess}
-                  data-hint-action="goout"
-                  aria-keyshortcuts="g"
-                  onClick={handleGoOut}
-                  disabled={loading}
-                  data-testid="cont-goout"
-                >
-                  {t('button.goOut')}
-                  {!loading && <KbdBadge label={t('kbd.goOut')} />}
-                </button>
-              )}
-
-              {canDiscard && goOutIdx < 0 && (
-                <p className="text-ds-text-muted text-sm" data-testid="cont-discard-notice">
-                  {t('discardNotice')}
-                </p>
-              )}
-
-              {isRoundEnd && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  aria-keyshortcuts="n"
-                  onClick={() => execApi('next')}
-                  disabled={loading}
-                >
-                  {t('button.next')}
-                  {!loading && <KbdBadge label={t('kbd.next')} />}
-                </button>
-              )}
-
-              {!myTurn && !isRoundEnd && !gameOver && (
-                <p className="text-ds-text-muted text-sm" data-testid="cont-wait-notice">
-                  {t('waitNotice')}
-                </p>
-              )}
-
-              <div className="flex gap-2">
-                <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
-                  {tc('button.actionLog')}
-                </button>
-                <GameResetButton
-                  isGameEnd={gameOver}
-                  onReset={handleResetWithConfig}
-                  requestConfirm={requestConfirm}
-                  loading={loading}
-                />
-              </div>
-            </div>
           </GameFooter>
         </>
       )}

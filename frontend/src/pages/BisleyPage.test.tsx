@@ -328,11 +328,11 @@ describe('BisleyPage', () => {
       expect(liveRegion).toBeEmptyDOMElement();
 
       fireEvent.click(screen.getByTestId('autocomplete-button'));
-      expect(liveRegion).toHaveTextContent('自動完成を開始しました');
+      expect(liveRegion).toHaveTextContent('オートコンプリートを開始しました');
       act(() => {
         vi.advanceTimersByTime(3001);
       });
-      expect(liveRegion).toHaveTextContent('自動完成の処理が終わりました');
+      expect(liveRegion).toHaveTextContent('オートコンプリートの処理が終わりました');
     } finally {
       unmount();
       vi.useRealTimers();

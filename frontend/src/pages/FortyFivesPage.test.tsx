@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fortyFivesApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -67,6 +67,13 @@ beforeEach(() => {
 });
 
 describe('FortyFivesPage', () => {
+  it('keeps each status item unbroken in the wrapping status row', async () => {
+    renderWithProviders(<FortyFivesPage />);
+    const row = await screen.findByText(/ラウンド/).then((el) => el.closest('[data-tutorial="fortyfives-info"]'));
+    expect(row).toHaveClass('flex', 'flex-wrap');
+    expect(row?.querySelectorAll('span.whitespace-nowrap')).toHaveLength(4);
+  });
+
   it('keeps an empty polite status region without a decorative box', async () => {
     mockExec.mockResolvedValue(makeFortyFivesState({ message: undefined }));
     renderWithProviders(<FortyFivesPage />);
@@ -106,6 +113,22 @@ describe('FortyFivesPage', () => {
     expect(screen.getByTestId('bid-15')).toBeInTheDocument();
     expect(screen.getByTestId('bid-20')).toBeInTheDocument();
     expect(screen.getByTestId('bid-25')).toBeInTheDocument();
+    const actions = within(screen.getByTestId('game-footer-actions'));
+    expect(actions.getByTestId('bid-0')).toBeInTheDocument();
+  });
+
+  it('keeps the hand in the footer and places supporting content in the play area', async () => {
+    const { container } = renderWithProviders(<FortyFivesPage />);
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const footer = screen.getByTestId('game-footer-actions').parentElement;
+    const playArea = container.querySelector('.flex-1.overflow-y-auto');
+    expect(playArea).not.toBeNull();
+    expect(footer).toContainElement(footerContent);
+    expect(footerContent.querySelector('[data-tutorial="fortyfives-player-hand"]')).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('ff-bid-history')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('ff-bid-history')).toBeInTheDocument();
+    expect(footerContent.querySelector('[data-tutorial="fortyfives-reset-button"]')).not.toBeInTheDocument();
+    expect(playArea?.querySelector('[data-tutorial="fortyfives-reset-button"]')).toBeInTheDocument();
   });
 
   it('marks the current player during bidding and play, but not between tricks', async () => {
@@ -408,5 +431,28 @@ describe('FortyFivesPage', () => {
     });
     renderWithProviders(<FortyFivesPage />);
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
+  });
+
+  it('renders the game message in the footer message region', async () => {
+    mockExec.mockResolvedValue(makeFortyFivesState({ message: 'footer placement check' }));
+    renderWithProviders(<FortyFivesPage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage).toHaveTextContent('footer placement check');
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    mockExec.mockResolvedValue(makeFortyFivesState({ message: 'mobile placement check' }));
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      renderWithProviders(<FortyFivesPage />);
+      const message = await screen.findByText('mobile placement check');
+      expect(message.closest('[data-testid="game-footer-message"]')).toBeNull();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
   });
 });

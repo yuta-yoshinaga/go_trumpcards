@@ -322,6 +322,7 @@ function OmahaHiLoPageContent() {
                   player={player}
                   showCards={isShowdown}
                   faceDownCount={4}
+                  compactFaceDown={isLargeDesktop}
                   showHandName={isShowdown}
                   extraInfo={
                     player.totalHands > 0 ? (
@@ -496,10 +497,175 @@ function OmahaHiLoPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+
+            <ErrorAlert message={error} onRetry={retry} />
+            {/* Hint */}
+            {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
+
+            {/* Settings + Reset */}
+            <details className="mb-1" open={learningMode || undefined}>
+              <summary className="cursor-pointer select-none text-ds-text-primary text-sm font-bold py-1">
+                {tc('settings.title')}
+              </summary>
+              <div className="flex flex-col gap-2 py-1">
+                <div className="flex items-center gap-2" data-testid="learning-mode-toggle">
+                  <label
+                    htmlFor="learningModeCheckbox"
+                    className="text-ds-text-primary text-sm cursor-pointer flex items-center gap-2 min-h-[44px]"
+                  >
+                    {t('learning.toggle')}
+                    <input
+                      id="learningModeCheckbox"
+                      type="checkbox"
+                      checked={learningMode}
+                      onChange={(e) => setLearningMode(e.target.checked)}
+                    />
+                  </label>
+                </div>
+                {learningMode && state?.equity && state.potOdds != null && (
+                  <EquityDisplay
+                    equity={state.equity}
+                    potOdds={state.potOdds}
+                    lowProbability={state.equity.lowProbability}
+                  />
+                )}
+                <div className="flex items-center gap-3">
+                  <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
+                    <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
+                    {tc('hint.toggle', { ns: 'tutorial' })}
+                  </label>
+                  <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
+                    <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
+                    {t('settings.cpuMetaAI')}
+                  </label>
+                </div>
+              </div>
+            </details>
+            <GameResetButton
+              isGameEnd={phase === OmahaPhase.SHOWDOWN || phase === OmahaPhase.END}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+              dataTutorial="ohl-reset-button"
+              className="min-w-[90px]"
+            />
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="omahahilo-kbd-shortcuts" />
           </div>
 
           {/* Sticky footer: player hand + buttons */}
-          <GameFooter className={`${gameTheme.omahahilo.footer} px-5 py-3`}>
+          <GameFooter
+            className={`${gameTheme.omahahilo.footer} px-5 py-3`}
+            actions={
+              <>
+                {/* Muck/Show controls */}
+                {isMuckPhase && (
+                  <div className="mb-2 text-center" data-testid="muck-controls">
+                    <div className="flex justify-center gap-2">
+                      <button
+                        type="button"
+                        className={`${btnPrimary} min-w-[90px]`}
+                        disabled={loading}
+                        onClick={() => execApi('muck')}
+                      >
+                        {t('muck.muck')}
+                      </button>
+                      <button
+                        type="button"
+                        className={`${btnSecondary} min-w-[90px]`}
+                        disabled={loading}
+                        onClick={() => execApi('show')}
+                      >
+                        {t('muck.show')}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Rebuy/Addon controls */}
+                {isRebuyPhase && state && humanPlayer && (
+                  <div className="mb-2 text-center" data-testid="rebuy-controls">
+                    <p className="text-ds-text-primary mb-2">
+                      {t('rebuy.prompt', { chips: state.rebuyChips, used: humanRebuyCount, max: state.rebuyMaxCount })}
+                    </p>
+                    <p className="text-ds-text-muted mb-2">
+                      {t('rebuy.stack', {
+                        current: humanPlayer.chips,
+                        after: humanPlayer.chips + state.rebuyChips,
+                        remaining: Math.max(0, state.rebuyMaxCount - humanRebuyCount),
+                        separator: t('listSeparator'),
+                      })}
+                    </p>
+                    <div className="flex justify-center gap-2">
+                      <button
+                        type="button"
+                        className={`${btnPrimary} min-w-[90px]`}
+                        disabled={loading}
+                        onClick={() => execApi('rebuy')}
+                      >
+                        {t('rebuy.accept')}
+                      </button>
+                      <button
+                        type="button"
+                        className={`${btnSecondary} min-w-[90px]`}
+                        disabled={loading}
+                        onClick={() => execApi('skiprebuy')}
+                      >
+                        {t('rebuy.skip')}
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {isAddonPhase && state && humanPlayer && (
+                  <div className="mb-2 text-center" data-testid="addon-controls">
+                    <p className="text-ds-text-primary mb-2">{t('addon.prompt', { chips: state.addonChips })}</p>
+                    <p className="text-ds-text-muted mb-2">
+                      {t('addon.stack', { after: humanPlayer.chips + state.addonChips })}
+                    </p>
+                    <div className="flex justify-center gap-2">
+                      <button
+                        type="button"
+                        className={`${btnPrimary} min-w-[90px]`}
+                        disabled={loading}
+                        onClick={() => execApi('addon')}
+                      >
+                        {t('addon.accept')}
+                      </button>
+                      <button
+                        type="button"
+                        className={`${btnSecondary} min-w-[90px]`}
+                        disabled={loading}
+                        onClick={() => execApi('skipaddon')}
+                      >
+                        {t('addon.skip')}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Betting controls */}
+                {canAct && (
+                  <div data-tutorial="ohl-action-buttons">
+                    <BettingControls
+                      inputId="omahaBetAmount"
+                      betAmount={betAmount}
+                      onBetAmountChange={setBetAmount}
+                      minRaise={minRaise}
+                      maxBetAmount={state?.maxBetAmount}
+                      potSize={state?.pot}
+                      hasOutstandingBet={hasOutstandingBet}
+                      loading={loading}
+                      onCall={() => execApi('call', undefined, undefined, getElapsed())}
+                      onRaise={() => execApi('raise', betAmount, undefined, getElapsed())}
+                      onBet={() => execApi('bet', betAmount, undefined, getElapsed())}
+                      onCheck={() => execApi('check', undefined, undefined, getElapsed())}
+                      onFold={() => execApi('fold', undefined, undefined, getElapsed())}
+                      onAllIn={() => execApi('allin', undefined, undefined, getElapsed())}
+                    />
+                  </div>
+                )}
+              </>
+            }
+          >
             {/* Human player */}
             {humanPlayer && (
               <div className="mb-2" data-tutorial="ohl-player-hand">
@@ -592,167 +758,6 @@ function OmahaHiLoPageContent() {
               messageParams={state?.messageParams}
               alwaysVisible
             />
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            {/* Muck/Show controls */}
-            {isMuckPhase && (
-              <div className="mb-2 text-center" data-testid="muck-controls">
-                <div className="flex justify-center gap-2">
-                  <button
-                    type="button"
-                    className={`${btnPrimary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => execApi('muck')}
-                  >
-                    {t('muck.muck')}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnSecondary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => execApi('show')}
-                  >
-                    {t('muck.show')}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Rebuy/Addon controls */}
-            {isRebuyPhase && state && humanPlayer && (
-              <div className="mb-2 text-center" data-testid="rebuy-controls">
-                <p className="text-ds-text-primary mb-2">
-                  {t('rebuy.prompt', { chips: state.rebuyChips, used: humanRebuyCount, max: state.rebuyMaxCount })}
-                </p>
-                <p className="text-ds-text-muted mb-2">
-                  {t('rebuy.stack', {
-                    current: humanPlayer.chips,
-                    after: humanPlayer.chips + state.rebuyChips,
-                    remaining: Math.max(0, state.rebuyMaxCount - humanRebuyCount),
-                    separator: t('listSeparator'),
-                  })}
-                </p>
-                <div className="flex justify-center gap-2">
-                  <button
-                    type="button"
-                    className={`${btnPrimary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => execApi('rebuy')}
-                  >
-                    {t('rebuy.accept')}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnSecondary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => execApi('skiprebuy')}
-                  >
-                    {t('rebuy.skip')}
-                  </button>
-                </div>
-              </div>
-            )}
-            {isAddonPhase && state && humanPlayer && (
-              <div className="mb-2 text-center" data-testid="addon-controls">
-                <p className="text-ds-text-primary mb-2">{t('addon.prompt', { chips: state.addonChips })}</p>
-                <p className="text-ds-text-muted mb-2">
-                  {t('addon.stack', { after: humanPlayer.chips + state.addonChips })}
-                </p>
-                <div className="flex justify-center gap-2">
-                  <button
-                    type="button"
-                    className={`${btnPrimary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => execApi('addon')}
-                  >
-                    {t('addon.accept')}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnSecondary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => execApi('skipaddon')}
-                  >
-                    {t('addon.skip')}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Hint */}
-            {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
-
-            {/* Betting controls */}
-            {canAct && (
-              <div data-tutorial="ohl-action-buttons">
-                <BettingControls
-                  inputId="omahaBetAmount"
-                  betAmount={betAmount}
-                  onBetAmountChange={setBetAmount}
-                  minRaise={minRaise}
-                  maxBetAmount={state?.maxBetAmount}
-                  potSize={state?.pot}
-                  hasOutstandingBet={hasOutstandingBet}
-                  loading={loading}
-                  onCall={() => execApi('call', undefined, undefined, getElapsed())}
-                  onRaise={() => execApi('raise', betAmount, undefined, getElapsed())}
-                  onBet={() => execApi('bet', betAmount, undefined, getElapsed())}
-                  onCheck={() => execApi('check', undefined, undefined, getElapsed())}
-                  onFold={() => execApi('fold', undefined, undefined, getElapsed())}
-                  onAllIn={() => execApi('allin', undefined, undefined, getElapsed())}
-                />
-              </div>
-            )}
-
-            {/* Settings + Reset */}
-            <details className="mb-1" open={learningMode || undefined}>
-              <summary className="cursor-pointer select-none text-ds-text-primary text-sm font-bold py-1">
-                {tc('settings.title')}
-              </summary>
-              <div className="flex flex-col gap-2 py-1">
-                <div className="flex items-center gap-2" data-testid="learning-mode-toggle">
-                  <label
-                    htmlFor="learningModeCheckbox"
-                    className="text-ds-text-primary text-sm cursor-pointer flex items-center gap-2 min-h-[44px]"
-                  >
-                    {t('learning.toggle')}
-                    <input
-                      id="learningModeCheckbox"
-                      type="checkbox"
-                      checked={learningMode}
-                      onChange={(e) => setLearningMode(e.target.checked)}
-                    />
-                  </label>
-                </div>
-                {learningMode && state?.equity && state.potOdds != null && (
-                  <EquityDisplay
-                    equity={state.equity}
-                    potOdds={state.potOdds}
-                    lowProbability={state.equity.lowProbability}
-                  />
-                )}
-                <div className="flex items-center gap-3">
-                  <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
-                    <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
-                    {tc('hint.toggle', { ns: 'tutorial' })}
-                  </label>
-                  <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
-                    <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
-                    {t('settings.cpuMetaAI')}
-                  </label>
-                </div>
-              </div>
-            </details>
-            <GameResetButton
-              isGameEnd={phase === OmahaPhase.SHOWDOWN || phase === OmahaPhase.END}
-              onReset={handleManualReset}
-              requestConfirm={requestConfirm}
-              loading={loading}
-              dataTutorial="ohl-reset-button"
-              className="min-w-[90px]"
-            />
-            <ActionShortcutsPanel bindings={actionBindings} data-testid="omahahilo-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

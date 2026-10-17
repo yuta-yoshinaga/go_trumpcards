@@ -72,6 +72,29 @@ describe('BraidPage', () => {
     vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
   });
 
+  it('fits the foundations, stock, and waste in one compact row on large desktop', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BraidPage />);
+    const row = await screen.findByTestId('br-top-row');
+    expect(row.querySelector('[data-tutorial="br-foundation"]')?.parentElement).toBe(row);
+    expect(row.querySelector('[data-tutorial="br-stock"]')?.parentElement).toBe(row);
+    expect(row.querySelector('[data-tutorial="br-foundation"] button')).toHaveStyle({ width: '80px', height: '120px' });
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
+  it('keeps the develop layout at 800px', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 800 });
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BraidPage />);
+    await screen.findByText('山札');
+    expect(screen.queryByTestId('br-top-row')).not.toBeInTheDocument();
+    expect(screen.getByText('山札').closest('[data-tutorial="br-stock"]')).toBeInTheDocument();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
   it('calls reset on initial render', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BraidPage />);
@@ -125,6 +148,17 @@ describe('BraidPage', () => {
     await waitFor(() => expect(screen.getByText(/向き: 未選択/)).toBeInTheDocument());
     expect(screen.getByTestId('direction-up')).toBeInTheDocument();
     expect(screen.getByTestId('direction-down')).toBeInTheDocument();
+  });
+
+  it('does not repeat the direction prompt in the game message panel', async () => {
+    mockExec.mockResolvedValue({
+      ...awaitingDirectionState,
+      message: '方向を選んでください',
+    });
+    renderWithProviders(<BraidPage />);
+
+    await screen.findByTestId('direction-up');
+    expect(screen.queryByText('方向を選んでください')).not.toBeInTheDocument();
   });
 
   it.each([
@@ -587,5 +621,30 @@ describe('BraidPage braid tail label', () => {
 
     expect(screen.queryByRole('button', { name: /^ブレイド ♠/ })).not.toBeInTheDocument();
     expect(screen.getByLabelText('ブレイドは空です')).toBeInTheDocument();
+  });
+});
+
+describe('BraidPage compact large-desktop dimensions', () => {
+  it('uses 60px cards at 1024px and 80px cards at 1280px', async () => {
+    const originalWidth = window.innerWidth;
+    try {
+      mockExec.mockResolvedValue(playingState);
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 });
+      const compact = renderWithProviders(<BraidPage />);
+      await screen.findByTestId('br-top-row');
+      const compactCard = screen.getByLabelText('空の組札0');
+      expect(compactCard).toHaveStyle({ width: '60px' });
+      compact.unmount();
+
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+      const fullSize = renderWithProviders(<BraidPage />);
+      await screen.findByTestId('br-top-row');
+      const fullSizeCard = screen.getByLabelText('空の組札0');
+      expect(fullSizeCard).toHaveStyle({ width: '80px' });
+      fullSize.unmount();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
   });
 });

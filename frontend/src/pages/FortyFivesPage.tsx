@@ -197,6 +197,17 @@ function FortyFivesPageContent() {
     reset();
   };
 
+  const messageBox = (
+    <GameMessageBox
+      message={state.message}
+      messageCode={state.messageCode}
+      messageParams={state.messageParams}
+      alwaysVisible
+      bareWhenEmpty
+      testId="forty-fives-game-message"
+    />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.fortyfives')}
@@ -247,11 +258,14 @@ function FortyFivesPageContent() {
           />
 
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            <div className="text-ds-text-primary text-center mb-2" data-tutorial="fortyfives-info">
-              <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
-              <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
-              <span className="mr-4">{t('trump', { suit: trumpSymbol })}</span>
-              <span>{t('target', { points: state.config.targetPoints })}</span>
+            <div
+              className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-ds-text-primary mb-2"
+              data-tutorial="fortyfives-info"
+            >
+              <span className="whitespace-nowrap">{t('round', { n: state.roundNumber })}</span>
+              <span className="whitespace-nowrap">{t('trick', { n: state.trickNumber })}</span>
+              <span className="whitespace-nowrap">{t('trump', { suit: trumpSymbol })}</span>
+              <span className="whitespace-nowrap">{t('target', { points: state.config.targetPoints })}</span>
             </div>
 
             <div className="text-ds-text-muted text-center mb-2 text-sm">
@@ -370,15 +384,7 @@ function FortyFivesPageContent() {
               </div>
             </div>
 
-            {/* Message */}
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-              alwaysVisible
-              bareWhenEmpty
-              testId="forty-fives-game-message"
-            />
+            {isMobile && messageBox}
 
             <ActionLogSection
               isEndPhase={isGameEnd}
@@ -386,24 +392,6 @@ function FortyFivesPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
-          </div>
-
-          {/* Footer */}
-          <GameFooter className={`${gameTheme.fortyfives.footer} px-4 py-2.5`}>
-            {humanPlayer && (
-              <PlayerHandSection
-                humanPlayer={humanPlayer}
-                selectedCardIndices={selectedCardIndices}
-                toggleCard={toggleCard}
-                cardWidth={cardWidth}
-                isMobile={isMobile}
-                dataTutorialPrefix="fortyfives"
-                validIndices={canPlay ? state.playableIndices : undefined}
-                restrictedTooltip={t('playButton')}
-                trumpIndices={topTrumpIndices}
-                trumpTitle={t('topTrumpTitle')}
-              />
-            )}
 
             <ErrorAlert message={error} onRetry={retry} />
 
@@ -436,60 +424,7 @@ function FortyFivesPageContent() {
               </span>
             </div>
 
-            <div className="flex flex-wrap gap-2 items-center" data-tutorial="fortyfives-action-buttons">
-              {isBidPhase && isHumanBidTurn && (
-                <>
-                  <span className="text-xs text-ds-text-muted self-center mr-1">{t('bidPrompt')}</span>
-                  <span className="text-xs text-ds-text-muted self-center mr-1" data-testid="ff-highest-bid">
-                    {highestBid > 0
-                      ? t('bidHighest', { bid: bidName(highestBid), player: highestBidderName })
-                      : t('bidNone')}
-                  </span>
-                  {BIDS.map((b) => {
-                    // Pass (0) is always allowed; a non-pass bid must beat the current highest.
-                    const tooLow = b.value !== 0 && b.value <= highestBid;
-                    const disabled = loading || tooLow;
-                    const reason = tooLow ? t('bidDisabledReason', { currentBid: highestBid }) : undefined;
-                    // The title lives on the wrapping span: browsers suppress native tooltips on
-                    // disabled buttons, so hovering the span still surfaces the reason.
-                    return (
-                      <span key={b.value} title={reason} data-testid={`bid-wrap-${b.value}`}>
-                        <button
-                          type="button"
-                          className="px-3 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
-                          onClick={() => handleBid(b.value)}
-                          disabled={disabled}
-                          aria-disabled={disabled}
-                          aria-label={reason ? `${t(b.key)} — ${reason}` : undefined}
-                          data-testid={`bid-${b.value}`}
-                        >
-                          {t(b.key)}
-                        </button>
-                      </span>
-                    );
-                  })}
-                </>
-              )}
-              {canPlay && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-              {isTrickEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                  {t('nextTrick')}
-                </button>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
+            <div className="flex flex-wrap gap-2 items-center">
               <GameResetButton
                 isGameEnd={isGameEnd}
                 onReset={handleManualReset}
@@ -498,6 +433,86 @@ function FortyFivesPageContent() {
                 dataTutorial="fortyfives-reset-button"
               />
             </div>
+          </div>
+
+          {/* Footer */}
+          <GameFooter
+            message={isMobile ? undefined : messageBox}
+            className={`${gameTheme.fortyfives.footer} px-4 py-2.5`}
+            actions={
+              (isBidPhase && isHumanBidTurn) || canPlay || isTrickEnd || isRoundEnd ? (
+                <div className="flex flex-wrap gap-2 items-center" data-tutorial="fortyfives-action-buttons">
+                  {isBidPhase && isHumanBidTurn && (
+                    <>
+                      <span className="text-xs text-ds-text-muted self-center mr-1">{t('bidPrompt')}</span>
+                      <span className="text-xs text-ds-text-muted self-center mr-1" data-testid="ff-highest-bid">
+                        {highestBid > 0
+                          ? t('bidHighest', { bid: bidName(highestBid), player: highestBidderName })
+                          : t('bidNone')}
+                      </span>
+                      {BIDS.map((b) => {
+                        // Pass (0) is always allowed; a non-pass bid must beat the current highest.
+                        const tooLow = b.value !== 0 && b.value <= highestBid;
+                        const disabled = loading || tooLow;
+                        const reason = tooLow ? t('bidDisabledReason', { currentBid: highestBid }) : undefined;
+                        // The title lives on the wrapping span: browsers suppress native tooltips on
+                        // disabled buttons, so hovering the span still surfaces the reason.
+                        return (
+                          <span key={b.value} title={reason} data-testid={`bid-wrap-${b.value}`}>
+                            <button
+                              type="button"
+                              className="px-3 py-2 rounded-lg bg-ds-info text-ds-text-on-accent text-sm disabled:opacity-40"
+                              onClick={() => handleBid(b.value)}
+                              disabled={disabled}
+                              aria-disabled={disabled}
+                              aria-label={reason ? `${t(b.key)} — ${reason}` : undefined}
+                              data-testid={`bid-${b.value}`}
+                            >
+                              {t(b.key)}
+                            </button>
+                          </span>
+                        );
+                      })}
+                    </>
+                  )}
+                  {canPlay && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handlePlay}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                    >
+                      {t('playButton')}
+                    </button>
+                  )}
+                  {isTrickEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                      {t('nextTrick')}
+                    </button>
+                  )}
+                  {isRoundEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                      {t('nextRound')}
+                    </button>
+                  )}
+                </div>
+              ) : null
+            }
+          >
+            {humanPlayer && (
+              <PlayerHandSection
+                humanPlayer={humanPlayer}
+                selectedCardIndices={selectedCardIndices}
+                toggleCard={toggleCard}
+                cardWidth={cardWidth}
+                isMobile={isMobile}
+                dataTutorialPrefix="fortyfives"
+                validIndices={canPlay ? state.playableIndices : undefined}
+                restrictedTooltip={t('playButton')}
+                trumpIndices={topTrumpIndices}
+                trumpTitle={t('topTrumpTitle')}
+              />
+            )}
           </GameFooter>
         </>
       )}

@@ -49,6 +49,35 @@ beforeEach(() => {
 });
 
 describe('QuadrillePage', () => {
+  it('keeps the called king and trump labels on one line', async () => {
+    renderWithProviders(<QuadrillePage />);
+    expect(await screen.findByTestId('quadrille-king-line')).toHaveClass('whitespace-nowrap');
+    expect(screen.getByText(/切り札/)).toHaveClass('whitespace-nowrap');
+  });
+
+  it('stacks later mobile hand rows', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    try {
+      const state = makeQuadrilleState({
+        players: makeQuadrilleState().players.map((player) =>
+          player.isHuman
+            ? { ...player, cards: Array.from({ length: 8 }, (_, i) => ({ design: 'SPADE' as const, value: i + 1 })) }
+            : player,
+        ),
+      });
+      mockExec.mockResolvedValue(state);
+      const { container } = renderWithProviders(<QuadrillePage />);
+      await screen.findByRole('button', { name: /♠ 8/ });
+      const rows = container.querySelectorAll<HTMLElement>(
+        '[data-tutorial="quadrille-player-hand"] [data-testid="hand-row"]',
+      );
+      expect(rows.length).toBeGreaterThan(1);
+      expect(Number.parseFloat(rows[1].style.marginTop)).toBeLessThan(0);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+    }
+  });
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<QuadrillePage />);
@@ -65,11 +94,19 @@ describe('QuadrillePage', () => {
   });
 
   it('renders the play phase with the human cards and the Quadrille badge', async () => {
-    renderWithProviders(<QuadrillePage />);
+    const { container } = renderWithProviders(<QuadrillePage />);
     await waitFor(() => {
       expect(screen.getByAltText('♥ Q')).toBeInTheDocument();
       expect(screen.getByAltText('♠ A')).toBeInTheDocument();
     });
+    const footerContent = screen.getByTestId('game-footer-content');
+    const playArea = container.querySelector('.flex-1.overflow-y-auto');
+    expect(playArea).not.toBeNull();
+    expect(footerContent.querySelector('[data-tutorial="quadrille-player-hand"]')).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('quadrille-hint-live')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('quadrille-hint-live')).toBeInTheDocument();
+    expect(within(footerContent).queryByRole('button', { name: 'リセット' })).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByRole('button', { name: 'リセット' })).toBeInTheDocument();
     // The human (seat 0) is the default Quadrille — the badge renders (heading also reads カドリール).
     expect(screen.getAllByText('カドリール').length).toBeGreaterThan(1);
   });
@@ -110,6 +147,9 @@ describe('QuadrillePage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'エントラール' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'ソロ' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'パス' })).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: 'エントラール' }),
+    ).toBeInTheDocument();
   });
 
   it('shows each seat declaration and current bidder only during the auction', async () => {
@@ -284,6 +324,7 @@ describe('QuadrillePage', () => {
     renderWithProviders(<QuadrillePage />);
     await waitFor(() => expect(screen.getByAltText('♥ Q')).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-actions')).not.toBeInTheDocument();
   });
 
   it('badges Spadille (♠A) in the hand when trump is decided', async () => {
@@ -426,5 +467,28 @@ describe('QuadrillePage king call', () => {
     expect(live).toHaveAttribute('aria-live', 'polite');
     // 催促が**その領域の中**にあること。隣に置いただけの実装は属性の検査を通る。
     expect(live).toContainElement(await screen.findByTestId('quadrille-bid-prompt'));
+  });
+
+  it('renders the game message in the footer message region', async () => {
+    mockExec.mockResolvedValue(makeQuadrilleState({ message: 'footer placement check' }));
+    renderWithProviders(<QuadrillePage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage).toHaveTextContent('footer placement check');
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    mockExec.mockResolvedValue(makeQuadrilleState({ message: 'mobile placement check' }));
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      renderWithProviders(<QuadrillePage />);
+      const message = await screen.findByText('mobile placement check');
+      expect(message.closest('[data-testid="game-footer-message"]')).toBeNull();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
   });
 });

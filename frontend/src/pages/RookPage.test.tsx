@@ -456,4 +456,9 @@ describe('follow-suit restriction', () => {
     expect(screen.queryByRole('option', { name: 'Easy' })).not.toBeInTheDocument();
     expect(document.body.textContent).not.toContain('settings.easy');
   });
+
+  it('renders CPU hands in compact card back fans', async () => {
+    renderWithProviders(<RookPage />);
+    expect(await screen.findAllByTestId('card-back-fan')).not.toHaveLength(0);
+  });
 });

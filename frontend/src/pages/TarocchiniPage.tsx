@@ -321,32 +321,6 @@ function TarocchiniPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
-          </div>
-
-          {/* Footer */}
-          <GameFooter className={`${gameTheme.tarocchini.footer} px-4 py-2.5`}>
-            {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
-                変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。 */}
-            <div data-testid="tarocchini-prompt-live" role="status" aria-live="polite">
-              {canScarto && (
-                <div className="mb-1 text-center text-sm text-ds-text-muted" data-testid="tarocchini-scarto-prompt">
-                  {t('scartoPrompt', { count: selectedCardIndices.length, total: TAROCCHINI_SURPLUS })}
-                </div>
-              )}
-            </div>
-
-            {humanPlayer && (
-              <PlayerHandSection
-                humanPlayer={humanPlayer}
-                selectedCardIndices={selectedCardIndices}
-                toggleCard={toggleCard}
-                cardWidth={cardWidth}
-                isMobile={isMobile}
-                dataTutorialPrefix="tarocchini"
-                validIndices={canPlay ? state.playableIndices : scartoValidIndices}
-                restrictedTooltip={canScarto ? t('scartoRestricted') : t('playButton')}
-              />
-            )}
 
             <ErrorAlert message={error} onRetry={retry} />
 
@@ -367,50 +341,7 @@ function TarocchiniPageContent() {
             </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-            <div className="flex flex-wrap gap-2 items-center" data-tutorial="tarocchini-action-buttons">
-              {canScarto && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handleScarto}
-                  disabled={loading || selectedCardIndices.length !== TAROCCHINI_SURPLUS}
-                >
-                  {t('scartoButton')}
-                </button>
-              )}
-              {canPlay && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-              {/* 同格のパパ 4 枚をどう使うかがこのゲームの難所。CUI と CLI からは
-                  呼べるのに、盤面には要求する手段が無かった (#4820)。 */}
-              {(canScarto || canPlay) && (
-                <button
-                  type="button"
-                  className={btnSuccess}
-                  onClick={handleHint}
-                  disabled={loading}
-                  data-testid="tarocchini-hint-button"
-                >
-                  {t('hintButton')}
-                </button>
-              )}
-              {isTrickEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                  {t('nextTrick')}
-                </button>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
+            <div className="flex flex-wrap gap-2 items-center">
               <GameResetButton
                 isGameEnd={isGameEnd}
                 onReset={handleManualReset}
@@ -419,6 +350,86 @@ function TarocchiniPageContent() {
                 dataTutorial="tarocchini-reset-button"
               />
             </div>
+          </div>
+
+          {/* Footer */}
+          {/* Tarot-size hands outgrow the 45vh cap on phones (#11655). */}
+          <GameFooter
+            tall
+            className={`${gameTheme.tarocchini.footer} px-4 py-2.5`}
+            actions={
+              (canScarto || canPlay || isTrickEnd || isRoundEnd) && (
+                <div className="flex flex-wrap gap-2 items-center" data-tutorial="tarocchini-action-buttons">
+                  {canScarto && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handleScarto}
+                      disabled={loading || selectedCardIndices.length !== TAROCCHINI_SURPLUS}
+                    >
+                      {t('scartoButton')}
+                    </button>
+                  )}
+                  {canPlay && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handlePlay}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                    >
+                      {t('playButton')}
+                    </button>
+                  )}
+                  {/* 同格のパパ 4 枚をどう使うかがこのゲームの難所。CUI と CLI からは
+                    呼べるのに、盤面には要求する手段が無かった (#4820)。 */}
+                  {(canScarto || canPlay) && (
+                    <button
+                      type="button"
+                      className={btnSuccess}
+                      onClick={handleHint}
+                      disabled={loading}
+                      data-testid="tarocchini-hint-button"
+                    >
+                      {t('hintButton')}
+                    </button>
+                  )}
+                  {isTrickEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                      {t('nextTrick')}
+                    </button>
+                  )}
+                  {isRoundEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                      {t('nextRound')}
+                    </button>
+                  )}
+                </div>
+              )
+            }
+          >
+            {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
+                変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。 */}
+            <div data-testid="tarocchini-prompt-live" role="status" aria-live="polite">
+              {canScarto && (
+                <div className="mb-1 text-center text-sm text-ds-text-muted" data-testid="tarocchini-scarto-prompt">
+                  {t('scartoPrompt', { count: selectedCardIndices.length, total: TAROCCHINI_SURPLUS })}
+                </div>
+              )}
+            </div>
+
+            {humanPlayer && (
+              <PlayerHandSection
+                humanPlayer={humanPlayer}
+                selectedCardIndices={selectedCardIndices}
+                toggleCard={toggleCard}
+                cardWidth={cardWidth}
+                isMobile={isMobile}
+                dataTutorialPrefix="tarocchini"
+                stackRows
+                validIndices={canPlay ? state.playableIndices : scartoValidIndices}
+                restrictedTooltip={canScarto ? t('scartoRestricted') : t('playButton')}
+              />
+            )}
           </GameFooter>
         </>
       )}

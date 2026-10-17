@@ -1,10 +1,17 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { boliviaApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeBoliviaState } from '../test/stateFactories';
 import { BoliviaPage } from './BoliviaPage';
+
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+}));
 
 vi.mock('../api/gameApi', () => ({
   boliviaApi: { exec: vi.fn() },
@@ -21,6 +28,34 @@ const gameEndState = makeBoliviaState({ phase: 4, gameEndFlag: true, winnerIdx: 
 const cpuTurnState = makeBoliviaState({ currentPlayerIdx: 1 });
 
 describe('BoliviaPage', () => {
+  it('renders the game message in the footer message slot', async () => {
+    mobileState.isMobile = false;
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      message: 'Footer message test',
+      messageCode: 'test.untranslated',
+    });
+    renderWithProviders(<BoliviaPage />);
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(within(footerMessage).getByRole('status')).toHaveTextContent('Footer message test');
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    mobileState.isMobile = true;
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      message: 'Mobile play-area message',
+      messageCode: 'test.untranslated',
+    });
+    renderWithProviders(<BoliviaPage />);
+    await screen.findByText('Mobile play-area message');
+    const status = screen.getByText('Mobile play-area message').closest('[role="status"]');
+    if (!status) throw new Error('Mobile message must be inside its live region');
+    expect(status).toHaveTextContent('Mobile play-area message');
+    expect(status.closest('[data-testid="game-footer-message"]')).toBeNull();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     mockExec.mockResolvedValue(drawPhaseState);
@@ -28,12 +63,123 @@ describe('BoliviaPage', () => {
 
   afterEach(() => {
     localStorage.clear();
+    mobileState.isMobile = true;
+  });
+
+  it('collapses the rule and score details on mobile while keeping team scores visible', async () => {
+    renderWithProviders(<BoliviaPage />);
+
+    const rule = await screen.findByTestId('bo-goout-rule');
+    const scoreTable = screen.getByTestId('bo-score-table');
+    expect(rule).not.toHaveAttribute('open');
+    expect(within(rule).getByText('上がるには完成メルド 2 個以上＋そのうち最低 1 本がエスカレラ')).not.toBeVisible();
+    expect(scoreTable).not.toHaveAttribute('open');
+    expect(within(scoreTable).getByRole('table')).not.toBeVisible();
+    const cpuAccordion = screen.getByTestId('cpu-accordion');
+    expect(cpuAccordion).not.toHaveAttribute('open');
+    expect(cpuAccordion.querySelector(':scope > div')).not.toBeVisible();
+    expect(screen.getByTestId('sa-discard-pile').querySelector('img')).toHaveStyle({ width: '36px' });
+    expect(screen.getByTestId('sa-team-scores')).toBeVisible();
+    expect(screen.getByTestId('sa-play-area')).toHaveClass('pt-2', 'sm:pt-3');
+    expect(screen.getByTestId('sa-team-scores')).toHaveClass('mb-1', 'sm:mb-2');
+  });
+
+  it('opens the score details on desktop', async () => {
+    mobileState.isMobile = false;
+    renderWithProviders(<BoliviaPage />);
+
+    const scoreTable = await screen.findByTestId('bo-score-table');
+    expect(scoreTable).toHaveAttribute('open');
+    expect(within(scoreTable).getByRole('table')).toBeVisible();
+    expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
   });
 
   it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<BoliviaPage />);
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+  });
+
+  it('keeps the hand in the footer and places supporting controls in the play area', async () => {
+    renderWithProviders(<BoliviaPage />);
+
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const playArea = screen.getByTestId('sa-play-area');
+    expect(footerContent.querySelector('[data-tutorial="sa-player-hand"]')).toBeInTheDocument();
+    expect(within(playArea).getByTestId('bolivia-kbd-shortcuts')).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('bolivia-kbd-shortcuts')).not.toBeInTheDocument();
+    expect(within(playArea).getByRole('button', { name: 'リセット' })).toBeInTheDocument();
+    expect(within(footerContent).queryByRole('button', { name: 'リセット' })).not.toBeInTheDocument();
+  });
+
+  it('stacks mobile hand rows and preserves card selection and restrictions', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      const cards = Array.from({ length: 13 }, (_, value) => ({ design: 'SPADE' as const, value }));
+      mockExec.mockResolvedValue(
+        makeBoliviaState({
+          phase: 1,
+          players: makeBoliviaState().players.map((player) =>
+            player.isHuman ? { ...player, cards, cardCount: cards.length } : player,
+          ),
+        }),
+      );
+      renderWithProviders(<BoliviaPage />);
+
+      const hand = await screen
+        .findByTestId('game-footer-content')
+        .then((footer) => footer.querySelector('[data-tutorial="sa-player-hand"]'));
+      expect(hand).not.toBeNull();
+      if (!hand) throw new Error('Expected the Bolivia player hand');
+      await waitFor(() => expect(hand.querySelectorAll('[data-testid="hand-row"]').length).toBeGreaterThanOrEqual(2));
+      const rows = hand.querySelectorAll<HTMLElement>('[data-testid="hand-row"]');
+      for (const row of Array.from(rows).slice(1)) expect(row.style.marginTop).toMatch(/^-/);
+
+      const handCards = within(hand as HTMLElement).getAllByRole('button');
+      fireEvent.click(handCards[0]);
+      expect(handCards[0]).toHaveAttribute('aria-pressed', 'true');
+      fireEvent.click(handCards[1]);
+      fireEvent.click(handCards[2]);
+      fireEvent.click(screen.getByRole('button', { name: 'グループを追加' }));
+      expect(handCards[0]).toHaveAttribute('aria-disabled', 'true');
+      expect(handCards[0]).toHaveAccessibleName(/グループ1に追加済み/);
+      fireEvent.click(handCards[0]);
+      expect(handCards[0]).toHaveAttribute('aria-pressed', 'false');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it('renders the desktop hand and keeps grouped cards unselectable', async () => {
+    mobileState.isMobile = false;
+    const cards = Array.from({ length: 5 }, (_, value) => ({ design: 'SPADE' as const, value }));
+    mockExec.mockResolvedValue(
+      makeBoliviaState({
+        phase: 1,
+        players: makeBoliviaState().players.map((player) =>
+          player.isHuman ? { ...player, cards, cardCount: cards.length } : player,
+        ),
+      }),
+    );
+    renderWithProviders(<BoliviaPage />);
+
+    const hand = await screen
+      .findByTestId('game-footer-content')
+      .then((footer) => footer.querySelector('[data-tutorial="sa-player-hand"]'));
+    expect(hand).toBeInTheDocument();
+    if (!hand) throw new Error('Expected the Bolivia player hand');
+    const handCards = within(hand as HTMLElement).getAllByRole('button');
+    fireEvent.click(handCards[0]);
+    expect(handCards[0]).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(handCards[1]);
+    fireEvent.click(handCards[2]);
+    fireEvent.click(screen.getByRole('button', { name: 'グループを追加' }));
+    expect(handCards[0]).toHaveAttribute('aria-disabled', 'true');
+    expect(handCards[0]).toHaveAccessibleName(/グループ1に追加済み/);
+    fireEvent.click(handCards[0]);
+    expect(handCards[0]).toHaveAttribute('aria-pressed', 'false');
   });
 
   it('calls reset on mount with the default config', async () => {
@@ -59,6 +205,9 @@ describe('BoliviaPage', () => {
   it('shows draw phase buttons and team scores', async () => {
     renderWithProviders(<BoliviaPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '山札から引く' })).toBeInTheDocument());
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '山札から引く' }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeInTheDocument();
     expect(screen.getByTestId('sa-team-scores')).toBeInTheDocument();
   });
@@ -270,6 +419,14 @@ describe('BoliviaPage', () => {
     expect(screen.getByTestId('sa-draw-discard-reason')).toHaveTextContent(
       'フリーズ中はワイルドカードでの代用ができません',
     );
+  });
+
+  it('keeps the frozen status label together while the status row can wrap', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, isFrozen: true });
+    renderWithProviders(<BoliviaPage />);
+    const frozenLabel = await screen.findByText('[フリーズ中]');
+    expect(frozenLabel.parentElement).toHaveClass('flex', 'flex-wrap');
+    expect(frozenLabel).toHaveClass('shrink-0', 'whitespace-nowrap');
   });
 
   it('explains when a natural pair matches the discard top', async () => {

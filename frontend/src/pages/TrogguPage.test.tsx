@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { trogguApi } from '../api/gameApi';
 import i18n from '../i18n';
@@ -33,6 +33,13 @@ beforeEach(() => {
 });
 
 describe('TrogguPage', () => {
+  it('keeps the tutorial action target present outside the human bidding turn', async () => {
+    mockExec.mockResolvedValue(playState);
+    const { container } = renderWithProviders(<TrogguPage />);
+    expect(await screen.findByTestId('tg-info')).toBeInTheDocument();
+    expect(container.querySelector('[data-tutorial="tg-actions"]')).toBeInTheDocument();
+  });
+
   it('marks ordinary trumps visually and in accessible names, but not the Excuse', async () => {
     mockExec.mockResolvedValue(
       makeTrogguState({
@@ -136,8 +143,10 @@ describe('TrogguPage', () => {
   // **4 契約すべてが打てる。** どれか一つ欠けると、その契約だけが遊べなくなる。
   it('offers all four contracts and pass', async () => {
     renderWithProviders(<TrogguPage />);
+    const actions = await screen.findByTestId('game-footer-actions');
     for (const c of ['trois', 'solo', 'piccolo', 'misere']) {
       expect(await screen.findByTestId(`tg-bid-${c}`)).toBeInTheDocument();
+      expect(within(actions).getByTestId(`tg-bid-${c}`)).toBeInTheDocument();
     }
     expect(screen.getByTestId('tg-pass')).toBeInTheDocument();
 

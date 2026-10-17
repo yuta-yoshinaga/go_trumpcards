@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, wizardApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -162,7 +162,47 @@ const followSuitState: WizardResponse = {
   ],
 };
 
+afterEach(() => {
+  Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1024 });
+});
+
 describe('WizardPage', () => {
+  it('keeps status labels intact and wraps between items', async () => {
+    renderWithProviders(<WizardPage />);
+    const row = await screen.findByTestId('wiz-status-row');
+    expect(row).toHaveClass('flex-wrap');
+    expect(row.querySelectorAll('span.whitespace-nowrap').length).toBeGreaterThanOrEqual(3);
+  });
+  it('keeps trick and round score headings on one line', async () => {
+    renderWithProviders(<WizardPage />);
+    const headers = await screen.findAllByRole('columnheader');
+    expect(headers.filter((header) => header.classList.contains('text-[10px]'))).toHaveLength(2);
+    expect(headers.filter((header) => header.classList.contains('whitespace-nowrap'))).toHaveLength(2);
+  });
+  it('shows the no-trump label when the trump suit is -1', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, trumpSuit: -1 });
+    renderWithProviders(<WizardPage />);
+    expect(await screen.findByText('切り札: なし')).toBeInTheDocument();
+    expect(screen.queryByText(/suitName/)).not.toBeInTheDocument();
+  });
+
+  it('renders turn guidance in the footer on desktop', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1024 });
+    mockExec.mockResolvedValue({ ...playPhaseState, message: 'Footer guidance' });
+    renderWithProviders(<WizardPage />);
+    const message = await screen.findByText('Footer guidance');
+    expect(message.closest('[data-testid="game-footer-message"]')).toBeInTheDocument();
+  });
+
+  it('keeps turn guidance in the play area on mobile', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 375 });
+    mockExec.mockResolvedValue({ ...playPhaseState, message: 'Mobile guidance' });
+    renderWithProviders(<WizardPage />);
+    const message = await screen.findByText('Mobile guidance');
+    expect(message.closest('[role="status"]')).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+  });
+
   it('announces cards added to the current trick without announcing a result during play', async () => {
     mockExec.mockResolvedValue(playPhaseState);
     renderWithProviders(<WizardPage />);
@@ -935,5 +975,19 @@ describe('WizardPage', () => {
 
     // 制約の掛かっていないボタンには余計な属性を付けない。
     expect(screen.getByRole('button', { name: 'ビッド 3' })).not.toHaveAttribute('aria-describedby');
+  });
+  it('fits the score table at large desktop widths', async () => {
+    const innerWidthSpy = vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(1280);
+    try {
+      const { container } = renderWithProviders(<WizardPage />);
+      await waitFor(() =>
+        expect(container.querySelector('[data-tutorial="wiz-score-table"] table')).toBeInTheDocument(),
+      );
+      const table = container.querySelector('[data-tutorial="wiz-score-table"] table');
+      expect(table?.className).toContain('table-fixed');
+      expect(table?.className).not.toContain('min-w-[');
+    } finally {
+      innerWidthSpy.mockRestore();
+    }
   });
 });

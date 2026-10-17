@@ -85,6 +85,60 @@ describe('RoyalCotillionPage', () => {
     }
   });
 
+  it('fits the sixteen tableau slots into two rows on mobile', async () => {
+    const previousWidth = window.innerWidth;
+    window.innerWidth = 375;
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<RoyalCotillionPage />);
+
+    const tableau = await screen.findByTestId('rc-tableau');
+    expect(tableau).toHaveStyle({ gridTemplateColumns: 'repeat(8, minmax(0, 1fr))' });
+
+    window.innerWidth = previousWidth;
+    window.dispatchEvent(new Event('resize'));
+  });
+
+  it('uses compact desktop cards and keeps foundations beside the stock', async () => {
+    const previousWidth = window.innerWidth;
+    window.innerWidth = 1280;
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<RoyalCotillionPage />);
+
+    const stock = await screen.findByRole('button', { name: /山札 残り76枚/ });
+    expect(stock).toHaveStyle({ width: '60px', height: '90px' });
+    const topRow = document.querySelector('[data-tutorial="cg-foundation"]')?.parentElement;
+    expect(topRow).toHaveClass('sm:flex-nowrap');
+
+    window.innerWidth = previousWidth;
+    window.dispatchEvent(new Event('resize'));
+  });
+
+  it('uses eight tableau columns on large desktop and keeps four at 800px', async () => {
+    const previousWidth = window.innerWidth;
+    try {
+      window.innerWidth = 1280;
+      window.dispatchEvent(new Event('resize'));
+      mockExec.mockResolvedValue(playingState);
+      const { unmount } = renderWithProviders(<RoyalCotillionPage />);
+      expect(await screen.findByTestId('rc-tableau')).toHaveStyle({
+        gridTemplateColumns: 'repeat(8, minmax(0, 1fr))',
+      });
+      unmount();
+
+      window.innerWidth = 800;
+      window.dispatchEvent(new Event('resize'));
+      renderWithProviders(<RoyalCotillionPage />);
+      expect(await screen.findByTestId('rc-tableau')).toHaveStyle({
+        gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+      });
+    } finally {
+      window.innerWidth = previousWidth;
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
   it('shows the waste count and describes the waste card for assistive technology', async () => {
     mockExec.mockResolvedValue({ ...playingState, waste: [card('DIAMOND', 4), card('HEART', 8)] });
     renderWithProviders(<RoyalCotillionPage />);
@@ -413,13 +467,13 @@ describe('RoyalCotillionPage', () => {
     expect(liveRegion).toBeEmptyDOMElement();
 
     fireEvent.click(screen.getByTestId('autocomplete-button'));
-    expect(liveRegion).toHaveTextContent('自動完成を開始しました');
+    expect(liveRegion).toHaveTextContent('オートコンプリートを開始しました');
     expect(screen.getByTestId('cg-hint-live')).toBeInTheDocument();
 
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, 3050));
     });
-    expect(liveRegion).toHaveTextContent('自動完成の処理が終わりました');
+    expect(liveRegion).toHaveTextContent('オートコンプリートの処理が終わりました');
   });
 
   it('shows StalemateEscapeButton when the stalemate flag is set', async () => {

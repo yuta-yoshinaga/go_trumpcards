@@ -1,6 +1,7 @@
 {
   "stock": "Stock",
   "tie": "Tie",
+  "rules": "Rules",
   "captureRule": "A-9 capture by summing to ten / 10-K capture by rank / only red cards (H, D) score",
   "you": "You",
   "opponent": "CPU",

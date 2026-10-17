@@ -3,10 +3,14 @@ package games_test
 import (
 	"encoding/json"
 	"fmt"
+	"go/ast"
+	"go/parser"
+	"go/token"
 	"os"
 	"path/filepath"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -59,6 +63,74 @@ func TestDomainErrorCodesResolveInGoLocales(t *testing.T) {
 		t.Fatalf("%d domain error code(s) have no Go translation and print raw to the CUI:\n  %s",
 			len(missing), strings.Join(missing, "\n  "))
 	}
+}
+
+// TestNilMessageCodeParamsHaveNoFrontendTemplatePlaceholders catches a code emitted
+// as `return "", "<code>", nil` whose web template still interpolates `{{...}}`
+// (#11615: hearts.passPhase rendered a literal "{{count}}"). It only sees string-
+// literal codes returned with a literal nil, and only checks common.json's
+// messageCode map; a code missing from that map is not reported here.
+func TestNilMessageCodeParamsHaveNoFrontendTemplatePlaceholders(t *testing.T) {
+	codes := collectNilMessageCodeParams(t)
+	if len(codes) == 0 {
+		t.Fatal("no nil-parameter message codes found; scanner may have stopped matching")
+	}
+	for _, lang := range []string{"ja", "en"} {
+		data, err := os.ReadFile(filepath.Join(repoRoot, "frontend", "src", "i18n", "locales", lang, "common.json"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		var locale struct {
+			MessageCode map[string]string `json:"messageCode"`
+		}
+		if err := json.Unmarshal(data, &locale); err != nil {
+			t.Fatal(err)
+		}
+		for _, code := range codes {
+			translation := locale.MessageCode[code]
+			if strings.Contains(translation, "{{") {
+				t.Errorf("%s messageCode %q has template placeholders but is emitted with nil params", lang, code)
+			}
+		}
+	}
+}
+
+func collectNilMessageCodeParams(t *testing.T) []string {
+	t.Helper()
+	var codes []string
+	err := filepath.WalkDir(filepath.Join(repoRoot, "internal"), func(path string, entry os.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if entry.IsDir() || !strings.HasSuffix(path, ".go") || strings.HasSuffix(path, "_test.go") {
+			return nil
+		}
+		file, err := parser.ParseFile(token.NewFileSet(), path, nil, 0)
+		if err != nil {
+			return err
+		}
+		ast.Inspect(file, func(node ast.Node) bool {
+			ret, ok := node.(*ast.ReturnStmt)
+			if !ok || len(ret.Results) < 3 {
+				return true
+			}
+			code, ok := ret.Results[1].(*ast.BasicLit)
+			params, nilParams := ret.Results[2].(*ast.Ident)
+			if !ok || code.Kind != token.STRING || !nilParams || params.Name != "nil" {
+				return true
+			}
+			value, err := strconv.Unquote(code.Value)
+			if err == nil {
+				codes = append(codes, value)
+			}
+			return true
+		})
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	return codes
 }
 
 // collectDomainErrorCodes returns every message code literal in internal/domain.

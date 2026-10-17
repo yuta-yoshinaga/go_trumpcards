@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, machiavelliApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -13,6 +13,16 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockExec = vi.mocked(machiavelliApi.exec);
+
+vi.mock('../hooks/useCardDimensions', async () => ({
+  ...(await vi.importActual<typeof import('../hooks/useCardDimensions')>('../hooks/useCardDimensions')),
+  useIsMobile: vi.fn(() => false),
+  useBreakpoint: vi.fn(() => 'desktop'),
+}));
+
+const { useBreakpoint, useIsMobile } = await import('../hooks/useCardDimensions');
+const mockUseIsMobile = vi.mocked(useIsMobile);
+const mockUseBreakpoint = vi.mocked(useBreakpoint);
 
 function player(overrides: Partial<MachiavelliPlayer> = {}): MachiavelliPlayer {
   return {
@@ -101,9 +111,103 @@ const roundEndCpuCardsState: MachiavelliResponse = {
 
 beforeEach(() => {
   mockExec.mockResolvedValue(turnState);
+  mockUseIsMobile.mockReturnValue(false);
+  mockUseBreakpoint.mockReturnValue('desktop');
 });
 
 describe('MachiavelliPage', () => {
+  it('uses CardFan and wrapping meld groups on large desktop', async () => {
+    mockUseBreakpoint.mockReturnValue('largeDesktop');
+    mockExec.mockResolvedValue({ ...turnState, table: [tableMeld, tableMeld] });
+    renderWithProviders(<MachiavelliPage />);
+    await waitFor(() => expect(screen.getByTestId('machiavelli-table')).toBeInTheDocument());
+
+    const hand = screen.getByTestId('machiavelli-hand-fan');
+    expect(hand).toHaveClass('min-w-0');
+    expect(screen.getByTestId('machiavelli-meld-list')).toHaveClass('flex-wrap', 'gap-x-4', 'gap-y-2');
+    const meldGroups = within(screen.getByTestId('machiavelli-meld-list')).getAllByRole('group');
+    expect(meldGroups).toHaveLength(2);
+    // The overlap sits on a non-shrinking wrapper so every card keeps the same full size.
+    const meldCardWrappers = within(meldGroups[0]).getAllByTestId('machiavelli-meld-card');
+    expect(meldCardWrappers[0]).toHaveClass('shrink-0');
+    expect(meldCardWrappers[0].style.marginLeft).toBe('');
+    expect(Number.parseFloat(meldCardWrappers[1].style.marginLeft)).toBeLessThan(0);
+    expect(Number.parseFloat(meldCardWrappers[2].style.marginLeft)).toBeLessThan(0);
+    const side = within(meldGroups[0]).getByTestId('machiavelli-meld-side');
+    expect(within(side).getByTestId('machiavelli-meld-label-0')).toBeInTheDocument();
+    expect(within(side).getByRole('button')).toBeInTheDocument();
+    const meldCards = within(meldGroups[0]).getAllByRole('img');
+    const imageWidths = meldCards.map((card) => (card as HTMLElement).style.width);
+    expect(new Set(imageWidths).size).toBe(1);
+  });
+
+  it('sizes meld cards for large desktop and desktop viewports', async () => {
+    const originalWidth = window.innerWidth;
+    const setViewportWidth = (width: number) => {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: width });
+      window.dispatchEvent(new Event('resize'));
+    };
+    const meldCard = () => within(screen.getByTestId('machiavelli-meld-list')).getAllByRole('img')[0];
+    try {
+      // At 1024px, cardWidth is 80px; at 1280px, it is 100px.
+      setViewportWidth(1024);
+      mockUseBreakpoint.mockReturnValue('largeDesktop');
+      let currentUnmount = renderWithProviders(<MachiavelliPage />).unmount;
+      await waitFor(() => expect(screen.getByTestId('machiavelli-table')).toBeInTheDocument());
+      expect(meldCard()).toHaveStyle({ width: '48px' });
+
+      currentUnmount();
+      setViewportWidth(1280);
+      currentUnmount = renderWithProviders(<MachiavelliPage />).unmount;
+      await waitFor(() => expect(meldCard()).toHaveStyle({ width: '60px' }));
+
+      currentUnmount();
+      setViewportWidth(800);
+      mockUseBreakpoint.mockReturnValue('desktop');
+      renderWithProviders(<MachiavelliPage />);
+      await waitFor(() => expect(meldCard()).toHaveStyle({ width: '48px' }));
+    } finally {
+      setViewportWidth(originalWidth);
+    }
+  });
+
+  it('keeps the existing hand and meld layout below large desktop', async () => {
+    mockUseBreakpoint.mockReturnValue('desktop');
+    renderWithProviders(<MachiavelliPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    expect(screen.getByTestId('machiavelli-meld-list')).toHaveClass('flex', 'flex-col');
+    expect(screen.getByTestId('game-footer-content').querySelector('[data-tutorial="mv-player-hand"]')).toHaveClass(
+      'flex-wrap',
+      'gap-1',
+    );
+  });
+
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue({ ...turnState, message: 'Footer message test' });
+    renderWithProviders(<MachiavelliPage />);
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(within(footerMessage).getByRole('status')).toHaveTextContent('Footer message test');
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue({ ...turnState, message: 'Mobile play-area message', messageCode: 'test.untranslated' });
+    try {
+      renderWithProviders(<MachiavelliPage />);
+      await screen.findByText('Mobile play-area message');
+      const status = screen.getByText('Mobile play-area message').closest('[role="status"]');
+      if (!status) throw new Error('Mobile message must be inside its live region');
+      expect(status).toHaveTextContent('Mobile play-area message');
+      expect(status.closest('[data-testid="game-footer-message"]')).toBeNull();
+      expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<MachiavelliPage />);
@@ -126,6 +230,26 @@ describe('MachiavelliPage', () => {
       expect(screen.getByAltText('♠ A')).toBeInTheDocument();
       expect(screen.getByAltText('♥ J')).toBeInTheDocument();
     });
+  });
+
+  it('keeps the hand in the footer and places deadwood and shortcuts in the play area', async () => {
+    const { container } = renderWithProviders(<MachiavelliPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+    const footerContent = screen.getByTestId('game-footer-content');
+    const playArea = container.querySelector('.flex-1.overflow-y-auto');
+    const hand = container.querySelector<HTMLElement>('[data-tutorial="mv-player-hand"]');
+    const deadwood = screen.getByTestId('mv-own-deadwood');
+    const drawPileLive = screen.getByTestId('machiavelli-draw-pile-live');
+    const shortcuts = screen.getByTestId('machiavelli-kbd-shortcuts');
+
+    expect(footerContent).toContainElement(hand);
+    expect(footerContent).not.toContainElement(deadwood);
+    expect(footerContent).not.toContainElement(shortcuts);
+    expect(playArea).toContainElement(deadwood);
+    expect(deadwood.parentElement).toBe(playArea);
+    expect(deadwood.previousElementSibling).toBe(drawPileLive);
+    expect(playArea).toContainElement(shortcuts);
   });
 
   it('sorts the hand by rank and suit while selection and rearrange references stay on the same card', async () => {
@@ -169,6 +293,9 @@ describe('MachiavelliPage', () => {
       expect(screen.getByRole('button', { name: '山札から引く' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'メルドを出す' })).toBeInTheDocument();
     });
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '山札から引く' }),
+    ).toBeInTheDocument();
   });
 
   it('new-meld button disabled until 3 cards selected', async () => {
@@ -224,6 +351,33 @@ describe('MachiavelliPage', () => {
     // The layoff button's accessible name includes the target meld description.
     const layoff = screen.getByRole('button', { name: /にレイオフ/ });
     expect(layoff.getAttribute('aria-label')).toMatch(/3枚/);
+  });
+
+  it('overlaps mobile table cards and keeps a layoff button in every meld', async () => {
+    mockUseIsMobile.mockReturnValue(true);
+    const secondMeld: MachiavelliMeld = {
+      kind: 0,
+      cards: [
+        { design: 'HEART', value: 7 },
+        { design: 'CLOVER', value: 7 },
+        { design: 'DIAMOND', value: 7 },
+      ],
+    };
+    mockExec.mockResolvedValue({ ...turnState, table: [tableMeld, secondMeld] });
+    renderWithProviders(<MachiavelliPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ 3')).toBeInTheDocument());
+
+    const meldGroups = within(screen.getByTestId('machiavelli-table')).getAllByRole('group');
+    expect(meldGroups).toHaveLength(2);
+    expect(screen.getByTestId('machiavelli-meld-list').className).toContain('grid-cols-2');
+    for (const meldGroup of meldGroups) {
+      const layoffButton = within(meldGroup).getByRole('button', { name: /レイオフ/ });
+      expect(layoffButton).toBeInTheDocument();
+      expect(layoffButton.className).toContain('min-h-11');
+      const meldCards = within(meldGroup).getAllByRole('img');
+      expect(Number.parseFloat(meldCards[1].style.marginLeft)).toBeLessThan(0);
+      expect(Number.parseFloat(meldCards[2].style.marginLeft)).toBeLessThan(0);
+    }
   });
 
   it('labels a set meld with its shared rank', async () => {
@@ -309,12 +463,45 @@ describe('MachiavelliPage', () => {
     await waitFor(() => expect(screen.getByText(/CPU 1.*13枚/)).toBeInTheDocument());
   });
 
+  it('collapses the CPU player area on mobile and opens it on desktop', async () => {
+    mockUseIsMobile.mockReturnValue(true);
+    const { unmount } = renderWithProviders(<MachiavelliPage />);
+    await waitFor(() => expect(screen.getByTestId('cpu-accordion')).toBeInTheDocument());
+    expect(screen.getByTestId('cpu-accordion')).not.toHaveAttribute('open');
+    expect(screen.getByText(/CPU 1.*13枚/)).not.toBeVisible();
+
+    unmount();
+    mockUseIsMobile.mockReturnValue(false);
+    renderWithProviders(<MachiavelliPage />);
+    await waitFor(() => {
+      expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
+      expect(screen.getByText(/CPU 1.*13枚/)).toBeVisible();
+    });
+  });
+
   it('score table shows all players', async () => {
     renderWithProviders(<MachiavelliPage />);
     await waitFor(() => {
       expect(screen.getByText('スコア')).toBeInTheDocument();
+      expect(screen.getByTestId('mv-score-table')).toHaveAttribute('open');
       expect(screen.getByText('あなた')).toBeInTheDocument();
       expect(screen.getByText('CPU 1')).toBeInTheDocument();
+    });
+  });
+
+  it('collapses the score table on mobile and opens it on desktop', async () => {
+    mockUseIsMobile.mockReturnValue(true);
+    const { unmount } = renderWithProviders(<MachiavelliPage />);
+    await waitFor(() => expect(screen.getByTestId('mv-score-table')).toBeInTheDocument());
+    expect(screen.getByTestId('mv-score-table')).not.toHaveAttribute('open');
+    expect(screen.getByTestId('mv-score-table').querySelector('table')).not.toBeVisible();
+
+    unmount();
+    mockUseIsMobile.mockReturnValue(false);
+    renderWithProviders(<MachiavelliPage />);
+    await waitFor(() => {
+      expect(screen.getByTestId('mv-score-table')).toHaveAttribute('open');
+      expect(screen.getByTestId('mv-score-table').querySelector('table')).toBeVisible();
     });
   });
 

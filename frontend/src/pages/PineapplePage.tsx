@@ -469,6 +469,17 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
         <>
           {/* Scrollable: community cards + CPU players */}
           <div className={`flex-1 overflow-y-auto pt-4 px-5 lg:px-8 ${lgCardAreaConstraint}`}>
+            {/* Crazy Pineapple and Irish Poker discard after the flop betting round
+                (unlike plain Pineapple's immediate discard) — forewarn the player during
+                the flop bet so they can factor the upcoming discard into their decision. */}
+            {(variant === 'crazypineapple' || variant === 'irishpoker') && phase === PineapplePhase.FLOP && (
+              <div
+                data-testid="cp-discard-upcoming-banner"
+                className="mb-2 rounded border border-ds-info bg-ds-surface px-3 py-1.5 text-center text-ds-info text-sm"
+              >
+                {t('discardUpcoming')}
+              </div>
+            )}
             {/* Community cards + CPU players (poker table layout on desktop, accordion on mobile) */}
             {(() => {
               const communityCardsContent = (
@@ -565,21 +576,282 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+            <ErrorAlert message={error} onRetry={retry} />
+
+            {/* Hint */}
+            {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
+
+            {/* Settings + Reset */}
+            {variant === 'irishpoker' && (
+              <details className="mb-1" data-tutorial="pn-betting-info">
+                <summary className="cursor-pointer select-none text-ds-text-primary text-sm font-bold py-1">
+                  {t('bettingInfo.title')}
+                </summary>
+                <div className="py-1">
+                  <p className="text-ds-text-muted text-xs mb-2">{t('bettingInfo.description')}</p>
+                  {state?.equity && state.potOdds != null && (
+                    <EquityDisplay equity={state.equity} potOdds={state.potOdds} />
+                  )}
+                </div>
+              </details>
+            )}
+            <details className="mb-1" data-tutorial="pn-learning-mode" open={learningMode || undefined}>
+              <summary className="cursor-pointer select-none text-ds-text-primary text-sm font-bold py-1">
+                {tc('settings.title')}
+              </summary>
+              <div className="flex flex-col gap-2 py-1">
+                {variant !== 'irishpoker' && (
+                  <div className="flex items-center gap-2" data-testid="learning-mode-toggle">
+                    <label
+                      htmlFor="learningModeCheckbox"
+                      className="text-ds-text-primary text-sm cursor-pointer flex items-center gap-2 min-h-[44px]"
+                    >
+                      {t('learning.toggle')}
+                      <input
+                        id="learningModeCheckbox"
+                        type="checkbox"
+                        checked={learningMode}
+                        onChange={(e) => setLearningMode(e.target.checked)}
+                      />
+                    </label>
+                  </div>
+                )}
+                {variant !== 'irishpoker' && learningMode && state?.equity && state.potOdds != null && (
+                  <EquityDisplay equity={state.equity} potOdds={state.potOdds} />
+                )}
+                <div className="flex items-center gap-3">
+                  <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
+                    <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
+                    {tc('hint.toggle', { ns: 'tutorial' })}
+                  </label>
+                  {variant !== 'irishpoker' && (
+                    <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
+                      <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
+                      {t('settings.cpuMetaAI')}
+                    </label>
+                  )}
+                </div>
+              </div>
+            </details>
+            <GameResetButton
+              isGameEnd={phase === PineapplePhase.SHOWDOWN || phase === PineapplePhase.END}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+              dataTutorial="pn-reset-button"
+              className="min-w-[90px]"
+            />
+            <ActionShortcutsPanel
+              bindings={availableActionBindings}
+              includeCardNav
+              data-testid="pineapple-kbd-shortcuts"
+            />
           </div>
 
           {/* Sticky footer: player hand + buttons */}
-          <GameFooter className={`${gameTheme[variant].footer} px-5 py-3`}>
-            {/* Crazy Pineapple and Irish Poker discard after the flop betting round
-                (unlike plain Pineapple's immediate discard) — forewarn the player during
-                the flop bet so they can factor the upcoming discard into their decision. */}
-            {(variant === 'crazypineapple' || variant === 'irishpoker') && phase === PineapplePhase.FLOP && (
-              <div
-                data-testid="cp-discard-upcoming-banner"
-                className="mb-2 rounded border border-ds-info bg-ds-surface px-3 py-1.5 text-center text-ds-info text-sm"
-              >
-                {t('discardUpcoming')}
-              </div>
-            )}
+          <GameFooter
+            className={`${gameTheme[variant].footer} px-5 py-3`}
+            actions={
+              canAct || canDiscard || isMuckPhase || isRebuyPhase || isAddonPhase ? (
+                <>
+                  {/* Discard controls */}
+                  {canDiscard && (
+                    <div
+                      className="mb-2 text-center"
+                      data-testid="discard-controls"
+                      data-tutorial="pn-discard-controls"
+                    >
+                      {discardPreview && (
+                        <div className="mb-2 text-sm" data-testid="irishpoker-discard-preview">
+                          {/* **見えている行は読み上げ向きではない。** ラベル・札・役が
+                        別々の要素に割れていて、順に読まれても対応が取れない。1文に
+                        まとめた sr-only の live region を別に置く。上限超過通知
+                        (pn-discard-limit-announce) だけが aria-live を持っていて、
+                        こちらは無音だった (#5490)。視覚表示は変えていない。 */}
+                          <div
+                            className="sr-only"
+                            role="status"
+                            aria-live="polite"
+                            data-testid="irishpoker-discard-preview-announce"
+                          >
+                            {discardPreview.handKey
+                              ? t('discard.previewAriaWithHand', {
+                                  cards: discardPreview.kept.map((c) => cardAlt(c)).join(t('listSeparator')),
+                                  hand: t(`hand.${discardPreview.handKey}`),
+                                  strength: discardPreview.strengthCards.map(cardAlt).join(t('listSeparator')),
+                                })
+                              : t('discard.previewAria', {
+                                  cards: discardPreview.kept.map((c) => cardAlt(c)).join(t('listSeparator')),
+                                })}
+                          </div>
+                          <span className="text-ds-text-muted">{`${t('discard.keepLabel')}: `}</span>
+                          <span className="text-ds-text-primary font-semibold">
+                            {discardPreview.kept.map((c) => cardAlt(c)).join('  ')}
+                          </span>
+                          {discardPreview.handKey && (
+                            <span className="ml-2 inline-block rounded-full bg-ds-accent/30 px-2 py-0.5 text-ds-text-primary font-semibold">
+                              {t('discard.previewWithStrength', {
+                                hand: t(`hand.${discardPreview.handKey}`),
+                                strength: discardPreview.strengthCards.map(cardAlt).join(t('listSeparator')),
+                              })}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      {discardConfirming && selectedDiscards.length === discardCount && humanPlayer ? (
+                        <div data-testid="discard-confirm">
+                          <p className="text-ds-text-primary mb-2">
+                            {t('discard.confirm', {
+                              card: selectedDiscards.map((i) => cardAlt(humanPlayer.cards[i])).join(', '),
+                            })}
+                          </p>
+                          <div className="flex justify-center gap-2">
+                            <button
+                              type="button"
+                              className={`${btnPrimary} min-w-[90px]`}
+                              disabled={loading}
+                              onClick={() => {
+                                apiExec('discard', undefined, { cardIdxs: [...selectedDiscards] });
+                                setSelectedDiscards([]);
+                                setDiscardConfirming(false);
+                              }}
+                            >
+                              {t('discard.confirmYes')}
+                            </button>
+                            <button
+                              type="button"
+                              className={`${btnSecondary} min-w-[90px]`}
+                              disabled={loading}
+                              onClick={() => setDiscardConfirming(false)}
+                            >
+                              {t('discard.confirmNo')}
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <p className="text-ds-text-primary mb-2">{t('discard.select')}</p>
+                          {discardCount > 1 && (
+                            <p className="text-ds-text-muted text-xs mb-2" data-testid="discard-count">
+                              {t('discard.selectedCount', { n: selectedDiscards.length, total: discardCount })}
+                            </p>
+                          )}
+                          <button
+                            type="button"
+                            className={`${btnPrimary} min-w-[90px]`}
+                            disabled={loading || selectedDiscards.length !== discardCount}
+                            onClick={() => setDiscardConfirming(true)}
+                          >
+                            {t('discard.prompt')}
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Muck/Show controls */}
+                  {isMuckPhase && (
+                    <div className="mb-2 text-center" data-testid="muck-controls">
+                      <div className="flex justify-center gap-2">
+                        <button
+                          type="button"
+                          className={`${btnPrimary} min-w-[90px]`}
+                          disabled={loading}
+                          onClick={() => apiExec('muck')}
+                        >
+                          {t('muck.muck')}
+                        </button>
+                        <button
+                          type="button"
+                          className={`${btnSecondary} min-w-[90px]`}
+                          disabled={loading}
+                          onClick={() => apiExec('show')}
+                        >
+                          {t('muck.show')}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Rebuy/Addon controls */}
+                  {isRebuyPhase && (
+                    <div className="mb-2 text-center" data-testid="rebuy-controls">
+                      <p className="text-ds-text-primary mb-2">
+                        {t('rebuy.prompt', {
+                          chips: state?.rebuyChips,
+                          used: humanRebuyCount,
+                          max: state?.rebuyMaxCount,
+                        })}
+                      </p>
+                      <div className="flex justify-center gap-2">
+                        <button
+                          type="button"
+                          className={`${btnPrimary} min-w-[90px]`}
+                          disabled={loading}
+                          onClick={() => apiExec('rebuy')}
+                        >
+                          {t('rebuy.accept')}
+                        </button>
+                        <button
+                          type="button"
+                          className={`${btnSecondary} min-w-[90px]`}
+                          disabled={loading}
+                          onClick={() => apiExec('skiprebuy')}
+                        >
+                          {t('rebuy.skip')}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  {isAddonPhase && (
+                    <div className="mb-2 text-center" data-testid="addon-controls">
+                      <p className="text-ds-text-primary mb-2">{t('addon.prompt', { chips: state?.addonChips })}</p>
+                      <div className="flex justify-center gap-2">
+                        <button
+                          type="button"
+                          className={`${btnPrimary} min-w-[90px]`}
+                          disabled={loading}
+                          onClick={() => apiExec('addon')}
+                        >
+                          {t('addon.accept')}
+                        </button>
+                        <button
+                          type="button"
+                          className={`${btnSecondary} min-w-[90px]`}
+                          disabled={loading}
+                          onClick={() => apiExec('skipaddon')}
+                        >
+                          {t('addon.skip')}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {canAct && (
+                    <div data-tutorial="pn-action-buttons">
+                      <BettingControls
+                        inputId="pineappleBetAmount"
+                        betAmount={betAmount}
+                        onBetAmountChange={setBetAmount}
+                        minRaise={minRaise}
+                        maxBetAmount={state?.maxBetAmount}
+                        potSize={state?.pot}
+                        hasOutstandingBet={hasOutstandingBet}
+                        callAmountLabel={hasOutstandingBet ? t('callAmount', { amount: callAmount }) : undefined}
+                        loading={loading}
+                        onCall={() => apiExec('call', undefined, undefined, getElapsed())}
+                        onRaise={() => apiExec('raise', betAmount, undefined, getElapsed())}
+                        onBet={() => apiExec('bet', betAmount, undefined, getElapsed())}
+                        onCheck={() => apiExec('check', undefined, undefined, getElapsed())}
+                        onFold={() => apiExec('fold', undefined, undefined, getElapsed())}
+                        onAllIn={() => apiExec('allin', undefined, undefined, getElapsed())}
+                      />
+                    </div>
+                  )}
+                </>
+              ) : null
+            }
+          >
             {/* Human player */}
             {humanPlayer && (
               <div className="mb-2" data-tutorial="pn-player-hand">
@@ -766,8 +1038,6 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
               alwaysVisible
             />
 
-            <ErrorAlert message={error} onRetry={retry} />
-
             {/* The cp-discard-candidate / cp-discard-recommended badges are
                 visual only. This region is variant-exclusive with
                 irishpoker-discard-preview-announce, so only one of the two
@@ -787,263 +1057,6 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                       hand: t(`hand.${cpSelectedPreview.handKey}`),
                     }))}
             </div>
-
-            {/* Discard controls */}
-            {canDiscard && (
-              <div className="mb-2 text-center" data-testid="discard-controls" data-tutorial="pn-discard-controls">
-                {discardPreview && (
-                  <div className="mb-2 text-sm" data-testid="irishpoker-discard-preview">
-                    {/* **見えている行は読み上げ向きではない。** ラベル・札・役が
-                        別々の要素に割れていて、順に読まれても対応が取れない。1文に
-                        まとめた sr-only の live region を別に置く。上限超過通知
-                        (pn-discard-limit-announce) だけが aria-live を持っていて、
-                        こちらは無音だった (#5490)。視覚表示は変えていない。 */}
-                    <div
-                      className="sr-only"
-                      role="status"
-                      aria-live="polite"
-                      data-testid="irishpoker-discard-preview-announce"
-                    >
-                      {discardPreview.handKey
-                        ? t('discard.previewAriaWithHand', {
-                            cards: discardPreview.kept.map((c) => cardAlt(c)).join(t('listSeparator')),
-                            hand: t(`hand.${discardPreview.handKey}`),
-                            strength: discardPreview.strengthCards.map(cardAlt).join(t('listSeparator')),
-                          })
-                        : t('discard.previewAria', {
-                            cards: discardPreview.kept.map((c) => cardAlt(c)).join(t('listSeparator')),
-                          })}
-                    </div>
-                    <span className="text-ds-text-muted">{`${t('discard.keepLabel')}: `}</span>
-                    <span className="text-ds-text-primary font-semibold">
-                      {discardPreview.kept.map((c) => cardAlt(c)).join('  ')}
-                    </span>
-                    {discardPreview.handKey && (
-                      <span className="ml-2 inline-block rounded-full bg-ds-accent/30 px-2 py-0.5 text-ds-text-primary font-semibold">
-                        {t('discard.previewWithStrength', {
-                          hand: t(`hand.${discardPreview.handKey}`),
-                          strength: discardPreview.strengthCards.map(cardAlt).join(t('listSeparator')),
-                        })}
-                      </span>
-                    )}
-                  </div>
-                )}
-                {discardConfirming && selectedDiscards.length === discardCount && humanPlayer ? (
-                  <div data-testid="discard-confirm">
-                    <p className="text-ds-text-primary mb-2">
-                      {t('discard.confirm', {
-                        card: selectedDiscards.map((i) => cardAlt(humanPlayer.cards[i])).join(', '),
-                      })}
-                    </p>
-                    <div className="flex justify-center gap-2">
-                      <button
-                        type="button"
-                        className={`${btnPrimary} min-w-[90px]`}
-                        disabled={loading}
-                        onClick={() => {
-                          apiExec('discard', undefined, { cardIdxs: [...selectedDiscards] });
-                          setSelectedDiscards([]);
-                          setDiscardConfirming(false);
-                        }}
-                      >
-                        {t('discard.confirmYes')}
-                      </button>
-                      <button
-                        type="button"
-                        className={`${btnSecondary} min-w-[90px]`}
-                        disabled={loading}
-                        onClick={() => setDiscardConfirming(false)}
-                      >
-                        {t('discard.confirmNo')}
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <p className="text-ds-text-primary mb-2">{t('discard.select')}</p>
-                    {discardCount > 1 && (
-                      <p className="text-ds-text-muted text-xs mb-2" data-testid="discard-count">
-                        {t('discard.selectedCount', { n: selectedDiscards.length, total: discardCount })}
-                      </p>
-                    )}
-                    <button
-                      type="button"
-                      className={`${btnPrimary} min-w-[90px]`}
-                      disabled={loading || selectedDiscards.length !== discardCount}
-                      onClick={() => setDiscardConfirming(true)}
-                    >
-                      {t('discard.prompt')}
-                    </button>
-                  </>
-                )}
-              </div>
-            )}
-
-            {/* Muck/Show controls */}
-            {isMuckPhase && (
-              <div className="mb-2 text-center" data-testid="muck-controls">
-                <div className="flex justify-center gap-2">
-                  <button
-                    type="button"
-                    className={`${btnPrimary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => apiExec('muck')}
-                  >
-                    {t('muck.muck')}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnSecondary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => apiExec('show')}
-                  >
-                    {t('muck.show')}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Rebuy/Addon controls */}
-            {isRebuyPhase && (
-              <div className="mb-2 text-center" data-testid="rebuy-controls">
-                <p className="text-ds-text-primary mb-2">
-                  {t('rebuy.prompt', { chips: state?.rebuyChips, used: humanRebuyCount, max: state?.rebuyMaxCount })}
-                </p>
-                <div className="flex justify-center gap-2">
-                  <button
-                    type="button"
-                    className={`${btnPrimary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => apiExec('rebuy')}
-                  >
-                    {t('rebuy.accept')}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnSecondary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => apiExec('skiprebuy')}
-                  >
-                    {t('rebuy.skip')}
-                  </button>
-                </div>
-              </div>
-            )}
-            {isAddonPhase && (
-              <div className="mb-2 text-center" data-testid="addon-controls">
-                <p className="text-ds-text-primary mb-2">{t('addon.prompt', { chips: state?.addonChips })}</p>
-                <div className="flex justify-center gap-2">
-                  <button
-                    type="button"
-                    className={`${btnPrimary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => apiExec('addon')}
-                  >
-                    {t('addon.accept')}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnSecondary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => apiExec('skipaddon')}
-                  >
-                    {t('addon.skip')}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Hint */}
-            {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
-
-            {/* Betting controls */}
-            {canAct && (
-              <div data-tutorial="pn-action-buttons">
-                <BettingControls
-                  inputId="pineappleBetAmount"
-                  betAmount={betAmount}
-                  onBetAmountChange={setBetAmount}
-                  minRaise={minRaise}
-                  maxBetAmount={state?.maxBetAmount}
-                  potSize={state?.pot}
-                  hasOutstandingBet={hasOutstandingBet}
-                  callAmountLabel={hasOutstandingBet ? t('callAmount', { amount: callAmount }) : undefined}
-                  loading={loading}
-                  onCall={() => apiExec('call', undefined, undefined, getElapsed())}
-                  onRaise={() => apiExec('raise', betAmount, undefined, getElapsed())}
-                  onBet={() => apiExec('bet', betAmount, undefined, getElapsed())}
-                  onCheck={() => apiExec('check', undefined, undefined, getElapsed())}
-                  onFold={() => apiExec('fold', undefined, undefined, getElapsed())}
-                  onAllIn={() => apiExec('allin', undefined, undefined, getElapsed())}
-                />
-              </div>
-            )}
-
-            {/* Settings + Reset */}
-            {variant === 'irishpoker' && (
-              <details className="mb-1" data-tutorial="pn-betting-info">
-                <summary className="cursor-pointer select-none text-ds-text-primary text-sm font-bold py-1">
-                  {t('bettingInfo.title')}
-                </summary>
-                <div className="py-1">
-                  <p className="text-ds-text-muted text-xs mb-2">{t('bettingInfo.description')}</p>
-                  {state?.equity && state.potOdds != null && (
-                    <EquityDisplay equity={state.equity} potOdds={state.potOdds} />
-                  )}
-                </div>
-              </details>
-            )}
-            <details className="mb-1" data-tutorial="pn-learning-mode" open={learningMode || undefined}>
-              <summary className="cursor-pointer select-none text-ds-text-primary text-sm font-bold py-1">
-                {tc('settings.title')}
-              </summary>
-              <div className="flex flex-col gap-2 py-1">
-                {variant !== 'irishpoker' && (
-                  <div className="flex items-center gap-2" data-testid="learning-mode-toggle">
-                    <label
-                      htmlFor="learningModeCheckbox"
-                      className="text-ds-text-primary text-sm cursor-pointer flex items-center gap-2 min-h-[44px]"
-                    >
-                      {t('learning.toggle')}
-                      <input
-                        id="learningModeCheckbox"
-                        type="checkbox"
-                        checked={learningMode}
-                        onChange={(e) => setLearningMode(e.target.checked)}
-                      />
-                    </label>
-                  </div>
-                )}
-                {variant !== 'irishpoker' && learningMode && state?.equity && state.potOdds != null && (
-                  <EquityDisplay equity={state.equity} potOdds={state.potOdds} />
-                )}
-                <div className="flex items-center gap-3">
-                  <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
-                    <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
-                    {tc('hint.toggle', { ns: 'tutorial' })}
-                  </label>
-                  {variant !== 'irishpoker' && (
-                    <label className="text-ds-text-primary text-sm flex items-center gap-1 min-h-[44px]">
-                      <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
-                      {t('settings.cpuMetaAI')}
-                    </label>
-                  )}
-                </div>
-              </div>
-            </details>
-            <GameResetButton
-              isGameEnd={phase === PineapplePhase.SHOWDOWN || phase === PineapplePhase.END}
-              onReset={handleManualReset}
-              requestConfirm={requestConfirm}
-              loading={loading}
-              dataTutorial="pn-reset-button"
-              className="min-w-[90px]"
-            />
-            <ActionShortcutsPanel
-              bindings={availableActionBindings}
-              includeCardNav
-              data-testid="pineapple-kbd-shortcuts"
-            />
           </GameFooter>
         </>
       )}

@@ -4,6 +4,7 @@ import { type NertzMoveZone, nertzApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CardBack } from '../components/CardImage';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -16,7 +17,7 @@ import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsLargeDesktop, useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -112,6 +113,7 @@ function nertzTableauAccepts(card: Card | null, destTop: Card | null): boolean {
 export const NertzPage = withTutorial(NertzPageContent, 'nertz', NERTZ_TUTORIAL_STEPS);
 
 function NertzPageContent() {
+  const isMobile = useIsMobile();
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('nertz');
   const runApi = useCallback((...args: Parameters<typeof nertzApi.exec>) => nertzApi.exec(...args), []);
@@ -462,7 +464,6 @@ function NertzPageContent() {
     if (isRoundEnd) return t('phase.roundEnd');
     return t('phase.playing');
   }, [isGameEnd, isRoundEnd, t]);
-
   if (!state || !human) {
     return (
       <div className={`flex-1 flex flex-col min-h-0 ${gameTheme.nertz.bg}`}>
@@ -491,11 +492,11 @@ function NertzPageContent() {
         <CliTerminal logEntries={cliMode.logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
-          <div className="flex-1 overflow-y-auto px-3 py-2 space-y-4">
+          <div className="flex-1 overflow-y-auto px-2 py-1 sm:px-3 sm:py-2 space-y-2 sm:space-y-4">
             <div className="sr-only" role="status" aria-live="polite" aria-atomic="true" data-testid="nertz-announce">
               {foundationAnnounce}
             </div>
-            <div className="bg-black/30 text-ds-text-primary p-3 rounded text-sm">
+            <div className="bg-black/30 text-ds-text-primary p-2 sm:p-3 rounded text-sm">
               <div className="flex flex-wrap gap-x-4 gap-y-1">
                 <span>
                   {t('labels.round')}: {state.roundNumber}
@@ -504,54 +505,127 @@ function NertzPageContent() {
                   {t('labels.moveCount')}: {state.moveCount}
                 </span>
               </div>
-              <div className="mt-2 space-y-1">
+              <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-xs sm:hidden">
                 {state.players.map((p, i) => {
                   const label = p.isHuman ? t('labels.you') : `${t('labels.cpu')}${i}`;
-                  const pct =
-                    state.targetScore > 0 ? Math.max(0, Math.min(100, (p.score / state.targetScore) * 100)) : 0;
                   return (
-                    <div key={`scorebar-${i}`} className="flex items-center gap-2 text-xs">
-                      <span className="w-14 shrink-0">{label}</span>
-                      <div
-                        className="relative h-3 flex-1 overflow-hidden rounded bg-black/40"
-                        role="progressbar"
-                        aria-valuemin={0}
-                        aria-valuemax={state.targetScore}
-                        // WAI-ARIA requires aria-valuenow within [min, max]; clamp it
-                        // (the raw score is still shown in the numeric label).
-                        aria-valuenow={Math.max(0, Math.min(p.score, state.targetScore))}
-                        aria-label={t('labels.scoreBarAria', {
-                          player: label,
-                          score: p.score,
-                          target: state.targetScore,
-                        })}
-                      >
-                        <div
-                          data-testid={`nertz-scorebar-${i.toString()}`}
-                          className={`h-full ${p.isHuman ? 'bg-ds-success' : 'bg-ds-warning'} motion-safe:transition-[width] motion-safe:duration-300`}
-                          style={{ width: `${pct.toString()}%` }}
-                        />
-                      </div>
-                      <span className="w-12 shrink-0 text-right tabular-nums">
-                        {p.score} ({p.nertzSize})
-                      </span>
-                    </div>
+                    <span key={`compact-score-${i}`}>
+                      {label}: {p.score} ({p.nertzSize})
+                    </span>
                   );
                 })}
               </div>
+              <details open={!isMobile || undefined} className="mt-1" data-testid="nertz-score-details">
+                <summary className="cursor-pointer select-none text-xs text-ds-text-muted sm:hidden">
+                  {t('labels.score')}
+                </summary>
+                <div className="mt-1 space-y-1">
+                  {state.players.map((p, i) => {
+                    const label = p.isHuman ? t('labels.you') : `${t('labels.cpu')}${i}`;
+                    const pct =
+                      state.targetScore > 0 ? Math.max(0, Math.min(100, (p.score / state.targetScore) * 100)) : 0;
+                    return (
+                      <div key={`scorebar-${i}`} className="flex items-center gap-2 text-xs">
+                        <span className="w-14 shrink-0">{label}</span>
+                        <div
+                          className="relative h-3 flex-1 overflow-hidden rounded bg-black/40"
+                          role="progressbar"
+                          aria-valuemin={0}
+                          aria-valuemax={state.targetScore}
+                          // WAI-ARIA requires aria-valuenow within [min, max]; clamp it
+                          // (the raw score is still shown in the numeric label).
+                          aria-valuenow={Math.max(0, Math.min(p.score, state.targetScore))}
+                          aria-label={t('labels.scoreBarAria', {
+                            player: label,
+                            score: p.score,
+                            target: state.targetScore,
+                          })}
+                        >
+                          <div
+                            data-testid={`nertz-scorebar-${i.toString()}`}
+                            className={`h-full ${p.isHuman ? 'bg-ds-success' : 'bg-ds-warning'} motion-safe:transition-[width] motion-safe:duration-300`}
+                            style={{ width: `${pct.toString()}%` }}
+                          />
+                        </div>
+                        <span className="w-12 shrink-0 text-right tabular-nums">
+                          {p.score} ({p.nertzSize})
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </details>
             </div>
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
+            {state.messageCode !== 'nertz.playing' && (
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+                testId="nertz-message"
+              />
+            )}
 
             {error && !isCollisionError && <ErrorAlert message={error} onRetry={retry} />}
 
-            <div data-tutorial="nertz-foundations" className="bg-black/30 text-ds-text-primary p-3 rounded">
+            <div className="bg-black/30 text-ds-text-primary p-2 sm:p-3 rounded space-y-2">
+              <div className="flex flex-wrap gap-3 items-start">
+                <div data-tutorial="nertz-pile" className="space-y-1">
+                  <div className="text-xs uppercase tracking-wide text-ds-text-muted">{t('labels.nertz')}</div>
+                  <CardButton
+                    card={human.nertzTop ?? null}
+                    label={`${human.nertzSize}`}
+                    selected={selection?.kind === 'nertz'}
+                    disabled={!isHumanTurn || !human.nertzTop}
+                    onClick={handleSelectNertz}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <div className="text-xs uppercase tracking-wide text-ds-text-muted">{t('labels.waste')}</div>
+                  <CardButton
+                    card={human.wasteTop ?? null}
+                    label={`${human.wasteSize}`}
+                    selected={selection?.kind === 'waste'}
+                    disabled={!isHumanTurn || !human.wasteTop}
+                    onClick={handleSelectWaste}
+                  />
+                </div>
+                <div data-tutorial="nertz-stock" className="space-y-1">
+                  <div className="text-xs uppercase tracking-wide text-ds-text-muted">{t('labels.stock')}</div>
+                  <button
+                    type="button"
+                    aria-label={t('labels.stockDrawAria', { count: human.stockSize })}
+                    onClick={handleDrawStock}
+                    disabled={!isHumanTurn || loading}
+                    className={`${btnSecondary} min-w-[3rem]`}
+                  >
+                    {human.stockSize}
+                  </button>
+                </div>
+              </div>
+              <div data-tutorial="nertz-tableau" className="space-y-1">
+                <div className="text-xs uppercase tracking-wide text-ds-text-muted">{t('labels.tableau')}</div>
+                <div className="grid grid-cols-4 gap-2">
+                  {human.tableau.map((col, colIdx) => (
+                    <TableauColumn
+                      key={`tab-${colIdx}`}
+                      col={col}
+                      colIdx={colIdx}
+                      selection={selection}
+                      onSelectCard={handleSelectTableau}
+                      onTarget={() => handleTableauTargetClick(colIdx)}
+                      disabled={!isHumanTurn}
+                      validTarget={validTableauCols.has(colIdx)}
+                      selectionActive={!!selection}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div data-tutorial="nertz-foundations" className="bg-black/30 text-ds-text-primary p-2 sm:p-3 rounded">
               <div className="text-xs uppercase tracking-wide text-ds-text-muted mb-2">{t('labels.foundation')}</div>
-              <div className="flex flex-wrap gap-2">
+              <div className="grid grid-cols-7 gap-1 sm:flex sm:flex-wrap sm:gap-2">
                 {state.foundations.map((f, idx) => {
                   const flash = placedFlashes.get(idx);
                   return (
@@ -581,83 +655,30 @@ function NertzPageContent() {
             </div>
 
             {state.players.length > 1 && (
-              <div className="bg-black/30 text-ds-text-primary p-3 rounded text-sm space-y-1">
-                {state.players
-                  .filter((p) => !p.isHuman)
-                  .map((p) => (
-                    <div key={`cpu-${p.deckIdx}`} className="space-y-2">
-                      <div className="flex flex-wrap justify-between gap-x-3 gap-y-1">
-                        <span>
-                          {t('labels.cpu')}
-                          {p.deckIdx} — {p.name}
-                        </span>
-                        <span>
-                          {t('labels.nertz')}: {p.nertzSize} / {t('labels.score')}: {p.score}
-                        </span>
+              <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                  {state.players
+                    .filter((p) => !p.isHuman)
+                    .map((p) => (
+                      <div
+                        key={`cpu-${p.deckIdx}`}
+                        className="bg-black/30 text-ds-text-primary p-3 rounded text-sm space-y-2"
+                      >
+                        <div className="flex flex-wrap justify-between gap-x-3 gap-y-1">
+                          <span>
+                            {t('labels.cpu')}
+                            {p.deckIdx} — {p.name}
+                          </span>
+                          <span>
+                            {t('labels.nertz')}: {p.nertzSize} / {t('labels.score')}: {p.score}
+                          </span>
+                        </div>
+                        <NertzOpponentBoard player={p} />
                       </div>
-                      <NertzOpponentBoard player={p} />
-                    </div>
-                  ))}
-              </div>
+                    ))}
+                </div>
+              </CpuAccordion>
             )}
-
-            <div className="bg-black/30 text-ds-text-primary p-3 rounded space-y-2">
-              <div className="flex flex-wrap gap-3 items-start">
-                <div data-tutorial="nertz-pile" className="space-y-1">
-                  <div className="text-xs uppercase tracking-wide text-ds-text-muted">{t('labels.nertz')}</div>
-                  <CardButton
-                    card={human.nertzTop ?? null}
-                    label={`${human.nertzSize}`}
-                    selected={selection?.kind === 'nertz'}
-                    disabled={!isHumanTurn || !human.nertzTop}
-                    onClick={handleSelectNertz}
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <div className="text-xs uppercase tracking-wide text-ds-text-muted">{t('labels.waste')}</div>
-                  <CardButton
-                    card={human.wasteTop ?? null}
-                    label={`${human.wasteSize}`}
-                    selected={selection?.kind === 'waste'}
-                    disabled={!isHumanTurn || !human.wasteTop}
-                    onClick={handleSelectWaste}
-                  />
-                </div>
-
-                <div data-tutorial="nertz-stock" className="space-y-1">
-                  <div className="text-xs uppercase tracking-wide text-ds-text-muted">{t('labels.stock')}</div>
-                  <button
-                    type="button"
-                    aria-label={t('labels.stockDrawAria', { count: human.stockSize })}
-                    onClick={handleDrawStock}
-                    disabled={!isHumanTurn || loading}
-                    className={`${btnSecondary} min-w-[3rem]`}
-                  >
-                    {human.stockSize}
-                  </button>
-                </div>
-              </div>
-
-              <div data-tutorial="nertz-tableau" className="space-y-1">
-                <div className="text-xs uppercase tracking-wide text-ds-text-muted">{t('labels.tableau')}</div>
-                <div className="grid grid-cols-4 gap-2">
-                  {human.tableau.map((col, colIdx) => (
-                    <TableauColumn
-                      key={`tab-${colIdx}`}
-                      col={col}
-                      colIdx={colIdx}
-                      selection={selection}
-                      onSelectCard={handleSelectTableau}
-                      onTarget={() => handleTableauTargetClick(colIdx)}
-                      disabled={!isHumanTurn}
-                      validTarget={validTableauCols.has(colIdx)}
-                      selectionActive={!!selection}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
 
             <SettingsPanel
               title={tc('settings.title')}
@@ -767,8 +788,8 @@ function FoundationCell({
   validTarget = false,
   selectionActive = false,
 }: FoundationCellProps) {
-  const { cardWidth } = useCardDimensions();
-  const w = Math.max(44, Math.round(cardWidth * 0.6));
+  const { cardWidth, footerCardWidth, isMobile } = useCardDimensions();
+  const w = isMobile ? Math.max(24, Math.round(footerCardWidth * 0.6)) : Math.max(44, Math.round(cardWidth * 0.6));
   // A rejected move flashes an error ring transiently; otherwise a legal
   // destination shows a persistent success ring (a non-colour "has a ring"
   // cue), and invalid destinations dim while a source is selected.
@@ -794,7 +815,7 @@ function FoundationCell({
         type="button"
         onClick={onClick}
         disabled={disabled}
-        className={`flex flex-col items-center rounded p-0.5 text-xs text-ds-text-muted disabled:opacity-50 ${targetCls}`}
+        className={`flex min-h-11 min-w-11 flex-col items-center justify-center rounded p-0.5 text-xs text-ds-text-muted disabled:opacity-50 ${targetCls}`}
         aria-label={ariaLabel}
         data-testid={`nertz-foundation-${idx}`}
         data-collided={collided || undefined}
@@ -841,17 +862,18 @@ interface CardButtonProps {
 /** Renders the publicly visible piles for one CPU without enabling interaction. */
 function NertzOpponentBoard({ player }: { player: NertzPlayerData }) {
   const { cpuCardWidth } = useCardDimensions();
+  const boardCardWidth = useIsLargeDesktop() ? 36 : cpuCardWidth;
   const { t } = useTranslation('nertz');
   return (
-    <div className="flex flex-wrap items-start gap-2 text-xs text-ds-text-muted">
-      <div className="space-y-1">
+    <div className="flex flex-wrap items-start gap-2 text-xs text-ds-text-muted lg:flex-nowrap">
+      <div className="space-y-1 lg:shrink-0">
         <div>{t('labels.nertz')}</div>
-        {player.nertzTop ? <AnimatedCard card={player.nertzTop} width={cpuCardWidth} /> : <span>—</span>}
+        {player.nertzTop ? <AnimatedCard card={player.nertzTop} width={boardCardWidth} /> : <span>—</span>}
       </div>
       <div className="min-w-0 flex-1 space-y-1">
-        <div className="grid grid-cols-4 gap-1">
+        <div className="grid grid-cols-4 gap-1 lg:flex lg:items-start">
           {player.tableau.map((col, colIdx) => (
-            <div key={`cpu-tableau-${player.deckIdx}-${colIdx}`} className="flex min-w-0 flex-col gap-1">
+            <div key={`cpu-tableau-${player.deckIdx}-${colIdx}`} className="flex min-w-0 flex-col gap-1 lg:flex-row">
               {col.length === 0 ? (
                 <span className="block text-center">—</span>
               ) : (
@@ -860,10 +882,11 @@ function NertzOpponentBoard({ player }: { player: NertzPlayerData }) {
                     <AnimatedCard
                       key={`cpu-card-${player.deckIdx}-${colIdx}-${cardIdx}`}
                       card={tableauCard.card}
-                      width={cpuCardWidth}
+                      width={boardCardWidth}
+                      wrapperClassName="lg:-ml-5 first:ml-0"
                     />
                   ) : (
-                    <CardBack key={`cpu-card-${player.deckIdx}-${colIdx}-${cardIdx}`} width={cpuCardWidth} />
+                    <CardBack key={`cpu-card-${player.deckIdx}-${colIdx}-${cardIdx}`} width={boardCardWidth} />
                   ),
                 )
               )}
@@ -871,7 +894,7 @@ function NertzOpponentBoard({ player }: { player: NertzPlayerData }) {
           ))}
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <span>{player.wasteTop ? <AnimatedCard card={player.wasteTop} width={cpuCardWidth} /> : '—'}</span>
+          <span>{player.wasteTop ? <AnimatedCard card={player.wasteTop} width={boardCardWidth} /> : '—'}</span>
           <span>
             {t('labels.waste')}: {player.wasteSize}
           </span>

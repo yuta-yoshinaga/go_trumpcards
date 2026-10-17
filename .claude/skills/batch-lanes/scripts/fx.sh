@@ -1,6 +1,7 @@
 #!/bin/bash
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
-# usage: fx.sh <slot-name> <branch> — check out an existing PR branch in a fixup worktree
+# usage: fx.sh <numeric-slot> <branch> — check out an existing PR branch in a fixup worktree; slot must be numeric (use a lane-distinct number such as 21..29)
+[[ "${1:-}" =~ ^[0-9]+$ ]] || { echo "fx slot must be numeric (rcg/e2e use port 18000+slot); use e.g. 21 for a fixup lane" >&2; exit 2; }
 wt="$WT_ROOT/wt-ib$1"; cd "$REPO"; git fetch -q origin "$2"
 [ -d "$wt" ] || git worktree add -q --detach "$wt" origin/develop
 cd "$wt"; test -z "$(git status --porcelain)" || { echo DIRTY; exit 1; }

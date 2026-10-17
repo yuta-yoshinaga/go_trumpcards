@@ -1,5 +1,12 @@
 import { expect, test } from '@playwright/test';
-import { isVisibleWithin, navigateTo, TIMEOUT_ACTION, TIMEOUT_TRANSITION, waitForLoaded } from './helpers';
+import {
+  clickHandCard,
+  isVisibleWithin,
+  navigateTo,
+  TIMEOUT_ACTION,
+  TIMEOUT_TRANSITION,
+  waitForLoaded,
+} from './helpers';
 
 /**
  * Selects the first `count` selectable cards in the human's hand.
@@ -13,7 +20,7 @@ async function selectCards(page: Parameters<typeof navigateTo>[0], count: number
   const available = await cards.count();
   const picked = Math.min(count, available);
   for (let i = 0; i < picked; i++) {
-    await cards.nth(i).click();
+    await clickHandCard(cards.nth(i));
   }
   return picked;
 }

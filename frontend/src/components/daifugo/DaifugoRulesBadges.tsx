@@ -103,7 +103,7 @@ function RulesBadgeModal({
         <button
           type="button"
           onClick={onClose}
-          className="text-ds-text-primary/60 hover:text-ds-text-primary text-lg leading-none"
+          className="text-ds-text-muted hover:text-ds-text-primary text-lg leading-none"
           aria-label={closeLabel}
         >
           ✕
@@ -118,7 +118,7 @@ function RulesBadgeModal({
             >
               {b.label}
             </span>
-            <span className="text-xs text-ds-text-primary/80">{b.description}</span>
+            <span className="text-xs text-ds-text-primary">{b.description}</span>
           </li>
         ))}
       </ul>
@@ -147,7 +147,7 @@ export function DaifugoRulesBadges({ state }: { state: DaifugoResponse }) {
       <div className="my-1 px-1">
         <button
           type="button"
-          className="inline-flex items-center gap-1 rounded-md px-3 py-1 text-xs font-bold bg-ds-warning text-white"
+          className="inline-flex items-center gap-1 rounded-md px-3 py-1 text-xs font-bold bg-ds-warning text-ds-text-on-accent"
           onClick={openModal}
           data-testid="rules-summary-button"
         >

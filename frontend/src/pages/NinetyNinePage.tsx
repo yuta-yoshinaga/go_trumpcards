@@ -17,7 +17,7 @@ import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardSelection } from '../hooks/useCardSelection';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -29,6 +29,7 @@ import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
+import { scoreTableClass } from '../styles/scoreTableStyles';
 import type { NinetyNineHint, NinetyNineResponse } from '../types/card';
 import { NinetyNinePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
@@ -110,6 +111,7 @@ export const NinetyNinePage = withTutorial(NinetyNinePageContent, 'ninetynine', 
 
 /** Inner content of the Ninety-Nine page, wrapped by TutorialProvider. */
 function NinetyNinePageContent() {
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('ninetynine');
   const { selected: selectedCardIndices, toggle: toggleCard, clear: clearSelection, setSelected } = useCardSelection();
@@ -241,6 +243,10 @@ function NinetyNinePageContent() {
     state.players[state.dealerIdx]?.isHuman ?? false,
   );
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.ninetynine')}
@@ -288,15 +294,18 @@ function NinetyNinePageContent() {
           />
 
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            <div className="text-ds-text-primary text-center mb-2">
-              <span className="mr-4">{t('deal', { n: state.dealNumber })}</span>
-              <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
-              <span className="mr-4">{t('handSize', { n: state.handSize })}</span>
+            <div
+              className="text-ds-text-primary text-center mb-2 flex flex-wrap justify-center gap-x-4 gap-y-1"
+              data-testid="nn-status-row"
+            >
+              <span className="whitespace-nowrap">{t('deal', { n: state.dealNumber })}</span>
+              <span className="whitespace-nowrap">{t('trick', { n: state.trickNumber })}</span>
+              <span className="whitespace-nowrap">{t('handSize', { n: state.handSize })}</span>
             </div>
-            <div className="text-ds-text-primary text-center mb-2">
-              <span className="mr-4">{t('trump', { suit: t(`suitName.${state.trumpSuit}`) })}</span>
-              <span className="mr-4">{t('targetScore', { n: state.targetScore })}</span>
-              <span>{t('dealer', { name: dealerName })}</span>
+            <div className="text-ds-text-primary text-center mb-2 flex flex-wrap justify-center gap-x-4 gap-y-1">
+              <span className="whitespace-nowrap">{t('trump', { suit: t(`suitName.${state.trumpSuit}`) })}</span>
+              <span className="whitespace-nowrap">{t('targetScore', { n: state.targetScore })}</span>
+              <span className="whitespace-nowrap">{t('dealer', { name: dealerName })}</span>
             </div>
 
             <div className={lgTwoColGrid}>
@@ -393,15 +402,21 @@ function NinetyNinePageContent() {
                 <div className="my-3 p-2 rounded bg-black/30 relative" data-tutorial="nn-score-table">
                   <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
                   <div className="overflow-x-auto -mx-2 px-2">
-                    <table className="w-full text-sm text-ds-text-muted min-w-[360px]">
+                    <table
+                      className={scoreTableClass(isLargeDesktop, 'w-full text-sm text-ds-text-muted min-w-[360px]')}
+                    >
                       <thead>
                         <tr>
                           <th scope="col" className="text-left">
                             {t('scoresPlayer')}
                           </th>
                           <th scope="col">{t('scoresBid')}</th>
-                          <th scope="col">{t('scoresTricks')}</th>
-                          <th scope="col">{t('scoresRound')}</th>
+                          <th scope="col" className="text-[10px] whitespace-nowrap">
+                            {t('scoresTricks')}
+                          </th>
+                          <th scope="col" className="text-[10px] whitespace-nowrap">
+                            {t('scoresRound')}
+                          </th>
                           <th scope="col">{t('scoresTotal')}</th>
                         </tr>
                       </thead>
@@ -439,13 +454,7 @@ function NinetyNinePageContent() {
               </div>
             </div>
 
-            <div>
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-              />
-            </div>
+            <div>{isMobile && messageBox}</div>
 
             <ActionLogSection
               isEndPhase={isGameEnd}
@@ -455,7 +464,70 @@ function NinetyNinePageContent() {
             />
           </div>
 
-          <GameFooter className={`${gameTheme.ninetynine.footer} px-4 py-2.5`}>
+          <GameFooter
+            message={isMobile ? undefined : messageBox}
+            className={`${gameTheme.ninetynine.footer} px-4 py-2.5`}
+            actions={
+              (isHumanBidTurn || isHumanTurn || isTrickEnd || isRoundEnd) && (
+                <div className="flex gap-2 items-center" data-tutorial="nn-play-button">
+                  {(isHumanBidTurn || isHumanTurn) && (
+                    <button
+                      type="button"
+                      className={btnSuccess}
+                      onClick={handleHint}
+                      disabled={loading || hintLoading}
+                      data-testid="nn-hint-button"
+                    >
+                      {tc('button.hint')}
+                    </button>
+                  )}
+                  {isHumanBidTurn && (
+                    // Use aria-disabled (not the HTML `disabled` attribute) for the
+                    // not-enough-cards state so the button stays focusable and a screen
+                    // reader can read why it can't be pressed yet; handleBury guards the
+                    // count so activating it while not-ready is a no-op. `disabled` is
+                    // still applied while loading. Mirrors the Cribbage pegRestricted pattern.
+                    <button
+                      type="button"
+                      className={`${btnPrimary}${buryReady ? '' : ' opacity-50 cursor-not-allowed'}`}
+                      onClick={handleBury}
+                      disabled={loading}
+                      aria-disabled={!buryReady || undefined}
+                      aria-label={
+                        buryReady
+                          ? undefined
+                          : buryOverBy > 0
+                            ? t('buryButtonTooManyAria', { count: buryOverBy })
+                            : t('buryButtonDisabledAria', { count: buryRemaining })
+                      }
+                    >
+                      {t('buryButton')}
+                    </button>
+                  )}
+                  {isHumanTurn && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handlePlay}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                    >
+                      {t('playButton')}
+                    </button>
+                  )}
+                  {isTrickEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                      {t('nextTrick')}
+                    </button>
+                  )}
+                  {isRoundEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                      {t('nextRound')}
+                    </button>
+                  )}
+                </div>
+              )
+            }
+          >
             {humanPlayer &&
               (isMobile ? (
                 <MobileHandGrid
@@ -531,61 +603,7 @@ function NinetyNinePageContent() {
             )}
 
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-            <div className="flex gap-2 items-center" data-tutorial="nn-play-button">
-              {(isHumanBidTurn || isHumanTurn) && (
-                <button
-                  type="button"
-                  className={btnSuccess}
-                  onClick={handleHint}
-                  disabled={loading || hintLoading}
-                  data-testid="nn-hint-button"
-                >
-                  {tc('button.hint')}
-                </button>
-              )}
-              {isHumanBidTurn && (
-                // Use aria-disabled (not the HTML `disabled` attribute) for the
-                // not-enough-cards state so the button stays focusable and a screen
-                // reader can read why it can't be pressed yet; handleBury guards the
-                // count so activating it while not-ready is a no-op. `disabled` is
-                // still applied while loading. Mirrors the Cribbage pegRestricted pattern.
-                <button
-                  type="button"
-                  className={`${btnPrimary}${buryReady ? '' : ' opacity-50 cursor-not-allowed'}`}
-                  onClick={handleBury}
-                  disabled={loading}
-                  aria-disabled={!buryReady || undefined}
-                  aria-label={
-                    buryReady
-                      ? undefined
-                      : buryOverBy > 0
-                        ? t('buryButtonTooManyAria', { count: buryOverBy })
-                        : t('buryButtonDisabledAria', { count: buryRemaining })
-                  }
-                >
-                  {t('buryButton')}
-                </button>
-              )}
-              {isHumanTurn && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-              {isTrickEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                  {t('nextTrick')}
-                </button>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
+            <div className="flex items-center">
               <GameResetButton
                 isGameEnd={isGameEnd}
                 onReset={handleManualReset}

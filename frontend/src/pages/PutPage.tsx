@@ -5,6 +5,7 @@ import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CardImage } from '../components/CardImage';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { HintTooltip } from '../components/hint/HintTooltip';
@@ -62,7 +63,7 @@ function PutPageContent() {
     exec: dispatch,
     retry,
   } = useGameApi<PutResponse, Parameters<typeof putApi.exec>>(putApi.exec);
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('put', state);
 
   const [matchTarget, setMatchTarget] = useState(PUT_DEFAULT_MATCH_TARGET);
@@ -151,6 +152,9 @@ function PutPageContent() {
 
   const youPoints = state.matchPoints[humanIdx] ?? 0;
   const cpuPoints = state.matchPoints[humanIdx === 0 ? 1 : 0] ?? 0;
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
 
   const resultBanner = (() => {
     if (!isGameEnd) return null;
@@ -256,16 +260,72 @@ function PutPageContent() {
           </div>
         )}
 
-        {isHumanRespond && state.putCallerIdx >= 0 && (
-          <div className="text-center text-lg my-2 text-ds-accent" role="status">
-            {t('respondPrompt', { name: t('header.cpu'), level: levelLabel(state.pendingLevel) })}
-          </div>
-        )}
+        {isMobile && messageBox}
+        <div className="mt-4 flex flex-wrap gap-2">
+          <button type="button" className={btnPrimary} onClick={() => requestConfirm(handleReset)} disabled={loading}>
+            {t('actions.reset')}
+          </button>
+          <label
+            className="flex items-center gap-1 text-ds-text-primary text-sm min-h-[44px]"
+            data-testid="put-hint-toggle"
+          >
+            <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
+            {tc('button.hint')}
+          </label>
+        </div>
+      </div>
 
-        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
-        {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
-        <ErrorAlert message={error} onRetry={retry} />
-
+      <GameFooter
+        className={`${gameTheme.put.footer} px-4 py-2.5`}
+        message={!isMobile && messageBox}
+        actions={
+          <>
+            <div className="flex flex-wrap gap-2" data-testid="put-primary-actions">
+              {isHumanPlayTurn && state.canDeclarePut && (
+                <button
+                  type="button"
+                  className={btnWarning}
+                  onClick={handlePut}
+                  disabled={loading}
+                  data-tutorial="put-call"
+                >
+                  {t('actions.put')}
+                </button>
+              )}
+              {isHumanRespond && (
+                <>
+                  <button type="button" className={btnSuccess} onClick={handleAccept} disabled={loading}>
+                    {t('actions.accept')}
+                  </button>
+                  <p className="self-center text-ds-text-muted text-sm">
+                    {t('respondOutcome.accept', { stake: state.pendingLevel + 1 })}
+                  </p>
+                  <button type="button" className={btnDanger} onClick={handleDecline} disabled={loading}>
+                    {t('actions.decline')}
+                  </button>
+                  <p className="self-center text-ds-text-muted text-sm">
+                    {t('respondOutcome.decline', { stake: state.handStake })}
+                  </p>
+                  {/* **応答フェーズに引き上げボタンは置かない。** プットの宣言は
+                      1 段だけで、言われた側は受諾か降参かの二択。クローン元の
+                      トゥルコは Retruco / Vale Cuatro へ伸ばせるのでここに
+                      「引き上げる」があったが、PutMaxLevel を絞った時点で
+                      canDeclarePut は必ず false になり、押せないボタンが残る。 */}
+                </>
+              )}
+            </div>
+            {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
+            <ErrorAlert message={error} onRetry={retry} />
+            <div className="flex flex-wrap gap-2">
+              {(isTrickEnd || isHandEnd) && (
+                <button type="button" className={btnSuccess} onClick={handleNext} disabled={loading}>
+                  {t('actions.next')}
+                </button>
+              )}
+            </div>
+          </>
+        }
+      >
         <div className="mt-4" data-tutorial="put-hand">
           {human && human.cards.length > 0 && (
             <div className="flex flex-wrap gap-2">
@@ -284,55 +344,7 @@ function PutPageContent() {
             </div>
           )}
         </div>
-
-        <div className="mt-4 flex flex-wrap gap-2">
-          {isHumanPlayTurn && state.canDeclarePut && (
-            <button
-              type="button"
-              className={btnWarning}
-              onClick={handlePut}
-              disabled={loading}
-              data-tutorial="put-call"
-            >
-              {t('actions.put')}
-            </button>
-          )}
-          {isHumanRespond && (
-            <>
-              <button type="button" className={btnSuccess} onClick={handleAccept} disabled={loading}>
-                {t('actions.accept')}
-              </button>
-              <p className="text-ds-text-muted text-sm">
-                {t('respondOutcome.accept', { stake: state.pendingLevel + 1 })}
-              </p>
-              <button type="button" className={btnDanger} onClick={handleDecline} disabled={loading}>
-                {t('actions.decline')}
-              </button>
-              <p className="text-ds-text-muted text-sm">{t('respondOutcome.decline', { stake: state.handStake })}</p>
-              {/* **応答フェーズに引き上げボタンは置かない。** プットの宣言は
-                  1 段だけで、言われた側は受諾か降参かの二択。クローン元の
-                  トゥルコは Retruco / Vale Cuatro へ伸ばせるのでここに
-                  「引き上げる」があったが、PutMaxLevel を絞った時点で
-                  canDeclarePut は必ず false になり、押せないボタンが残る。 */}
-            </>
-          )}
-          {(isTrickEnd || isHandEnd) && (
-            <button type="button" className={btnSuccess} onClick={handleNext} disabled={loading}>
-              {t('actions.next')}
-            </button>
-          )}
-          <button type="button" className={btnPrimary} onClick={() => requestConfirm(handleReset)} disabled={loading}>
-            {t('actions.reset')}
-          </button>
-          <label
-            className="flex items-center gap-1 text-ds-text-primary text-sm min-h-[44px]"
-            data-testid="put-hint-toggle"
-          >
-            <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
-            {tc('hint')}
-          </label>
-        </div>
-      </div>
+      </GameFooter>
 
       <ActionLogSection
         isEndPhase={isGameEnd}
@@ -357,8 +369,6 @@ function PutPageContent() {
           },
         ]}
       />
-      {/* No GameFooter on this page, where the other 55 action-nav pages put the
-          panel, so it sits after the action log instead — still last on the page. */}
       <ActionShortcutsPanel bindings={actionBindings} data-testid="put-kbd-shortcuts" />
     </GamePageShell>
   );

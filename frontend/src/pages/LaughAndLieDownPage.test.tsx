@@ -156,12 +156,38 @@ describe('LaughAndLieDownPage', () => {
     }
   });
 
-  it('shows the pot, the dealer and both rules permanently', async () => {
+  it('shows the pot and dealer and keeps the rule text collapsed on mobile', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
     renderWithProviders(<LaughAndLieDownPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.getByText(/ポット: 11/)).toBeInTheDocument();
-    expect(screen.getByText(/1枚か3枚/)).toBeInTheDocument();
-    expect(screen.getByText(/手札を全部場に置いて降りる/)).toBeInTheDocument();
+    const rules = screen.getByTestId('lld-rules');
+    expect(rules).not.toHaveAttribute('open');
+    expect(screen.getByText('ルール')).toBeVisible();
+    expect(screen.getByText(/1枚か3枚/)).not.toBeVisible();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
+  it('keeps CPU seats collapsed and fits the maximum hand on large desktop', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    mockExec.mockResolvedValue(
+      makeState({ players: [human({ cards: Array.from({ length: 8 }, (_, i) => card('SPADE', i + 1)) }), cpu(1)] }),
+    );
+    renderWithProviders(<LaughAndLieDownPage />);
+    expect(await screen.findByTestId('lld-rules')).toHaveAttribute('open');
+    const cpuAccordion = screen.getByTestId('cpu-accordion');
+    expect(cpuAccordion).not.toHaveAttribute('open');
+    const hand = document.querySelector('[data-tutorial="lld-hand"] .flex');
+    expect(hand).toHaveClass('gap-1', 'flex-wrap');
+    expect(hand?.querySelectorAll('button[data-hint-action="play"]')).toHaveLength(8);
+    const cpuHand = screen.getByRole('img', { name: /CPU1.*3/ });
+    const cpuCards = cpuHand.querySelectorAll('img');
+    expect(cpuCards).toHaveLength(3);
+    expect(Array.from(cpuCards, (image) => image.style.width)).toEqual(['36px', '36px', '36px']);
+    expect(cpuCards[1]?.style.marginLeft).toBe('-22px');
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
   });
 
   it('shows every seat won count and marks who has laid down', async () => {

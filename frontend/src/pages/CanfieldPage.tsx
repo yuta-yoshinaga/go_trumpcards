@@ -18,7 +18,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsLargeDesktop } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -123,6 +123,7 @@ function CanfieldPageContent() {
     previousMoveCount.current = state.moveCount;
   }, [state]);
   const { cardWidth, cardHeight, isMobile } = useCardDimensions();
+  const isLargeDesktop = useIsLargeDesktop();
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -263,7 +264,7 @@ function CanfieldPageContent() {
   if (error) return <ErrorAlert message={error} onRetry={retry} />;
   if (!state) return null;
 
-  // 自動完成はリザーブ・山札・捨て札が空でないとサーバが弾く。押してみるまで
+  // オートコンプリートはリザーブ・山札・捨て札が空でないとサーバが弾く。押してみるまで
   // 分からなかったので、他のソリティアと同じくリング+バッジで知らせる (#4787)。
   const autoCompleteReady = canfieldAutoCompleteReady(state);
 
@@ -344,7 +345,7 @@ function CanfieldPageContent() {
             ]}
           />
 
-          <LandscapeBanner message={phaseName} />
+          <LandscapeBanner message={t('landscapeBanner')} />
 
           <p className="mb-2 text-center text-xs text-ds-text-muted" data-testid="cf-base-rank-rule" role="note">
             {t('baseRankRule')}
@@ -370,7 +371,7 @@ function CanfieldPageContent() {
                       {pile.length > 0 ? (
                         <AnimatedCard card={pile[pile.length - 1]} width={cardWidth} />
                       ) : (
-                        <span className="absolute inset-0 flex items-center justify-center text-xs text-ds-text-muted/80">
+                        <span className="absolute inset-0 flex items-center justify-center text-xs text-ds-text-muted">
                           {t('foundation')}
                         </span>
                       )}
@@ -412,7 +413,7 @@ function CanfieldPageContent() {
                   {state.stockCount > 0 ? (
                     <AnimatedCardBack width={cardWidth} />
                   ) : (
-                    <span className="text-xs text-ds-text-muted/80">{t('empty')}</span>
+                    <span className="text-xs text-ds-text-muted">{t('empty')}</span>
                   )}
                 </button>
                 <span className="mt-1 text-xs text-ds-text-muted">
@@ -485,6 +486,38 @@ function CanfieldPageContent() {
                   {t('reserve')}: {state.reserve.length}
                 </span>
               </div>
+              {isPlaying && isLargeDesktop && selected && (
+                <fieldset
+                  className="flex flex-wrap items-start gap-2 overflow-y-auto border-0 p-0 m-0 min-w-0"
+                  style={{ maxHeight: cardHeight }}
+                  data-testid="cf-selected-move-bar"
+                >
+                  <legend className="sr-only">{t('tableau')}</legend>
+                  <button
+                    type="button"
+                    data-testid="cf-bar-move-to-foundation"
+                    className={`${btnOutline} ${focusRingWhite} text-xs min-h-[44px]`}
+                    onClick={handleMoveSelectedToFoundation}
+                    disabled={loading}
+                  >
+                    {t('moveToFoundation')}
+                  </button>
+                  {state.tableau.map((_, col) =>
+                    col === selected.col ? null : (
+                      <button
+                        key={col}
+                        type="button"
+                        data-testid={`cf-bar-move-to-tableau-${col}`}
+                        className={`${btnOutline} ${focusRingWhite} text-xs min-h-[44px]`}
+                        onClick={() => handleMoveSelectedToTableau(col)}
+                        disabled={loading}
+                      >
+                        {t('moveToCol', { col })}
+                      </button>
+                    ),
+                  )}
+                </fieldset>
+              )}
             </div>
 
             {/* Tableau */}
@@ -537,6 +570,8 @@ function CanfieldPageContent() {
                                   type="button"
                                   aria-label={t('tableauCardAriaLabel', {
                                     card: cardAlt(tc.card),
+                                    listSeparator: t('listSeparator'),
+                                    tableau: t('tableau'),
                                     col: i,
                                     index: j,
                                   })}

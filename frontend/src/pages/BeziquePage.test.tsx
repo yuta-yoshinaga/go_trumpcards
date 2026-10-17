@@ -74,6 +74,7 @@ describe('BeziquePage', () => {
     mockExec.mockResolvedValue(makeBeziqueState({ trumpSuit: 0 }));
     renderWithProviders(<BeziquePage />);
     expect(await screen.findByText('切り札: 未宣言')).toBeInTheDocument();
+    expect(screen.getByText('切り札: 未宣言').closest('[data-tutorial="bezique-info"]')).toHaveClass('flex-wrap');
   });
 
   it('renders skeleton when no state', () => {

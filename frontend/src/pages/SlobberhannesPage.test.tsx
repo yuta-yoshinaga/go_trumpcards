@@ -147,10 +147,12 @@ describe('SlobberhannesPage', () => {
 
   // **位置による罰は盤面に出ない情報。** 最初と最後のトリックでだけ警告し、
   // 中間では出さない。三方向とも踏む。
-  it('warns on the first trick', async () => {
-    mockExec.mockResolvedValue(makeState({ trickNumber: 0 }));
+  it('does not repeat the first-trick instruction already shown by GameMessageBox', async () => {
+    mockExec.mockResolvedValue(makeState({ trickNumber: 0, message: '最初のトリックです。取ると -1 点。' }));
     renderWithProviders(<SlobberhannesPage />);
-    expect(await screen.findByTestId('sh-position-warning')).toHaveTextContent('最初のトリック');
+    await screen.findByTestId('sh-trick');
+    expect(screen.queryByTestId('sh-position-warning')).not.toBeInTheDocument();
+    expect(screen.getByText('最初のトリックです。取ると -1 点。')).toBeInTheDocument();
   });
 
   it('warns on the last trick', async () => {
@@ -182,6 +184,16 @@ describe('SlobberhannesPage', () => {
     expect(screen.getByTestId('sh-seat-1')).toHaveTextContent('無傷(+1点)');
     // 罰を受けた席にはボーナス表示が出ない。
     expect(screen.getByTestId('sh-seat-0')).not.toHaveTextContent('無傷');
+  });
+
+  it('keeps score and penalty information visible in compact seat rows', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<SlobberhannesPage />);
+
+    expect(await screen.findByTestId('sh-seat-0')).toHaveTextContent('あなた');
+    expect(screen.getByTestId('sh-seat-0')).toHaveTextContent('0点');
+    expect(screen.getByTestId('sh-seat-0')).toHaveTextContent('無傷(+1点)');
+    expect(screen.getByTestId('sh-seat-0')).toHaveClass('px-2', 'py-1', 'text-xs');
   });
 
   it('shows the current round trick counts with scores at round and game end only', async () => {
@@ -342,8 +354,8 @@ describe('SlobberhannesPage queen of clubs warning', () => {
     expect(screen.queryByTestId('sh-queen-warning')).not.toBeInTheDocument();
   });
 
-  // 位置の警告と同時に出ても壊れない (受け入れ条件4)。
-  it('shows the position warning alongside it on the first trick', async () => {
+  // The queen warning is independent of the GameMessageBox instruction.
+  it('shows the queen warning without repeating the first-trick instruction', async () => {
     mockExec.mockResolvedValue(
       makeState({
         trickNumber: 0,
@@ -352,7 +364,7 @@ describe('SlobberhannesPage queen of clubs warning', () => {
     );
     renderWithProviders(<SlobberhannesPage />);
     expect(await screen.findByTestId('sh-queen-warning')).toBeInTheDocument();
-    expect(screen.getByTestId('sh-position-warning')).toHaveTextContent('最初のトリック');
+    expect(screen.queryByTestId('sh-position-warning')).not.toBeInTheDocument();
   });
 
   it('marks the queen in the human hand', async () => {

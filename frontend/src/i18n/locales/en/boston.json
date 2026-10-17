@@ -16,6 +16,7 @@
   "tricksWon": "Tricks {{n}}",
   "chips": "Chips {{n}}",
   "ladderTitle": "The bidding ladder (highest last)",
+  "ladderSummary": "Bidding ladder",
   "ladderNote": "The miseres sit BETWEEN the trick bids: Little Misere ranks below seven tricks, Grand Misere below nine.",
   "kindTricks": "at least {{n}} tricks",
   "kindMisere": "take no trick at all",

@@ -20,8 +20,8 @@ describe('CpuActionLog', () => {
     ];
     render(<CpuActionLog actions={actions} />);
     expect(screen.getByText('CPU行動:')).toBeInTheDocument();
-    expect(screen.getByText('Player 1: コール (50)')).toBeInTheDocument();
-    expect(screen.getByText('Player 2: フォールド')).toBeInTheDocument();
+    expect(screen.getByText('CPU 1: コール (50)')).toBeInTheDocument();
+    expect(screen.getByText('CPU 2: フォールド')).toBeInTheDocument();
   });
 
   it('has role="log" and aria-live="polite" for screen readers', () => {
@@ -36,6 +36,6 @@ describe('CpuActionLog', () => {
   it('renders unknown action as 不明', () => {
     const actions = [{ playerIdx: 1, action: 99, amount: 0 }];
     render(<CpuActionLog actions={actions} />);
-    expect(screen.getByText('Player 1: 不明')).toBeInTheDocument();
+    expect(screen.getByText('CPU 1: 不明')).toBeInTheDocument();
   });
 });

@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { literatureApi } from '../api/gameApi';
 import i18n from '../i18n';
@@ -12,6 +12,18 @@ vi.mock('../api/gameApi', () => ({
   literatureApi: { exec: vi.fn() },
   actionLogApi: { literature: vi.fn() },
 }));
+
+const mobileState = vi.hoisted(() => ({ isMobile: undefined as boolean | undefined }));
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useCardDimensions: () => {
+      const d = actual.useCardDimensions();
+      return mobileState.isMobile ? { ...d, isMobile: true } : d;
+    },
+  };
+});
 
 const mockExec = vi.mocked(literatureApi.exec);
 
@@ -63,8 +75,20 @@ function makeState(overrides?: Partial<LiteratureResponse>): LiteratureResponse 
 
 describe('LiteraturePage', () => {
   beforeEach(() => {
+    mobileState.isMobile = undefined;
     vi.clearAllMocks();
     mockExec.mockResolvedValue(makeState());
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    mockExec.mockResolvedValue(makeState({ message: 'Mobile message' }));
+    mobileState.isMobile = true;
+    renderWithProviders(<LiteraturePage />);
+
+    const messageText = await screen.findByText('Mobile message');
+    const message = messageText.closest('[role="status"]');
+    expect(message).toHaveTextContent('Mobile message');
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
   });
 
   it('resets on mount', async () => {
@@ -593,5 +617,38 @@ describe('LiteraturePage', () => {
     // テキストボックス(CLI)が出るまで待つ
     await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument());
     expect(screen.queryByTestId('literature-scores')).not.toBeInTheDocument();
+  });
+
+  it('keeps the primary control in the pinned footer actions', async () => {
+    localStorage.setItem('cli-mode-literature', 'false');
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<LiteraturePage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: '要求する' })).toBeInTheDocument();
+    expect(within(actions).getByRole('button', { name: '宣言する' })).toBeInTheDocument();
+
+    const content = screen.getByTestId('game-footer-content');
+    const playArea = content.parentElement?.previousElementSibling as HTMLElement;
+    expect(within(playArea).getByLabelText(/相手/)).toBeInTheDocument();
+    expect(within(playArea).getByLabelText(/^札/)).toBeInTheDocument();
+    expect(within(playArea).getByLabelText(/^組/)).toBeInTheDocument();
+    expect(within(content).queryByLabelText(/相手/)).not.toBeInTheDocument();
+    expect(within(content).queryByRole('button', { name: '要求する' })).not.toBeInTheDocument();
+    expect(within(content).queryByRole('button', { name: '宣言する' })).not.toBeInTheDocument();
+  });
+
+  it('keeps only the hand in the footer and puts choices and reference info in the play area', async () => {
+    localStorage.setItem('cli-mode-literature', 'false');
+    renderWithProviders(<LiteraturePage />);
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const footer = footerContent.parentElement;
+    const playArea = footer?.previousElementSibling;
+    expect(playArea).not.toBeNull();
+
+    expect(footerContent.querySelector('[data-tutorial="literature-hand"]')).toBeInTheDocument();
+    expect(within(footerContent).queryByLabelText(/相手/)).not.toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('literature-halfsuits')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByLabelText(/相手/)).toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('literature-halfsuits')).toBeInTheDocument();
   });
 });

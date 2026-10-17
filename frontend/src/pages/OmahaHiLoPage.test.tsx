@@ -270,6 +270,20 @@ beforeEach(() => {
 });
 
 describe('OmahaHiLoPage', () => {
+  it('keeps only the hand in the footer and places settings and reset in the play area', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<OmahaHiLoPage />);
+
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const playArea = footerContent.closest('footer')?.previousElementSibling;
+    expect(playArea).not.toBeNull();
+    expect(footerContent.querySelector('[data-tutorial="ohl-player-hand"]')).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('learning-mode-toggle')).not.toBeInTheDocument();
+    expect(footerContent.querySelector('[data-tutorial="ohl-reset-button"]')).not.toBeInTheDocument();
+    expect(playArea).toContainElement(screen.getByTestId('learning-mode-toggle'));
+    expect(playArea?.querySelector('[data-tutorial="ohl-reset-button"]')).toBeInTheDocument();
+  });
+
   it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<OmahaHiLoPage />);
@@ -609,7 +623,7 @@ describe('OmahaHiLoPage', () => {
     mockExec.mockResolvedValue(preFlopWithBetState);
     renderWithProviders(<OmahaHiLoPage />);
     await waitFor(() => expect(screen.getByText('CPU行動:')).toBeInTheDocument());
-    expect(screen.getByText(/Player 1: ベット/)).toBeInTheDocument();
+    expect(screen.getByText(/CPU 1: ベット/)).toBeInTheDocument();
   });
 
   it('does not show CPU actions log when cpuActions is empty', async () => {
@@ -622,7 +636,7 @@ describe('OmahaHiLoPage', () => {
   it('shows amount in CPU action when amount > 0', async () => {
     mockExec.mockResolvedValue(preFlopWithBetState);
     renderWithProviders(<OmahaHiLoPage />);
-    await waitFor(() => expect(screen.getByText(/Player 1: ベット \(40\)/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/CPU 1: ベット \(40\)/)).toBeInTheDocument());
   });
 
   it('does not show amount when action amount is 0', async () => {
@@ -632,7 +646,7 @@ describe('OmahaHiLoPage', () => {
     });
     renderWithProviders(<OmahaHiLoPage />);
     await waitFor(() => expect(screen.getByText('CPU行動:')).toBeInTheDocument());
-    expect(screen.getByText(/Player 1: チェック/)).toBeInTheDocument();
+    expect(screen.getByText(/CPU 1: チェック/)).toBeInTheDocument();
     expect(screen.queryByText(/\(0\)/)).not.toBeInTheDocument();
   });
 
@@ -642,7 +656,7 @@ describe('OmahaHiLoPage', () => {
       cpuActions: [{ playerIdx: 1, action: 99, amount: 0 }],
     });
     renderWithProviders(<OmahaHiLoPage />);
-    await waitFor(() => expect(screen.getByText(/Player 1: 不明/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/CPU 1: 不明/)).toBeInTheDocument());
   });
 
   // ---- round results ----
@@ -824,6 +838,9 @@ describe('OmahaHiLoPage', () => {
     mockExec.mockResolvedValue(preFlopState);
     renderWithProviders(<OmahaHiLoPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: 'ベット' }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'チェック' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'オールイン' })).toBeInTheDocument();
@@ -1901,5 +1918,15 @@ describe('OmahaHiLoPage', () => {
     renderWithProviders(<OmahaHiLoPage />);
     const panel = await screen.findByTestId('omahahilo-kbd-shortcuts');
     expect(panel).toBeInTheDocument();
+  });
+
+  it('compresses face-down CPU cards on large desktop', async () => {
+    mockUseIsLargeDesktop.mockReturnValue(true);
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<OmahaHiLoPage />);
+
+    const cpuCount = preFlopState.players.filter((player) => !player.isHuman).length;
+    await waitFor(() => expect(screen.getAllByTestId('compact-card-count')).toHaveLength(cpuCount));
+    expect(screen.getAllByTestId('compact-card-count')[0]).toHaveTextContent('4');
   });
 });

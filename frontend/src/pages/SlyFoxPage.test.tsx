@@ -76,11 +76,63 @@ describe('slyfoxNextRank', () => {
 
 describe('SlyFoxPage', () => {
   const originalLanguage = i18n.language;
+  const originalInnerWidth = window.innerWidth;
 
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
     mockExec.mockResolvedValue(makeState());
+  });
+
+  it('uses compact cards and a single foundation row on mobile', async () => {
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      renderWithProviders(<SlyFoxPage />);
+
+      const foundations = await screen.findByTestId('co-foundation-0');
+      expect(foundations.parentElement).toHaveClass('flex-nowrap');
+      expect(foundations.querySelector('img')).toHaveStyle({ width: '32px' });
+      expect(screen.getByTestId('co-tableau-0').querySelector('img')).toHaveStyle({ width: '32px' });
+    } finally {
+      Object.defineProperty(window, 'innerWidth', {
+        writable: true,
+        configurable: true,
+        value: originalInnerWidth,
+      });
+    }
+  });
+
+  it('keeps the develop card size and markup at desktop width', async () => {
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 800 });
+    try {
+      renderWithProviders(<SlyFoxPage />);
+
+      const foundations = await screen.findByTestId('co-foundation-0');
+      expect(foundations.querySelector('img')).toHaveStyle({ width: '60px' });
+      expect(screen.queryByTestId('co-top-row')).not.toBeInTheDocument();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', {
+        writable: true,
+        configurable: true,
+        value: originalInnerWidth,
+      });
+    }
+  });
+
+  it('groups foundations and stock in one compact desktop row with ten tableau columns', async () => {
+    const original = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    try {
+      renderWithProviders(<SlyFoxPage />);
+      const foundations = await screen.findByTestId('co-foundation-0');
+      const topRow = screen.getByTestId('co-top-row');
+      expect(topRow).toContainElement(foundations);
+      expect(topRow).toContainElement(screen.getByTestId('co-deal-button'));
+      expect(foundations.querySelector('img')).toHaveStyle({ width: '80px' });
+      expect(document.querySelector('[data-tutorial="co-tableau"]')).toHaveClass('flex-wrap');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: original });
+    }
   });
 
   it('includes the top reserve card in localized accessible names and preserves empty names', async () => {
@@ -137,6 +189,27 @@ describe('SlyFoxPage', () => {
     // The empty piles still show their opening rank, one per direction.
     expect(screen.getByTestId('co-foundation-next-1')).toHaveTextContent('A');
     expect(screen.getByTestId('co-foundation-next-5')).toHaveTextContent('K');
+  });
+
+  it('uses fallback piles and directions for foundations missing from the response', async () => {
+    mockExec.mockResolvedValue(makeState({ foundation: [[card('SPADE', 1)]], foundationAscending: [true] }));
+    renderWithProviders(<SlyFoxPage />);
+    await screen.findByTestId('co-foundation-7');
+    expect(screen.getByTestId('co-foundation-1')).toHaveTextContent('↑F1');
+    expect(screen.getByTestId('co-foundation-7')).toHaveTextContent('↓F7');
+    expect(screen.getByTestId('co-foundation-1')).toHaveAccessibleName(/昇順/);
+    expect(screen.getByTestId('co-foundation-7')).toHaveAccessibleName(/降順/);
+  });
+
+  it('highlights the hinted foundation', async () => {
+    const hinted = makeState({
+      hint: { fromZone: 'tableau', fromIdx: 4, toZone: 'foundation', toIdx: 0 },
+      messageCode: 'slyfox.hintAvailable',
+    });
+    mockExec.mockImplementation(async (command) => (command === 'hint' ? hinted : makeState()));
+    renderWithProviders(<SlyFoxPage />);
+    fireEvent.click(await screen.findByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(screen.getByTestId('co-foundation-0')).toHaveClass('ring-2', 'ring-ds-success'));
   });
 
   it('includes the foundation top card in localized names and keeps empty and complete states', async () => {
@@ -432,5 +505,30 @@ describe('SlyFoxPage', () => {
     mockExec.mockRejectedValue(new Error('boom'));
     renderWithProviders(<SlyFoxPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /再試行|retry/i })).toBeInTheDocument());
+  });
+});
+
+describe('SlyFoxPage compact large-desktop dimensions', () => {
+  it('uses 60px cards at 1024px and 80px cards at 1280px', async () => {
+    const originalWidth = window.innerWidth;
+    try {
+      mockExec.mockResolvedValue(makeState());
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 });
+      const compact = renderWithProviders(<SlyFoxPage />);
+      await screen.findByTestId('co-top-row');
+      const compactCard = screen.getByTestId('co-foundation-0').querySelector('img');
+      expect(compactCard).toHaveStyle({ width: '60px' });
+      compact.unmount();
+
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+      const fullSize = renderWithProviders(<SlyFoxPage />);
+      await screen.findByTestId('co-top-row');
+      const fullSizeCard = screen.getByTestId('co-foundation-0').querySelector('img');
+      expect(fullSizeCard).toHaveStyle({ width: '80px' });
+      fullSize.unmount();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
   });
 });

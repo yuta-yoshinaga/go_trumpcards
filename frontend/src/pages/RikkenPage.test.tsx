@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { rikkenApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
@@ -185,6 +185,12 @@ describe('RikkenPage', () => {
       expect(screen.getByRole('button', { name })).toBeInTheDocument();
     }
     expect(screen.getByRole('button', { name: '降りる' })).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '降りる' }),
+    ).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId('game-footer-actions')).queryByRole('button', { name: /^リク/ }),
+    ).not.toBeInTheDocument();
   });
 
   it('sends the contract value on a bid', async () => {
@@ -225,6 +231,26 @@ describe('RikkenPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: /ハート.*を切り札/ })).toBeInTheDocument());
     fireEvent.click(screen.getByRole('button', { name: /ハート.*を切り札/ }));
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('call', undefined, undefined, 3));
+  });
+
+  it('keeps the call guide in the footer content and hides actions on a CPU turn', async () => {
+    mockApi.mockResolvedValue({
+      ...bidState,
+      phase: RikkenPhase.CALL,
+      contract: RikkenContract.RIK,
+      isHumanTurn: true,
+    });
+    const { unmount } = renderWithProviders(<RikkenPage />);
+    const content = await screen.findByTestId('game-footer-content');
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(content).getByText('切り札を決めてください')).toBeInTheDocument();
+    expect(within(actions).getByRole('button', { name: /ハート.*を切り札/ })).toBeInTheDocument();
+
+    mockApi.mockResolvedValue({ ...bidState, isHumanTurn: false });
+    unmount();
+    renderWithProviders(<RikkenPage />);
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('reset'));
+    expect(screen.queryByTestId('game-footer-actions')).not.toBeInTheDocument();
   });
 
   it('enables only the legal cards', async () => {

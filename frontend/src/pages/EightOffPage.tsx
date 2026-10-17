@@ -18,7 +18,7 @@ import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useEightOffGame } from '../hooks/useEightOffGame';
@@ -27,6 +27,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
+import { DESKTOP_COMPACT_CARD_WIDTH } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, EightOffHint, EightOffResponse } from '../types/card';
 import { EightOffPhase } from '../types/phases';
@@ -157,6 +158,10 @@ function EightOffPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('eightoff', state);
   const { cardHeight, cardOverlap, cardWidth } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
+  const topRowGap = isLargeDesktop ? 'gap-1' : 'gap-2';
+  const topCardWidth = isLargeDesktop ? DESKTOP_COMPACT_CARD_WIDTH : cardWidth;
+  const topCardHeight = isLargeDesktop ? Math.round(DESKTOP_COMPACT_CARD_WIDTH * 1.5) : cardHeight;
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('eightoff');
   const cliConfig: CliGameConfig<EightOffResponse, Parameters<typeof eightoffApi.exec>> = useMemo(
@@ -346,7 +351,8 @@ function EightOffPageContent() {
         <>
           <LandscapeBanner message={t('landscapeBanner')} />
 
-          <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
+          {/* 12 x 80 + 11 x 4 = 1004px: one row from about 1036px wide (with sm:px-4); narrower, it wraps. */}
+          <div className={`flex-1 overflow-y-auto pt-3 ${isLargeDesktop ? 'px-2 sm:px-4' : 'px-4 lg:px-8'}`}>
             <span id={selectSourceHintId} className="sr-only">
               {tc('label.selectSourceFirst')}
             </span>
@@ -354,9 +360,12 @@ function EightOffPageContent() {
               {selectedSource?.zone === 'freecell' ? freeCellMoveGuide : tableauMoveGuide}
             </div>
             {/* Free cells + Foundation row */}
-            <div className="flex gap-2 mb-3 items-start flex-wrap">
+            <div
+              className={`flex ${topRowGap} mb-3 items-start flex-wrap`}
+              data-testid={isLargeDesktop ? 'eo-top-row' : undefined}
+            >
               {/* Free cells */}
-              <div className="flex gap-2" data-tutorial="eo-free-cells">
+              <div className={`flex ${topRowGap}`} data-tutorial="eo-free-cells">
                 {state.freeCells.map((card: Card | null, idx: number) => {
                   const freeCellZone: EightOffMoveZone = { zone: 'freecell', cell: idx };
                   return (
@@ -396,7 +405,7 @@ function EightOffPageContent() {
                             onDragEnd={dnd.handleDragEnd}
                             className={`p-0 border-0 bg-transparent cursor-pointer rounded ${isSourceSelected('freecell', undefined, idx) ? 'ring-2 ring-ds-warning' : isHintSourceFreecell(idx) ? 'ring-2 ring-ds-info animate-pulse' : focusRingWhite} ${dnd.isDragSource(freeCellZone) ? 'opacity-50' : ''}`}
                           >
-                            <AnimatedCard card={card} width={cardWidth} draggable={false} />
+                            <AnimatedCard card={card} width={topCardWidth} draggable={false} />
                           </button>
                         ) : (
                           <button
@@ -407,7 +416,7 @@ function EightOffPageContent() {
                             aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('emptyFreecellAriaLabel', { idx: String(idx) })}
                             data-testid={`eo-freecell-empty-${idx.toString()}`}
-                            style={{ width: cardWidth, height: cardHeight }}
+                            style={{ width: topCardWidth, height: topCardHeight }}
                             className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}${isHintTarget('freecell', idx) ? ' ring-2 ring-ds-success animate-pulse' : ''}`}
                           >
                             {t('empty')}
@@ -419,10 +428,10 @@ function EightOffPageContent() {
                 })}
               </div>
 
-              <div className="w-4" />
+              {!isLargeDesktop && <div className="w-4" />}
 
               {/* Foundation piles */}
-              <div className="flex gap-2" data-tutorial="eo-foundation">
+              <div className={`flex ${topRowGap}`} data-tutorial="eo-foundation">
                 {state.foundation.map((pile: Card[], idx: number) => {
                   const foundationZone: EightOffMoveZone = { zone: 'foundation', col: idx };
                   return (
@@ -450,7 +459,7 @@ function EightOffPageContent() {
                           >
                             <AnimatedCard
                               card={pile[pile.length - 1]}
-                              width={cardWidth}
+                              width={topCardWidth}
                               draggable={false}
                               dealDelay={isAutoCompleting ? idx * 0.15 : 0}
                             />
@@ -464,7 +473,7 @@ function EightOffPageContent() {
                             aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
                             data-testid={`eo-foundation-empty-${idx.toString()}`}
-                            style={{ width: cardWidth, height: cardHeight }}
+                            style={{ width: topCardWidth, height: topCardHeight }}
                             className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}${isHintTarget('foundation', idx) ? ' ring-2 ring-ds-success animate-pulse' : ''}`}
                           >
                             A
@@ -475,10 +484,17 @@ function EightOffPageContent() {
                   );
                 })}
               </div>
-              <span data-testid="eo-doubleclick-hint" className="text-game-text-muted text-xs self-center">
-                {t('doubleClickHint')}
-              </span>
+              {!isLargeDesktop && (
+                <span data-testid="eo-doubleclick-hint" className="text-game-text-muted text-xs self-center">
+                  {t('doubleClickHint')}
+                </span>
+              )}
             </div>
+            {isLargeDesktop && (
+              <div className="mb-3 text-game-text-muted text-xs" data-testid="eo-doubleclick-hint">
+                {t('doubleClickHint')}
+              </div>
+            )}
 
             {/* Tableau */}
             <div className="relative">

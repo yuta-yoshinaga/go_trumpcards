@@ -7,6 +7,21 @@ import type { Card, CardDesign, DesmochePlayer, DesmocheResponse } from '../type
 import { DesmochePhase } from '../types/phases';
 import { DesmochePage } from './DesmochePage';
 
+const mobileState = vi.hoisted(() => ({
+  isMobile: true,
+  breakpoint: 'mobile' as 'mobile' | 'desktop' | 'largeDesktop',
+}));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useBreakpoint: () => mobileState.breakpoint,
+    useIsMobile: () => mobileState.isMobile,
+    useCardDimensions: () => ({ ...actual.useCardDimensions(), isMobile: mobileState.isMobile }),
+  };
+});
+
 vi.mock('../api/gameApi', () => ({
   desmocheApi: { exec: vi.fn() },
   actionLogApi: { desmoche: vi.fn() },
@@ -57,8 +72,26 @@ function selectCards(indices: number[]) {
   }
 }
 
+/** Returns the grid cells occupied by an element from its Tailwind placement classes. */
+function occupiedGridCells(element: Element): Set<string> {
+  const classes = element.className.toString().split(/\s+/);
+  const value = (prefix: string, fallback: number) =>
+    Number(classes.find((name) => name.startsWith(prefix))?.slice(prefix.length) ?? fallback);
+  const colStart = value('col-start-', 1);
+  const rowStart = value('row-start-', 1);
+  const colSpan = value('col-span-', 1);
+  const rowSpan = value('row-span-', 1);
+  const cells = new Set<string>();
+  for (let row = rowStart; row < rowStart + rowSpan; row += 1) {
+    for (let col = colStart; col < colStart + colSpan; col += 1) cells.add(`${row}:${col}`);
+  }
+  return cells;
+}
+
 describe('DesmochePage', () => {
   beforeEach(() => {
+    mobileState.isMobile = true;
+    mobileState.breakpoint = 'mobile';
     vi.clearAllMocks();
     mockExec.mockResolvedValue(makeState());
   });
@@ -66,6 +99,66 @@ describe('DesmochePage', () => {
   it('resets on mount', async () => {
     renderWithProviders(<DesmochePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('keeps the hand in the large desktop grid without making it sticky', async () => {
+    mobileState.breakpoint = 'largeDesktop';
+    mobileState.isMobile = false;
+    renderWithProviders(<DesmochePage />);
+    await waitFor(() => expect(document.querySelector('[data-tutorial="ds-hand"] button')).not.toBeNull());
+    const hand = document.querySelector('[data-tutorial="ds-hand"]');
+    expect(hand).not.toHaveClass('lg:sticky');
+    expect(hand).toHaveClass('col-span-2', 'row-start-5');
+    expect(document.querySelector('.grid-cols-2')).toBeInTheDocument();
+    expect(document.querySelector('[data-tutorial="ds-seats"]')?.parentElement).toHaveClass(
+      'col-start-1',
+      'row-start-2',
+    );
+    expect(document.querySelector('[data-tutorial="ds-melds"]')).toHaveClass(
+      'col-start-2',
+      'row-start-1',
+      'row-span-3',
+    );
+  });
+
+  it('gives the round result a separate grid row from the board and hand', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: DesmochePhase.ROUND_END }));
+    mobileState.breakpoint = 'largeDesktop';
+    mobileState.isMobile = false;
+    renderWithProviders(<DesmochePage />);
+
+    const result = await screen.findByTestId('desmoche-round-result');
+    const discard = result.parentElement?.querySelector('.text-center.mb-3');
+    const melds = document.querySelector('[data-tutorial="ds-melds"]');
+    const hand = document.querySelector('[data-tutorial="ds-hand"]');
+    expect(result).toHaveClass('col-span-2', 'row-start-4');
+    expect(document.querySelector('.grid-cols-2')?.className).toContain(
+      'grid-rows-[auto_auto_auto_auto_auto_auto_auto]',
+    );
+    expect(discard).not.toBeNull();
+    expect(melds).not.toBeNull();
+    expect(hand).not.toBeNull();
+    const placed = [result, discard, melds, hand].map((element) => occupiedGridCells(element as Element));
+    for (let left = 0; left < placed.length; left += 1) {
+      for (let right = left + 1; right < placed.length; right += 1) {
+        expect([...placed[left]].some((cell) => placed[right].has(cell))).toBe(false);
+      }
+    }
+    expect(screen.getByTestId('desmoche-round-announcement')).toHaveClass('sr-only');
+  });
+
+  it('lays melds out in rows only on large desktop', async () => {
+    mobileState.breakpoint = 'largeDesktop';
+    mobileState.isMobile = false;
+    const { unmount } = renderWithProviders(<DesmochePage />);
+    const list = await screen.findByTestId('desmoche-meld-list');
+    expect(list.className).toContain('flex-row');
+    expect(list.className).toContain('flex-wrap');
+    unmount();
+
+    mobileState.breakpoint = 'desktop';
+    renderWithProviders(<DesmochePage />);
+    expect((await screen.findByTestId('desmoche-meld-list')).className).toContain('flex-col');
   });
 
   it('sends a changed difficulty in the reset request', async () => {
@@ -79,13 +172,32 @@ describe('DesmochePage', () => {
     );
   });
 
-  it('shows both rules permanently and the pot', async () => {
+  it('shows both rules on demand and keeps the pot visible', async () => {
     renderWithProviders(<DesmochePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    fireEvent.click(screen.getByText('ルール', { exact: true }));
     // 上がりは配札 9 枚ではなく 10 枚、そしてポーカーの役は使わない。
     expect(screen.getByText(/ちょうど10枚/)).toBeInTheDocument();
     expect(screen.getByText(/ポーカーの役は使いません/)).toBeInTheDocument();
     expect(screen.getByText(/ポット40/)).toBeInTheDocument();
+  });
+
+  it('collapses CPU seats on mobile and desktop while keeping desktop rules open', async () => {
+    mobileState.isMobile = true;
+    const { unmount } = renderWithProviders(<DesmochePage />);
+    const mobileRule = await screen.findByTestId('ds-rule-details');
+    expect(mobileRule).not.toHaveAttribute('open');
+    expect(screen.getByText(/ちょうど10枚/)).not.toBeVisible();
+    expect(screen.getByTestId('cpu-accordion')).not.toHaveAttribute('open');
+
+    unmount();
+    mobileState.isMobile = false;
+    renderWithProviders(<DesmochePage />);
+    const desktopRule = await screen.findByTestId('ds-rule-details');
+    expect(desktopRule).toHaveAttribute('open');
+    expect(screen.getByText(/ちょうど10枚/)).toBeVisible();
+    expect(screen.getByTestId('cpu-accordion')).not.toHaveAttribute('open');
+    expect(screen.getByTestId('desmoche-score-1')).not.toBeVisible();
   });
 
   it.each([
@@ -389,5 +501,28 @@ describe('DesmochePage', () => {
     // 席番号で呼ばない ── これが元の症状。
     expect(result).not.toHaveTextContent('席0');
     expect(result.textContent).not.toContain('{{');
+  });
+});
+
+describe('DesmochePage opponent card backs by viewport', () => {
+  beforeEach(() => {
+    mobileState.isMobile = true;
+    vi.clearAllMocks();
+    mockExec.mockResolvedValue(makeState());
+  });
+
+  it('renders a fan with each opponent hand count on desktop', async () => {
+    mobileState.isMobile = false;
+    renderWithProviders(<DesmochePage />);
+    const fans = await screen.findAllByTestId('card-back-fan');
+    expect(fans).toHaveLength(3);
+    for (const fan of fans) expect(fan.querySelectorAll('img')).toHaveLength(9);
+  });
+
+  it('keeps the full-size individual backs on mobile', async () => {
+    renderWithProviders(<DesmochePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('card-back-fan')).not.toBeInTheDocument();
+    expect(screen.getAllByAltText('カード裏面')).toHaveLength(27);
   });
 });

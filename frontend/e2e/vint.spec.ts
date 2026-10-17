@@ -7,6 +7,10 @@ test.describe('Vint E2E', () => {
 
     // Permanent, not tutorial-only: spades are the LOWEST denomination, the
     // reverse of bridge, and there is no dummy.
+    const rules = page.getByTestId('vint-rules');
+    if (!(await rules.evaluate((element) => (element as HTMLDetailsElement).open))) {
+      await rules.locator('summary').click();
+    }
     const ladder = page.getByTestId('vint-ladder');
     await expect(ladder).toBeVisible({ timeout: TIMEOUT_GAME_LOOP });
     await expect(ladder).toContainText('♠');
@@ -14,7 +18,11 @@ test.describe('Vint E2E', () => {
     await expect(page.getByTestId('vint-no-dummy')).toContainText('ダミーはありません');
 
     await expect(page.getByTestId('vint-player')).toHaveCount(4, { timeout: TIMEOUT_GAME_LOOP });
-    await expect(page.getByTestId('vint-scores')).toBeVisible();
+    const scores = page.getByTestId('vint-scores');
+    if (!(await scores.evaluate((element) => (element as HTMLDetailsElement).open))) {
+      await scores.locator('summary').click();
+    }
+    await expect(scores).toBeVisible();
 
     // The human may open the auction, or the CPUs may already have settled it.
     const pass = gameButton(page, 'パス');

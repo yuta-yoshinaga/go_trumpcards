@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, wattenApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -79,6 +79,54 @@ beforeEach(() => {
 });
 
 describe('WattenPage', () => {
+  it('renders the game message inside the footer message region', async () => {
+    mockExec.mockResolvedValue(makeWattenState({ message: 'Footer message' }));
+    renderWithProviders(<WattenPage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage.querySelector('[role="status"], [role="alert"]')).toHaveTextContent('Footer message');
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue(makeWattenState({ message: 'Mobile message' }));
+    renderWithProviders(<WattenPage />);
+
+    const messageText = await screen.findByText('Mobile message');
+    const message = messageText.closest('[role="status"]');
+    expect(message).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+    expect(message?.closest('footer')).not.toBeInTheDocument();
+  });
+
+  it('keeps the hand in the footer and puts declare choices and trump guidance in the play area', async () => {
+    mockExec.mockResolvedValue(declarePhaseState);
+    renderWithProviders(<WattenPage />);
+
+    const footer = await screen.findByTestId('game-footer-content');
+    const playArea = footer.parentElement?.previousElementSibling;
+    expect(playArea).toBeInTheDocument();
+    expect(footer.querySelector('[data-tutorial="watten-player-hand"]')).toBeInTheDocument();
+    expect(within(footer).queryByRole('button', { name: '7' })).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByRole('button', { name: '7' })).toBeInTheDocument();
+    expect(within(footer).queryByTestId('watten-trump-panel')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('watten-trump-panel')).toBeInTheDocument();
+    expect(within(footer).queryByTestId('watten-hint-live')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('watten-hint-live')).toBeInTheDocument();
+  });
+
+  it('shows the no-trumps reference when the hand has no trump cards', async () => {
+    const noTrumpState = makeWattenState({
+      ...declarePhaseState,
+      players: declarePhaseState.players.map((player) => (player.isHuman ? { ...player, cards: [] } : player)),
+    });
+    mockExec.mockResolvedValue(noTrumpState);
+    renderWithProviders(<WattenPage />);
+
+    expect(await screen.findByTestId('watten-trump-count')).toHaveTextContent('永久最強札は常に有効です');
+  });
+
   it('shows the latest completed trick with its winner and card owners', async () => {
     mockExec.mockResolvedValue(
       makeWattenState({
@@ -454,5 +502,11 @@ describe('WattenPage', () => {
     expect(live).toHaveAttribute('aria-live', 'polite');
     // 隣に置いただけの実装は属性の検査を通る。**中にあること**を見る。
     expect(live).toContainElement(await screen.findByTestId('watten-declare-prompt'));
+  });
+  it('places the current turn action in the pinned footer actions', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<WattenPage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: '出す' })).toBeInTheDocument();
   });
 });

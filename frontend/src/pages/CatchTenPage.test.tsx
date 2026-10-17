@@ -69,13 +69,33 @@ beforeEach(() => {
 });
 
 describe('CatchTenPage', () => {
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue(makeState({ message: 'Footer message location' }));
+    renderWithProviders(<CatchTenPage />);
+
+    const messageSlot = await screen.findByTestId('game-footer-message');
+    expect(messageSlot).toHaveTextContent('Footer message location');
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    mockExec.mockResolvedValue(makeState({ message: 'Footer message location' }));
+    mobileFlag.value = true;
+    renderWithProviders(<CatchTenPage />);
+
+    const messageText = await screen.findByText('Footer message location');
+    const message = messageText.closest('[role="status"]');
+    expect(message).toHaveTextContent('Footer message location');
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+  });
+
   it('shows each player’s current trick count in Japanese and English', async () => {
     mockExec.mockResolvedValue(
       makeState({ players: makeState().players.map((player, index) => ({ ...player, trickCount: index + 1 })) }),
     );
     renderWithProviders(<CatchTenPage />);
 
-    expect(await screen.findByTestId('catchten-human-team')).toHaveTextContent('チーム 0 · 獲得トリック数: 1');
+    expect(await screen.findByTestId('catchten-human-team')).toHaveTextContent('あなた: チーム 0 · 獲得トリック数: 1');
+    expect(screen.getByTestId('catchten-human-team')).not.toHaveTextContent('label.you');
     expect(screen.getByText('獲得トリック数: 2')).toBeInTheDocument();
     expect(screen.getByText('獲得トリック数: 3')).toBeInTheDocument();
     expect(screen.getByText('獲得トリック数: 4')).toBeInTheDocument();

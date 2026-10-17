@@ -95,6 +95,11 @@ beforeEach(() => {
 });
 
 describe('ContractRummyPage', () => {
+  it('keeps every hand card in the hand fan', async () => {
+    renderWithProviders(<ContractRummyPage />);
+    const hand = await screen.findByTestId('cr-hand');
+    expect(hand.querySelectorAll('button')).toHaveLength(baseHand.length);
+  });
   it('calls reset on mount', async () => {
     renderWithProviders(<ContractRummyPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

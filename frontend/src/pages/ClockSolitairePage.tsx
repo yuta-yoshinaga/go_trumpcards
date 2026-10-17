@@ -15,7 +15,13 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
+import {
+  CARD_DIMENSIONS,
+  useBreakpoint,
+  useCardDimensions,
+  useIsCompactLargeDesktop,
+  useWindowWidth,
+} from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -220,6 +226,9 @@ function ClockSolitairePageContent() {
     previousStepStateRef.current = state;
   }, [state, t]);
   const { cardWidth, cardHeight } = useCardDimensions();
+  const isCompactLargeDesktop = useIsCompactLargeDesktop();
+  const badgeScale = isCompactLargeDesktop ? cardWidth / CARD_DIMENSIONS.largeDesktop.cardWidth : 1;
+  const breakpoint = useBreakpoint();
   const viewportWidth = useWindowWidth();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('clocksolitaire', state);
 
@@ -290,7 +299,13 @@ function ClockSolitairePageContent() {
   if (!state) return <GameSkeleton gameKey="clocksolitaire" layout={{ kind: 'centered', rows: [4, 5, 4] }} />;
 
   const availableBoardWidth = Math.max(cardWidth + 16, viewportWidth - 32);
-  const radius = Math.min(cardWidth * 5, 180, (availableBoardWidth - cardWidth - 16) / 2);
+  // The large-desktop radius lifts the lowest card into view; label and progress offsets scale
+  // with cardWidth so both compact 80px cards and full-size 100px cards keep badges between piles.
+  const radius = Math.min(
+    cardWidth * 5,
+    breakpoint === 'largeDesktop' ? 157 : 180,
+    (availableBoardWidth - cardWidth - 16) / 2,
+  );
 
   // Resolve the same text GameMessageBox shows so it can also be announced in a
   // dedicated live region (the visible box is not guaranteed to be a live region).
@@ -388,7 +403,17 @@ function ClockSolitairePageContent() {
                       }}
                     >
                       <legend className="sr-only">{pileLabel}</legend>
-                      <span className="mb-0.5 text-xs font-bold text-ds-text-muted">{CLOCK_LABELS[i]}</span>
+                      <span
+                        data-testid={`clock-pile-label-${i.toString()}`}
+                        className="absolute z-20 whitespace-nowrap text-xs font-bold text-ds-text-muted"
+                        style={{
+                          left: cardWidth / 2 + pos.x * 82 * badgeScale,
+                          top: cardHeight / 2 + pos.y * 82 * badgeScale,
+                          transform: 'translate(-50%, -50%)',
+                        }}
+                      >
+                        {CLOCK_LABELS[i]}
+                      </span>
                       {pile && pile.length > 0 ? (
                         <div
                           className={`relative rounded ${isFlightTarget ? 'ring-2 ring-ds-warning animate-pulse' : ''}`}
@@ -408,7 +433,15 @@ function ClockSolitairePageContent() {
                           ) : (
                             <AnimatedCardBack width={cardWidth} />
                           )}
-                          <span className="absolute -bottom-4 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] text-ds-text-muted">
+                          <span
+                            data-testid={`clock-pile-progress-${i.toString()}`}
+                            className="absolute z-20 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] text-ds-text-muted"
+                            style={{
+                              // Scale offsets only for compact large-desktop cards; twelve o'clock uses 8px to stay below its label.
+                              top: i === 11 ? 8 : cardHeight / 2 + pos.y * 105 * badgeScale,
+                              left: cardWidth / 2 + pos.x * 105 * badgeScale,
+                            }}
+                          >
                             <ClockPileFaceUpSuits pile={pile} testId={`clock-pile-suits-${i.toString()}`} />
                             {faceUpCount}/4
                           </span>
@@ -441,7 +474,9 @@ function ClockSolitairePageContent() {
                     status: t(state.faceUpCount[12] >= 4 ? 'pileComplete' : 'pileIncomplete'),
                   })}
                 </legend>
-                <span className="mb-0.5 text-xs font-bold text-ds-warning">K</span>
+                <span data-testid="clock-pile-label-12" className="mb-0.5 text-xs font-bold text-ds-warning">
+                  K
+                </span>
                 {(() => {
                   const centerPile = state.piles[12];
                   const centerTopCard = centerPile?.[centerPile.length - 1]?.card ?? null;
@@ -468,7 +503,10 @@ function ClockSolitairePageContent() {
                       ) : (
                         <AnimatedCardBack width={cardWidth} />
                       )}
-                      <span className="absolute -bottom-4 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] text-ds-text-muted">
+                      <span
+                        data-testid="clock-pile-progress-12"
+                        className="absolute z-20 -bottom-4 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] text-ds-text-muted"
+                      >
                         <ClockPileFaceUpSuits pile={centerPile} testId="clock-pile-suits-12" />
                         {state.faceUpCount[12]}/4
                       </span>

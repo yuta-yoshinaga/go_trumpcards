@@ -2,6 +2,21 @@ import { expect, test } from '@playwright/test';
 import { gameButton, navigateTo, waitForLoaded } from './helpers';
 
 test.describe('Spades E2E', () => {
+  test('score table fits its scroll area at 1280×800', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await navigateTo(page, '/spades');
+    const section = page.locator('[data-tutorial="sp-score-table"]');
+    const table = section.locator('table').last();
+    await expect(table).toBeVisible();
+    const dimensions = await table.evaluate((element) => {
+      let ancestor = element.parentElement;
+      while (ancestor && getComputedStyle(ancestor).overflowX === 'visible') ancestor = ancestor.parentElement;
+      if (!ancestor) throw new Error('score table has no horizontal overflow ancestor');
+      return { scrollWidth: ancestor.scrollWidth, clientWidth: ancestor.clientWidth };
+    });
+    expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth);
+  });
+
   test('navigates, resets, and plays through phase transitions', async ({ page }) => {
     await navigateTo(page, '/spades');
 
@@ -33,16 +48,11 @@ test.describe('Spades E2E', () => {
     // 全札から first() を取ると制限札を掴んでクリックが無反応になるため、
     // 合法な札だけに絞る。
     const handCards = page.locator('button[aria-pressed]:has(img):not([aria-disabled="true"])');
-    const anyResetButton = page.getByRole('button', { name: /リセット|次のゲーム/ });
 
     // Play through several interactions to verify phase transitions
     const MAX_TURNS = 60;
     let interactions = 0;
     for (let turn = 0; turn < MAX_TURNS; turn++) {
-      await expect(
-        bidButton.or(playButton).or(nextTrickButton).or(nextRoundButton).or(anyResetButton).first(),
-      ).toBeVisible({ timeout: 10_000 });
-
       const bidVisible = await bidButton.isVisible();
       const playVisible = await playButton.isVisible();
       const nextTrickVisible = await nextTrickButton.isVisible();

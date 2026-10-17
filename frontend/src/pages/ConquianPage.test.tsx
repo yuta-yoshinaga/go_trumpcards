@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, conquianApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -178,6 +178,9 @@ describe('ConquianPage', () => {
     await waitFor(() => {
       expect(screen.getByAltText('♠ A')).toBeInTheDocument();
       expect(screen.getByRole('button', { name: '山札から引く' })).toBeInTheDocument();
+      expect(
+        within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '山札から引く' }),
+      ).toBeInTheDocument();
       expect(screen.getByRole('button', { name: '捨て札から引く' })).toBeInTheDocument();
     });
   });

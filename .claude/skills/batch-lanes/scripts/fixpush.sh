@@ -7,6 +7,18 @@ $B/busy.sh "$1" >/dev/null && { echo "REFUSED: a delegation is still running in 
 # usage: fixpush.sh <fxslot> <pr> "<commit subject>" "<reply to review>"
 set -e
 cd "$WT_ROOT/wt-ib$1"
+readarray -t pr_info < <(gh pr view "$2" --json state,headRefName -q '[.state, .headRefName][]')
+pr_state=${pr_info[0]}
+expected_br=${pr_info[1]}
+if [[ "$pr_state" != OPEN ]]; then
+  echo "REFUSED: PR $2 is $pr_state; ship the fix as a follow-up PR" >&2
+  exit 1
+fi
+current_br=$(git branch --show-current)
+if [[ "$current_br" != "$expected_br" ]]; then
+  echo "REFUSED: current branch $current_br does not match PR $2 head $expected_br" >&2
+  exit 1
+fi
 if [[ "${CLAIM_SKIP:-}" != 1 ]] && ! "$B/claimcheck.sh" "$PWD" "$4"; then
   echo "REFUSED: unverified claims" >&2
   exit 1
@@ -25,11 +37,16 @@ git push -q 2>&1 | grep -v '^remote:'
 push_status=${PIPESTATUS[0]}
 set -e
 ((push_status == 0)) || exit "$push_status"
-sha=$(git rev-parse --short HEAD); rsha=$(git ls-remote origin "refs/heads/$(git branch --show-current)" | cut -c1-9)
+sha=$(git rev-parse --short=9 HEAD); rsha=$(git ls-remote origin "refs/heads/$(git branch --show-current)" | cut -c1-9)
 [ "${sha:0:9}" = "$rsha" ] || { echo "PUSH MISMATCH $sha $rsha"; exit 1; }
 tn=$(git show HEAD -U0 -- "*.test.ts" "*.test.tsx" "*_test.go" | grep -E "^\+\s*(it|test)\(|^\+func Test" | sed -E "s/^\+\s*//; s/, async.*//; s/\{$//" | head -8)
 [ -n "$tn" ] && body="$4
 
 Tests added/changed in this commit (from the diff):
 $(sed "s/^/- /" <<<"$tn")" || body="$4"
-gh pr comment "$2" --body "$body ($sha)" >/dev/null && echo "pushed $sha + replied"
+gh pr comment "$2" --body "$body ($sha)" >/dev/null
+# If the comment fails, the push already happened but reviewed.txt will not be updated; verify manually and append it.
+if ! grep -qx "$2" "$BATCH_STATE/reviewed.txt"; then
+  printf '%s\n' "$2" >> "$BATCH_STATE/reviewed.txt"
+fi
+echo "pushed $sha + replied"

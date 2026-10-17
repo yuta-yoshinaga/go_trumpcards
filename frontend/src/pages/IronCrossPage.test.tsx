@@ -8,6 +8,13 @@ import type { Card, IronCrossResponse } from '../types/card';
 import { IronCrossPhase } from '../types/phases';
 import { IronCrossPage } from './IronCrossPage';
 
+const layoutState = vi.hoisted(() => ({ largeDesktop: false }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useBreakpoint: () => (layoutState.largeDesktop ? 'largeDesktop' : 'desktop'),
+}));
+
 vi.mock('../api/gameApi', () => ({
   ironcrossApi: { exec: vi.fn() },
   actionLogApi: { ironcross: vi.fn() },
@@ -90,6 +97,21 @@ beforeEach(() => {
 });
 
 describe('IronCrossPage', () => {
+  it('uses a cross and hand grid only on large desktop', async () => {
+    mockApi.mockResolvedValue(withState({}));
+    layoutState.largeDesktop = true;
+    const { unmount } = renderWithProviders(<IronCrossPage />);
+    await waitFor(() => expect(screen.getByTestId('card-area')).toHaveClass('grid-cols-[auto_minmax(0,1fr)]'));
+    expect(screen.getByTestId('ic-cross-1').parentElement).toHaveClass('col-start-2', 'row-start-1');
+    expect(screen.getByTestId('ic-cross')).not.toHaveClass('flex');
+    expect(screen.getByTestId('ic-cross')).toHaveClass('grid', 'grid-cols-3', 'grid-rows-3');
+    expect(screen.getByTestId('ic-hand')).toHaveClass('flex-nowrap');
+    unmount();
+    layoutState.largeDesktop = false;
+    renderWithProviders(<IronCrossPage />);
+    await waitFor(() => expect(screen.getByTestId('card-area')).not.toHaveClass('grid-cols-[auto_minmax(0,1fr)]'));
+  });
+
   it('shows each seat net change at showdown separately from gross winnings', async () => {
     mockApi.mockResolvedValue(
       withState({
@@ -178,6 +200,7 @@ describe('IronCrossPage', () => {
     renderWithProviders(<IronCrossPage />);
     await waitFor(() => expect(screen.getByTestId('ic-hand')).toBeInTheDocument());
     expect(screen.getByTestId('ic-hand').children).toHaveLength(4);
+    expect(screen.getByTestId('ic-hand').parentElement).not.toHaveClass('lg:sticky');
   });
 
   // **十字の位置は落とさない。** 伏せている枠も出さないと、開いた札が

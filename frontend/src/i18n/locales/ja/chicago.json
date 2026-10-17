@@ -114,5 +114,9 @@
     "winner": "{{name}} +{{amount}}",
     "scoop": "{{name}} が両取り！ +{{total}}",
     "hiTakesAll": "伏せ札にスペードを持つ人がいないので、役の勝者がポットを総取りします。"
-  }
+  },
+  "showingHand": "見えている札: {{hand}}",
+  "sidePot": "ポット{{number}}: {{amount}}チップ — 対象: {{players}}",
+  "currentLow": "現在のロー: {{low}}",
+  "listSeparator": "、"
 }

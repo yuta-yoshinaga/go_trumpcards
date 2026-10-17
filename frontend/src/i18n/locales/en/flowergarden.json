@@ -36,6 +36,7 @@
   "reserve": "Bouquet",
   "reserveSelectionHint": "Only slots containing cards can be selected",
   "reserveCardAriaLabel": "{{card}} (reserve slot {{idx}})",
+  "rules": "Rules",
   "rulesNote": "Suit is ignored — only the next rank down stacks. An empty bed takes any card.",
   "stalemate": "Stalemate",
   "tableau": "Flower bed",

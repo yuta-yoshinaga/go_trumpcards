@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { tarocchiniApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -36,6 +36,53 @@ beforeEach(() => {
 });
 
 describe('TarocchiniPage', () => {
+  it('uses the taller mobile footer cap', async () => {
+    renderWithProviders(<TarocchiniPage />);
+    const content = await screen.findByTestId('game-footer-content');
+    expect(content.closest('footer')?.className).toContain('max-h-[60vh]');
+  });
+
+  it('stacks mobile hand rows with negative margins', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      window.dispatchEvent(new Event('resize'));
+      const source = playState;
+      const human = source.players.find((player) => player.isHuman);
+      if (!human) throw new Error('Expected the TarocchiniPage human player');
+      const cards = Array.from({ length: 17 }, (_, index) => human.cards[index % human.cards.length]);
+      mockExec.mockResolvedValue({
+        ...playState,
+        players: playState.players.map((player) =>
+          player.isHuman ? { ...player, cards, cardCount: cards.length } : player,
+        ),
+      });
+      renderWithProviders(<TarocchiniPage />);
+      const content = await screen.findByTestId('game-footer-content');
+      const hand = content.querySelector<HTMLElement>('[data-tutorial="tarocchini-player-hand"]');
+      expect(hand).not.toBeNull();
+      if (!hand) throw new Error('Expected the TarocchiniPage player hand');
+      await waitFor(() => expect(hand.querySelectorAll('[data-testid="hand-row"]').length).toBeGreaterThanOrEqual(2));
+      for (const row of Array.from(hand.querySelectorAll<HTMLElement>('[data-testid="hand-row"]')).slice(1)) {
+        expect(row.style.marginTop).toMatch(/^-/);
+      }
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it('keeps the hand in the footer and supporting notices in the play area', async () => {
+    const { container } = renderWithProviders(<TarocchiniPage />);
+    const footer = await screen.findByTestId('game-footer-content');
+    const playArea = container.querySelector('.flex-1.overflow-y-auto');
+
+    expect(footer.querySelector('[data-tutorial="tarocchini-player-hand"]')).toBeInTheDocument();
+    expect(footer.querySelector('[data-tutorial="tarocchini-reset-button"]')).not.toBeInTheDocument();
+    expect(playArea).toContainElement(screen.getByTestId('tarocchini-hint-live'));
+    expect(playArea).toContainElement(container.querySelector('[data-tutorial="tarocchini-reset-button"]'));
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<TarocchiniPage />);
@@ -88,6 +135,7 @@ describe('TarocchiniPage', () => {
   it('plays the selected card', async () => {
     renderWithProviders(<TarocchiniPage />);
     const playButton = await screen.findByRole('button', { name: '出す' });
+    expect(within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '出す' })).toBe(playButton);
     expect(playButton).toBeDisabled();
 
     fireEvent.click(screen.getByRole('button', { name: 'Re ♠' }));

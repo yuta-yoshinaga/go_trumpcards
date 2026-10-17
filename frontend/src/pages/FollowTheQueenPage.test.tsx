@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { followTheQueenApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -6,6 +6,7 @@ import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { FollowTheQueenResponse } from '../types/card';
+import { FollowTheQueenPhase, FollowTheQueenRebuyPhaseType } from '../types/phases';
 import { FollowTheQueenPage } from './FollowTheQueenPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -14,6 +15,13 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockExec = vi.mocked(followTheQueenApi.exec);
+
+const mobileState = vi.hoisted(() => ({ isMobile: false }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+}));
 
 /** Helper: base human player */
 const humanPlayer = (overrides: Partial<import('../types/card').FollowTheQueenPlayerData> = {}) => ({
@@ -170,6 +178,7 @@ const showdownState: FollowTheQueenResponse = {
 };
 
 beforeEach(() => {
+  mobileState.isMobile = false;
   mockExec.mockResolvedValue(initState);
 });
 
@@ -216,6 +225,27 @@ describe('FollowTheQueenPage', () => {
     await waitFor(() => expect(screen.getByText(/CPU 1/)).toBeInTheDocument());
     expect(screen.getByText(/CPU 2/)).toBeInTheDocument();
     expect(screen.getAllByText(/タイト/).length).toBeGreaterThanOrEqual(1);
+    expect(
+      Array.from(document.querySelectorAll('span.whitespace-nowrap')).filter((chips) =>
+        chips.textContent?.includes('チップ:'),
+      ),
+    ).toHaveLength(3);
+  });
+
+  it('keeps CPU details collapsed on mobile and opens them on desktop', async () => {
+    mobileState.isMobile = true;
+    mockExec.mockResolvedValue(thirdStreetState);
+    const { unmount } = renderWithProviders(<FollowTheQueenPage />);
+    const mobileAccordion = await screen.findByTestId('cpu-accordion');
+    expect(mobileAccordion).not.toHaveAttribute('open');
+    expect(within(mobileAccordion).getAllByText('ドアカード')[0]).not.toBeVisible();
+
+    unmount();
+    mobileState.isMobile = false;
+    renderWithProviders(<FollowTheQueenPage />);
+    const desktopAccordion = await screen.findByTestId('cpu-accordion');
+    expect(desktopAccordion).toHaveAttribute('open');
+    expect(within(desktopAccordion).getAllByText('ドアカード')[0]).toBeVisible();
   });
 
   it('shows fold badge for folded CPU', async () => {
@@ -396,7 +426,7 @@ describe('FollowTheQueenPage', () => {
     mockExec.mockResolvedValue(thirdStreetWithBetState);
     renderWithProviders(<FollowTheQueenPage />);
     await waitFor(() => expect(screen.getByText('CPU行動:')).toBeInTheDocument());
-    expect(screen.getByText(/Player 1: ベット/)).toBeInTheDocument();
+    expect(screen.getByText(/CPU 1: ベット/)).toBeInTheDocument();
   });
 
   // ---- round results ----
@@ -481,6 +511,29 @@ describe('FollowTheQueenPage', () => {
     await waitFor(() => expect(screen.getByText(/あなたの手札/)).toBeInTheDocument());
   });
 
+  it('keeps the hand in the footer and places phase choices and reset controls in the play area', async () => {
+    mockExec.mockResolvedValue({
+      ...thirdStreetState,
+      phase: FollowTheQueenPhase.REBUY,
+      rebuyPhaseType: FollowTheQueenRebuyPhaseType.REBUY,
+      rebuyChips: 500,
+      rebuyMaxCount: 2,
+      rebuyCounts: [0],
+    });
+    renderWithProviders(<FollowTheQueenPage />);
+
+    const footer = await screen.findByTestId('game-footer-content');
+    const playArea = footer.closest('footer')?.previousElementSibling?.previousElementSibling;
+    await waitFor(() => expect(screen.getByTestId('rebuy-controls')).toBeInTheDocument());
+
+    expect(footer.querySelector('[data-tutorial="scs-player-hand"]')).toBeInTheDocument();
+    expect(footer.querySelector('[data-testid="rebuy-controls"]')).toBeNull();
+    expect(footer.querySelector('[data-tutorial="scs-reset-button"]')).toBeNull();
+    expect(playArea).toHaveAttribute('class', expect.stringContaining('flex-1 overflow-y-auto'));
+    expect(within(playArea as HTMLElement).getByTestId('rebuy-controls')).toBeInTheDocument();
+    expect(playArea?.querySelector('[data-tutorial="scs-reset-button"]')).toBeInTheDocument();
+  });
+
   it('does not show human player section when no players', async () => {
     renderWithProviders(<FollowTheQueenPage />);
     await waitFor(() => expect(screen.getByText('初期化中')).toBeInTheDocument());
@@ -501,6 +554,48 @@ describe('FollowTheQueenPage', () => {
     expect(screen.getByAltText('♥ K')).toBeInTheDocument();
   });
 
+  it('shows seven face-down placeholders for an undealt, active human hand and none when folded', async () => {
+    mockExec.mockResolvedValue({
+      ...thirdStreetState,
+      players: [humanPlayer({ doorCards: [], holeCards: [] }), cpuPlayer(1), cpuPlayer(2)],
+    });
+    const { unmount } = renderWithProviders(<FollowTheQueenPage />);
+    const hand = await screen.findByTestId('game-footer-content');
+    const humanHand = hand.querySelector('[data-tutorial="scs-player-hand"]') as HTMLElement;
+    expect(within(humanHand).getAllByTestId('animated-card-back')).toHaveLength(7);
+    unmount();
+
+    mockExec.mockResolvedValue({
+      ...thirdStreetState,
+      players: [humanPlayer({ doorCards: [], holeCards: [], folded: true }), cpuPlayer(1), cpuPlayer(2)],
+    });
+    renderWithProviders(<FollowTheQueenPage />);
+    const foldedHand = (await screen.findByTestId('game-footer-content')).querySelector(
+      '[data-tutorial="scs-player-hand"]',
+    ) as HTMLElement;
+    expect(within(foldedHand).queryAllByTestId('animated-card-back')).toHaveLength(0);
+  });
+
+  it('places the human door and hole card groups side by side', async () => {
+    mockExec.mockResolvedValue(thirdStreetState);
+    renderWithProviders(<FollowTheQueenPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+    const hand = screen.getByTestId('game-footer-content').querySelector('[data-tutorial="scs-player-hand"]');
+    expect(hand).not.toBeNull();
+    const doorHeading = within(hand as HTMLElement).getByText(i18n.t('followthequeen:doorCards'));
+    const holeHeading = within(hand as HTMLElement).getByText(i18n.t('followthequeen:holeCards'));
+    const ancestors = new Set<HTMLElement>();
+    for (let node = doorHeading.parentElement; node; node = node.parentElement) ancestors.add(node);
+
+    let commonAncestor = holeHeading.parentElement;
+    while (commonAncestor && !ancestors.has(commonAncestor)) commonAncestor = commonAncestor.parentElement;
+
+    expect(commonAncestor).not.toBeNull();
+    expect(commonAncestor).toHaveClass('flex', 'flex-wrap', 'items-start', 'gap-x-3');
+    expect(doorHeading.parentElement).not.toBe(holeHeading.parentElement);
+  });
+
   // ---- message ----
   it('shows game message', async () => {
     mockExec.mockResolvedValue(thirdStreetState);
@@ -513,6 +608,9 @@ describe('FollowTheQueenPage', () => {
     mockExec.mockResolvedValue(thirdStreetState);
     renderWithProviders(<FollowTheQueenPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: 'ベット' }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'チェック' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'オールイン' })).toBeInTheDocument();

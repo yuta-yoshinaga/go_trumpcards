@@ -31,6 +31,16 @@ beforeEach(() => {
 });
 
 describe('TeenPattiPage', () => {
+  it('shows the human turn instruction once', async () => {
+    mockExec.mockResolvedValue(
+      makeTeenPattiState({ message: 'あなたの番です — シー／ベット／レイズ／フォールドを選んでください。' }),
+    );
+    renderWithProviders(<TeenPattiPage />);
+    expect(
+      await screen.findAllByText('あなたの番です — シー／ベット／レイズ／フォールドを選んでください。'),
+    ).toHaveLength(1);
+  });
+
   it('shows three face-down cards with an accessible description while the human is blind', async () => {
     renderWithProviders(<TeenPattiPage />);
     const hand = await screen.findByRole('group', { name: 'ブラインド中の手札。カードは伏せられています。' });
@@ -57,6 +67,8 @@ describe('TeenPattiPage', () => {
     const badge = await screen.findByText('ディーラー', { selector: 'span' });
     expect(badge.parentElement).toHaveTextContent('CPU 3');
     expect(badge.parentElement).toHaveTextContent('[ブラインド]');
+    expect(badge.className).toContain('whitespace-nowrap');
+    expect(badge.className).toContain('shrink-0');
     expect(screen.getAllByText('ディーラー', { selector: 'span' })).toHaveLength(1);
   });
 
@@ -297,6 +309,7 @@ describe('TeenPattiPage', () => {
     renderWithProviders(<TeenPattiPage />);
 
     const range = await screen.findByTestId('tp-raise-range');
+    expect(range).toHaveClass('whitespace-nowrap');
     expect(range).toHaveTextContent('2');
     expect(range).toHaveTextContent('30');
   });

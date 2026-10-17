@@ -26,6 +26,7 @@ git -C "$repo" -c user.name=test -c user.email=test@example.com commit -qm fixtu
 printf 'it("node-only case", () => {})\n' >"$repo/node_modules/fake/only.test.ts"
 bash "$SCRIPTS/claimcheck.sh" "$repo" 'Uses `GetTrickWinnerIdx`, `state.config.pointLimit`, func TestExistingCase(t *testing.T), t.Run("nested case"), it('\''existing browser case'\''), and pkg/sample_test.go:2' || fail "valid claims rejected"
 bash "$SCRIPTS/claimcheck.sh" "$repo" 'Foo.go:3' || fail "basename file:line claim did not match a deep file"
+bash "$SCRIPTS/claimcheck.sh" "$repo" '7.23:1, 4.5:1, 比 3.1:1' || fail "contrast ratios were read as file:line claims"
 set +e
 out=$(bash "$SCRIPTS/claimcheck.sh" "$repo" 'Foo.go:5' 2>&1)
 rc=$?
@@ -40,6 +41,25 @@ set -e
 grep -q '^UNVERIFIED identifier NoSuchExport$' <<<"$out" || fail "missing identifier not reported: $out"
 grep -q '^UNVERIFIED test TestMissingCase$' <<<"$out" || fail "missing test not reported: $out"
 grep -q '^UNVERIFIED file:line pkg/missing.go:8$' <<<"$out" || fail "missing path not reported: $out"
+# A removed identifier remains verifiable from deletion lines; absent identifiers remain unverified.
+printf 'var RemovedExport = true\n' > "$repo/pkg/source.go"
+git -C "$repo" add pkg/source.go
+tree=$(git -C "$repo" write-tree); parent=$(git -C "$repo" rev-parse HEAD)
+commit=$(printf 'add export\n' | git -C "$repo" -c user.name=test -c user.email=test@example.com commit-tree "$tree" -p "$parent")
+git -C "$repo" update-ref refs/heads/master "$commit"; git -C "$repo" update-ref refs/remotes/origin/develop "$commit"
+printf 'GetTrickWinnerIdx and pointLimit\n' > "$repo/pkg/source.go"
+git -C "$repo" add pkg/source.go
+tree=$(git -C "$repo" write-tree); parent=$(git -C "$repo" rev-parse HEAD)
+commit=$(printf 'remove export\n' | git -C "$repo" -c user.name=test -c user.email=test@example.com commit-tree "$tree" -p "$parent")
+git -C "$repo" update-ref refs/heads/master "$commit"
+bash "$SCRIPTS/claimcheck.sh" "$repo" 'Removed `RemovedExport`' || fail "deleted identifier claim was rejected"
+printf '%s\n' '-- RemovedLuaThing' >> "$repo/pkg/source.go"
+git -C "$repo" add pkg/source.go
+tree=$(git -C "$repo" write-tree); parent=$(git -C "$repo" rev-parse HEAD)
+commit=$(printf 'add lua marker\n' | git -C "$repo" -c user.name=test -c user.email=test@example.com commit-tree "$tree" -p "$parent")
+git -C "$repo" update-ref refs/heads/master "$commit"
+sed -i '/-- RemovedLuaThing/d' "$repo/pkg/source.go"
+bash "$SCRIPTS/claimcheck.sh" "$repo" 'Removed `RemovedLuaThing`' || fail "deleted ---prefixed identifier claim was rejected"
 set +e
 out=$(bash "$SCRIPTS/claimcheck.sh" "$repo" 'it("node-only case")' 2>&1)
 rc=$?
@@ -60,6 +80,7 @@ prompt=$(bash -c 'n=1; body=x; source /dev/stdin' <"$heredoc") || fail "mkprompt
 grep -q 'design "BACK"' <<<"$prompt" || fail "expanded prompt lost design BACK quotes"
 grep -q '`VERDICT: NOT_PLANNED`' <<<"$prompt" || fail "expanded prompt lost backtick-delimited text"
 grep -q '\$ref' <<<"$prompt" || fail "expanded prompt lost literal dollar text"
+grep -q '既存のコメント (TSDoc / GoDoc / 説明コメント) は、依頼された箇所以外で削除・短縮しないこと。' <<<"$prompt" || fail "expanded prompt omitted comment preservation contract"
 if grep -q '\\"' <<<"$prompt"; then fail "expanded prompt contains escaped quotes"; fi
 for script in ship.sh fixpush.sh; do
   if [[ "$script" == ship.sh ]]; then wt_path='\$WT_ROOT/wt-ib\$s'; else wt_path='\$WT_ROOT/wt-ib\$1'; fi

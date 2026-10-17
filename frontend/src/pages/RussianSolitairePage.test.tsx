@@ -75,6 +75,59 @@ beforeEach(() => {
 });
 
 describe('RussianSolitairePage', () => {
+  it('places autocomplete status below mobile controls and inline with large desktop controls', async () => {
+    const originalWidth = window.innerWidth;
+
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 375 });
+    const mobile = renderWithProviders(<RussianSolitairePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const mobileStatus = screen.getByText('全カードが表向きになるとクリックできます');
+    const mobileButton = screen.getByTestId('autocomplete-button');
+    expect(mobileStatus.parentElement).not.toBe(mobileButton.parentElement);
+    expect(
+      (mobileButton.parentElement?.compareDocumentPosition(mobileStatus) ?? 0) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    mobile.unmount();
+
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1280 });
+    const largeDesktop = renderWithProviders(<RussianSolitairePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const desktopStatus = screen.getByText('全カードが表向きになるとクリックできます');
+    const desktopButton = screen.getByTestId('autocomplete-button');
+    const undoButton = screen.getByRole('button', { name: '元に戻す' });
+    expect(desktopStatus.parentElement).toBe(desktopButton.parentElement);
+    expect(desktopButton.compareDocumentPosition(desktopStatus)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(desktopStatus.compareDocumentPosition(undoButton)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    largeDesktop.unmount();
+
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: originalWidth });
+    window.dispatchEvent(new Event('resize'));
+  });
+
+  it('uses a tighter tableau step on large desktop and keeps the develop step at 800px', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1280 });
+    const large = renderWithProviders(<RussianSolitairePage />);
+    const largeCard = await screen.findByRole('button', { name: '♣ 5' });
+    expect(largeCard.closest('[style*="top"]')).toHaveStyle({ top: '56px' });
+    large.unmount();
+
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 800 });
+    const desktop = renderWithProviders(<RussianSolitairePage />);
+    const desktopCard = await screen.findByRole('button', { name: '♣ 5' });
+    expect(desktopCard.closest('[style*="top"]')).toHaveStyle({ top: '44px' });
+    desktop.unmount();
+
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 375 });
+    const mobile = renderWithProviders(<RussianSolitairePage />);
+    const mobileCard = await screen.findByRole('button', { name: '♣ 5' });
+    expect(mobileCard.closest('[style*="top"]')).toHaveStyle({ top: '38px' });
+    mobile.unmount();
+
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: originalWidth });
+    window.dispatchEvent(new Event('resize'));
+  });
+
   it('announces selected tableau cards with aria-pressed while preserving card and block names', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
@@ -341,7 +394,7 @@ describe('RussianSolitairePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
     mockExec.mockResolvedValue(readyState);
-    const btn = screen.getByRole('button', { name: '自動完成' });
+    const btn = screen.getByRole('button', { name: 'オートコンプリート' });
     btn.click();
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
   });

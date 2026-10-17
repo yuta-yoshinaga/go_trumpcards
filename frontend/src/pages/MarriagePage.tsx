@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { marriageApi } from '../api/games/marriage';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -12,6 +13,7 @@ import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { PlayerHandSection } from '../components/PlayerHandSection';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -29,7 +31,6 @@ import {
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { badgeSuccessColors, badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
-import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card } from '../types/card';
@@ -128,7 +129,7 @@ function MarriagePageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('marriage', state);
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('marriage');
   const cliConfig: CliGameConfig<MarriageResponse, Parameters<typeof marriageApi.exec>> = useMemo(
@@ -170,6 +171,15 @@ function MarriagePageContent() {
 
   const phaseNames = usePhaseNames('marriage', MARRIAGE_PHASE_KEYS);
 
+  const roundEndMessage =
+    state && state.phase === MarriagePhase.ROUND_END
+      ? state.declarerIdx >= 0
+        ? t('roundEndByDeclaration', {
+            name: playerName(state.declarerIdx, state.players[state.declarerIdx].isHuman),
+          })
+        : t('roundEndByStockOut')
+      : undefined;
+
   // Client-side declaration preview: when a finish card is selected during the
   // discard phase, evaluate whether the remaining 21 cards form a valid declare.
   // The backend still re-validates on submit; this only powers a non-blocking hint.
@@ -201,6 +211,14 @@ function MarriagePageContent() {
         layout={{ kind: 'trick-taking', opponents: 1, centerCard: true, trickArea: true, footerHandSize: 21 }}
       />
     );
+
+  const messageBox = (
+    <GameMessageBox
+      message={roundEndMessage ?? state?.message}
+      messageCode={roundEndMessage ? undefined : state?.messageCode}
+      messageParams={roundEndMessage ? undefined : state?.messageParams}
+    />
+  );
 
   const humanPlayer = state.players.find((p) => p.isHuman);
   const previewHandCards = humanPlayer?.cards.filter((_, index) => index !== selectedCardIndices[0]) ?? [];
@@ -360,96 +378,108 @@ function MarriagePageContent() {
               {/* Right: info sidebar */}
               <div>
                 {/* CPU players */}
-                {state.players
-                  .filter((p) => !p.isHuman)
-                  .map((p) => (
-                    <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                      <div className="text-ds-text-muted text-sm">
-                        {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                        {t('cumulativeScore', { score: p.cumulativeScore })}
-                        {revealCpu && (
-                          <>
-                            {' '}
-                            | {t('deadwoodShort', { score: p.deadwood })}
-                            {p.maal > 0 && (
-                              <span className="ml-1" data-testid="marriage-maal">
-                                {t('maalShort', { score: p.maal })}
-                              </span>
-                            )}
-                            {p.hasPureSequence && (
-                              <span className="ml-1 text-ds-success">{t('pureSequenceBadge')}</span>
-                            )}
-                          </>
+                <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+                  {state.players
+                    .filter((p) => !p.isHuman)
+                    .map((p) => (
+                      <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
+                        <div className="text-ds-text-muted text-sm">
+                          {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                          {t('cumulativeScore', { score: p.cumulativeScore })}
+                          {revealCpu && (
+                            <>
+                              {' '}
+                              | {t('deadwoodShort', { score: p.deadwood })}
+                              {p.maal > 0 && (
+                                <span className="ml-1" data-testid="marriage-maal">
+                                  {t('maalShort', { score: p.maal })}
+                                </span>
+                              )}
+                              {p.hasPureSequence && (
+                                <span className="ml-1 text-ds-success">{t('pureSequenceBadge')}</span>
+                              )}
+                            </>
+                          )}
+                        </div>
+                        {revealCpu && p.cards.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {p.cards.map((card, idx) => (
+                              <div
+                                key={`cpu-${p.id}-${card.design}-${card.value}-${idx}`}
+                                className={`relative inline-block rounded ${
+                                  isWildCard(card) ? 'ring-2 ring-ds-info' : ''
+                                }`}
+                              >
+                                <AnimatedCard card={card} width={cardWidth * 0.8} />
+                                {isWildCard(card) && <span className="sr-only">{t('wildAria')}</span>}
+                                {wildBadge(card)}
+                              </div>
+                            ))}
+                          </div>
                         )}
                       </div>
-                      {revealCpu && p.cards.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {p.cards.map((card, idx) => (
-                            <div
-                              key={`cpu-${p.id}-${card.design}-${card.value}-${idx}`}
-                              className={`relative inline-block rounded ${
-                                isWildCard(card) ? 'ring-2 ring-ds-info' : ''
-                              }`}
-                            >
-                              <AnimatedCard card={card} width={cardWidth * 0.8} />
-                              {isWildCard(card) && <span className="sr-only">{t('wildAria')}</span>}
-                              {wildBadge(card)}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                    ))}
+                </CpuAccordion>
 
                 {/* Score table */}
-                <div className="my-3 p-2 rounded bg-black/30" data-tutorial="marriage-score-table">
-                  <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
-                  <p className="text-ds-text-muted text-xs mb-2" data-testid="marriage-maal-rule">
-                    {t('maalRule')}
-                  </p>
-                  <table className="w-full text-sm text-ds-text-muted">
-                    <thead>
-                      <tr>
-                        <th scope="col" className="text-left">
-                          {t('scoresPlayer')}
-                        </th>
-                        <th scope="col">{t('scoresRound')}</th>
-                        <th scope="col">{t('scoresTotal')}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {state.players.map((p, playerIdx) => (
-                        <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
-                          <td>
-                            {playerName(p.id, p.isHuman)}
-                            {playerIdx === state.dealerIdx && (
-                              <span className="ml-2 text-ds-warning" data-testid="marriage-dealer-badge">
-                                {t('dealerBadge')}
-                              </span>
-                            )}
-                          </td>
-                          <td className="text-center">{p.roundScore}</td>
-                          <td className="text-center">
-                            {p.cumulativeScore}
-                            {p.maal > 0 && (
-                              <span className="ml-1" data-testid="marriage-maal">
-                                {t('maalShort', { score: p.maal })}
-                              </span>
-                            )}
-                          </td>
+                <details
+                  open={!isMobile || undefined}
+                  className="my-3 p-2 rounded bg-black/30"
+                  data-testid="marriage-score-table"
+                >
+                  <summary
+                    className="cursor-pointer select-none text-ds-text-muted text-sm mb-1"
+                    data-tutorial="marriage-score-table"
+                  >
+                    {t('scores')}
+                  </summary>
+                  <div>
+                    <details open={!isMobile || undefined} className="mb-2 p-2 rounded bg-ds-surface">
+                      <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('rules')}</summary>
+                      <p className="text-ds-text-muted text-xs mt-1" data-testid="marriage-maal-rule">
+                        {t('maalRule')}
+                      </p>
+                    </details>
+                    <table className="w-full text-sm text-ds-text-muted">
+                      <thead>
+                        <tr>
+                          <th scope="col" className="text-left">
+                            {t('scoresPlayer')}
+                          </th>
+                          <th scope="col">{t('scoresRound')}</th>
+                          <th scope="col">{t('scoresTotal')}</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody>
+                        {state.players.map((p, playerIdx) => (
+                          <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
+                            <td>
+                              {playerName(p.id, p.isHuman)}
+                              {playerIdx === state.dealerIdx && (
+                                <span className="ml-2 text-ds-warning" data-testid="marriage-dealer-badge">
+                                  {t('dealerBadge')}
+                                </span>
+                              )}
+                            </td>
+                            <td className="text-center">{p.roundScore}</td>
+                            <td className="text-center">
+                              {p.cumulativeScore}
+                              {p.maal > 0 && (
+                                <span className="ml-1" data-testid="marriage-maal">
+                                  {t('maalShort', { score: p.maal })}
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </details>
               </div>
             </div>
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
+            {isMobile && messageBox}
 
             <ActionLogSection
               isEndPhase={isGameEnd}
@@ -457,43 +487,6 @@ function MarriagePageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
-          </div>
-
-          <GameFooter className={`${marriageTheme.footer} px-4 py-2.5`}>
-            {humanPlayer && (
-              <div className="flex flex-wrap gap-1 mb-2" data-tutorial="marriage-player-hand">
-                {humanPlayer.cards.map((card, idx) => (
-                  <button
-                    type="button"
-                    key={`${card.design}-${card.value}-${idx}`}
-                    onClick={() => toggleCard(idx)}
-                    aria-label={`${cardAlt(card)}${isWildCard(card) ? ` ${t('wildAria')}` : ''}${handMeldLabels.has(idx) ? ` ${t('declarePreview.cardBelongsTo', { meld: handMeldLabels.get(idx)?.label })}` : ''}`}
-                    aria-pressed={selectedCardIndices.includes(idx)}
-                    className={`relative transition-transform ${focusRingCard} ${
-                      isWildCard(card) ? 'ring-2 ring-ds-info' : ''
-                    }`}
-                    style={{
-                      background: 'none',
-                      padding: 0,
-                      borderRadius: 8,
-                      ...selectedCardStyle(selectedCardIndices.includes(idx)),
-                      boxSizing: 'border-box',
-                    }}
-                  >
-                    <AnimatedCard card={card} width={cardWidth} />
-                    {wildBadge(card)}
-                    {handMeldLabels.has(idx) && (
-                      <span
-                        aria-hidden="true"
-                        className="absolute bottom-0.5 left-0.5 rounded bg-ds-accent px-1 text-[9px] font-bold text-ds-text-on-accent"
-                      >
-                        {handMeldLabels.get(idx)?.number}
-                      </span>
-                    )}
-                  </button>
-                ))}
-              </div>
-            )}
 
             <ErrorAlert message={error} onRetry={retry} />
 
@@ -521,6 +514,94 @@ function MarriagePageContent() {
                   {t('pointsLegend')}
                 </div>
               </div>
+            )}
+
+            <div className="flex gap-2 items-center flex-wrap">
+              <GameResetButton
+                isGameEnd={!!isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="marriage-reset-button"
+              />
+            </div>
+            <CardNavShortcutsPanel data-testid="indian-rummy-kbd-shortcuts" />
+          </div>
+
+          <GameFooter
+            message={isMobile ? undefined : messageBox}
+            className={`${marriageTheme.footer} px-4 py-2.5`}
+            actions={
+              (isDrawPhase && isHumanTurn) || (isDiscardPhase && isHumanTurn) || isRoundEnd ? (
+                <div className="flex gap-2 items-center justify-center flex-wrap">
+                  {isDrawPhase && isHumanTurn && (
+                    <div className="flex gap-2" data-tutorial="marriage-draw-area">
+                      <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
+                        {t('drawStockButton')}
+                      </button>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={handleDrawDiscard}
+                        disabled={loading || !state.discardTop}
+                      >
+                        {t('drawDiscardButton')}
+                      </button>
+                    </div>
+                  )}
+                  {isDiscardPhase && isHumanTurn && (
+                    <>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={handleDiscard}
+                        disabled={loading || selectedCardIndices.length !== 1}
+                        data-tutorial="marriage-discard-button"
+                      >
+                        {t('discardButton')}
+                      </button>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={handleDeclare}
+                        disabled={loading || selectedCardIndices.length !== 1}
+                        data-tutorial="marriage-declare-button"
+                        data-testid="marriage-declare-button"
+                      >
+                        {t('declareButton')}
+                      </button>
+                    </>
+                  )}
+                  {isRoundEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                      {t('nextRound')}
+                    </button>
+                  )}
+                </div>
+              ) : null
+            }
+          >
+            {humanPlayer && (
+              <PlayerHandSection
+                humanPlayer={humanPlayer}
+                selectedCardIndices={selectedCardIndices}
+                toggleCard={toggleCard}
+                cardWidth={cardWidth}
+                isMobile={isMobile}
+                dataTutorialPrefix="marriage"
+                trumpIndices={humanPlayer.cards.flatMap((card, idx) => (isWildCard(card) ? [idx] : []))}
+                trumpAccessibleLabel={t('wildBadge')}
+                cardBadgeFor={(idx) => {
+                  const meld = handMeldLabels.get(idx);
+                  return meld
+                    ? {
+                        glyph: String(meld.number),
+                        title: t('declarePreview.cardBelongsTo', { meld: meld.label }),
+                      }
+                    : null;
+                }}
+                stackRows
+              />
             )}
 
             {isDiscardPhase && isHumanTurn && declarePreview && (
@@ -574,60 +655,6 @@ function MarriagePageContent() {
                 )}
               </div>
             )}
-
-            <div className="flex gap-2 items-center flex-wrap">
-              {isDrawPhase && isHumanTurn && (
-                <div className="flex gap-2" data-tutorial="marriage-draw-area">
-                  <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
-                    {t('drawStockButton')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleDrawDiscard}
-                    disabled={loading || !state.discardTop}
-                  >
-                    {t('drawDiscardButton')}
-                  </button>
-                </div>
-              )}
-              {isDiscardPhase && isHumanTurn && (
-                <>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleDiscard}
-                    disabled={loading || selectedCardIndices.length !== 1}
-                    data-tutorial="marriage-discard-button"
-                  >
-                    {t('discardButton')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleDeclare}
-                    disabled={loading || selectedCardIndices.length !== 1}
-                    data-tutorial="marriage-declare-button"
-                    data-testid="marriage-declare-button"
-                  >
-                    {t('declareButton')}
-                  </button>
-                </>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={!!isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="marriage-reset-button"
-              />
-            </div>
-            <CardNavShortcutsPanel data-testid="indian-rummy-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

@@ -116,5 +116,7 @@
     "lpTooltip": "Loose Passive: plays many hands but rarely raises",
     "balanced": "BAL",
     "balancedTooltip": "Balanced style"
-  }
+  },
+  "showingHand": "Showing: {{hand}}",
+  "sidePot": "Pot {{number}}: {{amount}} chips — eligible: {{players}}"
 }

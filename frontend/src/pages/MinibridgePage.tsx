@@ -2,17 +2,25 @@ import { useCallback, useMemo, useState } from 'react';
 import { minibridgeApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import {
+  useBreakpoint,
+  useCardDimensions,
+  useDenseLargeDesktopCardSize,
+  useIsCompactLargeDesktop,
+  useIsMobile,
+} from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -33,6 +41,9 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** The five denominations, in the order the contract buttons are offered. */
 const DENOMINATIONS: readonly number[] = [1, 2, 3, 4, 0];
+
+/** Visible left edge of an overlapping card; preserves the minimum tap target. */
+const COMPACT_CARD_EDGE_PX = 48;
 
 /** Highest contract level. Level n needs 6 + n tricks, so 7 is all thirteen. */
 const MAX_LEVEL = 7;
@@ -67,7 +78,12 @@ function MinibridgePageContent() {
     exec: dispatch,
     retry,
   } = useGameApi<MinibridgeResponse, Parameters<typeof minibridgeApi.exec>>(minibridgeApi.exec);
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, cpuCardWidth } = useCardDimensions();
+  const denseCardSize = useDenseLargeDesktopCardSize();
+  const isMobile = useIsMobile();
+  const isCompactLargeDesktop = useIsCompactLargeDesktop();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
+  const playCardWidth = isCompactLargeDesktop ? cardWidth : denseCardSize.width;
   const { hint, hintEnabled, setHintEnabled } = useGameHint('minibridge', state);
   const [level, setLevel] = useState(1);
   const [cpuProcessing, setCpuProcessing] = useState(false);
@@ -162,6 +178,42 @@ function MinibridgePageContent() {
     .filter((p) => p.team === state.players[state.declarerIdx]?.team)
     .reduce((sum, p) => sum + p.hcp, 0);
 
+  const renderSeat = (p: (typeof state.players)[number]) => (
+    <div
+      key={p.id}
+      className={`rounded bg-black/30 ${isCompactLargeDesktop ? 'px-2 py-1 text-xs whitespace-nowrap' : 'px-3 py-2 text-sm'} text-ds-text-muted ${
+        state.phase === MinibridgePhase.PLAY && isHumanTurn && p.id === state.currentPlayerIdx
+          ? 'ring-2 ring-ds-accent'
+          : ''
+      }`}
+      data-testid={`mb-seat-${p.id.toString()}`}
+    >
+      <span className="text-ds-text-primary">
+        {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
+      </span>
+      {state.phase === MinibridgePhase.PLAY && isHumanTurn && p.id === state.currentPlayerIdx && (
+        <span className="ml-1 text-ds-accent" aria-current="step" data-testid={`mb-turn-${p.id.toString()}`}>
+          {t('header.currentTurn')}
+        </span>
+      )}
+      <span className={`ml-1 ${teamTagClass(p.team === humanTeam)}`} data-testid={`mb-team-${p.id.toString()}`}>
+        <span aria-hidden="true">{t('header.teamTag', { team: String(p.team) })}</span>
+        <span className="sr-only">{p.team === humanTeam ? t('header.teamAllyAria') : t('header.teamFoeAria')}</span>
+      </span>
+      {p.id === state.dealerIdx && (
+        <span className="ml-1 text-ds-info" data-testid={`mb-dealer-${p.id.toString()}`}>
+          {t('header.dealer')}
+        </span>
+      )}
+      {p.id === state.declarerIdx && <span className="ml-1 text-ds-accent">{t('header.declarer')}</span>}
+      {p.id === state.dummyIdx && <span className="ml-1 text-ds-accent">{t('header.dummy')}</span>}
+      {': '}
+      <span className="text-ds-accent">{t('header.hcp', { n: String(p.hcp) })}</span>
+      {' / '}
+      {t('header.took', { n: String(p.trickCount) })}
+    </div>
+  );
+
   const resultBanner = (() => {
     if (!isGameEnd) return null;
     if (state.winnerTeam === 0) return t('result.you');
@@ -198,8 +250,10 @@ function MinibridgePageContent() {
       ) : (
         <>
           <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
-            <div className="text-ds-text-primary text-center mb-2">
-              <span className="mr-4" data-testid="mb-round">
+            <div
+              className={`text-ds-text-primary text-center mb-2${isMobile ? ' flex flex-wrap justify-center gap-x-2' : ''}`}
+            >
+              <span className={isMobile ? undefined : 'mr-4'} data-testid="mb-round">
                 {t('header.round', { round: String(state.roundNumber), total: String(state.config.rounds) })}
               </span>
               <span data-testid="mb-score">
@@ -213,121 +267,78 @@ function MinibridgePageContent() {
             </div>
 
             {/* **競りが無いこと自体が規則。** 先に出す。 */}
-            <div
-              className="mb-3 rounded bg-black/30 px-3 py-2 text-ds-text-primary text-center"
-              data-testid="mb-rule"
-              data-tutorial="mb-rule"
-            >
-              {t('header.rule')}
+            <div className={isMobile ? 'flex flex-wrap gap-2 mb-3' : undefined}>
+              <details
+                className={`${isMobile ? 'mb-0 flex-1 basis-0' : 'mb-3'} rounded bg-black/30 px-3 py-2 text-ds-text-primary text-center`}
+                data-tutorial="mb-rule"
+                data-testid="mb-rule-details"
+              >
+                <summary className="cursor-pointer select-none">{t('header.rules')}</summary>
+                <div className="mt-1" data-testid="mb-rule">
+                  {t('header.rule')}
+                </div>
+              </details>
+              <CpuAccordion
+                playerCount={state.players.filter((p) => !p.isHuman).length}
+                dataTutorial="mb-seats"
+                openOnDesktop={false}
+                className={isMobile ? 'mb-0 flex-1 basis-0 open:basis-full' : undefined}
+              >
+                <div className="flex flex-wrap justify-center gap-1 mb-4 sm:gap-2" data-testid="mb-seats">
+                  {state.players.filter((p) => !p.isHuman).map(renderSeat)}
+                </div>
+              </CpuAccordion>
             </div>
 
-            <div
-              className="text-center mb-3 text-ds-text-primary"
-              data-testid="mb-contract"
-              data-tutorial="mb-contract"
-            >
-              {state.contractLevel > 0
-                ? t('header.contract', {
-                    level: String(state.contractLevel),
-                    suit: suitSymbolAt(state.contractSuit, state.contractSuit === 0 ? 'NT' : '?'),
-                    name:
-                      state.declarerIdx === 0 ? t('header.you') : t('header.cpu', { idx: String(state.declarerIdx) }),
-                    need: String(state.requiredTricks),
-                  })
-                : t('header.contractUndecided')}
-            </div>
+            <div className={isCompactLargeDesktop ? 'flex items-center gap-2' : undefined}>
+              <div
+                className={`text-center mb-3 text-ds-text-primary${isCompactLargeDesktop ? ' flex-1 min-w-0' : ''}`}
+                data-testid="mb-contract"
+                data-tutorial="mb-contract"
+              >
+                {state.contractLevel > 0
+                  ? t('header.contract', {
+                      level: String(state.contractLevel),
+                      suit: suitSymbolAt(state.contractSuit, state.contractSuit === 0 ? 'NT' : '?'),
+                      name:
+                        state.declarerIdx === 0 ? t('header.you') : t('header.cpu', { idx: String(state.declarerIdx) }),
+                      need: String(state.requiredTricks),
+                    })
+                  : t('header.contractUndecided')}
+              </div>
 
+              {/* **HCP は公開情報。** CPU の席だけを折りたたみ、自分の席は常時表示する。 */}
+              <div
+                className={`flex flex-wrap justify-center gap-1 mb-2 sm:gap-2${isCompactLargeDesktop ? ' flex-1 min-w-0' : ''}`}
+                data-testid="mb-human-seat"
+              >
+                {human && renderSeat(human)}
+              </div>
+            </div>
             {state.declarerByDealerTie && (
               <div className="text-center mb-3 text-ds-text-muted text-sm" role="status" data-testid="mb-tie-note">
                 {t('header.declarerByTie', { seat: String(state.dealerIdx) })}
               </div>
             )}
-
             {isContract && (
               <div className="text-center mb-3 text-ds-accent text-sm" role="status" data-testid="mb-pair-hcp">
                 {t('header.pairHcp', { n: String(pairHcp) })}
               </div>
             )}
-
-            {/* **HCP は公開情報。** 4 席ぶん常に出す。 */}
-            <div className="flex flex-wrap justify-center gap-2 mb-4" data-tutorial="mb-seats">
-              {state.players.map((p) => (
-                <div
-                  key={p.id}
-                  className={`rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted ${
-                    state.phase === MinibridgePhase.PLAY && isHumanTurn && p.id === state.currentPlayerIdx
-                      ? 'ring-2 ring-ds-accent'
-                      : ''
-                  }`}
-                  data-testid={`mb-seat-${p.id.toString()}`}
-                >
-                  <span className="text-ds-text-primary">
-                    {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
-                  </span>
-                  {state.phase === MinibridgePhase.PLAY && isHumanTurn && p.id === state.currentPlayerIdx && (
-                    <span
-                      className="ml-1 text-ds-accent"
-                      aria-current="step"
-                      data-testid={`mb-turn-${p.id.toString()}`}
-                    >
-                      {t('header.currentTurn')}
-                    </span>
-                  )}
-                  {/* **競りが無いぶん、味方が誰かは席表示でしか分からない** (#5761)。
-                      CUI は最初から team を出しているのに、Web は契約が決まって
-                      デクレアラー/ダミーのタグが付くまで何も出していなかった。 */}
-                  <span
-                    className={`ml-1 ${teamTagClass(p.team === humanTeam)}`}
-                    data-testid={`mb-team-${p.id.toString()}`}
-                  >
-                    <span aria-hidden="true">{t('header.teamTag', { team: String(p.team) })}</span>
-                    <span className="sr-only">
-                      {p.team === humanTeam ? t('header.teamAllyAria') : t('header.teamFoeAria')}
-                    </span>
-                  </span>
-                  {p.id === state.dealerIdx && (
-                    <span className="ml-1 text-ds-info" data-testid={`mb-dealer-${p.id.toString()}`}>
-                      {t('header.dealer')}
-                    </span>
-                  )}
-                  {p.id === state.declarerIdx && <span className="ml-1 text-ds-accent">{t('header.declarer')}</span>}
-                  {p.id === state.dummyIdx && <span className="ml-1 text-ds-accent">{t('header.dummy')}</span>}
-                  {': '}
-                  <span className="text-ds-accent">{t('header.hcp', { n: String(p.hcp) })}</span>
-                  {' / '}
-                  {t('header.took', { n: String(p.trickCount) })}
-                </div>
-              ))}
-            </div>
-
-            <div data-tutorial="mb-trick">
-              <TrickDisplay
-                currentTrick={state.currentTrick}
-                lastTrick={state.lastTrick}
-                lastTrickWinner={state.lastTrickWinner}
-                players={state.players}
-                cardWidth={cardWidth}
-                label={t('currentTrick')}
-                winnerLabel={t('trickWinner')}
-              />
-            </div>
-
-            {state.trickPaused && (
-              <div className="text-center my-3">
-                <button
-                  type="button"
-                  className={`${btnPrimary} aria-disabled:opacity-50 aria-disabled:cursor-not-allowed`}
-                  onClick={handleContinueTrick}
-                  aria-disabled={loading}
-                  aria-describedby={loading ? 'mb-continue-loading' : undefined}
-                >
-                  {t('actions.continue')}
-                </button>
-                <span id="mb-continue-loading" className="sr-only">
-                  {t('header.cpuProcessing')}
-                </span>
+            {/* This selector depends on TrickDisplay's inner div structure to tighten its spacing on compact large desktop. */}
+            {!isLargeDesktop || !humanIsDummy ? (
+              <div className={isCompactLargeDesktop ? '[&>div]:my-1 [&>div]:p-2' : undefined} data-tutorial="mb-trick">
+                <TrickDisplay
+                  currentTrick={state.currentTrick}
+                  lastTrick={state.lastTrick}
+                  lastTrickWinner={state.lastTrickWinner}
+                  players={state.players}
+                  cardWidth={isCompactLargeDesktop ? cpuCardWidth : cardWidth}
+                  label={t('currentTrick')}
+                  winnerLabel={t('trickWinner')}
+                />
               </div>
-            )}
+            ) : null}
 
             {roundResult && (
               <div className="text-center my-3 text-ds-text-primary" role="status" data-testid="mb-round-result">
@@ -361,58 +372,92 @@ function MinibridgePageContent() {
             <ErrorAlert message={error} onRetry={retry} />
 
             {/* **ダミーは契約が決まると公開され、デクレアラーが操作する。** */}
-            {state.dummyHand.length > 0 && !humanIsDummy && (
-              <div className="mt-4" data-testid="mb-dummy">
-                <div className="text-ds-text-muted text-sm mb-1">
-                  {t('header.dummyHand')}
-                  {isHumanDummyTurn && <span className="ml-2 text-ds-accent">{t('header.dummyTurn')}</span>}
+            <div
+              className="contents lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-2"
+              data-testid="mb-card-layout"
+            >
+              {isLargeDesktop && humanIsDummy && (
+                <div
+                  className={isCompactLargeDesktop ? '[&>div]:my-1 [&>div]:p-2' : undefined}
+                  data-tutorial="mb-trick"
+                  data-testid="mb-trick-layout"
+                >
+                  <TrickDisplay
+                    currentTrick={state.currentTrick}
+                    lastTrick={state.lastTrick}
+                    lastTrickWinner={state.lastTrickWinner}
+                    players={state.players}
+                    cardWidth={isCompactLargeDesktop ? cpuCardWidth : cardWidth}
+                    label={t('currentTrick')}
+                    winnerLabel={t('trickWinner')}
+                  />
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  {state.dummyHand.map((card, idx) => (
-                    <button
-                      key={`dummy-${card.design}-${card.value}-${idx}`}
-                      type="button"
-                      onClick={() => handlePlay(idx)}
-                      disabled={loading || !isHumanDummyTurn || !legalRing.has(idx)}
-                      aria-label={t('actions.playDummyAria', { card: cardAlt(card) })}
-                      className={`disabled:opacity-50 ${
-                        isHumanDummyTurn && legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''
-                      }`}
-                    >
-                      <CardImage card={card} width={cardWidth} />
-                    </button>
-                  ))}
+              )}
+              {state.dummyHand.length > 0 && !humanIsDummy && (
+                <div className="mt-4 lg:col-start-1 lg:min-w-0" data-testid="mb-dummy">
+                  <div className="text-ds-text-muted text-sm mb-1">
+                    {t('header.dummyHand')}
+                    {isHumanDummyTurn && <span className="ml-2 text-ds-accent">{t('header.dummyTurn')}</span>}
+                  </div>
+                  <div className="flex flex-nowrap gap-0">
+                    {state.dummyHand.map((card, idx) => (
+                      // disabled:opacity-50 の札は positioned 層で描かれ、出せる札の上に重なるので全札を relative にして DOM 順で重ねる
+                      <button
+                        key={`dummy-${card.design}-${card.value}-${idx}`}
+                        type="button"
+                        onClick={() => handlePlay(idx)}
+                        disabled={loading || !isHumanDummyTurn || !legalRing.has(idx)}
+                        aria-label={t('actions.playDummyAria', { card: cardAlt(card) })}
+                        className={`relative disabled:opacity-50 sm:focus-visible:z-10 ${
+                          isHumanDummyTurn && legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''
+                        }`}
+                        style={{
+                          marginLeft:
+                            idx > 0
+                              ? isLargeDesktop
+                                ? -(playCardWidth - COMPACT_CARD_EDGE_PX)
+                                : -Math.round(cardWidth * 0.55)
+                              : undefined,
+                        }}
+                      >
+                        <CardImage card={card} width={isLargeDesktop ? playCardWidth : cardWidth} />
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {human && human.cards.length > 0 && (
-              <div className="mt-4" data-tutorial="mb-hand">
-                <div className="text-ds-text-muted text-sm mb-1">
-                  {t('header.you')}: {human.cardCount}
-                  {humanIsDummy && <span className="ml-2 text-ds-accent">{t('header.cpuOperatedDummy')}</span>}
-                  {isHumanTurn && !isHumanDummyTurn && (
-                    <span className="ml-2 text-ds-accent">{t('header.yourTurn')}</span>
-                  )}
+              {human && human.cards.length > 0 && (
+                <div className="mt-4 lg:col-start-2 lg:min-w-0" data-tutorial="mb-hand" data-testid="mb-hand-area">
+                  <div className="text-ds-text-muted text-sm mb-1">
+                    {t('header.you')}: {human.cardCount}
+                    {humanIsDummy && <span className="ml-2 text-ds-accent">{t('header.cpuOperatedDummy')}</span>}
+                    {isHumanTurn && !isHumanDummyTurn && (
+                      <span className="ml-2 text-ds-accent">{t('header.yourTurn')}</span>
+                    )}
+                  </div>
+                  <div className={`flex ${isLargeDesktop ? 'flex-nowrap gap-0' : 'flex-wrap gap-2'}`}>
+                    {human.cards.map((card, idx) => (
+                      <button
+                        key={`${card.design}-${card.value}-${idx}`}
+                        type="button"
+                        onClick={() => handlePlay(idx)}
+                        disabled={loading || !isHumanTurn || isHumanDummyTurn || !legalRing.has(idx)}
+                        aria-label={t('actions.playAria', { card: cardAlt(card) })}
+                        className={`disabled:opacity-50 ${
+                          !isHumanDummyTurn && legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''
+                        }`}
+                        style={{
+                          marginLeft: isLargeDesktop && idx > 0 ? -(playCardWidth - COMPACT_CARD_EDGE_PX) : undefined,
+                        }}
+                      >
+                        <CardImage card={card} width={isLargeDesktop ? playCardWidth : cardWidth} />
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  {human.cards.map((card, idx) => (
-                    <button
-                      key={`${card.design}-${card.value}-${idx}`}
-                      type="button"
-                      onClick={() => handlePlay(idx)}
-                      disabled={loading || !isHumanTurn || isHumanDummyTurn || !legalRing.has(idx)}
-                      aria-label={t('actions.playAria', { card: cardAlt(card) })}
-                      className={`disabled:opacity-50 ${
-                        !isHumanDummyTurn && legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''
-                      }`}
-                    >
-                      <CardImage card={card} width={cardWidth} />
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+              )}
+            </div>
 
             {hintEnabled && hint && (
               <div className="mt-3 flex justify-center">
@@ -420,70 +465,91 @@ function MinibridgePageContent() {
               </div>
             )}
 
-            <div className="mt-4 flex flex-wrap gap-2 items-center" data-tutorial="mb-actions">
-              {isHumanContractTurn && (
-                <>
-                  <label className="text-ds-text-muted text-sm" htmlFor="mb-level">
-                    {t('actions.level')}
-                  </label>
-                  {/* 折りたたみに入れない：閉じた details の中はクリックできない。 */}
-                  <select
-                    id="mb-level"
-                    className="rounded bg-black/40 text-ds-text-primary px-2 py-1"
-                    value={level}
-                    onChange={(e) => setLevel(Number(e.target.value))}
-                    disabled={loading}
-                    data-testid="mb-level-select"
-                  >
-                    {Array.from({ length: MAX_LEVEL }, (_, i) => i + 1).map((lv) => (
-                      <option key={lv} value={lv}>
-                        {lv}
-                      </option>
-                    ))}
-                  </select>
-                  {/* **競りが無いので上回る必要はない。** どの組み合わせも選べる。 */}
-                  {DENOMINATIONS.map((suit) => (
-                    <button
-                      key={suit}
-                      type="button"
-                      className={btnWarning}
-                      onClick={() => handleContract(suit)}
-                      disabled={loading}
-                      data-testid={`mb-contract-${suit.toString()}-btn`}
-                    >
-                      {t('actions.contract', {
-                        level: String(level),
-                        suit: suitSymbolAt(suit, suit === 0 ? 'NT' : '?'),
-                      })}
-                    </button>
-                  ))}
-                </>
-              )}
-              {isRoundEnd && !isGameEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('actions.nextRound')}
-                </button>
-              )}
-              <button
-                type="button"
-                className={btnPrimary}
-                onClick={() => requestConfirm(handleReset)}
-                disabled={loading}
-              >
-                {t('actions.reset')}
-              </button>
-              {!isGameEnd && (
-                <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
-                  {t('actions.giveUp')}
-                </button>
-              )}
-            </div>
-
             <SettingsPanel
               title={tc('settings.title')}
               groups={[{ items: [hintCheckboxItem(tc, hintEnabled, setHintEnabled)] }]}
             />
           </div>
+
+          <GameFooter
+            className={`${gameTheme.minibridge.footer} px-4 py-2.5`}
+            actions={
+              <div className="flex flex-wrap gap-2 items-center" data-tutorial="mb-actions">
+                {state.trickPaused && (
+                  <div className="text-center">
+                    <button
+                      type="button"
+                      className={`${btnPrimary} aria-disabled:opacity-50 aria-disabled:cursor-not-allowed`}
+                      onClick={handleContinueTrick}
+                      aria-disabled={loading}
+                      aria-describedby={loading ? 'mb-continue-loading' : undefined}
+                    >
+                      {t('actions.continue')}
+                    </button>
+                    <span id="mb-continue-loading" className="sr-only">
+                      {t('header.cpuProcessing')}
+                    </span>
+                  </div>
+                )}
+                {isHumanContractTurn && (
+                  <>
+                    <label className="text-ds-text-muted text-sm" htmlFor="mb-level">
+                      {t('actions.level')}
+                    </label>
+                    {/* 折りたたみに入れない：閉じた details の中はクリックできない。 */}
+                    <select
+                      id="mb-level"
+                      className="rounded bg-black/40 text-ds-text-primary px-2 py-1"
+                      value={level}
+                      onChange={(e) => setLevel(Number(e.target.value))}
+                      disabled={loading}
+                      data-testid="mb-level-select"
+                    >
+                      {Array.from({ length: MAX_LEVEL }, (_, i) => i + 1).map((lv) => (
+                        <option key={lv} value={lv}>
+                          {lv}
+                        </option>
+                      ))}
+                    </select>
+                    {/* **競りが無いので上回る必要はない。** どの組み合わせも選べる。 */}
+                    {DENOMINATIONS.map((suit) => (
+                      <button
+                        key={suit}
+                        type="button"
+                        className={btnWarning}
+                        onClick={() => handleContract(suit)}
+                        disabled={loading}
+                        data-testid={`mb-contract-${suit.toString()}-btn`}
+                      >
+                        {t('actions.contract', {
+                          level: String(level),
+                          suit: suitSymbolAt(suit, suit === 0 ? 'NT' : '?'),
+                        })}
+                      </button>
+                    ))}
+                  </>
+                )}
+                {isRoundEnd && !isGameEnd && (
+                  <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                    {t('actions.nextRound')}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={() => requestConfirm(handleReset)}
+                  disabled={loading}
+                >
+                  {t('actions.reset')}
+                </button>
+                {!isGameEnd && (
+                  <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
+                    {t('actions.giveUp')}
+                  </button>
+                )}
+              </div>
+            }
+          />
 
           <ActionLogSection
             isEndPhase={isGameEnd}

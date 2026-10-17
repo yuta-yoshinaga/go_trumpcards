@@ -18,12 +18,17 @@ test.describe('Pasur E2E', () => {
   // **11 の合計と絵札の扱いが規則そのもの。**
   test('always states the capture rule', async ({ page }) => {
     await navigateTo(page, '/pasur');
-    await expect(page.getByTestId('ps-rule')).toContainText(/11/, { timeout: TIMEOUT_TRANSITION });
+    await page.getByTestId('ps-rule-details').locator('summary').click();
+    await expect(page.getByTestId('ps-rule-details')).toContainText(/11/, { timeout: TIMEOUT_TRANSITION });
   });
 
   test('shows every seat', async ({ page }) => {
     await navigateTo(page, '/pasur');
-    for (const id of [0, 1, 2, 3]) {
+    await expect(page.getByTestId('ps-seat-0')).toBeVisible({ timeout: TIMEOUT_TRANSITION });
+    // Open on desktop already; only expand it where it starts closed (phones).
+    const cpuAccordion = page.getByTestId('cpu-accordion');
+    if ((await cpuAccordion.getAttribute('open')) === null) await cpuAccordion.locator('summary').click();
+    for (const id of [1, 2, 3]) {
       await expect(page.getByTestId(`ps-seat-${id}`)).toBeVisible({ timeout: TIMEOUT_TRANSITION });
     }
     await expect(page.getByTestId('ps-seat-4')).toHaveCount(0);

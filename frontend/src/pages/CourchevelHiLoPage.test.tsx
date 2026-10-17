@@ -631,7 +631,7 @@ describe('CourchevelHiLoPage', () => {
     mockExec.mockResolvedValue(preFlopWithBetState);
     renderWithProviders(<CourchevelHiLoPage />);
     await waitFor(() => expect(screen.getByText('CPU行動:')).toBeInTheDocument());
-    expect(screen.getByText(/Player 1: ベット/)).toBeInTheDocument();
+    expect(screen.getByText(/CPU 1: ベット/)).toBeInTheDocument();
   });
 
   it('does not show CPU actions log when cpuActions is empty', async () => {
@@ -644,7 +644,7 @@ describe('CourchevelHiLoPage', () => {
   it('shows amount in CPU action when amount > 0', async () => {
     mockExec.mockResolvedValue(preFlopWithBetState);
     renderWithProviders(<CourchevelHiLoPage />);
-    await waitFor(() => expect(screen.getByText(/Player 1: ベット \(40\)/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/CPU 1: ベット \(40\)/)).toBeInTheDocument());
   });
 
   it('does not show amount when action amount is 0', async () => {
@@ -654,7 +654,7 @@ describe('CourchevelHiLoPage', () => {
     });
     renderWithProviders(<CourchevelHiLoPage />);
     await waitFor(() => expect(screen.getByText('CPU行動:')).toBeInTheDocument());
-    expect(screen.getByText(/Player 1: チェック/)).toBeInTheDocument();
+    expect(screen.getByText(/CPU 1: チェック/)).toBeInTheDocument();
     expect(screen.queryByText(/\(0\)/)).not.toBeInTheDocument();
   });
 
@@ -664,7 +664,7 @@ describe('CourchevelHiLoPage', () => {
       cpuActions: [{ playerIdx: 1, action: 99, amount: 0 }],
     });
     renderWithProviders(<CourchevelHiLoPage />);
-    await waitFor(() => expect(screen.getByText(/Player 1: 不明/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/CPU 1: 不明/)).toBeInTheDocument());
   });
 
   // ---- round results ----
@@ -841,11 +841,28 @@ describe('CourchevelHiLoPage', () => {
     await waitFor(() => expect(screen.getByText('あなたの番です')).toBeInTheDocument());
   });
 
+  it('keeps only the hand and live message in the footer content', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<CourchevelHiLoPage />);
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const playArea = screen.getByTestId('courchevelhilo-kbd-shortcuts').closest('.relative.flex-1.overflow-y-auto');
+
+    expect(footerContent.querySelector('[data-tutorial="bohl-player-hand"]')).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('learning-mode-toggle')).not.toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('courchevelhilo-kbd-shortcuts')).not.toBeInTheDocument();
+    expect(playArea).not.toBeNull();
+    expect(within(playArea as HTMLElement).getByTestId('learning-mode-toggle')).toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('courchevelhilo-kbd-shortcuts')).toBeInTheDocument();
+  });
+
   // ---- canAct / betting controls ----
   it('shows bet/check buttons when canAct and no outstanding bet', async () => {
     mockExec.mockResolvedValue(preFlopState);
     renderWithProviders(<CourchevelHiLoPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: 'ベット' }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'チェック' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'オールイン' })).toBeInTheDocument();
@@ -1889,5 +1906,15 @@ describe('CourchevelHiLoPage', () => {
     const awards = await screen.findAllByTestId('courchevelhilo-pot-award');
     expect(awards[0]).toHaveTextContent('Main pot 80: eligible [CPU 1, CPU 2] → winners Hi: CPU 2 (+80)');
     await i18n.changeLanguage('ja');
+  });
+
+  it('compresses face-down CPU cards on large desktop', async () => {
+    mockUseIsLargeDesktop.mockReturnValue(true);
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<CourchevelHiLoPage />);
+
+    const cpuCount = preFlopState.players.filter((player) => !player.isHuman).length;
+    await waitFor(() => expect(screen.getAllByTestId('compact-card-count')).toHaveLength(cpuCount));
+    expect(screen.getAllByTestId('compact-card-count')[0]).toHaveTextContent('5');
   });
 });

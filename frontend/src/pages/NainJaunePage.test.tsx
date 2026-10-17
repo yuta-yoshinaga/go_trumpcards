@@ -14,6 +14,12 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockExec = vi.mocked(nainjauneApi.exec);
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+}));
 
 const card = (design: CardDesign, value: number) => ({ design, value });
 
@@ -66,7 +72,18 @@ function pickHand(i: number) {
 }
 
 describe('NainJaunePage', () => {
+  it('keeps every hand card in the hand fan', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<NainJaunePage />);
+    const hand = await waitFor(() => {
+      const element = document.querySelector('[data-tutorial="nj-hand"]');
+      expect(element).not.toBeNull();
+      return element as HTMLElement;
+    });
+    expect(hand.querySelectorAll('button[data-hint-action="play"]')).toHaveLength(3);
+  });
   beforeEach(() => {
+    mobileState.isMobile = true;
     vi.clearAllMocks();
     mockExec.mockResolvedValue(makeState());
   });
@@ -76,11 +93,51 @@ describe('NainJaunePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
-  it('shows both rules permanently', async () => {
+  it('collapses rule and board explanations and CPU seats on mobile', async () => {
     renderWithProviders(<NainJaunePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
-    expect(screen.getByText(/スート無関係/)).toBeInTheDocument();
-    expect(screen.getByText(/枚数ではなく【点数】/)).toBeInTheDocument();
+    const rules = screen.getByTestId('nj-rule-details');
+    expect(rules).not.toHaveAttribute('open');
+    const ruleText = rules.querySelector('[data-tutorial="nj-rule"]');
+    expect(ruleText).not.toBeVisible();
+    const ruleSummary = rules.querySelector('summary');
+    expect(ruleSummary).toBeInTheDocument();
+    if (ruleSummary) fireEvent.click(ruleSummary);
+    expect(ruleText).toBeVisible();
+    expect(ruleText).toHaveTextContent(/スート無関係.*枚数ではなく【点数】/);
+
+    const board = screen.getAllByTestId('nainjaune-box')[0].closest('[data-tutorial="nj-board"]');
+    expect(board).toBeInTheDocument();
+    const boardDetails = board?.querySelector('details');
+    expect(boardDetails).not.toHaveAttribute('open');
+    expect(boardDetails?.querySelector('span')).not.toBeVisible();
+    const cpus = screen.getByTestId('cpu-accordion');
+    expect(cpus).not.toHaveAttribute('open');
+    expect(cpus.querySelector('.flex.flex-wrap')).toBeInTheDocument();
+  });
+
+  it('opens the CPU accordion on desktop', async () => {
+    mobileState.isMobile = false;
+    renderWithProviders(<NainJaunePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
+  });
+
+  it('stacks small CPU card backs in one row while keeping the hand count', async () => {
+    mobileState.isMobile = false;
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [seat(0, true), seat(1, false, { cardCount: 11, points: 76 }), seat(2, false), seat(3, false)],
+      }),
+    );
+    renderWithProviders(<NainJaunePage />);
+    const hand = await screen.findByRole('img', { name: /CPU1 の手札 11 枚/ });
+    expect(hand).toHaveClass('flex-nowrap');
+    const backs = [...hand.querySelectorAll('img')];
+    expect(backs).toHaveLength(11);
+    expect(backs.every((back) => back.style.width === '18px')).toBe(true);
+    expect(backs.slice(1).every((back) => back.className.includes('-ml-3'))).toBe(true);
+    expect(screen.getByText(/CPU1.*手札11枚（76点）/)).toBeInTheDocument();
   });
 
   it('reveals CPU hands only after a deal ends, while preserving the game-end reveal', async () => {

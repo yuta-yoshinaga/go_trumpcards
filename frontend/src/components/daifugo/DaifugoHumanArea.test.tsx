@@ -19,6 +19,92 @@ function makePlayer(overrides: Partial<DaifugoPlayerData> = {}): DaifugoPlayerDa
 }
 
 describe('DaifugoHumanArea', () => {
+  it('stacks a mobile hand in rows with overlap while retaining swipe handlers', () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 343 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      const onSwipeStart = vi.fn();
+      const player = makePlayer({
+        cardCount: 13,
+        cards: Array.from({ length: 13 }, (_, i) => ({ design: 'SPADE' as const, value: (i % 13) + 1 })),
+      });
+      const { container } = render(
+        <DaifugoHumanArea
+          player={player}
+          selectedIndices={[]}
+          onToggle={vi.fn()}
+          isCurrentTurn={true}
+          onDragCard={vi.fn()}
+          onSwipeStart={onSwipeStart}
+        />,
+      );
+      const rows = container.querySelectorAll<HTMLElement>('[data-testid="hand-row"]');
+      expect(rows.length).toBeGreaterThan(1);
+      expect(rows[1].style.marginTop).toMatch(/^-/);
+      const buttons = screen.getAllByRole('button');
+      expect(buttons.some((button) => Number.parseFloat(button.style.marginLeft) < 0)).toBe(true);
+      fireEvent.pointerDown(buttons[0]);
+      expect(onSwipeStart).toHaveBeenCalledWith(0);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it('adds rows on mobile until a row fits without scrolling', () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 343 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      // 27 cards cannot fit two rows at the 44px exposure, so the row count must grow past 2.
+      const player = makePlayer({
+        cardCount: 27,
+        cards: Array.from({ length: 27 }, (_, i) => ({ design: 'SPADE' as const, value: (i % 13) + 1 })),
+      });
+      const { container } = render(
+        <DaifugoHumanArea
+          player={player}
+          selectedIndices={[]}
+          onToggle={vi.fn()}
+          isCurrentTurn={true}
+          onDragCard={vi.fn()}
+          onSwipeStart={vi.fn()}
+        />,
+      );
+      expect(container.querySelectorAll('[data-testid="hand-row"]').length).toBeGreaterThan(2);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it('keeps the desktop hand in its flex-wrap layout', () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1024 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      const player = makePlayer({
+        cardCount: 13,
+        cards: Array.from({ length: 13 }, (_, i) => ({ design: 'SPADE' as const, value: (i % 13) + 1 })),
+      });
+      const { container } = render(
+        <DaifugoHumanArea
+          player={player}
+          selectedIndices={[]}
+          onToggle={vi.fn()}
+          isCurrentTurn={true}
+          onDragCard={vi.fn()}
+        />,
+      );
+      expect(container.querySelector('[data-testid="hand-row"]')).toBeNull();
+      expect(container.querySelector('.flex.flex-wrap.gap-1')).toBeInTheDocument();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
   it('renders player name "あなた" for human player', () => {
     render(
       <DaifugoHumanArea

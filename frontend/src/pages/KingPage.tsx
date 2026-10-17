@@ -205,12 +205,48 @@ function KingPageContent() {
           />
 
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            <div className="text-ds-text-primary text-center mb-2">
-              <span className="mr-4">{t('deal', { n: state.dealNumber + 1, total: state.totalDeals })}</span>
-              <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
-              <span className="mr-4">{t('contract', { name: contractName })}</span>
-              <span className="mr-4">{t('trump', { suit: trumpSymbol })}</span>
-              <span>{t('dealer', { name: playerName(state.dealerIdx, state.dealerIdx === humanIdx) })}</span>
+            {canSelect && pendingTrumpContract === null && (
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-1 mb-3" data-testid="king-contract-buttons">
+                {state.usedContracts.map((used, contract) => {
+                  const isAchieve = contract === KING_TRUMP_CONTRACT;
+                  return (
+                    <button
+                      key={contract}
+                      type="button"
+                      className={`${btnSecondary} flex flex-col items-center justify-center gap-0.5 px-1.5 py-1 text-xs`}
+                      onClick={() => handleContractClick(contract)}
+                      disabled={loading || used}
+                      title={t(`contractDesc.${contract}`)}
+                      aria-label={`${t(`contracts.${contract}`)} — ${t(`contractType.${isAchieve ? 'achieve' : 'avoid'}`)}${used ? ` — ${t('contractUnavailable')}` : ''}`}
+                      aria-describedby={`king-contract-desc-${contract}`}
+                      data-testid={`king-contract-${contract}`}
+                    >
+                      <span className={used ? 'line-through opacity-60' : ''}>{t(`contracts.${contract}`)}</span>
+                      <span
+                        className="flex items-center gap-1 text-xs"
+                        aria-hidden="true"
+                        data-testid={`king-contract-badge-${contract}`}
+                      >
+                        <span className={`rounded px-1 py-0.5 ${isAchieve ? badgeSuccessColors : badgeErrorColors}`}>
+                          {t(`contractType.${isAchieve ? 'achieve' : 'avoid'}`)}
+                        </span>
+                        <span>{t(`contractIcon.${contract}`)}</span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-ds-text-primary mb-2">
+              <span className="whitespace-nowrap">
+                {t('deal', { n: state.dealNumber + 1, total: state.totalDeals })}
+              </span>
+              <span className="whitespace-nowrap">{t('trick', { n: state.trickNumber })}</span>
+              <span className="whitespace-nowrap">{t('contract', { name: contractName })}</span>
+              <span className="whitespace-nowrap">{t('trump', { suit: trumpSymbol })}</span>
+              <span className="whitespace-nowrap">
+                {t('dealer', { name: playerName(state.dealerIdx, state.dealerIdx === humanIdx) })}
+              </span>
             </div>
 
             {state.dealHistory.length > 0 && (
@@ -398,10 +434,97 @@ function KingPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+
+            {isSelectPhase && (
+              <div className="mb-2 text-sm" data-testid="king-contract-descriptions">
+                <p className="font-semibold">{t('contractDescriptionsTitle')}</p>
+                <ul className="list-disc pl-5">
+                  {state.usedContracts.map((used, contract) => (
+                    <li key={contract} id={`king-contract-desc-${contract}`}>
+                      <span className="font-medium">{t(`contracts.${contract}`)}:</span>{' '}
+                      {used && `${t('contractUnavailable')}. `}
+                      {t(`contractDesc.${contract}`)}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            <ErrorAlert message={error} onRetry={retry} />
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+              られないことがある (#5955)。
+            */}
+            <div data-testid="king-hint-live" role="status" aria-live="polite">
+              {state.hint && isRequestedHint(state) && (
+                <div className="text-ds-warning text-sm mb-2">
+                  {state.hint.contract !== undefined && state.hint.contract >= 0
+                    ? t('hintContract', {
+                        contract: t(`contracts.${state.hint.contract}`),
+                        reason: t(`hint.${state.hint.reason}`),
+                      })
+                    : `${t('hintAvailable')}: ${t(`hint.${state.hint.reason}`)}`}
+                  {state.hint.cardIndices &&
+                    state.hint.cardIndices.length > 0 &&
+                    ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
+                </div>
+              )}
+            </div>
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+            <div className="flex flex-wrap gap-2 items-center">
+              <GameResetButton
+                isGameEnd={isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="king-reset-button"
+              />
+            </div>
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.king.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.king.footer} px-4 py-2.5`}
+            actions={
+              (canSelect && pendingTrumpContract !== null) || canPlay || isDealEnd ? (
+                <div className="flex flex-wrap gap-2 items-center">
+                  {canSelect && pendingTrumpContract !== null && (
+                    <div className="flex flex-wrap gap-2" data-testid="king-trump-buttons">
+                      {TRUMP_SUITS.map((suit) => (
+                        <button
+                          key={suit}
+                          type="button"
+                          className={btnPrimary}
+                          onClick={() => handleTrumpClick(suit)}
+                          disabled={loading}
+                          aria-label={t(`trumpSuit.${suit}`)}
+                        >
+                          {suitSymbolAt(suit, '-')}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {canPlay && (
+                    <div data-tutorial="king-action-buttons">
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={handlePlay}
+                        disabled={loading || selectedCardIndices.length !== 1}
+                      >
+                        {t('playButton')}
+                      </button>
+                    </div>
+                  )}
+                  {isDealEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextDeal} disabled={loading}>
+                      {t('nextDeal')}
+                    </button>
+                  )}
+                </div>
+              ) : null
+            }
+          >
             {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
                 変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。 */}
             <div data-testid="king-prompt-live" role="status" aria-live="polite">
@@ -433,113 +556,6 @@ function KingPageContent() {
                 restrictedTooltip={t('playButton')}
               />
             )}
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            {/*
-              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
-              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
-              られないことがある (#5955)。
-            */}
-            <div data-testid="king-hint-live" role="status" aria-live="polite">
-              {state.hint && isRequestedHint(state) && (
-                <div className="text-ds-warning text-sm mb-2">
-                  {state.hint.contract !== undefined && state.hint.contract >= 0
-                    ? t('hintContract', {
-                        contract: t(`contracts.${state.hint.contract}`),
-                        reason: t(`hint.${state.hint.reason}`),
-                      })
-                    : `${t('hintAvailable')}: ${t(`hint.${state.hint.reason}`)}`}
-                  {state.hint.cardIndices &&
-                    state.hint.cardIndices.length > 0 &&
-                    ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
-                </div>
-              )}
-            </div>
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            <div className="flex flex-wrap gap-2 items-center" data-tutorial="king-action-buttons">
-              {canSelect && pendingTrumpContract === null && (
-                <div className="flex flex-wrap gap-2" data-testid="king-contract-buttons">
-                  {state.usedContracts.map((used, contract) => {
-                    // Contract 6 (King/Trump) rewards taking tricks; every other
-                    // contract penalises capturing its target cards. See
-                    // internal/domain/King.go for the authoritative classification.
-                    const isAchieve = contract === KING_TRUMP_CONTRACT;
-                    return (
-                      <button
-                        key={contract}
-                        type="button"
-                        className={`${btnSecondary} flex flex-col items-center gap-1`}
-                        onClick={() => handleContractClick(contract)}
-                        disabled={loading || used}
-                        title={t(`contractDesc.${contract}`)}
-                        // The badge below is aria-hidden (it is icon + colour), so
-                        // the achieve/avoid distinction has to be restated here or a
-                        // screen reader hears only the contract's name (#4844).
-                        aria-label={`${t(`contracts.${contract}`)} — ${t(`contractType.${isAchieve ? 'achieve' : 'avoid'}`)}${used ? ` — ${t('contractUnavailable')}` : ''}`}
-                        aria-describedby={`king-contract-desc-${contract}`}
-                        data-testid={`king-contract-${contract}`}
-                      >
-                        <span className={used ? 'line-through opacity-60' : ''}>{t(`contracts.${contract}`)}</span>
-                        <span
-                          className="flex items-center gap-1 text-xs"
-                          aria-hidden="true"
-                          data-testid={`king-contract-badge-${contract}`}
-                        >
-                          <span className={`rounded px-1 py-0.5 ${isAchieve ? badgeSuccessColors : badgeErrorColors}`}>
-                            {t(`contractType.${isAchieve ? 'achieve' : 'avoid'}`)}
-                          </span>
-                          <span>{t(`contractIcon.${contract}`)}</span>
-                        </span>
-                        <span id={`king-contract-desc-${contract}`} className="sr-only">
-                          {used && `${t('contractUnavailable')}. `}
-                          {t(`contractDesc.${contract}`)}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-              {canSelect && pendingTrumpContract !== null && (
-                <div className="flex flex-wrap gap-2" data-testid="king-trump-buttons">
-                  {TRUMP_SUITS.map((suit) => (
-                    <button
-                      key={suit}
-                      type="button"
-                      className={btnPrimary}
-                      onClick={() => handleTrumpClick(suit)}
-                      disabled={loading}
-                      aria-label={t(`trumpSuit.${suit}`)}
-                    >
-                      {suitSymbolAt(suit, '-')}
-                    </button>
-                  ))}
-                </div>
-              )}
-              {canPlay && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-              {isDealEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextDeal} disabled={loading}>
-                  {t('nextDeal')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="king-reset-button"
-              />
-            </div>
           </GameFooter>
         </>
       )}

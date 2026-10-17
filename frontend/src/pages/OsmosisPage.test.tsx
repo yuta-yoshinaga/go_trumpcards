@@ -51,6 +51,42 @@ beforeEach(() => {
 });
 
 describe('OsmosisPage', () => {
+  it('shows the landscape recommendation instead of the phase name in the banner', async () => {
+    renderWithProviders(<OsmosisPage />);
+    const bannerMessage = await screen.findByText('横画面での表示を推奨します');
+    expect(bannerMessage.parentElement).toHaveTextContent(/^横画面での表示を推奨します$/);
+  });
+
+  it('places reserve and foundations in one large-desktop board row', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    renderWithProviders(<OsmosisPage />);
+    const row = await screen.findByTestId('os-board-row');
+    const boardSections = row.querySelectorAll('[data-tutorial="os-reserve"], [data-tutorial="os-foundation"]');
+    expect(boardSections).toHaveLength(2);
+    expect(boardSections[0]).toHaveAttribute('data-tutorial', 'os-reserve');
+    expect(boardSections[1]).toHaveAttribute('data-tutorial', 'os-foundation');
+    expect([...row.querySelectorAll<HTMLElement>('*')].some((element) => /\border-/.test(element.className))).toBe(
+      false,
+    );
+    expect(screen.getByRole('button', { name: /^組札 0/ }).querySelector('.relative')).toHaveStyle({
+      width: '80px',
+      height: '120px',
+    });
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
+  it('keeps the develop markup at 800px', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 800 });
+    renderWithProviders(<OsmosisPage />);
+    await screen.findByTestId('os-allowed-0');
+    expect(screen.queryByTestId('os-board-row')).not.toBeInTheDocument();
+    expect(document.querySelector('[data-tutorial="os-foundation"]')?.className).toContain('flex-col');
+    expect(document.querySelector('[data-tutorial="os-reserve"]')?.className).toContain('flex');
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
   it('renders heading', async () => {
     renderWithProviders(<OsmosisPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -78,6 +114,23 @@ describe('OsmosisPage', () => {
   it('shows base rank', async () => {
     renderWithProviders(<OsmosisPage />);
     await waitFor(() => expect(screen.getByText(/ベースランク/)).toBeInTheDocument());
+  });
+
+  it('uses compact cards on mobile while keeping the foundation rows playable', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    try {
+      renderWithProviders(<OsmosisPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+      const foundation = screen.getByTestId('os-allowed-0').closest('[data-tutorial="os-foundation"]');
+      expect(foundation).toBeInTheDocument();
+      const foundationButton = within(foundation as HTMLElement).getByRole('button', { name: /^組札 0/ });
+      expect(foundationButton.querySelector('.relative')).toHaveStyle({ width: '30px', height: '45px' });
+      expect(screen.getByRole('button', { name: /山札/ })).toHaveStyle({ width: '30px', height: '45px' });
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+    }
   });
 
   it('shows the allowed-rank guide per foundation row', async () => {
@@ -279,7 +332,7 @@ describe('OsmosisPage', () => {
   it('autocomplete button triggers autocomplete command', async () => {
     renderWithProviders(<OsmosisPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    screen.getByRole('button', { name: '自動完成' }).click();
+    screen.getByRole('button', { name: 'オートコンプリート' }).click();
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
   });
 
@@ -316,7 +369,7 @@ describe('OsmosisPage', () => {
     expect(draw.querySelector('kbd')?.textContent).toBe('D');
     // KbdBadge text is aria-hidden, so button accessible names stay clean.
     expect(screen.getByRole('button', { name: 'ヒント' })).toHaveAttribute('aria-keyshortcuts', 'h');
-    expect(screen.getByRole('button', { name: '自動完成' })).toHaveAttribute('aria-keyshortcuts', 'a');
+    expect(screen.getByRole('button', { name: 'オートコンプリート' })).toHaveAttribute('aria-keyshortcuts', 'a');
     expect(screen.getByRole('button', { name: '元に戻す' })).toHaveAttribute('aria-keyshortcuts', 'z');
     expect(screen.getByRole('button', { name: 'ギブアップ' })).toHaveAttribute('aria-keyshortcuts', 'g');
   });
@@ -460,6 +513,19 @@ describe('OsmosisPage', () => {
     expect(
       screen.getAllByRole('button').every((button) => !button.getAttribute('aria-label')?.includes('undefined')),
     ).toBe(true);
+  });
+
+  it('renders an empty reserve slot while keeping cards in other reserve columns', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      reserve: [[], [card('HEART', 9)], ...playingState.reserve.slice(2)],
+    });
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const reserve = document.querySelector('[data-tutorial="os-reserve"]');
+    expect(reserve?.querySelector('.border-dashed')).toHaveStyle({ width: '80px', height: '120px' });
+    expect(screen.getByRole('button', { name: 'リザーブ 1: ♥ 9' })).toBeInTheDocument();
   });
 
   it('selects the same reserve top card that its name announces', async () => {

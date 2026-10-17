@@ -1,5 +1,12 @@
 import { expect, test } from '@playwright/test';
-import { isVisibleWithin, navigateTo, TIMEOUT_ACTION, TIMEOUT_TRANSITION, waitForLoaded } from './helpers';
+import {
+  clickHandCard,
+  isVisibleWithin,
+  navigateTo,
+  TIMEOUT_ACTION,
+  TIMEOUT_TRANSITION,
+  waitForLoaded,
+} from './helpers';
 
 /**
  * The hand, scoped to the player-hand container.
@@ -86,7 +93,7 @@ test.describe('Troggu E2E', () => {
     if (!(await page.locator('[data-testid="tg-info"][data-human-turn]').isVisible())) return;
     if ((await playableCards(page).count()) === 0) return;
 
-    await playableCards(page).first().click();
+    await clickHandCard(playableCards(page).first());
     await waitForLoaded(page);
     await expect(hand(page)).toHaveCount(17, { timeout: TIMEOUT_TRANSITION });
   });

@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fiveHundredApi } from '../api/gameApi';
 import i18n from '../i18n';
@@ -15,6 +15,12 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockExec = vi.mocked(fiveHundredApi.exec);
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+}));
 
 const card = (design: string, value: number): Card => ({ design, value }) as unknown as Card;
 
@@ -83,6 +89,51 @@ afterEach(async () => {
 });
 
 describe('FiveHundredPage', () => {
+  it('uses a single-row card fan only at large desktop width', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1280 });
+    act(() => window.dispatchEvent(new Event('resize')));
+    renderWithProviders(<FiveHundredPage />);
+    const cards = await screen.findByTestId('fh-hand-cards');
+    expect(cards).toHaveClass('large-desktop-hand-fan');
+    cleanup();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 768 });
+    renderWithProviders(<FiveHundredPage />);
+    expect(await screen.findByTestId('fh-hand-cards')).not.toHaveClass('large-desktop-hand-fan');
+  });
+
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue(makeState({ message: 'Your turn notice' }));
+    renderWithProviders(<FiveHundredPage />);
+
+    expect(await screen.findByTestId('game-footer-message')).toHaveTextContent('Your turn notice');
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue(makeState({ message: 'Mobile notice' }));
+    renderWithProviders(<FiveHundredPage />);
+    expect(await screen.findByText('Mobile notice')).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+    window.dispatchEvent(new Event('resize'));
+  });
+
+  it('collapses CPU seats on mobile and opens them on desktop', async () => {
+    renderWithProviders(<FiveHundredPage />);
+    const mobileAccordion = await screen.findByTestId('cpu-accordion');
+    expect(mobileAccordion).not.toHaveAttribute('open');
+    const cpuSeat = within(mobileAccordion).getByRole('group', { name: 'CPU 1の手札 残り0枚' });
+    expect(cpuSeat).not.toBeVisible();
+
+    cleanup();
+    mobileState.isMobile = false;
+    renderWithProviders(<FiveHundredPage />);
+    expect(await screen.findByTestId('cpu-accordion')).toHaveAttribute('open');
+    mobileState.isMobile = true;
+  });
+
   it('uses the active game target from the server response in the tutorial', async () => {
     mockExec.mockResolvedValue(makeState({ config: { cpuDifficulty: 1, targetScore: 700 } }));
     renderWithProviders(<FiveHundredPage />);
@@ -327,7 +378,10 @@ describe('FiveHundredPage', () => {
 
   it('shows bid controls on the human bid turn', async () => {
     renderWithProviders(<FiveHundredPage />);
-    expect(await screen.findByTestId('pass-button')).toBeEnabled();
+    const passButton = await screen.findByTestId('pass-button');
+    expect(passButton).toBeEnabled();
+    expect(passButton).not.toHaveClass('text-white');
+    expect(passButton).toHaveClass('text-ds-text-on-accent');
   });
 
   it('explains the focused bid condition and follows the selected trick count', async () => {
@@ -417,6 +471,12 @@ describe('FiveHundredPage', () => {
     expect(screen.getByTestId('fh-bid-nt')).toHaveTextContent('120'); // 6NT
     expect(screen.getByTestId('fh-bid-misere')).toHaveTextContent('250');
     expect(screen.getByTestId('fh-bid-open-misere')).toHaveTextContent('520');
+    for (const id of ['fh-bid-suit-1', 'fh-bid-suit-2', 'fh-bid-suit-3', 'fh-bid-suit-4', 'fh-bid-nt']) {
+      const button = screen.getByTestId(id);
+      const score = button.querySelector('span.text-\\[10px\\]');
+      expect(button).toHaveClass('text-ds-text-on-accent');
+      expect(score).not.toHaveClass('text-white');
+    }
   });
 
   it('updates suit/NT scores live when the trick count changes (7♠=140, 7NT=220)', async () => {

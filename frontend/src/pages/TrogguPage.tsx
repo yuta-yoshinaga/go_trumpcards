@@ -402,76 +402,76 @@ function TrogguPageContent() {
             ]}
           />
 
-          <GameFooter className={`${gameTheme.troggu.footer} px-4 py-2.5`}>
-            <ActionShortcutsPanel bindings={actionBindings} data-testid="tg-kbd-shortcuts" />
-            <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="tg-actions">
-              {isBid && isHumanTurn && hasUnbeatableContract && (
-                <span id={BID_TOO_LOW_ID} className="sr-only">
-                  {bidTooLowMessage}
-                </span>
-              )}
-              {isBid &&
-                isHumanTurn &&
-                bidOptions.map(({ contract: c, tooLow }) => {
-                  return (
+          <GameFooter
+            className={`${gameTheme.troggu.footer} px-4 py-2.5`}
+            actions={
+              <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="tg-actions">
+                {isBid && isHumanTurn ? (
+                  <>
+                    {hasUnbeatableContract && (
+                      <span id={BID_TOO_LOW_ID} className="sr-only">
+                        {bidTooLowMessage}
+                      </span>
+                    )}
+                    {bidOptions.map(({ contract: c, tooLow }) => (
+                      /* #5808: show a contract that cannot beat the current high bid, but prevent pressing it. */
+                      <button
+                        key={c}
+                        type="button"
+                        className={`${btnSecondary} aria-disabled:opacity-70 aria-disabled:cursor-not-allowed aria-disabled:saturate-50`}
+                        onClick={() => {
+                          if (tooLow) return;
+                          callApi('bid', { bid: c });
+                        }}
+                        disabled={loading}
+                        aria-disabled={tooLow || undefined}
+                        title={tooLow ? bidTooLowMessage : undefined}
+                        aria-describedby={tooLow ? BID_TOO_LOW_ID : undefined}
+                        data-testid={`tg-bid-${c}`}
+                      >
+                        {t(`contract.${c}`, { target: state.soloTarget })}
+                      </button>
+                    ))}
                     <button
-                      key={c}
                       type="button"
-                      className={`${btnSecondary} aria-disabled:opacity-70 aria-disabled:cursor-not-allowed aria-disabled:saturate-50`}
-                      onClick={() => {
-                        if (tooLow) return;
-                        callApi('bid', { bid: c });
-                      }}
-                      // **今の最高入札を超えられない契約は押させない。**押せても
-                      // サーバーに却下されるだけで、画面は入札のまま動かない (#5808)。
+                      className={btnPrimary}
+                      onClick={() => callApi('pass')}
                       disabled={loading}
-                      aria-disabled={tooLow || undefined}
-                      title={tooLow ? bidTooLowMessage : undefined}
-                      aria-describedby={tooLow ? BID_TOO_LOW_ID : undefined}
-                      data-testid={`tg-bid-${c}`}
+                      data-testid="tg-pass"
                     >
-                      {t(`contract.${c}`, { target: state.soloTarget })}
+                      {t('pass')}
                     </button>
-                  );
-                })}
-              {isBid && isHumanTurn && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={() => callApi('pass')}
-                  disabled={loading}
-                  data-testid="tg-pass"
-                >
-                  {t('pass')}
-                </button>
-              )}
-              {isTrickEnd && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={() => callApi('next')}
-                  disabled={loading}
-                  data-testid="tg-next-trick"
-                >
-                  {t('nextTrick')}
-                </button>
-              )}
-              {isRoundEnd && !isGameEnd && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={() => callApi('nextround')}
-                  disabled={loading}
-                  data-testid="tg-next-round"
-                >
-                  {t('nextDeal')}
-                </button>
-              )}
-              {isGameEnd && (
-                <button type="button" className={btnSuccess} onClick={resetWithConfig} disabled={loading}>
-                  {t('newGame')}
-                </button>
-              )}
+                  </>
+                ) : isTrickEnd ? (
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={() => callApi('next')}
+                    disabled={loading}
+                    data-testid="tg-next-trick"
+                  >
+                    {t('nextTrick')}
+                  </button>
+                ) : isRoundEnd && !isGameEnd ? (
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={() => callApi('nextround')}
+                    disabled={loading}
+                    data-testid="tg-next-round"
+                  >
+                    {t('nextDeal')}
+                  </button>
+                ) : isGameEnd ? (
+                  <button type="button" className={btnSuccess} onClick={resetWithConfig} disabled={loading}>
+                    {t('newGame')}
+                  </button>
+                ) : null}
+              </div>
+            }
+          >
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="tg-kbd-shortcuts" />
+            <div className="flex justify-center">
               <GameResetButton
                 isGameEnd={isGameEnd}
                 onReset={resetWithConfig}

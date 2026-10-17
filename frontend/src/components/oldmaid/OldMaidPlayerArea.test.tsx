@@ -4,6 +4,8 @@ import type { Card, OldMaidPlayerData } from '../../types/card';
 import { cardAlt } from '../../utils/cardAlt';
 import { OldMaidPlayerArea } from './OldMaidPlayerArea';
 
+vi.mock('../../hooks/useCardDimensions', () => ({ useCardDimensions: () => ({ cardWidth: 60 }) }));
+
 function makeCard(design: Card['design'], value: number): Card {
   return { design, value };
 }
@@ -47,6 +49,23 @@ describe('OldMaidPlayerArea compactNonTarget', () => {
     render(<OldMaidPlayerArea {...defaultProps} player={makeCpuPlayer(5)} isTarget compactNonTarget />);
     const backs = screen.getAllByAltText('カード裏面');
     expect(backs.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('keeps compact selectable CPU card backs in 44px minimum tap targets', () => {
+    render(<OldMaidPlayerArea {...defaultProps} player={makeCpuPlayer(7)} isTarget isHumanTurn compactCpuCards />);
+    const cards = screen.getAllByRole('button', { name: /カード \d+ 枚目を引く/ });
+    expect(cards).toHaveLength(7);
+    for (const card of cards) {
+      expect(card).toHaveClass('min-w-[44px]');
+      expect(card.querySelector('img')).toHaveStyle({ width: '36px' });
+    }
+  });
+
+  it('uses the configured card width for selectable CPU cards outside compact mode', () => {
+    render(<OldMaidPlayerArea {...defaultProps} player={makeCpuPlayer(2)} isTarget isHumanTurn />);
+    for (const card of screen.getAllByRole('button', { name: /カード \d+ 枚目を引く/ })) {
+      expect(card.querySelector('img')).toHaveStyle({ width: '60px' });
+    }
   });
 
   it('shows card backs for non-target CPU when compactNonTarget is false', () => {

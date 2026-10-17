@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, spadesApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -12,6 +12,18 @@ vi.mock('../api/gameApi', () => ({
   spadesApi: { exec: vi.fn() },
   actionLogApi: { spades: vi.fn() },
 }));
+
+const mobileState = vi.hoisted(() => ({ isMobile: undefined as boolean | undefined }));
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useCardDimensions: () => {
+      const d = actual.useCardDimensions();
+      return mobileState.isMobile === undefined ? d : { ...d, isMobile: mobileState.isMobile };
+    },
+  };
+});
 
 const mockExec = vi.mocked(spadesApi.exec);
 
@@ -57,10 +69,47 @@ const spadesBrokenState = makeSpadesState({ spadesBroken: true });
 const cpuTurnState = makeSpadesState({ currentPlayerIdx: 1 });
 
 beforeEach(() => {
+  mobileState.isMobile = undefined;
   mockExec.mockResolvedValue(playPhaseState);
 });
 
 describe('SpadesPage', () => {
+  it('keeps score table column headings on one line', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    const { container } = renderWithProviders(<SpadesPage />);
+    await waitFor(() => expect(container.querySelectorAll('th[scope="col"]').length).toBeGreaterThan(0));
+    const headings = container.querySelectorAll('th[scope="col"]');
+    for (const heading of headings) {
+      expect(heading.classList.contains('whitespace-nowrap')).toBe(true);
+      expect(heading.classList.contains('text-[10px]')).toBe(true);
+    }
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    mockExec.mockResolvedValue(makeSpadesState({ message: 'Mobile message' }));
+    mobileState.isMobile = true;
+    renderWithProviders(<SpadesPage />);
+
+    const messageText = await screen.findByText('Mobile message');
+    const message = messageText.closest('[role="status"]');
+    expect(message).toHaveTextContent('Mobile message');
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+  });
+
+  it('keeps only the human hand in the footer content', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<SpadesPage />);
+
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const playArea = footerContent.closest('footer')?.previousElementSibling;
+    expect(playArea).not.toBeNull();
+    expect(within(footerContent).getByAltText('\u2660 A')).toBeInTheDocument();
+    expect(within(footerContent).queryByRole('button', { name: '\u30cb\u30eb' })).not.toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('spades-hint-live')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByRole('button', { name: '\u30cb\u30eb' })).toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('spades-hint-live')).toBeInTheDocument();
+  });
+
   it('marks the resolved trick winner when the winner is not the previous leader', async () => {
     mockExec.mockResolvedValue(
       makeSpadesState({
@@ -223,6 +272,12 @@ describe('SpadesPage', () => {
     renderWithProviders(<SpadesPage />);
     await waitFor(() => {
       expect(screen.getByRole('button', { name: '\u30d3\u30c3\u30c9' })).toBeInTheDocument();
+      expect(
+        within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '\u30d3\u30c3\u30c9' }),
+      ).toBeInTheDocument();
+      expect(
+        within(screen.getByTestId('game-footer-actions')).queryByRole('button', { name: '\u30cb\u30eb' }),
+      ).not.toBeInTheDocument();
       expect(screen.getByRole('button', { name: '\u30cb\u30eb' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: '1' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: '13' })).toBeInTheDocument();
@@ -511,14 +566,34 @@ describe('SpadesPage', () => {
     }
   });
 
+  it('fits the score table at large desktop widths', async () => {
+    const innerWidthSpy = vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(1280);
+    try {
+      const { container } = renderWithProviders(<SpadesPage />);
+      await waitFor(() =>
+        expect(container.querySelector('[data-tutorial="sp-score-table"] table')).toBeInTheDocument(),
+      );
+      const table = container.querySelector('[data-tutorial="sp-score-table"] table');
+      expect(table?.className).toContain('table-fixed');
+      expect(table?.className).not.toContain('min-w-[');
+    } finally {
+      innerWidthSpy.mockRestore();
+    }
+  });
+
   it('score table has horizontal scroll wrapper', async () => {
-    const { container } = renderWithProviders(<SpadesPage />);
-    await waitFor(() => expect(screen.getByText('\u30b9\u30b3\u30a2')).toBeInTheDocument());
-    const scoreSection = container.querySelector('[data-tutorial="sp-score-table"]');
-    const scrollWrapper = scoreSection?.querySelector('.overflow-x-auto');
-    expect(scrollWrapper).toBeInTheDocument();
-    const table = scrollWrapper?.querySelector('table');
-    expect(table?.className).toContain('min-w-[360px]');
+    const innerWidthSpy = vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(375);
+    try {
+      const { container } = renderWithProviders(<SpadesPage />);
+      await waitFor(() => expect(screen.getByText('\u30b9\u30b3\u30a2')).toBeInTheDocument());
+      const scoreSection = container.querySelector('[data-tutorial="sp-score-table"]');
+      const scrollWrapper = scoreSection?.querySelector('.overflow-x-auto');
+      expect(scrollWrapper).toBeInTheDocument();
+      const table = scrollWrapper?.querySelector('table');
+      expect(table?.className).toContain('min-w-[360px]');
+    } finally {
+      innerWidthSpy.mockRestore();
+    }
   });
 
   it('score table renders ScrollFadeHint on mobile', async () => {
@@ -644,6 +719,14 @@ describe('SpadesPage', () => {
     renderWithProviders(<SpadesPage />);
     await waitFor(() => expect(screen.getByText('\u30b9\u30b3\u30a2')).toBeInTheDocument());
     expect(screen.queryByText('Game end!')).not.toBeInTheDocument();
+  });
+
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<SpadesPage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(within(footerMessage).getByRole('status')).toHaveTextContent('Game end!');
   });
 
   // -- ConfirmDialog on reset --
@@ -863,7 +946,9 @@ describe('SpadesPage', () => {
     renderWithProviders(<SpadesPage />);
     await waitFor(() => {
       // CPU 1 has bid=4
-      expect(screen.getByText(/CPU 1.*\u30d3\u30c3\u30c9 4/)).toBeInTheDocument();
+      const row = screen.getByText(/CPU 1/, { selector: 'span.whitespace-nowrap' }).closest('div.flex.flex-wrap');
+      expect(row).toHaveTextContent(/CPU 1.*ビッド 4/);
+      expect(row?.querySelectorAll('span.whitespace-nowrap').length).toBe(5);
     });
   });
 
@@ -871,7 +956,9 @@ describe('SpadesPage', () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<SpadesPage />);
     await waitFor(() => {
-      expect(screen.getByText(/CPU 1.*\u672a\u30d3\u30c3\u30c9/)).toBeInTheDocument();
+      const row = screen.getByText(/CPU 1/, { selector: 'span.whitespace-nowrap' }).closest('div.flex.flex-wrap');
+      expect(row).toHaveTextContent(/CPU 1.*未ビッド/);
+      expect(row?.querySelectorAll('span.whitespace-nowrap').length).toBe(5);
     });
   });
 

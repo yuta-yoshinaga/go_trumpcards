@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { razzApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -190,6 +190,11 @@ describe('RazzPage', () => {
   });
 
   // ---- mount & reset ----
+  it('opts into the taller mobile footer', async () => {
+    renderWithProviders(<RazzPage />);
+    expect((await screen.findByTestId('game-footer-content')).closest('footer')?.className).toContain('max-h-[60vh]');
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<RazzPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
@@ -205,6 +210,28 @@ describe('RazzPage', () => {
     mockExec.mockResolvedValue(thirdStreetState);
     renderWithProviders(<RazzPage />);
     await waitFor(() => expect(screen.getByText('サードストリート')).toBeInTheDocument());
+  });
+
+  it('uses compact CPU cards while keeping the human hand at the regular size', async () => {
+    mockExec.mockResolvedValue(thirdStreetState);
+    const { container } = renderWithProviders(<RazzPage />);
+    await screen.findByText('サードストリート');
+    const cpuCard = container.querySelector('[data-tutorial="razz-cpu-area"] [data-testid="animated-card"] img');
+    const humanCard = container.querySelector('[data-tutorial="razz-player-hand"] [data-testid="animated-card"] img');
+    expect(cpuCard).toHaveStyle({ width: '66px' });
+    expect(humanCard).toHaveStyle({ width: '80px' });
+  });
+
+  it('lays CPU seats out in a wrapping desktop grid while keeping mobile seats full width', async () => {
+    mockExec.mockResolvedValue(thirdStreetState);
+    const { container } = renderWithProviders(<RazzPage />);
+    await screen.findByText('サードストリート');
+
+    const seatGrid = container.querySelector('[data-tutorial="razz-cpu-area"] > div > div');
+    const seats = seatGrid?.querySelectorAll(':scope > div');
+    expect(seatGrid).toHaveClass('flex', 'flex-wrap');
+    expect(seats).toHaveLength(3);
+    expect(seats?.[0]).toHaveClass('w-full', 'sm:w-[calc(33.333%-0.34rem)]');
   });
 
   it('shows the call amount and pot odds only when a call is required', async () => {
@@ -388,7 +415,7 @@ describe('RazzPage', () => {
     mockExec.mockResolvedValue(thirdStreetWithBetState);
     renderWithProviders(<RazzPage />);
     await waitFor(() => expect(screen.getByText('CPU行動:')).toBeInTheDocument());
-    expect(screen.getByText(/Player 1: ベット/)).toBeInTheDocument();
+    expect(screen.getByText(/CPU 1: ベット/)).toBeInTheDocument();
   });
 
   // ---- round results ----
@@ -430,6 +457,35 @@ describe('RazzPage', () => {
     renderWithProviders(<RazzPage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
     expect(screen.getByAltText('♥ K')).toBeInTheDocument();
+  });
+
+  it('renders human door and hole card groups side by side', async () => {
+    mockExec.mockResolvedValue(thirdStreetState);
+    renderWithProviders(<RazzPage />);
+    const doorHeadings = await screen.findAllByText(i18n.t('razz:doorCards'));
+    const holeHeadings = screen.getAllByText(i18n.t('razz:holeCards'));
+    const doorHeading = doorHeadings.at(-1);
+    const holeHeading = holeHeadings.at(-1);
+    expect(doorHeading).toBeDefined();
+    expect(holeHeading).toBeDefined();
+    const ancestors = (element: HTMLElement) => {
+      const result: HTMLElement[] = [];
+      let current: HTMLElement | null = element;
+      while (current) {
+        result.push(current);
+        current = current.parentElement;
+      }
+      return result;
+    };
+    const holeAncestors = new Set(ancestors(holeHeading!));
+    const commonWrapper = ancestors(doorHeading!).find(
+      (ancestor) => holeAncestors.has(ancestor) && ancestor.className.includes('flex-wrap'),
+    );
+
+    expect(commonWrapper).toBeDefined();
+    expect(doorHeading!.parentElement).not.toBe(holeHeading!.parentElement);
+    expect(commonWrapper).toContainElement(doorHeading!);
+    expect(commonWrapper).toContainElement(holeHeading!);
   });
 
   // ---- message ----
@@ -502,6 +558,9 @@ describe('RazzPage', () => {
     mockExec.mockResolvedValue(thirdStreetState);
     renderWithProviders(<RazzPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument());
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: 'フォールド' }),
+    ).toBeInTheDocument();
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(thirdStreetState);
@@ -648,6 +707,31 @@ describe('RazzPage', () => {
     renderWithProviders(<RazzPage />);
     await waitFor(() => expect(screen.getByTestId('rebuy-controls')).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'リバイ' })).toBeInTheDocument();
+  });
+
+  it('keeps rebuy choices and reset in the play area while the hand stays in the footer', async () => {
+    const rebuyState = {
+      ...baseState,
+      players: [humanPlayer({ chips: 0 }), cpuPlayer(1)],
+      phase: 8,
+      message: '',
+      rebuyPhaseType: 1,
+      rebuyChips: 1000,
+      rebuyMaxCount: 3,
+      rebuyCounts: [1, 0],
+    };
+    mockExec.mockResolvedValue(rebuyState);
+    const { container } = renderWithProviders(<RazzPage />);
+    await waitFor(() => expect(screen.getByTestId('rebuy-controls')).toBeInTheDocument());
+
+    const footerContent = screen.getByTestId('game-footer-content');
+    const playArea = container.querySelector('div.flex-1.overflow-y-auto');
+    expect(playArea).not.toBeNull();
+    expect(within(footerContent).queryByTestId('rebuy-controls')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('rebuy-controls')).toBeInTheDocument();
+    expect(footerContent.querySelector('[data-tutorial="razz-player-hand"]')).not.toBeNull();
+    expect(within(footerContent).queryByRole('button', { name: 'リセット' })).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByRole('button', { name: 'リセット' })).toBeInTheDocument();
   });
 
   it('calls rebuy command when rebuy button clicked', async () => {

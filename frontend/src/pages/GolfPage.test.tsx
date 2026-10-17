@@ -361,7 +361,7 @@ describe('GolfPage', () => {
     mockExec.mockResolvedValue({ ...playingState, chainCombo: 5 });
     renderWithProviders(<GolfPage />);
     const badge = await screen.findByTestId('combo-badge');
-    expect(badge.className).toContain('bg-ds-error');
+    expect(badge).toHaveClass('bg-ds-error', 'text-white');
   });
 
   // **コンボは色とテキストだけで示されていた。** 読み上げ利用者には継続も

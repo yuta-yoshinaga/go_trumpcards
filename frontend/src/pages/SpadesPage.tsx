@@ -17,7 +17,7 @@ import { ScrollFadeHint } from '../components/ScrollFadeHint';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -35,6 +35,7 @@ import { badgeError, badgeInfo, badgeSuccess, badgeWarning } from '../styles/bad
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
+import { scoreTableClass } from '../styles/scoreTableStyles';
 import type { SpadesResponse } from '../types/card';
 import { SpadesPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
@@ -112,6 +113,7 @@ const SPADES_PHASE_KEYS: Readonly<Record<number, string>> = {
 export const SpadesPage = withTutorial(SpadesPageContent, 'spades', SP_TUTORIAL_STEPS);
 /** Inner content of the Spades page, wrapped by TutorialProvider. */
 function SpadesPageContent() {
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('spades');
   const {
@@ -216,6 +218,12 @@ function SpadesPageContent() {
     return w.level === 'danger' ? 'text-ds-warning font-bold' : 'text-ds-warning';
   };
 
+  const messageBox = (
+    <div data-tutorial="sp-bags-info">
+      <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+    </div>
+  );
+
   return (
     <GamePageShell
       title={tc('nav.spades')}
@@ -287,11 +295,34 @@ function SpadesPageContent() {
 
           {/* Scrollable area */}
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+            {isHumanBidTurn && (
+              <fieldset className="m-0 border-0 p-0" aria-label={t('bidPhase')}>
+                <div className="grid grid-cols-7 gap-1 justify-center">
+                  {[0, ...Array.from({ length: 13 }, (_, i) => i + 1)].map((v) => (
+                    <button
+                      key={v}
+                      type="button"
+                      className={
+                        v === bidValue
+                          ? `${btnSecondary} min-w-[44px] ring-2 ring-ds-warning`
+                          : `${btnSecondary} min-w-[44px]`
+                      }
+                      aria-pressed={bidValue === v}
+                      onClick={() => setBidValue(v)}
+                      disabled={loading}
+                    >
+                      {v === 0 ? t('nilButton') : v}
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+            )}
+
             {/* Round/Trick info */}
-            <div className="text-ds-text-primary text-center mb-2">
-              <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
-              <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
-              <span>{state.spadesBroken ? t('spadesBroken') : t('spadesNotBroken')}</span>
+            <div className="text-ds-text-primary flex flex-wrap justify-center gap-x-4 gap-y-1 text-center mb-2">
+              <span className="whitespace-nowrap">{t('round', { n: state.roundNumber })}</span>
+              <span className="whitespace-nowrap">{t('trick', { n: state.trickNumber })}</span>
+              <span className="whitespace-nowrap">{state.spadesBroken ? t('spadesBroken') : t('spadesNotBroken')}</span>
             </div>
 
             {(bidProgress || humanBagWarning) && (
@@ -381,11 +412,18 @@ function SpadesPageContent() {
                     .filter((p) => !p.isHuman)
                     .map((p) => (
                       <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                        <div className="text-ds-text-muted text-sm">
-                          {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                          {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
-                          {t('roundScore', { score: p.roundScore })} |{' '}
-                          {p.bid >= 0 ? t('bid', { n: p.bid }) : t('bidNone')} | {t('bags', { count: p.bags })}
+                        <div className="flex flex-wrap gap-x-1 text-ds-text-muted text-sm">
+                          <span className="whitespace-nowrap">
+                            {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })}
+                          </span>
+                          <span className="whitespace-nowrap">
+                            {t('cumulativeScore', { score: p.cumulativeScore })}
+                          </span>
+                          <span className="whitespace-nowrap">{t('roundScore', { score: p.roundScore })}</span>
+                          <span className="whitespace-nowrap">
+                            {p.bid >= 0 ? t('bid', { n: p.bid }) : t('bidNone')}
+                          </span>
+                          <span className="whitespace-nowrap">{t('bags', { count: p.bags })}</span>
                         </div>
                       </div>
                     ))
@@ -400,17 +438,33 @@ function SpadesPageContent() {
                   >
                     <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('scores')}</summary>
                     <div className="overflow-x-auto -mx-2 px-2">
-                      <table className="w-full text-sm text-ds-text-muted min-w-[360px] mt-1">
+                      <table
+                        className={scoreTableClass(
+                          isLargeDesktop,
+                          'w-full text-sm text-ds-text-muted min-w-[360px]',
+                          'mt-1',
+                        )}
+                      >
                         <thead>
                           <tr>
-                            <th scope="col" className="text-left">
+                            <th scope="col" className="text-left whitespace-nowrap text-[10px]">
                               {t('scoresPlayer')}
                             </th>
-                            <th scope="col">{t('scoresBid')}</th>
-                            <th scope="col">{t('scoresTricks')}</th>
-                            <th scope="col">{t('scoresBags')}</th>
-                            <th scope="col">{t('scoresRound')}</th>
-                            <th scope="col">{t('scoresTotal')}</th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresBid')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresTricks')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresBags')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresRound')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresTotal')}
+                            </th>
                           </tr>
                         </thead>
                         <tbody>
@@ -452,17 +506,29 @@ function SpadesPageContent() {
                   <div className="my-3 p-2 rounded bg-black/30 relative" data-tutorial="sp-score-table">
                     <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
                     <div className="overflow-x-auto -mx-2 px-2">
-                      <table className="w-full text-sm text-ds-text-muted min-w-[360px]">
+                      <table
+                        className={scoreTableClass(isLargeDesktop, 'w-full text-sm text-ds-text-muted min-w-[360px]')}
+                      >
                         <thead>
                           <tr>
-                            <th scope="col" className="text-left">
+                            <th scope="col" className="text-left whitespace-nowrap text-[10px]">
                               {t('scoresPlayer')}
                             </th>
-                            <th scope="col">{t('scoresBid')}</th>
-                            <th scope="col">{t('scoresTricks')}</th>
-                            <th scope="col">{t('scoresBags')}</th>
-                            <th scope="col">{t('scoresRound')}</th>
-                            <th scope="col">{t('scoresTotal')}</th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresBid')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresTricks')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresBags')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresRound')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresTotal')}
+                            </th>
                           </tr>
                         </thead>
                         <tbody>
@@ -511,39 +577,14 @@ function SpadesPageContent() {
               </div>
             </div>
 
-            {/* Message */}
-            <div data-tutorial="sp-bags-info">
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-              />
-            </div>
-
             {/* Action log */}
+            {isMobile && messageBox}
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
-          </div>
-
-          {/* Footer */}
-          <GameFooter className={`${gameTheme.spades.footer} px-4 py-2.5`}>
-            {/* Human cards */}
-            {humanPlayer && (
-              <PlayerHandSection
-                humanPlayer={humanPlayer}
-                selectedCardIndices={selectedCardIndices}
-                toggleCard={toggleCard}
-                cardWidth={cardWidth}
-                isMobile={isMobile}
-                dataTutorialPrefix="sp"
-                validIndices={isHumanTurn ? state.validPlayIndices : undefined}
-                restrictedTooltip={t('restrictedCard')}
-              />
-            )}
 
             <ErrorAlert message={error ?? hintError} onRetry={retry} />
 
@@ -561,70 +602,10 @@ function SpadesPageContent() {
             </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-            <div className="flex gap-2 items-center" data-tutorial="sp-play-button">
+            <div data-tutorial="sp-play-button">
               {(isHumanBidTurn || isHumanTurn) && (
                 <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
                   {tc('button.hint')}
-                </button>
-              )}
-              {isHumanBidTurn && (
-                <>
-                  <fieldset className="m-0 border-0 p-0" aria-label={t('bidPhase')}>
-                    <div className="flex flex-wrap gap-1.5 justify-center">
-                      <button
-                        type="button"
-                        className={
-                          bidValue === 0
-                            ? `${btnSecondary} min-w-[44px] ring-2 ring-ds-warning`
-                            : `${btnSecondary} min-w-[44px]`
-                        }
-                        aria-pressed={bidValue === 0}
-                        onClick={() => setBidValue(0)}
-                        disabled={loading}
-                      >
-                        {t('nilButton')}
-                      </button>
-                      {Array.from({ length: 13 }, (_, i) => i + 1).map((v) => (
-                        <button
-                          key={v}
-                          type="button"
-                          className={
-                            bidValue === v
-                              ? `${btnSecondary} min-w-[44px] ring-2 ring-ds-warning`
-                              : `${btnSecondary} min-w-[44px]`
-                          }
-                          aria-pressed={bidValue === v}
-                          onClick={() => setBidValue(v)}
-                          disabled={loading}
-                        >
-                          {v}
-                        </button>
-                      ))}
-                    </div>
-                  </fieldset>
-                  <button type="button" className={btnPrimary} onClick={() => handleBid(bidValue)} disabled={loading}>
-                    {t('bidButton')}
-                  </button>
-                </>
-              )}
-              {isHumanTurn && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-              {isTrickEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                  {t('nextTrick')}
-                </button>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
                 </button>
               )}
               <GameResetButton
@@ -636,6 +617,64 @@ function SpadesPageContent() {
               />
             </div>
             <CardNavShortcutsPanel data-testid="spades-kbd-shortcuts" />
+          </div>
+
+          {/* Footer */}
+          <GameFooter
+            className={`${gameTheme.spades.footer} px-4 py-2.5`}
+            message={!isMobile && messageBox}
+            actions={
+              isHumanBidTurn || isHumanTurn || isTrickEnd || isRoundEnd ? (
+                <div className="flex gap-2 items-center">
+                  {isHumanBidTurn && (
+                    <>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={() => handleBid(bidValue)}
+                        disabled={loading}
+                      >
+                        {t('bidButton')}
+                      </button>
+                    </>
+                  )}
+                  {isHumanTurn && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handlePlay}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                    >
+                      {t('playButton')}
+                    </button>
+                  )}
+                  {isTrickEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                      {t('nextTrick')}
+                    </button>
+                  )}
+                  {isRoundEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                      {t('nextRound')}
+                    </button>
+                  )}
+                </div>
+              ) : null
+            }
+          >
+            {/* Human cards */}
+            {humanPlayer && (
+              <PlayerHandSection
+                humanPlayer={humanPlayer}
+                selectedCardIndices={selectedCardIndices}
+                toggleCard={toggleCard}
+                cardWidth={cardWidth}
+                isMobile={isMobile}
+                dataTutorialPrefix="sp"
+                validIndices={isHumanTurn ? state.validPlayIndices : undefined}
+                restrictedTooltip={t('restrictedCard')}
+              />
+            )}
           </GameFooter>
         </>
       )}

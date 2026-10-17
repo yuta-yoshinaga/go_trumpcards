@@ -20,6 +20,27 @@ beforeEach(() => {
 });
 
 describe('UnsunKarutaPage', () => {
+  it('renders the game message inside the footer message region', async () => {
+    mockExec.mockResolvedValue(makeUnsunKarutaState({ message: 'Footer message' }));
+    renderWithProviders(<UnsunKarutaPage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage.querySelector('[role="status"], [role="alert"]')).toHaveTextContent('Footer message');
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue(makeUnsunKarutaState({ message: 'Mobile message' }));
+    renderWithProviders(<UnsunKarutaPage />);
+
+    const messageText = await screen.findByText('Mobile message');
+    const message = messageText.closest('[role="status"]');
+    expect(message).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+    expect(message?.closest('footer')).not.toBeInTheDocument();
+  });
+
   it('announces every card in the current trick with its player name', async () => {
     mockExec.mockResolvedValue(
       makeUnsunKarutaState({
@@ -36,7 +57,102 @@ describe('UnsunKarutaPage', () => {
     expect(announcement).toHaveTextContent('あなた: 1 杯、CPU 2: 3 刀');
   });
 
+  it('keeps the current trick on one row at large desktop width', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1280 });
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue(
+      makeUnsunKarutaState({
+        currentTrick: Array.from({ length: 8 }, (_, playerIdx) => ({
+          playerIdx,
+          card: {
+            design: 'JOKER',
+            value: playerIdx + 1,
+            deck: 'unsun',
+            glyph: '杯',
+            label: String(playerIdx + 1),
+            color: 'red',
+          },
+        })),
+      }),
+    );
+    try {
+      renderWithProviders(<UnsunKarutaPage />);
+      const cards = await screen.findByTestId('trick-display-cards');
+      expect(cards).not.toHaveClass('flex-wrap');
+      expect(cards.children).toHaveLength(8);
+      const wrappers = cards.querySelectorAll<HTMLElement>('[data-player-idx]');
+      expect(wrappers[0].style.marginLeft).toBe('');
+      for (const wrapper of Array.from(wrappers).slice(1)) {
+        expect(Number.parseFloat(wrapper.style.marginLeft)).toBeLessThan(0);
+      }
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it.each([1008, 600])('fits eight trick cards inside the measured %ipx row', async (rowWidth) => {
+    const originalWidth = window.innerWidth;
+    const originalResizeObserver = window.ResizeObserver;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1280 });
+    window.dispatchEvent(new Event('resize'));
+    Object.defineProperty(window, 'ResizeObserver', {
+      configurable: true,
+      value: class {
+        private readonly callback: ResizeObserverCallback;
+        constructor(callback: ResizeObserverCallback) {
+          this.callback = callback;
+        }
+        observe() {
+          this.callback(
+            [{ contentRect: { width: rowWidth } } as ResizeObserverEntry],
+            this as unknown as ResizeObserver,
+          );
+        }
+        disconnect() {}
+      },
+    });
+    mockExec.mockResolvedValue(
+      makeUnsunKarutaState({
+        currentTrick: Array.from({ length: 8 }, (_, playerIdx) => ({
+          playerIdx,
+          card: {
+            design: 'JOKER',
+            value: playerIdx + 1,
+            deck: 'unsun',
+            glyph: '杯',
+            label: String(playerIdx + 1),
+            color: 'red',
+          },
+        })),
+      }),
+    );
+    try {
+      renderWithProviders(<UnsunKarutaPage />);
+      const cards = await screen.findByTestId('trick-display-cards');
+      await waitFor(() => {
+        const wrappers = Array.from(cards.querySelectorAll<HTMLElement>('[data-player-idx]'));
+        expect(wrappers).toHaveLength(8);
+        const advancePx = Number.parseFloat(wrappers[1]!.style.marginLeft) + 100 + 8;
+        expect(100 + 7 * advancePx).toBeLessThanOrEqual(rowWidth - 24);
+        for (const wrapper of wrappers.slice(1)) {
+          expect(Number.parseFloat(wrapper.style.marginLeft) + 100 + 8).toBe(advancePx);
+        }
+      });
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+      if (originalResizeObserver)
+        Object.defineProperty(window, 'ResizeObserver', { configurable: true, value: originalResizeObserver });
+      else Reflect.deleteProperty(window, 'ResizeObserver');
+    }
+  });
+
   it('wraps all eight cards in the current trick', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 800 });
+    window.dispatchEvent(new Event('resize'));
     const state = makeUnsunKarutaState({
       currentTrick: Array.from({ length: 8 }, (_, playerIdx) => ({
         playerIdx,
@@ -51,13 +167,20 @@ describe('UnsunKarutaPage', () => {
       })),
     });
     mockExec.mockResolvedValue(state);
-    renderWithProviders(<UnsunKarutaPage />);
-
-    const cards = await screen.findByTestId('trick-display-cards');
-    expect(cards).toHaveClass('flex-wrap');
-    expect(cards.children).toHaveLength(8);
-    expect(cards).toHaveTextContent('CPU 1');
-    expect(cards).toHaveTextContent('CPU 7');
+    try {
+      renderWithProviders(<UnsunKarutaPage />);
+      const cards = await screen.findByTestId('trick-display-cards');
+      expect(cards).toHaveClass('flex-wrap');
+      expect(cards.children).toHaveLength(8);
+      expect(cards).toHaveTextContent('CPU 1');
+      expect(cards).toHaveTextContent('CPU 7');
+      expect(
+        Array.from(cards.querySelectorAll<HTMLElement>('[data-player-idx]')).every((el) => !el.style.marginLeft),
+      ).toBe(true);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
   });
 
   it('shows the dealer badge in the mobile player list only for the dealer', async () => {

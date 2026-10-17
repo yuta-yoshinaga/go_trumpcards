@@ -25,7 +25,6 @@
   "handLabel": "あなたの手札",
   "playersTitle": "プレイヤー",
   "playerRowLabel": "{{name}} — 状態: {{status}}",
-  "bettingNotice": "あなたの番です — コール・レイズ（ヴィ）・フォールドを選んでください。",
   "badge": {
     "active": "参加中",
     "folded": "降りた",

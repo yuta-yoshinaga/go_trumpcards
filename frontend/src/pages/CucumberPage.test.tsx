@@ -17,6 +17,12 @@ vi.mock('../hooks/useGameHint', () => ({
 }));
 
 const mockExec = vi.mocked(cucumberApi.exec);
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+}));
 
 const card = (design: string, value: number): Card => ({ design, value }) as unknown as Card;
 
@@ -58,6 +64,7 @@ function makeState(overrides: Partial<CucumberResponse> = {}): CucumberResponse 
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mobileState.isMobile = true;
   mockExec.mockResolvedValue(makeState());
 });
 
@@ -135,20 +142,36 @@ describe('CucumberPage', () => {
 
   it('states the comparison rule and that only the last trick scores', async () => {
     renderWithProviders(<CucumberPage />);
-    const rule = await screen.findByTestId('cu-rule');
-    expect(rule).toHaveTextContent(/スートは一切関係ありません/);
-    expect(rule).toHaveTextContent(/最終トリックを取った1人だけ/);
+    await screen.findByTestId('cu-header');
+    expect(screen.getByTestId('cu-rule-details')).not.toHaveAttribute('open');
+    expect(await screen.findByTestId('cu-rule')).not.toBeVisible();
   });
 
-  // **超えるべきランクが盤面の全て。** スートが無い以上、唯一の手がかり。
-  it('shows the rank to beat, or that you lead', async () => {
+  it('opens the rule explanation on desktop', async () => {
+    mobileState.isMobile = false;
+    renderWithProviders(<CucumberPage />);
+    const rule = await screen.findByTestId('cu-rule');
+    expect(screen.getByTestId('cu-rule-details')).toHaveAttribute('open');
+    expect(rule).toHaveTextContent(/スートは一切関係ありません/);
+    expect(rule).toHaveTextContent(/最終トリックを取った1人だけ/);
+    mobileState.isMobile = true;
+  });
+
+  it('always shows the rank or lead heading and leaves the lead instruction to GameMessageBox', async () => {
     const { unmount } = renderWithProviders(<CucumberPage />);
     expect(await screen.findByTestId('cu-threshold')).toHaveTextContent('9');
     unmount();
 
-    mockExec.mockResolvedValue(makeState({ highestInTrick: 0, currentTrick: [] }));
+    mockExec.mockResolvedValue(
+      makeState({
+        highestInTrick: 0,
+        currentTrick: [],
+        message: 'リードです。どの札でも出せます。',
+      }),
+    );
     renderWithProviders(<CucumberPage />);
-    expect(await screen.findByTestId('cu-threshold')).toHaveTextContent(/リード/);
+    expect(await screen.findByTestId('cu-threshold')).toHaveTextContent('リード（どの札でも出せます）');
+    expect(screen.getByText('リードです。どの札でも出せます。')).toBeInTheDocument();
   });
 
   it('shows every hand size and penalty', async () => {
@@ -157,6 +180,27 @@ describe('CucumberPage', () => {
     const s0 = await screen.findByTestId('cu-seat-0');
     expect(s0).toHaveTextContent('手札7枚');
     expect(s0).toHaveTextContent('失点12点');
+  });
+
+  it('collapses CPU seats on mobile and opens them on desktop', async () => {
+    const mobileRender = renderWithProviders(<CucumberPage />);
+    const accordion = await screen.findByTestId('cpu-accordion');
+    const humanSeat = screen.getByTestId('cu-seat-0');
+    expect(accordion).not.toHaveAttribute('open');
+    expect(accordion).not.toContainElement(humanSeat);
+    expect(humanSeat).toBeVisible();
+    expect(humanSeat).toHaveAttribute('data-tutorial', 'cu-seats');
+    expect(humanSeat).toHaveClass('bg-ds-surface');
+    expect(screen.getByTestId('cu-seat-1')).not.toBeVisible();
+    expect(accordion).toContainElement(screen.getByTestId('cu-seat-1'));
+    mobileRender.unmount();
+
+    mobileState.isMobile = false;
+    const { unmount } = renderWithProviders(<CucumberPage />);
+    await screen.findByTestId('cu-header');
+    expect(await screen.findByTestId('cpu-accordion')).toHaveAttribute('open');
+    expect(screen.getByTestId('cu-seat-1')).toBeVisible();
+    unmount();
   });
 
   it('shows penalty points remaining to the target and marks reached seats', async () => {
@@ -280,10 +324,20 @@ describe('CucumberPage', () => {
     expect(await screen.findByTestId('cu-status')).toHaveTextContent(/いちばん低い札/);
   });
 
-  it('says you may lead with anything', async () => {
-    mockExec.mockResolvedValue(makeState({ highestInTrick: 0, currentTrick: [], validPlays: [0, 1, 2, 3] }));
+  it('shows the lead instruction only once beside the lead heading', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        highestInTrick: 0,
+        currentTrick: [],
+        validPlays: [0, 1, 2, 3],
+        message: 'リードです。どの札でも出せます。',
+      }),
+    );
     renderWithProviders(<CucumberPage />);
-    expect(await screen.findByTestId('cu-status')).toHaveTextContent(/どの札でも出せます/);
+    await screen.findByTestId('cu-header');
+    expect(screen.getByTestId('cu-threshold')).toHaveTextContent('リード（どの札でも出せます）');
+    expect(screen.queryByTestId('cu-status')).not.toBeInTheDocument();
+    expect(screen.getAllByText('リードです。どの札でも出せます。')).toHaveLength(1);
   });
 
   it('disables the hand while it is a CPU turn', async () => {

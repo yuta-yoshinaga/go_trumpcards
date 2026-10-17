@@ -293,11 +293,30 @@ describe('BidEuchrePage', () => {
   });
 
   // **親だけは同額でも奪える。**入札画面で読めること。
-  it('says the dealer alone may equal the standing bid', async () => {
+  it('explains that other seats must beat the standing bid', async () => {
     mockExec.mockResolvedValue(makeState({ phase: BidEuchrePhase.BID, highBid: null, declarerIdx: -1 }));
     renderWithProviders(<BidEuchrePage />);
     await waitFor(() => expect(screen.getByTestId('bideuchre-dealer-note')).toBeInTheDocument());
-    expect(screen.getByTestId('bideuchre-dealer-note')).toHaveTextContent('親だけは同額');
+    expect(screen.getByTestId('bideuchre-dealer-note')).toHaveTextContent('他の席は直前の宣言を上回る必要があります');
+  });
+
+  it('does not repeat bid guidance already shown in the server message', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: BidEuchrePhase.BID,
+        highBid: null,
+        declarerIdx: -1,
+        message: '宣言フェーズ — 最低3トリック。【親だけは同額でも奪えます】',
+      }),
+    );
+    renderWithProviders(<BidEuchrePage />);
+
+    const message = await screen.findByText('宣言フェーズ — 最低3トリック。【親だけは同額でも奪えます】');
+    const page = document.body.textContent ?? '';
+    expect(page.match(/最低/g)).toHaveLength(1);
+    expect(page.match(/親だけは同額/g)).toHaveLength(1);
+    expect(screen.getByTestId('bideuchre-dealer-note')).toHaveTextContent('他の席は直前の宣言を上回る必要があります');
+    expect(message).toBeInTheDocument();
   });
 
   // **ノートランプが 2 種類あり、ローは序列が逆転する。**
@@ -479,5 +498,28 @@ describe('BidEuchrePage', () => {
     renderWithProviders(<BidEuchrePage />);
     await waitFor(() => expect(screen.getByTestId('bideuchre-play-notice')).toBeInTheDocument());
     expect(screen.queryByTestId('bideuchre-ntlow-play-note')).not.toBeInTheDocument();
+  });
+
+  it('renders the game message in the footer message region', async () => {
+    mockExec.mockResolvedValue(makeState({ message: 'footer placement check' }));
+    renderWithProviders(<BidEuchrePage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage).toHaveTextContent('footer placement check');
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    mockExec.mockResolvedValue(makeState({ message: 'mobile placement check' }));
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      renderWithProviders(<BidEuchrePage />);
+      const message = await screen.findByText('mobile placement check');
+      expect(message.closest('[data-testid="game-footer-message"]')).toBeNull();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
   });
 });

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { twentyNineApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -148,6 +149,9 @@ function TwentyNinePageContent() {
     return <GameSkeleton gameKey="twentynine" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 8 }} />;
 
   const humanPlayer = state.players.find((p) => p.isHuman);
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
   const humanIdx = state.players.findIndex((p) => p.isHuman);
   const humanTeam = humanIdx % 2;
   const isHumanTurn = state.isHumanTurn;
@@ -336,8 +340,14 @@ function TwentyNinePageContent() {
                   </div>
                 </div>
 
-                <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm" data-testid="tn29-bid-history">
-                  <div className="text-ds-text-primary text-xs mb-1">{t('bidHistory.title')}</div>
+                <details
+                  open={!isMobile || undefined}
+                  className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                  data-testid="tn29-bid-history"
+                >
+                  <summary className="cursor-pointer select-none text-ds-text-primary text-xs">
+                    {t('bidHistory.title')}
+                  </summary>
                   {bidHistory.map(({ player, seat, committed, bid }) => (
                     <div key={seat} className="py-0.5">
                       {t('bidHistory.player', {
@@ -348,24 +358,45 @@ function TwentyNinePageContent() {
                       : {committed ? (bid === 0 ? t('bid.pass') : bid) : t('bidHistory.pending')}
                     </div>
                   ))}
-                </div>
+                </details>
 
                 {/* Players grouped by team, with the declarer badge */}
-                {([0, 1] as const).map((team) => (
-                  <div key={team} className="mb-2 p-2 rounded bg-black/30">
-                    <div className="text-ds-text-primary text-xs mb-1">{team === 0 ? t('team.a') : t('team.b')}</div>
-                    {isMobile ? (
-                      <details>
-                        <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
-                          {t('players')}
-                        </summary>
-                        <div className="mt-1">{renderTeamPlayers(team)}</div>
-                      </details>
-                    ) : (
-                      renderTeamPlayers(team)
+                {state.players
+                  .filter((p) => p.isHuman)
+                  .map((p) => (
+                    <section
+                      key={p.id}
+                      className="mb-2 px-2 py-1 rounded bg-black/30 flex items-center gap-2 text-ds-text-muted text-sm"
+                      data-testid="tn29-human-seat"
+                      data-tutorial="twentynine-human-seat"
+                      aria-label={t('yourTeam')}
+                    >
+                      <span className={p.isDeclarer ? 'text-ds-warning font-semibold' : ''}>
+                        {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                        {t('tricks', { count: p.trickCount })}
+                      </span>
+                      {p.isDeclarer && (
+                        <span className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>
+                          {t('declarerBadge')}
+                        </span>
+                      )}
+                    </section>
+                  ))}
+                <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+                  <div className="flex flex-wrap sm:block">
+                    {([0, 1] as const).map(
+                      (team) =>
+                        state.players.some((p) => !p.isHuman && p.id % 2 === team) && (
+                          <div key={team} className="mb-2 p-2 rounded bg-black/30">
+                            <div className="text-ds-text-primary text-xs mb-1">
+                              {team === 0 ? t('team.a') : t('team.b')}
+                            </div>
+                            {renderTeamPlayers(team, true)}
+                          </div>
+                        ),
                     )}
                   </div>
-                ))}
+                </CpuAccordion>
 
                 {/* Live round card points during bidding/play (matches the CUI's roundPoints
                     readout); the round-result block below takes over once the round ends. */}
@@ -408,13 +439,7 @@ function TwentyNinePageContent() {
               </div>
             </div>
 
-            {/* Message */}
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
+            {isMobile && messageBox}
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -424,7 +449,10 @@ function TwentyNinePageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.twentynine.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.twentynine.footer} px-4 py-2.5`}
+            message={isMobile ? undefined : messageBox}
+          >
             {humanPlayer && (
               <PlayerHandSection
                 humanPlayer={humanPlayer}
@@ -475,7 +503,7 @@ function TwentyNinePageContent() {
                       <span key={b.value} title={reason} data-testid={`bid-wrap-${b.value}`}>
                         <button
                           type="button"
-                          className="px-3 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
+                          className="px-3 py-2 rounded-lg bg-ds-info text-ds-text-on-accent text-sm disabled:opacity-40"
                           onClick={() => handleBid(b.value)}
                           disabled={disabled}
                           aria-disabled={disabled}
@@ -524,10 +552,10 @@ function TwentyNinePageContent() {
   );
 
   /** Renders the per-player rows for one team (seats with seat%2 === team). */
-  function renderTeamPlayers(team: number) {
+  function renderTeamPlayers(team: number, cpuOnly = false) {
     if (!state) return null;
     return state.players
-      .filter((p) => p.id % 2 === team)
+      .filter((p) => p.id % 2 === team && (!cpuOnly || !p.isHuman))
       .map((p) => (
         <div key={p.id} className="py-0.5 flex items-center gap-2 text-ds-text-muted text-sm">
           <span className={p.isDeclarer ? 'text-ds-warning font-semibold' : ''}>

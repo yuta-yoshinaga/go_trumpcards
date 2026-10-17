@@ -276,7 +276,9 @@ function PokerPageContent() {
             </span>
           )}
           {state?.isLowball && (
-            <span className="bg-ds-warning text-white px-2 py-0.5 rounded text-xs font-bold">[{t('lowballMode')}]</span>
+            <span className="bg-ds-warning text-ds-text-on-accent px-2 py-0.5 rounded text-xs font-bold">
+              [{t('lowballMode')}]
+            </span>
           )}
         </>
       }
@@ -364,62 +366,18 @@ function PokerPageContent() {
 
             {/* Round results */}
             {isEnd && <RoundResults results={state?.roundResults} players={state?.players ?? []} />}
-          </div>
 
-          {/* Sticky footer: player hand + buttons */}
-          <GameFooter className={`${gameTheme.poker.footer} px-5 py-3`}>
-            {/* Human player */}
-            {humanPlayer && (
-              <div className="mb-2" data-tutorial="pk-player-hand">
-                <div className="text-ds-text-primary text-lg mb-1">
-                  {t('yourHand')}
-                  <span className="ml-3 text-xs">
-                    {tc('betting.chips')} {humanPlayer.chips}
-                  </span>
-                  {humanPlayer.currentBet > 0 && (
-                    <span className="ml-2 text-xs">
-                      {tc('betting.currentBet')} {humanPlayer.currentBet}
-                    </span>
-                  )}
-                  {humanPlayer.folded && (
-                    <span className="ml-2 text-ds-error-text text-xs">[{tc('status.folded')}]</span>
-                  )}
-                  {humanPlayer.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
-                  {isEnd && !humanPlayer.folded && humanPlayer.handName && (
-                    <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
-                      {humanPlayer.handName}
-                    </span>
-                  )}
+            {state.equity && <EquityDisplay equity={state.equity} potOdds={state.potOdds ?? 0} />}
+            {canExchange && (
+              <>
+                <div className="text-game-text-highlight text-xs mb-1 text-center" data-testid="pk-exchange-selected">
+                  {t('exchangeSelectedCount', { n: selected.length })}
                 </div>
-                {canExchange && <div className="text-game-text-highlight text-xs mb-1">{t('exchangeInstruction')}</div>}
-                <div className="flex flex-wrap gap-1.5 mb-2">
-                  {humanPlayer.cards?.map((card, i) => {
-                    const isSelected = selected.includes(i);
-                    return (
-                      <button
-                        key={`${card.design}-${card.value}`}
-                        type="button"
-                        aria-label={`${cardAlt(card)}${isSelected ? ` ${t('cardSelected')}` : ''}`}
-                        aria-pressed={isSelected}
-                        onClick={() => toggleCard(i)}
-                        className={`${focusRingAccent} rounded`}
-                        style={{
-                          background: 'none',
-                          padding: 0,
-                          cursor: canExchange ? 'pointer' : 'default',
-                          borderRadius: 8,
-                          ...selectedCardStyle(isSelected),
-                          boxSizing: 'border-box',
-                        }}
-                      >
-                        <AnimatedCard card={card} width={cardWidth} />
-                      </button>
-                    );
-                  })}
+                <div className="text-ds-text-muted text-xs mt-1 text-center" data-testid="pk-stand-hint">
+                  {t('standHint')}
                 </div>
-              </div>
+              </>
             )}
-
             {/* Message */}
             <div data-tutorial="pk-result-message">
               <GameMessageBox
@@ -430,7 +388,6 @@ function PokerPageContent() {
                 severity={phase === PokerPhase.END ? 'alert' : 'info'}
               />
             </div>
-
             {/* Action log */}
             <ActionLogSection
               isEndPhase={!!state?.gameEndFlag}
@@ -438,40 +395,9 @@ function PokerPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
-
             <ErrorAlert message={error} onRetry={retry} />
-
             {/* Hint display */}
             {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
-
-            {/* Betting controls */}
-            {canAct && (
-              <div data-tutorial="pk-bet-controls">
-                <BettingControls
-                  inputId="pokerBetAmount"
-                  betAmount={betAmount}
-                  onBetAmountChange={setBetAmount}
-                  minRaise={minRaise}
-                  maxBetAmount={state?.maxBetAmount}
-                  potSize={state?.pot}
-                  hasOutstandingBet={hasOutstandingBet}
-                  loading={loading}
-                  onCall={() => exec('call', undefined, undefined, undefined, getElapsed())}
-                  onRaise={() => exec('raise', undefined, betAmount, undefined, getElapsed())}
-                  onBet={() => exec('bet', undefined, betAmount, undefined, getElapsed())}
-                  onCheck={() => exec('check', undefined, undefined, undefined, getElapsed())}
-                  onFold={() => exec('fold', undefined, undefined, undefined, getElapsed())}
-                  onAllIn={() => exec('allin', undefined, undefined, undefined, getElapsed())}
-                />
-              </div>
-            )}
-
-            {/* **2巡目ベットの判断材料。**Holdem 系は EquityDisplay を持つのに
-                5カードドローには仕組み自体が無く、交換確率パネルしか無かった
-                (#4678)。ベッティングフェーズ以外はサーバーが送らないので、
-                ここでフェーズを再判定しない。 */}
-            {state.equity && <EquityDisplay equity={state.equity} potOdds={state.potOdds ?? 0} />}
-
             {/* Draw odds panel */}
             {canExchange && odds?.some((o) => o.probability > 0) && (
               <div
@@ -505,44 +431,6 @@ function PokerPageContent() {
                 </button>
               </div>
             )}
-
-            {/* Exchange controls */}
-            <div aria-live="polite" data-testid="pk-exchange-confirmability">
-              {canExchange && (
-                <span className="block text-center text-ds-text-muted text-xs mb-1">
-                  {selected.length === 0
-                    ? t('exchangeNotConfirmable')
-                    : t('exchangeConfirmable', { n: selected.length })}
-                </span>
-              )}
-            </div>
-            {canExchange && (
-              <div className="text-center mb-2" data-tutorial="pk-exchange-button">
-                <div className="text-game-text-highlight text-xs mb-1" data-testid="pk-exchange-selected">
-                  {t('exchangeSelectedCount', { n: selected.length })}
-                </div>
-                <button
-                  type="button"
-                  className={`${btnWarning} min-w-[90px]`}
-                  disabled={loading || selected.length === 0}
-                  onClick={() => handleExchange(selected)}
-                >
-                  {t('exchangeLabel')}
-                </button>
-                <button
-                  type="button"
-                  className={`${btnSuccess} min-w-[90px]`}
-                  disabled={loading}
-                  onClick={() => exec('stand')}
-                >
-                  {t('standLabel')}
-                </button>
-                <div className="text-ds-text-muted text-xs mt-1" data-testid="pk-stand-hint">
-                  {t('standHint')}
-                </div>
-              </div>
-            )}
-
             {/* Settings (collapsible) + Reset */}
             <SettingsPanel
               title={t('settings.title')}
@@ -597,6 +485,118 @@ function PokerPageContent() {
               />
             </div>
             <CardNavShortcutsPanel data-testid="poker-kbd-shortcuts" />
+          </div>
+
+          {/* Sticky footer: player hand and live turn guidance. */}
+          <GameFooter
+            className={`${gameTheme.poker.footer} px-5 py-3`}
+            actions={
+              <>
+                {/* Betting controls */}
+                {canAct && (
+                  <div data-tutorial="pk-bet-controls">
+                    <BettingControls
+                      inputId="pokerBetAmount"
+                      betAmount={betAmount}
+                      onBetAmountChange={setBetAmount}
+                      minRaise={minRaise}
+                      maxBetAmount={state?.maxBetAmount}
+                      potSize={state?.pot}
+                      hasOutstandingBet={hasOutstandingBet}
+                      loading={loading}
+                      onCall={() => exec('call', undefined, undefined, undefined, getElapsed())}
+                      onRaise={() => exec('raise', undefined, betAmount, undefined, getElapsed())}
+                      onBet={() => exec('bet', undefined, betAmount, undefined, getElapsed())}
+                      onCheck={() => exec('check', undefined, undefined, undefined, getElapsed())}
+                      onFold={() => exec('fold', undefined, undefined, undefined, getElapsed())}
+                      onAllIn={() => exec('allin', undefined, undefined, undefined, getElapsed())}
+                    />
+                  </div>
+                )}
+                {/* Exchange controls */}
+                {canExchange && (
+                  <div className="text-center mb-2" data-tutorial="pk-exchange-button">
+                    <button
+                      type="button"
+                      className={`${btnWarning} min-w-[90px]`}
+                      disabled={loading || selected.length === 0}
+                      onClick={() => handleExchange(selected)}
+                    >
+                      {t('exchangeLabel')}
+                    </button>
+                    <button
+                      type="button"
+                      className={`${btnSuccess} min-w-[90px]`}
+                      disabled={loading}
+                      onClick={() => exec('stand')}
+                    >
+                      {t('standLabel')}
+                    </button>
+                  </div>
+                )}
+              </>
+            }
+          >
+            <div aria-live="polite" data-testid="pk-exchange-confirmability">
+              {canExchange && (
+                <span className="block text-center text-ds-text-muted text-xs mb-1">
+                  {selected.length === 0
+                    ? t('exchangeNotConfirmable')
+                    : t('exchangeConfirmable', { n: selected.length })}
+                </span>
+              )}
+            </div>
+            {/* Human player */}
+            {humanPlayer && (
+              <div className="mb-2" data-tutorial="pk-player-hand">
+                <div className="text-ds-text-primary text-lg mb-1">
+                  {t('yourHand')}
+                  <span className="ml-3 text-xs">
+                    {tc('betting.chips')} {humanPlayer.chips}
+                  </span>
+                  {humanPlayer.currentBet > 0 && (
+                    <span className="ml-2 text-xs">
+                      {tc('betting.currentBet')} {humanPlayer.currentBet}
+                    </span>
+                  )}
+                  {humanPlayer.folded && (
+                    <span className="ml-2 text-ds-error-text text-xs">[{tc('status.folded')}]</span>
+                  )}
+                  {humanPlayer.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
+                  {isEnd && !humanPlayer.folded && humanPlayer.handName && (
+                    <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
+                      {humanPlayer.handName}
+                    </span>
+                  )}
+                </div>
+                {canExchange && <div className="text-game-text-highlight text-xs mb-1">{t('exchangeInstruction')}</div>}
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {humanPlayer.cards?.map((card, i) => {
+                    const isSelected = selected.includes(i);
+                    return (
+                      <button
+                        key={`${card.design}-${card.value}`}
+                        type="button"
+                        aria-label={`${cardAlt(card)}${isSelected ? ` ${t('cardSelected')}` : ''}`}
+                        aria-pressed={isSelected}
+                        onClick={() => toggleCard(i)}
+                        className={`${focusRingAccent} rounded`}
+                        style={{
+                          background: 'none',
+                          padding: 0,
+                          cursor: canExchange ? 'pointer' : 'default',
+                          borderRadius: 8,
+                          ...selectedCardStyle(isSelected),
+                          boxSizing: 'border-box',
+                        }}
+                      >
+                        <AnimatedCard card={card} width={cardWidth} />
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </GameFooter>
         </>
       )}

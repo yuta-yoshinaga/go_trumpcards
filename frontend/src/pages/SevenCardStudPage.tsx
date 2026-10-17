@@ -389,8 +389,82 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
         <>
           {/* Scrollable: CPU players */}
           <div className={`flex-1 overflow-y-auto pt-4 px-5 lg:px-8 ${lgCardAreaConstraint}`}>
+            {/* Muck/Show controls */}
+            {isMuckPhase && (
+              <div className="mb-2 text-center" data-testid="muck-controls">
+                <div className="flex justify-center gap-2">
+                  <button
+                    ref={muckButtonRef}
+                    type="button"
+                    className={`${btnPrimary} min-w-[90px]`}
+                    disabled={loading}
+                    onClick={() => execApi('muck')}
+                  >
+                    {t('muck.muck')}
+                  </button>
+                  <button
+                    type="button"
+                    className={`${btnSecondary} min-w-[90px]`}
+                    disabled={loading}
+                    onClick={() => execApi('show')}
+                  >
+                    {t('muck.show')}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Rebuy/Addon controls */}
+            {isRebuyPhase && (
+              <div className="mb-2 text-center" data-testid="rebuy-controls">
+                <p className="text-ds-text-primary mb-2">
+                  {t('rebuy.prompt', { chips: state?.rebuyChips, used: humanRebuyCount, max: state?.rebuyMaxCount })}
+                </p>
+                <div className="flex justify-center gap-2">
+                  <button
+                    type="button"
+                    className={`${btnPrimary} min-w-[90px]`}
+                    disabled={loading}
+                    onClick={() => execApi('rebuy')}
+                  >
+                    {t('rebuy.accept')}
+                  </button>
+                  <button
+                    type="button"
+                    className={`${btnSecondary} min-w-[90px]`}
+                    disabled={loading}
+                    onClick={() => execApi('skiprebuy')}
+                  >
+                    {t('rebuy.skip')}
+                  </button>
+                </div>
+              </div>
+            )}
+            {isAddonPhase && (
+              <div className="mb-2 text-center" data-testid="addon-controls">
+                <p className="text-ds-text-primary mb-2">{t('addon.prompt', { chips: state?.addonChips })}</p>
+                <div className="flex justify-center gap-2">
+                  <button
+                    type="button"
+                    className={`${btnPrimary} min-w-[90px]`}
+                    disabled={loading}
+                    onClick={() => execApi('addon')}
+                  >
+                    {t('addon.accept')}
+                  </button>
+                  <button
+                    type="button"
+                    className={`${btnSecondary} min-w-[90px]`}
+                    disabled={loading}
+                    onClick={() => execApi('skipaddon')}
+                  >
+                    {t('addon.skip')}
+                  </button>
+                </div>
+              </div>
+            )}
             {/* CPU players */}
-            <CpuAccordion playerCount={cpuPlayers.length} dataTutorial="scs-cpu-area">
+            <CpuAccordion playerCount={cpuPlayers.length} dataTutorial="scs-cpu-area" openOnDesktop={false}>
               {cpuPlayers.map((p) => (
                 <div key={p.id} className="mb-3 p-2 rounded bg-black/30">
                   <div className="text-ds-text-primary text-sm mb-1">
@@ -509,6 +583,20 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+
+            <ErrorAlert message={error} onRetry={retry} />
+
+            {/* Hint */}
+            {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
+
+            <GameResetButton
+              isGameEnd={phase === SevenCardStudPhase.SHOWDOWN || phase === SevenCardStudPhase.END}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+              dataTutorial="scs-reset-button"
+              className="min-w-[90px]"
+            />
           </div>
 
           {/* Settings */}
@@ -568,7 +656,40 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
           />
 
           {/* Sticky footer: player hand + buttons */}
-          <GameFooter className={`${gameTheme[gameKey].footer} px-5 py-3`}>
+          <GameFooter
+            // Stud hands plus their rank lines and BettingControls outgrow the 45vh cap on phones (#11655).
+            tall
+            className={`${gameTheme[gameKey].footer} px-5 py-3`}
+            actions={
+              <>
+                {/* Betting controls */}
+                {canAct && state && humanPlayer && (
+                  <div data-tutorial="scs-action-buttons">
+                    <BettingControls
+                      inputId="sevenCardStudBetAmount"
+                      betAmount={betAmount}
+                      onBetAmountChange={setBetAmount}
+                      minRaise={minRaise}
+                      maxBetAmount={state?.maxBetAmount}
+                      potSize={state?.pot}
+                      hasOutstandingBet={hasOutstandingBet}
+                      callAmountLabel={` ${t('callAmount', { amount: callAmount })}`}
+                      callPotOddsLabel={callPotOddsLabel}
+                      loading={loading}
+                      onCall={() => execApi('call', undefined, undefined, getElapsed())}
+                      onRaise={() => execApi('raise', betAmount, undefined, getElapsed())}
+                      onBet={() => execApi('bet', betAmount, undefined, getElapsed())}
+                      onCheck={() => execApi('check', undefined, undefined, getElapsed())}
+                      onFold={() => execApi('fold', undefined, undefined, getElapsed())}
+                      onAllIn={() => execApi('allin', undefined, undefined, getElapsed())}
+                    />
+                  </div>
+                )}
+
+                <ActionShortcutsPanel bindings={actionBindings} data-testid="seven-card-stud-kbd-shortcuts" />
+              </>
+            }
+          >
             {/* Human player */}
             {humanPlayer && (
               <div className="mb-2" data-tutorial="scs-player-hand">
@@ -636,40 +757,46 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
                       </span>
                     )}
                 </div>
-                {/* Door cards */}
-                <div className="text-ds-text-muted text-xs mb-0.5">{t('doorCards')}</div>
-                <div
-                  className={`flex flex-wrap gap-1.5 mb-1 ${humanPlayer.id === bringInPlayerId ? bringInCardClass : ''}`}
-                >
-                  {humanPlayer.doorCards?.length
-                    ? humanPlayer.doorCards.map((card) => (
-                        <AnimatedCard
-                          key={`${card.design}-${card.value}`}
-                          card={card}
-                          width={cardWidth}
-                          style={placeholderCardStyle}
-                        />
-                      ))
-                    : !humanPlayer.folded &&
-                      Array.from({ length: 4 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
-                </div>
-                {/* Hole cards */}
-                <div className="text-ds-text-muted text-xs mb-0.5">{t('holeCards')}</div>
-                <div
-                  className="flex flex-wrap gap-1.5 mb-2"
-                  {...(gameKey === 'chicago' ? { 'data-tutorial': 'chicago-hole-cards' } : {})}
-                >
-                  {humanPlayer.holeCards?.length
-                    ? humanPlayer.holeCards.map((card) => (
-                        <AnimatedCard
-                          key={`${card.design}-${card.value}`}
-                          card={card}
-                          width={cardWidth}
-                          style={placeholderCardStyle}
-                        />
-                      ))
-                    : !humanPlayer.folded &&
-                      Array.from({ length: 3 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
+                <div className="flex flex-wrap items-start gap-x-3 mb-2">
+                  <div>
+                    {/* Door cards */}
+                    <div className="text-ds-text-muted text-xs mb-0.5">{t('doorCards')}</div>
+                    <div
+                      className={`flex flex-wrap gap-1.5 ${humanPlayer.id === bringInPlayerId ? bringInCardClass : ''}`}
+                    >
+                      {humanPlayer.doorCards?.length
+                        ? humanPlayer.doorCards.map((card) => (
+                            <AnimatedCard
+                              key={`${card.design}-${card.value}`}
+                              card={card}
+                              width={cardWidth}
+                              style={placeholderCardStyle}
+                            />
+                          ))
+                        : !humanPlayer.folded &&
+                          Array.from({ length: 4 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
+                    </div>
+                  </div>
+                  <div>
+                    {/* Hole cards */}
+                    <div className="text-ds-text-muted text-xs mb-0.5">{t('holeCards')}</div>
+                    <div
+                      className="flex flex-wrap gap-1.5"
+                      {...(gameKey === 'chicago' ? { 'data-tutorial': 'chicago-hole-cards' } : {})}
+                    >
+                      {humanPlayer.holeCards?.length
+                        ? humanPlayer.holeCards.map((card) => (
+                            <AnimatedCard
+                              key={`${card.design}-${card.value}`}
+                              card={card}
+                              width={cardWidth}
+                              style={placeholderCardStyle}
+                            />
+                          ))
+                        : !humanPlayer.folded &&
+                          Array.from({ length: 3 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
@@ -681,120 +808,6 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
               messageParams={state?.messageParams}
               alwaysVisible
             />
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            {/* Muck/Show controls */}
-            {isMuckPhase && (
-              <div className="mb-2 text-center" data-testid="muck-controls">
-                <div className="flex justify-center gap-2">
-                  <button
-                    ref={muckButtonRef}
-                    type="button"
-                    className={`${btnPrimary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => execApi('muck')}
-                  >
-                    {t('muck.muck')}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnSecondary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => execApi('show')}
-                  >
-                    {t('muck.show')}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Rebuy/Addon controls */}
-            {isRebuyPhase && (
-              <div className="mb-2 text-center" data-testid="rebuy-controls">
-                <p className="text-ds-text-primary mb-2">
-                  {t('rebuy.prompt', { chips: state?.rebuyChips, used: humanRebuyCount, max: state?.rebuyMaxCount })}
-                </p>
-                <div className="flex justify-center gap-2">
-                  <button
-                    type="button"
-                    className={`${btnPrimary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => execApi('rebuy')}
-                  >
-                    {t('rebuy.accept')}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnSecondary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => execApi('skiprebuy')}
-                  >
-                    {t('rebuy.skip')}
-                  </button>
-                </div>
-              </div>
-            )}
-            {isAddonPhase && (
-              <div className="mb-2 text-center" data-testid="addon-controls">
-                <p className="text-ds-text-primary mb-2">{t('addon.prompt', { chips: state?.addonChips })}</p>
-                <div className="flex justify-center gap-2">
-                  <button
-                    type="button"
-                    className={`${btnPrimary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => execApi('addon')}
-                  >
-                    {t('addon.accept')}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnSecondary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => execApi('skipaddon')}
-                  >
-                    {t('addon.skip')}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Hint */}
-            {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
-
-            {/* Betting controls */}
-            {canAct && state && humanPlayer && (
-              <div data-tutorial="scs-action-buttons">
-                <BettingControls
-                  inputId="sevenCardStudBetAmount"
-                  betAmount={betAmount}
-                  onBetAmountChange={setBetAmount}
-                  minRaise={minRaise}
-                  maxBetAmount={state?.maxBetAmount}
-                  potSize={state?.pot}
-                  hasOutstandingBet={hasOutstandingBet}
-                  callAmountLabel={` ${t('callAmount', { amount: callAmount })}`}
-                  callPotOddsLabel={callPotOddsLabel}
-                  loading={loading}
-                  onCall={() => execApi('call', undefined, undefined, getElapsed())}
-                  onRaise={() => execApi('raise', betAmount, undefined, getElapsed())}
-                  onBet={() => execApi('bet', betAmount, undefined, getElapsed())}
-                  onCheck={() => execApi('check', undefined, undefined, getElapsed())}
-                  onFold={() => execApi('fold', undefined, undefined, getElapsed())}
-                  onAllIn={() => execApi('allin', undefined, undefined, getElapsed())}
-                />
-              </div>
-            )}
-
-            <GameResetButton
-              isGameEnd={phase === SevenCardStudPhase.SHOWDOWN || phase === SevenCardStudPhase.END}
-              onReset={handleManualReset}
-              requestConfirm={requestConfirm}
-              loading={loading}
-              dataTutorial="scs-reset-button"
-              className="min-w-[90px]"
-            />
-            <ActionShortcutsPanel bindings={actionBindings} data-testid="seven-card-stud-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

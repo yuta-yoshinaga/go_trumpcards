@@ -20,7 +20,12 @@ import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useBraidGame } from '../hooks/useBraidGame';
-import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
+import {
+  useBreakpoint,
+  useCardDimensions,
+  useDenseLargeDesktopCardSize,
+  useWindowWidth,
+} from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
@@ -112,6 +117,8 @@ function BraidPageContent() {
   );
   const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
+  const denseCardSize = useDenseLargeDesktopCardSize();
   const windowWidth = useWindowWidth();
 
   const dims = useMemo(() => {
@@ -124,6 +131,8 @@ function BraidPageContent() {
     const co = Math.round(cw * 0.32);
     return { cw, ch, co };
   }, [isMobile, windowWidth, cardWidth, cardHeight, cardOverlap]);
+  const topCardWidth = isLargeDesktop ? denseCardSize.width : dims.cw;
+  const topCardHeight = isLargeDesktop ? denseCardSize.height : dims.ch;
 
   const isPlayingForKbd = state?.phase === BraidPhase.PLAYING;
 
@@ -325,7 +334,7 @@ function BraidPageContent() {
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
-          <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
+          <div className="flex-1 overflow-y-auto pt-1 sm:pt-3 px-2 sm:px-4 lg:px-8">
             {/* **一度きりで取り消せない選択**なのに、画面に現れたことが
                 読み上げられていなかった (#5564)。見えている案内はそのまま、
                 読み上げ用の領域を別に持つ。assertive なのは、方向を決めるまで
@@ -336,7 +345,7 @@ function BraidPageContent() {
             />
 
             {state.awaitingDirection && isPlaying && (
-              <div className="text-center mb-2" data-tutorial="br-direction">
+              <div className="text-center mb-1 sm:mb-2" data-tutorial="br-direction">
                 <p className="text-ds-warning text-sm mb-1">{t('chooseDirectionBanner', { rank: state.baseRank })}</p>
                 <div className="flex gap-2 justify-center">
                   <button
@@ -364,8 +373,14 @@ function BraidPageContent() {
             <span id={selectSourceHintId} className="sr-only">
               {tc('label.selectSourceFirst')}
             </span>
-            <div className="flex flex-wrap justify-center items-start gap-3 sm:gap-6 mb-3">
-              <div className="flex flex-wrap justify-center gap-1 sm:gap-2" data-tutorial="br-foundation">
+            <div
+              className={`flex flex-wrap justify-center items-start mb-1 sm:mb-3 ${isLargeDesktop ? 'gap-2' : 'gap-1 sm:gap-6'}`}
+              data-testid={isLargeDesktop ? 'br-top-row' : undefined}
+            >
+              <div
+                className={`flex flex-wrap justify-center ${isLargeDesktop ? 'gap-2' : 'gap-1 sm:gap-2'}`}
+                data-tutorial="br-foundation"
+              >
                 {Array.from({ length: FOUNDATIONS }, (_, idx) => {
                   const pile = state.foundation[idx] ?? [];
                   const foundationZone: BraidMoveZone = { zone: 'foundation', col: idx };
@@ -390,7 +405,7 @@ function BraidPageContent() {
                           >
                             <AnimatedCard
                               card={pile[pile.length - 1]}
-                              width={dims.cw}
+                              width={topCardWidth}
                               draggable={false}
                               dealDelay={isAutoCompleting ? idx * 0.1 : 0}
                             />
@@ -403,7 +418,7 @@ function BraidPageContent() {
                             aria-disabled={!selectedSource || undefined}
                             aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('emptyFoundationAriaLabel', { idx })}
-                            style={{ width: dims.cw, height: dims.ch }}
+                            style={{ width: topCardWidth, height: topCardHeight }}
                             data-hint-slot={isHintTo('foundation', idx) ? 'to' : undefined}
                             className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite} ${hintRingClass('foundation', idx)}`}
                           >
@@ -431,7 +446,7 @@ function BraidPageContent() {
                             redeals: t('redealsLeft', { count: state.redealsLeft }),
                           })
                     }
-                    style={{ width: dims.cw, height: dims.ch }}
+                    style={{ width: topCardWidth, height: topCardHeight }}
                     className={`rounded border-2 border-white/30 bg-white/10 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                   >
                     {state.stockCount}
@@ -458,13 +473,13 @@ function BraidPageContent() {
                       onDragEnd={dnd.handleDragEnd}
                       className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste', undefined) ? 'ring-2 ring-ds-warning' : ''}`}
                     >
-                      <AnimatedCard card={wasteTop} width={dims.cw} draggable={false} />
+                      <AnimatedCard card={wasteTop} width={topCardWidth} draggable={false} />
                     </button>
                   ) : (
                     <div
                       role="img"
                       aria-label={t('emptyWasteAriaLabel')}
-                      style={{ width: dims.cw, height: dims.ch }}
+                      style={{ width: topCardWidth, height: topCardHeight }}
                       className="rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center"
                     >
                       {t('empty')}
@@ -474,7 +489,7 @@ function BraidPageContent() {
               </div>
             </div>
 
-            <div className="flex flex-wrap justify-center items-start gap-3 sm:gap-6 mb-3">
+            <div className="flex flex-wrap justify-center items-start gap-1 sm:gap-6 mb-1 sm:mb-3">
               <div className="text-center" data-tutorial="br-braid">
                 <div className="text-game-text-muted text-xs mb-1">{t('braid')}</div>
                 {braidTail ? (
@@ -539,11 +554,13 @@ function BraidPageContent() {
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled && !hint} t={t} />
             </div>
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
+            {!state.awaitingDirection && (
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            )}
 
             {isGameOver && (
               <p data-testid="br-gameover-summary" className="text-ds-text-muted text-sm text-center mt-1">

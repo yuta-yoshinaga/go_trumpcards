@@ -19,7 +19,10 @@ function getImagePath(card: Card): string {
     JOKER: 'x',
   };
   const prefix = prefixMap[card.design] ?? 'x';
-  return `/images/${prefix}${zeroPad(card.value)}.png`;
+  // Only two joker images exist (x01, x02). Decks number their jokers 0 or 1..n, so wrap any
+  // value onto those two; the value itself stays the game's identifier.
+  const value = card.design === 'JOKER' ? (card.value <= 0 ? 1 : ((card.value - 1) % 2) + 1) : card.value;
+  return `/images/${prefix}${zeroPad(value)}.png`;
 }
 
 /** Props for {@link CardImage}. */

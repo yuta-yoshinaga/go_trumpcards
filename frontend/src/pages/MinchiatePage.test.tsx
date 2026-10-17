@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { minchiateApi } from '../api/gameApi';
 import i18n from '../i18n';
@@ -11,6 +11,18 @@ vi.mock('../api/gameApi', () => ({
   minchiateApi: { exec: vi.fn() },
   actionLogApi: { minchiate: vi.fn() },
 }));
+
+const mobileState = vi.hoisted(() => ({ isMobile: undefined as boolean | undefined }));
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useCardDimensions: () => {
+      const dimensions = actual.useCardDimensions();
+      return mobileState.isMobile === undefined ? dimensions : { ...dimensions, isMobile: mobileState.isMobile };
+    },
+  };
+});
 
 const mockExec = vi.mocked(minchiateApi.exec);
 
@@ -36,11 +48,90 @@ const roundEndState = makeMinchiateState({
 });
 
 beforeEach(() => {
+  mobileState.isMobile = undefined;
   mockExec.mockReset();
   mockExec.mockResolvedValue(playState);
 });
 
 describe('MinchiatePage', () => {
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue(makeMinchiateState({ message: 'Footer message location' }));
+    renderWithProviders(<MinchiatePage />);
+
+    const messageSlot = await screen.findByTestId('game-footer-message');
+    expect(messageSlot).toHaveTextContent('Footer message location');
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    mockExec.mockResolvedValue(makeMinchiateState({ message: 'Footer message location' }));
+    mobileState.isMobile = true;
+    renderWithProviders(<MinchiatePage />);
+
+    const messageText = await screen.findByText('Footer message location');
+    const message = messageText.closest('[role="status"]');
+    expect(message).toHaveTextContent('Footer message location');
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+  });
+
+  it('uses the taller mobile footer cap', async () => {
+    renderWithProviders(<MinchiatePage />);
+    const content = await screen.findByTestId('game-footer-content');
+    expect(content.closest('footer')?.className).toContain('max-h-[60vh]');
+  });
+  it('stacks the mobile hand rows when the hand spans at least two rows', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      const cards = Array.from({ length: 13 }, (_, i) => ({
+        design: 'SPADE' as const,
+        value: (i % 14) + 1,
+        glyph: '♠',
+        label: `Card ${i}`,
+        color: 'black' as const,
+        deck: 'tarot' as const,
+      }));
+      mockExec.mockResolvedValue(
+        makeMinchiateState({
+          players: [{ ...playState.players[0], cards, cardCount: cards.length }, ...playState.players.slice(1)],
+        }),
+      );
+      renderWithProviders(<MinchiatePage />);
+      await screen.findByTestId('phase-indicator');
+      const hand = document.querySelector<HTMLElement>('[data-tutorial="minchiate-player-hand"]');
+      expect(hand).not.toBeNull();
+      if (!hand) throw new Error('Expected the Minchiate player hand');
+      await waitFor(() => expect(hand.querySelectorAll('[data-testid="hand-row"]').length).toBeGreaterThanOrEqual(2));
+      const rows = hand.querySelectorAll<HTMLElement>('[data-testid="hand-row"]');
+      for (const row of Array.from(rows).slice(1)) expect(row.style.marginTop).toMatch(/^-/);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it('keeps the hand and scarto progress in the footer', async () => {
+    mockExec.mockResolvedValue(scartoState);
+    renderWithProviders(<MinchiatePage />);
+
+    const footer = await screen.findByTestId('game-footer-content');
+    const playArea = screen.getByTestId('minchiate-trump-count-note').closest('.flex-1.overflow-y-auto');
+    expect(playArea).not.toBeNull();
+    expect(footer.querySelector('[data-tutorial="minchiate-player-hand"]')).not.toBeNull();
+    expect(within(footer).getByTestId('minchiate-scarto-progress')).toBeInTheDocument();
+    expect(within(playArea as HTMLElement).queryByTestId('minchiate-scarto-progress')).not.toBeInTheDocument();
+    expect(within(footer).queryByTestId('minchiate-hint-live')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('minchiate-hint-live')).toBeInTheDocument();
+    expect(footer.querySelector('[data-tutorial="minchiate-reset-button"]')).toBeNull();
+    expect(playArea?.querySelector('[data-tutorial="minchiate-reset-button"]')).not.toBeNull();
+  });
+
+  it('keeps the tutorial action target present during a CPU turn with no actions', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    const { container } = renderWithProviders(<MinchiatePage />);
+    expect(await screen.findByTestId('phase-indicator')).toBeInTheDocument();
+    expect(container.querySelector('[data-tutorial="minchiate-action-buttons"]')).toBeInTheDocument();
+  });
+
   it('renders minchiate-scarto-done when scartoCount is greater than 0', async () => {
     // スカルト（不要牌捨て）で既に捨てた枚数があるならその旨のメッセージを出す
     const state = makeMinchiateState({ scartoCount: 1 });
@@ -137,6 +228,7 @@ describe('MinchiatePage', () => {
   it('plays the selected card', async () => {
     renderWithProviders(<MinchiatePage />);
     const playButton = await screen.findByRole('button', { name: '出す' });
+    expect(within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '出す' })).toBe(playButton);
     expect(playButton).toBeDisabled();
 
     fireEvent.click(screen.getByRole('button', { name: 'Re ♠' }));
@@ -189,6 +281,9 @@ describe('MinchiatePage', () => {
       mockExec.mockResolvedValue(scartoHandState());
       renderWithProviders(<MinchiatePage />);
       expect(await screen.findByTestId('minchiate-scarto-prompt')).toHaveTextContent(String(MINCHIATE_SURPLUS));
+      expect(
+        within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '捨てる' }),
+      ).toBeInTheDocument();
       const progress = screen.getByTestId('minchiate-scarto-progress');
       expect(progress).toHaveTextContent('選択済み 0/13枚');
 
@@ -335,5 +430,11 @@ describe('MinchiatePage', () => {
 
     const progress = await screen.findByTestId('minchiate-scarto-progress');
     expect(progress.closest('[aria-live]')).toBeNull();
+    const promptLive = screen.getByTestId('minchiate-prompt-live');
+    expect(progress.parentElement).not.toBeNull();
+    expect(promptLive.parentElement).not.toBeNull();
+    expect(progress.parentElement).toBe(promptLive.parentElement);
+    // On one line, not two footer rows: the shared parent is the prompt line, not the footer content.
+    expect(progress.parentElement).not.toBe(screen.getByTestId('game-footer-content'));
   });
 });

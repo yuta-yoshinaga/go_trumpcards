@@ -17,7 +17,7 @@ import { ScrollFadeHint } from '../components/ScrollFadeHint';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -33,6 +33,7 @@ import {
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
+import { scoreTableClass } from '../styles/scoreTableStyles';
 import type { TarneebResponse } from '../types/card';
 import { TarneebPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
@@ -115,6 +116,7 @@ export const TarneebPage = withTutorial(TarneebPageContent, 'tarneeb', TARNEEB_T
 
 /** Inner Tarneeb content. */
 function TarneebPageContent() {
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('tarneeb');
   const {
@@ -344,7 +346,9 @@ function TarneebPageContent() {
                 <div className="my-3 p-2 rounded bg-black/30 relative" data-tutorial="tn-score-table">
                   <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
                   <div className="overflow-x-auto -mx-2 px-2">
-                    <table className="w-full text-sm text-ds-text-muted min-w-[340px]">
+                    <table
+                      className={scoreTableClass(isLargeDesktop, 'w-full text-sm text-ds-text-muted min-w-[340px]')}
+                    >
                       <thead>
                         <tr>
                           <th scope="col" className="text-left">
@@ -363,7 +367,9 @@ function TarneebPageContent() {
                           const { roundScore, roundTricks } = teamBreakdown[i];
                           return (
                             <tr key={i} className={isYourTeam ? 'text-ds-accent' : ''}>
-                              <td>{isYourTeam ? t('yourTeam') : t('opponentTeam')}</td>
+                              <td title={isYourTeam ? t('yourTeam') : t('opponentTeam')}>
+                                {isYourTeam ? t('yourTeam') : t('opponentTeam')}
+                              </td>
                               <td className="text-center">{roundTricks}</td>
                               <td className="text-center">{roundScore}</td>
                               <td className="text-center">{score}</td>
@@ -431,22 +437,6 @@ function TarneebPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
-          </div>
-
-          <GameFooter className={`${gameTheme.tarneeb.footer} px-4 py-2.5`}>
-            {humanPlayer && (
-              <PlayerHandSection
-                humanPlayer={humanPlayer}
-                selectedCardIndices={selectedCardIndices}
-                toggleCard={toggleCard}
-                cardWidth={cardWidth}
-                isMobile={isMobile}
-                dataTutorialPrefix="tn"
-                validIndices={isHumanTurn ? state.validPlayIndices : undefined}
-                restrictedTooltip={t('restrictedCard')}
-              />
-            )}
-
             <ErrorAlert message={error ?? hintError} onRetry={retry} />
 
             <RoundScoreAnnouncement
@@ -457,10 +447,6 @@ function TarneebPageContent() {
                 cumulativeScore,
               }))}
             />
-
-            <div data-testid="tarneeb-bid-live" role="status" aria-live="polite">
-              {isHumanBidTurn && t('selectedBid', { n: bidValue })}
-            </div>
 
             {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
                 付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
@@ -478,95 +464,10 @@ function TarneebPageContent() {
             </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-            <div className="flex flex-wrap gap-2 items-center" data-tutorial="tn-play-button">
+            <div data-tutorial="tn-play-button">
               {(isHumanBidTurn || isHumanTrumpTurn || isHumanTurn) && (
                 <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
                   {tc('button.hint')}
-                </button>
-              )}
-              {isHumanBidTurn && (
-                <div className="flex flex-col items-center gap-2">
-                  {/*
-                    Valid Tarneeb bids are 0 (pass) or minBid..13 and must beat the current
-                    highest bid. A discrete button group (mirroring CallBreak) replaces the raw
-                    number input: out-of-range / already-beaten values are simply disabled, so no
-                    client-side clamping is needed.
-                  */}
-                  <fieldset
-                    className="grid grid-cols-4 gap-1 border-0 p-0 min-w-0 sm:grid-cols-7"
-                    aria-label={t('bidSelectLabel')}
-                  >
-                    {Array.from({ length: 13 - state.config.minBid + 1 }, (_, i) => i + state.config.minBid).map(
-                      (n) => (
-                        <button
-                          key={n}
-                          type="button"
-                          onClick={() => setBidValue(n)}
-                          disabled={loading || n <= state.highestBid}
-                          aria-pressed={bidValue === n}
-                          data-testid={`bid-option-${n}`}
-                          className={`h-11 w-11 rounded-lg font-medium text-sm transition-all disabled:cursor-not-allowed disabled:opacity-40 ${
-                            bidValue === n
-                              ? 'bg-ds-accent text-white ring-2 ring-ds-accent'
-                              : 'bg-white/20 text-ds-text-primary hover:bg-white/30'
-                          }`}
-                        >
-                          {n}
-                        </button>
-                      ),
-                    )}
-                  </fieldset>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      className={btnPrimary}
-                      onClick={() => handleBid(bidValue)}
-                      disabled={
-                        loading || bidValue < state.config.minBid || bidValue > 13 || bidValue <= state.highestBid
-                      }
-                    >
-                      {t('bidButton')}
-                    </button>
-                    <button type="button" className={btnSuccess} onClick={() => handleBid(0)} disabled={loading}>
-                      {t('passButton')}
-                    </button>
-                  </div>
-                </div>
-              )}
-              {isHumanTrumpTurn && (
-                <div className="flex gap-1">
-                  {[1, 2, 3, 4].map((suit) => (
-                    <button
-                      key={suit}
-                      type="button"
-                      className={btnPrimary}
-                      onClick={() => handleDeclareTrump(suit)}
-                      disabled={loading}
-                      aria-label={t(`suitName.${SUIT_KEYS[suit]}`)}
-                    >
-                      {TRUMP_LABELS[suit]}
-                    </button>
-                  ))}
-                </div>
-              )}
-              {isHumanTurn && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-              {isTrickEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                  {t('nextTrick')}
-                </button>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
                 </button>
               )}
               <GameResetButton
@@ -578,6 +479,109 @@ function TarneebPageContent() {
               />
             </div>
             <CardNavShortcutsPanel data-testid="tarneeb-kbd-shortcuts" />
+          </div>
+
+          <GameFooter
+            className={`${gameTheme.tarneeb.footer} px-4 py-2.5`}
+            actions={
+              isHumanBidTurn || isHumanTrumpTurn || isHumanTurn || isTrickEnd || isRoundEnd ? (
+                <div className="flex flex-wrap gap-2 items-center">
+                  {isHumanBidTurn && (
+                    <div className="flex flex-col items-center gap-2">
+                      <fieldset
+                        className="grid grid-cols-4 gap-1 border-0 p-0 min-w-0 sm:grid-cols-7"
+                        aria-label={t('bidSelectLabel')}
+                      >
+                        {Array.from({ length: 13 - state.config.minBid + 1 }, (_, i) => i + state.config.minBid).map(
+                          (n) => (
+                            <button
+                              key={n}
+                              type="button"
+                              onClick={() => setBidValue(n)}
+                              disabled={loading || n <= state.highestBid}
+                              aria-pressed={bidValue === n}
+                              data-testid={`bid-option-${n}`}
+                              className={`h-11 w-11 rounded-lg font-medium text-sm transition-all disabled:cursor-not-allowed disabled:opacity-40 ${bidValue === n ? 'bg-ds-accent text-ds-text-on-accent ring-2 ring-ds-accent' : 'bg-white/20 text-ds-text-primary hover:bg-white/30'}`}
+                            >
+                              {n}
+                            </button>
+                          ),
+                        )}
+                      </fieldset>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          className={btnPrimary}
+                          onClick={() => handleBid(bidValue)}
+                          disabled={
+                            loading || bidValue < state.config.minBid || bidValue > 13 || bidValue <= state.highestBid
+                          }
+                        >
+                          {t('bidButton')}
+                        </button>
+                        <button type="button" className={btnSuccess} onClick={() => handleBid(0)} disabled={loading}>
+                          {t('passButton')}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  {isHumanTrumpTurn && (
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4].map((suit) => (
+                        <button
+                          key={suit}
+                          type="button"
+                          className={btnPrimary}
+                          onClick={() => handleDeclareTrump(suit)}
+                          disabled={loading}
+                          aria-label={t(`suitName.${SUIT_KEYS[suit]}`)}
+                        >
+                          {TRUMP_LABELS[suit]}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {isHumanTurn && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handlePlay}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                    >
+                      {t('playButton')}
+                    </button>
+                  )}
+                  {isTrickEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                      {t('nextTrick')}
+                    </button>
+                  )}
+                  {isRoundEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                      {t('nextRound')}
+                    </button>
+                  )}
+                </div>
+              ) : null
+            }
+          >
+            {humanPlayer && (
+              <PlayerHandSection
+                humanPlayer={humanPlayer}
+                selectedCardIndices={selectedCardIndices}
+                toggleCard={toggleCard}
+                cardWidth={cardWidth}
+                isMobile={isMobile}
+                stackRows
+                dataTutorialPrefix="tn"
+                validIndices={isHumanTurn ? state.validPlayIndices : undefined}
+                restrictedTooltip={t('restrictedCard')}
+              />
+            )}
+
+            <div data-testid="tarneeb-bid-live" role="status" aria-live="polite">
+              {isHumanBidTurn && t('selectedBid', { n: bidValue })}
+            </div>
           </GameFooter>
         </>
       )}

@@ -20,6 +20,7 @@ const bidPhaseState = makeTysiacState({
   currentPlayerIdx: 0,
   isHumanTurn: true,
   currentBid: 100,
+  message: '入札フェーズ — レイズ（+10）またはパス。',
 });
 const talonPhaseState = makeTysiacState({ phase: 1, declarerIdx: 0 });
 const trickEndState = makeTysiacState({
@@ -50,6 +51,13 @@ beforeEach(() => {
 });
 
 describe('TysiacPage', () => {
+  it('shows the bidding guidance exactly once', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<TysiacPage />);
+
+    expect(await screen.findAllByText('入札フェーズ — レイズ（+10）またはパス。')).toHaveLength(1);
+  });
+
   it('shows the current talon recipient', async () => {
     mockExec.mockResolvedValue(talonPhaseState);
     renderWithProviders(<TysiacPage />);

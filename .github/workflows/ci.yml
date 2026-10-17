@@ -35,6 +35,14 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - name: Install goimports
+        run: go install golang.org/x/tools/cmd/goimports@v0.48.0
+
       # The hooks are the thing that stops a broken commit reaching CI, and they
       # fail silently: a guard that no longer matches anything exits 0 and looks
       # healthy. On 2026-08-16 one emitted invalid JSON for weeks and another
@@ -305,9 +313,13 @@ jobs:
     runs-on: ubuntu-latest
     # ハングしたジョブを止める上限。既定は 6 時間で、その間 PR は pending の
     # まま誰かが手でキャンセルするまで進まない (#5967 は E2E が 26-46 分走り続けた
-    # 3 例)。値は develop の成功 run 4 本の実測 max 7.8 分 (セットアップ込み) の
-    # おおよそ 2 倍。伸ばす前に、まず実測が伸びたのかハングなのかを確かめること。
-    timeout-minutes: 20
+    # 3 例)。当初の 20 分は develop の成功 run 4 本の実測 max 7.8 分 (セットアップ込み) の
+    # おおよそ 2 倍だった。2026-10-15 には develop の 3 run で 1 シャード 10.2-15.1 分まで
+    # 伸びており、#11812 でデスクトップ表示ガード 3 本を 1024px でも回すと 1 本あたり
+    # 約 +3-5 分 (16.5 / 17.0 分、1 本は 20 分で打ち切り) になったので 30 分にした。
+    # シャードを増やさないのは上の「待ち行列」の理由による。伸ばす前に、まず実測が
+    # 伸びたのかハングなのかを確かめること。
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:

@@ -7,6 +7,7 @@
   "foundation": "組札",
   "tableau": "場札",
   "moveCount": "手数",
+  "foundationProgress": "{{count}}枚",
   "giveup": "ギブアップ",
   "empty": "空",
   "foundationAriaLabel": "{{suit}} 組札 {{count}}枚",
@@ -14,7 +15,7 @@
   "emptyColumnAriaLabel": "空のタブロー列 {{col}}",
   "landscapeBanner": "横画面での表示を推奨します",
   "hint": "ヒント",
-  "autoComplete": "自動完成",
+  "autoComplete": "オートコンプリート",
   "autoCompleteNotReady": "組札を2枚目以降まで進めると有効になります",
   "undo": "元に戻す",
   "stalemate": "手詰まりです",
@@ -32,7 +33,7 @@
     "foundation": "中央の4つの組札には開始時に4枚のAが置かれます。同じスートでA→Kの順に積み上げます。",
     "tableau": "4枚のAの後、カードは1枚ずつ配られます。組札に置けるカードは即座に送り、残りを8列へ順に配るため、列の枚数は不揃いです。各列の右端が移動できます。",
     "moves": "1枚ずつ、スート関係なく1つ下のランクのカードに重ねられます。空の列には任意のカードを置けます。",
-    "controls": "ヒント・元に戻す・自動完成などの操作ボタンです。"
+    "controls": "ヒント・元に戻す・オートコンプリートなどの操作ボタンです。"
   },
   "frontendHint": {
     "tableau": "タブロー列{{col}}",

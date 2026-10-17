@@ -79,6 +79,46 @@ describe('TerracePage', () => {
     vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
   });
 
+  it('groups the desktop top zones into one compact row', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    mockExec.mockResolvedValue(playingState);
+    const { unmount } = renderWithProviders(<TerracePage />);
+    const topRow = await screen.findByTestId('tr-top-row');
+    expect(topRow.querySelector('[data-tutorial="tr-terrace"]')).toBeInTheDocument();
+    expect(topRow.querySelector('[data-tutorial="tr-foundation"]')).toBeInTheDocument();
+    expect(topRow).toHaveClass('flex', 'flex-wrap', 'justify-center', 'items-start', 'gap-2');
+    unmount();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
+  it('keeps the desktop top zones from develop at 800px', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 800 });
+    mockExec.mockResolvedValue(playingState);
+    const { container, unmount } = renderWithProviders(<TerracePage />);
+    await waitFor(() => expect(container.querySelector('[data-testid="tr-top-row"]')).toBeNull());
+    const oldRow = container.querySelector('.flex.flex-wrap.justify-center.items-start.gap-3');
+    expect(oldRow).not.toBeNull();
+    expect(oldRow).toHaveClass('sm:gap-6', 'mb-3');
+    unmount();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
+  it('keeps the mobile top zones in their existing wrapped layout', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    mockExec.mockResolvedValue(playingState);
+    const { container, unmount } = renderWithProviders(<TerracePage />);
+    await waitFor(() => expect(container.querySelector('[data-testid="tr-top-row"]')).toBeNull());
+    const oldRow = container.querySelector('.flex.flex-wrap.justify-center.items-start.gap-3');
+    expect(oldRow).not.toBeNull();
+    expect(oldRow?.querySelector('[data-tutorial="tr-terrace"]')).toBeInTheDocument();
+    expect(oldRow?.querySelector('[data-tutorial="tr-foundation"]')).toBeInTheDocument();
+    unmount();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
   it('calls reset on initial render', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<TerracePage />);

@@ -239,11 +239,11 @@ describe('SpiderPage', () => {
     };
     mockExec.mockResolvedValue(readyState);
     renderWithProviders(<SpiderPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '自動完成' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'オートコンプリート' })).toBeInTheDocument());
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(readyState);
-    fireEvent.click(screen.getByRole('button', { name: '自動完成' }));
+    fireEvent.click(screen.getByRole('button', { name: 'オートコンプリート' }));
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
   });
@@ -295,7 +295,7 @@ describe('SpiderPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
 
     expect(screen.queryByRole('button', { name: 'ヒント' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: '自動完成' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'オートコンプリート' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'ギブアップ' })).not.toBeInTheDocument();
   });
 
@@ -577,7 +577,7 @@ describe('SpiderPage', () => {
     expect(region).toBeEmptyDOMElement();
   });
 
-  it('displays message with messageCode', async () => {
+  it('keeps the message region empty for the steady playing code', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
       message: 'プレイ中',
@@ -585,7 +585,10 @@ describe('SpiderPage', () => {
     });
     renderWithProviders(<SpiderPage />);
     const region = await screen.findByTestId('spider-game-message');
-    await waitFor(() => expect(region).toHaveTextContent('プレイ中'));
+    // Wait until the state has rendered (the phase indicator shows プレイ中); the region starts
+    // empty before the response arrives, so checking it earlier would pass without the change.
+    await waitFor(() => expect(screen.getAllByText('プレイ中').length).toBeGreaterThan(0));
+    expect(region).toBeEmptyDOMElement();
   });
 
   it('stock card back is clickable during playing phase', async () => {

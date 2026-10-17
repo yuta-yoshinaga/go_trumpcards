@@ -18,7 +18,7 @@ import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useDuchessGame } from '../hooks/useDuchessGame';
@@ -111,6 +111,7 @@ function DuchessPageContent() {
   );
   const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const windowWidth = useWindowWidth();
 
   const dims = useMemo(() => {
@@ -252,8 +253,8 @@ function DuchessPageContent() {
                 return (
                   <div
                     key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
-                    className="absolute left-0 right-0"
-                    style={{ top: cardIdx * dims.co }}
+                    className="absolute left-0"
+                    style={{ top: cardIdx * dims.co, width: dims.cw }}
                   >
                     {tc2.card ? (
                       <button
@@ -344,6 +345,10 @@ function DuchessPageContent() {
   const wasteTop = state.waste.length > 0 ? state.waste[state.waste.length - 1] : null;
   const wasteZone: DuchessMoveZone = { zone: 'waste' };
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.duchess')}
@@ -385,7 +390,10 @@ function DuchessPageContent() {
               <p className="text-ds-warning text-sm text-center mb-2">{t('chooseBaseBanner')}</p>
             )}
 
-            <div className="flex flex-wrap justify-center items-start gap-3 sm:gap-6 mb-3">
+            <div
+              className={`flex flex-wrap justify-center items-start gap-3 sm:gap-6 ${isLargeDesktop ? 'mb-1' : 'mb-3'}`}
+              data-testid="du-upper-zones"
+            >
               <div className="flex flex-wrap justify-center gap-1 sm:gap-2" data-tutorial="du-reserve">
                 {Array.from({ length: RESERVE_FANS }, (_, i) => i).map(renderReserveFan)}
               </div>
@@ -520,12 +528,6 @@ function DuchessPageContent() {
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
             </div>
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
             {isGameOver && (
               <p data-testid="du-gameover-summary" className="text-ds-text-muted text-sm text-center mt-1">
                 {t('gameOverSummary', {
@@ -534,6 +536,8 @@ function DuchessPageContent() {
                 })}
               </p>
             )}
+
+            {isMobile && messageBox}
 
             <ActionLogSection
               isEndPhase={isEnded}
@@ -548,7 +552,7 @@ function DuchessPageContent() {
             groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
           />
 
-          <GameFooter className={`${gameTheme.duchess.footer} px-4 py-2.5`}>
+          <GameFooter className={`${gameTheme.duchess.footer} px-4 py-2.5`} message={isMobile ? undefined : messageBox}>
             <ErrorAlert message={error ?? hintError} onRetry={retry} />
             <div className="flex gap-2 items-center flex-wrap">
               {isPlaying && (

@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import i18n from 'i18next';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { SoundProvider } from '../providers/SoundProvider';
 import { ErrorAlert } from './ErrorAlert';
@@ -25,6 +25,41 @@ vi.mock('howler', () => ({
 }));
 
 const retryLabel = i18n.t('button.retry', { ns: 'common' });
+
+describe('ErrorAlert scrollIntoView', () => {
+  const original = Object.getOwnPropertyDescriptor(Element.prototype, 'scrollIntoView');
+  let scrollIntoView: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    scrollIntoView = vi.fn();
+    Object.defineProperty(Element.prototype, 'scrollIntoView', { configurable: true, value: scrollIntoView });
+  });
+
+  afterEach(() => {
+    if (original) Object.defineProperty(Element.prototype, 'scrollIntoView', original);
+    else Reflect.deleteProperty(Element.prototype, 'scrollIntoView');
+  });
+
+  it('scrolls once for each new non-null message', () => {
+    const { rerender } = render(<ErrorAlert message="boom" />);
+    expect(scrollIntoView).toHaveBeenCalledTimes(1);
+    expect(scrollIntoView).toHaveBeenLastCalledWith({ block: 'nearest', behavior: 'auto' });
+
+    rerender(<ErrorAlert message="boom" />);
+    expect(scrollIntoView).toHaveBeenCalledTimes(1);
+
+    rerender(<ErrorAlert message="other failure" />);
+    expect(scrollIntoView).toHaveBeenCalledTimes(2);
+
+    rerender(<ErrorAlert message={null} />);
+    expect(scrollIntoView).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not throw when scrollIntoView is unavailable', () => {
+    Reflect.deleteProperty(Element.prototype, 'scrollIntoView');
+    expect(() => render(<ErrorAlert message="boom" />)).not.toThrow();
+  });
+});
 
 describe('ErrorAlert', () => {
   it('renders nothing when message is null', () => {

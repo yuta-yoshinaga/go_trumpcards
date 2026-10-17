@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { useEffect } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { trenteetquaranteApi } from '../api/gameApi';
@@ -150,10 +150,27 @@ describe('TrenteEtQuarantePage', () => {
     mockApi.mockResolvedValue(betState);
     renderWithProviders(<TrenteEtQuarantePage />);
     await waitFor(() => expect(screen.getByTestId('teq-deal-button')).toBeInTheDocument());
+    expect(within(screen.getByTestId('game-footer-actions')).getByTestId('teq-deal-button')).toBeInTheDocument();
     expect(screen.getByTestId(`teq-bet-${TrenteEtQuaranteBetType.NOIR}`)).toBeInTheDocument();
     expect(screen.getByTestId(`teq-bet-${TrenteEtQuaranteBetType.ROUGE}`)).toBeInTheDocument();
     expect(screen.getByTestId(`teq-bet-${TrenteEtQuaranteBetType.COULEUR}`)).toBeInTheDocument();
     expect(screen.getByTestId(`teq-bet-${TrenteEtQuaranteBetType.INVERSE}`)).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId('game-footer-actions')).queryByTestId(`teq-bet-${TrenteEtQuaranteBetType.NOIR}`),
+    ).not.toBeInTheDocument();
+  });
+
+  it('keeps bet choices and reference information in the play area', async () => {
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<TrenteEtQuarantePage />);
+    await screen.findByTestId('teq-deal-button');
+
+    const footer = screen.getByTestId('game-footer-content');
+    const playArea = screen.getByTestId('card-area');
+    expect(within(footer).queryByTestId(`teq-bet-${TrenteEtQuaranteBetType.NOIR}`)).not.toBeInTheDocument();
+    expect(within(playArea).getByTestId(`teq-bet-${TrenteEtQuaranteBetType.NOIR}`)).toBeInTheDocument();
+    expect(within(footer).queryByTestId('teq-refait-explainer')).not.toBeInTheDocument();
+    expect(within(playArea).getByTestId('teq-refait-explainer')).toBeInTheDocument();
   });
 
   it.each([

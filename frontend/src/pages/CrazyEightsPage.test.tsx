@@ -14,6 +14,13 @@ vi.mock('../api/gameApi', () => ({
 
 const mockExec = vi.mocked(crazyeightsApi.exec);
 
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+}));
+
 const playPhaseState: CrazyEightsResponse = {
   players: [
     {
@@ -153,6 +160,24 @@ describe('CrazyEightsPage', () => {
     expect(legend).toHaveTextContent('その他');
     expect(legend).toHaveTextContent('額面どおり');
     expect(legend.textContent).not.toContain('{{');
+  });
+
+  it('collapses CPU seats and scores on mobile, and opens scores on desktop', async () => {
+    mobileState.isMobile = true;
+    const { unmount } = renderWithProviders(<CrazyEightsPage />);
+    const cpuAccordion = await screen.findByTestId('cpu-accordion');
+    const mobileScores = screen.getByTestId('ce-score-table');
+
+    expect(cpuAccordion).not.toHaveAttribute('open');
+    expect(mobileScores).not.toHaveAttribute('open');
+    expect(within(mobileScores).getByText('プレイヤー')).not.toBeVisible();
+
+    unmount();
+    mobileState.isMobile = false;
+    renderWithProviders(<CrazyEightsPage />);
+    expect(await screen.findByTestId('cpu-accordion')).toHaveAttribute('open');
+    expect(screen.getByTestId('ce-score-table')).toHaveAttribute('open');
+    mobileState.isMobile = true;
   });
 
   it('highlights legal cards and dims illegal ones on the human turn', async () => {

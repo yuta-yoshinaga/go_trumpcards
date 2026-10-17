@@ -18,6 +18,8 @@ vi.mock('../hooks/useGameHint', () => ({
 }));
 
 const mockExec = vi.mocked(stHelenaApi.exec);
+const originalViewportWidth = window.innerWidth;
+const originalViewportHeight = window.innerHeight;
 
 // **12 列。**クローン元のクレセントは 16 列なので、16 で埋めると存在しない列を
 // 描いた盤でテストすることになる。
@@ -112,9 +114,141 @@ beforeEach(() => {
 
 afterEach(async () => {
   await i18n.changeLanguage('ja');
+  Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalViewportWidth });
+  Object.defineProperty(window, 'innerHeight', { writable: true, configurable: true, value: originalViewportHeight });
+  window.dispatchEvent(new Event('resize'));
 });
 
 describe('StHelenaPage', () => {
+  it('packs the mobile tableau into two rows and collapses the rules', async () => {
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    Object.defineProperty(window, 'innerHeight', { writable: true, configurable: true, value: 667 });
+    window.dispatchEvent(new Event('resize'));
+    const { container } = renderWithProviders(<StHelenaPage />);
+    await screen.findByTestId('phase-indicator');
+    const tableau = container.querySelector('[data-tutorial="sthelena-tableau"]');
+    expect(tableau).toHaveClass('grid-cols-8');
+    expect(container.querySelector('[data-tutorial="sthelena-foundations"]')).toHaveClass('mb-1', 'sm:mb-4');
+    const details = screen.getByText('ルール').closest('details');
+    expect(details).not.toHaveAttribute('open');
+    expect(screen.getByText(/上の4列はK段/)).not.toBeVisible();
+  });
+
+  it('opens the rules by default on desktop', async () => {
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });
+    window.dispatchEvent(new Event('resize'));
+    renderWithProviders(<StHelenaPage />);
+    await screen.findByTestId('phase-indicator');
+    expect(document.querySelector('[data-tutorial="sthelena-foundations"]')).toHaveClass('mb-1', 'sm:mb-4');
+    expect(screen.getByText('ルール').closest('details')).toHaveAttribute('open');
+    expect(screen.getByText(/上の4列はK段/)).toBeVisible();
+  });
+
+  it('keeps mobile tableau groups within 170px using a 12px card overlap', async () => {
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    Object.defineProperty(window, 'innerHeight', { writable: true, configurable: true, value: 667 });
+    window.dispatchEvent(new Event('resize'));
+    const initialStack = Array.from({ length: 8 }, (_, index) => ({
+      card: card('SPADE', index + 1),
+      faceUp: true,
+    }));
+    mockExec.mockResolvedValue({ ...playingState, tableau: makeTableau({ 0: initialStack }) });
+    const { container } = renderWithProviders(<StHelenaPage />);
+    await screen.findByTestId('phase-indicator');
+    const band = container.querySelector('[data-testid="sthelena-band-top"]');
+    expect(band).toHaveClass('grid-cols-4');
+    expect(container.querySelector('[data-tutorial="sthelena-foundations"]')).toHaveClass('flex-row');
+    const tableau = container.querySelector('[data-tutorial="sthelena-tableau"]');
+    expect(tableau).toHaveClass('grid-cols-8');
+    const cards = Array.from(
+      container
+        .querySelector('[data-testid="sthelena-col-badge-0"]')
+        ?.parentElement?.querySelectorAll<HTMLButtonElement>('button') ?? [],
+    );
+    const top = Number.parseInt(cards.at(-1)?.parentElement?.style.top ?? '0', 10);
+    const groupHeight = top + 60;
+    expect(top / (cards.length - 1)).toBe(12);
+    expect(groupHeight).toBeLessThanOrEqual(170);
+    expect(container.querySelector('[data-testid="sthelena-band-top"]')?.parentElement).toHaveClass('min-w-0');
+    expect(container.querySelector('[data-testid="sthelena-band-side"]')?.parentElement).toHaveClass('min-w-0');
+    expect(container.querySelector('[data-testid="sthelena-band-bottom"]')?.parentElement).toHaveClass('min-w-0');
+    expect(
+      container.querySelectorAll('[data-tutorial="sthelena-foundations"] [data-testid^="foundation-dir-"]'),
+    ).toHaveLength(8);
+    expect(container.querySelector('[data-testid="sthelena-col-badge-0"]')?.parentElement).toHaveStyle({
+      width: '40px',
+    });
+  });
+
+  it('keeps the mobile card step based on the fixed initial depth as columns grow', async () => {
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    Object.defineProperty(window, 'innerHeight', { writable: true, configurable: true, value: 667 });
+    window.dispatchEvent(new Event('resize'));
+    const deepStack = Array.from({ length: 20 }, (_, index) => ({
+      card: card('SPADE', (index % 13) + 1),
+      faceUp: true,
+    }));
+    mockExec.mockResolvedValue({ ...playingState, tableau: makeTableau({ 0: deepStack }) });
+    const { container } = renderWithProviders(<StHelenaPage />);
+    await waitFor(() =>
+      expect(container.querySelector('[data-tutorial="sthelena-tableau"] button')).toBeInTheDocument(),
+    );
+    const firstColumn = container.querySelector('[data-testid="sthelena-col-badge-0"]')?.parentElement;
+    const cards = Array.from(firstColumn?.querySelectorAll<HTMLButtonElement>('button') ?? []);
+    const top = Number.parseInt(cards.at(-1)?.parentElement?.style.top ?? '0', 10);
+    expect(top / 19).toBe(12);
+  });
+
+  it('uses 60px cards and a compressed step on large desktop', async () => {
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });
+    Object.defineProperty(window, 'innerHeight', { writable: true, configurable: true, value: 800 });
+    window.dispatchEvent(new Event('resize'));
+    const deepStack = Array.from({ length: 8 }, (_, index) => ({
+      card: card('SPADE', (index % 13) + 1),
+      faceUp: true,
+    }));
+    mockExec.mockResolvedValue({ ...playingState, tableau: makeTableau({ 0: deepStack }) });
+    const { container } = renderWithProviders(<StHelenaPage />);
+    await waitFor(() =>
+      expect(container.querySelector('[data-tutorial="sthelena-tableau"] button')).toBeInTheDocument(),
+    );
+    const tableau = container.querySelector('[data-tutorial="sthelena-tableau"]');
+    expect(tableau).toHaveClass('grid-cols-8');
+    expect(tableau).toHaveClass('lg:gap-y-0');
+    expect(container.querySelector('[data-testid="sthelena-band-bottom"]')?.parentElement).toHaveClass('col-span-8');
+    const cards = Array.from(
+      container
+        .querySelector('[data-testid="sthelena-col-badge-0"]')
+        ?.parentElement?.querySelectorAll<HTMLButtonElement>('button') ?? [],
+    );
+    const top = Number.parseInt(cards.at(-1)?.parentElement?.style.top ?? '0', 10);
+    expect(top / 7).toBe(10);
+    expect(
+      screen.getAllByAltText('♠ A').some((element) => element.getAttribute('style')?.includes('width: 60px')),
+    ).toBe(true);
+  });
+
+  it('keeps develop card width and step at desktop width', async () => {
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 800 });
+    window.dispatchEvent(new Event('resize'));
+    const deepStack = Array.from({ length: 8 }, (_, index) => ({
+      card: card('SPADE', (index % 13) + 1),
+      faceUp: true,
+    }));
+    mockExec.mockResolvedValue({ ...playingState, tableau: makeTableau({ 0: deepStack }) });
+    const { container } = renderWithProviders(<StHelenaPage />);
+    await screen.findByAltText('♠ 8');
+    expect(
+      screen.getAllByAltText('♠ A').some((element) => element.getAttribute('style')?.includes('width: 60px')),
+    ).toBe(true);
+    const cards = Array.from(
+      container.querySelector('[data-testid="sthelena-col-badge-0"]')?.parentElement?.querySelectorAll('button') ?? [],
+    );
+    const top = Number.parseInt(cards.at(-1)?.parentElement?.style.top ?? '0', 10);
+    expect(top / 7).toBeGreaterThanOrEqual(14);
+    expect(top / 7).toBeLessThan(20);
+  });
+
   it('announces the first-deal destinations with zero-based column numbers', async () => {
     renderWithProviders(<StHelenaPage />);
     const status = await screen.findByTestId('sthelena-restriction-status');
@@ -789,5 +923,26 @@ describe('StHelenaPage keyboard shortcuts', () => {
       await waitFor(() => expect(mockExec).toHaveBeenCalled());
       expect(screen.queryByTestId('cr-gameover-summary')).not.toBeInTheDocument();
     });
+  });
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue({ ...playingState, message: 'Footer guidance' });
+    renderWithProviders(<StHelenaPage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage.querySelector('[role="status"], [role="alert"]')).toHaveTextContent('Footer guidance');
+  });
+  it('renders the game message in the play area instead of the footer on mobile', async () => {
+    mockExec.mockResolvedValue({ ...playingState, message: 'Mobile guidance' });
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    renderWithProviders(<StHelenaPage />);
+
+    const messageText = await screen.findByText('Mobile guidance');
+    const message = messageText.closest('[role="status"], [role="alert"]');
+    expect(message?.closest('.flex-1.overflow-y-auto')).not.toBeNull();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    window.dispatchEvent(new Event('resize'));
   });
 });

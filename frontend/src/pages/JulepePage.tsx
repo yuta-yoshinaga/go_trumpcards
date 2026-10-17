@@ -2,10 +2,12 @@ import { useCallback, useMemo } from 'react';
 import { julepeApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { HintTooltip } from '../components/hint/HintTooltip';
@@ -152,7 +154,7 @@ function JulepePageContent() {
     !p.decided ? t('status.undecided') : p.inRound ? t('status.in') : t('status.out');
 
   const undecidedCount = state.players.filter((player) => !player.decided).length;
-  const decisionAnnouncement = t('decision.undecided', { count: undecidedCount });
+  const undecidedAnnouncement = t('decision.undecided', { count: undecidedCount });
 
   const resultBanner = (() => {
     if (!isGameEnd) return null;
@@ -182,7 +184,7 @@ function JulepePageContent() {
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
-          <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
+          <div className="flex-1 min-h-0 overflow-y-auto pt-3 px-4 lg:px-8">
             <div className="text-ds-text-primary text-center mb-2">
               <span className="mr-4" data-testid="rm-round">
                 {t('header.round')}: {state.roundNumber}/{state.config.rounds}
@@ -210,11 +212,17 @@ function JulepePageContent() {
                   <CardImage card={state.upCard} width={Math.round(cardWidth * 0.8)} />
                 </div>
               )}
-              <div className="rounded bg-black/30 px-3 py-2 text-ds-text-muted text-sm" data-testid="rm-risk">
-                {t('header.risk', {
-                  penalty: String(MISS_PENALTY),
-                  required: String(state.requiredTricks),
-                })}
+              <div
+                className="rounded border border-white/10 px-3 py-1 text-ds-text-muted text-sm"
+                data-testid="rm-risk"
+              >
+                <span>
+                  {t('header.riskSummary', { penalty: String(MISS_PENALTY), required: String(state.requiredTricks) })}
+                </span>
+                <details className="mt-1">
+                  <summary className="cursor-pointer select-none text-xs">{t('header.riskDetails')}</summary>
+                  <p className="pt-1">{t('header.risk')}</p>
+                </details>
               </div>
             </div>
 
@@ -224,58 +232,60 @@ function JulepePageContent() {
                 role="status"
                 data-testid="rm-decision-status"
               >
-                {decisionAnnouncement}
+                {undecidedAnnouncement}
               </div>
             )}
 
-            <div className="flex flex-wrap justify-center gap-2 mb-4">
-              {state.players.map((p) => (
-                <div
-                  key={p.id}
-                  className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
-                  data-testid={`rm-seat-${p.id.toString()}`}
-                >
-                  <span className="text-ds-text-primary">
-                    {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
-                  </span>
-                  {/* **参加判断もリードも親の左隣から始まる** (#5748)。3〜5 人卓で
+            <CpuAccordion playerCount={state.players.filter((player) => !player.isHuman).length}>
+              <div className="flex flex-wrap justify-center gap-2 mb-4">
+                {state.players.map((p) => (
+                  <div
+                    key={p.id}
+                    className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
+                    data-testid={`rm-seat-${p.id.toString()}`}
+                  >
+                    <span className="text-ds-text-primary">
+                      {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
+                    </span>
+                    {/* **参加判断もリードも親の左隣から始まる** (#5748)。3〜5 人卓で
                       毎ラウンド 1 つ回るので、誰が親かが出ていないと自分が何番目に
                       決断するのか読めない。 */}
-                  {p.id === state.dealerIdx && (
-                    <span
-                      className={`ml-1 rounded px-1.5 py-0.5 text-xs ${badgeWarningColors}`}
-                      data-testid={`rm-dealer-${p.id.toString()}`}
-                    >
-                      <span aria-hidden="true">{t('dealerBadge')}</span>
-                      <span className="sr-only">{t('dealerAria')}</span>
-                    </span>
-                  )}
-                  {state.beast[p.id] && (
-                    <span
-                      className={`ml-1 rounded px-1.5 py-0.5 text-xs ${badgeWarningColors}`}
-                      data-testid={`rm-beast-${p.id.toString()}`}
-                    >
-                      <span aria-hidden="true">{t('beastBadge')}</span>
-                      <span className="sr-only">{t('beastAria')}</span>
-                    </span>
-                  )}
-                  {': '}
-                  {t('header.seat', { chips: String(p.chips), tricks: String(p.roundTricks) })} [{statusStr(p)}]
-                  {isDecide && state.roundAntes[p.id] !== undefined && (
-                    <span className="ml-1" data-testid={`rm-ante-${p.id.toString()}`}>
-                      {t('ante', { amount: String(state.roundAntes[p.id]) })}
-                    </span>
-                  )}
-                  {isRoundEnd && (p.roundPayout > 0 || p.roundPenalty > 0) && (
-                    <span className="ml-2 text-ds-text-primary" data-testid={`rm-chip-change-${p.id.toString()}`}>
-                      {p.roundPayout > 0 && t('roundResult.payout', { amount: String(p.roundPayout) })}
-                      {p.roundPayout > 0 && p.roundPenalty > 0 && ' '}
-                      {p.roundPenalty > 0 && t('roundResult.penalty', { amount: String(p.roundPenalty) })}
-                    </span>
-                  )}
-                </div>
-              ))}
-            </div>
+                    {p.id === state.dealerIdx && (
+                      <span
+                        className={`ml-1 rounded px-1.5 py-0.5 text-xs ${badgeWarningColors}`}
+                        data-testid={`rm-dealer-${p.id.toString()}`}
+                      >
+                        <span aria-hidden="true">{t('dealerBadge')}</span>
+                        <span className="sr-only">{t('dealerAria')}</span>
+                      </span>
+                    )}
+                    {state.beast[p.id] && (
+                      <span
+                        className={`ml-1 rounded px-1.5 py-0.5 text-xs ${badgeWarningColors}`}
+                        data-testid={`rm-beast-${p.id.toString()}`}
+                      >
+                        <span aria-hidden="true">{t('beastBadge')}</span>
+                        <span className="sr-only">{t('beastAria')}</span>
+                      </span>
+                    )}
+                    {': '}
+                    {t('header.seat', { chips: String(p.chips), tricks: String(p.roundTricks) })} [{statusStr(p)}]
+                    {isDecide && state.roundAntes[p.id] !== undefined && (
+                      <span className="ml-1" data-testid={`rm-ante-${p.id.toString()}`}>
+                        {t('ante', { amount: String(state.roundAntes[p.id]) })}
+                      </span>
+                    )}
+                    {isRoundEnd && (p.roundPayout > 0 || p.roundPenalty > 0) && (
+                      <span className="ml-2 text-ds-text-primary" data-testid={`rm-chip-change-${p.id.toString()}`}>
+                        {p.roundPayout > 0 && t('roundResult.payout', { amount: String(p.roundPayout) })}
+                        {p.roundPayout > 0 && p.roundPenalty > 0 && ' '}
+                        {p.roundPenalty > 0 && t('roundResult.penalty', { amount: String(p.roundPenalty) })}
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </CpuAccordion>
 
             <div data-tutorial="julepe-trick">
               <TrickDisplay
@@ -321,15 +331,76 @@ function JulepePageContent() {
               </div>
             )}
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
             <ErrorAlert message={error} onRetry={retry} />
+            {hintEnabled && hint && (
+              <div className="mt-3 flex justify-center">
+                <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />
+              </div>
+            )}
 
+            <SettingsPanel
+              title={tc('settings.title')}
+              groups={[{ items: [hintCheckboxItem(tc, hintEnabled, setHintEnabled)] }]}
+            />
+          </div>
+
+          <GameFooter
+            className={`${gameTheme.julepe.footer} px-4 py-2.5`}
+            message={
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            }
+            actions={
+              <div className="flex flex-wrap gap-2" data-tutorial="julepe-decide" data-testid="rm-primary-actions">
+                {/* 参加選択は配り直後の一度きり。 */}
+                {isDecide && !isGameEnd && (
+                  <>
+                    <button
+                      type="button"
+                      className={btnWarning}
+                      onClick={handlePlayIn}
+                      disabled={loading}
+                      data-testid="rm-in-btn"
+                    >
+                      {t('actions.playIn')}
+                    </button>
+                    <button
+                      type="button"
+                      className={btnSuccess}
+                      onClick={handlePassOut}
+                      disabled={loading}
+                      data-testid="rm-out-btn"
+                    >
+                      {t('actions.passOut')}
+                    </button>
+                  </>
+                )}
+                {isRoundEnd && !isGameEnd && (
+                  <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                    {t('actions.nextRound')}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={() => requestConfirm(handleReset)}
+                  disabled={loading}
+                >
+                  {t('actions.reset')}
+                </button>
+                {!isGameEnd && (
+                  <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
+                    {t('actions.giveUp')}
+                  </button>
+                )}
+              </div>
+            }
+          >
             {human && human.cards.length > 0 && (
-              <div className="mt-4" data-tutorial="julepe-hand">
+              <div className="mb-2" data-tutorial="julepe-hand">
                 <div className="text-ds-text-muted text-sm mb-1">
                   {t('header.you')}: {human.cardCount}
                 </div>
@@ -351,62 +422,7 @@ function JulepePageContent() {
                 </div>
               </div>
             )}
-
-            {hintEnabled && hint && (
-              <div className="mt-3 flex justify-center">
-                <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />
-              </div>
-            )}
-
-            <div className="mt-4 flex flex-wrap gap-2" data-tutorial="julepe-decide">
-              {/* 参加選択は配り直後の一度きり。 */}
-              {isDecide && !isGameEnd && (
-                <>
-                  <button
-                    type="button"
-                    className={btnWarning}
-                    onClick={handlePlayIn}
-                    disabled={loading}
-                    data-testid="rm-in-btn"
-                  >
-                    {t('actions.playIn')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnSuccess}
-                    onClick={handlePassOut}
-                    disabled={loading}
-                    data-testid="rm-out-btn"
-                  >
-                    {t('actions.passOut')}
-                  </button>
-                </>
-              )}
-              {isRoundEnd && !isGameEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('actions.nextRound')}
-                </button>
-              )}
-              <button
-                type="button"
-                className={btnPrimary}
-                onClick={() => requestConfirm(handleReset)}
-                disabled={loading}
-              >
-                {t('actions.reset')}
-              </button>
-              {!isGameEnd && (
-                <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
-                  {t('actions.giveUp')}
-                </button>
-              )}
-            </div>
-
-            <SettingsPanel
-              title={tc('settings.title')}
-              groups={[{ items: [hintCheckboxItem(tc, hintEnabled, setHintEnabled)] }]}
-            />
-          </div>
+          </GameFooter>
 
           <ActionLogSection
             isEndPhase={isGameEnd}

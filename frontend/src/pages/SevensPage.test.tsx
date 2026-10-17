@@ -1,5 +1,5 @@
-import { act, fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, sevensApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -13,6 +13,14 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockExec = vi.mocked(sevensApi.exec);
+const originalInnerWidth = window.innerWidth;
+
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+}));
 
 // tableMinVals/tableMaxVals: index 0 unused; 1=SPADE, 2=CLOVER, 3=HEART, 4=DIAMOND
 // tablePlaced: bitmask per suit; bit i = value i placed. 7 placed = 1<<7 = 128
@@ -155,10 +163,31 @@ const passesExhaustedState: SevensResponse = {
 };
 
 beforeEach(() => {
+  mobileState.isMobile = true;
   mockExec.mockResolvedValue(humanTurnState);
 });
 
+afterEach(() => {
+  Object.defineProperty(window, 'innerWidth', { value: originalInnerWidth, configurable: true, writable: true });
+  window.dispatchEvent(new Event('resize'));
+});
+
 describe('SevensPage', () => {
+  it('allows the taller mobile footer', async () => {
+    renderWithProviders(<SevensPage />);
+    expect((await screen.findByTestId('game-footer-content')).closest('footer')?.className).toContain('max-h-[60vh]');
+  });
+  it('keeps the hand in the footer and moves settings into the play area', async () => {
+    renderWithProviders(<SevensPage />);
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const footer = footerContent.closest('footer');
+    const settings = screen.getByText('ゲーム設定');
+
+    expect(footerContent.querySelector('[data-tutorial="sv-player-hand"]')).toBeInTheDocument();
+    expect(within(footerContent).queryByText('ゲーム設定')).not.toBeInTheDocument();
+    expect(footer?.parentElement).toContainElement(settings);
+  });
+
   it('announces a normally played human card in the live region', async () => {
     mockExec.mockResolvedValue({
       ...humanTurnState,
@@ -265,6 +294,35 @@ describe('SevensPage', () => {
     });
   });
 
+  it('keeps CPU areas open below large desktop and collapsed by default on large desktop', async () => {
+    const { unmount } = renderWithProviders(<SevensPage />);
+    await screen.findByText('CPU 1');
+    const mobileAccordion = screen.getByTestId('cpu-accordion');
+    expect(mobileAccordion).not.toHaveAttribute('open');
+    expect(within(mobileAccordion).getByText('CPU 1')).not.toBeVisible();
+
+    unmount();
+    mobileState.isMobile = false;
+    window.innerWidth = 800;
+    window.dispatchEvent(new Event('resize'));
+    renderWithProviders(<SevensPage />);
+    const desktopAccordion = await screen.findByTestId('cpu-accordion');
+    expect(desktopAccordion).toHaveAttribute('open');
+    expect(within(desktopAccordion).getByText('CPU 1')).toBeVisible();
+
+    unmount();
+    mobileState.isMobile = false;
+    Object.defineProperty(window, 'innerWidth', { value: 1280, configurable: true });
+    window.dispatchEvent(new Event('resize'));
+    renderWithProviders(<SevensPage />);
+    const largeDesktopAccordion = await screen.findByTestId('cpu-accordion');
+    expect(largeDesktopAccordion).not.toHaveAttribute('open');
+    expect(within(largeDesktopAccordion).getByText('CPU 1')).not.toBeVisible();
+    fireEvent.click(within(largeDesktopAccordion).getByText('CPU対戦相手 (3)'));
+    expect(largeDesktopAccordion).toHaveAttribute('open');
+    expect(within(largeDesktopAccordion).getByText('CPU 1')).toBeVisible();
+  });
+
   it('renders the board section', async () => {
     renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByText('ボード')).toBeInTheDocument());
@@ -318,7 +376,9 @@ describe('SevensPage', () => {
 
   it('pass button is enabled on human turn with passes remaining', async () => {
     renderWithProviders(<SevensPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: /パス/ })).not.toBeDisabled());
+    const actions = await screen.findByTestId('game-footer-actions');
+    const passButton = within(actions).getByRole('button', { name: /パス/ });
+    await waitFor(() => expect(passButton).not.toBeDisabled());
   });
 
   it('pass button is disabled on CPU turn', async () => {
@@ -342,6 +402,9 @@ describe('SevensPage', () => {
     renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /パス/ })).toBeDisabled());
     expect(screen.getByText('パスできる回数の上限に達しました')).toBeInTheDocument();
+    expect(within(screen.getByTestId('game-footer-actions')).getByTestId('pass-disabled-reason')).toHaveTextContent(
+      'パスできる回数の上限に達しました',
+    );
     expect(screen.getByRole('button', { name: /パス/ })).toHaveAttribute('title', 'パスできる回数の上限に達しました');
   });
 

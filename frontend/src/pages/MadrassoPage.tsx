@@ -176,6 +176,11 @@ function MadrassoPageContent() {
     return <GameSkeleton gameKey="madrasso" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 5 }} />;
 
   const humanPlayer = state.players.find((p) => p.isHuman);
+  const messageBox = (
+    <div data-tutorial="tr-point-info">
+      <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+    </div>
+  );
   const isPlayPhase = state.phase === MadrassoPhase.PLAY;
   const isTrickEnd = state.phase === MadrassoPhase.TRICK_END;
   const isRoundEnd = state.phase === MadrassoPhase.ROUND_END;
@@ -236,10 +241,15 @@ function MadrassoPageContent() {
           />
 
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            <div className="text-ds-text-primary text-center mb-2">
-              <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
-              <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
-              <span data-testid="madrasso-trump">{t('trumpSuit', { suit: trumpSymbol })}</span>
+            <div
+              className="text-ds-text-primary text-center mb-2 flex flex-wrap justify-center gap-x-4 gap-y-1"
+              data-testid="madrasso-status-row"
+            >
+              <span className="whitespace-nowrap">{t('round', { n: state.roundNumber })}</span>
+              <span className="whitespace-nowrap">{t('trick', { n: state.trickNumber })}</span>
+              <span data-testid="madrasso-trump" className="whitespace-nowrap">
+                {t('trumpSuit', { suit: trumpSymbol })}
+              </span>
             </div>
 
             <div className={lgTwoColGrid}>
@@ -334,14 +344,18 @@ function MadrassoPageContent() {
                         <th scope="col" className="text-left">
                           {t('scoresTeam')}
                         </th>
-                        <th scope="col">{t('scoresPoints', { target: state.config.targetPoints })}</th>
-                        <th scope="col">{t('scoresRoundPoints')}</th>
+                        <th scope="col" className="whitespace-nowrap text-[10px]">
+                          {t('scoresPoints', { target: state.config.targetPoints })}
+                        </th>
+                        <th scope="col" className="whitespace-nowrap text-[10px]">
+                          {t('scoresRoundPoints')}
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
                       {teamLabels.map((label, idx) => (
                         <tr key={label} className={humanPlayer && humanPlayer.teamId === idx ? 'text-ds-accent' : ''}>
-                          <th scope="row" className="text-left font-normal">
+                          <th scope="row" className="text-left font-normal whitespace-nowrap">
                             {t('teamLabel', { team: label })}
                           </th>
                           <td className="text-center">{state.teamScores[idx] ?? 0}</td>
@@ -399,15 +413,7 @@ function MadrassoPageContent() {
               </div>
             </div>
 
-            {/* Message */}
-            <div data-tutorial="tr-point-info">
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-              />
-            </div>
-
+            {isMobile && messageBox}
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -417,7 +423,10 @@ function MadrassoPageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.madrasso.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.madrasso.footer} px-4 py-2.5`}
+            message={isMobile ? undefined : messageBox}
+          >
             {humanPlayer && (
               <PlayerHandSection
                 humanPlayer={humanPlayer}

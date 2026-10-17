@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { lobaApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardBack } from '../components/CardImage';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -16,7 +17,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions, useDenseLargeDesktopCardSize } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
@@ -32,6 +33,11 @@ import { formatLobaState } from '../utils/cli/formatters/lobaFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { findPlayerName, playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
+
+const OPPONENT_CARD_WIDTH_RATIO = 0.55;
+const MOBILE_DISCARD_CARD_WIDTH_RATIO = 0.55;
+const MOBILE_MELD_CARD_WIDTH_RATIO = 0.45;
+const DESKTOP_MELD_CARD_WIDTH_RATIO = 0.7;
 
 const LB_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="lb-rule"]', messageKey: 'tutorial.pierna', placement: 'bottom', advanceOn: 'next' },
@@ -71,7 +77,10 @@ function LobaPageContent() {
     [],
   );
   const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
+  const denseCardSize = useDenseLargeDesktopCardSize();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
+  const handCardWidth = isLargeDesktop ? denseCardSize.width : cardWidth;
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -145,52 +154,86 @@ function LobaPageContent() {
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
-          <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
+          <div
+            className={`flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8 ${isLargeDesktop ? 'grid grid-cols-2 grid-rows-[auto_auto_auto_auto_auto_auto_auto] items-start gap-x-4' : ''}`}
+          >
             {/* Permanent, not tutorial-only: "three different suits" and "jokers
                 only in runs" are the two rules a player gets wrong. */}
-            <div className="text-center text-xs text-ds-warning mb-3 font-medium" data-tutorial="lb-rule">
-              {t('ruleLine')}
-            </div>
+            <div
+              className={`flex flex-wrap items-start gap-2 sm:block min-w-0 ${isLargeDesktop ? 'col-start-1 row-start-1' : ''}`}
+            >
+              <details
+                className="mb-2 p-2 rounded bg-ds-surface flex-1 open:basis-full sm:flex-none"
+                data-testid="lb-rule-details"
+              >
+                <summary className="cursor-pointer select-none text-center text-xs text-ds-warning font-medium">
+                  {t('rulesLabel')}
+                </summary>
+                <p className="mt-2 text-center text-xs text-ds-warning" data-tutorial="lb-rule">
+                  {t('ruleLine')}
+                </p>
+              </details>
 
-            <div className="flex justify-center gap-4 mb-3 flex-wrap" data-tutorial="lb-seats">
-              {opponents.map((o) => (
-                <div key={`opp-${o.id.toString()}`} className="text-center">
-                  <div className="text-game-text-muted text-xs mb-1">
-                    {t('opponentHand', { name: playerName(o.id, false), n: o.cardCount })}
-                    {' · '}
-                    {t('score', { n: o.score })}
-                    {o.eliminated && ` · ${t('eliminated')}`}
-                  </div>
-                  <div
-                    className="flex gap-1 justify-center flex-wrap"
-                    role="img"
-                    aria-label={t('opponentHandAriaLabel', { name: playerName(o.id, false), n: o.cardCount })}
-                  >
-                    {Array.from({ length: o.cardCount }, (_, i) => (
-                      <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
-                    ))}
-                  </div>
+              <CpuAccordion
+                playerCount={opponents.length}
+                openOnDesktop={false}
+                dataTutorial="lb-seats"
+                className="mb-3 flex-1 open:basis-full sm:flex-none"
+              >
+                <div className="flex flex-wrap gap-2 sm:grid sm:grid-cols-3 sm:justify-items-center sm:gap-4 mb-3">
+                  {opponents.map((o) => (
+                    <div key={`opp-${o.id.toString()}`} className="flex-1 text-center">
+                      <div className="text-game-text-muted text-xs mb-1">
+                        {t('opponentHand', { name: playerName(o.id, false), n: o.cardCount })}
+                        {' · '}
+                        {t('score', { n: o.score })}
+                        {o.eliminated && ` · ${t('eliminated')}`}
+                      </div>
+                      <div
+                        className="flex gap-1 justify-center flex-wrap"
+                        role="img"
+                        aria-label={t('opponentHandAriaLabel', { name: playerName(o.id, false), n: o.cardCount })}
+                      >
+                        {Array.from({ length: o.cardCount }, (_, i) => (
+                          <CardBack
+                            key={`opp-${o.id.toString()}-c${i.toString()}`}
+                            width={Math.round(cardWidth * OPPONENT_CARD_WIDTH_RATIO)}
+                            className={i > 0 ? '-ml-5' : undefined}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </CpuAccordion>
             </div>
 
-            <div className="text-center mb-3">
-              <div className="text-game-text-muted text-xs mb-1">{t('discard')}</div>
+            <div className={`text-center mb-1 sm:mb-3 ${isLargeDesktop ? 'col-start-1 row-start-2' : ''}`}>
+              <div className="text-game-text-muted text-xs mb-0 sm:mb-1">{t('discard')}</div>
               {state.discardTop ? (
                 <div className="flex justify-center">
-                  <AnimatedCard card={state.discardTop} width={cardWidth} draggable={false} />
+                  <AnimatedCard
+                    card={state.discardTop}
+                    width={isMobile ? Math.round(cardWidth * MOBILE_DISCARD_CARD_WIDTH_RATIO) : cardWidth}
+                    draggable={false}
+                  />
                 </div>
               ) : (
                 <span className="text-game-text-muted text-xs">—</span>
               )}
             </div>
 
-            <div className="mb-4" data-tutorial="lb-melds">
+            <div
+              className={`mb-4 min-w-0 ${isLargeDesktop ? 'col-start-2 row-start-1 row-span-2' : ''}`}
+              data-tutorial="lb-melds"
+            >
               <div className="text-game-text-muted text-xs mb-1 text-center">{t('melds')}</div>
               {state.melds.length === 0 ? (
                 <div className="text-center text-game-text-muted text-xs">{t('noMelds')}</div>
               ) : (
-                <div className="flex flex-col gap-1 items-center">
+                <div
+                  className={`flex gap-1 items-center justify-center flex-wrap ${isLargeDesktop ? '' : 'sm:flex-col'}`}
+                >
                   {state.melds.map((m, i) => (
                     <button
                       key={`meld-${i.toString()}`}
@@ -210,7 +253,10 @@ function LobaPageContent() {
                         <AnimatedCard
                           key={`meld-${i.toString()}-c${j.toString()}`}
                           card={card}
-                          width={Math.round(cardWidth * 0.7)}
+                          width={Math.round(
+                            cardWidth * (isMobile ? MOBILE_MELD_CARD_WIDTH_RATIO : DESKTOP_MELD_CARD_WIDTH_RATIO),
+                          )}
+                          wrapperClassName={j > 0 ? '-ml-3' : undefined}
                           draggable={false}
                         />
                       ))}
@@ -221,14 +267,17 @@ function LobaPageContent() {
             </div>
 
             {roundOver && state.roundWinner >= 0 && (
-              <div className="text-center text-sm mb-3" data-testid="loba-round-result">
+              <div
+                className={`text-center text-sm mb-3 ${isLargeDesktop ? 'col-span-2 row-start-3' : ''}`}
+                data-testid="loba-round-result"
+              >
                 {state.roundClean
                   ? t('roundWinnerClean', { name: findPlayerName(state.players, state.roundWinner) })
                   : t('roundWinner', { name: findPlayerName(state.players, state.roundWinner) })}
               </div>
             )}
 
-            <div className="text-center" data-tutorial="lb-hand">
+            <div className={`text-center ${isLargeDesktop ? 'col-span-2 row-start-4' : ''}`} data-tutorial="lb-hand">
               <div className="text-game-text-muted text-xs mb-1">
                 {t('yourHand')}
                 {' · '}
@@ -252,7 +301,7 @@ function LobaPageContent() {
                       hintMeldIndices.has(i) ? 'ring-2 ring-ds-warning' : '',
                     ].join(' ')}
                   >
-                    <AnimatedCard card={card} width={cardWidth} draggable={false} />
+                    <AnimatedCard card={card} width={handCardWidth} draggable={false} />
                   </button>
                 ))}
               </div>
@@ -275,28 +324,34 @@ function LobaPageContent() {
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
             </div>
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
+            <div className={isLargeDesktop ? 'col-span-2 row-start-5' : ''}>
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            </div>
 
-            <RoundScoreAnnouncement
-              active={roundOver || ended}
-              entries={state.players.map((p) => ({
-                name: playerName(p.id, p.isHuman),
-                roundScore: p.roundScore,
-                cumulativeScore: p.score,
-              }))}
-            />
+            <div className={isLargeDesktop ? 'col-span-2 row-start-6' : ''}>
+              <RoundScoreAnnouncement
+                active={roundOver || ended}
+                entries={state.players.map((p) => ({
+                  name: playerName(p.id, p.isHuman),
+                  roundScore: p.roundScore,
+                  cumulativeScore: p.score,
+                }))}
+              />
+            </div>
 
-            <ActionLogSection
-              isEndPhase={ended}
-              availableDuringPlay
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
+            <div className={isLargeDesktop ? 'col-span-2 row-start-7' : ''}>
+              <ActionLogSection
+                isEndPhase={ended}
+                availableDuringPlay
+                actionLog={actionLog}
+                showActionLog={showActionLog}
+                hideActionLog={hideActionLog}
+              />
+            </div>
           </div>
 
           <GameFooter className={`${gameTheme.loba.footer} px-4 py-2.5`}>

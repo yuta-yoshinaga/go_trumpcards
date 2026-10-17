@@ -10,6 +10,7 @@
   "player": "プレイヤー:",
   "deck": "デッキ:",
   "deckUnit": "{{count}}デッキ",
+  "chips": "チップ",
   "dealerHand": "ディーラー手札",
   "score": "スコア",
   "playerHand": "プレイヤー手札",
@@ -129,7 +130,9 @@
     "insurance": "インシュランス (2:1)",
     "push": "同点 (ディーラーの勝ち。ナチュラルブラックジャック同士のみプレイヤーの勝ち)",
     "surrender": "サレンダー (ベットの半額返金)",
-    "bust": "バスト (21超過: 負け)"
+    "bust": "バスト (21超過: 負け)",
+    "perfectPairs": "パーフェクトペア (ミックス {{mixed}}:1 / カラード {{colored}}:1 / パーフェクト {{perfect}}:1)",
+    "twentyOnePlus3": "ポーカー役ベット (フラッシュ {{flush}}:1 / ストレート {{straight}}:1 / スリーカード {{trips}}:1 / ストレートフラッシュ {{straightFlush}}:1 / スーテッドトリップス {{suitedTrips}}:1)"
   },
   "kbd": {
     "insurance": "I",

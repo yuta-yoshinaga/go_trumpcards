@@ -1,4 +1,4 @@
-import { act, fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { coincheApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -92,6 +92,52 @@ beforeEach(() => {
 });
 
 describe('CoinchePage', () => {
+  it('stacks mobile hand rows for the human player', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      const cards = Array.from({ length: 13 }, (_, i) => card('SPADE', (i % 13) + 1));
+      mockExec.mockResolvedValue(
+        makeState({
+          players: [{ ...initialState.players[0], cards, cardCount: cards.length }, ...initialState.players.slice(1)],
+        }),
+      );
+      renderWithProviders(<CoinchePage />);
+      const hand = await screen.findByAltText('♠ A');
+      const handSection = hand.closest('[data-tutorial="be-player-hand"]');
+      expect(handSection).not.toBeNull();
+      await waitFor(() =>
+        expect(handSection?.querySelectorAll('[data-testid="hand-row"]').length).toBeGreaterThanOrEqual(2),
+      );
+      const rows = handSection?.querySelectorAll<HTMLElement>('[data-testid="hand-row"]') ?? [];
+      for (const row of Array.from(rows).slice(1)) expect(row.style.marginTop).toMatch(/^-/);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it('keeps only the hand in the footer content and places supporting UI in the play area', async () => {
+    renderWithProviders(<CoinchePage />);
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const footer = footerContent.parentElement;
+    const playArea = footer?.previousElementSibling;
+    expect(playArea).not.toBeNull();
+
+    expect(within(footerContent).getByRole('button', { name: '♠ J' })).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('coinche-kbd-shortcuts')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('coinche-kbd-shortcuts')).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('coinche-hint-live')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('coinche-hint-live')).toBeInTheDocument();
+  });
+
+  it('keeps the auction pass action in the fixed footer actions row', async () => {
+    mockExec.mockResolvedValue(initialState);
+    renderWithProviders(<CoinchePage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: /パス/ })).toBeInTheDocument();
+  });
+
   it('includes each trick player’s team role and card name in the accessible card name', async () => {
     mockExec.mockResolvedValue(
       makeState({

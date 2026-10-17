@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { FlowerGardenMoveZone, flowerGardenApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
+import { CardFan } from '../components/CardFan';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -18,7 +19,7 @@ import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useFlowerGardenGame } from '../hooks/useFlowerGardenGame';
@@ -26,6 +27,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
+import { DESKTOP_COMPACT_CARD_WIDTH } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, FlowerGardenResponse } from '../types/card';
 import { FlowerGardenPhase } from '../types/phases';
@@ -38,6 +40,8 @@ import { flowerGardenLegalTargets } from '../utils/flowerGardenLegalTargets';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
+// Keep in sync with the sm:gap-2 spacing on the bed row below.
+const BED_GAP_PX = 8;
 const FOUNDATION_SUIT_I18N_KEYS = [
   'common.suit.spade',
   'common.suit.club',
@@ -143,6 +147,7 @@ function FlowerGardenPageContent() {
     clearLog,
   });
   const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const windowWidth = useWindowWidth();
 
   const dims = useMemo(() => {
@@ -157,6 +162,13 @@ function FlowerGardenPageContent() {
     const co = Math.round(cw * 0.32);
     return { cw, ch, co };
   }, [isMobile, windowWidth, cardWidth, cardHeight, cardOverlap]);
+  const reserveDims = isMobile
+    ? { cw: Math.min(dims.cw, 32), ch: Math.round(Math.min(dims.cw, 32) * 1.5) }
+    : { cw: dims.cw, ch: dims.ch };
+  const foundationWidth = isLargeDesktop ? DESKTOP_COMPACT_CARD_WIDTH : dims.cw;
+  const foundationHeight = isLargeDesktop ? Math.round(DESKTOP_COMPACT_CARD_WIDTH * 1.5) : dims.ch;
+  const BedsLayout = isLargeDesktop ? 'div' : Fragment;
+  const bedsLayoutProps = isLargeDesktop ? { className: 'flex flex-wrap justify-center items-start gap-4' } : {};
 
   const isPlayingForKbd = state?.phase === FlowerGardenPhase.PLAYING;
 
@@ -336,14 +348,14 @@ function FlowerGardenPageContent() {
             onDragEnd={dnd.handleDragEnd}
             className={`p-0 border-0 bg-transparent rounded cursor-pointer ${focusRingWhite} ${isSourceSelected('reserve', cellIdx) ? 'ring-2 ring-ds-warning' : ''} ${dnd.isDragSource(reserveZone) ? 'opacity-50' : ''}`}
           >
-            <AnimatedCard card={reserveCard} width={dims.cw} draggable={false} />
+            <AnimatedCard card={reserveCard} width={reserveDims.cw} draggable={false} />
           </button>
         ) : (
           <div
             role="img"
             aria-label={t('emptyReserveSlot', { idx: cellIdx })}
             className="rounded border border-dashed border-white/10"
-            style={{ width: dims.cw, height: dims.ch }}
+            style={{ width: reserveDims.cw, height: reserveDims.ch }}
           />
         )}
         <span className="text-xs text-ds-text-muted mt-0.5" aria-hidden="true">
@@ -352,6 +364,67 @@ function FlowerGardenPageContent() {
       </div>
     );
   };
+
+  const renderFoundations = () =>
+    state.foundation.map((pile, idx) => {
+      const foundationZone: FlowerGardenMoveZone = { zone: 'foundation', col: idx };
+      return (
+        <div key={`f-${idx.toString()}`} className="text-center">
+          <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
+          <DropZone
+            isDropTarget={dnd.isDropTarget(foundationZone)}
+            onDragOver={dnd.handleDragOver(foundationZone)}
+            onDrop={dnd.handleDrop(foundationZone)}
+            onDragLeave={dnd.handleDragLeave}
+          >
+            {pile.length > 0 ? (
+              <button
+                type="button"
+                onClick={() => game.handleSelectTarget(foundationZone)}
+                disabled={!isPlaying || loading || isAutoCompleting}
+                aria-disabled={!selectedSource || undefined}
+                aria-describedby={!selectedSource ? selectSourceHintId : undefined}
+                aria-label={t('foundationAriaLabel', {
+                  suit: tc(FOUNDATION_SUIT_I18N_KEYS[idx]),
+                  card: cardAlt(pile[pile.length - 1]),
+                  count: pile.length,
+                })}
+                data-target-candidate={legalTargets.foundation.has(idx) || undefined}
+                className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${legalTargets.foundation.has(idx) ? 'ring-2 ring-ds-success' : ''}`}
+              >
+                <AnimatedCard
+                  card={pile[pile.length - 1]}
+                  width={foundationWidth}
+                  draggable={false}
+                  dealDelay={isAutoCompleting ? idx * 0.15 : 0}
+                />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => game.handleSelectTarget(foundationZone)}
+                disabled={!isPlaying || loading}
+                aria-disabled={!selectedSource || undefined}
+                aria-describedby={!selectedSource ? selectSourceHintId : undefined}
+                aria-label={t('emptyFoundationAriaLabel', { suit: tc(FOUNDATION_SUIT_I18N_KEYS[idx]) })}
+                style={{ width: foundationWidth, height: foundationHeight }}
+                data-target-candidate={legalTargets.foundation.has(idx) || undefined}
+                className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite} ${legalTargets.foundation.has(idx) ? 'ring-2 ring-ds-success' : ''}`}
+              >
+                A
+              </button>
+            )}
+          </DropZone>
+          <div
+            data-testid={`fg-foundation-progress-${idx.toString()}`}
+            className={`text-xs mt-1 tabular-nums ${pile.length === 13 ? 'text-ds-success' : 'text-game-text-muted'}`}
+          >
+            {pile.length === 13 && <span aria-hidden="true">✓ </span>}
+            {t('foundationProgress', { count: pile.length })}
+          </div>
+        </div>
+      );
+    });
 
   return (
     <GamePageShell
@@ -391,94 +464,52 @@ function FlowerGardenPageContent() {
         <>
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
             <div className="flex flex-wrap gap-2 sm:gap-3 items-start justify-center mb-3">
-              <div className="flex flex-col gap-1" data-tutorial="fg-reserve">
+              <div
+                className={isLargeDesktop ? 'flex flex-col gap-1 w-full' : 'flex flex-col gap-1'}
+                data-tutorial="fg-reserve"
+              >
                 <span className="text-game-text-muted text-xs">{t('reserve')}</span>
                 <span className="text-game-text-muted text-xs">{t('reserveSelectionHint')}</span>
                 {/* 16 bouquet cards laid out as a grid (4 cols on mobile, 8 on sm+) so every
                     slot stays clearly visible instead of cramming into one wrapping row (#3283). */}
-                <div className="grid grid-cols-4 sm:grid-cols-8 gap-1 sm:gap-2 justify-items-center">
-                  {state.reserve.map((_, idx) => renderReserveCell(idx))}
+                {/* Add the card button's 6px border to each card's fan width. */}
+                {isLargeDesktop ? (
+                  <CardFan itemWidth={dims.cw + 6} className="w-full" data-testid="fg-bouquet-fan">
+                    {state.reserve.map((_, idx) => renderReserveCell(idx))}
+                  </CardFan>
+                ) : (
+                  <div className="grid grid-cols-4 sm:grid-cols-8 gap-1 sm:gap-2 justify-items-center">
+                    {state.reserve.map((_, idx) => renderReserveCell(idx))}
+                  </div>
+                )}
+              </div>
+
+              {!isLargeDesktop && (
+                <div className="flex items-start gap-1 sm:gap-2" data-tutorial="fg-foundation">
+                  {renderFoundations()}
                 </div>
+              )}
+            </div>
+
+            <details className="mb-1 text-center text-ds-text-muted text-xs">
+              <summary className="cursor-pointer">{t('rules')}</summary>
+              <p data-testid="fg-rules-note">{t('rulesNote')}</p>
+            </details>
+
+            <BedsLayout {...bedsLayoutProps}>
+              <div
+                className="flex gap-1 sm:gap-2"
+                data-tutorial="fg-tableau"
+                style={isLargeDesktop ? { width: 6 * dims.cw + 5 * BED_GAP_PX } : undefined}
+              >
+                {[0, 1, 2, 3, 4, 5].map(renderTableauColumn)}
               </div>
-
-              <div className="flex items-start gap-1 sm:gap-2" data-tutorial="fg-foundation">
-                {state.foundation.map((pile, idx) => {
-                  const foundationZone: FlowerGardenMoveZone = { zone: 'foundation', col: idx };
-                  return (
-                    <div key={`f-${idx.toString()}`} className="text-center">
-                      <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
-                      <DropZone
-                        isDropTarget={dnd.isDropTarget(foundationZone)}
-                        onDragOver={dnd.handleDragOver(foundationZone)}
-                        onDrop={dnd.handleDrop(foundationZone)}
-                        onDragLeave={dnd.handleDragLeave}
-                      >
-                        {pile.length > 0 ? (
-                          <button
-                            type="button"
-                            onClick={() => game.handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading || isAutoCompleting}
-                            aria-disabled={!selectedSource || undefined}
-                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
-                            aria-label={t('foundationAriaLabel', {
-                              suit: tc(FOUNDATION_SUIT_I18N_KEYS[idx]),
-                              card: cardAlt(pile[pile.length - 1]),
-                              count: pile.length,
-                            })}
-                            data-target-candidate={legalTargets.foundation.has(idx) || undefined}
-                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${
-                              legalTargets.foundation.has(idx) ? 'ring-2 ring-ds-success' : ''
-                            }`}
-                          >
-                            <AnimatedCard
-                              card={pile[pile.length - 1]}
-                              width={dims.cw}
-                              draggable={false}
-                              dealDelay={isAutoCompleting ? idx * 0.15 : 0}
-                            />
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => game.handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading}
-                            aria-disabled={!selectedSource || undefined}
-                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
-                            aria-label={t('emptyFoundationAriaLabel', {
-                              suit: tc(FOUNDATION_SUIT_I18N_KEYS[idx]),
-                            })}
-                            style={{ width: dims.cw, height: dims.ch }}
-                            data-target-candidate={legalTargets.foundation.has(idx) || undefined}
-                            className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite} ${
-                              legalTargets.foundation.has(idx) ? 'ring-2 ring-ds-success' : ''
-                            }`}
-                          >
-                            A
-                          </button>
-                        )}
-                      </DropZone>
-                      <div
-                        data-testid={`fg-foundation-progress-${idx.toString()}`}
-                        className={`text-xs mt-1 tabular-nums ${pile.length === 13 ? 'text-ds-success' : 'text-game-text-muted'}`}
-                      >
-                        {pile.length === 13 && <span aria-hidden="true">✓ </span>}
-                        {t('foundationProgress', { count: pile.length })}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* 他のソリティアと違う規則なので常設で出す。初回だけのチュートリアルに
-                書いてあっても、読み飛ばした後は盤面に手掛かりが無い (#5599)。 */}
-            <div className="mb-1 text-center text-ds-text-muted text-xs" data-testid="fg-rules-note">
-              {t('rulesNote')}
-            </div>
-
-            <div className="flex gap-1 sm:gap-2" data-tutorial="fg-tableau">
-              {[0, 1, 2, 3, 4, 5].map(renderTableauColumn)}
-            </div>
+              {isLargeDesktop && (
+                <div className="grid grid-cols-2 gap-1" data-tutorial="fg-foundation">
+                  {renderFoundations()}
+                </div>
+              )}
+            </BedsLayout>
 
             {/*
               ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、

@@ -19,14 +19,16 @@ import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useBigBenGame } from '../hooks/useBigBenGame';
-import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
+import { useElementWidth } from '../hooks/useElementWidth';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { HINT_FROM_RING, HINT_TO_RING } from '../styles/cardStyles';
+import { DESKTOP_COMPACT_CARD_WIDTH } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { BigBenMoveZone, BigBenResponse } from '../types/card';
 import { BigBenPhase } from '../types/phases';
@@ -36,8 +38,11 @@ import { BIGBEN_HELP, parseBigBenCommand } from '../utils/cli/commands/bigbenCom
 import { formatBigBenState } from '../utils/cli/formatters/bigbenFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
+import { tableauDimensions } from '../utils/tableauDimensions';
 
 const TABLEAU_COLS = 8;
+// Matches the tableau's sm:gap-2 spacing (8px).
+const TABLEAU_GAP = 8;
 const FACE_COUNT = 12;
 
 // Face index 0 is one o'clock, 11 is twelve. Everything the player sees stays
@@ -99,11 +104,20 @@ function BigBenPageContent() {
     [],
   );
   const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
-  const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
+  const { cardOverlap, cardWidth, isMobile } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const windowWidth = useWindowWidth();
-
+  const [tableauRef, tableauRowWidth] = useElementWidth<HTMLDivElement>();
   const dims = useMemo(() => {
-    if (!isMobile) return { cw: cardWidth, ch: cardHeight, co: cardOverlap };
+    if (!isMobile) {
+      const measured = tableauDimensions(
+        tableauRowWidth || cardWidth * TABLEAU_COLS + (TABLEAU_COLS - 1) * TABLEAU_GAP,
+        TABLEAU_COLS,
+        TABLEAU_GAP,
+        cardOverlap / cardWidth,
+      );
+      return { cw: measured.cardWidth, ch: measured.cardHeight, co: measured.cardOverlap };
+    }
     const padX = 16;
     const gapPx = 4;
     const colW = Math.floor((windowWidth - padX - (TABLEAU_COLS - 1) * gapPx) / TABLEAU_COLS);
@@ -111,7 +125,9 @@ function BigBenPageContent() {
     const ch = Math.round(cw * 1.5);
     const co = Math.round(cw * 0.32);
     return { cw, ch, co };
-  }, [isMobile, windowWidth, cardWidth, cardHeight, cardOverlap]);
+  }, [isMobile, windowWidth, cardWidth, cardOverlap, tableauRowWidth]);
+  const clockCardWidth = isLargeDesktop ? DESKTOP_COMPACT_CARD_WIDTH : dims.cw;
+  const clockCardHeight = isLargeDesktop ? Math.round(DESKTOP_COMPACT_CARD_WIDTH * 1.5) : dims.ch;
 
   const isPlayingForKbd = state?.phase === BigBenPhase.PLAYING;
 
@@ -255,7 +271,9 @@ function BigBenPageContent() {
                 );
               })
             )}
-            {col.length > 0 && <div style={{ height: (col.length - 1) * dims.co + dims.ch }} />}
+            {col.length > 0 && (
+              <div data-testid="gc-tableau-column-spacer" style={{ height: (col.length - 1) * dims.co + dims.ch }} />
+            )}
           </div>
         </DropZone>
       </div>
@@ -298,8 +316,12 @@ function BigBenPageContent() {
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
-          <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
-            <div className="flex flex-wrap justify-center gap-1 sm:gap-2 mb-3" data-tutorial="gc-clock">
+          {/* 12 x 80 + 11 x 4 = 1004px; keep enough content width for the clock row. */}
+          <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4">
+            <div
+              className={`flex flex-wrap justify-center gap-1 mb-3 ${isLargeDesktop ? '' : 'sm:gap-2'}`}
+              data-tutorial="gc-clock"
+            >
               {state.foundation.map((face, idx) => {
                 const faceZone: BigBenMoveZone = { zone: 'foundation', col: idx };
                 const top = face.cards.length > 0 ? face.cards[face.cards.length - 1] : null;
@@ -341,7 +363,7 @@ function BigBenPageContent() {
                         >
                           <AnimatedCard
                             card={top}
-                            width={dims.cw}
+                            width={clockCardWidth}
                             draggable={false}
                             dealDelay={isAutoCompleting ? idx * 0.05 : 0}
                           />
@@ -350,7 +372,7 @@ function BigBenPageContent() {
                         <div
                           role="img"
                           aria-label={t('emptyFaceAriaLabel', { idx, hour: CLOCK_HOURS[idx] })}
-                          style={{ width: dims.cw, height: dims.ch }}
+                          style={{ width: clockCardWidth, height: clockCardHeight }}
                           className="rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center"
                         >
                           {t('empty')}
@@ -371,7 +393,12 @@ function BigBenPageContent() {
               })}
             </div>
 
-            <div className="flex gap-1 sm:gap-2 items-start" data-tutorial="gc-tableau">
+            <div
+              ref={tableauRef}
+              className="flex gap-1 sm:gap-2 items-start"
+              data-testid="gc-tableau"
+              data-tutorial="gc-tableau"
+            >
               {Array.from({ length: TABLEAU_COLS }, (_, i) => i).map(renderTableauColumn)}
             </div>
 

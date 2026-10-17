@@ -545,3 +545,29 @@ func cuiSignedScore(n int) string {
 	}
 	return strconv.Itoa(n)
 }
+
+// cuiFourCardHandName returns the localized display name for a four-card poker rank.
+func cuiFourCardHandName(rank int) string {
+	var key string
+	switch rank {
+	case domain.FourCardHandHighCard:
+		key = "highCard"
+	case domain.FourCardHandPair:
+		key = "pair"
+	case domain.FourCardHandTwoPair:
+		key = "twoPair"
+	case domain.FourCardHandStraight:
+		key = "straight"
+	case domain.FourCardHandFlush:
+		key = "flush"
+	case domain.FourCardHandThreeOfAKind:
+		key = "threeOfAKind"
+	case domain.FourCardHandStraightFlush:
+		key = "straightFlush"
+	case domain.FourCardHandFourOfAKind:
+		key = "fourOfAKind"
+	default:
+		return ""
+	}
+	return i18n.T("pokerhand." + key)
+}

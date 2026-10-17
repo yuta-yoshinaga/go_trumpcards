@@ -295,7 +295,10 @@ function CirullaPageContent() {
                       <span className="flex items-center gap-2">
                         <span>
                           {playerName(p.id, p.isHuman)}: {t('score', { n: p.score })} /{' '}
-                          {t('taken', { n: p.capturedCount, denari: p.denariCount })} / {t('scope', { n: p.scope })}
+                          {t('taken', { n: p.capturedCount, denari: p.denariCount })} /{' '}
+                          <span className="whitespace-nowrap" data-testid="cirulla-scope">
+                            {t('scope', { n: p.scope })}
+                          </span>
                         </span>
                         {p.isDealer && (
                           <span className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>

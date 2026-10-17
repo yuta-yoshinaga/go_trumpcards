@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { sevensApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { ReplaySpeedSettingsPanel } from '../components/common/ReplaySpeedSettingsPanel';
@@ -18,6 +19,7 @@ import { SevensCpuArea } from '../components/sevens/SevensCpuArea';
 import { SevensHumanArea } from '../components/sevens/SevensHumanArea';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { useBreakpoint } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -65,6 +67,8 @@ export const SevensPage = withTutorial(SevensPageContent, 'sevens', SV_TUTORIAL_
 function SevensPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('sevens');
+  // CPU details are reference info; keeping them closed at large desktop lets the 4-row board fit 1280x800 (#11702).
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const {
     state,
     placedJoker,
@@ -391,11 +395,13 @@ function SevensPageContent() {
                 </div>
               )}
 
-            <div className="flex gap-2.5 flex-wrap mb-2.5">
-              {cpuPlayers.map((player) => (
-                <SevensCpuArea key={player.id} player={player} isCurrentTurn={state.currentTurn === player.id} />
-              ))}
-            </div>
+            <CpuAccordion playerCount={cpuPlayers.length} openOnDesktop={!isLargeDesktop}>
+              <div className="flex flex-wrap sm:flex-nowrap gap-2.5 mb-2.5">
+                {cpuPlayers.map((player) => (
+                  <SevensCpuArea key={player.id} player={player} isCurrentTurn={state.currentTurn === player.id} />
+                ))}
+              </div>
+            </CpuAccordion>
 
             <div data-tutorial="sv-board">
               <SevensBoard
@@ -479,9 +485,66 @@ function SevensPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+            <div data-tutorial="sv-settings">
+              <SettingsPanel title={t('config.title')} groups={settingsGroups} />
+              <ReplaySpeedSettingsPanel />
+            </div>
+
+            <ErrorAlert message={error} onRetry={retry} />
+
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            <div className="text-center">
+              <GameResetButton
+                isGameEnd={!!state.gameEndFlag}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="sv-reset-button"
+                className="min-w-[90px]"
+              />
+            </div>
+            <CardNavShortcutsPanel directPlay data-testid="sevens-kbd-shortcuts" />
           </div>
 
-          <GameFooter className={`${gameTheme.sevens.footer} px-4 py-2.5`}>
+          {/* Hand plus actions outgrow the 45vh cap on phones (#11655). */}
+          <GameFooter
+            tall
+            className={`${gameTheme.sevens.footer} px-4 py-2.5`}
+            actions={
+              <div className="flex gap-2 items-center justify-center flex-wrap">
+                <button
+                  type="button"
+                  className={`${btnSecondary} min-w-[90px] ${passesRemaining === 1 ? 'text-ds-warning' : ''}`}
+                  disabled={loading || !canPass}
+                  onClick={() => exec('play', -1)}
+                  data-tutorial="sv-play-pass"
+                  title={passDisabledReason ?? undefined}
+                  aria-describedby={passDisabledReason ? 'pass-disabled-reason' : undefined}
+                >
+                  {passesRemaining === null ? tc('button.pass') : t('passRemaining', { count: passesRemaining })}
+                </button>
+                {jokerCardIdx !== null && (
+                  <button
+                    type="button"
+                    className={`${btnSecondary} min-w-[90px]`}
+                    onClick={() => setJokerCardIdx(null)}
+                  >
+                    {tc('button.cancel')}
+                  </button>
+                )}
+                {passDisabledReason && (
+                  <p
+                    id="pass-disabled-reason"
+                    data-testid="pass-disabled-reason"
+                    className="w-full text-center text-xs text-ds-text-muted"
+                  >
+                    {passDisabledReason}
+                  </p>
+                )}
+              </div>
+            }
+          >
             {humanPlayer && (
               <div className="mb-2" data-tutorial="sv-player-hand">
                 <SevensHumanArea
@@ -506,52 +569,6 @@ function SevensPageContent() {
                 )}
               </div>
             )}
-
-            <div data-tutorial="sv-settings">
-              <SettingsPanel title={t('config.title')} groups={settingsGroups} />
-              <ReplaySpeedSettingsPanel />
-            </div>
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            <div className="text-center">
-              <GameResetButton
-                isGameEnd={!!state.gameEndFlag}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="sv-reset-button"
-                className="min-w-[90px]"
-              />
-              <button
-                type="button"
-                className={`${btnSecondary} min-w-[90px] ${passesRemaining === 1 ? 'text-ds-warning' : ''}`}
-                disabled={loading || !canPass}
-                onClick={() => exec('play', -1)}
-                data-tutorial="sv-play-pass"
-                title={passDisabledReason ?? undefined}
-                aria-describedby={passDisabledReason ? 'pass-disabled-reason' : undefined}
-              >
-                {passesRemaining === null ? tc('button.pass') : t('passRemaining', { count: passesRemaining })}
-              </button>
-              {passDisabledReason && (
-                <p
-                  id="pass-disabled-reason"
-                  data-testid="pass-disabled-reason"
-                  className="text-xs text-ds-text-muted mt-1"
-                >
-                  {passDisabledReason}
-                </p>
-              )}
-              {jokerCardIdx !== null && (
-                <button type="button" className={`${btnSecondary} min-w-[90px]`} onClick={() => setJokerCardIdx(null)}>
-                  {tc('button.cancel')}
-                </button>
-              )}
-            </div>
-            <CardNavShortcutsPanel directPlay data-testid="sevens-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

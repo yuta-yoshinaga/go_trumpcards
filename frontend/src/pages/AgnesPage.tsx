@@ -17,7 +17,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -46,6 +46,7 @@ import { isTableauAllFaceUp } from '../utils/solitaireUtils';
 
 /** Upper bound on auto-complete sweep iterations (one per card) to guard against loops. */
 const AGNES_AUTO_MAX_STEPS = 52;
+const AGNES_CARD_OVERLAP = 24;
 
 /** Tutorial steps for the Agnes Sorel solitaire game. */
 const AG_TUTORIAL_STEPS: TutorialStep[] = [
@@ -92,6 +93,7 @@ function AgnesPageContent() {
   } = useGamePageSetup('agnes');
   const { state, setState, loading, error, exec: execApi, retry } = useGameApi(agnesApi.exec);
   const { cardWidth, cardHeight, isMobile } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -270,12 +272,14 @@ function AgnesPageContent() {
       cancelGiveUp={cancelGiveUp}
       headerExtra={
         <>
-          <span data-testid="agnes-base-rank" className="text-sm text-ds-text-muted">
-            {t('baseRank')}: {state.baseRank || '?'}
-          </span>
-          <span className="text-sm text-ds-text-muted">
-            {t('moveCount')}: {state.moveCount}
-          </span>
+          <div className="flex flex-wrap items-center gap-x-3">
+            <span data-testid="agnes-base-rank" className="whitespace-nowrap text-sm text-ds-text-muted">
+              {t('baseRank')}: {state.baseRank || '?'}
+            </span>
+            <span className="whitespace-nowrap text-sm text-ds-text-muted">
+              {t('moveCount')}: {state.moveCount}
+            </span>
+          </div>
           <span className="sr-only" role="status" aria-live="polite" data-testid="agnes-drag-target-status">
             {dnd.isDragging && draggedCard !== null
               ? state.tableau
@@ -307,7 +311,7 @@ function AgnesPageContent() {
             ]}
           />
 
-          <LandscapeBanner message={phaseName} />
+          <LandscapeBanner message={t('landscapeBanner')} />
 
           <div className="flex-1 overflow-y-auto px-4 pt-3 lg:px-8">
             {/* Foundation */}
@@ -336,8 +340,16 @@ function AgnesPageContent() {
                       {pile.length > 0 ? (
                         <AnimatedCard card={pile[pile.length - 1]} width={cardWidth} />
                       ) : (
-                        <span className="absolute inset-0 flex items-center justify-center text-xs text-ds-text-muted/80">
-                          {t('baseRank')}: {state.baseRank}
+                        <span className="absolute inset-0 flex items-center justify-center text-xs text-ds-text-muted">
+                          <span className="sr-only">
+                            {t('baseRank')}: {state.baseRank}
+                          </span>
+                          <span aria-hidden="true" className="text-[10px] leading-tight break-keep sm:hidden">
+                            {t('baseRankShort')}
+                          </span>
+                          <span aria-hidden="true" className="hidden sm:inline">
+                            {t('baseRank')}: {state.baseRank}
+                          </span>
                         </span>
                       )}
                     </div>
@@ -347,7 +359,7 @@ function AgnesPageContent() {
             </div>
 
             {/* Stock (deal) */}
-            <div className="mb-3 flex gap-3" data-tutorial="ag-stock">
+            <div className="mb-3 flex items-start gap-3" data-tutorial="ag-stock">
               <div className="flex flex-col items-center">
                 <button
                   type="button"
@@ -360,13 +372,58 @@ function AgnesPageContent() {
                   {state.stockCount > 0 ? (
                     <AnimatedCardBack width={cardWidth} />
                   ) : (
-                    <span className="text-xs text-ds-text-muted/80">{t('empty')}</span>
+                    <span className="text-xs text-ds-text-muted">{t('empty')}</span>
                   )}
                 </button>
                 <span className="mt-1 text-xs text-ds-text-muted">
                   {t('stock')}: {state.stockCount}
                 </span>
               </div>
+              {isPlaying && isLargeDesktop && (
+                <fieldset
+                  className="flex flex-wrap items-start gap-2 overflow-y-auto border-0 p-0"
+                  style={{ maxHeight: cardHeight }}
+                  data-testid="agnes-move-bar"
+                >
+                  <legend className="sr-only">{t('tableau')}</legend>
+                  {state.tableau.flatMap((col, fromCol) => {
+                    const sourceCard = endFaceUpCard(col);
+                    if (!sourceCard) return [];
+                    const moves = [];
+                    if (agnesCanPlaceOnFoundation(sourceCard, state.foundation, state.baseRank)) {
+                      moves.push(
+                        <button
+                          key={`f-${fromCol}`}
+                          type="button"
+                          aria-label={t('moveToFoundationAriaLabel', { col: fromCol })}
+                          className={`${btnOutline} ${focusRingWhite} text-xs min-h-[44px]`}
+                          onClick={() => handleMoveTableauToFoundation(fromCol)}
+                          disabled={loading}
+                        >
+                          #{fromCol} {t('moveToFoundation')}
+                        </button>,
+                      );
+                    }
+                    state.tableau.forEach((targetCol, toCol) => {
+                      if (toCol !== fromCol && agnesCanPlaceOnTableau(sourceCard, targetCol)) {
+                        moves.push(
+                          <button
+                            key={`t-${fromCol}-${toCol}`}
+                            type="button"
+                            aria-label={t('moveToColAriaLabel', { fromCol, toCol })}
+                            className={`${btnOutline} ${focusRingWhite} text-xs min-h-[44px]`}
+                            onClick={() => handleMoveTableauToTableau(fromCol, col.length - 1, toCol)}
+                            disabled={loading}
+                          >
+                            #{fromCol} {t('moveToCol', { col: toCol })}
+                          </button>,
+                        );
+                      }
+                    });
+                    return moves;
+                  })}
+                </fieldset>
+              )}
             </div>
 
             {/* Tableau */}
@@ -374,6 +431,7 @@ function AgnesPageContent() {
               {state.tableau.map((col, i) => {
                 const tZone: AgnesMoveZone = { zone: 'tableau', col: i };
                 const endIndex = col.length - 1;
+                const stackHeight = col.length > 0 ? endIndex * AGNES_CARD_OVERLAP + cardHeight : cardHeight;
                 const isDragSourceColumn = dnd.dragSource?.zone === 'tableau' && dnd.dragSource.col === i;
                 const isEligible =
                   dnd.isDragging &&
@@ -381,7 +439,7 @@ function AgnesPageContent() {
                   draggedCard !== null &&
                   agnesCanPlaceOnTableau(draggedCard, col);
                 return (
-                  <div key={`t-${i}`} className="flex flex-col gap-1">
+                  <div key={`t-${i}`} className="relative flex flex-col gap-1">
                     <span className="text-xs text-ds-text-muted">#{i}</span>
                     <DropZone
                       className={isEligible ? 'border-2 border-ds-success rounded' : ''}
@@ -392,7 +450,7 @@ function AgnesPageContent() {
                     >
                       <div
                         className="relative"
-                        style={{ width: cardWidth, minHeight: cardHeight }}
+                        style={{ width: cardWidth, minHeight: stackHeight }}
                         data-eligible={isEligible ? 'true' : undefined}
                       >
                         {col.length === 0 ? (
@@ -407,7 +465,11 @@ function AgnesPageContent() {
                             const draggable = isEnd && tcard.faceUp && isPlaying && !loading;
                             const cardZone: AgnesMoveZone = { zone: 'tableau', col: i, cardIndex: j };
                             return (
-                              <div key={`t-${i}-${j}`} className="absolute" style={{ top: j * 24, left: 0 }}>
+                              <div
+                                key={`t-${i}-${j}`}
+                                className="absolute"
+                                style={{ top: j * AGNES_CARD_OVERLAP, left: 0 }}
+                              >
                                 {tcard.faceUp && tcard.card ? (
                                   <button
                                     type="button"
@@ -462,8 +524,7 @@ function AgnesPageContent() {
                             })}
                           </div>
                         );
-                        // On mobile, collapse the dense per-column action buttons behind a
-                        // details disclosure so they don't crowd below the 44px tap-target min.
+                        if (isLargeDesktop) return null;
                         return isMobile ? (
                           <details className="mt-1 w-full" data-testid={`ag-col-actions-${i}`}>
                             <summary className="text-xs text-ds-text-muted cursor-pointer min-h-[44px] flex items-center justify-center">

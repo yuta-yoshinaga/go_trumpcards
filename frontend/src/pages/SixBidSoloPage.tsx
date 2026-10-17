@@ -128,7 +128,7 @@ function SixBidSoloPageContent() {
   );
   const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('sixbidsolo', SIXBIDSOLO_PHASE_KEYS);
 
   if (!state)
@@ -180,6 +180,10 @@ function SixBidSoloPageContent() {
   };
 
   const result = state.lastResult;
+
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
 
   return (
     <GamePageShell
@@ -341,11 +345,7 @@ function SixBidSoloPageContent() {
               </div>
             )}
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
+            {isMobile && messageBox}
 
             <ActionLogSection
               isEndPhase={isGameEnd}
@@ -353,10 +353,154 @@ function SixBidSoloPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+
+            <ErrorAlert message={error} onRetry={retry} />
+
+            <label className="flex items-center gap-1 text-ds-text-primary text-xs w-full justify-center cursor-pointer min-h-[44px]">
+              <input
+                type="checkbox"
+                checked={frontendHintEnabled}
+                onChange={(e) => setFrontendHintEnabled(e.target.checked)}
+              />
+              {tc('hint.toggle', { ns: 'tutorial' })}
+            </label>
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            <div>
+              {isGameEnd && (
+                <span className="text-ds-text-primary text-sm font-semibold mr-1">
+                  {humanWon ? t('win') : t('lose')}
+                </span>
+              )}
+              <GameResetButton
+                isGameEnd={isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="sixbidsolo-reset-button"
+              />
+            </div>
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.sixbidsolo.footer} px-4 py-2.5`}>
+          <GameFooter
+            message={isMobile ? undefined : messageBox}
+            className={`${gameTheme.sixbidsolo.footer} px-4 py-2.5`}
+            actions={
+              isHumanBid || isHumanDeclare || isHumanPlay || (isHandEnd && !isGameEnd) ? (
+                <div className="flex flex-wrap gap-2 items-center" data-tutorial="sixbidsolo-actions">
+                  {isHumanBid && (
+                    <>
+                      <label
+                        className="text-ds-text-muted text-xs flex items-center gap-1"
+                        htmlFor="sixbidsolo-bid-select"
+                      >
+                        {t('bidLabel')}
+                        <select
+                          id="sixbidsolo-bid-select"
+                          className="bg-black/30 text-ds-text-primary rounded px-1 min-h-[44px]"
+                          value={selectedBid}
+                          onChange={(e) => setBidKind(Number(e.target.value))}
+                        >
+                          {bids.map((b) => (
+                            <option key={b} value={b}>
+                              {bidLabel(b)} ({t('target', { n: state.bidTargets[b] ?? 0 })})
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <button type="button" className={btnPrimary} onClick={handleBid} disabled={loading}>
+                        {t('bidButton')}
+                      </button>
+                      <button type="button" className={btnWarning} onClick={() => exec('pass')} disabled={loading}>
+                        {t('passButton')}
+                      </button>
+                    </>
+                  )}
+                  {isHumanDeclare && (
+                    <>
+                      <label
+                        className="text-ds-text-muted text-xs flex items-center gap-1"
+                        htmlFor="sixbidsolo-suit-select"
+                      >
+                        {t('suitLabel')}
+                        <select
+                          id="sixbidsolo-suit-select"
+                          className="bg-black/30 text-ds-text-primary rounded px-1 min-h-[44px]"
+                          value={suit}
+                          onChange={(e) => setSuit(Number(e.target.value))}
+                        >
+                          {SUITS.map((s) => (
+                            <option key={s} value={s}>
+                              {suitLabel(s)}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      {needsCalledCard && (
+                        <>
+                          <label
+                            className="text-ds-text-muted text-xs flex items-center gap-1"
+                            htmlFor="sixbidsolo-called-suit-select"
+                          >
+                            {t('calledSuitLabel')}
+                            <select
+                              id="sixbidsolo-called-suit-select"
+                              className="bg-black/30 text-ds-text-primary rounded px-1 min-h-[44px]"
+                              value={calledSuit}
+                              onChange={(e) => setCalledSuit(Number(e.target.value))}
+                            >
+                              {SUITS.map((s) => (
+                                <option key={s} value={s}>
+                                  {suitLabel(s)}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                          <label
+                            className="text-ds-text-muted text-xs flex items-center gap-1"
+                            htmlFor="sixbidsolo-called-value-select"
+                          >
+                            {t('calledValueLabel')}
+                            <select
+                              id="sixbidsolo-called-value-select"
+                              className="bg-black/30 text-ds-text-primary rounded px-1 min-h-[44px]"
+                              value={calledValue}
+                              onChange={(e) => setCalledValue(Number(e.target.value))}
+                            >
+                              {CALL_RANKS.map((v) => (
+                                <option key={v} value={v}>
+                                  {v}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                        </>
+                      )}
+                      <button type="button" className={btnPrimary} onClick={handleDeclare} disabled={loading}>
+                        {t('declareButton')}
+                      </button>
+                    </>
+                  )}
+                  {isHumanPlay && (
+                    <button
+                      type="button"
+                      className={btnSuccess}
+                      onClick={handlePlay}
+                      disabled={loading || selected === null}
+                    >
+                      {t('playButton')}
+                    </button>
+                  )}
+                  {isHandEnd && !isGameEnd && (
+                    <button type="button" className={btnSuccess} onClick={() => exec('next')} disabled={loading}>
+                      {t('nextHand')}
+                    </button>
+                  )}
+                </div>
+              ) : null
+            }
+          >
             <div className="mb-2" data-tutorial="sixbidsolo-hand">
               <div className="text-ds-text-muted text-xs mb-1">{t('yourHand')}</div>
               <div className="flex flex-wrap gap-1">
@@ -385,8 +529,6 @@ function SixBidSoloPageContent() {
               </span>
             </div>
 
-            <ErrorAlert message={error} onRetry={retry} />
-
             {isHumanBid && (
               <div className="text-ds-text-muted text-xs mb-2" data-testid="sixbidsolo-bid-notice">
                 <div>{t('bidNotice')}</div>
@@ -407,141 +549,6 @@ function SixBidSoloPageContent() {
                 {t('playNotice')}
               </div>
             )}
-
-            <label className="flex items-center gap-1 text-ds-text-primary text-xs w-full justify-center cursor-pointer min-h-[44px]">
-              <input
-                type="checkbox"
-                checked={frontendHintEnabled}
-                onChange={(e) => setFrontendHintEnabled(e.target.checked)}
-              />
-              {tc('hint.toggle', { ns: 'tutorial' })}
-            </label>
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            <div className="flex flex-wrap gap-2 items-center" data-tutorial="sixbidsolo-actions">
-              {isHumanBid && (
-                <>
-                  <label className="text-ds-text-muted text-xs flex items-center gap-1" htmlFor="sixbidsolo-bid-select">
-                    {t('bidLabel')}
-                    <select
-                      id="sixbidsolo-bid-select"
-                      className="bg-black/30 text-ds-text-primary rounded px-1 min-h-[44px]"
-                      value={selectedBid}
-                      onChange={(e) => setBidKind(Number(e.target.value))}
-                    >
-                      {bids.map((b) => (
-                        <option key={b} value={b}>
-                          {bidLabel(b)} ({t('target', { n: state.bidTargets[b] ?? 0 })})
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <button type="button" className={btnPrimary} onClick={handleBid} disabled={loading}>
-                    {t('bidButton')}
-                  </button>
-                  <button type="button" className={btnWarning} onClick={() => exec('pass')} disabled={loading}>
-                    {t('passButton')}
-                  </button>
-                </>
-              )}
-
-              {isHumanDeclare && (
-                <>
-                  <label
-                    className="text-ds-text-muted text-xs flex items-center gap-1"
-                    htmlFor="sixbidsolo-suit-select"
-                  >
-                    {t('suitLabel')}
-                    <select
-                      id="sixbidsolo-suit-select"
-                      className="bg-black/30 text-ds-text-primary rounded px-1 min-h-[44px]"
-                      value={suit}
-                      onChange={(e) => setSuit(Number(e.target.value))}
-                    >
-                      {SUITS.map((s) => (
-                        <option key={s} value={s}>
-                          {suitLabel(s)}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  {needsCalledCard && (
-                    <>
-                      <label
-                        className="text-ds-text-muted text-xs flex items-center gap-1"
-                        htmlFor="sixbidsolo-called-suit-select"
-                      >
-                        {t('calledSuitLabel')}
-                        <select
-                          id="sixbidsolo-called-suit-select"
-                          className="bg-black/30 text-ds-text-primary rounded px-1 min-h-[44px]"
-                          value={calledSuit}
-                          onChange={(e) => setCalledSuit(Number(e.target.value))}
-                        >
-                          {SUITS.map((s) => (
-                            <option key={s} value={s}>
-                              {suitLabel(s)}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                      <label
-                        className="text-ds-text-muted text-xs flex items-center gap-1"
-                        htmlFor="sixbidsolo-called-value-select"
-                      >
-                        {t('calledValueLabel')}
-                        <select
-                          id="sixbidsolo-called-value-select"
-                          className="bg-black/30 text-ds-text-primary rounded px-1 min-h-[44px]"
-                          value={calledValue}
-                          onChange={(e) => setCalledValue(Number(e.target.value))}
-                        >
-                          {CALL_RANKS.map((v) => (
-                            <option key={v} value={v}>
-                              {v}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                    </>
-                  )}
-                  <button type="button" className={btnPrimary} onClick={handleDeclare} disabled={loading}>
-                    {t('declareButton')}
-                  </button>
-                </>
-              )}
-
-              {isHumanPlay && (
-                <button
-                  type="button"
-                  className={btnSuccess}
-                  onClick={handlePlay}
-                  disabled={loading || selected === null}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-
-              {isHandEnd && !isGameEnd && (
-                <button type="button" className={btnSuccess} onClick={() => exec('next')} disabled={loading}>
-                  {t('nextHand')}
-                </button>
-              )}
-
-              {isGameEnd && (
-                <span className="text-ds-text-primary text-sm font-semibold mr-1">
-                  {humanWon ? t('win') : t('lose')}
-                </span>
-              )}
-
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="sixbidsolo-reset-button"
-              />
-            </div>
           </GameFooter>
         </>
       )}

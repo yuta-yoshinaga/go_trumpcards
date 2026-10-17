@@ -265,6 +265,10 @@ function BridgePageContent() {
     return t('contract', { level: state.contractLevel, suit });
   };
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.bridge')}
@@ -309,12 +313,15 @@ function BridgePageContent() {
           {/* Scrollable area */}
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
             {/* Round/Trick info */}
-            <div className="text-ds-text-primary text-center mb-2">
-              <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
-              {isPlayPhase && <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>}
-              {contractDisplay() && <span className="mr-4">{contractDisplay()}</span>}
+            <div
+              className="text-ds-text-primary text-center mb-2 flex flex-wrap justify-center gap-x-4 gap-y-1"
+              data-testid="bridge-status-row"
+            >
+              <span className="whitespace-nowrap">{t('round', { n: state.roundNumber })}</span>
+              {isPlayPhase && <span className="whitespace-nowrap">{t('trick', { n: state.trickNumber })}</span>}
+              {contractDisplay() && <span className="whitespace-nowrap">{contractDisplay()}</span>}
               {state.trumpSuit !== 0 && state.contractLevel > 0 && (
-                <span>
+                <span className="whitespace-nowrap">
                   {state.trumpSuit === 5 ? t('noTrump') : t('trumpSuit', { suit: suitLabel(state.trumpSuit) })}
                 </span>
               )}
@@ -542,9 +549,15 @@ function BridgePageContent() {
                           <th scope="col" className="text-left">
                             {t('team', { n: '' })}
                           </th>
-                          <th scope="col">{tc('button.score', { defaultValue: 'Score' })}</th>
-                          <th scope="col">{t('gamesWon')}</th>
-                          <th scope="col">{t('belowLine')}</th>
+                          <th scope="col" className="whitespace-nowrap text-[10px]">
+                            {tc('button.score', { defaultValue: 'Score' })}
+                          </th>
+                          <th scope="col" className="whitespace-nowrap text-[10px]">
+                            {t('gamesWon')}
+                          </th>
+                          <th scope="col" className="whitespace-nowrap text-[10px]">
+                            {t('belowLine')}
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
@@ -568,9 +581,15 @@ function BridgePageContent() {
                           <th scope="col" className="text-left">
                             {t('team', { n: '' })}
                           </th>
-                          <th scope="col">{tc('button.score', { defaultValue: 'Score' })}</th>
-                          <th scope="col">{t('gamesWon')}</th>
-                          <th scope="col">{t('belowLine')}</th>
+                          <th scope="col" className="whitespace-nowrap text-[10px]">
+                            {tc('button.score', { defaultValue: 'Score' })}
+                          </th>
+                          <th scope="col" className="whitespace-nowrap text-[10px]">
+                            {t('gamesWon')}
+                          </th>
+                          <th scope="col" className="whitespace-nowrap text-[10px]">
+                            {t('belowLine')}
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
@@ -589,24 +608,146 @@ function BridgePageContent() {
               </div>
             </div>
 
-            {/* Message */}
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
             {/* Action log */}
+            {isMobile && messageBox}
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+
+            <ErrorAlert message={error ?? hintError} onRetry={retry} />
+
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
+                付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
+              読み上げられないことがある (#5955, #6663)。 */}
+            {(isHumanBidTurn || isHumanTurn) && (
+              <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
+                {tc('button.hint')}
+              </button>
+            )}
+            <div data-testid="bridge-hint-live" role="status" aria-live="polite">
+              {hint && (
+                <div className="text-ds-warning text-sm mb-2">
+                  {hint.cardIndex != null
+                    ? `${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`
+                    : `(${t(`hintReason.${hint.reason}`)})`}
+                </div>
+              )}
+            </div>
+
+            <GameResetButton
+              isGameEnd={isGameEnd}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+              dataTutorial="br-reset-button"
+            />
+            <CardNavShortcutsPanel data-testid="bridge-kbd-shortcuts" />
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.bridge.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.bridge.footer} px-4 py-2.5`}
+            message={!isMobile && messageBox}
+            actions={
+              isHumanBidTurn || isHumanTurn || isTrickEnd || isRoundEnd ? (
+                <div className="flex gap-1 items-center flex-wrap" data-tutorial="br-play-button">
+                  {/* Bid phase controls */}
+                  {isHumanBidTurn && (
+                    <span data-tutorial="br-bid-controls" className="flex gap-1 items-center flex-wrap">
+                      <select
+                        className="text-xs rounded bg-black/50 text-ds-text-primary px-1.5 py-0.5"
+                        value={bidLevel}
+                        onChange={(e) => setBidLevel(Number(e.target.value))}
+                        aria-label={t('bidLevel')}
+                      >
+                        {[1, 2, 3, 4, 5, 6, 7].map((lv) => (
+                          <option key={lv} value={lv}>
+                            {lv}
+                          </option>
+                        ))}
+                      </select>
+                      <select
+                        className="text-xs rounded bg-black/50 text-ds-text-primary px-1.5 py-0.5"
+                        value={bidSuit}
+                        onChange={(e) => setBidSuit(Number(e.target.value))}
+                        aria-label={t('bidSuit')}
+                      >
+                        {DENOMINATIONS.map((d) => (
+                          <option key={d.suit} value={d.suit}>
+                            {t(d.labelKey)}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={() => handleBid(1, bidLevel, bidSuit)}
+                        disabled={loading || !bidLegal}
+                        title={!bidLegal ? t('bidTooLow') : undefined}
+                        data-testid="br-bid-submit"
+                      >
+                        {t('bidButton')}
+                      </button>
+                      <button type="button" className={btnSecondary} onClick={() => handleBid(0)} disabled={loading}>
+                        {t('passButton')}
+                      </button>
+                      <button
+                        type="button"
+                        className={btnSecondary}
+                        onClick={() => handleBid(2)}
+                        disabled={loading || !doubleLegal}
+                        title={!doubleLegal ? t('doubleIllegal') : undefined}
+                        data-testid="br-double"
+                      >
+                        {t('doubleButton')}
+                      </button>
+                      <button
+                        type="button"
+                        className={btnSecondary}
+                        onClick={() => handleBid(3)}
+                        disabled={loading || !redoubleLegal}
+                        title={!redoubleLegal ? t('redoubleIllegal') : undefined}
+                        data-testid="br-redouble"
+                      >
+                        {t('redoubleButton')}
+                      </button>
+                    </span>
+                  )}
+
+                  {/* Play phase */}
+                  {isHumanTurn && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handlePlay}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                    >
+                      {t('playButton')}
+                    </button>
+                  )}
+
+                  {/* Trick end */}
+                  {isTrickEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                      {t('nextTrick')}
+                    </button>
+                  )}
+
+                  {/* Round end */}
+                  {isRoundEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                      {t('nextRound')}
+                    </button>
+                  )}
+                </div>
+              ) : null
+            }
+          >
             {/* Human cards */}
             {activeHand.length > 0 &&
               (isMobile ? (
@@ -652,130 +793,6 @@ function BridgePageContent() {
                   })}
                 </div>
               ))}
-
-            <ErrorAlert message={error ?? hintError} onRetry={retry} />
-
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
-                付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
-                読み上げられないことがある (#5955, #6663)。 */}
-            <div data-testid="bridge-hint-live" role="status" aria-live="polite">
-              {hint && (
-                <div className="text-ds-warning text-sm mb-2">
-                  {hint.cardIndex != null
-                    ? `${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`
-                    : `(${t(`hintReason.${hint.reason}`)})`}
-                </div>
-              )}
-            </div>
-
-            <div className="flex gap-1 items-center flex-wrap" data-tutorial="br-play-button">
-              {(isHumanBidTurn || isHumanTurn) && (
-                <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
-                  {tc('button.hint')}
-                </button>
-              )}
-
-              {/* Bid phase controls */}
-              {isHumanBidTurn && (
-                <span data-tutorial="br-bid-controls" className="flex gap-1 items-center flex-wrap">
-                  <select
-                    className="text-xs rounded bg-black/50 text-ds-text-primary px-1.5 py-0.5"
-                    value={bidLevel}
-                    onChange={(e) => setBidLevel(Number(e.target.value))}
-                    aria-label={t('bidLevel')}
-                  >
-                    {[1, 2, 3, 4, 5, 6, 7].map((lv) => (
-                      <option key={lv} value={lv}>
-                        {lv}
-                      </option>
-                    ))}
-                  </select>
-                  <select
-                    className="text-xs rounded bg-black/50 text-ds-text-primary px-1.5 py-0.5"
-                    value={bidSuit}
-                    onChange={(e) => setBidSuit(Number(e.target.value))}
-                    aria-label={t('bidSuit')}
-                  >
-                    {DENOMINATIONS.map((d) => (
-                      <option key={d.suit} value={d.suit}>
-                        {t(d.labelKey)}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={() => handleBid(1, bidLevel, bidSuit)}
-                    disabled={loading || !bidLegal}
-                    title={!bidLegal ? t('bidTooLow') : undefined}
-                    data-testid="br-bid-submit"
-                  >
-                    {t('bidButton')}
-                  </button>
-                  <button type="button" className={btnSecondary} onClick={() => handleBid(0)} disabled={loading}>
-                    {t('passButton')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnSecondary}
-                    onClick={() => handleBid(2)}
-                    disabled={loading || !doubleLegal}
-                    title={!doubleLegal ? t('doubleIllegal') : undefined}
-                    data-testid="br-double"
-                  >
-                    {t('doubleButton')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnSecondary}
-                    onClick={() => handleBid(3)}
-                    disabled={loading || !redoubleLegal}
-                    title={!redoubleLegal ? t('redoubleIllegal') : undefined}
-                    data-testid="br-redouble"
-                  >
-                    {t('redoubleButton')}
-                  </button>
-                </span>
-              )}
-
-              {/* Play phase */}
-              {isHumanTurn && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-
-              {/* Trick end */}
-              {isTrickEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                  {t('nextTrick')}
-                </button>
-              )}
-
-              {/* Round end */}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
-
-              {/* Reset */}
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="br-reset-button"
-              />
-            </div>
-            <CardNavShortcutsPanel data-testid="bridge-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

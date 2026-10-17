@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { burracoApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -15,7 +16,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useBurracoGame } from '../hooks/useBurracoGame';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -74,6 +75,7 @@ const CA_TUTORIAL_STEPS: TutorialStep[] = [
 export const BurracoPage = withTutorial(BurracoPageContent, 'burraco', CA_TUTORIAL_STEPS);
 /** Inner content of the Burraco page. */
 function BurracoPageContent() {
+  const isMobile = useIsMobile();
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('burraco');
   const {
@@ -105,7 +107,12 @@ function BurracoPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('burraco', state);
 
+  const messageBox = (
+    <GameMessageBox message={state?.message} messageCode={state?.messageCode} messageParams={state?.messageParams} />
+  );
+
   const humanPlayer = state?.players.find((p) => p.isHuman);
+  const humanSeat = state?.players.find((player) => player.isHuman)?.id ?? 0;
   // ヒントが無効なとき・サーバがヒントを返さない場面 (CPU の手番など) では空。
   // **useGameHint が無効時に null を返す**ので、ここで再度フラグを見ない
   // (見ると、条件が二重になって片方が死ぬ)。
@@ -331,31 +338,28 @@ function BurracoPageContent() {
                 {t('pozzettoTakenBanner', { player: pozzettoBanner })}
               </div>
             )}
-            <div className="text-ds-text-primary text-center mb-2">
-              <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
+            <div className="mb-2 flex flex-wrap items-center justify-center gap-2 text-[10px] text-ds-text-primary sm:gap-4 sm:text-base">
+              <span>{t('round', { n: state.roundNumber })}</span>
               <span>
                 {t('drawPile', { count: state.drawPileCount })} / {t('discardPile', { count: state.discardPileCount })}
               </span>
               <span
-                className="ml-4"
                 data-testid="bu-pozzetto-count"
                 title={t('pozzettoDescription')}
                 aria-describedby="bu-pozzetto-description"
               >
                 {t('pozzetto', { count: state.pozzettoCount })}
               </span>
-              {state.isFrozen && <span className="ml-2 text-ds-info font-bold">[{t('frozen')}]</span>}
+              {state.isFrozen && (
+                <span className="shrink-0 whitespace-nowrap text-ds-info font-bold">[{t('frozen')}]</span>
+              )}
             </div>
-            {/* **ポゼットはこのゲーム固有の用語。** 残り山数とバナーだけでは
-                意味不明な数字にしかならない。title だけだとタッチ操作で読めないので
-                常時見える 1 行として出す (読み上げには aria-describedby で結ぶ)。 */}
-            <div
-              id="bu-pozzetto-description"
-              className="text-ds-text-muted text-xs"
-              data-testid="bu-pozzetto-description"
-            >
-              {t('pozzettoDescription')}
-            </div>
+            <details className="mb-2 text-xs text-ds-text-muted" data-testid="bu-rules">
+              <summary className="min-h-11 cursor-pointer py-2">{t('rulesLabel')}</summary>
+              <div id="bu-pozzetto-description" data-testid="bu-pozzetto-description">
+                {t('pozzettoDescription')}
+              </div>
+            </details>
 
             <div className={lgTwoColGrid}>
               {/* Left: game play area */}
@@ -369,7 +373,7 @@ function BurracoPageContent() {
                     data-tutorial="ca-draw-area"
                     data-testid="ca-discard-pile"
                   >
-                    <AnimatedCard card={state.discardTop} width={cardWidth} />
+                    <AnimatedCard card={state.discardTop} width={isMobile ? 36 : cardWidth} />
                     <div className="text-ds-text-muted text-sm">{t('discardTop')}</div>
                     {state.isFrozen && (
                       <span
@@ -386,11 +390,7 @@ function BurracoPageContent() {
 
                 {/* Full discard pile viewer: in Burraco the whole pile is taken at once,
                     so its contents are decision-critical public information. */}
-                <details
-                  className="my-3 rounded bg-black/30 p-2"
-                  data-testid="ca-discard-pile-viewer"
-                  open={isDrawPhase}
-                >
+                <details className="my-3 rounded bg-black/30 p-2" data-testid="ca-discard-pile-viewer">
                   <summary className="cursor-pointer select-none text-sm text-ds-text-muted">
                     {t('discardPileViewer', { count: state.discardPile.length })}
                   </summary>
@@ -404,7 +404,7 @@ function BurracoPageContent() {
                           <AnimatedCard
                             key={`discard-${card.design}-${card.value}-${di}`}
                             card={card}
-                            width={cardWidth * 0.6}
+                            width={isMobile ? 36 : cardWidth * 0.6}
                           />
                         ))}
                       </div>
@@ -415,10 +415,13 @@ function BurracoPageContent() {
                 {/* Player melds */}
                 {state.players.map((p, pi) => {
                   if (p.melds.length === 0 && p.red3s.length === 0) return null;
-                  return (
+                  // Burraco は 2 人戦 (NewDefaultBurraco: 人間 1 + CPU 1) なので席の偶奇で自分側が決まる。
+                  const isOwnTeam = Math.abs(p.id - humanSeat) % 2 === 0;
+                  const meldCount = p.melds.length + p.red3s.length;
+                  const meldContent = (
                     <div
                       key={pi}
-                      className="my-2 p-2 rounded bg-black/30"
+                      className="my-2 p-2 rounded bg-ds-surface"
                       data-tutorial={pi === 0 ? 'ca-meld-area' : undefined}
                     >
                       <div className="text-ds-text-muted text-sm mb-1">
@@ -427,7 +430,7 @@ function BurracoPageContent() {
                         {p.tookPozzetto && <span className="ml-2 text-ds-info text-xs">[{t('tookPozzetto')}]</span>}
                       </div>
                       {p.melds.map((m, mi) => (
-                        <div key={mi} className="flex flex-wrap gap-1 mb-1">
+                        <div key={mi} className="mb-1 flex flex-nowrap gap-0 sm:gap-1" data-testid="bu-meld-cards">
                           <span className="text-xs text-ds-text-muted self-center mr-1">
                             {m.isBurraco
                               ? m.isNatural
@@ -436,19 +439,39 @@ function BurracoPageContent() {
                               : `(${m.cards.length})`}
                           </span>
                           {m.cards.map((card, ci) => (
-                            <AnimatedCard key={`meld-${pi}-${mi}-${ci}`} card={card} width={cardWidth * 0.6} />
+                            <AnimatedCard
+                              key={`meld-${pi}-${mi}-${ci}`}
+                              card={card}
+                              width={isMobile ? 36 : cardWidth * 0.6}
+                              wrapperClassName={isMobile && ci > 0 ? '-ml-[22px]' : undefined}
+                            />
                           ))}
                         </div>
                       ))}
                       {p.red3s.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1">
+                        <div className="mt-1 flex flex-wrap gap-0 sm:gap-1">
                           <span className="text-xs text-ds-error-text self-center mr-1">{t('red3s')}</span>
                           {p.red3s.map((card, ri) => (
-                            <AnimatedCard key={`red3-${pi}-${ri}`} card={card} width={cardWidth * 0.6} />
+                            <AnimatedCard
+                              key={`red3-${pi}-${ri}`}
+                              card={card}
+                              width={isMobile ? 36 : cardWidth * 0.6}
+                              wrapperClassName={isMobile && ri > 0 ? '-ml-[22px]' : undefined}
+                            />
                           ))}
                         </div>
                       )}
                     </div>
+                  );
+                  return isOwnTeam ? (
+                    meldContent
+                  ) : (
+                    <details key={pi} className="my-2 rounded bg-ds-surface p-2" open={!isMobile || undefined}>
+                      <summary className="cursor-pointer select-none text-sm text-ds-text-muted">
+                        {playerName(p.id, p.isHuman)} - {t('melds')} ({meldCount})
+                      </summary>
+                      {meldContent}
+                    </details>
                   );
                 })}
               </div>
@@ -456,7 +479,14 @@ function BurracoPageContent() {
               {/* Right: info sidebar */}
               <div>
                 {/* Score table */}
-                <div className="my-3 p-2 rounded bg-black/30">
+                <details
+                  className="my-3 rounded bg-black/30 p-2"
+                  data-testid="bu-score-table"
+                  open={!isMobile || undefined}
+                >
+                  <summary className="min-h-11 cursor-pointer py-2 text-sm text-ds-text-muted">
+                    {t('score.title')}
+                  </summary>
                   <table className="w-full text-sm text-ds-text-muted">
                     <thead>
                       <tr>
@@ -482,40 +512,41 @@ function BurracoPageContent() {
                       ))}
                     </tbody>
                   </table>
-                </div>
+                </details>
 
                 {/* CPU hand (shown at round/game end) */}
-                {(isRoundEnd || isGameEnd) &&
-                  state.players
-                    .filter((p) => !p.isHuman)
-                    .map((p) => (
-                      <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                        <div className="text-ds-text-muted text-sm">
-                          {playerName(p.id, p.isHuman)}: {t('handCards', { count: p.cardCount })}
-                        </div>
-                        {p.cards.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {p.cards.map((card, idx) => (
-                              <AnimatedCard
-                                key={`cpu-${card.design}-${card.value}-${idx}`}
-                                card={card}
-                                width={cardWidth * 0.7}
-                              />
-                            ))}
+                {(isRoundEnd || isGameEnd) && (
+                  <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+                    <div className="flex flex-wrap gap-2">
+                      {state.players
+                        .filter((p) => !p.isHuman)
+                        .map((p) => (
+                          <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
+                            <div className="text-ds-text-muted text-sm">
+                              {playerName(p.id, p.isHuman)}: {t('handCards', { count: p.cardCount })}
+                            </div>
+                            {p.cards.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {p.cards.map((card, idx) => (
+                                  <AnimatedCard
+                                    key={`cpu-${card.design}-${card.value}-${idx}`}
+                                    card={card}
+                                    width={cardWidth * 0.7}
+                                  />
+                                ))}
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
-                    ))}
+                        ))}
+                    </div>
+                  </CpuAccordion>
+                )}
               </div>
             </div>
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            {isMobile && messageBox}
 
             <ActionLogSection
               isEndPhase={isGameEnd}
@@ -523,9 +554,7 @@ function BurracoPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
-          </div>
 
-          <GameFooter className={`${gameTheme.burraco.footer} px-4 py-2.5`}>
             {humanPlayer && humanPlayer.cards.length > 0 && (
               <fieldset className="flex flex-wrap justify-center gap-1.5 mb-2 border-0 p-0 m-0">
                 <legend className="sr-only">{t('sort.label')}</legend>
@@ -543,6 +572,114 @@ function BurracoPageContent() {
                 ))}
               </fieldset>
             )}
+            <ErrorAlert message={error} onRetry={retry} />
+            <GameResetButton
+              isGameEnd={isGameEnd}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+            />
+            <CardNavShortcutsPanel data-testid="burraco-kbd-shortcuts" />
+          </div>
+
+          <GameFooter
+            message={isMobile ? undefined : messageBox}
+            className={`${gameTheme.burraco.footer} px-4 py-2.5`}
+            actions={
+              <div className="flex gap-2 items-center flex-wrap" data-tutorial="ca-actions">
+                {isDrawPhase && isHumanTurn && (
+                  <div className="flex gap-2 flex-col">
+                    {state.isFrozen && (
+                      <div role="status" data-testid="ca-draw-freeze-guide" className="text-xs text-ds-warning">
+                        {t('drawFreezeGuide')}
+                      </div>
+                    )}
+                    <div className="flex gap-2">
+                      <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
+                        {t('drawStockButton')}
+                      </button>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={handleDrawDiscard}
+                        disabled={loading || drawDiscardProblem !== null}
+                        title={drawDiscardReason || undefined}
+                        aria-describedby={drawDiscardReason ? 'ca-draw-discard-reason' : undefined}
+                      >
+                        {t('drawDiscardButton')}
+                      </button>
+                    </div>
+                    {drawDiscardReason && (
+                      <div
+                        id="ca-draw-discard-reason"
+                        data-testid="ca-draw-discard-reason"
+                        className="text-xs text-ds-text-muted"
+                      >
+                        {drawDiscardReason}
+                      </div>
+                    )}
+                  </div>
+                )}
+                {isMeldPhase && isHumanTurn && (
+                  <>
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handleMeldSelected}
+                      disabled={loading || selectedCardIndices.length < 3}
+                      aria-describedby="bu-meld-selection-reason"
+                    >
+                      {t('meldButton')}
+                    </button>
+                    <button type="button" className={btnOutline} onClick={handleSkipMeld} disabled={loading}>
+                      {t('skipMeldButton')}
+                    </button>
+                    <span
+                      id="bu-meld-selection-reason"
+                      data-testid="bu-meld-selection-reason"
+                      className="text-xs text-ds-text-muted"
+                    >
+                      {meldSelectionReason}
+                    </span>
+                  </>
+                )}
+                {isDiscardPhase && isHumanTurn && (
+                  <>
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handleDiscard}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                    >
+                      {t('discardButton')}
+                    </button>
+                    <button
+                      type="button"
+                      className={`${btnSuccess} ${!canGoOut ? 'aria-disabled:opacity-70 aria-disabled:cursor-not-allowed' : ''}`}
+                      onClick={() => {
+                        if (!loading && canGoOut) handleGoOut();
+                      }}
+                      disabled={loading}
+                      aria-disabled={!canGoOut || undefined}
+                      aria-describedby={!canGoOut ? 'bu-go-out-reason' : undefined}
+                    >
+                      {t('goOutButton')}
+                    </button>
+                    {goOutReason && (
+                      <span id="bu-go-out-reason" data-testid="bu-go-out-reason" className="text-xs text-ds-text-muted">
+                        {goOutReason}
+                      </span>
+                    )}
+                  </>
+                )}
+                {isRoundEnd && (
+                  <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                    {t('nextRound')}
+                  </button>
+                )}
+              </div>
+            }
+          >
             {humanPlayer && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="ca-player-hand">
                 {sortedHandForDisplay(humanPlayer.cards, sortMode).map(({ card, index: idx }) => (
@@ -572,108 +709,6 @@ function BurracoPageContent() {
                 ))}
               </div>
             )}
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            <div className="flex gap-2 items-center flex-wrap" data-tutorial="ca-actions">
-              {isDrawPhase && isHumanTurn && (
-                <div className="flex gap-2 flex-col">
-                  {state.isFrozen && (
-                    <div role="status" data-testid="ca-draw-freeze-guide" className="text-xs text-ds-warning">
-                      {t('drawFreezeGuide')}
-                    </div>
-                  )}
-                  <div className="flex gap-2">
-                    <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
-                      {t('drawStockButton')}
-                    </button>
-                    <button
-                      type="button"
-                      className={btnPrimary}
-                      onClick={handleDrawDiscard}
-                      disabled={loading || drawDiscardProblem !== null}
-                      title={drawDiscardReason || undefined}
-                      aria-describedby={drawDiscardReason ? 'ca-draw-discard-reason' : undefined}
-                    >
-                      {t('drawDiscardButton')}
-                    </button>
-                  </div>
-                  {drawDiscardReason && (
-                    <div
-                      id="ca-draw-discard-reason"
-                      data-testid="ca-draw-discard-reason"
-                      className="text-xs text-ds-text-muted"
-                    >
-                      {drawDiscardReason}
-                    </div>
-                  )}
-                </div>
-              )}
-              {isMeldPhase && isHumanTurn && (
-                <>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleMeldSelected}
-                    disabled={loading || selectedCardIndices.length < 3}
-                    aria-describedby="bu-meld-selection-reason"
-                  >
-                    {t('meldButton')}
-                  </button>
-                  <button type="button" className={btnOutline} onClick={handleSkipMeld} disabled={loading}>
-                    {t('skipMeldButton')}
-                  </button>
-                  <span
-                    id="bu-meld-selection-reason"
-                    data-testid="bu-meld-selection-reason"
-                    className="text-xs text-ds-text-muted"
-                  >
-                    {meldSelectionReason}
-                  </span>
-                </>
-              )}
-              {isDiscardPhase && isHumanTurn && (
-                <>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleDiscard}
-                    disabled={loading || selectedCardIndices.length !== 1}
-                  >
-                    {t('discardButton')}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnSuccess} ${!canGoOut ? 'aria-disabled:opacity-70 aria-disabled:cursor-not-allowed' : ''}`}
-                    onClick={() => {
-                      if (!loading && canGoOut) handleGoOut();
-                    }}
-                    disabled={loading}
-                    aria-disabled={!canGoOut || undefined}
-                    aria-describedby={!canGoOut ? 'bu-go-out-reason' : undefined}
-                  >
-                    {t('goOutButton')}
-                  </button>
-                  {goOutReason && (
-                    <span id="bu-go-out-reason" data-testid="bu-go-out-reason" className="text-xs text-ds-text-muted">
-                      {goOutReason}
-                    </span>
-                  )}
-                </>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-              />
-            </div>
-            <CardNavShortcutsPanel data-testid="burraco-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

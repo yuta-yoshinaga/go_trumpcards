@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { badugiApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -82,6 +82,19 @@ describe('BadugiPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('keeps the hand in the footer and places settings and keyboard shortcuts in the play area', async () => {
+    mockExec.mockResolvedValue(baseState());
+    renderWithProviders(<BadugiPage />);
+
+    const footer = await screen.findByTestId('game-footer-content');
+    const playArea = footer.parentElement?.previousElementSibling as HTMLElement;
+    expect(footer.querySelector('[data-tutorial="bg-player-hand"]')).toBeInTheDocument();
+    expect(footer.querySelector('[data-tutorial="bg-reset-button"]')).not.toBeInTheDocument();
+    expect(within(footer).queryByTestId('badugi-kbd-shortcuts')).not.toBeInTheDocument();
+    expect(playArea.querySelector('[data-tutorial="bg-reset-button"]')).toBeInTheDocument();
+    expect(within(playArea).getByTestId('badugi-kbd-shortcuts')).toBeInTheDocument();
+  });
+
   it('renders the pot and dealer label', async () => {
     mockExec.mockResolvedValue(baseState({ pot: 120, dealerIdx: 2 }));
     renderWithProviders(<BadugiPage />);
@@ -130,6 +143,13 @@ describe('BadugiPage', () => {
     // The counter appears both in the phase name and in the info badge; just
     // assert presence of at least one occurrence.
     await waitFor(() => expect(screen.getAllByText('ドロー 2/3').length).toBeGreaterThan(0));
+  });
+
+  it('renders CPU exchange entries in Japanese', async () => {
+    mockExec.mockResolvedValue(baseState({ cpuExchanges: [{ playerIdx: 1, drawIndex: 2, exchangeCount: 3 }] }));
+    renderWithProviders(<BadugiPage />);
+    expect(await screen.findByText('プレイヤー1（2回目のドロー）: 3枚交換')).toBeInTheDocument();
+    expect(screen.queryByText(/Player 1 \(draw 2\)/)).not.toBeInTheDocument();
   });
 
   it('annotates card aria-labels with best-subset / exchange-candidate hints during the draw phase', async () => {
@@ -372,6 +392,7 @@ describe('BadugiPage', () => {
     mockExec.mockResolvedValue(baseState({ phase: BadugiPhase.DRAW, drawIndex: 1, currentTurn: 0 }));
     renderWithProviders(<BadugiPage />);
     await waitFor(() => expect(screen.getByTestId('bg-stand-btn')).toBeInTheDocument());
+    expect(within(screen.getByTestId('game-footer-actions')).getByTestId('bg-stand-btn')).toBeInTheDocument();
 
     expect(screen.getByTestId('bg-complete-badugi-banner')).toBeInTheDocument();
     expect(screen.getByTestId('bg-stand-btn').className).toContain('animate-pulse');

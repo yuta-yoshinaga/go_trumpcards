@@ -71,7 +71,7 @@ export function CliToggle({ cliEnabled, onToggle }: CliToggleProps) {
       ) : (
         <>
           <TerminalIcon />
-          <span>CLI</span>
+          <span className="hidden sm:inline">CLI</span>
         </>
       )}
     </button>

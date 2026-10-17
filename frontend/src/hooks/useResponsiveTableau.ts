@@ -25,12 +25,31 @@ export interface ResponsiveTableauConfig {
    * Omit for layouts where columns can never grow tall enough to overflow (#1861).
    */
   maxColCards?: number;
+  /** Smallest card-to-card vertical step when compressing a tall stack. */
+  minVerticalOverlap?: number;
   /**
    * Vertical pixels reserved for non-tableau chrome (header, stock row, footer, settings, message
    * box). Subtracted from `window.innerHeight` to derive the tableau's vertical budget. Defaults
    * to 300 px which matches the standard solo-game shell on a 667 px viewport.
    */
   reservedHeightPx?: number;
+  /** Optional width cap for pages whose tableau must fit a dense desktop layout. */
+  maxCardWidthPx?: number;
+  /** Apply fixed-depth vertical compression at desktop breakpoints too. */
+  compressDesktop?: boolean;
+}
+
+/** Initial maximum tableau depths used to keep these games' mobile layout steady during play. */
+export const FIXED_TABLEAU_DEPTH = { crescent: 6, sthelena: 8 } as const;
+
+/** Shared mobile-only compression settings for Crescent and St. Helena. */
+export function mobileTableauConfig(isMobile: boolean, maxColCards: number): ResponsiveTableauConfig | undefined {
+  if (!isMobile) return undefined;
+  return {
+    maxColCards,
+    minVerticalOverlap: 14,
+    reservedHeightPx: 420,
+  };
 }
 
 /** Minimum visual card width in px. Anything smaller is unreadable on a 375 px portrait phone. */
@@ -83,22 +102,34 @@ export function useResponsiveTableau(
   const padX = config.padX ?? DEFAULT_PAD_X;
   const gapPx = config.gapPx ?? DEFAULT_GAP_PX;
   const maxColCards = config.maxColCards;
+  const minVerticalOverlap = config.minVerticalOverlap ?? MIN_VERTICAL_OVERLAP;
   const reservedHeightPx = config.reservedHeightPx ?? DEFAULT_RESERVED_HEIGHT_PX;
+  const maxCardWidthPx = config.maxCardWidthPx;
+  const compressDesktop = config.compressDesktop ?? false;
 
   return useMemo<ResponsiveTableauDimensions>(() => {
     if (!isMobile) {
-      return { cw: cardWidth, ch: cardHeight, co: cardOverlap, wasteFan: DESKTOP_WASTE_FAN };
+      const cw = Math.min(cardWidth, maxCardWidthPx ?? cardWidth);
+      const ch = maxCardWidthPx === undefined ? cardHeight : Math.round(cw * 1.5);
+      const co =
+        compressDesktop && maxColCards !== undefined && maxColCards > 1
+          ? Math.max(
+              minVerticalOverlap,
+              Math.min(cardOverlap, Math.floor((windowHeight - reservedHeightPx - ch) / (maxColCards - 1))),
+            )
+          : cardOverlap;
+      return { cw, ch, co, wasteFan: DESKTOP_WASTE_FAN };
     }
     const availableWidth = windowWidth - padX - (numCols - 1) * gapPx;
     const colW = Math.floor(availableWidth / numCols);
-    const cw = Math.min(Math.max(colW, MIN_CARD_WIDTH), cardWidth);
+    const cw = Math.min(Math.max(colW, MIN_CARD_WIDTH), cardWidth, maxCardWidthPx ?? cardWidth);
     const ch = Math.round(cw * 1.5);
     const naturalCo = Math.round(cw * MOBILE_VERTICAL_OVERLAP_RATIO);
     let co = naturalCo;
     if (maxColCards !== undefined && maxColCards > 1) {
       const availableHeight = windowHeight - reservedHeightPx;
       const fittingCo = Math.floor((availableHeight - ch) / (maxColCards - 1));
-      co = Math.max(MIN_VERTICAL_OVERLAP, Math.min(naturalCo, fittingCo));
+      co = Math.max(minVerticalOverlap, Math.min(naturalCo, fittingCo));
     }
     const wasteFan = Math.round(cw * 0.3);
     return { cw, ch, co, wasteFan };
@@ -110,7 +141,10 @@ export function useResponsiveTableau(
     padX,
     gapPx,
     maxColCards,
+    minVerticalOverlap,
     reservedHeightPx,
+    maxCardWidthPx,
+    compressDesktop,
     cardWidth,
     cardHeight,
     cardOverlap,

@@ -1,6 +1,7 @@
 import { Fragment, useCallback, useMemo } from 'react';
 import type { canastaApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardFan } from '../components/CardFan';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
@@ -11,11 +12,12 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
+import { MobileHandGrid } from '../components/MobileHandGrid';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useCanastaGame } from '../hooks/useCanastaGame';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -27,7 +29,7 @@ import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { CanastaResponse, Card } from '../types/card';
+import type { CanastaPlayerData, CanastaResponse, Card } from '../types/card';
 import { CanastaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { canastaDrawDiscardProblem } from '../utils/canastaDrawDiscard';
@@ -61,6 +63,84 @@ const CA_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="ca-actions"]', messageKey: 'tutorial.actionButtons', placement: 'top', advanceOn: 'next' },
 ];
 
+/** Render one player's melds and red threes. */
+function CanastaMeldArea({
+  player,
+  playerIndex,
+  cardWidth,
+  t,
+  tutorialTarget,
+  className,
+  maxHeight,
+}: {
+  player: CanastaPlayerData;
+  playerIndex: number;
+  cardWidth: number;
+  t: (key: string) => string;
+  tutorialTarget?: string;
+  className?: string;
+  maxHeight?: number;
+}) {
+  const hasMeldContent = player.melds.length > 0 || player.red3s.length > 0;
+  return (
+    <div
+      className={`${hasMeldContent ? 'my-2 p-2 rounded bg-black/30 ' : ''}${className ?? ''}`}
+      data-tutorial={tutorialTarget}
+      style={maxHeight === undefined ? undefined : { maxHeight }}
+    >
+      <div className="text-ds-text-muted text-sm mb-1">
+        {playerName(player.id, player.isHuman)} - {t('melds')}
+        {player.hasCanasta && <span className="ml-2 text-ds-warning">★</span>}
+      </div>
+      {player.melds.map((meld, meldIndex) => {
+        const meldWidth = cardWidth * 0.6;
+        const canastaLabel = meld.isCanasta ? (meld.isNatural ? t('naturalCanasta') : t('mixedCanasta')) : null;
+        return (
+          <details key={meldIndex} className="mb-1" data-testid={`ca-meld-${playerIndex}-${meldIndex}`}>
+            <summary className="flex items-center gap-2 cursor-pointer list-none marker:hidden" title={t('meldExpand')}>
+              <div className="relative flex items-center shrink-0">
+                {meld.cards.map((card, cardIndex) => (
+                  <div
+                    key={`meld-stack-${playerIndex}-${meldIndex}-${cardIndex}`}
+                    style={{ marginLeft: cardIndex === 0 ? 0 : -meldWidth * 0.72, zIndex: cardIndex }}
+                  >
+                    <AnimatedCard card={card} width={meldWidth} silent />
+                  </div>
+                ))}
+              </div>
+              <span
+                className="text-xs font-bold px-1.5 py-0.5 rounded-full bg-black/50 text-ds-text-primary"
+                data-testid={`ca-meld-badge-${playerIndex}-${meldIndex}`}
+              >
+                {meld.cards.length}
+              </span>
+              {canastaLabel && <span className="text-xs font-bold text-ds-warning">★ {canastaLabel}</span>}
+            </summary>
+            <div className="flex flex-wrap gap-1 mt-1 pl-2">
+              {meld.cards.map((card, cardIndex) => (
+                <AnimatedCard
+                  key={`meld-${playerIndex}-${meldIndex}-${cardIndex}`}
+                  card={card}
+                  width={meldWidth}
+                  silent
+                />
+              ))}
+            </div>
+          </details>
+        );
+      })}
+      {player.red3s.length > 0 && (
+        <div className="flex flex-wrap gap-1 mt-1">
+          <span className="text-xs text-ds-error-text self-center mr-1">{t('red3s')}</span>
+          {player.red3s.map((card, red3Index) => (
+            <AnimatedCard key={`red3-${playerIndex}-${red3Index}`} card={card} width={cardWidth * 0.6} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /** Canasta game page. */
 export const CanastaPage = withTutorial(CanastaPageContent, 'canasta', CA_TUTORIAL_STEPS);
 /** Inner content of the Canasta page. */
@@ -87,7 +167,8 @@ function CanastaPageContent() {
     handleNextRound,
   } = useCanastaGame();
 
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const phaseNames = usePhaseNames('canasta', CANASTA_PHASE_KEYS);
   const {
     hint: frontendHint,
@@ -192,6 +273,10 @@ function CanastaPageContent() {
     );
   }
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.canasta')}
@@ -257,12 +342,14 @@ function CanastaPageContent() {
           />
 
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            <div className="text-ds-text-primary text-center mb-2">
+            <div className="flex flex-wrap justify-center text-ds-text-primary text-center mb-2">
               <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
               <span>
                 {t('drawPile', { count: state.drawPileCount })} / {t('discardPile', { count: state.discardPileCount })}
               </span>
-              {state.isFrozen && <span className="ml-2 text-ds-info font-bold">[{t('frozen')}]</span>}
+              {state.isFrozen && (
+                <span className="ml-2 shrink-0 whitespace-nowrap text-ds-info font-bold">[{t('frozen')}]</span>
+              )}
             </div>
 
             <div className={lgTwoColGrid}>
@@ -312,70 +399,18 @@ function CanastaPageContent() {
 
                 {/* Player melds */}
                 {state.players.map((p, pi) => {
+                  if (isLargeDesktop && p.isHuman) return null;
                   const hasMeldContent = p.melds.length > 0 || p.red3s.length > 0;
                   if (!hasMeldContent && !p.isHuman) return null;
                   return (
-                    <div
+                    <CanastaMeldArea
                       key={pi}
-                      className={hasMeldContent ? 'my-2 p-2 rounded bg-black/30' : ''}
-                      data-tutorial={pi === 0 ? 'ca-meld-area' : undefined}
-                    >
-                      <div className="text-ds-text-muted text-sm mb-1">
-                        {playerName(p.id, p.isHuman)} - {t('melds')}
-                        {p.hasCanasta && <span className="ml-2 text-ds-warning">★</span>}
-                      </div>
-                      {p.melds.map((m, mi) => {
-                        // Same-rank cards are collapsed into an overlapping stack so a meld
-                        // occupies ~one card of height; the <details> expands to the full spread.
-                        const meldW = cardWidth * 0.6;
-                        const canastaLabel = m.isCanasta
-                          ? m.isNatural
-                            ? t('naturalCanasta')
-                            : t('mixedCanasta')
-                          : null;
-                        return (
-                          <details key={mi} className="mb-1" data-testid={`ca-meld-${pi}-${mi}`}>
-                            <summary
-                              className="flex items-center gap-2 cursor-pointer list-none marker:hidden"
-                              title={t('meldExpand')}
-                            >
-                              <div className="relative flex items-center shrink-0">
-                                {m.cards.map((card, ci) => (
-                                  <div
-                                    key={`meld-stack-${pi}-${mi}-${ci}`}
-                                    style={{ marginLeft: ci === 0 ? 0 : -meldW * 0.72, zIndex: ci }}
-                                  >
-                                    <AnimatedCard card={card} width={meldW} silent />
-                                  </div>
-                                ))}
-                              </div>
-                              <span
-                                className="text-xs font-bold px-1.5 py-0.5 rounded-full bg-black/50 text-ds-text-primary"
-                                data-testid={`ca-meld-badge-${pi}-${mi}`}
-                              >
-                                {m.cards.length}
-                              </span>
-                              {canastaLabel && (
-                                <span className="text-xs font-bold text-ds-warning">★ {canastaLabel}</span>
-                              )}
-                            </summary>
-                            <div className="flex flex-wrap gap-1 mt-1 pl-2">
-                              {m.cards.map((card, ci) => (
-                                <AnimatedCard key={`meld-${pi}-${mi}-${ci}`} card={card} width={meldW} silent />
-                              ))}
-                            </div>
-                          </details>
-                        );
-                      })}
-                      {p.red3s.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          <span className="text-xs text-ds-error-text self-center mr-1">{t('red3s')}</span>
-                          {p.red3s.map((card, ri) => (
-                            <AnimatedCard key={`red3-${pi}-${ri}`} card={card} width={cardWidth * 0.6} />
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                      player={p}
+                      playerIndex={pi}
+                      cardWidth={cardWidth}
+                      t={t}
+                      tutorialTarget={pi === 0 ? 'ca-meld-area' : undefined}
+                    />
                   );
                 })}
               </div>
@@ -451,11 +486,7 @@ function CanastaPageContent() {
               </div>
             </div>
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
+            {isMobile && messageBox}
 
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
@@ -465,142 +496,194 @@ function CanastaPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
-          </div>
-
-          <GameFooter className={`${gameTheme.canasta.footer} px-4 py-2.5`}>
-            {humanPlayer && (
-              <div className="flex flex-wrap gap-1 mb-2" data-tutorial="ca-player-hand">
-                {humanPlayer.cards.map((card, idx) => (
-                  <button
-                    type="button"
-                    key={`${card.design}-${card.value}-${idx}`}
-                    onClick={() => toggleCard(idx)}
-                    aria-label={cardAlt(card)}
-                    aria-pressed={selectedCardIndices.includes(idx)}
-                    className={`transition-transform ${focusRingCard}`}
-                    style={{
-                      background: 'none',
-                      padding: 0,
-                      borderRadius: 8,
-                      ...selectedCardStyle(selectedCardIndices.includes(idx)),
-                      boxSizing: 'border-box',
-                    }}
-                  >
-                    <AnimatedCard card={card} width={cardWidth} />
-                  </button>
-                ))}
-              </div>
-            )}
 
             <ErrorAlert message={error} onRetry={retry} />
+            <GameResetButton
+              isGameEnd={isGameEnd}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+            />
+            <CardNavShortcutsPanel data-testid="canasta-kbd-shortcuts" />
+          </div>
 
-            <div className="flex gap-2 items-center flex-wrap" data-tutorial="ca-actions">
-              {isDrawPhase && isHumanTurn && (
-                <div className="flex gap-2 flex-col">
-                  <div className="flex gap-2">
-                    <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
-                      {t('drawStockButton')}
-                    </button>
+          <GameFooter
+            message={isMobile ? undefined : messageBox}
+            className={`${gameTheme.canasta.footer} px-4 py-2.5`}
+            actions={
+              <div className="flex gap-2 items-center flex-wrap" data-tutorial="ca-actions">
+                {isDrawPhase && isHumanTurn && (
+                  <div className="flex gap-2 flex-col">
+                    <div className="flex gap-2">
+                      <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
+                        {t('drawStockButton')}
+                      </button>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={handleDrawDiscard}
+                        disabled={loading || drawDiscardProblem !== null}
+                        title={drawDiscardReason || undefined}
+                        aria-describedby={drawDiscardReason ? 'ca-draw-discard-reason' : undefined}
+                      >
+                        {t('drawDiscardButton')}
+                      </button>
+                    </div>
+                    {drawDiscardReason && (
+                      <div
+                        id="ca-draw-discard-reason"
+                        data-testid="ca-draw-discard-reason"
+                        className="text-xs text-ds-text-muted"
+                      >
+                        {drawDiscardReason}
+                      </div>
+                    )}
+                  </div>
+                )}
+                {isMeldPhase && isHumanTurn && (
+                  <>
+                    {
+                      <div
+                        id="ca-meld-points"
+                        data-testid="ca-meld-points"
+                        className={`w-full text-xs ${meldPointInfo.below ? 'text-ds-warning' : 'text-ds-text-muted'}`}
+                      >
+                        {meldPointInfo.needInitial
+                          ? t('meldPoints.initial', {
+                              min: meldPointInfo.minMeld,
+                              points: meldPointInfo.selectedPoints,
+                            })
+                          : t('meldPoints.selected', { points: meldPointInfo.selectedPoints })}
+                      </div>
+                    }
                     <button
                       type="button"
                       className={btnPrimary}
-                      onClick={handleDrawDiscard}
-                      disabled={loading || drawDiscardProblem !== null}
-                      title={drawDiscardReason || undefined}
-                      aria-describedby={drawDiscardReason ? 'ca-draw-discard-reason' : undefined}
+                      onClick={handleMeldSelected}
+                      // **最低点未達なら押させない** (#6165)。警告テキストは出て
+                      // いたのにボタンはそれを見ておらず、サーバのバリデーションで
+                      // 弾かれて初めて気づく形だった。
+                      disabled={loading || selectedCardIndices.length < 3 || meldPointInfo.below}
+                      aria-describedby={meldPointInfo.below ? 'ca-meld-points' : undefined}
                     >
-                      {t('drawDiscardButton')}
+                      {t('meldButton')}
                     </button>
-                  </div>
-                  {drawDiscardReason && (
-                    <div
-                      id="ca-draw-discard-reason"
-                      data-testid="ca-draw-discard-reason"
-                      className="text-xs text-ds-text-muted"
+                    <button type="button" className={btnOutline} onClick={handleSkipMeld} disabled={loading}>
+                      {t('skipMeldButton')}
+                    </button>
+                  </>
+                )}
+                {isDiscardPhase && isHumanTurn && (
+                  <>
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handleDiscard}
+                      disabled={loading || selectedCardIndices.length !== 1}
                     >
-                      {drawDiscardReason}
-                    </div>
-                  )}
-                </div>
-              )}
-              {isMeldPhase && isHumanTurn && (
-                <>
-                  {
-                    <div
-                      id="ca-meld-points"
-                      data-testid="ca-meld-points"
-                      className={`w-full text-xs ${meldPointInfo.below ? 'text-ds-warning' : 'text-ds-text-muted'}`}
+                      {t('discardButton')}
+                    </button>
+                    <button
+                      type="button"
+                      className={btnSuccess}
+                      onClick={handleGoOut}
+                      disabled={loading || !canGoOut}
+                      title={canGoOut ? undefined : t('goOutReason')}
+                      aria-describedby={canGoOut ? undefined : 'ca-go-out-reason'}
+                      data-testid="ca-go-out-button"
                     >
-                      {meldPointInfo.needInitial
-                        ? t('meldPoints.initial', {
-                            min: meldPointInfo.minMeld,
-                            points: meldPointInfo.selectedPoints,
-                          })
-                        : t('meldPoints.selected', { points: meldPointInfo.selectedPoints })}
+                      {t('goOutButton')}
+                    </button>
+                    {!canGoOut && (
+                      <div
+                        id="ca-go-out-reason"
+                        data-testid="ca-go-out-reason"
+                        className="w-full text-xs text-ds-text-muted"
+                      >
+                        {t('goOutReason')}
+                      </div>
+                    )}
+                  </>
+                )}
+                {isRoundEnd && (
+                  <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                    {t('nextRound')}
+                  </button>
+                )}
+              </div>
+            }
+          >
+            <div className={isLargeDesktop ? 'flex items-start gap-4' : undefined}>
+              {isLargeDesktop && humanPlayer && (
+                <CanastaMeldArea
+                  player={humanPlayer}
+                  playerIndex={0}
+                  cardWidth={cardWidth}
+                  t={t}
+                  tutorialTarget="ca-meld-area"
+                  className="shrink-0 max-w-[30%] overflow-y-auto"
+                  maxHeight={cardWidth * 1.4}
+                />
+              )}
+              <div className={isLargeDesktop ? 'min-w-0 flex-1' : undefined}>
+                {humanPlayer &&
+                  (isMobile ? (
+                    <MobileHandGrid
+                      cards={humanPlayer.cards}
+                      selectedIndices={selectedCardIndices}
+                      onToggle={toggleCard}
+                      cardWidth={cardWidth}
+                      dataTutorial="ca-player-hand"
+                      stackRows
+                    />
+                  ) : isLargeDesktop ? (
+                    <CardFan itemWidth={cardWidth + 6} data-testid="ca-player-hand" dataTutorial="ca-player-hand">
+                      {humanPlayer.cards.map((card, idx) => (
+                        <button
+                          type="button"
+                          key={`${card.design}-${card.value}-${idx}`}
+                          onClick={() => toggleCard(idx)}
+                          aria-label={cardAlt(card)}
+                          aria-pressed={selectedCardIndices.includes(idx)}
+                          data-testid={`hand-card-${idx}`}
+                          className={`transition-transform ${focusRingCard}`}
+                          style={{
+                            background: 'none',
+                            padding: 0,
+                            borderRadius: 8,
+                            ...selectedCardStyle(selectedCardIndices.includes(idx)),
+                            boxSizing: 'border-box',
+                          }}
+                        >
+                          <AnimatedCard card={card} width={cardWidth} />
+                        </button>
+                      ))}
+                    </CardFan>
+                  ) : (
+                    <div className="flex flex-wrap gap-1 mb-2" data-tutorial="ca-player-hand">
+                      {humanPlayer.cards.map((card, idx) => (
+                        <button
+                          type="button"
+                          key={`${card.design}-${card.value}-${idx}`}
+                          onClick={() => toggleCard(idx)}
+                          aria-label={cardAlt(card)}
+                          aria-pressed={selectedCardIndices.includes(idx)}
+                          className={`transition-transform ${focusRingCard}`}
+                          style={{
+                            background: 'none',
+                            padding: 0,
+                            borderRadius: 8,
+                            ...selectedCardStyle(selectedCardIndices.includes(idx)),
+                            boxSizing: 'border-box',
+                          }}
+                        >
+                          <AnimatedCard card={card} width={cardWidth} />
+                        </button>
+                      ))}
                     </div>
-                  }
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleMeldSelected}
-                    // **最低点未達なら押させない** (#6165)。警告テキストは出て
-                    // いたのにボタンはそれを見ておらず、サーバのバリデーションで
-                    // 弾かれて初めて気づく形だった。
-                    disabled={loading || selectedCardIndices.length < 3 || meldPointInfo.below}
-                    aria-describedby={meldPointInfo.below ? 'ca-meld-points' : undefined}
-                  >
-                    {t('meldButton')}
-                  </button>
-                  <button type="button" className={btnOutline} onClick={handleSkipMeld} disabled={loading}>
-                    {t('skipMeldButton')}
-                  </button>
-                </>
-              )}
-              {isDiscardPhase && isHumanTurn && (
-                <>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleDiscard}
-                    disabled={loading || selectedCardIndices.length !== 1}
-                  >
-                    {t('discardButton')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnSuccess}
-                    onClick={handleGoOut}
-                    disabled={loading || !canGoOut}
-                    title={canGoOut ? undefined : t('goOutReason')}
-                    aria-describedby={canGoOut ? undefined : 'ca-go-out-reason'}
-                    data-testid="ca-go-out-button"
-                  >
-                    {t('goOutButton')}
-                  </button>
-                  {!canGoOut && (
-                    <div
-                      id="ca-go-out-reason"
-                      data-testid="ca-go-out-reason"
-                      className="w-full text-xs text-ds-text-muted"
-                    >
-                      {t('goOutReason')}
-                    </div>
-                  )}
-                </>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-              />
+                  ))}
+              </div>
             </div>
-            <CardNavShortcutsPanel data-testid="canasta-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

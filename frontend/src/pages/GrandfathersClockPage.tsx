@@ -18,7 +18,12 @@ import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
+import {
+  useBreakpoint,
+  useCardDimensions,
+  useDenseLargeDesktopCardSize,
+  useWindowWidth,
+} from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
@@ -107,8 +112,9 @@ function GrandfathersClockPageContent() {
   );
   const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
+  const denseCardSize = useDenseLargeDesktopCardSize();
   const windowWidth = useWindowWidth();
-
   const dims = useMemo(() => {
     if (!isMobile) return { cw: cardWidth, ch: cardHeight, co: cardOverlap };
     const padX = 16;
@@ -119,6 +125,8 @@ function GrandfathersClockPageContent() {
     const co = Math.round(cw * 0.32);
     return { cw, ch, co };
   }, [isMobile, windowWidth, cardWidth, cardHeight, cardOverlap]);
+  const clockCardWidth = isLargeDesktop ? denseCardSize.width : dims.cw;
+  const clockCardHeight = isLargeDesktop ? denseCardSize.height : dims.ch;
 
   const isPlayingForKbd = state?.phase === GrandfathersClockPhase.PLAYING;
 
@@ -315,8 +323,12 @@ function GrandfathersClockPageContent() {
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
-          <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
-            <div className="flex flex-wrap justify-center gap-1 sm:gap-2 mb-3" data-tutorial="gc-clock">
+          {/* 12 x 80 + 11 x 4 = 1004px; keep enough content width for the clock row. */}
+          <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4">
+            <div
+              className={`flex flex-wrap justify-center gap-1 mb-3 ${isLargeDesktop ? '' : 'sm:gap-2'}`}
+              data-tutorial="gc-clock"
+            >
               {state.foundation.map((face, idx) => {
                 const faceZone: GrandfathersClockMoveZone = { zone: 'foundation', col: idx };
                 const top = face.cards.length > 0 ? face.cards[face.cards.length - 1] : null;
@@ -356,7 +368,7 @@ function GrandfathersClockPageContent() {
                         >
                           <AnimatedCard
                             card={top}
-                            width={dims.cw}
+                            width={clockCardWidth}
                             draggable={false}
                             dealDelay={isAutoCompleting ? idx * 0.05 : 0}
                           />
@@ -369,7 +381,7 @@ function GrandfathersClockPageContent() {
                             hour: CLOCK_HOURS[idx],
                             target: face.targetRank,
                           })}
-                          style={{ width: dims.cw, height: dims.ch }}
+                          style={{ width: clockCardWidth, height: clockCardHeight }}
                           className="rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center"
                         >
                           {t('empty')}

@@ -7,7 +7,8 @@
 - [agent-browser](https://github.com/vercel-labs/agent-browser) がインストール済み（`bun install -g agent-browser && agent-browser install`）
 - Go サーバーが起動可能な状態
 - `gh` CLIでGitHubにログイン済み
-- 画像アップロード先として catbox.moe を使用（永続的な無料ホスティング、APIキー不要）
+- 画像の置き場所は secret gist（`gh auth setup-git` 済みで、トークンに gist スコープがあること）
+- agent-browser の daemon は close するまで Chrome ごと残り続ける。1 回のレビューでは `--session` 名を 1 つに固定し（コマンドごとに名前を変えると daemon がその数だけ増える）、終了時に必ず `agent-browser close` する。保険として `AGENT_BROWSER_IDLE_TIMEOUT_MS=600000` を環境に入れておくと、10 分操作が無い daemon は自動で終了する。
 
 ## 手順
 
@@ -84,6 +85,10 @@ agent-browser find role button click --name "メニューを開く" 2>/dev/null 
 agent-browser wait 500
 agent-browser screenshot "/tmp/mobile-screenshots/nav-open.png" --full
 ```
+
+### 4'. 数値計測
+
+スクリーンショット確認の前に、プレイエリアのはみ出しを数値で絞り込む。サーバー起動後に `.claude/commands/scripts/play-area-overflow.sh` を実行する（例: `bash .claude/commands/scripts/play-area-overflow.sh -p 8080 -n 5 -j 4`、ゲーム指定も可能）。配り依存が大きいため、モバイルは複数回リロードした最悪値を使う。目安は mobile ≤300px / desktop ≤600px。`frontend/e2e/play-area-budget.spec.ts` も同じ指標で上限を固定している。`mobile_footer` はフッター内スクロールで隠れる量を示し、目安は ≤40px（手札は見えている必要がある）。 `hidden_cards` は上端 52px（数字の隅と 44px のタップ領域）が `game-footer-content` の表示域に入らない札の数で目安は 0（`frontend/e2e/hand-visibility.spec.ts` と同じ判定）、`footer_cards` は検出できた札数で、0 の場合は hidden_cards の検査結果に意味がない。計測前に、ポートを listen しているサーバーの cwd がこのチェックアウトと異なれば停止する（別ツリーの `public/` を測ってしまうため。意図して測るときは `-x`）。`public/index.html` より新しいファイルが `frontend/src` にあれば、ビルドが古いという警告を出す。
 
 ### 4. スクリーンショット確認
 
@@ -166,17 +171,15 @@ Mobile (375x667)
 
 ### 8. スクリーンショット添付
 
-catbox.moe に画像をアップロードし、各IssueにコメントでMarkdown画像リンクを添付する。
+影響箇所に挙げたゲームの画像だけを渡す。
 
 ```sh
-# アップロード
-URL=$(curl -s -F "reqtype=fileupload" -F "fileToUpload=@/tmp/mobile-screenshots/game.png" https://catbox.moe/user/api.php)
+# 最初のIssueでsecret gistを作成（成功後、gist: <id> がstderrに表示される）
+bash .claude/commands/scripts/attach-screenshots.sh -i <ISSUE_NUMBER> -t "スクリーンショット（iPhone SE 375x667）" /tmp/mobile-screenshots/bhabhi-play.png /tmp/mobile-screenshots/pitch-play.png
 
-# Issueコメントに添付
-gh issue comment <ISSUE_NUMBER> --body "## スクリーンショット（iPhone SE 375x667）
-
-### ゲーム名
-![ゲーム名]($URL)"
+# モバイルとデスクトップは同じファイル名になるので、同じ gist を使うときは片方を `<game>-desktop.png` などに改名する（同名で内容が違うとスクリプトが止まる）
+# 2件目以降は同じgistを再利用
+bash .claude/commands/scripts/attach-screenshots.sh -i <ISSUE_NUMBER> -t "スクリーンショット（iPhone SE 375x667）" -g <GIST_ID> /tmp/mobile-screenshots/bhabhi-play.png /tmp/mobile-screenshots/pitch-play.png
 ```
 
 ### 9. クリーンアップ
@@ -214,7 +217,7 @@ rm -rf /tmp/mobile-screenshots
 
 - **HashRouter**: URLは `http://localhost:8080/#/<game>` 形式。`/` 直打ちは404になる
 - **チュートリアルダイアログ**: 初回表示時にほぼ全ゲームで表示される。スキップ状態はlocalStorageに保存される
-- **catbox.moe**: 永続的な無料ホスティング。APIキー不要。1ファイル200MBまで
+- catbox は使わない: GitHub の画像プロキシ (camo) が 503 を返し、直接 URL は 200 なので投稿前の確認では気づけない (2026-10-14)。スクリプトは投稿後のコメントの `<img src>`（GitHub が実際に読み込む URL）を検証する
 - ゲームルート一覧は `frontend/src/constants/gameRoutes.ts` で管理されており、本コマンドは同ファイルから動的に取得するため、ゲームの追加・削除時にこのコマンドファイルの更新は不要
 
 ## 引数

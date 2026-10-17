@@ -20,7 +20,7 @@ export function PhaseIndicator({ phaseName, isHumanTurn, children }: PhaseIndica
 
   return (
     <div
-      className="shrink-0 glass-panel text-ds-text-primary text-sm px-5 py-2 flex flex-wrap gap-x-6 gap-y-1 items-center tabular-nums"
+      className="shrink-0 glass-panel text-ds-text-primary text-sm px-3 sm:px-5 py-2 flex flex-wrap gap-x-2 sm:gap-x-6 gap-y-1 items-center tabular-nums"
       data-testid="phase-indicator"
     >
       <span>
@@ -30,11 +30,17 @@ export function PhaseIndicator({ phaseName, isHumanTurn, children }: PhaseIndica
         <span
           className={
             isHumanTurn
-              ? 'text-ds-success motion-safe:animate-pulse font-bold text-base bg-ds-surface ring-2 ring-ds-success/40 px-2 py-0.5 rounded-full'
+              ? 'relative inline-flex text-ds-success font-bold text-base bg-ds-surface px-2 py-0.5 rounded-full'
               : 'text-game-text-muted'
           }
         >
-          {turnLabel}
+          {isHumanTurn && (
+            <span
+              aria-hidden="true"
+              className="absolute inset-0 rounded-full ring-2 ring-ds-success/40 motion-safe:animate-pulse pointer-events-none"
+            />
+          )}
+          <span className={isHumanTurn ? 'relative' : undefined}>{turnLabel}</span>
         </span>
       )}
       {children}

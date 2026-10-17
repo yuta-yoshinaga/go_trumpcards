@@ -1,4 +1,4 @@
-import { act, fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { speedApi } from '../api/gameApi';
 import { registerOpenModal } from '../hooks/keyboardNavUtils';
@@ -98,6 +98,13 @@ describe('SpeedPage', () => {
   it('renders the page heading', async () => {
     renderWithProviders(<SpeedPage />);
     await waitFor(() => expect(screen.getByText('スピード')).toBeInTheDocument());
+  });
+
+  it('keeps the stuck flip controls in the footer action row', async () => {
+    mockExec.mockResolvedValue(stuckState);
+    renderWithProviders(<SpeedPage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByTestId('flip-button')).toBeInTheDocument();
   });
 
   it('renders player hand after API resolves', async () => {
@@ -571,6 +578,8 @@ describe('SpeedPage', () => {
       'border-ds-warning',
       'ring-2',
       'ring-ds-warning',
+      'flex-col',
+      'sm:flex-row',
     );
   });
 

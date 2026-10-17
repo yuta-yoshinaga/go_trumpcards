@@ -235,7 +235,7 @@ function BarbuPageContent() {
                           onFocus={() => setHoveredContract(c)}
                           onBlur={() => setHoveredContract(null)}
                           disabled={loading || state.usedContracts[c]}
-                          className="px-3 py-2 rounded-lg bg-ds-info text-white text-xs font-medium disabled:opacity-30 disabled:line-through"
+                          className="px-3 py-2 rounded-lg bg-ds-info text-ds-text-on-accent text-xs font-medium disabled:opacity-30 disabled:line-through"
                           data-testid={`contract-${c}`}
                           title={t(`contractDesc.${c}`)}
                         >
@@ -261,7 +261,7 @@ function BarbuPageContent() {
                           type="button"
                           onClick={() => onTrumpClick(suit)}
                           disabled={loading}
-                          className="px-3 py-2 rounded-lg bg-ds-warning text-white text-sm font-medium"
+                          className="px-3 py-2 rounded-lg bg-ds-warning text-ds-text-on-accent text-sm font-medium"
                           data-testid={`trump-${suit}`}
                         >
                           {t(`trump.${suit}`)}
@@ -499,7 +499,7 @@ function BarbuPageContent() {
                 type="button"
                 onClick={play}
                 disabled={loading || !canPlay}
-                className="px-4 py-2 rounded-lg bg-ds-info text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                className="px-4 py-2 rounded-lg bg-ds-info text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                 data-testid="play-button"
                 data-hint-action="play"
               >
@@ -510,7 +510,7 @@ function BarbuPageContent() {
                   type="button"
                   onClick={pass}
                   disabled={loading || !canPass}
-                  className="px-4 py-2 rounded-lg bg-ds-warning text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                  className="px-4 py-2 rounded-lg bg-ds-warning text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                   data-testid="pass-button"
                   data-hint-action="pass"
                 >
@@ -522,7 +522,7 @@ function BarbuPageContent() {
                   type="button"
                   onClick={handleNextDeal}
                   disabled={loading}
-                  className="px-4 py-2 rounded-lg bg-ds-success text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                  className="px-4 py-2 rounded-lg bg-ds-success text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                   data-testid="next-deal-button"
                 >
                   {t('button.nextDeal')}

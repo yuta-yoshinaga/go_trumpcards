@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { sixBidSoloApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -107,9 +107,21 @@ describe('SixBidSoloPage', () => {
     expect(widow).toHaveTextContent('宣言者の得点へ加算');
   });
 
+  it('shows a zero target when a bid target is missing', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ phase: SixBidSoloPhase.BID, highBid: null, declarerIdx: -1, bidTargets: [] }),
+    );
+    renderWithProviders(<SixBidSoloPage />);
+    const bidSelect = await screen.findByLabelText('宣言');
+    expect(
+      Array.from(bidSelect.querySelectorAll('option')).some((option) => option.textContent?.includes('目標 0')),
+    ).toBe(true);
+  });
+
   it('plays exactly one card', async () => {
     renderWithProviders(<SixBidSoloPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '出す' })).toBeInTheDocument());
+    expect(within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '出す' })).toBeInTheDocument();
 
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: '出す' }));
@@ -119,6 +131,22 @@ describe('SixBidSoloPage', () => {
     fireEvent.click(handButtons()[1]);
     fireEvent.click(screen.getByRole('button', { name: '出す' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 1 }));
+  });
+
+  it('keeps the hand in the footer and places supporting controls in the play area', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: SixBidSoloPhase.BID, highBid: null, declarerIdx: -1 }));
+    renderWithProviders(<SixBidSoloPage />);
+    const footer = await screen.findByTestId('game-footer-content');
+    const playArea = footer.parentElement?.previousElementSibling;
+    const hand = footer.querySelector('[data-tutorial="sixbidsolo-hand"]');
+    const hintToggle = screen.getByRole('checkbox', { name: /ヒント/ });
+    const bidSelect = screen.getByLabelText('宣言');
+
+    expect(hand).toBeInTheDocument();
+    expect(footer).not.toContainElement(hintToggle);
+    expect(playArea).toContainElement(hintToggle);
+    expect(footer).not.toContainElement(bidSelect);
+    expect(within(screen.getByTestId('game-footer-actions')).getByLabelText('宣言')).toBeInTheDocument();
   });
 
   it('announces hand-card selection and deselection', async () => {
@@ -447,5 +475,28 @@ describe('SixBidSoloPage', () => {
     mockExec.mockResolvedValue(makeState({ phase: SixBidSoloPhase.DECLARE, declarerIdx: 1 }));
     renderWithProviders(<SixBidSoloPage />);
     await waitFor(() => expect(screen.queryByTestId('sixbidsolo-declare-notice')).not.toBeInTheDocument());
+  });
+
+  it('renders the game message in the footer message region', async () => {
+    mockExec.mockResolvedValue(makeState({ message: 'footer placement check' }));
+    renderWithProviders(<SixBidSoloPage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage).toHaveTextContent('footer placement check');
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    mockExec.mockResolvedValue(makeState({ message: 'mobile placement check' }));
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      renderWithProviders(<SixBidSoloPage />);
+      const message = await screen.findByText('mobile placement check');
+      expect(message.closest('[data-testid="game-footer-message"]')).toBeNull();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
   });
 });

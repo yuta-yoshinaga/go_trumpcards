@@ -23,7 +23,7 @@ import {
   CALLBREAK_MAX_ROUNDS_OPTIONS,
   useCallBreakGame,
 } from '../hooks/useCallBreakGame';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -34,6 +34,7 @@ import i18n from '../i18n';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
+import { scoreTableClass } from '../styles/scoreTableStyles';
 import type { CallBreakResponse } from '../types/card';
 import { CallBreakPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
@@ -118,6 +119,7 @@ const CALLBREAK_PHASE_KEYS: Readonly<Record<number, string>> = {
 export const CallBreakPage = withTutorial(CallBreakPageContent, 'callbreak', CB_TUTORIAL_STEPS);
 /** Inner content of the Call Break page, wrapped by TutorialProvider. */
 function CallBreakPageContent() {
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('callbreak');
   const {
@@ -215,6 +217,10 @@ function CallBreakPageContent() {
     return reason ? t(reasonKeys[reason]) : undefined;
   };
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.callbreak')}
@@ -264,6 +270,37 @@ function CallBreakPageContent() {
           />
 
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+            {isHumanBidTurn && (
+              <div className="flex flex-col items-center gap-2 pb-2">
+                <fieldset
+                  className="grid max-w-[16rem] grid-cols-7 gap-1 border-0 p-0"
+                  aria-label={t('bidSelectLabel')}
+                >
+                  {Array.from({ length: 13 }, (_, i) => i + 1).map((n) => (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => setBidSelection({ roundNumber: state.roundNumber, value: n })}
+                      disabled={loading}
+                      aria-pressed={bidValue === n}
+                      data-testid={`bid-option-${n}`}
+                      className={`h-9 w-9 rounded-lg font-medium text-sm transition-all ${
+                        bidValue === n
+                          ? 'bg-ds-accent text-ds-text-on-accent ring-2 ring-ds-accent'
+                          : 'bg-white/20 text-ds-text-primary hover:bg-white/30'
+                      }`}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                </fieldset>
+                {/* Announce the current bid selection to screen readers, since the
+                    grid's aria-pressed alone isn't read back as a running value. */}
+                <span className="sr-only" role="status" aria-live="polite" data-testid="cb-bid-selected">
+                  {t('bidSelected', { n: bidValue })}
+                </span>
+              </div>
+            )}
             <span className="sr-only" role="status" aria-live="polite" data-testid="callbreak-trick-winner-status">
               {isTrickEnd && state.players[state.leadPlayerIdx]
                 ? t('trickWinnerAnnouncement', {
@@ -271,10 +308,12 @@ function CallBreakPageContent() {
                   })
                 : ''}
             </span>
-            <div className="text-ds-text-primary text-center mb-2">
-              <span className="mr-4">{t('round', { n: state.roundNumber, max: state.config.maxRounds })}</span>
-              <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
-              <span>{state.spadesBroken ? t('spadesBroken') : t('spadesNotBroken')}</span>
+            <div className="text-ds-text-primary flex flex-wrap justify-center gap-x-4 gap-y-1 text-center mb-2">
+              <span className="whitespace-nowrap">
+                {t('round', { n: state.roundNumber, max: state.config.maxRounds })}
+              </span>
+              <span className="whitespace-nowrap">{t('trick', { n: state.trickNumber })}</span>
+              <span className="whitespace-nowrap">{state.spadesBroken ? t('spadesBroken') : t('spadesNotBroken')}</span>
             </div>
 
             <div className={lgTwoColGrid}>
@@ -330,13 +369,21 @@ function CallBreakPageContent() {
                     .filter((p) => !p.isHuman)
                     .map((p) => (
                       <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                        <div className="text-ds-text-muted text-sm">
-                          {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                          {t('cumulativeScore', { score: fmtScore(p.cumulativeScore) })} |{' '}
-                          {t('roundScore', { score: fmtScore(p.roundScore) })} |{' '}
-                          {p.bid >= 0
-                            ? `${t('bid', { n: p.bid })} / ${t('tricksWon', { n: p.trickCount })}`
-                            : t('bidNone')}
+                        <div className="flex flex-wrap gap-x-1 text-ds-text-muted text-sm">
+                          <span className="whitespace-nowrap">
+                            {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })}
+                          </span>
+                          <span className="whitespace-nowrap">
+                            {t('cumulativeScore', { score: fmtScore(p.cumulativeScore) })}
+                          </span>
+                          <span className="whitespace-nowrap">
+                            {t('roundScore', { score: fmtScore(p.roundScore) })}
+                          </span>
+                          <span className="whitespace-nowrap">
+                            {p.bid >= 0
+                              ? `${t('bid', { n: p.bid })} / ${t('tricksWon', { n: p.trickCount })}`
+                              : t('bidNone')}
+                          </span>
                         </div>
                         <BidProgressBar
                           bid={p.bid}
@@ -356,17 +403,31 @@ function CallBreakPageContent() {
                   >
                     <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('scores')}</summary>
                     <div className="overflow-x-auto -mx-2 px-2">
-                      <table className="w-full text-sm text-ds-text-muted min-w-[360px] mt-1">
+                      <table
+                        className={scoreTableClass(
+                          isLargeDesktop,
+                          'w-full text-sm text-ds-text-muted min-w-[360px]',
+                          'mt-1',
+                        )}
+                      >
                         <caption className="sr-only">{t('scores')}</caption>
                         <thead>
                           <tr>
-                            <th scope="col" className="text-left">
+                            <th scope="col" className="text-left whitespace-nowrap text-[10px]">
                               {t('scoresPlayer')}
                             </th>
-                            <th scope="col">{t('scoresBid')}</th>
-                            <th scope="col">{t('scoresTricks')}</th>
-                            <th scope="col">{t('scoresRound')}</th>
-                            <th scope="col">{t('scoresTotal')}</th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresBid')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresTricks')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresRound')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresTotal')}
+                            </th>
                           </tr>
                         </thead>
                         <tbody>
@@ -388,17 +449,27 @@ function CallBreakPageContent() {
                   <div className="my-3 p-2 rounded bg-black/30 relative" data-tutorial="cb-score-table">
                     <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
                     <div className="overflow-x-auto -mx-2 px-2">
-                      <table className="w-full text-sm text-ds-text-muted min-w-[360px]">
+                      <table
+                        className={scoreTableClass(isLargeDesktop, 'w-full text-sm text-ds-text-muted min-w-[360px]')}
+                      >
                         <caption className="sr-only">{t('scores')}</caption>
                         <thead>
                           <tr>
-                            <th scope="col" className="text-left">
+                            <th scope="col" className="text-left whitespace-nowrap text-[10px]">
                               {t('scoresPlayer')}
                             </th>
-                            <th scope="col">{t('scoresBid')}</th>
-                            <th scope="col">{t('scoresTricks')}</th>
-                            <th scope="col">{t('scoresRound')}</th>
-                            <th scope="col">{t('scoresTotal')}</th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresBid')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresTricks')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresRound')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresTotal')}
+                            </th>
                           </tr>
                         </thead>
                         <tbody>
@@ -442,11 +513,7 @@ function CallBreakPageContent() {
                   </span>
                 ))}
               </div>
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-              />
+              {isMobile && messageBox}
             </div>
 
             <ActionLogSection
@@ -455,9 +522,7 @@ function CallBreakPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
-          </div>
 
-          <GameFooter className={`${gameTheme.callbreak.footer} px-4 py-2.5`}>
             {humanPlayer && (
               <>
                 <div className="mb-1 text-ds-text-muted text-xs" role="status" data-testid="cb-spades-break-footer">
@@ -476,17 +541,6 @@ function CallBreakPageContent() {
                     />
                   </div>
                 )}
-                <PlayerHandSection
-                  humanPlayer={humanPlayer}
-                  selectedCardIndices={selectedCardIndices}
-                  toggleCard={toggleCard}
-                  cardWidth={cardWidth}
-                  isMobile={isMobile}
-                  dataTutorialPrefix="cb"
-                  validIndices={isHumanTurn ? state.validPlayIndices : undefined}
-                  restrictedTooltip={t('mustTrumpSpadeTooltip')}
-                  cardTitleFor={isHumanTurn ? cardTitleFor : undefined}
-                />
               </>
             )}
 
@@ -510,64 +564,10 @@ function CallBreakPageContent() {
             </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-            <div className="flex gap-2 items-center" data-tutorial="cb-play-button">
+            <div className="flex gap-2 items-center">
               {(isHumanBidTurn || isHumanTurn) && (
                 <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
                   {tc('button.hint')}
-                </button>
-              )}
-              {isHumanBidTurn && (
-                <div className="flex flex-col items-center gap-2">
-                  <fieldset
-                    className="grid max-w-[16rem] grid-cols-7 gap-1 border-0 p-0"
-                    aria-label={t('bidSelectLabel')}
-                  >
-                    {Array.from({ length: 13 }, (_, i) => i + 1).map((n) => (
-                      <button
-                        key={n}
-                        type="button"
-                        onClick={() => setBidSelection({ roundNumber: state.roundNumber, value: n })}
-                        disabled={loading}
-                        aria-pressed={bidValue === n}
-                        data-testid={`bid-option-${n}`}
-                        className={`h-9 w-9 rounded-lg font-medium text-sm transition-all ${
-                          bidValue === n
-                            ? 'bg-ds-accent text-white ring-2 ring-ds-accent'
-                            : 'bg-white/20 text-ds-text-primary hover:bg-white/30'
-                        }`}
-                      >
-                        {n}
-                      </button>
-                    ))}
-                  </fieldset>
-                  {/* Announce the current bid selection to screen readers, since the
-                      grid's aria-pressed alone isn't read back as a running value. */}
-                  <span className="sr-only" role="status" aria-live="polite" data-testid="cb-bid-selected">
-                    {t('bidSelected', { n: bidValue })}
-                  </span>
-                  <button type="button" className={btnPrimary} onClick={() => handleBid(bidValue)} disabled={loading}>
-                    {t('bidButton')}
-                  </button>
-                </div>
-              )}
-              {isHumanTurn && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-              {isTrickEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                  {t('nextTrick')}
-                </button>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
                 </button>
               )}
               <GameResetButton
@@ -579,6 +579,57 @@ function CallBreakPageContent() {
               />
             </div>
             <CardNavShortcutsPanel data-testid="call-break-kbd-shortcuts" />
+          </div>
+
+          <GameFooter
+            message={isMobile ? undefined : messageBox}
+            dataTutorial="cb-play-button"
+            className={`${gameTheme.callbreak.footer} px-4 py-2.5`}
+            actions={
+              isHumanBidTurn || isHumanTurn || isTrickEnd || isRoundEnd ? (
+                <div className="flex gap-2 items-center">
+                  {isHumanBidTurn && (
+                    <button type="button" className={btnPrimary} onClick={() => handleBid(bidValue)} disabled={loading}>
+                      {t('bidButtonSelected', { n: bidValue })}
+                    </button>
+                  )}
+                  {isHumanTurn && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handlePlay}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                    >
+                      {t('playButton')}
+                    </button>
+                  )}
+                  {isTrickEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                      {t('nextTrick')}
+                    </button>
+                  )}
+                  {isRoundEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                      {t('nextRound')}
+                    </button>
+                  )}
+                </div>
+              ) : null
+            }
+          >
+            {humanPlayer && (
+              <PlayerHandSection
+                humanPlayer={humanPlayer}
+                selectedCardIndices={selectedCardIndices}
+                toggleCard={toggleCard}
+                cardWidth={cardWidth}
+                isMobile={isMobile}
+                dataTutorialPrefix="cb"
+                validIndices={isHumanTurn ? state.validPlayIndices : undefined}
+                restrictedTooltip={t('mustTrumpSpadeTooltip')}
+                cardTitleFor={isHumanTurn ? cardTitleFor : undefined}
+              />
+            )}
           </GameFooter>
         </>
       )}

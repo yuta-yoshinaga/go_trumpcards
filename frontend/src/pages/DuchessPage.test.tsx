@@ -1,6 +1,7 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, renderHook, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { duchessApi } from '../api/gameApi';
+import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameHint } from '../hooks/useGameHint';
 import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -70,6 +71,18 @@ const gameOverState: DuchessResponse = {
 };
 
 describe('DuchessPage', () => {
+  it('tightens the upper zone spacing only at large desktop width', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1280 });
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<DuchessPage />);
+    const zones = await screen.findByTestId('du-upper-zones');
+    expect(zones).toHaveClass('mb-1');
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 768 });
+    window.dispatchEvent(new Event('resize'));
+    await waitFor(() => expect(zones).toHaveClass('mb-3'));
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
@@ -97,6 +110,20 @@ describe('DuchessPage', () => {
     for (let i = 0; i < 4; i++) {
       expect(screen.getByText(`#${i}`)).toBeInTheDocument();
     }
+  });
+
+  it('keeps tableau card wrappers at the card dimension width', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<DuchessPage />);
+    await screen.findByText('開始ランク: 5');
+    const { result } = renderHook(() => useCardDimensions());
+    const wrapper = document.querySelector('[data-tutorial="du-tableau"] [style*="top"]') as HTMLElement;
+    expect(wrapper).not.toBeNull();
+    const expectedWidth = result.current.isMobile
+      ? Math.min(Math.max(Math.floor((window.innerWidth - 16 - 3 * 4) / 4), 30), result.current.cardWidth)
+      : result.current.cardWidth;
+    expect(Number.parseFloat(wrapper.style.width)).toBe(expectedWidth);
+    expect(wrapper.style.right).toBe('');
   });
 
   it('includes the top card in a non-empty foundation name and keeps empty names', async () => {
@@ -493,5 +520,26 @@ describe('DuchessPage keyboard shortcuts', () => {
     }
     await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
+  });
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue({ ...playingState, message: 'Footer guidance' });
+    renderWithProviders(<DuchessPage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage.querySelector('[role="status"], [role="alert"]')).toHaveTextContent('Footer guidance');
+  });
+  it('renders the game message in the play area instead of the footer on mobile', async () => {
+    mockExec.mockResolvedValue({ ...playingState, message: 'Mobile guidance' });
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    renderWithProviders(<DuchessPage />);
+
+    const messageText = await screen.findByText('Mobile guidance');
+    const message = messageText.closest('[role="status"], [role="alert"]');
+    expect(message?.closest('.flex-1.overflow-y-auto')).not.toBeNull();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    window.dispatchEvent(new Event('resize'));
   });
 });

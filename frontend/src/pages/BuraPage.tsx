@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import type { buraApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardBackFan } from '../components/CardBackFan';
 import { CardBack, CardImage } from '../components/CardImage';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
@@ -16,7 +17,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useBuraGame } from '../hooks/useBuraGame';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
@@ -62,6 +63,7 @@ function BuraPageContent() {
   );
   const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   const { cardWidth } = useCardDimensions();
+  const isMobile = useIsMobile();
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -177,18 +179,22 @@ function BuraPageContent() {
               {opponents.map((o) => {
                 const opponentName = findPlayerName(state.players, state.players.indexOf(o));
                 const revealed = ended && o.cards.length > 0;
-                const handCards = revealed
-                  ? o.cards.map((card, i) => (
-                      <CardImage
-                        key={`opp-${o.id.toString()}-c${i.toString()}`}
-                        card={card}
-                        ariaLabel={cardAlt(card)}
-                        width={cardWidth}
-                      />
-                    ))
-                  : Array.from({ length: o.cardCount }, (_, i) => (
-                      <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
-                    ));
+                const handCards = revealed ? (
+                  o.cards.map((card, i) => (
+                    <CardImage
+                      key={`opp-${o.id.toString()}-c${i.toString()}`}
+                      card={card}
+                      ariaLabel={cardAlt(card)}
+                      width={cardWidth}
+                    />
+                  ))
+                ) : isMobile ? (
+                  Array.from({ length: o.cardCount }, (_, i) => (
+                    <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
+                  ))
+                ) : (
+                  <CardBackFan count={o.cardCount} width={Math.round(cardWidth * 0.45)} />
+                );
                 return (
                   <div key={`opp-${o.id.toString()}`} className="text-center">
                     <div className="text-game-text-muted text-xs mb-1">
@@ -235,7 +241,10 @@ function BuraPageContent() {
               </div>
             </div>
 
-            <div className="text-center" data-tutorial="bura-hand">
+            <div
+              className="text-center lg:sticky lg:bottom-0 lg:z-10 lg:bg-game-bg-casino lg:pt-2 lg:shadow-[0_-8px_16px_rgba(0,0,0,0.35)]"
+              data-tutorial="bura-hand"
+            >
               <div className="text-game-text-muted text-xs mb-1">{t('yourHand')}</div>
               <div className="flex gap-1 justify-center flex-wrap">
                 {(human?.cards ?? []).map((card, i) => {

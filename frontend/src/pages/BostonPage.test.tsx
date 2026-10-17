@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { bostonApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -6,6 +6,17 @@ import { renderWithProviders } from '../test/renderWithProviders';
 import type { BostonBidOption, BostonPlayer, BostonResponse, CardDesign } from '../types/card';
 import { BostonPhase } from '../types/phases';
 import { BostonPage } from './BostonPage';
+
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useIsMobile: () => mobileState.isMobile,
+    useCardDimensions: () => ({ ...actual.useCardDimensions(), isMobile: mobileState.isMobile }),
+  };
+});
 
 vi.mock('../api/gameApi', () => ({
   bostonApi: { exec: vi.fn() },
@@ -107,6 +118,24 @@ describe('BostonPage', () => {
   it('resets on mount', async () => {
     renderWithProviders(<BostonPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('keeps the bidding ladder collapsed on mobile and open on desktop', async () => {
+    mobileState.isMobile = true;
+    const mobileRender = renderWithProviders(<BostonPage />);
+    await waitFor(() => expect(screen.getByTestId('boston-ladder')).toBeInTheDocument());
+
+    const ladder = screen.getByTestId('boston-ladder');
+    expect(ladder).not.toHaveAttribute('open');
+    expect(screen.getByTestId('boston-ladder-summary')).toBeInTheDocument();
+    expect(within(ladder).getByText(/ミゼールはトリック宣言の間に挟まります/)).not.toBeVisible();
+
+    mobileRender.unmount();
+    mobileState.isMobile = false;
+    renderWithProviders(<BostonPage />);
+    const desktopLadder = await screen.findByTestId('boston-ladder');
+    expect(desktopLadder).toHaveAttribute('open');
+    expect(within(desktopLadder).getByText(/ミゼールはトリック宣言の間に挟まります/)).toBeVisible();
   });
 
   // **序列はサーバーが送る順のまま出す。**ミゼールがトリック宣言の間に挟まる。
@@ -503,5 +532,50 @@ describe('BostonPage', () => {
     renderWithProviders(<BostonPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     expect(screen.queryByTestId('boston-bid-history')).not.toBeInTheDocument();
+  });
+
+  it('keeps the primary control in the pinned footer actions', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<BostonPage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: '出す' })).toBeInTheDocument();
+  });
+
+  it('keeps only the hand and turn notice in the footer content', async () => {
+    renderWithProviders(<BostonPage />);
+    const footer = await screen.findByTestId('game-footer-content');
+    const playArea = footer.parentElement?.previousElementSibling;
+    expect(playArea).toBeInTheDocument();
+
+    expect(footer.querySelector('[data-tutorial="boston-hand"]')).toBeInTheDocument();
+    expect(within(footer).getByTestId('boston-play-notice')).toBeInTheDocument();
+    expect(within(footer).queryByLabelText('ヒント表示')).not.toBeInTheDocument();
+    expect(footer.querySelector('[data-tutorial="boston-reset-button"]')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByLabelText('ヒント表示')).toBeInTheDocument();
+    expect(playArea?.querySelector('[data-tutorial="boston-reset-button"]')).toBeInTheDocument();
+  });
+  it('renders the game message in the footer message slot', async () => {
+    mobileState.isMobile = false;
+    mockExec.mockResolvedValue({ ...makeState(), message: 'Footer guidance' });
+    renderWithProviders(<BostonPage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage.querySelector('[role="status"], [role="alert"]')).toHaveTextContent('Footer guidance');
+  });
+  it('renders the game message in the play area instead of the footer on mobile', async () => {
+    mobileState.isMobile = true;
+    mockExec.mockResolvedValue({ ...makeState(), message: 'Mobile guidance' });
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    renderWithProviders(<BostonPage />);
+
+    const messageText = await screen.findByText('Mobile guidance');
+    const message = messageText.closest('[role="status"], [role="alert"]');
+    expect(message?.closest('.flex-1.overflow-y-auto')).not.toBeNull();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    window.dispatchEvent(new Event('resize'));
+    mobileState.isMobile = false;
   });
 });

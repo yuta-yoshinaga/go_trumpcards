@@ -238,6 +238,7 @@ Key routing rules:
 - Merge a PR ("マージして", "land it", "merge #NNNN") → invoke land-pr (`/land-pr <#>`) — a green tick alone is not the gate; it also checks the head SHA still matches and that the checks actually ran
 - Docs out of sync with the code ("ドキュメントの乖離", "docs are stale") → invoke doc-drift-check (`/doc-drift-check [--fix]`)
 - Coverage of only this branch's changes, before pushing → invoke coverage-gate
+- Unify terminology across a game's CUI, Web, manual, and CLI formatter → invoke term-unify
 - Untaken branches on changed frontend lines (what codecov/patch counts as misses), before pushing or when codecov/patch fails → invoke patch-branch-gaps
 - Prove a test fails when the code it guards is broken, before claiming "verified by mutation" → invoke mutation-proof
 - A test failed and you suspect a flake → invoke flake-ledger

@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import i18n from 'i18next';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { kingApi } from '../api/gameApi';
@@ -46,6 +46,14 @@ beforeEach(() => {
 });
 
 describe('KingPage', () => {
+  it('keeps status items unbroken in the wrapping status row', async () => {
+    const { container } = renderWithProviders(<KingPage />);
+    await screen.findByAltText('♥ Q');
+    const row = container.querySelector('.flex.flex-wrap.justify-center');
+    expect(row).toHaveClass('flex-wrap');
+    expect(row?.querySelectorAll('span.whitespace-nowrap')).toHaveLength(5);
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<KingPage />);
@@ -76,6 +84,42 @@ describe('KingPage', () => {
     renderWithProviders(<KingPage />);
     await waitFor(() => expect(screen.getByTestId('king-select-prompt')).toBeInTheDocument());
     expect(screen.getByRole('button', { name: /^ノートリック —/ })).toBeInTheDocument();
+  });
+
+  it('keeps only the prompt and hand in the footer while choices and game info stay in the play area', async () => {
+    mockExec.mockResolvedValue(selectPhaseState);
+    renderWithProviders(<KingPage />);
+
+    const footer = await screen.findByTestId('game-footer-content');
+    const playArea = footer.parentElement?.previousElementSibling;
+    expect(playArea).not.toBeNull();
+    expect(within(footer).queryByTestId('king-contract-buttons')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('king-contract-buttons')).toBeInTheDocument();
+    const settings = screen.getByText('設定', { selector: 'summary' }).closest('details');
+    expect(settings).toBeInTheDocument();
+    expect(playArea).not.toContainElement(settings);
+    expect(within(footer).queryByTestId('king-contract-descriptions')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('king-contract-descriptions')).toBeInTheDocument();
+    expect(within(footer).getByTestId('king-prompt-live')).toBeInTheDocument();
+    expect(within(footer).getByAltText('♥ Q')).toBeInTheDocument();
+  });
+
+  it('keeps contract descriptions linked to choices in the play area without footer actions', async () => {
+    mockExec.mockResolvedValue(selectPhaseState);
+    renderWithProviders(<KingPage />);
+    const content = await screen.findByTestId('game-footer-content');
+    const contractButtons = screen.getByTestId('king-contract-buttons');
+    expect(within(contractButtons).getByTestId('king-contract-0')).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-actions')).not.toBeInTheDocument();
+    const descriptions = screen.getByTestId('king-contract-descriptions');
+    expect(content).not.toContainElement(contractButtons);
+    expect(content).not.toContainElement(descriptions);
+    expect(descriptions).toHaveTextContent('契約の説明');
+    expect(descriptions).toHaveTextContent(i18n.t('king:contractDesc.0'));
+    expect(within(contractButtons).getByTestId('king-contract-0')).toHaveAttribute(
+      'aria-describedby',
+      'king-contract-desc-0',
+    );
   });
 
   it('shows achieve/avoid badges on the contract buttons', async () => {
@@ -381,6 +425,7 @@ describe('KingPage', () => {
     renderWithProviders(<KingPage />);
     await waitFor(() => expect(screen.getByTestId('king-select-cpu')).toBeInTheDocument());
     expect(screen.queryByTestId('king-contract-buttons')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-actions')).not.toBeInTheDocument();
   });
 
   it('shows king-trump-buttons when the user clicks the King/Trump contract', async () => {
@@ -389,7 +434,8 @@ describe('KingPage', () => {
     renderWithProviders(<KingPage />);
     const trumpContractBtn = await screen.findByTestId('king-contract-6');
     fireEvent.click(trumpContractBtn);
-    expect(await screen.findByTestId('king-trump-buttons')).toBeInTheDocument();
+    const actions = screen.getByTestId('game-footer-actions');
+    expect(within(actions).getByTestId('king-trump-buttons')).toBeInTheDocument();
   });
 
   it('does not show king-trump-buttons before a contract is selected', async () => {
@@ -397,5 +443,14 @@ describe('KingPage', () => {
     renderWithProviders(<KingPage />);
     await waitFor(() => expect(screen.getByTestId('king-contract-buttons')).toBeInTheDocument());
     expect(screen.queryByTestId('king-trump-buttons')).not.toBeInTheDocument();
+  });
+
+  it('keeps the primary control in the pinned footer actions', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<KingPage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: '出す' })).toBeInTheDocument();
+    const content = screen.getByTestId('game-footer-content');
+    expect(within(content).getByAltText('♥ Q')).toBeInTheDocument();
   });
 });

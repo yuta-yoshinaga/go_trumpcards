@@ -7,6 +7,13 @@ import { renderWithProviders } from '../test/renderWithProviders';
 import type { BalootResponse, Card } from '../types/card';
 import { BalootPage } from './BalootPage';
 
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+}));
+
 vi.mock('../api/gameApi', () => ({
   balootApi: { exec: vi.fn() },
   actionLogApi: { baloot: vi.fn() },
@@ -67,6 +74,38 @@ beforeEach(() => {
 });
 
 describe('BalootPage', () => {
+  it('keeps the hand and reset/give-up actions in the shared footer', async () => {
+    mockExec.mockResolvedValue(playing());
+    renderWithProviders(<BalootPage />);
+    await screen.findByRole('button', { name: /♠/ });
+    const hand = document.querySelector<HTMLElement>('[data-tutorial="baloot-hand"]');
+    const footerContent = screen.getByTestId('game-footer-content');
+    const footerActions = screen.getByTestId('game-footer-actions');
+    expect(footerContent).toContainElement(hand);
+    expect(footerActions).toContainElement(screen.getByRole('button', { name: 'リセット' }));
+    expect(footerActions).toContainElement(screen.getByRole('button', { name: '投了' }));
+  });
+
+  it('collapses rules and CPU seats on mobile and opens them on desktop', async () => {
+    mobileState.isMobile = true;
+    mockExec.mockResolvedValue(makeState({ mode: 1, declarerIdx: 0 } as Partial<BalootResponse>));
+    const { unmount } = renderWithProviders(<BalootPage />);
+    const mobileRules = await screen.findByTestId('bl-rules');
+    expect(mobileRules).not.toHaveAttribute('open');
+    expect(screen.getByText(/A=11 > 10/)).not.toBeVisible();
+    expect(screen.getByTestId('cpu-accordion')).not.toHaveAttribute('open');
+    expect(screen.getByTestId('bl-seat-0')).toBeVisible();
+    expect(screen.getByTestId('bl-seat-1')).not.toBeVisible();
+
+    unmount();
+    mobileState.isMobile = false;
+    renderWithProviders(<BalootPage />);
+    expect(await screen.findByTestId('bl-rules')).toHaveAttribute('open');
+    expect(screen.getByText(/A=11 > 10/)).toBeVisible();
+    expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
+    expect(screen.getByTestId('bl-seat-1')).toBeVisible();
+  });
+
   it('resets on mount', async () => {
     renderWithProviders(<BalootPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

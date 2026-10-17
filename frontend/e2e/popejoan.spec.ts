@@ -4,6 +4,7 @@ import { navigateTo, TIMEOUT_GAME_LOOP, waitForLoaded } from './helpers';
 test.describe('Pope Joan E2E', () => {
   test('shows the rules, the eight compartments and plays a card', async ({ page }) => {
     await navigateTo(page, '/popejoan');
+    await page.getByTestId('pj-rule-details').locator('summary').click();
 
     // Permanent, not tutorial-only: compartments pay only on trumps, and the
     // missing eight of diamonds is what makes a run always die at the seven.

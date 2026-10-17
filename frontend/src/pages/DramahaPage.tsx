@@ -371,6 +371,45 @@ function DramahaPageContent() {
         <>
           {/* Scrollable: community cards + CPU players */}
           <div className={`relative flex-1 overflow-y-auto pt-4 px-5 lg:px-8 ${lgCardAreaConstraint}`}>
+            {humanPlayer && (
+              <>
+                <div
+                  className={`mb-1 inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-semibold ${badgeInfoColors}`}
+                  data-testid="dramaha-split-rule-badge"
+                  data-tutorial="dr-split-rule"
+                  title={t('splitRuleAria')}
+                >
+                  <span aria-hidden="true">🔀</span>
+                  {t('splitRule')}
+                </div>
+                {/* Both halves, side by side. Showing one alone would hide half
+                    of what the player is playing for. */}
+                <div className="mb-1 flex flex-wrap gap-2" data-testid="dramaha-hands">
+                  <div className="flex items-center gap-1" data-testid="dramaha-omaha-hand">
+                    <span className="text-ds-text-primary text-xs">
+                      {t('omahaHand')} <span className="text-ds-text-muted">({t('omahaHandRule')})</span>
+                    </span>
+                    <span
+                      className={`inline-block text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}
+                      data-testid="dramaha-omaha-hand-name"
+                    >
+                      {hands.omaha ? t(`hand.${hands.omaha.key}`) : t('handsUnavailable')}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1" data-testid="dramaha-draw-hand">
+                    <span className="text-ds-text-primary text-xs">
+                      {t('drawHand')} <span className="text-ds-text-muted">({t('drawHandRule')})</span>
+                    </span>
+                    <span
+                      className={`inline-block text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}
+                      data-testid="dramaha-draw-hand-name"
+                    >
+                      {hands.draw ? t(`hand.${hands.draw.key}`) : t('handsUnavailable')}
+                    </span>
+                  </div>
+                </div>
+              </>
+            )}
             {/* Community cards + CPU players (poker table layout on desktop, accordion on mobile) */}
             {(() => {
               const communityCardsContent = (
@@ -403,6 +442,7 @@ function DramahaPageContent() {
                   player={player}
                   showCards={isShowdown}
                   faceDownCount={DRAMAHA_HOLE_CARDS}
+                  compactFaceDown={isLargeDesktop}
                   showHandName={false}
                   extraInfo={
                     <>
@@ -507,247 +547,12 @@ function DramahaPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
-          </div>
-
-          {/* Sticky footer: player hand + buttons */}
-          <GameFooter className={`${gameTheme.dramaha.footer} px-5 py-3`}>
-            {/* Human player */}
-            {humanPlayer && (
-              <div className="mb-2" data-tutorial="dr-player-hand">
-                <div className="text-ds-text-primary text-lg mb-1">
-                  {t('yourHand')}
-                  <span className="ml-3 text-xs">
-                    {tc('betting.chips')} {humanPlayer.chips}
-                  </span>
-                  {humanPlayer.totalHands > 0 && (
-                    <HudStats
-                      namespace="dramaha"
-                      vpip={humanPlayer.vpip}
-                      pfr={humanPlayer.pfr}
-                      threeBet={humanPlayer.threeBet}
-                      af={humanPlayer.af}
-                    />
-                  )}
-                  {humanPlayer.currentBet > 0 && (
-                    <span className="ml-2 text-xs">
-                      {tc('betting.currentBet')} {humanPlayer.currentBet}
-                    </span>
-                  )}
-                  {humanPlayer.folded && (
-                    <span className="ml-2 text-ds-error-text text-xs">[{tc('status.folded')}]</span>
-                  )}
-                  {humanPlayer.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
-                </div>
-                <div
-                  className={`mb-1 inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-semibold ${badgeInfoColors}`}
-                  data-testid="dramaha-split-rule-badge"
-                  data-tutorial="dr-split-rule"
-                  title={t('splitRuleAria')}
-                >
-                  <span aria-hidden="true">🔀</span>
-                  {t('splitRule')}
-                </div>
-                {/* Both halves, side by side. Showing one alone would hide half
-                    of what the player is playing for. */}
-                <div className="mb-1 flex flex-wrap gap-2" data-testid="dramaha-hands">
-                  <div className="flex items-center gap-1" data-testid="dramaha-omaha-hand">
-                    <span className="text-ds-text-primary text-xs">
-                      {t('omahaHand')} <span className="text-ds-text-muted">({t('omahaHandRule')})</span>
-                    </span>
-                    <span
-                      className={`inline-block text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}
-                      data-testid="dramaha-omaha-hand-name"
-                    >
-                      {hands.omaha ? t(`hand.${hands.omaha.key}`) : t('handsUnavailable')}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1" data-testid="dramaha-draw-hand">
-                    <span className="text-ds-text-primary text-xs">
-                      {t('drawHand')} <span className="text-ds-text-muted">({t('drawHandRule')})</span>
-                    </span>
-                    <span
-                      className={`inline-block text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}
-                      data-testid="dramaha-draw-hand-name"
-                    >
-                      {hands.draw ? t(`hand.${hands.draw.key}`) : t('handsUnavailable')}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex flex-wrap gap-1.5 mb-2">
-                  {humanPlayer.cards?.length
-                    ? humanPlayer.cards.map((card, idx) => {
-                        const isSelected = selectedDraw.includes(idx);
-                        const inBest = showdownBest5.holeSet.has(idx);
-                        const dim = showdownBest5.holeSet.size > 0 && !inBest;
-                        return (
-                          <button
-                            type="button"
-                            key={`${card.design}-${card.value}`}
-                            onClick={() => toggleDraw(idx)}
-                            disabled={!canDraw || loading}
-                            aria-pressed={canDraw ? isSelected : undefined}
-                            className={`transition-all ${canDraw ? 'cursor-pointer' : 'cursor-default'} ${
-                              inBest ? 'rounded-lg ring-2 ring-ds-success motion-safe:animate-pulse' : ''
-                            } ${dim ? 'opacity-50' : ''}`}
-                            style={selectedCardStyle(canDraw && isSelected)}
-                            data-best5-hole={inBest || undefined}
-                            data-testid={`dramaha-hole-card-${idx}`}
-                          >
-                            <AnimatedCard card={card} width={cardWidth} />
-                          </button>
-                        );
-                      })
-                    : !humanPlayer.folded &&
-                      Array.from({ length: DRAMAHA_HOLE_CARDS }).map((_, i) => (
-                        <AnimatedCardBack key={i} width={cardWidth} />
-                      ))}
-                </div>
-              </div>
-            )}
-
-            {/* Message */}
-            <GameMessageBox
-              message={state?.message}
-              messageCode={state?.messageCode}
-              messageParams={state?.messageParams}
-              alwaysVisible
-            />
 
             <ErrorAlert message={error} onRetry={retry} />
-
-            {/* Draw controls */}
-            {canDraw && (
-              <div className="mb-2 text-center" data-testid="draw-controls" data-tutorial="dr-draw-round">
-                <p className="text-ds-text-primary font-bold mb-1">{t('draw.title')}</p>
-                <p className="text-ds-text-primary mb-1">{t('draw.prompt')}</p>
-                <p className="text-ds-text-muted text-xs mb-2" data-testid="dramaha-draw-once">
-                  {t('draw.onceOnly')}
-                </p>
-                <p className="text-ds-text-primary text-xs mb-2" data-testid="dramaha-draw-selected">
-                  {t('draw.selected', { count: selectedDraw.length, max: DRAMAHA_HOLE_CARDS })}
-                </p>
-                <div className="flex justify-center gap-2">
-                  <button
-                    type="button"
-                    className={`${btnPrimary} min-w-[90px]`}
-                    disabled={loading || selectedDraw.length === 0}
-                    onClick={() => submitDraw([...selectedDraw])}
-                    data-testid="dramaha-draw-exchange"
-                  >
-                    {t('draw.exchange', { count: selectedDraw.length })}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnSecondary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => submitDraw([])}
-                    data-testid="dramaha-draw-standpat"
-                  >
-                    {t('draw.standPat')}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Muck/Show controls */}
-            {isMuckPhase && (
-              <div className="mb-2 text-center" data-testid="muck-controls">
-                <div className="flex justify-center gap-2">
-                  <button
-                    type="button"
-                    className={`${btnPrimary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => execApi('muck')}
-                  >
-                    {t('muck.muck')}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnSecondary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => execApi('show')}
-                  >
-                    {t('muck.show')}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Rebuy/Addon controls */}
-            {isRebuyPhase && (
-              <div className="mb-2 text-center" data-testid="rebuy-controls">
-                <p className="text-ds-text-primary mb-2">
-                  {t('rebuy.prompt', { chips: state?.rebuyChips, used: humanRebuyCount, max: state?.rebuyMaxCount })}
-                </p>
-                <div className="flex justify-center gap-2">
-                  <button
-                    type="button"
-                    className={`${btnPrimary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => execApi('rebuy')}
-                  >
-                    {t('rebuy.accept')}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnSecondary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => execApi('skiprebuy')}
-                  >
-                    {t('rebuy.skip')}
-                  </button>
-                </div>
-              </div>
-            )}
-            {isAddonPhase && (
-              <div className="mb-2 text-center" data-testid="addon-controls">
-                <p className="text-ds-text-primary mb-2">{t('addon.prompt', { chips: state?.addonChips })}</p>
-                <div className="flex justify-center gap-2">
-                  <button
-                    type="button"
-                    className={`${btnPrimary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => execApi('addon')}
-                  >
-                    {t('addon.accept')}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnSecondary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => execApi('skipaddon')}
-                  >
-                    {t('addon.skip')}
-                  </button>
-                </div>
-              </div>
-            )}
 
             {/* Hint */}
             {hintEnabled && hint && (
               <HintTooltip reason={t(hint.reason, hint.reasonParams)} confidence={hint.confidence} />
-            )}
-
-            {/* Betting controls */}
-            {canAct && (
-              <div data-tutorial="dr-action-buttons">
-                <BettingControls
-                  inputId="dramahaBetAmount"
-                  betAmount={betAmount}
-                  onBetAmountChange={setBetAmount}
-                  minRaise={minRaise}
-                  maxBetAmount={state?.maxBetAmount}
-                  potSize={state?.pot}
-                  hasOutstandingBet={hasOutstandingBet}
-                  loading={loading}
-                  onCall={() => execApi('call', undefined, undefined, getElapsed())}
-                  onRaise={() => execApi('raise', betAmount, undefined, getElapsed())}
-                  onBet={() => execApi('bet', betAmount, undefined, getElapsed())}
-                  onCheck={() => execApi('check', undefined, undefined, getElapsed())}
-                  onFold={() => execApi('fold', undefined, undefined, getElapsed())}
-                  onAllIn={() => execApi('allin', undefined, undefined, getElapsed())}
-                />
-              </div>
             )}
 
             {/* Settings + Reset */}
@@ -794,6 +599,220 @@ function DramahaPageContent() {
               className="min-w-[90px]"
             />
             <ActionShortcutsPanel bindings={actionBindings} data-testid="dramaha-kbd-shortcuts" />
+          </div>
+
+          {/* Sticky footer: player hand + buttons */}
+          <GameFooter
+            className={`${gameTheme.dramaha.footer} px-5 py-3`}
+            actions={
+              <>
+                {/* Draw controls */}
+                {canDraw && (
+                  <div className="mb-2 text-center" data-testid="draw-controls" data-tutorial="dr-draw-round">
+                    <p className="text-ds-text-primary font-bold mb-1">{t('draw.title')}</p>
+                    <p className="text-ds-text-primary mb-1">{t('draw.prompt')}</p>
+                    <p className="text-ds-text-muted text-xs mb-2" data-testid="dramaha-draw-once">
+                      {t('draw.onceOnly')}
+                    </p>
+                    <p className="text-ds-text-primary text-xs mb-2" data-testid="dramaha-draw-selected">
+                      {t('draw.selected', { count: selectedDraw.length, max: DRAMAHA_HOLE_CARDS })}
+                    </p>
+                    <div className="flex justify-center gap-2">
+                      <button
+                        type="button"
+                        className={`${btnPrimary} min-w-[90px]`}
+                        disabled={loading || selectedDraw.length === 0}
+                        onClick={() => submitDraw([...selectedDraw])}
+                        data-testid="dramaha-draw-exchange"
+                      >
+                        {t('draw.exchange', { count: selectedDraw.length })}
+                      </button>
+                      <button
+                        type="button"
+                        className={`${btnSecondary} min-w-[90px]`}
+                        disabled={loading}
+                        onClick={() => submitDraw([])}
+                        data-testid="dramaha-draw-standpat"
+                      >
+                        {t('draw.standPat')}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Muck/Show controls */}
+                {isMuckPhase && (
+                  <div className="mb-2 text-center" data-testid="muck-controls">
+                    <div className="flex justify-center gap-2">
+                      <button
+                        type="button"
+                        className={`${btnPrimary} min-w-[90px]`}
+                        disabled={loading}
+                        onClick={() => execApi('muck')}
+                      >
+                        {t('muck.muck')}
+                      </button>
+                      <button
+                        type="button"
+                        className={`${btnSecondary} min-w-[90px]`}
+                        disabled={loading}
+                        onClick={() => execApi('show')}
+                      >
+                        {t('muck.show')}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Rebuy/Addon controls */}
+                {isRebuyPhase && (
+                  <div className="mb-2 text-center" data-testid="rebuy-controls">
+                    <p className="text-ds-text-primary mb-2">
+                      {t('rebuy.prompt', {
+                        chips: state?.rebuyChips,
+                        used: humanRebuyCount,
+                        max: state?.rebuyMaxCount,
+                      })}
+                    </p>
+                    <div className="flex justify-center gap-2">
+                      <button
+                        type="button"
+                        className={`${btnPrimary} min-w-[90px]`}
+                        disabled={loading}
+                        onClick={() => execApi('rebuy')}
+                      >
+                        {t('rebuy.accept')}
+                      </button>
+                      <button
+                        type="button"
+                        className={`${btnSecondary} min-w-[90px]`}
+                        disabled={loading}
+                        onClick={() => execApi('skiprebuy')}
+                      >
+                        {t('rebuy.skip')}
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {isAddonPhase && (
+                  <div className="mb-2 text-center" data-testid="addon-controls">
+                    <p className="text-ds-text-primary mb-2">{t('addon.prompt', { chips: state?.addonChips })}</p>
+                    <div className="flex justify-center gap-2">
+                      <button
+                        type="button"
+                        className={`${btnPrimary} min-w-[90px]`}
+                        disabled={loading}
+                        onClick={() => execApi('addon')}
+                      >
+                        {t('addon.accept')}
+                      </button>
+                      <button
+                        type="button"
+                        className={`${btnSecondary} min-w-[90px]`}
+                        disabled={loading}
+                        onClick={() => execApi('skipaddon')}
+                      >
+                        {t('addon.skip')}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Betting controls */}
+                {canAct && (
+                  <div data-tutorial="dr-action-buttons">
+                    <BettingControls
+                      inputId="dramahaBetAmount"
+                      betAmount={betAmount}
+                      onBetAmountChange={setBetAmount}
+                      minRaise={minRaise}
+                      maxBetAmount={state?.maxBetAmount}
+                      potSize={state?.pot}
+                      hasOutstandingBet={hasOutstandingBet}
+                      loading={loading}
+                      onCall={() => execApi('call', undefined, undefined, getElapsed())}
+                      onRaise={() => execApi('raise', betAmount, undefined, getElapsed())}
+                      onBet={() => execApi('bet', betAmount, undefined, getElapsed())}
+                      onCheck={() => execApi('check', undefined, undefined, getElapsed())}
+                      onFold={() => execApi('fold', undefined, undefined, getElapsed())}
+                      onAllIn={() => execApi('allin', undefined, undefined, getElapsed())}
+                    />
+                  </div>
+                )}
+              </>
+            }
+          >
+            {/* Human player */}
+            {humanPlayer && (
+              <div className="mb-2" data-tutorial="dr-player-hand">
+                <div className="text-ds-text-primary text-lg mb-1">
+                  {t('yourHand')}
+                  <span className="ml-3 text-xs">
+                    {tc('betting.chips')} {humanPlayer.chips}
+                  </span>
+                  {humanPlayer.totalHands > 0 && (
+                    <HudStats
+                      namespace="dramaha"
+                      vpip={humanPlayer.vpip}
+                      pfr={humanPlayer.pfr}
+                      threeBet={humanPlayer.threeBet}
+                      af={humanPlayer.af}
+                    />
+                  )}
+                  {humanPlayer.currentBet > 0 && (
+                    <span className="ml-2 text-xs">
+                      {tc('betting.currentBet')} {humanPlayer.currentBet}
+                    </span>
+                  )}
+                  {humanPlayer.folded && (
+                    <span className="ml-2 text-ds-error-text text-xs">[{tc('status.folded')}]</span>
+                  )}
+                  {humanPlayer.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
+                </div>
+                {humanPlayer.cards?.length ? (
+                  <div className="flex flex-wrap gap-1.5 mb-2">
+                    {humanPlayer.cards.map((card, idx) => {
+                      const isSelected = selectedDraw.includes(idx);
+                      const inBest = showdownBest5.holeSet.has(idx);
+                      const dim = showdownBest5.holeSet.size > 0 && !inBest;
+                      return (
+                        <button
+                          type="button"
+                          key={`${card.design}-${card.value}`}
+                          onClick={() => toggleDraw(idx)}
+                          disabled={!canDraw || loading}
+                          aria-pressed={canDraw ? isSelected : undefined}
+                          className={`transition-all ${canDraw ? 'cursor-pointer' : 'cursor-default'} ${
+                            inBest ? 'rounded-lg ring-2 ring-ds-success motion-safe:animate-pulse' : ''
+                          } ${dim ? 'opacity-50' : ''}`}
+                          style={selectedCardStyle(canDraw && isSelected)}
+                          data-best5-hole={inBest || undefined}
+                          data-testid={`dramaha-hole-card-${idx}`}
+                        >
+                          <AnimatedCard card={card} width={cardWidth} />
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  !humanPlayer.folded && (
+                    <div className="flex flex-wrap gap-1.5 mb-2">
+                      {Array.from({ length: DRAMAHA_HOLE_CARDS }).map((_, i) => (
+                        <AnimatedCardBack key={i} width={cardWidth} />
+                      ))}
+                    </div>
+                  )
+                )}
+              </div>
+            )}
+
+            {/* Message */}
+            <GameMessageBox
+              message={state?.message}
+              messageCode={state?.messageCode}
+              messageParams={state?.messageParams}
+              alwaysVisible
+            />
           </GameFooter>
         </>
       )}

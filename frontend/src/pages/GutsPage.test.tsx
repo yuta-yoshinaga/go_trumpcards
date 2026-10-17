@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { gutsApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -94,6 +94,16 @@ beforeEach(() => {
 });
 
 describe('GutsPage', () => {
+  it('shows the human turn instruction once', async () => {
+    mockExec.mockResolvedValue(
+      makeGutsState({ message: 'あなたの番です — イン（残る）かアウト（降りる）を選んでください。' }),
+    );
+    renderWithProviders(<GutsPage />);
+    expect(
+      await screen.findAllByText('あなたの番です — イン（残る）かアウト（降りる）を選んでください。'),
+    ).toHaveLength(1);
+  });
+
   it('shows the configured target rounds', async () => {
     for (const { targetRounds, text } of [
       { targetRounds: 4, text: 'ラウンド 1 / 4' },
@@ -140,10 +150,25 @@ describe('GutsPage', () => {
     );
   });
 
+  it('keeps the hand in the footer and renders declaration guidance and reset in the play area', async () => {
+    const { container } = renderWithProviders(<GutsPage />);
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const playArea = container.querySelector('.flex-1.overflow-y-auto');
+
+    expect(playArea).not.toBeNull();
+    expect(footerContent.querySelector('[data-tutorial="guts-hand"]')).not.toBeNull();
+    expect(within(footerContent).queryByTestId('guts-declare-guide')).not.toBeInTheDocument();
+    expect(footerContent.querySelector('[data-tutorial="guts-reset-button"]')).toBeNull();
+    expect(within(playArea as HTMLElement).getByTestId('guts-declare-guide')).toBeInTheDocument();
+    expect(playArea?.querySelector('[data-tutorial="guts-reset-button"]')).not.toBeNull();
+  });
+
   it('shows the declare action buttons on the declare phase', async () => {
     renderWithProviders(<GutsPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'イン（残る）' })).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: 'アウト（降りる）' })).toBeInTheDocument();
+    const actions = within(screen.getByTestId('game-footer-actions'));
+    expect(actions.getByRole('button', { name: 'イン（残る）' })).toBeInTheDocument();
+    expect(actions.getByRole('button', { name: 'アウト（降りる）' })).toBeInTheDocument();
   });
 
   it('shows the human chips, round bet, and current pot beside the declare actions', async () => {

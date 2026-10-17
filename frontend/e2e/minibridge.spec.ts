@@ -1,5 +1,5 @@
 import { expect, type Page, test } from '@playwright/test';
-import { navigateTo, TIMEOUT_ACTION, TIMEOUT_TRANSITION } from './helpers';
+import { clickHandCard, navigateTo, TIMEOUT_ACTION, TIMEOUT_TRANSITION } from './helpers';
 
 // **合法な札だけを選ぶ。** カードは意図的に disabled にしていないので、
 // フォロー義務を満たさない札を押すとサーバが拒否して盤面が動かない。
@@ -10,6 +10,13 @@ const ownHand = (page: Page) => page.getByRole('button', { name: /^(?!ダミー�
 
 /** Contract buttons, only rendered when the human is the declarer. */
 const contractBtn = (page: Page) => page.locator('[data-testid^="mb-contract-"]:not([disabled])');
+
+const expandDisclosure = async (page: Page, testId: string) => {
+  const disclosure = page.getByTestId(testId);
+  if (!(await disclosure.evaluate((element) => (element as HTMLDetailsElement).open))) {
+    await disclosure.locator('summary').click();
+  }
+};
 
 /**
  * True when the human sits in the dummy seat.
@@ -43,6 +50,20 @@ const totalTricks = async (page: Page) => {
   return total;
 };
 
+/** Advance paused CPU tricks when the human occupies the dummy seat. */
+const playOutDummyDeal = async (page: Page) => {
+  const continueButton = page.getByRole('button', { name: /^(次へ|Continue)$/ });
+  for (let attempt = 0; attempt < 20; attempt++) {
+    const tricksBefore = await totalTricks(page);
+    if (tricksBefore === 13) return;
+
+    await expect(continueButton).toBeVisible({ timeout: TIMEOUT_ACTION });
+    await continueButton.click();
+    await expect.poll(async () => totalTricks(page), { timeout: TIMEOUT_ACTION }).toBeGreaterThan(tricksBefore);
+  }
+  await expect.poll(async () => totalTricks(page), { timeout: TIMEOUT_ACTION }).toBe(13);
+};
+
 test.describe('Minibridge E2E', () => {
   test('navigates to minibridge and renders initial game state', async ({ page }) => {
     await navigateTo(page, '/minibridge');
@@ -54,12 +75,14 @@ test.describe('Minibridge E2E', () => {
   // **競りが無いこと自体が規則。**
   test('always states that there is no auction', async ({ page }) => {
     await navigateTo(page, '/minibridge');
+    await expandDisclosure(page, 'mb-rule-details');
     await expect(page.getByTestId('mb-rule')).toContainText(/競り|auction/, { timeout: TIMEOUT_TRANSITION });
   });
 
   // **HCP は 4 席ぶん公開され、合計は必ず 40。**
   test('shows every seat HCP, totalling forty', async ({ page }) => {
     await navigateTo(page, '/minibridge');
+    await expandDisclosure(page, 'cpu-accordion');
     await expect(page.getByTestId('mb-seat-0')).toBeVisible({ timeout: TIMEOUT_TRANSITION });
 
     let total = 0;
@@ -76,6 +99,7 @@ test.describe('Minibridge E2E', () => {
   /** Settle the contract — the human only chooses it when they are the declarer. */
   const settleContract = async (page: Page) => {
     await expect(page.getByTestId('mb-round')).toBeVisible({ timeout: TIMEOUT_ACTION });
+    await expandDisclosure(page, 'cpu-accordion');
     if (await contractBtn(page).first().isVisible()) {
       await contractBtn(page).first().click();
     }
@@ -91,7 +115,8 @@ test.describe('Minibridge E2E', () => {
 
     if (await humanIsDummy(page)) {
       // 自分がダミーなら、公開されるのは自分の手札 —— 席行のダミー表示がその印。
-      // 盤面は既にディールを打ち切っているので、**素通りさせずそれを主張する**。
+      // トリックごとの一時停止を「次へ」で進め、ディール完了を主張する。
+      await playOutDummyDeal(page);
       await expect.poll(async () => totalTricks(page), { timeout: TIMEOUT_ACTION }).toBe(13);
       return;
     }
@@ -104,9 +129,8 @@ test.describe('Minibridge E2E', () => {
     await settleContract(page);
 
     if (await humanIsDummy(page)) {
-      // 人間がダミーの配りには出す手札が残っていない。**素通りさせず**、
-      // CPU が最後まで打ち切ったこと（13 トリック）と、押せる札が 1 枚も
-      // 出ていないことを主張する —— 出せたらサーバが拒否するのでバグ。
+      // 人間がダミーの配りは「次へ」で進め、完了後に押せる札が無いことも主張する。
+      await playOutDummyDeal(page);
       await expect.poll(async () => totalTricks(page), { timeout: TIMEOUT_ACTION }).toBe(13);
       await expect(legalCard(page)).toHaveCount(0);
       return;
@@ -118,7 +142,9 @@ test.describe('Minibridge E2E', () => {
 
     await expect(legalCard(page).first()).toBeVisible({ timeout: TIMEOUT_ACTION });
     await expect(legalCard(page).first()).toBeEnabled({ timeout: TIMEOUT_ACTION });
-    await legalCard(page).first().click();
+    // Desktop cards overlap. Click the exposed left edge so the next card
+    // cannot intercept the pointer intended for the first legal card.
+    await clickHandCard(legalCard(page).first());
 
     await expect
       .poll(

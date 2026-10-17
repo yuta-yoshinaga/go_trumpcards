@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, doubleattackApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
@@ -91,6 +91,39 @@ beforeEach(() => {
 });
 
 describe('DoubleAttackPage', () => {
+  it('keeps the deal action in the persistent footer action row', async () => {
+    mockApi.mockResolvedValue(withState({ phase: DoubleAttackPhase.BET }));
+    renderWithProviders(<DoubleAttackPage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: '配る' })).toBeInTheDocument();
+    expect(screen.getByTestId('da-bet-support').parentElement).not.toBe(actions);
+    expect(within(actions).queryByTestId('da-bustit-payouts')).not.toBeInTheDocument();
+  });
+
+  it('keeps bet choices and payout information in the play area outside the footer', async () => {
+    mockApi.mockResolvedValue(withState({ phase: DoubleAttackPhase.BET }));
+    renderWithProviders(<DoubleAttackPage />);
+
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const betSupport = screen.getByTestId('da-bet-support');
+    const playArea = screen.getByTestId('card-area');
+    expect(within(footerContent).queryByTestId('da-bet-support')).not.toBeInTheDocument();
+    expect(within(playArea).getByTestId('da-bet-support')).toBe(betSupport);
+    expect(within(footerContent).queryByTestId('da-bustit-payouts')).not.toBeInTheDocument();
+    expect(within(playArea).getByTestId('da-bustit-payouts')).toBeInTheDocument();
+  });
+
+  it('keeps attack comparison in the play area outside the footer', async () => {
+    mockApi.mockResolvedValue(withState({ phase: DoubleAttackPhase.ATTACK }));
+    renderWithProviders(<DoubleAttackPage />);
+
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const comparison = screen.getByTestId('da-attack-comparison');
+    const playArea = screen.getByTestId('card-area');
+    expect(within(footerContent).queryByTestId('da-attack-comparison')).not.toBeInTheDocument();
+    expect(within(playArea).getByTestId('da-attack-comparison')).toBe(comparison);
+  });
+
   it('announces the newly active hand and score only when the active hand changes during play', async () => {
     mockApi
       .mockResolvedValueOnce(
@@ -577,9 +610,9 @@ describe('DoubleAttackPage', () => {
     mockApi.mockResolvedValue(withState({ phase: DoubleAttackPhase.PLAY, hands: [hand()] }));
     mockActionLogApi.mockResolvedValue({ entries: [] });
     renderWithProviders(<DoubleAttackPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'button.actionLog' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: '棋譜を見る' })).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole('button', { name: 'button.actionLog' }));
+    fireEvent.click(screen.getByRole('button', { name: '棋譜を見る' }));
     await waitFor(() => expect(mockActionLogApi).toHaveBeenCalled());
     expect(screen.getByTestId('copy-announcer')).toBeInTheDocument();
 

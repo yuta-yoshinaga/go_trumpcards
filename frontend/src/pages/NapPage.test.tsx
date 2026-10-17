@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { napApi } from '../api/gameApi';
 import i18n from '../i18n';
@@ -66,6 +66,13 @@ beforeEach(() => {
 });
 
 describe('NapPage', () => {
+  it('keeps each status item unbroken in the wrapping status row', async () => {
+    renderWithProviders(<NapPage />);
+    const row = await screen.findByText(/ラウンド/).then((el) => el.closest('[data-tutorial="nap-info"]'));
+    expect(row).toHaveClass('flex', 'flex-wrap');
+    expect(row?.querySelectorAll('span.whitespace-nowrap')).toHaveLength(4);
+  });
+
   it('shows each bid, pass, and a not-yet-bid seat after the auction', async () => {
     mockExec.mockResolvedValue(
       makeNapState({
@@ -116,11 +123,37 @@ describe('NapPage', () => {
 
   it('shows bid buttons on a human bid turn', async () => {
     renderWithProviders(<NapPage />);
-    await waitFor(() => expect(screen.getByTestId('bid-0')).toBeInTheDocument());
-    expect(screen.getByTestId('bid-2')).toBeInTheDocument();
-    expect(screen.getByTestId('bid-3')).toBeInTheDocument();
-    expect(screen.getByTestId('bid-4')).toBeInTheDocument();
-    expect(screen.getByTestId('bid-5')).toBeInTheDocument();
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByTestId('bid-0')).toBeInTheDocument();
+    expect(within(actions).getByTestId('bid-2')).toBeInTheDocument();
+    expect(within(actions).getByTestId('bid-3')).toBeInTheDocument();
+    expect(within(actions).getByTestId('bid-4')).toBeInTheDocument();
+    expect(within(actions).getByTestId('bid-5')).toBeInTheDocument();
+  });
+
+  it('keeps the tutorial action anchor available on a CPU turn', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<NapPage />);
+    const footerContent = await screen.findByTestId('game-footer-content');
+    expect(footerContent.closest('footer')).toHaveAttribute('data-tutorial', 'nap-action-buttons');
+  });
+
+  it('keeps only the hand in the footer content and places bid guidance and hint live region in the play area', async () => {
+    mockExec.mockResolvedValue({
+      ...bidPhaseState,
+      hint: { cardIndices: [0], reason: 'x' },
+      messageCode: 'nap.hintRequested',
+    });
+    renderWithProviders(<NapPage />);
+
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const playArea = footerContent.parentElement?.previousElementSibling;
+    expect(playArea).toHaveClass('flex-1', 'overflow-y-auto');
+    expect(within(footerContent).getAllByAltText(/♠|♥|♦|♣/).length).toBeGreaterThan(0);
+    expect(within(footerContent).queryByTestId('nap-hint-live')).not.toBeInTheDocument();
+    expect(within(footerContent).queryByText(/ボタンの数字:/)).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('nap-hint-live')).toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByText(/ボタンの数字:/)).toBeInTheDocument();
   });
 
   it('keeps every hand card unavailable during the bidding phase', async () => {

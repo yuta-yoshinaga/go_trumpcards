@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { guandanApi } from '../api/gameApi';
 import i18n from '../i18n';
@@ -63,9 +63,33 @@ describe('GuandanPage', () => {
     mockExec.mockResolvedValue(makeState());
   });
 
+  it('opts into the taller mobile footer for its 27-card hand', async () => {
+    renderWithProviders(<GuandanPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.getByRole('contentinfo').className).toContain('max-h-[60vh]');
+  });
+
   it('resets on mount', async () => {
     renderWithProviders(<GuandanPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('renders without a human player and shows no hand cards', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ players: makeState().players.map((player) => ({ ...player, isHuman: false })) }),
+    );
+
+    renderWithProviders(<GuandanPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    await waitFor(() => expect(screen.getByTestId('guandan-info')).toBeInTheDocument());
+    expect(screen.queryByTestId('hand-card-0')).toBeNull();
+  });
+
+  it('renders desktop hand cards through PlayerHandSection', async () => {
+    renderWithProviders(<GuandanPage />);
+    const cardButton = await screen.findByTestId('hand-card-0');
+    expect(cardButton).toHaveAttribute('data-hand-card-index', '0');
   });
 
   // **レベル札が A より強いことがこのゲームの肝。**画面に書いていないと読めない。
@@ -172,6 +196,62 @@ describe('GuandanPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndexes: [0, 2] }));
   });
 
+  it('stacks mobile hand rows and preserves selectable and disabled card behavior', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      const designs: CardDesign[] = ['SPADE', 'HEART', 'CLOVER', 'DIAMOND'];
+      const cards = Array.from({ length: 27 }, (_, i) => card(designs[Math.floor(i / 13)] ?? 'SPADE', (i % 13) + 1));
+      mockExec.mockResolvedValue(
+        makeState({ players: [seat(0, true, { cards, cardCount: cards.length }), ...makeState().players.slice(1)] }),
+      );
+      renderWithProviders(<GuandanPage />);
+      await waitFor(() =>
+        expect(document.querySelectorAll('[data-testid="hand-row"]').length).toBeGreaterThanOrEqual(2),
+      );
+      const hand = document.querySelector<HTMLElement>('[data-tutorial="guandan-hand"]');
+      expect(document.querySelectorAll('[data-tutorial="guandan-hand"]')).toHaveLength(1);
+      const rows = hand?.querySelectorAll<HTMLElement>('[data-testid="hand-row"]');
+      expect(rows).toBeDefined();
+      for (const row of Array.from(rows ?? []).slice(1)) expect(row.style.marginTop).toMatch(/^-/);
+
+      const availableCard = screen.getByRole('button', { name: '♠ A' });
+      fireEvent.click(availableCard);
+      expect(availableCard).toHaveAttribute('aria-pressed', 'true');
+      fireEvent.click(availableCard);
+      expect(availableCard).toHaveAttribute('aria-pressed', 'false');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it('does not allow mobile hand selection outside the human action phase', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      const otherTurn = makeState({ currentPlayerIdx: 1 });
+      mockExec.mockResolvedValue(otherTurn);
+      renderWithProviders(<GuandanPage />);
+      await waitFor(() => expect(document.querySelectorAll('[data-testid="hand-row"]').length).toBeGreaterThan(0));
+      const unavailableCard = screen.getByRole('button', { name: '♠ 2' });
+      expect(unavailableCard).toHaveAttribute('aria-disabled', 'true');
+      fireEvent.click(unavailableCard);
+      expect(unavailableCard).toHaveAttribute('aria-pressed', 'false');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it('keeps the play action in the fixed footer action row on the human turn', async () => {
+    renderWithProviders(<GuandanPage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: '出す' })).toBeInTheDocument();
+  });
+
   it('exposes selected hand cards as pressed in play and tribute phases', async () => {
     const { unmount } = renderWithProviders(<GuandanPage />);
     await waitFor(() => expect(screen.getByTestId('hand-card-0')).toHaveAttribute('aria-pressed', 'false'));
@@ -245,6 +325,15 @@ describe('GuandanPage', () => {
       mockExec.mockResolvedValue(tributeState());
       renderWithProviders(<GuandanPage />);
       await waitFor(() => expect(screen.getByTestId('guandan-tribute-rules')).toBeInTheDocument());
+
+      const playArea = screen.getByTestId('guandan-info').parentElement;
+      const footerContent = screen.getByTestId('game-footer-content');
+      expect(playArea).toContainElement(screen.getByTestId('guandan-tribute-rules'));
+      expect(footerContent).not.toContainElement(screen.getByTestId('guandan-tribute-rules'));
+      expect(footerContent).toContainElement(screen.getByTestId('hand-card-0'));
+      expect(
+        within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '還貢する' }),
+      ).toBeInTheDocument();
     });
 
     it('hides tribute rules when human does not owe return', async () => {
@@ -367,7 +456,7 @@ describe('GuandanPage', () => {
       }),
     );
     renderWithProviders(<GuandanPage />);
-    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeDisabled());
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toHaveAttribute('aria-disabled', 'true'));
   });
 
   // **ヒント経路はページ側からも踏む。**ファクトリ単体テストだけだと

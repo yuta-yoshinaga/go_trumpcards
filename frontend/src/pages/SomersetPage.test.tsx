@@ -18,6 +18,19 @@ vi.mock('../hooks/useGameHint', () => ({
   useGameHint: vi.fn(() => ({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() })),
 }));
 
+const mobileState = vi.hoisted(() => ({ isMobile: undefined as boolean | undefined, largeDesktop: false }));
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useCardDimensions: () => {
+      const d = actual.useCardDimensions();
+      return mobileState.isMobile === undefined ? d : { ...d, isMobile: mobileState.isMobile };
+    },
+    useBreakpoint: () => (mobileState.largeDesktop ? 'largeDesktop' : 'desktop'),
+  };
+});
+
 const mockExec = vi.mocked(somersetApi.exec);
 const mockActionLog = vi.mocked(actionLogApi.somerset);
 
@@ -75,9 +88,31 @@ describe('SomersetPage', () => {
   afterEach(() => localStorage.clear());
 
   beforeEach(() => {
+    mobileState.isMobile = undefined;
+    mobileState.largeDesktop = false;
     vi.clearAllMocks();
     mockActionLog.mockResolvedValue({ entries: [] });
     vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
+  });
+
+  it('lays out the four foundation piles in two columns only on large desktop', async () => {
+    mobileState.largeDesktop = true;
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<SomersetPage />);
+    const foundations = await screen.findByTestId('somerset-foundations');
+    expect(foundations).toHaveClass('grid', 'grid-cols-2');
+    mobileState.largeDesktop = false;
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    mockExec.mockResolvedValue({ ...gameOverState, message: 'Mobile message', messageCode: undefined });
+    mobileState.isMobile = true;
+    renderWithProviders(<SomersetPage />);
+
+    const messageText = await screen.findByText('Mobile message');
+    const message = messageText.closest('[role="status"]');
+    expect(message).toHaveTextContent('Mobile message');
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
   });
 
   it('opens the action log during play and disables game shortcuts while it is open', async () => {
@@ -136,6 +171,14 @@ describe('SomersetPage', () => {
     renderWithProviders(<SomersetPage />);
     await waitFor(() => expect(screen.getByText(/サマセット/)).toBeInTheDocument());
     expect(screen.getByText(/手数: 3/)).toBeInTheDocument();
+  });
+
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue(gameOverState);
+    renderWithProviders(<SomersetPage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage.querySelector('[role="status"], [role="alert"]')).toHaveTextContent('ゲームオーバー');
   });
 
   it('renders 4 foundation suits', async () => {

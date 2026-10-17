@@ -235,7 +235,7 @@ function BlackHolePageContent() {
               {isHintedLegal && (
                 <span
                   aria-hidden="true"
-                  className="absolute -top-1 -right-1 rounded-full bg-ds-success text-white text-[10px] leading-none px-1 py-0.5"
+                  className="absolute -top-1 -right-1 rounded-full bg-ds-success text-ds-text-on-accent text-[10px] leading-none px-1 py-0.5"
                 >
                   ✓
                 </span>
@@ -244,7 +244,7 @@ function BlackHolePageContent() {
               {isRecommended && (
                 <span
                   aria-hidden="true"
-                  className="absolute -bottom-1 -left-1 rounded-full bg-ds-warning text-white text-[10px] leading-none px-1 py-0.5"
+                  className="absolute -bottom-1 -left-1 rounded-full bg-ds-warning text-ds-text-on-accent text-[10px] leading-none px-1 py-0.5"
                 >
                   ★
                 </span>
@@ -274,8 +274,8 @@ function BlackHolePageContent() {
     >
       <div className="flex-1 overflow-y-auto pt-3 px-2 lg:px-6">
         {/* Central black hole */}
-        <div className="flex items-center gap-3 mb-3" data-tutorial="bh-hole">
-          <div className="text-ds-text-muted text-xs">{t('blackHole')}</div>
+        <div className="flex flex-wrap items-center gap-3 mb-3" data-tutorial="bh-hole">
+          <div className="text-ds-text-muted text-xs whitespace-nowrap">{t('blackHole')}</div>
           <div
             className="rounded-full bg-black/60 border-2 border-ds-accent flex items-center justify-center"
             style={{ width: cardH, height: cardH }}
@@ -294,7 +294,7 @@ function BlackHolePageContent() {
           {/* Always-on readout of which rank(s) the hole accepts next, plus the
               current legal-move count (warning colour when no move remains). */}
           <div className="flex flex-col gap-0.5 text-xs" data-testid="bh-acceptable">
-            <span className="text-ds-text-primary">
+            <span className="text-ds-text-primary whitespace-nowrap">
               {acceptableRanks.length > 0
                 ? t('acceptableRanks', { ranks: acceptableRanks.map(valueName).join(' / ') })
                 : t('acceptableRanksNone')}

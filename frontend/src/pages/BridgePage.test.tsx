@@ -12,6 +12,18 @@ vi.mock('../api/gameApi', () => ({
   actionLogApi: { bridge: vi.fn() },
 }));
 
+const mobileState = vi.hoisted(() => ({ isMobile: undefined as boolean | undefined }));
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useCardDimensions: () => {
+      const dimensions = actual.useCardDimensions();
+      return mobileState.isMobile === undefined ? dimensions : { ...dimensions, isMobile: mobileState.isMobile };
+    },
+  };
+});
+
 const mockExec = vi.mocked(bridgeApi.exec);
 
 const bidPhaseState: BridgeResponse = {
@@ -178,10 +190,63 @@ const redoublableBidTurnState: BridgeResponse = {
 };
 
 beforeEach(() => {
+  mobileState.isMobile = undefined;
   mockExec.mockResolvedValue(bidPhaseState);
 });
 
 describe('BridgePage', () => {
+  it('keeps status items intact and wraps between them', async () => {
+    renderWithProviders(<BridgePage />);
+    const row = await screen.findByTestId('bridge-status-row');
+    expect(row).toHaveClass('flex-wrap');
+    expect(row.querySelectorAll('span.whitespace-nowrap').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByRole('columnheader', { name: 'ゲーム勝利数' })).toHaveClass('whitespace-nowrap', 'text-[10px]');
+    expect(screen.getByRole('columnheader', { name: 'ビロウ・ザ・ライン' })).toHaveClass(
+      'whitespace-nowrap',
+      'text-[10px]',
+    );
+  });
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, message: 'Footer message location' });
+    renderWithProviders(<BridgePage />);
+
+    const messageSlot = await screen.findByTestId('game-footer-message');
+    expect(messageSlot).toHaveTextContent('Footer message location');
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, message: 'Footer message location' });
+    mobileState.isMobile = true;
+    renderWithProviders(<BridgePage />);
+
+    const messageText = await screen.findByText('Footer message location');
+    const message = messageText.closest('[role="status"]');
+    expect(message).toHaveTextContent('Footer message location');
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+  });
+
+  it('keeps bidding controls in the fixed footer actions row', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<BridgePage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByTestId('br-bid-submit')).toBeInTheDocument();
+  });
+
+  it('keeps the hand in the footer and places hint support in the play area', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    const { container } = renderWithProviders(<BridgePage />);
+
+    const footer = await screen.findByTestId('game-footer-content');
+    const hintLive = container.querySelector('[data-testid="bridge-hint-live"]');
+    const playArea = hintLive?.closest('.flex-1.overflow-y-auto');
+    expect(footer.querySelector('[data-tutorial="br-player-hand"]')).toBeInTheDocument();
+    expect(footer.querySelector('[data-testid="bridge-hint-live"]')).toBeNull();
+    expect(footer.querySelector('[data-testid="bridge-kbd-shortcuts"]')).toBeNull();
+    expect(playArea).toHaveAttribute('class', expect.stringContaining('flex-1 overflow-y-auto'));
+    expect(playArea?.querySelector('[data-testid="bridge-hint-live"]')).toBe(hintLive);
+    expect(playArea?.querySelector('[data-testid="bridge-kbd-shortcuts"]')).toBeInTheDocument();
+  });
+
   it('marks illegal cards unavailable and ignores their clicks', async () => {
     mockExec.mockResolvedValue(playPhaseState);
     renderWithProviders(<BridgePage />);

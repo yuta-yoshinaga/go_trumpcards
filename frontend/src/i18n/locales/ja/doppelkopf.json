@@ -20,6 +20,7 @@
   "chips": "{{count}}チップ",
   "currentTrick": "現在のトリック",
   "players": "プレイヤー",
+  "rules": "ルール",
   "you": "あなた",
   "cpu": "CPU {{id}}",
   "yourTeam": "あなたのチーム",

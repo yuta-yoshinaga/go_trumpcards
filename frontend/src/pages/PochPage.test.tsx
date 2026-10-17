@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { pochApi } from '../api/gameApi';
 import i18n from '../i18n';
@@ -7,6 +7,17 @@ import { renderWithProviders } from '../test/renderWithProviders';
 import type { CardDesign, PochPlayer, PochResponse } from '../types/card';
 import { PochPhase } from '../types/phases';
 import { PochPage } from './PochPage';
+
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useIsMobile: () => mobileState.isMobile,
+    useCardDimensions: () => ({ ...actual.useCardDimensions(), isMobile: mobileState.isMobile }),
+  };
+});
 
 vi.mock('../api/gameApi', () => ({
   pochApi: { exec: vi.fn() },
@@ -68,7 +79,17 @@ function pickHand(i: number) {
 }
 
 describe('PochPage', () => {
+  it('keeps the hand non-sticky and CPU reference details collapsed on desktop', async () => {
+    mobileState.isMobile = false;
+    renderWithProviders(<PochPage />);
+    await screen.findAllByTestId('poch-pool');
+    const hand = document.querySelector('[data-tutorial="pc-hand"]');
+    expect(hand).not.toHaveClass('lg:sticky');
+    expect(screen.getByTestId('cpu-accordion')).not.toHaveAttribute('open');
+  });
+
   beforeEach(() => {
+    mobileState.isMobile = true;
     vi.clearAllMocks();
     mockExec.mockResolvedValue(makeState());
   });
@@ -87,11 +108,31 @@ describe('PochPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 2 }));
   });
 
-  it('shows both rules permanently', async () => {
+  it('keeps the rules collapsed on mobile and opens them on desktop', async () => {
     renderWithProviders(<PochPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
-    expect(screen.getByText(/めくり札と同じスート/)).toBeInTheDocument();
-    expect(screen.getByText(/宣言ではなく同ランクの組の比べ合い/)).toBeInTheDocument();
+    const rules = screen.getByTestId('poch-rules');
+    expect(rules).not.toHaveAttribute('open');
+    expect(screen.getByText(/めくり札と同じスート/)).not.toBeVisible();
+
+    cleanup();
+    mobileState.isMobile = false;
+    renderWithProviders(<PochPage />);
+    await screen.findAllByTestId('poch-pool');
+    expect(screen.getByTestId('poch-rules')).toHaveAttribute('open');
+    expect(screen.getByText(/宣言ではなく同ランクの組の比べ合い/)).toBeVisible();
+  });
+
+  it('collapses CPU seats on mobile and desktop', async () => {
+    renderWithProviders(<PochPage />);
+    await screen.findAllByTestId('poch-pool');
+    expect(screen.getByTestId('cpu-accordion')).not.toHaveAttribute('open');
+
+    cleanup();
+    mobileState.isMobile = false;
+    renderWithProviders(<PochPage />);
+    await screen.findAllByTestId('poch-pool');
+    expect(screen.getByTestId('cpu-accordion')).not.toHaveAttribute('open');
   });
 
   it('reveals CPU cards with alt text after the game ends', async () => {
@@ -431,5 +472,28 @@ describe('PochPage', () => {
       expect(screen.getByTestId('poch-pochen-result')).toHaveTextContent('席3');
       expect(screen.getByTestId('poch-staking')).not.toHaveTextContent('あなたが');
     });
+  });
+});
+
+describe('PochPage opponent card backs by viewport', () => {
+  beforeEach(() => {
+    mobileState.isMobile = true;
+    vi.clearAllMocks();
+    mockExec.mockResolvedValue(makeState());
+  });
+
+  it('renders a fan with each opponent hand count on desktop', async () => {
+    mobileState.isMobile = false;
+    renderWithProviders(<PochPage />);
+    const fans = await screen.findAllByTestId('card-back-fan');
+    expect(fans).toHaveLength(3);
+    for (const fan of fans) expect(fan.querySelectorAll('img')).toHaveLength(3);
+  });
+
+  it('keeps the full-size individual backs on mobile', async () => {
+    renderWithProviders(<PochPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('card-back-fan')).not.toBeInTheDocument();
+    expect(screen.getAllByAltText('カード裏面')).toHaveLength(9);
   });
 });

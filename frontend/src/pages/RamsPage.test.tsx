@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ramsApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
@@ -21,6 +21,12 @@ vi.mock('../hooks/useGameHint', () => ({
 }));
 
 const mockExec = vi.mocked(ramsApi.exec);
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+}));
 
 const card = (design: string, value: number): Card => ({ design, value }) as unknown as Card;
 
@@ -73,11 +79,44 @@ const playing = (over: Partial<RamsResponse> = {}) =>
   } as Partial<RamsResponse>);
 
 beforeEach(() => {
+  mobileState.isMobile = true;
   vi.clearAllMocks();
   mockExec.mockResolvedValue(makeState());
 });
 
 describe('RamsPage', () => {
+  it('collapses CPU seats on mobile and opens them on desktop', async () => {
+    renderWithProviders(<RamsPage />);
+    const mobileAccordion = await screen.findByTestId('cpu-accordion');
+    expect(mobileAccordion).not.toHaveAttribute('open');
+    expect(screen.getByTestId('rm-seat-1')).not.toBeVisible();
+
+    cleanup();
+    mobileState.isMobile = false;
+    renderWithProviders(<RamsPage />);
+    const desktopAccordion = await screen.findByTestId('cpu-accordion');
+    expect(desktopAccordion).toHaveAttribute('open');
+    expect(screen.getByTestId('rm-seat-1')).toBeVisible();
+  });
+
+  it('renders the decision controls in the game footer action row', async () => {
+    mockExec.mockResolvedValue(makeState({ message: 'テストメッセージ' }));
+    renderWithProviders(<RamsPage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByTestId('rm-in-btn')).toBeInTheDocument();
+    expect(within(actions).getByTestId('rm-out-btn')).toBeInTheDocument();
+    expect(actions.closest('footer')).toHaveClass('max-h-[60vh]');
+    expect(screen.getByTestId('game-footer-message')).toContainElement(screen.getByText('テストメッセージ'));
+    expect(screen.getByTestId('game-footer-content')).toContainElement(
+      screen.getByText(/あなた:/).closest('[data-tutorial="rams-hand"]'),
+    );
+
+    cleanup();
+    mobileState.isMobile = false;
+    renderWithProviders(<RamsPage />);
+    expect((await screen.findByTestId('game-footer-actions')).closest('footer')).toHaveClass('max-h-[45vh]');
+  });
+
   it('opens the action log during play and shows its entries', async () => {
     mockExec.mockResolvedValue(playing());
     renderWithProviders(<RamsPage />);

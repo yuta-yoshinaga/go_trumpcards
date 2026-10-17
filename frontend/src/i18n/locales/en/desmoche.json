@@ -2,6 +2,7 @@
   "round": "Round",
   "stock": "Stock",
   "pot": "pot {{n}}",
+  "rulesLabel": "Rules",
   "ruleLine": "melding exactly {{n}} cards (nine dealt plus one drawn) takes the pot / poker hand rankings play no part",
   "discard": "Discard",
   "melds": "Melds",

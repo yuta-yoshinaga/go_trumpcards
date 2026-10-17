@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, panApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -149,6 +149,123 @@ beforeEach(() => {
 });
 
 describe('PanPage', () => {
+  it.each([
+    {
+      name: 'Pan declaration',
+      state: { ...roundEndState, panDeclarerIdx: 1 },
+      message: 'CPU 1がパンを宣言してラウンド終了',
+    },
+    { name: 'stock out', state: roundEndState, message: '山札切れでラウンド終了' },
+  ])('shows the $name reason in the message box without repeating the phase label', async ({ state, message }) => {
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<PanPage />);
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(within(footerMessage).getByRole('status')).toHaveTextContent(message);
+    expect(screen.getAllByText('ラウンド終了')).toHaveLength(1);
+  });
+
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, message: 'Footer message test' });
+    renderWithProviders(<PanPage />);
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(within(footerMessage).getByRole('status')).toHaveTextContent('Footer message test');
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      message: 'Mobile play-area message',
+      messageCode: 'test.untranslated',
+    });
+    try {
+      renderWithProviders(<PanPage />);
+      await screen.findByText('Mobile play-area message');
+      const status = screen.getByText('Mobile play-area message').closest('[role="status"]');
+      if (!status) throw new Error('Mobile message must be inside its live region');
+      expect(status).toHaveTextContent('Mobile play-area message');
+      expect(status.closest('[data-testid="game-footer-message"]')).toBeNull();
+      expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it('collapses CPU details on mobile while keeping them in the DOM', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    renderWithProviders(<PanPage />);
+    const accordion = await screen.findByTestId('cpu-accordion');
+    expect(accordion).not.toHaveAttribute('open');
+    expect(accordion).toHaveTextContent('CPU');
+    expect(within(accordion).getByText(/10枚/)).not.toBeVisible();
+    const scoreTable = screen.getByTestId('pan-score-table');
+    expect(scoreTable).not.toHaveAttribute('open');
+    expect(within(scoreTable).getByRole('table')).not.toBeVisible();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
+  it('keeps the score table open on desktop', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    renderWithProviders(<PanPage />);
+    const scoreTable = await screen.findByTestId('pan-score-table');
+    expect(scoreTable).toHaveAttribute('open');
+    expect(within(scoreTable).getByRole('table')).toBeVisible();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
+  it('keeps CPU melds and their chip units inside the CPU accordion', async () => {
+    mockExec.mockResolvedValue(valleMeldState);
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    renderWithProviders(<PanPage />);
+
+    const accordion = await screen.findByTestId('cpu-accordion');
+    expect(accordion).not.toHaveAttribute('open');
+    const chipUnits = within(accordion).getByTestId('pan-chip-units-1-0');
+    expect(chipUnits).not.toBeVisible();
+    expect(screen.queryByTestId('pan-chip-units-1-0')).toBe(chipUnits);
+
+    fireEvent.click(within(accordion).getByText(/CPU対戦相手/));
+    expect(chipUnits).toBeVisible();
+    for (const meld of within(accordion).getAllByLabelText(/CPU 1 のメルド/)) {
+      expect(meld).toBeVisible();
+    }
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
+  it('opens the mobile CPU accordion when a layoff target is available', async () => {
+    mockExec.mockResolvedValue(valleMeldState);
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    renderWithProviders(<PanPage />);
+
+    const accordion = await screen.findByTestId('cpu-accordion');
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    expect(accordion).toHaveAttribute('open');
+    expect(within(accordion).getByTestId('pan-layoff-1-0')).toBeVisible();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
+  it('keeps the desktop CPU accordion closed by default and opens it when a layoff target is available', async () => {
+    mockExec.mockResolvedValue(valleMeldState);
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    renderWithProviders(<PanPage />);
+
+    const accordion = await screen.findByTestId('cpu-accordion');
+    expect(accordion).not.toHaveAttribute('open');
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    expect(accordion).toHaveAttribute('open');
+    expect(within(accordion).getByTestId('pan-chip-units-1-0')).toBeVisible();
+    expect(within(accordion).getByTestId('pan-layoff-1-0')).toBeVisible();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<PanPage />);
@@ -180,6 +297,13 @@ describe('PanPage', () => {
       expect(screen.getByRole('button', { name: '山札から引く' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: '捨て札から引く' })).toBeInTheDocument();
       expect(screen.getByTestId('pan-draw-pile-count')).toHaveTextContent('山札: 250枚');
+      const actions = screen.getByTestId('game-footer-actions');
+      expect(within(actions).getByRole('button', { name: '山札から引く' })).toBeInTheDocument();
+      expect(within(actions).getByRole('button', { name: '捨て札から引く' })).toBeInTheDocument();
+      expect(actions.querySelector('[data-tutorial="pan-draw-area"]')).toBeInTheDocument();
+      expect(
+        actions.querySelector('[data-tutorial="pan-draw-area"] [data-testid="pan-draw-pile-count"]'),
+      ).toBeInTheDocument();
     });
   });
 
@@ -298,13 +422,19 @@ describe('PanPage', () => {
       players: [player(), player({ id: 1, isHuman: false })],
     });
     renderWithProviders(<PanPage />);
-    expect(await screen.findByTestId('pan-round-end-reason')).toHaveTextContent('CPU 1がパンを宣言してラウンド終了');
+    const reason = 'CPU 1がパンを宣言してラウンド終了';
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(within(footerMessage).getByRole('status')).toHaveTextContent(reason);
+    expect(screen.getAllByText(reason)).toHaveLength(1);
   });
 
   it('shows stock out as the round end reason when there was no Pan declarer', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<PanPage />);
-    expect(await screen.findByTestId('pan-round-end-reason')).toHaveTextContent('山札切れでラウンド終了');
+    const reason = '山札切れでラウンド終了';
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(within(footerMessage).getByRole('status')).toHaveTextContent(reason);
+    expect(screen.getAllByText(reason)).toHaveLength(1);
   });
 
   it('shows game end with action log button', async () => {
@@ -645,6 +775,35 @@ describe('PanPage meld candidates', () => {
     expect(firstMeld).toBeInTheDocument();
     expect(secondMeld).toBeInTheDocument();
     expect(firstMeld).not.toBe(secondMeld);
+  });
+  it('overlaps only the second and later meld cards on mobile', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<PanPage />);
+    const meld = await screen.findByRole('group', { name: 'CPU 1 のメルド: ♦ 4、♥ 4、♣ 4' });
+    const images = within(meld).getAllByRole('img');
+    const wrappers = images.map((image) => image.closest('.inline-block'));
+    const overlap = `${-Math.round(Number.parseFloat(getComputedStyle(images[1]).width) * 0.6)}px`;
+    expect(wrappers[0]).toHaveStyle({ marginLeft: '0px' });
+    expect(wrappers[0]).not.toHaveClass('-ml-[60%]');
+    expect(wrappers[1]).toHaveStyle({ marginLeft: overlap });
+    expect(wrappers[2]).toHaveStyle({ marginLeft: overlap });
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+  it('uses compact overlapping meld cards on desktop', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<PanPage />);
+    const meld = await screen.findByRole('group', { name: 'CPU 1 のメルド: ♦ 4、♥ 4、♣ 4' });
+    const images = within(meld).getAllByRole('img');
+    expect(images[0]).toHaveStyle({ width: '50px' });
+    const wrappers = images.map((image) => image.closest('.inline-block'));
+    expect(wrappers[0]).not.toHaveClass('-ml-[60%]');
+    expect(wrappers[1]).toHaveStyle({ marginLeft: '-30px' });
+    expect(wrappers[2]).toHaveStyle({ marginLeft: '-30px' });
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
   });
   // **同じ「レイオフ」が卓の上に何個も並ぶ。**読み上げではどのプレイヤーの
   // どのメルド宛かが区別できなかった (#6502)。姉妹ゲーム Machiavelli は

@@ -17,11 +17,11 @@
   "emptyFoundationAriaLabel": "空の組札 ({{suit}})",
   "landscapeBanner": "横画面での表示を推奨します",
   "hint": "ヒント",
-  "autoComplete": "自動完成",
+  "autoComplete": "オートコンプリート",
   "autoCompleteStatus": {
-    "inProgress": "自動完成中です",
-    "finished": "自動完成が完了しました",
-    "interrupted": "自動完成が中断されました"
+    "inProgress": "オートコンプリート中です",
+    "finished": "オートコンプリートが完了しました",
+    "interrupted": "オートコンプリートが中断されました"
   },
   "undo": "元に戻す",
   "stalemate": "手詰まりです",
@@ -38,7 +38,7 @@
     "foundation": "4つの組札に同じスートのカードをA→Kの順に積み上げます。",
     "tableau": "13列の場札に4枚ずつカードが配られます。配り直し時にキングは自動的に各列の一番下に移動します。",
     "moves": "1枚ずつ、スート関係なく1つ下のランクのカードに重ねられます。空の列はカードを置くことはできません。",
-    "controls": "ヒント・元に戻す・自動完成などの操作ボタンです。"
+    "controls": "ヒント・元に戻す・オートコンプリートなどの操作ボタンです。"
   },
   "frontendHint": {
     "tableau": "タブロー列{{col}}",

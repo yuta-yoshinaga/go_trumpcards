@@ -1054,6 +1054,40 @@ describe('EightOffPage', () => {
     }
   });
 
+  it('combines free cells and foundations in the compact large-desktop top row', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      mockExec.mockResolvedValue(playingState);
+      renderWithProviders(<EightOffPage />);
+      const topRow = await screen.findByTestId('eo-top-row');
+      expect(topRow.querySelector('[data-testid="eo-freecell-empty-0"]')).toBeInTheDocument();
+      expect(topRow.querySelector('[data-testid="eo-foundation-empty-0"]')).toBeInTheDocument();
+      expect(topRow.querySelector('[data-testid="eo-doubleclick-hint"]')).not.toBeInTheDocument();
+      expect(screen.getByTestId('eo-doubleclick-hint')).toBeInTheDocument();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it('keeps the develop top-row markup at 800px', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 800 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      mockExec.mockResolvedValue(playingState);
+      renderWithProviders(<EightOffPage />);
+      await screen.findByTestId('eo-freecell-empty-0');
+      expect(screen.queryByTestId('eo-top-row')).not.toBeInTheDocument();
+      expect(screen.getByTestId('eo-doubleclick-hint').parentElement).toHaveClass('flex-wrap');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
   // --- Frontend hint ---
 
   it('renders hint toggle checkbox in SettingsPanel', async () => {

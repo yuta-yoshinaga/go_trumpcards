@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { eightGameApi, horseApi } from '../api/gameApi';
 import { TutorialProvider } from '../providers/TutorialProvider';
@@ -25,6 +25,31 @@ beforeEach(() => {
 });
 
 describe('HorsePage', () => {
+  it('resolves betting footer translations in Eight-Game Mix', async () => {
+    mockEightExec.mockResolvedValue(
+      makeHorseState({ variant: 1, tablePhase: 1, toCall: 25, smallBlind: 5, bigBlind: 10 }),
+    );
+    renderWithProviders(
+      <TutorialProvider config={{ gameName: 'eightgame', steps: [] }}>
+        <HorsePageContent gameKey="eightgame" />
+      </TutorialProvider>,
+    );
+
+    expect(await screen.findByTestId('ho-forced-bets')).toHaveTextContent('スモールブラインド 5、ビッグブラインド 10');
+    expect(screen.getByTestId('ho-forced-bets')).not.toHaveTextContent(/forcedBets\.|listSeparator/);
+    expect(screen.getByTestId('ho-action-context')).toHaveTextContent('プリフロップベッティング手番');
+    expect(screen.getByTestId('ho-action-context')).toHaveClass('flex-wrap');
+    expect(screen.getByTestId('ho-action-context').textContent).not.toMatch(/ · /);
+    expect(screen.getByTestId('ho-action-context').querySelectorAll('span.whitespace-nowrap').length).toBeGreaterThan(
+      2,
+    );
+    expect(screen.getByTestId('ho-action-context')).not.toHaveTextContent('action.betting');
+    expect(within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: /コール/ })).toHaveTextContent(
+      '25 チップ',
+    );
+    expect(document.body).not.toHaveTextContent('callAmount');
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<HorsePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
@@ -491,6 +516,7 @@ describe('HorsePage', () => {
     mockExec.mockResolvedValue(makeHorseState({ isDrawPhase: true, drawIndex: 1 }));
     renderWithProviders(<HorsePage />);
     await waitFor(() => expect(screen.getByTestId('ho-draw-exchange')).toBeInTheDocument());
+    expect(within(screen.getByTestId('game-footer-actions')).getByTestId('ho-draw-exchange')).toBeInTheDocument();
   });
 
   // ドローフェーズ以外ではカード交換ボタンを表示しない。

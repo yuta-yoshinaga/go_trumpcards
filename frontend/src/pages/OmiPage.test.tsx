@@ -149,6 +149,27 @@ beforeEach(() => {
 });
 
 describe('OmiPage', () => {
+  it('renders the game message inside the footer message region', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, message: 'Footer message' });
+    renderWithProviders(<OmiPage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage.querySelector('[role="status"], [role="alert"]')).toHaveTextContent('Footer message');
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue({ ...playPhaseState, message: 'Mobile message' });
+    renderWithProviders(<OmiPage />);
+
+    const messageText = await screen.findByText('Mobile message');
+    const message = messageText.closest('[role="status"]');
+    expect(message).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+    expect(message?.closest('footer')).not.toBeInTheDocument();
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<OmiPage />);
@@ -609,12 +630,35 @@ describe('OmiPage', () => {
     });
   });
 
+  it('shows dealer and trump caller labels when the human has both roles', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, dealerIdx: 0, bidPlayerIdx: 0, trumpSuit: 1 });
+    renderWithProviders(<OmiPage />);
+    await waitFor(() => expect(screen.getByText('ディーラー')).toBeInTheDocument());
+    expect(screen.getByText('切り札宣言者')).toBeInTheDocument();
+  });
+
+  it('keeps separators around CPU dealer and trump caller labels', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, dealerIdx: 1, bidPlayerIdx: 1, trumpCallerIdx: 1 });
+    renderWithProviders(<OmiPage />);
+    const row = await screen.findByTestId('omi-player-row-1');
+    expect(row).toHaveTextContent('トリック: 1 | ディーラー | 切り札宣言者');
+  });
+
   it('score table headers have scope="col" for accessibility', async () => {
     const { container } = renderWithProviders(<OmiPage />);
     await waitFor(() => expect(screen.getByText('チームスコア')).toBeInTheDocument());
     const ths = container.querySelectorAll('th');
     ths.forEach((th) => {
       expect(th).toHaveAttribute('scope', 'col');
+    });
+  });
+
+  it('keeps the score table heading on one line', async () => {
+    renderWithProviders(<OmiPage />);
+    await waitFor(() => expect(screen.getByText('チームスコア')).toBeInTheDocument());
+    expect(screen.getAllByRole('columnheader')).toHaveLength(3);
+    screen.getAllByRole('columnheader').forEach((header) => {
+      expect(header).toHaveClass('whitespace-nowrap');
     });
   });
 

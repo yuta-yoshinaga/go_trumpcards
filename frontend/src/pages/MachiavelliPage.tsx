@@ -1,7 +1,9 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { machiavelliApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardFan } from '../components/CardFan';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -14,7 +16,7 @@ import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -30,6 +32,7 @@ import type { Card, MachiavelliResponse } from '../types/card';
 import { MachiavelliPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { DESKTOP_MIN_CARD_EXPOSURE_PX } from '../utils/cardFan';
 import { valueName } from '../utils/cardUtils';
 import { MACHIAVELLI_HELP, parseMachiavelliCommand } from '../utils/cli/commands/machiavelliCommands';
 import { formatMachiavelliState } from '../utils/cli/formatters/machiavelliFormatter';
@@ -86,6 +89,8 @@ const MV_TUTORIAL_STEPS: TutorialStep[] = [
 export const MachiavelliPage = withTutorial(MachiavelliPageContent, 'machiavelli', MV_TUTORIAL_STEPS);
 /** Inner content of the Machiavelli page, wrapped by TutorialProvider. */
 function MachiavelliPageContent() {
+  const isMobileViewport = useIsMobile();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('machiavelli');
   const {
@@ -125,7 +130,7 @@ function MachiavelliPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('machiavelli', state);
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('machiavelli');
   const cliConfig: CliGameConfig<MachiavelliResponse, Parameters<typeof machiavelliApi.exec>> = useMemo(
@@ -183,6 +188,28 @@ function MachiavelliPageContent() {
       ),
     [frontendHintEnabled, frontendHint, hintHand],
   );
+  const renderHandCard = ({ card, index }: (typeof displayHand)[number]) => (
+    <button
+      type="button"
+      key={`${card.design}-${card.value}-${index}`}
+      onClick={() => toggleCard(index)}
+      aria-label={cardAlt(card)}
+      aria-pressed={selectedCardIndices.includes(index)}
+      data-meld-hint={meldHintIndices.has(index) || undefined}
+      className={`transition-transform ${focusRingCard} ${
+        meldHintIndices.has(index) && !selectedCardIndices.includes(index) ? 'ring-2 ring-ds-success rounded' : ''
+      }`}
+      style={{
+        background: 'none',
+        padding: 0,
+        borderRadius: 8,
+        ...selectedCardStyle(selectedCardIndices.includes(index)),
+        boxSizing: 'border-box',
+      }}
+    >
+      <AnimatedCard card={card} width={cardWidth} />
+    </button>
+  );
 
   if (!state)
     return (
@@ -191,6 +218,10 @@ function MachiavelliPageContent() {
         layout={{ kind: 'trick-taking', opponents: 1, centerCard: true, trickArea: true, footerHandSize: 13 }}
       />
     );
+
+  const messageBox = (
+    <GameMessageBox message={state?.message} messageCode={state?.messageCode} messageParams={state?.messageParams} />
+  );
 
   const humanPlayer = state.players.find((p) => p.isHuman);
   const isTurnPhase = state.phase === MachiavelliPhase.TURN;
@@ -337,6 +368,16 @@ function MachiavelliPageContent() {
                 : t('drawPileAnnouncement', { count: state.drawPileCount })}
             </div>
 
+            {/* **デッドウッドはそのまま失点になる。**サーバは人間の分も毎回
+                送っているのに、画面は revealCpu の下で CPU の分しか出しておらず、
+                自分の持ち点はラウンドが終わるまで見えなかった (#6501)。
+                ドローかメルドかは、この数字を見て決めるもの。 */}
+            {humanPlayer && (
+              <div className="text-ds-text-muted text-xs mb-1" data-testid="mv-own-deadwood">
+                {t('deadwoodShort', { score: humanPlayer.deadwood })}
+              </div>
+            )}
+
             <div className={lgTwoColGrid}>
               {/* Left: shared table melds */}
               <div>
@@ -345,45 +386,103 @@ function MachiavelliPageContent() {
                   {state.table.length === 0 ? (
                     <div className="text-ds-text-muted text-sm">{t('tableEmpty')}</div>
                   ) : (
-                    <div className="flex flex-col gap-2">
-                      {state.table.map((meld, meldIdx) => (
-                        // biome-ignore lint/a11y/useSemanticElements: a labelled group of cards forming one meld; <fieldset> would be semantically wrong here
-                        <div
-                          key={`meld-${meldIdx}-${meld.kind}-${meld.cards.map((c) => `${c.design}${c.value}`).join('')}`}
-                          role="group"
-                          aria-label={meldAria(meld)}
-                          className={`flex items-center gap-2 flex-wrap rounded transition-colors ${
-                            canLayoff ? 'ring-2 ring-ds-accent/70 p-1' : ''
-                          }`}
-                        >
-                          <span
-                            className="text-ds-text-muted text-xs whitespace-nowrap min-w-16"
-                            data-testid={`machiavelli-meld-label-${meldIdx}`}
+                    <div
+                      className={`${isMobileViewport ? 'grid grid-cols-2 gap-2' : isLargeDesktop ? 'flex flex-wrap gap-x-4 gap-y-2' : 'flex flex-col gap-2'}`}
+                      data-testid="machiavelli-meld-list"
+                    >
+                      {state.table.map((meld, meldIdx) => {
+                        // Five or more melds fit in two rows even at 1280×800.
+                        const meldCardWidth = cardWidth * (isLargeDesktop ? 0.6 : 0.8);
+                        const layoffButton = isHumanTurn ? (
+                          <button
+                            type="button"
+                            className={`${btnPrimary} ${isMobileViewport ? 'min-h-11 min-w-11 text-xs' : ''}`}
+                            onClick={() => handleLayoff(meldIdx)}
+                            disabled={loading || selectedCardIndices.length !== 1}
+                            aria-label={t('a11y.layoffTo', { meld: meldAria(meld) })}
                           >
-                            {meldVisualLabel(meld)}
-                          </span>
-                          <div className="flex flex-wrap gap-1">
-                            {meld.cards.map((card, idx) => (
-                              <AnimatedCard
-                                key={`meld-${meldIdx}-card-${card.design}-${card.value}-${idx}`}
-                                card={card}
-                                width={cardWidth * 0.8}
-                              />
-                            ))}
-                          </div>
-                          {isHumanTurn && (
-                            <button
-                              type="button"
-                              className={btnPrimary}
-                              onClick={() => handleLayoff(meldIdx)}
-                              disabled={loading || selectedCardIndices.length !== 1}
-                              aria-label={t('a11y.layoffTo', { meld: meldAria(meld) })}
+                            {t('layoffButton')}
+                          </button>
+                        ) : null;
+                        return (
+                          // biome-ignore lint/a11y/useSemanticElements: a labelled group of cards forming one meld; <fieldset> would be semantically wrong here
+                          <div
+                            key={`meld-${meldIdx}-${meld.kind}-${meld.cards.map((c) => `${c.design}${c.value}`).join('')}`}
+                            role="group"
+                            aria-label={meldAria(meld)}
+                            className={`${isMobileViewport ? 'flex flex-col gap-1' : isLargeDesktop ? 'flex items-center gap-2' : 'flex items-center gap-2 flex-wrap'} rounded transition-colors ${
+                              canLayoff ? 'ring-2 ring-ds-accent/70 p-1' : ''
+                            }`}
+                          >
+                            {isMobileViewport ? (
+                              <div className="flex items-center justify-between gap-2">
+                                <span
+                                  className="text-ds-text-muted text-xs whitespace-nowrap min-w-16 truncate"
+                                  data-testid={`machiavelli-meld-label-${meldIdx}`}
+                                  title={meldVisualLabel(meld)}
+                                >
+                                  {meldVisualLabel(meld)}
+                                </span>
+                                {layoffButton}
+                              </div>
+                            ) : isLargeDesktop ? (
+                              // Label above the lay-off button keeps each set narrow enough for two per row.
+                              <div className="flex flex-col items-start gap-1" data-testid="machiavelli-meld-side">
+                                <span
+                                  className="text-ds-text-muted text-xs whitespace-nowrap"
+                                  data-testid={`machiavelli-meld-label-${meldIdx}`}
+                                  title={meldVisualLabel(meld)}
+                                >
+                                  {meldVisualLabel(meld)}
+                                </span>
+                                {layoffButton}
+                              </div>
+                            ) : (
+                              <span
+                                className="text-ds-text-muted text-xs whitespace-nowrap min-w-16"
+                                data-testid={`machiavelli-meld-label-${meldIdx}`}
+                                title={meldVisualLabel(meld)}
+                              >
+                                {meldVisualLabel(meld)}
+                              </span>
+                            )}
+                            <div
+                              className={`flex ${isMobileViewport ? 'flex-wrap min-w-0' : isLargeDesktop ? 'flex-nowrap' : 'flex-wrap gap-1'}`}
+                              style={isMobileViewport ? { paddingLeft: meldCardWidth * 0.55 } : undefined}
                             >
-                              {t('layoffButton')}
-                            </button>
-                          )}
-                        </div>
-                      ))}
+                              {meld.cards.map((card, idx) => {
+                                const key = `meld-${meldIdx}-card-${card.design}-${card.value}-${idx}`;
+                                // On large desktop each card keeps its full size and only the wrapper overlaps,
+                                // leaving the rank-and-suit corner (DESKTOP_MIN_CARD_EXPOSURE_PX) visible.
+                                return isLargeDesktop ? (
+                                  <div
+                                    key={key}
+                                    className="shrink-0"
+                                    data-testid="machiavelli-meld-card"
+                                    style={
+                                      idx > 0
+                                        ? { marginLeft: -(meldCardWidth - DESKTOP_MIN_CARD_EXPOSURE_PX) }
+                                        : undefined
+                                    }
+                                  >
+                                    <AnimatedCard card={card} width={meldCardWidth} />
+                                  </div>
+                                ) : (
+                                  <AnimatedCard
+                                    key={key}
+                                    card={card}
+                                    width={meldCardWidth}
+                                    style={
+                                      isMobileViewport && idx > 0 ? { marginLeft: -(meldCardWidth * 0.55) } : undefined
+                                    }
+                                  />
+                                );
+                              })}
+                            </div>
+                            {!isMobileViewport && !isLargeDesktop && layoffButton}
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -392,32 +491,41 @@ function MachiavelliPageContent() {
               {/* Right: info sidebar */}
               <div>
                 {/* CPU players */}
-                {state.players
-                  .filter((p) => !p.isHuman)
-                  .map((p) => (
-                    <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                      <div className="text-ds-text-muted text-sm">
-                        {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                        {t('cumulativeScore', { score: p.cumulativeScore })}
-                        {revealCpu && <> | {t('deadwoodShort', { score: p.deadwood })}</>}
-                      </div>
-                      {revealCpu && p.cards.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {p.cards.map((card, idx) => (
-                            <AnimatedCard
-                              key={`cpu-${p.id}-${card.design}-${card.value}-${idx}`}
-                              card={card}
-                              width={cardWidth * 0.8}
-                            />
-                          ))}
+                <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+                  <div>
+                    {state.players
+                      .filter((p) => !p.isHuman)
+                      .map((p) => (
+                        <div key={p.id} className="mb-2 min-w-0 max-w-full p-2 rounded bg-black/30">
+                          <div className="text-ds-text-muted text-sm">
+                            {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                            {t('cumulativeScore', { score: p.cumulativeScore })}
+                            {revealCpu && <> | {t('deadwoodShort', { score: p.deadwood })}</>}
+                          </div>
+                          {revealCpu && p.cards.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {p.cards.map((card, idx) => (
+                                <AnimatedCard
+                                  key={`cpu-${p.id}-${card.design}-${card.value}-${idx}`}
+                                  card={card}
+                                  width={cardWidth * 0.8}
+                                />
+                              ))}
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  ))}
+                      ))}
+                  </div>
+                </CpuAccordion>
 
                 {/* Score table */}
-                <div className="my-3 p-2 rounded bg-black/30" data-tutorial="mv-score-table">
-                  <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
+                <details
+                  className="my-3 p-2 rounded bg-black/30"
+                  data-tutorial="mv-score-table"
+                  data-testid="mv-score-table"
+                  open={!isMobileViewport || undefined}
+                >
+                  <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('scores')}</summary>
                   <table className="w-full text-sm text-ds-text-muted">
                     <thead>
                       <tr>
@@ -468,7 +576,7 @@ function MachiavelliPageContent() {
                       </tbody>
                     </table>
                   )}
-                </div>
+                </details>
               </div>
             </div>
 
@@ -564,11 +672,7 @@ function MachiavelliPageContent() {
               </div>
             )}
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
+            {isMobile && messageBox}
 
             <ActionLogSection
               isEndPhase={isGameEnd}
@@ -576,48 +680,6 @@ function MachiavelliPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
-          </div>
-
-          <GameFooter className={`${gameTheme.machiavelli.footer} px-4 py-2.5`}>
-            {/* **デッドウッドはそのまま失点になる。**サーバは人間の分も毎回
-                送っているのに、画面は revealCpu の下で CPU の分しか出しておらず、
-                自分の持ち点はラウンドが終わるまで見えなかった (#6501)。
-                ドローかメルドかは、この数字を見て決めるもの。 */}
-            {humanPlayer && (
-              <div className="text-ds-text-muted text-xs mb-1" data-testid="mv-own-deadwood">
-                {t('deadwoodShort', { score: humanPlayer.deadwood })}
-              </div>
-            )}
-            {humanPlayer && (
-              <div className="flex flex-wrap gap-1 mb-2" data-tutorial="mv-player-hand">
-                {displayHand.map(({ card, index }) => {
-                  return (
-                    <button
-                      type="button"
-                      key={`${card.design}-${card.value}-${index}`}
-                      onClick={() => toggleCard(index)}
-                      aria-label={cardAlt(card)}
-                      aria-pressed={selectedCardIndices.includes(index)}
-                      data-meld-hint={meldHintIndices.has(index) || undefined}
-                      className={`transition-transform ${focusRingCard} ${
-                        meldHintIndices.has(index) && !selectedCardIndices.includes(index)
-                          ? 'ring-2 ring-ds-success rounded'
-                          : ''
-                      }`}
-                      style={{
-                        background: 'none',
-                        padding: 0,
-                        borderRadius: 8,
-                        ...selectedCardStyle(selectedCardIndices.includes(index)),
-                        boxSizing: 'border-box',
-                      }}
-                    >
-                      <AnimatedCard card={card} width={cardWidth} />
-                    </button>
-                  );
-                })}
-              </div>
-            )}
 
             <ErrorAlert message={error} onRetry={retry} />
 
@@ -634,8 +696,23 @@ function MachiavelliPageContent() {
                   {t(handSorted ? 'handOrder.deal' : 'handOrder.rankSuit')}
                 </button>
               )}
-              {isHumanTurn && (
-                <>
+              <GameResetButton
+                isGameEnd={!!isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="mv-reset-button"
+              />
+            </div>
+            <CardNavShortcutsPanel data-testid="machiavelli-kbd-shortcuts" />
+          </div>
+
+          <GameFooter
+            message={isMobile ? undefined : messageBox}
+            className={`${gameTheme.machiavelli.footer} px-4 py-2.5`}
+            actions={
+              isHumanTurn ? (
+                <div className="flex gap-2 items-center flex-wrap">
                   <button
                     type="button"
                     className={btnPrimary}
@@ -666,22 +743,29 @@ function MachiavelliPageContent() {
                   >
                     {t('rearrange.toggle')}
                   </button>
-                </>
-              )}
-              {isRoundEnd && (
+                </div>
+              ) : isRoundEnd ? (
                 <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
                   {t('nextRound')}
                 </button>
-              )}
-              <GameResetButton
-                isGameEnd={!!isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="mv-reset-button"
-              />
-            </div>
-            <CardNavShortcutsPanel data-testid="machiavelli-kbd-shortcuts" />
+              ) : null
+            }
+          >
+            {humanPlayer &&
+              (isLargeDesktop ? (
+                <CardFan
+                  itemWidth={cardWidth + 6}
+                  className="mb-2 min-w-0"
+                  dataTutorial="mv-player-hand"
+                  data-testid="machiavelli-hand-fan"
+                >
+                  {displayHand.map(renderHandCard)}
+                </CardFan>
+              ) : (
+                <div className="flex flex-wrap gap-1 mb-2" data-tutorial="mv-player-hand">
+                  {displayHand.map(renderHandCard)}
+                </div>
+              ))}
           </GameFooter>
         </>
       )}

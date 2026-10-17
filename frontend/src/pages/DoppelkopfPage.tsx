@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import type { doppelkopfApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -14,7 +15,7 @@ import { PlayerHandSection } from '../components/PlayerHandSection';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { CPU_DIFFICULTY_OPTIONS, TARGET_CHIPS_OPTIONS, useDoppelkopfGame } from '../hooks/useDoppelkopfGame';
@@ -132,10 +133,15 @@ function DoppelkopfPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('doppelkopf', state);
   const { cardWidth, isMobile } = useCardDimensions();
+  const isMobileViewport = useIsMobile();
   const phaseNames = usePhaseNames('doppelkopf', DOPPELKOPF_PHASE_KEYS);
 
   if (!state)
     return <GameSkeleton gameKey="doppelkopf" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 6 }} />;
+
+  const messageBox = (
+    <GameMessageBox message={state?.message} messageCode={state?.messageCode} messageParams={state?.messageParams} />
+  );
 
   const humanPlayer = state.players.find((p) => p.isHuman);
   const humanIdx = state.players.findIndex((p) => p.isHuman);
@@ -213,7 +219,7 @@ function DoppelkopfPageContent() {
             ]}
           />
 
-          <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+          <div className={`flex-1 overflow-y-auto pt-2 sm:pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
             <div className="text-ds-text-primary text-center mb-2">
               <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
               <span>{t('trick', { n: state.trickNumber })}</span>
@@ -234,11 +240,10 @@ function DoppelkopfPageContent() {
               {/* Right: info sidebar */}
               <div data-tutorial="dk-info">
                 {/* Trump ordering legend (collapsible) */}
-                <details className="mb-2 p-2 rounded bg-black/30" data-testid="dk-trump-legend">
-                  <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
-                    {t('trumpLegend.title')}
-                  </summary>
+                <details className="mb-1 sm:mb-2 p-1 sm:p-2 rounded bg-black/30" data-testid="dk-trump-legend">
+                  <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('rules')}</summary>
                   <div className="mt-1 text-ds-text-muted text-xs">
+                    <div className="mb-1 text-ds-text-primary">{t('trumpLegend.title')}</div>
                     <div className="mb-1">{t('trumpLegend.caption')}</div>
                     <div className="flex flex-wrap items-center gap-x-1 gap-y-0.5">
                       {DOPPELKOPF_TRUMP_ORDER.map((symbol, i) => (
@@ -252,48 +257,56 @@ function DoppelkopfPageContent() {
                 </details>
 
                 {/* Your team / announcements */}
-                <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-                  <div>
+                <div className="mb-1 sm:mb-2 p-1 sm:p-2 rounded bg-black/30 text-ds-text-muted text-sm flex flex-wrap items-center gap-x-2 sm:block">
+                  <span className="sm:block">
                     {t('yourTeam')}: {teamLabel}
                     {state.soloRe && ` (${t('soloRe')})`}
-                  </div>
+                  </span>
                   {(state.reAnnounced || state.kontraAnnounced) && (
-                    <div>
+                    <span className="sm:block">
                       {t('announced')}:{' '}
                       {[state.reAnnounced && t('team.re'), state.kontraAnnounced && t('team.kontra')]
                         .filter(Boolean)
                         .join(', ')}
-                    </div>
+                    </span>
                   )}
                 </div>
 
                 {/* Players: chips / cards / tricks (team shown once revealed) */}
-                {isMobile ? (
-                  <details className="mb-2 p-2 rounded bg-black/30">
-                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('players')}</summary>
-                    <div className="mt-1">
-                      {state.players.map((p) => (
-                        <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
+                <div className="mb-1 p-1 sm:p-2 rounded bg-black/30">
+                  {state.players
+                    .filter((p) => p.isHuman)
+                    .map((p) => (
+                      <div
+                        key={p.id}
+                        className="flex flex-wrap items-center gap-x-1 text-ds-text-muted text-sm sm:py-0.5"
+                        data-testid="dk-human-player-info"
+                      >
+                        {playerName(p.id, true)}
+                        {(state.teamsRevealed || p.teamKnown) && ` [${p.isRe ? t('team.re') : t('team.kontra')}]`}:{' '}
+                        {t('chips', { count: p.chips })} | {t('cards', { count: p.cardCount })} |{' '}
+                        <span className="whitespace-nowrap">{t('tricks', { count: p.trickCount })}</span>
+                      </div>
+                    ))}
+                </div>
+                <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+                  <div className="mb-2 p-2 rounded bg-black/30">
+                    {state.players
+                      .filter((p) => !p.isHuman)
+                      .map((p) => (
+                        <div
+                          key={p.id}
+                          className="flex flex-wrap items-center gap-x-1 text-ds-text-muted text-sm py-0.5"
+                          data-testid="dk-cpu-player-info"
+                        >
                           {playerName(p.id, p.isHuman)}
                           {(state.teamsRevealed || p.teamKnown) && ` [${p.isRe ? t('team.re') : t('team.kontra')}]`}:{' '}
                           {t('chips', { count: p.chips })} | {t('cards', { count: p.cardCount })} |{' '}
-                          {t('tricks', { count: p.trickCount })}
+                          <span className="whitespace-nowrap">{t('tricks', { count: p.trickCount })}</span>
                         </div>
                       ))}
-                    </div>
-                  </details>
-                ) : (
-                  <div className="mb-2 p-2 rounded bg-black/30">
-                    {state.players.map((p) => (
-                      <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                        {playerName(p.id, p.isHuman)}
-                        {(state.teamsRevealed || p.teamKnown) && ` [${p.isRe ? t('team.re') : t('team.kontra')}]`}:{' '}
-                        {t('chips', { count: p.chips })} | {t('cards', { count: p.cardCount })} |{' '}
-                        {t('tricks', { count: p.trickCount })}
-                      </div>
-                    ))}
                   </div>
-                )}
+                </CpuAccordion>
 
                 {/* ラウンド中の獲得点。**同じ値がレスポンスに毎回乗っているのに、
                     ラウンド終了まで画面に出していなかった。**最初のトリックで
@@ -301,12 +314,12 @@ function DoppelkopfPageContent() {
                     実戦上の判断材料になる。終了後は下の内訳が引き継ぐ。 */}
                 {!(isRoundEnd || isGameEnd) && (
                   <div
-                    className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                    className="my-1 sm:my-3 p-1 sm:p-2 rounded bg-black/30 text-ds-text-muted text-sm"
                     role="status"
                     aria-live="polite"
                     data-testid="dk-live-points"
                   >
-                    <div className="mb-1 text-ds-text-primary">{t('livePoints.title')}</div>
+                    <div className="mb-0.5 sm:mb-1 text-ds-text-primary">{t('livePoints.title')}</div>
                     <div>
                       {t('livePoints.re', {
                         points: state.liveRePoints,
@@ -324,7 +337,7 @@ function DoppelkopfPageContent() {
 
                 {/* Round result */}
                 {(isRoundEnd || isGameEnd) && (
-                  <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
+                  <div className="my-1 sm:my-3 p-1 sm:p-2 rounded bg-black/30 text-ds-text-muted text-sm">
                     <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
                     <div>{t('roundResult.rePoints', { points: state.roundRePoints })}</div>
                     <div>{state.roundReWon ? t('roundResult.reWon') : t('roundResult.reLost')}</div>
@@ -332,43 +345,47 @@ function DoppelkopfPageContent() {
                   </div>
                 )}
                 {state.roundScoreHistory.length > 0 && (
-                  <div className="my-3 overflow-x-auto" data-testid="dk-round-history">
-                    <table className="w-full text-sm">
-                      <caption className="mb-1 text-left text-ds-text-primary">{t('roundHistory.title')}</caption>
-                      <thead>
-                        <tr>
-                          <th scope="col">{t('roundHistory.round')}</th>
-                          {state.players.map((p) => (
-                            <th scope="col" key={p.id}>
-                              {playerName(p.id, p.isHuman)}
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {state.roundScoreHistory.map((scores, index) => (
-                          <tr key={index}>
-                            <th scope="row">{index + 1}</th>
-                            {scores.map((score, playerIdx) => (
-                              <td key={playerIdx} className="text-center">
-                                {formatSignedDelta(score)}
-                              </td>
+                  <details
+                    open={!isMobileViewport || undefined}
+                    className="my-1 sm:my-3"
+                    data-testid="dk-round-history-details"
+                  >
+                    <summary className="cursor-pointer select-none text-ds-text-primary text-sm">
+                      {t('roundHistory.title')}
+                    </summary>
+                    <div className="mt-1 overflow-x-auto" data-testid="dk-round-history">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr>
+                            <th scope="col">{t('roundHistory.round')}</th>
+                            {state.players.map((p) => (
+                              <th scope="col" key={p.id}>
+                                {playerName(p.id, p.isHuman)}
+                              </th>
                             ))}
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                        </thead>
+                        <tbody>
+                          {state.roundScoreHistory.map((scores, index) => (
+                            <tr key={index}>
+                              <th scope="row">{index + 1}</th>
+                              {scores.map((score, playerIdx) => (
+                                <td key={playerIdx} className="text-center">
+                                  {formatSignedDelta(score)}
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </details>
                 )}
               </div>
             </div>
 
             {/* Message */}
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
+            {isMobile && messageBox}
 
             <ActionLogSection
               isEndPhase={isGameEnd}
@@ -379,7 +396,10 @@ function DoppelkopfPageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.doppelkopf.footer} px-4 py-2.5`}>
+          <GameFooter
+            message={isMobile ? undefined : messageBox}
+            className={`${gameTheme.doppelkopf.footer} px-4 py-2.5`}
+          >
             {humanPlayer && (
               <PlayerHandSection
                 humanPlayer={humanPlayer}

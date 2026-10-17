@@ -103,6 +103,22 @@ beforeEach(() => {
 });
 
 describe('PrimeroPage', () => {
+  it('shows the human turn instruction once', async () => {
+    mockExec.mockResolvedValue(
+      makePrimeroState({ message: 'あなたの番です — コール・レイズ（ヴィ）・フォールドを選んでください。' }),
+    );
+    renderWithProviders(<PrimeroPage />);
+    expect(
+      await screen.findAllByText('あなたの番です — コール・レイズ（ヴィ）・フォールドを選んでください。'),
+    ).toHaveLength(1);
+  });
+
+  it('keeps the participating status on one line', async () => {
+    renderWithProviders(<PrimeroPage />);
+    const statuses = await screen.findAllByText('参加中');
+    expect(statuses[0].className).toContain('whitespace-nowrap');
+  });
+
   it('shows the configured target rounds', async () => {
     for (const { targetRounds, text } of [
       { targetRounds: 4, text: 'ラウンド 1 / 4' },

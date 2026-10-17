@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { frenchtarotApi } from '../api/gameApi';
 import i18n from '../i18n';
@@ -153,6 +153,62 @@ beforeEach(() => {
 });
 
 describe('FrenchTarotPage', () => {
+  it('uses the taller mobile footer cap', async () => {
+    renderWithProviders(<FrenchTarotPage />);
+    const content = await screen.findByTestId('game-footer-content');
+    expect(content.closest('footer')?.className).toContain('max-h-[60vh]');
+  });
+
+  it('stacks mobile hand rows with negative margins', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      window.dispatchEvent(new Event('resize'));
+      mobileFlag.value = true;
+      const source = playPhaseState;
+      const human = source.players.find((player) => player.isHuman);
+      if (!human) throw new Error('Expected the FrenchTarotPage human player');
+      const cards = Array.from({ length: 17 }, (_, index) => human.cards[index % human.cards.length]);
+      mockExec.mockResolvedValue({
+        ...playPhaseState,
+        players: playPhaseState.players.map((player) =>
+          player.isHuman ? { ...player, cards, cardCount: cards.length } : player,
+        ),
+      });
+      renderWithProviders(<FrenchTarotPage />);
+      const content = await screen.findByTestId('game-footer-content');
+      const hand = content.querySelector<HTMLElement>('[data-tutorial="frenchtarot-player-hand"]');
+      expect(hand).not.toBeNull();
+      if (!hand) throw new Error('Expected the FrenchTarotPage player hand');
+      await waitFor(() => expect(hand.querySelectorAll('[data-testid="hand-row"]').length).toBeGreaterThanOrEqual(2));
+      for (const row of Array.from(hand.querySelectorAll<HTMLElement>('[data-testid="hand-row"]')).slice(1)) {
+        expect(row.style.marginTop).toMatch(/^-/);
+      }
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it('keeps the hand in the footer and supporting controls in the play area', async () => {
+    renderWithProviders(<FrenchTarotPage />);
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const playArea = footerContent.parentElement?.previousElementSibling;
+    expect(playArea).not.toBeNull();
+    expect(footerContent.querySelector('[data-tutorial="frenchtarot-player-hand"]')).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('frenchtarot-hint-live')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('frenchtarot-hint-live')).toBeInTheDocument();
+    expect(within(footerContent).queryByRole('button', { name: 'リセット' })).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByRole('button', { name: 'リセット' })).toBeInTheDocument();
+  });
+
+  it('keeps the pass action in the fixed footer actions row while bidding', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<FrenchTarotPage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: /パス/ })).toBeInTheDocument();
+  });
+
   it('shows the trick points and bouts at trick end, including zero bouts', async () => {
     mockExec.mockResolvedValue(makeFrenchTarotState({ phase: 3, trickHalfPoints: 11, trickBouts: 1 }));
     const { unmount } = renderWithProviders(<FrenchTarotPage />);

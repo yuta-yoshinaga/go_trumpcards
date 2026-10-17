@@ -177,10 +177,16 @@ function TrucoPageContent() {
             {t('header.match')} — {t('header.you')}: {youPoints} / {t('header.cpu')}: {cpuPoints} ({t('header.target')}:{' '}
             {state.matchTarget})
           </span>
-          <span className="rounded bg-ds-info px-2 py-1 text-sm" data-testid="truco-mano">
+          <span
+            className="whitespace-nowrap rounded bg-ds-info px-2 py-1 text-sm text-ds-text-on-accent"
+            data-testid="truco-mano"
+          >
             {t('header.mano')}: {playerLabel(state.manoIdx)}
           </span>
-          <span className="ml-2 rounded bg-ds-accent px-2 py-1 text-sm" data-testid="truco-dealer">
+          <span
+            className="ml-2 rounded bg-ds-accent px-2 py-1 text-sm text-ds-text-on-accent"
+            data-testid="truco-dealer"
+          >
             {t('header.dealer')}: {playerLabel(state.dealerIdx)}
           </span>
         </div>
@@ -271,39 +277,13 @@ function TrucoPageContent() {
           </div>
         )}
 
+        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
         {isHumanRespond && state.trucoCallerIdx >= 0 && (
           <div className="text-center text-lg my-2 text-ds-accent" role="status">
             {t('respondPrompt', { name: t('header.cpu'), level: levelLabel(state.pendingLevel) })}
           </div>
         )}
-
-        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
-        {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
-        <ErrorAlert message={error} onRetry={retry} />
-
-        {human && human.cards.length > 0 && (
-          <div className="mt-4" data-tutorial="truco-hand">
-            <div className="text-ds-text-muted text-sm mb-1">
-              {t('header.you')}: {human.cardCount} / {t('header.tricks')}: {human.trickCount}
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {human.cards.map((card, idx) => (
-                <button
-                  key={`${card.design}-${card.value}-${idx}`}
-                  type="button"
-                  onClick={() => handlePlay(idx)}
-                  disabled={loading || !isHumanPlayTurn}
-                  aria-label={tc('card.play', { card: cardAlt(card) })}
-                  className="disabled:opacity-50"
-                >
-                  <CardImage card={card} width={cardWidth} />
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div className="mt-3 flex flex-wrap gap-2" data-testid="truco-primary-actions">
           {isHumanPlayTurn && state.canDeclareTruco && (
             <button
               type="button"
@@ -330,6 +310,33 @@ function TrucoPageContent() {
               )}
             </>
           )}
+        </div>
+        {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
+        <ErrorAlert message={error} onRetry={retry} />
+
+        {human && human.cards.length > 0 && (
+          <div className="mt-4" data-tutorial="truco-hand">
+            <div className="text-ds-text-muted text-sm mb-1">
+              {t('header.you')}: {human.cardCount} / {t('header.tricks')}: {human.trickCount}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {human.cards.map((card, idx) => (
+                <button
+                  key={`${card.design}-${card.value}-${idx}`}
+                  type="button"
+                  onClick={() => handlePlay(idx)}
+                  disabled={loading || !isHumanPlayTurn}
+                  aria-label={tc('card.play', { card: cardAlt(card) })}
+                  className="disabled:opacity-50"
+                >
+                  <CardImage card={card} width={cardWidth} />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="mt-4 flex flex-wrap gap-2">
           {(isTrickEnd || isHandEnd) && (
             <button type="button" className={btnSuccess} onClick={handleNext} disabled={loading}>
               {t('actions.next')}
@@ -343,7 +350,7 @@ function TrucoPageContent() {
             data-testid="truco-hint-toggle"
           >
             <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
-            {tc('hint')}
+            {tc('button.hint')}
           </label>
         </div>
       </div>

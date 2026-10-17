@@ -1,5 +1,5 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { callBreakApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import i18n from '../i18n';
@@ -63,6 +63,10 @@ beforeEach(() => {
   mockExec.mockResolvedValue(playPhaseState);
 });
 
+afterEach(() => {
+  Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1024 });
+});
+
 describe('fmtScore', () => {
   it('formats int×10 scores as X.Y for en/ja locales (period separator)', () => {
     expect(fmtScore(41, 'en')).toBe('4.1');
@@ -79,6 +83,48 @@ describe('fmtScore', () => {
 });
 
 describe('CallBreakPage', () => {
+  it('keeps score table column headings on one line', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    const { container } = renderWithProviders(<CallBreakPage />);
+    await waitFor(() => expect(container.querySelectorAll('th[scope="col"]').length).toBeGreaterThan(0));
+    const headings = container.querySelectorAll('th[scope="col"]');
+    for (const heading of headings) {
+      expect(heading.classList.contains('whitespace-nowrap')).toBe(true);
+      expect(heading.classList.contains('text-[10px]')).toBe(true);
+    }
+  });
+
+  it('renders turn guidance in the footer on desktop', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1024 });
+    mockExec.mockResolvedValue({ ...playPhaseState, message: 'Footer guidance' });
+    renderWithProviders(<CallBreakPage />);
+    const message = await screen.findByText('Footer guidance');
+    expect(message.closest('[data-testid="game-footer-message"]')).toBeInTheDocument();
+  });
+
+  it('keeps turn guidance in the play area on mobile', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 375 });
+    mockExec.mockResolvedValue({ ...playPhaseState, message: 'Mobile guidance' });
+    renderWithProviders(<CallBreakPage />);
+    const message = await screen.findByText('Mobile guidance');
+    expect(message.closest('[role="status"]')).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+  });
+
+  it('keeps bid choices in the play area and the hand in the footer', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    const { container } = renderWithProviders(<CallBreakPage />);
+
+    const footer = await screen.findByTestId('game-footer-content');
+    const playArea = container.querySelector('.flex-1.overflow-y-auto');
+    expect(playArea).not.toBeNull();
+    expect(within(footer).queryByTestId('bid-option-1')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('bid-option-1')).toBeInTheDocument();
+    expect(within(footer).queryByTestId('callbreak-hint-live')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('callbreak-hint-live')).toBeInTheDocument();
+    expect(within(footer).getByAltText('♠ A')).toBeInTheDocument();
+  });
+
   it('names the mobile and desktop score tables with the localized scores caption', async () => {
     const originalWidth = window.innerWidth;
     window.innerWidth = 1024;
@@ -128,6 +174,20 @@ describe('CallBreakPage', () => {
     });
   });
 
+  it('keeps the tutorial action anchor available on a CPU bid turn and labels the selected bid', async () => {
+    mockExec.mockResolvedValue(bidPhaseCpuTurnState);
+    const cpuTurn = renderWithProviders(<CallBreakPage />);
+    const footer = await screen.findByTestId('game-footer-content');
+    expect(footer.closest('footer')).toHaveAttribute('data-tutorial', 'cb-play-button');
+    cpuTurn.unmount();
+
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<CallBreakPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ビッド 1' })).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('bid-option-5'));
+    expect(screen.getByRole('button', { name: 'ビッド 5' })).toBeInTheDocument();
+  });
+
   // **バッグの式はドメインの GetBags() が唯一の出どころ (#4752)。**以前はこの
   // ページが bid と trickCount から自前で組み立てており、CUI 側と二重化していた。
   // ここで確かめるのは「サーバーの値をそのまま出すこと」— わざと式と矛盾する
@@ -150,7 +210,9 @@ describe('CallBreakPage', () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<CallBreakPage />);
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'ビッド' })).toBeInTheDocument();
+      expect(
+        within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: 'ビッド 1' }),
+      ).toBeInTheDocument();
     });
     // 13 selectable bid options, defaulting to 1 pressed.
     expect(screen.getByTestId('bid-option-1')).toHaveAttribute('aria-pressed', 'true');
@@ -182,7 +244,7 @@ describe('CallBreakPage', () => {
     mockExec.mockImplementation((command) =>
       Promise.resolve(command === 'nextround' ? nextRoundBidState : roundEndState),
     );
-    fireEvent.click(screen.getByRole('button', { name: 'ビッド' }));
+    fireEvent.click(screen.getByRole('button', { name: 'ビッド 5' }));
     await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
     fireEvent.click(screen.getByRole('button', { name: '次のラウンド' }));
     await waitFor(() => expect(screen.getByTestId('bid-option-1')).toHaveAttribute('aria-pressed', 'true'));
@@ -208,17 +270,21 @@ describe('CallBreakPage', () => {
   it('calls bid command when bid button is clicked', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<CallBreakPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'ビッド' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ビッド 1' })).toBeInTheDocument());
 
     // Select bid 5 from the button group.
     fireEvent.click(screen.getByTestId('bid-option-5'));
     expect(screen.getByTestId('bid-option-5')).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('bid-option-5')).not.toHaveClass('text-white');
+    expect(screen.getByTestId('bid-option-5')).toHaveClass('text-ds-text-on-accent');
+    expect(screen.getByTestId('bid-option-1')).not.toHaveClass('text-white', 'text-ds-text-on-accent');
+    expect(screen.getByTestId('bid-option-1')).toHaveClass('text-ds-text-primary');
     // The live region reflects the current selection for screen readers.
     expect(screen.getByTestId('cb-bid-selected')).toHaveTextContent('5');
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(playPhaseState);
-    fireEvent.click(screen.getByRole('button', { name: 'ビッド' }));
+    fireEvent.click(screen.getByRole('button', { name: 'ビッド 5' }));
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', 5));
   });
@@ -546,5 +612,19 @@ describe('CallBreakPage', () => {
       expect(region).toHaveTextContent('-');
       expect(region).not.toHaveTextContent('{{');
     });
+  });
+  it('fits the score table at large desktop widths', async () => {
+    const innerWidthSpy = vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(1280);
+    try {
+      const { container } = renderWithProviders(<CallBreakPage />);
+      await waitFor(() =>
+        expect(container.querySelector('[data-tutorial="cb-score-table"] table')).toBeInTheDocument(),
+      );
+      const table = container.querySelector('[data-tutorial="cb-score-table"] table');
+      expect(table?.className).toContain('table-fixed');
+      expect(table?.className).not.toContain('min-w-[');
+    } finally {
+      innerWidthSpy.mockRestore();
+    }
   });
 });

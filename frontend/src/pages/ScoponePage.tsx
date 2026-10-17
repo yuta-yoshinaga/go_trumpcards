@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardBackFan } from '../components/CardBackFan';
+import { CardFan } from '../components/CardFan';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -9,7 +11,6 @@ import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
-import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -276,11 +277,7 @@ function ScoponePageContent() {
                       {tc('player.cpu', { id: p.id })} ({t('label.team', { team: p.team })}) —{' '}
                       {t('label.cpuStats', { cards: p.handCount, captured: p.capturedCount, scopa: p.scopaCount })}
                     </div>
-                    <div className="flex gap-0.5 justify-center">
-                      {Array.from({ length: Math.min(p.handCount, 10) }, (_, i) => (
-                        <AnimatedCardBack key={i} width={cardWidth * 0.4} />
-                      ))}
-                    </div>
+                    <CardBackFan count={Math.min(p.handCount, 10)} width={cardWidth * 0.4} />
                   </div>
                 ))}
             </div>
@@ -298,7 +295,7 @@ function ScoponePageContent() {
                     className={`rounded-full px-3 py-0.5 text-sm font-bold shadow-lg ${
                       scopaCelebration.own
                         ? 'bg-ds-accent text-ds-text-on-accent ring-2 ring-ds-accent'
-                        : 'bg-ds-info text-white'
+                        : 'bg-ds-info text-ds-text-on-accent'
                     }`}
                   >
                     {scopaCelebration.own ? t('label.scopaBadgeOwn') : t('label.scopaBadge')}
@@ -363,7 +360,7 @@ function ScoponePageContent() {
                   scopa: human.scopaCount,
                 })}
               </div>
-              <div className="flex flex-wrap justify-center gap-2">
+              <CardFan itemWidth={cardWidth + 6}>
                 {human.cards.map((c, i) => (
                   <button
                     key={i}
@@ -379,7 +376,7 @@ function ScoponePageContent() {
                     <AnimatedCard card={c} width={cardWidth} />
                   </button>
                 ))}
-              </div>
+              </CardFan>
             </div>
 
             {/* Round-end score breakdown */}
@@ -448,7 +445,7 @@ function ScoponePageContent() {
                 type="button"
                 onClick={play}
                 disabled={loading || !canTake}
-                className="px-4 py-2 rounded-lg bg-ds-info text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                className="px-4 py-2 rounded-lg bg-ds-info text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                 data-testid="take-button"
               >
                 {t('button.take')}
@@ -457,7 +454,7 @@ function ScoponePageContent() {
                 type="button"
                 onClick={play}
                 disabled={loading || !canLay}
-                className="px-4 py-2 rounded-lg bg-ds-warning text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                className="px-4 py-2 rounded-lg bg-ds-warning text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                 data-testid="lay-button"
                 title={mustCapture ? t('mustCapture') : undefined}
               >
@@ -473,7 +470,7 @@ function ScoponePageContent() {
                   type="button"
                   onClick={handleNextRound}
                   disabled={loading}
-                  className="px-4 py-2 rounded-lg bg-ds-info/70 text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                  className="px-4 py-2 rounded-lg bg-ds-info/70 text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                   data-testid="next-round-button"
                 >
                   {t('button.nextRound')}

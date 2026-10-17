@@ -1,4 +1,5 @@
 {
+  "rulesLabel": "Rules",
   "discardTop": "Discard",
   "discardPileViewer": "View discard pile ({{count}} cards)",
   "discardPileEmpty": "The discard pile is empty.",
@@ -71,6 +72,7 @@
     "cpuWin": "CPU {{cpuId}} wins!"
   },
   "score": {
+    "title": "Score",
     "cumulative": "Total",
     "round": "Round",
     "update": "{{player}}'s round score: {{score}}; cumulative score: {{cumulativeScore}}"

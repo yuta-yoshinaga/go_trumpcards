@@ -159,9 +159,10 @@ describe('TuSacPage', () => {
 
   it('自分の手札を出す', async () => {
     mockApi.mockResolvedValue(base);
-    renderWithProviders(<TuSacPage />);
+    const { container } = renderWithProviders(<TuSacPage />);
     await waitFor(() => expect(screen.getByTestId('tusac-hand')).toBeInTheDocument());
     expect(screen.getByTestId('tusac-hand').children).toHaveLength(4);
+    expect(container.querySelector('[data-tutorial="tusac-hand"]')).toHaveClass('lg:sticky', 'lg:bottom-0');
   });
 
   it('各手牌ボタンを牌名と表示順の番号で区別する', async () => {

@@ -100,7 +100,7 @@ describe('WillOTheWispPage', () => {
 
     expect(button).toHaveAttribute('aria-disabled', 'true');
     expect(button).not.toBeDisabled();
-    expect(button).toHaveAccessibleDescription('自動完成するには、山札をすべて使い切ってください');
+    expect(button).toHaveAccessibleDescription('オートコンプリートするには、山札をすべて使い切ってください');
     mockSend.mockClear();
     fireEvent.click(button);
     await flushPendingDispatch();
@@ -118,7 +118,9 @@ describe('WillOTheWispPage', () => {
     const button = await screen.findByTestId('autocomplete-button');
 
     expect(button).toHaveAttribute('aria-disabled', 'true');
-    expect(button).toHaveAccessibleDescription('自動完成するには、タブローの裏向きカードをすべて表向きにしてください');
+    expect(button).toHaveAccessibleDescription(
+      'オートコンプリートするには、タブローの裏向きカードをすべて表向きにしてください',
+    );
     mockSend.mockClear();
     fireEvent.click(button);
     await flushPendingDispatch();

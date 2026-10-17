@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import i18n from 'i18next';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, blackjackApi, doubleexposureApi, spanish21Api } from '../api/gameApi';
@@ -256,18 +256,27 @@ describe('BlackJackPage', () => {
 
   it('shows chip info bar', async () => {
     renderWithProviders(<BlackJackPage />);
-    await waitFor(() => expect(screen.getByText(/プレイヤー: 1000 chips/)).toBeInTheDocument());
-    expect(screen.getByText(/ディーラー: 1000 chips/)).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText(/プレイヤー: 1000 チップ/)).toBeInTheDocument());
+    expect(screen.getByText(/ディーラー: 1000 チップ/)).toBeInTheDocument();
   });
 
   it('shows bet button in bet phase', async () => {
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: 'ベット' }),
+    ).toBeInTheDocument();
+    expect(within(screen.getByTestId('game-footer-actions')).queryByTestId('bj-quick-bet')).not.toBeInTheDocument();
+    expect(screen.getByTestId('bj-quick-bet').closest('[data-testid="game-footer-actions"]')).toBeNull();
   });
 
   it('shows bet amount input in bet phase', async () => {
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(screen.getByLabelText('ベット額:')).toBeInTheDocument());
+    const footerContent = screen.getByTestId('game-footer-content');
+    const cardArea = screen.getByTestId('card-area');
+    expect(footerContent.querySelector('[data-tutorial="bj-bet-controls"]')).toBeNull();
+    expect(cardArea.querySelector('[data-tutorial="bj-bet-controls"]')).toBeInTheDocument();
   });
 
   it('calls bet command when bet button is clicked', async () => {
@@ -284,6 +293,23 @@ describe('BlackJackPage', () => {
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ヒット' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'スタンド' })).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: 'ヒット' }),
+    ).toBeInTheDocument();
+  });
+
+  it('keeps the player hand in the footer and moves supporting information into the play area', async () => {
+    mockExec.mockResolvedValue({ ...actionPhaseState, insuranceBet: 10 });
+    renderWithProviders(<BlackJackPage />);
+
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const cardArea = await screen.findByTestId('card-area');
+    await waitFor(() => expect(footerContent.querySelector('[data-tutorial="bj-player-hand"]')).not.toBeNull());
+    expect(footerContent.querySelector('[data-tutorial="bj-player-hand"]')).toBeInTheDocument();
+    expect(within(footerContent).queryByText(/インシュランス: 10/)).not.toBeInTheDocument();
+    expect(within(cardArea).getByText(/インシュランス: 10/)).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('black-jack-kbd-shortcuts')).not.toBeInTheDocument();
+    expect(within(cardArea).getByTestId('black-jack-kbd-shortcuts')).toBeInTheDocument();
   });
 
   it('shows double down button when 2 cards and sufficient chips', async () => {
@@ -855,6 +881,14 @@ describe('BlackJackPage', () => {
     mockExec.mockResolvedValue({ ...actionPhaseState, hintEnabled: true, suggestedAction: 7 });
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(screen.getByText('推奨: ダブルダウン')).toBeInTheDocument());
+    const cardArea = screen.getByTestId('card-area');
+    const hintBanner = screen.getByText('推奨: ダブルダウン').parentElement?.parentElement;
+    const dealerHand = cardArea.querySelector('[data-tutorial="bj-dealer-hand"]');
+    expect(cardArea.contains(hintBanner ?? null)).toBe(true);
+    expect(dealerHand).not.toBeNull();
+    if (hintBanner && dealerHand) {
+      expect(hintBanner.compareDocumentPosition(dealerHand) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    }
   });
 
   it('highlights split button when hint suggests split', async () => {
@@ -1002,7 +1036,7 @@ describe('BlackJackPage', () => {
   it('does not show RC and TC when countingEnabled is false', async () => {
     mockExec.mockResolvedValue({ ...betPhaseState, countingEnabled: false, runningCount: 5, trueCount: 2.3 });
     renderWithProviders(<BlackJackPage />);
-    await waitFor(() => expect(screen.getByText(/プレイヤー: 1000 chips/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/プレイヤー: 1000 チップ/)).toBeInTheDocument());
     expect(screen.queryByText(/RC=/)).not.toBeInTheDocument();
   });
 
@@ -1040,7 +1074,7 @@ describe('BlackJackPage', () => {
     };
     mockExec.mockResolvedValue(stateWithCpu);
     renderWithProviders(<BlackJackPage />);
-    await waitFor(() => expect(screen.getByText(/CPU 1 \(800 chips\)/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/CPU 1 \(800 チップ\)/)).toBeInTheDocument());
     expect(screen.getByText(/スコア 18/)).toBeInTheDocument();
   });
 
@@ -1584,7 +1618,7 @@ describe('BlackJackPage', () => {
     };
     mockExec.mockResolvedValue(stateWithCpu);
     renderWithProviders(<BlackJackPage />);
-    await waitFor(() => expect(screen.getByText(/CPU 1 \(800 chips\)/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/CPU 1 \(800 チップ\)/)).toBeInTheDocument());
     expect(screen.getByText('[インシュランス: 50]')).toBeInTheDocument();
   });
 
@@ -1617,7 +1651,7 @@ describe('BlackJackPage', () => {
     };
     mockExec.mockResolvedValue(stateWithCpu);
     renderWithProviders(<BlackJackPage />);
-    await waitFor(() => expect(screen.getByText(/CPU 1 \(800 chips\)/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/CPU 1 \(800 チップ\)/)).toBeInTheDocument());
     // The CPU seat renders its insurance as the bracketed badge "[インシュランス: N]"
     // (see the sibling test above). Match that shape rather than the bare word,
     // which now also appears in the footer's keyboard-shortcut rows.
@@ -1980,7 +2014,7 @@ describe('BlackJackPage', () => {
     mockExec.mockResolvedValue(betPhaseState);
     const { container } = renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(screen.getByText('配当表')).toBeInTheDocument());
-    const details = container.querySelector('details');
+    const details = container.querySelector('[data-tutorial="bj-payout-ref"]');
     expect(details).toBeInTheDocument();
     const summary = details?.querySelector('summary');
     expect(summary).toHaveTextContent('配当表');
@@ -2029,6 +2063,26 @@ describe('Side Bets display', () => {
   });
 
   describe('payout ref side-bet rows', () => {
+    it.each([
+      ['blackjack', () => mockExec.mockResolvedValue(betPhaseState)],
+      ['spanish21', () => mockSpanish21Exec.mockResolvedValue(betPhaseState)],
+      ['doubleexposure', () => mockDoubleExposureExec.mockResolvedValue(betPhaseState)],
+    ] as const)('%s renders translated payout rows and deck/chip labels', async (variant, setup) => {
+      setup();
+      const { container } = renderWithProviders(<BlackJackPage variant={variant} />);
+      expect(await screen.findByText(/デッキ: 1デッキ/)).toBeInTheDocument();
+      expect(screen.getByText(/プレイヤー: 1000 チップ/)).toBeInTheDocument();
+      const summary = container.querySelector('details[data-tutorial="bj-payout-ref"] summary');
+      expect(summary).toBeInTheDocument();
+      if (!summary) throw new Error('Payout table summary was not rendered');
+      fireEvent.click(summary);
+      const list = await screen.findByTestId('bj-payout-ref-list');
+      expect(list.textContent).toContain('パーフェクトペア');
+      expect(list.textContent).toContain('ポーカー役ベット');
+      expect(list.textContent).not.toContain('{{');
+      expect(list.textContent).not.toContain('payoutRef.');
+    });
+
     it('shows Perfect Pairs payout values (6/12/25) in the payout table during bet phase', async () => {
       renderWithProviders(<BlackJackPage />);
       // Open the <details> so the list is rendered

@@ -317,10 +317,143 @@ function DeuceToSevenPageContent() {
                 ))}
               </div>
             )}
+            {isHandOver && <RoundResults results={state.roundResults} players={state.players} />}
+
+            {/* Action log */}
+            <ActionLogSection
+              isEndPhase={!!state?.gameEndFlag}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
+
+            <ErrorAlert message={error} onRetry={retry} />
+
+            {/* Hint display */}
+            {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
+
+            {/* Settings (collapsible) + Reset */}
+            <SettingsPanel
+              title={t('settings.title')}
+              groups={[
+                {
+                  items: [
+                    {
+                      type: 'select',
+                      id: 'deuceToSevenBettingLimit',
+                      label: tc('betting.bettingLimit'),
+                      value: bettingLimit,
+                      options: [
+                        { value: 0, label: tc('betting.fixed') },
+                        { value: 1, label: tc('betting.potLimit') },
+                        { value: 2, label: tc('betting.noLimit') },
+                      ],
+                      onSelect: (v) => setBettingLimit(Number(v)),
+                    },
+                    {
+                      type: 'checkbox',
+                      id: 'deuceToSevenCpuMetaAI',
+                      label: t('settings.cpuMetaAI'),
+                      checked: cpuMetaAI,
+                      onToggle: setCpuMetaAI,
+                    },
+                    {
+                      type: 'checkbox',
+                      id: 'deuceToSevenHint',
+                      label: tc('hint.toggle', { ns: 'tutorial' }),
+                      checked: hintEnabled,
+                      onToggle: setHintEnabled,
+                    },
+                  ],
+                },
+              ]}
+            />
+            <div className="text-center mt-2">
+              <GameResetButton
+                isGameEnd={isHandOver}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="d7-reset-button"
+                className="min-w-[90px]"
+              />
+            </div>
+            <CardNavShortcutsPanel data-testid="deuce-to-seven-kbd-shortcuts" />
           </div>
 
           {/* Sticky footer: player hand + buttons */}
-          <GameFooter className={`${gameTheme.deucetoseven.footer} px-5 py-3`}>
+          <GameFooter
+            className={`${gameTheme.deucetoseven.footer} px-5 py-3`}
+            actions={
+              canAct || canExchange ? (
+                <>
+                  {canAct && (
+                    <div data-tutorial="d7-bet-controls">
+                      <BettingControls
+                        inputId="deuceToSevenBetAmount"
+                        betAmount={betAmount}
+                        onBetAmountChange={setBetAmount}
+                        minRaise={minRaise}
+                        maxBetAmount={state?.maxBetAmount}
+                        potSize={state?.pot}
+                        hasOutstandingBet={hasOutstandingBet}
+                        callAmountLabel={
+                          potOddsPercentage != null && callAmount != null
+                            ? ` ${t('callPotOdds', { amount: callAmount, percentage: potOddsPercentage.toFixed(1) })}`
+                            : undefined
+                        }
+                        loading={loading}
+                        onCall={() => execAction('call', undefined, undefined, undefined, getElapsed())}
+                        onRaise={() => execAction('raise', undefined, betAmount, undefined, getElapsed())}
+                        onBet={() => execAction('bet', undefined, betAmount, undefined, getElapsed())}
+                        onCheck={() => execAction('check', undefined, undefined, undefined, getElapsed())}
+                        onFold={() => execAction('fold', undefined, undefined, undefined, getElapsed())}
+                        onAllIn={() => execAction('allin', undefined, undefined, undefined, getElapsed())}
+                        raiseDisabled={isRaiseLimitReached}
+                        raiseDisabledReason={isRaiseLimitReached ? t('raiseLimitReached') : undefined}
+                      />
+                    </div>
+                  )}
+                  {canExchange && (
+                    <div className="text-center mb-2" data-tutorial="d7-exchange-button">
+                      {humanHasMadeLow && (
+                        <div
+                          role="status"
+                          aria-live="polite"
+                          data-testid="d7-made-low-banner"
+                          className="mb-2 inline-block px-3 py-1 rounded bg-ds-accent/15 border border-ds-accent text-ds-accent text-sm font-bold"
+                        >
+                          {t('madePatLowBanner')}
+                        </div>
+                      )}
+                      <button
+                        type="button"
+                        className={`${btnWarning} min-w-[90px]`}
+                        disabled={loading}
+                        onClick={() => execAction('exchange', selected)}
+                        data-testid="d7-exchange-btn"
+                      >
+                        {t('exchangeLabel')}
+                      </button>
+                      <button
+                        type="button"
+                        className={
+                          humanHasMadeLow
+                            ? `${btnSuccess} min-w-[90px] ring-2 ring-ds-accent animate-pulse`
+                            : `${btnSuccess} min-w-[90px]`
+                        }
+                        disabled={loading}
+                        onClick={() => execAction('stand')}
+                        data-testid="d7-stand-btn"
+                      >
+                        {t('standLabel')}
+                      </button>
+                    </div>
+                  )}
+                </>
+              ) : null
+            }
+          >
             {/* Human player */}
             {humanPlayer && (
               <div className="mb-2" data-tutorial="d7-player-hand">
@@ -394,136 +527,6 @@ function DeuceToSevenPageContent() {
                 severity={isEnd ? 'alert' : 'info'}
               />
             </div>
-
-            {isHandOver && <RoundResults results={state.roundResults} players={state.players} />}
-
-            {/* Action log */}
-            <ActionLogSection
-              isEndPhase={!!state?.gameEndFlag}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            {/* Hint display */}
-            {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
-
-            {/* Betting controls */}
-            {canAct && (
-              <div data-tutorial="d7-bet-controls">
-                <BettingControls
-                  inputId="deuceToSevenBetAmount"
-                  betAmount={betAmount}
-                  onBetAmountChange={setBetAmount}
-                  minRaise={minRaise}
-                  maxBetAmount={state?.maxBetAmount}
-                  potSize={state?.pot}
-                  hasOutstandingBet={hasOutstandingBet}
-                  callAmountLabel={
-                    potOddsPercentage != null && callAmount != null
-                      ? ` ${t('callPotOdds', { amount: callAmount, percentage: potOddsPercentage.toFixed(1) })}`
-                      : undefined
-                  }
-                  loading={loading}
-                  onCall={() => execAction('call', undefined, undefined, undefined, getElapsed())}
-                  onRaise={() => execAction('raise', undefined, betAmount, undefined, getElapsed())}
-                  onBet={() => execAction('bet', undefined, betAmount, undefined, getElapsed())}
-                  onCheck={() => execAction('check', undefined, undefined, undefined, getElapsed())}
-                  onFold={() => execAction('fold', undefined, undefined, undefined, getElapsed())}
-                  onAllIn={() => execAction('allin', undefined, undefined, undefined, getElapsed())}
-                  raiseDisabled={isRaiseLimitReached}
-                  raiseDisabledReason={isRaiseLimitReached ? t('raiseLimitReached') : undefined}
-                />
-              </div>
-            )}
-
-            {/* Exchange controls */}
-            {canExchange && (
-              <div className="text-center mb-2" data-tutorial="d7-exchange-button">
-                {humanHasMadeLow && (
-                  <div
-                    role="status"
-                    aria-live="polite"
-                    data-testid="d7-made-low-banner"
-                    className="mb-2 inline-block px-3 py-1 rounded bg-ds-accent/15 border border-ds-accent text-ds-accent text-sm font-bold"
-                  >
-                    {t('madePatLowBanner')}
-                  </div>
-                )}
-                <button
-                  type="button"
-                  className={`${btnWarning} min-w-[90px]`}
-                  disabled={loading}
-                  onClick={() => execAction('exchange', selected)}
-                  data-testid="d7-exchange-btn"
-                >
-                  {t('exchangeLabel')}
-                </button>
-                <button
-                  type="button"
-                  className={
-                    humanHasMadeLow
-                      ? `${btnSuccess} min-w-[90px] ring-2 ring-ds-accent animate-pulse`
-                      : `${btnSuccess} min-w-[90px]`
-                  }
-                  disabled={loading}
-                  onClick={() => execAction('stand')}
-                  data-testid="d7-stand-btn"
-                >
-                  {t('standLabel')}
-                </button>
-              </div>
-            )}
-
-            {/* Settings (collapsible) + Reset */}
-            <SettingsPanel
-              title={t('settings.title')}
-              groups={[
-                {
-                  items: [
-                    {
-                      type: 'select',
-                      id: 'deuceToSevenBettingLimit',
-                      label: tc('betting.bettingLimit'),
-                      value: bettingLimit,
-                      options: [
-                        { value: 0, label: tc('betting.fixed') },
-                        { value: 1, label: tc('betting.potLimit') },
-                        { value: 2, label: tc('betting.noLimit') },
-                      ],
-                      onSelect: (v) => setBettingLimit(Number(v)),
-                    },
-                    {
-                      type: 'checkbox',
-                      id: 'deuceToSevenCpuMetaAI',
-                      label: t('settings.cpuMetaAI'),
-                      checked: cpuMetaAI,
-                      onToggle: setCpuMetaAI,
-                    },
-                    {
-                      type: 'checkbox',
-                      id: 'deuceToSevenHint',
-                      label: tc('hint.toggle', { ns: 'tutorial' }),
-                      checked: hintEnabled,
-                      onToggle: setHintEnabled,
-                    },
-                  ],
-                },
-              ]}
-            />
-            <div className="text-center mt-2">
-              <GameResetButton
-                isGameEnd={isHandOver}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="d7-reset-button"
-                className="min-w-[90px]"
-              />
-            </div>
-            <CardNavShortcutsPanel data-testid="deuce-to-seven-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

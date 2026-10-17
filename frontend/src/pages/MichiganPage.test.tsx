@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { michiganApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -65,6 +65,12 @@ beforeEach(() => {
 });
 
 describe('MichiganPage', () => {
+  it('lays out bet counters in a two-column mobile grid', async () => {
+    renderWithProviders(<MichiganPage />);
+    const grid = await screen.findByTestId('michigan-bet-grid');
+    expect(grid).toHaveClass('grid-cols-2', 'sm:grid-cols-4');
+  });
+
   it('shows every player round bet, including zero, in a consistent position', async () => {
     mockExec.mockResolvedValue(
       makeMichiganState({
@@ -251,7 +257,18 @@ describe('MichiganPage', () => {
 
   it('shows the place-bets button on the human bet turn', async () => {
     renderWithProviders(<MichiganPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '賭ける' })).toBeInTheDocument());
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: '賭ける' })).toBeInTheDocument();
+    expect(within(actions).getByRole('button', { name: '♥ A の賭け金 2 チップから 1 枚減らす' })).toBeInTheDocument();
+    expect(actions.querySelector('[data-tutorial="michigan-action-buttons"]')).toBeInTheDocument();
+    const footerContent = screen.getByTestId('game-footer-content');
+    const playArea = footerContent.parentElement?.previousElementSibling;
+    expect(footerContent.querySelector('[data-tutorial="michigan-hand"]')).toBeInTheDocument();
+    expect(playArea).not.toBeNull();
+    expect(footerContent).toHaveTextContent('チップを 4 つのブードルに分配');
+    expect(playArea).not.toHaveTextContent('チップを 4 つのブードルに分配');
+    expect(footerContent.querySelector('[data-tutorial="michigan-reset-button"]')).not.toBeInTheDocument();
+    expect(playArea?.querySelector('[data-tutorial="michigan-reset-button"]')).toBeInTheDocument();
   });
 
   it('names each bet control with its card and current bet amount', async () => {
@@ -422,6 +439,10 @@ describe('MichiganPage', () => {
     mockExec.mockResolvedValue(resultState);
     renderWithProviders(<MichiganPage />);
     const btn = await screen.findByRole('button', { name: '次のラウンド' });
+    const footerContent = screen.getByTestId('game-footer-content');
+    const playArea = footerContent.parentElement?.previousElementSibling;
+    expect(playArea).not.toBeNull();
+    expect(playArea?.firstElementChild).toContainElement(btn);
     mockExec.mockClear();
     fireEvent.click(btn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));

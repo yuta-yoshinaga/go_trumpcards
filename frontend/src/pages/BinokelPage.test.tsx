@@ -13,6 +13,16 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockExec = vi.mocked(binokelApi.exec);
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useIsMobile: () => mobileState.isMobile,
+    useCardDimensions: () => ({ ...actual.useCardDimensions(), isMobile: mobileState.isMobile }),
+  };
+});
 
 const makePlayers = (overrides?: Partial<BinokelResponse['players'][number]>[]) =>
   [0, 1, 2].map((id) => ({
@@ -177,6 +187,7 @@ const gameEndState: BinokelResponse = {
 };
 
 beforeEach(() => {
+  mobileState.isMobile = true;
   mockExec.mockResolvedValue(bidPhaseState);
 });
 
@@ -186,6 +197,78 @@ afterEach(() => {
 });
 
 describe('BinokelPage', () => {
+  it('wraps player score fields between intact label and value groups', async () => {
+    renderWithProviders(<BinokelPage />);
+    const [row] = await screen.findAllByText('メルド得点: 0');
+    expect(row).toHaveClass('whitespace-nowrap');
+    expect(row.parentElement).toHaveClass('flex-wrap');
+  });
+  it('keeps the declarer badge intact and truncates the player name', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<BinokelPage />);
+    const badge = await screen.findByText('落札者');
+    expect(badge).toHaveClass('shrink-0', 'whitespace-nowrap');
+    expect(badge.previousElementSibling).toHaveClass('min-w-0', 'truncate');
+    expect(badge.previousElementSibling).toHaveAttribute('title');
+  });
+  it('compacts the dabb display only at large desktop width', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1280 });
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue(dabbPhaseStateHuman);
+    renderWithProviders(<BinokelPage />);
+    const dabb = await screen.findByTestId('bn-dabb-display');
+    const largeDesktopRow = screen.getByTestId('bn-player-and-dabb-row');
+    expect(largeDesktopRow).toHaveClass('flex', 'flex-wrap');
+    expect(largeDesktopRow.contains(dabb)).toBe(true);
+    expect(largeDesktopRow.contains(screen.getByText('あなた').closest('[data-tutorial="bn-player-info"]'))).toBe(true);
+    expect(dabb).toHaveClass('mb-1', 'py-1');
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 768 });
+    window.dispatchEvent(new Event('resize'));
+    await waitFor(() => expect(dabb).toHaveClass('mb-3', 'p-2'));
+    expect(screen.getByTestId('bn-player-and-dabb-row')).not.toHaveClass('flex');
+  });
+
+  it('renders the game message inside the footer message region', async () => {
+    mobileState.isMobile = false;
+    mockExec.mockResolvedValue({ ...playPhaseState, message: 'Footer message' });
+    renderWithProviders(<BinokelPage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage.querySelector('[role="status"], [role="alert"]')).toHaveTextContent('Footer message');
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    mobileState.isMobile = true;
+    mockExec.mockResolvedValue({ ...playPhaseState, message: 'Mobile message' });
+    renderWithProviders(<BinokelPage />);
+
+    const messageText = await screen.findByText('Mobile message');
+    const message = messageText.closest('[role="status"]');
+    expect(message).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+    expect(message?.closest('footer')).not.toBeInTheDocument();
+  });
+
+  it('collapses CPU seats and meld reference on mobile while keeping the human seat visible', async () => {
+    renderWithProviders(<BinokelPage />);
+    const cpu = await screen.findByTestId('cpu-accordion');
+    const meldTable = screen.getByTestId('bn-meld-table');
+    expect(cpu).not.toHaveAttribute('open');
+    expect(within(cpu).getByText('CPU対戦相手 (2)')).toBeVisible();
+    expect(within(cpu).getByText('CPU 1').closest('.rounded')).not.toBeVisible();
+    expect(screen.getByText('あなた').closest('.rounded')).toBeVisible();
+    expect(meldTable).not.toHaveAttribute('open');
+    expect(within(meldTable).getByText('ディクス 10')).not.toBeVisible();
+  });
+
+  it('opens CPU seats and meld reference on desktop', async () => {
+    mobileState.isMobile = false;
+    renderWithProviders(<BinokelPage />);
+    expect(await screen.findByTestId('cpu-accordion')).toHaveAttribute('open');
+    expect(screen.getByTestId('bn-meld-table')).toHaveAttribute('open');
+    expect(within(screen.getByTestId('bn-meld-table')).getByText('ディクス 10')).toBeVisible();
+  });
+
   it('translates CPU difficulty options while preserving their numeric values', async () => {
     renderWithProviders(<BinokelPage />);
     const difficulty = await screen.findByLabelText('CPU難易度');
@@ -247,6 +330,10 @@ describe('BinokelPage', () => {
 
     fireEvent.click(screen.getByTestId('bid-option-170'));
     expect(screen.getByTestId('bid-option-170')).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('bid-option-170')).not.toHaveClass('text-white');
+    expect(screen.getByTestId('bid-option-170')).toHaveClass('text-ds-text-on-accent');
+    expect(screen.getByTestId('bid-option-180')).not.toHaveClass('text-white', 'text-ds-text-on-accent');
+    expect(screen.getByTestId('bid-option-180')).toHaveClass('text-ds-text-primary');
     expect(screen.getByTestId('bn-bid-selected')).toHaveTextContent('170');
 
     mockExec.mockClear();
@@ -300,6 +387,9 @@ describe('BinokelPage', () => {
     const handContainer = container.querySelector('[data-tutorial="bn-player-hand"]') as HTMLElement;
     const cardButtons = within(handContainer).getAllByRole('button');
     expect(cardButtons).toHaveLength(18);
+    expect(
+      within(handContainer.querySelector('[data-testid="bn-player-hand"]') as HTMLElement).getAllByRole('button'),
+    ).toHaveLength(18);
 
     // 0 selected -> disabled
     expect(discardBtn).toBeDisabled();
@@ -593,6 +683,20 @@ describe('BinokelPage', () => {
     await waitFor(() => {
       expect(screen.getByRole('button', { name: '♠ A' })).toBeInTheDocument();
     });
+  });
+
+  it('plays a legal card and dims cards outside the legal-play indices', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, validPlayIndices: [0] });
+    renderWithProviders(<BinokelPage />);
+
+    const legalCard = await screen.findByRole('button', { name: '♠ A' });
+    const illegalCard = screen.getByRole('button', { name: '♥ J' });
+    expect(legalCard).toHaveStyle({ opacity: '1' });
+    expect(illegalCard).toHaveStyle({ opacity: '0.5' });
+
+    fireEvent.click(legalCard);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0));
+    expect(mockExec).not.toHaveBeenCalledWith('play', 1);
   });
 
   it('shows scored melds as plain text in the meld area during play phase', async () => {
@@ -910,5 +1014,31 @@ describe('BinokelPage meld reference', () => {
     expect(hintBox).not.toHaveTextContent('推奨プレイ');
     expect(hintBox).not.toHaveTextContent('推奨ビッド');
     expect(hintBox).not.toHaveTextContent('{{');
+  });
+
+  it('keeps the primary control in the pinned footer actions', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<BinokelPage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: 'ビッド' })).toBeInTheDocument();
+  });
+
+  it('keeps phase choices and reset in the play area while the hand stays in the footer', async () => {
+    mockExec.mockResolvedValue({
+      ...bidPhaseState,
+      players: makePlayers([{ cards: [{ design: 'SPADE', value: 1 }] }]),
+    });
+    renderWithProviders(<BinokelPage />);
+
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const playArea = footerContent.parentElement?.parentElement?.querySelector('.flex-1.overflow-y-auto');
+    expect(playArea).not.toBeNull();
+    expect(within(footerContent).queryByTestId('bid-option-150')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('bid-option-150')).toBeInTheDocument();
+    expect(footerContent.querySelector('[data-tutorial="bn-player-hand"]')).toBeInTheDocument();
+    const handFan = footerContent.querySelector('[data-testid="bn-player-hand"]') as HTMLElement;
+    expect(within(handFan).getAllByRole('button')).toHaveLength(1);
+    expect(footerContent.querySelector('[data-tutorial="bn-reset-button"]')).not.toBeInTheDocument();
+    expect(playArea?.querySelector('[data-tutorial="bn-reset-button"]')).toBeInTheDocument();
   });
 });

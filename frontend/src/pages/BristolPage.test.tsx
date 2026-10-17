@@ -59,6 +59,12 @@ beforeEach(() => {
 });
 
 describe('BristolPage', () => {
+  it('shows the landscape recommendation instead of the phase name in the banner', async () => {
+    renderWithProviders(<BristolPage />);
+    const bannerMessage = await screen.findByText('横画面での表示を推奨します');
+    expect(bannerMessage.parentElement).toHaveTextContent(/^横画面での表示を推奨します$/);
+  });
+
   it('renders heading', async () => {
     renderWithProviders(<BristolPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -288,7 +294,7 @@ describe('BristolPage', () => {
   it('autocomplete button triggers autocomplete command', async () => {
     renderWithProviders(<BristolPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    screen.getByRole('button', { name: '自動完成' }).click();
+    screen.getByRole('button', { name: 'オートコンプリート' }).click();
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
   });
 
@@ -399,7 +405,7 @@ describe('BristolPage', () => {
     expect(draw).toHaveAttribute('aria-keyshortcuts', 'd');
     expect(draw.querySelector('kbd')?.textContent).toBe('D');
     expect(screen.getByRole('button', { name: 'ヒント' })).toHaveAttribute('aria-keyshortcuts', 'h');
-    expect(screen.getByRole('button', { name: '自動完成' })).toHaveAttribute('aria-keyshortcuts', 'a');
+    expect(screen.getByRole('button', { name: 'オートコンプリート' })).toHaveAttribute('aria-keyshortcuts', 'a');
     expect(screen.getByRole('button', { name: '元に戻す' })).toHaveAttribute('aria-keyshortcuts', 'z');
     expect(screen.getByRole('button', { name: 'ギブアップ' })).toHaveAttribute('aria-keyshortcuts', 'g');
   });

@@ -438,7 +438,7 @@ function ScopaPageContent() {
                 type="button"
                 onClick={play}
                 disabled={loading || !canTake}
-                className="px-4 py-2 rounded-lg bg-ds-info text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                className="px-4 py-2 rounded-lg bg-ds-info text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                 data-testid="take-button"
               >
                 {t('button.take')}
@@ -447,7 +447,7 @@ function ScopaPageContent() {
                 type="button"
                 onClick={play}
                 disabled={loading || !canLay}
-                className="px-4 py-2 rounded-lg bg-ds-warning text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                className="px-4 py-2 rounded-lg bg-ds-warning text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                 data-testid="lay-button"
               >
                 {t('button.lay')}
@@ -457,7 +457,7 @@ function ScopaPageContent() {
                   type="button"
                   onClick={handleNextRound}
                   disabled={loading}
-                  className="px-4 py-2 rounded-lg bg-ds-info/70 text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                  className="px-4 py-2 rounded-lg bg-ds-info/70 text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                   data-testid="next-round-button"
                 >
                   {t('button.nextRound')}

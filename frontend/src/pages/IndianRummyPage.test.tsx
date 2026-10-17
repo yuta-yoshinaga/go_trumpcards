@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, indianRummyApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -182,6 +182,17 @@ beforeEach(() => {
 });
 
 describe('IndianRummyPage', () => {
+  it.each([
+    { name: 'declaration', state: { ...roundEndState, declarerIdx: 1 }, message: 'CPU 1が宣言してラウンド終了' },
+    { name: 'stock out', state: roundEndState, message: '山札切れでラウンド終了' },
+  ])('shows the $name reason in the message box without repeating the phase label', async ({ state, message }) => {
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<IndianRummyPage />);
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(within(footerMessage).getByRole('status')).toHaveTextContent(message);
+    expect(screen.getAllByText('ラウンド終了')).toHaveLength(1);
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<IndianRummyPage />);
@@ -209,8 +220,10 @@ describe('IndianRummyPage', () => {
 
   it('renders discard history oldest first and marks the latest card', async () => {
     renderWithProviders(<IndianRummyPage />);
-    await waitFor(() => expect(screen.getByTestId('indianrummy-discard-latest')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('indianrummy-discard-history-details')).toBeInTheDocument());
     const history = screen.getByTestId('indianrummy-discard-history');
+    fireEvent.click(within(history).getByText('捨て札の履歴（古い順）'));
+    await waitFor(() => expect(screen.getByTestId('indianrummy-discard-latest')).toBeInTheDocument());
     expect(history).toHaveTextContent('捨て札の履歴（古い順）');
     expect(history.querySelectorAll('img')).toHaveLength(2);
     expect(screen.getByRole('img', { name: '♣ 5' })).toBeInTheDocument();
@@ -261,6 +274,9 @@ describe('IndianRummyPage', () => {
     renderWithProviders(<IndianRummyPage />);
     await waitFor(() => {
       expect(screen.getByRole('button', { name: '山札から引く' })).toBeInTheDocument();
+      expect(
+        within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '山札から引く' }),
+      ).toBeInTheDocument();
       expect(screen.getByRole('button', { name: '捨て札から引く' })).toBeInTheDocument();
     });
     expect(screen.getByTestId('indianrummy-discard-draw-target')).toHaveTextContent('対象: ♥ 7');
@@ -446,6 +462,32 @@ describe('IndianRummyPage', () => {
     });
   });
 
+  it('collapses reference areas and CPU seats on mobile', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    renderWithProviders(<IndianRummyPage />);
+    await waitFor(() => expect(screen.getByTestId('ir-score-details')).toBeInTheDocument());
+    expect(screen.getByTestId('ir-score-details')).not.toHaveAttribute('open');
+    expect(screen.getByTestId('cpu-accordion')).not.toHaveAttribute('open');
+    expect(screen.getByRole('table')).not.toBeVisible();
+    expect(screen.getByText(/CPU 1.*13枚/)).not.toBeVisible();
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    window.dispatchEvent(new Event('resize'));
+  });
+
+  it('opens score table and CPU seats on desktop', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });
+    window.dispatchEvent(new Event('resize'));
+    renderWithProviders(<IndianRummyPage />);
+    await waitFor(() => expect(screen.getByTestId('ir-score-details')).toHaveAttribute('open'));
+    expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
+    expect(screen.getByText('スコア')).toBeVisible();
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    window.dispatchEvent(new Event('resize'));
+  });
+
   it('score table headers have scope="col"', async () => {
     const { container } = renderWithProviders(<IndianRummyPage />);
     await waitFor(() => expect(screen.getByText('あなた')).toBeInTheDocument());
@@ -499,6 +541,27 @@ describe('IndianRummyPage', () => {
     renderWithProviders(<IndianRummyPage />);
     await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
     expect(screen.queryByAltText('♦ 5')).not.toBeInTheDocument();
+  });
+
+  it('keeps only the hand in the footer and places reset and shortcuts in the play area', async () => {
+    mockExec.mockResolvedValue(discardPhaseState);
+    renderWithProviders(<IndianRummyPage />);
+    await waitFor(() => expect(screen.getByTestId('indianrummy-hand-status')).toBeInTheDocument());
+
+    const footer = screen.getByTestId('game-footer-content');
+    const playArea = footer.parentElement?.previousElementSibling;
+    const handStatus = screen.getByTestId('indianrummy-hand-status');
+    expect(footer).not.toContainElement(handStatus);
+    expect(playArea).toContainElement(handStatus);
+    expect(playArea).toHaveClass('overflow-y-auto');
+    expect(within(footer).getByAltText('♠ A').closest('[data-tutorial="ir-player-hand"]')).toBeInTheDocument();
+
+    const resetButton = document.querySelector<HTMLButtonElement>('[data-tutorial="ir-reset-button"]');
+    const shortcuts = screen.getByTestId('indian-rummy-kbd-shortcuts');
+    for (const element of [resetButton, shortcuts]) {
+      expect(footer).not.toContainElement(element);
+      expect(playArea).toContainElement(element);
+    }
   });
 
   it('card selection toggles aria-pressed', async () => {
@@ -792,5 +855,26 @@ describe('IndianRummyPage points legend', () => {
     expect(legend.textContent).toMatch(/10/);
     // ワイルドが 0 点であることも同じ行で言う (tutorial.wildJoker と矛盾しない)。
     expect(legend.textContent).toMatch(/0/);
+  });
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, message: 'Footer guidance' });
+    renderWithProviders(<IndianRummyPage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage.querySelector('[role="status"], [role="alert"]')).toHaveTextContent('Footer guidance');
+  });
+  it('renders the game message in the play area instead of the footer on mobile', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, message: 'Mobile guidance' });
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    renderWithProviders(<IndianRummyPage />);
+
+    const messageText = await screen.findByText('Mobile guidance');
+    const message = messageText.closest('[role="status"], [role="alert"]');
+    expect(message?.closest('.flex-1.overflow-y-auto')).not.toBeNull();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    window.dispatchEvent(new Event('resize'));
   });
 });

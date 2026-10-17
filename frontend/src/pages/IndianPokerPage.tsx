@@ -21,7 +21,7 @@ import { RoundResults } from '../components/RoundResults';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -91,6 +91,8 @@ function IndianPokerPageContent() {
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
   const isMobile = useIsMobile();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
+  const compactCpuRow = isMobile || isLargeDesktop;
   const { state, loading, error, exec: execApi, retry } = useGameApi(indianpokerApi.exec);
   const [betAmount, setBetAmount] = useState(20);
   const [ante, setAnte] = useState(10);
@@ -289,8 +291,13 @@ function IndianPokerPageContent() {
         <>
           {/* Scrollable: opponent cards + CPU players */}
           <div className={`flex-1 overflow-y-auto pt-4 px-5 lg:px-8 ${lgCardAreaConstraint}`}>
-            <section className="mb-3 rounded-lg bg-ds-surface p-3 text-xs" aria-label={t('metaAI.title')}>
-              <h2 className="mb-1 font-bold text-ds-text-primary">{t('metaAI.title')}</h2>
+            <section
+              className={`mb-3 rounded-lg bg-ds-surface p-3 text-xs ${isLargeDesktop ? 'grid grid-cols-4 gap-x-3 gap-y-1' : ''}`}
+              aria-label={t('metaAI.title')}
+            >
+              <h2 className={`mb-1 font-bold text-ds-text-primary ${isLargeDesktop ? 'col-span-4' : ''}`}>
+                {t('metaAI.title')}
+              </h2>
               <div className="text-ds-text-muted">
                 {t('metaAI.gamesPlayed', {
                   value:
@@ -323,11 +330,11 @@ function IndianPokerPageContent() {
               </div>
             </section>
             {/* CPU players - show cards face-up (opponents can see each other's cards) */}
-            <div data-tutorial="ip-cpu-cards" className={isMobile ? 'grid grid-cols-3 gap-2 mb-3' : ''}>
+            <div data-tutorial="ip-cpu-cards" className={compactCpuRow ? 'grid grid-cols-3 gap-2 mb-3' : ''}>
               {state.players
                 ?.filter((p) => !p.isHuman)
                 .map((p) => (
-                  <div key={p.id} className={isMobile ? 'text-center' : 'mb-3'}>
+                  <div key={p.id} className={compactCpuRow ? 'text-center' : 'mb-3'}>
                     <div className={`text-ds-text-primary text-sm mb-1 ${isMobile ? 'truncate' : ''}`}>
                       {tc('player.cpu', { id: p.id })}
                       {/* The whole game is reading the opponent, since your own
@@ -348,7 +355,7 @@ function IndianPokerPageContent() {
                       {p.folded && <span className="ml-1 text-ds-error-text text-xs">[{tc('status.folded')}]</span>}
                       {p.allIn && <span className="ml-1 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
                     </div>
-                    <div className={isMobile ? 'flex justify-center' : 'flex flex-wrap gap-1'}>
+                    <div className={compactCpuRow ? 'flex justify-center' : 'flex flex-wrap gap-1'}>
                       {p.card ? (
                         <span
                           className={`relative inline-flex ${winningPlayerIdxs.has(p.id) ? 'rounded ring-2 ring-ds-warning' : ''}`}
@@ -395,126 +402,35 @@ function IndianPokerPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
-          </div>
-
-          {/* Sticky footer: player card + buttons */}
-          <GameFooter className={`${gameTheme.indianpoker.footer} px-5 py-3`}>
-            {/* Human player */}
-            {humanPlayer && (
-              <div className="mb-2" data-tutorial="ip-player-card">
-                <div className="text-ds-text-primary text-lg mb-1">
-                  {t('yourCard')}
-                  <span className="ml-3 text-xs">
-                    {tc('betting.chips')} {humanPlayer.chips}
-                  </span>
-                  {humanPlayer.currentBet > 0 && (
-                    <span className="ml-2 text-xs">
-                      {tc('betting.currentBet')} {humanPlayer.currentBet}
-                    </span>
-                  )}
-                  {humanPlayer.folded && (
-                    <span className="ml-2 text-ds-error-text text-xs">[{tc('status.folded')}]</span>
-                  )}
-                  {humanPlayer.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
+            {hintEnabled && equityPct !== null && !humanFolded && (
+              <div
+                className="mt-1 text-xs text-ds-text-primary"
+                data-testid="indianpoker-equity-meter"
+                aria-live="polite"
+              >
+                <div className="mb-0.5 flex items-center justify-between">
+                  <span>{t('equity.label')}</span>
+                  <span className="font-semibold tabular-nums">{equityPct}%</span>
                 </div>
-                <div className="flex flex-wrap gap-1.5 mb-2">
-                  {isShowdown && humanPlayer.card ? (
-                    <motion.div
-                      key={revealSignature}
-                      className="relative [transform-style:preserve-3d]"
-                      initial={reduced ? false : { rotateY: 180, opacity: 0.5 }}
-                      animate={{ rotateY: 0, opacity: 1 }}
-                      transition={flipSpring}
-                      data-testid="indianpoker-own-reveal"
-                    >
-                      {winningPlayerIdxs.has(humanPlayer.id) && (
-                        <span
-                          role="img"
-                          aria-label={t('winnerCardAriaLabel')}
-                          className="absolute -right-2 -top-2 z-10 rounded-full bg-ds-warning px-1 text-xs text-ds-text-on-accent"
-                        >
-                          ★
-                        </span>
-                      )}
-                      <AnimatedCard
-                        card={humanPlayer.card}
-                        ariaLabel={t('faceUpCardAriaLabel', {
-                          name: tc('player.you'),
-                          card: cardAlt(humanPlayer.card),
-                        })}
-                        width={cardWidth}
-                        style={placeholderCardStyle}
-                        silent
-                      />
-                    </motion.div>
-                  ) : !humanPlayer.folded ? (
-                    <span role="img" aria-label={t('hiddenCardAriaLabel')}>
-                      <AnimatedCardBack width={cardWidth} />
-                    </span>
-                  ) : null}
-                </div>
-                {hintEnabled && equityPct !== null && !humanFolded && (
+                <div
+                  className="h-1.5 w-full overflow-hidden rounded bg-black/30"
+                  role="progressbar"
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={equityPct}
+                  aria-label={t('equity.label')}
+                >
                   <div
-                    className="mt-1 text-xs text-ds-text-primary"
-                    data-testid="indianpoker-equity-meter"
-                    aria-live="polite"
-                  >
-                    <div className="mb-0.5 flex items-center justify-between">
-                      <span>{t('equity.label')}</span>
-                      <span className="font-semibold tabular-nums">{equityPct}%</span>
-                    </div>
-                    <div
-                      className="h-1.5 w-full overflow-hidden rounded bg-black/30"
-                      role="progressbar"
-                      aria-valuemin={0}
-                      aria-valuemax={100}
-                      aria-valuenow={equityPct}
-                      aria-label={t('equity.label')}
-                    >
-                      <div
-                        className={`h-full transition-all ${equityPct >= 60 ? 'bg-ds-success' : equityPct >= 35 ? 'bg-ds-warning' : 'bg-ds-error'}`}
-                        style={{ width: `${equityPct}%` }}
-                      />
-                    </div>
-                  </div>
-                )}
+                    className={`h-full transition-all ${equityPct >= 60 ? 'bg-ds-success' : equityPct >= 35 ? 'bg-ds-warning' : 'bg-ds-error'}`}
+                    style={{ width: `${equityPct}%` }}
+                  />
+                </div>
               </div>
             )}
-
-            {/* Message */}
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-              alwaysVisible
-            />
-
             <ErrorAlert message={error} onRetry={retry} />
 
             {/* Hint */}
             {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
-
-            {/* Betting controls */}
-            {canAct && (
-              <div data-tutorial="ip-action-buttons">
-                <BettingControls
-                  inputId="indianPokerBetAmount"
-                  betAmount={betAmount}
-                  onBetAmountChange={setBetAmount}
-                  minRaise={minRaise}
-                  maxBetAmount={state.maxBetAmount}
-                  potSize={state.pot}
-                  hasOutstandingBet={hasOutstandingBet}
-                  loading={loading}
-                  onCall={() => execApi('call', undefined, undefined, getElapsed())}
-                  onRaise={() => execApi('raise', betAmount, undefined, getElapsed())}
-                  onBet={() => execApi('bet', betAmount, undefined, getElapsed())}
-                  onCheck={() => execApi('check', undefined, undefined, getElapsed())}
-                  onFold={() => execApi('fold', undefined, undefined, getElapsed())}
-                  onAllIn={() => execApi('allin', undefined, undefined, getElapsed())}
-                />
-              </div>
-            )}
 
             {/* Settings */}
             <SettingsPanel
@@ -578,6 +494,98 @@ function IndianPokerPageContent() {
               />
             </div>
             <ActionShortcutsPanel bindings={actionBindings} data-testid="indian-poker-kbd-shortcuts" />
+          </div>
+
+          {/* Sticky footer: player card + buttons */}
+          <GameFooter
+            className={`${gameTheme.indianpoker.footer} px-5 py-3`}
+            actions={
+              canAct ? (
+                <div data-tutorial="ip-action-buttons">
+                  <BettingControls
+                    inputId="indianPokerBetAmount"
+                    betAmount={betAmount}
+                    onBetAmountChange={setBetAmount}
+                    minRaise={minRaise}
+                    maxBetAmount={state.maxBetAmount}
+                    potSize={state.pot}
+                    hasOutstandingBet={hasOutstandingBet}
+                    loading={loading}
+                    onCall={() => execApi('call', undefined, undefined, getElapsed())}
+                    onRaise={() => execApi('raise', betAmount, undefined, getElapsed())}
+                    onBet={() => execApi('bet', betAmount, undefined, getElapsed())}
+                    onCheck={() => execApi('check', undefined, undefined, getElapsed())}
+                    onFold={() => execApi('fold', undefined, undefined, getElapsed())}
+                    onAllIn={() => execApi('allin', undefined, undefined, getElapsed())}
+                  />
+                </div>
+              ) : null
+            }
+          >
+            {/* Human player */}
+            {humanPlayer && (
+              <div className="mb-2" data-tutorial="ip-player-card">
+                <div className="text-ds-text-primary text-lg mb-1">
+                  {t('yourCard')}
+                  <span className="ml-3 text-xs">
+                    {tc('betting.chips')} {humanPlayer.chips}
+                  </span>
+                  {humanPlayer.currentBet > 0 && (
+                    <span className="ml-2 text-xs">
+                      {tc('betting.currentBet')} {humanPlayer.currentBet}
+                    </span>
+                  )}
+                  {humanPlayer.folded && (
+                    <span className="ml-2 text-ds-error-text text-xs">[{tc('status.folded')}]</span>
+                  )}
+                  {humanPlayer.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
+                </div>
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {isShowdown && humanPlayer.card ? (
+                    <motion.div
+                      key={revealSignature}
+                      className="relative [transform-style:preserve-3d]"
+                      initial={reduced ? false : { rotateY: 180, opacity: 0.5 }}
+                      animate={{ rotateY: 0, opacity: 1 }}
+                      transition={flipSpring}
+                      data-testid="indianpoker-own-reveal"
+                    >
+                      {winningPlayerIdxs.has(humanPlayer.id) && (
+                        <span
+                          role="img"
+                          aria-label={t('winnerCardAriaLabel')}
+                          className="absolute -right-2 -top-2 z-10 rounded-full bg-ds-warning px-1 text-xs text-ds-text-on-accent"
+                        >
+                          ★
+                        </span>
+                      )}
+                      <AnimatedCard
+                        card={humanPlayer.card}
+                        ariaLabel={t('faceUpCardAriaLabel', {
+                          name: tc('player.you'),
+                          card: cardAlt(humanPlayer.card),
+                        })}
+                        width={cardWidth}
+                        style={placeholderCardStyle}
+                        silent
+                      />
+                    </motion.div>
+                  ) : !humanPlayer.folded ? (
+                    <span role="img" aria-label={t('hiddenCardAriaLabel')}>
+                      <AnimatedCardBack width={cardWidth} />
+                    </span>
+                  ) : null}
+                </div>
+              </div>
+            )}
+
+            {/* Message */}
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+              alwaysVisible
+            />
           </GameFooter>
         </>
       )}

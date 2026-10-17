@@ -459,7 +459,85 @@ function GinRummyPageContent() {
             />
           </div>
 
-          <GameFooter className={`${gameTheme.ginrummy.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.ginrummy.footer} px-4 py-2.5`}
+            actions={
+              (isDrawPhase && isHumanTurn) ||
+              (isDiscardPhase && isHumanTurn) ||
+              (isLayoffPhase && isHumanTurn) ||
+              isRoundEnd ? (
+                <div className="flex gap-2 items-center flex-wrap">
+                  {isDrawPhase && isHumanTurn && (
+                    <div className="flex gap-2" data-tutorial="gr-draw-area">
+                      <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
+                        {t('drawStockButton')}
+                      </button>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={handleDrawDiscard}
+                        disabled={loading || !state.discardTop}
+                      >
+                        {t('drawDiscardButton')}
+                      </button>
+                    </div>
+                  )}
+                  {isDiscardPhase && isHumanTurn && (
+                    <>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={handleDiscard}
+                        disabled={loading || selectedCardIndices.length !== 1}
+                        data-tutorial="gr-discard-button"
+                      >
+                        {t('discardButton')}
+                      </button>
+                      <button
+                        type="button"
+                        className={`${btnPrimary} aria-disabled:cursor-not-allowed aria-disabled:opacity-50 ${canKnockSelectedCard ? 'motion-safe:animate-pulse ring-2 ring-ds-success' : ''}`}
+                        onClick={() => {
+                          if (!loading && canKnockSelectedCard) handleKnock();
+                        }}
+                        disabled={loading}
+                        aria-disabled={!canKnockSelectedCard || undefined}
+                        aria-describedby={!canKnockSelectedCard ? 'ginrummy-knock-disabled-reason' : undefined}
+                        data-tutorial="gr-knock-button"
+                        data-testid="ginrummy-knock-button"
+                      >
+                        {t('knockButton')}
+                      </button>
+                      {!canKnockSelectedCard && (
+                        <span id="ginrummy-knock-disabled-reason" className="sr-only">
+                          {t('knockDisabledReason')}
+                        </span>
+                      )}
+                    </>
+                  )}
+                  {isLayoffPhase && isHumanTurn && (
+                    <>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={handleLayoff}
+                        disabled={loading || selectedCardIndices.length === 0}
+                      >
+                        {t('layoffButton')}
+                      </button>
+                      <button type="button" className={btnPrimary} onClick={handleSkipLayoff} disabled={loading}>
+                        {t('skipLayoffButton')}
+                      </button>
+                    </>
+                  )}
+                  {isRoundEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                      {t('nextRound')}
+                    </button>
+                  )}
+                </div>
+              ) : null
+            }
+          >
             {liveDeadwood != null && (
               <div
                 data-testid="ginrummy-deadwood-indicator"
@@ -551,82 +629,13 @@ function GinRummyPageContent() {
 
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-            <div className="flex gap-2 items-center flex-wrap">
-              {isDrawPhase && isHumanTurn && (
-                <div className="flex gap-2" data-tutorial="gr-draw-area">
-                  <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
-                    {t('drawStockButton')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleDrawDiscard}
-                    disabled={loading || !state.discardTop}
-                  >
-                    {t('drawDiscardButton')}
-                  </button>
-                </div>
-              )}
-              {isDiscardPhase && isHumanTurn && (
-                <>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleDiscard}
-                    disabled={loading || selectedCardIndices.length !== 1}
-                    data-tutorial="gr-discard-button"
-                  >
-                    {t('discardButton')}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnPrimary} aria-disabled:cursor-not-allowed aria-disabled:opacity-50 ${canKnockSelectedCard ? 'motion-safe:animate-pulse ring-2 ring-ds-success' : ''}`}
-                    onClick={() => {
-                      if (!loading && canKnockSelectedCard) handleKnock();
-                    }}
-                    disabled={loading}
-                    aria-disabled={!canKnockSelectedCard || undefined}
-                    aria-describedby={!canKnockSelectedCard ? 'ginrummy-knock-disabled-reason' : undefined}
-                    data-tutorial="gr-knock-button"
-                    data-testid="ginrummy-knock-button"
-                  >
-                    {t('knockButton')}
-                  </button>
-                  {!canKnockSelectedCard && (
-                    <span id="ginrummy-knock-disabled-reason" className="sr-only">
-                      {t('knockDisabledReason')}
-                    </span>
-                  )}
-                </>
-              )}
-              {isLayoffPhase && isHumanTurn && (
-                <>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleLayoff}
-                    disabled={loading || selectedCardIndices.length === 0}
-                  >
-                    {t('layoffButton')}
-                  </button>
-                  <button type="button" className={btnPrimary} onClick={handleSkipLayoff} disabled={loading}>
-                    {t('skipLayoffButton')}
-                  </button>
-                </>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={!!isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="gr-reset-button"
-              />
-            </div>
+            <GameResetButton
+              isGameEnd={!!isGameEnd}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+              dataTutorial="gr-reset-button"
+            />
             <CardNavShortcutsPanel data-testid="gin-rummy-kbd-shortcuts" />
           </GameFooter>
         </>

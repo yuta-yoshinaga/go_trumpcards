@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { yanivApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -79,7 +80,7 @@ function YanivPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('yaniv');
   const { state, loading, error, exec: execApi, retry } = useGameApi(yanivApi.exec);
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
   const [cpuDifficulty, setCpuDifficulty] = useState(1);
   const [scoreLimit, setScoreLimit] = useState(200);
   const [selected, setSelected] = useState<number[]>([]);
@@ -199,6 +200,9 @@ function YanivPageContent() {
   const discardWarning = discardCheck?.reasonKey ? t(discardCheck.reasonKey) : null;
   const selectedTotal = selectedCards.reduce((total, card) => total + yanivCardValue(card), 0);
   const hasSelectionPreview = isDiscard && isHumanTurn && selectedCards.length > 0;
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
 
   return (
     <GamePageShell
@@ -232,7 +236,7 @@ function YanivPageContent() {
               data-testid="yaniv-round-result"
               className={
                 caller
-                  ? `rounded-lg p-3 text-center font-medium ${state.isAsaf ? 'bg-ds-error text-white' : 'bg-ds-success text-white'}`
+                  ? `rounded-lg p-3 text-center font-medium ${state.isAsaf ? 'bg-ds-error text-white' : 'bg-ds-success text-ds-text-on-accent'}`
                   : 'sr-only'
               }
             >
@@ -243,40 +247,45 @@ function YanivPageContent() {
             </div>
 
             {/* CPU players */}
-            <div className="flex justify-center gap-6 flex-wrap" data-tutorial="y-cpu-area">
-              {state.players
-                .filter((p) => !p.isHuman)
-                .map((p) => (
-                  <div key={p.id} className={p.isEliminated ? 'text-center opacity-40' : 'text-center'}>
-                    <div className="text-xs text-ds-text-muted mb-1">
-                      {tc('player.cpu', { id: p.id })}
-                      {p.isEliminated && <span className="ml-1">💀</span>}
-                    </div>
-                    <div className="text-[10px] text-ds-text-muted mb-1">
-                      {t('label.score')}: {p.score} · {t('label.hand')}: {reveal ? p.handTotal : '?'}
-                      {!p.isEliminated && (
-                        <span className="ml-1" data-testid={`yv-points-remaining-${p.id.toString()}`}>
-                          {t('pointsRemaining', { points: state.config.scoreLimit - p.score })}
-                        </span>
-                      )}
-                      {/* CUI と同じ閾値で「脱落間近」を出す。値はレスポンスの
+            <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length} dataTutorial="y-cpu-area">
+              <div className="flex flex-wrap justify-center gap-6">
+                {state.players
+                  .filter((p) => !p.isHuman)
+                  .map((p) => (
+                    <div key={p.id} className={p.isEliminated ? 'text-center opacity-40' : 'text-center'}>
+                      <div className="text-xs text-ds-text-muted mb-1">
+                        {tc('player.cpu', { id: p.id })}
+                        {p.isEliminated && <span className="ml-1">💀</span>}
+                      </div>
+                      <div className="text-[10px] text-ds-text-muted mb-1">
+                        {t('label.score')}: {p.score} · {t('label.hand')}: {reveal ? p.handTotal : '?'}
+                        {!p.isEliminated && (
+                          <span className="ml-1" data-testid={`yv-points-remaining-${p.id.toString()}`}>
+                            {t('pointsRemaining', { points: state.config.scoreLimit - p.score })}
+                          </span>
+                        )}
+                        {/* CUI と同じ閾値で「脱落間近」を出す。値はレスポンスの
                           scoreLimit を読む (#5629)。脱落済みには出さない。 */}
-                      {!p.isEliminated && yanivIsNearOut(p.score, state.config.scoreLimit) && (
-                        <span className="ml-1 text-ds-warning font-bold" data-testid={`yv-near-out-${p.id.toString()}`}>
-                          ⚠{t('nearOut')}
-                        </span>
-                      )}
+                        {!p.isEliminated && yanivIsNearOut(p.score, state.config.scoreLimit) && (
+                          <span
+                            className="ml-1 text-ds-warning font-bold"
+                            data-testid={`yv-near-out-${p.id.toString()}`}
+                          >
+                            ⚠{t('nearOut')}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex gap-0.5 justify-center">
+                        {reveal
+                          ? p.cards.map((c, i) => <AnimatedCard key={i} card={c} width={cardWidth * 0.6} />)
+                          : Array.from({ length: p.cardCount }, (_, i) => (
+                              <AnimatedCardBack key={i} width={cardWidth * 0.6} />
+                            ))}
+                      </div>
                     </div>
-                    <div className="flex gap-0.5 justify-center">
-                      {reveal
-                        ? p.cards.map((c, i) => <AnimatedCard key={i} card={c} width={cardWidth * 0.6} />)
-                        : Array.from({ length: p.cardCount }, (_, i) => (
-                            <AnimatedCardBack key={i} width={cardWidth * 0.6} />
-                          ))}
-                    </div>
-                  </div>
-                ))}
-            </div>
+                  ))}
+              </div>
+            </CpuAccordion>
 
             {/* Stock + discard ends */}
             <div className="py-3 bg-black/20 rounded-lg flex justify-center gap-8" data-tutorial="y-discard-area">
@@ -323,7 +332,7 @@ function YanivPageContent() {
                           {active && (
                             <span
                               data-testid={`pickup-badge-${i}`}
-                              className="absolute -top-1 -right-1 rounded bg-ds-info text-white text-[9px] font-bold px-1 pointer-events-none"
+                              className="absolute -top-1 -right-1 rounded bg-ds-info text-ds-text-on-accent text-[9px] font-bold px-1 pointer-events-none"
                             >
                               {t('pickup.badge')}
                             </span>
@@ -357,7 +366,11 @@ function YanivPageContent() {
                   data-testid="hand-total-badge"
                   title={t('handTotalHelp')}
                   className={`inline-block rounded px-1.5 font-bold ${
-                    human.handTotal <= 5 ? 'bg-ds-success text-white' : human.handTotal <= 10 ? 'bg-ds-warning/40' : ''
+                    human.handTotal <= 5
+                      ? 'bg-ds-success text-ds-text-on-accent'
+                      : human.handTotal <= 10
+                        ? 'bg-ds-warning/40'
+                        : ''
                   }`}
                 >
                   {human.handTotal}
@@ -397,11 +410,7 @@ function YanivPageContent() {
               </div>
             </div>
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
+            {isMobile && messageBox}
             {state.roundScoreHistory.length > 0 && (
               <section aria-label={t('label.roundHistory')} className="overflow-x-auto rounded-lg bg-ds-surface p-3">
                 <h2 className="mb-2 text-sm font-medium text-ds-text-primary">{t('label.roundHistory')}</h2>
@@ -465,7 +474,7 @@ function YanivPageContent() {
             ]}
           />
 
-          <GameFooter className={`${gameTheme.yaniv.footer} px-4 py-2.5`}>
+          <GameFooter className={`${gameTheme.yaniv.footer} px-4 py-2.5`} message={isMobile ? undefined : messageBox}>
             {discardWarning && (
               <div role="status" data-testid="discard-warning" className="mb-2 text-center text-xs text-ds-warning">
                 ⚠️ {discardWarning}
@@ -483,7 +492,7 @@ function YanivPageContent() {
                 onClick={handleDiscard}
                 disabled={loading || !isHumanTurn || !isDiscard || selected.length === 0}
                 title={discardWarning ?? undefined}
-                className="px-4 py-2 rounded-lg bg-ds-success text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                className="px-4 py-2 rounded-lg bg-ds-success text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                 data-testid="discard-button"
               >
                 {t('button.discard')}
@@ -494,8 +503,8 @@ function YanivPageContent() {
                 disabled={loading || !canYaniv}
                 className={
                   canYaniv
-                    ? 'px-4 py-2 rounded-lg bg-ds-warning text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm motion-safe:animate-pulse ring-2 ring-ds-success'
-                    : 'px-4 py-2 rounded-lg bg-ds-warning text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm'
+                    ? 'px-4 py-2 rounded-lg bg-ds-warning text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm motion-safe:animate-pulse ring-2 ring-ds-success'
+                    : 'px-4 py-2 rounded-lg bg-ds-warning text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm'
                 }
                 data-testid="yaniv-button"
               >
@@ -505,7 +514,7 @@ function YanivPageContent() {
                 type="button"
                 onClick={handleDrawStock}
                 disabled={loading || !isHumanTurn || !isDraw}
-                className="px-4 py-2 rounded-lg bg-ds-info text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                className="px-4 py-2 rounded-lg bg-ds-info text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                 data-testid="draw-stock-button"
               >
                 {t('button.drawStock')}

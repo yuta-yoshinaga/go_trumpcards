@@ -79,7 +79,28 @@ afterEach(() => {
   localStorage.clear();
 });
 
+afterEach(() => {
+  Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1024 });
+});
+
 describe('TwoTenJackPage', () => {
+  it('renders turn guidance in the footer on desktop', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1024 });
+    mockExec.mockResolvedValue({ ...playPhaseState, message: 'Footer guidance' });
+    renderWithProviders(<TwoTenJackPage />);
+    const message = await screen.findByText('Footer guidance');
+    expect(message.closest('[data-testid="game-footer-message"]')).toBeInTheDocument();
+  });
+
+  it('keeps turn guidance in the play area on mobile', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 375 });
+    mockExec.mockResolvedValue({ ...playPhaseState, message: 'Mobile guidance' });
+    renderWithProviders(<TwoTenJackPage />);
+    const message = await screen.findByText('Mobile guidance');
+    expect(message.closest('[role="status"]')).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+  });
+
   it('shows the declarer and their team during play and updates for a new round', async () => {
     mockExec.mockResolvedValue(makeTwoTenJackState({ phase: 3, declarerIdx: 0 }));
     renderWithProviders(<TwoTenJackPage />);
@@ -671,5 +692,20 @@ describe('TwoTenJackPage round announcement', () => {
     expect(live).toHaveAttribute('aria-live', 'polite');
     // 隣に置いただけの実装は属性の検査を通る。**中にあること**を見る。
     expect(live).toContainElement(await screen.findByTestId('tt-declare-prompt'));
+  });
+  it('fits the score table at large desktop widths', async () => {
+    const innerWidthSpy = vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(1280);
+    try {
+      const { container } = renderWithProviders(<TwoTenJackPage />);
+      await waitFor(() =>
+        expect(container.querySelector('[data-tutorial="tt-score-table"] table')).toBeInTheDocument(),
+      );
+      const table = container.querySelector('[data-tutorial="tt-score-table"] table');
+      expect(table?.className).toContain('table-fixed');
+      expect(table?.className).not.toContain('min-w-[');
+      expect(table?.querySelector('tbody td')?.getAttribute('title')).toBe('あなたのチーム (0,2)');
+    } finally {
+      innerWidthSpy.mockRestore();
+    }
   });
 });

@@ -12,6 +12,13 @@ vi.mock('../api/gameApi', () => ({
   actionLogApi: { indianpoker: vi.fn() },
 }));
 
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useCardDimensions: () => ({ cardWidth: 60, isMobile: window.innerWidth < 640 }),
+  useIsMobile: () => window.innerWidth < 640,
+  useBreakpoint: () => (window.innerWidth >= 1024 ? 'largeDesktop' : window.innerWidth >= 640 ? 'desktop' : 'mobile'),
+}));
+
 const mockExec = vi.mocked(indianpokerApi.exec);
 
 /** Helper: base human player */
@@ -144,6 +151,22 @@ beforeEach(() => {
 });
 
 describe('IndianPokerPage', () => {
+  it('uses tablet layout classes for CPU players', async () => {
+    const previousWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 800 });
+    mockExec.mockResolvedValue(bettingState);
+    const { container } = renderWithProviders(<IndianPokerPage />);
+
+    await screen.findByText('CPU 1');
+    const playerGrid = container.querySelector('[data-tutorial="ip-cpu-cards"]');
+    expect(playerGrid).not.toHaveClass('grid-cols-3');
+    const cpuPlayer = playerGrid?.firstElementChild;
+    expect(cpuPlayer).toHaveClass('mb-3');
+    expect(cpuPlayer).not.toHaveClass('text-center');
+    expect(cpuPlayer?.querySelector('.flex')).toHaveClass('flex-wrap', 'gap-1');
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: previousWidth });
+  });
+
   it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<IndianPokerPage />);
@@ -166,6 +189,22 @@ describe('IndianPokerPage', () => {
     mockExec.mockResolvedValue(bettingState);
     renderWithProviders(<IndianPokerPage />);
     await waitFor(() => expect(screen.getByText('ベッティング')).toBeInTheDocument());
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: /チェック/ }),
+    ).toBeInTheDocument();
+  });
+
+  it('keeps the hand in the footer and places settings and shortcuts in the play area', async () => {
+    mockExec.mockResolvedValue(bettingState);
+    const { container } = renderWithProviders(<IndianPokerPage />);
+    const footer = await screen.findByTestId('game-footer-content');
+    const playArea = container.querySelector('.flex-1.overflow-y-auto.pt-4');
+
+    expect(playArea).not.toBeNull();
+    expect(within(footer).getByText(/あなたのカード|自分のカード|あなたの手札/)).toBeInTheDocument();
+    expect(within(footer).queryByTestId('indian-poker-kbd-shortcuts')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('indian-poker-kbd-shortcuts')).toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByLabelText(/アンティ額|アンティ/)).toBeInTheDocument();
   });
 
   it('shows "アンティ" when phase is ANTE', async () => {
@@ -268,6 +307,18 @@ describe('IndianPokerPage', () => {
     expect(screen.getAllByText(/タイト/).length).toBeGreaterThanOrEqual(1);
   });
 
+  it('lays out all opponent cards in one desktop row', async () => {
+    const previousWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue(bettingState);
+    const { container } = renderWithProviders(<IndianPokerPage />);
+    await screen.findByAltText('CPU 1のカード: ♠ 10');
+    expect(container.querySelector('[data-tutorial="ip-cpu-cards"]')).toHaveClass('grid-cols-3');
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: previousWidth });
+    window.dispatchEvent(new Event('resize'));
+  });
+
   it('shows CPU card face-up during betting', async () => {
     mockExec.mockResolvedValue(bettingState);
     renderWithProviders(<IndianPokerPage />);
@@ -343,7 +394,7 @@ describe('IndianPokerPage', () => {
     mockExec.mockResolvedValue(bettingWithBetState);
     renderWithProviders(<IndianPokerPage />);
     await waitFor(() => expect(screen.getByText('CPU行動:')).toBeInTheDocument());
-    expect(screen.getByText(/Player 1: ベット/)).toBeInTheDocument();
+    expect(screen.getByText(/CPU 1: ベット/)).toBeInTheDocument();
   });
 
   it('does not show CPU actions log when cpuActions is empty', async () => {

@@ -267,9 +267,11 @@ function CometPageContent() {
                   )}
                 </div>
                 {/* **スートは問わない。** 数字だけで昇ることを毎回書く。 */}
-                <div className="text-ds-text-primary text-sm" data-testid="comet-need">
-                  {state.need > 0 ? t('need', { rank: state.need }) : t('needAny')}
-                </div>
+                {state.need > 0 && (
+                  <div className="text-ds-text-primary text-sm" data-testid="comet-need">
+                    {t('need', { rank: state.need })}
+                  </div>
+                )}
               </section>
 
               <div data-tutorial="comet-scores">

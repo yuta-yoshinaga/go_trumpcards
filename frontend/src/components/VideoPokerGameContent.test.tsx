@@ -130,6 +130,20 @@ beforeEach(() => {
 });
 
 describe('VideoPokerGameContent', () => {
+  it('uses a constrained mobile payout table with wrapping hand names', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderContent();
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    await waitFor(() => expect(screen.getByRole('table', { name: /配当表|payout table/i })).toBeInTheDocument());
+    const table = screen.getByRole('table', { name: /配当表|payout table/i });
+    expect(table).toHaveClass('w-full', 'table-fixed', 'sm:w-auto', 'sm:table-auto');
+    expect(within(table).getByRole('rowheader', { name: /ロイヤルフラッシュ|royal flush/i })).toHaveClass(
+      'whitespace-normal',
+      'sm:whitespace-nowrap',
+    );
+  });
+
   it('includes the card name and keeps position, hold, wild, and auto-selection details in card button names', async () => {
     const wildHand: VideoPokerResponse = {
       ...drawPhaseState,

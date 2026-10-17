@@ -1,5 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardFan } from '../components/CardFan';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -11,7 +13,7 @@ import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useFiveHundredGame } from '../hooks/useFiveHundredGame';
@@ -123,7 +125,8 @@ function FiveHundredPageContent() {
     reset,
   } = useFiveHundredGame();
   useTutorialMessageParams({ targetScore: state ? state.config.targetScore : config.targetScore });
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -186,6 +189,9 @@ function FiveHundredPageContent() {
   const isTrickEnd = state.phase === FiveHundredPhase.TRICK_END;
   const isRoundEnd = state.phase === FiveHundredPhase.ROUND_END;
   const isGameEnd = state.phase === FiveHundredPhase.GAME_END || state.gameEndFlag;
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
 
   const human = state.players[0];
   const humanTeam = human.team;
@@ -275,35 +281,37 @@ function FiveHundredPageContent() {
             </div>
 
             {/* CPU players */}
-            <div className="flex justify-center gap-6 flex-wrap">
-              {state.players
-                .filter((p) => !p.isHuman)
-                .map((p) => (
-                  <fieldset
-                    key={p.id}
-                    className="text-center border-0 p-0 min-w-0"
-                    aria-label={t('cpuHandAriaLabel', { player: tc('player.cpu', { id: p.id }), count: p.cardCount })}
-                  >
-                    <div className="text-xs text-ds-text-muted mb-1 flex items-center justify-center gap-1">
-                      <span>{tc('player.cpu', { id: p.id })}</span>
-                      <span>
-                        ({t('teamShort', { team: p.team })}) {p.trickCount}🂠
-                      </span>
-                      {p.isDeclarer && <span className="font-bold text-ds-warning">★</span>}
-                      {p.passed ? (
-                        <span className="opacity-60">{t('passed')}</span>
-                      ) : (
-                        p.bid && <span className="ml-1">{t('playerBid', { bid: formatBid(p.bid) })}</span>
-                      )}
-                    </div>
-                    <div className="flex gap-0.5 justify-center" aria-hidden="true">
-                      {Array.from({ length: Math.min(p.cardCount, 13) }, (_, i) => (
-                        <AnimatedCardBack key={i} width={cardWidth * 0.4} />
-                      ))}
-                    </div>
-                  </fieldset>
-                ))}
-            </div>
+            <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+              <div className="flex justify-center gap-6 flex-wrap sm:flex-nowrap">
+                {state.players
+                  .filter((p) => !p.isHuman)
+                  .map((p) => (
+                    <fieldset
+                      key={p.id}
+                      className="text-center border-0 p-0 min-w-0"
+                      aria-label={t('cpuHandAriaLabel', { player: tc('player.cpu', { id: p.id }), count: p.cardCount })}
+                    >
+                      <div className="text-xs text-ds-text-muted mb-1 flex items-center justify-center gap-1">
+                        <span>{tc('player.cpu', { id: p.id })}</span>
+                        <span>
+                          ({t('teamShort', { team: p.team })}) {p.trickCount}🂠
+                        </span>
+                        {p.isDeclarer && <span className="font-bold text-ds-warning">★</span>}
+                        {p.passed ? (
+                          <span className="opacity-60">{t('passed')}</span>
+                        ) : (
+                          p.bid && <span className="ml-1">{t('playerBid', { bid: formatBid(p.bid) })}</span>
+                        )}
+                      </div>
+                      <div className="flex gap-0.5 justify-center" aria-hidden="true">
+                        {Array.from({ length: Math.min(p.cardCount, 13) }, (_, i) => (
+                          <AnimatedCardBack key={i} width={cardWidth * 0.4} />
+                        ))}
+                      </div>
+                    </fieldset>
+                  ))}
+              </div>
+            </CpuAccordion>
 
             {/* Current trick */}
             <div className="py-3 bg-black/20 rounded-lg" data-tutorial="fh-trick">
@@ -372,8 +380,8 @@ function FiveHundredPageContent() {
                 {tc('player.you')} ({t('teamShort', { team: human.team })}) · {human.trickCount}🂠
                 {human.isDeclarer && <span className="font-bold text-ds-warning"> ★</span>}
               </div>
-              <div className="flex flex-wrap justify-center gap-2">
-                {human.cards.map((c, i) => {
+              {(() => {
+                const handCards = human.cards.map((c, i) => {
                   const selected = selectedCardIndices.includes(i);
                   const selectable = isHumanPlayTurn || isHumanExchange;
                   const playable = !isHumanPlayTurn || state.validPlayIndices.includes(i);
@@ -404,8 +412,17 @@ function FiveHundredPageContent() {
                       <AnimatedCard card={c} width={cardWidth} />
                     </button>
                   );
-                })}
-              </div>
+                });
+                return isLargeDesktop ? (
+                  <CardFan itemWidth={cardWidth} className="large-desktop-hand-fan w-full" data-testid="fh-hand-cards">
+                    {handCards}
+                  </CardFan>
+                ) : (
+                  <div className="flex flex-wrap justify-center gap-2" data-testid="fh-hand-cards">
+                    {handCards}
+                  </div>
+                );
+              })()}
               <span id="fh-legal-play-reason" className="sr-only">
                 {t('legalPlayReason')}
               </span>
@@ -414,11 +431,7 @@ function FiveHundredPageContent() {
               </span>
             </div>
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
+            {isMobile && messageBox}
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
           </div>
 
@@ -452,7 +465,10 @@ function FiveHundredPageContent() {
             ]}
           />
 
-          <GameFooter className={`${gameTheme.fivehundred.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.fivehundred.footer} px-4 py-2.5`}
+            message={isMobile ? undefined : messageBox}
+          >
             <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="fh-actions">
               {isHumanBidTurn && (
                 <>
@@ -506,10 +522,10 @@ function FiveHundredPageContent() {
                         tricks: bidTricks,
                         value: fivehundredBidValue(bidTricks, s.id),
                       })}
-                      className={`flex flex-col items-center rounded-lg bg-ds-info px-3 py-1.5 text-sm text-white disabled:opacity-40 ${bidIsUnder(fivehundredBidValue(bidTricks, s.id)) ? 'opacity-40 cursor-not-allowed' : ''}`}
+                      className={`flex flex-col items-center rounded-lg bg-ds-info px-3 py-1.5 text-sm text-ds-text-on-accent disabled:opacity-40 ${bidIsUnder(fivehundredBidValue(bidTricks, s.id)) ? 'opacity-40 cursor-not-allowed' : ''}`}
                     >
                       <span aria-hidden="true">{s.glyph}</span>
-                      <span aria-hidden="true" className="text-[10px] text-white">
+                      <span aria-hidden="true" className="text-[10px]">
                         {t('bidValueLabel', { value: fivehundredBidValue(bidTricks, s.id) })}
                       </span>
                     </button>
@@ -524,10 +540,10 @@ function FiveHundredPageContent() {
                     aria-disabled={bidIsUnder(fivehundredBidValue(bidTricks, -1))}
                     aria-describedby={bidIsUnder(fivehundredBidValue(bidTricks, -1)) ? 'fh-underbid-reason' : undefined}
                     data-testid="fh-bid-nt"
-                    className={`flex flex-col items-center rounded-lg bg-ds-info px-3 py-1.5 text-sm text-white disabled:opacity-40 ${bidIsUnder(fivehundredBidValue(bidTricks, -1)) ? 'opacity-40 cursor-not-allowed' : ''}`}
+                    className={`flex flex-col items-center rounded-lg bg-ds-info px-3 py-1.5 text-sm text-ds-text-on-accent disabled:opacity-40 ${bidIsUnder(fivehundredBidValue(bidTricks, -1)) ? 'opacity-40 cursor-not-allowed' : ''}`}
                   >
                     <span>NT</span>
-                    <span className="text-[10px] text-white">
+                    <span className="text-[10px]">
                       {t('bidValueLabel', { value: fivehundredBidValue(bidTricks, -1) })}
                     </span>
                   </button>
@@ -561,7 +577,7 @@ function FiveHundredPageContent() {
                     type="button"
                     onClick={pass}
                     disabled={loading}
-                    className="px-4 py-2 rounded-lg bg-ds-warning text-white text-sm disabled:opacity-40"
+                    className="px-4 py-2 rounded-lg bg-ds-warning text-ds-text-on-accent text-sm disabled:opacity-40"
                     data-testid="pass-button"
                   >
                     {t('passButton')}
@@ -574,7 +590,7 @@ function FiveHundredPageContent() {
                   type="button"
                   onClick={handleExchange}
                   disabled={loading || selectedCardIndices.length !== 3}
-                  className="px-4 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
+                  className="px-4 py-2 rounded-lg bg-ds-info text-ds-text-on-accent text-sm disabled:opacity-40"
                   data-testid="exchange-button"
                 >
                   {t('exchangeButton', { count: selectedCardIndices.length })}
@@ -593,7 +609,7 @@ function FiveHundredPageContent() {
                         disabled={loading}
                         aria-label={t('nominateSuitAria', { suit: t(`suitName.${s.nameKey}`) })}
                         data-testid={`fh-nominate-suit-${s.id}`}
-                        className="px-3 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
+                        className="px-3 py-2 rounded-lg bg-ds-info text-ds-text-on-accent text-sm disabled:opacity-40"
                       >
                         <span aria-hidden="true">{s.glyph}</span>
                       </button>
@@ -604,7 +620,7 @@ function FiveHundredPageContent() {
                     type="button"
                     onClick={() => handlePlay()}
                     disabled={loading || selectedIdx === undefined}
-                    className="px-4 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
+                    className="px-4 py-2 rounded-lg bg-ds-info text-ds-text-on-accent text-sm disabled:opacity-40"
                     data-testid="play-button"
                   >
                     {t('playButton')}
@@ -616,7 +632,7 @@ function FiveHundredPageContent() {
                   type="button"
                   onClick={nextTrick}
                   disabled={loading}
-                  className="px-4 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
+                  className="px-4 py-2 rounded-lg bg-ds-info text-ds-text-on-accent text-sm disabled:opacity-40"
                   data-testid="next-button"
                 >
                   {t('nextTrickButton')}
@@ -658,7 +674,7 @@ function FiveHundredPageContent() {
                   type="button"
                   onClick={nextRound}
                   disabled={loading}
-                  className="px-4 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
+                  className="px-4 py-2 rounded-lg bg-ds-info text-ds-text-on-accent text-sm disabled:opacity-40"
                   data-testid="nextround-button"
                 >
                   {t('nextRoundButton')}

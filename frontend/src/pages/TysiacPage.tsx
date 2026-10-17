@@ -413,7 +413,6 @@ function TysiacPageContent() {
               )}
               {isBidPhase && (
                 <div className="mb-1 text-center" data-testid="tysiac-bid-prompt">
-                  <div className="text-sm text-ds-accent font-semibold">{t('bidPhase')}</div>
                   <div className="text-sm text-ds-text-primary font-semibold" data-testid="tysiac-current-bid">
                     {t('currentBid', { points: state.currentBid })}
                   </div>

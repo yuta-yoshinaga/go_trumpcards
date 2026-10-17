@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ganjifaApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -11,6 +11,16 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockExec = vi.mocked(ganjifaApi.exec);
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const original = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...original,
+    useCardDimensions: () => ({ ...original.useCardDimensions(), isMobile: mobileState.isMobile }),
+    useIsMobile: () => mobileState.isMobile,
+  };
+});
 
 const playPhaseState = makeGanjifaState();
 const cpuTurnState = makeGanjifaState({ isHumanTurn: false, currentPlayerIdx: 1, playableIndices: [] });
@@ -36,11 +46,48 @@ const gameEndState = makeGanjifaState({
 });
 
 beforeEach(() => {
+  mobileState.isMobile = true;
   mockExec.mockReset();
   mockExec.mockResolvedValue(playPhaseState);
 });
 
 describe('GanjifaPage', () => {
+  it('uses the taller mobile footer cap', async () => {
+    renderWithProviders(<GanjifaPage />);
+    const content = await screen.findByTestId('game-footer-content');
+    expect(content.closest('footer')?.className).toContain('max-h-[60vh]');
+  });
+
+  it('stacks mobile hand rows with negative margins', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      window.dispatchEvent(new Event('resize'));
+      const source = playPhaseState;
+      const human = source.players.find((player) => player.isHuman);
+      if (!human) throw new Error('Expected the GanjifaPage human player');
+      const cards = Array.from({ length: 17 }, (_, index) => human.cards[index % human.cards.length]);
+      mockExec.mockResolvedValue({
+        ...playPhaseState,
+        players: playPhaseState.players.map((player) =>
+          player.isHuman ? { ...player, cards, cardCount: cards.length } : player,
+        ),
+      });
+      renderWithProviders(<GanjifaPage />);
+      const content = await screen.findByTestId('game-footer-content');
+      const hand = content.querySelector<HTMLElement>('[data-tutorial="ganjifa-player-hand"]');
+      expect(hand).not.toBeNull();
+      if (!hand) throw new Error('Expected the GanjifaPage player hand');
+      await waitFor(() => expect(hand.querySelectorAll('[data-testid="hand-row"]').length).toBeGreaterThanOrEqual(2));
+      for (const row of Array.from(hand.querySelectorAll<HTMLElement>('[data-testid="hand-row"]')).slice(1)) {
+        expect(row.style.marginTop).toMatch(/^-/);
+      }
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<GanjifaPage />);
@@ -61,6 +108,25 @@ describe('GanjifaPage', () => {
     expect(await screen.findByRole('button', { name: '棋譜を見る' })).toBeInTheDocument();
   });
 
+  it('keeps only the hand in the footer and places live hints and reset in the play area', async () => {
+    renderWithProviders(<GanjifaPage />);
+
+    const footer = await screen.findByTestId('game-footer-content');
+    const playArea = document.querySelector<HTMLElement>('[data-tutorial="ganjifa-info"]')?.closest('div.flex-1');
+    if (!playArea) throw new Error('Ganjifa play area not found');
+    const hintLive = screen.getByTestId('ganjifa-hint-live');
+    const info = document.querySelector<HTMLElement>('[data-tutorial="ganjifa-info"]');
+    if (!info) throw new Error('Ganjifa info not found');
+    const reset = document.querySelector<HTMLElement>('[data-tutorial="ganjifa-reset-button"]');
+
+    expect(footer).toContainElement(document.querySelector<HTMLElement>('[data-tutorial="ganjifa-player-hand"]'));
+    expect(footer).not.toContainElement(hintLive);
+    expect(footer).not.toContainElement(reset);
+    expect(playArea).toContainElement(hintLive);
+    expect(playArea).toContainElement(reset);
+    expect(info.compareDocumentPosition(hintLive) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   // The rank direction is the only thing a player cannot infer from the cards,
   // so the readout has to change with the trump group, not just exist.
   it('states that higher numbers win when trump is a strong suit', async () => {
@@ -69,6 +135,7 @@ describe('GanjifaPage', () => {
     const readout = await screen.findByTestId('ganjifa-trump-group');
     expect(readout).toHaveTextContent('数字が大きいほど強い');
     expect(readout).toHaveClass('text-ds-info');
+    expect(readout).toBeVisible();
   });
 
   it('states that lower numbers win when trump is a weak suit', async () => {
@@ -77,6 +144,7 @@ describe('GanjifaPage', () => {
     const readout = await screen.findByTestId('ganjifa-trump-group');
     expect(readout).toHaveTextContent('数字が小さいほど強い');
     expect(readout).toHaveClass('text-ds-warning');
+    expect(readout).toBeVisible();
   });
 
   it('identifies each hand card suit and its rank direction in the accessible name', async () => {
@@ -117,6 +185,7 @@ describe('GanjifaPage', () => {
     expect(readout).toHaveAttribute('role', 'status');
     expect(readout).toHaveAttribute('aria-live', 'polite');
     expect(readout).toHaveTextContent('数字が大きいほど強い');
+    fireEvent.click(screen.getByText('ルール'));
 
     // **同じ要素の中身が入れ替わること。**領域ごと差し替わると変化として扱われず、
     // 読み上げられないことがある。
@@ -148,13 +217,64 @@ describe('GanjifaPage', () => {
 
   it('explains that trump is chosen automatically from the dealer hand', async () => {
     renderWithProviders(<GanjifaPage />);
-    expect(await screen.findByTestId('ganjifa-trump-auto-note')).toHaveTextContent(
+    const rules = await screen.findByText('ルール');
+    const note = screen.getByTestId('ganjifa-trump-auto-note');
+    expect(rules.closest('details')).not.toHaveAttribute('open');
+    expect(note).not.toBeVisible();
+    fireEvent.click(rules);
+    expect(note).toHaveTextContent(
       '切り札はディーラーの手札で最も多いスートから自動で決まります（選択操作はありません）',
     );
   });
 
+  it('keeps the trump strength readout visible outside collapsed rules', async () => {
+    renderWithProviders(<GanjifaPage />);
+    const rules = await screen.findByText('ルール');
+    const details = rules.closest('details');
+    const readout = screen.getByTestId('ganjifa-trump-group');
+
+    expect(details).not.toHaveAttribute('open');
+    expect(readout).toBeVisible();
+    expect(details).not.toContainElement(readout);
+  });
+
+  it('keeps dealer and trump strength in the mobile information row', async () => {
+    renderWithProviders(<GanjifaPage />);
+    const info = await screen.findByTestId('ganjifa-trump-group').then((readout) => readout.parentElement);
+
+    expect(info).toHaveAttribute('data-tutorial', 'ganjifa-info');
+    expect(info).toContainElement(screen.getByTestId('ganjifa-dealer'));
+    expect(info).toContainElement(screen.getByText('ルール'));
+    expect(info).toHaveClass('text-xs', 'sm:text-base', 'gap-x-2', 'gap-y-0');
+  });
+
+  it('keeps rules and player details open on desktop', async () => {
+    mobileState.isMobile = false;
+    renderWithProviders(<GanjifaPage />);
+    const rules = await screen.findByText('ルール');
+    expect(rules.closest('details')).toHaveAttribute('open');
+    expect(screen.getByTestId('ganjifa-trump-group')).toBeVisible();
+    const cpuDetails = screen.getByTestId('cpu-accordion');
+    expect(cpuDetails).toHaveAttribute('open');
+    mobileState.isMobile = true;
+  });
+
+  it('collapses CPU player counts on mobile while keeping scores visible', async () => {
+    renderWithProviders(<GanjifaPage />);
+    const cpuDetails = await screen.findByTestId('cpu-accordion');
+    expect(cpuDetails).not.toHaveAttribute('open');
+    expect(within(cpuDetails).getByText(/CPU 1: 32枚/)).not.toBeVisible();
+    const humanDetails = screen.getByTestId('ganjifa-human-player');
+    expect(humanDetails).toBeVisible();
+    expect(humanDetails).toHaveTextContent('あなた: 32枚 | 0トリック');
+    expect(cpuDetails).not.toContainElement(humanDetails);
+    expect(screen.getByTestId('ganjifa-mobile-scores')).toHaveTextContent('得点 あなた 0 · CPU 1 0 · CPU 2 0');
+  });
+
   it('plays the selected card', async () => {
     renderWithProviders(<GanjifaPage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: '出す' })).toBeInTheDocument();
     const playButton = await screen.findByRole('button', { name: '出す' });
     // The play button stays inert until exactly one card is selected.
     expect(playButton).toBeDisabled();

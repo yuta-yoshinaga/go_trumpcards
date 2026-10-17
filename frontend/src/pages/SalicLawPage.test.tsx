@@ -73,6 +73,25 @@ const gameOverState: SalicLawResponse = {
 };
 
 describe('SalicLawPage', () => {
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue({ ...playingState, message: 'Your turn notice' });
+    renderWithProviders(<SalicLawPage />);
+
+    expect(await screen.findByTestId('game-footer-message')).toHaveTextContent('Your turn notice');
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue({ ...playingState, message: 'Mobile notice' });
+    renderWithProviders(<SalicLawPage />);
+    expect(await screen.findByText('Mobile notice')).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+    window.dispatchEvent(new Event('resize'));
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.removeItem('cli-mode-saliclaw');

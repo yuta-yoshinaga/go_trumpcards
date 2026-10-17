@@ -1,6 +1,7 @@
-import { render, screen } from '@testing-library/react';
+import { cleanup, render, screen } from '@testing-library/react';
 import i18n from 'i18next';
 import { describe, expect, it } from 'vitest';
+import jaCommon from '../i18n/locales/ja/common.json';
 import { GameMessageBox } from './GameMessageBox';
 
 describe('GameMessageBox', () => {
@@ -17,6 +18,34 @@ describe('GameMessageBox', () => {
   it('renders message text when message is provided', () => {
     render(<GameMessageBox message="テスト結果" />);
     expect(screen.getByText('テスト結果')).toBeInTheDocument();
+  });
+
+  it.each(['playing', 'alaska.playing'])('hides the playing status box for %s', (messageCode) => {
+    const { container } = render(<GameMessageBox message="プレイ中" messageCode={messageCode} />);
+    expect(container.querySelector('.glass-panel')).not.toBeInTheDocument();
+  });
+
+  it('keeps the always-visible live region empty for the playing status', () => {
+    const { container } = render(
+      <GameMessageBox message="プレイ中" messageCode="alaska.playing" alwaysVisible bareWhenEmpty />,
+    );
+    const region = screen.getByRole('status');
+    expect(region).toBeInTheDocument();
+    expect(region).toBeEmptyDOMElement();
+    expect(container.querySelector('.glass-panel')).not.toBeInTheDocument();
+  });
+
+  it.each([
+    { message: 'fallback', messageCode: 'blackjack.result.win' },
+    { message: 'カスタムメッセージ', messageCode: undefined },
+  ])('continues to show non-playing messages %#', ({ message, messageCode }) => {
+    render(<GameMessageBox message={message} messageCode={messageCode} />);
+    expect(screen.getByText(messageCode ? 'あなたの勝ちです。' : message)).toBeInTheDocument();
+  });
+
+  it('keeps instructional playing messages visible', () => {
+    render(<GameMessageBox message="カードを移動してください" messageCode="cruel.playing" />);
+    expect(screen.getByText('同スートの降順でカードを並べ、Aから順に組札へ送りましょう')).toBeInTheDocument();
   });
 
   it('has role="status" and aria-live="polite" by default', () => {
@@ -158,5 +187,24 @@ describe('GameMessageBox', () => {
       expect(box.textContent).not.toContain('農民');
     }
     await i18n.changeLanguage('ja');
+  });
+
+  // Guards the hard-coded exclusion list against drift: a new *.playing code whose text is an
+  // instruction (not the bare status プレイ中) must stay visible, so it has to be listed there.
+  it('hides exactly the playing codes whose ja text is the bare status プレイ中', () => {
+    const flatten = (node: unknown, prefix: string): [string, string][] =>
+      typeof node === 'string'
+        ? [[prefix, node]]
+        : Object.entries(node as Record<string, unknown>).flatMap(([k, v]) =>
+            flatten(v, prefix ? `${prefix}.${k}` : k),
+          );
+    const playingCodes = flatten(jaCommon.messageCode, '').filter(([code]) => /^(?:[a-z0-9]+\.)?playing$/.test(code));
+    expect(playingCodes.length).toBeGreaterThan(0);
+    for (const [code, text] of playingCodes) {
+      render(<GameMessageBox message={text} messageCode={code} testId="box" />);
+      if (text === 'プレイ中') expect(screen.queryByTestId('box'), code).toBeNull();
+      else expect(screen.getByTestId('box'), code).toHaveTextContent(text);
+      cleanup();
+    }
   });
 });

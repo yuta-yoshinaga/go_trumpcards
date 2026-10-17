@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import type { oldmaidApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { ReplaySpeedSettingsPanel } from '../components/common/ReplaySpeedSettingsPanel';
@@ -257,57 +258,60 @@ function OldMaidPageContent() {
             )}
 
             {/* CPU row */}
-            <div className="flex gap-2 flex-wrap mb-2 justify-center" data-tutorial="om-cpu-area">
-              {cpuPlayers.map((player) => {
-                // Surface a transient bubble on the CPU that just drew so the
-                // player can visually track who acted without reading the log.
-                // See issue #1490.
-                const isDrawer =
-                  !state.gameEndFlag && state.hasDrawn && state.lastDrawPlayerIdx === player.id && !player.isHuman;
-                const bubble = isDrawer
-                  ? {
-                      message:
-                        state.lastDiscardedPairs > 0
-                          ? t('bubble.drewAndPaired', {
-                              from: findPlayerName(state.players, state.lastDrawFromIdx),
-                            })
-                          : t('bubble.drewFrom', {
-                              from: findPlayerName(state.players, state.lastDrawFromIdx),
-                            }),
-                      // Prepend the monotonic drawHistory length so identical
-                      // back-to-back draws (same player, same target, same
-                      // card bouncing back, e.g. Joker) still re-trigger the
-                      // animation. Go Fish gets this for free via turnNumber.
-                      triggerKey: `${state.drawHistory?.length ?? 0}-${state.lastDrawPlayerIdx}-${state.lastDrawFromIdx}-${state.lastDrawCard?.design ?? 'x'}-${state.lastDrawCard?.value ?? 0}`,
-                    }
-                  : undefined;
-                return (
-                  <OldMaidPlayerArea
-                    key={player.id}
-                    player={player}
-                    isTarget={state.nextDrawTargetIdx === player.id}
-                    isHumanTurn={isHumanTurn}
-                    gameEndFlag={state.gameEndFlag}
-                    loading={loading}
-                    isSuspect={suspectPins.has(player.id)}
-                    compactNonTarget={isMobile}
-                    onToggleSuspect={() =>
-                      setSuspectPins((prev) => {
-                        const next = new Set(prev);
-                        if (next.has(player.id)) {
-                          next.delete(player.id);
-                        } else {
-                          next.add(player.id);
-                        }
-                        return next;
-                      })
-                    }
-                    onDraw={(drawIdx) => gameExec('draw', drawIdx)}
-                    bubble={bubble}
-                  />
-                );
-              })}
-            </div>
+            <CpuAccordion playerCount={cpuPlayers.length} dataTutorial="om-cpu-area">
+              <div className="flex gap-2 flex-wrap mb-2 justify-center sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:items-start">
+                {cpuPlayers.map((player) => {
+                  // Surface a transient bubble on the CPU that just drew so the
+                  // player can visually track who acted without reading the log.
+                  // See issue #1490.
+                  const isDrawer =
+                    !state.gameEndFlag && state.hasDrawn && state.lastDrawPlayerIdx === player.id && !player.isHuman;
+                  const bubble = isDrawer
+                    ? {
+                        message:
+                          state.lastDiscardedPairs > 0
+                            ? t('bubble.drewAndPaired', {
+                                from: findPlayerName(state.players, state.lastDrawFromIdx),
+                              })
+                            : t('bubble.drewFrom', {
+                                from: findPlayerName(state.players, state.lastDrawFromIdx),
+                              }),
+                        // Prepend the monotonic drawHistory length so identical
+                        // back-to-back draws (same player, same target, same
+                        // card bouncing back, e.g. Joker) still re-trigger the
+                        // animation. Go Fish gets this for free via turnNumber.
+                        triggerKey: `${state.drawHistory?.length ?? 0}-${state.lastDrawPlayerIdx}-${state.lastDrawFromIdx}-${state.lastDrawCard?.design ?? 'x'}-${state.lastDrawCard?.value ?? 0}`,
+                      }
+                    : undefined;
+                  return (
+                    <OldMaidPlayerArea
+                      key={player.id}
+                      player={player}
+                      isTarget={state.nextDrawTargetIdx === player.id}
+                      isHumanTurn={isHumanTurn}
+                      gameEndFlag={state.gameEndFlag}
+                      loading={loading}
+                      isSuspect={suspectPins.has(player.id)}
+                      compactNonTarget={isMobile}
+                      compactCpuCards={!isMobile}
+                      onToggleSuspect={() =>
+                        setSuspectPins((prev) => {
+                          const next = new Set(prev);
+                          if (next.has(player.id)) {
+                            next.delete(player.id);
+                          } else {
+                            next.add(player.id);
+                          }
+                          return next;
+                        })
+                      }
+                      onDraw={(drawIdx) => gameExec('draw', drawIdx)}
+                      bubble={bubble}
+                    />
+                  );
+                })}
+              </div>
+            </CpuAccordion>
 
             {/* Discarded Area */}
             <OldMaidDiscardedArea cards={state.lastDiscardedCards} />

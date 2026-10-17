@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { crazyfourpokerApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
@@ -97,15 +97,55 @@ beforeEach(() => {
 });
 
 describe('CrazyFourPokerPage', () => {
+  it('renders Japanese rank names in both payout tables and keeps the four aces label', async () => {
+    mockApi.mockResolvedValue(base);
+    renderWithProviders(<CrazyFourPokerPage />);
+
+    const superBonus = await screen.findByTestId('c4p-superbonus-payouts');
+    const queensUp = screen.getByTestId('c4p-queensup-payouts');
+    expect(within(superBonus).getByText('4 枚のエース')).toBeInTheDocument();
+    expect(within(superBonus).getByText('フォーカード')).toBeInTheDocument();
+    expect(within(superBonus).getByText('フラッシュ')).toBeInTheDocument();
+    expect(within(queensUp).getByText('フォーカード')).toBeInTheDocument();
+    expect(within(queensUp).getByText('ワンペア')).toBeInTheDocument();
+    expect(screen.queryByText('Four of a Kind')).not.toBeInTheDocument();
+    expect(screen.queryByText('Flush')).not.toBeInTheDocument();
+  });
+  it('keeps the player hand and wager information in the play area and decision controls in footer actions', async () => {
+    mockApi.mockResolvedValue(dealt());
+    renderWithProviders(<CrazyFourPokerPage />);
+
+    const footer = await screen.findByTestId('game-footer-content');
+    const playArea = screen.getByTestId('card-area');
+
+    const actions = screen.getByTestId('game-footer-actions');
+
+    expect(within(actions).getByTestId('c4p-play-1')).toBeInTheDocument();
+    expect(within(actions).getByRole('button', { name: '降りる' })).toBeInTheDocument();
+    expect(within(playArea).queryByTestId('c4p-play-1')).not.toBeInTheDocument();
+    expect(within(footer).getByTestId('c4p-multiplier-notice')).toBeInTheDocument();
+    expect(within(footer).queryByTestId('c4p-player-hand')).not.toBeInTheDocument();
+    expect(within(playArea).getByTestId('c4p-player-hand')).toBeInTheDocument();
+    expect(within(playArea).getByTestId('c4p-player-rank')).toBeInTheDocument();
+    expect(
+      within(playArea.querySelector('[data-tutorial="c4p-hand"]') as HTMLElement).getByTestId('c4p-player-rank'),
+    ).toBeInTheDocument();
+  });
+
   // **賭ける前に見えなければ意味がない** (#5775)。倍率はサーバの配当表そのまま。
   it('shows the Queens Up payout table while betting', async () => {
     mockApi.mockResolvedValue(base);
     renderWithProviders(<CrazyFourPokerPage />);
 
-    const table = await screen.findByTestId('c4p-queensup-payouts');
-    expect(table).toHaveTextContent('Four of a Kind');
+    const footer = await screen.findByTestId('game-footer-content');
+    const playArea = screen.getByTestId('card-area');
+    const table = within(playArea).getByTestId('c4p-queensup-payouts');
+    expect(within(footer).queryByTestId('c4p-queensup-payouts')).not.toBeInTheDocument();
+    expect(within(playArea).getByTestId('c4p-superbonus-payouts')).toBeInTheDocument();
+    expect(within(playArea).getByTestId('c4p-wager-summary')).toBeInTheDocument();
+    expect(table).toHaveTextContent('フォーカード');
     expect(table).toHaveTextContent('50倍');
-    expect(table).toHaveTextContent('Pair');
+    expect(table).toHaveTextContent('ワンペア');
     expect(table).toHaveTextContent('1倍');
   });
 
@@ -126,6 +166,7 @@ describe('CrazyFourPokerPage', () => {
     mockApi.mockResolvedValue(base);
     renderWithProviders(<CrazyFourPokerPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '配る' })).toBeInTheDocument());
+    expect(within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '配る' })).toBeInTheDocument();
   });
 
   it('賭け入力に応じて必須分と任意分の投入合計を更新する', async () => {

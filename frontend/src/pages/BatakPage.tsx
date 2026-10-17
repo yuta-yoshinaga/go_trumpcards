@@ -19,7 +19,7 @@ import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { BATAK_CPU_DIFFICULTY_OPTIONS, BATAK_MAX_ROUNDS_OPTIONS, useBatakGame } from '../hooks/useBatakGame';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -29,6 +29,7 @@ import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
+import { scoreTableClass } from '../styles/scoreTableStyles';
 import type { BatakResponse } from '../types/card';
 import { BatakPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
@@ -142,6 +143,7 @@ function BatakScoreBreakdownLines({
 export const BatakPage = withTutorial(BatakPageContent, 'batak', BATAK_TUTORIAL_STEPS);
 /** Inner content of the Batak page, wrapped by TutorialProvider. */
 function BatakPageContent() {
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('batak');
   const {
@@ -249,6 +251,10 @@ function BatakPageContent() {
     return reason ? t(reasonKeys[reason]) : undefined;
   };
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.batak')}
@@ -298,12 +304,41 @@ function BatakPageContent() {
           />
 
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            <div className="text-ds-text-primary text-center mb-2">
-              <span className="mr-4">{t('round', { n: state.roundNumber, max: state.config.maxRounds })}</span>
-              <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
-              <span className="mr-4">{state.spadesBroken ? t('spadesBroken') : t('spadesNotBroken')}</span>
+            {isHumanBidTurn && (
+              <div className="mb-2 flex flex-col items-center gap-1">
+                <span className="text-ds-text-primary" data-testid="batak-high-bid">
+                  {t('highBid', { n: state.highBid })}
+                </span>
+                {minLegalBid > 0 && (
+                  <fieldset
+                    className="grid max-w-[16rem] grid-cols-7 gap-1 border-0 p-0"
+                    aria-label={t('bidSelectLabel')}
+                  >
+                    {Array.from({ length: 13 - minLegalBid + 1 }, (_, i) => minLegalBid + i).map((n) => (
+                      <button
+                        key={n}
+                        type="button"
+                        onClick={() => setBidValue(n)}
+                        disabled={loading}
+                        aria-pressed={effectiveBidValue === n}
+                        data-testid={`bid-option-${n}`}
+                        className={`h-9 w-9 rounded-lg font-medium text-sm transition-all ${effectiveBidValue === n ? 'bg-ds-accent text-ds-text-on-accent ring-2 ring-ds-accent' : 'bg-white/20 text-ds-text-primary hover:bg-white/30'}`}
+                      >
+                        {n}
+                      </button>
+                    ))}
+                  </fieldset>
+                )}
+              </div>
+            )}
+            <div className="text-ds-text-primary flex flex-wrap justify-center gap-x-4 gap-y-1 text-center mb-2">
+              <span className="whitespace-nowrap">
+                {t('round', { n: state.roundNumber, max: state.config.maxRounds })}
+              </span>
+              <span className="whitespace-nowrap">{t('trick', { n: state.trickNumber })}</span>
+              <span className="whitespace-nowrap">{state.spadesBroken ? t('spadesBroken') : t('spadesNotBroken')}</span>
               {state.declarerIdx >= 0 && (
-                <span data-testid="batak-declarer">
+                <span className="whitespace-nowrap" data-testid="batak-declarer">
                   {t('declarer', { name: playerName(state.declarerIdx, state.players[state.declarerIdx]?.isHuman) })}
                 </span>
               )}
@@ -372,14 +407,21 @@ function BatakPageContent() {
                     .filter((p) => !p.isHuman)
                     .map((p) => (
                       <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                        <div className="text-ds-text-muted text-sm">
-                          {playerName(p.id, p.isHuman)}
-                          {p.id === state.declarerIdx ? ` (${t('declarerBadge')})` : ''}:{' '}
-                          {t('cards', { count: p.cardCount })} | {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
-                          {t('roundScore', { score: p.roundScore })} |{' '}
-                          {p.bid < 0
-                            ? t('bidNone')
-                            : `${p.bid === 0 ? t('bidPass') : t('bid', { n: p.bid })} / ${t('tricksWon', { n: p.trickCount })}`}
+                        <div className="flex flex-wrap gap-x-1 text-ds-text-muted text-sm">
+                          <span className="whitespace-nowrap">
+                            {playerName(p.id, p.isHuman)}
+                            {p.id === state.declarerIdx ? ` (${t('declarerBadge')})` : ''}:{' '}
+                            {t('cards', { count: p.cardCount })}
+                          </span>
+                          <span className="whitespace-nowrap">
+                            {t('cumulativeScore', { score: p.cumulativeScore })}
+                          </span>
+                          <span className="whitespace-nowrap">{t('roundScore', { score: p.roundScore })}</span>
+                          <span className="whitespace-nowrap">
+                            {p.bid < 0
+                              ? t('bidNone')
+                              : `${p.bid === 0 ? t('bidPass') : t('bid', { n: p.bid })} / ${t('tricksWon', { n: p.trickCount })}`}
+                          </span>
                         </div>
                         {p.id === state.declarerIdx && p.bid > 0 && (
                           <BidProgressBar
@@ -401,16 +443,30 @@ function BatakPageContent() {
                   >
                     <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('scores')}</summary>
                     <div className="overflow-x-auto -mx-2 px-2">
-                      <table className="w-full text-sm text-ds-text-muted min-w-[360px] mt-1">
+                      <table
+                        className={scoreTableClass(
+                          isLargeDesktop,
+                          'w-full text-sm text-ds-text-muted min-w-[360px]',
+                          'mt-1',
+                        )}
+                      >
                         <thead>
                           <tr>
-                            <th scope="col" className="text-left">
+                            <th scope="col" className="text-left whitespace-nowrap text-[10px]">
                               {t('scoresPlayer')}
                             </th>
-                            <th scope="col">{t('scoresBid')}</th>
-                            <th scope="col">{t('scoresTricks')}</th>
-                            <th scope="col">{t('scoresRound')}</th>
-                            <th scope="col">{t('scoresTotal')}</th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresBid')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresTricks')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresRound')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresTotal')}
+                            </th>
                           </tr>
                         </thead>
                         <tbody>
@@ -449,16 +505,26 @@ function BatakPageContent() {
                   <div className="my-3 p-2 rounded bg-black/30 relative" data-tutorial="batak-score-table">
                     <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
                     <div className="overflow-x-auto -mx-2 px-2">
-                      <table className="w-full text-sm text-ds-text-muted min-w-[360px]">
+                      <table
+                        className={scoreTableClass(isLargeDesktop, 'w-full text-sm text-ds-text-muted min-w-[360px]')}
+                      >
                         <thead>
                           <tr>
-                            <th scope="col" className="text-left">
+                            <th scope="col" className="text-left whitespace-nowrap text-[10px]">
                               {t('scoresPlayer')}
                             </th>
-                            <th scope="col">{t('scoresBid')}</th>
-                            <th scope="col">{t('scoresTricks')}</th>
-                            <th scope="col">{t('scoresRound')}</th>
-                            <th scope="col">{t('scoresTotal')}</th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresBid')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresTricks')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresRound')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresTotal')}
+                            </th>
                           </tr>
                         </thead>
                         <tbody>
@@ -504,13 +570,7 @@ function BatakPageContent() {
               </div>
             </div>
 
-            <div>
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-              />
-            </div>
+            <div>{isMobile && messageBox}</div>
 
             <ActionLogSection
               isEndPhase={isGameEnd}
@@ -518,9 +578,6 @@ function BatakPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
-          </div>
-
-          <GameFooter className={`${gameTheme.batak.footer} px-4 py-2.5`}>
             {humanPlayer && (
               <>
                 <div className="mb-1 text-ds-text-muted text-xs" role="status" data-testid="batak-spades-break-footer">
@@ -543,22 +600,9 @@ function BatakPageContent() {
                     )}
                   </div>
                 )}
-                <PlayerHandSection
-                  humanPlayer={humanPlayer}
-                  selectedCardIndices={selectedCardIndices}
-                  toggleCard={toggleCard}
-                  cardWidth={cardWidth}
-                  isMobile={isMobile}
-                  dataTutorialPrefix="batak"
-                  validIndices={isHumanTurn ? state.validPlayIndices : undefined}
-                  restrictedTooltip={t('restrictedTooltip')}
-                  cardTitleFor={isHumanTurn ? cardTitleFor : undefined}
-                />
               </>
             )}
-
             <ErrorAlert message={error ?? hintError} onRetry={retry} />
-
             {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
                 付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
                 読み上げられないことがある (#5955, #6663)。 */}
@@ -576,98 +620,7 @@ function BatakPageContent() {
               )}
             </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            <div className="flex gap-2 items-center" data-tutorial="batak-play-button">
-              {(isHumanBidTurn || isHumanTurn) && (
-                <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
-                  {tc('button.hint')}
-                </button>
-              )}
-              {isHumanBidTurn && (
-                <div className="flex flex-col items-center gap-2">
-                  <span className="text-ds-text-primary" data-testid="batak-high-bid">
-                    {t('highBid', { n: state.highBid })}
-                  </span>
-                  {minLegalBid > 0 && (
-                    <>
-                      <fieldset
-                        className="grid max-w-[16rem] grid-cols-7 gap-1 border-0 p-0"
-                        aria-label={t('bidSelectLabel')}
-                      >
-                        {Array.from({ length: 13 - minLegalBid + 1 }, (_, i) => minLegalBid + i).map((n) => (
-                          <button
-                            key={n}
-                            type="button"
-                            onClick={() => setBidValue(n)}
-                            disabled={loading}
-                            aria-pressed={effectiveBidValue === n}
-                            data-testid={`bid-option-${n}`}
-                            className={`h-9 w-9 rounded-lg font-medium text-sm transition-all ${
-                              effectiveBidValue === n
-                                ? 'bg-ds-accent text-white ring-2 ring-ds-accent'
-                                : 'bg-white/20 text-ds-text-primary hover:bg-white/30'
-                            }`}
-                          >
-                            {n}
-                          </button>
-                        ))}
-                      </fieldset>
-                      {/* Announce the current bid selection to screen readers, since the
-                          grid's aria-pressed alone isn't read back as a running value. */}
-                      <span className="sr-only" role="status" aria-live="polite" data-testid="batak-bid-selected">
-                        {bidSelectedLabel}
-                      </span>
-                    </>
-                  )}
-                  <span className="text-ds-text-primary" data-testid="batak-bid-selected-visible">
-                    {bidSelectedLabel}
-                  </span>
-                  <div className="flex gap-2">
-                    {minLegalBid > 0 && (
-                      <button
-                        type="button"
-                        className={btnPrimary}
-                        onClick={() => handleBid(effectiveBidValue)}
-                        disabled={loading}
-                      >
-                        {t('bidButton')}
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      className={btnSecondary}
-                      onClick={() => {
-                        setBidValue(0);
-                        handleBid(0);
-                      }}
-                      disabled={loading}
-                      data-testid="bid-pass"
-                    >
-                      {t('passButton')}
-                    </button>
-                  </div>
-                </div>
-              )}
-              {isHumanTurn && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-              {isTrickEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                  {t('nextTrick')}
-                </button>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
+            <div className="flex gap-2 items-center">
               <GameResetButton
                 isGameEnd={!!isGameEnd}
                 onReset={handleManualReset}
@@ -677,6 +630,92 @@ function BatakPageContent() {
               />
             </div>
             <CardNavShortcutsPanel data-testid="batak-kbd-shortcuts" />
+          </div>
+
+          <GameFooter
+            message={isMobile ? undefined : messageBox}
+            className={`${gameTheme.batak.footer} px-4 py-2.5`}
+            actions={
+              <div className="flex gap-2 items-center" data-tutorial="batak-play-button">
+                {(isHumanBidTurn || isHumanTurn) && (
+                  <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
+                    {tc('button.hint')}
+                  </button>
+                )}
+                {isHumanBidTurn && (
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="flex gap-2">
+                      {minLegalBid > 0 && (
+                        <button
+                          type="button"
+                          className={btnPrimary}
+                          onClick={() => handleBid(effectiveBidValue)}
+                          disabled={loading}
+                        >
+                          {t('bidButton')}
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        className={btnSecondary}
+                        onClick={() => {
+                          setBidValue(0);
+                          handleBid(0);
+                        }}
+                        disabled={loading}
+                        data-testid="bid-pass"
+                      >
+                        {t('passButton')}
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {isHumanTurn && (
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handlePlay}
+                    disabled={loading || selectedCardIndices.length !== 1}
+                  >
+                    {t('playButton')}
+                  </button>
+                )}
+                {isTrickEnd && (
+                  <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                    {t('nextTrick')}
+                  </button>
+                )}
+                {isRoundEnd && (
+                  <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                    {t('nextRound')}
+                  </button>
+                )}
+              </div>
+            }
+          >
+            {isHumanBidTurn && (
+              <div className="mb-2 flex flex-col items-center gap-1">
+                <span className="sr-only" role="status" aria-live="polite" data-testid="batak-bid-selected">
+                  {bidSelectedLabel}
+                </span>
+                <span className="text-ds-text-primary" data-testid="batak-bid-selected-visible">
+                  {bidSelectedLabel}
+                </span>
+              </div>
+            )}
+            {humanPlayer && (
+              <PlayerHandSection
+                humanPlayer={humanPlayer}
+                selectedCardIndices={selectedCardIndices}
+                toggleCard={toggleCard}
+                cardWidth={cardWidth}
+                isMobile={isMobile}
+                dataTutorialPrefix="batak"
+                validIndices={isHumanTurn ? state.validPlayIndices : undefined}
+                restrictedTooltip={t('restrictedTooltip')}
+                cardTitleFor={isHumanTurn ? cardTitleFor : undefined}
+              />
+            )}
           </GameFooter>
         </>
       )}

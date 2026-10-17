@@ -5,10 +5,12 @@
     "gameOver": "Game Over"
   },
   "title": "Agnes Sorel",
+  "landscapeBanner": "Landscape mode recommended",
   "stock": "Stock",
   "foundation": "Foundation",
   "tableau": "Tableau",
   "baseRank": "Base rank",
+  "baseRankShort": "Base",
   "moveCount": "Moves",
   "deal": "Deal",
   "giveup": "Give up",

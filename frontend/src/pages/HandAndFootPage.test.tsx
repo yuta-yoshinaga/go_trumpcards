@@ -1,8 +1,10 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { handandfootApi } from '../api/gameApi';
+import * as cardDimensions from '../hooks/useCardDimensions';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { HandAndFootPlayerData, HandAndFootResponse, HandAndFootTeamData } from '../types/card';
+import { HandAndFootPhase } from '../types/phases';
 import { HandAndFootPage } from './HandAndFootPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -148,6 +150,118 @@ const gameEndState: HandAndFootResponse = {
 };
 
 describe('HandAndFootPage', () => {
+  it('keeps the frozen status label together while the status row can wrap', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, isFrozen: true });
+    renderWithProviders(<HandAndFootPage />);
+
+    const frozenLabel = await screen.findByText('[フリーズ中]');
+    expect(frozenLabel.parentElement).toHaveClass('flex', 'flex-wrap');
+    expect(frozenLabel).toHaveClass('whitespace-nowrap');
+  });
+
+  it('places meld blocks in a wrapping row only at large desktop widths', async () => {
+    const originalWidth = window.innerWidth;
+    try {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });
+      window.dispatchEvent(new Event('resize'));
+      mockExec.mockResolvedValue({
+        ...drawPhaseState,
+        teams: [
+          {
+            ...baseTeams[0],
+            melds: [
+              {
+                cards: [
+                  { design: 'SPADE', value: 7 },
+                  { design: 'CLOVER', value: 7 },
+                ],
+                isNatural: true,
+                isCanasta: false,
+                rank: 7,
+              },
+            ],
+          },
+          baseTeams[1],
+        ],
+      });
+      const { unmount } = renderWithProviders(<HandAndFootPage />);
+      const meld = await screen.findByTestId('hf-discard-pile');
+      expect(meld.parentElement).toHaveClass('flex', 'flex-wrap');
+      const meldFan = screen.getByTestId('hf-meld-fan-0-0');
+      expect(meldFan).toBeInTheDocument();
+      expect(within(meldFan).getAllByTestId('animated-card')).toHaveLength(2);
+      unmount();
+
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 800 });
+      window.dispatchEvent(new Event('resize'));
+      renderWithProviders(<HandAndFootPage />);
+      expect((await screen.findByTestId('hf-discard-pile')).parentElement).not.toHaveClass('flex-wrap');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it('uses a non-wrapping red threes row only at large desktop widths', async () => {
+    const originalWidth = window.innerWidth;
+    const stateWithRedThrees: HandAndFootResponse = {
+      ...drawPhaseState,
+      teams: [{ ...baseTeams[0], red3s: [{ design: 'HEART', value: 3 }] }, baseTeams[1]],
+    };
+
+    try {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });
+      window.dispatchEvent(new Event('resize'));
+      mockExec.mockResolvedValue(stateWithRedThrees);
+      const { unmount } = renderWithProviders(<HandAndFootPage />);
+      const redThreesLabel = await screen.findByText('赤3');
+      expect(redThreesLabel.parentElement).toHaveClass('flex', 'flex-nowrap', 'gap-1', 'mt-1');
+      unmount();
+
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 800 });
+      window.dispatchEvent(new Event('resize'));
+      mockExec.mockResolvedValue(stateWithRedThrees);
+      renderWithProviders(<HandAndFootPage />);
+      expect((await screen.findByText('赤3')).parentElement).toHaveClass('flex', 'flex-wrap', 'gap-1', 'mt-1');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it('renders desktop hand cards through PlayerHandSection', async () => {
+    mockExec.mockResolvedValue(drawPhaseState);
+    renderWithProviders(<HandAndFootPage />);
+    const footer = await screen.findByTestId('game-footer-content');
+    const hand = footer.querySelector('[data-tutorial="hf-player-hand"]');
+    expect(hand?.querySelector('[data-hand-card-index="0"]')).toBeInTheDocument();
+  });
+
+  it('allows the taller mobile footer', async () => {
+    mockExec.mockResolvedValue(drawPhaseState);
+    renderWithProviders(<HandAndFootPage />);
+    expect((await screen.findByTestId('game-footer-content')).closest('footer')?.className).toContain('max-h-[60vh]');
+  });
+  it('keeps the hand and live draw guidance in the footer and utility panels in the play area', async () => {
+    mockExec.mockResolvedValue(drawPhaseState);
+    renderWithProviders(<HandAndFootPage />);
+
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const playArea = footerContent.closest('footer')?.previousElementSibling;
+    expect(playArea).toBeInstanceOf(HTMLElement);
+    expect(footerContent.querySelector('[data-tutorial="hf-player-hand"]')).toBeInTheDocument();
+    expect(within(footerContent).getByTestId('hf-draw-discard-reason')).toHaveAttribute('aria-live', 'polite');
+    expect(within(playArea as HTMLElement).queryByTestId('hf-draw-discard-reason')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByRole('button', { name: 'リセット' })).toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('hand-and-foot-kbd-shortcuts')).toBeInTheDocument();
+    mockExec.mockRejectedValueOnce(new Error('request failed'));
+    fireEvent.click(within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '山札から引く' }));
+    expect(await within(playArea as HTMLElement).findByRole('alert')).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '山札から引く' }),
+    ).toBeInTheDocument();
+  });
+
   it('uses player names as row headers and keeps the score column headers', async () => {
     mockExec.mockResolvedValue(drawPhaseState);
     renderWithProviders(<HandAndFootPage />);
@@ -186,6 +300,78 @@ describe('HandAndFootPage', () => {
     renderWithProviders(<HandAndFootPage />);
     await waitFor(() => expect(screen.getByText('山札から引く')).toBeInTheDocument());
     expect(screen.queryByTestId('hf-score-breakdown')).not.toBeInTheDocument();
+  });
+
+  it('keeps the score table collapsed on mobile while retaining its data', async () => {
+    vi.spyOn(cardDimensions, 'useIsMobile').mockReturnValue(true);
+    mockExec.mockResolvedValue(drawPhaseState);
+    renderWithProviders(<HandAndFootPage />);
+
+    const scoreDetails = await screen.findByText('スコア表').then((summary) => summary.closest('details'));
+    expect(scoreDetails).not.toHaveAttribute('open');
+    expect(within(scoreDetails as HTMLElement).getByRole('table')).not.toBeVisible();
+    expect(within(scoreDetails as HTMLElement).getByRole('rowheader', { name: 'あなた' })).not.toBeVisible();
+  });
+
+  it('uses stacked mobile hand rows and lets cards toggle outside the human turn', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    vi.spyOn(cardDimensions, 'useIsMobile').mockReturnValue(true);
+    const cards = Array.from({ length: 15 }, (_, i) => ({ design: 'SPADE' as const, value: (i % 13) + 1 }));
+    try {
+      mockExec.mockResolvedValue({
+        ...drawPhaseState,
+        players: [{ ...basePlayers[0], cards, cardCount: cards.length }, basePlayers[1]],
+      });
+      const { unmount } = renderWithProviders(<HandAndFootPage />);
+      await waitFor(() => expect(document.querySelector('[data-testid="hand-row"]')).not.toBeNull());
+      const hand = document.querySelector<HTMLElement>('[data-tutorial="hf-player-hand"]');
+      expect(hand).toHaveAttribute('data-tutorial', 'hf-player-hand');
+      const rows = hand?.querySelectorAll<HTMLElement>('[data-testid="hand-row"]');
+      expect(rows?.length).toBeGreaterThanOrEqual(2);
+      for (const row of Array.from(rows ?? []).slice(1)) expect(row.style.marginTop).toMatch(/^-/);
+
+      const cardsInHand = hand?.querySelectorAll('button') ?? [];
+      fireEvent.click(cardsInHand[0]);
+      expect(cardsInHand[0]).toHaveAttribute('aria-pressed', 'true');
+      unmount();
+
+      mockExec.mockResolvedValue({
+        ...drawPhaseState,
+        phase: HandAndFootPhase.ROUND_END,
+        players: [{ ...basePlayers[0], cards, cardCount: cards.length }, basePlayers[1]],
+      });
+      renderWithProviders(<HandAndFootPage />);
+      await waitFor(() => expect(document.querySelector('[data-testid="hand-row"]')).not.toBeNull());
+      const nonTurnHand = document.querySelector<HTMLElement>('[data-tutorial="hf-player-hand"]');
+      const nonTurnCard = nonTurnHand?.querySelector('button');
+      expect(nonTurnCard).toHaveAttribute('aria-pressed', 'false');
+      fireEvent.click(nonTurnCard as HTMLElement);
+      expect(nonTurnCard).toHaveAttribute('aria-pressed', 'true');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it('opens the score table on desktop', async () => {
+    vi.spyOn(cardDimensions, 'useIsMobile').mockReturnValue(false);
+    mockExec.mockResolvedValue(drawPhaseState);
+    renderWithProviders(<HandAndFootPage />);
+
+    const scoreDetails = await screen.findByText('スコア表').then((summary) => summary.closest('details'));
+    expect(scoreDetails).toHaveAttribute('open');
+    expect(within(scoreDetails as HTMLElement).getByRole('table')).toBeVisible();
+  });
+
+  it('uses the CPU accordion for revealed CPU hands and keeps it closed on mobile', async () => {
+    vi.spyOn(cardDimensions, 'useIsMobile').mockReturnValue(true);
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<HandAndFootPage />);
+
+    const accordion = await screen.findByTestId('cpu-accordion');
+    expect(accordion).not.toHaveAttribute('open');
+    expect(within(accordion).getByText(/CPU 1:/)).not.toBeVisible();
   });
 
   // 最初の手札が配られるまでは捨て札の山がないので表示しない
@@ -368,6 +554,9 @@ describe('HandAndFootPage', () => {
     mockExec.mockResolvedValue(discardPhaseState);
     renderWithProviders(<HandAndFootPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '捨てる' })).toBeInTheDocument());
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '捨てる' }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '上がる' })).toBeInTheDocument();
   });
 

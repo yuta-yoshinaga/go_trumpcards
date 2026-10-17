@@ -39,6 +39,36 @@ function defaultProps(overrides?: Partial<BjBetPhaseControlsProps>): BjBetPhaseC
 }
 
 describe('BjBetPhaseControls', () => {
+  it('renders only the bet input and Bet button in action layout', () => {
+    render(<BjBetPhaseControls {...defaultProps({ layout: 'action' })} />);
+
+    expect(screen.getByLabelText('ベット額:')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument();
+    expect(screen.queryByTestId('bj-quick-bet')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('bj-chip-add')).not.toBeInTheDocument();
+    expect(screen.queryByText('詳細設定')).not.toBeInTheDocument();
+  });
+
+  it('renders only supporting controls in support layout', () => {
+    render(<BjBetPhaseControls {...defaultProps({ layout: 'support' })} />);
+
+    expect(screen.getByTestId('bj-quick-bet')).toBeInTheDocument();
+    expect(screen.getByTestId('bj-chip-add')).toBeInTheDocument();
+    expect(screen.getByText('詳細設定')).toBeInTheDocument();
+    expect(screen.queryByLabelText('ベット額:')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'ベット' })).not.toBeInTheDocument();
+  });
+
+  it('defaults to all controls', () => {
+    render(<BjBetPhaseControls {...defaultProps()} />);
+
+    expect(screen.getByLabelText('ベット額:')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument();
+    expect(screen.getByTestId('bj-quick-bet')).toBeInTheDocument();
+    expect(screen.getByTestId('bj-chip-add')).toBeInTheDocument();
+    expect(screen.getByText('詳細設定')).toBeInTheDocument();
+  });
+
   it('exposes toggle state through aria-pressed and keeps it aligned with the displayed state', () => {
     const { rerender } = render(<BjBetPhaseControls {...defaultProps()} />);
     const hint = screen.getByRole('button', { name: 'ヒント OFF' });

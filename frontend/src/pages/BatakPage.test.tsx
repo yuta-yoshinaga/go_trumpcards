@@ -1,5 +1,5 @@
-import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { batakApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import i18n from '../i18n';
@@ -74,7 +74,41 @@ beforeEach(() => {
   mockExec.mockResolvedValue(playPhaseState);
 });
 
+afterEach(() => {
+  mobileFlag.value = false;
+  Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1024 });
+});
+
 describe('BatakPage', () => {
+  it('keeps score table column headings on one line', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    const { container } = renderWithProviders(<BatakPage />);
+    await waitFor(() => expect(container.querySelectorAll('th[scope="col"]').length).toBeGreaterThan(0));
+    const headings = container.querySelectorAll('th[scope="col"]');
+    for (const heading of headings) {
+      expect(heading.classList.contains('whitespace-nowrap')).toBe(true);
+      expect(heading.classList.contains('text-[10px]')).toBe(true);
+    }
+  });
+
+  it('renders turn guidance in the footer on desktop', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1024 });
+    mockExec.mockResolvedValue({ ...playPhaseState, message: 'Footer guidance' });
+    renderWithProviders(<BatakPage />);
+    const message = await screen.findByText('Footer guidance');
+    expect(message.closest('[data-testid="game-footer-message"]')).toBeInTheDocument();
+  });
+
+  it('keeps turn guidance in the play area on mobile', async () => {
+    mobileFlag.value = true;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 375 });
+    mockExec.mockResolvedValue({ ...playPhaseState, message: 'Mobile guidance' });
+    renderWithProviders(<BatakPage />);
+    const message = await screen.findByText('Mobile guidance');
+    expect(message.closest('[role="status"]')).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<BatakPage />);
@@ -764,5 +798,51 @@ describe('BatakPage trick winner badge', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: '次のトリック' }));
     await waitFor(() => expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument());
+  });
+
+  it('keeps the primary control in the pinned footer actions', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<BatakPage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: '出す' })).toBeInTheDocument();
+  });
+
+  it('keeps bid choices above the pinned bid action row', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<BatakPage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: 'ビッド' })).toBeInTheDocument();
+    expect(screen.getByTestId('bid-option-6')).toBeInTheDocument();
+    expect(actions).not.toContainElement(screen.getByTestId('bid-option-6'));
+  });
+
+  it('keeps bid choices and keyboard help in the play area while the hand stays in the footer', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<BatakPage />);
+
+    const bidChoice = await screen.findByTestId('bid-option-6');
+    const playArea = document.querySelector('.flex-1.overflow-y-auto.pt-3');
+    const footerContent = screen.getByTestId('game-footer-content');
+    const keyboardHelp = screen.getByTestId('batak-kbd-shortcuts');
+
+    expect(playArea).toContainElement(bidChoice);
+    expect(playArea).toContainElement(keyboardHelp);
+    expect(footerContent).not.toContainElement(bidChoice);
+    expect(footerContent).not.toContainElement(keyboardHelp);
+    expect(footerContent).toContainElement(screen.getByAltText('♠ A'));
+  });
+  it('fits the score table at large desktop widths', async () => {
+    const innerWidthSpy = vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(1280);
+    try {
+      const { container } = renderWithProviders(<BatakPage />);
+      await waitFor(() =>
+        expect(container.querySelector('[data-tutorial="batak-score-table"] table')).toBeInTheDocument(),
+      );
+      const table = container.querySelector('[data-tutorial="batak-score-table"] table');
+      expect(table?.className).toContain('table-fixed');
+      expect(table?.className).not.toContain('min-w-[');
+    } finally {
+      innerWidthSpy.mockRestore();
+    }
   });
 });

@@ -133,7 +133,7 @@ function LiteraturePageContent() {
   );
   const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('literature', LITERATURE_PHASE_KEYS);
 
   // A claim is the heaviest move in the game: one wrong seat voids the set or
@@ -217,6 +217,10 @@ function LiteraturePageContent() {
     exec('reset');
   };
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.literature')}
@@ -237,6 +241,102 @@ function LiteraturePageContent() {
       ) : (
         <>
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+            {isHumanTurn && (
+              <div className="mb-2 flex flex-col gap-2">
+                {/* Ask — opponents only. */}
+                <div className="text-ds-text-muted text-xs" data-testid="literature-ask-rules">
+                  {t('askRules')}
+                </div>
+                <fieldset
+                  disabled={askableCards.length === 0}
+                  className="flex flex-wrap gap-2 items-center border-0 p-0 m-0 min-w-0"
+                >
+                  <label className="text-ds-text-muted text-xs flex items-center gap-1" htmlFor="literature-target">
+                    {t('askTargetLabel')}
+                    <select
+                      id="literature-target"
+                      className="bg-black/30 text-ds-text-primary rounded px-1 min-h-[44px]"
+                      value={selectedTarget}
+                      onChange={(e) => setAskTarget(Number(e.target.value))}
+                    >
+                      {opponents.map((seat) => (
+                        <option key={seat} value={seat}>
+                          {t('seat', { n: seat })}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="text-ds-text-muted text-xs flex items-center gap-1" htmlFor="literature-card">
+                    {t('askCardLabel')}
+                    <select
+                      id="literature-card"
+                      className="bg-black/30 text-ds-text-primary rounded px-1 min-h-[44px]"
+                      value={selectedCardKey}
+                      onChange={(e) => setAskCard(e.target.value)}
+                    >
+                      {askableCards.map((a) => (
+                        <option key={a.key} value={a.key}>
+                          {suitLabel(suitOf(a.card.design))}
+                          {a.card.value}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </fieldset>
+                <p
+                  className={askableCards.length === 0 ? 'text-ds-warning text-sm' : undefined}
+                  role="status"
+                  aria-live="polite"
+                  data-testid="literature-ask-status"
+                >
+                  {askableCards.length === 0 ? t('noAskableCards') : null}
+                </p>
+
+                {/* Claim — placing all six, and misplacing within your own team cancels it. */}
+                <div className="text-ds-text-muted text-xs" data-testid="literature-claim-rules">
+                  {t('claimRules')}
+                </div>
+                <div className="flex flex-wrap gap-2 items-center">
+                  <label className="text-ds-text-muted text-xs flex items-center gap-1" htmlFor="literature-half">
+                    {t('claimHalfLabel')}
+                    <select
+                      id="literature-half"
+                      className="bg-black/30 text-ds-text-primary rounded px-1 min-h-[44px]"
+                      value={selectedHalf}
+                      onChange={(e) => setClaim({ half: Number(e.target.value), holders: [0, 0, 0, 0, 0, 0] })}
+                    >
+                      {openHalfSuits.map((half) => (
+                        <option key={half} value={half}>
+                          {halfSuitLabel(half)}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  {(state.halfSuitCards[selectedHalf] ?? []).map((c, i) => (
+                    <label
+                      key={`holder-${c.design}-${c.value}`}
+                      className="text-ds-text-muted text-xs flex items-center gap-1"
+                      htmlFor={`literature-holder-${i}`}
+                    >
+                      {suitLabel(suitOf(c.design))}
+                      {c.value}
+                      <select
+                        id={`literature-holder-${i}`}
+                        className="bg-black/30 text-ds-text-primary rounded px-1 min-h-[44px]"
+                        value={claimHolders[i] ?? 0}
+                        onChange={(e) => setHolder(i, Number(e.target.value))}
+                      >
+                        {ownTeamSeats.map((seat) => (
+                          <option key={seat} value={seat}>
+                            {t('seat', { n: seat })}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
             {/* Five of eight wins — four is exactly half and decides nothing. */}
             <div className="mb-2 p-2 rounded bg-black/20 text-sm" data-testid="literature-scores">
               <div data-tutorial="literature-info">
@@ -370,30 +470,13 @@ function LiteraturePageContent() {
               </div>
             )}
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
+            {isMobile && messageBox}
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
-          </div>
-
-          {/* Footer */}
-          <GameFooter className={`${gameTheme.literature.footer} px-4 py-2.5`}>
-            <div className="mb-2" data-tutorial="literature-hand">
-              <div className="text-ds-text-muted text-xs mb-1">{t('yourHand')}</div>
-              <div className="flex flex-wrap gap-1">
-                {(human?.cards ?? []).map((c, i) => (
-                  <CardImage key={`hand-${c.design}-${c.value}-${i}`} card={c} width={cardWidth} />
-                ))}
-              </div>
-            </div>
 
             <ErrorAlert message={error} onRetry={retry} />
 
@@ -406,114 +489,6 @@ function LiteraturePageContent() {
               {tc('hint.toggle', { ns: 'tutorial' })}
             </label>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            {isHumanTurn && (
-              <div className="flex flex-col gap-2" data-tutorial="literature-actions">
-                {/* Ask — opponents only. */}
-                <div className="text-ds-text-muted text-xs" data-testid="literature-ask-rules">
-                  {t('askRules')}
-                </div>
-                <fieldset
-                  disabled={askableCards.length === 0}
-                  className="flex flex-wrap gap-2 items-center border-0 p-0 m-0 min-w-0"
-                >
-                  <label className="text-ds-text-muted text-xs flex items-center gap-1" htmlFor="literature-target">
-                    {t('askTargetLabel')}
-                    <select
-                      id="literature-target"
-                      className="bg-black/30 text-ds-text-primary rounded px-1 min-h-[44px]"
-                      value={selectedTarget}
-                      onChange={(e) => setAskTarget(Number(e.target.value))}
-                    >
-                      {opponents.map((seat) => (
-                        <option key={seat} value={seat}>
-                          {t('seat', { n: seat })}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label className="text-ds-text-muted text-xs flex items-center gap-1" htmlFor="literature-card">
-                    {t('askCardLabel')}
-                    <select
-                      id="literature-card"
-                      className="bg-black/30 text-ds-text-primary rounded px-1 min-h-[44px]"
-                      value={selectedCardKey}
-                      onChange={(e) => setAskCard(e.target.value)}
-                    >
-                      {askableCards.map((a) => (
-                        <option key={a.key} value={a.key}>
-                          {suitLabel(suitOf(a.card.design))}
-                          {a.card.value}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <button type="button" className={btnPrimary} onClick={handleAsk} disabled={loading || !selectedCard}>
-                    {t('askButton')}
-                  </button>
-                </fieldset>
-                <p
-                  className={askableCards.length === 0 ? 'text-ds-warning text-sm' : undefined}
-                  role="status"
-                  aria-live="polite"
-                  data-testid="literature-ask-status"
-                >
-                  {askableCards.length === 0 ? t('noAskableCards') : null}
-                </p>
-
-                {/* Claim — placing all six, and misplacing within your own team cancels it. */}
-                <div className="text-ds-text-muted text-xs" data-testid="literature-claim-rules">
-                  {t('claimRules')}
-                </div>
-                <div className="flex flex-wrap gap-2 items-center">
-                  <label className="text-ds-text-muted text-xs flex items-center gap-1" htmlFor="literature-half">
-                    {t('claimHalfLabel')}
-                    <select
-                      id="literature-half"
-                      className="bg-black/30 text-ds-text-primary rounded px-1 min-h-[44px]"
-                      value={selectedHalf}
-                      onChange={(e) => setClaim({ half: Number(e.target.value), holders: [0, 0, 0, 0, 0, 0] })}
-                    >
-                      {openHalfSuits.map((half) => (
-                        <option key={half} value={half}>
-                          {halfSuitLabel(half)}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  {(state.halfSuitCards[selectedHalf] ?? []).map((c, i) => (
-                    <label
-                      key={`holder-${c.design}-${c.value}`}
-                      className="text-ds-text-muted text-xs flex items-center gap-1"
-                      htmlFor={`literature-holder-${i}`}
-                    >
-                      {suitLabel(suitOf(c.design))}
-                      {c.value}
-                      <select
-                        id={`literature-holder-${i}`}
-                        className="bg-black/30 text-ds-text-primary rounded px-1 min-h-[44px]"
-                        value={claimHolders[i] ?? 0}
-                        onChange={(e) => setHolder(i, Number(e.target.value))}
-                      >
-                        {ownTeamSeats.map((seat) => (
-                          <option key={seat} value={seat}>
-                            {t('seat', { n: seat })}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                  ))}
-                  <button
-                    type="button"
-                    className={btnSuccess}
-                    onClick={() => setClaimConfirmOpen(true)}
-                    disabled={loading}
-                  >
-                    {t('claimButton')}
-                  </button>
-                </div>
-              </div>
-            )}
 
             <div className="flex flex-wrap gap-2 items-center mt-2">
               {isGameEnd && (
@@ -529,6 +504,38 @@ function LiteraturePageContent() {
                 loading={loading}
                 dataTutorial="literature-reset-button"
               />
+            </div>
+          </div>
+
+          {/* Footer */}
+          <GameFooter
+            className={`${gameTheme.literature.footer} px-4 py-2.5`}
+            message={!isMobile && messageBox}
+            actions={
+              isHumanTurn ? (
+                <div className="flex flex-wrap gap-2" data-tutorial="literature-actions">
+                  <button type="button" className={btnPrimary} onClick={handleAsk} disabled={loading || !selectedCard}>
+                    {t('askButton')}
+                  </button>
+                  <button
+                    type="button"
+                    className={btnSuccess}
+                    onClick={() => setClaimConfirmOpen(true)}
+                    disabled={loading}
+                  >
+                    {t('claimButton')}
+                  </button>
+                </div>
+              ) : null
+            }
+          >
+            <div className="mb-2" data-tutorial="literature-hand">
+              <div className="text-ds-text-muted text-xs mb-1">{t('yourHand')}</div>
+              <div className="flex flex-wrap gap-1">
+                {(human?.cards ?? []).map((c, i) => (
+                  <CardImage key={`hand-${c.design}-${c.value}-${i}`} card={c} width={cardWidth} />
+                ))}
+              </div>
             </div>
           </GameFooter>
         </>

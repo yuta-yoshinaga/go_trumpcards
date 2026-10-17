@@ -18,12 +18,13 @@ import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
-import { useResponsiveTableau } from '../hooks/useResponsiveTableau';
+import { FIXED_TABLEAU_DEPTH, mobileTableauConfig, useResponsiveTableau } from '../hooks/useResponsiveTableau';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useStHelenaGame } from '../hooks/useStHelenaGame';
 import { badgeSuccessColors, badgeWarningColors } from '../styles/badgeStyles';
@@ -165,8 +166,18 @@ function StHelenaPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('sthelena', state);
 
-  const tableauDim = useResponsiveTableau(8);
-  // Mobile renders the tableau as a 4-column grid, which makes the per-column arc translate Y
+  const { isMobile } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
+  const tableauDim = useResponsiveTableau(8, {
+    ...mobileTableauConfig(isMobile, FIXED_TABLEAU_DEPTH.sthelena),
+    maxColCards: FIXED_TABLEAU_DEPTH.sthelena,
+    // Desktop already uses 60px cards here; a 14px step (not 20) lets the lower piles fit 1280x800 (#11702).
+    minVerticalOverlap: isMobile ? 12 : isLargeDesktop ? 10 : 14,
+    reservedHeightPx: isMobile ? 520 : isLargeDesktop ? 640 : 630,
+    maxCardWidthPx: 60,
+    compressDesktop: true,
+  });
+  const foundationCardWidth = tableauDim.cw;
 
   const isPlayingForKbd = state?.phase === StHelenaPhase.PLAYING;
 
@@ -305,6 +316,10 @@ function StHelenaPageContent() {
         );
   const legalDestinationLabels = [...foundationDestinationLabels, ...tableauDestinationLabels];
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.sthelena')}
@@ -356,12 +371,12 @@ function StHelenaPageContent() {
               {tc('label.selectSourceFirst')}
             </span>
             {/* Foundations (4 ascending + 4 descending in two rows) */}
-            <div className="flex flex-col gap-2 mb-4" data-tutorial="sthelena-foundations">
+            <div className="flex flex-row gap-2 mb-1 sm:mb-4" data-tutorial="sthelena-foundations">
               {([0, 1] as const).map((rowIdx) => {
                 const startIdx = rowIdx * 4;
                 const directionKey = rowIdx === 0 ? 'asc' : 'desc';
                 return (
-                  <div key={`fnd-row-${rowIdx}`} className="flex gap-1 sm:gap-2 justify-center flex-wrap">
+                  <div key={`fnd-row-${rowIdx}`} className="flex gap-1 sm:gap-2 justify-center flex-nowrap">
                     {[0, 1, 2, 3].map((col) => {
                       const idx = startIdx + col;
                       const foundationZone: StHelenaMoveZone = { zone: 'foundation', col: idx };
@@ -412,7 +427,11 @@ function StHelenaPageContent() {
                                 })}
                                 className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${selectedCard !== null && !isFoundationTarget(idx) ? 'opacity-40' : ''}`}
                               >
-                                <AnimatedCard card={pile[pile.length - 1]} width={tableauDim.cw} draggable={false} />
+                                <AnimatedCard
+                                  card={pile[pile.length - 1]}
+                                  width={foundationCardWidth}
+                                  draggable={false}
+                                />
                               </button>
                             ) : (
                               <button
@@ -428,7 +447,7 @@ function StHelenaPageContent() {
                                   suit,
                                   direction: t(`direction.${directionKey}`),
                                 })}
-                                style={{ width: tableauDim.cw, height: tableauDim.ch }}
+                                style={{ width: foundationCardWidth, height: tableauDim.ch }}
                                 className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                               >
                                 {directionKey === 'asc' ? 'A' : 'K'}
@@ -449,18 +468,31 @@ function StHelenaPageContent() {
                 beside, so rendering them as one undifferentiated grid would hide the
                 only thing that decides where a card can go. (The clone source draws a
                 sixteen-column crescent arc; that silhouette belongs to Crescent.) */}
-            <div className="flex flex-col gap-1 sm:gap-2 mb-3" data-tutorial="sthelena-tableau">
+            <div
+              className={`grid grid-cols-8 gap-1 sm:gap-2 ${isLargeDesktop ? 'lg:gap-y-0' : ''} mb-3`}
+              data-tutorial="sthelena-tableau"
+            >
               {STHELENA_BANDS.map((band) => (
-                <div key={band.key}>
+                <div
+                  key={band.key}
+                  className={`min-w-0 ${band.key === 'bottom' ? 'col-span-8 mx-auto w-1/2' : 'col-span-4'}`}
+                >
                   <div className="text-center text-[10px] text-ds-text-muted mb-0.5" aria-hidden="true">
-                    {t(`band.${band.key}`)}
+                    {t(`bandLabel.${band.key}`)}
                   </div>
                   <div className="grid grid-cols-4 gap-1 sm:gap-2" data-testid={`sthelena-band-${band.key}`}>
                     {band.cols.map((colIdx) => {
                       const col = state.tableau[colIdx] ?? [];
                       const tableauColZone: StHelenaMoveZone = { zone: 'tableau', col: colIdx };
                       return (
-                        <div key={`col-${colIdx.toString()}`} className="min-w-0">
+                        <div
+                          key={`col-${colIdx.toString()}`}
+                          className="min-w-0"
+                          // Phones pin each column to the small card width so the 8-column rows
+                          // fit 375px; desktop keeps the grid-sized columns it had before.
+                          style={isMobile ? { width: tableauDim.cw } : undefined}
+                        >
+                          {/* Explicit mobile width fits eight columns; desktop keeps its legacy sizing. */}
                           {/* Column-number badge mirrors the CUI "タブロー列{{col}}" labelling so hints
                         and logs that reference a column index map to a visible marker (#2618). */}
                           <div
@@ -542,6 +574,11 @@ function StHelenaPageContent() {
               ))}
             </div>
 
+            <details className="mb-2 text-center text-ds-text-muted text-xs" open={!isMobile}>
+              <summary className="cursor-pointer">{t('rulesSummary')}</summary>
+              <p className="mt-1">{t('rulesNote')}</p>
+            </details>
+
             {/* Hint display */}
             {/*
               ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
@@ -566,12 +603,6 @@ function StHelenaPageContent() {
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
             </div>
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
             {/* **どこまで進んでいたかを自分で数えさせない。**8 組札 (昇順4 + 降順4)
                 は Congress より複雑なので、なおさら数えにくい (#5590)。
                 Congress / CrazyQuilt と同じ形。 */}
@@ -583,6 +614,8 @@ function StHelenaPageContent() {
                 })}
               </p>
             )}
+
+            {isMobile && messageBox}
 
             <ActionLogSection
               isEndPhase={isEnded}
@@ -601,7 +634,10 @@ function StHelenaPageContent() {
             ]}
           />
 
-          <GameFooter className={`${gameTheme.sthelena.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.sthelena.footer} px-4 py-2.5`}
+            message={isMobile ? undefined : messageBox}
+          >
             <ErrorAlert message={error ?? hintError} onRetry={retry} />
             <div className="flex gap-2 items-center flex-wrap">
               {isPlaying && (

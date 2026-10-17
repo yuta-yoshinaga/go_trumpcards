@@ -239,6 +239,9 @@ func TestPaiGowCuiPresenter_Output_Push(t *testing.T) {
 }
 
 func TestPaiGowCuiPresenter_Output_EndPhaseWithHands(t *testing.T) {
+	original := i18n.Lang()
+	t.Cleanup(func() { i18n.SetLang(original) })
+	i18n.SetLang("ja")
 	p := new(PaiGowCuiPresenter)
 	m := new(interfaces.MockPaiGowGame)
 	m.On("GetChips").Return(1195).Maybe()
@@ -286,8 +289,10 @@ func TestPaiGowCuiPresenter_Output_EndPhaseWithHands(t *testing.T) {
 	assert.Contains(t, result, "ハイ:")
 	assert.Contains(t, result, "ロー:")
 	assert.Contains(t, result, "DEALER")
-	assert.Contains(t, result, "Straight")
-	assert.Contains(t, result, "High Card")
+	assert.Contains(t, result, "ストレート")
+	assert.Contains(t, result, "ハイカード")
+	assert.NotContains(t, result, "Straight")
+	assert.NotContains(t, result, "Straight")
 }
 
 func TestPaiGowCuiPresenter_PhaseStr_Unknown(t *testing.T) {

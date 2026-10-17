@@ -19,7 +19,7 @@ import { ScrollFadeHint } from '../components/ScrollFadeHint';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -37,6 +37,7 @@ import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
+import { scoreTableClass } from '../styles/scoreTableStyles';
 import type { NapoleonResponse } from '../types/card';
 import { NapoleonPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
@@ -118,6 +119,7 @@ const MAX_BID = 17;
 export const NapoleonPage = withTutorial(NapoleonPageContent, 'napoleon', NP_TUTORIAL_STEPS);
 /** Inner content of the Napoleon page, wrapped by TutorialProvider. */
 function NapoleonPageContent() {
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('napoleon');
   const {
@@ -258,6 +260,10 @@ function NapoleonPageContent() {
 
   const trumpLabel = state.trumpSuit > 0 ? t(`suitName.${SUIT_KEYS[state.trumpSuit]}`) : '';
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.napoleon')}
@@ -327,9 +333,9 @@ function NapoleonPageContent() {
           {/* Scrollable area */}
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
             {/* Round/Trick info */}
-            <div className="text-ds-text-primary text-center mb-2">
-              <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
-              <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
+            <div className="text-ds-text-primary flex flex-wrap justify-center gap-x-4 gap-y-1 text-center mb-2">
+              <span className="whitespace-nowrap">{t('round', { n: state.roundNumber })}</span>
+              <span className="whitespace-nowrap">{t('trick', { n: state.trickNumber })}</span>
               {trumpLabel && (
                 <span>
                   {t('trumpSuit')}: {trumpLabel}
@@ -492,13 +498,19 @@ function NapoleonPageContent() {
                     .filter((p) => !p.isHuman)
                     .map((p) => (
                       <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                        <div className="text-ds-text-muted text-sm">
-                          {playerName(p.id, p.isHuman)}
-                          {roleBadge(p)}: {t('cards', { count: p.cardCount })} |{' '}
-                          {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
-                          {t('roundScore', { score: p.roundScore })} |{' '}
-                          {p.bid >= 0 ? t('bid', { n: p.bid }) : t('bidNone')} |{' '}
-                          {t('pictureCards', { count: p.pictureCards })}
+                        <div className="flex flex-wrap gap-x-1 text-ds-text-muted text-sm">
+                          <span className="whitespace-nowrap">
+                            {playerName(p.id, p.isHuman)}
+                            {roleBadge(p)}: {t('cards', { count: p.cardCount })}
+                          </span>
+                          <span className="whitespace-nowrap">
+                            {t('cumulativeScore', { score: p.cumulativeScore })}
+                          </span>
+                          <span className="whitespace-nowrap">{t('roundScore', { score: p.roundScore })}</span>
+                          <span className="whitespace-nowrap">
+                            {p.bid >= 0 ? t('bid', { n: p.bid }) : t('bidNone')}
+                          </span>
+                          <span className="whitespace-nowrap">{t('pictureCards', { count: p.pictureCards })}</span>
                         </div>
                       </div>
                     ))
@@ -521,18 +533,36 @@ function NapoleonPageContent() {
                   >
                     <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('scores')}</summary>
                     <div className="overflow-x-auto -mx-2 px-2">
-                      <table className="w-full text-sm text-ds-text-muted min-w-[420px] mt-1">
+                      <table
+                        className={scoreTableClass(
+                          isLargeDesktop,
+                          'w-full text-sm text-ds-text-muted min-w-[420px]',
+                          'mt-1',
+                        )}
+                      >
                         <thead>
                           <tr>
-                            <th scope="col" className="text-left">
+                            <th scope="col" className="text-left whitespace-nowrap text-[10px]">
                               {t('scoresPlayer')}
                             </th>
-                            <th scope="col">{t('scoresRole')}</th>
-                            <th scope="col">{t('scoresBid')}</th>
-                            <th scope="col">{t('scoresPictureCards')}</th>
-                            <th scope="col">{t('scoresTricks')}</th>
-                            <th scope="col">{t('scoresRound')}</th>
-                            <th scope="col">{t('scoresTotal')}</th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresRole')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresBid')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresPictureCards')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresTricks')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresRound')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresTotal')}
+                            </th>
                           </tr>
                         </thead>
                         <tbody>
@@ -562,18 +592,32 @@ function NapoleonPageContent() {
                   <div className="my-3 p-2 rounded bg-black/30 relative" data-tutorial="np-score-table">
                     <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
                     <div className="overflow-x-auto -mx-2 px-2">
-                      <table className="w-full text-sm text-ds-text-muted min-w-[420px]">
+                      <table
+                        className={scoreTableClass(isLargeDesktop, 'w-full text-sm text-ds-text-muted min-w-[420px]')}
+                      >
                         <thead>
                           <tr>
-                            <th scope="col" className="text-left">
+                            <th scope="col" className="text-left whitespace-nowrap text-[10px]">
                               {t('scoresPlayer')}
                             </th>
-                            <th scope="col">{t('scoresRole')}</th>
-                            <th scope="col">{t('scoresBid')}</th>
-                            <th scope="col">{t('scoresPictureCards')}</th>
-                            <th scope="col">{t('scoresTricks')}</th>
-                            <th scope="col">{t('scoresRound')}</th>
-                            <th scope="col">{t('scoresTotal')}</th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresRole')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresBid')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresPictureCards')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresTricks')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresRound')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresTotal')}
+                            </th>
                           </tr>
                         </thead>
                         <tbody>
@@ -611,11 +655,7 @@ function NapoleonPageContent() {
             </div>
 
             {/* Message */}
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
+            {isMobile && messageBox}
 
             {/* Action log */}
             <ActionLogSection
@@ -627,7 +667,123 @@ function NapoleonPageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.napoleon.footer} px-4 py-2.5`}>
+          <GameFooter
+            message={isMobile ? undefined : messageBox}
+            className={`${gameTheme.napoleon.footer} px-4 py-2.5`}
+            actions={
+              (isHumanBidTurn || isHumanTurn || isHumanNapoleon || isHumanExchange || isTrickEnd || isRoundEnd) && (
+                <div className="flex gap-2 items-center flex-wrap">
+                  {(isHumanBidTurn || isHumanTurn || isHumanNapoleon || isHumanExchange) && (
+                    <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
+                      {tc('button.hint')}
+                    </button>
+                  )}
+
+                  {/* Bid controls */}
+                  {isHumanBidTurn && (
+                    <>
+                      <input
+                        type="number"
+                        min={minLegalBid}
+                        max={MAX_BID}
+                        value={effectiveBidValue}
+                        onChange={(e) => setBidValue(Number(e.target.value))}
+                        className="w-16 px-2 py-1 rounded bg-white/20 text-ds-text-primary text-center"
+                        aria-label={t('bidInputLabel')}
+                      />
+                      <button
+                        type="button"
+                        className={`${btnPrimary}${!isBidValueLegal ? ' opacity-50 cursor-not-allowed active:scale-100 hover:shadow-none' : ''}`}
+                        onClick={() => {
+                          if (isBidValueLegal) handleBid(effectiveBidValue);
+                        }}
+                        disabled={loading}
+                        aria-disabled={!isBidValueLegal || undefined}
+                      >
+                        {t('bidButton')}
+                      </button>
+                      <button type="button" className={btnPrimary} onClick={handlePass} disabled={loading}>
+                        {t('passButton')}
+                      </button>
+                    </>
+                  )}
+
+                  {/* Trump declaration controls (adjutant card is chosen via the visual picker above) */}
+                  {isHumanNapoleon && (
+                    <>
+                      <select
+                        value={trumpSuitValue}
+                        onChange={(e) => setTrumpSuitValue(Number(e.target.value))}
+                        className="px-2 py-1 rounded bg-white/20 text-ds-text-primary"
+                        aria-label={t('trumpSuitLabel')}
+                      >
+                        {[1, 2, 3, 4].map((s) => (
+                          <option key={s} value={s}>
+                            {t(`suitName.${SUIT_KEYS[s]}`)}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={() => {
+                          if (adjSelection)
+                            handleTrumpDeclaration(trumpSuitValue, adjSelection.suit, adjSelection.value);
+                        }}
+                        disabled={loading || !adjSelection}
+                      >
+                        {t('declareButton')}
+                      </button>
+                    </>
+                  )}
+
+                  {/* Kitty exchange controls */}
+                  {isHumanExchange && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={() => {
+                        if (selectedCardIndices.length === 1) handleExchange(selectedCardIndices[0]);
+                      }}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                    >
+                      {selectedCardIndices.length === 1 && humanPlayer?.cards[selectedCardIndices[0]]
+                        ? t('exchangeButtonNamed', { card: cardAlt(humanPlayer.cards[selectedCardIndices[0]]) })
+                        : t('exchangeButton')}
+                    </button>
+                  )}
+
+                  {/* Play controls */}
+                  {isHumanTurn && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={confirmAction}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                    >
+                      {t('playButton')}
+                    </button>
+                  )}
+
+                  {/* Trick end */}
+                  {isTrickEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                      {t('nextTrick')}
+                    </button>
+                  )}
+
+                  {/* Round end */}
+                  {isRoundEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                      {t('nextRound')}
+                    </button>
+                  )}
+
+                  {/* Reset */}
+                </div>
+              )
+            }
+          >
             {isHumanExchange && (
               <div className="text-ds-info text-xs text-center mb-1" data-testid="np-hand-discard-label">
                 {t('handDiscardLabel')}
@@ -693,113 +849,7 @@ function NapoleonPageContent() {
             </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-            <div className="flex gap-2 items-center flex-wrap">
-              {(isHumanBidTurn || isHumanTurn || isHumanNapoleon || isHumanExchange) && (
-                <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
-                  {tc('button.hint')}
-                </button>
-              )}
-
-              {/* Bid controls */}
-              {isHumanBidTurn && (
-                <>
-                  <input
-                    type="number"
-                    min={minLegalBid}
-                    max={MAX_BID}
-                    value={effectiveBidValue}
-                    onChange={(e) => setBidValue(Number(e.target.value))}
-                    className="w-16 px-2 py-1 rounded bg-white/20 text-ds-text-primary text-center"
-                    aria-label={t('bidInputLabel')}
-                  />
-                  <button
-                    type="button"
-                    className={`${btnPrimary}${!isBidValueLegal ? ' opacity-50 cursor-not-allowed active:scale-100 hover:shadow-none' : ''}`}
-                    onClick={() => {
-                      if (isBidValueLegal) handleBid(effectiveBidValue);
-                    }}
-                    disabled={loading}
-                    aria-disabled={!isBidValueLegal || undefined}
-                  >
-                    {t('bidButton')}
-                  </button>
-                  <button type="button" className={btnPrimary} onClick={handlePass} disabled={loading}>
-                    {t('passButton')}
-                  </button>
-                </>
-              )}
-
-              {/* Trump declaration controls (adjutant card is chosen via the visual picker above) */}
-              {isHumanNapoleon && (
-                <>
-                  <select
-                    value={trumpSuitValue}
-                    onChange={(e) => setTrumpSuitValue(Number(e.target.value))}
-                    className="px-2 py-1 rounded bg-white/20 text-ds-text-primary"
-                    aria-label={t('trumpSuitLabel')}
-                  >
-                    {[1, 2, 3, 4].map((s) => (
-                      <option key={s} value={s}>
-                        {t(`suitName.${SUIT_KEYS[s]}`)}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={() => {
-                      if (adjSelection) handleTrumpDeclaration(trumpSuitValue, adjSelection.suit, adjSelection.value);
-                    }}
-                    disabled={loading || !adjSelection}
-                  >
-                    {t('declareButton')}
-                  </button>
-                </>
-              )}
-
-              {/* Kitty exchange controls */}
-              {isHumanExchange && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={() => {
-                    if (selectedCardIndices.length === 1) handleExchange(selectedCardIndices[0]);
-                  }}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {selectedCardIndices.length === 1 && humanPlayer?.cards[selectedCardIndices[0]]
-                    ? t('exchangeButtonNamed', { card: cardAlt(humanPlayer.cards[selectedCardIndices[0]]) })
-                    : t('exchangeButton')}
-                </button>
-              )}
-
-              {/* Play controls */}
-              {isHumanTurn && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={confirmAction}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-
-              {/* Trick end */}
-              {isTrickEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                  {t('nextTrick')}
-                </button>
-              )}
-
-              {/* Round end */}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
-
-              {/* Reset */}
+            <div className="flex items-center">
               <GameResetButton
                 isGameEnd={!!isGameEnd}
                 onReset={handleManualReset}

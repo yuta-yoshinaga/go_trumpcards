@@ -266,12 +266,9 @@ function ThreeCardBragPageContent() {
             </div>
 
             {isHumanBetTurn && (
-              <>
-                <div className="text-ds-text-muted text-center mb-2 text-sm font-semibold">{t('betNotice')}</div>
-                <div className="text-ds-text-muted text-center mb-2 text-xs" data-testid="tcb-cost-notice">
-                  {humanSeen ? t('costNotice.seen', { cost: betCost }) : t('costNotice.blind', { cost: betCost })}
-                </div>
-              </>
+              <div className="text-ds-text-muted text-center mb-2 text-xs" data-testid="tcb-cost-notice">
+                {humanSeen ? t('costNotice.seen', { cost: betCost }) : t('costNotice.blind', { cost: betCost })}
+              </div>
             )}
 
             {/* Players */}
@@ -452,7 +449,7 @@ function ThreeCardBragPageContent() {
                     >
                       {t('raiseButton', { amount: raiseCost })}
                     </button>
-                    <span className="text-ds-text-muted text-xs ml-1" data-testid="tcb-raise-range">
+                    <span className="text-ds-text-muted text-xs ml-1 whitespace-nowrap" data-testid="tcb-raise-range">
                       {canRaise ? t('raiseRange', { min: raiseMin, max: raiseMax }) : t('raiseUnavailable')}
                     </span>
                   </div>

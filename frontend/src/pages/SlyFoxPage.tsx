@@ -15,7 +15,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions, useDenseLargeDesktopCardSize } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -36,6 +36,7 @@ import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
+const MOBILE_PLAY_CARD_WIDTH = 32;
 const TABLEAU_CNT = 20;
 const FOUNDATION_CNT = 8;
 const FOUNDATION_PILE_FULL = 13;
@@ -133,7 +134,15 @@ function SlyFoxPageContent() {
   );
   const { handleCommand } = useCliGame(runApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  const { cardWidth, cardHeight } = useCardDimensions();
+  const { cardWidth, cardHeight, isMobile } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
+  const denseCardSize = useDenseLargeDesktopCardSize();
+  const playCardWidth = isMobile ? MOBILE_PLAY_CARD_WIDTH : isLargeDesktop ? denseCardSize.width : cardWidth;
+  const playCardHeight = isLargeDesktop
+    ? denseCardSize.height
+    : isMobile
+      ? Math.round(playCardWidth * 1.5)
+      : cardHeight;
 
   const handleManualReset = useCallback(() => {
     void runApi('reset');
@@ -285,109 +294,120 @@ function SlyFoxPageContent() {
 
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
             <div className="mb-2 text-xs text-ds-text-muted">{t('foundations')}</div>
-            <div className="flex gap-2 mb-5 flex-wrap" data-tutorial="co-foundations">
-              {Array.from({ length: FOUNDATION_CNT }, (_, idx) => {
-                const pile = state.foundation[idx] ?? [];
-                const top = pile[pile.length - 1];
-                const ascending = state.foundationAscending[idx] ?? idx < FOUNDATION_CNT / 2;
-                const nextRank = slyfoxNextRank(top?.value, pile.length, ascending);
-                const nextRankLabel = nextRank !== null ? valueName(nextRank) : null;
-                const dirLabel = ascending ? t('ascending') : t('descending');
-                return (
-                  <button
-                    key={`f-${idx.toString()}`}
-                    type="button"
-                    className={`flex flex-col items-center p-1 rounded ${focusRingWhite} ${hintFoundation === idx ? 'ring-2 ring-ds-success animate-pulse' : ''} ${source ? 'cursor-pointer' : 'cursor-default'}`}
-                    onClick={() => clickFoundation(idx)}
-                    disabled={!isPlaying || loading || source === null}
-                    data-testid={`co-foundation-${idx.toString()}`}
-                    aria-label={
-                      top
-                        ? nextRankLabel
-                          ? t('foundationTopAria', {
-                              index: idx,
-                              direction: dirLabel,
-                              card: cardAlt(top),
-                              rank: nextRankLabel,
-                            })
-                          : t('foundationTopCompleteAria', { index: idx, direction: dirLabel, card: cardAlt(top) })
-                        : t('foundationEmptyAria', { index: idx, direction: dirLabel, rank: nextRankLabel })
-                    }
-                  >
-                    <span className="text-[11px] mb-0.5 text-ds-text-muted">
-                      {ascending ? '↑' : '↓'}F{idx}
-                    </span>
-                    <div className="relative" style={{ width: cardWidth, height: cardHeight }}>
-                      {top ? (
-                        <AnimatedCard card={top} width={cardWidth} />
-                      ) : (
-                        <div
-                          style={{ width: cardWidth, height: cardHeight }}
-                          className="rounded border-2 border-dashed border-white/30 flex items-center justify-center text-ds-text-muted text-xs"
-                        >
-                          {t('empty')}
-                        </div>
-                      )}
-                      {nextRankLabel && (
-                        <span
-                          data-testid={`co-foundation-next-${idx.toString()}`}
-                          aria-hidden="true"
-                          className="absolute -top-1 -right-1 px-1.5 py-0.5 rounded-md bg-black/60 text-ds-text-on-accent text-[10px] font-bold leading-none ring-1 ring-white/30"
-                        >
-                          {t('nextRankBadge', { rank: nextRankLabel })}
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-[11px] text-ds-text-muted mt-0.5">
-                      {pile.length}/{FOUNDATION_PILE_FULL}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="flex gap-3 flex-wrap items-start mb-5" data-tutorial="co-stock">
-              <div className="flex flex-col items-center">
-                <div className="text-[11px] mb-0.5 text-ds-text-muted">
-                  {t('stock')} ({state.stockCount})
-                </div>
-                <button
-                  type="button"
-                  onClick={toggleDealing}
-                  disabled={!isPlaying || loading || state.stockCount === 0}
-                  aria-label={t('dealAria')}
-                  aria-pressed={source?.kind === 'dealing'}
-                  data-testid="co-deal-button"
-                  className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${source?.kind === 'dealing' ? 'ring-2 ring-ds-warning' : ''} ${hintStock ? 'ring-2 ring-ds-success animate-pulse' : ''}`}
-                >
-                  {state.stockCount > 0 ? (
-                    <AnimatedCardBack width={cardWidth} />
-                  ) : (
-                    <div
-                      style={{ width: cardWidth, height: cardHeight }}
-                      className="rounded border-2 border-dashed border-white/30 flex items-center justify-center text-ds-text-muted text-xs"
+            <div
+              className={`${isLargeDesktop ? 'flex flex-wrap justify-center gap-2 mb-2' : 'contents'}`}
+              data-testid={isLargeDesktop ? 'co-top-row' : undefined}
+            >
+              <div
+                className={`flex gap-1 ${isLargeDesktop ? 'flex-wrap' : 'mb-5 flex-nowrap sm:gap-2 sm:flex-wrap'}`}
+                data-tutorial="co-foundations"
+              >
+                {Array.from({ length: FOUNDATION_CNT }, (_, idx) => {
+                  const pile = state.foundation[idx] ?? [];
+                  const top = pile[pile.length - 1];
+                  const ascending = state.foundationAscending[idx] ?? idx < FOUNDATION_CNT / 2;
+                  const nextRank = slyfoxNextRank(top?.value, pile.length, ascending);
+                  const nextRankLabel = nextRank !== null ? valueName(nextRank) : null;
+                  const dirLabel = ascending ? t('ascending') : t('descending');
+                  return (
+                    <button
+                      key={`f-${idx.toString()}`}
+                      type="button"
+                      className={`flex flex-col items-center p-0 sm:p-1 rounded ${focusRingWhite} ${hintFoundation === idx ? 'ring-2 ring-ds-success animate-pulse' : ''} ${source ? 'cursor-pointer' : 'cursor-default'}`}
+                      onClick={() => clickFoundation(idx)}
+                      disabled={!isPlaying || loading || source === null}
+                      data-testid={`co-foundation-${idx.toString()}`}
+                      aria-label={
+                        top
+                          ? nextRankLabel
+                            ? t('foundationTopAria', {
+                                index: idx,
+                                direction: dirLabel,
+                                card: cardAlt(top),
+                                rank: nextRankLabel,
+                              })
+                            : t('foundationTopCompleteAria', { index: idx, direction: dirLabel, card: cardAlt(top) })
+                          : t('foundationEmptyAria', { index: idx, direction: dirLabel, rank: nextRankLabel })
+                      }
                     >
-                      {t('empty')}
-                    </div>
-                  )}
-                </button>
-                {/* **周の進みはここにしか出ない。**閉じている理由が盤から読めないと
+                      <span className="text-[11px] mb-0.5 text-ds-text-muted">
+                        {ascending ? '↑' : '↓'}F{idx}
+                      </span>
+                      <div className="relative" style={{ width: playCardWidth, height: playCardHeight }}>
+                        {top ? (
+                          <AnimatedCard card={top} width={playCardWidth} />
+                        ) : (
+                          <div
+                            style={{ width: playCardWidth, height: playCardHeight }}
+                            className="rounded border-2 border-dashed border-white/30 flex items-center justify-center text-ds-text-muted text-xs"
+                          >
+                            {t('empty')}
+                          </div>
+                        )}
+                        {nextRankLabel && (
+                          <span
+                            data-testid={`co-foundation-next-${idx.toString()}`}
+                            aria-hidden="true"
+                            className="absolute -top-1 -right-1 px-1.5 py-0.5 rounded-md bg-black/60 text-ds-text-on-accent text-[10px] font-bold leading-none ring-1 ring-white/30"
+                          >
+                            {t('nextRankBadge', { rank: nextRankLabel })}
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[11px] text-ds-text-muted mt-0.5">
+                        {pile.length}/{FOUNDATION_PILE_FULL}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="flex gap-3 flex-wrap items-start mb-5" data-tutorial="co-stock">
+                <div className="flex flex-col items-center">
+                  <div className="text-[11px] mb-0.5 text-ds-text-muted">
+                    {t('stock')} ({state.stockCount})
+                  </div>
+                  <button
+                    type="button"
+                    onClick={toggleDealing}
+                    disabled={!isPlaying || loading || state.stockCount === 0}
+                    aria-label={t('dealAria')}
+                    aria-pressed={source?.kind === 'dealing'}
+                    data-testid="co-deal-button"
+                    className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${source?.kind === 'dealing' ? 'ring-2 ring-ds-warning' : ''} ${hintStock ? 'ring-2 ring-ds-success animate-pulse' : ''}`}
+                  >
+                    {state.stockCount > 0 ? (
+                      <AnimatedCardBack width={playCardWidth} />
+                    ) : (
+                      <div
+                        style={{ width: playCardWidth, height: playCardHeight }}
+                        className="rounded border-2 border-dashed border-white/30 flex items-center justify-center text-ds-text-muted text-xs"
+                      >
+                        {t('empty')}
+                      </div>
+                    )}
+                  </button>
+                  {/* **周の進みはここにしか出ない。**閉じている理由が盤から読めないと
                     「なぜリザーブが押せないのか」が分からない。 */}
-                <div
-                  className="text-[11px] mt-1 text-ds-text-muted text-center"
-                  data-testid="co-cycle-status"
-                  role="status"
-                  aria-live="polite"
-                >
-                  {reserveLocked
-                    ? t('cycleLocked', { dealt: state.dealtThisCycle, cycle: state.dealCycle, left: dealsLeft })
-                    : t('cycleOpen')}
+                  <div
+                    className="text-[11px] mt-1 text-ds-text-muted text-center"
+                    data-testid="co-cycle-status"
+                    role="status"
+                    aria-live="polite"
+                  >
+                    {reserveLocked
+                      ? t('cycleLocked', { dealt: state.dealtThisCycle, cycle: state.dealCycle, left: dealsLeft })
+                      : t('cycleOpen')}
+                  </div>
                 </div>
               </div>
             </div>
 
             <div className="mb-2 text-xs text-ds-text-muted">{t('tableau')}</div>
-            <div className="flex gap-2 flex-wrap items-start" data-tutorial="co-tableau">
+            <div
+              className={`items-start ${isLargeDesktop ? 'flex flex-wrap justify-center gap-2' : 'flex gap-1 sm:gap-2 flex-wrap'}`}
+              data-tutorial="co-tableau"
+            >
               {Array.from({ length: TABLEAU_CNT }, (_, idx) => {
                 const pile = state.tableau[idx] ?? [];
                 const top = pile[pile.length - 1];
@@ -396,7 +416,11 @@ function SlyFoxPageContent() {
                 // 配るモードなら、空き枠でもそうでなくても置き先になる。
                 const isTarget = source?.kind === 'dealing';
                 return (
-                  <div key={`t-${idx.toString()}`} className="flex flex-col items-center">
+                  <div
+                    key={`t-${idx.toString()}`}
+                    className="flex flex-col items-center"
+                    style={{ width: isLargeDesktop ? playCardWidth : undefined }}
+                  >
                     <div className="text-[11px] mb-0.5 text-ds-text-muted">
                       T{idx} ({pile.length})
                     </div>
@@ -416,10 +440,10 @@ function SlyFoxPageContent() {
                       className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${selected ? 'ring-2 ring-ds-warning' : ''} ${hintTableau === idx || hintTableauTarget === idx ? 'ring-2 ring-ds-success animate-pulse' : ''} ${isTarget && !selected ? 'ring-2 ring-ds-info/70' : ''}`}
                     >
                       {top ? (
-                        <AnimatedCard card={top} width={cardWidth} />
+                        <AnimatedCard card={top} width={playCardWidth} />
                       ) : (
                         <div
-                          style={{ width: cardWidth, height: cardHeight }}
+                          style={{ width: playCardWidth, height: playCardHeight }}
                           className="rounded border-2 border-dashed border-white/30 flex items-center justify-center text-ds-text-muted text-xs"
                         >
                           {t('empty')}

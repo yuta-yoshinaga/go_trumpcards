@@ -30,6 +30,8 @@
   "gameWinner": "{{name}} の勝ちです。",
   "loserLine": "{{name}} が脱落しました（{{reason}}）",
   "eventsTitle": "このラウンドの交換",
+  "rulesLabel": "ルール",
+  "deckLabel": "デッキ早見",
   "event": {
     "swap": "{{actor}} が {{target}} と交換しました",
     "satisfied": "{{actor}} は交換しませんでした",

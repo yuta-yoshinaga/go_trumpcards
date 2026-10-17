@@ -38,6 +38,7 @@
   "bagsAria": "Bags per player",
   "bagsValue": "{{name}}: {{n}}",
   "bidButton": "Bid",
+  "bidButtonSelected": "Bid {{n}}",
   "bidSelectLabel": "Select your bid",
   "playButton": "Play",
   "nextTrick": "Next Trick",

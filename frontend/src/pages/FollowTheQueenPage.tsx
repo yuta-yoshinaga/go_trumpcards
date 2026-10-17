@@ -361,198 +361,6 @@ export function FollowTheQueenPageContent({ gameKey }: { gameKey: StudPageGameKe
         <>
           {/* Scrollable: CPU players */}
           <div className={`flex-1 overflow-y-auto pt-4 px-5 lg:px-8 ${lgCardAreaConstraint}`}>
-            {/* CPU players */}
-            <CpuAccordion playerCount={cpuPlayers.length} dataTutorial="scs-cpu-area">
-              {cpuPlayers.map((p) => (
-                <div key={p.id} className="mb-3 p-2 rounded bg-black/30">
-                  <div className="text-ds-text-primary text-sm mb-1">
-                    CPU {p.id}
-                    {p.id === bringInPlayerId && (
-                      <span data-testid={`ftq-bringin-badge-${p.id}`} className={bringInBadgeClass}>
-                        {t('bringIn')}
-                      </span>
-                    )}
-                    <span className="ml-2 text-xs text-ds-text-muted">{p.playStyleName}</span>
-                    {/* サーバは VPIP/PFR/3Bet/AF を毎回返し CUI も毎ターン出しているのに、
-                        Web だけ出していなかった (#5522)。0 ハンドのうちは全部 0% で
-                        情報にならないので他のポーカーページと同じ条件で出す。 */}
-                    {p.totalHands > 0 && (
-                      <HudStats vpip={p.vpip} pfr={p.pfr} threeBet={p.threeBet} af={p.af} namespace={gameKey} />
-                    )}
-                    <span className="ml-2 text-xs">
-                      {tc('betting.chips')} {p.chips}
-                    </span>
-                    {p.currentBet > 0 && (
-                      <span className="ml-2 text-xs">
-                        {tc('betting.currentBet')} {p.currentBet}
-                      </span>
-                    )}
-                    {p.folded && <span className="ml-2 text-ds-error-text text-xs">[{tc('status.folded')}]</span>}
-                    {p.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
-                    {isShowdown && !p.folded && p.handName && (
-                      <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
-                        {p.handName}
-                      </span>
-                    )}
-                  </div>
-                  {/* Door cards (always visible) */}
-                  <div className="text-ds-text-muted text-xs mb-0.5">{t('doorCards')}</div>
-                  <div className="flex flex-wrap gap-1 mb-1">
-                    {p.doorCards?.length
-                      ? p.doorCards.map((card) => (
-                          <AnimatedCard
-                            key={`${card.design}-${card.value}`}
-                            card={card}
-                            width={cardWidth}
-                            style={placeholderCardStyle}
-                          />
-                        ))
-                      : !p.folded &&
-                        Array.from({ length: 4 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
-                  </div>
-                  {/* Hole cards (face-down unless showdown) */}
-                  <div className="text-ds-text-muted text-xs mb-0.5">{t('holeCards')}</div>
-                  <div className="flex flex-wrap gap-1">
-                    {isShowdown && !p.folded && p.holeCards?.length
-                      ? p.holeCards.map((card) => (
-                          <AnimatedCard
-                            key={`${card.design}-${card.value}`}
-                            card={card}
-                            width={cardWidth}
-                            style={placeholderCardStyle}
-                          />
-                        ))
-                      : !p.folded &&
-                        Array.from({
-                          length: (state?.phase ?? 0) >= FollowTheQueenPhase.SEVENTH_STREET ? 3 : 2,
-                        }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
-                  </div>
-                </div>
-              ))}
-            </CpuAccordion>
-
-            {/* CPU actions: toast on mobile, inline log on desktop */}
-            {isMobile ? <CpuActionToast actions={state?.cpuActions} /> : <CpuActionLog actions={state?.cpuActions} />}
-
-            {/* Round results */}
-            {isShowdown && <RoundResults results={state?.roundResults} players={state?.players ?? []} />}
-            {isShowdown && state.sidePots.length > 0 && (
-              <div className="mt-3 space-y-1 text-center text-sm text-ds-text-primary">
-                {state.sidePots.map((sidePot, index) => (
-                  <p key={index === 0 ? 'main-pot' : `side-pot-${index}`}>
-                    {t(index === 0 ? 'mainPot' : 'sidePot', {
-                      index,
-                      amount: sidePot.amount,
-                      eligiblePlayers: sidePot.eligiblePlayers
-                        .map((playerIdx) => findPlayerName(state.players, playerIdx))
-                        .join(t('listSeparator')),
-                    })}
-                    {sidePot.winners.length > 0 &&
-                      t('awarded', {
-                        winners: sidePot.winners
-                          .map((winner) => `${findPlayerName(state.players, winner.playerIdx)} ${winner.amount}`)
-                          .join(t('listSeparator')),
-                      })}
-                  </p>
-                ))}
-              </div>
-            )}
-
-            {/* Action log */}
-            <ActionLogSection
-              isEndPhase={!!state?.gameEndFlag}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
-          </div>
-
-          {/* Settings */}
-          <SettingsPanel
-            title={tc('settings.title')}
-            groups={[
-              {
-                items: [
-                  hintCheckboxItem(tc, hintEnabled, setHintEnabled),
-                  {
-                    type: 'checkbox' as const,
-                    id: 'cpuMetaAI',
-                    label: t('settings.cpuMetaAI'),
-                    checked: cpuMetaAI,
-                    onToggle: setCpuMetaAI,
-                  },
-                ],
-              },
-            ]}
-          />
-
-          {/* Sticky footer: player hand + buttons */}
-          <GameFooter className={`${gameTheme[gameKey].footer} px-5 py-3`}>
-            {/* Human player */}
-            {humanPlayer && (
-              <div className="mb-2" data-tutorial="scs-player-hand">
-                <div className="text-ds-text-primary text-lg mb-1">
-                  {t('yourHand')}
-                  {humanPlayer.id === bringInPlayerId && (
-                    <span data-testid={`ftq-bringin-badge-${humanPlayer.id}`} className={bringInBadgeClass}>
-                      {t('bringIn')}
-                    </span>
-                  )}
-                  <span className="ml-3 text-xs">
-                    {tc('betting.chips')} {humanPlayer.chips}
-                  </span>
-                  {humanPlayer.currentBet > 0 && (
-                    <span className="ml-2 text-xs">
-                      {tc('betting.currentBet')} {humanPlayer.currentBet}
-                    </span>
-                  )}
-                  {humanPlayer.folded && (
-                    <span className="ml-2 text-ds-error-text text-xs">[{tc('status.folded')}]</span>
-                  )}
-                  {humanPlayer.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
-                  {isShowdown && !humanPlayer.folded && humanPlayer.handName && (
-                    <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
-                      {humanPlayer.handName}
-                    </span>
-                  )}
-                  {isActive && !humanPlayer.folded && currentHandKey && (
-                    <span
-                      data-testid="scs-current-hand"
-                      className="inline-block ml-2 text-xs rounded px-2 py-0.5 bg-black/25 text-ds-text-muted"
-                    >
-                      {t('currentHand')}: {t(`hand.${currentHandKey}`)}
-                    </span>
-                  )}
-                </div>
-                {/* Door cards */}
-                <div className="text-ds-text-muted text-xs mb-0.5">{t('doorCards')}</div>
-                <div className="flex flex-wrap gap-1.5 mb-1">
-                  {humanPlayer.doorCards?.length
-                    ? humanPlayer.doorCards.map(renderHumanCard)
-                    : !humanPlayer.folded &&
-                      Array.from({ length: 4 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
-                </div>
-                {/* Hole cards */}
-                <div className="text-ds-text-muted text-xs mb-0.5">{t('holeCards')}</div>
-                <div className="flex flex-wrap gap-1.5 mb-2">
-                  {humanPlayer.holeCards?.length
-                    ? humanPlayer.holeCards.map(renderHumanCard)
-                    : !humanPlayer.folded &&
-                      Array.from({ length: 3 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
-                </div>
-              </div>
-            )}
-
-            {/* Message */}
-            <GameMessageBox
-              message={state?.message}
-              messageCode={state?.messageCode}
-              messageParams={state?.messageParams}
-              alwaysVisible
-            />
-
-            <ErrorAlert message={error} onRetry={retry} />
-
             {/* Muck/Show controls */}
             {isMuckPhase && (
               <div className="mb-2 text-center" data-testid="muck-controls">
@@ -626,37 +434,121 @@ export function FollowTheQueenPageContent({ gameKey }: { gameKey: StudPageGameKe
                 </div>
               </div>
             )}
+            {/* CPU players */}
+            <CpuAccordion playerCount={cpuPlayers.length} dataTutorial="scs-cpu-area">
+              <div className="flex flex-wrap gap-2">
+                {cpuPlayers.map((p) => (
+                  <div key={p.id} className="w-full sm:flex-1 sm:basis-[300px] p-2 rounded bg-black/30">
+                    <div className="text-ds-text-primary text-sm mb-1">
+                      CPU {p.id}
+                      {p.id === bringInPlayerId && (
+                        <span data-testid={`ftq-bringin-badge-${p.id}`} className={bringInBadgeClass}>
+                          {t('bringIn')}
+                        </span>
+                      )}
+                      <span className="ml-2 text-xs text-ds-text-muted">{p.playStyleName}</span>
+                      {/* サーバは VPIP/PFR/3Bet/AF を毎回返し CUI も毎ターン出しているのに、
+                        Web だけ出していなかった (#5522)。0 ハンドのうちは全部 0% で
+                        情報にならないので他のポーカーページと同じ条件で出す。 */}
+                      {p.totalHands > 0 && (
+                        <HudStats vpip={p.vpip} pfr={p.pfr} threeBet={p.threeBet} af={p.af} namespace={gameKey} />
+                      )}
+                      <span className="ml-2 text-xs">
+                        <span className="whitespace-nowrap">
+                          {tc('betting.chips')} {p.chips}
+                        </span>
+                      </span>
+                      {p.currentBet > 0 && (
+                        <span className="ml-2 text-xs">
+                          {tc('betting.currentBet')} {p.currentBet}
+                        </span>
+                      )}
+                      {p.folded && <span className="ml-2 text-ds-error-text text-xs">[{tc('status.folded')}]</span>}
+                      {p.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
+                      {isShowdown && !p.folded && p.handName && (
+                        <span
+                          className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}
+                        >
+                          {p.handName}
+                        </span>
+                      )}
+                    </div>
+                    {/* Door cards (always visible) */}
+                    <div className="text-ds-text-muted text-xs mb-0.5">{t('doorCards')}</div>
+                    <div className="flex flex-wrap gap-1 mb-1">
+                      {p.doorCards?.length
+                        ? p.doorCards.map((card) => (
+                            <AnimatedCard
+                              key={`${card.design}-${card.value}`}
+                              card={card}
+                              width={cardWidth}
+                              style={placeholderCardStyle}
+                            />
+                          ))
+                        : !p.folded &&
+                          Array.from({ length: 4 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
+                    </div>
+                    {/* Hole cards (face-down unless showdown) */}
+                    <div className="text-ds-text-muted text-xs mb-0.5">{t('holeCards')}</div>
+                    <div className="flex flex-wrap gap-1">
+                      {isShowdown && !p.folded && p.holeCards?.length
+                        ? p.holeCards.map((card) => (
+                            <AnimatedCard
+                              key={`${card.design}-${card.value}`}
+                              card={card}
+                              width={cardWidth}
+                              style={placeholderCardStyle}
+                            />
+                          ))
+                        : !p.folded &&
+                          Array.from({
+                            length: (state?.phase ?? 0) >= FollowTheQueenPhase.SEVENTH_STREET ? 3 : 2,
+                          }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CpuAccordion>
+
+            {/* CPU actions: toast on mobile, inline log on desktop */}
+            {isMobile ? <CpuActionToast actions={state?.cpuActions} /> : <CpuActionLog actions={state?.cpuActions} />}
+
+            {/* Round results */}
+            {isShowdown && <RoundResults results={state?.roundResults} players={state?.players ?? []} />}
+            {isShowdown && state.sidePots.length > 0 && (
+              <div className="mt-3 space-y-1 text-center text-sm text-ds-text-primary">
+                {state.sidePots.map((sidePot, index) => (
+                  <p key={index === 0 ? 'main-pot' : `side-pot-${index}`}>
+                    {t(index === 0 ? 'mainPot' : 'sidePot', {
+                      index,
+                      amount: sidePot.amount,
+                      eligiblePlayers: sidePot.eligiblePlayers
+                        .map((playerIdx) => findPlayerName(state.players, playerIdx))
+                        .join(t('listSeparator')),
+                    })}
+                    {sidePot.winners.length > 0 &&
+                      t('awarded', {
+                        winners: sidePot.winners
+                          .map((winner) => `${findPlayerName(state.players, winner.playerIdx)} ${winner.amount}`)
+                          .join(t('listSeparator')),
+                      })}
+                  </p>
+                ))}
+              </div>
+            )}
+
+            {/* Action log */}
+            <ActionLogSection
+              isEndPhase={!!state?.gameEndFlag}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
+
+            <ErrorAlert message={error} onRetry={retry} />
 
             {/* Hint */}
             {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
-
-            {/* Betting controls */}
-            {canAct && (
-              <div data-tutorial="scs-action-buttons">
-                <p data-testid="ftq-betting-pot" className="mb-2 text-center text-ds-text-primary text-sm tabular-nums">
-                  {tc('label.pot')} <strong>{state.pot}</strong>
-                </p>
-                <BettingControls
-                  inputId="followTheQueenBetAmount"
-                  betAmount={betAmount}
-                  onBetAmountChange={setBetAmount}
-                  minRaise={minRaise}
-                  maxBetAmount={state?.maxBetAmount}
-                  potSize={state?.pot}
-                  hasOutstandingBet={hasOutstandingBet}
-                  callAmountLabel={
-                    hasOutstandingBet && callAmount > 0 ? t('callAmount', { amount: callAmount }) : undefined
-                  }
-                  loading={loading}
-                  onCall={() => execApi('call', undefined, undefined, getElapsed())}
-                  onRaise={() => execApi('raise', betAmount, undefined, getElapsed())}
-                  onBet={() => execApi('bet', betAmount, undefined, getElapsed())}
-                  onCheck={() => execApi('check', undefined, undefined, getElapsed())}
-                  onFold={() => execApi('fold', undefined, undefined, getElapsed())}
-                  onAllIn={() => execApi('allin', undefined, undefined, getElapsed())}
-                />
-              </div>
-            )}
 
             <GameResetButton
               isGameEnd={phase === FollowTheQueenPhase.SHOWDOWN || phase === FollowTheQueenPhase.END}
@@ -666,7 +558,135 @@ export function FollowTheQueenPageContent({ gameKey }: { gameKey: StudPageGameKe
               dataTutorial="scs-reset-button"
               className="min-w-[90px]"
             />
-            <ActionShortcutsPanel bindings={actionBindings} data-testid="seven-card-stud-kbd-shortcuts" />
+          </div>
+
+          {/* Settings */}
+          <SettingsPanel
+            title={tc('settings.title')}
+            groups={[
+              {
+                items: [
+                  hintCheckboxItem(tc, hintEnabled, setHintEnabled),
+                  {
+                    type: 'checkbox' as const,
+                    id: 'cpuMetaAI',
+                    label: t('settings.cpuMetaAI'),
+                    checked: cpuMetaAI,
+                    onToggle: setCpuMetaAI,
+                  },
+                ],
+              },
+            ]}
+          />
+
+          {/* Sticky footer: player hand + buttons */}
+          <GameFooter
+            className={`${gameTheme[gameKey].footer} px-5 py-3`}
+            actions={
+              <>
+                {/* Betting controls */}
+                {canAct && (
+                  <div data-tutorial="scs-action-buttons">
+                    <p
+                      data-testid="ftq-betting-pot"
+                      className="mb-2 text-center text-ds-text-primary text-sm tabular-nums"
+                    >
+                      {tc('label.pot')} <strong>{state.pot}</strong>
+                    </p>
+                    <BettingControls
+                      inputId="followTheQueenBetAmount"
+                      betAmount={betAmount}
+                      onBetAmountChange={setBetAmount}
+                      minRaise={minRaise}
+                      maxBetAmount={state?.maxBetAmount}
+                      potSize={state?.pot}
+                      hasOutstandingBet={hasOutstandingBet}
+                      callAmountLabel={
+                        hasOutstandingBet && callAmount > 0 ? t('callAmount', { amount: callAmount }) : undefined
+                      }
+                      loading={loading}
+                      onCall={() => execApi('call', undefined, undefined, getElapsed())}
+                      onRaise={() => execApi('raise', betAmount, undefined, getElapsed())}
+                      onBet={() => execApi('bet', betAmount, undefined, getElapsed())}
+                      onCheck={() => execApi('check', undefined, undefined, getElapsed())}
+                      onFold={() => execApi('fold', undefined, undefined, getElapsed())}
+                      onAllIn={() => execApi('allin', undefined, undefined, getElapsed())}
+                    />
+                  </div>
+                )}
+
+                <ActionShortcutsPanel bindings={actionBindings} data-testid="seven-card-stud-kbd-shortcuts" />
+              </>
+            }
+          >
+            {/* Human player */}
+            {humanPlayer && (
+              <div className="mb-2" data-tutorial="scs-player-hand">
+                <div className="text-ds-text-primary text-lg mb-1">
+                  {t('yourHand')}
+                  {humanPlayer.id === bringInPlayerId && (
+                    <span data-testid={`ftq-bringin-badge-${humanPlayer.id}`} className={bringInBadgeClass}>
+                      {t('bringIn')}
+                    </span>
+                  )}
+                  <span className="ml-3 text-xs">
+                    {tc('betting.chips')} {humanPlayer.chips}
+                  </span>
+                  {humanPlayer.currentBet > 0 && (
+                    <span className="ml-2 text-xs">
+                      {tc('betting.currentBet')} {humanPlayer.currentBet}
+                    </span>
+                  )}
+                  {humanPlayer.folded && (
+                    <span className="ml-2 text-ds-error-text text-xs">[{tc('status.folded')}]</span>
+                  )}
+                  {humanPlayer.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
+                  {isShowdown && !humanPlayer.folded && humanPlayer.handName && (
+                    <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
+                      {humanPlayer.handName}
+                    </span>
+                  )}
+                  {isActive && !humanPlayer.folded && currentHandKey && (
+                    <span
+                      data-testid="scs-current-hand"
+                      className="inline-block ml-2 text-xs rounded px-2 py-0.5 bg-black/25 text-ds-text-muted"
+                    >
+                      {t('currentHand')}: {t(`hand.${currentHandKey}`)}
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-wrap items-start gap-x-3 mb-2">
+                  {/* Door cards */}
+                  <div>
+                    <div className="text-ds-text-muted text-xs mb-0.5">{t('doorCards')}</div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {humanPlayer.doorCards?.length
+                        ? humanPlayer.doorCards.map(renderHumanCard)
+                        : !humanPlayer.folded &&
+                          Array.from({ length: 4 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
+                    </div>
+                  </div>
+                  {/* Hole cards */}
+                  <div>
+                    <div className="text-ds-text-muted text-xs mb-0.5">{t('holeCards')}</div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {humanPlayer.holeCards?.length
+                        ? humanPlayer.holeCards.map(renderHumanCard)
+                        : !humanPlayer.folded &&
+                          Array.from({ length: 3 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Message */}
+            <GameMessageBox
+              message={state?.message}
+              messageCode={state?.messageCode}
+              messageParams={state?.messageParams}
+              alwaysVisible
+            />
           </GameFooter>
         </>
       )}

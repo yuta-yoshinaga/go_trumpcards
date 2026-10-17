@@ -31,6 +31,7 @@
   "deadwoodShort": "デッドウッド {{score}}",
   "maalShort": "マール {{score}}",
   "maalRule": "マール: ティプル3点、ポプル/ジプル各2点、アルター1点、印刷ジョーカー1点。純シーケンス3組以上のとき、合計をラウンド点から差し引きます。",
+  "rules": "ルール",
   "pureSequenceBadge": "純シーケンス有",
   "scores": "スコア",
   "scoresPlayer": "プレイヤー",
@@ -58,6 +59,8 @@
   "drawPhase": "山札または捨て札から1枚引いてください",
   "discardPhase": "1枚捨てるか、21枚が有効なら宣言してください",
   "roundEnd": "ラウンド終了",
+  "roundEndByDeclaration": "{{name}}が宣言してラウンド終了",
+  "roundEndByStockOut": "山札切れでラウンド終了",
   "result": {
     "humanWin": "あなたの勝利！",
     "cpuWin": "CPU {{cpuId}} の勝利！"

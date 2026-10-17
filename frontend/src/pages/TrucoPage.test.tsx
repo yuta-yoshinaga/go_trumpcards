@@ -59,8 +59,17 @@ beforeEach(() => {
 });
 
 describe('TrucoPage', () => {
+  it('renders the Truco declaration in the primary action row', async () => {
+    renderWithProviders(<TrucoPage />);
+    expect(await screen.findByTestId('truco-primary-actions')).toContainElement(
+      screen.getByRole('button', { name: 'Truco を宣言' }),
+    );
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<TrucoPage />);
+    expect(await screen.findByTestId('truco-hint-toggle')).toHaveTextContent('ヒント');
+    expect(screen.queryByText('hint', { exact: true })).not.toBeInTheDocument();
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { matchTarget: 15 }));
   });
 
@@ -106,6 +115,7 @@ describe('TrucoPage', () => {
     renderWithProviders(<TrucoPage />);
     await waitFor(() => expect(screen.getByText(/マッチ得点/)).toBeInTheDocument());
     expect(screen.getByTestId('truco-header')).toHaveTextContent(/目標/);
+    expect(screen.getByTestId('truco-mano')).toHaveClass('whitespace-nowrap');
     expect(screen.getByTestId('truco-stake')).toBeInTheDocument();
   });
 
@@ -246,8 +256,9 @@ describe('TrucoPage', () => {
   });
 
   it('shows accept/decline buttons in respond phase and dispatches accept', async () => {
-    mockExec.mockResolvedValue(makeState({ phase: 1, responderIdx: 0, trucoCallerIdx: 1, pendingLevel: 1 }));
+    mockExec.mockResolvedValue(makeState({ phase: 1, responderIdx: 0, trucoCallerIdx: 1, pendingLevel: 2 }));
     renderWithProviders(<TrucoPage />);
+    expect(await screen.findByText('CPU が Retruco を宣言しました。応答してください。')).toBeInTheDocument();
     const acceptBtn = await screen.findByRole('button', { name: '受諾 (Quiero)' });
     expect(screen.getByRole('button', { name: '拒否 (No Quiero)' })).toBeInTheDocument();
 

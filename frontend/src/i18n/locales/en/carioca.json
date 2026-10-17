@@ -18,6 +18,7 @@
   },
   "roundLabel": "Round {{round}} / {{total}}",
   "contractLabel": "Contract",
+  "rules": "Rules",
   "stockLabel": "Stock",
   "discardLabel": "Discard",
   "yourHand": "Your hand",

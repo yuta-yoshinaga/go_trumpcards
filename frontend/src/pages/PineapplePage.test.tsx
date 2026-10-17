@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { crazyPineappleApi, irishPokerApi, pineappleApi } from '../api/gameApi';
 import i18n from '../i18n';
@@ -329,8 +329,30 @@ describe('PineapplePage', () => {
     await waitFor(() => expect(screen.getByText('あなたの手札')).toBeInTheDocument());
     expect(screen.queryByRole('log')).not.toBeInTheDocument();
     expect(screen.queryByTestId('cp-cpu-discard-log')).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'チェック' })).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: 'チェック' }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
+  });
+
+  it('keeps the hand in the footer and places the discard notice in the play area', async () => {
+    mockCrazyExec.mockResolvedValue({
+      ...preFlopState,
+      phase: PineapplePhase.FLOP,
+      communityCards: [
+        { design: 'SPADE', value: 10 },
+        { design: 'HEART', value: 5 },
+        { design: 'DIAMOND', value: 8 },
+      ],
+    });
+    renderWithProviders(<PineapplePage variant="crazypineapple" />);
+
+    await screen.findByTestId('cp-discard-upcoming-banner');
+    const footer = screen.getByTestId('game-footer-content');
+    const playArea = footer.parentElement?.previousElementSibling;
+    expect(within(footer).getByText('あなたの手札')).toBeInTheDocument();
+    expect(within(footer).queryByTestId('cp-discard-upcoming-banner')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('cp-discard-upcoming-banner')).toBeInTheDocument();
   });
 
   it('shows only the outstanding bet difference as the call amount', async () => {

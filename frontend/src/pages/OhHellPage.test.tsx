@@ -1,5 +1,5 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, ohHellApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -139,7 +139,47 @@ beforeEach(() => {
   mockExec.mockResolvedValue(playPhaseState);
 });
 
+afterEach(() => {
+  Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1024 });
+});
+
 describe('OhHellPage', () => {
+  it('keeps status labels intact and wraps between items', async () => {
+    renderWithProviders(<OhHellPage />);
+    const row = await screen.findByTestId('oh-status-row');
+    expect(row).toHaveClass('flex-wrap');
+    expect(row.querySelectorAll('span.whitespace-nowrap').length).toBeGreaterThanOrEqual(3);
+  });
+  it('keeps trick and round score headings on one line', async () => {
+    renderWithProviders(<OhHellPage />);
+    const headers = await screen.findAllByRole('columnheader');
+    expect(headers.filter((header) => header.classList.contains('text-[10px]'))).toHaveLength(2);
+    expect(headers.filter((header) => header.classList.contains('whitespace-nowrap'))).toHaveLength(2);
+  });
+  it('shows the no-trump label when the trump suit is -1', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, trumpSuit: -1 });
+    renderWithProviders(<OhHellPage />);
+    expect(await screen.findByText('切り札: なし')).toBeInTheDocument();
+    expect(screen.queryByText(/suitName/)).not.toBeInTheDocument();
+  });
+
+  it('renders turn guidance in the footer on desktop', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1024 });
+    mockExec.mockResolvedValue({ ...playPhaseState, message: 'Footer guidance' });
+    renderWithProviders(<OhHellPage />);
+    const message = await screen.findByText('Footer guidance');
+    expect(message.closest('[data-testid="game-footer-message"]')).toBeInTheDocument();
+  });
+
+  it('keeps turn guidance in the play area on mobile', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 375 });
+    mockExec.mockResolvedValue({ ...playPhaseState, message: 'Mobile guidance' });
+    renderWithProviders(<OhHellPage />);
+    const message = await screen.findByText('Mobile guidance');
+    expect(message.closest('[role="status"]')).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<OhHellPage />);
@@ -164,6 +204,19 @@ describe('OhHellPage', () => {
       expect(screen.getByAltText('\u2660 A')).toBeInTheDocument();
       expect(screen.getByAltText('\u2665 J')).toBeInTheDocument();
     });
+    expect(within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '出す' })).toBeInTheDocument();
+  });
+
+  it('keeps the hand in the footer and places shortcuts and reset in the play area', async () => {
+    const { container } = renderWithProviders(<OhHellPage />);
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const playArea = container.querySelector('.flex-1.overflow-y-auto');
+    expect(playArea).not.toBeNull();
+    expect(within(footerContent).getByAltText('\u2660 A')).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('oh-hell-kbd-shortcuts')).not.toBeInTheDocument();
+    expect(footerContent.querySelector('[data-tutorial="oh-reset-button"]')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('oh-hell-kbd-shortcuts')).toBeInTheDocument();
+    expect(playArea?.querySelector('[data-tutorial="oh-reset-button"]')).toBeInTheDocument();
   });
 
   it('includes each player name in the trick card accessible name', async () => {
@@ -249,6 +302,30 @@ describe('OhHellPage', () => {
       }
     } finally {
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    }
+  });
+
+  it('stacks later mobile hand rows', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 375 });
+    try {
+      mockExec.mockResolvedValue({
+        ...playPhaseState,
+        players: [
+          {
+            ...playPhaseState.players[0],
+            cards: Array.from({ length: 8 }, (_, i) => ({ design: 'SPADE' as const, value: i + 1 })),
+          },
+          ...playPhaseState.players.slice(1),
+        ],
+      });
+      const { container } = renderWithProviders(<OhHellPage />);
+      await screen.findByRole('button', { name: /♠ 8/ });
+      const rows = container.querySelectorAll<HTMLElement>('[data-tutorial="oh-player-hand"] [data-testid="hand-row"]');
+      expect(rows.length).toBeGreaterThan(1);
+      expect(Number.parseFloat(rows[1].style.marginTop)).toBeLessThan(0);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
     }
   });
 
@@ -897,5 +974,19 @@ describe('OhHellPage', () => {
 
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(document.querySelectorAll('[data-hint-suggested="true"]')).toHaveLength(0);
+  });
+  it('fits the score table at large desktop widths', async () => {
+    const innerWidthSpy = vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(1280);
+    try {
+      const { container } = renderWithProviders(<OhHellPage />);
+      await waitFor(() =>
+        expect(container.querySelector('[data-tutorial="oh-score-table"] table')).toBeInTheDocument(),
+      );
+      const table = container.querySelector('[data-tutorial="oh-score-table"] table');
+      expect(table?.className).toContain('table-fixed');
+      expect(table?.className).not.toContain('min-w-[');
+    } finally {
+      innerWidthSpy.mockRestore();
+    }
   });
 });

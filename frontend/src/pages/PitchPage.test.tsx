@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { pitchApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
@@ -7,6 +7,13 @@ import { renderWithProviders } from '../test/renderWithProviders';
 import type { CardDesign, PitchResponse } from '../types/card';
 import { PitchPhase } from '../types/phases';
 import { PitchPage } from './PitchPage';
+
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+}));
 
 vi.mock('../api/gameApi', () => ({
   pitchApi: { exec: vi.fn() },
@@ -65,7 +72,7 @@ const bidState: PitchResponse = {
   leadPlayerIdx: -1,
   roundBreakdown: { high: -1, low: -1, jack: -1, game: -1 },
   validPlayIndices: [],
-  message: '',
+  message: 'ビッド宣言 (0=パス, 2-4)',
   config: baseConfig,
 };
 
@@ -104,10 +111,18 @@ const gameEndState: PitchResponse = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mobileState.isMobile = true;
   mockApi.mockResolvedValue(bidState);
 });
 
 describe('PitchPage', () => {
+  it('shows the bid guidance exactly once', async () => {
+    mockApi.mockResolvedValue(bidState);
+    renderWithProviders(<PitchPage />);
+
+    expect(await screen.findAllByText('ビッド宣言 (0=パス, 2-4)')).toHaveLength(1);
+  });
+
   it.each([
     [1, '♠', 'スペード'],
     [2, '♣', 'クラブ'],
@@ -137,6 +152,9 @@ describe('PitchPage', () => {
   it('renders play phase with player hand', async () => {
     mockApi.mockResolvedValue(playState);
     renderWithProviders(<PitchPage />);
+
+    expect(await screen.findByTestId('pitch-game-pips-badge')).toBeInTheDocument();
+    expect(document.querySelector('[data-tutorial="pt-player-hand"]')).not.toHaveClass('lg:sticky');
     await waitFor(() => expect(screen.getByRole('button', { name: /出す/ })).toBeInTheDocument());
   });
 
@@ -244,6 +262,37 @@ describe('PitchPage', () => {
     expect(screen.getAllByText(/CPU 1/).length).toBeGreaterThan(0);
   });
 
+  it('keeps the score table collapsed by default on mobile and desktop', async () => {
+    const { container } = renderWithProviders(<PitchPage />);
+    await screen.findByTestId('pt-score-table');
+    let scoreDetails = container.querySelector('details:has([data-testid="pt-score-table"])');
+    expect(scoreDetails).not.toHaveAttribute('open');
+    expect(screen.getByTestId('pt-score-table')).not.toBeVisible();
+
+    cleanup();
+    mobileState.isMobile = false;
+    const desktopRender = renderWithProviders(<PitchPage />);
+    await screen.findByTestId('pt-score-table');
+    scoreDetails = desktopRender.container.querySelector('details:has([data-testid="pt-score-table"])');
+    expect(scoreDetails).not.toHaveAttribute('open');
+    expect(screen.getByTestId('pt-score-table')).not.toBeVisible();
+  });
+
+  it('does not make the player hand sticky on desktop', async () => {
+    mobileState.isMobile = false;
+    mockApi.mockResolvedValue(playState);
+    renderWithProviders(<PitchPage />);
+    await waitFor(() => expect(document.querySelector('[data-tutorial="pt-player-hand"]')).not.toBeNull());
+    const hand = document.querySelector('[data-tutorial="pt-player-hand"]');
+    expect(hand).not.toHaveClass('sticky', 'lg:sticky');
+    expect(hand).toHaveClass('xl:col-start-2', 'xl:row-start-1', 'min-w-0');
+    expect(document.querySelector('[data-tutorial="pt-trick-display"]')).toHaveClass(
+      'xl:col-start-1',
+      'xl:row-start-1',
+      'min-w-0',
+    );
+  });
+
   it('shows winner banner on game end', async () => {
     mockApi.mockResolvedValue(gameEndState);
     renderWithProviders(<PitchPage />);
@@ -256,6 +305,8 @@ describe('PitchPage', () => {
     renderWithProviders(<PitchPage />);
     const badge = await screen.findByTestId('pitch-game-pips-badge');
     expect(badge.textContent).toMatch(/Game値: 0/);
+    expect(badge.className).toContain('text-ds-accent');
+    expect(badge.closest('.opacity-60')).toBeNull();
   });
 
   it('Game-pip badge tooltip has no trailing newline when pips = 0', async () => {

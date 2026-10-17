@@ -522,7 +522,7 @@ function CassinoPageContent() {
                 type="button"
                 onClick={playTake}
                 disabled={loading || !canTake}
-                className="px-4 py-2 rounded-lg bg-ds-info text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                className="px-4 py-2 rounded-lg bg-ds-info text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                 data-testid="take-button"
               >
                 {t('button.take')}
@@ -545,7 +545,7 @@ function CassinoPageContent() {
                   type="button"
                   onClick={playBuild}
                   disabled={loading || !canBuild}
-                  className="px-4 py-2 rounded-lg bg-ds-success text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                  className="px-4 py-2 rounded-lg bg-ds-success text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                   data-testid="build-button"
                 >
                   {t('button.build')}
@@ -555,7 +555,7 @@ function CassinoPageContent() {
                 type="button"
                 onClick={playTrail}
                 disabled={loading || !canTrail}
-                className="px-4 py-2 rounded-lg bg-ds-warning text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                className="px-4 py-2 rounded-lg bg-ds-warning text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                 data-testid="trail-button"
               >
                 {t('button.trail')}

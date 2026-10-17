@@ -58,7 +58,6 @@
   "acceptButton": "Accept",
   "declineButton": "Decline",
   "nextRound": "Next Deal",
-  "betNotice": "Your turn — choose See, Bet, Raise or Fold.",
   "sideShowTitle": "Side Show Request",
   "sideShowPending": "{{requester}} requested a Side Show with {{target}}. Accept or decline.",
   "consequence": {

@@ -37,6 +37,21 @@ describe('CardFace', () => {
     expect(screen.getByRole('img')).toHaveStyle({ color: '#7C3AED' });
   });
 
+  it('uses the dark label-only ink for gold hanafuda cards', () => {
+    render(<CardFace card={{ ...wizardCard, deck: 'hanafuda', color: 'gold', label: '桜に幕' }} />);
+    const labels = screen.getAllByText('桜に幕');
+    expect(labels).toHaveLength(2);
+    expect(labels[0]?.getAttribute('style')).toContain('color: var(--color-hanafuda-label)');
+    expect(labels[1]?.getAttribute('style')).toContain('color: var(--color-hanafuda-label)');
+    expect(screen.getByText('✦').getAttribute('style')).not.toContain('color: var(--color-hanafuda-label)');
+  });
+
+  it('keeps the shared gold ink for other decks', () => {
+    render(<CardFace card={{ ...wizardCard, deck: 'tarot', color: 'gold', label: 'Excuse' }} />);
+    expect(screen.getByRole('img')).toHaveStyle({ color: '#B8892E' });
+    expect(screen.getAllByText('Excuse')[0]?.getAttribute('style')).not.toContain('color: var(--color-hanafuda-label)');
+  });
+
   it('defaults ink to near-black for an unknown color token', () => {
     render(<CardFace card={{ ...wizardCard, color: 'chartreuse' }} />);
     expect(screen.getByRole('img')).toHaveStyle({ color: '#1A1A1A' });

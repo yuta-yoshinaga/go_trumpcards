@@ -18,7 +18,7 @@ import { ScrollFadeHint } from '../components/ScrollFadeHint';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -37,6 +37,7 @@ import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
+import { scoreTableClass } from '../styles/scoreTableStyles';
 import type { OhHellResponse } from '../types/card';
 import { OhHellPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
@@ -107,6 +108,7 @@ const OH_HELL_PHASE_KEYS: Readonly<Record<number, string>> = {
 export const OhHellPage = withTutorial(OhHellPageContent, 'ohhell', OH_TUTORIAL_STEPS);
 /** Inner content of the Oh Hell page, wrapped by TutorialProvider. */
 function OhHellPageContent() {
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('ohhell');
   const {
@@ -221,6 +223,10 @@ function OhHellPageContent() {
       )
     : null;
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.ohhell')}
@@ -331,13 +337,20 @@ function OhHellPageContent() {
           {/* Scrollable area */}
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
             {/* Round/Trick/Trump info */}
-            <div className="text-ds-text-primary text-center mb-2">
-              <span className="mr-4">{t('round', { n: state.roundNumber, total: state.totalRounds })}</span>
-              <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
-              <span className="mr-4">{t('handSize', { n: state.handSize })}</span>
+            <div
+              className="text-ds-text-primary text-center mb-2 flex flex-wrap justify-center gap-x-4 gap-y-1"
+              data-testid="oh-status-row"
+            >
+              <span className="whitespace-nowrap">
+                {t('round', { n: state.roundNumber, total: state.totalRounds })}
+              </span>
+              <span className="whitespace-nowrap">{t('trick', { n: state.trickNumber })}</span>
+              <span className="whitespace-nowrap">{t('handSize', { n: state.handSize })}</span>
             </div>
-            <div className="text-ds-text-primary text-center mb-2">
-              <span className="mr-4">{t('trump', { suit: t(`suitName.${state.trumpSuit}`) })}</span>
+            <div className="text-ds-text-primary text-center mb-2 flex flex-wrap justify-center gap-x-4 gap-y-1">
+              <span className="whitespace-nowrap">
+                {t('trump', { suit: state.trumpSuit > 0 ? t(`suitName.${state.trumpSuit}`) : t('noTrump') })}
+              </span>
               <span>{t('dealer', { name: dealerName })}</span>
             </div>
 
@@ -426,15 +439,25 @@ function OhHellPageContent() {
                   >
                     <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('scores')}</summary>
                     <div className="overflow-x-auto -mx-2 px-2">
-                      <table className="w-full text-sm text-ds-text-muted min-w-[360px] mt-1">
+                      <table
+                        className={scoreTableClass(
+                          isLargeDesktop,
+                          'w-full text-sm text-ds-text-muted min-w-[360px]',
+                          'mt-1',
+                        )}
+                      >
                         <thead>
                           <tr>
                             <th scope="col" className="text-left">
                               {t('scoresPlayer')}
                             </th>
                             <th scope="col">{t('scoresBid')}</th>
-                            <th scope="col">{t('scoresTricks')}</th>
-                            <th scope="col">{t('scoresRound')}</th>
+                            <th scope="col" className="text-[10px] whitespace-nowrap">
+                              {t('scoresTricks')}
+                            </th>
+                            <th scope="col" className="text-[10px] whitespace-nowrap">
+                              {t('scoresRound')}
+                            </th>
                             <th scope="col">{t('scoresTotal')}</th>
                           </tr>
                         </thead>
@@ -457,15 +480,21 @@ function OhHellPageContent() {
                   <div className="my-3 p-2 rounded bg-black/30 relative" data-tutorial="oh-score-table">
                     <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
                     <div className="overflow-x-auto -mx-2 px-2">
-                      <table className="w-full text-sm text-ds-text-muted min-w-[360px]">
+                      <table
+                        className={scoreTableClass(isLargeDesktop, 'w-full text-sm text-ds-text-muted min-w-[360px]')}
+                      >
                         <thead>
                           <tr>
                             <th scope="col" className="text-left">
                               {t('scoresPlayer')}
                             </th>
                             <th scope="col">{t('scoresBid')}</th>
-                            <th scope="col">{t('scoresTricks')}</th>
-                            <th scope="col">{t('scoresRound')}</th>
+                            <th scope="col" className="text-[10px] whitespace-nowrap">
+                              {t('scoresTricks')}
+                            </th>
+                            <th scope="col" className="text-[10px] whitespace-nowrap">
+                              {t('scoresRound')}
+                            </th>
                             <th scope="col">{t('scoresTotal')}</th>
                           </tr>
                         </thead>
@@ -499,13 +528,7 @@ function OhHellPageContent() {
             </div>
 
             {/* Message */}
-            <div>
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-              />
-            </div>
+            <div>{isMobile && messageBox}</div>
 
             {/* Action log */}
             <ActionLogSection
@@ -514,10 +537,107 @@ function OhHellPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+
+            <ErrorAlert message={error ?? hintError} onRetry={retry} />
+
+            {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
+                付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
+                読み上げられないことがある (#5955, #6663)。 */}
+            <div data-testid="ohhell-hint-live" role="status" aria-live="polite">
+              {hint && (
+                <div className="text-ds-warning text-sm mb-2">
+                  {hint.bid != null
+                    ? `${t('hintBid')}: ${hint.bid} (${t(`hintReason.${hint.reason}`)})`
+                    : `${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`}
+                </div>
+              )}
+            </div>
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+            <div className="flex items-center">
+              <GameResetButton
+                isGameEnd={!!isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="oh-reset-button"
+              />
+            </div>
+            <CardNavShortcutsPanel data-testid="oh-hell-kbd-shortcuts" />
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.ohhell.footer} px-4 py-2.5`}>
+          <GameFooter
+            message={isMobile ? undefined : messageBox}
+            className={`${gameTheme.ohhell.footer} px-4 py-2.5`}
+            actions={
+              (isHumanBidTurn || isHumanTurn || isTrickEnd || isRoundEnd) && (
+                <div className="flex gap-2 items-center" data-tutorial="oh-play-button">
+                  {(isHumanBidTurn || isHumanTurn) && (
+                    <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
+                      {tc('button.hint')}
+                    </button>
+                  )}
+                  {isHumanBidTurn && (
+                    <fieldset className="border-0 p-0 m-0 min-w-0 flex flex-wrap gap-1.5">
+                      <legend className="sr-only">{t('bidOptions', { max: state.handSize })}</legend>
+                      {Array.from({ length: state.handSize + 1 }, (_, i) => i).map((i) => {
+                        const isRestricted = state.restrictedBid === i;
+                        return (
+                          <button
+                            key={i}
+                            type="button"
+                            // Restricted bids use aria-disabled (not the HTML disabled
+                            // attribute) so they stay focusable and a screen reader can
+                            // read why they can't be chosen; the click is guarded instead.
+                            // Mirrors the Cribbage pegRestricted / Call Break pattern.
+                            // Neutralize btnPrimary's interactive feedback (press-scale,
+                            // hover shadow) when restricted so it doesn't feel clickable.
+                            // **ヒントは数字をテキストで言うだけで、どのボタンを
+                            // 押せばよいか視覚的に示していなかった。**制限ビッドとは
+                            // 別状態なので、強調は制限が無いときだけ付ける。
+                            className={`${btnPrimary}${
+                              isRestricted ? ' opacity-50 cursor-not-allowed active:scale-100 hover:shadow-none' : ''
+                            }${!isRestricted && hint?.bid === i ? ' ring-2 ring-ds-warning' : ''}`}
+                            onClick={() => {
+                              if (!isRestricted) handleBid(i);
+                            }}
+                            disabled={loading}
+                            aria-disabled={isRestricted || undefined}
+                            title={isRestricted ? t('restrictedBidTooltip') : undefined}
+                            aria-label={isRestricted ? t('restrictedBidAria', { n: i }) : t('bid', { n: i })}
+                            data-testid={isRestricted ? 'ohhell-restricted-bid' : undefined}
+                            data-hint-suggested={!isRestricted && hint?.bid === i ? 'true' : undefined}
+                          >
+                            {i}
+                          </button>
+                        );
+                      })}
+                    </fieldset>
+                  )}
+                  {isHumanTurn && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handlePlay}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                    >
+                      {t('playButton')}
+                    </button>
+                  )}
+                  {isTrickEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                      {t('nextTrick')}
+                    </button>
+                  )}
+                  {isRoundEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                      {t('nextRound')}
+                    </button>
+                  )}
+                </div>
+              )
+            }
+          >
             <span id="ohhell-illegal-card-description" className="sr-only">
               {t('illegalCardStatus')}
             </span>
@@ -529,6 +649,7 @@ function OhHellPageContent() {
                   selectedIndices={selectedCardIndices}
                   onToggle={toggleCard}
                   cardWidth={cardWidth}
+                  stackRows
                   dataTutorial="oh-player-hand"
                   legalIndices={isHumanTurn ? state.validPlayIndices : undefined}
                   validIndices={isHumanTurn ? state.validPlayIndices : undefined}
@@ -577,94 +698,6 @@ function OhHellPageContent() {
                   })}
                 </div>
               ))}
-
-            <ErrorAlert message={error ?? hintError} onRetry={retry} />
-
-            {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
-                付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
-                読み上げられないことがある (#5955, #6663)。 */}
-            <div data-testid="ohhell-hint-live" role="status" aria-live="polite">
-              {hint && (
-                <div className="text-ds-warning text-sm mb-2">
-                  {hint.bid != null
-                    ? `${t('hintBid')}: ${hint.bid} (${t(`hintReason.${hint.reason}`)})`
-                    : `${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`}
-                </div>
-              )}
-            </div>
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-            <div className="flex gap-2 items-center" data-tutorial="oh-play-button">
-              {(isHumanBidTurn || isHumanTurn) && (
-                <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
-                  {tc('button.hint')}
-                </button>
-              )}
-              {isHumanBidTurn && (
-                <fieldset className="border-0 p-0 m-0 min-w-0 flex flex-wrap gap-1.5">
-                  <legend className="sr-only">{t('bidOptions', { max: state.handSize })}</legend>
-                  {Array.from({ length: state.handSize + 1 }, (_, i) => i).map((i) => {
-                    const isRestricted = state.restrictedBid === i;
-                    return (
-                      <button
-                        key={i}
-                        type="button"
-                        // Restricted bids use aria-disabled (not the HTML disabled
-                        // attribute) so they stay focusable and a screen reader can
-                        // read why they can't be chosen; the click is guarded instead.
-                        // Mirrors the Cribbage pegRestricted / Call Break pattern.
-                        // Neutralize btnPrimary's interactive feedback (press-scale,
-                        // hover shadow) when restricted so it doesn't feel clickable.
-                        // **ヒントは数字をテキストで言うだけで、どのボタンを
-                        // 押せばよいか視覚的に示していなかった。**制限ビッドとは
-                        // 別状態なので、強調は制限が無いときだけ付ける。
-                        className={`${btnPrimary}${
-                          isRestricted ? ' opacity-50 cursor-not-allowed active:scale-100 hover:shadow-none' : ''
-                        }${!isRestricted && hint?.bid === i ? ' ring-2 ring-ds-warning' : ''}`}
-                        onClick={() => {
-                          if (!isRestricted) handleBid(i);
-                        }}
-                        disabled={loading}
-                        aria-disabled={isRestricted || undefined}
-                        title={isRestricted ? t('restrictedBidTooltip') : undefined}
-                        aria-label={isRestricted ? t('restrictedBidAria', { n: i }) : t('bid', { n: i })}
-                        data-testid={isRestricted ? 'ohhell-restricted-bid' : undefined}
-                        data-hint-suggested={!isRestricted && hint?.bid === i ? 'true' : undefined}
-                      >
-                        {i}
-                      </button>
-                    );
-                  })}
-                </fieldset>
-              )}
-              {isHumanTurn && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-              {isTrickEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                  {t('nextTrick')}
-                </button>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={!!isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="oh-reset-button"
-              />
-            </div>
-            <CardNavShortcutsPanel data-testid="oh-hell-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

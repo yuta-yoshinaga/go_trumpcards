@@ -512,7 +512,7 @@ describe('OmahaPage', () => {
     mockExec.mockResolvedValue(preFlopWithBetState);
     renderWithProviders(<OmahaPage />);
     await waitFor(() => expect(screen.getByText('CPU行動:')).toBeInTheDocument());
-    expect(screen.getByText(/Player 1: ベット/)).toBeInTheDocument();
+    expect(screen.getByText(/CPU 1: ベット/)).toBeInTheDocument();
   });
 
   it('does not show CPU actions log when cpuActions is empty', async () => {
@@ -525,7 +525,7 @@ describe('OmahaPage', () => {
   it('shows amount in CPU action when amount > 0', async () => {
     mockExec.mockResolvedValue(preFlopWithBetState);
     renderWithProviders(<OmahaPage />);
-    await waitFor(() => expect(screen.getByText(/Player 1: ベット \(40\)/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/CPU 1: ベット \(40\)/)).toBeInTheDocument());
   });
 
   it('does not show amount when action amount is 0', async () => {
@@ -535,7 +535,7 @@ describe('OmahaPage', () => {
     });
     renderWithProviders(<OmahaPage />);
     await waitFor(() => expect(screen.getByText('CPU行動:')).toBeInTheDocument());
-    expect(screen.getByText(/Player 1: チェック/)).toBeInTheDocument();
+    expect(screen.getByText(/CPU 1: チェック/)).toBeInTheDocument();
     expect(screen.queryByText(/\(0\)/)).not.toBeInTheDocument();
   });
 
@@ -545,7 +545,7 @@ describe('OmahaPage', () => {
       cpuActions: [{ playerIdx: 1, action: 99, amount: 0 }],
     });
     renderWithProviders(<OmahaPage />);
-    await waitFor(() => expect(screen.getByText(/Player 1: 不明/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/CPU 1: 不明/)).toBeInTheDocument());
   });
 
   // ---- round results ----
@@ -750,9 +750,28 @@ describe('OmahaPage', () => {
     mockExec.mockResolvedValue(preFlopState);
     renderWithProviders(<OmahaPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: 'ベット' }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'チェック' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'オールイン' })).toBeInTheDocument();
+  });
+
+  it('keeps the hand in the footer and supporting controls in the play area', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<OmahaPage />);
+    await waitFor(() => expect(screen.getByTestId('game-footer-content')).toBeInTheDocument());
+
+    const footerContent = screen.getByTestId('game-footer-content');
+    const playArea = footerContent.closest('footer')?.previousElementSibling;
+    expect(footerContent.querySelector('[data-tutorial="oh-player-hand"]')).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('learning-mode-toggle')).not.toBeInTheDocument();
+    expect(playArea).toContainElement(screen.getByTestId('learning-mode-toggle'));
+    expect(playArea?.querySelector('[data-tutorial="oh-reset-button"]')).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: 'ベット' }),
+    ).toBeInTheDocument();
   });
 
   it('shows call/raise buttons when canAct and has outstanding bet', async () => {
@@ -1647,6 +1666,16 @@ describe('OmahaPage', () => {
     renderWithProviders(<OmahaPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
     expect(screen.queryByTestId('cpu-accordion')).not.toBeInTheDocument();
+  });
+
+  it('compresses face-down CPU cards on large desktop and keeps five community card backs', async () => {
+    mockUseIsLargeDesktop.mockReturnValue(true);
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<OmahaPage />);
+    const cpuCount = preFlopState.players.filter((player) => !player.isHuman).length;
+    await waitFor(() => expect(screen.getAllByTestId('compact-card-count')).toHaveLength(cpuCount));
+    expect(screen.getAllByTestId('compact-card-count')[0]).toHaveTextContent('4');
+    expect(screen.getAllByAltText('カード裏面')).toHaveLength(5);
   });
 
   it('wraps settings in collapsible details element', async () => {

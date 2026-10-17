@@ -1012,12 +1012,23 @@ classDiagram
         +number footerCardWidth
         +number solitaireMinColWidth
     }
-    note for useCardDimensions "3-tier responsive = mobile/desktop/largeDesktop (640px/1024px)"
+    note for useCardDimensions "3-tier layout breakpoints = mobile/desktop/largeDesktop (640px/1024px); card dimensions switch again at 1280px, with 80px cards from 1024–1279px"
 
     class useIsLargeDesktop {
         +boolean isLargeDesktop
     }
     note for useIsLargeDesktop "Returns true when viewport >= 1024px"
+
+    class useIsCompactLargeDesktop {
+        +boolean isCompactLargeDesktop
+    }
+    note for useIsCompactLargeDesktop "Returns true when viewport is 1024–1279px"
+
+    class useDenseLargeDesktopCardSize {
+        +number width
+        +number height
+    }
+    note for useDenseLargeDesktopCardSize "Fixed dense card dimensions for large-desktop pages"
 
     class useActionKeyboardNav {
         +(bindings: KeyBinding[]) void
@@ -1514,7 +1525,7 @@ classDiagram
         +タブロー列 (7列)
         +ファウンデーション (4山)
         +ストック/ウェイスト
-        +Undo/ヒント/自動完成
+        +Undo/ヒント/オートコンプリート
     }
 
     class MemoryPage {

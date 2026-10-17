@@ -11,6 +11,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
+import { MobileHandGrid } from '../components/MobileHandGrid';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
@@ -139,7 +140,7 @@ function TongitsPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('tongits', state);
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('tongits');
   const cliConfig: CliGameConfig<TongitsResponse, Parameters<typeof tongitsApi.exec>> = useMemo(
     () => ({
@@ -195,6 +196,9 @@ function TongitsPageContent() {
   const isRoundEnd = state.phase === TongitsPhase.ROUND_END;
   const isGameEnd = state.phase === TongitsPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = (isDrawPhase || isDiscardPhase) && state.players[state.currentPlayerIdx]?.isHuman === true;
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
 
   // When exactly three cards are selected, highlight the selected meld candidates.
   const meldHighlight = (() => {
@@ -403,137 +407,18 @@ function TongitsPageContent() {
               </div>
             </div>
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
+            {isMobile && messageBox}
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
-          </div>
-
-          <GameFooter className={`${gameTheme.tongits.footer} px-4 py-2.5`}>
-            {humanPlayer && (
-              <div className="flex flex-wrap gap-1 mb-2" data-tutorial="tongits-player-hand">
-                {humanPlayer.cards.map((card, idx) => {
-                  const isCardSelected = selectedCardIndices.includes(idx);
-                  const isMeldCard = !isCardSelected && meldHighlight.has(idx);
-                  return (
-                    <button
-                      type="button"
-                      key={`${card.design}-${card.value}-${idx}`}
-                      onClick={() => toggleCard(idx)}
-                      aria-label={cardAlt(card)}
-                      aria-pressed={isCardSelected}
-                      data-meld={isMeldCard ? 'true' : undefined}
-                      data-testid={`tongits-hand-${idx.toString()}`}
-                      className={`transition-transform ${focusRingCard}`}
-                      style={{
-                        background: 'none',
-                        padding: 0,
-                        borderRadius: 8,
-                        // Selection wins; otherwise green-highlight cards that already form a meld.
-                        ...(isCardSelected
-                          ? selectedCardStyle(true)
-                          : isMeldCard
-                            ? playableCardStyle(true)
-                            : selectedCardStyle(false)),
-                        boxSizing: 'border-box',
-                      }}
-                    >
-                      <AnimatedCard card={card} width={cardWidth} />
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-
             <ErrorAlert message={error} onRetry={retry} />
 
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex gap-2 items-center flex-wrap">
-              {isDrawPhase && isHumanTurn && (
-                <div className="flex gap-2" data-tutorial="tongits-draw-area">
-                  <button type="button" className={btnPrimary} onClick={announceStockDraw} disabled={loading}>
-                    {t('drawStockButton')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleDrawDiscard}
-                    disabled={loading || !state.discardTop}
-                  >
-                    {t('drawDiscardButton')}
-                  </button>
-                </div>
-              )}
-              {isDiscardPhase && isHumanTurn && (
-                <>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleDiscard}
-                    disabled={loading || selectedCardIndices.length !== 1}
-                    data-tutorial="tongits-discard-button"
-                  >
-                    {t('discardButton')}
-                  </button>
-                  {state.remainingPoints >= 0 && (
-                    <span
-                      className={`self-center text-xs ${canChallenge ? 'text-ds-success' : 'text-ds-text-muted'}`}
-                      role="status"
-                      aria-live="polite"
-                      data-testid="tongits-remaining-points"
-                      data-challengeable={canChallenge ? 'true' : undefined}
-                    >
-                      {t('remainingPoints', { value: state.remainingPoints })}{' '}
-                      {canChallenge ? t('challengeable') : t('notChallengeable')}
-                    </span>
-                  )}
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleMeld}
-                    disabled={loading || selectedCardIndices.length < 3}
-                  >
-                    {t('meldButton')}
-                  </button>
-                  {state.players
-                    .flatMap((p) => p.melds.map((_, meldIdx) => ({ p, meldIdx })))
-                    .map(({ p, meldIdx }) => (
-                      <button
-                        key={`sapaw-${p.id}-${meldIdx}`}
-                        type="button"
-                        className={btnPrimary}
-                        onClick={() => handleSapaw(p.id, meldIdx)}
-                        disabled={loading || selectedCardIndices.length !== 1}
-                      >
-                        {t('sapawButton', { player: playerName(p.id, p.isHuman), meld: meldIdx + 1 })}
-                      </button>
-                    ))}
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleChallenge}
-                    disabled={loading || !canChallenge}
-                    data-tutorial="tongits-challenge-button"
-                    data-challengeable={canChallenge ? 'true' : undefined}
-                  >
-                    {t('challengeButton')}
-                  </button>
-                </>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
               <GameResetButton
                 isGameEnd={!!isGameEnd}
                 onReset={handleManualReset}
@@ -543,6 +428,136 @@ function TongitsPageContent() {
               />
             </div>
             <CardNavShortcutsPanel data-testid="tongits-kbd-shortcuts" />
+          </div>
+
+          <GameFooter
+            className={`${gameTheme.tongits.footer} px-4 py-2.5`}
+            message={isMobile ? undefined : messageBox}
+            actions={
+              <div className="flex gap-2 items-center flex-wrap">
+                {isDrawPhase && isHumanTurn && (
+                  <div className="flex gap-2" data-tutorial="tongits-draw-area">
+                    <button type="button" className={btnPrimary} onClick={announceStockDraw} disabled={loading}>
+                      {t('drawStockButton')}
+                    </button>
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handleDrawDiscard}
+                      disabled={loading || !state.discardTop}
+                    >
+                      {t('drawDiscardButton')}
+                    </button>
+                  </div>
+                )}
+                {isDiscardPhase && isHumanTurn && (
+                  <>
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handleDiscard}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                      data-tutorial="tongits-discard-button"
+                    >
+                      {t('discardButton')}
+                    </button>
+                    {state.remainingPoints >= 0 && (
+                      <span
+                        className={`self-center text-xs ${canChallenge ? 'text-ds-success' : 'text-ds-text-muted'}`}
+                        role="status"
+                        aria-live="polite"
+                        data-testid="tongits-remaining-points"
+                        data-challengeable={canChallenge ? 'true' : undefined}
+                      >
+                        {t('remainingPoints', { value: state.remainingPoints })}{' '}
+                        {canChallenge ? t('challengeable') : t('notChallengeable')}
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handleMeld}
+                      disabled={loading || selectedCardIndices.length < 3}
+                    >
+                      {t('meldButton')}
+                    </button>
+                    {state.players
+                      .flatMap((p) => p.melds.map((_, meldIdx) => ({ p, meldIdx })))
+                      .map(({ p, meldIdx }) => (
+                        <button
+                          key={`sapaw-${p.id}-${meldIdx}`}
+                          type="button"
+                          className={btnPrimary}
+                          onClick={() => handleSapaw(p.id, meldIdx)}
+                          disabled={loading || selectedCardIndices.length !== 1}
+                        >
+                          {t('sapawButton', { player: playerName(p.id, p.isHuman), meld: meldIdx + 1 })}
+                        </button>
+                      ))}
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handleChallenge}
+                      disabled={loading || !canChallenge}
+                      data-tutorial="tongits-challenge-button"
+                      data-challengeable={canChallenge ? 'true' : undefined}
+                    >
+                      {t('challengeButton')}
+                    </button>
+                  </>
+                )}
+                {isRoundEnd && (
+                  <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                    {t('nextRound')}
+                  </button>
+                )}
+              </div>
+            }
+          >
+            {humanPlayer &&
+              (isMobile ? (
+                <MobileHandGrid
+                  cards={humanPlayer.cards}
+                  selectedIndices={selectedCardIndices}
+                  onToggle={toggleCard}
+                  cardWidth={cardWidth}
+                  dataTutorial="tongits-player-hand"
+                  stackRows
+                />
+              ) : (
+                <div className="flex flex-wrap gap-1 mb-2" data-tutorial="tongits-player-hand">
+                  {humanPlayer.cards.map((card, idx) => {
+                    const isCardSelected = selectedCardIndices.includes(idx);
+                    const isMeldCard = !isCardSelected && meldHighlight.has(idx);
+                    return (
+                      <button
+                        type="button"
+                        key={`${card.design}-${card.value}-${idx}`}
+                        onClick={() => toggleCard(idx)}
+                        aria-label={cardAlt(card)}
+                        aria-pressed={isCardSelected}
+                        data-meld={isMeldCard ? 'true' : undefined}
+                        data-testid={`tongits-hand-${idx.toString()}`}
+                        className={`transition-transform ${focusRingCard}`}
+                        style={{
+                          background: 'none',
+                          padding: 0,
+                          borderRadius: 8,
+                          // Selection wins; otherwise green-highlight cards that already form a meld.
+                          ...(isCardSelected
+                            ? selectedCardStyle(true)
+                            : isMeldCard
+                              ? playableCardStyle(true)
+                              : selectedCardStyle(false)),
+                          boxSizing: 'border-box',
+                        }}
+                      >
+                        <AnimatedCard card={card} width={cardWidth} />
+                      </button>
+                    );
+                  })}
+                </div>
+              ))}
           </GameFooter>
         </>
       )}

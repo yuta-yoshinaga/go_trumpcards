@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { biribaApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -15,7 +16,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useBiribaGame } from '../hooks/useBiribaGame';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -97,7 +98,8 @@ function BiribaPageContent() {
     handleNextRound,
   } = useBiribaGame();
 
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
+  const isMobileViewport = useIsMobile();
   const { playSound } = useSound();
   const phaseNames = usePhaseNames('biriba', BIRIBA_PHASE_KEYS);
   const {
@@ -105,6 +107,10 @@ function BiribaPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('biriba', state);
+
+  const messageBox = (
+    <GameMessageBox message={state?.message} messageCode={state?.messageCode} messageParams={state?.messageParams} />
+  );
 
   const humanPlayer = state?.players.find((p) => p.isHuman);
   const selectedMeldCards = humanPlayer?.cards.filter((_, index) => selectedCardIndices.includes(index)) ?? [];
@@ -141,18 +147,7 @@ function BiribaPageContent() {
   const isDiscardPhase = state?.phase === BiribaPhase.DISCARD;
   const isRoundEnd = state?.phase === BiribaPhase.ROUND_END;
   const isGameEnd = state?.phase === BiribaPhase.GAME_END || !!state?.gameEndFlag;
-  const [discardPileViewerOpen, setDiscardPileViewerOpen] = useState(false);
-  const previousPhaseRef = useRef<number | undefined>(undefined);
-
-  useEffect(() => {
-    if (!state) return;
-    if (state.phase === BiribaPhase.DRAW && previousPhaseRef.current !== BiribaPhase.DRAW) {
-      setDiscardPileViewerOpen(true);
-    } else if (state.phase !== BiribaPhase.DRAW && previousPhaseRef.current === BiribaPhase.DRAW) {
-      setDiscardPileViewerOpen(false);
-    }
-    previousPhaseRef.current = state.phase;
-  }, [state]);
+  const [discardPileViewerOpen, setDiscardPileViewerOpen] = useState(!isMobileViewport);
 
   // Biriba uses the Canasta discard-pile mechanism: two natural cards matching
   // the top card are required to take the pile.
@@ -323,7 +318,7 @@ function BiribaPageContent() {
                 {t('pozzettoTakenBanner', { player: pozzettoBanner })}
               </div>
             )}
-            <div className="text-ds-text-primary text-center mb-2">
+            <div className="flex flex-wrap justify-center text-ds-text-primary text-center mb-2">
               <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
               <span>
                 {t('drawPile', { count: state.drawPileCount })} / {t('discardPile', { count: state.discardPileCount })}
@@ -331,7 +326,9 @@ function BiribaPageContent() {
               <span className="ml-4" data-testid="bu-pozzetto-count">
                 {t('pozzetto', { count: state.pozzettoCount })}
               </span>
-              {state.isFrozen && <span className="ml-2 text-ds-info font-bold">[{t('frozen')}]</span>}
+              {state.isFrozen && (
+                <span className="ml-2 shrink-0 whitespace-nowrap text-ds-info font-bold">[{t('frozen')}]</span>
+              )}
             </div>
 
             <div className={lgTwoColGrid}>
@@ -366,7 +363,7 @@ function BiribaPageContent() {
                 <details
                   className="my-3 rounded bg-black/30 p-2"
                   data-testid="ca-discard-pile-viewer"
-                  open={discardPileViewerOpen}
+                  open={discardPileViewerOpen || undefined}
                   onToggle={(event) => setDiscardPileViewerOpen(event.currentTarget.open)}
                 >
                   <summary className="cursor-pointer select-none text-sm text-ds-text-muted">
@@ -430,89 +427,95 @@ function BiribaPageContent() {
               {/* Right: info sidebar */}
               <div>
                 {/* Score table */}
-                <div className="my-3 p-2 rounded bg-black/30">
-                  <table className="w-full text-sm text-ds-text-muted">
-                    <thead>
-                      <tr>
-                        <th scope="col" className="text-left">
-                          {tc('label.player')}
-                        </th>
-                        <th scope="col">{t('score.round')}</th>
-                        <th scope="col">{t('score.cumulative')}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {state.players.map((p) => (
-                        <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
-                          <td>{playerName(p.id, p.isHuman)}</td>
-                          <td
-                            className={`text-center ${pulsingScoreIds.has(p.id) ? 'motion-safe:animate-pulse text-ds-info' : ''}`}
-                            data-testid={`bu-round-score-${p.id.toString()}`}
-                          >
-                            {p.roundScore}
-                            {isRoundEnd && (
-                              <ul className="mt-2 space-y-1 text-left text-xs text-ds-text-muted">
-                                <li>{t('score.breakdown')}</li>
-                                <li>
-                                  {t('score.meldCards')}: {p.scoreBreakdown.meldCards || t('score.noPoints')}
-                                </li>
-                                <li>
-                                  {t('score.biribaBonus')}: {p.scoreBreakdown.canastaBonus || t('score.noPoints')}
-                                </li>
-                                <li>
-                                  {t('score.red3Bonus')}: {p.scoreBreakdown.red3Bonus || t('score.noPoints')}
-                                </li>
-                                <li>
-                                  {t('score.goingOutBonus')}: {p.scoreBreakdown.goOutBonus || t('score.noPoints')}
-                                </li>
-                                <li>
-                                  {t('score.handPenalty')}:{' '}
-                                  {p.scoreBreakdown.handPenalty
-                                    ? `−${p.scoreBreakdown.handPenalty}`
-                                    : t('score.noPoints')}
-                                </li>
-                              </ul>
-                            )}
-                          </td>
-                          <td className="text-center">{p.cumulativeScore}</td>
+                <details className="my-3 p-2 rounded bg-black/30" open={!isMobileViewport || undefined}>
+                  <summary className="cursor-pointer select-none text-sm text-ds-text-muted">
+                    {t('score.round')}
+                  </summary>
+                  <div className="mt-2">
+                    <table className="w-full text-sm text-ds-text-muted">
+                      <thead>
+                        <tr>
+                          <th scope="col" className="text-left">
+                            {tc('label.player')}
+                          </th>
+                          <th scope="col">{t('score.round')}</th>
+                          <th scope="col">{t('score.cumulative')}</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody>
+                        {state.players.map((p) => (
+                          <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
+                            <td>{playerName(p.id, p.isHuman)}</td>
+                            <td
+                              className={`text-center ${pulsingScoreIds.has(p.id) ? 'motion-safe:animate-pulse text-ds-info' : ''}`}
+                              data-testid={`bu-round-score-${p.id.toString()}`}
+                            >
+                              {p.roundScore}
+                              {isRoundEnd && (
+                                <ul className="mt-2 space-y-1 text-left text-xs text-ds-text-muted">
+                                  <li>{t('score.breakdown')}</li>
+                                  <li>
+                                    {t('score.meldCards')}: {p.scoreBreakdown.meldCards || t('score.noPoints')}
+                                  </li>
+                                  <li>
+                                    {t('score.biribaBonus')}: {p.scoreBreakdown.canastaBonus || t('score.noPoints')}
+                                  </li>
+                                  <li>
+                                    {t('score.red3Bonus')}: {p.scoreBreakdown.red3Bonus || t('score.noPoints')}
+                                  </li>
+                                  <li>
+                                    {t('score.goingOutBonus')}: {p.scoreBreakdown.goOutBonus || t('score.noPoints')}
+                                  </li>
+                                  <li>
+                                    {t('score.handPenalty')}:{' '}
+                                    {p.scoreBreakdown.handPenalty
+                                      ? `−${p.scoreBreakdown.handPenalty}`
+                                      : t('score.noPoints')}
+                                  </li>
+                                </ul>
+                              )}
+                            </td>
+                            <td className="text-center">{p.cumulativeScore}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </details>
 
                 {/* CPU hand (shown at round/game end) */}
-                {(isRoundEnd || isGameEnd) &&
-                  state.players
-                    .filter((p) => !p.isHuman)
-                    .map((p) => (
-                      <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                        <div className="text-ds-text-muted text-sm">
-                          {playerName(p.id, p.isHuman)}: {t('handCards', { count: p.cardCount })}
-                        </div>
-                        {p.cards.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {p.cards.map((card, idx) => (
-                              <AnimatedCard
-                                key={`cpu-${card.design}-${card.value}-${idx}`}
-                                card={card}
-                                width={cardWidth * 0.7}
-                              />
-                            ))}
+                {(isRoundEnd || isGameEnd) && (
+                  <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+                    <div className="flex flex-wrap gap-2">
+                      {state.players
+                        .filter((p) => !p.isHuman)
+                        .map((p) => (
+                          <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
+                            <div className="text-ds-text-muted text-sm">
+                              {playerName(p.id, p.isHuman)}: {t('handCards', { count: p.cardCount })}
+                            </div>
+                            {p.cards.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {p.cards.map((card, idx) => (
+                                  <AnimatedCard
+                                    key={`cpu-${card.design}-${card.value}-${idx}`}
+                                    card={card}
+                                    width={cardWidth * 0.7}
+                                  />
+                                ))}
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
-                    ))}
+                        ))}
+                    </div>
+                  </CpuAccordion>
+                )}
               </div>
             </div>
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            {isMobile && messageBox}
 
             <ActionLogSection
               isEndPhase={isGameEnd}
@@ -520,9 +523,7 @@ function BiribaPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
-          </div>
 
-          <GameFooter className={`${gameTheme.biriba.footer} px-4 py-2.5`}>
             {humanPlayer && humanPlayer.cards.length > 0 && (
               <fieldset className="flex flex-wrap justify-center gap-1.5 mb-2 border-0 p-0 m-0">
                 <legend className="sr-only">{t('sort.label')}</legend>
@@ -540,6 +541,126 @@ function BiribaPageContent() {
                 ))}
               </fieldset>
             )}
+            <ErrorAlert message={error} onRetry={retry} />
+            <GameResetButton
+              isGameEnd={isGameEnd}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+            />
+            <CardNavShortcutsPanel data-testid="biriba-kbd-shortcuts" />
+          </div>
+
+          <GameFooter
+            message={isMobile ? undefined : messageBox}
+            className={`${gameTheme.biriba.footer} px-4 py-2.5`}
+            actions={
+              <div className="flex gap-2 items-center flex-wrap" data-tutorial="ca-actions">
+                {isDrawPhase && isHumanTurn && (
+                  <div className="flex gap-2 flex-col">
+                    {state.isFrozen && (
+                      <div role="status" data-testid="ca-draw-freeze-guide" className="text-xs text-ds-warning">
+                        {t('drawFreezeGuide')}
+                      </div>
+                    )}
+                    <div className="flex gap-2">
+                      <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
+                        {t('drawStockButton')}
+                      </button>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={handleDrawDiscard}
+                        disabled={loading || drawDiscardProblem !== null}
+                        title={drawDiscardReason || undefined}
+                        aria-describedby={drawDiscardReason ? 'ca-draw-discard-reason' : undefined}
+                      >
+                        {t('drawDiscardButton')}
+                      </button>
+                    </div>
+                    {drawDiscardReason && (
+                      <div
+                        id="ca-draw-discard-reason"
+                        data-testid="ca-draw-discard-reason"
+                        className="text-xs text-ds-text-muted"
+                      >
+                        {drawDiscardReason}
+                      </div>
+                    )}
+                  </div>
+                )}
+                {isMeldPhase && isHumanTurn && (
+                  <>
+                    <div
+                      role="status"
+                      aria-live="polite"
+                      data-testid="biriba-meld-status"
+                      className="text-xs text-ds-text-muted"
+                    >
+                      {meldStatus.ok ? t('meldStatus.valid') : meldReason}
+                    </div>
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={() => {
+                        if (!loading && meldStatus.ok) handleMeldSelected();
+                      }}
+                      aria-disabled={!meldStatus.ok}
+                      aria-describedby={meldReason ? 'biriba-meld-reason' : undefined}
+                    >
+                      {t('meldButton')}
+                    </button>
+                    {meldReason && (
+                      <span id="biriba-meld-reason" className="sr-only">
+                        {meldReason}
+                      </span>
+                    )}
+                    <button type="button" className={btnOutline} onClick={handleSkipMeld} disabled={loading}>
+                      {t('skipMeldButton')}
+                    </button>
+                  </>
+                )}
+                {isDiscardPhase && isHumanTurn && (
+                  <>
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handleDiscard}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                    >
+                      {t('discardButton')}
+                    </button>
+                    <button
+                      type="button"
+                      className={`${btnSuccess} ${goOutReason || loading ? 'aria-disabled:opacity-70 aria-disabled:cursor-not-allowed aria-disabled:saturate-50' : ''}`}
+                      onClick={() => {
+                        if (!loading && !goOutReason) handleGoOut();
+                      }}
+                      aria-disabled={!!goOutReason || loading || undefined}
+                      aria-describedby={goOutReason ? 'biriba-go-out-reason-visible' : undefined}
+                    >
+                      {t('goOutButton')}
+                    </button>
+                    {goOutReason && (
+                      <span
+                        id="biriba-go-out-reason-visible"
+                        data-testid="biriba-go-out-reason-visible"
+                        className="text-xs text-ds-text-muted"
+                        aria-hidden="true"
+                      >
+                        {goOutReason}
+                      </span>
+                    )}
+                  </>
+                )}
+                {isRoundEnd && (
+                  <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                    {t('nextRound')}
+                  </button>
+                )}
+              </div>
+            }
+          >
             {humanPlayer && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="ca-player-hand">
                 {sortedHandForDisplay(humanPlayer.cards, sortMode).map(({ card, index: idx }) => (
@@ -569,124 +690,9 @@ function BiribaPageContent() {
                 ))}
               </div>
             )}
-
-            <ErrorAlert message={error} onRetry={retry} />
-
             <div id="biriba-go-out-reason" data-testid="biriba-go-out-reason" role="status" aria-live="polite">
               {isDiscardPhase && isHumanTurn && goOutReason && <span className="sr-only">{goOutReason}</span>}
             </div>
-
-            <div className="flex gap-2 items-center flex-wrap" data-tutorial="ca-actions">
-              {isDrawPhase && isHumanTurn && (
-                <div className="flex gap-2 flex-col">
-                  {state.isFrozen && (
-                    <div role="status" data-testid="ca-draw-freeze-guide" className="text-xs text-ds-warning">
-                      {t('drawFreezeGuide')}
-                    </div>
-                  )}
-                  <div className="flex gap-2">
-                    <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
-                      {t('drawStockButton')}
-                    </button>
-                    <button
-                      type="button"
-                      className={btnPrimary}
-                      onClick={handleDrawDiscard}
-                      disabled={loading || drawDiscardProblem !== null}
-                      title={drawDiscardReason || undefined}
-                      aria-describedby={drawDiscardReason ? 'ca-draw-discard-reason' : undefined}
-                    >
-                      {t('drawDiscardButton')}
-                    </button>
-                  </div>
-                  {drawDiscardReason && (
-                    <div
-                      id="ca-draw-discard-reason"
-                      data-testid="ca-draw-discard-reason"
-                      className="text-xs text-ds-text-muted"
-                    >
-                      {drawDiscardReason}
-                    </div>
-                  )}
-                </div>
-              )}
-              {isMeldPhase && isHumanTurn && (
-                <>
-                  <div
-                    role="status"
-                    aria-live="polite"
-                    data-testid="biriba-meld-status"
-                    className="text-xs text-ds-text-muted"
-                  >
-                    {meldStatus.ok ? t('meldStatus.valid') : meldReason}
-                  </div>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={() => {
-                      if (!loading && meldStatus.ok) handleMeldSelected();
-                    }}
-                    aria-disabled={!meldStatus.ok}
-                    aria-describedby={meldReason ? 'biriba-meld-reason' : undefined}
-                  >
-                    {t('meldButton')}
-                  </button>
-                  {meldReason && (
-                    <span id="biriba-meld-reason" className="sr-only">
-                      {meldReason}
-                    </span>
-                  )}
-                  <button type="button" className={btnOutline} onClick={handleSkipMeld} disabled={loading}>
-                    {t('skipMeldButton')}
-                  </button>
-                </>
-              )}
-              {isDiscardPhase && isHumanTurn && (
-                <>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleDiscard}
-                    disabled={loading || selectedCardIndices.length !== 1}
-                  >
-                    {t('discardButton')}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnSuccess} ${goOutReason || loading ? 'aria-disabled:opacity-70 aria-disabled:cursor-not-allowed aria-disabled:saturate-50' : ''}`}
-                    onClick={() => {
-                      if (!loading && !goOutReason) handleGoOut();
-                    }}
-                    aria-disabled={!!goOutReason || loading || undefined}
-                    aria-describedby={goOutReason ? 'biriba-go-out-reason-visible' : undefined}
-                  >
-                    {t('goOutButton')}
-                  </button>
-                  {goOutReason && (
-                    <span
-                      id="biriba-go-out-reason-visible"
-                      data-testid="biriba-go-out-reason-visible"
-                      className="text-xs text-ds-text-muted"
-                      aria-hidden="true"
-                    >
-                      {goOutReason}
-                    </span>
-                  )}
-                </>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-              />
-            </div>
-            <CardNavShortcutsPanel data-testid="biriba-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

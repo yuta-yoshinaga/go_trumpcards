@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { deuceToSevenApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -100,6 +100,26 @@ describe('DeuceToSevenPage', () => {
     await waitFor(() => expect(screen.getByText('プリドロー')).toBeInTheDocument());
   });
 
+  it('keeps the hand in the footer and renders results and shortcuts in the play area', async () => {
+    mockExec.mockResolvedValue(
+      baseState({
+        phase: DeuceToSevenPhase.SHOWDOWN,
+        roundResults: [{ playerIdx: 0, handRank: 0, handName: 'Seven Low', wonAmount: 40 }],
+      }),
+    );
+    renderWithProviders(<DeuceToSevenPage />);
+
+    const footer = await screen.findByTestId('game-footer-content');
+    expect(footer.querySelector('[data-tutorial="d7-player-hand"]')).toBeInTheDocument();
+
+    const playArea = footer.parentElement?.previousElementSibling;
+    expect(playArea).not.toBeNull();
+    expect(within(playArea as HTMLElement).getByTestId('round-results-visible')).toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('deuce-to-seven-kbd-shortcuts')).toBeInTheDocument();
+    expect(within(footer).queryByTestId('round-results-visible')).not.toBeInTheDocument();
+    expect(within(footer).queryByTestId('deuce-to-seven-kbd-shortcuts')).not.toBeInTheDocument();
+  });
+
   it('announces the latest CPU exchange in a persistent live region while keeping the visible log', async () => {
     mockExec.mockResolvedValue(baseState({ cpuExchanges: [{ playerIdx: 1, drawIndex: 2, exchangeCount: 3 }] }));
     renderWithProviders(<DeuceToSevenPage />);
@@ -108,9 +128,9 @@ describe('DeuceToSevenPage', () => {
     expect(liveRegion).toHaveAttribute('role', 'status');
     expect(liveRegion).toHaveAttribute('aria-live', 'polite');
     expect(liveRegion).toHaveClass('sr-only');
-    expect(liveRegion).toHaveTextContent('Player 1 (draw 2): 3枚交換');
+    expect(liveRegion).toHaveTextContent('プレイヤー1（2回目のドロー）: 3枚交換');
     expect(screen.getByText('CPUドロー:')).toBeInTheDocument();
-    expect(screen.getAllByText('Player 1 (draw 2): 3枚交換')).toHaveLength(2);
+    expect(screen.getAllByText('プレイヤー1（2回目のドロー）: 3枚交換')).toHaveLength(2);
   });
 
   it('keeps the CPU exchange live region mounted before any exchanges', async () => {
@@ -135,7 +155,7 @@ describe('DeuceToSevenPage', () => {
     renderWithProviders(<DeuceToSevenPage />);
 
     expect(await screen.findByTestId('d7-cpu-exchange-live')).toHaveTextContent(
-      'Player 1 (draw 1): 2枚交換、Player 2 (draw 1): 1枚交換',
+      'プレイヤー1（1回目のドロー）: 2枚交換、プレイヤー2（1回目のドロー）: 1枚交換',
     );
   });
 
@@ -147,7 +167,7 @@ describe('DeuceToSevenPage', () => {
     renderWithProviders(<DeuceToSevenPage />);
 
     const liveRegion = await screen.findByTestId('d7-cpu-exchange-live');
-    await waitFor(() => expect(liveRegion).toHaveTextContent('Player 1 (draw 1): 2枚交換'));
+    await waitFor(() => expect(liveRegion).toHaveTextContent('プレイヤー1（1回目のドロー）: 2枚交換'));
     fireEvent.click(screen.getByRole('button', { name: '交換' }));
     await waitFor(() => expect(liveRegion).toBeEmptyDOMElement());
   });
@@ -169,9 +189,9 @@ describe('DeuceToSevenPage', () => {
     renderWithProviders(<DeuceToSevenPage />);
 
     const liveRegion = await screen.findByTestId('d7-cpu-exchange-live');
-    await waitFor(() => expect(liveRegion).toHaveTextContent('Player 1 (draw 1): 2枚交換'));
+    await waitFor(() => expect(liveRegion).toHaveTextContent('プレイヤー1（1回目のドロー）: 2枚交換'));
     fireEvent.click(screen.getByRole('button', { name: '交換' }));
-    await waitFor(() => expect(liveRegion).toHaveTextContent('Player 3 (draw 1): 4枚交換'));
+    await waitFor(() => expect(liveRegion).toHaveTextContent('プレイヤー3（1回目のドロー）: 4枚交換'));
   });
 
   it('renders the draw counter badge with the current draw and the max cap', async () => {
@@ -259,6 +279,9 @@ describe('DeuceToSevenPage', () => {
     mockExec.mockResolvedValue(baseState({ phase: DeuceToSevenPhase.DEAL, currentTurn: 0 }));
     renderWithProviders(<DeuceToSevenPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /チェック/ })).toBeInTheDocument());
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: /チェック/ }),
+    ).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /チェック/ }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('check', undefined, undefined, undefined, 0));

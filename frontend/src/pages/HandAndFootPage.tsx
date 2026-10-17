@@ -1,7 +1,9 @@
 import { useCallback, useMemo } from 'react';
 import type { handandfootApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardFan } from '../components/CardFan';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -12,9 +14,10 @@ import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { PlayerHandSection } from '../components/PlayerHandSection';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -24,14 +27,12 @@ import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useHandAndFootGame } from 
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { badgeInfoColors } from '../styles/badgeStyles';
 import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
-import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { HandAndFootResponse } from '../types/card';
 import { HandAndFootPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { canastaFamilySelectionPoints } from '../utils/canastaFamilyScore';
-import { cardAlt } from '../utils/cardAlt';
 import { HANDANDFOOT_HELP, parseHandAndFootCommand } from '../utils/cli/commands/handandfootCommands';
 import { formatHandAndFootState } from '../utils/cli/formatters/handandfootFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -72,6 +73,8 @@ const HF_TUTORIAL_STEPS: TutorialStep[] = [
 export const HandAndFootPage = withTutorial(HandAndFootPageContent, 'handandfoot', HF_TUTORIAL_STEPS);
 /** Inner content of the Hand and Foot page. */
 function HandAndFootPageContent() {
+  const isMobile = useIsMobile();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('handandfoot');
   const {
@@ -273,12 +276,12 @@ function HandAndFootPageContent() {
           />
 
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            <div className="text-ds-text-primary text-center mb-2">
-              <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
-              <span>
+            <div className="flex flex-wrap justify-center text-ds-text-primary text-center mb-2">
+              <span className="mr-4 whitespace-nowrap">{t('round', { n: state.roundNumber })}</span>
+              <span className="whitespace-nowrap">
                 {t('drawPile', { count: state.drawPileCount })} / {t('discardPile', { count: state.discardPileCount })}
               </span>
-              {state.isFrozen && <span className="ml-2 text-ds-info font-bold">[{t('frozen')}]</span>}
+              {state.isFrozen && <span className="ml-2 whitespace-nowrap text-ds-info font-bold">[{t('frozen')}]</span>}
             </div>
 
             <div className={lgTwoColGrid}>
@@ -286,73 +289,90 @@ function HandAndFootPageContent() {
               <div>
                 <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-                {/* Discard pile top */}
-                {state.discardTop && (
-                  <div
-                    className={`my-3 p-3 rounded flex items-center gap-3 relative ${
-                      state.isFrozen ? `${badgeInfoColors} ring-2 ring-ds-info` : 'bg-black/40'
-                    }`}
-                    data-tutorial="hf-draw-area"
-                    data-testid="hf-discard-pile"
-                  >
-                    <AnimatedCard card={state.discardTop} width={cardWidth} />
-                    <div className="text-ds-text-muted text-sm">{t('discardTop')}</div>
-                    {state.isFrozen && (
-                      <span
-                        className="absolute top-1 right-2 text-ds-info text-xs font-bold"
-                        data-testid="hf-frozen-badge"
-                        role="img"
-                        aria-label={t('frozenIndicator')}
-                      >
-                        {t('frozenIndicator')}
-                      </span>
-                    )}
-                  </div>
-                )}
-
-                {/* Team melds */}
-                {state.teams.map((team, ti) => {
-                  if (team.melds.length === 0 && team.red3s.length === 0) return null;
-                  return (
+                <div className={isLargeDesktop ? 'flex flex-wrap items-start gap-2' : undefined}>
+                  {/* Discard pile top */}
+                  {state.discardTop && (
                     <div
-                      key={team.team}
-                      className="my-2 p-2 rounded bg-black/30"
-                      data-tutorial={ti === 0 ? 'hf-meld-area' : undefined}
+                      className={`my-3 p-3 rounded flex items-center gap-3 relative ${
+                        state.isFrozen ? `${badgeInfoColors} ring-2 ring-ds-info` : 'bg-black/40'
+                      }`}
+                      data-tutorial="hf-draw-area"
+                      data-testid="hf-discard-pile"
                     >
-                      <div className="text-ds-text-muted text-sm mb-1">
-                        {t('team', { n: team.team })} - {t('melds')}
-                      </div>
-                      {team.melds.map((m, mi) => (
-                        <div key={mi} className="flex flex-wrap gap-1 mb-1">
-                          <span className="text-xs text-ds-text-muted self-center mr-1">
-                            {m.isCanasta
-                              ? m.isNatural
-                                ? t('naturalCanasta')
-                                : t('mixedCanasta')
-                              : `(${m.cards.length})`}
-                          </span>
-                          {m.cards.map((card, ci) => (
-                            <AnimatedCard key={`meld-${ti}-${mi}-${ci}`} card={card} width={cardWidth * 0.6} />
-                          ))}
-                        </div>
-                      ))}
-                      {team.red3s.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          <span className="text-xs text-ds-error-text self-center mr-1">{t('red3s')}</span>
-                          {team.red3s.map((card, ri) => (
-                            <AnimatedCard key={`red3-${ti}-${ri}`} card={card} width={cardWidth * 0.6} />
-                          ))}
-                        </div>
+                      <AnimatedCard card={state.discardTop} width={cardWidth} />
+                      <div className="text-ds-text-muted text-sm">{t('discardTop')}</div>
+                      {state.isFrozen && (
+                        <span
+                          className="absolute top-1 right-2 text-ds-info text-xs font-bold"
+                          data-testid="hf-frozen-badge"
+                          role="img"
+                          aria-label={t('frozenIndicator')}
+                        >
+                          {t('frozenIndicator')}
+                        </span>
                       )}
                     </div>
-                  );
-                })}
+                  )}
+
+                  {/* Team melds */}
+                  {state.teams.map((team, ti) => {
+                    if (team.melds.length === 0 && team.red3s.length === 0) return null;
+                    return (
+                      <div
+                        key={team.team}
+                        className={`my-2 p-2 rounded bg-black/30 ${isLargeDesktop ? 'flex flex-col' : ''}`}
+                        data-tutorial={ti === 0 ? 'hf-meld-area' : undefined}
+                      >
+                        <div className="text-ds-text-muted text-sm mb-1">
+                          {t('team', { n: team.team })} - {t('melds')}
+                        </div>
+                        {team.melds.map((m, mi) => (
+                          <div key={mi} className={`flex ${isLargeDesktop ? 'flex-nowrap' : 'flex-wrap'} gap-1 mb-1`}>
+                            <span className="text-xs text-ds-text-muted self-center mr-1">
+                              {m.isCanasta
+                                ? m.isNatural
+                                  ? t('naturalCanasta')
+                                  : t('mixedCanasta')
+                                : `(${m.cards.length})`}
+                            </span>
+                            {isLargeDesktop ? (
+                              <CardFan
+                                itemWidth={cardWidth * 0.6}
+                                className="min-w-0 flex-1"
+                                data-testid={`hf-meld-fan-${ti}-${mi}`}
+                              >
+                                {m.cards.map((card, ci) => (
+                                  <AnimatedCard key={`meld-${ti}-${mi}-${ci}`} card={card} width={cardWidth * 0.6} />
+                                ))}
+                              </CardFan>
+                            ) : (
+                              m.cards.map((card, ci) => (
+                                <AnimatedCard key={`meld-${ti}-${mi}-${ci}`} card={card} width={cardWidth * 0.6} />
+                              ))
+                            )}
+                          </div>
+                        ))}
+                        {team.red3s.length > 0 && (
+                          <div className={`flex ${isLargeDesktop ? 'flex-nowrap' : 'flex-wrap'} gap-1 mt-1`}>
+                            <span className="text-xs text-ds-error-text self-center mr-1">{t('red3s')}</span>
+                            {team.red3s.map((card, ri) => (
+                              <AnimatedCard key={`red3-${ti}-${ri}`} card={card} width={cardWidth * 0.6} />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Right: info sidebar */}
               <div>
                 {/* Score table */}
-                <div className="my-3 p-2 rounded bg-black/30">
+                <details className="my-3 p-2 rounded bg-black/30" open={!isMobile || undefined}>
+                  <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
+                    {t('score.table')}
+                  </summary>
                   <table className="w-full text-sm text-ds-text-muted">
                     <thead>
                       <tr>
@@ -407,30 +427,33 @@ function HandAndFootPageContent() {
                       ))}
                     </div>
                   )}
-                </div>
+                </details>
 
                 {/* CPU hands (shown at round/game end) */}
-                {(isRoundEnd || isGameEnd) &&
-                  state.players
-                    .filter((p) => !p.isHuman)
-                    .map((p) => (
-                      <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                        <div className="text-ds-text-muted text-sm">
-                          {playerName(p.id, p.isHuman)}: {t('handCards', { count: p.cardCount })}
-                        </div>
-                        {p.cards.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {p.cards.map((card, idx) => (
-                              <AnimatedCard
-                                key={`cpu-${card.design}-${card.value}-${idx}`}
-                                card={card}
-                                width={cardWidth * 0.7}
-                              />
-                            ))}
+                {(isRoundEnd || isGameEnd) && (
+                  <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+                    {state.players
+                      .filter((p) => !p.isHuman)
+                      .map((p) => (
+                        <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
+                          <div className="text-ds-text-muted text-sm">
+                            {playerName(p.id, p.isHuman)}: {t('handCards', { count: p.cardCount })}
                           </div>
-                        )}
-                      </div>
-                    ))}
+                          {p.cards.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {p.cards.map((card, idx) => (
+                                <AnimatedCard
+                                  key={`cpu-${card.design}-${card.value}-${idx}`}
+                                  card={card}
+                                  width={cardWidth * 0.7}
+                                />
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                  </CpuAccordion>
+                )}
               </div>
             </div>
 
@@ -446,142 +469,145 @@ function HandAndFootPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
-          </div>
-
-          <GameFooter className={`${gameTheme.handandfoot.footer} px-4 py-2.5`}>
-            {humanPlayer && (
-              <div className="flex flex-wrap gap-1 mb-2" data-tutorial="hf-player-hand">
-                {humanPlayer.cards.map((card, idx) => (
-                  <button
-                    type="button"
-                    key={`${card.design}-${card.value}-${idx}`}
-                    onClick={() => toggleCard(idx)}
-                    aria-label={cardAlt(card)}
-                    aria-pressed={selectedCardIndices.includes(idx)}
-                    className={`transition-transform ${focusRingCard}`}
-                    style={{
-                      background: 'none',
-                      padding: 0,
-                      borderRadius: 8,
-                      ...selectedCardStyle(selectedCardIndices.includes(idx)),
-                      boxSizing: 'border-box',
-                    }}
-                  >
-                    <AnimatedCard card={card} width={cardWidth} />
-                  </button>
-                ))}
-              </div>
-            )}
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            <div className="flex gap-2 items-center flex-wrap" data-tutorial="hf-actions">
-              {isDrawPhase && isHumanTurn && (
-                <div className="flex gap-2 flex-col">
-                  <div className="flex gap-2">
-                    <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
-                      {t('drawStockButton')}
-                    </button>
-                    <button
-                      type="button"
-                      className={`${btnPrimary} ${
-                        state.isFrozen && selectedCardIndices.length === 2 && !loading
-                          ? 'motion-safe:animate-pulse ring-2 ring-ds-info'
-                          : ''
-                      }`}
-                      data-frozen={state.isFrozen && selectedCardIndices.length === 2 && !loading ? 'true' : undefined}
-                      onClick={handleDrawDiscard}
-                      disabled={loading || selectedCardIndices.length !== 2}
-                      aria-describedby="hf-draw-discard-reason"
-                    >
-                      {t('drawDiscardButton')}
-                    </button>
-                  </div>
-                </div>
-              )}
-              {isMeldPhase && isHumanTurn && (
-                <>
-                  {
-                    <div
-                      id="hf-meld-points"
-                      data-testid="hf-meld-points"
-                      className={`w-full text-xs ${
-                        meldPointInfo.below
-                          ? 'text-ds-warning'
-                          : meldPointInfo.needInitial
-                            ? 'text-ds-success'
-                            : 'text-ds-text-muted'
-                      }`}
-                    >
-                      {meldPointInfo.needInitial
-                        ? t('meldPoints.initial', {
-                            min: meldPointInfo.minMeld,
-                            points: meldPointInfo.selectedPoints,
-                          })
-                        : t('meldPoints.selected', { points: meldPointInfo.selectedPoints })}
-                    </div>
-                  }
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleMeldSelected}
-                    // **最低点未達なら押させない** (#5663)。警告テキストは出ていた
-                    // のにボタンはそれを見ておらず、サーバーのバリデーションで
-                    // 弾かれて初めて気づく形だった。
-                    disabled={loading || selectedCardIndices.length < 3 || meldPointInfo.below}
-                  >
-                    {t('meldButton')}
-                  </button>
-                  <button type="button" className={btnOutline} onClick={handleSkipMeld} disabled={loading}>
-                    {t('skipMeldButton')}
-                  </button>
-                </>
-              )}
-              {isDiscardPhase && isHumanTurn && (
-                <div className="flex gap-2 flex-col">
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      className={btnPrimary}
-                      onClick={handleDiscard}
-                      disabled={loading || selectedCardIndices.length !== 1}
-                    >
-                      {t('discardButton')}
-                    </button>
-                    <button
-                      type="button"
-                      className={btnSuccess}
-                      onClick={handleGoOut}
-                      disabled={loading || goOutGuidance?.canGoOut !== true}
-                      title={goOutGuidance && !goOutGuidance.canGoOut ? t(goOutGuidance.reasonKey) : undefined}
-                      aria-describedby={goOutGuidance ? 'hf-go-out-guidance' : undefined}
-                    >
-                      {t('goOutButton')}
-                    </button>
-                  </div>
-                  {goOutGuidance && (
-                    <div
-                      id="hf-go-out-guidance"
-                      data-testid="hf-go-out-guidance"
-                      className={`text-xs ${goOutGuidance.canGoOut ? 'text-ds-success' : 'text-ds-text-muted'}`}
-                    >
-                      {t(goOutGuidance.reasonKey)}
+            <GameResetButton
+              isGameEnd={isGameEnd}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+            />
+            <CardNavShortcutsPanel data-testid="hand-and-foot-kbd-shortcuts" />
+          </div>
+
+          {/* Hand plus actions outgrow the 45vh cap on phones (#11655). */}
+          <GameFooter
+            tall
+            className={`${gameTheme.handandfoot.footer} px-4 py-2.5`}
+            actions={
+              (isDrawPhase && isHumanTurn) ||
+              (isMeldPhase && isHumanTurn) ||
+              (isDiscardPhase && isHumanTurn) ||
+              isRoundEnd ? (
+                <div className="flex gap-2 items-center flex-wrap" data-tutorial="hf-actions">
+                  {isDrawPhase && isHumanTurn && (
+                    <div className="flex gap-2 flex-col">
+                      <div className="flex gap-2">
+                        <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
+                          {t('drawStockButton')}
+                        </button>
+                        <button
+                          type="button"
+                          className={`${btnPrimary} ${
+                            state.isFrozen && selectedCardIndices.length === 2 && !loading
+                              ? 'motion-safe:animate-pulse ring-2 ring-ds-info'
+                              : ''
+                          }`}
+                          data-frozen={
+                            state.isFrozen && selectedCardIndices.length === 2 && !loading ? 'true' : undefined
+                          }
+                          onClick={handleDrawDiscard}
+                          disabled={loading || selectedCardIndices.length !== 2}
+                          aria-describedby="hf-draw-discard-reason"
+                        >
+                          {t('drawDiscardButton')}
+                        </button>
+                      </div>
                     </div>
                   )}
+                  {isMeldPhase && isHumanTurn && (
+                    <>
+                      {
+                        <div
+                          id="hf-meld-points"
+                          data-testid="hf-meld-points"
+                          className={`w-full text-xs ${
+                            meldPointInfo.below
+                              ? 'text-ds-warning'
+                              : meldPointInfo.needInitial
+                                ? 'text-ds-success'
+                                : 'text-ds-text-muted'
+                          }`}
+                        >
+                          {meldPointInfo.needInitial
+                            ? t('meldPoints.initial', {
+                                min: meldPointInfo.minMeld,
+                                points: meldPointInfo.selectedPoints,
+                              })
+                            : t('meldPoints.selected', { points: meldPointInfo.selectedPoints })}
+                        </div>
+                      }
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={handleMeldSelected}
+                        // **最低点未達なら押させない** (#5663)。警告テキストは出ていた
+                        // のにボタンはそれを見ておらず、サーバーのバリデーションで
+                        // 弾かれて初めて気づく形だった。
+                        disabled={loading || selectedCardIndices.length < 3 || meldPointInfo.below}
+                      >
+                        {t('meldButton')}
+                      </button>
+                      <button type="button" className={btnOutline} onClick={handleSkipMeld} disabled={loading}>
+                        {t('skipMeldButton')}
+                      </button>
+                    </>
+                  )}
+                  {isDiscardPhase && isHumanTurn && (
+                    <div className="flex gap-2 flex-col">
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          className={btnPrimary}
+                          onClick={handleDiscard}
+                          disabled={loading || selectedCardIndices.length !== 1}
+                        >
+                          {t('discardButton')}
+                        </button>
+                        <button
+                          type="button"
+                          className={btnSuccess}
+                          onClick={handleGoOut}
+                          disabled={loading || goOutGuidance?.canGoOut !== true}
+                          title={goOutGuidance && !goOutGuidance.canGoOut ? t(goOutGuidance.reasonKey) : undefined}
+                          aria-describedby={goOutGuidance ? 'hf-go-out-guidance' : undefined}
+                        >
+                          {t('goOutButton')}
+                        </button>
+                      </div>
+                      {goOutGuidance && (
+                        <div
+                          id="hf-go-out-guidance"
+                          data-testid="hf-go-out-guidance"
+                          className={`text-xs ${goOutGuidance.canGoOut ? 'text-ds-success' : 'text-ds-text-muted'}`}
+                        >
+                          {t(goOutGuidance.reasonKey)}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {isRoundEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                      {t('nextRound')}
+                    </button>
+                  )}
                 </div>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
+              ) : null
+            }
+          >
+            {humanPlayer && (
+              <PlayerHandSection
+                humanPlayer={humanPlayer}
+                selectedCardIndices={selectedCardIndices}
+                toggleCard={toggleCard}
+                cardWidth={cardWidth}
+                isMobile={isMobile}
+                dataTutorialPrefix="hf"
+                stackRows
               />
-            </div>
+            )}
+
             <div
               id="hf-draw-discard-reason"
               data-testid="hf-draw-discard-reason"
@@ -591,7 +617,6 @@ function HandAndFootPageContent() {
             >
               {drawDiscardReason && <span className="text-xs text-ds-text-muted">{drawDiscardReason}</span>}
             </div>
-            <CardNavShortcutsPanel data-testid="hand-and-foot-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

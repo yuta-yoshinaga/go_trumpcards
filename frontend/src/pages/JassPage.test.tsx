@@ -20,6 +20,18 @@ vi.mock('../providers/SoundProvider', () => ({
   useOptionalSound: () => mockSoundValue,
 }));
 
+const mobileState = vi.hoisted(() => ({ isMobile: undefined as boolean | undefined }));
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useCardDimensions: () => {
+      const dimensions = actual.useCardDimensions();
+      return mobileState.isMobile === undefined ? dimensions : { ...dimensions, isMobile: mobileState.isMobile };
+    },
+  };
+});
+
 const mockExec = vi.mocked(jassApi.exec);
 
 const card = (design: string, value: number): Card => ({ design, value }) as unknown as Card;
@@ -81,12 +93,56 @@ const gameEndState = makeState({
 });
 
 beforeEach(() => {
+  mobileState.isMobile = undefined;
   mockExec.mockReset();
   mockPlaySound.mockClear();
   mockExec.mockResolvedValue(initialState);
 });
 
 describe('JassPage', () => {
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue(makeState({ message: 'Footer message location' }));
+    renderWithProviders(<JassPage />);
+
+    const messageSlot = await screen.findByTestId('game-footer-message');
+    expect(messageSlot).toHaveTextContent('Footer message location');
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    mockExec.mockResolvedValue(makeState({ message: 'Footer message location' }));
+    mobileState.isMobile = true;
+    renderWithProviders(<JassPage />);
+
+    const messageText = await screen.findByText('Footer message location');
+    const message = messageText.closest('[role="status"]');
+    expect(message).toHaveTextContent('Footer message location');
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+  });
+
+  it('collapses CPU details and the score table on mobile', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    renderWithProviders(<JassPage />);
+    const cpuAccordion = await screen.findByTestId('cpu-accordion');
+    const scoreDetails = await screen.findByTestId('ja-score-table');
+    expect(cpuAccordion).not.toHaveAttribute('open');
+    expect(cpuAccordion.querySelector('div')).not.toBeVisible();
+    expect(scoreDetails).not.toHaveAttribute('open');
+    expect(scoreDetails).toHaveAttribute('data-tutorial', 'ja-score-table');
+    expect(scoreDetails.querySelector('summary')).not.toHaveAttribute('data-tutorial');
+    expect(scoreDetails.querySelector('table')).not.toBeVisible();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
+  it('keeps CPU details and the score table open on desktop', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    renderWithProviders(<JassPage />);
+    expect(await screen.findByTestId('cpu-accordion')).toHaveAttribute('open');
+    expect(await screen.findByTestId('ja-score-table')).toHaveAttribute('open');
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
   it('marks the dealer in the player list and above the human hand', async () => {
     const { unmount } = renderWithProviders(<JassPage />);
     await waitFor(() => expect(screen.getByTestId('jass-dealer-3')).toHaveTextContent('ディーラー'));
@@ -293,12 +349,25 @@ describe('JassPage', () => {
     renderWithProviders(<JassPage />);
     const panel = await screen.findByTestId('jass-weis-panel');
     expect(panel).toBeInTheDocument();
+    expect(panel).toHaveAttribute('open');
     expect(panel).toHaveTextContent('Weis（メルド）宣言');
     // Human is on team 0, so the (You) marker appears on team 0.
     expect(panel).toHaveTextContent('チーム0（あなた）');
     expect(panel).toHaveTextContent('20点');
     // Only the scoring team (team 0) gets the "獲得" marker.
     expect(screen.getAllByText('獲得')).toHaveLength(1);
+  });
+
+  it('collapses the Weis panel on mobile while keeping its summary visible', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    mockExec.mockResolvedValue(makeState({ phase: JassPhase.TRICK_END, trumpSuit: 1, roundWeisPoints: [20, 0] }));
+    renderWithProviders(<JassPage />);
+    const panel = await screen.findByTestId('jass-weis-panel');
+    expect(panel).not.toHaveAttribute('open');
+    expect(panel.querySelector('summary')).toHaveTextContent('Weis（メルド）宣言');
+    expect(panel.querySelector('section')).not.toBeVisible();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
   });
 
   it('hides the Weis panel when the feature is disabled', async () => {

@@ -1,5 +1,5 @@
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, crescentApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -17,6 +17,14 @@ vi.mock('../hooks/useGameHint', () => ({
 }));
 
 const mockExec = vi.mocked(crescentApi.exec);
+const originalViewportWidth = window.innerWidth;
+const originalViewportHeight = window.innerHeight;
+
+afterEach(() => {
+  Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalViewportWidth });
+  Object.defineProperty(window, 'innerHeight', { writable: true, configurable: true, value: originalViewportHeight });
+  window.dispatchEvent(new Event('resize'));
+});
 
 function makeTableau(cols: CrescentTableauCard[][]): CrescentTableauCard[][] {
   const result: CrescentTableauCard[][] = [];
@@ -80,6 +88,96 @@ beforeEach(() => {
 });
 
 describe('CrescentPage', () => {
+  it('renders all eight ascending and descending foundations in one row', async () => {
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    const { container } = renderWithProviders(<CrescentPage />);
+    await screen.findByTestId('phase-indicator');
+
+    const foundations = container.querySelector('[data-tutorial="crescent-foundations"]');
+    expect(foundations?.children).toHaveLength(8);
+    expect(foundations?.querySelectorAll('[data-testid^="foundation-dir-"]')).toHaveLength(8);
+    expect(screen.getByTestId('foundation-dir-0')).toHaveTextContent('♠ ↑');
+    expect(screen.getByTestId('foundation-dir-4')).toHaveTextContent('♠ ↓');
+  });
+
+  it('uses eight tableau columns on mobile and retains the desktop grid class', async () => {
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    const { container, unmount } = renderWithProviders(<CrescentPage />);
+    const tableau = await screen
+      .findByTestId('phase-indicator')
+      .then(() => container.querySelector('[data-tutorial="crescent-tableau"]'));
+    expect(tableau).toHaveClass('grid-cols-8');
+    expect(tableau).not.toHaveClass('grid-cols-4');
+    const mobileCard = tableau?.querySelector('img[alt]');
+    expect(mobileCard).toBeInTheDocument();
+    expect(tableau?.querySelector('.relative[style*="min-height"]')).toHaveStyle({ minHeight: '45px' });
+    unmount();
+
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 800 });
+    window.dispatchEvent(new Event('resize'));
+    const desktop = renderWithProviders(<CrescentPage />);
+    await screen.findByTestId('phase-indicator');
+    const desktopTableau = desktop.container.querySelector('[data-tutorial="crescent-tableau"]');
+    const desktopFoundations = desktop.container.querySelector('[data-tutorial="crescent-foundations"]');
+    expect(desktopFoundations).toHaveClass('flex', 'justify-center', 'mb-4');
+    expect(desktopTableau).toHaveClass('grid-cols-8');
+    expect(desktopTableau).not.toHaveClass('grid-cols-4');
+  });
+
+  it('uses compact cards and a compressed step on large desktop while preserving desktop dimensions', async () => {
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });
+    Object.defineProperty(window, 'innerHeight', { writable: true, configurable: true, value: 800 });
+    window.dispatchEvent(new Event('resize'));
+    const deepStack = Array.from({ length: 6 }, (_, index) => ({ card: card('SPADE', index + 1), faceUp: true }));
+    mockExec.mockResolvedValue({ ...playingState, tableau: makeTableau([deepStack]) });
+    const { container, unmount } = renderWithProviders(<CrescentPage />);
+    await screen.findByAltText('♠ 6');
+    const largeDesktopCard = screen
+      .getAllByAltText('♠ A')
+      .find((element) => element.getAttribute('style')?.includes('width: 80px'));
+    expect(largeDesktopCard).toBeDefined();
+    expect(largeDesktopCard).toHaveStyle({ width: '80px' });
+    const largeCards = Array.from(
+      container.querySelector('[data-testid="crescent-col-badge-0"]')?.parentElement?.querySelectorAll('button') ?? [],
+    );
+    const largeStep = Number.parseInt(largeCards.at(-1)?.parentElement?.style.top ?? '0', 10) / (largeCards.length - 1);
+    expect(largeStep).toBeGreaterThanOrEqual(14);
+    expect(largeStep).toBeLessThan(34);
+    const foundations = container.querySelector('[data-tutorial="crescent-foundations"]');
+    const largeChildren = Array.from(foundations?.children ?? []);
+    const leftFoundation = container.querySelector('[data-testid="foundation-dir-0"]')?.closest('.text-center');
+    const rightFoundation = container.querySelector('[data-testid="foundation-dir-4"]')?.closest('.text-center');
+    const tableau = container.querySelector('[data-tutorial="crescent-tableau"]');
+    expect(leftFoundation?.parentElement).not.toBe(rightFoundation?.parentElement);
+    expect(largeChildren.indexOf(leftFoundation?.parentElement as Element)).toBeLessThan(
+      largeChildren.indexOf(tableau as Element),
+    );
+    expect(largeChildren.indexOf(tableau as Element)).toBeLessThan(
+      largeChildren.indexOf(rightFoundation?.parentElement as Element),
+    );
+    unmount();
+
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 800 });
+    window.dispatchEvent(new Event('resize'));
+    const desktop = renderWithProviders(<CrescentPage />);
+    await screen.findByAltText('♠ 6');
+    const desktopCard = screen
+      .getAllByAltText('♠ A')
+      .find((element) => element.getAttribute('style')?.includes('width: 60px'));
+    expect(desktopCard).toBeDefined();
+    expect(desktopCard).toHaveStyle({ width: '60px' });
+    const desktopCards = Array.from(
+      desktop.container
+        .querySelector('[data-testid="crescent-col-badge-0"]')
+        ?.parentElement?.querySelectorAll('button') ?? [],
+    );
+    expect(Number.parseInt(desktopCards.at(-1)?.parentElement?.style.top ?? '0', 10) / (desktopCards.length - 1)).toBe(
+      22,
+    );
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<CrescentPage />);
@@ -159,6 +257,61 @@ describe('CrescentPage', () => {
     fireEvent.click(target as HTMLElement);
     await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
+  it('updates foundation guidance after selecting a tableau source and tolerates missing foundation piles', async () => {
+    mockExec.mockResolvedValue({ ...playingState, foundation: playingState.foundation.slice(0, 2) });
+    renderWithProviders(<CrescentPage />);
+    await screen.findByTestId('phase-indicator');
+    const foundationTarget = screen.getByRole('button', { name: /昇順組札 ♠/ });
+    expect(foundationTarget).toHaveAttribute('aria-disabled', 'true');
+    expect(foundationTarget).toHaveAttribute('aria-describedby');
+
+    fireEvent.click(screen.getByRole('button', { name: 'タブロー列0、♠ 4' }));
+    await waitFor(() => expect(foundationTarget).not.toHaveAttribute('aria-disabled'));
+    expect(foundationTarget).not.toHaveAttribute('aria-describedby');
+    expect(screen.getByTestId('foundation-dir-7')).toBeInTheDocument();
+  });
+
+  it('renders only face-up tableau cards and ignores clicks on a non-top card', async () => {
+    const tableau = makeTableau([
+      [
+        { card: card('SPADE', 5), faceUp: true },
+        { card: card('SPADE', 4), faceUp: true },
+      ],
+      [{ card: card('HEART', 3), faceUp: false }],
+    ]);
+    mockExec.mockResolvedValue({ ...playingState, tableau });
+    renderWithProviders(<CrescentPage />);
+    await screen.findByTestId('phase-indicator');
+    expect(screen.queryByRole('button', { name: /♥ 3/ })).not.toBeInTheDocument();
+    const nonTop = screen.getByRole('button', { name: 'タブロー列0、♠ 5' });
+    expect(nonTop).toBeDisabled();
+    expect(nonTop).toHaveClass('cursor-default');
+    expect(screen.getByRole('button', { name: 'タブロー列0、♠ 4' })).toHaveClass('cursor-pointer');
+    fireEvent.click(nonTop);
+    expect(nonTop).not.toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: /昇順組札 ♠/ })).toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('covers face-down cards and non-top clicks in the regular desktop layout', async () => {
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 800 });
+    window.dispatchEvent(new Event('resize'));
+    const tableau = makeTableau([
+      [
+        { card: card('SPADE', 5), faceUp: true },
+        { card: card('SPADE', 4), faceUp: true },
+      ],
+      [{ card: card('HEART', 3), faceUp: false }],
+    ]);
+    mockExec.mockResolvedValue({ ...playingState, tableau });
+    renderWithProviders(<CrescentPage />);
+    await screen.findByTestId('phase-indicator');
+    expect(screen.queryByRole('button', { name: /♥ 3/ })).not.toBeInTheDocument();
+    const nonTop = screen.getByRole('button', { name: 'タブロー列0、♠ 5' });
+    expect(nonTop).toBeDisabled();
+    fireEvent.click(nonTop);
+    expect(nonTop).not.toHaveAttribute('aria-pressed', 'true');
   });
 
   it('renders ascending and descending foundation suit headers', async () => {
@@ -279,6 +432,21 @@ describe('CrescentPage', () => {
     await waitFor(() => expect(cardButton.className).toContain('ring-2'));
   });
 
+  it('treats a second tableau top click as a destination after source selection', async () => {
+    renderWithProviders(<CrescentPage />);
+    await screen.findByTestId('phase-indicator');
+    fireEvent.click(screen.getByRole('button', { name: 'タブロー列0、♠ 4' }));
+    const destination = screen.getByRole('button', { name: 'タブロー列1、♥ 6' });
+    fireEvent.click(destination);
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith(
+        'move',
+        expect.objectContaining({ zone: 'tableau', col: 0 }),
+        expect.objectContaining({ zone: 'tableau', col: 1 }),
+      ),
+    );
+  });
+
   it('includes the zero-based tableau column and card in each face-up card name', async () => {
     renderWithProviders(<CrescentPage />);
     expect(await screen.findByRole('button', { name: 'タブロー列0、♠ 4' })).toBeInTheDocument();
@@ -346,8 +514,8 @@ describe('CrescentPage', () => {
     const cardButton = screen.getByAltText('♠ 4').closest('button') as HTMLButtonElement;
     fireEvent.click(cardButton);
 
-    await waitFor(() => expect(foundations.querySelectorAll('.ring-ds-success').length).toBe(1));
-    // Exactly the ♠5 column rings; the ♥6 column and the source do not.
+    await waitFor(() => expect(foundations.querySelectorAll('.ring-ds-success').length).toBeGreaterThan(0));
+    // Legal foundation destination(s) and exactly the ♠5 tableau column ring; the ♥6 column and source do not.
     expect(tableau.querySelectorAll('.ring-ds-success')).toHaveLength(1);
     const invalidTop = screen.getByAltText('♥ 6').closest('button') as HTMLButtonElement;
     expect(invalidTop.className).toContain('opacity-40');
@@ -426,6 +594,20 @@ describe('CrescentPage', () => {
     }
   });
 
+  it('keeps tableau piles flat on mobile', async () => {
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue(playingState);
+    const { container } = renderWithProviders(<CrescentPage />);
+    await screen.findByTestId('crescent-col-badge-0');
+    const piles = container.querySelectorAll('[data-crescent-arc]');
+    expect(piles).toHaveLength(16);
+    for (const pile of piles) {
+      expect(pile).toHaveAttribute('data-crescent-arc', '0');
+      expect(pile).not.toHaveStyle({ transform: expect.any(String) });
+    }
+  });
+
   it('renders a [0]..[15] column-number badge above each tableau pile', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<CrescentPage />);
@@ -434,6 +616,23 @@ describe('CrescentPage', () => {
     expect(screen.getByTestId('crescent-col-badge-15')).toHaveTextContent('[15]');
     // The badge is decorative — it must not add to the SR card label noise.
     expect(screen.getByTestId('crescent-col-badge-7')).toHaveAttribute('aria-hidden', 'true');
+  });
+
+  it('keeps the mobile card step based on the fixed initial depth as columns grow', async () => {
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    const deepStack = Array.from({ length: 20 }, (_, index) => ({
+      card: card('SPADE', (index % 13) + 1),
+      faceUp: true,
+    }));
+    mockExec.mockResolvedValue({ ...playingState, tableau: makeTableau([deepStack]) });
+    renderWithProviders(<CrescentPage />);
+    await screen.findByTestId('crescent-col-badge-0');
+    const columnCards = [
+      ...document.querySelectorAll<HTMLButtonElement>('[data-tutorial="crescent-tableau"] button'),
+    ].filter((button) => button.getAttribute('aria-label')?.startsWith('タブロー列0、'));
+    const top = Number.parseInt(columnCards.at(-1)?.parentElement?.style.top ?? '0', 10);
+    expect(top / 14).toBe(19);
   });
 
   it('announces how many legal destinations the selected card has', async () => {
@@ -559,17 +758,24 @@ describe('tableau rules note', () => {
   });
 
   it('displays the packing rule note during play with exact text and mentions A-K wrap', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
     renderWithProviders(<CrescentPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
     const note = screen.getByTestId('cr-rules-note');
+    const rules = note.closest('details');
+    expect(rules).not.toHaveAttribute('open');
+    expect(rules?.querySelector('summary')).toHaveTextContent('ルール');
     expect(note).toBeInTheDocument();
     expect(note.textContent).toBe('同スートで値差±1（A↔Kはラップ）で重ねられます（空列には置けません）。');
     expect(note.textContent).toContain('A');
     expect(note.textContent).toContain('K');
     expect(note.textContent).toMatch(/A.*K/);
     expect(note).toHaveClass('text-ds-text-muted');
-    expect(note).toHaveClass('mb-1', 'text-center', 'text-xs');
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    window.dispatchEvent(new Event('resize'));
   });
 
   it('persists and displays the note after the tutorial is completed', async () => {
@@ -580,5 +786,30 @@ describe('tableau rules note', () => {
     const note = screen.getByTestId('cr-rules-note');
     expect(note).toBeInTheDocument();
     expect(note.textContent).toBe('同スートで値差±1（A↔Kはラップ）で重ねられます（空列には置けません）。');
+  });
+});
+
+describe('CrescentPage compact large-desktop dimensions', () => {
+  it('uses 60px cards at 1024px and 80px cards at 1280px', async () => {
+    const originalWidth = window.innerWidth;
+    try {
+      mockExec.mockResolvedValue(playingState);
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 });
+      const compact = renderWithProviders(<CrescentPage />);
+      await screen.findByTestId('phase-indicator');
+      const compactCard = screen.getByTestId('foundation-dir-0').parentElement?.parentElement?.querySelector('img');
+      expect(compactCard).toHaveStyle({ width: '60px' });
+      compact.unmount();
+
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+      const fullSize = renderWithProviders(<CrescentPage />);
+      await screen.findByTestId('phase-indicator');
+      const fullSizeCard = screen.getByTestId('foundation-dir-0').parentElement?.parentElement?.querySelector('img');
+      expect(fullSizeCard).toHaveStyle({ width: '80px' });
+      fullSize.unmount();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
   });
 });

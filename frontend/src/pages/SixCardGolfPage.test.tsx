@@ -16,6 +16,12 @@ vi.mock('../hooks/useGameHint', () => ({
   useGameHint: vi.fn(() => ({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() })),
 }));
 
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useCardDimensions: () => ({ cardWidth: 60, isMobile: window.innerWidth < 640 }),
+  useBreakpoint: () => (window.innerWidth >= 1024 ? 'largeDesktop' : window.innerWidth >= 640 ? 'desktop' : 'mobile'),
+}));
+
 const mockExec = vi.mocked(sixcardgolfApi.exec);
 
 const card = (value: number): Card => ({ design: 'SPADE', value }) as unknown as Card;
@@ -54,6 +60,60 @@ beforeEach(() => {
 });
 
 describe('SixCardGolfPage', () => {
+  it('uses an opaque warning surface with on-accent text for the active player', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 1, currentPlayerIdx: 0 }));
+    renderWithProviders(<SixCardGolfPage />);
+    await screen.findByTestId('scg-seat-0');
+    const activeScore = screen.getByTestId('scg-player-score-0');
+    const inactiveScore = screen.getByTestId('scg-player-score-1');
+    expect(activeScore).toHaveClass('bg-ds-warning', 'text-ds-text-on-accent');
+    expect(activeScore).not.toHaveClass('text-white');
+    expect(inactiveScore).not.toHaveClass('bg-ds-warning');
+  });
+
+  it('uses a phase label instead of repeating the setup instruction', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 0, canFlip: true, message: '最初にめくる2枚を選んでください。' }));
+    renderWithProviders(<SixCardGolfPage />);
+
+    expect(await screen.findByText('初期めくり')).toBeInTheDocument();
+    expect(screen.getByText('最初にめくる2枚を選んでください。')).toBeInTheDocument();
+    expect(screen.queryByText('初期カードを2枚めくってください')).not.toBeInTheDocument();
+  });
+
+  it('places the player boards before the stock area at intermediate widths', async () => {
+    const previousWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 800 });
+    const { container } = renderWithProviders(<SixCardGolfPage />);
+    await screen.findByTestId('scg-seat-0');
+    const humanSeat = container.querySelector('[data-testid="scg-seat-0"]');
+    const stockArea = container.querySelector('[data-tutorial="scg-stock"]');
+    expect(stockArea).not.toBeNull();
+    expect(humanSeat).not.toBeNull();
+    if (!stockArea || !humanSeat) throw new Error('Expected the stock area and human board to render');
+    expect(humanSeat.compareDocumentPosition(stockArea) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: previousWidth });
+  });
+
+  it('places the draw area before wrapped player boards on large desktop', async () => {
+    const previousWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue(makeState({ phase: 1, currentPlayerIdx: 0 }));
+    const { container } = renderWithProviders(<SixCardGolfPage />);
+
+    await screen.findByTestId('scg-seat-0');
+    const stockArea = container.querySelector('[data-tutorial="scg-stock"]');
+    const humanSeat = container.querySelector('[data-testid="scg-seat-0"]');
+    expect(stockArea).not.toBeNull();
+    expect(humanSeat).not.toBeNull();
+    if (!stockArea || !humanSeat) throw new Error('Expected the stock area and human board to render');
+    expect(stockArea).toHaveClass('justify-center');
+    expect(stockArea.compareDocumentPosition(humanSeat) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(humanSeat?.parentElement).toHaveClass('flex-wrap');
+
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: previousWidth });
+    window.dispatchEvent(new Event('resize'));
+  });
   it('shows every completed round score and cumulative totals after the game', async () => {
     mockExec.mockResolvedValue(
       makeState({
@@ -83,6 +143,8 @@ describe('SixCardGolfPage', () => {
       }),
     );
     renderWithProviders(<SixCardGolfPage />);
+    expect(await screen.findByLabelText('ヒント')).toBeInTheDocument();
+    expect(screen.queryByText('hint', { exact: true })).not.toBeInTheDocument();
     const history = await screen.findByRole('region', { name: 'ラウンド別スコア' });
     expect(within(history).getByText('12')).toBeInTheDocument();
     expect(within(history).getByText('8')).toBeInTheDocument();

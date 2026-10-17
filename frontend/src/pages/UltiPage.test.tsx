@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ultiApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -59,6 +59,35 @@ beforeEach(() => {
 });
 
 describe('UltiPage', () => {
+  it('allows the taller mobile footer', async () => {
+    renderWithProviders(<UltiPage />);
+    expect((await screen.findByTestId('game-footer-content')).closest('footer')?.className).toContain('max-h-[60vh]');
+  });
+
+  it('stacks mobile hand rows for the human player', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      const cards = Array.from({ length: 13 }, (_, i) => ({ design: 'HEART' as const, value: (i % 13) + 1 }));
+      mockExec.mockResolvedValue({
+        ...playPhaseState,
+        players: [{ ...playPhaseState.players[0], cards, cardCount: cards.length }, ...playPhaseState.players.slice(1)],
+      });
+      renderWithProviders(<UltiPage />);
+      const hand = await screen.findByAltText('♥ A');
+      const handSection = hand.closest('[data-tutorial="ulti-player-hand"]');
+      expect(handSection).not.toBeNull();
+      await waitFor(() =>
+        expect(handSection?.querySelectorAll('[data-testid="hand-row"]').length).toBeGreaterThanOrEqual(2),
+      );
+      const rows = handSection?.querySelectorAll<HTMLElement>('[data-testid="hand-row"]') ?? [];
+      for (const row of Array.from(rows).slice(1)) expect(row.style.marginTop).toMatch(/^-/);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
   it('keeps an empty persistent live region when no contract progress exists', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<UltiPage />);
@@ -493,5 +522,28 @@ describe('UltiPage', () => {
     renderWithProviders(<UltiPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     expect(screen.queryByTestId('ulti-bid-descriptions')).not.toBeInTheDocument();
+  });
+  it('places the current turn action in the pinned footer actions', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<UltiPage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: '出す' })).toBeInTheDocument();
+  });
+  it('keeps only the hand and turn prompt in the footer content', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      hint: { cardIndices: [0], reason: 'x' },
+      messageCode: 'ulti.hintRequested',
+    });
+    const { container } = renderWithProviders(<UltiPage />);
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const playArea = container.querySelector('.flex-1.overflow-y-auto');
+    expect(playArea).not.toBeNull();
+
+    expect(footerContent.querySelector('[data-testid="ulti-hint-live"]')).toBeNull();
+    expect(footerContent.querySelector('[data-tutorial="ulti-reset-button"]')).toBeNull();
+    expect(playArea).toContainElement(screen.getByTestId('ulti-hint-live'));
+    expect(playArea?.querySelector('[data-tutorial="ulti-reset-button"]')).not.toBeNull();
+    expect(footerContent.querySelector('[data-tutorial="ulti-player-hand"]')).toBeInTheDocument();
   });
 });

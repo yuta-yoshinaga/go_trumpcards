@@ -56,6 +56,7 @@
   "meldProgressAnnouncement": "あなたのチームのメルド: {{updates}}",
   "listSeparator": "、",
   "melds": "メルド",
+  "opponentMelds": "相手チームのメルド ({{count}})",
   "mixedCanasta": "ミックスカナスタ",
   "naturalCanasta": "ナチュラルカナスタ",
   "nextRound": "次のラウンド",
@@ -75,6 +76,7 @@
   "roundEnd": "ラウンド終了。次のラウンドに進んでください。",
   "samba": "サンバ",
   "score": {
+    "title": "スコア",
     "cumulative": "累積",
     "round": "ラウンド",
     "team": "チーム"

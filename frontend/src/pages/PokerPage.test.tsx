@@ -177,6 +177,25 @@ beforeEach(() => {
 });
 
 describe('PokerPage', () => {
+  it('keeps exchange controls in footer actions and exchange information in the play area', async () => {
+    mockExec.mockResolvedValue(exchangeState);
+    renderWithProviders(<PokerPage />);
+
+    await screen.findByRole('button', { name: '交換' });
+    const footer = screen.getByTestId('game-footer-content');
+    const actions = screen.getByTestId('game-footer-actions');
+    const playArea = screen.getByTestId('pk-stand-hint').closest('[class*="overflow-y-auto"]');
+    expect(playArea).not.toBeNull();
+    expect(footer.querySelector('[data-tutorial="pk-player-hand"]')).toBeInTheDocument();
+    expect(within(actions).getByRole('button', { name: '交換' })).toBeInTheDocument();
+    expect(within(actions).getByRole('button', { name: 'スタンド' })).toBeInTheDocument();
+    expect(within(footer).getByTestId('pk-exchange-confirmability')).toBeInTheDocument();
+    expect(within(footer).queryByTestId('pk-exchange-selected')).not.toBeInTheDocument();
+    expect(within(footer).queryByTestId('pk-stand-hint')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('pk-exchange-selected')).toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('pk-stand-hint')).toBeInTheDocument();
+  });
+
   it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<PokerPage />);
@@ -399,7 +418,7 @@ describe('PokerPage', () => {
     mockExec.mockResolvedValue(dealWithBetState);
     renderWithProviders(<PokerPage />);
     await waitFor(() => expect(screen.getByText('CPU行動:')).toBeInTheDocument());
-    expect(screen.getByText(/Player 1: ベット/)).toBeInTheDocument();
+    expect(screen.getByText(/CPU 1: ベット/)).toBeInTheDocument();
   });
 
   it('does not show CPU actions log when cpuActions is empty', async () => {
@@ -412,7 +431,7 @@ describe('PokerPage', () => {
   it('shows amount in CPU action when amount > 0', async () => {
     mockExec.mockResolvedValue(dealWithBetState);
     renderWithProviders(<PokerPage />);
-    await waitFor(() => expect(screen.getByText(/Player 1: ベット \(40\)/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/CPU 1: ベット \(40\)/)).toBeInTheDocument());
   });
 
   it('does not show amount when action amount is 0', async () => {
@@ -422,7 +441,7 @@ describe('PokerPage', () => {
     });
     renderWithProviders(<PokerPage />);
     await waitFor(() => expect(screen.getByText('CPU行動:')).toBeInTheDocument());
-    expect(screen.getByText(/Player 1: チェック/)).toBeInTheDocument();
+    expect(screen.getByText(/CPU 1: チェック/)).toBeInTheDocument();
     expect(screen.queryByText(/\(0\)/)).not.toBeInTheDocument();
   });
 
@@ -432,7 +451,7 @@ describe('PokerPage', () => {
       cpuActions: [{ playerIdx: 1, action: 99, amount: 0 }],
     });
     renderWithProviders(<PokerPage />);
-    await waitFor(() => expect(screen.getByText(/Player 1: 不明/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/CPU 1: 不明/)).toBeInTheDocument());
   });
 
   // ---- CPU exchanges log ----
@@ -845,6 +864,12 @@ describe('PokerPage', () => {
     mockExec.mockResolvedValue(secondBetState);
     renderWithProviders(<PokerPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: 'ベット' }),
+    ).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId('game-footer-actions')).queryByTestId('pk-exchange-confirmability'),
+    ).not.toBeInTheDocument();
   });
 
   it('hides betting controls in END phase', async () => {

@@ -308,6 +308,7 @@ describe('PresidentPage', () => {
     expect(screen.getByTestId('rank-stamp-1').textContent).toContain('👑');
     // Trash icon for rank 4 (scum).
     expect(screen.getByTestId('rank-stamp-4').textContent).toContain('🗑️');
+    expect(screen.getByTestId('rank-stamp-4')).toHaveClass('bg-ds-error', 'text-white');
   });
 
   it('falls back to neutral styling and an empty icon for an unknown rank value', async () => {
@@ -549,5 +550,10 @@ describe('PresidentPage SettingsPanel tooltips', () => {
         expect(document.getElementById(`${toggle.id}-tooltip`)).not.toBeInTheDocument();
       });
     }
+  });
+
+  it('renders CPU hands in compact card back fans', async () => {
+    renderWithProviders(<PresidentPage />);
+    expect(await screen.findAllByTestId('card-back-fan')).not.toHaveLength(0);
   });
 });

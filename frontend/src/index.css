@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Shared source for the muted text color on opaque surfaces and outside felt. */
+:root {
+  --ds-text-muted-surface: #8b9aaf;
+}
+
 @theme {
   --color-game-status-active: var(--color-ds-success);
   --color-game-status-waiting: var(--color-ds-warning);
@@ -29,9 +34,9 @@
   /* Game background colors */
   --color-game-bg-green: #1a5c1a;
   --color-game-bg-green-dark: #163e16;
-  --color-game-bg-green-bright: #008000;
+  --color-game-bg-green-bright: #006a00;
   --color-game-bg-green-bright-dark: #005a00;
-  --color-game-bg-green-poker: #1a6b1a;
+  --color-game-bg-green-poker: #196919;
   --color-game-bg-green-poker-dark: #155715;
   --color-game-bg-casino: #0d5016;
   --color-game-bg-casino-dark: #0a3a10;
@@ -52,10 +57,10 @@
   --color-game-bg-tute: #7a2e1e;
   --color-game-bg-tute-dark: #521e13;
   /* Sueca — Portuguese/Brazilian deep emerald with a gold lean, distinct from Mus's green. */
-  --color-game-bg-sueca: #0f6b4f;
+  --color-game-bg-sueca: #0e674c;
   --color-game-bg-sueca-dark: #0a4733;
   /* Klaverjas — Dutch burnt-orange (Oranje), distinct from every felt and red game. */
-  --color-game-bg-klaverjas: #b3541e;
+  --color-game-bg-klaverjas: #914418;
   --color-game-bg-klaverjas-dark: #7a3813;
   /* Manille — French/Belgian royal bleu (brighter & cooler than BLUE's navy). */
   --color-game-bg-manille: #2451a8;
@@ -76,7 +81,7 @@
   --color-game-bg-ombre: #a11d29;
   --color-game-bg-ombre-dark: #6b111a;
   /* Ulti (Ultimó) — Hungarian Tokaji-gold amber felt, a warm golden tone distinct from Cuarenta's olive-gold, Calabresella's terracotta, and Ombre's crimson. */
-  --color-game-bg-ulti: #9a6b0f;
+  --color-game-bg-ulti: #78530c;
   --color-game-bg-ulti-dark: #664709;
   /* Watten (ヴァッテン) — Alpine/Bavarian glacier blue felt, cooler and brighter than Jass's navy blue and distinct from every other game. */
   --color-game-bg-watten: #1c5b8c;
@@ -109,13 +114,13 @@
   --color-game-bg-catchten: #2a5d6e;
   --color-game-bg-catchten-dark: #1a3d49;
   /* Auction Forty-Fives — Irish/Canadian deep shamrock-on-amber, a warm bronze-gold felt distinct from Solo Whist's cool green and Spoil Five's vivid emerald. */
-  --color-game-bg-fortyfives: #8a5a16;
+  --color-game-bg-fortyfives: #7c5114;
   --color-game-bg-fortyfives-dark: #5c3a0d;
   /* Knockout Whist — British pub-quiz royal-purple, distinct from every other felt (survival/elimination drama). */
   --color-game-bg-knockoutwhist: #4a1d6e;
   --color-game-bg-knockoutwhist-dark: #2f1247;
   /* Spoil Five (Maw) — Irish shamrock vivid emerald-green, distinct from Solo Whist's muted forest felt and Préférence's teal. */
-  --color-game-bg-spoilfive: #0b6b3a;
+  --color-game-bg-spoilfive: #0b6838;
   --color-game-bg-spoilfive-dark: #064523;
   /* Nap (Napoleon) — British gambling-parlour deep wine/burgundy, distinct from Solo Whist's green and every other felt. */
   --color-game-bg-nap: #6e1f2e;
@@ -135,7 +140,7 @@
   --color-game-bg-preference: #14474a;
   --color-game-bg-preference-dark: #0c2e30;
   /* Twenty-Nine (29) — Indian/Bangladeshi marigold-saffron deepening to terracotta, a warm spice-orange felt distinct from Forty-Fives' bronze-gold and Nap's wine. */
-  --color-game-bg-twentynine: #b5651d;
+  --color-game-bg-twentynine: #864b15;
   --color-game-bg-twentynine-dark: #7a4212;
   /* Court Piece (Rang) — a regal South-Asian indigo-violet "royal court" felt, distinct from Twenty-Nine's spice-orange and Preference's teal. */
   --color-game-bg-courtpiece: #4b3f72;
@@ -189,16 +194,16 @@
   --color-game-bg-primero: #14654a;
   --color-game-bg-primero-dark: #0a3628;
   /* Michigan (Newmarket) — a crisp racing-green turf evoking the English Newmarket racecourse, distinct from Primero's emerald and the standard table green. */
-  --color-game-bg-michigan: #2f6b34;
+  --color-game-bg-michigan: #2d6631;
   --color-game-bg-michigan-dark: #1a3d1e;
   /* Carioca — a vivid Rio tropical teal-jade felt evoking the Brazilian/Chilean contract-rummy party game, distinct from Primero's emerald, Michigan's turf-green, and BLUE's navy. */
-  --color-game-bg-carioca: #0e7c6b;
+  --color-game-bg-carioca: #0b6658;
   --color-game-bg-carioca-dark: #085247;
   /* Samba — a carnival magenta/fuchsia evoking the Brazilian samba-parade festivity of this three-deck Canasta variant, distinct from every other game's felt. */
   --color-game-bg-samba: #a5236e;
   --color-game-bg-samba-dark: #6e1749;
   /* Indian Rummy — a warm saffron/marigold orange evoking the Indian 13-card rummy tradition, distinct from Klaverjas's burnt-orange and Twenty-Nine's spice-orange. */
-  --color-game-bg-indianrummy: #c8651a;
+  --color-game-bg-indianrummy: #8c4712;
   --color-game-bg-indianrummy-dark: #8a4310;
   /* Machiavelli — a Renaissance-Florence deep crimson with a gilded undertone, evoking the Italian rummy's Medici-era heritage; distinct from other reds in the palette. */
   --color-game-bg-machiavelli: #8c1c2b;
@@ -212,8 +217,15 @@
   --color-ds-surface-elevated: #212d3f;
   --color-ds-surface-elevated-hover: #2a3a4f;
   --color-ds-text-primary: #e8e0d4;
-  --color-ds-text-muted: #8b9aaf;
+  --color-ds-text-muted: var(--ds-text-muted-surface);
   --color-ds-text-on-accent: #1a1a1a;
+  --color-ds-text-on-felt: #dde3ea;
+  --color-ds-warning-on-felt: #f8dcbf;
+  --color-ds-info-on-felt: #d5e3ed;
+  --color-ds-accent-on-felt: #efdfbf;
+  --color-ds-success-on-felt: #c9e8d8;
+  --color-ds-error-text-on-felt: #fbd9d6;
+  --color-hanafuda-label: #765300;
   --color-ds-text-inverse: #1a1a1a;
   --color-ds-accent: #d4a853;
   --color-ds-accent-hover: #e0b86a;
@@ -233,9 +245,9 @@
   --shadow-ds-accent-glow: 0 0 10px rgba(212, 168, 83, 0.6);
   /* Poker action button colors (from DESIGN.md game-specific palette) */
   --color-poker-call: #059669;
-  --color-poker-call-hover: #047857;
+  --color-poker-call-hover: #10b981;
   --color-poker-raise: #0ea5e9;
-  --color-poker-raise-hover: #0284c7;
+  --color-poker-raise-hover: #38bdf8;
   --color-poker-allin: #f59e0b;
   --color-poker-allin-hover: #d97706;
   --color-poker-fold: #6b7280;
@@ -243,6 +255,94 @@
   /* Typography */
   --font-display: "Fraunces", "Noto Sans JP", serif;
   --font-body: "DM Sans", "Noto Sans JP", system-ui, sans-serif;
+}
+
+/* Muted text needs the higher-contrast on-felt color unless an opaque surface
+   establishes its own background. The opaque-surface selector below must stay
+   in sync with the state-text selector above; glass panels remain on-felt. */
+[data-felt] {
+  --color-ds-text-muted: var(--color-ds-text-on-felt);
+  --ds-warning-text: var(--color-ds-warning-on-felt);
+  --ds-info-text: var(--color-ds-info-on-felt);
+  --ds-accent-text: var(--color-ds-accent-on-felt);
+  --ds-success-text: var(--color-ds-success-on-felt);
+  --ds-error-text: var(--color-ds-error-text-on-felt);
+}
+
+/* State text uses a lightness-adjusted version on felt. Keep the semantic
+   tokens themselves unchanged so background utilities retain their colors. */
+[data-felt] .text-ds-warning {
+  color: var(--ds-warning-text);
+}
+[data-felt] .text-ds-info {
+  color: var(--ds-info-text);
+}
+[data-felt] .text-ds-accent {
+  color: var(--ds-accent-text);
+}
+[data-felt] .text-ds-success {
+  color: var(--ds-success-text);
+}
+[data-felt] .text-ds-error-text {
+  color: var(--ds-error-text);
+}
+[data-felt] .hover\:text-ds-warning:hover,
+[data-felt] .hover\:text-ds-warning-hover:hover {
+  color: var(--ds-warning-text);
+}
+[data-felt] .hover\:text-ds-info:hover {
+  color: var(--ds-info-text);
+}
+[data-felt] .hover\:text-ds-accent:hover {
+  color: var(--ds-accent-text);
+}
+[data-felt] .hover\:text-ds-accent-hover:hover {
+  color: var(--ds-accent-text);
+}
+[data-felt] .hover\:text-ds-success:hover {
+  color: var(--ds-success-text);
+}
+[data-felt] .hover\:text-ds-error-text:hover {
+  color: var(--ds-error-text);
+}
+
+/* Keep this state-text surface list in sync with the muted-text surface list below.
+   Restore original state colors over opaque surfaces and bright colored fills,
+   where the light on-felt variants would lose contrast. Opaque surfaces are dark,
+   so other hover text stays on-felt for sufficient contrast. */
+[data-felt] :is(.bg-ds-surface, .bg-ds-surface-elevated, .bg-ds-bg, [data-surface]) {
+  --ds-warning-text: var(--color-ds-warning);
+  --ds-info-text: var(--color-ds-info);
+  --ds-accent-text: var(--color-ds-accent);
+  --ds-success-text: var(--color-ds-success);
+  --ds-error-text: var(--color-ds-error-text);
+}
+
+[data-felt] .bg-white,
+[data-felt] .bg-ds-warning,
+[data-felt] .bg-ds-accent,
+[data-felt] .bg-ds-info,
+[data-felt] .bg-ds-success,
+[data-felt] .bg-ds-error {
+  --ds-warning-text: var(--color-ds-warning);
+  --ds-info-text: var(--color-ds-info);
+  --ds-accent-text: var(--color-ds-accent);
+  --ds-success-text: var(--color-ds-success);
+  --ds-error-text: var(--color-ds-error-text);
+}
+
+[data-felt]
+  :is(.bg-ds-surface, .bg-ds-surface-elevated, .bg-ds-bg, [data-surface])
+  .hover\:text-ds-warning-hover:hover {
+  color: var(--color-ds-warning-hover);
+}
+
+[data-felt] :is(.bg-ds-surface, .bg-ds-surface-elevated, .bg-ds-bg, [data-surface]) .hover\:text-ds-accent-hover:hover {
+  color: var(--color-ds-accent-hover);
+}
+
+[data-felt] :is(.bg-ds-surface, .bg-ds-surface-elevated, .bg-ds-bg, [data-surface]) {
+  --color-ds-text-muted: var(--ds-text-muted-surface);
 }
 
 html,

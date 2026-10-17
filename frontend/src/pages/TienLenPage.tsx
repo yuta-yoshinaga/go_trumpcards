@@ -1,5 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardBackFan } from '../components/CardBackFan';
+import { CardFan } from '../components/CardFan';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { ReplaySpeedSettingsPanel } from '../components/common/ReplaySpeedSettingsPanel';
@@ -10,7 +12,6 @@ import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
-import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -211,11 +212,7 @@ function TienLenPageContent() {
                         <span>— {p.cardCount}</span>
                       )}
                     </div>
-                    <div className="flex gap-0.5 justify-center">
-                      {Array.from({ length: Math.min(p.cardCount, 13) }, (_, i) => (
-                        <AnimatedCardBack key={i} width={cardWidth * 0.45} />
-                      ))}
-                    </div>
+                    <CardBackFan count={Math.min(p.cardCount, 13)} width={cardWidth * 0.45} />
                   </div>
                 ))}
             </div>
@@ -248,7 +245,7 @@ function TienLenPageContent() {
                 <span>{tc('player.you')}</span>
                 {human.isFinished && <span className="font-bold">{t(`rank.${human.rank}`)}</span>}
               </div>
-              <div className="flex flex-wrap justify-center gap-2">
+              <CardFan itemWidth={cardWidth + 6}>
                 {human.cards.map((c, i) => {
                   const selected = selectedIndices.includes(i);
                   const cardClass = selected
@@ -273,7 +270,7 @@ function TienLenPageContent() {
                     </button>
                   );
                 })}
-              </div>
+              </CardFan>
             </div>
 
             <GameMessageBox
@@ -342,7 +339,7 @@ function TienLenPageContent() {
                 onClick={handlePlay}
                 disabled={loading || !canPlay}
                 aria-disabled={isHumanTurn && hasValidCombo && playability !== 'ok' ? 'true' : undefined}
-                className="px-4 py-2 rounded-lg bg-ds-info hover:bg-ds-info text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                className="px-4 py-2 rounded-lg bg-ds-info hover:bg-ds-info text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                 data-testid="play-button"
               >
                 {t('playButton')}
@@ -356,7 +353,7 @@ function TienLenPageContent() {
                 disabled={loading || !isHumanTurn}
                 aria-disabled={isHumanTurn && state.tableCards.length === 0 ? 'true' : undefined}
                 aria-describedby={isHumanTurn && state.tableCards.length === 0 ? 'tl-pass-unavailable' : undefined}
-                className="px-4 py-2 rounded-lg bg-ds-warning hover:bg-ds-warning text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed aria-disabled:opacity-40 aria-disabled:cursor-not-allowed text-sm"
+                className="px-4 py-2 rounded-lg bg-ds-warning hover:bg-ds-warning text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed aria-disabled:opacity-40 aria-disabled:cursor-not-allowed text-sm"
                 data-testid="pass-button"
               >
                 {t('passButton')}

@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { tusacApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
+import { CardFan } from '../components/CardFan';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -269,7 +270,10 @@ function TuSacPageContent() {
             </div>
 
             {/* **手札は位置で選ぶ。** 押した札の番号がそのままワイヤに乗る。 */}
-            <div className="mb-3" data-tutorial="tusac-hand">
+            <div
+              className="mb-3 lg:sticky lg:bottom-0 lg:z-10 lg:bg-game-bg-casino lg:pt-2 lg:shadow-lg"
+              data-tutorial="tusac-hand"
+            >
               <div className="text-ds-text-primary text-center text-sm font-bold mb-1">
                 {t('label.yourHand')}
                 {/* **ライブ領域は常設。** 選択と同時に領域ごと現れると、その中身は
@@ -289,7 +293,7 @@ function TuSacPageContent() {
                   )}
                 </span>
               </div>
-              <div className="flex justify-center gap-1 flex-wrap" data-testid="tusac-hand">
+              <CardFan itemWidth={cardWidth + 6} data-testid="tusac-hand">
                 {(human?.cards ?? []).map((card, i) => (
                   <button
                     key={`hand-${i}-${card.design}-${card.value}`}
@@ -304,7 +308,7 @@ function TuSacPageContent() {
                     <AnimatedCard card={card} width={cardWidth} />
                   </button>
                 ))}
-              </div>
+              </CardFan>
             </div>
 
             {gameOver && (
@@ -423,7 +427,7 @@ function TuSacPageContent() {
 
               <div className="flex gap-2">
                 <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
-                  {tc('button.actionLog')}
+                  {tc('actionLog.view')}
                 </button>
                 <GameResetButton
                   isGameEnd={gameOver}

@@ -92,6 +92,8 @@ describe('GermanWhistPage', () => {
   it('shows the scoring trick win threshold', async () => {
     renderWithProviders(<GermanWhistPage />);
     expect(await screen.findByTestId('gw-trick')).toHaveTextContent('7');
+    expect(screen.getByTestId('gw-stock')).toHaveClass('whitespace-nowrap');
+    expect(screen.getByTestId('gw-stock').parentElement).toHaveClass('flex-wrap');
   });
   it('resets on mount', async () => {
     renderWithProviders(<GermanWhistPage />);

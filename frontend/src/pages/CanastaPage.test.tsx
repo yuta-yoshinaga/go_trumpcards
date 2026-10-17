@@ -10,6 +10,22 @@ vi.mock('../api/gameApi', () => ({
   actionLogApi: { canasta: vi.fn() },
 }));
 const mockExec = vi.mocked(canastaApi.exec);
+const breakpointState = vi.hoisted(() => ({ enabled: false }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useCardDimensions: () => {
+      const dimensions = actual.useCardDimensions();
+      return breakpointState.enabled ? { ...dimensions, isMobile: false } : dimensions;
+    },
+    useBreakpoint: () => {
+      const breakpoint = actual.useBreakpoint();
+      return breakpointState.enabled ? 'desktop' : breakpoint;
+    },
+  };
+});
 
 const basePlayers: CanastaPlayerData[] = [
   {
@@ -122,10 +138,196 @@ const meldDisplayState: CanastaResponse = {
   ],
 };
 
+afterEach(() => {
+  Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1024 });
+});
+
 describe('CanastaPage', () => {
+  it('renders turn guidance in the footer on desktop', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1024 });
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      message: 'Footer guidance',
+      messageCode: undefined,
+      messageParams: undefined,
+    });
+    renderWithProviders(<CanastaPage />);
+    const message = await screen.findByText('Footer guidance');
+    expect(message.closest('[data-testid="game-footer-message"]')).toBeInTheDocument();
+  });
+
+  it('keeps turn guidance in the play area on mobile', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 375 });
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      message: 'Mobile guidance',
+      messageCode: undefined,
+      messageParams: undefined,
+    });
+    renderWithProviders(<CanastaPage />);
+    const message = await screen.findByText('Mobile guidance');
+    expect(message.closest('[role="status"]')).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     mockExec.mockResolvedValue(drawPhaseState);
+  });
+
+  it('keeps the player meld area beside the hand on large desktop', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      mockExec.mockResolvedValue({
+        ...drawPhaseState,
+        players: [
+          {
+            ...basePlayers[0],
+            cards: Array.from({ length: 15 }, (_, i) => ({ design: 'SPADE' as const, value: (i % 13) + 1 })),
+          },
+          basePlayers[1],
+        ],
+      });
+      renderWithProviders(<CanastaPage />);
+      await screen.findByTestId('phase-indicator');
+      const footer = document.querySelector('[data-testid="game-footer-content"]');
+      expect(footer?.querySelector('[data-tutorial="ca-meld-area"]')).toBeInTheDocument();
+      expect(footer?.querySelector('[data-tutorial="ca-player-hand"]')).toBeInTheDocument();
+      expect(footer?.querySelector('[data-testid="ca-player-hand"]')).toBeInTheDocument();
+      expect(footer?.querySelectorAll('[data-testid^="hand-card-"]')).toHaveLength(15);
+      expect(footer?.firstElementChild).toHaveClass('flex', 'items-start');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it('renders human red threes and their Japanese label in the large desktop meld area', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      mockExec.mockResolvedValue({
+        ...meldPhaseState,
+        players: [{ ...basePlayers[0], red3Count: 1, red3s: [{ design: 'HEART', value: 3 }] }, basePlayers[1]],
+      });
+      renderWithProviders(<CanastaPage />);
+      await screen.findByTestId('phase-indicator');
+      const footer = document.querySelector('[data-testid="game-footer-content"]');
+      const meldArea = footer?.querySelector('[data-tutorial="ca-meld-area"]');
+      expect(meldArea).toHaveTextContent('赤3');
+      expect(meldArea?.querySelectorAll('[data-testid="animated-card"]')).toHaveLength(1);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it('does not mark the CPU meld area as the tutorial target on non-large desktop', async () => {
+    breakpointState.enabled = true;
+    try {
+      mockExec.mockResolvedValue({
+        ...meldPhaseState,
+        players: [
+          basePlayers[0],
+          {
+            ...basePlayers[1],
+            melds: [
+              {
+                rank: 7,
+                isNatural: true,
+                isCanasta: false,
+                cards: [
+                  { design: 'SPADE', value: 7 },
+                  { design: 'HEART', value: 7 },
+                  { design: 'CLOVER', value: 7 },
+                ],
+              },
+            ],
+          },
+        ],
+      });
+      renderWithProviders(<CanastaPage />);
+      await screen.findByTestId('phase-indicator');
+
+      const meldAreas = document.querySelectorAll('[data-tutorial="ca-meld-area"]');
+      expect(meldAreas).toHaveLength(1);
+      const cpuMeldArea = document.querySelector('[data-testid="ca-meld-1-0"]')?.parentElement;
+      expect(cpuMeldArea).toBeInTheDocument();
+      expect(cpuMeldArea).toHaveTextContent('CPU');
+      expect(cpuMeldArea).not.toHaveAttribute('data-tutorial', 'ca-meld-area');
+      expect(cpuMeldArea?.querySelector('[data-testid="ca-meld-1-0"]')).toBeInTheDocument();
+    } finally {
+      breakpointState.enabled = false;
+    }
+  });
+
+  it('renders the standard card hand on tablet', async () => {
+    breakpointState.enabled = true;
+    try {
+      renderWithProviders(<CanastaPage />);
+      await screen.findByTestId('phase-indicator');
+      const hand = document.querySelector<HTMLElement>('[data-tutorial="ca-player-hand"]');
+      expect(hand).not.toBeNull();
+      expect(hand).toHaveClass('flex', 'flex-wrap');
+      expect(hand?.querySelector('[data-testid="ca-player-hand"]')).toBeNull();
+      expect(hand?.querySelectorAll('button[aria-pressed]')).toHaveLength(basePlayers[0].cards.length);
+    } finally {
+      breakpointState.enabled = false;
+    }
+  });
+
+  it('stacks mobile hand rows when the hand spans multiple rows', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      mockExec.mockResolvedValue({
+        ...drawPhaseState,
+        players: [
+          {
+            ...basePlayers[0],
+            cards: Array.from({ length: 15 }, (_, i) => ({ design: 'SPADE' as const, value: (i % 13) + 1 })),
+          },
+          basePlayers[1],
+        ],
+      });
+      renderWithProviders(<CanastaPage />);
+      await screen.findByTestId('phase-indicator');
+      const hand = document.querySelector<HTMLElement>('[data-tutorial="ca-player-hand"]');
+      expect(hand).not.toBeNull();
+      if (!hand) throw new Error('Expected the Canasta player hand');
+      await waitFor(() => expect(hand.querySelectorAll('[data-testid="hand-row"]').length).toBeGreaterThanOrEqual(2));
+      for (const row of Array.from(hand.querySelectorAll<HTMLElement>('[data-testid="hand-row"]')).slice(1)) {
+        expect(row.style.marginTop).toMatch(/^-/);
+      }
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it('allows selecting a mobile hand card', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      renderWithProviders(<CanastaPage />);
+      const hand = await screen.findByTestId('phase-indicator');
+      expect(hand).toBeInTheDocument();
+      const card = screen
+        .getAllByRole('button', { pressed: false })
+        .find((button) => button.hasAttribute('aria-pressed'));
+      expect(card).toBeDefined();
+      if (!card) throw new Error('Expected an unselected hand card');
+      fireEvent.click(card);
+      expect(card).toHaveAttribute('aria-pressed', 'true');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
   });
 
   it('renders skeleton before first API response', () => {
@@ -177,7 +379,23 @@ describe('CanastaPage', () => {
   it('shows draw phase buttons', async () => {
     renderWithProviders(<CanastaPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '山札から引く' })).toBeInTheDocument());
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '山札から引く' }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeInTheDocument();
+  });
+
+  it('keeps the hand in the footer and puts reset and keyboard shortcuts in the play area', async () => {
+    renderWithProviders(<CanastaPage />);
+
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const playArea = document.querySelector('.flex-1.overflow-y-auto');
+    expect(playArea).not.toBeNull();
+    expect(footerContent.querySelector('[data-tutorial="ca-player-hand"]')).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('canasta-kbd-shortcuts')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('canasta-kbd-shortcuts')).toBeInTheDocument();
+    expect(within(footerContent).queryByRole('button', { name: 'リセット' })).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByRole('button', { name: 'リセット' })).toBeInTheDocument();
   });
 
   it('keeps the human meld tutorial target visible when no melds or red threes exist', async () => {
@@ -410,6 +628,14 @@ describe('CanastaPage', () => {
     );
   });
 
+  it('keeps the frozen status label together while the status row can wrap', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, isFrozen: true });
+    renderWithProviders(<CanastaPage />);
+    const frozenLabel = await screen.findByText('[フリーズ中]');
+    expect(frozenLabel.parentElement).toHaveClass('flex', 'flex-wrap');
+    expect(frozenLabel).toHaveClass('shrink-0', 'whitespace-nowrap');
+  });
+
   it('switches the reason to selectOneMore once the player selects one card', async () => {
     renderWithProviders(<CanastaPage />);
     await waitFor(() => expect(screen.getByTestId('ca-draw-discard-reason')).toBeInTheDocument());
@@ -467,6 +693,34 @@ describe('CanastaPage', () => {
     expect(document.querySelector('[data-tutorial="ca-meld-area"]')).toBeInTheDocument();
     // Canasta type (with the ★) is visible at a glance for the completed canasta.
     expect(within(canastaMeld).getByText(/ナチュラルカナスタ/)).toBeInTheDocument();
+  });
+
+  it('renders the Japanese label for a mixed canasta', async () => {
+    mockExec.mockResolvedValue({
+      ...meldDisplayState,
+      players: [
+        {
+          ...basePlayers[0],
+          hasCanasta: true,
+          melds: [
+            {
+              rank: 7,
+              isNatural: false,
+              isCanasta: true,
+              cards: Array.from({ length: 7 }, (_, i) => ({
+                design: i % 2 ? ('HEART' as const) : ('SPADE' as const),
+                value: 7,
+              })),
+            },
+          ],
+        },
+        basePlayers[1],
+      ],
+    });
+    renderWithProviders(<CanastaPage />);
+
+    const mixedMeld = await screen.findByTestId('ca-meld-0-0');
+    expect(within(mixedMeld).getByText(/ミックスカナスタ/)).toBeInTheDocument();
   });
 
   it('expands a meld to reveal every constituent card when the summary is clicked', async () => {

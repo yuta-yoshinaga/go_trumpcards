@@ -7,12 +7,142 @@ fail() { echo "FAIL: $*" >&2; exit 1; }
 for script in "$SCRIPTS"/*.sh; do bash -n "$script" || fail "bash -n $script"; done
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
+# identgone.sh warns on rename-shaped removals and notes intentional deletions,
+# while ignoring numeric fragments, comments, strings and new files.
+(
+  repo="$tmp/identgone"
+  git init -q "$repo"
+  git -C "$repo" config user.email test@example.com
+  git -C "$repo" config user.name test
+  cat > "$repo/source.ts" <<'EOF'
+const isMobile = true;
+const countMismatch = true;
+const countRef = countMismatch;
+const moveBar = true;
+const obsoleteHelper = true;
+const mobileCheck = true;
+const mobileCheckUse = mobileCheck;
+const behaviour = true;
+const mobileState = true;
+const useState = mobileState;
+const jsxAfter = true;
+const numberValue = 1_000;
+const repeatedName = isMobile;
+// commentOnlyword and stringOnlyword
+const note = "quotedOnlyword";
+EOF
+  git -C "$repo" add source.ts && git -C "$repo" commit -qm initial
+  cat > "$repo/source.ts" <<'EOF'
+const isMobileViewport = true;
+const repeatedName = isMobileViewport;
+const countMismatchViewport = true;
+const countRef = true;
+const move = true;
+const numberValue = 2_000;
+// commentOnlyword and stringOnlyword
+const note = "quotedOnlyword";
+<p>Don't move</p>;
+const jsxAfterRenamed = true;
+const templateText = `${mobileCheckIsMobile} ${mobileCheckIsMobile}`;
+const behavior = true;
+const mobileStat = true;
+const mobileStateful = true;
+const selectionCount = mobileStat + mobileStateful;
+EOF
+  printf 'const brandNewName = true;\n' > "$repo/new.ts"
+  output=$(bash "$SCRIPTS/identgone.sh" "$repo") || fail "identgone.sh failed"
+  grep -qx 'WARN IDENT_GONE source.ts isMobile -> isMobileViewport' <<<"$output" || fail "identifier rename with matching occurrence count was not warned: $output"
+  grep -qx 'NOTE IDENT_GONE source.ts countMismatch' <<<"$output" || fail "rename-shaped identifier with mismatched occurrence count was not noted: $output"
+  grep -qx 'NOTE IDENT_GONE source.ts moveBar' <<<"$output" || fail "short substring candidate was not noted: $output"
+  grep -qx 'NOTE IDENT_GONE source.ts obsoleteHelper' <<<"$output" || fail "identifier deletion was not noted: $output"
+  grep -qx 'WARN IDENT_GONE source.ts jsxAfter -> jsxAfterRenamed' <<<"$output" || fail "JSX apostrophe hid a later identifier rename: $output"
+  grep -qx 'WARN IDENT_GONE source.ts behaviour -> behavior' <<<"$output" || fail "long edit-distance rename was not warned: $output"
+  grep -qx 'WARN IDENT_GONE source.ts mobileState -> mobileStat' <<<"$output" || fail "closest candidate was not selected: $output"
+  ! grep -qE 'numberValue|commentOnlyword|stringOnlyword|quotedOnlyword|brandNewName' <<<"$output" || fail "identgone reported a retained, numeric, comment, string, or new-file identifier: $output"
+  ig_strings="$tmp/identgone-strings"; git init -q "$ig_strings"
+  printf "const label = 'singleQuotedWord here';\nconst other = \"doubleQuotedWord\";\nexport const x = label + other;\n" > "$ig_strings/a.ts"
+  git -C "$ig_strings" add a.ts && git -C "$ig_strings" -c user.name=t -c user.email=t@t commit -qm a
+  printf "const label = 'replacementText here';\nconst other = \"anotherText\";\nexport const x = label + other;\n" > "$ig_strings/a.ts"
+  output=$(bash "$SCRIPTS/identgone.sh" "$ig_strings")
+  [[ -z "$output" ]] || fail "identgone counted words inside single or double quoted strings: $output"
+  output=$(ALLOW_IDENT_GONE='isMobile obsoleteHelper countMismatch moveBar behaviour jsxAfter mobileCheck mobileCheckUse mobileState useState' bash "$SCRIPTS/identgone.sh" "$repo") || fail "identgone.sh failed with allowlist"
+  [ -z "$output" ] || fail "ALLOW_IDENT_GONE did not suppress warning: $output"
+) || exit 1
+
+# Deleted paths are silent; Go raw strings are ignored while Go code is scanned.
+(
+  repo="$tmp/identgone-go"
+  git init -q "$repo"
+  git -C "$repo" config user.email test@example.com
+  git -C "$repo" config user.name test
+  printf 'package sample\nvar oldGoName = true\nvar kept = `oldGoName`\n' > "$repo/sample.go"
+  printf 'const deletedName = true\n' > "$repo/deleted.ts"
+  git -C "$repo" add . && git -C "$repo" commit -qm initial
+  printf 'package sample\nvar oldGoNames = true\nvar kept = `oldGoNames`\n' > "$repo/sample.go"
+  rm "$repo/deleted.ts"
+  output=$(bash "$SCRIPTS/identgone.sh" "$repo") || fail "identgone.sh Go/deletion check failed"
+  grep -qx 'WARN IDENT_GONE sample.go oldGoName -> oldGoNames' <<<"$output" || fail "Go identifier rename was not warned: $output"
+  ! grep -q deletedName <<<"$output" || fail "deleted file produced output: $output"
+  mkdir "$tmp/no-python"
+  ln -s "$(command -v git)" "$tmp/no-python/git"
+  bash_path=$(command -v bash)
+  output=$(PATH="$tmp/no-python" "$bash_path" "$SCRIPTS/identgone.sh" "$repo") || fail "missing-python path returned nonzero"
+  [ "$output" = 'NOTE IDENT_GONE python3 unavailable' ] || fail "missing-python note incorrect: $output"
+) || exit 1
+
 # Regression checks for review findings in the batch lane helpers.
 for script in ship.sh fixpush.sh; do
   grep -q 'PIPESTATUS' "$SCRIPTS/$script" || fail "$script does not preserve push status"
   grep -q 'push_status == 0' "$SCRIPTS/$script" || fail "$script does not stop after push failure"
   grep -q 'git diff --name-only -z HEAD' "$SCRIPTS/$script" || fail "$script does not collect paths with NUL delimiters"
 done
+
+# overlap.sh checks committed lanes only when they have an open PR, and always checks dirty lanes.
+(
+  repo="$tmp/overlap-repo"; root="$tmp/overlap-wts"; state="$tmp/overlap-state"
+  ghbin="$tmp/overlap-bin"; mkdir -p "$repo" "$root" "$state" "$ghbin"
+  cat >"$ghbin/gh" <<'GH'
+#!/usr/bin/env bash
+[[ "${GH_FAIL:-0}" == 1 ]] && exit 1
+printf '%s\n' "${GH_OPEN_BRANCHES:-lane2}"
+GH
+  chmod +x "$ghbin/gh"
+  git init -q "$repo"; git -C "$repo" config user.email test@example.com; git -C "$repo" config user.name test
+  printf 'base\n' > "$repo/shared"; printf 'base\n' > "$repo/other"
+  git -C "$repo" add .; git -C "$repo" commit -qm base; git -C "$repo" branch -M develop
+  git init -q --bare "$tmp/overlap-origin.git"; git -C "$tmp/overlap-origin.git" symbolic-ref HEAD refs/heads/develop
+  git -C "$repo" remote add origin "$tmp/overlap-origin.git"; git -C "$repo" push -q -u origin develop; git -C "$repo" fetch -q origin
+  git -C "$repo" worktree add -qb lane1 "$root/wt-ib1" origin/develop
+  git -C "$repo" worktree add -qb lane2 "$root/wt-ib2" origin/develop
+  git -C "$repo" worktree add -qb lane3 "$root/wt-ib3" origin/develop
+  git -C "$repo" worktree add -qb lane4 "$root/wt-ib4" origin/develop
+  printf 'lane1\n' >> "$root/wt-ib1/shared"; git -C "$root/wt-ib1" commit -qam lane1
+  printf 'lane2\n' >> "$root/wt-ib2/shared"; git -C "$root/wt-ib2" commit -qam lane2
+  printf 'lane3\n' >> "$root/wt-ib3/shared"; git -C "$root/wt-ib3" commit -qam lane3
+  out=$(PATH="$ghbin:$PATH" BATCH_REPO="$repo" BATCH_WT_ROOT="$root" BATCH_STATE="$state" bash "$SCRIPTS/overlap.sh" 1)
+  grep -qx 'WARN LANE_OVERLAP shared slots=1,2' <<<"$out" || fail "overlap.sh missed committed overlap: $out"
+  [[ "$out" != *'slots=1,3'* ]] || fail "overlap.sh reported merged lane without open PR: $out"
+  printf 'lane1\n' > "$root/wt-ib1/other"; git -C "$root/wt-ib1" add other; git -C "$root/wt-ib1" commit -qm disjoint
+  out=$(PATH="$ghbin:$PATH" BATCH_REPO="$repo" BATCH_WT_ROOT="$root" BATCH_STATE="$state" bash "$SCRIPTS/overlap.sh" 1)
+  [[ "$out" != *other* ]] || fail "overlap.sh reported disjoint paths: $out"
+  printf 'dirty\n' >> "$root/wt-ib1/shared"; printf 'dirty\n' >> "$root/wt-ib4/shared"
+  out=$(PATH="$ghbin:$PATH" BATCH_REPO="$repo" BATCH_WT_ROOT="$root" BATCH_STATE="$state" bash "$SCRIPTS/overlap.sh" 1)
+  grep -qx 'WARN LANE_OVERLAP shared slots=1,2' <<<"$out" || fail "overlap.sh missed uncommitted overlap: $out"
+  grep -qx 'WARN LANE_OVERLAP shared slots=1,4' <<<"$out" || fail "overlap.sh missed dirty lane without PR: $out"
+  out=$(PATH="$ghbin:$PATH" ALLOW_OVERLAP=shared BATCH_REPO="$repo" BATCH_WT_ROOT="$root" BATCH_STATE="$state" bash "$SCRIPTS/overlap.sh" 1)
+  [[ -z "$out" ]] || fail "overlap.sh ignored ALLOW_OVERLAP: $out"
+  out=$(PATH="$ghbin:$PATH" GH_FAIL=1 BATCH_REPO="$repo" BATCH_WT_ROOT="$root" BATCH_STATE="$state" bash "$SCRIPTS/overlap.sh" 1)
+  grep -qx 'NOTE LANE_OVERLAP gh unavailable; committed lanes not checked' <<<"$out" || fail "overlap.sh missed gh failure note: $out"
+  grep -qx 'WARN LANE_OVERLAP shared slots=1,4' <<<"$out" || fail "overlap.sh did not limit gh failure checks to dirty lane: $out"
+  [[ "$out" != *'slots=1,2'* ]] || fail "overlap.sh checked committed lane after gh failure: $out"
+  git -C "$root/wt-ib2" switch -q --detach HEAD
+  out=$(PATH="$ghbin:$PATH" BATCH_REPO="$repo" BATCH_WT_ROOT="$root" BATCH_STATE="$state" bash "$SCRIPTS/overlap.sh" 1)
+  [[ "$out" != *'slots=1,2'* ]] || fail "overlap.sh reported detached lane: $out"
+  printf 'dirty\n' >> "$root/wt-ib2/shared"
+  out=$(PATH="$ghbin:$PATH" BATCH_REPO="$repo" BATCH_WT_ROOT="$root" BATCH_STATE="$state" bash "$SCRIPTS/overlap.sh" 1)
+  grep -qx 'WARN LANE_OVERLAP shared slots=1,2' <<<"$out" || fail "overlap.sh skipped a dirty detached lane: $out"
+) || exit 1
+grep -q 'overlap.sh" "\$1" >> "\$BATCH_STATE/rc\$1.txt"' "$SCRIPTS/rc.sh" || fail "rc.sh no longer records overlap.sh in the receipt"
 ! grep -R -nE 'git status --porcelain \| awk' "$SCRIPTS" || fail "status paths are parsed as whitespace fields"
 if grep -R -n '/tmp/' "$SCRIPTS" >"$tmp/tmp-paths.out" 2>&1; then
   fail "batch scripts contain hardcoded /tmp paths: $(cat "$tmp/tmp-paths.out")"
@@ -29,6 +159,13 @@ grep -qF '[ -f "$t.test.ts" ] || [ -f "$t.test.tsx" ]' "$SCRIPTS/receipt.sh" || 
 grep -qP '(?<!\\)`' "$SCRIPTS/mkprompt.sh" && fail "mkprompt.sh has an unescaped backtick: its heredoc is unquoted, so bash runs the quoted text as a command and drops it from every lane prompt"
 sed -n '/^cat <<P$/,/^P$/p' "$SCRIPTS/mkprompt.sh" | grep -qP '(?<!\\)\$(?!n\b|body\b)' && fail "mkprompt.sh has a bare dollar in its unquoted heredoc; bash expands it to empty and removes a word from the instructions"
 grep -q 'dele' "$ROOT/.claude/skills/batch-lanes/SKILL.md" || fail "SKILL.md does not document dele"
+biome="$SCRIPTS/biomeignore.sh"
+move_out=$(printf '%s\n' 'diff --git a/a.ts b/a.ts' '+++ b/a.ts' '+// biome-ignore lint/suspicious/noExplicitAny' '-// biome-ignore lint/suspicious/noExplicitAny' | bash "$biome")
+[ -z "$move_out" ] || fail "biome-ignore move was warned: $move_out"
+grow_out=$(printf '%s\n' 'diff --git a/a.ts b/a.ts' '+++ b/a.ts' '+// biome-ignore lint/suspicious/noExplicitAny' | bash "$biome")
+grep -qx 'WARN NEW_BIOME_IGNORE a.ts (+1 -0)' <<<"$grow_out" || fail "biome-ignore increase was missed: $grow_out"
+allow_out=$(printf '%s\n' 'diff --git a/a.ts b/a.ts' '+++ b/a.ts' '+// biome-ignore lint/suspicious/noExplicitAny' | ALLOW_BIOME_IGNORE='a.ts' bash "$biome")
+[ -z "$allow_out" ] || fail "ALLOW_BIOME_IGNORE did not suppress warning: $allow_out"
 # repeattests.sh: lists added, edited and untracked Go tests per package, and warns when a
 # rerun of them fails (a shuffle-dependent test would otherwise fail on develop).
 (
@@ -78,6 +215,10 @@ PY
   [ "$(count 'Generated with [Claude Code]' "$noref")" = 1 ] || fail "full body without a footer did not get one: $noref"
   partof=$(ship_pr_body 42 $'Part of #42\n\n## Summary\n- slice' '' '')
   [ "$(count 'Closes #42' "$partof")" = 0 ] || fail "Part of body was given a Closes line: $partof"
+  refs=$(ship_pr_body 42 $'## Summary\n- slice one\n\nRefs #42 (more slices follow)' '' '')
+  [ "$(count 'Closes #42' "$refs")" = 0 ] || fail "Refs body was given a Closes line: $refs"
+  refsplain=$(ship_pr_body 42 '- slice one. Refs #42' '' '')
+  [ "$(count 'Closes #42' "$refsplain")" = 0 ] || fail "Refs summary was given a Closes line: $refsplain"
   other=$(ship_pr_body 42 $'Closes #420\n\n## Summary' '' '')
   grep -qx 'Closes #42' <<<"$other" || fail "Closes #420 was taken as a reference to #42: $other"
   plainref=$(ship_pr_body 42 $'- did it\n\nPart of #42' '' '')
@@ -163,17 +304,53 @@ git -C "$tmp/repo" remote add origin "$tmp/remote.git"
 git -C "$tmp/repo" push -q origin target develop
 git -C "$tmp/repo" fetch -q origin
 git -C "$tmp/repo" worktree add -q "$tmp/other" target
-git -C "$tmp/repo" worktree add -q --detach "$tmp/wt-ibfix" origin/develop
+git -C "$tmp/repo" worktree add -q --detach "$tmp/wt-ib21" origin/develop
+if PATH="$PATH" BATCH_REPO="$tmp/repo" BATCH_WT_ROOT="$tmp" bash "$SCRIPTS/fx.sh" fx1 target >"$tmp/fx-nonnumeric.out" 2>&1; then fail "fx.sh accepted a nonnumeric slot"; else [[ $? == 2 ]] || fail "fx.sh returned the wrong status for a nonnumeric slot"; fi
+grep -q 'fx slot must be numeric' "$tmp/fx-nonnumeric.out" || fail "fx.sh did not explain numeric slots"
+[[ ! -e "$tmp/wt-ibfx1" ]] || fail "fx.sh created a worktree for a nonnumeric slot"
+if PATH="$PATH" BATCH_REPO="$tmp/repo" BATCH_WT_ROOT="$tmp" bash "$SCRIPTS/gofx.sh" fx1 123 "$tmp/prompt" >"$tmp/gofx-nonnumeric.out" 2>&1; then fail "gofx.sh accepted a nonnumeric slot"; else [[ $? == 2 ]] || fail "gofx.sh returned the wrong status for a nonnumeric slot"; fi
+grep -q 'fx slot must be numeric' "$tmp/gofx-nonnumeric.out" || fail "gofx.sh did not explain numeric slots"
 PATH="$PATH" BATCH_REPO="$tmp/repo" BATCH_WT_ROOT="$tmp" \
-  bash "$SCRIPTS/fx.sh" fix target >"$tmp/fx.out" || fail "fx.sh failed to detach a clean worktree"
+  bash "$SCRIPTS/fx.sh" 21 target >"$tmp/fx.out" || fail "fx.sh failed to detach a clean worktree"
 git -C "$tmp/other" symbolic-ref -q HEAD && fail "fx.sh left the target branch checked out elsewhere"
 git -C "$tmp/other" status --porcelain | grep -q . && fail "fx.sh dirtied the detached worktree"
-git -C "$tmp/wt-ibfix" checkout -q --detach origin/develop
+git -C "$tmp/wt-ib21" checkout -q --detach origin/develop
 git -C "$tmp/other" checkout -q target
 echo changed > "$tmp/other/file"
 if PATH="$PATH" BATCH_REPO="$tmp/repo" BATCH_WT_ROOT="$tmp" \
-  bash "$SCRIPTS/fx.sh" fix target >"$tmp/fx-dirty.out" 2>&1; then fail "fx.sh accepted a dirty worktree on target"; fi
+  bash "$SCRIPTS/fx.sh" 21 target >"$tmp/fx-dirty.out" 2>&1; then fail "fx.sh accepted a dirty worktree on target"; fi
 grep -q "$tmp/other" "$tmp/fx-dirty.out" || fail "fx.sh did not report the dirty worktree path"
+
+# ship.sh refuses a file changed on develop after the lane branched, before staging or commit.
+(
+  seed="$tmp/ship-seed"; origin="$tmp/ship-origin.git"; lane="$tmp/wt-ib9"; state="$tmp/ship-state"
+  mkdir -p "$seed" "$state"
+  git init -q "$seed"; git -C "$seed" config user.email test@example.com; git -C "$seed" config user.name test
+  printf 'initial\n' > "$seed/A"; printf 'initial\n' > "$seed/B"
+  git -C "$seed" add A B; git -C "$seed" commit -qm initial; initial=$(git -C "$seed" rev-parse HEAD); git -C "$seed" branch -M develop
+  git init -q --bare "$origin"; git -C "$origin" symbolic-ref HEAD refs/heads/develop
+  git -C "$seed" remote add origin "$origin"; git -C "$seed" push -q origin develop
+  git clone -q -b develop "$origin" "$lane"; git -C "$lane" config user.email test@example.com; git -C "$lane" config user.name test
+  printf 'develop update\n' >> "$seed/A"; git -C "$seed" commit -qam 'develop updates A'; git -C "$seed" push -q origin develop
+  printf 'lane update\n' >> "$lane/A"
+  export BATCH_REPO="$ROOT" BATCH_WT_ROOT="$tmp" BATCH_STATE="$state" CLAIM_SKIP=1
+  hash=$(bash "$SCRIPTS/treehash.sh" 9); printf '%s' "$hash" > "$state/gate9.ok"
+  if bash "$SCRIPTS/ship.sh" 9 123 'test ship' 'claim-check: skip' >"$tmp/ship-overlap.out" 2>&1; then fail "ship.sh accepted overlapping stale-base file"; fi
+  grep -q 'REFUSED: develop changed these files after this lane branched' "$tmp/ship-overlap.out" || fail "ship.sh did not explain stale-base overlap: $(cat "$tmp/ship-overlap.out")"
+  [ -z "$(git -C "$lane" status --porcelain)" ] && fail "ship.sh staged or committed stale-base changes"
+  git clone -q "$origin" "$tmp/wt-ib10"
+  git -C "$tmp/wt-ib10" checkout -qb lane-disjoint "$initial"
+  git -C "$tmp/wt-ib10" config user.email test@example.com; git -C "$tmp/wt-ib10" config user.name test
+  printf 'lane update\n' >> "$tmp/wt-ib10/B"
+  hash=$(bash "$SCRIPTS/treehash.sh" 10); printf '%s' "$hash" > "$state/gate10.ok"
+  set +e
+  bash "$SCRIPTS/ship.sh" 10 123 'test ship' 'claim-check: skip' >"$tmp/ship-disjoint.out" 2>&1
+  ship_rc=$?
+  set -e
+  [ "$ship_rc" -ne 0 ] || fail "ship.sh unexpectedly completed without gh stub"
+  ! grep -q 'REFUSED: develop changed these files' "$tmp/ship-disjoint.out" || fail "ship.sh rejected a disjoint file change"
+  git -C "$tmp/wt-ib10" log -1 --format=%s | grep -qx 'test ship' || fail "ship.sh did not pass stale-base check and commit disjoint change"
+) || exit 1
 
 # e2echeck should ignore removed locale text found only on comment lines.
 for case_name in comment locator; do
@@ -209,4 +386,388 @@ printf '99 101\n' > "$tmp/result"
 rcg_result_is_fresh "$tmp/start" "$tmp/result" && fail "waitdone accepted a prior gate result"
 printf '100 101\n' > "$tmp/result"
 rcg_result_is_fresh "$tmp/start" "$tmp/result" || fail "waitdone rejected the current gate result"
+
+# combined.sh: isolate a detached scratch tree, filter open PR branches, report conflicts, and honor -k.
+combined="$SCRIPTS/combined.sh"
+mkdir -p "$tmp/combined-bin"
+cat >"$tmp/combined-bin/gh" <<'STUB'
+#!/usr/bin/env bash
+printf '%s\n' "${COMBINED_BRANCHES:-}"
+STUB
+cat >"$tmp/combined-bin/bun" <<'STUB'
+#!/usr/bin/env bash
+exit 0
+STUB
+cat >"$tmp/combined-bin/bunx" <<'STUB'
+#!/usr/bin/env bash
+printf '%s\n' "$*" >> "$COMBINED_BUNX_LOG"
+exit 0
+STUB
+chmod +x "$tmp/combined-bin/gh" "$tmp/combined-bin/bun" "$tmp/combined-bin/bunx"
+
+make_combined_repo() {
+  local repo="$1" origin="$2" shared="$3"
+  mkdir -p "$repo/frontend/node_modules" "$repo/frontend"
+  printf '{"name":"fixture","version":"1.0.0"}\n' > "$repo/frontend/package.json"
+  git init -q "$repo"
+  git -C "$repo" config user.email test@example.com
+  git -C "$repo" config user.name test
+  printf 'base\n' > "$repo/$shared"
+  git -C "$repo" add . && git -C "$repo" -c user.name=test -c user.email=test@example.com commit -qm base
+  git -C "$repo" branch -M develop
+  git init -q --bare "$origin"
+  git -C "$origin" symbolic-ref HEAD refs/heads/develop
+  git -C "$repo" remote add origin "$origin"
+  git -C "$repo" push -q -u origin develop
+}
+add_combined_branch() {
+  local repo="$1" spec="$2" file="$3"
+  git -C "$repo" checkout -q -b "$spec" origin/develop
+  printf '%s\n' "$spec" > "$repo/$file"
+  git -C "$repo" add "$file" && git -C "$repo" -c user.name=test -c user.email=test@example.com commit -qm "$spec"
+  git -C "$repo" push -q origin "$spec"
+  git -C "$repo" checkout -q develop
+}
+combined_repo="$tmp/combined-repo"
+make_combined_repo "$combined_repo" "$tmp/combined-origin.git" base
+add_combined_branch "$combined_repo" feat/11-one feat-one
+add_combined_branch "$combined_repo" chore/12-skip skip
+add_combined_branch "$combined_repo" feat/13-two feat-two
+git -C "$combined_repo" fetch -q origin
+if PATH="$tmp/combined-bin:$PATH" BATCH_REPO="$combined_repo" BATCH_WT_ROOT="$tmp" \
+  bash "$combined" frontend/e2e/guard.spec.ts >"$tmp/combined-missing.out" 2>&1; then
+  fail "combined.sh accepted an unset BATCH_BRANCH_RE"
+fi
+grep -q BATCH_BRANCH_RE "$tmp/combined-missing.out" || fail "combined.sh did not explain missing BATCH_BRANCH_RE"
+export COMBINED_BUNX_LOG="$tmp/combined-bunx.log"
+PATH="$tmp/combined-bin:$PATH" BATCH_REPO="$combined_repo" BATCH_WT_ROOT="$tmp" \
+  BATCH_BRANCH_RE='^feat/' COMBINED_BRANCHES=$'feat/11-one\nchore/12-skip\nfeat/13-two' \
+  bash "$combined" -k -r 2 frontend/e2e/guard.spec.ts >"$tmp/combined-filter.out" || fail "combined.sh failed on clean merges"
+grep -q '^MERGED: feat/11-one feat/13-two$' "$tmp/combined-filter.out" || fail "combined.sh merged an unexpected branch: $(cat "$tmp/combined-filter.out")"
+[ -d "$tmp/wt-combined" ] || fail "combined.sh -k removed its worktree"
+grep -q 'playwright test frontend/e2e/guard.spec.ts --repeat-each=2 --reporter=line' "$tmp/combined-bunx.log" || fail "combined.sh did not pass repeat/spec arguments"
+git -C "$tmp/wt-combined" worktree remove --force "$tmp/wt-combined"
+
+conflict_repo="$tmp/combined-conflict-repo"
+make_combined_repo "$conflict_repo" "$tmp/conflict-origin.git" shared
+add_combined_branch "$conflict_repo" feat/21-first shared
+add_combined_branch "$conflict_repo" feat/22-conflict shared
+git -C "$conflict_repo" fetch -q origin
+if PATH="$tmp/combined-bin:$PATH" BATCH_REPO="$conflict_repo" BATCH_WT_ROOT="$tmp" \
+  BATCH_BRANCH_RE='^feat/' COMBINED_BRANCHES=$'feat/21-first\nfeat/22-conflict' \
+  bash "$combined" frontend/e2e/guard.spec.ts >"$tmp/combined-conflict.out" 2>&1; then
+  fail "combined.sh returned success after a merge conflict"
+fi
+grep -q '^CONFLICT feat/22-conflict shared$' "$tmp/combined-conflict.out" || fail "combined.sh did not report conflict branch/files: $(cat "$tmp/combined-conflict.out")"
+[ ! -e "$tmp/wt-combined" ] || fail "combined.sh did not remove scratch worktree without -k"
+# e2egate selects page runs, full sweeps, imported helper specs, and no-op diffs.
+make_e2egate_case() {
+  local name="$1" changed="$2" repo="$tmp/e2egate-$1" wtroot="$tmp/e2egate-wts-$1"
+  mkdir -p "$repo/frontend/src/pages" "$repo/frontend/src/constants" "$repo/frontend/e2e" "$wtroot"
+  git init -q "$repo"; git -C "$repo" config user.email test@example.com; git -C "$repo" config user.name test
+  printf "export const gameRoutes = [{ path: '/wrong' }, { path: '/poker', page: 'Poker' }, { path: '/', page: 'BlackJack' }];\n" > "$repo/frontend/src/constants/gameRoutes.ts"
+  for spec in desktop-board-visibility desktop-hand-visibility game-message-visibility hand-visibility mobile-viewport text-contrast duplicate-text poker poker-paytable-mobile pokerx; do touch "$repo/frontend/e2e/$spec.spec.ts"; done
+  mkdir -p "$repo/frontend/src/components" "$repo/frontend/src/i18n/locales/en"
+  printf "import { helper } from './helpers';\n" > "$repo/frontend/e2e/poker.spec.ts"
+  touch "$repo/frontend/e2e/helpers.ts" "$repo/frontend/src/components/Other.tsx" "$repo/frontend/src/i18n/locales/en/common.json" "$repo/frontend/src/components/a.test.tsx"
+  touch "$repo/frontend/src/pages/PokerPage.tsx" "$repo/frontend/src/components/GameFooter.tsx" "$repo/frontend/base.ts"
+  git -C "$repo" add .
+  tree=$(git -C "$repo" write-tree)
+  commit=$(printf "base\n" | git -C "$repo" -c user.name=test -c user.email=test@example.com commit-tree "$tree")
+  git -C "$repo" update-ref refs/heads/develop "$commit"; git -C "$repo" update-ref refs/remotes/origin/develop "$commit"
+  git -C "$repo" worktree add -q -b lane "$wtroot/wt-ib1" "$commit"
+  case "$changed" in
+    shared) printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/src/components/GameFooter.tsx" ;;
+    page) printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/src/pages/PokerPage.tsx" ;;
+    component) printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/src/components/Other.tsx" ;;
+    helper) printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/e2e/helpers.ts" ;;
+    spec) printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/e2e/poker.spec.ts" ;;
+    ignored) printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/src/i18n/locales/en/common.json"; printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/src/components/a.test.tsx" ;;
+  esac
+  output=$(E2E_SWEEP_REPEAT=3 BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$SCRIPTS/e2egate.sh" --dry-run 1) || fail "e2egate $name dry-run failed"
+  if [[ "$changed" == shared || "$changed" == component ]]; then
+    for spec in desktop-board-visibility desktop-hand-visibility game-message-visibility hand-visibility mobile-viewport text-contrast duplicate-text; do grep -q "e2e/$spec.spec.ts" <<< "$output" || fail "sweep omitted $spec: $output"; done
+  elif [[ "$changed" == page ]]; then
+    grep -q 'run 1: e2e/poker.spec.ts$' <<< "$output" || fail "page game spec has grep or was omitted: $output"
+    grep -q 'run 2: e2e/poker-paytable-mobile.spec.ts$' <<< "$output" || fail "page route extra spec was omitted: $output"
+    ! grep -q 'pokerx.spec.ts' <<< "$output" || fail "page route selected a spec without a hyphen boundary: $output"
+    grep -qF 'run 3: e2e/desktop-board-visibility.spec.ts' <<< "$output" || fail "page sweep run omitted: $output"
+    grep -qF -- '--grep /poker\b --pass-with-no-tests --repeat-each=3' <<< "$output" || fail "page sweep omitted route grep/pass-with-no-tests/repeat: $output"
+    output_once=$(E2E_SWEEP_REPEAT=1 BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$SCRIPTS/e2egate.sh" --dry-run 1) || fail "e2egate $name repeat=1 dry-run failed"
+    ! grep -q -- '--repeat-each' <<<"$output_once" || fail "repeat=1 dry-run added repeat arg: $output_once"
+    exec_scripts="$tmp/e2egate-exec-$name"
+    mkdir -p "$exec_scripts"
+    cp "$SCRIPTS/common.sh" "$SCRIPTS/e2egate.sh" "$exec_scripts/"
+    cat > "$exec_scripts/e2e.sh" <<'STUB'
+#!/usr/bin/env bash
+printf '%s\n' "$@" > "$E2EGATE_ARGS"
+STUB
+    chmod +x "$exec_scripts/e2e.sh"
+    E2E_SWEEP_REPEAT=3 E2EGATE_ARGS="$tmp/e2egate-args-$name" BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$exec_scripts/e2egate.sh" 1 || fail "page e2egate execution failed"
+    expected="$tmp/e2egate-expected-$name"
+    printf '%s\n' 1 e2e/poker.spec.ts e2e/poker-paytable-mobile.spec.ts --- e2e/desktop-board-visibility.spec.ts e2e/desktop-hand-visibility.spec.ts e2e/duplicate-text.spec.ts e2e/game-message-visibility.spec.ts e2e/hand-visibility.spec.ts e2e/mobile-viewport.spec.ts e2e/text-contrast.spec.ts --grep '/poker\b' --pass-with-no-tests --repeat-each=3 > "$expected"
+    diff -u "$expected" "$tmp/e2egate-args-$name" || fail "page execution passed wrong args"
+    E2E_SWEEP_REPEAT=1 E2EGATE_ARGS="$tmp/e2egate-args-$name" BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$exec_scripts/e2egate.sh" 1 || fail "page e2egate repeat=1 execution failed"
+    ! grep -q -- '--repeat-each' "$tmp/e2egate-args-$name" || fail "repeat=1 added repeat arg"
+    ! grep -q 'e2e/e2e/' "$tmp/e2egate-args-$name" || fail "page execution doubled e2e prefix"
+  elif [[ "$changed" == helper ]]; then
+    grep -q 'run 1: e2e/poker.spec.ts' <<< "$output" || fail "helper edit omitted importing spec: $output"
+    [[ $(grep -c '^run ' <<< "$output") == 1 ]] || fail "helper edit selected non-importing specs: $output"
+  elif [[ "$changed" == spec ]]; then
+    grep -q 'run 1: e2e/poker.spec.ts$' <<< "$output" || fail "spec-only edit omitted its spec: $output"
+    exec_scripts="$tmp/e2egate-exec-$name"
+    mkdir -p "$exec_scripts"
+    cp "$SCRIPTS/common.sh" "$SCRIPTS/e2egate.sh" "$exec_scripts/"
+    cat > "$exec_scripts/e2e.sh" <<'STUB'
+#!/usr/bin/env bash
+printf '%s\n' "$@" > "$E2EGATE_ARGS"
+STUB
+    chmod +x "$exec_scripts/e2e.sh"
+    E2EGATE_ARGS="$tmp/e2egate-args-$name" BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$exec_scripts/e2egate.sh" 1 || fail "spec-only e2egate execution failed"
+    [[ "$(cat "$tmp/e2egate-args-$name")" == $'1\ne2e/poker.spec.ts' ]] || fail "spec-only execution passed wrong args: $(cat "$tmp/e2egate-args-$name")"
+  elif [[ "$changed" == ignored ]]; then
+    [[ -z "$output" ]] || fail "test/locale changes selected specs: $output"
+    BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$SCRIPTS/e2egate.sh" 1 || fail "no-spec e2egate should exit 0"
+  else [[ -z "$output" ]] || fail "unchanged frontend selected specs: $output"; fi
+}
+make_e2egate_case shared shared
+make_e2egate_case page page
+make_e2egate_case spec spec
+make_e2egate_case component component
+make_e2egate_case helper helper
+make_e2egate_case ignored ignored
+make_e2egate_case empty none
+
+# Removed route references are repeated; moves are excluded, including during full sweeps.
+(
+  repo="$tmp/e2egate-removed"; wtroot="$tmp/e2egate-removed-wts"
+  mkdir -p "$repo/frontend/e2e" "$repo/frontend/src/components" "$wtroot"
+  git -C "$repo" init -q; git -C "$repo" config user.email test@example.com; git -C "$repo" config user.name test
+  for spec in desktop-board-visibility desktop-hand-visibility game-message-visibility hand-visibility mobile-viewport text-contrast duplicate-text; do touch "$repo/frontend/e2e/$spec.spec.ts"; done
+  printf "const route = '/baloot';\n" > "$repo/frontend/e2e/helpers.ts"
+  printf 'base\n' > "$repo/frontend/src/components/shared.tsx"
+  git -C "$repo" add .
+  tree=$(git -C "$repo" write-tree)
+  commit=$(printf 'base\n' | git -C "$repo" -c user.name=test -c user.email=test@example.com commit-tree "$tree")
+  git -C "$repo" update-ref refs/heads/develop "$commit"; git -C "$repo" update-ref refs/remotes/origin/develop "$commit"
+  git -C "$repo" worktree add -q -b lane "$wtroot/wt-ib1" "$commit"
+  sed -i '/baloot/d' "$wtroot/wt-ib1/frontend/e2e/helpers.ts"
+  output=$(E2E_SWEEP_REPEAT=3 BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-removed-state" bash "$SCRIPTS/e2egate.sh" --dry-run 1) || fail "removed route dry-run failed"
+  grep -qF -- '--grep /baloot\b --pass-with-no-tests --repeat-each=3' <<<"$output" || fail "removed route did not get repeated: $output"
+  exec_scripts="$tmp/e2egate-removed-exec"; mkdir -p "$exec_scripts"
+  cp "$SCRIPTS/common.sh" "$SCRIPTS/e2egate.sh" "$exec_scripts/"
+  cat > "$exec_scripts/e2e.sh" <<'STUB'
+#!/usr/bin/env bash
+printf '%s\n' "$@" >> "$E2EGATE_ARGS"
+printf '%s\n' '---CALL---' >> "$E2EGATE_ARGS"
+STUB
+  chmod +x "$exec_scripts/e2e.sh"
+  E2E_SWEEP_REPEAT=3 E2EGATE_ARGS="$tmp/e2egate-removed-args" BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-removed-state" bash "$exec_scripts/e2egate.sh" 1 || fail "removed route execution failed"
+  expected="$tmp/e2egate-removed-expected"
+  printf '%s\n' 1 e2e/desktop-board-visibility.spec.ts e2e/desktop-hand-visibility.spec.ts e2e/duplicate-text.spec.ts e2e/game-message-visibility.spec.ts e2e/hand-visibility.spec.ts e2e/mobile-viewport.spec.ts e2e/text-contrast.spec.ts --grep '/baloot\b' --pass-with-no-tests --repeat-each=3 ---CALL--- > "$expected"
+  diff -u "$expected" "$tmp/e2egate-removed-args" || fail "removed route execution passed wrong args"
+  printf 'common\n' >> "$wtroot/wt-ib1/frontend/src/components/shared.tsx"
+  full=$(E2E_SWEEP_REPEAT=3 BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-removed-state" bash "$SCRIPTS/e2egate.sh" --dry-run 1) || fail "full sweep with removed route dry-run failed"
+  [[ $(grep -c '^run ' <<<"$full") == 2 ]] || fail "full sweep did not add separate repeated run: $full"
+  grep -q '^run 1: .*desktop-board-visibility' <<<"$full" || fail "full sweep run missing: $full"
+  grep -qF -- '--grep /baloot\b --pass-with-no-tests --repeat-each=3' <<<"$full" || fail "full sweep omitted removed-route run: $full"
+  cp "$wtroot/wt-ib1/frontend/e2e/helpers.ts" "$tmp/e2egate-helper-backup"
+  printf "const route = '/baloot';\n" >> "$wtroot/wt-ib1/frontend/e2e/helpers.ts"
+  sed -i '1i test("other", async () => {});' "$wtroot/wt-ib1/frontend/e2e/helpers.ts"
+  cp "$repo/frontend/src/components/shared.tsx" "$wtroot/wt-ib1/frontend/src/components/shared.tsx"
+  moved=$(E2E_SWEEP_REPEAT=3 BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-removed-state" bash "$SCRIPTS/e2egate.sh" --dry-run 1) || fail "moved route dry-run failed"
+  ! grep -q -- '--grep /baloot\b' <<<"$moved" || fail "route move was incorrectly repeated: $moved"
+  sed -i '/baloot/d' "$wtroot/wt-ib1/frontend/e2e/helpers.ts"
+  printf "const route = '/baloot';\n" > "$wtroot/wt-ib1/frontend/e2e/other.ts"
+  moved_file=$(E2E_SWEEP_REPEAT=3 BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-removed-state" bash "$SCRIPTS/e2egate.sh" --dry-run 1) || fail "cross-file route move dry-run failed"
+  grep -qF -- '--grep /baloot\b --pass-with-no-tests --repeat-each=3' <<<"$moved_file" || fail "cross-file route move was not repeated: $moved_file"
+) || exit 1
+
+# fieldcheck matches every changed page to its own controller, independent of branch name.
+(
+  repo="$tmp/fieldcheck-repo"; mkdir -p "$repo/frontend/src/pages" "$repo/internal/adapter/controller"
+  git -C "$repo" init -q; git -C "$repo" config user.email test@example.com; git -C "$repo" config user.name test
+  cat > "$repo/internal/adapter/controller/FooWebController.go" <<'GO'
+package controller
+type Foo struct { FooField string `json:"fooField"` }
+GO
+  cat > "$repo/internal/adapter/controller/BarWebController.go" <<'GO'
+package controller
+type Bar struct { BarField string `json:"barField"` }
+GO
+  printf 'export const FooPage = () => null;\n' > "$repo/frontend/src/pages/FooPage.tsx"
+  printf 'export const BarPage = () => null;\n' > "$repo/frontend/src/pages/BarPage.tsx"
+  git -C "$repo" add .
+  tree=$(git -C "$repo" write-tree)
+  commit=$(printf 'base\n' | git -C "$repo" -c user.name=test -c user.email=test@example.com commit-tree "$tree")
+  git -C "$repo" update-ref refs/heads/unrelated-branch "$commit"; git -C "$repo" symbolic-ref HEAD refs/heads/unrelated-branch
+  printf 'const x = state.fooField;\n' >> "$repo/frontend/src/pages/FooPage.tsx"
+  printf 'const x = state.barField;\n' >> "$repo/frontend/src/pages/BarPage.tsx"
+  output=$(bash "$SCRIPTS/fieldcheck.sh" "$repo") || fail "fieldcheck valid two-page run failed"
+  [[ -z "$output" ]] || fail "fieldcheck warned on fields in their own controllers: $output"
+  printf 'const x = state.fooField;\n' >> "$repo/frontend/src/pages/BarPage.tsx"
+  output=$(bash "$SCRIPTS/fieldcheck.sh" "$repo") || fail "fieldcheck cross-controller run failed"
+  [[ $(grep -c '^FIELDCHECK WARN:' <<<"$output") == 1 ]] || fail "fieldcheck accepted a field from another page controller: $output"
+  grep -q 'state.fooField' <<<"$output" || fail "fieldcheck warning omitted cross-controller field: $output"
+  printf 'const x = state.missingField;\n' >> "$repo/frontend/src/pages/BarPage.tsx"
+  output=$(bash "$SCRIPTS/fieldcheck.sh" "$repo") || fail "fieldcheck missing-field run failed"
+  [[ $(grep -c '^FIELDCHECK WARN:' <<<"$output") == 2 ]] || fail "fieldcheck did not emit both expected warnings: $output"
+  grep -q 'state.missingField' <<<"$output" || fail "fieldcheck warning omitted missing field: $output"
+) || exit 1
+
+# stopsrv.sh targets only the requested lane port and handles empty/invalid slots.
+stop_server_pid=
+trap '[[ -z "$stop_server_pid" ]] || kill "$stop_server_pid" 2>/dev/null || true; rm -rf "$tmp"' EXIT
+python3 -u -m http.server 18097 --bind 127.0.0.1 >"$tmp/http-server.log" 2>&1 & stop_server_pid=$!
+stop_test_fallback=0
+for _ in {1..20}; do
+  grep -q 'Serving HTTP on' "$tmp/http-server.log" && break
+  kill -0 "$stop_server_pid" 2>/dev/null || break
+  sleep 0.1
+done
+if ! grep -q 'Serving HTTP on' "$tmp/http-server.log"; then
+  # The sandbox can prohibit socket creation; still exercise PID targeting below.
+  kill "$stop_server_pid" 2>/dev/null || true
+  wait "$stop_server_pid" 2>/dev/null || true
+  sleep 60 & stop_server_pid=$!
+  stop_test_fallback=1
+fi
+stop_path="$PATH"
+ss_probe=$(ss -ltnpH 'sport = :18097' 2>&1 || true)
+if (( stop_test_fallback )) || ! grep -q 'LISTEN' <<<"$ss_probe"; then
+  mkdir -p "$tmp/stopsrv-bin"
+  cat > "$tmp/stopsrv-bin/ss" <<'SS'
+#!/usr/bin/env bash
+printf 'LISTEN 0 5 127.0.0.1:18097 0.0.0.0:* users:(("python3",pid=%s,fd=3))\n' "$STOPSERV_TEST_PID"
+SS
+  chmod +x "$tmp/stopsrv-bin/ss"
+  stop_path="$tmp/stopsrv-bin:$PATH"
+fi
+stop_out=$(PATH="$stop_path" STOPSERV_TEST_PID="$stop_server_pid" BATCH_REPO="$ROOT" BATCH_STATE="$tmp/stopsrv-state" bash "$SCRIPTS/stopsrv.sh" 97) || fail "stopsrv.sh failed to stop a lane server"
+grep -q 'stopped port=18097 pid=' <<<"$stop_out" || fail "stopsrv.sh output omitted the stopped process: $stop_out"
+for _ in {1..50}; do kill -0 "$stop_server_pid" 2>/dev/null || break; sleep 0.1; done
+! kill -0 "$stop_server_pid" 2>/dev/null || fail "stopsrv.sh left the server process alive"
+wait "$stop_server_pid" 2>/dev/null || true
+stop_server_pid=
+[[ $(BATCH_REPO="$ROOT" BATCH_STATE="$tmp/stopsrv-state" bash "$SCRIPTS/stopsrv.sh" 98) == none ]] || fail "stopsrv.sh did not report none for an idle slot"
+if BATCH_REPO="$ROOT" BATCH_STATE="$tmp/stopsrv-state" bash "$SCRIPTS/stopsrv.sh" nope >"$tmp/stopsrv-invalid.out" 2>&1; then fail "stopsrv.sh accepted a nonnumeric slot"; else [[ $? == 2 ]] || fail "stopsrv.sh returned wrong status for invalid slot"; fi
+
+# e2e.sh splits --- into separate bunx calls, builds once, and reports failure after all calls.
+e2e_repo="$tmp/e2e-repo"; e2e_wts="$tmp/e2e-wts"; e2e_bin="$tmp/e2e-bin"
+mkdir -p "$e2e_repo/frontend" "$e2e_wts/wt-ib1/frontend" "$e2e_bin"
+git -C "$e2e_repo" init -q
+cat > "$e2e_bin/bunx" <<'SH'
+#!/usr/bin/env bash
+printf '%s\n' "$*" >> "$E2E_CALL_LOG"
+[[ "$*" != *second* ]]
+SH
+chmod +x "$e2e_bin/bunx"
+export E2E_CALL_LOG="$tmp/e2e-calls.log"
+if PATH="$e2e_bin:$PATH" BATCH_REPO="$e2e_repo" BATCH_WT_ROOT="$e2e_wts" BATCH_STATE="$tmp/e2e-state" E2E_SKIP_BUILD=1 bash "$SCRIPTS/e2e.sh" 1 first --- second third; then fail "e2e.sh hid a failed run"; fi
+[[ $(wc -l < "$E2E_CALL_LOG") == 2 ]] || fail "e2e.sh did not make two bunx calls: $(cat "$E2E_CALL_LOG")"
+grep -q 'first' "$E2E_CALL_LOG" && grep -q 'second third' "$E2E_CALL_LOG" || fail "e2e.sh split run args incorrectly: $(cat "$E2E_CALL_LOG")"
+# prbody recognizes every GitHub closing keyword and issue references precisely.
+(
+  source "$SCRIPTS/prbody.sh"
+  prbody_has_ref 5 'to fix #5' || fail 'prbody_has_ref missed fix #5'
+  prbody_has_ref 5 'fixed #5' || fail 'prbody_has_ref missed fixed #5'
+  prbody_has_ref 5 'resolve #5' || fail 'prbody_has_ref missed resolve #5'
+  prbody_has_ref 5 'Part of #5' || fail 'prbody_has_ref missed Part of #5'
+  prbody_has_ref 5 'Refs #5' || fail 'prbody_has_ref missed Refs #5'
+  if prbody_has_ref 5 'Closes #50'; then fail 'prbody_has_ref accepted a longer issue number'; fi
+  if prbody_has_ref 5 'disclosed #5'; then fail 'prbody_has_ref accepted disclosed #5'; fi
+  if prbody_has_ref 5 'prefix #5'; then fail 'prbody_has_ref accepted prefix #5'; fi
+) || exit 1
+
+# fixpush validates the PR before committing and records a pushed PR exactly once.
+(
+  seed="$tmp/fix-seed"; origin="$tmp/fix-origin.git"; wts="$tmp/fix-wts"; lane="$wts/wt-ib31"; state="$tmp/fix-state"; bin="$tmp/fix-bin"
+  mkdir -p "$seed" "$wts" "$state" "$bin"
+  git init -q "$seed"; git -C "$seed" config user.email test@example.com; git -C "$seed" config user.name test
+  echo base > "$seed/file"; git -C "$seed" add file; git -C "$seed" commit -qm base; git -C "$seed" branch -M develop
+  git init -q --bare "$origin"; git -C "$origin" symbolic-ref HEAD refs/heads/develop
+  git -C "$seed" remote add origin "$origin"; git -C "$seed" push -qu origin develop
+  git clone -q "$origin" "$lane"; git -C "$lane" config user.email test@example.com; git -C "$lane" config user.name test
+  git -C "$lane" checkout -qb feat/31-fix; git -C "$lane" push -qu origin feat/31-fix
+  cat > "$bin/gh" <<'GH'
+#!/usr/bin/env bash
+case "$*" in
+  'pr view 31 --json state,headRefName -q [.state, .headRefName][]') printf '%s\n%s\n' "${FIX_STATE:-OPEN}" "${FIX_HEAD:-feat/31-fix}" ;;
+  'pr comment 31 --body '*) echo comment >> "$FIX_COMMENTS" ;;
+  *) echo "unexpected gh invocation: $*" >&2; exit 2 ;;
+esac
+GH
+  chmod +x "$bin/gh"; export FIX_COMMENTS="$tmp/fix-comments"; : > "$state/reviewed.txt"
+  run_fix() { PATH="$bin:$PATH" BATCH_REPO="$ROOT" BATCH_WT_ROOT="$wts" BATCH_STATE="$state" CLAIM_SKIP=1 bash "$SCRIPTS/fixpush.sh" 31 31 'fix change' 'reviewed'; }
+  printf changed >> "$lane/file"
+  hash=$(BATCH_REPO="$ROOT" BATCH_WT_ROOT="$wts" bash "$SCRIPTS/treehash.sh" 31); printf '%s' "$hash" > "$state/gate31.ok"
+  before=$(git -C "$lane" rev-parse HEAD)
+  if FIX_STATE=MERGED run_fix >"$tmp/fix-merged.out" 2>&1; then fail 'fixpush accepted a merged PR'; fi
+  grep -q 'follow-up PR' "$tmp/fix-merged.out" || fail "fixpush merged refusal missing: $(cat "$tmp/fix-merged.out")"
+  [ "$(git -C "$lane" rev-parse HEAD)" = "$before" ] || fail 'fixpush committed a merged PR'
+  if FIX_HEAD=other-branch run_fix >"$tmp/fix-branch.out" 2>&1; then fail 'fixpush accepted a different PR head branch'; fi
+  grep -q 'does not match PR' "$tmp/fix-branch.out" || fail "fixpush branch refusal missing: $(cat "$tmp/fix-branch.out")"
+  [ "$(git -C "$lane" rev-parse HEAD)" = "$before" ] || fail 'fixpush committed on a mismatched branch'
+  run_fix >"$tmp/fix-success.out" 2>&1 || fail "fixpush failed: $(cat "$tmp/fix-success.out")"
+  [ "$(cat "$state/reviewed.txt")" = 31 ] || fail 'fixpush did not record PR 31 once'
+  echo second-change >> "$lane/file"
+  hash=$(BATCH_REPO="$ROOT" BATCH_WT_ROOT="$wts" bash "$SCRIPTS/treehash.sh" 31); printf '%s' "$hash" > "$state/gate31.ok"
+  run_fix >"$tmp/fix-success2.out" 2>&1 || fail "fixpush second run failed: $(cat "$tmp/fix-success2.out")"
+  [ "$(wc -l < "$state/reviewed.txt")" -eq 1 ] || fail 'fixpush duplicated PR in reviewed.txt'
+  echo third-change >> "$lane/file"
+  : > "$state/reviewed.txt"
+  echo pushed >> "$lane/file"
+  hash=$(BATCH_REPO="$ROOT" BATCH_WT_ROOT="$wts" bash "$SCRIPTS/treehash.sh" 31); printf '%s' "$hash" > "$state/gate31.ok"
+  real_git=$(command -v git); mkdir "$tmp/fix-failbin"
+  cat > "$tmp/fix-failbin/git" <<'GIT'
+#!/usr/bin/env bash
+if [[ "$1" == push ]]; then exit 1; fi
+exec "$REAL_GIT" "$@"
+GIT
+  chmod +x "$tmp/fix-failbin/git"
+  before=$(git -C "$lane" rev-parse HEAD)
+  if PATH="$tmp/fix-failbin:$bin:$PATH" REAL_GIT="$real_git" BATCH_REPO="$ROOT" BATCH_WT_ROOT="$wts" BATCH_STATE="$state" CLAIM_SKIP=1 bash "$SCRIPTS/fixpush.sh" 31 31 'failed push' reviewed >"$tmp/fix-push-fail.out" 2>&1; then fail 'fixpush accepted a failed push'; fi
+  [ "$(wc -l < "$state/reviewed.txt")" -eq 0 ] || fail 'fixpush recorded reviewed PR after push failure'
+) || exit 1
+
+# ship issue/body and branch guards preserve the specified commit message behavior.
+(
+  mkdir -p "$tmp/ship-bin"
+  cat > "$tmp/ship-bin/gh" <<'GH'
+#!/usr/bin/env bash
+echo "$*" >> "$SHIP_GH_LOG"
+GH
+  chmod +x "$tmp/ship-bin/gh"; export SHIP_GH_LOG="$tmp/ship-gh.log"
+  ship_case() {
+    local name="$1" branch="$2" body="$3" allow_unmentioned="${4:-}" allow_branch="${5:-}" origin="$tmp/ship-$1-origin.git" lane="$tmp/wt-ib$1" state="$tmp/ship-$1-state"
+    mkdir -p "$state"; git init -q --bare "$origin"; git --git-dir="$origin" symbolic-ref HEAD refs/heads/develop; git init -q "$tmp/ship-$1-seed"
+    git -C "$tmp/ship-$1-seed" config user.email test@example.com; git -C "$tmp/ship-$1-seed" config user.name test
+    echo base > "$tmp/ship-$1-seed/file"; git -C "$tmp/ship-$1-seed" add file; git -C "$tmp/ship-$1-seed" commit -qm base; git -C "$tmp/ship-$1-seed" branch -M develop
+    git -C "$tmp/ship-$1-seed" remote add origin "$origin"; git -C "$tmp/ship-$1-seed" push -qu origin develop
+    git clone -q "$origin" "$lane"; git -C "$lane" checkout -qb "$branch"; git -C "$lane" config user.email test@example.com; git -C "$lane" config user.name test
+    echo change >> "$lane/file"
+    local h; h=$(BATCH_REPO="$ROOT" BATCH_WT_ROOT="$tmp" bash "$SCRIPTS/treehash.sh" "$1"); printf '%s' "$h" > "$state/gate$1.ok"
+    local before; before=$(git -C "$lane" rev-parse HEAD)
+    local out="$tmp/ship-$1.out" rc=0
+    env PATH="$tmp/ship-bin:$PATH" BATCH_REPO="$ROOT" BATCH_WT_ROOT="$tmp" BATCH_STATE="$state" CLAIM_SKIP=1 ALLOW_STALE_BASE=1 ALLOW_UNMENTIONED_ISSUE="$allow_unmentioned" ALLOW_BRANCH_ISSUE_MISMATCH="$allow_branch" bash "$SCRIPTS/ship.sh" "$1" 11851 ship "$body" >"$out" 2>&1 || rc=$?
+    echo "$rc" > "$tmp/ship-$1.rc"
+    if [ "$rc" -ne 0 ]; then [ "$(git -C "$lane" rev-parse HEAD)" = "$before" ] || fail "ship $name committed despite refusal"; fi
+  }
+  ship_case 41 feat/11851-test 'Refs #11837'
+  grep -q 'mentions another issue' "$tmp/ship-41.out" || fail 'ship did not refuse another issue reference'
+  ship_case 42 feat/11851-test 'Refs #11837' 1
+  [ "$(cat "$tmp/ship-42.rc")" = 0 ] || fail 'ship rejected ALLOW_UNMENTIONED_ISSUE'
+  ship_case 43 feat/11851-test 'Refs #11851'
+  [ "$(cat "$tmp/ship-43.rc")" = 0 ] || fail 'ship rejected matching issue reference'
+  ! git -C "$tmp/wt-ib43" log -1 --format=%B | grep -q 'Closes #11851' || fail 'ship added Closes despite matching Refs'
+  ship_case 44 feat/11851-test 'no issue reference'
+  git -C "$tmp/wt-ib44" log -1 --format=%B | grep -q 'Closes #11851' || fail 'ship omitted default Closes line'
+  ship_case 45 feat/11851-test 'see #11851; to fix #11729'
+  grep -q 'WARN: body closes #11729' "$tmp/ship-45.out" || fail 'ship omitted warning for a different closed issue'
+  ship_case 46 feat/11824-x 'summary'
+  grep -q 'does not match' "$tmp/ship-46.out" || fail 'ship did not refuse branch issue mismatch'
+  ship_case 47 feat/11824-x 'summary' '' 1
+  [ "$(cat "$tmp/ship-47.rc")" = 0 ] || fail 'ship rejected ALLOW_BRANCH_ISSUE_MISMATCH'
+) || exit 1
+
 echo "batch-lanes script tests passed"

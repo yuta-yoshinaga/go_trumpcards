@@ -70,7 +70,7 @@ describe('RussianBankPage', () => {
     const hand = await screen.findByTestId('hand-0');
     expect(screen.getByTestId('player-0')).toHaveTextContent('手札 0');
     expect(hand.querySelector('img')).toBeNull();
-    expect(hand.querySelector('div')).toHaveStyle({ width: '62px', height: '87px' });
+    expect(hand.querySelector('div')).toHaveStyle({ width: '50px', height: '70px' });
   });
 
   it('renders both players and the board', async () => {

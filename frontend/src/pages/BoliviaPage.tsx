@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { boliviaApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -11,11 +12,12 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
+import { MobileHandGrid } from '../components/MobileHandGrid';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useBoliviaGame } from '../hooks/useBoliviaGame';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -71,6 +73,7 @@ const SA_TUTORIAL_STEPS: TutorialStep[] = [
 export const BoliviaPage = withTutorial(BoliviaPageContent, 'bolivia', SA_TUTORIAL_STEPS);
 /** Inner content of the Bolivia page. */
 function BoliviaPageContent() {
+  const isMobile = useIsMobile();
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('bolivia');
   const {
@@ -97,12 +100,17 @@ function BoliviaPageContent() {
   } = useBoliviaGame();
 
   const { cardWidth } = useCardDimensions();
+  const boardCardWidth = isMobile ? 36 : cardWidth;
   const phaseNames = usePhaseNames('bolivia', BOLIVIA_PHASE_KEYS);
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('bolivia', state);
+
+  const messageBox = (
+    <GameMessageBox message={state?.message} messageCode={state?.messageCode} messageParams={state?.messageParams} />
+  );
 
   const humanPlayer = state?.players.find((p) => p.isHuman);
   const humanCardCount = humanPlayer?.cards?.length ?? 0;
@@ -270,19 +278,24 @@ function BoliviaPageContent() {
             ]}
           />
 
-          <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            <div className="text-ds-text-primary text-center mb-2">
+          <div
+            className={`flex-1 overflow-y-auto pt-2 sm:pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}
+            data-testid="sa-play-area"
+          >
+            <div className="flex flex-wrap justify-center text-ds-text-primary text-center mb-1 sm:mb-2">
               <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
               <span>
                 {t('drawPile', { count: state.drawPileCount })} / {t('discardPile', { count: state.discardPileCount })}
               </span>
-              {state.isFrozen && <span className="ml-2 text-ds-info font-bold">[{t('frozen')}]</span>}
+              {state.isFrozen && (
+                <span className="ml-2 shrink-0 whitespace-nowrap text-ds-info font-bold">[{t('frozen')}]</span>
+              )}
               {/* Self-contained live region announcing freeze/thaw transitions. */}
               <span className="sr-only" role="status" aria-live="polite" data-testid="sa-frozen-announce">
                 {frozenMsg}
               </span>
             </div>
-            <div className="text-ds-text-muted text-center mb-2 text-sm" data-testid="sa-team-scores">
+            <div className="text-ds-text-muted text-center mb-1 sm:mb-2 text-sm" data-testid="sa-team-scores">
               {t('teamScores', {
                 a: t(humanPlayer?.team === 0 ? 'teamScoreSelf' : 'teamScoreOpponent', {
                   team: t('teamLabel', { n: 0 }),
@@ -298,9 +311,10 @@ function BoliviaPageContent() {
             {/* **上がりの条件を書いておく。** カナスタ 2 個では上がれず、
                 最低 1 本のエスカレラが要る ── それが画面のどこにも無いと、
                 揃えたのに「上がる」が押せない理由が分からない。 */}
-            <div className="text-ds-text-muted text-center mb-2 text-xs" data-testid="bo-goout-rule">
-              {t('goOutRule')}
-            </div>
+            <details className="text-ds-text-muted text-center mb-2 text-xs" data-testid="bo-goout-rule">
+              <summary className="cursor-pointer select-none">{t('rules')}</summary>
+              <div className="mt-1">{t('goOutRule')}</div>
+            </details>
 
             <div className={lgTwoColGrid}>
               {/* Left: game play area */}
@@ -308,13 +322,13 @@ function BoliviaPageContent() {
                 {/* Discard pile top */}
                 {state.discardTop && (
                   <div
-                    className={`my-3 p-3 rounded flex items-center gap-3 relative ${
+                    className={`my-2 sm:my-3 p-3 rounded flex items-center gap-3 relative ${
                       state.isFrozen ? `${badgeInfoColors} ring-2 ring-ds-info` : 'bg-black/40'
                     }`}
                     data-tutorial="sa-draw-area"
                     data-testid="sa-discard-pile"
                   >
-                    <AnimatedCard card={state.discardTop} width={cardWidth} />
+                    <AnimatedCard card={state.discardTop} width={boardCardWidth} />
                     <div className="text-ds-text-muted text-sm">{t('discardTop')}</div>
                     {state.isFrozen && (
                       <span
@@ -330,115 +344,126 @@ function BoliviaPageContent() {
                 )}
 
                 {/* Player melds */}
-                {state.players.map((p, pi) => {
-                  if (p.melds.length === 0 && p.red3s.length === 0) return null;
-                  const teamMelded = state.players.some((tp) => tp.team === p.team && tp.hasInitMeld);
-                  return (
-                    <div
-                      key={pi}
-                      className="my-2 p-2 rounded bg-black/30"
-                      data-tutorial={pi === 0 ? 'sa-meld-area' : undefined}
-                    >
-                      <div className="text-ds-text-muted text-sm mb-1">
-                        {playerName(p.id, p.isHuman)} ({t('teamLabel', { n: p.team })}) - {t('melds')}
-                        {p.hasCanasta && (
-                          <span className="ml-2 text-ds-warning" title={t('tag.canasta')}>
-                            ★
-                          </span>
-                        )}
-                        {/* **エスカレラの印を落とさない。** 上がりを止めているのは
-                            こちらで、ボリビアは点が重いだけ。 */}
-                        {p.hasEscalera && (
-                          <span
-                            className="ml-1 text-ds-success"
-                            title={t('tag.escalera')}
-                            data-testid={`bo-tag-escalera-${p.id}`}
-                          >
-                            ◆
-                          </span>
-                        )}
-                        {p.hasBolivia && (
-                          <span
-                            className="ml-1 text-ds-accent"
-                            title={t('tag.bolivia')}
-                            data-testid={`bo-tag-bolivia-${p.id}`}
-                          >
-                            ▲
-                          </span>
-                        )}
-                      </div>
-                      {p.melds.map((m, mi) => {
-                        // Progress toward the 7-card canasta (set) / bolivia (sequence)
-                        // milestone, derived purely from `cards.length` and `kind`.
-                        const remaining = BOLIVIA_CANASTA_SIZE - m.cards.length;
-                        // **メルドは 3 種類。** 2 分岐のままだと、ワイルドだけの
-                        // メルド (kind 2) が「カナスタ」と表示されてしまう。
-                        const meldWord =
-                          m.kind === BOLIVIA_MELD_KIND.ESCALERA
-                            ? 'escalera'
-                            : m.kind === BOLIVIA_MELD_KIND.WILD
-                              ? 'bolivia'
-                              : 'canasta';
-                        const complete = remaining <= 0;
-                        return (
-                          <div key={mi} className="flex flex-wrap gap-1 mb-1">
-                            <span className="text-xs text-ds-text-muted self-center mr-1">
-                              {m.kind === 1
-                                ? t('sequence')
-                                : m.kind === BOLIVIA_MELD_KIND.WILD
-                                  ? t(m.isBolivia ? 'boliviaMeld' : 'wildMeld')
-                                  : m.isCanasta
-                                    ? m.isNatural
-                                      ? t('naturalCanasta')
-                                      : t('mixedCanasta')
-                                    : `(${m.cards.length})`}
-                            </span>
-                            <span
-                              data-testid={`sa-meld-progress-${pi}-${mi}`}
-                              className={`text-xs self-center mr-1 ${
-                                complete ? 'text-ds-success font-bold motion-safe:animate-pulse' : 'text-ds-info'
-                              }`}
-                            >
-                              {complete
-                                ? t(`meldProgress.${meldWord}Complete`)
-                                : t(`meldProgress.to_${meldWord}`, { n: remaining })}
-                            </span>
-                            {m.cards.map((card, ci) => (
-                              <AnimatedCard key={`meld-${pi}-${mi}-${ci}`} card={card} width={cardWidth * 0.6} />
-                            ))}
-                          </div>
-                        );
-                      })}
-                      {p.red3s.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          <span
-                            className={`text-xs self-center mr-1 ${!teamMelded ? 'text-ds-warning font-semibold' : 'text-ds-error-text'}`}
-                          >
-                            {t('red3s')}
-                          </span>
-                          {!teamMelded && (
-                            <span
-                              data-testid={`bo-red3-warning-${p.id}`}
-                              className="text-xs text-ds-warning self-center mr-1"
-                              title={t('red3PenaltyWarning')}
-                            >
-                              ({t('red3PenaltyWarning')})
+                <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length} dataTutorial="sa-meld-area">
+                  {state.players.map((p, pi) => {
+                    if (p.melds.length === 0 && p.red3s.length === 0) return null;
+                    const teamMelded = state.players.some((tp) => tp.team === p.team && tp.hasInitMeld);
+                    return (
+                      <div key={pi} className="my-2 p-2 rounded bg-black/30">
+                        <div className="text-ds-text-muted text-sm mb-1">
+                          {playerName(p.id, p.isHuman)} ({t('teamLabel', { n: p.team })}) - {t('melds')}
+                          {p.hasCanasta && (
+                            <span className="ml-2 text-ds-warning" title={t('tag.canasta')}>
+                              ★
                             </span>
                           )}
-                          {p.red3s.map((card, ri) => (
-                            <AnimatedCard key={`red3-${pi}-${ri}`} card={card} width={cardWidth * 0.6} />
-                          ))}
+                          {/* **エスカレラの印を落とさない。** 上がりを止めているのは
+                            こちらで、ボリビアは点が重いだけ。 */}
+                          {p.hasEscalera && (
+                            <span
+                              className="ml-1 text-ds-success"
+                              title={t('tag.escalera')}
+                              data-testid={`bo-tag-escalera-${p.id}`}
+                            >
+                              ◆
+                            </span>
+                          )}
+                          {p.hasBolivia && (
+                            <span
+                              className="ml-1 text-ds-accent"
+                              title={t('tag.bolivia')}
+                              data-testid={`bo-tag-bolivia-${p.id}`}
+                            >
+                              ▲
+                            </span>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  );
-                })}
+                        {p.melds.map((m, mi) => {
+                          // Progress toward the 7-card canasta (set) / bolivia (sequence)
+                          // milestone, derived purely from `cards.length` and `kind`.
+                          const remaining = BOLIVIA_CANASTA_SIZE - m.cards.length;
+                          // **メルドは 3 種類。** 2 分岐のままだと、ワイルドだけの
+                          // メルド (kind 2) が「カナスタ」と表示されてしまう。
+                          const meldWord =
+                            m.kind === BOLIVIA_MELD_KIND.ESCALERA
+                              ? 'escalera'
+                              : m.kind === BOLIVIA_MELD_KIND.WILD
+                                ? 'bolivia'
+                                : 'canasta';
+                          const complete = remaining <= 0;
+                          return (
+                            <div key={mi} className="flex flex-nowrap gap-1 mb-1 overflow-x-auto sm:overflow-visible">
+                              <span className="text-xs text-ds-text-muted self-center mr-1">
+                                {m.kind === 1
+                                  ? t('sequence')
+                                  : m.kind === BOLIVIA_MELD_KIND.WILD
+                                    ? t(m.isBolivia ? 'boliviaMeld' : 'wildMeld')
+                                    : m.isCanasta
+                                      ? m.isNatural
+                                        ? t('naturalCanasta')
+                                        : t('mixedCanasta')
+                                      : `(${m.cards.length})`}
+                              </span>
+                              <span
+                                data-testid={`sa-meld-progress-${pi}-${mi}`}
+                                className={`text-xs self-center mr-1 ${
+                                  complete ? 'text-ds-success font-bold motion-safe:animate-pulse' : 'text-ds-info'
+                                }`}
+                              >
+                                {complete
+                                  ? t(`meldProgress.${meldWord}Complete`)
+                                  : t(`meldProgress.to_${meldWord}`, { n: remaining })}
+                              </span>
+                              {m.cards.map((card, ci) => (
+                                <span key={`meld-${pi}-${mi}-${ci}`} className={ci > 0 ? '-ml-[22px] sm:ml-0' : ''}>
+                                  <AnimatedCard card={card} width={isMobile ? 36 : cardWidth * 0.6} />
+                                </span>
+                              ))}
+                            </div>
+                          );
+                        })}
+                        {p.red3s.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            <span
+                              className={`text-xs self-center mr-1 ${!teamMelded ? 'text-ds-warning font-semibold' : 'text-ds-error-text'}`}
+                            >
+                              {t('red3s')}
+                            </span>
+                            {!teamMelded && (
+                              <span
+                                data-testid={`bo-red3-warning-${p.id}`}
+                                className="text-xs text-ds-warning self-center mr-1"
+                                title={t('red3PenaltyWarning')}
+                              >
+                                ({t('red3PenaltyWarning')})
+                              </span>
+                            )}
+                            {p.red3s.map((card, ri) => (
+                              <AnimatedCard
+                                key={`red3-${pi}-${ri}`}
+                                card={card}
+                                width={isMobile ? 36 : cardWidth * 0.6}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </CpuAccordion>
               </div>
 
               {/* Right: info sidebar */}
               <div>
                 {/* Score table */}
-                <div className="my-3 p-2 rounded bg-black/30">
+                <details
+                  className="my-3 p-2 rounded bg-black/30"
+                  data-testid="bo-score-table"
+                  open={!isMobile || undefined}
+                >
+                  <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
+                    {tc('button.score')}
+                  </summary>
                   <table className="w-full text-sm text-ds-text-muted">
                     <thead>
                       <tr>
@@ -506,7 +531,7 @@ function BoliviaPageContent() {
                           ))}
                     </tbody>
                   </table>
-                </div>
+                </details>
 
                 {/* CPU hands (shown at round/game end) */}
                 {(isRoundEnd || isGameEnd) &&
@@ -533,13 +558,9 @@ function BoliviaPageContent() {
               </div>
             </div>
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            {isMobile && messageBox}
 
             <ActionLogSection
               isEndPhase={isGameEnd}
@@ -547,160 +568,181 @@ function BoliviaPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+            <ErrorAlert message={error} onRetry={retry} />
+            <GameResetButton
+              isGameEnd={isGameEnd}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+            />
+            <CardNavShortcutsPanel data-testid="bolivia-kbd-shortcuts" />
           </div>
 
-          <GameFooter className={`${gameTheme.bolivia.footer} px-4 py-2.5`}>
-            {humanPlayer && (
-              <div className="flex flex-wrap gap-1 mb-2" data-tutorial="sa-player-hand">
-                {humanPlayer.cards.map((card, idx) => (
-                  <button
-                    type="button"
-                    key={`${card.design}-${card.value}-${idx}`}
-                    onClick={() => {
-                      if (!groupedIndices.has(idx)) toggleCard(idx);
-                    }}
-                    aria-label={
-                      groupedIndices.has(idx)
-                        ? `${cardAlt(card)} (${t('inMeldGroup', { n: meldGroups.findIndex((group) => group.includes(idx)) + 1 })})`
-                        : cardAlt(card)
-                    }
-                    aria-pressed={selectedCardIndices.includes(idx)}
-                    aria-disabled={groupedIndices.has(idx) || undefined}
-                    className={`transition-transform aria-disabled:opacity-50 aria-disabled:cursor-not-allowed ${focusRingCard}`}
-                    style={{
-                      background: 'none',
-                      padding: 0,
-                      borderRadius: 8,
-                      ...selectedCardStyle(selectedCardIndices.includes(idx)),
-                      boxSizing: 'border-box',
-                    }}
-                  >
-                    <AnimatedCard card={card} width={cardWidth} />
-                  </button>
-                ))}
-              </div>
-            )}
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            <div className="flex gap-2 items-center flex-wrap" data-tutorial="sa-actions">
-              {isDrawPhase && isHumanTurn && (
-                <div className="flex gap-2 flex-col">
-                  <div className="flex gap-2">
-                    <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
-                      {t('drawStockButton')}
+          <GameFooter
+            message={isMobile ? undefined : messageBox}
+            className={`${gameTheme.bolivia.footer} px-4 py-2.5`}
+            actions={
+              <div className="flex gap-2 items-center flex-wrap" data-tutorial="sa-actions">
+                {isDrawPhase && isHumanTurn && (
+                  <div className="flex gap-2 flex-col">
+                    <div className="flex gap-2">
+                      <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
+                        {t('drawStockButton')}
+                      </button>
+                      <button
+                        type="button"
+                        className={`${btnPrimary} aria-disabled:opacity-50 aria-disabled:cursor-not-allowed`}
+                        onClick={() => {
+                          if (loading || !canTakeDiscard) return;
+                          handleDrawDiscard();
+                        }}
+                        aria-disabled={loading || !canTakeDiscard}
+                        title={drawDiscardReason || undefined}
+                        aria-describedby={drawDiscardReason ? 'sa-draw-discard-reason' : undefined}
+                      >
+                        {t('drawDiscardButton')}
+                      </button>
+                    </div>
+                    <div id="sa-draw-discard-reason" data-testid="sa-draw-discard-reason">
+                      {drawDiscardReason && <span className="text-xs text-ds-text-muted">{drawDiscardReason}</span>}
+                    </div>
+                  </div>
+                )}
+                {isMeldPhase && isHumanTurn && (
+                  <>
+                    {meldGroups.length > 0 && (
+                      <div className="w-full flex flex-wrap gap-2" data-testid="sa-meld-groups">
+                        {meldGroups.map((group, index) => (
+                          <button
+                            key={index}
+                            type="button"
+                            className={btnOutline}
+                            onClick={() => handleRemoveMeldGroup(index)}
+                            disabled={loading}
+                            aria-label={t('removeMeldGroup', { n: index + 1, count: group.length })}
+                          >
+                            {t('meldGroup', { n: index + 1, count: group.length })} ×
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {meldPointInfo && (
+                      <div
+                        id="sa-meld-points"
+                        data-testid="sa-meld-points"
+                        className={`w-full text-xs ${meldPointInfo.below ? 'text-ds-warning' : 'text-ds-text-muted'}`}
+                      >
+                        {meldPointInfo.needInitial
+                          ? t('meldPoints.initial', {
+                              min: meldPointInfo.minMeld,
+                              points: meldPointInfo.selectedPoints,
+                            })
+                          : t('meldPoints.selected', { points: meldPointInfo.selectedPoints })}
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handleMeldSelected}
+                      disabled={
+                        loading ||
+                        (meldGroups.length === 0 && selectedCardIndices.length < 3) ||
+                        (selectedCardIndices.length > 0 && selectedCardIndices.length < 3)
+                      }
+                      aria-describedby={meldPointInfo?.below ? 'sa-meld-points' : undefined}
+                    >
+                      {t('meldButton')}
                     </button>
                     <button
                       type="button"
-                      className={`${btnPrimary} aria-disabled:opacity-50 aria-disabled:cursor-not-allowed`}
-                      onClick={() => {
-                        if (loading || !canTakeDiscard) return;
-                        handleDrawDiscard();
-                      }}
-                      aria-disabled={loading || !canTakeDiscard}
-                      title={drawDiscardReason || undefined}
-                      aria-describedby={drawDiscardReason ? 'sa-draw-discard-reason' : undefined}
+                      className={btnOutline}
+                      onClick={handleAddMeldGroup}
+                      disabled={loading || selectedCardIndices.length < 3}
                     >
-                      {t('drawDiscardButton')}
+                      {t('addMeldGroupButton')}
                     </button>
-                  </div>
-                  <div id="sa-draw-discard-reason" data-testid="sa-draw-discard-reason">
-                    {drawDiscardReason && <span className="text-xs text-ds-text-muted">{drawDiscardReason}</span>}
-                  </div>
-                </div>
-              )}
-              {isMeldPhase && isHumanTurn && (
-                <>
-                  {meldGroups.length > 0 && (
-                    <div className="w-full flex flex-wrap gap-2" data-testid="sa-meld-groups">
-                      {meldGroups.map((group, index) => (
-                        <button
-                          key={index}
-                          type="button"
-                          className={btnOutline}
-                          onClick={() => handleRemoveMeldGroup(index)}
-                          disabled={loading}
-                          aria-label={t('removeMeldGroup', { n: index + 1, count: group.length })}
-                        >
-                          {t('meldGroup', { n: index + 1, count: group.length })} ×
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                  {meldPointInfo && (
-                    <div
-                      id="sa-meld-points"
-                      data-testid="sa-meld-points"
-                      className={`w-full text-xs ${meldPointInfo.below ? 'text-ds-warning' : 'text-ds-text-muted'}`}
+                    <button type="button" className={btnOutline} onClick={handleSkipMeld} disabled={loading}>
+                      {t('skipMeldButton')}
+                    </button>
+                  </>
+                )}
+                {isDiscardPhase && isHumanTurn && (
+                  <>
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handleDiscard}
+                      disabled={loading || selectedCardIndices.length !== 1}
                     >
-                      {meldPointInfo.needInitial
-                        ? t('meldPoints.initial', {
-                            min: meldPointInfo.minMeld,
-                            points: meldPointInfo.selectedPoints,
-                          })
-                        : t('meldPoints.selected', { points: meldPointInfo.selectedPoints })}
-                    </div>
-                  )}
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleMeldSelected}
-                    disabled={
-                      loading ||
-                      (meldGroups.length === 0 && selectedCardIndices.length < 3) ||
-                      (selectedCardIndices.length > 0 && selectedCardIndices.length < 3)
-                    }
-                    aria-describedby={meldPointInfo?.below ? 'sa-meld-points' : undefined}
-                  >
-                    {t('meldButton')}
+                      {t('discardButton')}
+                    </button>
+                    <button
+                      type="button"
+                      className={btnSuccess}
+                      onClick={handleGoOut}
+                      disabled={loading || !state.canGoOut}
+                    >
+                      {t('goOutButton')}
+                    </button>
+                    {!state.canGoOut && <p className="text-ds-text-muted text-xs">{t('goOutRule')}</p>}
+                  </>
+                )}
+                {isRoundEnd && (
+                  <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                    {t('nextRound')}
                   </button>
-                  <button
-                    type="button"
-                    className={btnOutline}
-                    onClick={handleAddMeldGroup}
-                    disabled={loading || selectedCardIndices.length < 3}
-                  >
-                    {t('addMeldGroupButton')}
-                  </button>
-                  <button type="button" className={btnOutline} onClick={handleSkipMeld} disabled={loading}>
-                    {t('skipMeldButton')}
-                  </button>
-                </>
-              )}
-              {isDiscardPhase && isHumanTurn && (
-                <>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleDiscard}
-                    disabled={loading || selectedCardIndices.length !== 1}
-                  >
-                    {t('discardButton')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnSuccess}
-                    onClick={handleGoOut}
-                    disabled={loading || !state.canGoOut}
-                  >
-                    {t('goOutButton')}
-                  </button>
-                  {!state.canGoOut && <p className="text-ds-text-muted text-xs">{t('goOutRule')}</p>}
-                </>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-              />
-            </div>
-            <CardNavShortcutsPanel data-testid="bolivia-kbd-shortcuts" />
+                )}
+              </div>
+            }
+          >
+            {humanPlayer &&
+              (isMobile ? (
+                <MobileHandGrid
+                  cards={humanPlayer.cards}
+                  selectedIndices={selectedCardIndices}
+                  onToggle={(idx) => {
+                    if (!groupedIndices.has(idx)) toggleCard(idx);
+                  }}
+                  cardWidth={cardWidth}
+                  dataTutorial="sa-player-hand"
+                  validIndices={humanPlayer.cards.map((_, idx) => idx).filter((idx) => !groupedIndices.has(idx))}
+                  cardStatusFor={(idx) =>
+                    groupedIndices.has(idx)
+                      ? t('inMeldGroup', { n: meldGroups.findIndex((group) => group.includes(idx)) + 1 })
+                      : undefined
+                  }
+                  stackRows
+                />
+              ) : (
+                <div className="flex flex-wrap gap-1 mb-2" data-tutorial="sa-player-hand">
+                  {humanPlayer.cards.map((card, idx) => (
+                    <button
+                      type="button"
+                      key={`${card.design}-${card.value}-${idx}`}
+                      onClick={() => {
+                        if (!groupedIndices.has(idx)) toggleCard(idx);
+                      }}
+                      aria-label={
+                        groupedIndices.has(idx)
+                          ? `${cardAlt(card)} (${t('inMeldGroup', { n: meldGroups.findIndex((group) => group.includes(idx)) + 1 })})`
+                          : cardAlt(card)
+                      }
+                      aria-pressed={selectedCardIndices.includes(idx)}
+                      aria-disabled={groupedIndices.has(idx) || undefined}
+                      className={`transition-transform aria-disabled:opacity-50 aria-disabled:cursor-not-allowed ${focusRingCard}`}
+                      style={{
+                        background: 'none',
+                        padding: 0,
+                        borderRadius: 8,
+                        ...selectedCardStyle(selectedCardIndices.includes(idx)),
+                        boxSizing: 'border-box',
+                      }}
+                    >
+                      <AnimatedCard card={card} width={cardWidth} />
+                    </button>
+                  ))}
+                </div>
+              ))}
           </GameFooter>
         </>
       )}

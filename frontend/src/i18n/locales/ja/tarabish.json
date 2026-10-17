@@ -28,6 +28,9 @@
     },
     "roundPoints": "ラウンド得点: あなたのチーム {{t0}} － 相手 {{t1}}"
   },
+  "disclosure": {
+    "rules": "ルール"
+  },
   "meld": {
     "none": "メルドなし",
     "run": "ラン{{len}}枚",

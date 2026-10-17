@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import type { scartoApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -215,6 +216,10 @@ function ScartoPageContent() {
     reset();
   };
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.scarto')}
@@ -276,10 +281,6 @@ function ScartoPageContent() {
                 自分の得点山に戻るという規則は実装されているのに説明が無く、
                 cardPoints の内訳が読み解けなかった (#6514)。Minchiate の mattoNote /
                 Tarocchini の papiNote と同じ常設の 1 行。 */}
-            <div className="text-center mb-2 text-sm font-semibold text-ds-warning" data-testid="scarto-excuse-note">
-              {t('excuseReturnsNote')}
-            </div>
-
             <div className={lgTwoColGrid}>
               {/* Left: play area */}
               <div>
@@ -301,7 +302,7 @@ function ScartoPageContent() {
               {/* Right: info sidebar */}
               <div data-tutorial="scarto-info">
                 {/* Per-player scores with a dealer badge */}
-                <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
+                <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm flex flex-wrap gap-x-4">
                   {state.players.map((p) => (
                     <div key={p.id} className="py-0.5 flex items-center gap-2">
                       <span className={p.isDealer ? 'text-ds-warning font-semibold' : ''}>
@@ -316,43 +317,51 @@ function ScartoPageContent() {
                   ))}
                 </div>
 
-                <section
+                <details
                   className="glass-panel mb-2 p-2 rounded text-ds-text-muted text-sm"
-                  aria-label={t('pointReference.title')}
-                  data-testid="scarto-point-reference"
+                  open={!isMobile || undefined}
                 >
-                  <div className="mb-1 text-ds-text-primary">{t('pointReference.title')}</div>
-                  <div>{t('pointReference.king')}</div>
-                  <div>{t('pointReference.queen')}</div>
-                  <div>{t('pointReference.knight')}</div>
-                  <div>{t('pointReference.jack')}</div>
-                  <div>{t('pointReference.bouts')}</div>
-                  <div>{t('pointReference.other')}</div>
-                </section>
+                  <summary className="cursor-pointer select-none">{t('rules')}</summary>
+                  <div className="mt-1" data-testid="scarto-rules">
+                    <div className="mb-2 text-center font-semibold text-ds-warning" data-testid="scarto-excuse-note">
+                      {t('excuseReturnsNote')}
+                    </div>
+                    <section aria-label={t('pointReference.title')} data-testid="scarto-point-reference">
+                      <div className="mb-1 text-ds-text-primary">{t('pointReference.title')}</div>
+                      <div>{t('pointReference.king')}</div>
+                      <div>{t('pointReference.queen')}</div>
+                      <div>{t('pointReference.knight')}</div>
+                      <div>{t('pointReference.jack')}</div>
+                      <div>{t('pointReference.bouts')}</div>
+                      <div>{t('pointReference.other')}</div>
+                    </section>
+                  </div>
+                </details>
 
                 {/* Players: cards / tricks / captured points */}
-                {isMobile ? (
-                  <details className="mb-2 p-2 rounded bg-black/30">
-                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('players')}</summary>
-                    <div className="mt-1">
-                      {state.players.map((p) => (
+                {humanPlayer && (
+                  <section
+                    className="mb-2 px-2 py-1 rounded bg-black/30 text-ds-text-muted text-sm"
+                    data-testid="scarto-human-seat"
+                    data-tutorial="scarto-human-seat"
+                    aria-label={`${playerName(humanPlayer.id, true)}: ${t('cards', { count: humanPlayer.cardCount })} | ${t('tricks', { count: humanPlayer.trickCount })} | ${t('points', { points: humanPlayer.cardPoints })}`}
+                  >
+                    {playerName(humanPlayer.id, true)}: {t('cards', { count: humanPlayer.cardCount })} |{' '}
+                    {t('tricks', { count: humanPlayer.trickCount })} | {t('points', { points: humanPlayer.cardPoints })}
+                  </section>
+                )}
+                <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+                  <div className="mb-2 p-2 rounded bg-black/30 flex flex-wrap gap-x-4">
+                    {state.players
+                      .filter((p) => !p.isHuman)
+                      .map((p) => (
                         <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
                           {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
                           {t('tricks', { count: p.trickCount })} | {t('points', { points: p.cardPoints })}
                         </div>
                       ))}
-                    </div>
-                  </details>
-                ) : (
-                  <div className="mb-2 p-2 rounded bg-black/30">
-                    {state.players.map((p) => (
-                      <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                        {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                        {t('tricks', { count: p.trickCount })} | {t('points', { points: p.cardPoints })}
-                      </div>
-                    ))}
                   </div>
-                )}
+                </CpuAccordion>
 
                 {/* Round result: the deal settlement (signed delta from the average) */}
                 {(isScartoPhase || isPlayPhase || isTrickEnd) && (
@@ -398,23 +407,87 @@ function ScartoPageContent() {
               </div>
             </div>
 
-            {/* Message */}
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
+            {isMobile && messageBox}
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+
+            <ErrorAlert message={error} onRetry={retry} />
+
+            {/*
+              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+              られないことがある (#5955)。
+            */}
+            <div data-testid="scarto-hint-live" role="status" aria-live="polite">
+              {state.hint && isRequestedHint(state) && (
+                <div className="text-ds-warning text-sm mb-2">
+                  {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
+                  {state.hint.cardIndices &&
+                    state.hint.cardIndices.length > 0 &&
+                    ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
+                </div>
+              )}
+            </div>
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            <div className="flex flex-wrap gap-2 items-center">
+              <GameResetButton
+                isGameEnd={isGameEnd}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="scarto-reset-button"
+              />
+            </div>
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.scarto.footer} px-4 py-2.5`}>
+          {/* Tarot-size hands outgrow the 45vh cap on phones (#11655). */}
+          <GameFooter
+            tall
+            className={`${gameTheme.scarto.footer} px-4 py-2.5`}
+            message={!isMobile && messageBox}
+            actions={
+              canScarto || canPlay || isTrickEnd || isRoundEnd ? (
+                <div className="flex flex-wrap gap-2 items-center" data-tutorial="scarto-action-buttons">
+                  {canScarto && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handleScarto}
+                      disabled={loading || selectedCardIndices.length !== SCARTO_DISCARD_COUNT}
+                    >
+                      {t('discardButton', { count: selectedCardIndices.length, total: SCARTO_DISCARD_COUNT })}
+                    </button>
+                  )}
+                  {canPlay && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handlePlay}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                    >
+                      {t('playButton')}
+                    </button>
+                  )}
+                  {isTrickEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                      {t('nextTrick')}
+                    </button>
+                  )}
+                  {isRoundEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                      {t('nextRound')}
+                    </button>
+                  )}
+                </div>
+              ) : null
+            }
+          >
             {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
                 変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。 */}
             <div data-testid="scarto-prompt-live" role="status" aria-live="polite">
@@ -440,70 +513,12 @@ function ScartoPageContent() {
                 cardWidth={cardWidth}
                 isMobile={isMobile}
                 dataTutorialPrefix="scarto"
+                stackRows
                 validIndices={handValidIndices}
                 restrictedTooltip={canScarto ? t('scartoRestricted') : t('playButton')}
                 cardTitleFor={canScarto ? scartoTitleFor : undefined}
               />
             )}
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            {/*
-              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
-              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
-              られないことがある (#5955)。
-            */}
-            <div data-testid="scarto-hint-live" role="status" aria-live="polite">
-              {state.hint && isRequestedHint(state) && (
-                <div className="text-ds-warning text-sm mb-2">
-                  {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
-                  {state.hint.cardIndices &&
-                    state.hint.cardIndices.length > 0 &&
-                    ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
-                </div>
-              )}
-            </div>
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            <div className="flex flex-wrap gap-2 items-center" data-tutorial="scarto-action-buttons">
-              {canScarto && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handleScarto}
-                  disabled={loading || selectedCardIndices.length !== SCARTO_DISCARD_COUNT}
-                >
-                  {t('discardButton', { count: selectedCardIndices.length, total: SCARTO_DISCARD_COUNT })}
-                </button>
-              )}
-              {canPlay && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-              {isTrickEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                  {t('nextTrick')}
-                </button>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="scarto-reset-button"
-              />
-            </div>
           </GameFooter>
         </>
       )}

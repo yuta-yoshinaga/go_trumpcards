@@ -237,7 +237,9 @@ function HighCardFlushPageContent() {
                       </ul>
                     </div>
                     <div>
-                      <div className="font-bold text-ds-text-primary mb-1">{t('payoutRef.straightFlushHeader')}</div>
+                      <div className="font-bold text-ds-text-primary mb-1 whitespace-nowrap">
+                        {t('payoutRef.straightFlushHeader')}
+                      </div>
                       <ul className="space-y-0.5">
                         {(
                           [
@@ -405,7 +407,11 @@ function HighCardFlushPageContent() {
               ]}
             />
             {isBetPhase && (
-              <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="hcf-bet-controls">
+              <div
+                className="flex flex-wrap items-center justify-center gap-2 pb-2 [&_label]:whitespace-nowrap"
+                data-tutorial="hcf-bet-controls"
+                data-testid="hcf-bet-controls"
+              >
                 <ChipBetInput
                   id="hcf-ante"
                   label={t('label.ante')}

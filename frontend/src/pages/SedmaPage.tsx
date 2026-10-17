@@ -172,8 +172,8 @@ function SedmaPageContent() {
         {/* Colour-independent team marker (WCAG 1.4.1): a visible A/B badge plus an
             sr-only full team name, so team membership isn't conveyed by colour alone. */}
         <span
-          className={`inline-block mr-1 px-1 rounded text-xs font-bold text-white ${
-            team === 0 ? 'bg-ds-info' : 'bg-ds-error'
+          className={`inline-block mr-1 px-1 rounded text-xs font-bold ${
+            team === 0 ? 'bg-ds-info text-ds-text-on-accent' : 'bg-ds-error text-white'
           }`}
           aria-hidden="true"
         >

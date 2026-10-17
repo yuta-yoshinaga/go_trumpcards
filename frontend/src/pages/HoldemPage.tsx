@@ -409,189 +409,10 @@ function HoldemPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
-          </div>
-
-          {/* Sticky footer: player hand + buttons */}
-          <GameFooter className={`${gameTheme.holdem.footer} px-5 py-3`}>
-            {/* Human player */}
-            {humanPlayer && (
-              <div className="mb-2" data-tutorial="he-player-hand">
-                <div className="text-ds-text-primary text-lg mb-1">
-                  {t('yourHand')}
-                  <span className="ml-3 text-xs">
-                    {tc('betting.chips')} {humanPlayer.chips}
-                  </span>
-                  {humanPlayer.totalHands > 0 && (
-                    <HudStats
-                      vpip={humanPlayer.vpip}
-                      pfr={humanPlayer.pfr}
-                      threeBet={humanPlayer.threeBet}
-                      af={humanPlayer.af}
-                    />
-                  )}
-                  {humanPlayer.currentBet > 0 && (
-                    <span className="ml-2 text-xs">
-                      {tc('betting.currentBet')} {humanPlayer.currentBet}
-                    </span>
-                  )}
-                  {humanPlayer.folded && (
-                    <span className="ml-2 text-ds-error-text text-xs">[{tc('status.folded')}]</span>
-                  )}
-                  {humanPlayer.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
-                  {isShowdown && !humanPlayer.folded && humanPlayer.handName && (
-                    <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${badgeSuccessColors}`}>
-                      {humanPlayer.handName}
-                    </span>
-                  )}
-                </div>
-                <div className="flex flex-wrap gap-1.5 mb-2">
-                  {humanPlayer.cards?.length
-                    ? humanPlayer.cards.map((card, idx) => {
-                        const inBest = showdownBest5.holeSet.has(idx);
-                        const dim = isShowdown && showdownBest5.holeSet.size > 0 && !inBest;
-                        return (
-                          <div
-                            key={`${card.design}-${card.value}`}
-                            className={`transition-all ${
-                              inBest ? '-translate-y-1 ring-2 ring-ds-success motion-safe:animate-pulse' : ''
-                            } ${dim ? 'opacity-50' : ''}`}
-                            data-best5-hole={inBest || undefined}
-                          >
-                            <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
-                          </div>
-                        );
-                      })
-                    : !humanPlayer.folded &&
-                      Array.from({ length: 2 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
-                </div>
-              </div>
-            )}
-
-            {/* Message */}
-            <GameMessageBox
-              message={state?.message}
-              messageCode={state?.messageCode}
-              messageParams={state?.messageParams}
-              alwaysVisible
-              severity={phase === HoldemPhase.END || phase === HoldemPhase.SHOWDOWN ? 'alert' : 'info'}
-            />
-
             <ErrorAlert message={error} onRetry={retry} />
-
-            {/* Muck/Show controls */}
-            {isMuckPhase && (
-              <div className="mb-2 text-center" data-testid="muck-controls">
-                <div className="flex justify-center gap-2">
-                  <button
-                    type="button"
-                    className={`${btnPrimary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => exec('muck')}
-                  >
-                    {t('muck.muck')}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnSecondary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => exec('show')}
-                  >
-                    {t('muck.show')}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Rebuy/Addon controls */}
-            {isRebuyPhase && (
-              <div className="mb-2 text-center" data-testid="rebuy-controls">
-                <p className="text-ds-text-primary mb-2">
-                  {t('rebuy.prompt', { chips: state?.rebuyChips, used: humanRebuyCount, max: state?.rebuyMaxCount })}
-                </p>
-                <div className="flex justify-center gap-2">
-                  <button
-                    type="button"
-                    className={`${btnPrimary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => exec('rebuy')}
-                  >
-                    {t('rebuy.accept')}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnSecondary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => exec('skiprebuy')}
-                  >
-                    {t('rebuy.skip')}
-                  </button>
-                </div>
-              </div>
-            )}
-            {isAddonPhase && (
-              <div className="mb-2 text-center" data-testid="addon-controls">
-                <p className="text-ds-text-primary mb-2">{t('addon.prompt', { chips: state?.addonChips })}</p>
-                <div className="flex justify-center gap-2">
-                  <button
-                    type="button"
-                    className={`${btnPrimary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => exec('addon')}
-                  >
-                    {t('addon.accept')}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${btnSecondary} min-w-[90px]`}
-                    disabled={loading}
-                    onClick={() => exec('skipaddon')}
-                  >
-                    {t('addon.skip')}
-                  </button>
-                </div>
-              </div>
-            )}
 
             {/* Hint */}
             {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
-
-            {/* Betting controls */}
-            {canAct && (
-              <div data-tutorial="he-action-buttons">
-                <div className="mb-2 text-ds-text-primary text-xs tabular-nums" data-testid="holdem-bet-comparison">
-                  <span>{t('betComparison.currentMaximum', { amount: state?.lastBet ?? 0 })}</span>
-                  <span className="mx-2">
-                    {t('betComparison.yourContribution', { amount: humanPlayer?.currentBet ?? 0 })}
-                  </span>
-                  <span>
-                    {hasOutstandingBet
-                      ? t('betComparison.callDifference', {
-                          amount: (state?.lastBet ?? 0) - (humanPlayer?.currentBet ?? 0),
-                        })
-                      : t('betComparison.noCallNeeded')}
-                  </span>
-                  {(state?.lastBet ?? 0) > 0 && (
-                    <span className="ml-2">{t('betComparison.minimumRaise', { amount: minRaise })}</span>
-                  )}
-                </div>
-                <BettingControls
-                  inputId="holdemBetAmount"
-                  betAmount={betAmount}
-                  onBetAmountChange={setBetAmount}
-                  minRaise={minRaise}
-                  maxBetAmount={state?.maxBetAmount}
-                  potSize={state?.pot}
-                  hasOutstandingBet={hasOutstandingBet}
-                  loading={loading}
-                  onCall={() => exec('call', undefined, undefined, getElapsed())}
-                  onRaise={() => exec('raise', betAmount, undefined, getElapsed())}
-                  onBet={() => exec('bet', betAmount, undefined, getElapsed())}
-                  onCheck={() => exec('check', undefined, undefined, getElapsed())}
-                  onFold={() => exec('fold', undefined, undefined, getElapsed())}
-                  onAllIn={() => exec('allin', undefined, undefined, getElapsed())}
-                />
-              </div>
-            )}
 
             {/* Settings + Reset */}
             <details className="mb-1" data-tutorial="he-learning-mode" open={learningMode || undefined}>
@@ -671,6 +492,195 @@ function HoldemPageContent() {
               className="min-w-[90px]"
             />
             <ActionShortcutsPanel bindings={actionBindings} data-testid="holdem-kbd-shortcuts" />
+          </div>
+
+          {/* Sticky footer: player hand + buttons */}
+          <GameFooter
+            className={`${gameTheme.holdem.footer} px-5 py-3`}
+            actions={
+              <>
+                {/* Muck/Show controls */}
+                {isMuckPhase && (
+                  <div className="mb-2 text-center" data-testid="muck-controls">
+                    <div className="flex justify-center gap-2">
+                      <button
+                        type="button"
+                        className={`${btnPrimary} min-w-[90px]`}
+                        disabled={loading}
+                        onClick={() => exec('muck')}
+                      >
+                        {t('muck.muck')}
+                      </button>
+                      <button
+                        type="button"
+                        className={`${btnSecondary} min-w-[90px]`}
+                        disabled={loading}
+                        onClick={() => exec('show')}
+                      >
+                        {t('muck.show')}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Rebuy/Addon controls */}
+                {isRebuyPhase && (
+                  <div className="mb-2 text-center" data-testid="rebuy-controls">
+                    <p className="text-ds-text-primary mb-2">
+                      {t('rebuy.prompt', {
+                        chips: state?.rebuyChips,
+                        used: humanRebuyCount,
+                        max: state?.rebuyMaxCount,
+                      })}
+                    </p>
+                    <div className="flex justify-center gap-2">
+                      <button
+                        type="button"
+                        className={`${btnPrimary} min-w-[90px]`}
+                        disabled={loading}
+                        onClick={() => exec('rebuy')}
+                      >
+                        {t('rebuy.accept')}
+                      </button>
+                      <button
+                        type="button"
+                        className={`${btnSecondary} min-w-[90px]`}
+                        disabled={loading}
+                        onClick={() => exec('skiprebuy')}
+                      >
+                        {t('rebuy.skip')}
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {isAddonPhase && (
+                  <div className="mb-2 text-center" data-testid="addon-controls">
+                    <p className="text-ds-text-primary mb-2">{t('addon.prompt', { chips: state?.addonChips })}</p>
+                    <div className="flex justify-center gap-2">
+                      <button
+                        type="button"
+                        className={`${btnPrimary} min-w-[90px]`}
+                        disabled={loading}
+                        onClick={() => exec('addon')}
+                      >
+                        {t('addon.accept')}
+                      </button>
+                      <button
+                        type="button"
+                        className={`${btnSecondary} min-w-[90px]`}
+                        disabled={loading}
+                        onClick={() => exec('skipaddon')}
+                      >
+                        {t('addon.skip')}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Betting controls */}
+                {canAct && (
+                  <div data-tutorial="he-action-buttons">
+                    <div className="mb-2 text-ds-text-primary text-xs tabular-nums" data-testid="holdem-bet-comparison">
+                      <span>{t('betComparison.currentMaximum', { amount: state?.lastBet ?? 0 })}</span>
+                      <span className="mx-2">
+                        {t('betComparison.yourContribution', { amount: humanPlayer?.currentBet ?? 0 })}
+                      </span>
+                      <span>
+                        {hasOutstandingBet
+                          ? t('betComparison.callDifference', {
+                              amount: (state?.lastBet ?? 0) - (humanPlayer?.currentBet ?? 0),
+                            })
+                          : t('betComparison.noCallNeeded')}
+                      </span>
+                      {(state?.lastBet ?? 0) > 0 && (
+                        <span className="ml-2 whitespace-nowrap">
+                          {t('betComparison.minimumRaise', { amount: minRaise })}
+                        </span>
+                      )}
+                    </div>
+                    <BettingControls
+                      inputId="holdemBetAmount"
+                      betAmount={betAmount}
+                      onBetAmountChange={setBetAmount}
+                      minRaise={minRaise}
+                      maxBetAmount={state?.maxBetAmount}
+                      potSize={state?.pot}
+                      hasOutstandingBet={hasOutstandingBet}
+                      loading={loading}
+                      onCall={() => exec('call', undefined, undefined, getElapsed())}
+                      onRaise={() => exec('raise', betAmount, undefined, getElapsed())}
+                      onBet={() => exec('bet', betAmount, undefined, getElapsed())}
+                      onCheck={() => exec('check', undefined, undefined, getElapsed())}
+                      onFold={() => exec('fold', undefined, undefined, getElapsed())}
+                      onAllIn={() => exec('allin', undefined, undefined, getElapsed())}
+                    />
+                  </div>
+                )}
+              </>
+            }
+          >
+            {/* Human player */}
+            {humanPlayer && (
+              <div className="mb-2" data-tutorial="he-player-hand">
+                <div className="text-ds-text-primary text-lg mb-1">
+                  {t('yourHand')}
+                  <span className="ml-3 text-xs">
+                    {tc('betting.chips')} {humanPlayer.chips}
+                  </span>
+                  {humanPlayer.totalHands > 0 && (
+                    <HudStats
+                      vpip={humanPlayer.vpip}
+                      pfr={humanPlayer.pfr}
+                      threeBet={humanPlayer.threeBet}
+                      af={humanPlayer.af}
+                    />
+                  )}
+                  {humanPlayer.currentBet > 0 && (
+                    <span className="ml-2 text-xs">
+                      {tc('betting.currentBet')} {humanPlayer.currentBet}
+                    </span>
+                  )}
+                  {humanPlayer.folded && (
+                    <span className="ml-2 text-ds-error-text text-xs">[{tc('status.folded')}]</span>
+                  )}
+                  {humanPlayer.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
+                  {isShowdown && !humanPlayer.folded && humanPlayer.handName && (
+                    <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${badgeSuccessColors}`}>
+                      {humanPlayer.handName}
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {humanPlayer.cards?.length
+                    ? humanPlayer.cards.map((card, idx) => {
+                        const inBest = showdownBest5.holeSet.has(idx);
+                        const dim = isShowdown && showdownBest5.holeSet.size > 0 && !inBest;
+                        return (
+                          <div
+                            key={`${card.design}-${card.value}`}
+                            className={`transition-all ${
+                              inBest ? '-translate-y-1 ring-2 ring-ds-success motion-safe:animate-pulse' : ''
+                            } ${dim ? 'opacity-50' : ''}`}
+                            data-best5-hole={inBest || undefined}
+                          >
+                            <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
+                          </div>
+                        );
+                      })
+                    : !humanPlayer.folded &&
+                      Array.from({ length: 2 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
+                </div>
+              </div>
+            )}
+
+            {/* Message */}
+            <GameMessageBox
+              message={state?.message}
+              messageCode={state?.messageCode}
+              messageParams={state?.messageParams}
+              alwaysVisible
+              severity={phase === HoldemPhase.END || phase === HoldemPhase.SHOWDOWN ? 'alert' : 'info'}
+            />
           </GameFooter>
         </>
       )}

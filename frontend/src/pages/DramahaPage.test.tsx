@@ -274,6 +274,30 @@ beforeEach(() => {
 });
 
 describe('DramahaPage', () => {
+  it('keeps the hand in the footer and moves error and settings into the play area', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<DramahaPage />);
+
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const playArea = document.querySelector('div.relative.flex-1.overflow-y-auto');
+    expect(playArea).not.toBeNull();
+    expect(within(footerContent).getByTestId('dramaha-hole-card-0')).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('dramaha-hands')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('dramaha-hands')).toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('dramaha-split-rule-badge')).toBeInTheDocument();
+    expect(within(footerContent).queryByRole('alert')).not.toBeInTheDocument();
+    expect(within(footerContent).queryByText('設定')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByText('設定')).toBeInTheDocument();
+    expect(playArea?.querySelector('[data-tutorial="dr-reset-button"]')).toBeInTheDocument();
+
+    mockExec.mockRejectedValueOnce(new Error('network error'));
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    const alert = await screen.findByRole('alert');
+    expect(footerContent).not.toContainElement(alert);
+    expect(within(playArea as HTMLElement).getByRole('alert')).toBeInTheDocument();
+    expect(screen.getByText('設定')).toBeInTheDocument();
+  });
+
   it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<DramahaPage />);
@@ -520,7 +544,7 @@ describe('DramahaPage', () => {
     mockExec.mockResolvedValue(preFlopWithBetState);
     renderWithProviders(<DramahaPage />);
     await waitFor(() => expect(screen.getByText('CPU行動:')).toBeInTheDocument());
-    expect(screen.getByText(/Player 1: ベット/)).toBeInTheDocument();
+    expect(screen.getByText(/CPU 1: ベット/)).toBeInTheDocument();
   });
 
   it('does not show CPU actions log when cpuActions is empty', async () => {
@@ -533,7 +557,7 @@ describe('DramahaPage', () => {
   it('shows amount in CPU action when amount > 0', async () => {
     mockExec.mockResolvedValue(preFlopWithBetState);
     renderWithProviders(<DramahaPage />);
-    await waitFor(() => expect(screen.getByText(/Player 1: ベット \(40\)/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/CPU 1: ベット \(40\)/)).toBeInTheDocument());
   });
 
   it('does not show amount when action amount is 0', async () => {
@@ -543,7 +567,7 @@ describe('DramahaPage', () => {
     });
     renderWithProviders(<DramahaPage />);
     await waitFor(() => expect(screen.getByText('CPU行動:')).toBeInTheDocument());
-    expect(screen.getByText(/Player 1: チェック/)).toBeInTheDocument();
+    expect(screen.getByText(/CPU 1: チェック/)).toBeInTheDocument();
     expect(screen.queryByText(/\(0\)/)).not.toBeInTheDocument();
   });
 
@@ -553,7 +577,7 @@ describe('DramahaPage', () => {
       cpuActions: [{ playerIdx: 1, action: 99, amount: 0 }],
     });
     renderWithProviders(<DramahaPage />);
-    await waitFor(() => expect(screen.getByText(/Player 1: 不明/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/CPU 1: 不明/)).toBeInTheDocument());
   });
 
   // ---- round results ----
@@ -726,6 +750,9 @@ describe('DramahaPage', () => {
     mockExec.mockResolvedValue(preFlopState);
     renderWithProviders(<DramahaPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: 'ベット' }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'チェック' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'オールイン' })).toBeInTheDocument();
@@ -2007,5 +2034,15 @@ describe('DramahaPage showdown split', () => {
     renderWithProviders(<DramahaPage />);
     const panel = await screen.findByTestId('dramaha-kbd-shortcuts');
     expect(panel).toBeInTheDocument();
+  });
+
+  it('compresses face-down CPU cards on large desktop', async () => {
+    mockUseIsLargeDesktop.mockReturnValue(true);
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<DramahaPage />);
+
+    const cpuCount = preFlopState.players.filter((player) => !player.isHuman).length;
+    await waitFor(() => expect(screen.getAllByTestId('compact-card-count')).toHaveLength(cpuCount));
+    expect(screen.getAllByTestId('compact-card-count')[0]).toHaveTextContent('5');
   });
 });

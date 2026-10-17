@@ -11,6 +11,11 @@ export function gameButton(page: Page, name: string | RegExp): Locator {
   return page.getByRole('button', { name }).and(page.locator(':not(nav *)'));
 }
 
+/** Click a hand card on its exposed left edge, where overlapped desktop cards remain clickable. */
+export async function clickHandCard(card: Locator): Promise<void> {
+  await card.click({ position: { x: 8, y: 24 } });
+}
+
 /** Timeout for quick UI checks (button appeared after an action). */
 export const TIMEOUT_QUICK = 1_000;
 /** Timeout for standard action visibility (betting round transitions, card animations). */
@@ -39,6 +44,20 @@ export async function isVisibleWithin(locator: Locator, timeout: number): Promis
 /** Wait for the page to finish loading (aria-busy becomes "false"). */
 export async function waitForLoaded(page: Page) {
   await page.waitForSelector('[aria-busy="false"]', { timeout: TIMEOUT_LOADED });
+}
+
+/** Wait for finite card animations to finish before measuring the board. */
+export async function waitForAnimations(page: Page) {
+  await page.waitForFunction(() =>
+    document
+      .getAnimations()
+      .every(
+        (animation) =>
+          animation.playState === 'finished' ||
+          animation.playState === 'idle' ||
+          animation.effect?.getComputedTiming().iterations === Number.POSITIVE_INFINITY,
+      ),
+  );
 }
 
 /** Navigate to a hash-routed page and wait for it to load. Suppresses the tutorial suggestion dialog. */

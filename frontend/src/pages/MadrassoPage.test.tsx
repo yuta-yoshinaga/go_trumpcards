@@ -34,6 +34,35 @@ beforeEach(() => {
 });
 
 describe('MadrassoPage', () => {
+  it('keeps status labels intact and wraps between items', async () => {
+    renderWithProviders(<MadrassoPage />);
+    const row = await screen.findByTestId('madrasso-status-row');
+    expect(row).toHaveClass('flex-wrap');
+    expect(row.querySelectorAll('span.whitespace-nowrap').length).toBeGreaterThanOrEqual(3);
+    expect(screen.getByRole('columnheader', { name: '今ラウンド' })).toHaveClass('whitespace-nowrap', 'text-[10px]');
+    expect(screen.getByRole('rowheader', { name: 'チームA' })).toHaveClass('whitespace-nowrap');
+  });
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue(makeMadrassoState({ message: 'Your turn notice' }));
+    renderWithProviders(<MadrassoPage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage).toHaveTextContent('Your turn notice');
+    expect(footerMessage.querySelector('[data-tutorial="tr-point-info"]')).not.toBeNull();
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue(makeMadrassoState({ message: 'Mobile notice' }));
+    renderWithProviders(<MadrassoPage />);
+    expect(await screen.findByText('Mobile notice')).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+    window.dispatchEvent(new Event('resize'));
+  });
+
   it('labels cumulative deals against the target separately from round card points', async () => {
     mockExec.mockResolvedValue(
       makeMadrassoState({

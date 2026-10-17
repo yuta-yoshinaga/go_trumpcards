@@ -41,6 +41,7 @@
     "avoid": "Avoid"
   },
   "contractUnavailable": "Already used — unavailable",
+  "contractDescriptionsTitle": "Contract descriptions",
   "contractIcon": {
     "0": "All tricks",
     "1": "♥",

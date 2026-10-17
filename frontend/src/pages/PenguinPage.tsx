@@ -18,7 +18,7 @@ import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
@@ -27,6 +27,7 @@ import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
 import { usePenguinGame } from '../hooks/usePenguinGame';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
+import { DESKTOP_COMPACT_CARD_WIDTH } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, PenguinHint, PenguinResponse } from '../types/card';
 import { PenguinPhase } from '../types/phases';
@@ -177,6 +178,9 @@ function PenguinPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('penguin', state);
   const { cardHeight, cardOverlap, cardWidth } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
+  const topZoneCardWidth = isLargeDesktop ? DESKTOP_COMPACT_CARD_WIDTH : cardWidth;
+  const topZoneCardHeight = isLargeDesktop ? Math.round(DESKTOP_COMPACT_CARD_WIDTH * 1.5) : cardHeight;
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('penguin');
   const cliConfig: CliGameConfig<PenguinResponse, Parameters<typeof penguinApi.exec>> = useMemo(
@@ -270,6 +274,17 @@ function PenguinPageContent() {
   const emptyColLabel = emptyColBlocked
     ? `${t('emptyColumnAriaLabel', { rank: emptyColPlaceholder })} — ${t('emptyColLimitTooltip', { limit: emptyColLimit, size: selectedStackSize })}`
     : t('emptyColumnAriaLabel', { rank: emptyColPlaceholder });
+  const baseRankLegend = (
+    <div
+      className={`text-game-text-muted text-[10px] ${isLargeDesktop ? 'mx-auto mb-3' : 'mt-1'} max-w-[12rem] text-center`}
+      data-testid="pg-base-rank-legend"
+    >
+      {t('baseRankLegend', {
+        rank: baseRankLabel(state.baseRank),
+        prev: prevRankLabel(state.baseRank),
+      })}
+    </div>
+  );
 
   const isSourceSelected = (zone: string, col?: number, cell?: number, cardIndex?: number) =>
     selectedSource !== null &&
@@ -306,7 +321,10 @@ function PenguinPageContent() {
           <span>
             {t('baseRank')}: {baseRankLabel(state.baseRank)}
           </span>
-          <span data-testid="pg-supermove-badge" title={t('supermoveBadgeTooltip')}>
+          <span
+            data-testid="pg-supermove-badge"
+            title={t('supermoveBadgeTooltip', { cells: emptyFreeCells, cols: emptyTableauCols })}
+          >
             {t('supermoveBadge', {
               limit: supermoveLimit,
               cells: emptyFreeCells,
@@ -330,9 +348,16 @@ function PenguinPageContent() {
 
           <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
             {/* Free cells + Foundation row */}
-            <div className="flex gap-2 mb-3 items-start flex-wrap">
+            <div
+              className={
+                isLargeDesktop
+                  ? 'flex flex-wrap justify-center items-start gap-2'
+                  : 'flex gap-2 mb-3 items-start flex-wrap'
+              }
+              data-testid={isLargeDesktop ? 'pg-top-row' : undefined}
+            >
               {/* Free cells */}
-              <div className="flex gap-2" data-tutorial="pg-free-cells">
+              <div className={`flex ${isLargeDesktop ? 'gap-1' : 'gap-2'}`} data-tutorial="pg-free-cells">
                 {state.freeCells.map((card: Card | null, idx: number) => {
                   const freeCellZone: PenguinMoveZone = { zone: 'freecell', cell: idx };
                   return (
@@ -371,7 +396,7 @@ function PenguinPageContent() {
                             onDragEnd={dnd.handleDragEnd}
                             className={`p-0 border-0 bg-transparent cursor-pointer rounded ${isSourceSelected('freecell', undefined, idx) ? 'ring-2 ring-ds-warning' : isHintSourceFreecell(idx) ? 'ring-2 ring-ds-info animate-pulse' : focusRingWhite} ${dnd.isDragSource(freeCellZone) ? 'opacity-50' : ''}`}
                           >
-                            <AnimatedCard card={card} width={cardWidth} draggable={false} />
+                            <AnimatedCard card={card} width={topZoneCardWidth} draggable={false} />
                           </button>
                         ) : (
                           <button
@@ -382,7 +407,7 @@ function PenguinPageContent() {
                             aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('emptyFreecellAriaLabel', { idx: String(idx) })}
                             data-testid={`pg-freecell-empty-${idx.toString()}`}
-                            style={{ width: cardWidth, height: cardHeight }}
+                            style={{ width: topZoneCardWidth, height: topZoneCardHeight }}
                             className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}${isHintTarget('freecell', idx) ? ' ring-2 ring-ds-success animate-pulse' : ''}`}
                           >
                             {t('empty')}
@@ -394,11 +419,11 @@ function PenguinPageContent() {
                 })}
               </div>
 
-              <div className="w-4" />
+              <div className={isLargeDesktop ? 'w-1' : 'w-4'} />
 
               {/* Foundation piles */}
               <div className="flex flex-col items-center">
-                <div className="flex gap-2" data-tutorial="pg-foundation">
+                <div className={`flex ${isLargeDesktop ? 'gap-1' : 'gap-2'}`} data-tutorial="pg-foundation">
                   {state.foundation.map((pile: Card[], idx: number) => {
                     const foundationZone: PenguinMoveZone = { zone: 'foundation', col: idx };
                     return (
@@ -426,7 +451,7 @@ function PenguinPageContent() {
                             >
                               <AnimatedCard
                                 card={pile[pile.length - 1]}
-                                width={cardWidth}
+                                width={topZoneCardWidth}
                                 draggable={false}
                                 dealDelay={isAutoCompleting ? idx * 0.15 : 0}
                               />
@@ -440,7 +465,7 @@ function PenguinPageContent() {
                               aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                               aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
                               data-testid={`pg-foundation-empty-${idx.toString()}`}
-                              style={{ width: cardWidth, height: cardHeight }}
+                              style={{ width: topZoneCardWidth, height: topZoneCardHeight }}
                               className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}${isHintTarget('foundation', idx) ? ' ring-2 ring-ds-success animate-pulse' : ''}`}
                             >
                               {baseRankLabel(state.baseRank)}
@@ -451,17 +476,10 @@ function PenguinPageContent() {
                     );
                   })}
                 </div>
-                <div
-                  className="text-game-text-muted text-[10px] mt-1 max-w-[12rem] text-center"
-                  data-testid="pg-base-rank-legend"
-                >
-                  {t('baseRankLegend', {
-                    rank: baseRankLabel(state.baseRank),
-                    prev: prevRankLabel(state.baseRank),
-                  })}
-                </div>
+                {!isLargeDesktop && baseRankLegend}
               </div>
             </div>
+            {isLargeDesktop && baseRankLegend}
 
             {/* Tableau */}
             <div className="relative">

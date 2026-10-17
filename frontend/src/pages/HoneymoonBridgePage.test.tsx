@@ -16,6 +16,12 @@ vi.mock('../hooks/useGameHint', () => ({
   useGameHint: vi.fn(() => ({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() })),
 }));
 
+const mobileState = { isMobile: true };
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+}));
+
 const mockExec = vi.mocked(honeymoonbridgeApi.exec);
 const mockActionLog = vi.mocked(actionLogApi.honeymoonbridge);
 
@@ -79,12 +85,50 @@ const playing = (over: Partial<HoneymoonBridgeResponse> = {}) =>
   } as Partial<HoneymoonBridgeResponse>);
 
 beforeEach(() => {
+  mobileState.isMobile = true;
   vi.clearAllMocks();
   mockExec.mockResolvedValue(makeState());
   mockActionLog.mockResolvedValue({ entries: [] });
 });
 
 describe('HoneymoonBridgePage', () => {
+  it('renders every human hand card through the hand fan', async () => {
+    const { container } = renderWithProviders(<HoneymoonBridgePage />);
+    await screen.findAllByRole('button', { name: /を出す/ });
+    const hand = container.querySelector('[data-tutorial="hb-hand"]');
+    expect(hand).not.toBeNull();
+    expect(hand?.querySelectorAll('button')).toHaveLength(5);
+  });
+
+  it('collapses the rules and CPU seats on mobile, and opens them on desktop', async () => {
+    const { unmount } = renderWithProviders(<HoneymoonBridgePage />);
+    const mobileRules = await screen.findByText('ルール');
+    expect(mobileRules.closest('details')).not.toHaveAttribute('open');
+    expect(screen.getByTestId('hb-rule')).not.toBeVisible();
+    expect(screen.getByTestId('cpu-accordion')).not.toHaveAttribute('open');
+    unmount();
+
+    mobileState.isMobile = false;
+    renderWithProviders(<HoneymoonBridgePage />);
+    await screen.findByTestId('hb-rule');
+    expect(screen.getByTestId('hb-rule')).not.toBeVisible();
+    expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
+    mobileState.isMobile = true;
+  });
+
+  it('keeps stock and contract together and leaves the human seat outside CPU details', async () => {
+    renderWithProviders(<HoneymoonBridgePage />);
+    const stock = await screen.findByTestId('hb-stock');
+    const contract = screen.getByTestId('hb-contract');
+    expect(stock.parentElement).toBe(contract.parentElement);
+
+    const humanSeat = screen.getByTestId('hb-seat-0');
+    const cpuSeat = screen.getByTestId('hb-seat-1');
+    expect(humanSeat.closest('details')).toBeNull();
+    expect(cpuSeat.closest('details')).toBe(screen.getByTestId('cpu-accordion'));
+    expect(humanSeat).toHaveClass('text-xs', 'py-1');
+  });
+
   it('allows only valid hand indices during the human play turn', async () => {
     mockExec.mockResolvedValue(playing({ validPlays: [1, 3] }));
     renderWithProviders(<HoneymoonBridgePage />);
@@ -314,8 +358,19 @@ describe('HoneymoonBridgePage', () => {
   it('shows each seat, and marks the declarer', async () => {
     mockExec.mockResolvedValue(playing({ declarerIdx: 1 } as Partial<HoneymoonBridgeResponse>));
     renderWithProviders(<HoneymoonBridgePage />);
-    expect(await screen.findByTestId('hb-seat-1')).toHaveTextContent(/落札者/);
-    expect(screen.getByTestId('hb-seat-0')).not.toHaveTextContent(/落札者/);
+    const cpuAccordion = await screen.findByTestId('cpu-accordion');
+    const humanSeat = screen.getByTestId('hb-seat-0');
+    const cpuSeat = await screen.findByTestId('hb-seat-1');
+
+    // モバイルでは CPU アコーディオンが閉じていても、人間の情報は見える。
+    expect(cpuAccordion).not.toHaveAttribute('open');
+    expect(humanSeat).toBeVisible();
+    expect(cpuAccordion).not.toContainElement(humanSeat);
+    expect(cpuAccordion).toContainElement(cpuSeat);
+    expect(cpuSeat).not.toBeVisible();
+
+    expect(cpuSeat).toHaveTextContent(/落札者/);
+    expect(humanSeat).not.toHaveTextContent(/落札者/);
   });
 
   it('shows the current hand size for every seat during draw and contract play', async () => {

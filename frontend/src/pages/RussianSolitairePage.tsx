@@ -19,7 +19,7 @@ import { StalemateEscapeButton } from '../components/StalemateEscapeButton';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -171,11 +171,14 @@ function RussianSolitairePageContent() {
   });
 
   const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
+  const breakpoint = useBreakpoint();
+  const isLargeDesktop = breakpoint === 'largeDesktop';
   const windowWidth = useWindowWidth();
 
   // Responsive card dimensions
   const rs = useMemo(() => {
-    if (!isMobile) return { cw: cardWidth, ch: cardHeight, co: cardOverlap };
+    // 7 steps at 28px save 42px, covering the 19px overflow plus 20px clearance.
+    if (!isMobile) return { cw: cardWidth, ch: cardHeight, co: breakpoint === 'largeDesktop' ? 28 : cardOverlap };
     const padX = 16;
     const gapPx = 4;
     const cols = 7;
@@ -184,7 +187,7 @@ function RussianSolitairePageContent() {
     const ch = Math.round(cw * 1.5);
     const co = Math.round(cw * 0.48);
     return { cw, ch, co };
-  }, [isMobile, windowWidth, cardWidth, cardHeight, cardOverlap]);
+  }, [isMobile, windowWidth, cardWidth, cardHeight, cardOverlap, breakpoint]);
 
   // Drag-and-drop
   const dispatchMove = useCallback(
@@ -604,9 +607,11 @@ function RussianSolitairePageContent() {
                   >
                     {t('autoComplete')}
                   </button>
-                  <span id={autoCompleteStatusId} className="text-ds-text-muted text-xs self-center">
-                    {autoCompleteReady ? t('autoCompleteReady') : t('autoCompleteNotReady')}
-                  </span>
+                  {isLargeDesktop ? (
+                    <span id={autoCompleteStatusId} className="text-ds-text-muted text-xs self-center">
+                      {autoCompleteReady ? t('autoCompleteReady') : t('autoCompleteNotReady')}
+                    </span>
+                  ) : null}
                   <button
                     type="button"
                     className={btnOutline}
@@ -624,6 +629,13 @@ function RussianSolitairePageContent() {
                       onEscape={handleUndoEscape}
                       disabled={loading}
                     />
+                  )}
+                  {!isLargeDesktop && (
+                    <div className="w-full">
+                      <span id={autoCompleteStatusId} className="text-ds-text-muted text-xs">
+                        {autoCompleteReady ? t('autoCompleteReady') : t('autoCompleteNotReady')}
+                      </span>
+                    </div>
                   )}
                 </>
               )}

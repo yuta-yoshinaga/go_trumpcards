@@ -97,6 +97,13 @@ const handButtons = () => {
 };
 
 describe('KalookiPage', () => {
+  it('keeps every hand card in the hand fan', async () => {
+    renderWithProviders(<KalookiPage />);
+    const hand = await screen.findByTestId('kalooki-hand-0');
+    expect(
+      hand.closest('[data-tutorial="kalooki-hand"]')?.querySelectorAll('button[data-testid^="kalooki-hand-"]'),
+    ).toHaveLength(baseHand.length);
+  });
   it('calls reset on mount', async () => {
     renderWithProviders(<KalookiPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

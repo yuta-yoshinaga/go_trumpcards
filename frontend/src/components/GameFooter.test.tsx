@@ -85,4 +85,99 @@ describe('GameFooter', () => {
     expect(footer.className).toContain('sm:max-h-none');
     expect(footer.className).toContain('sm:overflow-y-visible');
   });
+
+  it('renders a persistent message before actions, outside scrollable content', () => {
+    render(
+      <GameFooter message={<div role="status">案内</div>} actions={<button type="button">進む</button>}>
+        <span>手札</span>
+      </GameFooter>,
+    );
+    const footer = screen.getByRole('contentinfo');
+    const message = screen.getByTestId('game-footer-message');
+    const actions = screen.getByTestId('game-footer-actions');
+    expect(message).toContainElement(screen.getByRole('status'));
+    expect(screen.getByTestId('game-footer-content')).not.toContainElement(message);
+    expect(footer.compareDocumentPosition(message) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(message.compareDocumentPosition(actions) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it.each([null, undefined, false])('omits an empty message without adding a wrapper (%s)', (message) => {
+    render(<GameFooter message={message}>content</GameFooter>);
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+  });
+
+  it('renders a legacy message before its children', () => {
+    render(
+      <GameFooter message={<div>案内</div>}>
+        <span>手札</span>
+      </GameFooter>,
+    );
+    const message = screen.getByTestId('game-footer-message');
+    expect(message).toContainElement(screen.getByText('案内'));
+    expect(message.compareDocumentPosition(screen.getByText('手札')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('keeps the legacy footer classes when actions are omitted', () => {
+    render(
+      <GameFooter>
+        <span>content</span>
+      </GameFooter>,
+    );
+    const footer = screen.getByRole('contentinfo');
+    expect(footer.className).toContain('max-h-[45vh] overflow-y-auto sm:max-h-none sm:overflow-y-visible');
+    expect(screen.queryByTestId('game-footer-content')).not.toBeInTheDocument();
+  });
+
+  it('separates scrollable content from persistent actions', () => {
+    render(
+      <GameFooter actions={<button type="button">進む</button>}>
+        <span>手札</span>
+      </GameFooter>,
+    );
+    const footer = screen.getByRole('contentinfo');
+    const content = screen.getByTestId('game-footer-content');
+    const actions = screen.getByTestId('game-footer-actions');
+    expect(content).toContainElement(screen.getByText('手札'));
+    expect(actions).toContainElement(screen.getByRole('button', { name: '進む' }));
+    expect(content).not.toContainElement(actions);
+    expect(footer.className).toContain('sm:max-h-[50vh]');
+    expect(footer.className).not.toContain('overflow-y-auto');
+    expect(content.className).toContain('min-h-0');
+    expect(content.className).toContain('overflow-y-auto');
+  });
+
+  it('keeps the actions layout but omits the action row when actions is null', () => {
+    render(
+      <GameFooter actions={null}>
+        <span>手札</span>
+      </GameFooter>,
+    );
+    const footer = screen.getByRole('contentinfo');
+    expect(footer.className).toContain('sm:max-h-[50vh]');
+    expect(screen.getByTestId('game-footer-content')).toContainElement(screen.getByText('手札'));
+    expect(screen.queryByTestId('game-footer-actions')).not.toBeInTheDocument();
+  });
+
+  it.each([false, true])('uses the default cap when tall is omitted (actions: %s)', (withActions) => {
+    render(
+      <GameFooter actions={withActions ? <button type="button">進む</button> : undefined}>
+        <span>手札</span>
+      </GameFooter>,
+    );
+    const footer = screen.getByRole('contentinfo');
+    expect(footer.className).toContain('max-h-[45vh]');
+    expect(footer.className).not.toContain('max-h-[60vh]');
+  });
+
+  it.each([false, true])('uses the tall cap and keeps the sm cap (actions: %s)', (withActions) => {
+    render(
+      <GameFooter tall actions={withActions ? <button type="button">進む</button> : undefined}>
+        <span>手札</span>
+      </GameFooter>,
+    );
+    const footer = screen.getByRole('contentinfo');
+    expect(footer.className).toContain('max-h-[60vh]');
+    expect(footer.className).not.toContain('max-h-[45vh]');
+    if (withActions) expect(footer.className).toContain('sm:max-h-[50vh]');
+  });
 });

@@ -1,4 +1,4 @@
-import { act, fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fiveCardStudApi, sokoApi } from '../api/gameApi';
 import { TutorialWrapper } from '../components/tutorial/TutorialWrapper';
@@ -276,6 +276,11 @@ describe('FiveCardStudPage', () => {
     await waitFor(() => expect(screen.getByText('[フォールド]')).toBeInTheDocument());
     expect(screen.getByText('[オールイン]')).toBeInTheDocument();
     expect(screen.getAllByText(/タイト/).length).toBeGreaterThanOrEqual(1);
+    expect(
+      Array.from(document.querySelectorAll('span.whitespace-nowrap')).filter((chips) =>
+        chips.textContent?.includes('チップ:'),
+      ),
+    ).toHaveLength(2);
   });
 
   it('shows door and hole card labels and human cards', async () => {
@@ -286,6 +291,52 @@ describe('FiveCardStudPage', () => {
     expect(screen.getAllByText('ドアカード').length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText('ホールカード').length).toBeGreaterThanOrEqual(1);
     expect(screen.queryByLabelText('♠ A、役の構成札')).not.toBeInTheDocument();
+  });
+
+  it('shows two face-down placeholders for an undealt active hand and none when folded', async () => {
+    mockExec.mockResolvedValue({
+      ...secondStreetState,
+      players: [humanPlayer({ doorCards: [], holeCards: [] }), cpuPlayer(1), cpuPlayer(2), cpuPlayer(3)],
+    });
+    const { unmount } = renderWithProviders(<FiveCardStudPage />);
+    const footer = await screen.findByTestId('game-footer-content');
+    const humanHand = footer.querySelector('[data-tutorial="fcs-player-hand"]') as HTMLElement;
+    expect(within(humanHand).getAllByTestId('animated-card-back')).toHaveLength(2);
+    unmount();
+
+    mockExec.mockResolvedValue({
+      ...secondStreetState,
+      players: [humanPlayer({ doorCards: [], holeCards: [], folded: true }), cpuPlayer(1), cpuPlayer(2), cpuPlayer(3)],
+    });
+    renderWithProviders(<FiveCardStudPage />);
+    const foldedFooter = await screen.findByTestId('game-footer-content');
+    const foldedHand = foldedFooter.querySelector('[data-tutorial="fcs-player-hand"]') as HTMLElement;
+    expect(within(foldedHand).queryAllByTestId('animated-card-back')).toHaveLength(0);
+  });
+
+  it('lays out the human door and hole card groups in a shared wrapping row', async () => {
+    mockExec.mockResolvedValue(secondStreetState);
+    renderWithProviders(<FiveCardStudPage />);
+    await screen.findByTestId('latest-door-human');
+    const humanHand = document.querySelector<HTMLElement>('[data-tutorial="fcs-player-hand"]');
+    expect(humanHand).not.toBeNull();
+    const doorHeading = within(humanHand as HTMLElement).getByText('ドアカード');
+    const holeHeading = within(humanHand as HTMLElement).getByText('ホールカード');
+    const ancestors = (element: HTMLElement) => {
+      const result: HTMLElement[] = [];
+      let current: HTMLElement | null = element;
+      while (current) {
+        result.push(current);
+        current = current.parentElement;
+      }
+      return result;
+    };
+    const holeAncestors = new Set(ancestors(holeHeading));
+    const sharedWrapper = ancestors(doorHeading).find((ancestor) => holeAncestors.has(ancestor));
+
+    expect(sharedWrapper).toBeDefined();
+    expect(sharedWrapper).toHaveClass('flex', 'flex-wrap');
+    expect(doorHeading.parentElement).not.toBe(holeHeading.parentElement);
   });
 
   it('highlights the latest door card for the human and each CPU', async () => {
@@ -470,6 +521,9 @@ describe('FiveCardStudPage', () => {
     mockExec.mockResolvedValue(secondStreetState);
     renderWithProviders(<FiveCardStudPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument());
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: 'フォールド' }),
+    ).toBeInTheDocument();
     mockExec.mockClear();
     mockExec.mockResolvedValue(secondStreetState);
     fireEvent.click(screen.getByRole('button', { name: 'フォールド' }));
@@ -518,8 +572,16 @@ describe('FiveCardStudPage', () => {
       rebuyCounts: [1, 0],
     };
     mockExec.mockResolvedValue(rebuyState);
-    renderWithProviders(<FiveCardStudPage />);
+    const { container } = renderWithProviders(<FiveCardStudPage />);
     await waitFor(() => expect(screen.getByTestId('rebuy-controls')).toBeInTheDocument());
+    const footerContent = screen.getByTestId('game-footer-content');
+    const playArea = container.querySelector('.flex-1.overflow-y-auto');
+    expect(playArea).not.toBeNull();
+    expect(within(footerContent).queryByTestId('rebuy-controls')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('rebuy-controls')).toBeInTheDocument();
+    expect(footerContent.querySelector('[data-tutorial="fcs-player-hand"]')).toBeInTheDocument();
+    expect(footerContent.querySelector('[data-tutorial="fcs-reset-button"]')).toBeNull();
+    expect(playArea?.querySelector('[data-tutorial="fcs-reset-button"]')).toBeInTheDocument();
     mockExec.mockClear();
     mockExec.mockResolvedValue(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リバイ' }));
@@ -664,7 +726,25 @@ describe('FiveCardStudPage keyboard shortcuts', () => {
         <FiveCardStudPageContent gameKey="soko" />
       </TutorialWrapper>,
     );
-    await waitFor(() => expect(screen.getByTestId('soko-hand-ranking')).toBeInTheDocument());
+    const ranking = await screen.findByTestId('soko-hand-ranking');
+    expect(ranking).not.toHaveAttribute('open');
+    expect(within(ranking).getByText('役の強さ（強い順）')).not.toBeVisible();
+    fireEvent.click(within(ranking).getByText('役一覧'));
+    expect(within(ranking).getByText('役の強さ（強い順）')).toBeVisible();
+  });
+
+  it('keeps the CPU accordion open on desktop', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1280 });
+    mockExec.mockResolvedValue(secondStreetState);
+    renderWithProviders(<FiveCardStudPage />);
+    const accordion = await screen.findByTestId('cpu-accordion');
+    expect(accordion).toHaveAttribute('open');
+    const cpuCards = within(accordion).getAllByText(/^CPU [0-9]+$/);
+    expect(cpuCards.length).toBeGreaterThan(0);
+    expect(cpuCards[0].parentElement?.parentElement).toHaveClass('sm:grid-cols-3');
+    expect(cpuCards[0].parentElement).toHaveClass('sm:mb-0');
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: originalWidth });
   });
 
   // 通常のファイブカードスタッドではソッコ役順位リファレンスを表示しない。

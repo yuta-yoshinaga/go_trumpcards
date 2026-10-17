@@ -20,7 +20,7 @@ import {
   BACCARAT_BANQUE_START_CHIPS_OPTIONS,
   useBaccaratBanqueGame,
 } from '../hooks/useBaccaratBanqueGame';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
@@ -65,6 +65,7 @@ function BaccaratBanquePageContent() {
     useGamePageSetup('baccaratbanque');
 
   const { cardWidth } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const {
     state,
     loading,
@@ -230,13 +231,23 @@ function BaccaratBanquePageContent() {
               </div>
             </section>
 
-            <div className="flex gap-3 mb-3 flex-wrap sm:flex-nowrap" data-tutorial="baccaratbanque-tableaux">
-              {tableaux.map((p) => seatBox(p))}
-            </div>
-
-            <div className="flex mb-4" data-tutorial="baccaratbanque-bank">
-              {banker && seatBox(banker)}
-            </div>
+            {isLargeDesktop ? (
+              <div className="flex flex-wrap items-start gap-3 mb-4" data-testid="banque-desktop-seats">
+                {banker && seatBox(banker, 'baccaratbanque-bank')}
+                <div className="flex flex-1 min-w-0 flex-wrap gap-3" data-tutorial="baccaratbanque-tableaux">
+                  {tableaux.map((p) => seatBox(p))}
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="flex gap-3 mb-3 flex-wrap sm:flex-nowrap" data-tutorial="baccaratbanque-tableaux">
+                  {tableaux.map((p) => seatBox(p))}
+                </div>
+                <div className="flex mb-4" data-tutorial="baccaratbanque-bank">
+                  {banker && seatBox(banker)}
+                </div>
+              </>
+            )}
 
             {/* **左右は別勘定。** 片方に払いながらもう片方から取るクーがあるので、
                 1 行にまとめると何が起きたか読めない。 */}
@@ -387,7 +398,7 @@ function BaccaratBanquePageContent() {
 
               <div className="flex gap-2">
                 <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
-                  {tc('button.actionLog')}
+                  {tc('actionLog.view')}
                 </button>
                 <GameResetButton
                   isGameEnd={gameOver}

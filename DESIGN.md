@@ -66,8 +66,8 @@
 |-------|-----|-------|
 | `--felt-green` | `#1A5C1A` | Standard game table |
 | `--felt-green-dark` | `#163E16` | Darker felt variant |
-| `--felt-green-bright` | `#008000` | Bright felt (solitaire) |
-| `--felt-green-poker` | `#1A6B1A` | Poker table |
+| `--felt-green-bright` | `#006A00` | Bright felt (solitaire) |
+| `--felt-green-poker` | `#196919` | Poker table |
 | `--felt-casino` | `#0D5016` | Casino games |
 | `--felt-blue` | `#1A2C5C` | Blue variant (hearts, spades) |
 
@@ -75,7 +75,10 @@
 | Token | Hex | Usage |
 |-------|-----|-------|
 | `--text-on-accent` | `#1A1A1A` | Dark text on accent backgrounds (7.2:1 contrast on #D4A853, WCAG AA) |
+| `--text-on-felt` | `#DDE3EA` | Secondary text directly on game felt (see felt contrast table) |
 | `--success-hover` | `#3D9A6B` | Success button hover |
+| `--poker-call-hover` | `#10B981` | Poker call / check button hover |
+| `--poker-raise-hover` | `#38BDF8` | Poker raise / bet button hover |
 | `--warning-hover` | `#D4832E` | Warning button hover |
 | `--error-hover` | `#A03030` | Error button hover |
 | `--surface-elevated-hover` | `#2A3A4F` | Elevated surface hover |
@@ -112,6 +115,31 @@ These use design system tokens for game UX color-coding. They are scoped to poke
 | Error text `#F28B82` on `ds-surface` `#1A2332` | 6.61:1 | AA |
 | Error text `#F28B82` on `ds-surface-elevated` `#212D3F` | 5.81:1 | AA |
 | Error text `#F28B82` on felt `#1E4D2B` | 4.09:1 | Large text / opaque panel only |
+
+### Text on felt (dark mode)
+
+Muted text and state-colored text must not use their default colors directly on felt. In the game UI, `data-felt` scopes muted and state text utilities to their on-felt variants; inside opaque surfaces (`bg-ds-surface`, `bg-ds-surface-elevated`, `bg-ds-bg`, or explicit `data-surface`) and bright filled surfaces, state utilities resolve back to their original colors. Translucent `.glass-panel` and `.glass-panel--dark` retain the on-felt variants. At 80% opacity, `.glass-panel--dark` composites to approximately `#19362c` over the brightest felt (`#006a00`), where `#8b9aaf` has 4.57:1 contrast. New game pages get this behavior automatically by using `GamePageShell`. Eleven felt colors were darkened in #11722 (lightness only, hue kept) so that primary and on-felt text meet WCAG AA both on the bare felt and under a translucent `.glass-panel`: `game-bg-green-bright`, `game-bg-klaverjas`, `game-bg-ulti`, `game-bg-twentynine`, `game-bg-carioca`, `game-bg-indianrummy` (by 17–30%) and `game-bg-green-poker`, `game-bg-sueca`, `game-bg-fortyfives`, `game-bg-spoilfive`, `game-bg-michigan` (by 2–10%). Colored action buttons use dark `--text-on-accent` text.
+
+| Felt | Primary `#E8E0D4` | Muted `#8B9AAF` | On-felt `#DDE3EA` |
+|------|-----------------:|----------------:|-------------------:|
+| `felt-green` `#1A5C1A` | 6.20:1 | 2.83:1 | 6.27:1 |
+| `felt-green-dark` `#163E16` | 9.25:1 | 4.23:1 | 9.37:1 |
+| `felt-green-bright` `#006A00` | 5.24:1 | 2.40:1 | 5.31:1 |
+| `felt-green-poker` `#196919` | 5.22:1 | 2.39:1 | 5.28:1 |
+| `felt-casino` `#0D5016` | 7.37:1 | 3.37:1 | 7.47:1 |
+| `felt-blue` `#1A2C5C` | 10.29:1 | 4.71:1 | 10.43:1 |
+
+This table shows six representative colors; contrast was calculated for all 73 `--color-game-bg-*` colors in `frontend/src/index.css`. Every non-dark felt color meets AA for on-felt and primary text, bare and under a `.glass-panel`; `frontend/src/index.test.ts` checks every `--color-game-bg-*` both ways.
+
+State text uses hue-preserving, lightness-raised colors on felt. The on-felt values below are the darkest 8-bit colors tested against all 73 non-dark felts, both bare and under the translucent `.glass-panel`; each combination is at least 4.5:1 (the lowest result is 4.51:1). The utility class is overridden rather than the semantic color variable, so matching background utilities remain unchanged. Gold hanafuda card corner labels use a dedicated dark ink (`#765300`, 6.98:1 on white); other gold card art keeps its existing ink.
+
+| State text | Original | On-felt |
+|------------|---------|---------|
+| Warning | `#E8923A` | `#F8DCBF` |
+| Info | `#5B8FB9` | `#D5E3ED` |
+| Accent | `#D4A853` | `#EFDFBF` |
+| Success | `#4CAF7D` | `#C9E8D8` |
+| Error text | `#F28B82` | `#FBD9D6` |
 
 ### Contrast ratios (light mode)
 | Combination | Ratio | WCAG |
@@ -174,12 +202,18 @@ On a 375×667 phone a game page fits the viewport and scrolls **inside** its pla
 area, never by growing the document. This has regressed repeatedly (#1861, #1367,
 #4373), so the contract is written down here:
 
+`mobile-viewport.spec.ts` checks that the document stays within the viewport;
+`play-area-budget.spec.ts` also caps the play-area overflow on ten representative
+pages. Information that is always visible must not raise a page's play-area overflow;
+do not raise a page's limit to make a change pass without re-measuring the page.
+
 | Region | Behaviour |
 |---|---|
 | Mobile nav | fixed, ~62px |
 | Header block (phase, score chips, settings `<details>`) | `shrink-0` |
 | Play area | `flex-1 overflow-y-auto` **and `min-h-0`** — this is the only region allowed to absorb overflow |
-| `GameFooter` (actions) | `shrink-0`, capped at `max-h-[45vh]` with internal scroll below `sm` |
+| `GameFooter` (legacy) | `shrink-0`, capped at `max-h-[45vh]` with internal scroll below `sm` |
+| `GameFooter` with `actions` | footer capped at `45vh` below `sm` and `50vh` from `sm` up; content scrolls internally while its action row stays visible |
 
 Three classes are load-bearing and must not be "cleaned up". All three are enforced
 by the `shell-height` guard in `scripts/check-design-tokens.mjs`, because each one
@@ -190,10 +224,19 @@ looks like redundant cruft to a reader:
   viewport and grows the document instead — which is what made 179 of 219 game
   pages scroll vertically even though every page already had a play area meant to
   absorb it.
-- **The `45vh` cap on `GameFooter`.** The footer is `shrink-0`, so without a cap it
+- **The `45vh` cap on legacy `GameFooter`.** The footer is `shrink-0`, so without a cap it
   takes whatever its controls want and the play area is what gives way. Measured,
   the tallest footer was 558px (84% of the viewport) and 26 pages were left under
-  80px of play area. The cap is lifted at `sm` and up.
+  80px of play area.
+- Pages migrated to `GameFooter`'s optional `actions` slot keep the action row
+  visible and scroll only the supporting content. That variant keeps a `45vh`
+  mobile cap and uses a `50vh` cap from `sm` up.
+- BettingControls hides keyboard shortcut hints below `sm` because those layouts
+  are treated as touch-first; `aria-keyshortcuts` remains available to assistive
+  technology and keyboard users.
+- **Desktop vertical budget (1280×800).** The actions variant's `50vh` cap leaves
+  about 300px for the play area on stud pages (302px measured), while keeping the main controls reachable.
+  Legacy pages retain their existing uncapped `sm` behavior until migration.
 - **`overflow-hidden` on `GamePageShell`'s column.** Its children each scroll
   themselves, so nothing should overflow it — but stray scrollable overflow from a
   descendant still propagated to the viewport and grew the document. That kept six
@@ -246,3 +289,5 @@ content outside its play area.
 | 2026-04-04 | Warm ivory over pure white | Reduces eye strain for long game sessions while maintaining AAA contrast ratio (12.8:1). |
 | 2026-07-15 | Knockout Whist leader/round-winner badges use `badge*Colors` opaque tokens; eliminated rows use `opacity-70` (not `opacity-40`) | The old `bg-white/20` / `bg-ds-warning/30` badges and `opacity-40` strike-through failed WCAG AA on the dark panel; opaque badge helpers and a lighter dim keep state readable for low-vision users. |
 | 2026-07-24 | Shared `ErrorAlert` retry button uses an opaque `bg-white text-ds-error` surface (hover `bg-ds-text-primary text-ds-error-hover`) instead of `bg-white/20 hover:bg-white/30` | The alpha-suffixed surface took its effective color from the game-table felt beneath the red banner, collapsing to a ghost rectangle at the moment users most need the retry affordance. Opaque white/red is ~5.7:1 and the deepened-red hover ~5.4:1, both WCAG AA, on the error banner regardless of table theme. Standard pattern for actions on error banners. |
+| 2026-10-12 | #11722: colored action buttons use dark `--text-on-accent`; `--text-on-felt` is the direct-felt secondary text color | White failed AA on several action backgrounds, and muted text failed AA on most felt colors. Muted is prohibited directly on felt; translucent glass panels keep the on-felt color. |
+| 2026-10-13 | #11722: darken bright green, Klaverjas, and Ulti felt colors to meet AA | Their previous colors failed AA for primary and on-felt text; the adjusted colors preserve hue and meet 4.5:1 for both. |

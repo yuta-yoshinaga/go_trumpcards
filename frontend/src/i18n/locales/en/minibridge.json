@@ -8,6 +8,7 @@
   "header": {
     "round": "Deal {{round}}/{{total}}",
     "rule": "There is no auction. Everyone announces their HCP (A=4 K=3 Q=2 J=1, always 40 in total) and the pair with more declares, the seat holding more of it becoming declarer. On a 20-20 tie the dealer's side declares; on a seat tie the seat nearest the dealer does. The declarer's partner is the dummy: once the contract is set their hand is face up and the declarer plays both.",
+    "rules": "Rules",
     "contract": "Contract: {{level}}{{suit}} ({{name}}) / needs {{need}} tricks",
     "contractUndecided": "Contract: not yet chosen",
     "pairHcp": "Your pair's combined HCP: {{n}}",

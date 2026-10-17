@@ -8,6 +8,14 @@ import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, MendikotResponse } from '../types/card';
 import { MendikotPage } from './MendikotPage';
 
+const mobileState = vi.hoisted(() => ({ isMobile: true, largeDesktop: false }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+  useBreakpoint: () => (mobileState.largeDesktop ? 'largeDesktop' : mobileState.isMobile ? 'mobile' : 'desktop'),
+}));
+
 vi.mock('../api/gameApi', () => ({
   mendikotApi: { exec: vi.fn() },
   actionLogApi: { mendikot: vi.fn() },
@@ -61,11 +69,83 @@ function makeState(overrides: Partial<MendikotResponse> = {}): MendikotResponse 
 }
 
 beforeEach(() => {
+  mobileState.isMobile = true;
+  mobileState.largeDesktop = false;
   vi.clearAllMocks();
   mockExec.mockResolvedValue(makeState());
 });
 
 describe('MendikotPage', () => {
+  it('places the trick and CPU accordion in separate columns on large desktop', async () => {
+    mobileState.isMobile = false;
+    mobileState.largeDesktop = true;
+    mockExec.mockResolvedValue(makeState({ currentTrick: [{ playerIdx: 0, card: card('SPADE', 2) }] }));
+    const { container } = renderWithProviders(<MendikotPage />);
+
+    const trick = (await screen.findByTestId('md-board-grid')).querySelector('[data-tutorial="md-trick"]');
+    const accordion = await screen.findByTestId('cpu-accordion');
+    const grid = screen.getByTestId('md-board-grid');
+
+    expect(grid).toHaveClass('grid', 'grid-cols-[minmax(0,1fr)_minmax(280px,30%)]');
+    expect(trick?.parentElement).toHaveClass('col-start-1');
+    expect(trick?.parentElement).toHaveClass('min-w-0');
+    expect(accordion.parentElement).toHaveClass('col-start-2');
+    expect(accordion.parentElement).toHaveClass('min-w-0');
+    expect(grid.querySelector('[data-testid="md-tens"]')?.parentElement).toHaveClass('min-w-0');
+    expect(grid.querySelector('[data-testid="md-tricks"]')?.closest('.col-start-2')).toHaveClass('min-w-0');
+    expect(grid.querySelector('[data-testid="md-human-seat"]')?.parentElement).toHaveClass('min-w-0');
+    expect(grid.querySelector('[data-testid="trick-display-cards"]')).toHaveClass('flex-wrap');
+    expect(container.querySelector('[data-testid="md-board-grid"] [data-testid="md-tens"]')).not.toBeNull();
+  });
+
+  it('keeps the board content in the existing vertical flow below large desktop', async () => {
+    mobileState.isMobile = false;
+    const { container } = renderWithProviders(<MendikotPage />);
+
+    const grid = await screen.findByTestId('md-board-grid');
+    const children = Array.from(grid.children);
+    expect(grid).toHaveClass('contents');
+    expect(children.map((child) => child.className)).toEqual(Array(5).fill('contents'));
+    expect(grid.querySelector('[data-tutorial="md-trick"]')).not.toBeNull();
+    expect(await screen.findByTestId('cpu-accordion')).toBeInTheDocument();
+    const orderedElements = [
+      container.querySelector('[data-testid="md-tens"]'),
+      container.querySelector('[data-testid="md-human-seat"]'),
+      container.querySelector('[data-testid="cpu-accordion"]'),
+      container.querySelector('[data-tutorial="md-trick"]'),
+    ];
+    expect(orderedElements.every((element): element is Element => element !== null)).toBe(true);
+    for (let index = 0; index < orderedElements.length - 1; index += 1) {
+      expect(orderedElements[index]?.compareDocumentPosition(orderedElements[index + 1] as Element)).toBe(
+        Node.DOCUMENT_POSITION_FOLLOWING,
+      );
+    }
+  });
+
+  it('renders every human hand card through the hand fan', async () => {
+    const { container } = renderWithProviders(<MendikotPage />);
+    await screen.findAllByRole('button', { name: /を出す/ });
+    const hand = container.querySelector('[data-tutorial="md-hand"]');
+    expect(hand).not.toBeNull();
+    expect(hand?.querySelectorAll('button')).toHaveLength(3);
+  });
+
+  it('keeps the hand, trump warning, and primary actions in the footer on desktop', async () => {
+    mobileState.isMobile = false;
+    mockExec.mockResolvedValue(makeState({ willSetTrump: true }));
+    const { container } = renderWithProviders(<MendikotPage />);
+
+    await screen.findAllByRole('button', { name: /を出す/ });
+    const footer = container.querySelector('footer');
+    expect(footer).not.toBeNull();
+    expect(footer?.querySelector('[data-tutorial="md-hand"] button')).not.toBeNull();
+    expect(footer?.querySelector('[data-testid="md-sets-trump-warning"]')).not.toBeNull();
+    expect(footer?.querySelector('[data-tutorial="md-actions"]')).not.toBeNull();
+    expect(footer?.querySelector('[data-testid="game-footer-actions"]')).toContainElement(
+      screen.getByRole('button', { name: 'リセット' }),
+    );
+  });
+
   it('announces playable cards while retaining each card name', async () => {
     mockExec.mockResolvedValue(makeState({ validPlays: [1] }));
     renderWithProviders(<MendikotPage />);
@@ -73,7 +153,16 @@ describe('MendikotPage', () => {
     expect(screen.getAllByRole('button', { name: /を出す/ })).toHaveLength(3);
     const visualMarker = screen.getAllByText('出せる');
     expect(visualMarker).toHaveLength(1);
+    expect(visualMarker[0]).toHaveClass('sr-only');
     expect(visualMarker[0].querySelector('[aria-hidden="true"]')).toHaveTextContent('✓');
+  });
+
+  it('keeps trick count and hand score on one shared row', async () => {
+    renderWithProviders(<MendikotPage />);
+
+    const tricks = await screen.findByTestId('md-tricks');
+    const score = screen.getByTestId('md-score');
+    expect(tricks.parentElement).toBe(score.parentElement);
   });
 
   it('highlights the current seat and labels it when its play will set undecided trump', async () => {
@@ -193,7 +282,28 @@ describe('MendikotPage', () => {
     const tens = await screen.findByTestId('md-tens');
     expect(tens).toHaveTextContent('2');
     expect(tens).toHaveTextContent('1');
-    expect(tens).toHaveTextContent('4');
+    expect(tens).toHaveTextContent('全4枚');
+    expect(tens.querySelector('details')).toBeNull();
+    expect(screen.getByTestId('md-tens-rule')).not.toBeVisible();
+    expect(screen.getAllByText('ルール')).toHaveLength(1);
+    expect(await screen.findByTestId('md-seats')).toHaveClass('grid-cols-2');
+  });
+
+  it('collapses CPU seats on mobile and opens them on desktop', async () => {
+    const { unmount } = renderWithProviders(<MendikotPage />);
+    const accordion = await screen.findByTestId('cpu-accordion');
+    expect(accordion).not.toHaveAttribute('open');
+    expect(screen.getByTestId('md-seats')).not.toBeVisible();
+    expect(screen.getByTestId('md-human-seat')).toBeVisible();
+    expect(screen.getByTestId('md-seat-0')).toBeVisible();
+    expect(screen.getByTestId('md-seat-0').parentElement).toHaveAttribute('data-testid', 'md-human-seat');
+
+    unmount();
+    mobileState.isMobile = false;
+    renderWithProviders(<MendikotPage />);
+    const desktopAccordion = await screen.findByTestId('cpu-accordion');
+    expect(desktopAccordion).toHaveAttribute('open');
+    expect(screen.getByTestId('md-seats')).toBeVisible();
   });
 
   // **4枚独占と全トリック独占は追加点。**ハンドが終わるまで出てこないと、
@@ -203,6 +313,8 @@ describe('MendikotPage', () => {
     renderWithProviders(<MendikotPage />);
 
     const rule = await screen.findByTestId('md-bonus-rule');
+    expect(rule.closest('details')).not.toHaveAttribute('open');
+    expect(rule).not.toBeVisible();
     expect(rule).toHaveTextContent('Mendikot で +2');
     expect(rule).toHaveTextContent('Whitewash で +3');
     // 通常勝利の +1 と取り違えないよう、そちらも同じ行で名指しされている。
@@ -216,6 +328,15 @@ describe('MendikotPage', () => {
     const tricks = await screen.findByTestId('md-tricks');
     expect(tricks).toHaveTextContent('7');
     expect(tricks).toHaveTextContent('3');
+    expect(tricks.querySelector('details')).toBeNull();
+    expect(screen.getByText(/10 が2枚ずつのときだけ/)).toBeInTheDocument();
+  });
+
+  it('shows zero counts when the response count arrays are empty', async () => {
+    mockExec.mockResolvedValue(makeState({ teamTens: [], teamTricks: [] } as unknown as Partial<MendikotResponse>));
+    renderWithProviders(<MendikotPage />);
+    expect(await screen.findByTestId('md-tens')).toHaveTextContent('0');
+    expect(screen.getByTestId('md-tricks')).toHaveTextContent('0');
   });
 
   // **切り札を選ぶボタンは存在しない。** 出すとサーバが受けない操作を勧めることになる。
@@ -228,6 +349,12 @@ describe('MendikotPage', () => {
     // 負のコントロール: 札のボタンは確かに描かれている
     expect(await screen.findAllByRole('button', { name: /を出す/ })).not.toHaveLength(0);
     expect(screen.queryByRole('button', { name: /^切り札/ })).not.toBeInTheDocument();
+    const trumpRule = screen.getByText(
+      '最初にフォローできなかった人が出した札のスートが、このハンドの切り札になります。',
+    );
+    expect(trumpRule.closest('details')).not.toHaveAttribute('open');
+    expect(screen.getAllByText('ルール')).toHaveLength(1);
+    expect(screen.getByTestId('md-trump')).toHaveTextContent('切り札: 未定');
 
     // **切り札はスートを名指すコマンドで届かない。** 送るのは札のインデックスだけ。
     const cards = screen.getAllByRole('button', { name: /を出す/ });

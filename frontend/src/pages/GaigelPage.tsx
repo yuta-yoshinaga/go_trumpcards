@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -13,7 +14,7 @@ import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { CPU_DIFFICULTY_OPTIONS, TARGET_SCORE_OPTIONS, useGaigelGame } from '../hooks/useGaigelGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
@@ -115,6 +116,7 @@ function GaigelPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('gaigel', state);
   const { cardWidth, isMobile } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
 
   const phaseNames = usePhaseNames('gaigel', GAIGEL_PHASE_KEYS);
 
@@ -127,6 +129,10 @@ function GaigelPageContent() {
 
   if (!state)
     return <GameSkeleton gameKey="gaigel" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 5 }} />;
+
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
 
   const humanPlayer = state.players.find((p) => p.isHuman);
   const isPlayPhase = state.phase === GaigelPhase.PLAY;
@@ -202,13 +208,13 @@ function GaigelPageContent() {
 
       <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
         {/* Round/Trick/Trump/Stock info */}
-        <div className="text-ds-text-primary text-center mb-2">
-          <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
-          <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
-          <span className="mr-4">
+        <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-ds-text-primary text-center mb-2">
+          <span className="whitespace-nowrap">{t('round', { n: state.roundNumber })}</span>
+          <span className="whitespace-nowrap">{t('trick', { n: state.trickNumber })}</span>
+          <span className="whitespace-nowrap">
             {state.trumpSuit > 0 ? t('trumpSuit', { suit: t(SUIT_LABEL_KEYS[state.trumpSuit]) }) : t('noTrump')}
           </span>
-          <span>{t('stock', { count: state.stockRemaining })}</span>
+          <span className="whitespace-nowrap">{t('stock', { count: state.stockRemaining })}</span>
         </div>
 
         {/* **山が尽きた瞬間にマストフォローへ切り替わる。**残り 0 枚という数字は
@@ -234,36 +240,68 @@ function GaigelPageContent() {
           </div>
         )}
 
-        {/* Player list */}
-        <div className="mb-3">
-          {state.players.map((p) => (
-            <div
-              key={p.id}
-              data-testid={`gaigel-player-${p.id}`}
-              className="mb-1 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
-            >
-              {playerName(p.id, p.isHuman)}
-              {p.id === state.dealerIdx && (
-                <span className="ml-1 text-ds-accent" data-testid="gaigel-dealer-badge">
-                  [{t('dealerBadge')}]
-                </span>
-              )}
-              : {t('team', { n: p.team })} | {t('cards', { count: p.cardCount })} |{' '}
-              {t('trickCount', { count: p.trickCount })}
-            </div>
-          ))}
-        </div>
+        <div className={isLargeDesktop ? 'flex items-start gap-4 mb-3' : undefined} data-testid="gaigel-upper-layout">
+          {/* Player list */}
+          <div className={isLargeDesktop ? 'w-1/3 shrink-0' : 'mb-3'}>
+            {state.players
+              .filter((p) => p.isHuman)
+              .map((p) => (
+                <div
+                  key={p.id}
+                  data-testid={`gaigel-player-${p.id}`}
+                  className="mb-1 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                >
+                  <span className="whitespace-nowrap">{playerName(p.id, p.isHuman)}</span>
+                  {p.id === state.dealerIdx && (
+                    <span className="ml-1 text-ds-accent" data-testid="gaigel-dealer-badge">
+                      [{t('dealerBadge')}]
+                    </span>
+                  )}
+                  <span className="whitespace-nowrap">: {t('team', { n: p.team })}</span> |{' '}
+                  <span className="whitespace-nowrap">{t('cards', { count: p.cardCount })}</span> |{' '}
+                  <span className="whitespace-nowrap" data-testid="gaigel-player-tricks">
+                    {t('trickCount', { count: p.trickCount })}
+                  </span>
+                </div>
+              ))}
+            <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+              <div>
+                {state.players
+                  .filter((p) => !p.isHuman)
+                  .map((p) => (
+                    <div
+                      key={p.id}
+                      data-testid={`gaigel-player-${p.id}`}
+                      className="mb-1 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                    >
+                      <span className="whitespace-nowrap">{playerName(p.id, p.isHuman)}</span>
+                      {p.id === state.dealerIdx && (
+                        <span className="ml-1 text-ds-accent" data-testid="gaigel-dealer-badge">
+                          [{t('dealerBadge')}]
+                        </span>
+                      )}
+                      <span className="whitespace-nowrap">: {t('team', { n: p.team })}</span> |{' '}
+                      <span className="whitespace-nowrap">{t('cards', { count: p.cardCount })}</span> |{' '}
+                      <span className="whitespace-nowrap" data-testid="gaigel-player-tricks">
+                        {t('trickCount', { count: p.trickCount })}
+                      </span>
+                    </div>
+                  ))}
+              </div>
+            </CpuAccordion>
+          </div>
 
-        {/* Current trick */}
-        <TrickDisplay
-          currentTrick={state.currentTrick}
-          players={state.players}
-          cardWidth={cardWidth}
-          label={t('currentTrick')}
-          winnerIdx={isTrickEnd && state.trickWinnerIdx >= 0 ? state.trickWinnerIdx : undefined}
-          winnerLabel={t('winnerBadge')}
-          dataTutorial="gg-trick-display"
-        />
+          {/* Current trick */}
+          <TrickDisplay
+            currentTrick={state.currentTrick}
+            players={state.players}
+            cardWidth={cardWidth}
+            label={t('currentTrick')}
+            winnerIdx={isTrickEnd && state.trickWinnerIdx >= 0 ? state.trickWinnerIdx : undefined}
+            winnerLabel={t('winnerBadge')}
+            dataTutorial="gg-trick-display"
+          />
+        </div>
 
         {/* Team scores */}
         <div className="my-3 p-2 rounded bg-black/30" data-tutorial="gg-score-table">
@@ -283,14 +321,14 @@ function GaigelPageContent() {
             </thead>
             <tbody>
               <tr>
-                <th scope="row" className="text-left">
+                <th scope="row" className="whitespace-nowrap text-left">
                   {t('scoreRows.cumulative')}
                 </th>
                 <td className="text-ds-accent">{state.teamScores[0]}</td>
                 <td className="text-center">{state.teamScores[1]}</td>
               </tr>
               <tr>
-                <th scope="row" className="text-left text-xs">
+                <th scope="row" className="whitespace-nowrap text-left text-xs">
                   {t('scoreRows.round')}
                 </th>
                 <td className="text-xs">{state.roundPoints[0]}</td>
@@ -298,7 +336,7 @@ function GaigelPageContent() {
               </tr>
               {(state.roundMarriage[0] > 0 || state.roundMarriage[1] > 0) && (
                 <tr>
-                  <th scope="row" className="text-left text-xs text-ds-warning">
+                  <th scope="row" className="whitespace-nowrap text-left text-xs text-ds-warning">
                     {t('scoreRows.marriage')}
                   </th>
                   <td className="text-xs text-ds-warning">{state.roundMarriage[0]}</td>
@@ -335,10 +373,8 @@ function GaigelPageContent() {
           ]}
         />
 
-        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
-
         <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
+        {isMobile && messageBox}
         <ActionLogSection
           isEndPhase={isGameEnd}
           actionLog={actionLog}
@@ -347,7 +383,7 @@ function GaigelPageContent() {
         />
       </div>
 
-      <GameFooter className={`${gameTheme.gaigel.footer} px-4 py-2.5`}>
+      <GameFooter message={isMobile ? undefined : messageBox} className={`${gameTheme.gaigel.footer} px-4 py-2.5`}>
         {humanPlayer && (
           <PlayerHandSection
             humanPlayer={humanPlayer}

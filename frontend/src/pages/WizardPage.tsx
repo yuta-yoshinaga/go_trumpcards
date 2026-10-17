@@ -18,7 +18,7 @@ import { ScrollFadeHint } from '../components/ScrollFadeHint';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -31,6 +31,7 @@ import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
+import { scoreTableClass } from '../styles/scoreTableStyles';
 import type { WizardResponse } from '../types/card';
 import { WizardPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
@@ -114,6 +115,7 @@ const WIZARD_PHASE_KEYS: Readonly<Record<number, string>> = {
 export const WizardPage = withTutorial(WizardPageContent, 'wizard', WIZARD_TUTORIAL_STEPS);
 /** Inner content of the Wizard page, wrapped by TutorialProvider. */
 function WizardPageContent() {
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('wizard');
   const {
@@ -293,6 +295,10 @@ function WizardPageContent() {
       )
     : [];
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.wizard')}
@@ -368,14 +374,21 @@ function WizardPageContent() {
           {/* Scrollable area */}
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
             {/* Round/Trick/Trump info */}
-            <div className="text-ds-text-primary text-center mb-2">
-              <span className="mr-4">{t('round', { n: state.roundNumber, total: state.totalRounds })}</span>
-              <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
-              <span className="mr-4">{t('handSize', { n: state.handSize })}</span>
+            <div
+              className="text-ds-text-primary text-center mb-2 flex flex-wrap justify-center gap-x-4 gap-y-1"
+              data-testid="wiz-status-row"
+            >
+              <span className="whitespace-nowrap">
+                {t('round', { n: state.roundNumber, total: state.totalRounds })}
+              </span>
+              <span className="whitespace-nowrap">{t('trick', { n: state.trickNumber })}</span>
+              <span className="whitespace-nowrap">{t('handSize', { n: state.handSize })}</span>
             </div>
-            <div className="text-ds-text-primary text-center mb-2">
-              <span className="mr-4">{t('trump', { suit: t(`suitName.${state.trumpSuit}`) })}</span>
-              <span>{t('dealer', { name: dealerName })}</span>
+            <div className="text-ds-text-primary text-center mb-2 flex flex-wrap justify-center gap-x-4 gap-y-1">
+              <span className="whitespace-nowrap">
+                {t('trump', { suit: state.trumpSuit > 0 ? t(`suitName.${state.trumpSuit}`) : t('noTrump') })}
+              </span>
+              <span className="whitespace-nowrap">{t('dealer', { name: dealerName })}</span>
             </div>
 
             <div className={lgTwoColGrid}>
@@ -454,7 +467,7 @@ function WizardPageContent() {
                         {p.bid >= 0 ? t('bidProgress.values', { bid: p.bid, won: p.trickCount }) : t('bidNone')}
                         {p.bid >= 0 && (
                           <span
-                            className={`ml-1 rounded-full px-2 py-0.5 text-xs ${progressChipColors(p.bid, p.trickCount, playerBidProgress(p).remainingTricks)}`}
+                            className={`ml-1 whitespace-nowrap rounded-full px-2 py-0.5 text-xs ${progressChipColors(p.bid, p.trickCount, playerBidProgress(p).remainingTricks)}`}
                           >
                             {t(playerBidProgress(p).status)} (
                             {t('bidProgress.remaining', { count: playerBidProgress(p).remainingTricks })})
@@ -474,15 +487,25 @@ function WizardPageContent() {
                   >
                     <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('scores')}</summary>
                     <div className="overflow-x-auto -mx-2 px-2">
-                      <table className="w-full text-sm text-ds-text-muted min-w-[360px] mt-1">
+                      <table
+                        className={scoreTableClass(
+                          isLargeDesktop,
+                          'w-full text-sm text-ds-text-muted min-w-[360px]',
+                          'mt-1',
+                        )}
+                      >
                         <thead>
                           <tr>
                             <th scope="col" className="text-left">
                               {t('scoresPlayer')}
                             </th>
                             <th scope="col">{t('scoresBid')}</th>
-                            <th scope="col">{t('scoresTricks')}</th>
-                            <th scope="col">{t('scoresRound')}</th>
+                            <th scope="col" className="text-[10px] whitespace-nowrap">
+                              {t('scoresTricks')}
+                            </th>
+                            <th scope="col" className="text-[10px] whitespace-nowrap">
+                              {t('scoresRound')}
+                            </th>
                             <th scope="col">{t('scoresTotal')}</th>
                           </tr>
                         </thead>
@@ -505,15 +528,21 @@ function WizardPageContent() {
                   <div className="my-3 p-2 rounded bg-black/30 relative" data-tutorial="wiz-score-table">
                     <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
                     <div className="overflow-x-auto -mx-2 px-2">
-                      <table className="w-full text-sm text-ds-text-muted min-w-[360px]">
+                      <table
+                        className={scoreTableClass(isLargeDesktop, 'w-full text-sm text-ds-text-muted min-w-[360px]')}
+                      >
                         <thead>
                           <tr>
                             <th scope="col" className="text-left">
                               {t('scoresPlayer')}
                             </th>
                             <th scope="col">{t('scoresBid')}</th>
-                            <th scope="col">{t('scoresTricks')}</th>
-                            <th scope="col">{t('scoresRound')}</th>
+                            <th scope="col" className="text-[10px] whitespace-nowrap">
+                              {t('scoresTricks')}
+                            </th>
+                            <th scope="col" className="text-[10px] whitespace-nowrap">
+                              {t('scoresRound')}
+                            </th>
                             <th scope="col">{t('scoresTotal')}</th>
                           </tr>
                         </thead>
@@ -571,13 +600,7 @@ function WizardPageContent() {
             </div>
 
             {/* Message */}
-            <div>
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-              />
-            </div>
+            <div>{isMobile && messageBox}</div>
 
             {/* Action log */}
             <ActionLogSection
@@ -589,7 +612,7 @@ function WizardPageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.wizard.footer} px-4 py-2.5`}>
+          <GameFooter message={isMobile ? undefined : messageBox} className={`${gameTheme.wizard.footer} px-4 py-2.5`}>
             {/* Human cards */}
             {humanPlayer &&
               (isMobile ? (

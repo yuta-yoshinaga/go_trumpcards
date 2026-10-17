@@ -2,6 +2,7 @@ import { useCallback, useMemo } from 'react';
 import type { panApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -14,7 +15,7 @@ import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -80,6 +81,7 @@ const PAN_TUTORIAL_STEPS: TutorialStep[] = [
 export const PanPage = withTutorial(PanPageContent, 'pan', PAN_TUTORIAL_STEPS);
 /** Inner content of the Panguingue page, wrapped by TutorialProvider. */
 function PanPageContent() {
+  const isMobile = useIsMobile();
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('pan');
   const {
@@ -183,6 +185,22 @@ function PanPageContent() {
       />
     );
 
+  const roundEndMessage =
+    state?.phase === PanPhase.ROUND_END
+      ? state.panDeclarerIdx >= 0
+        ? t('roundEndByPan', {
+            name: playerName(state.panDeclarerIdx, state.players[state.panDeclarerIdx].isHuman),
+          })
+        : t('roundEndByStockOut')
+      : undefined;
+  const messageBox = (
+    <GameMessageBox
+      message={roundEndMessage ?? state?.message}
+      messageCode={roundEndMessage ? undefined : state?.messageCode}
+      messageParams={roundEndMessage ? undefined : state?.messageParams}
+    />
+  );
+
   const humanPlayer = state.players.find((p) => p.isHuman);
   const isDrawPhase = state.phase === PanPhase.DRAW;
   const isPlayPhase = state.phase === PanPhase.PLAY;
@@ -191,6 +209,53 @@ function PanPageContent() {
   const revealCpu = isRoundEnd || isGameEnd;
   const isHumanTurn = (isDrawPhase || isPlayPhase) && state.players[state.currentPlayerIdx]?.isHuman === true;
   const canLayoff = isPlayPhase && isHumanTurn && selectedCardIndices.length === 1 && !loading;
+
+  const renderPlayerMelds = (p: PanPlayer) =>
+    p.laidMelds.map((meld, meldIdx) => (
+      <fieldset
+        key={`meld-${p.id}-${meldIdx}-${meld.cards.map((c) => `${c.design}${c.value}`).join('')}`}
+        className={`border-0 p-0 m-0 min-w-0 flex flex-wrap items-center gap-1 ${isMobile ? 'mb-0' : 'mb-1'}`}
+        aria-label={t('a11y.meldGroup', {
+          name: playerName(p.id, p.isHuman),
+          cards: meld.cards.map(cardAlt).join(t('listSeparator')),
+        })}
+      >
+        {meld.cards.map((card, idx) => (
+          <span
+            key={`meldcard-${p.id}-${meldIdx}-${card.design}-${card.value}-${idx}`}
+            className="inline-block"
+            style={{ marginLeft: idx > 0 ? -Math.round(cardWidth * (isMobile ? 0.48 : 0.5) * 0.6) : 0 }}
+          >
+            <AnimatedCard card={card} width={cardWidth * (isMobile ? 0.48 : 0.5)} />
+          </span>
+        ))}
+        {meld.chipUnits > 0 && (
+          // A valle deals chips to every player; showing the unit beside its
+          // meld makes the source clear on the table (#4853).
+          <span
+            className={`text-xs font-bold px-1.5 py-0.5 rounded ${badgeWarningColors}`}
+            data-testid={`pan-chip-units-${p.id}-${meldIdx}`}
+          >
+            {t('chipUnits', { count: meld.chipUnits })}
+          </span>
+        )}
+        {canLayoff && (
+          <button
+            type="button"
+            className={btnPrimary}
+            onClick={() => handleLayoff(p.id, meldIdx)}
+            data-testid={`pan-layoff-${p.id}-${meldIdx}`}
+            // Owner and cards distinguish this target from other layoff buttons (#6502).
+            aria-label={t('a11y.layoffTo', {
+              name: playerName(p.id, p.isHuman),
+              meld: meld.cards.map(cardAlt).join(t('listSeparator')),
+            })}
+          >
+            {t('layoffButton')}
+          </button>
+        )}
+      </fieldset>
+    ));
 
   // Meld-progress indicator toward the win condition (winMeldCount cards laid on
   // the table), highlighting the final stretch (<=2 cards left) to go out.
@@ -305,63 +370,22 @@ function PanPageContent() {
                 )}
 
                 {/* Table melds (all players) with layoff targets */}
-                <div className="my-3 p-2 rounded bg-black/30" data-tutorial="pan-meld-area">
+                <div
+                  className={`${isMobile ? 'my-1 p-1' : 'my-3 p-2'} rounded bg-black/30`}
+                  data-tutorial="pan-meld-area"
+                >
                   <div className="text-ds-text-muted text-sm mb-1">{t('meldsTitle')}</div>
-                  {state.players.every((p) => p.laidMelds.length === 0) ? (
+                  {!humanPlayer?.laidMelds.length ? (
                     <div className="text-ds-text-muted text-sm">{t('noMelds')}</div>
                   ) : (
                     state.players
-                      .filter((p) => p.laidMelds.length > 0)
+                      .filter((p) => p.isHuman && p.laidMelds.length > 0)
                       .map((p) => (
-                        <div key={`melds-${p.id}`} className="mb-2">
+                        <div key={`melds-${p.id}`} className={isMobile ? 'mb-1' : 'mb-2'}>
                           <div className="text-ds-text-muted text-xs mb-1">
                             {t('meldOwner', { name: playerName(p.id, p.isHuman) })}
                           </div>
-                          {p.laidMelds.map((meld, meldIdx) => (
-                            <fieldset
-                              key={`meld-${p.id}-${meldIdx}-${meld.cards.map((c) => `${c.design}${c.value}`).join('')}`}
-                              className="border-0 p-0 m-0 min-w-0 flex flex-wrap items-center gap-1 mb-1"
-                              aria-label={t('a11y.meldGroup', {
-                                name: playerName(p.id, p.isHuman),
-                                cards: meld.cards.map(cardAlt).join(t('listSeparator')),
-                              })}
-                            >
-                              {meld.cards.map((card, idx) => (
-                                <AnimatedCard
-                                  key={`meldcard-${p.id}-${meldIdx}-${card.design}-${card.value}-${idx}`}
-                                  card={card}
-                                  width={cardWidth * 0.7}
-                                />
-                              ))}
-                              {/* バジェ (3/5/7 のセット) は全員にチップを配る。どのメルドが
-                                  その原因なのかが盤面から読めなかった (#4853)。 */}
-                              {meld.chipUnits > 0 && (
-                                <span
-                                  className={`text-xs font-bold px-1.5 py-0.5 rounded ${badgeWarningColors}`}
-                                  data-testid={`pan-chip-units-${p.id}-${meldIdx}`}
-                                >
-                                  {t('chipUnits', { count: meld.chipUnits })}
-                                </span>
-                              )}
-                              {canLayoff && (
-                                <button
-                                  type="button"
-                                  className={btnPrimary}
-                                  onClick={() => handleLayoff(p.id, meldIdx)}
-                                  data-testid={`pan-layoff-${p.id}-${meldIdx}`}
-                                  // **同じ「レイオフ」が卓の上に何個も並ぶ。**読み上げでは
-                                  // どのプレイヤーのどのメルド宛かが区別できなかった (#6502)。
-                                  // 所有者と札そのものを言えば、並んでいても取り違えない。
-                                  aria-label={t('a11y.layoffTo', {
-                                    name: playerName(p.id, p.isHuman),
-                                    meld: meld.cards.map(cardAlt).join(t('listSeparator')),
-                                  })}
-                                >
-                                  {t('layoffButton')}
-                                </button>
-                              )}
-                            </fieldset>
-                          ))}
+                          {renderPlayerMelds(p)}
                         </div>
                       ))
                   )}
@@ -371,31 +395,50 @@ function PanPageContent() {
               {/* Right: info sidebar */}
               <div>
                 {/* CPU players */}
-                {state.players
-                  .filter((p) => !p.isHuman)
-                  .map((p) => (
-                    <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                      <div className="text-ds-text-muted text-sm">
-                        {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                        {t('chips', { count: p.chips })} | {t('melded', { count: p.meldedCount })}
-                      </div>
-                      {revealCpu && p.cards.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {p.cards.map((card, idx) => (
-                            <AnimatedCard
-                              key={`cpu-${p.id}-${card.design}-${card.value}-${idx}`}
-                              card={card}
-                              width={cardWidth * 0.8}
-                            />
-                          ))}
+                <CpuAccordion
+                  playerCount={state.players.filter((p) => !p.isHuman).length}
+                  openOnDesktop={false}
+                  forceOpen={canLayoff && state.players.some((p) => !p.isHuman && p.laidMelds.length > 0)}
+                >
+                  {state.players
+                    .filter((p) => !p.isHuman)
+                    .map((p) => (
+                      <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
+                        <div className="text-ds-text-muted text-sm">
+                          {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                          {t('chips', { count: p.chips })} | {t('melded', { count: p.meldedCount })}
                         </div>
-                      )}
-                    </div>
-                  ))}
+                        {p.laidMelds.length > 0 && (
+                          <div className="mt-1">
+                            <div className="text-ds-text-muted text-xs mb-1">
+                              {t('meldOwner', { name: playerName(p.id, p.isHuman) })}
+                            </div>
+                            {renderPlayerMelds(p)}
+                          </div>
+                        )}
+                        {revealCpu && p.cards.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {p.cards.map((card, idx) => (
+                              <AnimatedCard
+                                key={`cpu-${p.id}-${card.design}-${card.value}-${idx}`}
+                                card={card}
+                                width={cardWidth * 0.8}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                </CpuAccordion>
 
                 {/* Score table */}
-                <div className="my-3 p-2 rounded bg-black/30" data-tutorial="pan-score-table">
-                  <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
+                <details
+                  className="my-3 p-2 rounded bg-black/30"
+                  data-tutorial="pan-score-table"
+                  data-testid="pan-score-table"
+                  open={!isMobile || undefined}
+                >
+                  <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('scores')}</summary>
                   <table className="w-full text-sm text-ds-text-muted">
                     <thead>
                       <tr>
@@ -427,25 +470,11 @@ function PanPageContent() {
                       ))}
                     </tbody>
                   </table>
-                </div>
+                </details>
               </div>
             </div>
 
-            {state.phase === PanPhase.ROUND_END && (
-              <div className="text-ds-text-primary text-center my-2" data-testid="pan-round-end-reason">
-                {state.panDeclarerIdx >= 0
-                  ? t('roundEndByPan', {
-                      name: playerName(state.panDeclarerIdx, state.players[state.panDeclarerIdx].isHuman),
-                    })
-                  : t('roundEndByStockOut')}
-              </div>
-            )}
-
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
+            {isMobile && messageBox}
 
             <ActionLogSection
               isEndPhase={isGameEnd}
@@ -455,7 +484,65 @@ function PanPageContent() {
             />
           </div>
 
-          <GameFooter className={`${gameTheme.pan.footer} px-4 py-2.5`}>
+          <GameFooter
+            message={isMobile ? undefined : messageBox}
+            className={`${gameTheme.pan.footer} px-4 py-2.5`}
+            actions={
+              (isDrawPhase && isHumanTurn) || (isPlayPhase && isHumanTurn) || isRoundEnd ? (
+                <div className="flex gap-2 items-center justify-center flex-wrap">
+                  {isDrawPhase && isHumanTurn && (
+                    <div className="flex gap-2 items-center" data-tutorial="pan-draw-area">
+                      <span className="text-ds-text-muted text-sm" data-testid="pan-draw-pile-count">
+                        {t('drawPile', { count: state.drawPileCount })}
+                      </span>
+                      {state.drawPileCount === 0 && (
+                        <span className="text-ds-warning text-sm">{t('drawStockEmpty')}</span>
+                      )}
+                      <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
+                        {t('drawStockButton')}
+                      </button>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={handleDrawDiscard}
+                        disabled={loading || !state.discardTop}
+                      >
+                        {t('drawDiscardButton')}
+                      </button>
+                    </div>
+                  )}
+                  {isPlayPhase && isHumanTurn && (
+                    <>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={handleMeld}
+                        disabled={loading || selectedCardIndices.length < 3}
+                        data-testid="pan-meld-button"
+                      >
+                        {t('meldButton')}
+                      </button>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={handleDiscard}
+                        disabled={loading || selectedCardIndices.length !== 1}
+                        data-tutorial="pan-discard-button"
+                        data-testid="pan-discard-button"
+                      >
+                        {t('discardButton')}
+                      </button>
+                    </>
+                  )}
+                  {isRoundEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                      {t('nextRound')}
+                    </button>
+                  )}
+                </div>
+              ) : null
+            }
+          >
             {humanPlayer && meldCandidates.length > 0 && (
               <div className="mb-2 p-2 rounded bg-black/30" data-testid="pan-meld-candidates">
                 <div className="text-ds-text-muted text-xs mb-1">{t('candidates.title')}</div>
@@ -531,53 +618,6 @@ function PanPageContent() {
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex gap-2 items-center flex-wrap">
-              {isDrawPhase && isHumanTurn && (
-                <div className="flex flex-wrap items-center gap-2" data-tutorial="pan-draw-area">
-                  <span className="text-ds-text-muted text-sm" data-testid="pan-draw-pile-count">
-                    {t('drawPile', { count: state.drawPileCount })}
-                  </span>
-                  {state.drawPileCount === 0 && <span className="text-ds-warning text-sm">{t('drawStockEmpty')}</span>}
-                  <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
-                    {t('drawStockButton')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleDrawDiscard}
-                    disabled={loading || !state.discardTop}
-                  >
-                    {t('drawDiscardButton')}
-                  </button>
-                </div>
-              )}
-              {isPlayPhase && isHumanTurn && (
-                <>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleMeld}
-                    disabled={loading || selectedCardIndices.length < 3}
-                    data-testid="pan-meld-button"
-                  >
-                    {t('meldButton')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleDiscard}
-                    disabled={loading || selectedCardIndices.length !== 1}
-                    data-tutorial="pan-discard-button"
-                    data-testid="pan-discard-button"
-                  >
-                    {t('discardButton')}
-                  </button>
-                </>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
               <GameResetButton
                 isGameEnd={!!isGameEnd}
                 onReset={handleManualReset}

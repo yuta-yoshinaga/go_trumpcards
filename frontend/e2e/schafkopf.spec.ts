@@ -69,8 +69,8 @@ test.describe('Schafkopf E2E', () => {
       .textContent();
     await playableCard(page).first().click();
     await page
+      .getByTestId('game-footer-actions')
       .getByRole('button', { name: /^出す$|^Play$/ })
-      .first()
       .click();
 
     await expect

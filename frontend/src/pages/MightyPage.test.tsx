@@ -1,10 +1,12 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, mightyApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { MightyHint, MightyResponse } from '../types/card';
 import { MightyPage } from './MightyPage';
+
+const mobileState = vi.hoisted(() => ({ isMobile: false }));
 
 vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
@@ -15,7 +17,7 @@ vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
     cpuCardWidth: 50,
     footerCardWidth: 54,
     solitaireMinColWidth: 0,
-    isMobile: false,
+    isMobile: mobileState.isMobile,
   })),
 }));
 
@@ -254,11 +256,54 @@ beforeEach(() => {
     cpuCardWidth: 50,
     footerCardWidth: 54,
     solitaireMinColWidth: 0,
-    isMobile: false,
+    isMobile: mobileState.isMobile,
   });
 });
 
+afterEach(() => {
+  mobileState.isMobile = false;
+  Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1024 });
+});
+
 describe('MightyPage', () => {
+  it('keeps score table column headings on one line', async () => {
+    mockCall.mockResolvedValue(roundEndState);
+    const { container } = renderWithProviders(<MightyPage />);
+    await waitFor(() => expect(container.querySelectorAll('th[scope="col"]').length).toBeGreaterThan(0));
+    const headings = container.querySelectorAll('th[scope="col"]');
+    for (const heading of headings) {
+      expect(heading.classList.contains('whitespace-nowrap')).toBe(true);
+      expect(heading.classList.contains('text-[10px]')).toBe(true);
+    }
+  });
+
+  it('renders turn guidance in the footer on desktop', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1024 });
+    mockCall.mockResolvedValue({ ...playPhaseState, message: 'Footer guidance' });
+    renderWithProviders(<MightyPage />);
+    const message = await screen.findByText('Footer guidance');
+    expect(message.closest('[data-testid="game-footer-message"]')).toBeInTheDocument();
+  });
+
+  it('keeps turn guidance in the play area on mobile', async () => {
+    mobileState.isMobile = true;
+    mockUseCardDimensions.mockReturnValue({
+      cardHeight: 84,
+      cardOverlap: 22,
+      cardWidth: 60,
+      cpuCardWidth: 50,
+      footerCardWidth: 54,
+      solitaireMinColWidth: 0,
+      isMobile: true,
+    });
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 375 });
+    mockCall.mockResolvedValue({ ...playPhaseState, message: 'Mobile guidance' });
+    renderWithProviders(<MightyPage />);
+    const message = await screen.findByText('Mobile guidance');
+    expect(message.closest('[role="status"]')).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+  });
+
   it('renders skeleton when no state', () => {
     mockCall.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<MightyPage />);
@@ -394,6 +439,10 @@ describe('MightyPage', () => {
     for (let n = 13; n <= 20; n++) {
       expect(screen.getByTestId(`bid-option-${n}`)).toBeInTheDocument();
     }
+    expect(screen.getByTestId('bid-option-13')).not.toHaveClass('text-white');
+    expect(screen.getByTestId('bid-option-13')).toHaveClass('text-ds-text-on-accent');
+    expect(screen.getByTestId('bid-option-14')).not.toHaveClass('text-white');
+    expect(screen.getByTestId('bid-option-14')).toHaveClass('text-ds-text-primary');
     expect(screen.queryByTestId('bid-option-12')).not.toBeInTheDocument();
     expect(screen.queryByTestId('bid-option-21')).not.toBeInTheDocument();
   });
@@ -1131,6 +1180,54 @@ describe('MightyPage aria-labels are translated', () => {
 
     for (const raw of ['bid-no-trump', 'joker-lead-button', 'partner-value']) {
       expect(screen.queryByLabelText(raw)).not.toBeInTheDocument();
+    }
+  });
+
+  it('keeps the primary control in the pinned footer actions', async () => {
+    mockCall.mockResolvedValue(playPhaseState);
+    renderWithProviders(<MightyPage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: '出す' })).toBeInTheDocument();
+  });
+
+  it('keeps bid selection in the scrollable play area', async () => {
+    mockCall.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<MightyPage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: 'ビッド' })).toBeInTheDocument();
+    const footer = screen.getByTestId('game-footer-content');
+    const playArea = footer.parentElement?.parentElement?.querySelector('.flex-1.overflow-y-auto');
+    expect(within(footer).queryByTestId('mighty-bid-grid')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('mighty-bid-grid')).toBeInTheDocument();
+  });
+
+  it('keeps choices and reference panels in the play area while the hand stays in the footer', async () => {
+    mockCall.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<MightyPage />);
+    const footer = await screen.findByTestId('game-footer-content');
+    const playArea = footer.parentElement?.parentElement?.querySelector('.flex-1.overflow-y-auto');
+    expect(playArea).not.toBeNull();
+    expect(within(footer).queryByTestId('mighty-bid-grid')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('mighty-bid-grid')).toBeInTheDocument();
+    expect(within(footer).queryByTestId('mighty-hint-live')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('mighty-hint-live')).toBeInTheDocument();
+    const settings = screen.getByText('設定', { selector: 'summary' }).closest('details');
+    expect(settings).toBeInTheDocument();
+    expect(playArea).not.toContainElement(settings);
+    expect(footer.querySelector('[data-tutorial="mighty-player-hand"]')).toBeInTheDocument();
+  });
+  it('fits the score table at large desktop widths', async () => {
+    const innerWidthSpy = vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(1280);
+    try {
+      const { container } = renderWithProviders(<MightyPage />);
+      await waitFor(() =>
+        expect(container.querySelector('[data-tutorial="mighty-score-table"] table')).toBeInTheDocument(),
+      );
+      const table = container.querySelector('[data-tutorial="mighty-score-table"] table');
+      expect(table?.className).toContain('table-fixed');
+      expect(table?.className).not.toContain('min-w-[');
+    } finally {
+      innerWidthSpy.mockRestore();
     }
   });
 });

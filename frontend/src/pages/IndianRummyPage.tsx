@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import type { indianRummyApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -120,7 +121,7 @@ function IndianRummyPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('indianrummy', state);
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
   const [keyboardFocusIndex, setKeyboardFocusIndex] = useState<number | null>(null);
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('indianrummy');
@@ -217,6 +218,22 @@ function IndianRummyPageContent() {
       </span>
     ) : null;
 
+  const roundEndMessage =
+    state.phase === IndianRummyPhase.ROUND_END
+      ? state.declarerIdx >= 0
+        ? t('roundEndByDeclaration', {
+            name: playerName(state.declarerIdx, state.players[state.declarerIdx].isHuman),
+          })
+        : t('roundEndByStockOut')
+      : undefined;
+  const messageBox = (
+    <GameMessageBox
+      message={roundEndMessage ?? state.message}
+      messageCode={roundEndMessage ? undefined : state.messageCode}
+      messageParams={roundEndMessage ? undefined : state.messageParams}
+    />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.indianrummy')}
@@ -274,6 +291,25 @@ function IndianRummyPageContent() {
           />
 
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+            {/* **CUI は毎ターン出している。**カードを選んでいない思案中でも、いまの
+                デッドウッドとピュアシーケンス充足を確認できるようにする (#4824)。 */}
+            {isDiscardPhase && isHumanTurn && humanPlayer && (
+              // 読み上げは declarePreview 側の live region に任せる。隣り合う
+              // live region が 2 つあると同じ変化を二重に告知する。
+              <div className="mt-2 text-sm text-ds-text-muted" data-testid="indianrummy-hand-status">
+                {t('deadwoodShort', { score: humanPlayer.deadwood })}
+                <span className={`ml-2 ${humanPlayer.hasPureSequence ? 'text-ds-success' : 'text-ds-warning'}`}>
+                  {humanPlayer.hasPureSequence ? t('pureSequenceBadge') : t('pureSequenceMissing')}
+                </span>
+                {/* **A も 10 点。** ジンラミー系に慣れたプレイヤーほど A=1 を
+                    期待するので、合計だけ見せられると数字を逆算できない。
+                    ワイルドが 0 点であることも同時に言う (#5501)。 */}
+                <div className="text-xs" data-testid="indianrummy-points-legend">
+                  {t('pointsLegend')}
+                </div>
+              </div>
+            )}
+
             <div className="text-ds-text-primary text-center mb-2">
               <span className="mr-4">{t('round', { n: state.roundNumber, total: state.targetRounds })}</span>
               <span>{t('drawPile', { count: state.drawPileCount })}</span>
@@ -299,24 +335,26 @@ function IndianRummyPageContent() {
                 {/* Discard history is ordered oldest to newest; the last card is the top. */}
                 <div data-testid="indianrummy-discard-history">
                   {state.discardPile.length > 0 && (
-                    <div className="my-3 p-3 rounded bg-black/40">
-                      <div className="text-ds-text-muted text-sm mb-2">{t('discardHistory')}</div>
-                      <div className="flex flex-wrap gap-2 items-end">
-                        {state.discardPile.map((card, idx) => {
-                          const isLatest = idx === state.discardPile.length - 1;
-                          return (
-                            <div
-                              key={`discard-${card.design}-${card.value}-${idx}`}
-                              className={`relative ${isLatest ? 'ring-2 ring-ds-accent rounded-lg' : ''}`}
-                              data-testid={isLatest ? 'indianrummy-discard-latest' : undefined}
-                            >
-                              <AnimatedCard card={card} width={cardWidth} />
-                              {isLatest && <span className="sr-only">{t('discardLatest')}</span>}
-                            </div>
-                          );
-                        })}
+                    <details className="my-3 rounded bg-black/40" data-testid="indianrummy-discard-history-details">
+                      <summary className="cursor-pointer p-2 text-ds-text-muted text-sm">{t('discardHistory')}</summary>
+                      <div className="my-3 p-3 rounded bg-black/40">
+                        <div className="flex flex-wrap gap-2 items-end">
+                          {state.discardPile.map((card, idx) => {
+                            const isLatest = idx === state.discardPile.length - 1;
+                            return (
+                              <div
+                                key={`discard-${card.design}-${card.value}-${idx}`}
+                                className={`relative ${isLatest ? 'ring-2 ring-ds-accent rounded-lg' : ''}`}
+                                data-testid={isLatest ? 'indianrummy-discard-latest' : undefined}
+                              >
+                                <AnimatedCard card={card} width={cardWidth} />
+                                {isLatest && <span className="sr-only">{t('discardLatest')}</span>}
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
+                    </details>
                   )}
                 </div>
               </div>
@@ -324,45 +362,55 @@ function IndianRummyPageContent() {
               {/* Right: info sidebar */}
               <div>
                 {/* CPU players */}
-                {state.players
-                  .filter((p) => !p.isHuman)
-                  .map((p) => (
-                    <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                      <div className="text-ds-text-muted text-sm">
-                        {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                        {t('cumulativeScore', { score: p.cumulativeScore })}
-                        {revealCpu && (
-                          <>
-                            {' '}
-                            | {t('deadwoodShort', { score: p.deadwood })}
-                            {p.hasPureSequence && (
-                              <span className="ml-1 text-ds-success">{t('pureSequenceBadge')}</span>
+                <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+                  <div className="flex flex-wrap gap-2">
+                    {state.players
+                      .filter((p) => !p.isHuman)
+                      .map((p) => (
+                        <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
+                          <div className="text-ds-text-muted text-sm">
+                            {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                            {t('cumulativeScore', { score: p.cumulativeScore })}
+                            {revealCpu && (
+                              <>
+                                {' '}
+                                | {t('deadwoodShort', { score: p.deadwood })}
+                                {p.hasPureSequence && (
+                                  <span className="ml-1 text-ds-success">{t('pureSequenceBadge')}</span>
+                                )}
+                              </>
                             )}
-                          </>
-                        )}
-                      </div>
-                      {revealCpu && p.cards.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {p.cards.map((card, idx) => (
-                            <div
-                              key={`cpu-${p.id}-${card.design}-${card.value}-${idx}`}
-                              className={`relative inline-block rounded ${
-                                isWildCard(card) ? 'ring-2 ring-ds-info' : ''
-                              }`}
-                            >
-                              <AnimatedCard card={card} width={cardWidth * 0.8} />
-                              {isWildCard(card) && <span className="sr-only">{t('wildAria')}</span>}
-                              {wildBadge(card)}
+                          </div>
+                          {revealCpu && p.cards.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {p.cards.map((card, idx) => (
+                                <div
+                                  key={`cpu-${p.id}-${card.design}-${card.value}-${idx}`}
+                                  className={`relative inline-block rounded ${
+                                    isWildCard(card) ? 'ring-2 ring-ds-info' : ''
+                                  }`}
+                                >
+                                  <AnimatedCard card={card} width={cardWidth * 0.8} />
+                                  {isWildCard(card) && <span className="sr-only">{t('wildAria')}</span>}
+                                  {wildBadge(card)}
+                                </div>
+                              ))}
                             </div>
-                          ))}
+                          )}
                         </div>
-                      )}
-                    </div>
-                  ))}
+                      ))}
+                  </div>
+                </CpuAccordion>
 
                 {/* Score table */}
-                <div className="my-3 p-2 rounded bg-black/30" data-tutorial="ir-score-table">
-                  <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
+                <details
+                  open={!isMobile || undefined}
+                  className="my-3 p-2 rounded bg-black/30"
+                  data-testid="ir-score-details"
+                >
+                  <summary className="cursor-pointer text-ds-text-muted text-sm mb-1" data-tutorial="ir-score-table">
+                    {t('scores')}
+                  </summary>
                   <table className="w-full text-sm text-ds-text-muted">
                     <thead>
                       <tr>
@@ -383,15 +431,24 @@ function IndianRummyPageContent() {
                       ))}
                     </tbody>
                   </table>
-                </div>
+                </details>
               </div>
             </div>
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
+            <ErrorAlert message={error} onRetry={retry} />
+
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            <GameResetButton
+              isGameEnd={!!isGameEnd}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+              dataTutorial="ir-reset-button"
             />
+            <CardNavShortcutsPanel arrowSelection data-testid="indian-rummy-kbd-shortcuts" />
+
+            {isMobile && messageBox}
 
             <ActionLogSection
               isEndPhase={isGameEnd}
@@ -401,7 +458,67 @@ function IndianRummyPageContent() {
             />
           </div>
 
-          <GameFooter className={`${gameTheme.indianrummy.footer} px-4 py-2.5`}>
+          <GameFooter
+            className={`${gameTheme.indianrummy.footer} px-4 py-2.5`}
+            message={isMobile ? undefined : messageBox}
+            actions={
+              (isDrawPhase && isHumanTurn) || (isDiscardPhase && isHumanTurn) || isRoundEnd ? (
+                <div className="flex gap-2 items-center flex-wrap">
+                  {isDrawPhase && isHumanTurn && (
+                    <div className="flex gap-2" data-tutorial="ir-draw-area">
+                      <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
+                        {t('drawStockButton')}
+                      </button>
+                      {state.discardTop && (
+                        <span
+                          className="self-center text-ds-text-muted text-sm"
+                          data-testid="indianrummy-discard-draw-target"
+                        >
+                          {t('drawDiscardTarget', { card: cardAlt(state.discardTop) })}
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={handleDrawDiscard}
+                        disabled={loading || !state.discardTop}
+                      >
+                        {t('drawDiscardButton')}
+                      </button>
+                    </div>
+                  )}
+                  {isDiscardPhase && isHumanTurn && (
+                    <>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={handleDiscard}
+                        disabled={loading || selectedCardIndices.length !== 1}
+                        data-tutorial="ir-discard-button"
+                      >
+                        {t('discardButton')}
+                      </button>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={handleDeclare}
+                        disabled={loading || selectedCardIndices.length !== 1}
+                        data-tutorial="ir-declare-button"
+                        data-testid="indianrummy-declare-button"
+                      >
+                        {t('declareButton')}
+                      </button>
+                    </>
+                  )}
+                  {isRoundEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                      {t('nextRound')}
+                    </button>
+                  )}
+                </div>
+              ) : null
+            }
+          >
             {humanPlayer && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="ir-player-hand">
                 {humanPlayer.cards.map((card, idx) => {
@@ -429,29 +546,6 @@ function IndianRummyPageContent() {
                     </button>
                   );
                 })}
-              </div>
-            )}
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            {/* **CUI は毎ターン出している。**カードを選んでいない思案中でも、いまの
-                デッドウッドとピュアシーケンス充足を確認できるようにする (#4824)。 */}
-            {isDiscardPhase && isHumanTurn && humanPlayer && (
-              // 読み上げは declarePreview 側の live region に任せる。隣り合う
-              // live region が 2 つあると同じ変化を二重に告知する。
-              <div className="mt-2 text-sm text-ds-text-muted" data-testid="indianrummy-hand-status">
-                {t('deadwoodShort', { score: humanPlayer.deadwood })}
-                <span className={`ml-2 ${humanPlayer.hasPureSequence ? 'text-ds-success' : 'text-ds-warning'}`}>
-                  {humanPlayer.hasPureSequence ? t('pureSequenceBadge') : t('pureSequenceMissing')}
-                </span>
-                {/* **A も 10 点。** ジンラミー系に慣れたプレイヤーほど A=1 を
-                    期待するので、合計だけ見せられると数字を逆算できない。
-                    ワイルドが 0 点であることも同時に言う (#5501)。 */}
-                <div className="text-xs" data-testid="indianrummy-points-legend">
-                  {t('pointsLegend')}
-                </div>
               </div>
             )}
 
@@ -487,68 +581,6 @@ function IndianRummyPageContent() {
                 </div>
               )}
             </div>
-
-            <div className="flex gap-2 items-center flex-wrap">
-              {isDrawPhase && isHumanTurn && (
-                <div className="flex gap-2" data-tutorial="ir-draw-area">
-                  <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
-                    {t('drawStockButton')}
-                  </button>
-                  {state.discardTop && (
-                    <span
-                      className="self-center text-ds-text-muted text-sm"
-                      data-testid="indianrummy-discard-draw-target"
-                    >
-                      {t('drawDiscardTarget', { card: cardAlt(state.discardTop) })}
-                    </span>
-                  )}
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleDrawDiscard}
-                    disabled={loading || !state.discardTop}
-                  >
-                    {t('drawDiscardButton')}
-                  </button>
-                </div>
-              )}
-              {isDiscardPhase && isHumanTurn && (
-                <>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleDiscard}
-                    disabled={loading || selectedCardIndices.length !== 1}
-                    data-tutorial="ir-discard-button"
-                  >
-                    {t('discardButton')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleDeclare}
-                    disabled={loading || selectedCardIndices.length !== 1}
-                    data-tutorial="ir-declare-button"
-                    data-testid="indianrummy-declare-button"
-                  >
-                    {t('declareButton')}
-                  </button>
-                </>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={!!isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="ir-reset-button"
-              />
-            </div>
-            <CardNavShortcutsPanel arrowSelection data-testid="indian-rummy-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

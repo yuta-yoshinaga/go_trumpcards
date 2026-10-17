@@ -8,6 +8,14 @@ import type { Card, CardDesign, LobaPlayer, LobaResponse } from '../types/card';
 import { LobaPhase } from '../types/phases';
 import { LobaPage } from './LobaPage';
 
+const mobileState = vi.hoisted(() => ({ isMobile: true, largeDesktop: false }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+  useBreakpoint: () => (mobileState.largeDesktop ? 'largeDesktop' : 'desktop'),
+}));
+
 vi.mock('../api/gameApi', () => ({
   lobaApi: { exec: vi.fn() },
   actionLogApi: { loba: vi.fn() },
@@ -61,7 +69,33 @@ function selectCards(indices: number[]) {
 }
 
 describe('LobaPage', () => {
+  it('does not make the player hand sticky on large desktop', async () => {
+    mobileState.largeDesktop = true;
+    const { unmount } = renderWithProviders(<LobaPage />);
+    await waitFor(() => expect(document.querySelector('[data-tutorial="lb-hand"]')).toBeInTheDocument());
+    expect(document.querySelector('.grid-cols-2')).toBeInTheDocument();
+    expect(document.querySelector('[data-tutorial="lb-hand"]')).not.toHaveClass('lg:sticky');
+    expect(screen.getByTestId('cpu-accordion')).not.toHaveAttribute('open');
+    unmount();
+    mobileState.largeDesktop = false;
+    renderWithProviders(<LobaPage />);
+    await waitFor(() => expect(document.querySelector('.grid-cols-2')).not.toBeInTheDocument());
+    unmount();
+  });
+
+  it('wraps melds on large desktop while retaining the narrow layout elsewhere', async () => {
+    mobileState.largeDesktop = true;
+    const { unmount } = renderWithProviders(<LobaPage />);
+    await waitFor(() => expect(screen.getByTestId('loba-meld').parentElement).toHaveClass('flex-wrap'));
+    unmount();
+    mobileState.largeDesktop = false;
+    renderWithProviders(<LobaPage />);
+    await waitFor(() => expect(screen.getByTestId('loba-meld').parentElement).toHaveClass('sm:flex-col'));
+  });
+
   beforeEach(() => {
+    mobileState.isMobile = true;
+    mobileState.largeDesktop = false;
     vi.clearAllMocks();
     // ヒントのトグルは localStorage に残る。消さないと次のテストが
     // チェック済みで始まり、クリックで off になる。
@@ -72,12 +106,61 @@ describe('LobaPage', () => {
     });
   });
 
+  it('keeps rules and CPU details collapsed while their content stays in the DOM', async () => {
+    renderWithProviders(<LobaPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    const ruleDetails = screen.getByTestId('lb-rule-details');
+    expect(ruleDetails).not.toHaveAttribute('open');
+    expect(ruleDetails).toHaveClass('flex-1', 'open:basis-full');
+    expect(ruleDetails.parentElement).toHaveClass('flex', 'flex-wrap', 'gap-2', 'sm:block');
+    const ruleText = ruleDetails.querySelector('[data-tutorial="lb-rule"]');
+    expect(ruleText).toBeInTheDocument();
+    expect(ruleText?.parentElement?.tagName).not.toBe('SUMMARY');
+    expect(ruleText).not.toBeVisible();
+    fireEvent.click(ruleDetails.querySelector('summary')!);
+    expect(ruleDetails).toHaveAttribute('open');
+    expect(ruleText).toBeVisible();
+    const cpuDetails = screen.getByTestId('cpu-accordion');
+    expect(cpuDetails).not.toHaveAttribute('open');
+    expect(cpuDetails).toHaveClass('flex-1', 'open:basis-full');
+    expect(cpuDetails.querySelector('[role="img"]')).toBeInTheDocument();
+    expect(cpuDetails.querySelector('.flex.flex-wrap')).toBeInTheDocument();
+    const cpuHand = cpuDetails.querySelector('[role="img"]');
+    expect(cpuHand).toBeInTheDocument();
+    expect(cpuHand?.querySelector('img')).toHaveStyle({ width: '44px' });
+    expect(cpuHand?.querySelectorAll('img')[1]).toHaveClass('-ml-5');
+    const meldList = screen.getByTestId('loba-meld').parentElement;
+    expect(meldList?.classList.contains('flex-wrap')).toBe(true);
+    expect(meldList?.classList.contains('sm:flex-col')).toBe(true);
+    expect(screen.getByTestId('loba-meld').querySelector('.-ml-3')).toBeInTheDocument();
+  });
+
+  it('shows the eliminated label beside an eliminated CPU seat', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ players: [seat(0, true), seat(1, false, { eliminated: true }), seat(2, false), seat(3, false)] }),
+    );
+    renderWithProviders(<LobaPage />);
+
+    const cpuDetails = await screen.findByTestId('cpu-accordion');
+    expect(cpuDetails).toHaveTextContent('CPU 1: 手札9枚 · 失点12 · 脱落');
+  });
+
   it('opens the action log during play and shows its entries', async () => {
     renderWithProviders(<LobaPage />);
     const button = await screen.findByRole('button', { name: '棋譜を見る' });
     fireEvent.click(button);
     expect(await screen.findByText(/VISIBLE LOG ENTRY/)).toBeInTheDocument();
     expect(mockActionLog).toHaveBeenCalled();
+  });
+
+  it('keeps CPU seats collapsed on desktop', async () => {
+    mobileState.isMobile = false;
+    renderWithProviders(<LobaPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.getByTestId('cpu-accordion')).not.toHaveAttribute('open');
+    expect(screen.getByTestId('cpu-accordion').querySelector('.sm\\:grid-cols-3')).toBeInTheDocument();
+    const meldList = screen.getByTestId('loba-meld').parentElement;
+    expect(meldList).toHaveClass('sm:flex-col');
   });
 
   it('resets on mount', async () => {
@@ -88,6 +171,7 @@ describe('LobaPage', () => {
   it('shows both rules permanently and the knock-out threshold', async () => {
     renderWithProviders(<LobaPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    fireEvent.click(screen.getByTestId('lb-rule-details').querySelector('summary')!);
     expect(screen.getByText(/異なる3スート/)).toBeInTheDocument();
     expect(screen.getByText(/ジョーカーは1枚まで、ピエルナ不可/)).toBeInTheDocument();
     expect(screen.getByText(/101点で脱落/)).toBeInTheDocument();
@@ -285,6 +369,7 @@ describe('LobaPage', () => {
   });
 
   it('tells a clean go-out apart at the end of a round', async () => {
+    mobileState.largeDesktop = true;
     mockExec.mockResolvedValue(
       makeState({
         phase: LobaPhase.ROUND_END,
@@ -300,6 +385,8 @@ describe('LobaPage', () => {
     );
     renderWithProviders(<LobaPage />);
     await waitFor(() => expect(screen.getByTestId('loba-round-result')).toHaveTextContent('-10'));
+    expect(screen.getByTestId('loba-round-result')).toHaveClass('row-start-3');
+    expect(document.querySelector('[data-tutorial="lb-hand"]')).toHaveClass('row-start-4');
     const announcement = screen.getByRole('status');
     expect(announcement).toHaveTextContent('あなた: +12 (合計 25)');
     expect(announcement).toHaveTextContent('CPU 2: +-10 (合計 2)');

@@ -1,5 +1,5 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, ninetyNineApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { NinetyNineResponse } from '../types/card';
@@ -117,7 +117,40 @@ beforeEach(() => {
   mockExec.mockResolvedValue(playPhaseState);
 });
 
+afterEach(() => {
+  Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1024 });
+});
+
 describe('NinetyNinePage', () => {
+  it('keeps status labels intact and wraps between items', async () => {
+    renderWithProviders(<NinetyNinePage />);
+    const row = await screen.findByTestId('nn-status-row');
+    expect(row).toHaveClass('flex-wrap');
+    expect(row.querySelectorAll('span.whitespace-nowrap').length).toBeGreaterThanOrEqual(3);
+  });
+  it('keeps trick and round score headings on one line', async () => {
+    renderWithProviders(<NinetyNinePage />);
+    const headers = await screen.findAllByRole('columnheader');
+    expect(headers.filter((header) => header.classList.contains('text-[10px]'))).toHaveLength(2);
+    expect(headers.filter((header) => header.classList.contains('whitespace-nowrap'))).toHaveLength(2);
+  });
+  it('renders turn guidance in the footer on desktop', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1024 });
+    mockExec.mockResolvedValue({ ...playPhaseState, message: 'Footer guidance' });
+    renderWithProviders(<NinetyNinePage />);
+    const message = await screen.findByText('Footer guidance');
+    expect(message.closest('[data-testid="game-footer-message"]')).toBeInTheDocument();
+  });
+
+  it('keeps turn guidance in the play area on mobile', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 375 });
+    mockExec.mockResolvedValue({ ...playPhaseState, message: 'Mobile guidance' });
+    renderWithProviders(<NinetyNinePage />);
+    const message = await screen.findByText('Mobile guidance');
+    expect(message.closest('[role="status"]')).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+  });
+
   it('shows only the human player’s buried cards after the bid phase', async () => {
     mockExec.mockResolvedValue(playPhaseState);
     renderWithProviders(<NinetyNinePage />);
@@ -160,6 +193,9 @@ describe('NinetyNinePage', () => {
       expect(screen.getByAltText('♠ A')).toBeInTheDocument();
       expect(screen.getByAltText('♥ J')).toBeInTheDocument();
     });
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: 'カードを出す' }),
+    ).toBeInTheDocument();
   });
 
   it('marks cards that follow the led suit and explains restricted cards accessibly', async () => {
@@ -548,5 +584,19 @@ describe('NinetyNinePage trick winner badge', () => {
     renderWithProviders(<NinetyNinePage />);
     await waitFor(() => expect(screen.getAllByRole('img').length).toBeGreaterThan(0));
     expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument();
+  });
+  it('fits the score table at large desktop widths', async () => {
+    const innerWidthSpy = vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(1280);
+    try {
+      const { container } = renderWithProviders(<NinetyNinePage />);
+      await waitFor(() =>
+        expect(container.querySelector('[data-tutorial="nn-score-table"] table')).toBeInTheDocument(),
+      );
+      const table = container.querySelector('[data-tutorial="nn-score-table"] table');
+      expect(table?.className).toContain('table-fixed');
+      expect(table?.className).not.toContain('min-w-[');
+    } finally {
+      innerWidthSpy.mockRestore();
+    }
   });
 });

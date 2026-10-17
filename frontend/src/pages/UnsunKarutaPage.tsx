@@ -15,9 +15,10 @@ import { PlayerHandSection } from '../components/PlayerHandSection';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
+import { useElementWidth } from '../hooks/useElementWidth';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
@@ -150,10 +151,16 @@ function UnsunKarutaPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('unsunkaruta', state);
   const { cardWidth, isMobile } = useCardDimensions();
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
+  const [trickColumnRef, trickColumnWidth] = useElementWidth<HTMLDivElement>();
   const phaseNames = usePhaseNames('unsunkaruta', UNSUN_PHASE_KEYS);
 
   if (!state)
     return <GameSkeleton gameKey="unsunkaruta" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 9 }} />;
+
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
 
   const humanPlayer = state.players.find((p) => p.isHuman);
   const isHumanTurn = state.isHumanTurn;
@@ -242,13 +249,23 @@ function UnsunKarutaPageContent() {
             </div>
 
             <div className={lgTwoColGrid}>
-              <div>
+              <div ref={trickColumnRef}>
                 <TrickDisplay
                   currentTrick={state.currentTrick}
                   players={state.players}
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
-                  wrap
+                  wrap={!isLargeDesktop}
+                  cardAdvancePx={
+                    isLargeDesktop
+                      ? trickColumnWidth > 0
+                        ? Math.max(
+                            24,
+                            Math.min(cardWidth * 0.8, (trickColumnWidth - 24 - cardWidth) / (state.players.length - 1)),
+                          )
+                        : cardWidth * 0.8
+                      : undefined
+                  }
                   dataTutorial="unsunkaruta-trick-display"
                   winnerIdx={isTrickEnd && state.lastTrickWinner >= 0 ? state.lastTrickWinner : undefined}
                   winnerLabel={t('trickWinnerBadge')}
@@ -348,13 +365,7 @@ function UnsunKarutaPageContent() {
                 )}
               </div>
             </div>
-
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
+            {isMobile && messageBox}
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -363,7 +374,10 @@ function UnsunKarutaPageContent() {
             />
           </div>
 
-          <GameFooter className={`${gameTheme.unsunkaruta.footer} px-4 py-2.5`}>
+          <GameFooter
+            message={isMobile ? undefined : messageBox}
+            className={`${gameTheme.unsunkaruta.footer} px-4 py-2.5`}
+          >
             {/* **フォロー義務は宣言で生まれる。** 出ているかどうかを書かないと、
                 なぜこの札しか押せないのかが読めない。 */}
             {canPlay && state.mustFollow && (

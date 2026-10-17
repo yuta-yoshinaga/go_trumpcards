@@ -34,9 +34,11 @@ Claude Code hooks（`.claude/settings.json`）を使い、以下の自動品質�
 
 ### PreToolUse hooks（git commit前にブロッキングチェック）
 
-3. **golangci-lint**: ステージされたGoファイルがある場合、`golangci-lint run ./...`を実行。警告があればコミットをブロック
+Goファイルの整形はコミット時にもステージ済み blob に対して `goimports -local github.com/yuta-yoshinaga/go_trumpcards` で検証する。ADR、Web API ルート、ゲーム登録の追加に対する限定的なドキュメント整合性チェックは `.claude/hooks/doc-drift-commit.sh` が行い、変更だけでは発火しない。
+
+3. **golangci-lint**: ステージされたGoファイルがある場合、CIと同じ`golangci-lint run --build-tags test ./...`を実行。警告があればコミットをブロック
 4. **biome check**: ステージされたTS/TSXファイルがある場合、`bun run check`を実行。エラーがあればコミットをブロック
-5. **ドキュメント乖離検知**: agentフックでステージされたファイルからドキュメント更新漏れを検出。CLAUDE.mdのDocumentation Maintenanceテーブルのルールを適用
+5. **ドキュメント乖離検知**: `.claude/hooks/doc-drift-commit.sh` が、新しい ADR・Web API ルート・ゲーム登録の**追加**に対応するドキュメント (`docs/adr/README.md`・`api/openapi.yaml`・`README.md`/`docs/games.md`/`docs/manual/`) がステージされていなければコミットをブロック。既存エントリの変更では発火しない
 6. **プロセス終了ガード**: `.claude/hooks/proc-kill-guard.sh`が、呼び出し元シェルにも一致し得る`pkill -f`等を拒否
    SSH remote command と `xargs` が起動するコマンド文字列の内部までは解析しない。
 7. **worktreeブランチガード**: `.claude/hooks/worktree-branch-guard.sh`が、別worktreeでcheckout中のブランチを動かす操作を拒否

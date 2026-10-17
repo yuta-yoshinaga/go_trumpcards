@@ -2,17 +2,19 @@ import { useCallback, useMemo, useState } from 'react';
 import { shelemApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { CARD_DIMENSIONS, useCardDimensions, useIsCompactLargeDesktop, useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -90,7 +92,12 @@ function ShelemPageContent() {
     exec: dispatch,
     retry,
   } = useGameApi<ShelemResponse, Parameters<typeof shelemApi.exec>>(shelemApi.exec);
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth: measuredCardWidth } = useCardDimensions();
+  const isCompactLargeDesktop = useIsCompactLargeDesktop();
+  // The hand sits below the seats and trick; at 1024–1279px the board is too short, so 60px saves 20px per row.
+  // Do not use useDenseLargeDesktopCardSize: at 1280px+ this page must use shared useCardDimensions sizing.
+  const cardWidth = isCompactLargeDesktop ? CARD_DIMENSIONS.desktop.cardWidth : measuredCardWidth;
+  const isMobile = useIsMobile();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('shelem', state);
   // 捨てる4枚は押して選ぶ。サーバに送るまではこちらで保持する。
   const [picked, setPicked] = useState<number[]>([]);
@@ -229,7 +236,7 @@ function ShelemPageContent() {
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
-          <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
+          <div className="flex-1 min-h-0 overflow-y-auto pt-3 px-4 lg:px-8">
             <div className="text-ds-text-primary text-center mb-2">
               <span className="mr-4" data-testid="sh-round">
                 {t('header.round')}: {state.roundNumber}
@@ -241,13 +248,12 @@ function ShelemPageContent() {
             </div>
 
             {/* **点になるのは A/10/5 だけ。** 盤面から読めない。 */}
-            <div
-              className="mb-3 rounded bg-black/30 px-3 py-2 text-ds-text-muted text-sm text-center"
-              data-testid="sh-points"
-              data-tutorial="sh-points"
-            >
-              {t('header.pointTable')}
-            </div>
+            <details className="mb-3 rounded bg-black/30 px-3 py-2 text-sm" data-tutorial="sh-points">
+              <summary className="cursor-pointer select-none text-ds-text-muted">{t('header.pointTableLabel')}</summary>
+              <div className="pt-2 text-center text-ds-text-muted" data-testid="sh-points">
+                {t('header.pointTable')}
+              </div>
+            </details>
 
             {state.widowSize > 0 && (
               <div className="mb-2 p-2 rounded bg-black/20 text-xs" data-testid="sh-widow">
@@ -281,9 +287,12 @@ function ShelemPageContent() {
               {state.trumpSuit > 0 && ` / ${t('header.trump', { suit: suitSymbolAt(state.trumpSuit, '?') })}`}
             </div>
 
-            <div className="text-ds-text-muted text-sm text-center mb-3" data-testid="sh-score">
-              {t('header.score', { t0: String(state.scores[0] ?? 0), t1: String(state.scores[1] ?? 0) })}
-            </div>
+            <details className="mb-3 text-center text-sm" data-testid="sh-score" open={!isMobile || undefined}>
+              <summary className="cursor-pointer select-none text-ds-text-muted">{t('header.scoreLabel')}</summary>
+              <div className="pt-1 text-ds-text-muted">
+                {t('header.score', { t0: String(state.scores[0] ?? 0), t1: String(state.scores[1] ?? 0) })}
+              </div>
+            </details>
             <div className="text-ds-text-muted text-sm text-center mb-3" data-testid="sh-team-tricks">
               <div>{t('header.teamTricksLabel')}</div>
               <div className="flex justify-center gap-3">
@@ -307,24 +316,39 @@ function ShelemPageContent() {
               </div>
             )}
 
-            <div className="flex flex-wrap justify-center gap-2 mb-4" data-tutorial="sh-seats">
-              {state.players.map((p) => (
+            {human && (
+              <div className="mb-2 flex justify-center" data-testid="sh-human-seat">
                 <div
-                  key={p.id}
-                  className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
-                  data-testid={`sh-seat-${p.id.toString()}`}
+                  className="rounded bg-black/30 px-2 py-1 text-xs text-ds-text-muted whitespace-nowrap"
+                  data-testid={`sh-seat-${human.id.toString()}`}
                 >
-                  <span className="text-ds-text-primary">
-                    {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
-                  </span>
-                  <span className="ml-1 text-ds-accent">{t('header.team', { team: String(p.team) })}</span>
+                  <span className="text-ds-text-primary">{t('header.you')}</span>
+                  <span className="ml-1 text-ds-accent">{t('header.team', { team: String(human.team) })}</span>
                   {': '}
-                  {roleStr(p)}
-                  {' / '}
-                  {t('header.took', { n: String(p.trickCount) })}
+                  {roleStr(human)} / {t('header.took', { n: String(human.trickCount) })}
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
+            <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length} dataTutorial="sh-seats">
+              <div className="flex flex-wrap justify-center gap-2 mb-4">
+                {state.players
+                  .filter((p) => !p.isHuman)
+                  .map((p) => (
+                    <div
+                      key={p.id}
+                      className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
+                      data-testid={`sh-seat-${p.id.toString()}`}
+                    >
+                      <span className="text-ds-text-primary">{t('header.cpu', { idx: String(p.id) })}</span>
+                      <span className="ml-1 text-ds-accent">{t('header.team', { team: String(p.team) })}</span>
+                      {': '}
+                      {roleStr(p)}
+                      {' / '}
+                      {t('header.took', { n: String(p.trickCount) })}
+                    </div>
+                  ))}
+              </div>
+            </CpuAccordion>
 
             <div data-tutorial="sh-trick">
               <TrickDisplay
@@ -341,15 +365,128 @@ function ShelemPageContent() {
               </div>
             )}
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-            <ErrorAlert message={error} onRetry={retry} />
+            {isMobile && (
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            )}
 
+            <ErrorAlert message={error} onRetry={retry} />
+            {hintEnabled && hint && (
+              <div className="mt-3 flex justify-center">
+                <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />
+              </div>
+            )}
+
+            <SettingsPanel
+              title={tc('settings.title')}
+              groups={[{ items: [hintCheckboxItem(tc, hintEnabled, setHintEnabled)] }]}
+            />
+          </div>
+
+          <GameFooter
+            className={`${gameTheme.shelem.footer} px-4 py-2.5`}
+            tall={isMobile}
+            message={
+              !isMobile && (
+                <GameMessageBox
+                  message={state.message}
+                  messageCode={state.messageCode}
+                  messageParams={state.messageParams}
+                />
+              )
+            }
+            actions={
+              <div className={`flex flex-wrap ${isMobile ? 'gap-1' : 'gap-2'}`}>
+                <div
+                  className={`flex flex-wrap ${isMobile ? 'gap-1' : 'gap-2'}`}
+                  data-tutorial="sh-actions"
+                  data-testid="sh-primary-actions"
+                >
+                  {isHumanBidTurn && (
+                    <>
+                      {/* **上回れる額だけを出す。** サーバが必ず拒否する額は出さない。 */}
+                      {bidChoices.map((bid) => (
+                        <button
+                          key={bid}
+                          type="button"
+                          className={btnWarning}
+                          onClick={() => handleBid(bid)}
+                          disabled={loading}
+                          data-testid={`sh-bid-${bid.toString()}-btn`}
+                        >
+                          {String(bid)}
+                        </button>
+                      ))}
+                      <button
+                        type="button"
+                        className={btnWarning}
+                        onClick={handleShelem}
+                        disabled={loading}
+                        data-testid="sh-shelem-btn"
+                      >
+                        {t('actions.shelem', { value: SHELEM_VALUE })}
+                      </button>
+                      {/* **最後の1人は降りられない。** 押せないボタンを出さない。 */}
+                      {mustBid ? (
+                        <span className="self-center text-ds-text-muted text-sm" data-testid="sh-must-bid">
+                          {t('mustBid')}
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          className={btnSuccess}
+                          onClick={handlePass}
+                          disabled={loading}
+                          data-testid="sh-pass-btn"
+                        >
+                          {t('actions.pass')}
+                        </button>
+                      )}
+                    </>
+                  )}
+                  {isHumanDiscardTurn &&
+                    SUITS.map((suit) => (
+                      <button
+                        key={suit}
+                        type="button"
+                        className={btnWarning}
+                        onClick={() => handleDiscard(suit)}
+                        // **ちょうど4枚選ぶまで押させない。** サーバが必ず拒否する。
+                        disabled={loading || picked.length !== state.discardCount}
+                        aria-disabled={picked.length !== state.discardCount}
+                        aria-label={t('actions.discardAria', { suit: tc(SUIT_I18N_KEYS[suit]) })}
+                        data-testid={`sh-discard-${suit.toString()}-btn`}
+                      >
+                        {t('actions.discard', { suit: suitSymbolAt(suit, '?') })}
+                      </button>
+                    ))}
+                </div>
+                {isRoundEnd && !isGameEnd && (
+                  <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                    {t('actions.nextRound')}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={() => requestConfirm(handleReset)}
+                  disabled={loading}
+                >
+                  {t('actions.reset')}
+                </button>
+                {!isGameEnd && (
+                  <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
+                    {t('actions.giveUp')}
+                  </button>
+                )}
+              </div>
+            }
+          >
             {human && human.cards.length > 0 && (
-              <div className="mt-4" data-tutorial="sh-hand">
+              <div className="mb-2" data-tutorial="sh-hand">
                 <div className="text-ds-text-muted text-sm mb-1">
                   {t('header.you')}: {human.cardCount}
                   {isHumanDiscardTurn &&
@@ -396,97 +533,7 @@ function ShelemPageContent() {
                 </div>
               </div>
             )}
-
-            {hintEnabled && hint && (
-              <div className="mt-3 flex justify-center">
-                <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />
-              </div>
-            )}
-
-            <div className="mt-4 flex flex-wrap gap-2" data-tutorial="sh-actions">
-              {isHumanBidTurn && (
-                <>
-                  {/* **上回れる額だけを出す。** サーバが必ず拒否する額は出さない。 */}
-                  {bidChoices.map((bid) => (
-                    <button
-                      key={bid}
-                      type="button"
-                      className={btnWarning}
-                      onClick={() => handleBid(bid)}
-                      disabled={loading}
-                      data-testid={`sh-bid-${bid.toString()}-btn`}
-                    >
-                      {String(bid)}
-                    </button>
-                  ))}
-                  <button
-                    type="button"
-                    className={btnWarning}
-                    onClick={handleShelem}
-                    disabled={loading}
-                    data-testid="sh-shelem-btn"
-                  >
-                    {t('actions.shelem', { value: SHELEM_VALUE })}
-                  </button>
-                  {/* **最後の1人は降りられない。** 押せないボタンを出さない。 */}
-                  {mustBid ? (
-                    <span className="self-center text-ds-text-muted text-sm" data-testid="sh-must-bid">
-                      {t('mustBid')}
-                    </span>
-                  ) : (
-                    <button
-                      type="button"
-                      className={btnSuccess}
-                      onClick={handlePass}
-                      disabled={loading}
-                      data-testid="sh-pass-btn"
-                    >
-                      {t('actions.pass')}
-                    </button>
-                  )}
-                </>
-              )}
-              {isHumanDiscardTurn &&
-                SUITS.map((suit) => (
-                  <button
-                    key={suit}
-                    type="button"
-                    className={btnWarning}
-                    onClick={() => handleDiscard(suit)}
-                    // **ちょうど4枚選ぶまで押させない。** サーバが必ず拒否する。
-                    disabled={loading || picked.length !== state.discardCount}
-                    aria-disabled={picked.length !== state.discardCount}
-                    aria-label={t('actions.discardAria', { suit: tc(SUIT_I18N_KEYS[suit]) })}
-                    data-testid={`sh-discard-${suit.toString()}-btn`}
-                  >
-                    {t('actions.discard', { suit: suitSymbolAt(suit, '?') })}
-                  </button>
-                ))}
-              {isRoundEnd && !isGameEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('actions.nextRound')}
-                </button>
-              )}
-              <button
-                type="button"
-                className={btnPrimary}
-                onClick={() => requestConfirm(handleReset)}
-                disabled={loading}
-              >
-                {t('actions.reset')}
-              </button>
-              {!isGameEnd && (
-                <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
-                  {t('actions.giveUp')}
-                </button>
-              )}
-            </div>
-
-            <SettingsPanel
-              title={tc('settings.title')}
-              groups={[{ items: [hintCheckboxItem(tc, hintEnabled, setHintEnabled)] }]}
-            />
-          </div>
+          </GameFooter>
 
           <ActionLogSection
             isEndPhase={isGameEnd}

@@ -11,6 +11,7 @@ $body
 ## 手順
 0. **必要な値が Web 応答に無いことは NOT_PLANNED の理由にならない。** その場合はドメインに getter を足し、Web 応答 (controller の json・presenter・api/openapi.yaml・frontend/src/types・stateFactories) に足して実装する (#9530 / #9609 で 2 回止まった)。
 1. **まず前提を実コードで確かめること。** 提案が既に実装済み、または前提が誤っている (その要素は既に存在する、共有 hook/子コンポーネントで既に満たされている等) なら、**ファイルを一切変更せず**、最終報告の先頭行に \`VERDICT: NOT_PLANNED\` と書き、根拠をファイル:行で示すこと。
+   - 画面の表示 (重複・はみ出し・隠れ・文言) についての指摘を NOT_PLANNED にするときは、コードを読んだだけで判断しない。\`renderWithProviders\` で該当の state を描画した DOM 断片 (または実画面の計測) を根拠に添える (#11773 でコードの読みだけで NOT_PLANNED と返したが、描画すると重複していた)。
 2. 前提が正しければ TDD で実装する。最終報告の先頭行は \`VERDICT: IMPLEMENTED\`。
    - ページ変更は \`frontend/src/pages/<X>Page.test.tsx\` に試験を足す (renderWithProviders を使う既存形に倣う)。
    - 文言は必ず i18n。\`frontend/src/i18n/locales/{ja,en}/<game>.json\` を**キー単位で対に**更新する。ja の値に英語を残さない。既存の近い文言・キー名を先に grep して揃える。
@@ -41,6 +42,8 @@ $body
    - 文の区切り (、 / ", ") を JSX のテンプレートリテラルにハードコードしない。区切りを含む文全体をロケールのテンプレートにする。
    - 訳語は同じゲームのロケールの既存の表記に合わせる (\`git grep <語> origin/develop -- frontend/src/i18n/locales/ja/<game>.json\` で確認。例: euchre は「バウアー」)。
    - 3 項目以上の新しいボタンや分岐を足すときも、既存のボタン・操作を隠したり意味を変えたりしない。
+   - レイアウトを変えるときは DOM の順序を変えない。列・行の配置は grid の class (\`col-start-*\` / \`row-start-*\`) だけで決め、狭い画面では包みを \`display: contents\` にして今の並びを保つ (#11802 で DOM 順を変えて差し戻し)。
+   - 卓の席数・トリックの枚数・手札の枚数は issue 文や推測で決めず、internal/domain/ のそのゲームの定数・コンストラクタから取る (#11801 で 8 人卓を 4 枚と見なし、横にはみ出した)。
    - **画面の差分 (前回の state との比較) で「出た札」「勝者」を読み上げるときは**、usecase の Interactor が人間の操作の中で CPU を何手進めるか (runCpuTurns 等) を先に読む。1 回の応答で複数の札が増える・トリック確定と次のリードが同時に起きる前提で、増えた札すべてと勝者の両方を出す。
    - 札の画像 (CardImage の alt) を中に持つボタンに aria-label を足すと、alt はアクセシブル名に入らなくなる。札がある状態では aria-label にも札名 (cardAlt) を含める。
    - api/openapi.yaml にプロパティを足すときは、既存プロパティの \`type:\` と \`description:\` の間に挿入しない (挿入位置の前後 5 行を必ず確認。\`mapping key "description" already defined\` で YAML が壊れる事故が 2 回)。共有スキーマ (複数の paths が \$ref する) に足すと他ゲームでも宣言されるので、そのゲームの応答が参照するスキーマを paths から辿って確認する。
@@ -59,6 +62,7 @@ $body
    - Go の presenter / domain を触ったら、そのファイルの //go:build にある worker タグで GOOS=js GOARCH=wasm go build -tags <worker> -o /dev/null ./cmd/workers/<worker> を通す。別タグのファイルの関数は使わず、共有したい関数はタグ無しの共有ヘルパへ移す。
    - 新しく足した関数・export は、定義以外から使われていることを git grep で確かめる (使われないものは足さない)。
 3. 受け入れ条件 (issue の各項目) を 1 対 1 で満たすこと。範囲外の改名・整形・無関係なファイル変更をしない。
+   - 既存のコメント (TSDoc / GoDoc / 説明コメント) は、依頼された箇所以外で削除・短縮しないこと。
 
 ## 検証 (すべて通すこと)
 - \`cd frontend && bunx vitest run <変更したテストファイル>\` (**-t で絞らずファイル丸ごと**。アクセシブル名を変えると既存試験のクエリが落ちる: #9631 で 12 本)

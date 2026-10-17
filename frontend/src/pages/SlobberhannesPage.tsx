@@ -139,7 +139,6 @@ function SlobberhannesPageContent() {
   // 個別に disabled にすると e2e の「先頭の札を押す」が動く的になる。
   const legalRing = new Set(isHumanTurn ? state.validPlays : []);
 
-  const isFirstTrick = state.trickNumber === 0;
   // **♣Q だけは位置ではなく中身の罰点** (#5745)。最初/最後は番号で警告できるが、
   // ♣Q は「今場に出ているか」がリスクの本体で、取ってから penaltyMarks で
   // 気づくのでは遅い。
@@ -200,7 +199,7 @@ function SlobberhannesPageContent() {
             {/* ♣Q が場に出ている間は、位置の警告と並べて出す。 */}
             {!isGameEnd && !isRoundEnd && queenOnTable && (
               <div
-                className="mb-3 rounded bg-ds-surface border border-ds-error px-3 py-2 text-ds-text-primary text-sm text-center"
+                className="mb-2 rounded bg-ds-surface border border-ds-error px-2 py-1 text-ds-text-primary text-xs text-center"
                 role="status"
                 data-testid="sh-queen-warning"
               >
@@ -210,7 +209,7 @@ function SlobberhannesPageContent() {
 
             {!isGameEnd && !isRoundEnd && !queenOnTable && !queenAlreadyTaken && queenInHandIdx < 0 && (
               <div
-                className={`mb-3 rounded px-3 py-2 text-ds-text-primary text-sm text-center ${badgeInfoColors}`}
+                className={`mb-2 rounded px-2 py-1 text-ds-text-primary text-xs text-center ${badgeInfoColors}`}
                 role="status"
                 data-testid="sh-queen-unseen-warning"
               >
@@ -219,22 +218,22 @@ function SlobberhannesPageContent() {
             )}
 
             {/* 最初と最後のトリックは中身に関係なく罰点対象。盤面には出ない情報。 */}
-            {!isGameEnd && !isRoundEnd && (isFirstTrick || isLastTrick) && (
+            {!isGameEnd && !isRoundEnd && isLastTrick && (
               <div
-                className="mb-3 rounded bg-ds-surface border border-ds-warning px-3 py-2 text-ds-text-primary text-sm text-center"
+                className="mb-2 rounded bg-ds-surface border border-ds-warning px-2 py-1 text-ds-text-primary text-xs text-center"
                 role="status"
                 data-testid="sh-position-warning"
               >
-                {isFirstTrick ? t('warn.first') : t('warn.last')}
+                {t('warn.last')}
               </div>
             )}
 
             {/* 得点と、そのラウンドで受けている罰の内訳 */}
-            <div className="flex flex-wrap justify-center gap-2 mb-4" data-tutorial="slobberhannes-scores">
+            <div className="flex flex-wrap justify-center gap-1 mb-2" data-tutorial="slobberhannes-scores">
               {state.players.map((p, seatIdx) => (
                 <div
                   key={p.id}
-                  className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
+                  className="rounded bg-black/30 px-2 py-1 text-xs text-ds-text-muted"
                   data-testid={`sh-seat-${p.id.toString()}`}
                 >
                   <span className="text-ds-text-primary">

@@ -84,6 +84,68 @@ describe('BettingControls', () => {
     expect(screen.getByRole('button', { name: 'フォールド' }).querySelector('kbd')).toHaveTextContent('F');
   });
 
+  it('lays out the controls in a wrapping row whose action buttons never shrink below their labels', () => {
+    const { rerender } = render(<BettingControls {...makeProps({ hasOutstandingBet: true })} />);
+    const controls = screen.getByTestId('betting-key-hints').parentElement;
+    expect(controls?.className.split(' ')).toEqual(expect.arrayContaining(['sm:items-center']));
+    expect(screen.getByTestId('betting-key-hints').className.split(' ')).toEqual(
+      expect.arrayContaining(['hidden', 'sm:basis-full', 'sm:block']),
+    );
+    expect(screen.getByLabelText('ベット額:').parentElement?.parentElement?.className.split(' ')).toEqual(
+      expect.arrayContaining(['flex-row']),
+    );
+    for (const name of [/^コール(?:\s|$)/, 'レイズ', 'フォールド', 'オールイン'] as const) {
+      const classes = screen.getByRole('button', { name }).className.split(' ');
+      expect(classes).toEqual(
+        expect.arrayContaining([
+          'flex-1',
+          'min-w-fit',
+          'whitespace-nowrap',
+          'max-sm:px-1!',
+          'max-sm:mx-0!',
+          'min-h-[44px]',
+          'text-sm',
+          'sm:flex-none',
+          'sm:min-w-[80px]',
+        ]),
+      );
+      // The old fixed minimum let labels outgrow their buttons (#11657).
+      expect(classes).not.toContain('min-w-[56px]');
+    }
+
+    rerender(<BettingControls {...makeProps()} />);
+    for (const name of ['ベット', 'チェック', 'フォールド', 'オールイン'] as const) {
+      const classes = screen.getByRole('button', { name }).className.split(' ');
+      expect(classes).toEqual(
+        expect.arrayContaining([
+          'flex-1',
+          'min-w-fit',
+          'whitespace-nowrap',
+          'max-sm:px-1!',
+          'max-sm:mx-0!',
+          'min-h-[44px]',
+          'text-sm',
+          'sm:flex-none',
+          'sm:min-w-[80px]',
+        ]),
+      );
+      // The old fixed minimum let labels outgrow their buttons (#11657).
+      expect(classes).not.toContain('min-w-[56px]');
+    }
+  });
+
+  it('keeps call pot odds and range errors on their own mobile rows', () => {
+    const { rerender } = render(
+      <BettingControls {...makeProps({ hasOutstandingBet: true, callPotOddsLabel: '必要ポットオッズ: 25.0%' })} />,
+    );
+    expect(screen.getByText('必要ポットオッズ: 25.0%').className.split(' ')).toEqual(
+      expect.arrayContaining(['basis-full']),
+    );
+
+    rerender(<BettingControls {...makeProps({ betAmount: 5, minRaise: 10 })} />);
+    expect(screen.getByRole('alert').className.split(' ')).toEqual(expect.arrayContaining(['basis-full']));
+  });
+
   it('renders the check/bet key-hint line and aria-keyshortcuts when there is no outstanding bet', () => {
     render(<BettingControls {...makeProps()} />);
     const hints = screen.getByTestId('betting-key-hints');

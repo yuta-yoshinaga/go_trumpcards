@@ -363,46 +363,6 @@ function SpeedPageContent() {
               </div>
             </div>
 
-            {/* Stuck message, flip button, and inline auto-flip toggle */}
-            {isStuck && (
-              <div
-                className={`flex flex-col items-center gap-2 ${badgeWarningColors} ring-2 ring-ds-warning rounded-lg p-3`}
-                data-testid="stuck-emphasis-container"
-                role="status"
-                aria-live="polite"
-              >
-                <p className="text-ds-warning font-bold text-base sm:text-lg">{t('stuckMessage')}</p>
-                {speedConfig.autoFlip && !loading && (
-                  <div className="text-ds-warning">
-                    <AutoFlipCountdown
-                      key={`stuck-${state.message}-${state.centerPiles.map((c) => c?.value ?? 0).join(',')}`}
-                      durationMs={AUTO_FLIP_DELAY_MS}
-                      ariaLabel={t('autoFlipCountdownAria')}
-                      formatRemaining={(n) => t('autoFlipCountdownRemaining', { n })}
-                    />
-                  </div>
-                )}
-                <button
-                  type="button"
-                  onClick={handleFlip}
-                  disabled={loading}
-                  className={`px-4 py-2 bg-ds-warning text-white rounded hover:bg-ds-warning-hover disabled:opacity-50 ring-2 ring-ds-warning${!loading ? ' animate-pulse' : ''}`}
-                  data-testid="flip-button"
-                >
-                  {t('flipButton')}
-                </button>
-                <label className="flex items-center gap-2 text-sm text-ds-text-primary cursor-pointer min-h-[44px] px-1">
-                  <input
-                    type="checkbox"
-                    checked={speedConfig.autoFlip}
-                    onChange={(e) => handleToggle('autoFlip', e.target.checked)}
-                    data-testid="inline-auto-flip-toggle"
-                  />
-                  {t('autoFlipInline')}
-                </label>
-              </div>
-            )}
-
             {/* Hint */}
             {state.hint?.found && isPlayPhase && (
               <p className="text-center text-sm text-ds-info">
@@ -443,7 +403,48 @@ function SpeedPageContent() {
               },
             ]}
           />
-          <GameFooter>
+          <GameFooter
+            actions={
+              isStuck ? (
+                <div
+                  className={`flex flex-col items-center gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center ${badgeWarningColors} ring-2 ring-ds-warning rounded-lg p-3 sm:py-2`}
+                  data-testid="stuck-emphasis-container"
+                  role="status"
+                  aria-live="polite"
+                >
+                  <p className="text-ds-warning font-bold text-base sm:text-lg">{t('stuckMessage')}</p>
+                  {speedConfig.autoFlip && !loading && (
+                    <div className="text-ds-warning">
+                      <AutoFlipCountdown
+                        key={`stuck-${state.message}-${state.centerPiles.map((c) => c?.value ?? 0).join(',')}`}
+                        durationMs={AUTO_FLIP_DELAY_MS}
+                        ariaLabel={t('autoFlipCountdownAria')}
+                        formatRemaining={(n) => t('autoFlipCountdownRemaining', { n })}
+                      />
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleFlip}
+                    disabled={loading}
+                    className={`px-4 py-2 bg-ds-warning text-ds-text-on-accent rounded hover:bg-ds-warning-hover disabled:opacity-50 ring-2 ring-ds-warning${!loading ? ' animate-pulse' : ''}`}
+                    data-testid="flip-button"
+                  >
+                    {t('flipButton')}
+                  </button>
+                  <label className="flex items-center gap-2 text-sm text-ds-text-primary cursor-pointer min-h-[44px] px-1">
+                    <input
+                      type="checkbox"
+                      checked={speedConfig.autoFlip}
+                      onChange={(e) => handleToggle('autoFlip', e.target.checked)}
+                      data-testid="inline-auto-flip-toggle"
+                    />
+                    {t('autoFlipInline')}
+                  </label>
+                </div>
+              ) : null
+            }
+          >
             <button type="button" onClick={handleHint} disabled={loading || !isPlayPhase} className={btnOutline}>
               {tc('button.hint')}
             </button>

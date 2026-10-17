@@ -314,47 +314,62 @@ function PishtiPageContent() {
 
             {/* Players (hand / captured / Pişti bonus / current turn) */}
             <div className="mb-2 p-2 rounded bg-black/30" data-tutorial="pishti-players">
-              <div className="mb-1 text-ds-text-primary text-sm">{t('playersTitle')}</div>
               {!isGameEnd && (
                 <div className="mb-1 text-ds-text-muted text-xs" data-testid="pishti-provisional-note">
                   {t('provisionalNote')}
                 </div>
               )}
-              {state.players.map((p) => (
-                <div
-                  key={`player-${p.id}`}
-                  className={`text-sm py-0.5 flex items-center gap-3 ${
-                    p.id === state.currentTurn && !isGameEnd ? 'text-ds-warning' : 'text-ds-text-muted'
-                  } ${p.isHuman ? 'font-semibold' : ''}`}
-                >
-                  <span>{playerLabel(p.id, p.isHuman)}</span>
-                  <span>{t('handCount', { count: p.cardCount })}</span>
-                  <span>{t('captured', { count: p.capturedCount })}</span>
-                  {p.pistiBonus > 0 && <span className="text-ds-accent">{t('pisti', { count: p.pistiBonus })}</span>}
-                  {!isGameEnd && (
-                    <span
-                      className="text-ds-text-primary"
-                      data-testid={`pishti-provisional-${p.id}`}
-                      title={t('provisionalNote')}
-                    >
-                      {t('provisional', { score: p.provisionalScore })}
-                      {p.id === provisionalLeaderSeat && (
-                        <span className="ml-1 text-ds-accent" role="img" aria-label={t('provisionalLeader')}>
-                          ★
+              <div
+                className="grid grid-cols-[minmax(0,1fr)_minmax(0,3fr)] gap-x-2 text-xs text-ds-text-muted"
+                data-testid="pishti-player-grid"
+              >
+                <span className="whitespace-nowrap">{t('playersTitle')}</span>
+                <div>
+                  <span className="block whitespace-nowrap">{t('statusHeader')}</span>
+                  <span className="block" data-testid="pishti-breakdown-headers">
+                    {t('scoreBreakdownHeaders')}
+                  </span>
+                </div>
+                {state.players.map((p) => (
+                  <div
+                    key={`player-${p.id}`}
+                    className={`contents text-sm ${
+                      p.id === state.currentTurn && !isGameEnd ? 'text-ds-warning' : 'text-ds-text-muted'
+                    } ${p.isHuman ? 'font-semibold' : ''}`}
+                  >
+                    <span className="whitespace-nowrap">{playerLabel(p.id, p.isHuman)}</span>
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                      <span className="whitespace-nowrap">{t('handCount', { count: p.cardCount })}</span>
+                      <span className="whitespace-nowrap">{t('captured', { count: p.capturedCount })}</span>
+                      {p.pistiBonus > 0 && (
+                        <span className="whitespace-nowrap text-ds-accent">{t('pisti', { count: p.pistiBonus })}</span>
+                      )}
+                      {!isGameEnd && (
+                        <span
+                          className="whitespace-nowrap text-ds-text-primary"
+                          data-testid={`pishti-provisional-${p.id}`}
+                          title={t('provisionalNote')}
+                        >
+                          {t('provisional', { score: p.provisionalScore })}
+                          {p.id === provisionalLeaderSeat && (
+                            <span className="ml-1 text-ds-accent" role="img" aria-label={t('provisionalLeader')}>
+                              ★
+                            </span>
+                          )}
                         </span>
                       )}
-                    </span>
-                  )}
-                  {!isGameEnd && (
-                    <span className="text-ds-text-muted text-xs" data-testid={`pishti-breakdown-${p.id}`}>
-                      {t('scoreBreakdown', { cards: p.cardPoints, pisti: p.pistiBonus, most: p.mostCapturedPoints })}
-                    </span>
-                  )}
-                  {isGameEnd && (
-                    <span className="text-ds-text-primary">{t('finalScore', { score: p.finalScore })}</span>
-                  )}
-                </div>
-              ))}
+                      {isGameEnd && (
+                        <span className="whitespace-nowrap text-ds-text-primary">
+                          {t('finalScore', { score: p.finalScore })}
+                        </span>
+                      )}
+                      <span className="whitespace-nowrap" data-testid={`pishti-breakdown-${p.id}`}>
+                        {p.cardPoints} / {p.pistiBonus} / {p.mostCapturedPoints}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Center pile */}

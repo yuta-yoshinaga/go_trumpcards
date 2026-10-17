@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { fiftyoneApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
+import { CardBackFan } from '../components/CardBackFan';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -83,7 +84,7 @@ function FiftyOnePageContent() {
     useGamePageSetup('fiftyone');
   const { state, loading, error, exec: execApi, retry } = useGameApi(fiftyoneApi.exec);
   const { playSound } = useSound();
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
   const [cpuDifficulty, setCpuDifficulty] = useState(1);
   const [selectedHandIdx, setSelectedHandIdx] = useState<number | null>(null);
   const [selectedTableIdx, setSelectedTableIdx] = useState<number | null>(null);
@@ -265,11 +266,15 @@ function FiftyOnePageContent() {
                       {tc('player.cpu', { id: p.id })} — {t('label.score')}: {isGameEnd ? p.score : '?'}
                     </div>
                     <div className="flex gap-0.5 justify-center">
-                      {isGameEnd
-                        ? p.cards.map((c, i) => <AnimatedCard key={i} card={c} width={cardWidth * 0.65} />)
-                        : Array.from({ length: p.cardCount }, (_, i) => (
-                            <AnimatedCardBack key={i} width={cardWidth * 0.65} />
-                          ))}
+                      {isGameEnd ? (
+                        p.cards.map((c, i) => <AnimatedCard key={i} card={c} width={cardWidth * 0.65} />)
+                      ) : isMobile ? (
+                        Array.from({ length: p.cardCount }, (_, i) => (
+                          <AnimatedCardBack key={i} width={cardWidth * 0.65} />
+                        ))
+                      ) : (
+                        <CardBackFan count={p.cardCount} width={Math.round(cardWidth * 0.45)} />
+                      )}
                     </div>
                   </div>
                 ))}
@@ -410,7 +415,7 @@ function FiftyOnePageContent() {
                 onClick={handleExchange}
                 disabled={loading || !canExchange}
                 title={exchangeGuide || undefined}
-                className="px-4 py-2 rounded-lg bg-ds-info hover:bg-ds-info text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                className="px-4 py-2 rounded-lg bg-ds-info hover:bg-ds-info text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                 data-testid="exchange-button"
               >
                 {t('button.exchange')}
@@ -419,7 +424,7 @@ function FiftyOnePageContent() {
                 type="button"
                 onClick={handleExchangeAll}
                 disabled={loading || !isHumanTurn}
-                className="px-4 py-2 rounded-lg bg-ds-success hover:bg-ds-success text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                className="px-4 py-2 rounded-lg bg-ds-success hover:bg-ds-success text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                 data-testid="exchange-all-button"
               >
                 {t('button.exchangeAll')}

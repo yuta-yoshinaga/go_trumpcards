@@ -118,7 +118,7 @@ function BouillottePageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('bouillotte', state);
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('bouillotte', BOUILLOTTE_PHASE_KEYS);
 
   if (!state)
@@ -174,6 +174,10 @@ function BouillottePageContent() {
     hideActionLog();
     reset();
   };
+
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
 
   return (
     <GamePageShell
@@ -246,11 +250,16 @@ function BouillottePageContent() {
           />
 
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            <div className="text-ds-text-primary text-center mb-2" data-tutorial="bouillotte-info">
-              <span className="mr-4">{t('round', { n: state.roundNumber, total: state.config.targetRounds })}</span>
-              <span className="mr-4">{t('pot', { amount: state.pot })}</span>
-              <span className="mr-4">{t('ante', { amount: state.ante })}</span>
-              <span>{t('currentBet', { amount: state.currentBet })}</span>
+            <div
+              className="text-ds-text-primary text-center mb-2 flex flex-wrap justify-center gap-x-4"
+              data-tutorial="bouillotte-info"
+            >
+              <span className="whitespace-nowrap">
+                {t('round', { n: state.roundNumber, total: state.config.targetRounds })}
+              </span>
+              <span className="whitespace-nowrap">{t('pot', { amount: state.pot })}</span>
+              <span className="whitespace-nowrap">{t('ante', { amount: state.ante })}</span>
+              <span className="whitespace-nowrap">{t('currentBet', { amount: state.currentBet })}</span>
             </div>
 
             {/* Retourne (shared turned-up card) */}
@@ -266,10 +275,6 @@ function BouillottePageContent() {
               </div>
             )}
 
-            {isBettingPhase && isHumanTurn && (
-              <div className="text-ds-text-muted text-center mb-2 text-sm font-semibold">{t('bettingNotice')}</div>
-            )}
-
             {/* Players */}
             <div className="mb-2 p-2 rounded bg-black/30" data-tutorial="bouillotte-players">
               <div className="mb-1 text-ds-text-primary text-sm">{t('playersTitle')}</div>
@@ -280,7 +285,7 @@ function BouillottePageContent() {
                 >
                   {playerLabel(p.id, p.isHuman)} — {t('chips', { amount: p.chips })} ·{' '}
                   {t('roundBet', { amount: p.roundBet })} · [{playerBadge(p)}]
-                  {p.handName ? ` · ${handName(p.handName)}` : ''}
+                  {p.handName && <span className="whitespace-nowrap"> · {handName(p.handName)}</span>}
                 </div>
               ))}
             </div>
@@ -326,11 +331,7 @@ function BouillottePageContent() {
               </div>
             )}
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
+            {isMobile && messageBox}
 
             <ActionLogSection
               isEndPhase={isGameEnd}
@@ -341,7 +342,10 @@ function BouillottePageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.bouillotte.footer} px-4 py-2.5`}>
+          <GameFooter
+            message={isMobile ? undefined : messageBox}
+            className={`${gameTheme.bouillotte.footer} px-4 py-2.5`}
+          >
             {humanPlayer && humanPlayer.cards.length > 0 ? (
               <div className="mb-2" data-tutorial="bouillotte-hand">
                 <div className="text-ds-text-muted text-xs mb-0.5">

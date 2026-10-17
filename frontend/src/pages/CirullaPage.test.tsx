@@ -65,6 +65,10 @@ describe('CirullaPage', () => {
     renderWithProviders(<CirullaPage />);
     expect(await screen.findByText('ラウンド 1（51 点勝負）')).toBeInTheDocument();
     expect(screen.getByTestId('cirulla-deck')).toHaveTextContent('30');
+    expect(screen.getAllByTestId('cirulla-scope')).toHaveLength(2);
+    expect(screen.getAllByTestId('cirulla-scope').every((scope) => scope.classList.contains('whitespace-nowrap'))).toBe(
+      true,
+    );
   });
 
   // **場札には番号が要る。** 取る札はこの番号で指す。

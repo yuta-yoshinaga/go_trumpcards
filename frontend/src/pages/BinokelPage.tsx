@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { binokelApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardFan } from '../components/CardFan';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -14,7 +16,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useBinokelGame } from '../hooks/useBinokelGame';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
@@ -98,6 +100,7 @@ export const BinokelPage = withTutorial(BinokelPageContent, 'binokel', BN_TUTORI
 
 /** Inner content of the Binokel page. */
 function BinokelPageContent() {
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('binokel');
   const {
@@ -123,7 +126,7 @@ function BinokelPageContent() {
     handleHint,
   } = useBinokelGame();
 
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('binokel', BINOKEL_PHASE_KEYS);
 
   // Selected card indices for Dabb discard phase (3 cards required).
@@ -243,6 +246,10 @@ function BinokelPageContent() {
     return <GameSkeleton gameKey="binokel" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 15 }} />;
   }
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   const phase = state.phase;
   const humanPlayer = state.players?.find((p) => p.isHuman);
   const humanIdx = humanPlayer ? state.players.indexOf(humanPlayer) : -1;
@@ -309,6 +316,35 @@ function BinokelPageContent() {
           />
 
           <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
+            {isBidTurn && (
+              <div className="mb-2 flex flex-col items-start gap-2">
+                <fieldset
+                  className="grid grid-cols-4 sm:grid-cols-6 max-h-36 overflow-y-auto gap-1 border-0 p-1 bg-black/20 rounded"
+                  aria-label={t('bidSelectLabel')}
+                >
+                  {bidOptions.map((n) => (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => setBidAmount(n)}
+                      disabled={loading}
+                      aria-pressed={bidAmount === n}
+                      data-testid={`bid-option-${n}`}
+                      className={`h-9 px-2 rounded-lg font-medium text-sm transition-all ${
+                        bidAmount === n
+                          ? 'bg-ds-accent text-ds-text-on-accent ring-2 ring-ds-accent'
+                          : 'bg-white/20 text-ds-text-primary hover:bg-white/30'
+                      }`}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                </fieldset>
+                <span className="sr-only" role="status" aria-live="polite" data-testid="bn-bid-selected">
+                  {t('bidSelected', { n: bidAmount })}
+                </span>
+              </div>
+            )}
             {/* Game Info */}
             <div className="text-ds-text-primary text-center mb-2 text-sm" data-tutorial="bn-game-info">
               <span className="mr-4">
@@ -330,63 +366,139 @@ function BinokelPageContent() {
               )}
             </div>
 
-            {/* Players Info: 3 individual seats */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3" data-tutorial="bn-player-info">
-              {state.players?.map((p) => {
-                const onTurn =
-                  phase === BinokelPhase.BID
-                    ? p.id === state.bidPlayerIdx
-                    : (phase === BinokelPhase.DABB ||
-                        phase === BinokelPhase.TRUMP ||
-                        phase === BinokelPhase.MELD ||
-                        phase === BinokelPhase.PLAY) &&
-                      p.id === state.currentPlayerIdx;
-                const isDeclarer = state.highestBidder === p.id;
-                const bidDisplay = p.hasPassed
-                  ? t('bidStatus.passed')
-                  : p.bid > 0
-                    ? t('bidStatus.bid', { amount: p.bid })
-                    : t('bidStatus.waiting');
-                const scoreVal = state.scores ? state.scores[p.id] : p.score;
-                return (
-                  <div
-                    key={p.id}
-                    data-on-turn={onTurn || undefined}
-                    className={`rounded p-2 text-sm ${
-                      p.isHuman ? 'bg-ds-accent/20 text-ds-accent' : 'bg-black/30 text-ds-text-muted'
-                    } ${onTurn ? 'ring-2 ring-ds-warning' : ''}`}
-                  >
-                    <div className="font-bold flex items-center justify-between">
-                      <span>{playerName(p.id, p.isHuman)}</span>
-                      {isDeclarer && (
-                        <span className="text-xs px-1.5 py-0.5 rounded bg-ds-accent text-black font-semibold">
-                          {t('declarer')}
-                        </span>
-                      )}
+            <div
+              className={isLargeDesktop ? 'flex flex-wrap items-start gap-2' : ''}
+              data-testid="bn-player-and-dabb-row"
+            >
+              {/* Players Info: 3 individual seats */}
+              <div className={`mb-3 ${isLargeDesktop ? 'flex-1 min-w-0' : ''}`} data-tutorial="bn-player-info">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  {state.players
+                    ?.filter((p) => p.isHuman)
+                    .map((p) => {
+                      const onTurn =
+                        phase === BinokelPhase.BID
+                          ? p.id === state.bidPlayerIdx
+                          : (phase === BinokelPhase.DABB ||
+                              phase === BinokelPhase.TRUMP ||
+                              phase === BinokelPhase.MELD ||
+                              phase === BinokelPhase.PLAY) &&
+                            p.id === state.currentPlayerIdx;
+                      const isDeclarer = state.highestBidder === p.id;
+                      const bidDisplay = p.hasPassed
+                        ? t('bidStatus.passed')
+                        : p.bid > 0
+                          ? t('bidStatus.bid', { amount: p.bid })
+                          : t('bidStatus.waiting');
+                      const scoreVal = state.scores ? state.scores[p.id] : p.score;
+                      return (
+                        <div
+                          key={p.id}
+                          data-on-turn={onTurn || undefined}
+                          className={`rounded p-2 text-sm ${
+                            p.isHuman ? 'bg-ds-accent/20 text-ds-accent' : 'bg-black/30 text-ds-text-muted'
+                          } ${onTurn ? 'ring-2 ring-ds-warning' : ''}`}
+                        >
+                          <div className="font-bold flex items-center justify-between">
+                            <span className="min-w-0 truncate" title={playerName(p.id, p.isHuman)}>
+                              {playerName(p.id, p.isHuman)}
+                            </span>
+                            {isDeclarer && (
+                              <span className="shrink-0 whitespace-nowrap text-xs px-1.5 py-0.5 rounded bg-ds-accent text-black font-semibold">
+                                {t('declarer')}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex flex-wrap gap-x-2 gap-y-1 text-xs">
+                            <span className="whitespace-nowrap">
+                              {t('scores')}: {scoreVal}
+                            </span>
+                            <span className="whitespace-nowrap">
+                              {t('bid')}: {bidDisplay}
+                            </span>
+                            <span className="whitespace-nowrap">
+                              {t('meldScore')}: {p.meldScore}
+                            </span>
+                            <span className="whitespace-nowrap">
+                              {t('trickCount')}: {p.trickCount} ({t('points', { points: p.trickPoints })})
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {state.players
+                        ?.filter((p) => !p.isHuman)
+                        .map((p) => {
+                          const onTurn =
+                            phase === BinokelPhase.BID
+                              ? p.id === state.bidPlayerIdx
+                              : (phase === BinokelPhase.DABB ||
+                                  phase === BinokelPhase.TRUMP ||
+                                  phase === BinokelPhase.MELD ||
+                                  phase === BinokelPhase.PLAY) &&
+                                p.id === state.currentPlayerIdx;
+                          const isDeclarer = state.highestBidder === p.id;
+                          const bidDisplay = p.hasPassed
+                            ? t('bidStatus.passed')
+                            : p.bid > 0
+                              ? t('bidStatus.bid', { amount: p.bid })
+                              : t('bidStatus.waiting');
+                          const scoreVal = state.scores ? state.scores[p.id] : p.score;
+                          return (
+                            <div
+                              key={p.id}
+                              data-on-turn={onTurn || undefined}
+                              className={`rounded p-2 text-sm bg-black/30 text-ds-text-muted ${onTurn ? 'ring-2 ring-ds-warning' : ''}`}
+                            >
+                              <div className="font-bold flex items-center justify-between">
+                                <span className="min-w-0 truncate" title={playerName(p.id, p.isHuman)}>
+                                  {playerName(p.id, p.isHuman)}
+                                </span>
+                                {isDeclarer && (
+                                  <span className="shrink-0 whitespace-nowrap text-xs px-1.5 py-0.5 rounded bg-ds-accent text-black font-semibold">
+                                    {t('declarer')}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex flex-wrap gap-x-2 gap-y-1 text-xs">
+                                <span className="whitespace-nowrap">
+                                  {t('scores')}: {scoreVal}
+                                </span>
+                                <span className="whitespace-nowrap">
+                                  {t('bid')}: {bidDisplay}
+                                </span>
+                                <span className="whitespace-nowrap">
+                                  {t('meldScore')}: {p.meldScore}
+                                </span>
+                                <span className="whitespace-nowrap">
+                                  {t('trickCount')}: {p.trickCount} ({t('points', { points: p.trickPoints })})
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
                     </div>
-                    <div>
-                      {t('scores')}: {scoreVal} | {t('bid')}: {bidDisplay}
-                    </div>
-                    <div>
-                      {t('meldScore')}: {p.meldScore} | {t('trickCount')}: {p.trickCount} (
-                      {t('points', { points: p.trickPoints })})
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Dabb Cards Display */}
-            {state.dabb && state.dabb.length > 0 && (
-              <div className="mb-3 p-2 rounded bg-black/40 text-center" data-testid="bn-dabb-display">
-                <div className="text-ds-text-muted text-sm mb-1">{t('dabbCardsLabel')}:</div>
-                <div className="flex gap-2 justify-center">
-                  {state.dabb.map((c, i) => (
-                    <AnimatedCard key={`dabb-${i}`} card={c} width={cardWidth * 0.8} />
-                  ))}
+                  </CpuAccordion>
                 </div>
               </div>
-            )}
+
+              {/* Dabb Cards Display */}
+              {state.dabb && state.dabb.length > 0 && (
+                <div
+                  className={`${isLargeDesktop ? 'mb-1 py-1' : 'mb-3 p-2'} ${isLargeDesktop ? 'flex-1 min-w-fit' : ''} rounded bg-black/40 text-center`}
+                  data-testid="bn-dabb-display"
+                >
+                  <div className="text-ds-text-muted text-sm mb-1">{t('dabbCardsLabel')}:</div>
+                  <div className="flex gap-2 justify-center">
+                    {state.dabb.map((c, i) => (
+                      <AnimatedCard key={`dabb-${i}`} card={c} width={cardWidth * 0.8} />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* CPU Dabb waiting notice */}
             {isDabbPhase && !isHumanDeclarer && state.highestBidder >= 0 && (
@@ -424,7 +536,7 @@ function BinokelPageContent() {
 
             {/* Meld reference: server-provided domain values */}
             {meldTable && (
-              <details data-testid="bn-meld-table" className="mb-3 rounded bg-black/30">
+              <details data-testid="bn-meld-table" className="mb-3 rounded bg-black/30" open={!isMobile || undefined}>
                 <summary className="cursor-pointer select-none px-3 py-2 text-ds-text-primary font-bold text-sm">
                   {t('meldTableTitle')}
                 </summary>
@@ -488,94 +600,16 @@ function BinokelPageContent() {
                 </div>
               )}
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
+            {isMobile && messageBox}
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
-          </div>
-
-          <GameFooter className={`${gameTheme.binokel.footer} px-4 py-2.5`}>
-            {/* Hand */}
-            {humanPlayer && humanPlayer.cards.length > 0 && (
-              <div className="flex flex-wrap gap-1 mb-2" data-tutorial="bn-player-hand">
-                {humanPlayer.cards.map((card, idx) => {
-                  const isValid = state.validPlayIndices?.includes(idx);
-                  const cardKey = `${card.design}-${card.value}`;
-                  const inHighlightedMeld = highlightedCardKeys.has(cardKey);
-                  const meldTitle = cardKeyToMeldTitle.get(cardKey);
-                  const isInMeld = meldTitle !== undefined;
-                  const dimmedByMeldFocus = highlightedMeldIdx !== null && !inHighlightedMeld;
-                  const isSelectedForDiscard = selectedCardIndices.includes(idx);
-
-                  const handleClick = () => {
-                    if (isDabbTurn) {
-                      toggleCardSelection(idx);
-                    } else if (isPlayTurn && isValid) {
-                      handlePlay(idx);
-                    }
-                  };
-
-                  const isClickable = isDabbTurn || (isPlayTurn && isValid);
-                  const isDisabled = loading || !isClickable;
-
-                  return (
-                    <button
-                      type="button"
-                      key={`${card.design}-${card.value}-${idx}`}
-                      onClick={handleClick}
-                      disabled={isDisabled}
-                      aria-label={cardAlt(card)}
-                      aria-pressed={isDabbTurn ? isSelectedForDiscard : undefined}
-                      data-meld-highlighted={inHighlightedMeld ? 'true' : undefined}
-                      data-in-meld={isInMeld ? 'true' : undefined}
-                      data-selected-discard={isSelectedForDiscard ? 'true' : undefined}
-                      title={meldTitle}
-                      className={`relative transition-all${
-                        isSelectedForDiscard
-                          ? ' -translate-y-3 ring-4 ring-ds-warning'
-                          : inHighlightedMeld
-                            ? ' -translate-y-2 ring-4 ring-ds-accent'
-                            : ''
-                      }${dimmedByMeldFocus ? ' opacity-40' : ''}`}
-                      style={{
-                        background: 'none',
-                        padding: 0,
-                        borderRadius: 8,
-                        opacity: dimmedByMeldFocus ? undefined : isPlayTurn && !isValid ? 0.5 : 1,
-                        boxSizing: 'border-box',
-                      }}
-                    >
-                      <AnimatedCard card={card} width={cardWidth} />
-                      {isInMeld && (
-                        <span
-                          aria-hidden="true"
-                          className="absolute top-0.5 right-0.5 px-1 rounded-full bg-ds-accent text-ds-text-on-accent text-[10px] font-bold shadow-sm pointer-events-none"
-                          data-testid={`bn-meld-card-badge-${idx}`}
-                        >
-                          M
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
 
             <ErrorAlert message={error ?? hintError} onRetry={retry} />
-
-            <span className="sr-only" role="status" aria-live="polite" data-testid="bn-dabb-selection-live">
-              {isDabbTurn ? t('dabbSelectionCount', { count: selectedCardIndices.length }) : ''}
-            </span>
 
             {/* Server hint result */}
             <div data-testid="binokel-hint-live" role="status" aria-live="polite">
@@ -616,120 +650,7 @@ function BinokelPageContent() {
               )}
             </div>
 
-            <div className="flex gap-2 items-center flex-wrap" data-tutorial="bn-action-buttons">
-              {/* Server hint button */}
-              {(isBidTurn || isDabbTurn || isTrumpTurn || isPlayTurn) && (
-                <button
-                  type="button"
-                  className={btnSuccess}
-                  data-testid="bn-hint-button"
-                  onClick={handleHint}
-                  disabled={loading || hintLoading}
-                >
-                  {tc('button.hint')}
-                </button>
-              )}
-
-              {/* Bid: discrete buttons from minLegalBid upwards */}
-              {isBidTurn && (
-                <div className="flex flex-col items-center gap-2">
-                  <fieldset
-                    className="grid grid-cols-4 sm:grid-cols-6 max-h-36 overflow-y-auto gap-1 border-0 p-1 bg-black/20 rounded"
-                    aria-label={t('bidSelectLabel')}
-                  >
-                    {bidOptions.map((n) => (
-                      <button
-                        key={n}
-                        type="button"
-                        onClick={() => setBidAmount(n)}
-                        disabled={loading}
-                        aria-pressed={bidAmount === n}
-                        data-testid={`bid-option-${n}`}
-                        className={`h-9 px-2 rounded-lg font-medium text-sm transition-all ${
-                          bidAmount === n
-                            ? 'bg-ds-accent text-white ring-2 ring-ds-accent'
-                            : 'bg-white/20 text-ds-text-primary hover:bg-white/30'
-                        }`}
-                      >
-                        {n}
-                      </button>
-                    ))}
-                  </fieldset>
-                  <span className="sr-only" role="status" aria-live="polite" data-testid="bn-bid-selected">
-                    {t('bidSelected', { n: bidAmount })}
-                  </span>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      className={btnPrimary}
-                      onClick={() => handleBid(bidAmount)}
-                      disabled={loading || bidAmount < minLegalBid}
-                    >
-                      {t('bid')}
-                    </button>
-                    <button
-                      type="button"
-                      className={btnOutline}
-                      onClick={handlePass}
-                      disabled={loading}
-                      data-testid="bid-pass"
-                    >
-                      {t('pass')}
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Dabb discard: discard 3 cards */}
-              {isDabbTurn && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  data-testid="discard-dabb-button"
-                  onClick={() => handleDiscard(selectedCardIndices)}
-                  disabled={loading || selectedCardIndices.length !== 3}
-                >
-                  {t('discardDabb', { count: selectedCardIndices.length })}
-                </button>
-              )}
-
-              {/* Trump */}
-              {isTrumpTurn &&
-                [1, 2, 3, 4].map((suit) => (
-                  <button
-                    key={suit}
-                    type="button"
-                    className={btnPrimary}
-                    aria-label={t('trumpButtonLabel', { suit: t(`suits.${suit}`) })}
-                    onClick={() => handleCallTrump(suit)}
-                    disabled={loading}
-                  >
-                    {SUIT_LABELS[suit]}
-                  </button>
-                ))}
-
-              {/* Meld confirm */}
-              {phase === BinokelPhase.MELD && (
-                <button type="button" className={btnSuccess} onClick={handleConfirmMelds} disabled={loading}>
-                  {t('confirmMelds')}
-                </button>
-              )}
-
-              {/* Trick End */}
-              {phase === BinokelPhase.TRICK_END && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                  {t('nextTrick')}
-                </button>
-              )}
-
-              {/* Round End */}
-              {phase === BinokelPhase.ROUND_END && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
-
-              {/* Reset */}
+            <div className="flex justify-end">
               <GameResetButton
                 isGameEnd={!!isGameEnd}
                 onReset={handleManualReset}
@@ -738,6 +659,175 @@ function BinokelPageContent() {
                 dataTutorial="bn-reset-button"
               />
             </div>
+          </div>
+
+          <GameFooter
+            message={isMobile ? undefined : messageBox}
+            className={`${gameTheme.binokel.footer} px-4 py-2.5`}
+            actions={
+              <div className="flex gap-2 items-center flex-wrap" data-tutorial="bn-action-buttons">
+                {/* Server hint button */}
+                {(isBidTurn || isDabbTurn || isTrumpTurn || isPlayTurn) && (
+                  <button
+                    type="button"
+                    className={btnSuccess}
+                    data-testid="bn-hint-button"
+                    onClick={handleHint}
+                    disabled={loading || hintLoading}
+                  >
+                    {tc('button.hint')}
+                  </button>
+                )}
+
+                {/* Bid: discrete buttons from minLegalBid upwards */}
+                {isBidTurn && (
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={() => handleBid(bidAmount)}
+                        disabled={loading || bidAmount < minLegalBid}
+                      >
+                        {t('bid')}
+                      </button>
+                      <button
+                        type="button"
+                        className={btnOutline}
+                        onClick={handlePass}
+                        disabled={loading}
+                        data-testid="bid-pass"
+                      >
+                        {t('pass')}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Dabb discard: discard 3 cards */}
+                {isDabbTurn && (
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    data-testid="discard-dabb-button"
+                    onClick={() => handleDiscard(selectedCardIndices)}
+                    disabled={loading || selectedCardIndices.length !== 3}
+                  >
+                    {t('discardDabb', { count: selectedCardIndices.length })}
+                  </button>
+                )}
+
+                {/* Trump */}
+                {isTrumpTurn &&
+                  [1, 2, 3, 4].map((suit) => (
+                    <button
+                      key={suit}
+                      type="button"
+                      className={btnPrimary}
+                      aria-label={t('trumpButtonLabel', { suit: t(`suits.${suit}`) })}
+                      onClick={() => handleCallTrump(suit)}
+                      disabled={loading}
+                    >
+                      {SUIT_LABELS[suit]}
+                    </button>
+                  ))}
+
+                {/* Meld confirm */}
+                {phase === BinokelPhase.MELD && (
+                  <button type="button" className={btnSuccess} onClick={handleConfirmMelds} disabled={loading}>
+                    {t('confirmMelds')}
+                  </button>
+                )}
+
+                {/* Trick End */}
+                {phase === BinokelPhase.TRICK_END && (
+                  <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                    {t('nextTrick')}
+                  </button>
+                )}
+
+                {/* Round End */}
+                {phase === BinokelPhase.ROUND_END && (
+                  <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                    {t('nextRound')}
+                  </button>
+                )}
+
+                {/* Reset */}
+              </div>
+            }
+          >
+            {/* Hand */}
+            {humanPlayer && humanPlayer.cards.length > 0 && (
+              <div className="mb-2" data-tutorial="bn-player-hand">
+                <CardFan itemWidth={cardWidth} data-testid="bn-player-hand">
+                  {humanPlayer.cards.map((card, idx) => {
+                    const isValid = state.validPlayIndices?.includes(idx);
+                    const cardKey = `${card.design}-${card.value}`;
+                    const inHighlightedMeld = highlightedCardKeys.has(cardKey);
+                    const meldTitle = cardKeyToMeldTitle.get(cardKey);
+                    const isInMeld = meldTitle !== undefined;
+                    const dimmedByMeldFocus = highlightedMeldIdx !== null && !inHighlightedMeld;
+                    const isSelectedForDiscard = selectedCardIndices.includes(idx);
+
+                    const handleClick = () => {
+                      if (isDabbTurn) {
+                        toggleCardSelection(idx);
+                      } else if (isPlayTurn && isValid) {
+                        handlePlay(idx);
+                      }
+                    };
+
+                    const isClickable = isDabbTurn || (isPlayTurn && isValid);
+                    const isDisabled = loading || !isClickable;
+
+                    return (
+                      <button
+                        type="button"
+                        key={`${card.design}-${card.value}-${idx}`}
+                        onClick={handleClick}
+                        disabled={isDisabled}
+                        aria-label={cardAlt(card)}
+                        aria-pressed={isDabbTurn ? isSelectedForDiscard : undefined}
+                        data-meld-highlighted={inHighlightedMeld ? 'true' : undefined}
+                        data-in-meld={isInMeld ? 'true' : undefined}
+                        data-selected-discard={isSelectedForDiscard ? 'true' : undefined}
+                        title={meldTitle}
+                        className={`relative transition-all${
+                          isSelectedForDiscard
+                            ? ' -translate-y-3 ring-4 ring-ds-warning'
+                            : inHighlightedMeld
+                              ? ' -translate-y-2 ring-4 ring-ds-accent'
+                              : ''
+                        }${dimmedByMeldFocus ? ' opacity-40' : ''}`}
+                        style={{
+                          background: 'none',
+                          padding: 0,
+                          borderRadius: 8,
+                          opacity: dimmedByMeldFocus ? undefined : isPlayTurn && !isValid ? 0.5 : 1,
+                          boxSizing: 'border-box',
+                        }}
+                      >
+                        <AnimatedCard card={card} width={cardWidth} />
+                        {isInMeld && (
+                          <span
+                            aria-hidden="true"
+                            className="absolute top-0.5 right-0.5 px-1 rounded-full bg-ds-accent text-ds-text-on-accent text-[10px] font-bold shadow-sm pointer-events-none"
+                            data-testid={`bn-meld-card-badge-${idx}`}
+                          >
+                            M
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </CardFan>
+              </div>
+            )}
+
+            <span className="sr-only" role="status" aria-live="polite" data-testid="bn-dabb-selection-live">
+              {isDabbTurn ? t('dabbSelectionCount', { count: selectedCardIndices.length }) : ''}
+            </span>
           </GameFooter>
         </>
       )}

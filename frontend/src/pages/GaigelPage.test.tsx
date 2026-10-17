@@ -76,6 +76,38 @@ beforeEach(() => {
 });
 
 describe('GaigelPage', () => {
+  it('places the player list beside the trick only at large desktop width', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1280 });
+    window.dispatchEvent(new Event('resize'));
+    renderWithProviders(<GaigelPage />);
+    const layout = await screen.findByTestId('gaigel-upper-layout');
+    expect(layout).toHaveClass('flex');
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 768 });
+    window.dispatchEvent(new Event('resize'));
+    await waitFor(() => expect(layout).not.toHaveClass('flex'));
+  });
+
+  it('renders the game message inside the footer message region', async () => {
+    mockExec.mockResolvedValue(makeState({ message: 'Footer message' }));
+    renderWithProviders(<GaigelPage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage.querySelector('[role="status"], [role="alert"]')).toHaveTextContent('Footer message');
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue(makeState({ message: 'Mobile message' }));
+    renderWithProviders(<GaigelPage />);
+
+    const messageText = await screen.findByText('Mobile message');
+    const message = messageText.closest('[role="status"]');
+    expect(message).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+    expect(message?.closest('footer')).not.toBeInTheDocument();
+  });
+
   it('calls reset on mount with default config', async () => {
     renderWithProviders(<GaigelPage />);
     await waitFor(() =>
@@ -99,6 +131,9 @@ describe('GaigelPage', () => {
     renderWithProviders(<GaigelPage />);
     await waitFor(() => expect(screen.getByText('チームスコア')).toBeInTheDocument());
     expect(screen.getByText('山札: 28')).toBeInTheDocument();
+    expect(screen.getByTestId('gaigel-player-0').querySelector('[data-testid="gaigel-player-tricks"]')).toHaveClass(
+      'whitespace-nowrap',
+    );
   });
 
   it('shows the active target score and non-negative points remaining for each team', async () => {
@@ -184,6 +219,32 @@ describe('GaigelPage', () => {
       expect(await screen.findByTestId('gaigel-dealer-badge')).toHaveTextContent('[Dealer]');
     } finally {
       await i18n.changeLanguage(previousLanguage);
+    }
+  });
+
+  it('collapses CPU seats on mobile while keeping the human seat visible', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    try {
+      renderWithProviders(<GaigelPage />);
+      const accordion = await screen.findByTestId('cpu-accordion');
+      expect(accordion).not.toHaveAttribute('open');
+      expect(screen.getByTestId('gaigel-player-0')).toBeVisible();
+      expect(screen.getByTestId('gaigel-player-1')).not.toBeVisible();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+    }
+  });
+
+  it('keeps CPU seats expanded on desktop', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    try {
+      renderWithProviders(<GaigelPage />);
+      expect(await screen.findByTestId('cpu-accordion')).toHaveAttribute('open');
+      expect(screen.getByTestId('gaigel-player-1')).toBeVisible();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
     }
   });
 

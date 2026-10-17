@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { schafkopfApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -157,6 +157,7 @@ describe('SchafkopfPage', () => {
     const card = await screen.findByAltText('♠ A');
     fireEvent.click(card);
     const playBtn = await screen.findByRole('button', { name: '出す' });
+    expect(within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '出す' })).toBeInTheDocument();
     mockExec.mockClear();
     mockExec.mockResolvedValue(playPhaseState);
     fireEvent.click(playBtn);
@@ -189,12 +190,37 @@ describe('SchafkopfPage', () => {
     mockExec.mockResolvedValue(pickPhaseState);
     renderWithProviders(<SchafkopfPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'Rufspiel（A呼び）' })).toBeInTheDocument());
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: 'パスする' }),
+    ).toBeInTheDocument();
+    expect(
+      within(document.querySelector('.flex-1.overflow-y-auto') as HTMLElement).getByRole('button', {
+        name: 'Rufspiel（A呼び）',
+      }),
+    ).toBeInTheDocument();
     // **All three contracts have to be reachable.** Only Rufspiel used to be,
     // which left Wenz and Solo settable by the domain but not by any player.
     expect(screen.getByRole('button', { name: 'Wenz（Unterのみ切り札）' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '♠ スペードを切り札にした Solo を宣言する' })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'パスする' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('pick', { pick: false }));
+  });
+
+  it('keeps phase choices and reference controls in the play area while the hand stays in the footer', async () => {
+    mockExec.mockResolvedValue(pickPhaseState);
+    renderWithProviders(<SchafkopfPage />);
+    const pickButton = await screen.findByRole('button', { name: 'Rufspiel（A呼び）' });
+    const footer = screen.getByTestId('game-footer-content');
+    const playArea = document.querySelector('.flex-1.overflow-y-auto');
+    expect(playArea).toBeInTheDocument();
+
+    expect(within(footer).queryByRole('button', { name: 'Rufspiel（A呼び）' })).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByRole('button', { name: 'Rufspiel（A呼び）' })).toBe(pickButton);
+
+    const hintLive = screen.getByTestId('schafkopf-hint-live');
+    expect(within(footer).queryByTestId('schafkopf-hint-live')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('schafkopf-hint-live')).toBe(hintLive);
+    expect(within(footer).getByAltText('♠ A')).toBeInTheDocument();
   });
 
   it('declaring Wenz sends the contract, and a Solo carries the suit it names', async () => {

@@ -30,6 +30,22 @@ describe('TrickDisplay', () => {
     expect(screen.getAllByTestId('animated-card')).toHaveLength(2);
   });
 
+  it('uses the supplied card advance only after the first card', () => {
+    const { container, rerender } = render(
+      <TrickDisplay currentTrick={trick} players={players} cardWidth={40} label="Current trick" />,
+    );
+    const wrappers = container.querySelectorAll('[data-player-idx]');
+    expect(wrappers[0]).not.toHaveStyle({ marginLeft: '-16px' });
+    expect(wrappers[1]).not.toHaveStyle({ marginLeft: '-16px' });
+
+    rerender(
+      <TrickDisplay currentTrick={trick} players={players} cardWidth={40} label="Current trick" cardAdvancePx={32} />,
+    );
+    const overlapped = container.querySelectorAll('[data-player-idx]');
+    expect(overlapped[0]).not.toHaveStyle({ marginLeft: '-16px' });
+    expect(overlapped[1]).toHaveStyle({ marginLeft: '-16px' });
+  });
+
   it('uses the supplied pile position when generating card row keys', () => {
     const keyFor = vi.fn((trickCard: TrickDisplayCard, index: number) => `pile-${trickCard.playerIdx}-${index}`);
     const { rerender } = render(

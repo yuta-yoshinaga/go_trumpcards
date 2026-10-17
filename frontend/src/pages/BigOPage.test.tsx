@@ -270,6 +270,28 @@ beforeEach(() => {
 });
 
 describe('BigOPage', () => {
+  it('keeps phase choices and supporting settings in the play area while the hand stays in the footer', async () => {
+    const rebuyState: OmahaResponse = {
+      ...preFlopState,
+      phase: 7,
+      rebuyPhaseType: 1,
+      rebuyChips: 1000,
+      rebuyMaxCount: 3,
+      rebuyCounts: [0, 0, 0, 0],
+    };
+    mockExec.mockResolvedValue(rebuyState);
+    renderWithProviders(<BigOPage />);
+
+    const footer = await screen.findByTestId('game-footer-content');
+    const playArea = document.querySelector('.relative.flex-1.overflow-y-auto');
+    expect(playArea).not.toBeNull();
+    await waitFor(() => expect(within(playArea as HTMLElement).getByTestId('rebuy-controls')).toBeInTheDocument());
+    expect(within(footer).queryByTestId('rebuy-controls')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByText('設定')).toBeInTheDocument();
+    expect(within(footer).queryByText('設定')).not.toBeInTheDocument();
+    expect(within(footer).getByTestId('bigo-hole-cards')).toBeInTheDocument();
+  });
+
   it('announces newly revealed community cards', async () => {
     mockExec.mockResolvedValue(flopState);
     renderWithProviders(<BigOPage />);
@@ -510,7 +532,7 @@ describe('BigOPage', () => {
     mockExec.mockResolvedValue(preFlopWithBetState);
     renderWithProviders(<BigOPage />);
     await waitFor(() => expect(screen.getByText('CPU行動:')).toBeInTheDocument());
-    expect(screen.getByText(/Player 1: ベット/)).toBeInTheDocument();
+    expect(screen.getByText(/CPU 1: ベット/)).toBeInTheDocument();
   });
 
   it('does not show CPU actions log when cpuActions is empty', async () => {
@@ -523,7 +545,7 @@ describe('BigOPage', () => {
   it('shows amount in CPU action when amount > 0', async () => {
     mockExec.mockResolvedValue(preFlopWithBetState);
     renderWithProviders(<BigOPage />);
-    await waitFor(() => expect(screen.getByText(/Player 1: ベット \(40\)/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/CPU 1: ベット \(40\)/)).toBeInTheDocument());
   });
 
   it('does not show amount when action amount is 0', async () => {
@@ -533,7 +555,7 @@ describe('BigOPage', () => {
     });
     renderWithProviders(<BigOPage />);
     await waitFor(() => expect(screen.getByText('CPU行動:')).toBeInTheDocument());
-    expect(screen.getByText(/Player 1: チェック/)).toBeInTheDocument();
+    expect(screen.getByText(/CPU 1: チェック/)).toBeInTheDocument();
     expect(screen.queryByText(/\(0\)/)).not.toBeInTheDocument();
   });
 
@@ -543,7 +565,7 @@ describe('BigOPage', () => {
       cpuActions: [{ playerIdx: 1, action: 99, amount: 0 }],
     });
     renderWithProviders(<BigOPage />);
-    await waitFor(() => expect(screen.getByText(/Player 1: 不明/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/CPU 1: 不明/)).toBeInTheDocument());
   });
 
   // ---- round results ----
@@ -751,6 +773,9 @@ describe('BigOPage', () => {
     mockExec.mockResolvedValue(preFlopState);
     renderWithProviders(<BigOPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: 'ベット' }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'チェック' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'オールイン' })).toBeInTheDocument();
@@ -1720,5 +1745,15 @@ describe('BigOPage', () => {
     renderWithProviders(<BigOPage />);
     const panel = await screen.findByTestId('bigo-kbd-shortcuts');
     expect(panel).toBeInTheDocument();
+  });
+
+  it('compresses face-down CPU cards on large desktop', async () => {
+    mockUseIsLargeDesktop.mockReturnValue(true);
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<BigOPage />);
+
+    const cpuCount = preFlopState.players.filter((player) => !player.isHuman).length;
+    await waitFor(() => expect(screen.getAllByTestId('compact-card-count')).toHaveLength(cpuCount));
+    expect(screen.getAllByTestId('compact-card-count')[0]).toHaveTextContent('5');
   });
 });

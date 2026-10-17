@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { musApi } from '../api/gameApi';
 import i18n from '../i18n';
@@ -138,6 +138,19 @@ describe('MusPage', () => {
     );
   });
 
+  it('keeps the hand in the footer and puts hand details and reset in the play area', async () => {
+    renderWithProviders(<MusPage />);
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const playArea = footerContent.parentElement?.previousElementSibling;
+    expect(playArea).toBeInTheDocument();
+
+    expect(within(footerContent).getByRole('button', { name: '♠ A' })).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('mus-hand-summary')).not.toBeInTheDocument();
+    expect(within(footerContent).queryByRole('button', { name: /リセット/ })).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('mus-hand-summary')).toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByRole('button', { name: /リセット/ })).toBeInTheDocument();
+  });
+
   it('renders the human cards and the amarrakos panel', async () => {
     renderWithProviders(<MusPage />);
     await waitFor(() => {
@@ -185,6 +198,9 @@ describe('MusPage', () => {
     mockExec.mockResolvedValue(musPhaseState);
     renderWithProviders(<MusPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /ムス（交換）/ })).toBeInTheDocument());
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: /ムス（交換）/ }),
+    ).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /コルテ（勝負）/ }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('mus', { mus: false }));
   });

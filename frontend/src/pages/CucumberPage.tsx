@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { cucumberApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -13,7 +14,7 @@ import { LiveAnnouncement } from '../components/LiveAnnouncement';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -63,6 +64,7 @@ function CucumberPageContent() {
     retry,
   } = useGameApi<CucumberResponse, Parameters<typeof cucumberApi.exec>>(cucumberApi.exec);
   const { cardWidth } = useCardDimensions();
+  const isMobile = useIsMobile();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('cucumber', state);
   const [playerCnt, setPlayerCnt] = useState(4);
   const [targetScore, setTargetScore] = useState(30);
@@ -192,13 +194,16 @@ function CucumberPageContent() {
             </div>
 
             {/* **スート無関係・失点は最終トリックだけ、が規則そのもの。** */}
-            <div
+            <details
+              open={!isMobile || undefined}
               className="mb-3 rounded bg-black/30 px-3 py-2 text-ds-text-primary text-center"
-              data-testid="cu-rule"
-              data-tutorial="cu-rule"
+              data-testid="cu-rule-details"
             >
-              {t('header.rule')}
-            </div>
+              <summary className="cursor-pointer select-none">{t('header.rules')}</summary>
+              <div data-testid="cu-rule" data-tutorial="cu-rule">
+                {t('header.rule')}
+              </div>
+            </details>
 
             {/* **超えるべきランクが盤面の全て。** スートが無い以上、これが唯一の手がかり。 */}
             <div
@@ -227,37 +232,69 @@ function CucumberPageContent() {
             <LiveAnnouncement message={state.trickNumber + 1 === state.totalTricks ? t('status.finalTrick') : ''} />
 
             {/* **失点がそのまま順位。** 少ないほうが良い。 */}
-            <div className="flex flex-wrap justify-center gap-2 mb-4" data-tutorial="cu-seats">
-              {state.players.map((p) => (
-                <div
-                  key={p.id}
-                  // **CPU 同士の手番中、誰が考えているのかが画面に無かった。**
-                  // 罰点バッジは行の中にあるので、手番はリングで囲って共存させる。
-                  className={`rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted ${
-                    p.id === state.currentPlayerIdx && !isGameEnd ? 'ring-1 ring-ds-warning' : ''
-                  }`}
-                  data-testid={`cu-seat-${p.id.toString()}`}
-                  data-current-turn={p.id === state.currentPlayerIdx && !isGameEnd ? 'true' : undefined}
-                >
-                  <span className="text-ds-text-primary">{seatName(p.id)}</span>
-                  {p.id === state.lastTrickWinnerIdx && state.lastPenalty > 0 && (
-                    <span className="ml-1 text-ds-warning">
-                      {t('header.lastTrick', { n: String(state.lastPenalty) })}
-                    </span>
-                  )}
-                  {': '}
-                  <span>{t('header.cards', { n: String(p.cardCount) })}</span>
-                  {' / '}
-                  <span className="text-ds-accent">{t('header.penalty', { n: String(p.penalty) })}</span>
-                  {' / '}
-                  <span className={p.penalty >= state.config.targetScore ? 'text-ds-warning' : ''}>
-                    {p.penalty >= state.config.targetScore
-                      ? t('header.targetReached')
-                      : t('header.targetRemaining', { count: state.config.targetScore - p.penalty })}
+            {human && (
+              <div
+                className={`mb-2 rounded bg-ds-surface px-2 py-1 text-center text-sm text-ds-text-muted ${
+                  human.id === state.currentPlayerIdx && !isGameEnd ? 'ring-1 ring-ds-warning' : ''
+                }`}
+                data-testid={`cu-seat-${human.id.toString()}`}
+                data-tutorial="cu-seats"
+                data-current-turn={human.id === state.currentPlayerIdx && !isGameEnd ? 'true' : undefined}
+              >
+                <span className="text-ds-text-primary">{seatName(human.id)}</span>
+                {human.id === state.lastTrickWinnerIdx && state.lastPenalty > 0 && (
+                  <span className="ml-1 text-ds-warning">
+                    {t('header.lastTrick', { n: String(state.lastPenalty) })}
                   </span>
-                </div>
-              ))}
-            </div>
+                )}
+                {': '}
+                <span>{t('header.cards', { n: String(human.cardCount) })}</span>
+                {' / '}
+                <span className="text-ds-accent">{t('header.penalty', { n: String(human.penalty) })}</span>
+                {' / '}
+                <span className={human.penalty >= state.config.targetScore ? 'text-ds-warning' : ''}>
+                  {human.penalty >= state.config.targetScore
+                    ? t('header.targetReached')
+                    : t('header.targetRemaining', { count: state.config.targetScore - human.penalty })}
+                </span>
+              </div>
+            )}
+
+            <CpuAccordion playerCount={state.players.length - 1}>
+              <div className="flex flex-wrap justify-center gap-2 mb-4">
+                {state.players
+                  .filter((p) => !p.isHuman)
+                  .map((p) => (
+                    <div
+                      key={p.id}
+                      // **CPU 同士の手番中、誰が考えているのかが画面に無かった。**
+                      // 罰点バッジは行の中にあるので、手番はリングで囲って共存させる。
+                      className={`rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted ${
+                        p.id === state.currentPlayerIdx && !isGameEnd ? 'ring-1 ring-ds-warning' : ''
+                      }`}
+                      data-testid={`cu-seat-${p.id.toString()}`}
+                      data-current-turn={p.id === state.currentPlayerIdx && !isGameEnd ? 'true' : undefined}
+                    >
+                      <span className="text-ds-text-primary">{seatName(p.id)}</span>
+                      {p.id === state.lastTrickWinnerIdx && state.lastPenalty > 0 && (
+                        <span className="ml-1 text-ds-warning">
+                          {t('header.lastTrick', { n: String(state.lastPenalty) })}
+                        </span>
+                      )}
+                      {': '}
+                      <span>{t('header.cards', { n: String(p.cardCount) })}</span>
+                      {' / '}
+                      <span className="text-ds-accent">{t('header.penalty', { n: String(p.penalty) })}</span>
+                      {' / '}
+                      <span className={p.penalty >= state.config.targetScore ? 'text-ds-warning' : ''}>
+                        {p.penalty >= state.config.targetScore
+                          ? t('header.targetReached')
+                          : t('header.targetRemaining', { count: state.config.targetScore - p.penalty })}
+                      </span>
+                    </div>
+                  ))}
+              </div>
+            </CpuAccordion>
 
             <div data-tutorial="cu-trick">
               <TrickDisplay
@@ -307,7 +344,7 @@ function CucumberPageContent() {
             />
 
             {/* **「選べる」と「決まっている」を言い分けます。** */}
-            {isHumanTurn && (
+            {isHumanTurn && state.highestInTrick > 0 && (
               <div className="mt-3 text-center text-ds-text-muted" role="status" data-testid="cu-status">
                 {state.forced
                   ? t('status.forced')

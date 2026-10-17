@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { maoApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -15,7 +16,7 @@ import { LiveAnnouncement } from '../components/LiveAnnouncement';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -102,6 +103,7 @@ const MAO_TUTORIAL_STEPS: TutorialStep[] = [
 export const MaoPage = withTutorial(MaoPageContent, 'mao', MAO_TUTORIAL_STEPS);
 /** Inner content of the Mao page, wrapped by TutorialProvider. */
 function MaoPageContent() {
+  const isMobile = useIsMobile();
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('mao');
   const [drawAnnouncement, setDrawAnnouncement] = useState('');
@@ -390,21 +392,29 @@ function MaoPageContent() {
               {/* Right: info sidebar */}
               <div>
                 {/* CPU players */}
-                {state.players
-                  .filter((p) => !p.isHuman)
-                  .map((p) => (
-                    <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                      <div className="text-ds-text-muted text-sm">
-                        {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                        {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
-                        {t('roundScore', { score: p.roundScore })}
-                      </div>
-                    </div>
-                  ))}
+                <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+                  <div className="flex flex-wrap gap-2 sm:block">
+                    {state.players
+                      .filter((p) => !p.isHuman)
+                      .map((p) => (
+                        <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
+                          <div className="text-ds-text-muted text-sm">
+                            {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                            {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
+                            {t('roundScore', { score: p.roundScore })}
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </CpuAccordion>
 
                 {/* Score table */}
-                <div className="my-3 p-2 rounded bg-black/30">
-                  <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
+                <details
+                  className="my-3 p-2 rounded bg-black/30"
+                  data-testid="mao-score-table"
+                  open={!isMobile || undefined}
+                >
+                  <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('scores')}</summary>
                   <table className="w-full text-sm text-ds-text-muted">
                     <thead>
                       <tr>
@@ -425,7 +435,7 @@ function MaoPageContent() {
                       ))}
                     </tbody>
                   </table>
-                </div>
+                </details>
               </div>
             </div>
           </div>

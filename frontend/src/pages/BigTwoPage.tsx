@@ -1,5 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardBackFan } from '../components/CardBackFan';
+import { CardFan } from '../components/CardFan';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { ReplaySpeedSettingsPanel } from '../components/common/ReplaySpeedSettingsPanel';
@@ -11,7 +13,6 @@ import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
-import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useBigTwoGame } from '../hooks/useBigTwoGame';
@@ -229,11 +230,7 @@ function BigTwoPageContent() {
                         <span>— {p.cardCount}</span>
                       )}
                     </div>
-                    <div className="flex gap-0.5 justify-center">
-                      {Array.from({ length: Math.min(p.cardCount, 13) }, (_, i) => (
-                        <AnimatedCardBack key={i} width={cardWidth * 0.45} />
-                      ))}
-                    </div>
+                    <CardBackFan count={Math.min(p.cardCount, 13)} width={cardWidth * 0.45} />
                   </div>
                 ))}
             </div>
@@ -315,7 +312,7 @@ function BigTwoPageContent() {
                   ))}
                 </fieldset>
               )}
-              <div className="flex flex-wrap justify-center gap-2">
+              <CardFan itemWidth={cardWidth + 6}>
                 {sortedBigTwoHand(human.cards, sortMode).map(({ card, index }) => (
                   <button
                     key={index}
@@ -331,7 +328,7 @@ function BigTwoPageContent() {
                     <AnimatedCard card={card} width={cardWidth} />
                   </button>
                 ))}
-              </div>
+              </CardFan>
             </div>
 
             <GameMessageBox
@@ -368,7 +365,7 @@ function BigTwoPageContent() {
                 type="button"
                 onClick={handlePlay}
                 disabled={loading || !canPlay}
-                className="px-4 py-2 rounded-lg bg-ds-info hover:bg-ds-info text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                className="px-4 py-2 rounded-lg bg-ds-info hover:bg-ds-info text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                 data-testid="play-button"
               >
                 {t('playButton')}
@@ -377,7 +374,7 @@ function BigTwoPageContent() {
                 type="button"
                 onClick={handlePass}
                 disabled={loading || !isHumanTurn}
-                className="px-4 py-2 rounded-lg bg-ds-warning hover:bg-ds-warning text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                className="px-4 py-2 rounded-lg bg-ds-warning hover:bg-ds-warning text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                 data-testid="pass-button"
               >
                 {t('passButton')}

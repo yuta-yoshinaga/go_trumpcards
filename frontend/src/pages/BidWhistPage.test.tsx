@@ -7,6 +7,13 @@ import type { BidWhistResponse, Card } from '../types/card';
 import { BidWhistPhase } from '../types/phases';
 import { BidWhistPage } from './BidWhistPage';
 
+const mobileState = vi.hoisted(() => ({ isMobile: false }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+}));
+
 vi.mock('../api/gameApi', () => ({
   bidWhistApi: { exec: vi.fn() },
   actionLogApi: { bidwhist: vi.fn() },
@@ -69,12 +76,31 @@ function makeState(overrides: Partial<BidWhistResponse> = {}): BidWhistResponse 
 }
 
 beforeEach(() => {
+  mobileState.isMobile = false;
   localStorage.clear();
   mockExec.mockReset();
   mockExec.mockResolvedValue(makeState());
 });
 
 describe('BidWhistPage', () => {
+  it('collapses CPU seats and bid direction rules on mobile, and opens them on desktop', async () => {
+    mobileState.isMobile = true;
+    const { unmount } = renderWithProviders(<BidWhistPage />);
+    const cpuAccordion = await screen.findByTestId('cpu-accordion');
+    expect(cpuAccordion).not.toHaveAttribute('open');
+    expect(within(cpuAccordion).queryByText('CPU 1')).not.toBeVisible();
+    const rules = screen.getByText('ルール').closest('details');
+    expect(rules).not.toHaveAttribute('open');
+    expect(screen.getByTestId('bid-direction-help')).not.toBeVisible();
+
+    unmount();
+    mobileState.isMobile = false;
+    renderWithProviders(<BidWhistPage />);
+    expect(await screen.findByTestId('cpu-accordion')).toHaveAttribute('open');
+    expect(screen.getByText('ルール').closest('details')).toHaveAttribute('open');
+    expect(screen.getByTestId('bid-direction-help')).toBeVisible();
+  });
+
   it('announces every card played by the human and CPUs in play order', async () => {
     const wonState = makeState({
       phase: BidWhistPhase.TRICK_END,
@@ -191,7 +217,10 @@ describe('BidWhistPage', () => {
 
   it('passes when pass is clicked', async () => {
     renderWithProviders(<BidWhistPage />);
-    fireEvent.click(await screen.findByTestId('pass-button'));
+    const passButton = await screen.findByTestId('pass-button');
+    expect(passButton).not.toHaveClass('text-white');
+    expect(passButton).toHaveClass('text-ds-text-on-accent');
+    fireEvent.click(passButton);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('pass'));
   });
 
@@ -407,6 +436,8 @@ describe('BidWhistPage', () => {
     expect(screen.getByTestId('hand-card-3')).toHaveAttribute('data-kitty', 'true');
     expect(screen.getByTestId('hand-card-1').className).toContain('ring-ds-warning');
     expect(screen.getByTestId('kitty-badge-1')).toBeInTheDocument();
+    expect(screen.getByTestId('kitty-badge-1')).not.toHaveClass('text-white');
+    expect(screen.getByTestId('kitty-badge-1')).toHaveClass('text-ds-text-on-accent');
     // Non-kitty cards are not flagged.
     expect(screen.getByTestId('hand-card-0')).not.toHaveAttribute('data-kitty');
     expect(screen.queryByTestId('kitty-badge-0')).not.toBeInTheDocument();
@@ -587,5 +618,26 @@ describe('BidWhistPage', () => {
     const humanRow = document.querySelector<HTMLElement>('[data-tutorial="bw-hand"]');
     if (!humanRow) throw new Error('Human hand row was not rendered');
     expect(within(humanRow).getByTestId('bidwhist-dealer-badge')).toBeInTheDocument();
+  });
+
+  it('renders CPU hands in compact card back fans', async () => {
+    renderWithProviders(<BidWhistPage />);
+    expect(await screen.findAllByTestId('card-back-fan')).not.toHaveLength(0);
+  });
+
+  it('renders the game message in the footer message region', async () => {
+    mockExec.mockResolvedValue(makeState({ message: 'footer placement check' }));
+    renderWithProviders(<BidWhistPage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage).toHaveTextContent('footer placement check');
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    mobileState.isMobile = true;
+    mockExec.mockResolvedValue(makeState({ message: 'mobile placement check' }));
+    renderWithProviders(<BidWhistPage />);
+    const message = await screen.findByText('mobile placement check');
+    expect(message.closest('[data-testid="game-footer-message"]')).toBeNull();
   });
 });

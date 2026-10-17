@@ -226,7 +226,7 @@ export function HorsePageContent({ gameKey }: { gameKey: HorsePageGameKey }) {
         <>
           <div className="flex-1 overflow-y-auto px-4 py-2 space-y-3">
             <div
-              className="text-center text-sm text-ds-text-muted"
+              className="text-center text-sm text-ds-text-muted flex flex-wrap justify-center gap-x-3"
               data-testid="ho-discipline"
               data-tutorial="ho-discipline"
               data-discipline-changed={gameKey === 'eightgame' && disciplineChanged ? 'true' : undefined}
@@ -244,19 +244,21 @@ export function HorsePageContent({ gameKey }: { gameKey: HorsePageGameKey }) {
               >
                 {disciplineName}
               </h2>
-              <span className="mr-3">
+              <span className="whitespace-nowrap">
                 {t('disciplineOrder', { position: state.disciplinePosition, total: state.disciplineTotal })}
               </span>
-              <span className="mr-3">
+              <span className="whitespace-nowrap">
                 {t('hand', { n: state.handInDiscipline, total: state.config.handsPerDiscipline })}
               </span>
               {roundLabel && (
-                <span className="mr-3 text-ds-accent" data-testid="ho-round">
+                <span className="whitespace-nowrap text-ds-accent" data-testid="ho-round">
                   {roundLabel}
                 </span>
               )}
-              <span className="mr-3">{t('handTotal', { n: state.handNumber })}</span>
-              <span data-testid="ho-pot">{t('pot', { pot: state.pot })}</span>
+              <span className="whitespace-nowrap">{t('handTotal', { n: state.handNumber })}</span>
+              <span className="whitespace-nowrap" data-testid="ho-pot">
+                {t('pot', { pot: state.pot })}
+              </span>
             </div>
 
             {gameKey === 'eightgame' && (
@@ -376,118 +378,129 @@ export function HorsePageContent({ gameKey }: { gameKey: HorsePageGameKey }) {
             ]}
           />
 
-          <GameFooter className={`${gameTheme[gameKey].footer} px-4 py-2.5`}>
-            <div className="text-center text-xs text-ds-text-muted" data-testid="ho-action-context">
-              <span className="text-ds-text-primary">{tc(`nav.${gameKey}`)}</span>
-              <span> · {disciplineName}</span>
-              {roundLabel && <span> · {roundLabel}</span>}
-              {isDrawTurn && <span> · {t('action.draw', { n: state.drawIndex })}</span>}
-              {roundLabel && isBetTurn && <span> · {t('action.betting')}</span>}
-            </div>
-            <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="ho-actions">
-              {isDrawTurn && (
-                <div className="flex flex-col items-center gap-2" data-testid="ho-draw">
-                  <div className="text-xs text-ds-text-muted">{t('draw.prompt', { n: state.drawIndex })}</div>
-                  <div className="flex flex-wrap justify-center gap-2">
-                    {humanCards.map((card, idx) => {
-                      const selected = drawSelection.includes(idx);
-                      return (
+          <GameFooter
+            className={`${gameTheme[gameKey].footer} px-4 py-2.5`}
+            actions={
+              isDrawTurn || isBetTurn || isHandEnd || isGameEnd ? (
+                <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="ho-actions">
+                  {isDrawTurn && (
+                    <div className="flex flex-col items-center gap-2" data-testid="ho-draw">
+                      <div className="text-xs text-ds-text-muted">{t('draw.prompt', { n: state.drawIndex })}</div>
+                      <div className="flex flex-wrap justify-center gap-2">
+                        {humanCards.map((card, idx) => {
+                          const selected = drawSelection.includes(idx);
+                          return (
+                            <button
+                              type="button"
+                              key={`${card.design}-${card.value}`}
+                              className={`rounded ${selected ? 'ring-2 ring-ds-accent' : ''}`}
+                              aria-pressed={selected}
+                              aria-label={cardAlt(card)}
+                              data-testid={`ho-draw-card-${idx}`}
+                              disabled={loading}
+                              onClick={() =>
+                                setDrawSelection((prev) =>
+                                  prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx],
+                                )
+                              }
+                            >
+                              <AnimatedCard card={card} width={Math.round(cardWidth * 0.8)} />
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <div className="flex gap-2">
                         <button
                           type="button"
-                          key={`${card.design}-${card.value}`}
-                          className={`rounded ${selected ? 'ring-2 ring-ds-accent' : ''}`}
-                          aria-pressed={selected}
-                          aria-label={cardAlt(card)}
-                          data-testid={`ho-draw-card-${idx}`}
-                          disabled={loading}
-                          onClick={() =>
-                            setDrawSelection((prev) =>
-                              prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx],
-                            )
-                          }
+                          className={btnPrimary}
+                          disabled={loading || drawSelection.length === 0}
+                          data-testid="ho-draw-exchange"
+                          onClick={() => {
+                            callApi('draw', { cardIndices: [...drawSelection].sort((a, b) => a - b) });
+                            setDrawSelection([]);
+                          }}
                         >
-                          <AnimatedCard card={card} width={Math.round(cardWidth * 0.8)} />
+                          {t('draw.exchange', { count: drawSelection.length })}
                         </button>
-                      );
-                    })}
-                  </div>
-                  <div className="flex gap-2">
+                        <button
+                          type="button"
+                          className={btnSuccess}
+                          disabled={loading}
+                          data-testid="ho-draw-stand"
+                          onClick={() => {
+                            callApi('draw', { cardIndices: [] });
+                            setDrawSelection([]);
+                          }}
+                        >
+                          {t('draw.stand')}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  {isBetTurn && (
+                    <>
+                      <p className="text-sm text-ds-text-muted" data-testid="ho-forced-bets">
+                        {[
+                          state.smallBlind > 0 && t('forcedBets.smallBlind', { amount: state.smallBlind }),
+                          state.bigBlind > 0 && t('forcedBets.bigBlind', { amount: state.bigBlind }),
+                          state.ante > 0 && t('forcedBets.ante', { amount: state.ante }),
+                          state.bringIn > 0 && t('forcedBets.bringIn', { amount: state.bringIn }),
+                        ]
+                          .filter(Boolean)
+                          .join(t('listSeparator'))}
+                      </p>
+                      <BettingControls
+                        inputId="ho-bet"
+                        betAmount={betAmount}
+                        onBetAmountChange={setBetAmount}
+                        minRaise={Math.max(state.minRaise, 1)}
+                        maxBetAmount={state.maxBetAmount}
+                        potSize={state.pot}
+                        // **「賭けられているか」はサーバが決める。** 固定すると、
+                        // チェックできる場面でチェックが出ず、逆も起きる。
+                        hasOutstandingBet={state.toCall > 0}
+                        callAmountLabel={state.toCall > 0 ? t('callAmount', { amount: state.toCall }) : undefined}
+                        loading={loading}
+                        onCall={() => callApi('action', { action: 'call' })}
+                        onRaise={() => callApi('action', { action: 'raise', amount: betAmount })}
+                        onBet={() => callApi('action', { action: 'bet', amount: betAmount })}
+                        onCheck={() => callApi('action', { action: 'check' })}
+                        onFold={() => callApi('action', { action: 'fold' })}
+                        onAllIn={() => callApi('action', { action: 'allin' })}
+                      />
+                    </>
+                  )}
+                  {isHandEnd && (
                     <button
                       type="button"
                       className={btnPrimary}
-                      disabled={loading || drawSelection.length === 0}
-                      data-testid="ho-draw-exchange"
-                      onClick={() => {
-                        callApi('draw', { cardIndices: [...drawSelection].sort((a, b) => a - b) });
-                        setDrawSelection([]);
-                      }}
-                    >
-                      {t('draw.exchange', { count: drawSelection.length })}
-                    </button>
-                    <button
-                      type="button"
-                      className={btnSuccess}
+                      onClick={() => callApi('next')}
                       disabled={loading}
-                      data-testid="ho-draw-stand"
-                      onClick={() => {
-                        callApi('draw', { cardIndices: [] });
-                        setDrawSelection([]);
-                      }}
+                      data-testid="ho-next-hand"
                     >
-                      {t('draw.stand')}
+                      {t('nextHand')}
                     </button>
-                  </div>
+                  )}
+                  {isGameEnd && (
+                    <button type="button" className={btnSuccess} onClick={resetWithConfig} disabled={loading}>
+                      {t('newGame')}
+                    </button>
+                  )}
                 </div>
-              )}
-              {isBetTurn && (
-                <>
-                  <p className="text-sm text-ds-text-muted" data-testid="ho-forced-bets">
-                    {[
-                      state.smallBlind > 0 && t('forcedBets.smallBlind', { amount: state.smallBlind }),
-                      state.bigBlind > 0 && t('forcedBets.bigBlind', { amount: state.bigBlind }),
-                      state.ante > 0 && t('forcedBets.ante', { amount: state.ante }),
-                      state.bringIn > 0 && t('forcedBets.bringIn', { amount: state.bringIn }),
-                    ]
-                      .filter(Boolean)
-                      .join(t('listSeparator'))}
-                  </p>
-                  <BettingControls
-                    inputId="ho-bet"
-                    betAmount={betAmount}
-                    onBetAmountChange={setBetAmount}
-                    minRaise={Math.max(state.minRaise, 1)}
-                    maxBetAmount={state.maxBetAmount}
-                    potSize={state.pot}
-                    // **「賭けられているか」はサーバが決める。** 固定すると、
-                    // チェックできる場面でチェックが出ず、逆も起きる。
-                    hasOutstandingBet={state.toCall > 0}
-                    callAmountLabel={state.toCall > 0 ? t('callAmount', { amount: state.toCall }) : undefined}
-                    loading={loading}
-                    onCall={() => callApi('action', { action: 'call' })}
-                    onRaise={() => callApi('action', { action: 'raise', amount: betAmount })}
-                    onBet={() => callApi('action', { action: 'bet', amount: betAmount })}
-                    onCheck={() => callApi('action', { action: 'check' })}
-                    onFold={() => callApi('action', { action: 'fold' })}
-                    onAllIn={() => callApi('action', { action: 'allin' })}
-                  />
-                </>
-              )}
-              {isHandEnd && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={() => callApi('next')}
-                  disabled={loading}
-                  data-testid="ho-next-hand"
-                >
-                  {t('nextHand')}
-                </button>
-              )}
-              {isGameEnd && (
-                <button type="button" className={btnSuccess} onClick={resetWithConfig} disabled={loading}>
-                  {t('newGame')}
-                </button>
-              )}
+              ) : null
+            }
+          >
+            <div
+              className="text-center text-xs text-ds-text-muted flex flex-wrap justify-center gap-x-1"
+              data-testid="ho-action-context"
+            >
+              <span className="whitespace-nowrap text-ds-text-primary">{tc(`nav.${gameKey}`)}</span>
+              <span className="whitespace-nowrap">{disciplineName}</span>
+              {roundLabel && <span className="whitespace-nowrap">{roundLabel}</span>}
+              {isDrawTurn && <span className="whitespace-nowrap">{t('action.draw', { n: state.drawIndex })}</span>}
+              {roundLabel && isBetTurn && <span className="whitespace-nowrap">{t('action.betting')}</span>}
+            </div>
+            <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="ho-actions">
               <GameResetButton
                 isGameEnd={isGameEnd}
                 onReset={resetWithConfig}

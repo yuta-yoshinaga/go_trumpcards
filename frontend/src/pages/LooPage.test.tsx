@@ -40,6 +40,30 @@ beforeEach(() => {
 });
 
 describe('LooPage', () => {
+  it('stacks mobile hand rows for the human player', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      const cards = Array.from({ length: 13 }, (_, i) => ({ design: 'SPADE' as const, value: (i % 13) + 1 }));
+      const base = makeLooState();
+      mockExec.mockResolvedValue(
+        makeLooState({ players: [{ ...base.players[0], cards, cardCount: cards.length }, ...base.players.slice(1)] }),
+      );
+      renderWithProviders(<LooPage />);
+      const hand = await screen.findByAltText('♠ A');
+      const handSection = hand.closest('[data-tutorial="loo-player-hand"]');
+      expect(handSection).not.toBeNull();
+      await waitFor(() =>
+        expect(handSection?.querySelectorAll('[data-testid="hand-row"]').length).toBeGreaterThanOrEqual(2),
+      );
+      const rows = handSection?.querySelectorAll<HTMLElement>('[data-testid="hand-row"]') ?? [];
+      for (const row of Array.from(rows).slice(1)) expect(row.style.marginTop).toMatch(/^-/);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
   it('shows the turn-up card alongside the trump suit', async () => {
     renderWithProviders(<LooPage />);
     expect(await screen.findByText('めくり札:')).toBeInTheDocument();
@@ -83,6 +107,7 @@ describe('LooPage', () => {
     mockExec.mockResolvedValue(state);
     const { getByTestId } = renderWithProviders(<LooPage />);
     await waitFor(() => expect(getByTestId('loo-decide-buttons')).toBeInTheDocument());
+    expect(within(screen.getByTestId('game-footer-actions')).getByTestId('loo-decide-buttons')).toBeInTheDocument();
   });
 
   it('does not render loo-decide-buttons when it is cpu turn', async () => {
@@ -92,6 +117,15 @@ describe('LooPage', () => {
     const { queryByTestId, getByTestId } = renderWithProviders(<LooPage />);
     await waitFor(() => expect(getByTestId('loo-hint-live')).toBeInTheDocument());
     expect(queryByTestId('loo-decide-buttons')).not.toBeInTheDocument();
+  });
+
+  it('keeps the pot-risk live region mounted when there are no action buttons', async () => {
+    mockExec.mockResolvedValue(cpuDecideState);
+    renderWithProviders(<LooPage />);
+
+    await waitFor(() => expect(screen.getByTestId('loo-hint-live')).toBeInTheDocument());
+    expect(screen.getByTestId('loo-pot-risk-live')).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-actions')).not.toBeInTheDocument();
   });
 
   it('renders skeleton when no state', () => {
@@ -115,6 +149,33 @@ describe('LooPage', () => {
       expect(screen.getByAltText('♥ Q')).toBeInTheDocument();
       expect(screen.getByAltText('♠ A')).toBeInTheDocument();
     });
+  });
+
+  it('keeps moved hints and reset controls in the play area while the hand stays in the footer', async () => {
+    renderWithProviders(<LooPage />);
+    await screen.findByAltText('♥ Q');
+    const playArea = document.querySelector('.flex-1.overflow-y-auto');
+    const footerContent = screen.getByTestId('game-footer-content');
+
+    expect(playArea).not.toBeNull();
+    expect(within(playArea as HTMLElement).getByTestId('loo-hint-live')).toBeInTheDocument();
+    expect(playArea?.querySelector('[data-tutorial="loo-reset-button"]')).toBeInTheDocument();
+    expect(footerContent.querySelector('[data-tutorial="loo-player-hand"]')).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('loo-hint-live')).not.toBeInTheDocument();
+    expect(footerContent.querySelector('[data-tutorial="loo-reset-button"]')).not.toBeInTheDocument();
+  });
+
+  it('keeps decision counts in the play area outside the footer content', async () => {
+    mockExec.mockResolvedValue(decidePhaseState);
+    renderWithProviders(<LooPage />);
+
+    const decisionCounts = await screen.findByTestId('loo-decision-counts');
+    const playArea = document.querySelector('.flex-1.overflow-y-auto');
+    const footerContent = screen.getByTestId('game-footer-content');
+
+    expect(playArea).not.toBeNull();
+    expect(within(playArea as HTMLElement).getByTestId('loo-decision-counts')).toBe(decisionCounts);
+    expect(within(footerContent).queryByTestId('loo-decision-counts')).not.toBeInTheDocument();
   });
 
   it('marks each player Play/Pass with an icon and a status aria-label', async () => {

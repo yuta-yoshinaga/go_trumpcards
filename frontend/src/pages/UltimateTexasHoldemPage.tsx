@@ -250,12 +250,12 @@ function UltimateTexasHoldemPageContent() {
             <h2 className="text-ds-text-primary text-center font-bold text-sm mb-1">{t('currentBets.title')}</h2>
             <div className="flex flex-wrap justify-center gap-x-4 text-ds-text-muted text-sm tabular-nums">
               {state.anteBet > 0 && (
-                <span>
+                <span className="whitespace-nowrap">
                   {t('label.ante')}: {state.anteBet}
                 </span>
               )}
               {state.blindBet > 0 && (
-                <span>
+                <span className="whitespace-nowrap">
                   {t('label.blind')}: {state.blindBet}
                 </span>
               )}
@@ -436,10 +436,12 @@ function UltimateTexasHoldemPageContent() {
         <ErrorAlert message={error} onRetry={retry} />
         {isBetPhase && (
           <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="uth-bet-controls">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <ChipBetInput
                 id="uth-ante-amount"
                 label={t('label.ante')}
+                labelClassName="shrink-0 whitespace-nowrap"
+                inputClassName="min-w-0"
                 value={anteAmount}
                 onChange={setAnteAmount}
                 min={10}
@@ -448,7 +450,7 @@ function UltimateTexasHoldemPageContent() {
                 disabled={loading}
                 showSteppers
               />
-              <span className="text-ds-text-muted text-xs">×2 ({t('label.blind')})</span>
+              <span className="shrink-0 whitespace-nowrap text-ds-text-muted text-xs">×2 ({t('label.blind')})</span>
             </div>
             <ChipBetInput
               id="uth-trips-amount"

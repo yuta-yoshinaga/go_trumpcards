@@ -91,6 +91,8 @@ describe('TichuPage', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<TichuPage />);
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+    expect(screen.getByText('読み込み中…')).toBeInTheDocument();
+    expect(screen.queryByText('loading', { exact: true })).not.toBeInTheDocument();
   });
 
   it('calls reset command on mount', async () => {
@@ -390,6 +392,7 @@ describe('TichuPage', () => {
     );
     renderWithProviders(<TichuPage />);
     await waitFor(() => expect(screen.getByTestId('tichu-bomb-badge-0')).toBeInTheDocument());
+    expect(screen.getByTestId('tichu-bomb-badge-0')).toHaveClass('bg-ds-error', 'text-white');
     // All four sevens are badged; the nine is not.
     expect(screen.getByTestId('tichu-bomb-badge-3')).toBeInTheDocument();
     expect(screen.queryByTestId('tichu-bomb-badge-4')).not.toBeInTheDocument();

@@ -5,6 +5,12 @@ test.describe('Kille E2E', () => {
   test('shows the pack, keeps other hands hidden and takes a turn', async ({ page }) => {
     await navigateTo(page, '/kille');
 
+    const rules = page.getByTestId('kille-rules');
+    if (!(await rules.locator('[data-testid="kille-rules-note"]').isVisible())) {
+      await rules.locator('summary').click();
+    }
+    await page.getByTestId('kille-ladder').locator('summary').click();
+
     // Permanent, not tutorial-only: an exchanged Harlequin being the LOWEST card
     // is what everyone gets wrong, and it decides whether to trade at all.
     await expect(page.getByTestId('kille-rules-note')).toBeVisible({ timeout: TIMEOUT_GAME_LOOP });
@@ -56,6 +62,7 @@ test.describe('Kille E2E', () => {
     }
     await waitForLoaded(page);
 
+    await page.getByTestId('kille-ladder').locator('summary').click();
     await expect(page.getByTestId('kille-ladder')).toBeVisible({ timeout: TIMEOUT_GAME_LOOP });
   });
 });

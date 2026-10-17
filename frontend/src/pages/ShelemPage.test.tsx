@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { shelemApi } from '../api/gameApi';
+import { useIsCompactLargeDesktop, useIsMobile } from '../hooks/useCardDimensions';
 import { useGameHint } from '../hooks/useGameHint';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -17,7 +18,15 @@ vi.mock('../hooks/useGameHint', () => ({
   useGameHint: vi.fn(() => ({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() })),
 }));
 
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: vi.fn(() => false),
+  useIsCompactLargeDesktop: vi.fn(() => false),
+}));
+
 const mockExec = vi.mocked(shelemApi.exec);
+const mockIsMobile = vi.mocked(useIsMobile);
+const mockIsCompactLargeDesktop = vi.mocked(useIsCompactLargeDesktop);
 
 const card = (design: string, value: number): Card => ({ design, value }) as unknown as Card;
 
@@ -55,6 +64,8 @@ const playing = (over: Partial<ShelemResponse> = {}) =>
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mockIsMobile.mockReturnValue(false);
+  mockIsCompactLargeDesktop.mockReturnValue(false);
   mockExec.mockResolvedValue(makeState());
 });
 
@@ -64,12 +75,92 @@ describe('ShelemPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('renders bidding controls in the fixed footer actions', async () => {
+    renderWithProviders(<ShelemPage />);
+    const actions = await screen.findByTestId('sh-primary-actions');
+    const hand = screen.getByText(/あなた:/).closest('[data-tutorial="sh-hand"]');
+    expect(actions.closest('[data-testid="game-footer-actions"]')).not.toBeNull();
+    expect(actions).toContainElement(screen.getByTestId('sh-bid-90-btn'));
+    expect(hand).not.toBeNull();
+    if (hand) expect(hand.closest('[data-testid="game-footer-content"]')).not.toBeNull();
+  });
+
+  it('keeps the mobile message in the play area while keeping hand and actions in footer slots', async () => {
+    mockIsMobile.mockReturnValue(true);
+    mockExec.mockResolvedValue(makeState({ message: 'テストメッセージ' }));
+    renderWithProviders(<ShelemPage />);
+
+    const footer = (await screen.findByTestId('game-footer-actions')).closest('footer');
+    expect(footer).toHaveClass('max-h-[60vh]');
+    const message = screen.getByText('テストメッセージ');
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+    expect(message.closest('[role="status"]')?.closest('footer')).toBeNull();
+    expect(screen.getByTestId('game-footer-actions')).toContainElement(screen.getByTestId('sh-primary-actions'));
+    expect(screen.getByTestId('game-footer-content')).toContainElement(
+      screen.getByText(/あなた:/).closest('[data-tutorial="sh-hand"]'),
+    );
+  });
+
+  it('keeps the desktop message in the footer message slot', async () => {
+    mockExec.mockResolvedValue(makeState({ message: 'デスクトップメッセージ' }));
+    renderWithProviders(<ShelemPage />);
+
+    const message = await screen.findByText('デスクトップメッセージ');
+    expect(screen.getByTestId('game-footer-message')).toContainElement(message);
+    expect(screen.getByTestId('game-footer-actions').closest('footer')).toContainElement(
+      screen.getByTestId('game-footer-message'),
+    );
+  });
+
   // **点になるのは A/10/5 だけ。** 盤面から読めないので常に出す。
   it('always states the point cards', async () => {
     renderWithProviders(<ShelemPage />);
     const box = await screen.findByTestId('sh-points');
     expect(box).toHaveTextContent(/A/);
     expect(box).toHaveTextContent(/100/);
+  });
+
+  it('collapses point guidance, seats, and cumulative score on mobile', async () => {
+    mockIsMobile.mockReturnValue(true);
+    renderWithProviders(<ShelemPage />);
+
+    const pointDetails = (await screen.findByText('得点札')).closest('details');
+    const score = await screen.findByTestId('sh-score');
+    const seats = screen.getByTestId('cpu-accordion');
+    expect(pointDetails).not.toHaveAttribute('open');
+    expect(screen.getByTestId('sh-points')).not.toBeVisible();
+    expect(score).not.toHaveAttribute('open');
+    expect(score.querySelector('div')).not.toBeVisible();
+    expect(seats).not.toHaveAttribute('open');
+    const humanSeat = screen.getByTestId('sh-seat-0');
+    const cpuSeat = screen.getByTestId('sh-seat-1');
+    expect(humanSeat).toBeVisible();
+    expect(humanSeat.closest('[data-testid="cpu-accordion"]')).toBeNull();
+    expect(cpuSeat.closest('[data-testid="cpu-accordion"]')).toBe(seats);
+    expect(cpuSeat).not.toBeVisible();
+  });
+
+  it('opens cumulative score and seats on desktop', async () => {
+    renderWithProviders(<ShelemPage />);
+
+    expect(await screen.findByTestId('sh-score')).toHaveAttribute('open');
+    expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
+    expect(screen.getByTestId('sh-seat-0')).toBeVisible();
+    expect(screen.getByTestId('sh-seat-0').closest('[data-testid="cpu-accordion"]')).toBeNull();
+    expect(screen.getByTestId('sh-seat-1').closest('[data-testid="cpu-accordion"]')).toBe(
+      screen.getByTestId('cpu-accordion'),
+    );
+  });
+
+  it('renders the human seat outside the CPU accordion', async () => {
+    renderWithProviders(<ShelemPage />);
+
+    await screen.findByTestId('sh-human-seat');
+    const humanSeat = screen.getByTestId('sh-human-seat');
+    const cpuAccordion = screen.getByTestId('cpu-accordion');
+
+    expect(humanSeat).toBeInTheDocument();
+    expect(cpuAccordion).not.toContainElement(humanSeat);
   });
 
   it('shows the last trick points separately from the round total', async () => {
@@ -378,5 +469,22 @@ describe('ShelemPage defender points', () => {
     renderWithProviders(<ShelemPage />);
     await waitFor(() => expect(screen.getByTestId('sh-contract')).toBeInTheDocument());
     expect(screen.queryByTestId('sh-defenders')).not.toBeInTheDocument();
+  });
+});
+
+describe('ShelemPage compact large-desktop dimensions', () => {
+  it('uses 60px cards in compact mode and 80px cards at full size', async () => {
+    mockExec.mockResolvedValue(playing());
+    mockIsCompactLargeDesktop.mockReturnValue(true);
+    const compact = renderWithProviders(<ShelemPage />);
+    await screen.findByTestId('sh-human-seat');
+    expect(compact.container.querySelector('[data-tutorial="sh-hand"] img')).toHaveStyle({ width: '60px' });
+    compact.unmount();
+
+    mockIsCompactLargeDesktop.mockReturnValue(false);
+    const fullSize = renderWithProviders(<ShelemPage />);
+    await screen.findByTestId('sh-human-seat');
+    expect(fullSize.container.querySelector('[data-tutorial="sh-hand"] img')).toHaveStyle({ width: '80px' });
+    fullSize.unmount();
   });
 });

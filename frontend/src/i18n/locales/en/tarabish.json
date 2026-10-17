@@ -29,6 +29,9 @@
     },
     "roundPoints": "Round points: your team {{t0}} — theirs {{t1}}"
   },
+  "disclosure": {
+    "rules": "Rules"
+  },
   "meld": {
     "none": "no meld",
     "run": "run of {{len}}",

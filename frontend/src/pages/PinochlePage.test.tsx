@@ -127,6 +127,13 @@ afterEach(() => {
 });
 
 describe('PinochlePage', () => {
+  it('keeps player score labels together while allowing the score row to wrap', async () => {
+    renderWithProviders(<PinochlePage />);
+    const score = (await screen.findAllByText(/トリック得点/))[0];
+    expect(score.parentElement).toHaveClass('flex', 'flex-wrap');
+    expect(score).toHaveClass('whitespace-nowrap');
+  });
+
   it('announces trump suit on hand cards while keeping other card labels unchanged', async () => {
     mockExec.mockResolvedValue(playPhaseState);
     renderWithProviders(<PinochlePage />);
@@ -142,9 +149,9 @@ describe('PinochlePage', () => {
       players: makePlayers([{ id: 0, isHuman: true, bid: 25, meldScore: 40, trickPoints: 15 }]),
     });
     renderWithProviders(<PinochlePage />);
-    await waitFor(() =>
-      expect(screen.getByText(/ビッド: 25 \| メルド得点: 40 \| トリック得点: 15/)).toBeInTheDocument(),
-    );
+    await waitFor(() => expect(screen.getByText('ビッド: 25')).toBeInTheDocument());
+    expect(screen.getByText('メルド得点: 40')).toHaveClass('whitespace-nowrap');
+    expect(screen.getByText('トリック得点: 15')).toHaveClass('whitespace-nowrap');
   });
 
   it.each([
@@ -195,8 +202,9 @@ describe('PinochlePage', () => {
   it('renders bid phase with bid and pass buttons', async () => {
     renderWithProviders(<PinochlePage />);
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'ビッド' })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'パス' })).toBeInTheDocument();
+      const actions = within(screen.getByTestId('game-footer-actions'));
+      expect(actions.getByRole('button', { name: 'ビッド' })).toBeInTheDocument();
+      expect(actions.getByRole('button', { name: 'パス' })).toBeInTheDocument();
     });
   });
 

@@ -116,5 +116,7 @@
     "lpTooltip": "Loose Passive：参加多めだがコール中心",
     "balanced": "BAL",
     "balancedTooltip": "バランス型のスタイル"
-  }
+  },
+  "showingHand": "見えている札: {{hand}}",
+  "sidePot": "ポット{{number}}: {{amount}}チップ — 対象: {{players}}"
 }

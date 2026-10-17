@@ -33,6 +33,16 @@ beforeEach(() => {
 });
 
 describe('ThreeCardBragPage', () => {
+  it('shows the human turn instruction once', async () => {
+    mockExec.mockResolvedValue(
+      makeThreeCardBragState({ message: 'あなたの番です — シー／ベット／レイズ／フォールドを選んでください。' }),
+    );
+    renderWithProviders(<ThreeCardBragPage />);
+    expect(
+      await screen.findAllByText('あなたの番です — シー／ベット／レイズ／フォールドを選んでください。'),
+    ).toHaveLength(1);
+  });
+
   it('marks only the current player in the player list with a translated turn badge', async () => {
     mockExec.mockResolvedValue(makeThreeCardBragState({ currentPlayerIdx: 1 }));
     renderWithProviders(<ThreeCardBragPage />);
@@ -350,6 +360,7 @@ describe('ThreeCardBragPage', () => {
     );
     renderWithProviders(<ThreeCardBragPage />);
     const range = await screen.findByTestId('tcb-raise-range');
+    expect(range).toHaveClass('whitespace-nowrap');
     expect(range).toHaveTextContent('範囲: 4〜40');
     // Value syncs to the stake-based minimum.
     expect(screen.getByTestId('tcb-raise-amount')).toHaveTextContent('4');

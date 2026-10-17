@@ -5,6 +5,7 @@
     "gameOver": "ゲームオーバー"
   },
   "title": "キャンフィールド",
+  "landscapeBanner": "横画面での表示を推奨します",
   "stock": "山札",
   "stockCountAriaLabel": "山札、残り{{count}}枚",
   "stockEmptyAriaLabel": "山札、空",
@@ -25,7 +26,7 @@
   "draw": "引く",
   "giveup": "ギブアップ",
   "hint": "ヒント",
-  "autoComplete": "自動完成",
+  "autoComplete": "オートコンプリート",
   "autoCompleteNotReady": "リザーブ・山札・捨て札がすべて空になるとクリックできます",
   "undo": "元に戻す",
   "empty": "空",
@@ -53,7 +54,7 @@
     "stockWaste": "山札をクリックしてカードをめくります。ウェイストのカードを使えます。",
     "reserve": "リザーブのカードです。組札や場札に移動できます。",
     "tableau": "場札です。カードをドラッグ＆ドロップで移動できます。",
-    "actionButtons": "ヒント・自動完成・元に戻すなどの操作ボタンです。",
+    "actionButtons": "ヒント・オートコンプリート・元に戻すなどの操作ボタンです。",
     "resetButton": "新しいゲームを始めるボタンです。"
   },
   "columnActionsFor": "列 {{n}} の操作",

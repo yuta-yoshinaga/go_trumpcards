@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, TIMEOUT_ACTION, waitForLoaded } from './helpers';
+import { clickHandCard, navigateTo, TIMEOUT_ACTION, waitForLoaded } from './helpers';
 
 test.describe('Colour Whist E2E', () => {
   test('reaches a contract and plays a card', async ({ page }) => {
@@ -38,7 +38,7 @@ test.describe('Colour Whist E2E', () => {
     const legal = handButtons.locator(':scope:not([aria-disabled="true"])');
     if (await legal.first().isVisible()) {
       const before = await handButtons.count();
-      await legal.first().click();
+      await clickHandCard(legal.first());
       await waitForLoaded(page);
       await expect(handButtons).toHaveCount(before - 1, { timeout: TIMEOUT_ACTION });
     } else if ((await handButtons.count()) === 0) {

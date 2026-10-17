@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { canfieldApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -12,6 +12,7 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockExec = vi.mocked(canfieldApi.exec);
+const originalInnerWidth = window.innerWidth;
 
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 
@@ -54,7 +55,78 @@ beforeEach(() => {
   mockExec.mockResolvedValue(playingState);
 });
 
+afterEach(() => {
+  Object.defineProperty(window, 'innerWidth', {
+    configurable: true,
+    writable: true,
+    value: originalInnerWidth,
+  });
+});
+
 describe('CanfieldPage', () => {
+  it('shows selected card move controls in the large desktop move bar', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1280 });
+    renderWithProviders(<CanfieldPage />);
+    const cardButton = (await screen.findByAltText('♠ 7')).closest('button');
+    if (!cardButton) throw new Error('Canfield tableau card is not inside a button');
+    fireEvent.click(cardButton);
+    const moveBar = await screen.findByTestId('cf-selected-move-bar');
+    expect(within(moveBar).getByTestId('cf-bar-move-to-foundation')).toBeInTheDocument();
+    expect(within(moveBar).getByTestId('cf-bar-move-to-tableau-1')).toBeInTheDocument();
+    expect(within(moveBar).queryByTestId('cf-bar-move-to-tableau-0')).not.toBeInTheDocument();
+  });
+
+  it('moves the selected card from the move bar to foundation', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1280 });
+    renderWithProviders(<CanfieldPage />);
+    const cardButton = (await screen.findByAltText('♠ 7')).closest('button');
+    if (!cardButton) throw new Error('Canfield tableau card is not inside a button');
+    fireEvent.click(cardButton);
+    const moveBar = await screen.findByTestId('cf-selected-move-bar');
+    mockExec.mockClear();
+
+    fireEvent.click(within(moveBar).getByTestId('cf-bar-move-to-foundation'));
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'tableau', col: 0, cardIndex: 0 }, { zone: 'foundation' }),
+    );
+  });
+
+  it('moves the selected card from the move bar to another tableau column', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 1280 });
+    renderWithProviders(<CanfieldPage />);
+    const cardButton = (await screen.findByAltText('♠ 7')).closest('button');
+    if (!cardButton) throw new Error('Canfield tableau card is not inside a button');
+    fireEvent.click(cardButton);
+    const moveBar = await screen.findByTestId('cf-selected-move-bar');
+    mockExec.mockClear();
+
+    fireEvent.click(within(moveBar).getByTestId('cf-bar-move-to-tableau-1'));
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith(
+        'move',
+        { zone: 'tableau', col: 0, cardIndex: 0 },
+        { zone: 'tableau', col: 1 },
+      ),
+    );
+  });
+
+  it('hides selected card move controls at a mobile width', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 375 });
+    renderWithProviders(<CanfieldPage />);
+    const cardButton = (await screen.findByAltText('♠ 7')).closest('button');
+    if (!cardButton) throw new Error('Canfield tableau card is not inside a button');
+    fireEvent.click(cardButton);
+
+    expect(screen.queryByTestId('cf-selected-move-bar')).not.toBeInTheDocument();
+  });
+  it('shows the landscape recommendation instead of the phase name in the banner', async () => {
+    renderWithProviders(<CanfieldPage />);
+    const bannerMessage = await screen.findByText('横画面での表示を推奨します');
+    expect(bannerMessage.parentElement).toHaveTextContent(/^横画面での表示を推奨します$/);
+  });
+
   it('fans the latest three waste cards while keeping only the top card interactive', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
@@ -96,6 +168,13 @@ describe('CanfieldPage', () => {
   it('shows base rank', async () => {
     renderWithProviders(<CanfieldPage />);
     await waitFor(() => expect(screen.getByText('ベースランク: 5')).toBeInTheDocument());
+  });
+
+  it('renders tableau card aria labels with all translated values', async () => {
+    renderWithProviders(<CanfieldPage />);
+    const cardButton = await screen.findByRole('button', { name: '♠ 7、場札 0、位置 0' });
+    expect(cardButton).toHaveAccessibleName('♠ 7、場札 0、位置 0');
+    expect(cardButton.getAttribute('aria-label')).not.toContain('{{');
   });
 
   it('explains the base-rank foundation cycle', async () => {
@@ -239,7 +318,7 @@ describe('CanfieldPage', () => {
     await waitFor(() => expect(screen.getByTestId('cf-hint-display')).not.toHaveTextContent('ヒントがあります'));
   });
 
-  // 自動完成はリザーブ・山札・捨て札が空のときだけ通る (#4787)。押せる/押せない
+  // オートコンプリートはリザーブ・山札・捨て札が空のときだけ通る (#4787)。押せる/押せない
   // の両側を踏まないと、常に押せる実装でも常に押せない実装でも通ってしまう。
   const readyState = { ...playingState, reserve: [], stockCount: 0, waste: [] };
 

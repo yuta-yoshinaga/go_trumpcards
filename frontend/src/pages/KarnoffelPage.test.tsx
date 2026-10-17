@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { karnoffelApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -10,6 +10,13 @@ import { KarnoffelPage } from './KarnoffelPage';
 vi.mock('../api/gameApi', () => ({
   karnoffelApi: { exec: vi.fn() },
   actionLogApi: { karnoffel: vi.fn() },
+}));
+
+const mobileState = { isMobile: false, breakpoint: 'largeDesktop' as 'mobile' | 'desktop' | 'largeDesktop' };
+vi.mock('../hooks/useCardDimensions', () => ({
+  useCardDimensions: () => ({ cardWidth: 40, isMobile: mobileState.isMobile }),
+  useIsMobile: () => mobileState.isMobile,
+  useBreakpoint: () => mobileState.breakpoint,
 }));
 
 const mockExec = vi.mocked(karnoffelApi.exec);
@@ -67,9 +74,106 @@ function handButtons() {
 }
 
 describe('KarnoffelPage', () => {
+  it('renders the game message inside the footer message region', async () => {
+    mockExec.mockResolvedValue(makeState({ message: 'Footer message' }));
+    renderWithProviders(<KarnoffelPage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage.querySelector('[role="status"], [role="alert"]')).toHaveTextContent('Footer message');
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    mobileState.isMobile = true;
+    mockExec.mockResolvedValue(makeState({ message: 'Mobile message' }));
+    renderWithProviders(<KarnoffelPage />);
+
+    const messageText = await screen.findByText('Mobile message');
+    const message = messageText.closest('[role="status"]');
+    expect(message).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+    expect(message?.closest('footer')).not.toBeInTheDocument();
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
+    mobileState.isMobile = false;
+    mobileState.breakpoint = 'largeDesktop';
     mockExec.mockResolvedValue(makeState());
+  });
+
+  it('keeps reference details closed and places the seat, trick, and CPU panels by breakpoint', async () => {
+    mobileState.isMobile = true;
+    const { unmount } = renderWithProviders(<KarnoffelPage />);
+    await screen.findByTestId('karnoffel-scores');
+    const details = screen.getAllByText(/切札の決め方|序列/).map((summary) => summary.closest('details'));
+    expect(details).toHaveLength(2);
+    for (const detail of details) expect(detail).not.toHaveAttribute('open');
+    expect(screen.getByTestId('karnoffel-ladder')).not.toBeVisible();
+    expect(screen.getByTestId('karnoffel-chosen-note')).not.toBeVisible();
+    expect(screen.getByTestId('karnoffel-ladder-summary')).toHaveTextContent('序列');
+    expect(screen.getByTestId('karnoffel-chosen-note-summary')).toHaveTextContent('切札の決め方');
+    const settings = screen.getByText('設定', { exact: true }).closest('details');
+    expect(screen.getByTestId('karnoffel-settings-summary')).toHaveTextContent('設定');
+    expect(settings).not.toHaveAttribute('open');
+    expect(screen.getByLabelText('目標局数')).not.toBeVisible();
+    const cpuAccordion = screen.getByTestId('cpu-accordion');
+    expect(cpuAccordion).not.toHaveAttribute('open');
+    const players = screen.getAllByTestId('karnoffel-player');
+    expect(players).toHaveLength(4);
+    const humanPlayer = screen.getByTestId('karnoffel-human-player');
+    expect(screen.getByText('プレイヤー', { exact: true })).toBeVisible();
+    expect(screen.getByTestId('karnoffel-players')).toContainElement(humanPlayer);
+    expect(humanPlayer).toContainElement(players[0]);
+    expect(cpuAccordion).not.toContainElement(players[0]);
+    expect(players[0]).toBeVisible();
+    for (const player of players.slice(1)) {
+      expect(cpuAccordion).toContainElement(player);
+      expect(player).not.toBeVisible();
+    }
+
+    unmount();
+    mobileState.isMobile = false;
+    mobileState.breakpoint = 'largeDesktop';
+    mockExec.mockResolvedValueOnce(makeState({ trick: [card('HEART', 5)] }));
+    renderWithProviders(<KarnoffelPage />);
+    await screen.findByTestId('karnoffel-scores');
+    const referenceDetails = [
+      screen.getByText('設定', { exact: true }).closest('details'),
+      screen.getByTestId('karnoffel-chosen-note-summary').closest('details'),
+      screen.getByTestId('karnoffel-ladder-summary').closest('details'),
+    ];
+    expect(referenceDetails).toHaveLength(3);
+    for (const detail of referenceDetails) expect(detail).not.toHaveAttribute('open');
+    expect(screen.getByTestId('karnoffel-ladder')).not.toBeVisible();
+    expect(screen.getByTestId('karnoffel-chosen-note')).not.toBeVisible();
+    const row = screen.getByTestId('karnoffel-seat-trick-row');
+    const humanSeat = screen.getByTestId('karnoffel-human-player');
+    const trick = screen.getByTestId('karnoffel-trick');
+    const desktopAccordion = screen.getByTestId('cpu-accordion');
+    expect(row).toHaveClass('flex', 'flex-wrap', 'items-start', 'gap-4');
+    expect(row).toContainElement(humanSeat);
+    expect(row).toContainElement(trick);
+    expect(humanSeat.compareDocumentPosition(trick) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(row.compareDocumentPosition(desktopAccordion) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
+    for (const player of screen.getAllByTestId('karnoffel-player')) expect(player).toBeVisible();
+    expect(
+      screen.getAllByTestId('karnoffel-player').filter((player) => desktopAccordion.contains(player)),
+    ).toHaveLength(3);
+
+    cleanup();
+    mobileState.breakpoint = 'desktop';
+    mockExec.mockResolvedValueOnce(makeState({ trick: [card('HEART', 5)] }));
+    renderWithProviders(<KarnoffelPage />);
+    await screen.findByTestId('karnoffel-scores');
+    const smallSeat = screen.getByTestId('karnoffel-human-player');
+    const smallAccordion = screen.getByTestId('cpu-accordion');
+    const smallTrick = screen.getByTestId('karnoffel-trick');
+    expect(smallSeat).toHaveClass('grid-cols-2');
+    expect(screen.getByTestId('karnoffel-human-player')).not.toHaveClass('grid-cols-4');
+    expect(smallSeat.compareDocumentPosition(smallAccordion) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(smallAccordion.compareDocumentPosition(smallTrick) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.queryByTestId('karnoffel-seat-trick-row')).not.toBeInTheDocument();
   });
 
   it('resets on mount', async () => {
@@ -122,6 +226,16 @@ describe('KarnoffelPage', () => {
     }
   });
 
+  it('keeps hidden-hand labels on one line for CPU players without visible cards', async () => {
+    renderWithProviders(<KarnoffelPage />);
+    await waitFor(() => expect(screen.getAllByTestId('karnoffel-player')).toHaveLength(4));
+    const cpuPlayers = screen.getAllByTestId('karnoffel-player').slice(1);
+    expect(cpuPlayers).toHaveLength(3);
+    cpuPlayers.forEach((player) => {
+      expect(player.querySelector('span.whitespace-nowrap')).toBeInTheDocument();
+    });
+  });
+
   it('plays exactly one card', async () => {
     renderWithProviders(<KarnoffelPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '出す' })).toBeInTheDocument());
@@ -136,20 +250,17 @@ describe('KarnoffelPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 1 }));
   });
 
-  // **追随の義務は無い。**制限は「第1トリックのリードに悪魔は使えない」だけ。
-  it('says there is no follow-suit rule but the devil cannot open', async () => {
+  it('keeps the play instruction out of the footer while the phase message remains visible', async () => {
     renderWithProviders(<KarnoffelPage />);
-    await waitFor(() => expect(screen.getByTestId('karnoffel-play-notice')).toBeInTheDocument());
-    const notice = screen.getByTestId('karnoffel-play-notice');
-    expect(notice).toHaveTextContent('追随の義務はありません');
-    expect(notice).toHaveTextContent('第1トリックのリードに悪魔は使えません');
+    expect(await screen.findByRole('button', { name: '出す' })).toBeInTheDocument();
+    expect(screen.queryByTestId('karnoffel-play-notice')).not.toBeInTheDocument();
   });
 
   // その一つの制限はサーバーが決める。
   it('disables cards the server did not list as playable', async () => {
     mockExec.mockResolvedValue(makeState({ validPlays: [1, 2] }));
     renderWithProviders(<KarnoffelPage />);
-    await waitFor(() => expect(screen.getByTestId('karnoffel-play-notice')).toBeInTheDocument());
+    await screen.findByRole('button', { name: '出す' });
 
     const hand = handButtons();
     expect(hand[0]).toBeDisabled();
@@ -160,7 +271,7 @@ describe('KarnoffelPage', () => {
   it('exposes hand selection and turn legality accessibly', async () => {
     mockExec.mockResolvedValue(makeState({ validPlays: [1, 2] }));
     renderWithProviders(<KarnoffelPage />);
-    await waitFor(() => expect(screen.getByTestId('karnoffel-play-notice')).toBeInTheDocument());
+    await screen.findByRole('button', { name: '出す' });
 
     const hand = handButtons();
     expect(hand[0]).toHaveAttribute('aria-pressed', 'false');
@@ -355,5 +466,18 @@ describe('KarnoffelPage', () => {
     expect(trick.querySelector('[data-testid="karnoffel-trick-rank-1"]')).toHaveTextContent('悪魔（追随・最弱）');
     expect(screen.getByRole('img', { name: '席0: あなた、♥ J、カルニッフェル' })).toBeInTheDocument();
     expect(screen.getByRole('img', { name: '席1: CPU 1、♥ 7、悪魔（追随・最弱）' })).toBeInTheDocument();
+  });
+
+  it('labels a leading devil, a following devil, and an unranked trick card accessibly', async () => {
+    mockExec.mockResolvedValue(makeState({ trick: [card('HEART', 7), card('HEART', 7), card('CLOVER', 4)] }));
+    renderWithProviders(<KarnoffelPage />);
+
+    const trick = await screen.findByTestId('karnoffel-trick');
+    expect(trick.querySelector('[data-testid="karnoffel-trick-rank-0"]')).toHaveTextContent('悪魔（リード）');
+    expect(trick.querySelector('[data-testid="karnoffel-trick-rank-1"]')).toHaveTextContent('悪魔（追随・最弱）');
+    expect(trick.querySelector('[data-testid="karnoffel-trick-rank-2"]')).not.toBeInTheDocument();
+    expect(screen.getByRole('img', { name: '席0: あなた、♥ 7、悪魔（リード）' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: '席1: CPU 1、♥ 7、悪魔（追随・最弱）' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: '席2: CPU 2、♣ 4' })).toBeInTheDocument();
   });
 });

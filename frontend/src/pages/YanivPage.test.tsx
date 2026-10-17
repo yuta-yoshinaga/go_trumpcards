@@ -8,6 +8,13 @@ import type { Card, YanivResponse } from '../types/card';
 import { YanivPhase } from '../types/phases';
 import { YanivPage } from './YanivPage';
 
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+}));
+
 vi.mock('../api/gameApi', () => ({
   yanivApi: { exec: vi.fn() },
   actionLogApi: { yaniv: vi.fn() },
@@ -54,6 +61,42 @@ beforeEach(() => {
 });
 
 describe('YanivPage', () => {
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue(makeState({ message: 'Your turn notice' }));
+    renderWithProviders(<YanivPage />);
+
+    expect(await screen.findByTestId('game-footer-message')).toHaveTextContent('Your turn notice');
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue(makeState({ message: 'Mobile notice' }));
+    renderWithProviders(<YanivPage />);
+    expect(await screen.findByText('Mobile notice')).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+    window.dispatchEvent(new Event('resize'));
+  });
+
+  it('collapses CPU seats on mobile while keeping their details available', async () => {
+    mobileState.isMobile = true;
+    renderWithProviders(<YanivPage />);
+    const accordion = await screen.findByTestId('cpu-accordion');
+    expect(accordion).not.toHaveAttribute('open');
+    expect(screen.getByText('CPU 1')).not.toBeVisible();
+    expect(accordion.querySelector('summary')).toHaveTextContent('CPU');
+  });
+
+  it('opens CPU seats by default on desktop', async () => {
+    mobileState.isMobile = false;
+    renderWithProviders(<YanivPage />);
+    expect(await screen.findByTestId('cpu-accordion')).toHaveAttribute('open');
+    expect(screen.getByText('CPU 1')).toBeVisible();
+    mobileState.isMobile = true;
+  });
+
   it('shows per-round penalties from server state', async () => {
     mockExec.mockResolvedValue(
       makeState({

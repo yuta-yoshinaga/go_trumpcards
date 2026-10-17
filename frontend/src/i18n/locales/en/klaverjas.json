@@ -34,6 +34,9 @@
     "b": "Team B"
   },
   "teamScoreWithTarget": "{{team}}: {{score}} / target {{target}} pts",
+  "teamScore": "{{team}}: {{score}} pts",
+  "matchDetails": "Target and team",
+  "targetPoints": "Target: {{target}} pts",
   "playButton": "Play",
   "playRestriction": {
     "followSuit": "Follow the led suit",
@@ -48,6 +51,9 @@
     "title": "Round Result",
     "teamA": "Team A card points: {{points}}",
     "teamB": "Team B card points: {{points}}",
+    "teamAShort": "A: {{points}} pts",
+    "teamBShort": "B: {{points}} pts",
+    "roemShort": "Roem A={{roemA}} B={{roemB}}",
     "roem": "Roem (bonus): A={{roemA}} B={{roemB}}"
   },
   "hintAvailable": "Hint",

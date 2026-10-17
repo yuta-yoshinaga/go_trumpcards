@@ -66,6 +66,16 @@ beforeEach(() => {
 });
 
 describe('ViraPage', () => {
+  it('uses on-accent text on both colored bid options', async () => {
+    renderWithProviders(<ViraPage />);
+    const misere = await screen.findByTestId('bid-2');
+    const solo = screen.getByTestId('bid-1');
+    expect(misere).not.toHaveClass('text-white');
+    expect(misere).toHaveClass('text-ds-text-on-accent');
+    expect(solo).not.toHaveClass('text-white');
+    expect(solo).toHaveClass('text-ds-text-on-accent');
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<ViraPage />);
@@ -111,6 +121,22 @@ describe('ViraPage', () => {
     expect(screen.getByTestId('bid-2')).toBeInTheDocument();
     expect(screen.getByTestId('bid-3')).toBeInTheDocument();
     expect(screen.getByTestId('bid-4')).toBeInTheDocument();
+  });
+
+  it('keeps bid choices and supporting controls in the play area while the hand stays in the footer', async () => {
+    renderWithProviders(<ViraPage />);
+
+    const footer = await screen.findByTestId('game-footer-content');
+    const bidChoices = document.querySelector<HTMLElement>('[data-tutorial="vira-bid-choices"]');
+    if (!bidChoices) throw new Error('Bid choices should render on the human bid turn');
+    const playArea = bidChoices.closest('.flex-1.overflow-y-auto');
+
+    expect(playArea).not.toBeNull();
+    expect(footer.querySelector('[data-tutorial="vira-bid-choices"]')).not.toBeInTheDocument();
+    expect(playArea?.querySelector('[data-tutorial="vira-bid-choices"]')).toBeInTheDocument();
+    expect(within(footer).queryByTestId('vira-hint-live')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('vira-hint-live')).toBeInTheDocument();
+    expect(footer.querySelector('[data-tutorial="vira-player-hand"]')).toBeInTheDocument();
   });
 
   it('explains Vira bid buttons, targets, ranking, and declarer roles in the tutorial', async () => {
@@ -506,5 +532,29 @@ describe('ViraPage pot settlement', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
 
     expect(screen.queryByTestId('vira-pot-settlement')).not.toBeInTheDocument();
+  });
+  it('places the current turn action in the pinned footer actions', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<ViraPage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: '出す' })).toBeInTheDocument();
+  });
+
+  it('keeps bid choices out of the pinned footer actions and pass in pinned actions', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<ViraPage />);
+
+    const actions = await screen.findByTestId('game-footer-actions');
+    const bidChoice = await screen.findByTestId('bid-1');
+    expect(within(actions).getByTestId('bid-0')).toBeInTheDocument();
+    expect(bidChoice).toBeInTheDocument();
+    expect(actions).not.toContainElement(bidChoice);
+  });
+
+  it('omits the pinned action row while the CPU is bidding', async () => {
+    mockExec.mockResolvedValue(makeViraState({ phase: 0, isHumanBidTurn: false, currentPlayerIdx: 1 }));
+    renderWithProviders(<ViraPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('game-footer-actions')).not.toBeInTheDocument();
   });
 });

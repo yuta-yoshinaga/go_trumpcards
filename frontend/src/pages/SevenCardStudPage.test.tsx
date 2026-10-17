@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { chicagoApi, sevenCardStudApi, sevenCardStudHiLoApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -175,6 +175,57 @@ beforeEach(() => {
 });
 
 describe('SevenCardStudPage', () => {
+  it('opts the Stud footer into the taller mobile cap', async () => {
+    mockExec.mockResolvedValue(thirdStreetState);
+    renderWithProviders(<SevenCardStudPage />);
+    expect((await screen.findByTestId('game-footer-content')).closest('footer')?.className).toContain('max-h-[60vh]');
+  });
+
+  it('groups the human door and hole cards side by side', async () => {
+    mockExec.mockResolvedValueOnce(thirdStreetState);
+    const { container } = renderWithProviders(<SevenCardStudPage />);
+
+    const doorHeadings = await screen.findAllByText('ドアカード');
+    const playerHand = doorHeadings
+      .find((heading) => heading.closest('[data-tutorial="scs-player-hand"]'))
+      ?.closest('[data-tutorial="scs-player-hand"]') as HTMLElement;
+    const doorHeading = within(playerHand).getByText('ドアカード');
+    const holeHeading = within(playerHand).getByText('ホールカード');
+    const ancestors = (element: HTMLElement) => {
+      const result: HTMLElement[] = [];
+      let current: HTMLElement | null = element.parentElement;
+      while (current) {
+        result.push(current);
+        current = current.parentElement;
+      }
+      return result;
+    };
+    const holeAncestors = new Set(ancestors(holeHeading));
+    const sharedFlexWrap = ancestors(doorHeading).find(
+      (ancestor) => holeAncestors.has(ancestor) && ancestor.classList.contains('flex-wrap'),
+    );
+
+    expect(container).toContainElement(doorHeading);
+    expect(sharedFlexWrap).toBeDefined();
+    expect(doorHeading.parentElement).not.toBe(holeHeading.parentElement);
+  });
+
+  it.each([
+    ['Chicago', chicagoApi, ChicagoPage, 'isChicago'],
+    ['Hi-Lo', sevenCardStudHiLoApi, SevenCardStudHiLoPage, 'isHiLo'],
+  ] as const)('translates visible opponent hands in the %s namespace', async (_name, api, Page, variantFlag) => {
+    vi.mocked(api.exec).mockResolvedValueOnce({
+      ...thirdStreetState,
+      players: [humanPlayer(), cpuPlayer(1)],
+      [variantFlag]: true,
+    } as SevenCardStudResponse);
+
+    renderWithProviders(<Page />);
+
+    expect(await screen.findByTestId('scs-showing-hand-1')).toHaveTextContent('見えている札: ハイカード');
+    expect(screen.queryByText('showingHand')).not.toBeInTheDocument();
+  });
+
   it('keeps the Chicago result live region mounted before showdown', async () => {
     vi.mocked(chicagoApi.exec).mockResolvedValueOnce({ ...thirdStreetState, isChicago: true } as SevenCardStudResponse);
     renderWithProviders(<ChicagoPage />);
@@ -249,6 +300,24 @@ describe('SevenCardStudPage', () => {
     mockExec.mockResolvedValue(thirdStreetState);
     renderWithProviders(<SevenCardStudPage />);
     await waitFor(() => expect(screen.getByText('サードストリート')).toBeInTheDocument());
+  });
+
+  it.each([
+    ['mobile', 375],
+    ['desktop', 1280],
+  ] as const)('keeps CPU seat details collapsed by default on %s', async (_viewport, width) => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: width });
+    mockExec.mockResolvedValue(thirdStreetState);
+    renderWithProviders(<SevenCardStudPage />);
+    const accordion = await screen.findByTestId('cpu-accordion');
+    await waitFor(() => expect(screen.getByText('サードストリート')).toBeInTheDocument());
+    expect(accordion).not.toHaveAttribute('open');
+    expect(screen.getByText('CPU 1')).not.toBeVisible();
+    fireEvent.click(within(accordion).getByText(/CPU対戦相手/));
+    expect(screen.getByText('CPU 1')).toBeVisible();
+
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
   });
 
   // ---- info bar ----
@@ -398,7 +467,7 @@ describe('SevenCardStudPage', () => {
     mockExec.mockResolvedValue(thirdStreetWithBetState);
     renderWithProviders(<SevenCardStudPage />);
     await waitFor(() => expect(screen.getByText('CPU行動:')).toBeInTheDocument());
-    expect(screen.getByText(/Player 1: ベット/)).toBeInTheDocument();
+    expect(screen.getByText(/CPU 1: ベット/)).toBeInTheDocument();
   });
 
   // ---- round results ----
@@ -440,6 +509,31 @@ describe('SevenCardStudPage', () => {
     renderWithProviders(<SevenCardStudPage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
     expect(screen.getByAltText('♥ K')).toBeInTheDocument();
+  });
+
+  it('shows seven face-down placeholders for an undealt, active human hand and none when folded', async () => {
+    mockExec.mockResolvedValue({
+      ...thirdStreetState,
+      players: [humanPlayer({ doorCards: [], holeCards: [] }), cpuPlayer(1), cpuPlayer(2)],
+      bringInPlayerIdx: 0,
+    });
+    const { unmount } = renderWithProviders(<SevenCardStudPage />);
+    const footer = await screen.findByTestId('game-footer-content');
+    const humanHand = footer.querySelector('[data-tutorial="scs-player-hand"]') as HTMLElement;
+    expect(within(humanHand).getAllByTestId('animated-card-back')).toHaveLength(7);
+    expect(within(humanHand).getByText('ドアカード').nextElementSibling).toHaveClass('ring-2');
+    unmount();
+
+    mockExec.mockResolvedValue({
+      ...thirdStreetState,
+      players: [humanPlayer({ doorCards: [], holeCards: [], folded: true }), cpuPlayer(1), cpuPlayer(2)],
+      bringInPlayerIdx: 1,
+    });
+    renderWithProviders(<SevenCardStudPage />);
+    const foldedFooter = await screen.findByTestId('game-footer-content');
+    const foldedHand = foldedFooter.querySelector('[data-tutorial="scs-player-hand"]') as HTMLElement;
+    expect(within(foldedHand).queryAllByTestId('animated-card-back')).toHaveLength(0);
+    expect(within(foldedHand).getByText('ドアカード').nextElementSibling).not.toHaveClass('ring-2');
   });
 
   // ---- message ----
@@ -567,6 +661,9 @@ describe('SevenCardStudPage', () => {
     mockExec.mockResolvedValue(thirdStreetState);
     renderWithProviders(<SevenCardStudPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument());
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: 'フォールド' }),
+    ).toBeInTheDocument();
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(thirdStreetState);
@@ -669,6 +766,16 @@ describe('SevenCardStudPage', () => {
     });
     renderWithProviders(<SevenCardStudPage />);
     await waitFor(() => expect(screen.getByTestId('muck-controls')).toBeInTheDocument());
+    const footerContent = screen.getByTestId('game-footer-content');
+    const playRegion = document.querySelector('.flex-1.overflow-y-auto');
+    expect(playRegion).not.toBeNull();
+    expect(within(playRegion as HTMLElement).getByTestId('muck-controls')).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('muck-controls')).not.toBeInTheDocument();
+    expect(
+      within(footerContent).getByText('あなたの手札').closest('[data-tutorial="scs-player-hand"]'),
+    ).toBeInTheDocument();
+    expect(playRegion?.querySelector('[data-tutorial="scs-reset-button"]')).toBeInTheDocument();
+    expect(footerContent.querySelector('[data-tutorial="scs-reset-button"]')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'マック' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'ショー' })).toBeInTheDocument();
   });

@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { kaiserApi } from '../api/gameApi';
 import i18n from '../i18n';
@@ -12,6 +12,18 @@ vi.mock('../api/gameApi', () => ({
   kaiserApi: { exec: vi.fn() },
   actionLogApi: { kaiser: vi.fn() },
 }));
+
+const mobileState = vi.hoisted(() => ({ isMobile: undefined as boolean | undefined }));
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useCardDimensions: () => {
+      const d = actual.useCardDimensions();
+      return mobileState.isMobile === undefined ? d : { ...d, isMobile: mobileState.isMobile };
+    },
+  };
+});
 
 const mockExec = vi.mocked(kaiserApi.exec);
 
@@ -74,6 +86,12 @@ function handButtons() {
 }
 
 describe('KaiserPage', () => {
+  it('keeps the kitty label on one line when shown', async () => {
+    mockExec.mockResolvedValue(makeState({ kittySize: 3 }));
+    renderWithProviders(<KaiserPage />);
+    expect(await screen.findByTestId('kaiser-kitty')).toHaveClass('whitespace-nowrap');
+  });
+
   // **サーバーが弾く選択肢は出さない。**設定でノートランプを切っていると
   // Bid が error を返すので、選べてしまうと押した瞬間に必ず失敗する。
   describe('the no-trump setting', () => {
@@ -138,13 +156,61 @@ describe('KaiserPage', () => {
   });
 
   beforeEach(() => {
+    mobileState.isMobile = undefined;
     vi.clearAllMocks();
     mockExec.mockResolvedValue(makeState());
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    mockExec.mockResolvedValue(makeState({ message: 'Mobile message' }));
+    mobileState.isMobile = true;
+    renderWithProviders(<KaiserPage />);
+
+    const messageText = await screen.findByText('Mobile message');
+    const message = messageText.closest('[role="status"]');
+    expect(message).toHaveTextContent('Mobile message');
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
   });
 
   it('resets on mount', async () => {
     renderWithProviders(<KaiserPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('keeps the hand and turn notice in the footer, with bidding controls in the play area', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: KaiserPhase.BID, highBid: null, declarerIdx: -1 }));
+    renderWithProviders(<KaiserPage />);
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const footer = within(footerContent);
+    const playArea = footerContent.parentElement?.previousElementSibling;
+    expect(playArea).toBeInTheDocument();
+
+    expect(footer.getAllByRole('button').filter((button) => button.dataset.hintAction === 'play')).toHaveLength(3);
+    expect(footer.getByTestId('kaiser-bid-notice')).toBeInTheDocument();
+    expect(footer.queryByLabelText(/ノートランプを許可/)).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).queryByTestId('kaiser-bid-notice')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByRole('button', { name: '7 を宣言' })).toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('kaiser-specials')).toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByLabelText(/ノートランプを許可/)).toBeInTheDocument();
+  });
+
+  // The tutorial's actions step explains the 7–12 bid, so while bidding it must point at the bid row.
+  it('points the tutorial actions anchor at the bid row while bidding', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: KaiserPhase.BID, highBid: null, declarerIdx: -1 }));
+    const { container } = renderWithProviders(<KaiserPage />);
+    await screen.findByRole('button', { name: '7 を宣言' });
+    const anchors = container.querySelectorAll('[data-tutorial="kaiser-actions"]');
+    expect(anchors).toHaveLength(1);
+    expect(within(anchors[0] as HTMLElement).getByRole('button', { name: '7 を宣言' })).toBeInTheDocument();
+  });
+
+  it('keeps trump selection in the pinned footer actions', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: KaiserPhase.DISCARD, declarerIdx: 0, contract: 0, trumpSuit: 0 }));
+    renderWithProviders(<KaiserPage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: '♠ を切札に' })).toBeInTheDocument();
+    // Outside bidding the anchor stays on the footer actions row.
+    expect(actions.querySelector('[data-tutorial="kaiser-actions"]')).not.toBeNull();
   });
 
   // **♥5 と ♠3 でトリック8点と同じ重みが動く。**常時表示する。
@@ -259,8 +325,9 @@ describe('KaiserPage', () => {
   it('bids points from the minimum the server sends', async () => {
     mockExec.mockResolvedValue(makeState({ phase: KaiserPhase.BID, highBid: null, declarerIdx: -1, trumpSuit: 0 }));
     renderWithProviders(<KaiserPage />);
-    await waitFor(() => expect(screen.getByTestId('kaiser-bid-notice')).toBeInTheDocument());
-    expect(screen.getByTestId('kaiser-bid-notice')).toHaveTextContent('トリック数ではありません');
+    const footer = within(await screen.findByTestId('game-footer-content'));
+    await waitFor(() => expect(footer.getByTestId('kaiser-bid-notice')).toBeInTheDocument());
+    expect(footer.getByTestId('kaiser-bid-notice')).toHaveTextContent('トリック数ではありません');
 
     // 6 以下のボタンは出ない。
     expect(screen.queryByRole('button', { name: '6 を宣言' })).not.toBeInTheDocument();
@@ -488,5 +555,12 @@ describe('KaiserPage', () => {
     mockExec.mockResolvedValue(makeState({ trick: [] }));
     renderWithProviders(<KaiserPage />);
     await waitFor(() => expect(screen.queryByTestId('kaiser-trick')).not.toBeInTheDocument());
+  });
+
+  it('keeps the primary control in the pinned footer actions', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<KaiserPage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: '出す' })).toBeInTheDocument();
   });
 });

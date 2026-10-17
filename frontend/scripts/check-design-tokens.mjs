@@ -8,6 +8,8 @@ import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { findBadgeContrastViolations } from './lib/badge-contrast.mjs';
 import { addBgBlackRatchetViolation, countBgBlackUtilities } from './lib/bg-black-ratchet.mjs';
+import { findColoredActionTextViolations } from './lib/colored-action-text.mjs';
+import { findOpacitySuffixedTextTokens } from './lib/design-text-opacity.mjs';
 import { collectDesignTokens, findUndefinedDesignUtilities } from './lib/design-token-utilities.mjs';
 import { findErrorTextTokenViolations } from './lib/error-text-token.mjs';
 import { assertFloor } from './lib/floor.mjs';
@@ -81,6 +83,14 @@ for (const file of files) {
       }
     }
   }
+  for (const { token, index } of findOpacitySuffixedTextTokens(text)) {
+    violations.push({
+      file: relative(ROOT, file),
+      line: text.slice(0, index).split('\n').length,
+      match: token,
+      message: 'Do not use opacity-suffixed design tokens for meaningful text (see DESIGN.md Opacity rule).',
+    });
+  }
 
   for (const violation of findErrorTextTokenViolations(text)) {
     violations.push({
@@ -88,6 +98,14 @@ for (const file of files) {
       line: text.slice(0, violation.index).split('\n').length,
       match: 'text-ds-error',
       message: 'Use text-ds-error-text for text unless the same class string has bg-white.',
+    });
+  }
+  for (const violation of findColoredActionTextViolations(text)) {
+    violations.push({
+      file: relative(ROOT, file),
+      line: text.slice(0, violation.index).split('\n').length,
+      match: violation.match,
+      message: 'Use text-ds-text-on-accent on warning, accent, info, or success backgrounds.',
     });
   }
 }
@@ -483,6 +501,13 @@ for (const need of ['max-h-[45vh]', 'overflow-y-auto', 'sm:max-h-none', 'sm:over
   if (!footerText.includes(need)) {
     shellViolations.push(
       `src/components/GameFooter.tsx: lost "${need}" — the footer will crowd out the play area on mobile`,
+    );
+  }
+}
+for (const need of ['min-h-0 overflow-y-auto', 'sm:max-h-[50vh]', 'game-footer-actions']) {
+  if (!footerText.includes(need)) {
+    shellViolations.push(
+      `src/components/GameFooter.tsx: actions layout lost "${need}" — footer actions may be hidden by inner scrolling`,
     );
   }
 }

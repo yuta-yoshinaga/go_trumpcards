@@ -100,6 +100,23 @@ beforeEach(() => {
 });
 
 describe('BouillottePage', () => {
+  it('shows the human turn instruction once', async () => {
+    mockExec.mockResolvedValue(
+      makeBouillotteState({ message: 'あなたの番です — コール・レイズ（ヴィ）・フォールドを選んでください。' }),
+    );
+    renderWithProviders(<BouillottePage />);
+    expect(
+      await screen.findAllByText('あなたの番です — コール・レイズ（ヴィ）・フォールドを選んでください。'),
+    ).toHaveLength(1);
+  });
+
+  it('keeps the player hand name on one line', async () => {
+    mockExec.mockResolvedValue(resultState);
+    renderWithProviders(<BouillottePage />);
+    await waitFor(() => expect(screen.getAllByText(/ハイカード/, { selector: 'span' }).length).toBeGreaterThan(0));
+    expect(screen.getAllByText(/ハイカード/, { selector: 'span' })[0].className).toContain('whitespace-nowrap');
+  });
+
   it('shows the configured target rounds', async () => {
     for (const { targetRounds, text } of [
       { targetRounds: 4, text: 'ラウンド 1 / 4' },
@@ -406,5 +423,28 @@ describe('BouillottePage', () => {
       // ボタン自体は消えたままでよい。理由が読めることが要点。
       expect(screen.queryByRole('button', { name: /レイズ/ })).not.toBeInTheDocument();
     });
+  });
+
+  it('renders the game message in the footer message region', async () => {
+    mockExec.mockResolvedValue(makeBouillotteState({ message: 'footer placement check' }));
+    renderWithProviders(<BouillottePage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage).toHaveTextContent('footer placement check');
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    mockExec.mockResolvedValue(makeBouillotteState({ message: 'mobile placement check' }));
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      renderWithProviders(<BouillottePage />);
+      const message = await screen.findByText('mobile placement check');
+      expect(message.closest('[data-testid="game-footer-message"]')).toBeNull();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
   });
 });

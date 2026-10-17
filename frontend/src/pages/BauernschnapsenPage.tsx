@@ -212,6 +212,56 @@ function BauernschnapsenPageContent() {
       />
 
       <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+        {isHumanContractTurn && (
+          <>
+            <div data-testid="bauernschnapsen-contract-controls" className="mb-2">
+              <div className="grid grid-cols-3 gap-1">
+                <button
+                  type="button"
+                  className={`${btnPrimary} min-h-[36px]`}
+                  onClick={() => handleContract(0, 1)}
+                  disabled={loading}
+                  title={t('contractPassHelp')}
+                >
+                  {t('contractPass')}
+                </button>
+                {TRUMP_CONTRACTS.map((c) =>
+                  TRUMP_SUITS.map((suit) => (
+                    <button
+                      key={`${c}-${suit}`}
+                      type="button"
+                      className={`${btnPrimary} min-h-[36px]`}
+                      onClick={() => handleContract(c, suit)}
+                      disabled={loading}
+                      title={t(`${CONTRACT_LABEL_KEYS[c]}Help`)}
+                      aria-describedby={
+                        c === 1 ? 'bauernschnapsen-contract-rufer-help' : 'bauernschnapsen-contract-farbenzwang-help'
+                      }
+                    >
+                      {`${t(CONTRACT_LABEL_KEYS[c])} ${t(SUIT_LABEL_KEYS[suit])}`}
+                    </button>
+                  )),
+                )}
+                <button
+                  type="button"
+                  className={`${btnPrimary} min-h-[36px]`}
+                  onClick={() => handleContract(3, 1)}
+                  disabled={loading}
+                  title={t('contractBettelHelp')}
+                  aria-describedby="bauernschnapsen-contract-bettel-help"
+                >
+                  {t('contractBettel')}
+                </button>
+              </div>
+            </div>
+            <section aria-label={t('declareContract')} className="mb-2 space-y-1 text-ds-text-muted text-sm">
+              <div className="text-sm mb-1">{t('declareContract')}</div>
+              <p id="bauernschnapsen-contract-rufer-help">{t('contractRuferHelp')}</p>
+              <p id="bauernschnapsen-contract-farbenzwang-help">{t('contractFarbenzwangHelp')}</p>
+              <p id="bauernschnapsen-contract-bettel-help">{t('contractBettelHelp')}</p>
+            </section>
+          </>
+        )}
         {/* Round / trick / trump / contract. There is no stock and no turn-up
             card in this game: all 20 cards are dealt, and the trump comes from
             the winning declaration rather than from a face-up card. */}
@@ -323,22 +373,6 @@ function BauernschnapsenPageContent() {
           showActionLog={showActionLog}
           hideActionLog={hideActionLog}
         />
-      </div>
-
-      <GameFooter className={`${gameTheme.bauernschnapsen.footer} px-4 py-2.5`}>
-        {humanPlayer && (
-          <PlayerHandSection
-            humanPlayer={humanPlayer}
-            selectedCardIndices={selectedCardIndices}
-            toggleCard={toggleCard}
-            cardWidth={cardWidth}
-            isMobile={isMobile}
-            dataTutorialPrefix="gg"
-            cardBadgeFor={marriageBadgeFor}
-            validIndices={isHumanTurn ? state.validPlayIndices : undefined}
-            restrictedTooltip={t('mustFollow')}
-          />
-        )}
 
         <ErrorAlert message={error ?? hintError} onRetry={retry} />
 
@@ -353,100 +387,71 @@ function BauernschnapsenPageContent() {
           )}
         </div>
 
-        {isHumanContractTurn && (
-          <div className="mb-2" data-testid="bauernschnapsen-contract-controls">
-            <div className="text-ds-text-muted text-sm mb-1">{t('declareContract')}</div>
-            <section aria-label={t('declareContract')} className="mb-2 space-y-1 text-ds-text-muted text-sm">
-              <p id="bauernschnapsen-contract-rufer-help">{t('contractRuferHelp')}</p>
-              <p id="bauernschnapsen-contract-farbenzwang-help">{t('contractFarbenzwangHelp')}</p>
-              <p id="bauernschnapsen-contract-bettel-help">{t('contractBettelHelp')}</p>
-            </section>
-            <div className="flex gap-2 items-center flex-wrap">
-              <button
-                type="button"
-                className={btnPrimary}
-                onClick={() => handleContract(0, 1)}
-                disabled={loading}
-                title={t('contractPassHelp')}
-              >
-                {t('contractPass')}
-              </button>
-              {TRUMP_CONTRACTS.map((c) =>
-                TRUMP_SUITS.map((suit) => (
+        <GameResetButton
+          isGameEnd={!!isGameEnd}
+          onReset={handleManualReset}
+          requestConfirm={requestConfirm}
+          loading={loading}
+          dataTutorial="gg-reset-button"
+        />
+      </div>
+
+      <GameFooter
+        className={`${gameTheme.bauernschnapsen.footer} px-4 py-2.5`}
+        actions={
+          <div className="flex gap-2 items-center flex-wrap" data-tutorial="gg-play-button">
+            {isHumanTurn && (
+              <>
+                <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
+                  {tc('button.hint')}
+                </button>
+                {canDeclareMarriage && (
                   <button
-                    key={`${c}-${suit}`}
                     type="button"
                     className={btnPrimary}
-                    onClick={() => handleContract(c, suit)}
+                    onClick={() => handleMarriage(selectedIdx)}
                     disabled={loading}
-                    title={t(`${CONTRACT_LABEL_KEYS[c]}Help`)}
-                    aria-describedby={
-                      c === 1 ? 'bauernschnapsen-contract-rufer-help' : 'bauernschnapsen-contract-farbenzwang-help'
-                    }
+                    title={t('declareMarriage')}
                   >
-                    {`${t(CONTRACT_LABEL_KEYS[c])} ${t(SUIT_LABEL_KEYS[suit])}`}
+                    {t('marriageButton')}
                   </button>
-                )),
-              )}
-              <button
-                type="button"
-                className={btnPrimary}
-                onClick={() => handleContract(3, 1)}
-                disabled={loading}
-                title={t('contractBettelHelp')}
-                aria-describedby="bauernschnapsen-contract-bettel-help"
-              >
-                {t('contractBettel')}
-              </button>
-            </div>
-          </div>
-        )}
-
-        <div className="flex gap-2 items-center flex-wrap" data-tutorial="gg-play-button">
-          {isHumanTurn && (
-            <>
-              <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
-                {tc('button.hint')}
-              </button>
-              {canDeclareMarriage && (
+                )}
                 <button
                   type="button"
                   className={btnPrimary}
-                  onClick={() => handleMarriage(selectedIdx)}
-                  disabled={loading}
-                  title={t('declareMarriage')}
+                  onClick={handlePlay}
+                  disabled={loading || selectedCardIndices.length !== 1}
                 >
-                  {t('marriageButton')}
+                  {t('playButton')}
                 </button>
-              )}
-              <button
-                type="button"
-                className={btnPrimary}
-                onClick={handlePlay}
-                disabled={loading || selectedCardIndices.length !== 1}
-              >
-                {t('playButton')}
+              </>
+            )}
+            {isTrickEnd && (
+              <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                {t('nextTrick')}
               </button>
-            </>
-          )}
-          {isTrickEnd && (
-            <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-              {t('nextTrick')}
-            </button>
-          )}
-          {isRoundEnd && (
-            <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-              {t('nextRound')}
-            </button>
-          )}
-          <GameResetButton
-            isGameEnd={!!isGameEnd}
-            onReset={handleManualReset}
-            requestConfirm={requestConfirm}
-            loading={loading}
-            dataTutorial="gg-reset-button"
+            )}
+            {isRoundEnd && (
+              <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                {t('nextRound')}
+              </button>
+            )}
+          </div>
+        }
+      >
+        {humanPlayer && (
+          <PlayerHandSection
+            humanPlayer={humanPlayer}
+            selectedCardIndices={selectedCardIndices}
+            toggleCard={toggleCard}
+            cardWidth={cardWidth}
+            isMobile={isMobile}
+            dataTutorialPrefix="gg"
+            cardBadgeFor={marriageBadgeFor}
+            validIndices={isHumanTurn ? state.validPlayIndices : undefined}
+            restrictedTooltip={t('mustFollow')}
           />
-        </div>
+        )}
       </GameFooter>
     </GamePageShell>
   );

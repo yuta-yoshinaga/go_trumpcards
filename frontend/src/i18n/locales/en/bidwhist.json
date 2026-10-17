@@ -16,6 +16,7 @@
   "contractLine": "Contract: {{tricks}} {{dir}} (trump: {{trump}})",
   "teamScores": "Team 0: {{t0}} / Team 1: {{t1}}",
   "targetScoreLine": "Target score: {{score}}",
+  "rules": "Rules",
   "teamShort": "T{{team}}",
   "passed": "pass",
   "currentTrick": "Current trick",

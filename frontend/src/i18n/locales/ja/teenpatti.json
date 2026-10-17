@@ -58,7 +58,6 @@
   "acceptButton": "承諾",
   "declineButton": "拒否",
   "nextRound": "次のディール",
-  "betNotice": "あなたの番です — シー／ベット／レイズ／フォールドを選んでください。",
   "sideShowTitle": "サイドショー要求",
   "sideShowPending": "{{requester}} が {{target}} にサイドショーを要求しました。承諾か拒否を選んでください。",
   "consequence": {

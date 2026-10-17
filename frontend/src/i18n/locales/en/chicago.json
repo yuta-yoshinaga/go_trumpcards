@@ -114,5 +114,9 @@
     "winner": "{{name}} +{{amount}}",
     "scoop": "{{name}} scoops! +{{total}}",
     "hiTakesAll": "Nobody holds a spade face-down, so the high hand takes the whole pot."
-  }
+  },
+  "showingHand": "Showing: {{hand}}",
+  "sidePot": "Pot {{number}}: {{amount}} chips — eligible: {{players}}",
+  "currentLow": "Current low: {{low}}",
+  "listSeparator": ", "
 }

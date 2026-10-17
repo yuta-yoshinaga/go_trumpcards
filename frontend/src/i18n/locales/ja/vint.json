@@ -15,6 +15,7 @@
   "trick": "場",
   "trickCardLabel": "{{card}}（{{name}}）",
   "tricksWon": "トリック {{n}}",
+  "rules": "ルール",
   "progress": {
     "line": "宣言側の進捗: {{won}} / {{needed}} トリック"
   },

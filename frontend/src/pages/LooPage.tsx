@@ -164,6 +164,7 @@ function LooPageContent() {
   const leadSuitKey = state.currentTrick[0]?.card.design
     ? SUIT_I18N_KEYS[state.currentTrick[0].card.design]
     : undefined;
+  const { looPenalty, perTrick, maxWin } = computeLooPotRisk(state.pot, state.potStart);
 
   const handleManualReset = () => {
     hideActionLog();
@@ -219,6 +220,16 @@ function LooPageContent() {
           />
 
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+            <div data-testid="loo-decision-counts-live" role="status" aria-live="polite">
+              {isDecidePhase && (
+                <div
+                  className="mb-2 mx-auto max-w-md text-center text-sm text-ds-text-muted"
+                  data-testid="loo-decision-counts"
+                >
+                  {t('decisionCounts', decisionCounts)}
+                </div>
+              )}
+            </div>
             <div className="text-ds-text-primary text-center mb-2">
               <span className="mr-4">{t('deal', { n: state.roundNumber })}</span>
               <span className="mr-4">{t('trick', { n: state.trickNumber, total: state.totalTricks })}</span>
@@ -373,65 +384,15 @@ function LooPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
-          </div>
 
-          {/* Footer */}
-          <GameFooter className={`${gameTheme.loo.footer} px-4 py-2.5`}>
-            {isDecidePhase && !canDecide && (
-              <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="loo-decide-cpu">
-                {t('decideCpu', { id: state.decidePlayerIdx })}
-              </div>
-            )}
-            {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
-                変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。 */}
-            <div data-testid="loo-prompt-live" role="status" aria-live="polite">
+            <div data-testid="loo-pot-risk-live" role="status" aria-live="polite" className="sr-only">
               {canDecide && (
-                <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="loo-decide-prompt">
-                  {t('decidePrompt')}
+                <div data-testid="loo-pot-risk">
+                  {t('potRisk.label')} {t('potRisk.win', { pot: maxWin, perTrick })}{' '}
+                  {t('potRisk.loss', { penalty: looPenalty })}
                 </div>
               )}
             </div>
-            <div data-testid="loo-decision-counts-live" role="status" aria-live="polite">
-              {isDecidePhase && (
-                <div
-                  className="mb-2 mx-auto max-w-md text-center text-sm text-ds-text-muted"
-                  data-testid="loo-decision-counts"
-                >
-                  {t('decisionCounts', decisionCounts)}
-                </div>
-              )}
-            </div>
-            {/* ポットの損益表示は領域を常設し、中身だけを判断フェーズで差し替える。領域と
-                パネルを同時に挿入すると、変化として読み上げられないことがある (#7352)。 */}
-            <div data-testid="loo-pot-risk-live" role="status" aria-live="polite">
-              {canDecide &&
-                (() => {
-                  const { looPenalty, perTrick, maxWin } = computeLooPotRisk(state.pot, state.potStart);
-                  return (
-                    <div
-                      className="mb-2 mx-auto max-w-md p-2 rounded bg-black/30 text-center text-sm"
-                      data-testid="loo-pot-risk"
-                    >
-                      <div className="text-ds-text-muted mb-0.5">{t('potRisk.label')}</div>
-                      <div className="text-ds-accent">{t('potRisk.win', { pot: maxWin, perTrick })}</div>
-                      <div className="text-ds-error-text">{t('potRisk.loss', { penalty: looPenalty })}</div>
-                    </div>
-                  );
-                })()}
-            </div>
-            {humanPlayer && (
-              <PlayerHandSection
-                humanPlayer={humanPlayer}
-                selectedCardIndices={selectedCardIndices}
-                toggleCard={toggleCard}
-                cardWidth={cardWidth}
-                isMobile={isMobile}
-                dataTutorialPrefix="loo"
-                validIndices={canPlay ? state.playableIndices : undefined}
-                restrictedTooltip={t('playButton')}
-              />
-            )}
-
             <ErrorAlert message={error} onRetry={retry} />
 
             {/*
@@ -451,32 +412,7 @@ function LooPageContent() {
             </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-            <div className="flex flex-wrap gap-2 items-center" data-tutorial="loo-action-buttons">
-              {canDecide && (
-                <div className="flex flex-wrap gap-2" data-testid="loo-decide-buttons">
-                  <button type="button" className={btnPrimary} onClick={() => handleDecide(true)} disabled={loading}>
-                    {t('decidePlay')}
-                  </button>
-                  <button type="button" className={btnSecondary} onClick={() => handleDecide(false)} disabled={loading}>
-                    {t('decidePass')}
-                  </button>
-                </div>
-              )}
-              {canPlay && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextDeal} disabled={loading}>
-                  {t('nextDeal')}
-                </button>
-              )}
+            <div className="flex flex-wrap gap-2 items-center">
               <GameResetButton
                 isGameEnd={false}
                 onReset={handleManualReset}
@@ -485,6 +421,89 @@ function LooPageContent() {
                 dataTutorial="loo-reset-button"
               />
             </div>
+          </div>
+
+          {/* Footer */}
+          <GameFooter
+            className={`${gameTheme.loo.footer} px-4 py-2.5`}
+            actions={
+              canDecide || canPlay || isRoundEnd ? (
+                <>
+                  {canDecide && (
+                    <div className="mb-2 mx-auto max-w-md p-2 rounded bg-black/30 text-center text-sm">
+                      <div className="text-ds-text-muted mb-0.5">{t('potRisk.label')}</div>
+                      <div className="text-ds-accent">{t('potRisk.win', { pot: maxWin, perTrick })}</div>
+                      <div className="text-ds-error-text">{t('potRisk.loss', { penalty: looPenalty })}</div>
+                    </div>
+                  )}
+                  <div className="flex flex-wrap gap-2 items-center" data-tutorial="loo-action-buttons">
+                    {canDecide && (
+                      <div className="flex flex-wrap gap-2" data-testid="loo-decide-buttons">
+                        <button
+                          type="button"
+                          className={btnPrimary}
+                          onClick={() => handleDecide(true)}
+                          disabled={loading}
+                        >
+                          {t('decidePlay')}
+                        </button>
+                        <button
+                          type="button"
+                          className={btnSecondary}
+                          onClick={() => handleDecide(false)}
+                          disabled={loading}
+                        >
+                          {t('decidePass')}
+                        </button>
+                      </div>
+                    )}
+                    {canPlay && (
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={handlePlay}
+                        disabled={loading || selectedCardIndices.length !== 1}
+                      >
+                        {t('playButton')}
+                      </button>
+                    )}
+                    {isRoundEnd && (
+                      <button type="button" className={btnSuccess} onClick={handleNextDeal} disabled={loading}>
+                        {t('nextDeal')}
+                      </button>
+                    )}
+                  </div>
+                </>
+              ) : null
+            }
+          >
+            {isDecidePhase && !canDecide && (
+              <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="loo-decide-cpu">
+                {t('decideCpu', { id: state.decidePlayerIdx })}
+              </div>
+            )}
+            {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
+                変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。 */}
+            <div data-testid="loo-prompt-live" role="status" aria-live="polite">
+              {canDecide && (
+                <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="loo-decide-prompt">
+                  {t('decidePrompt')}
+                </div>
+              )}
+            </div>
+            {humanPlayer && (
+              <PlayerHandSection
+                humanPlayer={humanPlayer}
+                selectedCardIndices={selectedCardIndices}
+                toggleCard={toggleCard}
+                cardWidth={cardWidth}
+                isMobile={isMobile}
+                stackRows
+                dataTutorialPrefix="loo"
+                validIndices={canPlay ? state.playableIndices : undefined}
+                restrictedTooltip={t('playButton')}
+              />
+            )}
           </GameFooter>
         </>
       )}

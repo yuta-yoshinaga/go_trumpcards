@@ -87,6 +87,53 @@ describe('GrandfathersClockPage', () => {
     expect(screen.getByText(/手数: 3/)).toBeInTheDocument();
   });
 
+  it('wraps the twelve compact clock slots at large desktop', async () => {
+    const original = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    mockExec.mockResolvedValue(playingState);
+    try {
+      renderWithProviders(<GrandfathersClockPage />);
+      await screen.findByTestId('gc-autocomplete-status');
+      const clock = document.querySelector('[data-tutorial="gc-clock"]') as HTMLElement;
+      expect(clock).toHaveClass('flex-wrap');
+      expect(clock.querySelectorAll('[role="img"], button')).toHaveLength(12);
+      expect(clock.querySelector('img')).toHaveStyle({ width: '80px' });
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: original });
+    }
+  });
+
+  it('keeps develop card sizing and clock markup at desktop width', async () => {
+    const original = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 800 });
+    mockExec.mockResolvedValue(playingState);
+    try {
+      renderWithProviders(<GrandfathersClockPage />);
+      await screen.findByTestId('gc-autocomplete-status');
+      const clock = document.querySelector('[data-tutorial="gc-clock"]') as HTMLElement;
+      expect(clock).not.toHaveAttribute('data-testid', 'gc-clock-row');
+      expect(clock).toHaveClass('flex-wrap');
+      expect(clock.querySelector('img')).toHaveStyle({ width: '60px' });
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: original });
+    }
+  });
+
+  it('wraps clock slots and sizes them to the mobile viewport', async () => {
+    const original = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    mockExec.mockResolvedValue(playingState);
+    try {
+      renderWithProviders(<GrandfathersClockPage />);
+      await screen.findByTestId('gc-autocomplete-status');
+      const clock = document.querySelector('[data-tutorial="gc-clock"]') as HTMLElement;
+      expect(clock).toHaveClass('flex-wrap');
+      expect(clock.querySelector('img')).toHaveStyle({ width: '40px' });
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: original });
+    }
+  });
+
   it('enables redo only when the server reports redo history', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<GrandfathersClockPage />);
@@ -326,14 +373,14 @@ describe('GrandfathersClockPage', () => {
     fireEvent.click(button);
     const liveRegion = screen.getByTestId('gc-autocomplete-status');
     expect(liveRegion).toHaveClass('sr-only');
-    expect(liveRegion).toHaveTextContent('自動完成中');
+    expect(liveRegion).toHaveTextContent('オートコンプリート中');
     expect(screen.getByTestId('gc-autocomplete-visible')).toBeInTheDocument();
     expect(button).toHaveAttribute('aria-disabled', 'true');
 
     await act(async () => {
       vi.advanceTimersByTime(3000);
     });
-    expect(liveRegion).toHaveTextContent('自動完成が完了しました');
+    expect(liveRegion).toHaveTextContent('オートコンプリートが完了しました');
     expect(screen.queryByTestId('gc-autocomplete-visible')).not.toBeInTheDocument();
     expect(button).toBeEnabled();
     vi.useRealTimers();
@@ -428,5 +475,30 @@ describe('GrandfathersClockPage keyboard shortcuts', () => {
     }
     await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
+  });
+});
+
+describe('GrandfathersClockPage compact large-desktop dimensions', () => {
+  it('uses 60px cards at 1024px and 80px cards at 1280px', async () => {
+    const originalWidth = window.innerWidth;
+    try {
+      mockExec.mockResolvedValue(playingState);
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 });
+      const compact = renderWithProviders(<GrandfathersClockPage />);
+      await screen.findByTestId('gc-autocomplete-status');
+      const compactCard = document.querySelector('[data-tutorial="gc-clock"] img');
+      expect(compactCard).toHaveStyle({ width: '60px' });
+      compact.unmount();
+
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+      const fullSize = renderWithProviders(<GrandfathersClockPage />);
+      await screen.findByTestId('gc-autocomplete-status');
+      const fullSizeCard = document.querySelector('[data-tutorial="gc-clock"] img');
+      expect(fullSizeCard).toHaveStyle({ width: '80px' });
+      fullSize.unmount();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
   });
 });

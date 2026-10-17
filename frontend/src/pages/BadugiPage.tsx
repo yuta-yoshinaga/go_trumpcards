@@ -323,10 +323,133 @@ function BadugiPageContent() {
                 ))}
               </div>
             )}
+
+            {/* Action log */}
+            <ActionLogSection
+              isEndPhase={!!state?.gameEndFlag}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
+
+            <ErrorAlert message={error} onRetry={retry} />
+
+            {/* Hint display */}
+            {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
+
+            {/* Settings (collapsible) + Reset */}
+            <SettingsPanel
+              title={t('settings.title')}
+              groups={[
+                {
+                  items: [
+                    {
+                      type: 'select',
+                      id: 'badugiBettingLimit',
+                      label: tc('betting.bettingLimit'),
+                      tooltip: t('settings.bettingLimitHelp'),
+                      value: bettingLimit,
+                      options: [
+                        { value: 0, label: tc('betting.fixed') },
+                        { value: 1, label: tc('betting.potLimit') },
+                        { value: 2, label: tc('betting.noLimit') },
+                      ],
+                      onSelect: (v) => setBettingLimit(Number(v)),
+                    },
+                    {
+                      type: 'checkbox',
+                      id: 'badugiCpuMetaAI',
+                      label: t('settings.cpuMetaAI'),
+                      tooltip: t('settings.cpuMetaAIHelp'),
+                      checked: cpuMetaAI,
+                      onToggle: setCpuMetaAI,
+                    },
+                    {
+                      type: 'checkbox',
+                      id: 'badugiHint',
+                      label: tc('hint.toggle', { ns: 'tutorial' }),
+                      checked: hintEnabled,
+                      onToggle: setHintEnabled,
+                    },
+                  ],
+                },
+              ]}
+            />
+            <div className="text-center mt-2">
+              <GameResetButton
+                isGameEnd={isHandOver}
+                onReset={handleManualReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="bg-reset-button"
+                className="min-w-[90px]"
+              />
+            </div>
+            <CardNavShortcutsPanel data-testid="badugi-kbd-shortcuts" />
           </div>
 
           {/* Sticky footer: player hand + buttons */}
-          <GameFooter className={`${gameTheme.badugi.footer} px-5 py-3`}>
+          <GameFooter
+            className={`${gameTheme.badugi.footer} px-5 py-3`}
+            actions={
+              canAct || canExchange ? (
+                <>
+                  {canAct && (
+                    <div data-tutorial="bg-bet-controls">
+                      <BettingControls
+                        inputId="badugiBetAmount"
+                        betAmount={betAmount}
+                        onBetAmountChange={setBetAmount}
+                        minRaise={minRaise}
+                        maxBetAmount={state?.maxBetAmount}
+                        potSize={state?.pot}
+                        hasOutstandingBet={hasOutstandingBet}
+                        loading={loading}
+                        onCall={() => execAction('call', undefined, undefined, undefined, getElapsed())}
+                        onRaise={() => execAction('raise', undefined, betAmount, undefined, getElapsed())}
+                        onBet={() => execAction('bet', undefined, betAmount, undefined, getElapsed())}
+                        onCheck={() => execAction('check', undefined, undefined, undefined, getElapsed())}
+                        onFold={() => execAction('fold', undefined, undefined, undefined, getElapsed())}
+                        onAllIn={() => execAction('allin', undefined, undefined, undefined, getElapsed())}
+                      />
+                    </div>
+                  )}
+                  {canExchange && (
+                    <div className="text-center mb-2" data-tutorial="bg-exchange-button">
+                      {humanHasCompleteBadugi && (
+                        <div
+                          role="status"
+                          aria-live="polite"
+                          data-testid="bg-complete-badugi-banner"
+                          className="mb-2 inline-block px-3 py-1 rounded bg-ds-accent/15 border border-ds-accent text-ds-accent text-sm font-bold"
+                        >
+                          {t('completeBadugiBanner')}
+                        </div>
+                      )}
+                      <button
+                        type="button"
+                        className={`${btnWarning} min-w-[90px]`}
+                        disabled={loading}
+                        onClick={() => execAction('exchange', selected, undefined, undefined, getElapsed())}
+                        data-testid="bg-exchange-btn"
+                      >
+                        {t('exchangeLabel')}
+                      </button>
+                      <button
+                        type="button"
+                        className={`${btnSuccess} min-w-[90px]${humanHasCompleteBadugi ? ' ring-2 ring-ds-accent animate-pulse' : ''}`}
+                        disabled={loading}
+                        onClick={() => execAction('stand', undefined, undefined, undefined, getElapsed())}
+                        data-testid="bg-stand-btn"
+                      >
+                        {t('standLabel')}
+                      </button>
+                    </div>
+                  )}
+                </>
+              ) : null
+            }
+          >
             {/* Human player */}
             {humanPlayer && (
               <div className="mb-2" data-tutorial="bg-player-hand">
@@ -425,127 +548,6 @@ function BadugiPageContent() {
                 severity={isEnd ? 'alert' : 'info'}
               />
             </div>
-
-            {/* Action log */}
-            <ActionLogSection
-              isEndPhase={!!state?.gameEndFlag}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            {/* Hint display */}
-            {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
-
-            {/* Betting controls */}
-            {canAct && (
-              <div data-tutorial="bg-bet-controls">
-                <BettingControls
-                  inputId="badugiBetAmount"
-                  betAmount={betAmount}
-                  onBetAmountChange={setBetAmount}
-                  minRaise={minRaise}
-                  maxBetAmount={state?.maxBetAmount}
-                  potSize={state?.pot}
-                  hasOutstandingBet={hasOutstandingBet}
-                  loading={loading}
-                  onCall={() => execAction('call', undefined, undefined, undefined, getElapsed())}
-                  onRaise={() => execAction('raise', undefined, betAmount, undefined, getElapsed())}
-                  onBet={() => execAction('bet', undefined, betAmount, undefined, getElapsed())}
-                  onCheck={() => execAction('check', undefined, undefined, undefined, getElapsed())}
-                  onFold={() => execAction('fold', undefined, undefined, undefined, getElapsed())}
-                  onAllIn={() => execAction('allin', undefined, undefined, undefined, getElapsed())}
-                />
-              </div>
-            )}
-
-            {/* Exchange controls */}
-            {canExchange && (
-              <div className="text-center mb-2" data-tutorial="bg-exchange-button">
-                {humanHasCompleteBadugi && (
-                  <div
-                    role="status"
-                    aria-live="polite"
-                    data-testid="bg-complete-badugi-banner"
-                    className="mb-2 inline-block px-3 py-1 rounded bg-ds-accent/15 border border-ds-accent text-ds-accent text-sm font-bold"
-                  >
-                    {t('completeBadugiBanner')}
-                  </div>
-                )}
-                <button
-                  type="button"
-                  className={`${btnWarning} min-w-[90px]`}
-                  disabled={loading}
-                  onClick={() => execAction('exchange', selected, undefined, undefined, getElapsed())}
-                  data-testid="bg-exchange-btn"
-                >
-                  {t('exchangeLabel')}
-                </button>
-                <button
-                  type="button"
-                  className={`${btnSuccess} min-w-[90px]${
-                    humanHasCompleteBadugi ? ' ring-2 ring-ds-accent animate-pulse' : ''
-                  }`}
-                  disabled={loading}
-                  onClick={() => execAction('stand', undefined, undefined, undefined, getElapsed())}
-                  data-testid="bg-stand-btn"
-                >
-                  {t('standLabel')}
-                </button>
-              </div>
-            )}
-
-            {/* Settings (collapsible) + Reset */}
-            <SettingsPanel
-              title={t('settings.title')}
-              groups={[
-                {
-                  items: [
-                    {
-                      type: 'select',
-                      id: 'badugiBettingLimit',
-                      label: tc('betting.bettingLimit'),
-                      tooltip: t('settings.bettingLimitHelp'),
-                      value: bettingLimit,
-                      options: [
-                        { value: 0, label: tc('betting.fixed') },
-                        { value: 1, label: tc('betting.potLimit') },
-                        { value: 2, label: tc('betting.noLimit') },
-                      ],
-                      onSelect: (v) => setBettingLimit(Number(v)),
-                    },
-                    {
-                      type: 'checkbox',
-                      id: 'badugiCpuMetaAI',
-                      label: t('settings.cpuMetaAI'),
-                      tooltip: t('settings.cpuMetaAIHelp'),
-                      checked: cpuMetaAI,
-                      onToggle: setCpuMetaAI,
-                    },
-                    {
-                      type: 'checkbox',
-                      id: 'badugiHint',
-                      label: tc('hint.toggle', { ns: 'tutorial' }),
-                      checked: hintEnabled,
-                      onToggle: setHintEnabled,
-                    },
-                  ],
-                },
-              ]}
-            />
-            <div className="text-center mt-2">
-              <GameResetButton
-                isGameEnd={isHandOver}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="bg-reset-button"
-                className="min-w-[90px]"
-              />
-            </div>
-            <CardNavShortcutsPanel data-testid="badugi-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

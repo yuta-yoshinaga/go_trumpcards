@@ -1,11 +1,32 @@
+function hasNode(node: React.ReactNode): boolean {
+  return node != null && node !== false;
+}
+
 /** Props for {@link GameFooter}. */
 export interface GameFooterProps {
   className?: string;
-  children: React.ReactNode;
+  /** Supporting footer content, such as the player hand and game messages. */
+  children?: React.ReactNode;
+  /**
+   * The always-visible primary action row. When provided, the footer itself does not
+   * scroll; only its children scroll internally, with a 50vh cap from the sm breakpoint up.
+   * Migrated pages should always provide this prop, passing `null` when a turn has no
+   * actions, so the footer layout does not change between turns: `null` and `false`
+   * keep this layout and omit the (otherwise empty, padded) action row.
+   */
+  actions?: React.ReactNode;
+  /** Persistent guidance rendered immediately before footer actions or legacy content. Callers should omit it on mobile so it does not reduce the hand area. */
+  message?: React.ReactNode;
+  /** On mobile, expands the footer cap from 45vh to 60vh for pages with very large hands. Unchanged at sm and above; defaults to false. */
+  tall?: boolean;
+  /** Stable tutorial anchor rendered on the footer even when its actions are absent. */
+  dataTutorial?: string;
 }
 
 /**
- * Renders a sticky footer area for game action buttons with safe-area padding.
+ * Renders a game footer with safe-area padding. During migration, pages may omit
+ * `actions` to retain the legacy scrolling footer; pages that provide it keep
+ * their action row visible while only the supporting content scrolls.
  *
  * The height cap is load-bearing on mobile. This footer is `shrink-0`, so it takes
  * whatever height its content wants and the sibling `flex-1 overflow-y-auto` play
@@ -17,17 +38,56 @@ export interface GameFooterProps {
  * deliberate: a footer that scrolls keeps the cards visible while the player
  * reaches a button, whereas a document that scrolls does not. See issue #4373.
  *
- * The cap is lifted from `sm` up, where the viewport is tall enough that it would
- * only add a pointless inner scrollbar.
+ * In the legacy form without `actions`, the mobile cap is lifted from `sm` up,
+ * where the viewport is tall enough that it would only add a pointless inner scrollbar.
  */
-export function GameFooter({ className, children }: GameFooterProps) {
+export function GameFooter({ className, children, actions, message, dataTutorial, tall = false }: GameFooterProps) {
+  if (actions !== undefined) {
+    return (
+      <footer
+        className={[
+          'shrink-0',
+          'border-t',
+          'flex',
+          'flex-col',
+          tall ? 'max-h-[60vh]' : 'max-h-[45vh]',
+          'sm:max-h-[50vh]',
+          className,
+        ]
+          .filter(Boolean)
+          .join(' ')}
+        data-tutorial={dataTutorial}
+        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 12px)' }}
+      >
+        <div className="min-h-0 overflow-y-auto" data-testid="game-footer-content">
+          {children}
+        </div>
+        {hasNode(message) && (
+          <div className="shrink-0" data-testid="game-footer-message">
+            {message}
+          </div>
+        )}
+        {hasNode(actions) && (
+          <div className="shrink-0 pt-2" data-testid="game-footer-actions">
+            {actions}
+          </div>
+        )}
+      </footer>
+    );
+  }
   return (
     <footer
-      className={['shrink-0', 'border-t', 'max-h-[45vh] overflow-y-auto sm:max-h-none sm:overflow-y-visible', className]
+      className={[
+        'shrink-0',
+        'border-t',
+        `${tall ? 'max-h-[60vh]' : 'max-h-[45vh]'} overflow-y-auto sm:max-h-none sm:overflow-y-visible`,
+        className,
+      ]
         .filter(Boolean)
         .join(' ')}
       style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 12px)' }}
     >
+      {hasNode(message) && <div data-testid="game-footer-message">{message}</div>}
       {children}
     </footer>
   );

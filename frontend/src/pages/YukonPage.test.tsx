@@ -311,12 +311,12 @@ describe('YukonPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
     mockExec.mockResolvedValue(readyState);
-    const btn = screen.getByRole('button', { name: '自動完成' });
+    const btn = screen.getByRole('button', { name: 'オートコンプリート' });
     btn.click();
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
   });
 
-  // **自動完成中は他の操作を止める。** 複数手が続けて動く間に Undo や
+  // **オートコンプリート中は他の操作を止める。** 複数手が続けて動く間に Undo や
   // ギブアップを押されると、表示中のアニメーションとサーバ状態がずれる (#5533)。
   it('locks undo, hint and give-up while auto-complete is running', async () => {
     const readyState: YukonResponse = {

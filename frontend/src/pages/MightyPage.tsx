@@ -22,7 +22,7 @@ import { ScrollFadeHint } from '../components/ScrollFadeHint';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -34,6 +34,7 @@ import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
+import { scoreTableClass } from '../styles/scoreTableStyles';
 import type { MightyResponse } from '../types/card';
 import { MightyPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
@@ -116,7 +117,7 @@ const MIGHTY_MAX_BID = 20;
 /** Tailwind classes for a suit/option toggle button (44px tap target, highlighted when selected). */
 function suitToggleClass(selected: boolean): string {
   return selected
-    ? 'min-h-[44px] min-w-[44px] rounded px-2 font-bold text-lg bg-ds-accent text-white ring-2 ring-ds-accent'
+    ? 'min-h-[44px] min-w-[44px] rounded px-2 font-bold text-lg bg-ds-accent text-ds-text-on-accent ring-2 ring-ds-accent'
     : 'min-h-[44px] min-w-[44px] rounded px-2 font-bold text-lg bg-white/20 text-ds-text-primary';
 }
 
@@ -125,6 +126,7 @@ export const MightyPage = withTutorial(MightyPageContent, 'mighty', MIGHTY_TUTOR
 
 /** Inner content of the Mighty page, wrapped by TutorialProvider. */
 function MightyPageContent() {
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('mighty');
   const {
@@ -278,6 +280,10 @@ function MightyPageContent() {
     selectedCardIndices.length === 1 && humanPlayer?.cards[selectedCardIndices[0]]?.design === 'JOKER';
   const isLeadingTrick = isPlayPhase && state.currentTrick.length === 0;
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.mighty')}
@@ -305,6 +311,7 @@ function MightyPageContent() {
             }
             headline={t('role.partnerRevealed')}
           />
+
           {/* Settings */}
           <SettingsPanel
             title={t('settings.title')}
@@ -346,10 +353,132 @@ function MightyPageContent() {
 
           {/* Scrollable area */}
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+            {/* Phase selections stay scrollable above the hand. */}
+            {(isHumanBidTurn || isHumanDeclarer) && (
+              <div className="flex flex-col items-center gap-2 mb-2">
+                {isHumanBidTurn && (
+                  <>
+                    <div className="text-center mb-2" data-tutorial="mighty-bid-controls">
+                      <div className="text-ds-warning">{t('bidPhase', { min: state.config.minBid })}</div>
+                      <div className="text-ds-text-muted text-sm" data-testid="mighty-notrump-explain">
+                        {t('settings.noTrumpExtraExplain', { points: state.config.noTrumpExtra })}
+                      </div>
+                    </div>
+                    <fieldset
+                      className="grid grid-cols-7 gap-1 border-0 p-0"
+                      aria-label={t('bidSelectLabel')}
+                      data-testid="mighty-bid-grid"
+                    >
+                      {Array.from(
+                        { length: MIGHTY_MAX_BID - state.config.minBid + 1 },
+                        (_, i) => i + state.config.minBid,
+                      ).map((n) => (
+                        <button
+                          key={n}
+                          type="button"
+                          onClick={() => setBidValue(n)}
+                          disabled={loading || n < bidEffectiveMin || n <= state.highestBid}
+                          aria-pressed={bidValue === n}
+                          data-testid={`bid-option-${n}`}
+                          className={`min-h-[36px] min-w-[36px] rounded-lg font-medium text-sm transition-all disabled:cursor-not-allowed disabled:opacity-40 ${bidValue === n ? 'bg-ds-accent text-ds-text-on-accent ring-2 ring-ds-accent' : 'bg-white/20 text-ds-text-primary hover:bg-white/30'}`}
+                        >
+                          {n}
+                        </button>
+                      ))}
+                    </fieldset>
+                    <label className="flex items-center gap-1 text-ds-text-primary text-sm min-h-[44px]">
+                      <input
+                        type="checkbox"
+                        checked={bidNoTrumpToggle}
+                        onChange={(e) => setBidNoTrumpToggle(e.target.checked)}
+                        aria-label={t('noTrumpToggle')}
+                      />
+                      {t('noTrumpToggle')}
+                    </label>
+                  </>
+                )}
+                {isHumanDeclarer && (
+                  <>
+                    <div className="text-ds-warning text-center mb-2" data-tutorial="mighty-trump-friend">
+                      {t('trumpAndFriendPhase')}
+                    </div>
+                    <fieldset className="flex flex-wrap gap-1 border-0 p-0">
+                      <legend className="sr-only">{t('trumpSuit')}</legend>
+                      <button
+                        type="button"
+                        aria-pressed={trumpSuitValue === -1}
+                        data-testid="trump-suit--1"
+                        onClick={() => setTrumpSuitValue(-1)}
+                        disabled={loading}
+                        className={suitToggleClass(trumpSuitValue === -1)}
+                      >
+                        {t('noTrump')}
+                      </button>
+                      {[1, 2, 3, 4].map((s) => (
+                        <button
+                          key={s}
+                          type="button"
+                          aria-pressed={trumpSuitValue === s}
+                          aria-label={t(`suitName.${SUIT_KEYS[s]}`)}
+                          data-testid={`trump-suit-${s}`}
+                          onClick={() => setTrumpSuitValue(s)}
+                          disabled={loading}
+                          className={suitToggleClass(trumpSuitValue === s)}
+                        >
+                          {suitSymbolAt(s)}
+                        </button>
+                      ))}
+                    </fieldset>
+                    <fieldset className="flex flex-wrap gap-1 border-0 p-0">
+                      <legend className="sr-only">{t('partnerSuit')}</legend>
+                      <button
+                        type="button"
+                        aria-pressed={partnerSuitValue === 0}
+                        data-testid="partner-suit-0"
+                        onClick={() => setPartnerSuitValue(0)}
+                        disabled={loading}
+                        className={suitToggleClass(partnerSuitValue === 0)}
+                      >
+                        JOKER
+                      </button>
+                      {[1, 2, 3, 4].map((s) => (
+                        <button
+                          key={s}
+                          type="button"
+                          aria-pressed={partnerSuitValue === s}
+                          aria-label={t(`suitName.${SUIT_KEYS[s]}`)}
+                          data-testid={`partner-suit-${s}`}
+                          onClick={() => setPartnerSuitValue(s)}
+                          disabled={loading}
+                          className={suitToggleClass(partnerSuitValue === s)}
+                        >
+                          {suitSymbolAt(s)}
+                        </button>
+                      ))}
+                    </fieldset>
+                    {partnerSuitValue > 0 && (
+                      <select
+                        value={partnerValueValue}
+                        onChange={(e) => setPartnerValueValue(Number(e.target.value))}
+                        className="px-2 py-1 rounded bg-white/20 text-ds-text-primary"
+                        aria-label={t('partnerValue')}
+                      >
+                        {Array.from({ length: 13 }, (_, i) => i + 1).map((v) => (
+                          <option key={v} value={v}>
+                            {valueName(v)}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+
             {/* Round/Trick info */}
-            <div className="text-ds-text-primary text-center mb-2">
-              <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
-              <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
+            <div className="text-ds-text-primary flex flex-wrap justify-center gap-x-4 gap-y-1 text-center mb-2">
+              <span className="whitespace-nowrap">{t('round', { n: state.roundNumber })}</span>
+              <span className="whitespace-nowrap">{t('trick', { n: state.trickNumber })}</span>
               {trumpLabel && (
                 <span>
                   {t('trumpSuit')}: {trumpLabel}
@@ -378,23 +507,6 @@ function MightyPageContent() {
                       name: findPlayerName(state.players, state.highestBidder),
                     })}
                     {state.winningBidNoTrump ? ` (${t('noTrump')})` : ''}
-                  </div>
-                )}
-
-                {/* Bid phase instruction */}
-                {isHumanBidTurn && (
-                  <div className="text-center mb-2" data-tutorial="mighty-bid-controls">
-                    <div className="text-ds-warning">{t('bidPhase', { min: state.config.minBid })}</div>
-                    <div className="text-ds-text-muted text-sm" data-testid="mighty-notrump-explain">
-                      {t('settings.noTrumpExtraExplain', { points: state.config.noTrumpExtra })}
-                    </div>
-                  </div>
-                )}
-
-                {/* Trump/Friend declaration instruction */}
-                {isHumanDeclarer && (
-                  <div className="text-ds-warning text-center mb-2" data-tutorial="mighty-trump-friend">
-                    {t('trumpAndFriendPhase')}
                   </div>
                 )}
 
@@ -470,13 +582,19 @@ function MightyPageContent() {
                     .filter((p) => !p.isHuman)
                     .map((p) => (
                       <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                        <div className="text-ds-text-muted text-sm">
-                          {playerName(p.id, p.isHuman)}
-                          {roleBadge(p)}: {t('cards', { count: p.cardCount })} |{' '}
-                          {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
-                          {t('roundScore', { score: p.roundScore })} |{' '}
-                          {p.bid >= 0 ? t('bid', { n: p.bid }) : t('bidNone')} |{' '}
-                          {t('pointCards', { count: p.pointCards })}
+                        <div className="flex flex-wrap gap-x-1 text-ds-text-muted text-sm">
+                          <span className="whitespace-nowrap">
+                            {playerName(p.id, p.isHuman)}
+                            {roleBadge(p)}: {t('cards', { count: p.cardCount })}
+                          </span>
+                          <span className="whitespace-nowrap">
+                            {t('cumulativeScore', { score: p.cumulativeScore })}
+                          </span>
+                          <span className="whitespace-nowrap">{t('roundScore', { score: p.roundScore })}</span>
+                          <span className="whitespace-nowrap">
+                            {p.bid >= 0 ? t('bid', { n: p.bid }) : t('bidNone')}
+                          </span>
+                          <span className="whitespace-nowrap">{t('pointCards', { count: p.pointCards })}</span>
                         </div>
                       </div>
                     ))
@@ -499,18 +617,36 @@ function MightyPageContent() {
                       </div>
                     )}
                     <div className="overflow-x-auto -mx-2 px-2">
-                      <table className="w-full text-sm text-ds-text-muted min-w-[420px] mt-1">
+                      <table
+                        className={scoreTableClass(
+                          isLargeDesktop,
+                          'w-full text-sm text-ds-text-muted min-w-[420px]',
+                          'mt-1',
+                        )}
+                      >
                         <thead>
                           <tr>
-                            <th scope="col" className="text-left">
+                            <th scope="col" className="text-left whitespace-nowrap text-[10px]">
                               {t('scoresPlayer')}
                             </th>
-                            <th scope="col">{t('scoresRole')}</th>
-                            <th scope="col">{t('scoresBid')}</th>
-                            <th scope="col">{t('scoresPointCards')}</th>
-                            <th scope="col">{t('scoresTricks')}</th>
-                            <th scope="col">{t('scoresRound')}</th>
-                            <th scope="col">{t('scoresTotal')}</th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresRole')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresBid')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresPointCards')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresTricks')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresRound')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresTotal')}
+                            </th>
                           </tr>
                         </thead>
                         <tbody>
@@ -548,18 +684,32 @@ function MightyPageContent() {
                       </div>
                     )}
                     <div className="overflow-x-auto -mx-2 px-2">
-                      <table className="w-full text-sm text-ds-text-muted min-w-[420px]">
+                      <table
+                        className={scoreTableClass(isLargeDesktop, 'w-full text-sm text-ds-text-muted min-w-[420px]')}
+                      >
                         <thead>
                           <tr>
-                            <th scope="col" className="text-left">
+                            <th scope="col" className="text-left whitespace-nowrap text-[10px]">
                               {t('scoresPlayer')}
                             </th>
-                            <th scope="col">{t('scoresRole')}</th>
-                            <th scope="col">{t('scoresBid')}</th>
-                            <th scope="col">{t('scoresPointCards')}</th>
-                            <th scope="col">{t('scoresTricks')}</th>
-                            <th scope="col">{t('scoresRound')}</th>
-                            <th scope="col">{t('scoresTotal')}</th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresRole')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresBid')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresPointCards')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresTricks')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresRound')}
+                            </th>
+                            <th scope="col" className="whitespace-nowrap text-[10px]">
+                              {t('scoresTotal')}
+                            </th>
                           </tr>
                         </thead>
                         <tbody>
@@ -597,11 +747,7 @@ function MightyPageContent() {
             </div>
 
             {/* Message */}
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
+            {isMobile && messageBox}
 
             {/* Action log */}
             <ActionLogSection
@@ -610,10 +756,172 @@ function MightyPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+
+            <GameResetButton
+              isGameEnd={!!isGameEnd}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+              dataTutorial="mighty-reset-button"
+            />
+            {(isHumanBidTurn || isHumanTurn || isHumanDeclarer || isHumanExchange) && (
+              <button
+                type="button"
+                className={`${btnSuccess} mb-2`}
+                onClick={handleHint}
+                disabled={loading || hintLoading}
+              >
+                {tc('button.hint')}
+              </button>
+            )}
+            <ErrorAlert message={error ?? hintError} onRetry={retry} />
+
+            {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
+                付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
+                読み上げられないことがある (#5955, #6663)。 */}
+            <div data-testid="mighty-hint-live" role="status" aria-live="polite">
+              {hint && (
+                <div className="text-ds-warning text-sm mb-2">
+                  {hint.bid != null
+                    ? `${t('hintBid')}: ${hint.bid}${hint.bidNoTrump ? ` (${t('noTrump')})` : ''} (${t(`hintReason.${hint.reason}`)})`
+                    : hint.trumpSuit != null
+                      ? `${t('hintTrump')}: ${hint.trumpSuit === -1 ? t('noTrump') : t(`suitName.${SUIT_KEYS[hint.trumpSuit]}`)} (${t(`hintReason.${hint.reason}`)})`
+                      : hint.discardIndices != null
+                        ? `${t('hintDiscard')}: [${hint.discardIndices.join(', ')}] (${t(`hintReason.${hint.reason}`)})`
+                        : `${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`}
+                </div>
+              )}
+            </div>
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            {/* Joker suit picker dialog */}
+            <Modal
+              open={jokerSuitPickerOpen}
+              onClose={() => setJokerSuitPickerOpen(false)}
+              ariaLabel={t('demandSuit')}
+              panelClassName="glass-panel rounded-lg shadow-xl p-4 flex gap-2 items-center flex-wrap max-w-sm mx-4"
+            >
+              <span className="text-ds-text-primary text-sm mr-2">{t('demandSuit')}:</span>
+              {[1, 2, 3, 4].map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  className={btnPrimary}
+                  onClick={() => {
+                    handleJokerLead(s);
+                    setJokerSuitPickerOpen(false);
+                  }}
+                  disabled={loading}
+                >
+                  {t(`suitName.${SUIT_KEYS[s]}`)}
+                </button>
+              ))}
+            </Modal>
+
+            <CardNavShortcutsPanel data-testid="mighty-kbd-shortcuts" />
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.mighty.footer} px-4 py-2.5`}>
+          <GameFooter
+            message={isMobile ? undefined : messageBox}
+            className={`${gameTheme.mighty.footer} px-4 py-2.5`}
+            actions={
+              isHumanBidTurn || isHumanTurn || isHumanDeclarer || isHumanExchange || isTrickEnd || isRoundEnd ? (
+                <div className="flex gap-2 items-center flex-wrap">
+                  {/* Bid controls */}
+                  {isHumanBidTurn && (
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={() => handleBid(bidValue, bidNoTrumpToggle)}
+                        disabled={loading || !isBidSelectionValid}
+                      >
+                        {t('bidButton')}
+                      </button>
+                      <button type="button" className={btnPrimary} onClick={handlePass} disabled={loading}>
+                        {t('passButton')}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Trump & Friend declaration controls */}
+                  {isHumanDeclarer && (
+                    <>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={() =>
+                          handleTrumpAndFriend(
+                            trumpSuitValue,
+                            partnerSuitValue,
+                            partnerSuitValue === 0 ? 0 : partnerValueValue,
+                          )
+                        }
+                        disabled={loading}
+                      >
+                        {t('declareButton')}
+                      </button>
+                    </>
+                  )}
+
+                  {/* Kitty exchange controls */}
+                  {isHumanExchange && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={() => {
+                        if (selectedCardIndices.length === 3) handleExchange(selectedCardIndices);
+                      }}
+                      disabled={loading || selectedCardIndices.length !== 3}
+                    >
+                      {t('exchangeButton')}
+                    </button>
+                  )}
+
+                  {/* Play controls */}
+                  {isHumanTurn && (
+                    <>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={handlePlay}
+                        disabled={loading || selectedCardIndices.length !== 1}
+                      >
+                        {t('playButton')}
+                      </button>
+                      {/* Joker lead button: only when a Joker is selected and leading */}
+                      {selectedCardIsJoker && isLeadingTrick && (
+                        <button
+                          type="button"
+                          className={btnPrimary}
+                          onClick={() => setJokerSuitPickerOpen(true)}
+                          disabled={loading}
+                          aria-label={t('jokerLeadButton')}
+                        >
+                          {t('jokerLeadButton')}
+                        </button>
+                      )}
+                    </>
+                  )}
+
+                  {/* Trick end */}
+                  {isTrickEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                      {t('nextTrick')}
+                    </button>
+                  )}
+
+                  {/* Round end */}
+                  {isRoundEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                      {t('nextRound')}
+                    </button>
+                  )}
+                </div>
+              ) : null
+            }
+          >
             {/* Human cards */}
             {humanPlayer &&
               (isMobile ? (
@@ -659,264 +967,6 @@ function MightyPageContent() {
                   })}
                 </div>
               ))}
-
-            <ErrorAlert message={error ?? hintError} onRetry={retry} />
-
-            {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
-                付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
-                読み上げられないことがある (#5955, #6663)。 */}
-            <div data-testid="mighty-hint-live" role="status" aria-live="polite">
-              {hint && (
-                <div className="text-ds-warning text-sm mb-2">
-                  {hint.bid != null
-                    ? `${t('hintBid')}: ${hint.bid}${hint.bidNoTrump ? ` (${t('noTrump')})` : ''} (${t(`hintReason.${hint.reason}`)})`
-                    : hint.trumpSuit != null
-                      ? `${t('hintTrump')}: ${hint.trumpSuit === -1 ? t('noTrump') : t(`suitName.${SUIT_KEYS[hint.trumpSuit]}`)} (${t(`hintReason.${hint.reason}`)})`
-                      : hint.discardIndices != null
-                        ? `${t('hintDiscard')}: [${hint.discardIndices.join(', ')}] (${t(`hintReason.${hint.reason}`)})`
-                        : `${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`}
-                </div>
-              )}
-            </div>
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            {/* Joker suit picker dialog */}
-            <Modal
-              open={jokerSuitPickerOpen}
-              onClose={() => setJokerSuitPickerOpen(false)}
-              ariaLabel={t('demandSuit')}
-              panelClassName="glass-panel rounded-lg shadow-xl p-4 flex gap-2 items-center flex-wrap max-w-sm mx-4"
-            >
-              <span className="text-ds-text-primary text-sm mr-2">{t('demandSuit')}:</span>
-              {[1, 2, 3, 4].map((s) => (
-                <button
-                  key={s}
-                  type="button"
-                  className={btnPrimary}
-                  onClick={() => {
-                    handleJokerLead(s);
-                    setJokerSuitPickerOpen(false);
-                  }}
-                  disabled={loading}
-                >
-                  {t(`suitName.${SUIT_KEYS[s]}`)}
-                </button>
-              ))}
-            </Modal>
-
-            <div className="flex gap-2 items-center flex-wrap">
-              {(isHumanBidTurn || isHumanTurn || isHumanDeclarer || isHumanExchange) && (
-                <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
-                  {tc('button.hint')}
-                </button>
-              )}
-
-              {/* Bid controls */}
-              {isHumanBidTurn && (
-                <div className="flex flex-col items-center gap-2">
-                  <fieldset
-                    className="grid grid-cols-4 gap-1 border-0 p-0"
-                    aria-label={t('bidSelectLabel')}
-                    data-testid="mighty-bid-grid"
-                  >
-                    {Array.from(
-                      { length: MIGHTY_MAX_BID - state.config.minBid + 1 },
-                      (_, i) => i + state.config.minBid,
-                    ).map((n) => (
-                      <button
-                        key={n}
-                        type="button"
-                        onClick={() => setBidValue(n)}
-                        disabled={loading || n < bidEffectiveMin || n <= state.highestBid}
-                        aria-pressed={bidValue === n}
-                        data-testid={`bid-option-${n}`}
-                        className={`min-h-[44px] min-w-[44px] rounded-lg font-medium text-sm transition-all disabled:cursor-not-allowed disabled:opacity-40 ${
-                          bidValue === n
-                            ? 'bg-ds-accent text-white ring-2 ring-ds-accent'
-                            : 'bg-white/20 text-ds-text-primary hover:bg-white/30'
-                        }`}
-                      >
-                        {n}
-                      </button>
-                    ))}
-                  </fieldset>
-                  <label className="flex items-center gap-1 text-ds-text-primary text-sm min-h-[44px]">
-                    <input
-                      type="checkbox"
-                      checked={bidNoTrumpToggle}
-                      onChange={(e) => setBidNoTrumpToggle(e.target.checked)}
-                      aria-label={t('noTrumpToggle')}
-                    />
-                    {t('noTrumpToggle')}
-                  </label>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      className={btnPrimary}
-                      onClick={() => handleBid(bidValue, bidNoTrumpToggle)}
-                      disabled={loading || !isBidSelectionValid}
-                    >
-                      {t('bidButton')}
-                    </button>
-                    <button type="button" className={btnPrimary} onClick={handlePass} disabled={loading}>
-                      {t('passButton')}
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Trump & Friend declaration controls */}
-              {isHumanDeclarer && (
-                <>
-                  <fieldset className="flex flex-wrap gap-1 border-0 p-0">
-                    <legend className="sr-only">{t('trumpSuit')}</legend>
-                    <button
-                      type="button"
-                      aria-pressed={trumpSuitValue === -1}
-                      data-testid="trump-suit--1"
-                      onClick={() => setTrumpSuitValue(-1)}
-                      disabled={loading}
-                      className={suitToggleClass(trumpSuitValue === -1)}
-                    >
-                      {t('noTrump')}
-                    </button>
-                    {[1, 2, 3, 4].map((s) => (
-                      <button
-                        key={s}
-                        type="button"
-                        aria-pressed={trumpSuitValue === s}
-                        aria-label={t(`suitName.${SUIT_KEYS[s]}`)}
-                        data-testid={`trump-suit-${s}`}
-                        onClick={() => setTrumpSuitValue(s)}
-                        disabled={loading}
-                        className={suitToggleClass(trumpSuitValue === s)}
-                      >
-                        {suitSymbolAt(s)}
-                      </button>
-                    ))}
-                  </fieldset>
-                  <fieldset className="flex flex-wrap gap-1 border-0 p-0">
-                    <legend className="sr-only">{t('partnerSuit')}</legend>
-                    <button
-                      type="button"
-                      aria-pressed={partnerSuitValue === 0}
-                      data-testid="partner-suit-0"
-                      onClick={() => setPartnerSuitValue(0)}
-                      disabled={loading}
-                      className={suitToggleClass(partnerSuitValue === 0)}
-                    >
-                      JOKER
-                    </button>
-                    {[1, 2, 3, 4].map((s) => (
-                      <button
-                        key={s}
-                        type="button"
-                        aria-pressed={partnerSuitValue === s}
-                        aria-label={t(`suitName.${SUIT_KEYS[s]}`)}
-                        data-testid={`partner-suit-${s}`}
-                        onClick={() => setPartnerSuitValue(s)}
-                        disabled={loading}
-                        className={suitToggleClass(partnerSuitValue === s)}
-                      >
-                        {suitSymbolAt(s)}
-                      </button>
-                    ))}
-                  </fieldset>
-                  {partnerSuitValue > 0 && (
-                    <select
-                      value={partnerValueValue}
-                      onChange={(e) => setPartnerValueValue(Number(e.target.value))}
-                      className="px-2 py-1 rounded bg-white/20 text-ds-text-primary"
-                      aria-label={t('partnerValue')}
-                    >
-                      {Array.from({ length: 13 }, (_, i) => i + 1).map((v) => (
-                        <option key={v} value={v}>
-                          {valueName(v)}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={() =>
-                      handleTrumpAndFriend(
-                        trumpSuitValue,
-                        partnerSuitValue,
-                        partnerSuitValue === 0 ? 0 : partnerValueValue,
-                      )
-                    }
-                    disabled={loading}
-                  >
-                    {t('declareButton')}
-                  </button>
-                </>
-              )}
-
-              {/* Kitty exchange controls */}
-              {isHumanExchange && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={() => {
-                    if (selectedCardIndices.length === 3) handleExchange(selectedCardIndices);
-                  }}
-                  disabled={loading || selectedCardIndices.length !== 3}
-                >
-                  {t('exchangeButton')}
-                </button>
-              )}
-
-              {/* Play controls */}
-              {isHumanTurn && (
-                <>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handlePlay}
-                    disabled={loading || selectedCardIndices.length !== 1}
-                  >
-                    {t('playButton')}
-                  </button>
-                  {/* Joker lead button: only when a Joker is selected and leading */}
-                  {selectedCardIsJoker && isLeadingTrick && (
-                    <button
-                      type="button"
-                      className={btnPrimary}
-                      onClick={() => setJokerSuitPickerOpen(true)}
-                      disabled={loading}
-                      aria-label={t('jokerLeadButton')}
-                    >
-                      {t('jokerLeadButton')}
-                    </button>
-                  )}
-                </>
-              )}
-
-              {/* Trick end */}
-              {isTrickEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                  {t('nextTrick')}
-                </button>
-              )}
-
-              {/* Round end */}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
-
-              {/* Reset */}
-              <GameResetButton
-                isGameEnd={!!isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="mighty-reset-button"
-              />
-            </div>
-            <CardNavShortcutsPanel data-testid="mighty-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

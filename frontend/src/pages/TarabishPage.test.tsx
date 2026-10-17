@@ -1,10 +1,11 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { tarabishApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, TarabishResponse } from '../types/card';
+import { TarabishPhase } from '../types/phases';
 import { TarabishPage } from './TarabishPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -17,6 +18,16 @@ vi.mock('../hooks/useGameHint', () => ({
 }));
 
 const mockExec = vi.mocked(tarabishApi.exec);
+const mobileState = vi.hoisted(() => ({
+  isMobile: true,
+  breakpoint: 'mobile' as 'mobile' | 'desktop' | 'largeDesktop',
+}));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+  useBreakpoint: () => mobileState.breakpoint,
+}));
 
 const card = (design: string, value: number): Card => ({ design, value }) as unknown as Card;
 
@@ -64,10 +75,67 @@ const playing = (over: Partial<TarabishResponse> = {}) =>
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mobileState.isMobile = true;
+  mobileState.breakpoint = 'mobile';
   mockExec.mockResolvedValue(makeState());
 });
 
 describe('TarabishPage', () => {
+  it('places the trick and CPU accordion in separate columns on large desktop', async () => {
+    mobileState.breakpoint = 'largeDesktop';
+    mobileState.isMobile = false;
+    renderWithProviders(<TarabishPage />);
+
+    const layout = await screen.findByTestId('tb-play-layout');
+    const trick = screen.getByTestId('tb-trick-column');
+    const cpu = screen.getByTestId('cpu-accordion');
+    const cpuColumn = cpu.closest('[data-testid="tb-side-column"]');
+    expect(layout).toHaveClass('grid-cols-[minmax(0,1fr)_minmax(280px,30%)]');
+    expect(trick.parentElement).toBe(layout);
+    expect(cpuColumn?.parentElement).toBe(layout);
+    expect(trick).toHaveClass('col-start-1');
+    expect(cpuColumn).toHaveClass('min-w-0');
+  });
+
+  it('keeps the result banner in a full-width row on large desktop', async () => {
+    mobileState.breakpoint = 'largeDesktop';
+    mobileState.isMobile = false;
+    mockExec.mockResolvedValue(makeState({ phase: TarabishPhase.GAME_END, gameEndFlag: true, winnerTeam: 0 }));
+    renderWithProviders(<TarabishPage />);
+
+    const banner = await screen.findByText(/あなたのチームの勝ち/);
+    const fullRow = banner.parentElement;
+    expect(fullRow).toHaveClass('col-span-2', 'min-w-0');
+    expect(fullRow?.parentElement).toBe(screen.getByTestId('tb-play-layout'));
+  });
+
+  it('expands the mobile footer while retaining the desktop action and message slots', async () => {
+    mockExec.mockResolvedValue(makeState({ message: 'テストメッセージ' }));
+    renderWithProviders(<TarabishPage />);
+    const footer = await screen.findByTestId('game-footer-actions');
+    expect(footer.closest('footer')).toHaveClass('max-h-[60vh]');
+    expect(screen.getByTestId('game-footer-message')).toContainElement(screen.getByText('テストメッセージ'));
+    expect(footer).toContainElement(screen.getByTestId('tb-take-btn'));
+
+    cleanup();
+    mobileState.isMobile = false;
+    mobileState.breakpoint = 'largeDesktop';
+    const { unmount } = renderWithProviders(<TarabishPage />);
+    expect((await screen.findByTestId('game-footer-actions')).closest('footer')).toHaveClass('max-h-[45vh]');
+    unmount();
+  });
+
+  it('keeps CPU before the trick in the DOM outside large desktop', async () => {
+    mobileState.breakpoint = 'desktop';
+    mobileState.isMobile = false;
+    renderWithProviders(<TarabishPage />);
+
+    const cpu = await screen.findByTestId('cpu-accordion');
+    const trick = screen.getByTestId('tb-trick-column');
+    expect(cpu.compareDocumentPosition(trick) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.getByTestId('tb-play-layout')).toHaveClass('contents');
+  });
+
   it('keeps the original points label off turn', async () => {
     renderWithProviders(<TarabishPage />);
     const cards = await screen.findAllByRole('button', { name: /を出す/ });
@@ -107,17 +175,58 @@ describe('TarabishPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
-  // **切り札の序列は盤面から読めない。** 常に出ていなければならない。
-  it('always states the trump order', async () => {
+  it('keeps the trump order collapsed on mobile and exposes it on demand', async () => {
     renderWithProviders(<TarabishPage />);
-    expect(await screen.findByTestId('tb-order')).toHaveTextContent(/J\(Jass\)=20/);
+    expect(await screen.findByTestId('tb-order-details')).not.toHaveAttribute('open');
+    expect(screen.getByTestId('tb-order')).not.toBeVisible();
+    fireEvent.click(screen.getByText('ルール'));
+    expect(screen.getByTestId('tb-order')).toHaveTextContent(/J\(Jass\)=20/);
     expect(screen.getByTestId('tb-order')).toHaveTextContent(/9\(Menel\)=14/);
   });
 
+  it('keeps the rules disclosure available on desktop', async () => {
+    mobileState.isMobile = false;
+    renderWithProviders(<TarabishPage />);
+    const details = await screen.findByTestId('tb-order-details');
+    expect(details).not.toHaveAttribute('open');
+    expect(details.querySelector('summary')).toHaveTextContent('ルール');
+    mobileState.isMobile = true;
+  });
+
+  it('keeps the human seat visible outside the mobile CPU accordion', async () => {
+    const firstRender = renderWithProviders(<TarabishPage />);
+    const accordion = await screen.findByTestId('cpu-accordion');
+    const humanSeat = screen.getByTestId('tb-seat-0');
+    expect(accordion).not.toHaveAttribute('open');
+    expect(humanSeat).toBeVisible();
+    expect(accordion).not.toContainElement(humanSeat);
+    expect(accordion).toContainElement(screen.getByTestId('tb-seat-1'));
+    expect(accordion.querySelector('summary')).toHaveTextContent('CPU対戦相手 (3)');
+    fireEvent.click(screen.getByTestId('cpu-accordion').querySelector('summary') as HTMLElement);
+    expect(screen.getByTestId('tb-seat-1')).toBeVisible();
+    firstRender.unmount();
+    mobileState.isMobile = false;
+    const { unmount } = renderWithProviders(<TarabishPage />);
+    expect(await screen.findByTestId('cpu-accordion')).toHaveAttribute('open');
+    expect(screen.getByTestId('tb-seat-0')).toBeVisible();
+    unmount();
+    mobileState.isMobile = true;
+  });
+
   it('offers both choices while bidding', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: TarabishPhase.BID,
+        currentPlayerIdx: 0,
+        dealerIdx: 2,
+        trumpTakerIdx: -1,
+      } as Partial<TarabishResponse>),
+    );
     renderWithProviders(<TarabishPage />);
     expect(await screen.findByTestId('tb-take-btn')).toBeInTheDocument();
     expect(screen.getByTestId('tb-pass-btn')).toBeInTheDocument();
+    expect(screen.getByTestId('game-footer-actions')).toContainElement(screen.getByTestId('tb-take-btn'));
+    expect(screen.getByTestId('game-footer-actions')).toContainElement(screen.getByTestId('tb-pass-btn'));
     expect(screen.getAllByRole('button', { name: /出す/ })[0]).not.toHaveAttribute('aria-disabled');
   });
 
@@ -184,6 +293,7 @@ describe('TarabishPage', () => {
       } as Partial<TarabishResponse>),
     );
     renderWithProviders(<TarabishPage />);
+    fireEvent.click((await screen.findByTestId('cpu-accordion')).querySelector('summary') as HTMLElement);
 
     expect(await screen.findByTestId('tb-seat-0')).toHaveTextContent('T0');
     expect(screen.getByTestId('tb-seat-0')).toHaveTextContent('ラン4枚');
@@ -225,6 +335,7 @@ describe('TarabishPage', () => {
 
     expect(await screen.findByTestId('tb-seat-cards-0')).toHaveTextContent('残り手札5枚');
     expect(screen.getByTestId('tb-seat-cards-1')).toHaveTextContent('残り手札4枚');
+    expect(screen.getByTestId('tb-seat-cards-1')).toHaveClass('whitespace-nowrap');
     expect(screen.getByTestId('tb-seat-cards-2')).toHaveTextContent('残り手札2枚');
     expect(screen.getByTestId('tb-seat-cards-3')).toHaveTextContent('残り手札1枚');
   });

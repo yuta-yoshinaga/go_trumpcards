@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { shengjiApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -83,9 +83,81 @@ describe('ShengJiPage', () => {
     mockExec.mockResolvedValue(makeState());
   });
 
+  it('stacks mobile hand rows', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      renderWithProviders(<ShengJiPage />);
+      const hand = await screen.findByTestId('game-footer-content');
+      await waitFor(() => expect(hand.querySelectorAll('[data-testid="hand-row"]').length).toBeGreaterThanOrEqual(2));
+      const rows = hand.querySelectorAll<HTMLElement>('[data-testid="hand-row"]');
+      for (const row of Array.from(rows).slice(1)) expect(row.style.marginTop).toMatch(/^-/);
+      const tutorialHand = hand.querySelector('[data-tutorial="shengji-hand"]');
+      expect(tutorialHand).not.toBeNull();
+      expect(tutorialHand).toHaveTextContent('あなたの手札');
+      expect(tutorialHand?.querySelector('[data-testid="hand-row"]')).not.toBeNull();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it('renders desktop hand cards through PlayerHandSection', async () => {
+    renderWithProviders(<ShengJiPage />);
+    const cardButton = await screen.findByTestId('hand-card-0');
+    expect(cardButton).toHaveAttribute('data-hand-card-index', '0');
+  });
+
+  it('toggles mobile card selection and ignores taps when cards cannot be selected', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      renderWithProviders(<ShengJiPage />);
+      const selectable = await screen.findByRole('button', { name: '♠ 2' });
+      fireEvent.click(selectable);
+      expect(selectable).toHaveAttribute('aria-pressed', 'true');
+      cleanup();
+
+      mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1 }));
+      renderWithProviders(<ShengJiPage />);
+      const unavailable = await screen.findByRole('button', { name: '♠ 2' });
+      fireEvent.click(unavailable);
+      expect(unavailable).toHaveAttribute('aria-pressed', 'false');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it('marks mobile hand cards aria-disabled when they cannot be selected', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1 }));
+      renderWithProviders(<ShengJiPage />);
+      const unavailable = await screen.findByRole('button', { name: '♠ 2' });
+      expect(unavailable).toHaveAttribute('aria-disabled', 'true');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
   it('resets on mount', async () => {
     renderWithProviders(<ShengJiPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('renders without a human player and shows no hand cards', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ players: makeState().players.map((player) => ({ ...player, isHuman: false })) }),
+    );
+
+    renderWithProviders(<ShengJiPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    await waitFor(() => expect(screen.getByTestId('shengji-info')).toBeInTheDocument());
+    expect(screen.queryByTestId('hand-card-0')).toBeNull();
   });
 
   it('marks and announces the provisional trick winner', async () => {
@@ -135,6 +207,30 @@ describe('ShengJiPage', () => {
     expect(players[2]).toHaveTextContent('宣言側');
   });
 
+  it('keeps controls in footer actions and moves errors and reset controls to the play area', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: ShengJiPhase.DECLARE, declarableSuits: { '3': 2 } }));
+    renderWithProviders(<ShengJiPage />);
+    await waitFor(() => expect(screen.getByTestId('shengji-declare-3')).toBeInTheDocument());
+
+    const footerContent = within(screen.getByTestId('game-footer-content'));
+    const footerActions = within(screen.getByTestId('game-footer-actions'));
+    const playArea = screen.getByTestId('game-footer-content').closest('footer')?.previousElementSibling;
+    expect(footerActions.getByTestId('shengji-declare-3')).toBeInTheDocument();
+    expect(playArea).toHaveAttribute('class', expect.stringContaining('flex-1 overflow-y-auto'));
+
+    mockExec.mockRejectedValueOnce(new Error('declare failed'));
+    fireEvent.click(screen.getByTestId('shengji-declare-3'));
+    await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument());
+
+    const playAreaContent = within(playArea as HTMLElement);
+    expect(playAreaContent.getByRole('alert')).toBeInTheDocument();
+    expect(playArea?.querySelector('[data-tutorial="shengji-reset-button"]')).toBeInTheDocument();
+    expect(footerContent.queryByRole('alert')).not.toBeInTheDocument();
+    expect(
+      screen.getByTestId('game-footer-content').querySelector('[data-tutorial="shengji-reset-button"]'),
+    ).toBeNull();
+  });
+
   describe('declaring', () => {
     const declareState = (overrides?: Partial<ShengJiResponse>) =>
       makeState({ phase: ShengJiPhase.DECLARE, declarableSuits: { '3': 2, '2': 1 }, ...overrides });
@@ -171,6 +267,10 @@ describe('ShengJiPage', () => {
       await waitFor(() =>
         expect(screen.getByTestId('shengji-declare-rules')).toHaveTextContent('強い宣言だけが上書き'),
       );
+      const footerActions = screen.getByTestId('game-footer-actions');
+      const playArea = footerActions.closest('footer')?.previousElementSibling;
+      expect(within(footerActions).queryByTestId('shengji-declare-rules')).not.toBeInTheDocument();
+      expect(within(playArea as HTMLElement).getByTestId('shengji-declare-rules')).toBeInTheDocument();
     });
   });
 
@@ -201,6 +301,10 @@ describe('ShengJiPage', () => {
       await waitFor(() =>
         expect(screen.getByTestId('shengji-kitty-rules')).toHaveTextContent('得点札と切札は埋めないでください'),
       );
+      const footerActions = screen.getByTestId('game-footer-actions');
+      const playArea = footerActions.closest('footer')?.previousElementSibling;
+      expect(within(footerActions).queryByTestId('shengji-kitty-rules')).not.toBeInTheDocument();
+      expect(within(playArea as HTMLElement).getByTestId('shengji-kitty-rules')).toBeInTheDocument();
     });
   });
 
@@ -217,6 +321,7 @@ describe('ShengJiPage', () => {
     );
     renderWithProviders(<ShengJiPage />);
     await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    expect(within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '出す' })).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId('hand-card-0'));
     fireEvent.click(screen.getByTestId('hand-card-1'));
@@ -323,6 +428,7 @@ describe('ShengJiPage', () => {
     );
     renderWithProviders(<ShengJiPage />);
     await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    expect(screen.getByRole('contentinfo').className).toContain('max-h-[60vh]');
     const play = screen.getByRole('button', { name: '出す' });
     expect(play).not.toHaveAttribute('aria-disabled', 'true');
     fireEvent.click(screen.getByTestId('hand-card-0'));
@@ -605,7 +711,7 @@ describe('ShengJiPage', () => {
       }),
     );
     renderWithProviders(<ShengJiPage />);
-    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeDisabled());
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toHaveAttribute('aria-disabled', 'true'));
   });
 });
 

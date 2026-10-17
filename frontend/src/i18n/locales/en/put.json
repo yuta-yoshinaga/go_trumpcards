@@ -39,7 +39,6 @@
     "youWin": "You win! ({{p0}}-{{p1}})",
     "cpuWin": "CPU wins ({{p0}}-{{p1}})"
   },
-  "respondPrompt": "{{name}} called {{level}}. Respond.",
   "respondOutcome": {
     "accept": "Accept: the stake becomes {{stake}} points",
     "decline": "Decline: the caller wins the current {{stake}} points"

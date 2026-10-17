@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { sambaApi } from '../api/gameApi';
 import i18n from '../i18n';
@@ -12,6 +12,13 @@ vi.mock('../api/gameApi', () => ({
   actionLogApi: { samba: vi.fn() },
 }));
 const mockExec = vi.mocked(sambaApi.exec);
+const mobileState = vi.hoisted(() => ({ isMobile: true, largeDesktop: false }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+  useBreakpoint: () => (mobileState.largeDesktop ? 'largeDesktop' : 'desktop'),
+}));
 
 const drawPhaseState = makeSambaState();
 const meldPhaseState = makeSambaState({ phase: 1, messageCode: 'samba.meldPhase' });
@@ -22,13 +29,496 @@ const gameEndState = makeSambaState({ phase: 4, gameEndFlag: true, winnerIdx: 0 
 const cpuTurnState = makeSambaState({ currentPlayerIdx: 1 });
 
 describe('SambaPage', () => {
+  it('renders the game message in the footer message slot', async () => {
+    mobileState.isMobile = false;
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      message: 'Footer message test',
+      messageCode: 'test.untranslated',
+    });
+    renderWithProviders(<SambaPage />);
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(within(footerMessage).getByRole('status')).toHaveTextContent('Footer message test');
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
+    mobileState.isMobile = true;
+    mobileState.largeDesktop = false;
     mockExec.mockResolvedValue(drawPhaseState);
+  });
+
+  it('uses a single-row CardFan hand on large desktop', async () => {
+    mobileState.isMobile = false;
+    mobileState.largeDesktop = true;
+    renderWithProviders(<SambaPage />);
+    expect(await screen.findByTestId('sa-player-hand')).toBeInTheDocument();
+    expect(screen.getByTestId('sa-player-hand').querySelectorAll('button')).toHaveLength(
+      drawPhaseState.players[0].cards.length,
+    );
+    fireEvent.click(within(screen.getByTestId('sa-player-hand')).getAllByRole('button')[0]);
+    expect(within(screen.getByTestId('sa-player-hand')).getAllByRole('button')[0]).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+  });
+
+  it('omits the large-desktop meld footer when the human team has no melds or red threes', async () => {
+    mobileState.isMobile = false;
+    mobileState.largeDesktop = true;
+    renderWithProviders(<SambaPage />);
+    await screen.findByTestId('sa-player-hand');
+    expect(screen.queryByTestId('sa-footer-melds')).not.toBeInTheDocument();
+  });
+
+  it('keeps both teammates’ meld rows visible beside the large-desktop hand without scrolling', async () => {
+    const base = makeSambaState();
+    const meld = {
+      cards: [
+        { design: 'HEART' as const, value: 4 },
+        { design: 'CLOVER' as const, value: 4 },
+        { design: 'DIAMOND' as const, value: 4 },
+      ],
+      kind: 0,
+      isNatural: true,
+      isCanasta: false,
+      isSamba: false,
+      rank: 4,
+    };
+    mockExec.mockResolvedValue(
+      makeSambaState({
+        players: [
+          { ...base.players[0], melds: [meld, meld] },
+          base.players[1],
+          { ...base.players[2], melds: [meld, meld] },
+          base.players[3],
+        ],
+      }),
+    );
+
+    mobileState.isMobile = false;
+    mobileState.largeDesktop = true;
+    renderWithProviders(<SambaPage />);
+    const meldArea = await screen.findByTestId('sa-footer-melds');
+    const hand = await screen.findByTestId('sa-player-hand');
+    const row = screen.getByTestId('sa-footer-hand-row');
+    expect(meldArea.style.maxHeight).toBe('');
+    expect(meldArea).not.toHaveClass('overflow-y-auto');
+    expect(meldArea.querySelectorAll('[data-testid^="sa-meld-progress-"]')).toHaveLength(4);
+    expect(meldArea.querySelectorAll('[data-testid="animated-card"]')).toHaveLength(12);
+    expect(meldArea.parentElement).toBe(row);
+    expect(hand.parentElement).toBe(row);
+    expect(meldArea.closest('[data-testid="game-footer-content"]')).toBeInTheDocument();
+  });
+
+  it('lays out footer meld cards in one overlapped row on large desktop', async () => {
+    const base = makeSambaState();
+    const meld = {
+      cards: [
+        { design: 'HEART' as const, value: 4 },
+        { design: 'CLOVER' as const, value: 4 },
+        { design: 'DIAMOND' as const, value: 4 },
+      ],
+      kind: 0,
+      isNatural: true,
+      isCanasta: false,
+      isSamba: false,
+      rank: 4,
+    };
+    mockExec.mockResolvedValue(
+      makeSambaState({ players: [{ ...base.players[0], melds: [meld] }, ...base.players.slice(1)] }),
+    );
+    mobileState.isMobile = false;
+    mobileState.largeDesktop = true;
+    renderWithProviders(<SambaPage />);
+
+    const meldArea = await screen.findByTestId('sa-footer-melds');
+    const progress = within(meldArea).getByTestId('sa-meld-progress-0-0');
+    const meldRow = progress.parentElement;
+    expect(meldRow).toHaveClass('flex', 'flex-nowrap');
+    const cards = within(meldArea).getAllByTestId('animated-card');
+    expect(cards).toHaveLength(3);
+    expect(cards[0]).toHaveClass('inline-block');
+    expect(cards[0]).not.toHaveClass('-ml-12');
+    expect(cards[1]).toHaveClass('inline-block', '-ml-12');
+    expect(cards[2]).toHaveClass('inline-block', '-ml-12');
+  });
+
+  it('wraps large-desktop meld boxes without shrinking while preserving other breakpoints', async () => {
+    const base = makeSambaState();
+    const meld = {
+      cards: [
+        { design: 'HEART' as const, value: 4 },
+        { design: 'CLOVER' as const, value: 4 },
+        { design: 'DIAMOND' as const, value: 4 },
+      ],
+      kind: 0,
+      isNatural: true,
+      isCanasta: false,
+      isSamba: false,
+      rank: 4,
+    };
+    mockExec.mockResolvedValue(
+      makeSambaState({
+        players: [
+          { ...base.players[0], melds: [meld] },
+          base.players[1],
+          { ...base.players[2], melds: [meld] },
+          base.players[3],
+        ],
+      }),
+    );
+    mobileState.isMobile = false;
+    mobileState.largeDesktop = true;
+    const { unmount } = renderWithProviders(<SambaPage />);
+
+    const meldArea = await screen.findByTestId('sa-footer-melds');
+    expect(meldArea).toHaveClass('flex-wrap');
+    const playerBoxes = Array.from(meldArea.children);
+    expect(playerBoxes).toHaveLength(2);
+    for (const box of playerBoxes) {
+      expect(box).toHaveClass('shrink-0', 'max-w-full');
+      expect(box).not.toHaveClass('flex-1', 'min-w-0');
+      expect(box.querySelector('.flex.flex-nowrap')).toBeInTheDocument();
+    }
+
+    unmount();
+    mobileState.largeDesktop = false;
+    renderWithProviders(<SambaPage />);
+    await screen.findByTestId('phase-indicator');
+    expect(screen.queryByTestId('sa-footer-melds')).not.toBeInTheDocument();
+  });
+
+  it('wraps footer meld cards without overlap below large desktop', async () => {
+    const base = makeSambaState();
+    const meld = {
+      cards: [
+        { design: 'HEART' as const, value: 4 },
+        { design: 'CLOVER' as const, value: 4 },
+        { design: 'DIAMOND' as const, value: 4 },
+      ],
+      kind: 0,
+      isNatural: true,
+      isCanasta: false,
+      isSamba: false,
+      rank: 4,
+    };
+    mockExec.mockResolvedValue(
+      makeSambaState({ players: [{ ...base.players[0], melds: [meld] }, ...base.players.slice(1)] }),
+    );
+    mobileState.isMobile = false;
+    mobileState.largeDesktop = false;
+    renderWithProviders(<SambaPage />);
+
+    const meldRow = await screen.findByTestId('sa-meld-progress-0-0').then((el) => el.parentElement);
+    expect(meldRow).toHaveClass('flex', 'flex-wrap');
+    const cards = within(meldRow as HTMLElement).getAllByTestId('animated-card');
+    expect(cards).toHaveLength(3);
+    for (const card of cards) {
+      expect(card).not.toHaveClass('inline-block');
+      expect(card).not.toHaveClass('-ml-12');
+    }
+  });
+
+  it('lays out red threes in one overlapped row on large desktop', async () => {
+    const base = makeSambaState();
+    mockExec.mockResolvedValue(
+      makeSambaState({
+        players: [
+          {
+            ...base.players[0],
+            red3s: [
+              { design: 'HEART', value: 3 },
+              { design: 'DIAMOND', value: 3 },
+            ],
+          },
+          ...base.players.slice(1),
+        ],
+      }),
+    );
+    mobileState.isMobile = false;
+    mobileState.largeDesktop = true;
+    renderWithProviders(<SambaPage />);
+
+    const redThreesLabel = await screen.findByText(i18n.t('samba:red3s'));
+    const redThreeRow = redThreesLabel.parentElement as HTMLElement;
+    expect(redThreeRow).toHaveClass('flex', 'flex-nowrap');
+    const cards = within(redThreeRow).getAllByTestId('animated-card');
+    expect(cards).toHaveLength(2);
+    expect(cards[0]).toHaveClass('inline-block');
+    expect(cards[0]).not.toHaveClass('-ml-12');
+    expect(cards[1]).toHaveClass('inline-block', '-ml-12');
+  });
+
+  it('wraps red threes without overlap below large desktop', async () => {
+    const base = makeSambaState();
+    mockExec.mockResolvedValue(
+      makeSambaState({
+        players: [
+          {
+            ...base.players[0],
+            red3s: [
+              { design: 'HEART', value: 3 },
+              { design: 'DIAMOND', value: 3 },
+            ],
+          },
+          ...base.players.slice(1),
+        ],
+      }),
+    );
+    mobileState.isMobile = false;
+    mobileState.largeDesktop = false;
+    renderWithProviders(<SambaPage />);
+
+    const redThreesLabel = await screen.findByText(i18n.t('samba:red3s'));
+    const redThreeRow = redThreesLabel.parentElement as HTMLElement;
+    expect(redThreeRow).toHaveClass('flex', 'flex-wrap');
+    const cards = within(redThreeRow).getAllByTestId('animated-card');
+    expect(cards).toHaveLength(2);
+    for (const card of cards) {
+      expect(card).not.toHaveClass('inline-block');
+      expect(card).not.toHaveClass('-ml-12');
+    }
   });
 
   afterEach(() => {
     localStorage.clear();
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    mobileState.isMobile = true;
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      message: 'Mobile play-area message',
+      messageCode: 'test.untranslated',
+    });
+    try {
+      renderWithProviders(<SambaPage />);
+      await screen.findByText('Mobile play-area message');
+      const status = screen.getByText('Mobile play-area message').closest('[role="status"]');
+      if (!status) throw new Error('Mobile message must be inside its live region');
+      expect(status).toHaveTextContent('Mobile play-area message');
+      expect(status.closest('[data-testid="game-footer-message"]')).toBeNull();
+      expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it('uses stacked MobileHandGrid rows for a large mobile hand', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      const base = makeSambaState();
+      mockExec.mockResolvedValue(
+        makeSambaState({
+          players: [
+            {
+              ...base.players[0],
+              cards: Array.from({ length: 16 }, (_, i) => ({ design: 'SPADE' as const, value: (i % 13) + 1 })),
+            },
+            ...base.players.slice(1),
+          ],
+        }),
+      );
+      renderWithProviders(<SambaPage />);
+
+      const rows = await screen.findAllByTestId('hand-row');
+      expect(rows.length).toBeGreaterThanOrEqual(2);
+      expect(Number.parseFloat((rows[1] as HTMLElement).style.marginTop)).toBeLessThan(0);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it('selects tappable mobile cards and keeps staged meld cards unavailable', async () => {
+    mobileState.isMobile = true;
+    mockExec.mockResolvedValue(meldPhaseState);
+    renderWithProviders(<SambaPage />);
+    const cards = await screen.findAllByTestId('hand-row');
+    const buttons = cards.flatMap((row) => Array.from(row.querySelectorAll('button')));
+    fireEvent.click(buttons[0]);
+    expect(buttons[0]).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(buttons[1]);
+    fireEvent.click(buttons[2]);
+    fireEvent.click(screen.getByRole('button', { name: '選択カードをグループに追加' }));
+
+    await waitFor(() => expect(buttons[0]).toHaveAttribute('aria-disabled', 'true'));
+    fireEvent.click(buttons[0]);
+    expect(buttons[0]).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(buttons[3]);
+    expect(buttons[3]).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('collapses opponents melds on mobile while keeping the human team visible', async () => {
+    const base = makeSambaState();
+    const opponentMeld = {
+      cards: Array.from({ length: 3 }, () => ({ design: 'SPADE' as const, value: 4 })),
+      kind: 0,
+      isNatural: true,
+      isCanasta: false,
+      isSamba: false,
+      rank: 4,
+    };
+    mockExec.mockResolvedValue(
+      makeSambaState({
+        players: [
+          { ...base.players[0], melds: [opponentMeld] },
+          { ...base.players[1], melds: [opponentMeld] },
+          ...base.players.slice(2),
+        ],
+      }),
+    );
+    renderWithProviders(<SambaPage />);
+
+    const details = await screen.findByTestId('sa-opponent-meld-details');
+    expect(details).not.toHaveAttribute('open');
+    expect(within(details).getByText('相手チームのメルド (1)')).toBeInTheDocument();
+    expect(within(details).getByText('あと4枚でカナスタ')).not.toBeVisible();
+    expect(screen.getByTestId('sa-meld-progress-0-0')).toBeVisible();
+  });
+
+  it('expands opponents melds on desktop', async () => {
+    mobileState.isMobile = false;
+    const base = makeSambaState();
+    const opponentMeld = {
+      cards: Array.from({ length: 3 }, () => ({ design: 'SPADE' as const, value: 4 })),
+      kind: 0,
+      isNatural: true,
+      isCanasta: false,
+      isSamba: false,
+      rank: 4,
+    };
+    mockExec.mockResolvedValue(
+      makeSambaState({
+        players: [base.players[0], { ...base.players[1], melds: [opponentMeld] }, ...base.players.slice(2)],
+      }),
+    );
+    renderWithProviders(<SambaPage />);
+
+    const details = await screen.findByTestId('sa-opponent-meld-details');
+    expect(details).toHaveAttribute('open');
+    expect(within(details).getByText('あと4枚でカナスタ')).toBeVisible();
+  });
+
+  it('does not render opponent meld details when opponents have no melds or red threes', async () => {
+    renderWithProviders(<SambaPage />);
+    await screen.findByTestId('game-footer-actions');
+    expect(screen.queryByTestId('sa-opponent-meld-details')).not.toBeInTheDocument();
+  });
+
+  it('keeps only the hand and its selection feedback in the footer content', async () => {
+    const { container } = renderWithProviders(<SambaPage />);
+    const footer = await screen.findByTestId('game-footer-content');
+    const playArea = container.querySelector('.flex-1.overflow-y-auto');
+
+    expect(playArea).not.toBeNull();
+    expect(footer.querySelector('[data-tutorial="sa-player-hand"]')).not.toBeNull();
+    expect(within(footer).getByTestId('sa-meld-points')).toBeInTheDocument();
+    expect(within(footer).queryByTestId('samba-kbd-shortcuts')).not.toBeInTheDocument();
+    expect(within(footer).queryByRole('button', { name: 'リセット' })).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('samba-kbd-shortcuts')).toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByRole('button', { name: 'リセット' })).toBeInTheDocument();
+  });
+
+  it('shows an opponent meld and counts only melds (not red threes) in the summary', async () => {
+    const base = makeSambaState();
+    const meld = {
+      cards: [
+        { design: 'SPADE' as const, value: 4 },
+        { design: 'HEART' as const, value: 4 },
+      ],
+      kind: 0,
+      isNatural: true,
+      isCanasta: false,
+      isSamba: false,
+      rank: 4,
+    };
+    const red3 = { design: 'HEART' as const, value: 3 };
+    mockExec.mockResolvedValue(
+      makeSambaState({
+        players: [base.players[0], { ...base.players[1], melds: [meld], red3s: [red3] }, ...base.players.slice(2)],
+      }),
+    );
+    renderWithProviders(<SambaPage />);
+
+    const details = await screen.findByTestId('sa-opponent-meld-details');
+    expect(within(details).getByText('相手チームのメルド (1)')).toBeInTheDocument();
+    expect(within(details).getByAltText('♠ 4')).toBeInTheDocument();
+    expect(within(details).getByAltText('♥ 3')).toBeInTheDocument();
+  });
+
+  it('shows an opponent red three when that seat has no melds', async () => {
+    const base = makeSambaState();
+    mockExec.mockResolvedValue(
+      makeSambaState({
+        players: [
+          base.players[0],
+          { ...base.players[1], red3s: [{ design: 'DIAMOND', value: 3 }] },
+          ...base.players.slice(2),
+        ],
+      }),
+    );
+    renderWithProviders(<SambaPage />);
+
+    const details = await screen.findByTestId('sa-opponent-meld-details');
+    expect(within(details).getByAltText('♦ 3')).toBeInTheDocument();
+  });
+
+  it('omits an empty opponent seat when the other opponent has a meld', async () => {
+    const base = makeSambaState();
+    const meld = {
+      cards: [{ design: 'SPADE' as const, value: 4 }],
+      kind: 0,
+      isNatural: true,
+      isCanasta: false,
+      isSamba: false,
+      rank: 4,
+    };
+    mockExec.mockResolvedValue(
+      makeSambaState({
+        players: [base.players[0], { ...base.players[1], melds: [meld] }, base.players[2], base.players[3]],
+      }),
+    );
+    renderWithProviders(<SambaPage />);
+
+    const details = await screen.findByTestId('sa-opponent-meld-details');
+    expect(within(details).getByText(/CPU 1/)).toBeInTheDocument();
+    expect(within(details).queryByText(/CPU 3/)).not.toBeInTheDocument();
+    expect(within(details).getAllByTestId('animated-card')).toHaveLength(1);
+  });
+
+  it('keeps the human team meld outside opponent details', async () => {
+    const base = makeSambaState();
+    const meld = {
+      cards: [{ design: 'SPADE' as const, value: 4 }],
+      kind: 0,
+      isNatural: true,
+      isCanasta: false,
+      isSamba: false,
+      rank: 4,
+    };
+    mockExec.mockResolvedValue(
+      makeSambaState({
+        players: [
+          { ...base.players[0], melds: [meld] },
+          { ...base.players[1], melds: [meld] },
+          ...base.players.slice(2),
+        ],
+      }),
+    );
+    renderWithProviders(<SambaPage />);
+
+    const details = await screen.findByTestId('sa-opponent-meld-details');
+    const allMeldProgress = screen.getAllByText('あと6枚でカナスタ');
+    expect(details).not.toContainElement(allMeldProgress[0]);
+    expect(details).toContainElement(allMeldProgress[1]);
   });
 
   it('renders skeleton before first API response', () => {
@@ -46,10 +536,40 @@ describe('SambaPage', () => {
 
   it('shows draw phase buttons and team scores', async () => {
     renderWithProviders(<SambaPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '山札から引く' })).toBeInTheDocument());
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: '山札から引く' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeInTheDocument();
     expect(screen.getByTestId('sa-team-scores')).toBeInTheDocument();
     expect(screen.getByTestId('sa-meld-points')).toHaveAttribute('aria-live', 'polite');
+  });
+
+  it('collapses the score table on mobile and opens it on desktop', async () => {
+    const { unmount } = renderWithProviders(<SambaPage />);
+    await screen.findByTestId('sa-score-details');
+    const mobileDetails = screen.getByTestId('sa-score-details');
+    expect(mobileDetails).not.toHaveAttribute('open');
+    expect(within(mobileDetails).getByRole('table')).not.toBeVisible();
+    unmount();
+
+    mobileState.isMobile = false;
+    renderWithProviders(<SambaPage />);
+    const desktopDetails = await screen.findByTestId('sa-score-details');
+    expect(desktopDetails).toHaveAttribute('open');
+    expect(within(desktopDetails).getByRole('table')).toBeVisible();
+  });
+
+  it('renders the score summary using the active locale', async () => {
+    await i18n.changeLanguage('ja');
+    const { unmount } = renderWithProviders(<SambaPage />);
+    expect(await within(await screen.findByTestId('sa-score-details')).findByText('スコア')).toBeInTheDocument();
+    expect(screen.queryByText('label.score')).not.toBeInTheDocument();
+    unmount();
+
+    await i18n.changeLanguage('en');
+    renderWithProviders(<SambaPage />);
+    expect(await within(await screen.findByTestId('sa-score-details')).findByText('Scores')).toBeInTheDocument();
+    expect(screen.queryByText('label.score')).not.toBeInTheDocument();
+    await i18n.changeLanguage('ja');
   });
 
   it('announces only changed team scores after the initial state', async () => {
@@ -194,11 +714,20 @@ describe('SambaPage', () => {
     expect(info).toHaveTextContent('初回メルド必要点: 90');
     expect(info).toHaveTextContent('選択合計: 0');
     expect(info).toHaveTextContent('あと90点不足しています');
+  });
+
+  it('describes meld points from desktop hand cards during the initial meld', async () => {
+    mobileState.isMobile = false;
+    mockExec.mockResolvedValue({ ...meldPhaseState, minMeld: 90 });
+    renderWithProviders(<SambaPage />);
+
+    await screen.findByTestId('sa-meld-points');
     const hand = document.querySelector('[data-tutorial="sa-player-hand"] button');
     expect(hand).toHaveAttribute('aria-describedby', 'sa-meld-points');
   });
 
   it('does not describe meld points after the initial meld is complete', async () => {
+    mobileState.isMobile = false;
     const stateAfterInitialMeld = makeSambaState({
       phase: 1,
       messageCode: 'samba.meldPhase',
@@ -211,6 +740,29 @@ describe('SambaPage', () => {
     const hand = document.querySelector('[data-tutorial="sa-player-hand"] button');
     expect(hand).not.toHaveAttribute('aria-describedby');
     expect(meldButton).not.toHaveAttribute('aria-describedby');
+  });
+
+  it('does not add meld-point announcements to mobile card labels before or after the initial meld', async () => {
+    const pointsLabel = '初回メルド必要点';
+    mockExec.mockResolvedValue(meldPhaseState);
+    const { unmount } = renderWithProviders(<SambaPage />);
+    const beforeCards = await screen.findAllByTestId('hand-row');
+    const beforeCard = beforeCards[0]?.querySelector('button');
+    expect(beforeCard).toBeInTheDocument();
+    expect(beforeCard?.getAttribute('aria-label')).not.toContain(pointsLabel);
+    unmount();
+
+    const stateAfterInitialMeld = makeSambaState({
+      phase: 1,
+      messageCode: 'samba.meldPhase',
+      players: [{ ...meldPhaseState.players[0], hasInitMeld: true }, ...meldPhaseState.players.slice(1)],
+    });
+    mockExec.mockResolvedValue(stateAfterInitialMeld);
+    renderWithProviders(<SambaPage />);
+    const afterCards = await screen.findAllByTestId('hand-row');
+    const afterCard = afterCards[0]?.querySelector('button');
+    expect(afterCard).toBeInTheDocument();
+    expect(afterCard?.getAttribute('aria-label')).not.toContain(pointsLabel);
   });
 
   it('announces that the initial-meld requirement is met when selected points reach the minimum', async () => {
@@ -281,6 +833,18 @@ describe('SambaPage', () => {
       'title',
       '上がるにはチームで完成メルドが2個必要です',
     );
+  });
+
+  it('keeps go-out progress in the play area during the discard phase', async () => {
+    mockExec.mockResolvedValue(discardPhaseState);
+    const { container } = renderWithProviders(<SambaPage />);
+    const progress = await screen.findByTestId('sa-go-out-progress');
+    const footer = await screen.findByTestId('game-footer-content');
+    const playArea = container.querySelector('.flex-1.overflow-y-auto');
+
+    expect(playArea).not.toBeNull();
+    expect(within(footer).queryByTestId('sa-go-out-progress')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('sa-go-out-progress')).toBe(progress);
   });
 
   it.each([
@@ -414,6 +978,7 @@ describe('SambaPage', () => {
     mockExec.mockResolvedValue(makeSambaState({ isFrozen: true }));
     renderWithProviders(<SambaPage />);
     await waitFor(() => expect(screen.getByTestId('sa-frozen-badge')).toBeInTheDocument());
+    expect(screen.getByTestId('sa-frozen-badge')).toHaveClass('shrink-0', 'whitespace-nowrap');
     expect(screen.getByTestId('sa-discard-pile')).toHaveClass(
       'bg-ds-surface',
       'border-ds-border-subtle',

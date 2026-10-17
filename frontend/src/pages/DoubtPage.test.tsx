@@ -94,6 +94,25 @@ beforeEach(() => {
 });
 
 describe('DoubtPage', () => {
+  it('keeps the play action in the fixed footer action row on the human turn', async () => {
+    renderWithProviders(<DoubtPage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: '出す' })).toBeInTheDocument();
+  });
+
+  it('keeps the hand in the footer and places supporting controls in the play area', async () => {
+    renderWithProviders(<DoubtPage />);
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const playArea = footerContent.closest('footer')?.previousElementSibling;
+
+    expect(playArea).not.toBeNull();
+    expect(footerContent.querySelector('[data-tutorial="dt-player-hand"]')).toBeInTheDocument();
+    expect(within(footerContent).queryByRole('button', { name: 'リセット' })).not.toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('doubt-kbd-shortcuts')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByRole('button', { name: 'リセット' })).toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('doubt-kbd-shortcuts')).toBeInTheDocument();
+  });
+
   it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<DoubtPage />);

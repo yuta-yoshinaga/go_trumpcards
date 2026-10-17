@@ -139,7 +139,7 @@ function KaiserPageContent() {
   );
   const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('kaiser', KAISER_PHASE_KEYS);
 
   // **フックは早期 return より上。**`if (!state)` の下に置くと、初回レンダー
@@ -213,6 +213,10 @@ function KaiserPageContent() {
   const bidValues: number[] = [];
   for (let v = state.minBid; v <= state.maxBid; v++) bidValues.push(v);
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.kaiser')}
@@ -233,6 +237,40 @@ function KaiserPageContent() {
       ) : (
         <>
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+            {isHumanBid && (
+              // While bidding the tutorial's "actions" step (which explains the 7–12 bid) points here.
+              <div className="mb-2 flex flex-wrap gap-2 items-center" data-tutorial="kaiser-actions">
+                <label className="text-ds-text-muted text-xs flex items-center gap-1" htmlFor="kaiser-contract-select">
+                  {t('contractLabel')}
+                  <select
+                    id="kaiser-contract-select"
+                    className="bg-black/30 text-ds-text-primary rounded px-1 min-h-[44px]"
+                    value={selectedContract}
+                    onChange={(e) => setContract(Number(e.target.value))}
+                  >
+                    {availableContracts.map((c) => (
+                      <option key={c.value} value={c.value}>
+                        {t(c.labelKey)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                {bidValues.map((v) => (
+                  <button
+                    key={`bid-${v}`}
+                    type="button"
+                    className={btnPrimary}
+                    onClick={() => exec('bid', { bid: v, contract: selectedContract })}
+                    disabled={loading}
+                  >
+                    {t('bidButton', { n: v })}
+                  </button>
+                ))}
+                <button type="button" className={btnWarning} onClick={() => exec('pass')} disabled={loading}>
+                  {t('passButton')}
+                </button>
+              </div>
+            )}
             <div className="text-ds-text-primary text-center mb-2" data-tutorial="kaiser-info">
               <span className="mr-4">{t('hand', { n: state.handNumber })}</span>
               <span className="mr-4">{t('target', { n: state.targetScore })}</span>
@@ -242,7 +280,11 @@ function KaiserPageContent() {
                   {state.contract === 0 && suitGlyph(state.trumpSuit)}
                 </span>
               )}
-              {state.kittySize > 0 && <span data-testid="kaiser-kitty">{t('kitty', { n: state.kittySize })}</span>}
+              {state.kittySize > 0 && (
+                <span className="whitespace-nowrap" data-testid="kaiser-kitty">
+                  {t('kitty', { n: state.kittySize })}
+                </span>
+              )}
             </div>
 
             {/* **相方が何点で入札し、誰がどこで降りたかは公開情報で、続けるか降りるかの
@@ -367,22 +409,13 @@ function KaiserPageContent() {
               </div>
             )}
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
+            {isMobile && messageBox}
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
-          </div>
-
-          {/* Footer */}
-          <GameFooter className={`${gameTheme.kaiser.footer} px-4 py-2.5`}>
             <SettingsPanel
               title={t('settings.title')}
               groups={[
@@ -400,6 +433,62 @@ function KaiserPageContent() {
               ]}
             />
             <p className="px-4 text-xs text-ds-text-muted">{t('settings.newHandNotice')}</p>
+          </div>
+
+          {/* Footer */}
+          <GameFooter
+            className={`${gameTheme.kaiser.footer} px-4 py-2.5`}
+            message={!isMobile && messageBox}
+            actions={
+              <div
+                className="flex flex-wrap gap-2 items-center"
+                data-tutorial={isHumanBid ? undefined : 'kaiser-actions'}
+              >
+                {needsTrump &&
+                  [1, 2, 3, 4].map((s) => (
+                    <button
+                      key={`trump-${s}`}
+                      type="button"
+                      className={btnPrimary}
+                      onClick={() => exec('trump', { suit: s })}
+                      disabled={loading}
+                    >
+                      {t('trumpButton', { suit: SUIT_GLYPHS[s] })}
+                    </button>
+                  ))}
+                {isHumanDeclarer && !needsTrump && (
+                  <button
+                    type="button"
+                    className={btnSuccess}
+                    onClick={handleDiscard}
+                    disabled={loading || selected.length !== KAISER_DISCARD_COUNT}
+                  >
+                    {t('discardButton')}
+                  </button>
+                )}
+                {isHumanPlay && (
+                  <button
+                    type="button"
+                    className={btnSuccess}
+                    onClick={handlePlay}
+                    disabled={loading || selected.length !== 1}
+                  >
+                    {t('playButton')}
+                  </button>
+                )}
+                {isHandEnd && !isGameEnd && (
+                  <button type="button" className={btnSuccess} onClick={() => exec('next')} disabled={loading}>
+                    {t('nextHand')}
+                  </button>
+                )}
+                {isGameEnd && (
+                  <span className="text-ds-text-primary text-sm font-semibold mr-1">
+                    {humanWon ? t('win') : t('lose')}
+                  </span>
+                )}
+              </div>
+            }
+          >
             <div className="mb-2" data-tutorial="kaiser-hand">
               <div className="text-ds-text-muted text-xs mb-1">{t('yourHand')}</div>
               <div className="flex flex-wrap gap-1">
@@ -458,91 +547,7 @@ function KaiserPageContent() {
             </label>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-            <div className="flex flex-wrap gap-2 items-center" data-tutorial="kaiser-actions">
-              {isHumanBid && (
-                <>
-                  <label
-                    className="text-ds-text-muted text-xs flex items-center gap-1"
-                    htmlFor="kaiser-contract-select"
-                  >
-                    {t('contractLabel')}
-                    <select
-                      id="kaiser-contract-select"
-                      className="bg-black/30 text-ds-text-primary rounded px-1 min-h-[44px]"
-                      value={selectedContract}
-                      onChange={(e) => setContract(Number(e.target.value))}
-                    >
-                      {availableContracts.map((c) => (
-                        <option key={c.value} value={c.value}>
-                          {t(c.labelKey)}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  {bidValues.map((v) => (
-                    <button
-                      key={`bid-${v}`}
-                      type="button"
-                      className={btnPrimary}
-                      onClick={() => exec('bid', { bid: v, contract: selectedContract })}
-                      disabled={loading}
-                    >
-                      {t('bidButton', { n: v })}
-                    </button>
-                  ))}
-                  <button type="button" className={btnWarning} onClick={() => exec('pass')} disabled={loading}>
-                    {t('passButton')}
-                  </button>
-                </>
-              )}
-
-              {needsTrump &&
-                [1, 2, 3, 4].map((s) => (
-                  <button
-                    key={`trump-${s}`}
-                    type="button"
-                    className={btnPrimary}
-                    onClick={() => exec('trump', { suit: s })}
-                    disabled={loading}
-                  >
-                    {t('trumpButton', { suit: SUIT_GLYPHS[s] })}
-                  </button>
-                ))}
-
-              {isHumanDeclarer && !needsTrump && (
-                <button
-                  type="button"
-                  className={btnSuccess}
-                  onClick={handleDiscard}
-                  disabled={loading || selected.length !== KAISER_DISCARD_COUNT}
-                >
-                  {t('discardButton')}
-                </button>
-              )}
-
-              {isHumanPlay && (
-                <button
-                  type="button"
-                  className={btnSuccess}
-                  onClick={handlePlay}
-                  disabled={loading || selected.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-
-              {isHandEnd && !isGameEnd && (
-                <button type="button" className={btnSuccess} onClick={() => exec('next')} disabled={loading}>
-                  {t('nextHand')}
-                </button>
-              )}
-
-              {isGameEnd && (
-                <span className="text-ds-text-primary text-sm font-semibold mr-1">
-                  {humanWon ? t('win') : t('lose')}
-                </span>
-              )}
-
+            <div className="flex flex-wrap gap-2 items-center">
               <GameResetButton
                 isGameEnd={isGameEnd}
                 onReset={handleManualReset}

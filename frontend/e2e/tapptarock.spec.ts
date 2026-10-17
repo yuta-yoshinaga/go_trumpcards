@@ -1,5 +1,12 @@
 import { expect, test } from '@playwright/test';
-import { isVisibleWithin, navigateTo, TIMEOUT_ACTION, TIMEOUT_TRANSITION, waitForLoaded } from './helpers';
+import {
+  clickHandCard,
+  isVisibleWithin,
+  navigateTo,
+  TIMEOUT_ACTION,
+  TIMEOUT_TRANSITION,
+  waitForLoaded,
+} from './helpers';
 
 /**
  * The hand, scoped to the player-hand container.
@@ -62,7 +69,7 @@ test.describe('TappTarock E2E', () => {
 
     const cards = hand(page);
     for (let i = 0; i < 6; i++) {
-      await cards.nth(i).click();
+      await clickHandCard(cards.nth(i));
     }
     await expect(discard).toBeEnabled();
     await discard.click();
@@ -90,7 +97,7 @@ test.describe('TappTarock E2E', () => {
     }
     if ((await playableCards(page).count()) === 0) return;
 
-    await playableCards(page).first().click();
+    await clickHandCard(playableCards(page).first());
     await waitForLoaded(page);
     await expect(hand(page)).toHaveCount(15, { timeout: TIMEOUT_TRANSITION });
   });

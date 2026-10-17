@@ -98,6 +98,13 @@ beforeEach(() => {
 });
 
 describe('SoloWhistPage', () => {
+  it('keeps each status item unbroken in the wrapping status row', async () => {
+    renderWithProviders(<SoloWhistPage />);
+    const row = await screen.findByText(/ラウンド/).then((el) => el.closest('[data-tutorial="solowhist-info"]'));
+    expect(row).toHaveClass('flex', 'flex-wrap');
+    expect(row?.querySelectorAll('span.whitespace-nowrap')).toHaveLength(4);
+  });
+
   it('shows the dealer badge only beside the dealer seat', async () => {
     renderWithProviders(<SoloWhistPage />);
     const badge = await screen.findByText('ディーラー', { selector: 'span' });
@@ -136,6 +143,16 @@ describe('SoloWhistPage', () => {
     expect(screen.getByTestId('bid-1')).toBeInTheDocument();
     expect(screen.getByTestId('bid-2')).toBeInTheDocument();
     expect(screen.getByTestId('bid-3')).toBeInTheDocument();
+  });
+
+  it('uses on-accent text on both colored bid options', async () => {
+    renderWithProviders(<SoloWhistPage />);
+    const pass = await screen.findByTestId('bid-0');
+    const misere = screen.getByTestId('bid-2');
+    expect(pass).not.toHaveClass('text-white');
+    expect(pass).toHaveClass('text-ds-text-on-accent');
+    expect(misere).not.toHaveClass('text-white');
+    expect(misere).toHaveClass('text-ds-text-on-accent');
   });
 
   it('shows every seat bid state, distinguishing unbid, pass, and localized contracts', async () => {

@@ -53,6 +53,7 @@
   "shedArea": "場",
   "shedEmpty": "まだ何も置かれていません。好きな札から始められます。",
   "penaltyLegend": "罰点（少ないほうが勝ち）",
+  "scoreSummary": "罰点",
   "penalty": "{{n}} 点",
   "dealPoints": "{{n}} 点",
   "history": {

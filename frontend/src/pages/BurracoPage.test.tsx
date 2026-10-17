@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { burracoApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -102,6 +102,40 @@ const gameEndState: BurracoResponse = {
 };
 
 describe('BurracoPage', () => {
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      message: 'Footer message test',
+      messageCode: 'test.untranslated',
+    });
+    renderWithProviders(<BurracoPage />);
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(within(footerMessage).getByRole('status')).toHaveTextContent('Footer message test');
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      message: 'Mobile play-area message',
+      messageCode: 'test.untranslated',
+    });
+    try {
+      renderWithProviders(<BurracoPage />);
+      await screen.findByText('Mobile play-area message');
+      const status = screen.getByText('Mobile play-area message').closest('[role="status"]');
+      if (!status) throw new Error('Mobile message must be inside its live region');
+      expect(status).toHaveTextContent('Mobile play-area message');
+      expect(status.closest('[data-testid="game-footer-message"]')).toBeNull();
+      expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     mockExec.mockResolvedValue(drawPhaseState);
@@ -126,7 +160,24 @@ describe('BurracoPage', () => {
   it('shows draw phase buttons', async () => {
     renderWithProviders(<BurracoPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '山札から引く' })).toBeInTheDocument());
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '山札から引く' }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeInTheDocument();
+  });
+
+  it('keeps the hand in the footer and places hand utilities in the play area', async () => {
+    renderWithProviders(<BurracoPage />);
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const playArea = footerContent.parentElement?.previousElementSibling;
+    expect(playArea).not.toBeNull();
+    expect(within(footerContent).getAllByTestId(/^bu-hand-card-/)).toHaveLength(basePlayers[0].cards.length);
+    expect(within(footerContent).queryByTestId('bu-sort-suit')).not.toBeInTheDocument();
+    expect(screen.getByTestId('bu-sort-suit')).toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('bu-sort-suit')).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('burraco-kbd-shortcuts')).not.toBeInTheDocument();
+    expect(screen.getByTestId('burraco-kbd-shortcuts')).toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('burraco-kbd-shortcuts')).toBeInTheDocument();
   });
 
   it('renders the discard pile viewer with all pile cards', async () => {
@@ -273,10 +324,127 @@ describe('BurracoPage', () => {
       'ポゼットは11枚の予備手札です。最初に手札をすべて出し切ったプレイヤーが新しい手札として獲得します。ポゼットを獲得しないと上がれません。';
 
     expect(count).toHaveAttribute('title', explanation);
-    // toHaveTextContent does not account for CSS, so sr-only text would pass this check too.
     expect(description).toHaveTextContent(explanation);
-    expect(description).not.toHaveClass('sr-only');
+    expect(screen.getByTestId('bu-rules')).not.toHaveAttribute('open');
+    expect(description).not.toBeVisible();
     expect(count).toHaveAttribute('aria-describedby', description.id);
+  });
+
+  it('keeps the score and discard pile details collapsed on mobile', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    renderWithProviders(<BurracoPage />);
+    expect(await screen.findByTestId('bu-score-table')).not.toHaveAttribute('open');
+    expect(screen.getByTestId('ca-discard-pile-viewer')).not.toHaveAttribute('open');
+    expect(screen.getByTestId('bu-score-table').querySelector('table')).not.toBeVisible();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
+  it('keeps own-team melds visible and collapses opponent melds on mobile', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    mockExec.mockResolvedValue({
+      ...meldPhaseState,
+      players: [
+        {
+          ...basePlayers[0],
+          melds: [{ cards: basePlayers[0].cards.slice(0, 3), isNatural: true, isBurraco: false, rank: 7 }],
+        },
+        {
+          ...basePlayers[1],
+          melds: [{ cards: basePlayers[0].cards.slice(0, 3), isNatural: true, isBurraco: false, rank: 7 }],
+        },
+      ],
+    });
+    renderWithProviders(<BurracoPage />);
+
+    const opponentMelds = await screen.findByText('CPU 1 - メルド (1)');
+    expect(opponentMelds.closest('details')).not.toHaveAttribute('open');
+    expect(
+      screen
+        .getByText('あなた - メルド')
+        .closest('[data-tutorial="ca-meld-area"]')
+        ?.querySelector('[data-testid="bu-meld-cards"]'),
+    ).toBeVisible();
+    expect(within(opponentMelds.closest('details') as HTMLElement).getByTestId('bu-meld-cards')).not.toBeVisible();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
+  it('opens opponent melds on desktop', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 });
+    mockExec.mockResolvedValue({
+      ...meldPhaseState,
+      players: [
+        basePlayers[0],
+        {
+          ...basePlayers[1],
+          melds: [{ cards: basePlayers[0].cards.slice(0, 3), isNatural: true, isBurraco: false, rank: 7 }],
+        },
+      ],
+    });
+    renderWithProviders(<BurracoPage />);
+
+    const opponentMelds = await screen.findByText('CPU 1 - メルド (1)');
+    expect(opponentMelds.closest('details')).toHaveAttribute('open');
+    expect(within(opponentMelds.closest('details') as HTMLElement).getByTestId('bu-meld-cards')).toBeVisible();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
+  it('keeps the state summary on one line and uses compact overlapping meld cards on mobile', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    mockExec.mockResolvedValue({
+      ...meldPhaseState,
+      players: [
+        {
+          ...basePlayers[0],
+          melds: [{ cards: basePlayers[0].cards.slice(0, 3), isNatural: true, isBurraco: false, rank: 7 }],
+        },
+        basePlayers[1],
+      ],
+    });
+    renderWithProviders(<BurracoPage />);
+
+    const summary = await screen.findByTestId('bu-pozzetto-count');
+    const summaryRow = summary.parentElement;
+    expect(summaryRow).toHaveClass('flex-wrap');
+    const meldCards = within(screen.getByTestId('bu-meld-cards')).getAllByTestId('animated-card');
+    expect(meldCards[0].querySelector('img')).toHaveStyle({ width: '36px' });
+    expect(meldCards[1].querySelector('img')).toHaveStyle({ width: '36px' });
+    expect(meldCards[1]).toHaveClass('-ml-[22px]');
+    expect(screen.getByTestId('bu-meld-cards')).toHaveClass('flex-nowrap');
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
+  it('renders the discard top and discard pile cards at 36px on mobile', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      discardPile: [
+        { design: 'SPADE', value: 3 },
+        { design: 'HEART', value: 7 },
+      ],
+      discardPileCount: 2,
+    });
+    renderWithProviders(<BurracoPage />);
+
+    expect((await screen.findByTestId('ca-discard-pile')).querySelector('img')).toHaveStyle({ width: '36px' });
+    fireEvent.click(within(screen.getByTestId('ca-discard-pile-viewer')).getByText(/捨て札の山を見る/));
+    const pileCards = await screen.findByTestId('ca-discard-pile-cards');
+    for (const card of within(pileCards).getAllByTestId('animated-card')) {
+      expect(card.querySelector('img')).toHaveStyle({ width: '36px' });
+    }
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
+  it('opens the score table on desktop', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    renderWithProviders(<BurracoPage />);
+    expect(await screen.findByTestId('bu-score-table')).toHaveAttribute('open');
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
   });
 
   it('shows HintTooltip when hint is enabled in draw phase', async () => {
@@ -357,6 +525,14 @@ describe('BurracoPage', () => {
     );
     // Pre-emptive freeze guide shown at the top of the draw controls.
     expect(screen.getByTestId('ca-draw-freeze-guide')).toHaveTextContent(/フリーズ中/);
+  });
+
+  it('keeps the frozen status label together while the status row can wrap', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, isFrozen: true });
+    renderWithProviders(<BurracoPage />);
+    const frozenLabel = await screen.findByText('[フリーズ中]');
+    expect(frozenLabel.parentElement).toHaveClass('flex', 'flex-wrap');
+    expect(frozenLabel).toHaveClass('shrink-0', 'whitespace-nowrap');
   });
 
   it('switches the reason to selectOneMore once the player selects one card', async () => {

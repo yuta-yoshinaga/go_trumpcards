@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, waitForLoaded } from './helpers';
+import { clickHandCard, navigateTo, waitForLoaded } from './helpers';
 
 test.describe('Machiavelli E2E', () => {
   test('loads, resets, and renders the human turn controls', async ({ page }) => {
@@ -34,9 +34,9 @@ test.describe('Machiavelli E2E', () => {
       if (cardCount > 0) {
         const firstCard = handCards.first();
         await expect(firstCard).toHaveAttribute('aria-pressed', 'false');
-        await firstCard.click();
+        await clickHandCard(firstCard);
         await expect(firstCard).toHaveAttribute('aria-pressed', 'true');
-        await firstCard.click();
+        await clickHandCard(firstCard);
         await expect(firstCard).toHaveAttribute('aria-pressed', 'false');
       }
 

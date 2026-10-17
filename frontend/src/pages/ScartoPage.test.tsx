@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { scartoApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -9,6 +9,18 @@ vi.mock('../api/gameApi', () => ({
   scartoApi: { exec: vi.fn() },
   actionLogApi: { scarto: vi.fn() },
 }));
+
+const mobileState = vi.hoisted(() => ({ isMobile: undefined as boolean | undefined }));
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useCardDimensions: () => {
+      const dimensions = actual.useCardDimensions();
+      return mobileState.isMobile === undefined ? dimensions : { ...dimensions, isMobile: mobileState.isMobile };
+    },
+  };
+});
 
 const mockExec = vi.mocked(scartoApi.exec);
 
@@ -145,11 +157,70 @@ const drawState = makeScartoState({
 const cpuTurnState = makeScartoState({ currentPlayerIdx: 1, isHumanTurn: false });
 
 beforeEach(() => {
+  mobileState.isMobile = undefined;
+  window.innerWidth = 375;
+  window.dispatchEvent(new Event('resize'));
   mockExec.mockReset();
   mockExec.mockResolvedValue(playPhaseState);
 });
 
 describe('ScartoPage', () => {
+  it('renders the game message in the footer message slot', async () => {
+    mobileState.isMobile = false;
+    mockExec.mockResolvedValue(makeScartoState({ message: 'Footer message location' }));
+    renderWithProviders(<ScartoPage />);
+
+    const messageSlot = await screen.findByTestId('game-footer-message');
+    expect(messageSlot).toHaveTextContent('Footer message location');
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    mockExec.mockResolvedValue(makeScartoState({ message: 'Footer message location' }));
+    mobileState.isMobile = true;
+    renderWithProviders(<ScartoPage />);
+
+    const messageText = await screen.findByText('Footer message location');
+    const message = messageText.closest('[role="status"]');
+    expect(message).toHaveTextContent('Footer message location');
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+  });
+
+  it('uses the taller mobile footer cap', async () => {
+    renderWithProviders(<ScartoPage />);
+    const content = await screen.findByTestId('game-footer-content');
+    expect(content.closest('footer')?.className).toContain('max-h-[60vh]');
+  });
+
+  it('stacks mobile hand rows with negative margins', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      window.dispatchEvent(new Event('resize'));
+      const source = playPhaseState;
+      const human = source.players.find((player) => player.isHuman);
+      if (!human) throw new Error('Expected the ScartoPage human player');
+      const cards = Array.from({ length: 17 }, (_, index) => human.cards[index % human.cards.length]);
+      mockExec.mockResolvedValue({
+        ...playPhaseState,
+        players: playPhaseState.players.map((player) =>
+          player.isHuman ? { ...player, cards, cardCount: cards.length } : player,
+        ),
+      });
+      renderWithProviders(<ScartoPage />);
+      const content = await screen.findByTestId('game-footer-content');
+      const hand = content.querySelector<HTMLElement>('[data-tutorial="scarto-player-hand"]');
+      expect(hand).not.toBeNull();
+      if (!hand) throw new Error('Expected the ScartoPage player hand');
+      await waitFor(() => expect(hand.querySelectorAll('[data-testid="hand-row"]').length).toBeGreaterThanOrEqual(2));
+      for (const row of Array.from(hand.querySelectorAll<HTMLElement>('[data-testid="hand-row"]')).slice(1)) {
+        expect(row.style.marginTop).toMatch(/^-/);
+      }
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<ScartoPage />);
@@ -182,8 +253,23 @@ describe('ScartoPage', () => {
     expect(screen.getAllByText('親（ディーラー）').length).toBeGreaterThan(0);
   });
 
+  it('keeps the hand in the footer and places hint and reset content in the play area', async () => {
+    renderWithProviders(<ScartoPage />);
+    await screen.findByRole('button', { name: 'D ♥' });
+
+    const footerContent = screen.getByTestId('game-footer-content');
+    const playArea = footerContent.parentElement?.previousElementSibling;
+    expect(playArea).not.toBeNull();
+    expect(within(footerContent).getByRole('button', { name: 'D ♥' })).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('scarto-hint-live')).not.toBeInTheDocument();
+    expect(within(footerContent).queryByRole('button', { name: 'リセット' })).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('scarto-hint-live')).toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByRole('button', { name: 'リセット' })).toBeInTheDocument();
+  });
+
   it('shows the card point reference during play without revealing CPU hands', async () => {
     renderWithProviders(<ScartoPage />);
+    fireEvent.click(await screen.findByText('ルール'));
     const reference = await screen.findByTestId('scarto-point-reference');
     expect(reference).toHaveTextContent('スート札のキング: 4.5点');
     expect(reference).toHaveTextContent('スート札のクイーン: 3.5点');
@@ -191,6 +277,7 @@ describe('ScartoPage', () => {
     expect(reference).toHaveTextContent('スート札のジャック: 1.5点');
     expect(reference).toHaveTextContent('ブー（切り札の1・21とエクスキューズ）: 各4.5点');
     expect(reference).toHaveTextContent('その他の札: 各0.5点');
+    fireEvent.click(screen.getByText('CPU対戦相手 (2)'));
     expect(screen.getByText(/CPU 1: 25枚/)).toBeInTheDocument();
     expect(screen.getByText(/CPU 2: 25枚/)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /CPU 1/ })).not.toBeInTheDocument();
@@ -206,6 +293,7 @@ describe('ScartoPage', () => {
       fireEvent.click(screen.getByRole('button', { name: label }));
     }
     const discardBtn = screen.getByRole('button', { name: /捨てる/ });
+    expect(within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: /捨てる/ })).toBe(discardBtn);
     expect(discardBtn).toBeEnabled();
     mockExec.mockClear();
     mockExec.mockResolvedValue(scartoPhaseState);
@@ -262,6 +350,7 @@ describe('ScartoPage', () => {
     const card = await screen.findByRole('button', { name: 'D ♥' });
     fireEvent.click(card);
     const playBtn = await screen.findByRole('button', { name: '出す' });
+    expect(within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '出す' })).toBe(playBtn);
     mockExec.mockClear();
     mockExec.mockResolvedValue(playPhaseState);
     fireEvent.click(playBtn);
@@ -463,13 +552,44 @@ describe('ScartoPage', () => {
   });
   // **エクスキューズだけが勝敗の外にいる。**出した札が誰の手にも渡らず自分の得点山に
   // 戻るという規則は実装されているのに説明が無く、cardPoints の内訳が読み解けなかった
-  // (#6514)。Minchiate/Tarocchini と同じ常設の注釈。
-  it('always explains that the excuse comes back to its owner', async () => {
+  // (#6514)。説明は「ルール」details に置く。
+  it('keeps the excuse rule available inside the rules disclosure', async () => {
     renderWithProviders(<ScartoPage />);
+    await screen.findByTestId('scarto-provisional');
+    const rules = screen.getByText('ルール').closest('details');
+    expect(rules).not.toHaveAttribute('open');
+    expect(screen.getByTestId('scarto-rules')).not.toBeVisible();
+    fireEvent.click(screen.getByText('ルール'));
     const note = await screen.findByTestId('scarto-excuse-note');
     // **キーではなく解決後の文言を見る** ── i18next は未知のキーをそのまま返す。
     expect(note).toHaveTextContent('エクスキューズは特別');
     expect(note.textContent).not.toContain('excuseReturnsNote');
+  });
+
+  it('keeps the CPU seat information collapsed on mobile', async () => {
+    renderWithProviders(<ScartoPage />);
+    await screen.findByTestId('scarto-provisional');
+    const cpuAccordion = screen.getByTestId('cpu-accordion');
+    const humanSeat = screen.getByTestId('scarto-human-seat');
+    expect(cpuAccordion).not.toHaveAttribute('open');
+    expect(humanSeat).toBeVisible();
+    expect(humanSeat).toHaveAttribute('data-tutorial', 'scarto-human-seat');
+    expect(humanSeat).toHaveAttribute('aria-label', 'あなた: 25枚 | 0トリック | 0点');
+    expect(cpuAccordion).not.toContainElement(humanSeat);
+    expect(humanSeat).toHaveTextContent('あなた: 25枚 | 0トリック | 0点');
+    expect(within(cpuAccordion).queryByText(/CPU 1: 25枚/)).not.toBeVisible();
+    expect(within(cpuAccordion).queryByText(/あなた:/)).not.toBeInTheDocument();
+    fireEvent.click(within(cpuAccordion).getByText('CPU対戦相手 (2)'));
+    expect(within(cpuAccordion).getByText(/CPU 1: 25枚/)).toBeVisible();
+  });
+
+  it('opens the rules and CPU information on desktop', async () => {
+    window.innerWidth = 1280;
+    window.dispatchEvent(new Event('resize'));
+    renderWithProviders(<ScartoPage />);
+    await screen.findByTestId('scarto-point-reference');
+    expect(screen.getByText('ルール').closest('details')).toHaveAttribute('open');
+    expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
   });
 
   // **催促は常設のライブ領域の中にある (#6880)。** フェーズ切り替えで現れる

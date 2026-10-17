@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { karnoffelApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -12,7 +13,7 @@ import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -110,11 +111,16 @@ function KarnoffelPageContent() {
   );
   const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
+  const breakpoint = useBreakpoint();
   const phaseNames = usePhaseNames('karnoffel', KARNOFFEL_PHASE_KEYS);
 
   if (!state)
     return <GameSkeleton gameKey="karnoffel" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 5 }} />;
+
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
 
   const human = state.players.find((p) => p.isHuman);
   // Hoisted so a seat-less state exercises the empty case rather than leaving it
@@ -129,6 +135,52 @@ function KarnoffelPageContent() {
 
   const playerLabel = (id: number, isHuman: boolean): string => (isHuman ? t('you') : t('cpu', { id }));
   const suitLabel = (s: number): string => t(`suitName.${s}`);
+  const rankForPosition = (baseRankKey: string | null, isLead: boolean) =>
+    baseRankKey === 'devil' ? (isLead ? 'devilLead' : 'devilFollow') : baseRankKey;
+  const renderPlayer = (p: (typeof state.players)[number]) => (
+    <div
+      key={`player-${p.id}`}
+      data-testid="karnoffel-player"
+      className={`grid grid-cols-[1fr_auto] items-center gap-x-1 rounded bg-black/30 p-1 text-xs ${
+        p.isCurrentTurn && !isGameEnd ? 'text-ds-warning' : 'text-ds-text-muted'
+      } ${p.isHuman ? 'font-semibold' : ''}`}
+    >
+      <span className="col-span-2 flex min-w-0 items-center gap-1 truncate">
+        <span className="truncate">{playerLabel(p.id, p.isHuman)}</span>
+        <span>({t('team', { n: p.team })})</span>
+        {p.isDealer && <span className="text-ds-accent">[{t('dealer')}]</span>}
+      </span>
+      <span className="col-span-2 row-start-2 flex items-center gap-1">
+        <span className="flex items-center gap-1">
+          {t('upCard')}:
+          {p.upCard ? (
+            (() => {
+              const upKey = karnoffelRankKey(p.upCard, state.chosenSuit);
+              return (
+                <span className="relative inline-block">
+                  <CardImage card={p.upCard} width={cardWidth} />
+                  {upKey && (
+                    <span
+                      data-testid={`karnoffel-up-rank-${p.id}`}
+                      className={`absolute left-0 right-0 bottom-0 rounded-b px-0.5 text-[9px] font-bold text-center truncate ${badgeWarningColors}`}
+                    >
+                      {t(`rankBadge.${upKey}`)}
+                    </span>
+                  )}
+                </span>
+              );
+            })()
+          ) : (
+            <span>-</span>
+          )}
+        </span>
+        <span className="ml-auto">{t('tricksWon', { n: p.tricksWon })}</span>
+        {!p.isHuman && p.cards.length === 0 && (
+          <span className="whitespace-nowrap">{t('hiddenHand', { count: p.cardCount })}</span>
+        )}
+      </span>
+    </div>
+  );
 
   const canPlay = (i: number) => state.validPlays.includes(i);
 
@@ -145,6 +197,52 @@ function KarnoffelPageContent() {
   };
 
   const result = state.lastResult;
+  const renderTrick = () =>
+    state.trick.length > 0 && (
+      <div
+        className={`mb-2 flex ${breakpoint === 'largeDesktop' ? 'flex-1' : ''} items-center gap-2`}
+        data-testid="karnoffel-trick"
+      >
+        <span className="text-ds-text-muted text-sm">{t('trick')}</span>
+        {state.trick.map((c, i) => {
+          const seatIdx = (state.trickLeaderIdx + i) % state.players.length;
+          const isHuman = state.players.some((p) => p.id === seatIdx && p.isHuman);
+          const name = t('seatPlayer', { idx: seatIdx, name: playerLabel(seatIdx, isHuman) });
+          const baseRankKey = karnoffelRankKey(c, state.chosenSuit);
+          const rankKey = rankForPosition(baseRankKey, i === 0);
+          const accessibleName = rankKey
+            ? `${name}${t('listSeparator')}${cardAlt(c)}${t('listSeparator')}${t(`rankBadge.${rankKey}`)}`
+            : `${name}${t('listSeparator')}${cardAlt(c)}`;
+          return (
+            <div key={`trick-${c.design}-${c.value}-${i}`} className="flex flex-col items-center">
+              <span className="mb-1 text-ds-text-muted text-xs" aria-hidden="true">
+                {name}
+              </span>
+              <span className="relative inline-block">
+                <CardImage card={c} width={cardWidth} ariaLabel={accessibleName} />
+                {rankKey && (
+                  <span
+                    aria-hidden="true"
+                    data-testid={`karnoffel-trick-rank-${i}`}
+                    className={`absolute left-0 right-0 bottom-0 rounded-b px-0.5 text-[9px] font-bold text-center truncate ${badgeWarningColors}`}
+                  >
+                    {t(`rankBadge.${rankKey}`)}
+                  </span>
+                )}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  const cpuAccordion = (
+    <CpuAccordion playerCount={state.players.filter((player) => !player.isHuman).length}>
+      {/* CPUの表向き札は全員ぶん見える。切札の根拠がここにある。 */}
+      <div className="grid grid-cols-2 gap-1 sm:grid-cols-4">
+        {state.players.filter((player) => !player.isHuman).map(renderPlayer)}
+      </div>
+    </CpuAccordion>
+  );
 
   return (
     <GamePageShell
@@ -173,35 +271,50 @@ function KarnoffelPageContent() {
               </span>
             </div>
 
-            <div className="mb-2 flex justify-center">
-              <label className="flex min-h-[44px] items-center gap-2 text-sm text-ds-text-primary">
-                <span>{t('targetHandsLabel')}</span>
-                <select
-                  aria-label={t('targetHandsLabel')}
-                  className="min-h-[44px] rounded border border-ds-border bg-ds-surface px-3 text-ds-text-primary"
-                  value={targetHands}
-                  onChange={(event) => setTargetHands(Number(event.target.value))}
-                >
-                  {Array.from({ length: 10 }, (_, index) => index + 1).map((count) => (
-                    <option key={count} value={count}>
-                      {count}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
+            <details className="mb-2 text-center text-ds-text-primary text-sm">
+              <summary className="cursor-pointer select-none" data-testid="karnoffel-settings-summary">
+                {tc('settings.title')}
+              </summary>
+              <div className="flex justify-center">
+                <label className="flex min-h-[44px] items-center gap-2 text-sm text-ds-text-primary">
+                  <span>{t('targetHandsLabel')}</span>
+                  <select
+                    aria-label={t('targetHandsLabel')}
+                    className="min-h-[44px] rounded border border-ds-border bg-ds-surface px-3 text-ds-text-primary"
+                    value={targetHands}
+                    onChange={(event) => setTargetHands(Number(event.target.value))}
+                  >
+                    {Array.from({ length: 10 }, (_, index) => index + 1).map((count) => (
+                      <option key={count} value={count}>
+                        {count}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+            </details>
 
             {/* The lowest face-up card decides the suit — not a turn-up. */}
-            <div className="mb-2 text-center text-ds-text-muted text-xs" data-testid="karnoffel-chosen-note">
-              {t('chosenNote')}
-            </div>
+            <details className="mb-2 text-center text-ds-text-muted text-xs">
+              <summary className="cursor-pointer select-none" data-testid="karnoffel-chosen-note-summary">
+                {t('chosenNoteSummary')}
+              </summary>
+              <div data-testid="karnoffel-chosen-note">{t('chosenNote')}</div>
+            </details>
 
             {/* The irregular ranking, which is the whole point of the game. */}
-            <div className="mb-2 p-2 rounded bg-black/20 text-xs" data-testid="karnoffel-ladder">
-              <div className="mb-1 text-ds-text-primary">{t('ladderTitle')}</div>
-              <div className="text-ds-text-primary">{t('ladderLine')}</div>
-              <div className="mt-1 text-ds-text-muted">{t('ladderNote')}</div>
-            </div>
+            <details className="mb-2 p-2 rounded bg-black/20 text-xs">
+              <summary
+                className="cursor-pointer select-none text-ds-text-primary"
+                data-testid="karnoffel-ladder-summary"
+              >
+                {t('ladderTitle')}
+              </summary>
+              <div data-testid="karnoffel-ladder">
+                <div className="text-ds-text-primary">{t('ladderLine')}</div>
+                <div className="mt-1 text-ds-text-muted">{t('ladderNote')}</div>
+              </div>
+            </details>
 
             {/* Score sheet */}
             <div className="mb-2 p-2 rounded bg-black/20 text-sm" data-testid="karnoffel-scores">
@@ -216,86 +329,28 @@ function KarnoffelPageContent() {
             </div>
 
             {/* Players */}
-            <div className="mb-2 p-2 rounded bg-black/30" data-tutorial="karnoffel-players">
+            <div className="mb-2" data-testid="karnoffel-players" data-tutorial="karnoffel-players">
               <div className="mb-1 text-ds-text-primary text-sm">{t('playersTitle')}</div>
-              {state.players.map((p) => (
-                <div
-                  key={`player-${p.id}`}
-                  data-testid="karnoffel-player"
-                  className={`text-sm py-0.5 flex items-center gap-2 ${
-                    p.isCurrentTurn && !isGameEnd ? 'text-ds-warning' : 'text-ds-text-muted'
-                  } ${p.isHuman ? 'font-semibold' : ''}`}
-                >
-                  <span>{playerLabel(p.id, p.isHuman)}</span>
-                  <span>({t('team', { n: p.team })})</span>
-                  {p.isDealer && <span className="text-ds-accent">[{t('dealer')}]</span>}
-                  {/* **表向きの札は全員ぶん見える。**切札の根拠がここにある。 */}
-                  {/* 上札自身が称号札のこともある。**手札にはバッジを出しているのに
-                      上札には出していない**と、同じ札が場所によって別の重みに見える (#6529)。 */}
-                  <span className="flex items-center gap-1">
-                    {t('upCard')}:
-                    {p.upCard ? (
-                      (() => {
-                        const upKey = karnoffelRankKey(p.upCard, state.chosenSuit);
-                        return (
-                          <span className="relative inline-block">
-                            <CardImage card={p.upCard} width={cardWidth} />
-                            {upKey && (
-                              <span
-                                data-testid={`karnoffel-up-rank-${p.id}`}
-                                className={`absolute left-0 right-0 bottom-0 rounded-b px-0.5 text-[9px] font-bold text-center truncate ${badgeWarningColors}`}
-                              >
-                                {t(`rankBadge.${upKey}`)}
-                              </span>
-                            )}
-                          </span>
-                        );
-                      })()
-                    ) : (
-                      <span>-</span>
-                    )}
-                  </span>
-                  <span>{t('tricksWon', { n: p.tricksWon })}</span>
-                  {!p.isHuman && p.cards.length === 0 && <span>{t('hiddenHand', { count: p.cardCount })}</span>}
-                </div>
-              ))}
-            </div>
-
-            {/* Trick */}
-            {state.trick.length > 0 && (
-              <div className="mb-2 flex items-center gap-2" data-testid="karnoffel-trick">
-                <span className="text-ds-text-muted text-sm">{t('trick')}</span>
-                {state.trick.map((c, i) => {
-                  const seatIdx = (state.trickLeaderIdx + i) % state.players.length;
-                  const isHuman = state.players.some((p) => p.id === seatIdx && p.isHuman);
-                  const name = t('seatPlayer', { idx: seatIdx, name: playerLabel(seatIdx, isHuman) });
-                  const baseRankKey = karnoffelRankKey(c, state.chosenSuit);
-                  const rankKey = baseRankKey === 'devil' ? (i === 0 ? 'devilLead' : 'devilFollow') : baseRankKey;
-                  const accessibleName = rankKey
-                    ? `${name}${t('listSeparator')}${cardAlt(c)}${t('listSeparator')}${t(`rankBadge.${rankKey}`)}`
-                    : `${name}${t('listSeparator')}${cardAlt(c)}`;
-                  return (
-                    <div key={`trick-${c.design}-${c.value}-${i}`} className="flex flex-col items-center">
-                      <span className="mb-1 text-ds-text-muted text-xs" aria-hidden="true">
-                        {name}
-                      </span>
-                      <span className="relative inline-block">
-                        <CardImage card={c} width={cardWidth} ariaLabel={accessibleName} />
-                        {rankKey && (
-                          <span
-                            aria-hidden="true"
-                            data-testid={`karnoffel-trick-rank-${i}`}
-                            className={`absolute left-0 right-0 bottom-0 rounded-b px-0.5 text-[9px] font-bold text-center truncate ${badgeWarningColors}`}
-                          >
-                            {t(`rankBadge.${rankKey}`)}
-                          </span>
-                        )}
-                      </span>
+              {breakpoint === 'largeDesktop' ? (
+                <>
+                  <div className="flex flex-wrap items-start gap-4" data-testid="karnoffel-seat-trick-row">
+                    <div className="grid grid-cols-1 gap-1" data-testid="karnoffel-human-player">
+                      {state.players.filter((player) => player.isHuman).map(renderPlayer)}
                     </div>
-                  );
-                })}
-              </div>
-            )}
+                    {renderTrick()}
+                  </div>
+                  {cpuAccordion}
+                </>
+              ) : (
+                <>
+                  <div className="grid grid-cols-2 gap-1 sm:grid-cols-4" data-testid="karnoffel-human-player">
+                    {state.players.filter((player) => player.isHuman).map(renderPlayer)}
+                  </div>
+                  {cpuAccordion}
+                  {renderTrick()}
+                </>
+              )}
+            </div>
 
             {/* Hand result */}
             {(isHandEnd || isGameEnd) && result && (
@@ -313,13 +368,7 @@ function KarnoffelPageContent() {
                 </div>
               </div>
             )}
-
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
+            {isMobile && messageBox}
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
@@ -329,19 +378,17 @@ function KarnoffelPageContent() {
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.karnoffel.footer} px-4 py-2.5`}>
+          <GameFooter
+            message={isMobile ? undefined : messageBox}
+            className={`${gameTheme.karnoffel.footer} px-4 py-2.5`}
+          >
             <div className="mb-2" data-tutorial="karnoffel-hand">
               <div className="text-ds-text-muted text-xs mb-1">{t('yourHand')}</div>
               <div className="flex flex-wrap gap-1">
                 {humanCards.map((c, i) => {
                   // The ladder text names the titled cards, but which card in hand
                   // holds a title depends on the suit chosen this deal (#4773).
-                  const rankKey =
-                    karnoffelRankKey(c, state.chosenSuit) === 'devil'
-                      ? state.trick.length === 0
-                        ? 'devilLead'
-                        : 'devilFollow'
-                      : karnoffelRankKey(c, state.chosenSuit);
+                  const rankKey = rankForPosition(karnoffelRankKey(c, state.chosenSuit), state.trick.length === 0);
                   const cardName = rankKey ? `${cardAlt(c)} (${t(`rankBadge.${rankKey}`)})` : cardAlt(c);
                   const accessibleName = isPlay
                     ? `${cardName}, ${t(canPlay(i) ? 'playableThisTurn' : 'notPlayableThisTurn')}`
@@ -376,12 +423,6 @@ function KarnoffelPageContent() {
             </div>
 
             <ErrorAlert message={error} onRetry={retry} />
-
-            {isHumanPlay && (
-              <div className="text-ds-text-muted text-xs mb-2" data-testid="karnoffel-play-notice">
-                {t('playNotice')}
-              </div>
-            )}
 
             <label className="flex items-center gap-1 text-ds-text-primary text-xs w-full justify-center cursor-pointer min-h-[44px]">
               <input

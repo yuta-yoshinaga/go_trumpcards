@@ -155,6 +155,8 @@ describe('LingerLongerPage', () => {
     const line = await screen.findByTestId('ll-stock');
     expect(line).toHaveTextContent('山札 残り30枚');
     expect(within(line).getByTestId('ll-discarded')).toHaveTextContent('場から消えた札 6枚');
+    expect(line).toHaveClass('flex-wrap');
+    expect(within(line).getByTestId('ll-discarded')).toHaveClass('whitespace-nowrap');
   });
 
   // 2 つの数字は独立に動く。片方をもう片方から描いている実装では落ちる。

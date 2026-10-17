@@ -93,6 +93,14 @@ beforeEach(() => {
 });
 
 describe('AllFoursPage', () => {
+  it('keeps the beg instruction in the message box without repeating it by the buttons', async () => {
+    renderWithProviders(<AllFoursPage />);
+
+    const instruction = 'ベグ（配り直しの要求）するか、このまま進めてください。';
+    expect(await screen.findByText(instruction)).toBeInTheDocument();
+    expect(screen.getAllByText(instruction)).toHaveLength(1);
+  });
+
   it('names the player score table and associates each column heading', async () => {
     renderWithProviders(<AllFoursPage />);
 

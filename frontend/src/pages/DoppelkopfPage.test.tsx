@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { doppelkopfApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -76,6 +76,43 @@ beforeEach(() => {
 });
 
 describe('DoppelkopfPage', () => {
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, message: 'Footer message test' });
+    renderWithProviders(<DoppelkopfPage />);
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(within(footerMessage).getByRole('status')).toHaveTextContent('Footer message test');
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      message: 'Mobile play-area message',
+      messageCode: 'test.untranslated',
+    });
+    try {
+      renderWithProviders(<DoppelkopfPage />);
+      await screen.findByText('Mobile play-area message');
+      const status = screen.getByText('Mobile play-area message').closest('[role="status"]');
+      if (!status) throw new Error('Mobile message must be inside its live region');
+      expect(status).toHaveTextContent('Mobile play-area message');
+      expect(status.closest('[data-testid="game-footer-message"]')).toBeNull();
+      expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it('keeps the human player summary outside the CPU accordion', async () => {
+    renderWithProviders(<DoppelkopfPage />);
+    const accordion = await screen.findByTestId('cpu-accordion');
+    expect(accordion).not.toContainElement(screen.getByText(/あなた.*チップ/));
+    expect(screen.getByText(/あなた.*チップ/)).toBeVisible();
+  });
+
   it('shows each player’s remaining hand count and refreshes it from the response', async () => {
     const initial = makeDoppelkopfState({
       players: makeDoppelkopfState().players.map((player, index) => ({ ...player, cardCount: 12 - index })),
@@ -98,9 +135,29 @@ describe('DoppelkopfPage', () => {
     mockExec.mockResolvedValue(makeDoppelkopfState({ roundScoreHistory: [[2, -2, 2, -2]] }));
     renderWithProviders(<DoppelkopfPage />);
     await waitFor(() => expect(screen.getByTestId('dk-round-history')).toBeInTheDocument());
-    expect(screen.getByTestId('dk-round-history')).toHaveTextContent('ラウンドごとのチップ増減');
+    expect(screen.getByTestId('dk-round-history-details').querySelector('summary')).toHaveTextContent(
+      'ラウンドごとのチップ増減',
+    );
     expect(screen.getByTestId('dk-round-history')).toHaveTextContent('+2');
     expect(screen.getByTestId('dk-round-history')).toHaveTextContent('-2');
+  });
+
+  it('collapses round history on mobile and opens it on desktop', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    mockExec.mockResolvedValue(makeDoppelkopfState({ roundScoreHistory: [[2, -2, 2, -2]] }));
+    const mobile = renderWithProviders(<DoppelkopfPage />);
+    const mobileHistory = await screen.findByTestId('dk-round-history-details');
+    expect(mobileHistory).not.toHaveAttribute('open');
+    expect(screen.getByTestId('dk-round-history')).not.toBeVisible();
+    mobile.unmount();
+
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    renderWithProviders(<DoppelkopfPage />);
+    const desktopHistory = await screen.findByTestId('dk-round-history-details');
+    expect(desktopHistory).toHaveAttribute('open');
+    expect(screen.getByTestId('dk-round-history')).toBeVisible();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
   });
   it('shows a known team label before the teams are fully revealed', async () => {
     mockExec.mockResolvedValue(
@@ -116,7 +173,34 @@ describe('DoppelkopfPage', () => {
     );
     renderWithProviders(<DoppelkopfPage />);
     await waitFor(() => expect(screen.getByText(/CPU 1 \[Re\]/)).toBeInTheDocument());
+    expect(screen.getByTestId('dk-human-player-info')).toHaveClass('flex', 'flex-wrap');
+    expect(screen.getAllByTestId('dk-cpu-player-info')).toHaveLength(3);
+    for (const row of screen.getAllByTestId('dk-cpu-player-info')) expect(row).toHaveClass('flex', 'flex-wrap');
+    expect(screen.getByTestId('dk-human-player-info').querySelector('.whitespace-nowrap')).toHaveTextContent(
+      /0.*トリック/,
+    );
     expect(screen.queryByText(/CPU 2 \[Kontra\]/)).not.toBeInTheDocument();
+  });
+
+  it('keeps the team and announcement status compact on mobile', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    mockExec.mockResolvedValue(
+      makeDoppelkopfState({
+        canAnnounce: false,
+        youAreRe: true,
+        reAnnounced: true,
+      }),
+    );
+    const { unmount } = renderWithProviders(<DoppelkopfPage />);
+    const teamStatus = await screen.findByText(/あなたのチーム:/);
+    const status = teamStatus.parentElement;
+    expect(status).toHaveClass('flex', 'flex-wrap');
+    expect(status?.querySelectorAll('span')).toHaveLength(2);
+    expect(status).toHaveTextContent('あなたのチーム: Re');
+    expect(status).toHaveTextContent('宣言済み: Re');
+    unmount();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
   });
 
   it('renders skeleton when no state', () => {
@@ -229,11 +313,31 @@ describe('DoppelkopfPage', () => {
     renderWithProviders(<DoppelkopfPage />);
     const legend = await screen.findByTestId('dk-trump-legend');
     expect(legend).toBeInTheDocument();
-    expect(legend).toContainHTML('details');
-    expect(screen.getByText('切り札序列')).toBeInTheDocument();
+    expect(legend).not.toHaveAttribute('open');
+    expect(screen.getByText('ルール')).toBeInTheDocument();
+    expect(screen.getByText('切り札序列')).not.toBeVisible();
+    fireEvent.click(screen.getByText('ルール'));
+    expect(screen.getByText('切り札序列')).toBeVisible();
     // The strongest and weakest trumps appear in the ordering.
     expect(screen.getByText('♥10')).toBeInTheDocument();
     expect(screen.getByText('♦9')).toBeInTheDocument();
+  });
+
+  it('collapses player statistics on mobile and opens them on desktop', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    const mobile = renderWithProviders(<DoppelkopfPage />);
+    const mobileAccordion = await screen.findByTestId('cpu-accordion');
+    expect(mobileAccordion).not.toHaveAttribute('open');
+    expect(screen.getByText(/CPU 1:/)).not.toBeVisible();
+    mobile.unmount();
+
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    renderWithProviders(<DoppelkopfPage />);
+    const desktopAccordion = await screen.findByTestId('cpu-accordion');
+    expect(desktopAccordion).toHaveAttribute('open');
+    expect(screen.getByText(/CPU 1:/)).toBeVisible();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
   });
 
   it('rings trump cards in the hand and leaves fail cards unmarked', async () => {

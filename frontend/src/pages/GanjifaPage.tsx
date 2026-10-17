@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import type { ganjifaApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -187,37 +188,34 @@ function GanjifaPageContent() {
           />
 
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            <div className="text-ds-text-primary text-center mb-2" data-tutorial="ganjifa-info">
-              <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
-              <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
-              <span className="mr-4">{t('trump', { suit: trumpLabel })}</span>
-              <span>{t('target', { rounds: state.config.targetRounds })}</span>
-            </div>
-
-            {dealer && (
-              <div className="text-center text-ds-text-muted text-sm mb-1" data-testid="ganjifa-dealer">
-                {t('dealer', { name: playerName(dealer.id, dealer.isHuman) })}
-              </div>
-            )}
-            <div className="text-center text-ds-text-muted text-sm mb-2" data-testid="ganjifa-trump-auto-note">
-              {t('trumpAutoNote')}
-            </div>
-
-            {/*
-              The rank direction is the whole game, so it gets its own line rather
-              than a tooltip: in a strong suit the 12 is the best card, in a weak
-              suit the 1 is, and the hand below is sorted by that order.
-            */}
             <div
-              className={`text-center mb-2 text-sm font-semibold ${trumpIsStrong ? 'text-ds-info' : 'text-ds-warning'}`}
-              data-testid="ganjifa-trump-group"
-              // **向きはラウンドごとに反転する。**色と文字でしか伝わっていないと、
-              // 支援技術の利用者は反転に気づかないまま前の並び順で打ってしまう。
-              // 領域は常設で中身だけが差し替わるので、変化がそのまま告知になる (#6449)。
-              role="status"
-              aria-live="polite"
+              className="flex flex-wrap items-center justify-center gap-x-2 gap-y-0 text-xs sm:text-base text-ds-text-primary text-center mb-2"
+              data-tutorial="ganjifa-info"
             >
-              {trumpIsStrong ? t('trumpGroupStrong') : t('trumpGroupWeak')}
+              <span className="sm:mr-4">{t('round', { n: state.roundNumber })}</span>
+              <span className="sm:mr-4">{t('trick', { n: state.trickNumber })}</span>
+              <span className="sm:mr-4">{t('trump', { suit: trumpLabel })}</span>
+              <span>{t('target', { rounds: state.config.targetRounds })}</span>
+              {/* 強さの向きがこのゲームの要 */}
+              <span
+                className={`text-xs font-semibold ${trumpIsStrong ? 'text-ds-info' : 'text-ds-warning'}`}
+                data-testid="ganjifa-trump-group"
+                role="status"
+                aria-live="polite"
+              >
+                {trumpIsStrong ? t('trumpGroupStrong') : t('trumpGroupWeak')}
+              </span>
+              {dealer && (
+                <span className="text-ds-text-muted text-sm" data-testid="ganjifa-dealer">
+                  {t('dealer', { name: playerName(dealer.id, dealer.isHuman) })}
+                </span>
+              )}
+              <details className="basis-full text-sm sm:ml-auto sm:basis-auto" open={!isMobile || undefined}>
+                <summary className="cursor-pointer select-none">{t('rules')}</summary>
+                <div className="text-ds-text-muted w-full" data-testid="ganjifa-trump-auto-note">
+                  {t('trumpAutoNote')}
+                </div>
+              </details>
             </div>
 
             <div className={lgTwoColGrid}>
@@ -238,36 +236,46 @@ function GanjifaPageContent() {
 
               {/* Right: info sidebar */}
               <div>
-                <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-                  {state.players.map((p) => (
-                    <div key={p.id} className="py-0.5">
-                      {playerName(p.id, p.isHuman)}: {t('score', { score: p.score })}
-                    </div>
-                  ))}
+                <div className="mb-2 px-2 py-1 rounded bg-black/30 text-ds-text-muted text-sm text-center sm:text-left">
+                  <div className="sm:hidden whitespace-nowrap" data-testid="ganjifa-mobile-scores">
+                    {t('scores')}{' '}
+                    {state.players.map((p, index) => (
+                      <span key={p.id}>
+                        {index > 0 && ' · '}
+                        {playerName(p.id, p.isHuman)} {p.score}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="hidden sm:flex sm:flex-col sm:gap-x-0">
+                    {state.players.map((p) => (
+                      <span key={p.id} className="py-0.5">
+                        {playerName(p.id, p.isHuman)}: {t('score', { score: p.score })}
+                      </span>
+                    ))}
+                  </div>
                 </div>
 
-                {isMobile ? (
-                  <details className="mb-2 p-2 rounded bg-black/30">
-                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('players')}</summary>
-                    <div className="mt-1">
-                      {state.players.map((p) => (
+                {humanPlayer && (
+                  <div className="mb-2 rounded bg-black/30 px-2 py-1 text-ds-text-muted text-sm">
+                    <div className="py-0.5" data-testid="ganjifa-human-player" data-tutorial="ganjifa-human-player">
+                      {playerName(humanPlayer.id, humanPlayer.isHuman)}: {t('cards', { count: humanPlayer.cardCount })}{' '}
+                      | {t('tricks', { count: humanPlayer.trickCount })}
+                    </div>
+                  </div>
+                )}
+
+                <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+                  <div className="mb-2 p-2 rounded bg-black/30">
+                    {state.players
+                      .filter((p) => !p.isHuman)
+                      .map((p) => (
                         <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
                           {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
                           {t('tricks', { count: p.trickCount })}
                         </div>
                       ))}
-                    </div>
-                  </details>
-                ) : (
-                  <div className="mb-2 p-2 rounded bg-black/30">
-                    {state.players.map((p) => (
-                      <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                        {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                        {t('tricks', { count: p.trickCount })}
-                      </div>
-                    ))}
                   </div>
-                )}
+                </CpuAccordion>
 
                 {(isRoundEnd || isGameEnd) && (
                   <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
@@ -302,28 +310,6 @@ function GanjifaPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
-          </div>
-
-          {/* Footer */}
-          <GameFooter className={`${gameTheme.ganjifa.footer} px-4 py-2.5`}>
-            {humanPlayer && (
-              <PlayerHandSection
-                humanPlayer={humanPlayer}
-                selectedCardIndices={selectedCardIndices}
-                toggleCard={toggleCard}
-                cardWidth={cardWidth}
-                isMobile={isMobile}
-                dataTutorialPrefix="ganjifa"
-                validIndices={canPlay ? state.playableIndices : undefined}
-                restrictedTooltip={t('mustFollowSuit')}
-                cardStatusFor={(idx) => {
-                  const rankDirection = ganjifaHandCardStatus(humanPlayer.cards[idx], t);
-                  const mustFollow = canPlay && state.currentTrick.length > 0 && !state.playableIndices.includes(idx);
-                  if (!mustFollow) return rankDirection;
-                  return [rankDirection, t('mustFollowSuit')].filter(Boolean).join(' — ');
-                }}
-              />
-            )}
 
             <ErrorAlert message={error} onRetry={retry} />
 
@@ -344,27 +330,7 @@ function GanjifaPageContent() {
             </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-            <div className="flex flex-wrap gap-2 items-center" data-tutorial="ganjifa-action-buttons">
-              {canPlay && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-              {isTrickEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                  {t('nextTrick')}
-                </button>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
+            <div className="flex flex-wrap gap-2 items-center">
               <GameResetButton
                 isGameEnd={isGameEnd}
                 onReset={handleManualReset}
@@ -373,6 +339,57 @@ function GanjifaPageContent() {
                 dataTutorial="ganjifa-reset-button"
               />
             </div>
+          </div>
+
+          {/* Footer */}
+          {/* Tarot-size hands outgrow the 45vh cap on phones (#11655). */}
+          <GameFooter
+            tall
+            className={`${gameTheme.ganjifa.footer} px-4 py-2.5`}
+            actions={
+              <div className="flex flex-wrap gap-2 items-center" data-tutorial="ganjifa-action-buttons">
+                {canPlay && (
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handlePlay}
+                    disabled={loading || selectedCardIndices.length !== 1}
+                  >
+                    {t('playButton')}
+                  </button>
+                )}
+                {isTrickEnd && (
+                  <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                    {t('nextTrick')}
+                  </button>
+                )}
+                {isRoundEnd && (
+                  <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                    {t('nextRound')}
+                  </button>
+                )}
+              </div>
+            }
+          >
+            {humanPlayer && (
+              <PlayerHandSection
+                humanPlayer={humanPlayer}
+                selectedCardIndices={selectedCardIndices}
+                toggleCard={toggleCard}
+                cardWidth={cardWidth}
+                isMobile={isMobile}
+                dataTutorialPrefix="ganjifa"
+                stackRows
+                validIndices={canPlay ? state.playableIndices : undefined}
+                restrictedTooltip={t('mustFollowSuit')}
+                cardStatusFor={(idx) => {
+                  const rankDirection = ganjifaHandCardStatus(humanPlayer.cards[idx], t);
+                  const mustFollow = canPlay && state.currentTrick.length > 0 && !state.playableIndices.includes(idx);
+                  if (!mustFollow) return rankDirection;
+                  return [rankDirection, t('mustFollowSuit')].filter(Boolean).join(' — ');
+                }}
+              />
+            )}
           </GameFooter>
         </>
       )}

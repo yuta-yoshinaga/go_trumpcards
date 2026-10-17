@@ -66,6 +66,46 @@ beforeEach(() => {
 });
 
 describe('TarneebPage', () => {
+  it('stacks mobile hand rows for the human player', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    try {
+      const state = makeState({
+        players: [
+          {
+            ...player(0, true, 0, 3, 4),
+            cards: Array.from({ length: 13 }, (_, i) => card('SPADE', (i % 13) + 1)),
+            cardCount: 13,
+          },
+          ...makeState().players.slice(1),
+        ],
+      });
+      mockExec.mockResolvedValue(state);
+      renderWithProviders(<TarneebPage />);
+      await screen.findByTestId('phase-indicator');
+      const hand = document.querySelector<HTMLElement>('[data-tutorial="tn-player-hand"]');
+      await waitFor(() => expect(hand?.querySelectorAll('[data-testid="hand-row"]').length).toBeGreaterThanOrEqual(2));
+      const rows = hand?.querySelectorAll<HTMLElement>('[data-testid="hand-row"]') ?? [];
+      for (const row of Array.from(rows).slice(1)) expect(row.style.marginTop).toMatch(/^-/);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it('keeps the hand in the footer and places hint and keyboard reference content in the play area', async () => {
+    const { container } = renderWithProviders(<TarneebPage />);
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const playArea = container.querySelector('.flex-1.overflow-y-auto');
+    expect(playArea).not.toBeNull();
+
+    expect(footerContent.querySelector('[data-tutorial="tn-player-hand"]')).not.toBeNull();
+    expect(footerContent.querySelector('[data-testid="tarneeb-hint-live"]')).toBeNull();
+    expect(playArea?.querySelector('[data-testid="tarneeb-hint-live"]')).not.toBeNull();
+    expect(footerContent.querySelector('[data-testid="tarneeb-kbd-shortcuts"]')).toBeNull();
+    expect(playArea?.querySelector('[data-testid="tarneeb-kbd-shortcuts"]')).not.toBeNull();
+  });
+
   it('shows the declared trump symbol and translated suit name in Japanese and English', async () => {
     const previousLanguage = i18n.language;
     mockExec.mockResolvedValue(makeState({ phase: TarneebPhase.PLAY, trumpSuit: 1 }));
@@ -223,6 +263,7 @@ describe('TarneebPage', () => {
     renderWithProviders(<TarneebPage />);
     // minBid 7 → buttons 7..13, none below 7.
     const bid9 = await screen.findByTestId('bid-option-9');
+    expect(within(screen.getByTestId('game-footer-actions')).getByTestId('bid-option-9')).toBeInTheDocument();
     expect(screen.queryByTestId('bid-option-6')).not.toBeInTheDocument();
     expect(screen.getByTestId('bid-option-13')).toBeInTheDocument();
     expect(bid9).toHaveClass('h-11', 'w-11');
@@ -384,5 +425,20 @@ describe('TarneebPage', () => {
       expect(region).not.toHaveTextContent('推奨トランプ');
       expect(region).not.toHaveTextContent('{{');
     });
+  });
+  it('fits the score table at large desktop widths', async () => {
+    const innerWidthSpy = vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(1280);
+    try {
+      const { container } = renderWithProviders(<TarneebPage />);
+      await waitFor(() =>
+        expect(container.querySelector('[data-tutorial="tn-score-table"] table')).toBeInTheDocument(),
+      );
+      const table = container.querySelector('[data-tutorial="tn-score-table"] table');
+      expect(table?.className).toContain('table-fixed');
+      expect(table?.className).not.toContain('min-w-[');
+      expect(table?.querySelector('tbody td')?.getAttribute('title')).toBe('あなたのチーム');
+    } finally {
+      innerWidthSpy.mockRestore();
+    }
   });
 });

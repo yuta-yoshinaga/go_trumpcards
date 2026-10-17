@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { continentalrummyApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -86,9 +86,12 @@ describe('ContinentalRummyPage', () => {
     renderWithProviders(<ContinentalRummyPage />);
     const history = await screen.findByTestId('cont-score-history');
     expect(history).toHaveTextContent('得点履歴');
+    expect(history.querySelector('thead tr:first-child th:first-child')).toHaveClass('whitespace-nowrap');
     expect(history.querySelectorAll('thead th')).toHaveLength(14);
     expect(history.querySelectorAll('tbody tr')).toHaveLength(2);
     expect(history).toHaveTextContent('累計');
+    expect(history.querySelector('thead tr:nth-child(2) th:nth-child(2)')).toHaveClass('whitespace-nowrap');
+    expect(history.querySelector('thead tr:nth-child(2) th:nth-child(3)')).toHaveClass('whitespace-nowrap');
     expect(Array.from(history.querySelectorAll('tbody tr')[0].children).map((cell) => cell.textContent)).toEqual([
       '1',
       '0',
@@ -127,6 +130,18 @@ describe('ContinentalRummyPage', () => {
   it('calls reset on mount', async () => {
     renderWithProviders(<ContinentalRummyPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('keeps only the hand in the footer content and places settings and utility controls in the play area', async () => {
+    renderWithProviders(<ContinentalRummyPage />);
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const playArea = screen.getByTestId('card-area');
+
+    expect(footerContent.querySelector('[data-tutorial="continentalrummy-player-hand"]')).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('continentalrummy-cpuDifficulty')).not.toBeInTheDocument();
+    expect(within(footerContent).queryByRole('button', { name: '棋譜を見る' })).not.toBeInTheDocument();
+    expect(within(playArea).getByTestId('continentalrummy-cpuDifficulty')).toBeInTheDocument();
+    expect(within(playArea).getByRole('button', { name: '棋譜を見る' })).toBeInTheDocument();
   });
 
   // **上がれる形は常に見えていること。** 5+5+5 がそこに無いのが肝。
@@ -208,6 +223,9 @@ describe('ContinentalRummyPage', () => {
     mockExec.mockResolvedValue(makeContinentalRummyState({ phase: 'draw', discardTop: undefined }));
     renderWithProviders(<ContinentalRummyPage />);
     const takeButton = await screen.findByRole('button', { name: '捨て札を取る' });
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '山札から引く' }),
+    ).toBeInTheDocument();
     expect(takeButton).toBeDisabled();
     expect(takeButton.querySelector('kbd')).not.toBeInTheDocument();
   });

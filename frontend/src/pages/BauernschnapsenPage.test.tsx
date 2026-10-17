@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, bauernschnapsenApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -173,6 +173,12 @@ describe('BauernschnapsenPage', () => {
     renderWithProviders(<BauernschnapsenPage />);
     await waitFor(() => expect(screen.getByTestId('bauernschnapsen-contract-controls')).toBeInTheDocument());
     expect(screen.getByTestId('bauernschnapsen-contract')).toHaveTextContent('宣言中');
+    const actions = screen.getByTestId('game-footer-actions');
+    expect(within(actions).queryByTestId('bauernschnapsen-contract-controls')).not.toBeInTheDocument();
+    expect(
+      within(screen.getByTestId('game-footer-content')).queryByTestId('bauernschnapsen-contract-controls'),
+    ).not.toBeInTheDocument();
+    expect(screen.getByTestId('bauernschnapsen-contract-controls')).toBeInTheDocument();
 
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: 'ベテル' }));
@@ -180,14 +186,26 @@ describe('BauernschnapsenPage', () => {
     expect(mockExec).toHaveBeenCalledWith('contract', 3, undefined, undefined, 1);
   });
 
+  it('keeps only the hand in the footer while contract choices and settings stay in the play area', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: BauernschnapsenPhase.CONTRACT, contract: 0, declarerIdx: -1 }));
+    renderWithProviders(<BauernschnapsenPage />);
+
+    const footer = await screen.findByTestId('game-footer-content');
+    const playArea = footer.parentElement?.parentElement?.querySelector(':scope > div.flex-1.overflow-y-auto');
+    expect(playArea).not.toBeNull();
+    expect(within(footer).getByRole('button', { name: '♠ K' })).toBeInTheDocument();
+    expect(within(footer).queryByTestId('bauernschnapsen-contract-controls')).not.toBeInTheDocument();
+    expect(within(playArea as HTMLElement).getByTestId('bauernschnapsen-contract-controls')).toBeInTheDocument();
+  });
+
   it('shows each contract condition and associates it with its contract buttons', async () => {
     mockExec.mockResolvedValue(makeState({ phase: BauernschnapsenPhase.CONTRACT, contract: 0, declarerIdx: -1 }));
     renderWithProviders(<BauernschnapsenPage />);
 
-    const controls = await screen.findByTestId('bauernschnapsen-contract-controls');
-    expect(controls).toHaveTextContent('切り札を決めて、自チームでカード点の過半 (61点以上) を取る');
-    expect(controls).toHaveTextContent('切り札を決めて、相手に1トリックも渡さない');
-    expect(controls).toHaveTextContent('切り札なしで、自分は1トリックも取らない');
+    await screen.findByTestId('bauernschnapsen-contract-controls');
+    expect(screen.getByText('切り札を決めて、自チームでカード点の過半 (61点以上) を取る')).toBeInTheDocument();
+    expect(screen.getByText('切り札を決めて、相手に1トリックも渡さない')).toBeInTheDocument();
+    expect(screen.getByText('切り札なしで、自分は1トリックも取らない')).toBeInTheDocument();
 
     for (const button of screen.getAllByRole('button', { name: /^(通常|同スート縛り) / })) {
       expect(button).toHaveAttribute(
@@ -342,5 +360,12 @@ describe('BauernschnapsenPage marriage badge accessibility', () => {
     renderWithProviders(<BauernschnapsenPage />);
     const cardBtn = await screen.findByRole('button', { name: '♠ K' });
     expect(cardBtn.getAttribute('aria-label')).not.toContain('マリッジ可能');
+  });
+
+  it('keeps the primary control in the pinned footer actions', async () => {
+    mockExec.mockResolvedValue(initialState);
+    renderWithProviders(<BauernschnapsenPage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: '出す' })).toBeInTheDocument();
   });
 });

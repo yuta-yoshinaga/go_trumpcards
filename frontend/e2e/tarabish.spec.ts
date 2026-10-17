@@ -13,9 +13,9 @@ test.describe('Tarabish E2E', () => {
     await expect(page.getByTestId('tb-round')).toBeVisible({ timeout: TIMEOUT_TRANSITION });
   });
 
-  // **切り札の序列はこの系統の肝。** 盤面から読めないので常時出ていること。
-  test('always states the trump order', async ({ page }) => {
+  test('shows the trump order on demand', async ({ page }) => {
     await navigateTo(page, '/tarabish');
+    await page.getByTestId('tb-order-details').locator('summary').click();
     await expect(page.getByTestId('tb-order')).toContainText(/Jass/, { timeout: TIMEOUT_TRANSITION });
     await expect(page.getByTestId('tb-order')).toContainText(/Menel/, { timeout: TIMEOUT_TRANSITION });
   });
@@ -50,6 +50,10 @@ test.describe('Tarabish E2E', () => {
   // 4 席すべてがチーム番号つきで出る。
   test('labels all four seats with their team', async ({ page }) => {
     await navigateTo(page, '/tarabish');
+    const cpuSeats = page.getByTestId('cpu-accordion');
+    if (!(await cpuSeats.evaluate((details) => (details as HTMLDetailsElement).open))) {
+      await cpuSeats.locator('summary').click();
+    }
     for (const id of [0, 1, 2, 3]) {
       await expect(page.getByTestId(`tb-seat-${id}`)).toContainText(/T[01]/, { timeout: TIMEOUT_TRANSITION });
     }

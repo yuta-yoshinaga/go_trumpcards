@@ -1,10 +1,17 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { biribaApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BiribaPlayerData, BiribaResponse } from '../types/card';
 import { BiribaPage } from './BiribaPage';
+
+const mobileState = vi.hoisted(() => ({ isMobile: false }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+}));
 
 vi.mock('../api/gameApi', () => ({
   biribaApi: { exec: vi.fn() },
@@ -108,9 +115,61 @@ const gameEndState: BiribaResponse = {
 };
 
 describe('BiribaPage', () => {
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      message: 'Footer message test',
+      messageCode: 'test.untranslated',
+    });
+    renderWithProviders(<BiribaPage />);
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(within(footerMessage).getByRole('status')).toHaveTextContent('Footer message test');
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      message: 'Mobile play-area message',
+      messageCode: 'test.untranslated',
+    });
+    try {
+      renderWithProviders(<BiribaPage />);
+      await screen.findByText('Mobile play-area message');
+      const status = screen.getByText('Mobile play-area message').closest('[role="status"]');
+      if (!status) throw new Error('Mobile message must be inside its live region');
+      expect(status).toHaveTextContent('Mobile play-area message');
+      expect(status.closest('[data-testid="game-footer-message"]')).toBeNull();
+      expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
+    mobileState.isMobile = false;
     mockExec.mockResolvedValue(drawPhaseState);
+  });
+
+  it('collapses reference details on mobile and keeps them open on desktop', async () => {
+    mobileState.isMobile = true;
+    renderWithProviders(<BiribaPage />);
+    const pileViewer = await screen.findByTestId('ca-discard-pile-viewer');
+    expect(pileViewer).not.toHaveAttribute('open');
+    expect(screen.queryByTestId('ca-discard-pile-cards')).not.toBeVisible();
+    const scoreDetails = document.querySelector('table')?.closest('details');
+    expect(scoreDetails).not.toHaveAttribute('open');
+    expect(scoreDetails?.querySelector('table')).not.toBeVisible();
+
+    cleanup();
+    mobileState.isMobile = false;
+    renderWithProviders(<BiribaPage />);
+    expect(await screen.findByTestId('ca-discard-pile-viewer')).toHaveAttribute('open');
+    expect(document.querySelector('table')?.closest('details')).toHaveAttribute('open');
   });
 
   it('shows every round score component and labels zero values at round end', async () => {
@@ -160,7 +219,30 @@ describe('BiribaPage', () => {
   it('shows draw phase buttons', async () => {
     renderWithProviders(<BiribaPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '山札から引く' })).toBeInTheDocument());
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '山札から引く' }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeInTheDocument();
+  });
+
+  it('keeps the hand in the footer and places its other controls in the play area', async () => {
+    renderWithProviders(<BiribaPage />);
+    const footer = await screen.findByTestId('game-footer-content');
+    const playArea = footer.closest('footer')?.previousElementSibling as HTMLElement;
+
+    mockExec.mockRejectedValueOnce(new Error('draw failed'));
+    fireEvent.click(within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '山札から引く' }));
+    const alert = await within(playArea).findByRole('alert');
+
+    expect(within(footer).getByTestId('bu-hand-card-0')).toBeInTheDocument();
+    expect(within(footer).queryByTestId('bu-sort-rank')).not.toBeInTheDocument();
+    expect(within(footer).queryByTestId('biriba-kbd-shortcuts')).not.toBeInTheDocument();
+    expect(playArea.querySelector('[data-testid="bu-sort-rank"]')).not.toBeNull();
+    expect(playArea.querySelector('[data-testid="biriba-kbd-shortcuts"]')).not.toBeNull();
+    expect(playArea.contains(alert)).toBe(true);
+    expect(within(playArea).getByRole('button', { name: 'リセット' })).toBeInTheDocument();
+    expect(within(footer).queryByRole('alert')).not.toBeInTheDocument();
+    expect(within(footer).queryByRole('button', { name: 'リセット' })).not.toBeInTheDocument();
   });
 
   it('renders the discard pile viewer with all pile cards', async () => {
@@ -191,7 +273,7 @@ describe('BiribaPage', () => {
     expect(screen.getByTestId('ca-discard-pile-viewer')).not.toHaveAttribute('open');
   });
 
-  it('opens the discard pile viewer again on the next draw phase', async () => {
+  it('keeps the discard pile viewer closed through later draw phases', async () => {
     renderWithProviders(<BiribaPage />);
     const viewer = await screen.findByTestId('ca-discard-pile-viewer');
     fireEvent.click(viewer.querySelector('summary') as HTMLElement);
@@ -209,7 +291,7 @@ describe('BiribaPage', () => {
     fireEvent.click(document.querySelector('[data-tutorial="ca-player-hand"] button') as HTMLElement);
     fireEvent.click(screen.getByRole('button', { name: '捨てる' }));
 
-    await waitFor(() => expect(screen.getByTestId('ca-discard-pile-viewer')).toHaveAttribute('open'));
+    await waitFor(() => expect(screen.getByTestId('ca-discard-pile-viewer')).not.toHaveAttribute('open'));
   });
 
   it('shows an empty message when the discard pile is empty', async () => {
@@ -392,10 +474,12 @@ describe('BiribaPage', () => {
   it('shows 次のゲーム at game-end and fires reset directly (no confirm)', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<BiribaPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+    const footer = await screen.findByTestId('game-footer-content');
+    const playArea = within(footer.closest('footer')?.previousElementSibling as HTMLElement);
+    await waitFor(() => expect(playArea.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
 
     mockExec.mockClear();
-    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
+    fireEvent.click(playArea.getByRole('button', { name: '次のゲーム' }));
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
         cpuDifficulty: 1,
@@ -421,6 +505,14 @@ describe('BiribaPage', () => {
     );
     // Pre-emptive freeze guide shown at the top of the draw controls.
     expect(screen.getByTestId('ca-draw-freeze-guide')).toHaveTextContent(/フリーズ中/);
+  });
+
+  it('keeps the frozen status label together while the status row can wrap', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, isFrozen: true });
+    renderWithProviders(<BiribaPage />);
+    const frozenLabel = await screen.findByText('[フリーズ中]');
+    expect(frozenLabel.parentElement).toHaveClass('flex', 'flex-wrap');
+    expect(frozenLabel).toHaveClass('shrink-0', 'whitespace-nowrap');
   });
 
   it('switches the reason to selectOneMore once the player selects one card', async () => {

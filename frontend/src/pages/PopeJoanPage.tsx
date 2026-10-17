@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { popejoanApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardFan } from '../components/CardFan';
 import { CardBack } from '../components/CardImage';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -15,7 +17,7 @@ import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
@@ -43,6 +45,7 @@ const PJ_TUTORIAL_STEPS: TutorialStep[] = [
 export const PopeJoanPage = withTutorial(PopeJoanPageContent, 'popejoan', PJ_TUTORIAL_STEPS);
 
 function PopeJoanPageContent() {
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('popejoan');
   const game = usePopeJoanGame();
@@ -141,6 +144,36 @@ function PopeJoanPageContent() {
         }))
     : [];
   const isHumanTurn = !ended && playing && state.currentPlayerIdx === 0;
+  const renderHandCard = (card: PopeJoanResponse['players'][number]['cards'][number], i: number) => {
+    // 並びに従う義務がある。出せない札を押せてしまうと、サーバに弾かれて初めて分かる (#4934)。
+    // 空リストは「情報が無い」なので制限しない。
+    const restricting = isHumanTurn ? (state.validPlays?.length ?? 0) > 0 : false;
+    const canPlay = !restricting || state.validPlays.includes(i);
+    return (
+      <button
+        key={`hand-${i.toString()}`}
+        type="button"
+        data-hint-action="play"
+        data-unplayable={restricting && !canPlay ? 'true' : undefined}
+        aria-pressed={handIdx === i}
+        disabled={restricting && !canPlay}
+        aria-disabled={!isHumanTurn || !canPlay}
+        onClick={() => {
+          if (!isHumanTurn) return;
+          setHandIdx(handIdx === i ? null : i);
+        }}
+        className={[
+          'rounded transition-transform',
+          restricting && !canPlay ? 'opacity-40' : '',
+          isHumanTurn ? 'hover:-translate-y-2' : 'opacity-60',
+          handIdx === i ? 'ring-2 ring-ds-accent -translate-y-2' : '',
+          frontendHintEnabled && state.hint?.cardIndex === i ? 'ring-2 ring-ds-warning' : '',
+        ].join(' ')}
+      >
+        <AnimatedCard card={card} width={cardWidth} draggable={false} />
+      </button>
+    );
+  };
 
   const phaseName = ended ? t('phase.end') : dealOver ? t('phase.dealEnd') : t('phase.play');
   const trumpCards = (human?.cards ?? []).filter((card) => card.design === suitName(state.trumpSuit));
@@ -185,41 +218,48 @@ function PopeJoanPageContent() {
             {/* Permanent, not tutorial-only: "only trumps pay" and "the 8D is
                 out, so a run always dies at the 7" are what a player gets
                 wrong. */}
-            <div className="text-center text-xs text-ds-warning mb-3 font-medium" data-tutorial="pj-rule">
-              {t('ruleLine')}
-            </div>
+            <details className="mb-2 p-2 rounded bg-ds-surface" data-testid="pj-rule-details">
+              <summary className="cursor-pointer select-none text-center text-xs text-ds-warning font-medium">
+                {t('rulesLabel')}
+              </summary>
+              <p className="mt-2 text-center text-xs text-ds-warning" data-tutorial="pj-rule">
+                {t('ruleLine')}
+              </p>
+            </details>
 
-            <div className="text-center mb-3">
-              <div className="text-game-text-muted text-xs mb-1">{t('turnUp')}</div>
-              {state.turnUp ? (
-                <div className="flex justify-center">
-                  <AnimatedCard card={state.turnUp} width={cardWidth} draggable={false} />
-                </div>
-              ) : (
-                <span className="text-game-text-muted text-xs">—</span>
-              )}
-              <div className="text-game-text-muted text-xs" data-testid="popejoan-targets">
-                {t('targets')}: {hasMatrimony ? t('target.matrimony') : ''}
-                {hasMatrimony && hasIntrigue ? ' / ' : ''}
-                {hasIntrigue ? t('target.intrigue') : !hasMatrimony ? t('target.none') : ''}
-              </div>
-            </div>
-
-            {/* **8 区画は毎回すべて出す。**膨らんでいる区画がそのディールの
-                狙いどころそのものになる。 */}
-            <div className="mb-4" data-tutorial="pj-board">
-              <div className="text-game-text-muted text-xs mb-1 text-center">{t('board')}</div>
-              <div className="flex gap-2 justify-center flex-wrap">
-                {state.compartments.map((comp) => (
-                  <div
-                    key={`comp-${comp.name}`}
-                    data-testid="popejoan-compartment"
-                    className="rounded px-2 py-1 text-xs ring-1 ring-ds-border text-center min-w-14"
-                  >
-                    <div className="text-ds-text-muted">{t(`compartment.${comp.name}`)}</div>
-                    <div className="font-medium">{comp.chips}</div>
+            <div className={isLargeDesktop ? 'mb-3 flex items-start justify-center gap-8' : ''}>
+              <div className="text-center mb-3">
+                <div className="text-game-text-muted text-xs mb-1">{t('turnUp')}</div>
+                {state.turnUp ? (
+                  <div className="flex justify-center">
+                    <AnimatedCard card={state.turnUp} width={cardWidth} draggable={false} />
                   </div>
-                ))}
+                ) : (
+                  <span className="text-game-text-muted text-xs">—</span>
+                )}
+                <div className="text-game-text-muted text-xs" data-testid="popejoan-targets">
+                  {t('targets')}: {hasMatrimony ? t('target.matrimony') : ''}
+                  {hasMatrimony && hasIntrigue ? ' / ' : ''}
+                  {hasIntrigue ? t('target.intrigue') : !hasMatrimony ? t('target.none') : ''}
+                </div>
+              </div>
+
+              {/* **8 区画は毎回すべて出す。**膨らんでいる区画がそのディールの
+                狙いどころそのものになる。 */}
+              <div className="mb-4" data-tutorial="pj-board">
+                <div className="text-game-text-muted text-xs mb-1 text-center">{t('board')}</div>
+                <div className="flex gap-2 justify-center flex-wrap">
+                  {state.compartments.map((comp) => (
+                    <div
+                      key={`comp-${comp.name}`}
+                      data-testid="popejoan-compartment"
+                      className="rounded px-2 py-1 text-xs ring-1 ring-ds-border text-center min-w-14"
+                    >
+                      <div className="text-ds-text-muted">{t(`compartment.${comp.name}`)}</div>
+                      <div className="font-medium">{comp.chips}</div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -260,35 +300,37 @@ function PopeJoanPageContent() {
               </section>
             )}
 
-            <div className="flex justify-center gap-4 mb-3 flex-wrap">
-              {opponents.map((o) => (
-                <div key={`opp-${o.id.toString()}`} className="text-center">
-                  <div className="text-game-text-muted text-xs mb-1">
-                    {playing
-                      ? t('seat', { name: `CPU${o.id.toString()}`, chips: o.chips, n: o.cardCount })
-                      : t('seatEnded', { name: `CPU${o.id.toString()}`, chips: o.chips })}
-                    {/* **ディーラーは区画の種銭を負担し、めくり札が Pope/A/K/Q/J なら
+            <CpuAccordion playerCount={opponents.length} openOnDesktop={false}>
+              <div className="flex flex-wrap sm:flex-nowrap justify-center gap-4 mb-3">
+                {opponents.map((o) => (
+                  <div key={`opp-${o.id.toString()}`} className="text-center">
+                    <div className="text-game-text-muted text-xs mb-1">
+                      {playing
+                        ? t('seat', { name: `CPU${o.id.toString()}`, chips: o.chips, n: o.cardCount })
+                        : t('seatEnded', { name: `CPU${o.id.toString()}`, chips: o.chips })}
+                      {/* **ディーラーは区画の種銭を負担し、めくり札が Pope/A/K/Q/J なら
                         その区画を総取りする。**毎ディール回るので印を付けないと追えない (#6520)。 */}
-                    {o.id === state.dealerIdx && (
-                      <span data-testid={`pj-dealer-${o.id.toString()}`}> · {t('dealerBadge')}</span>
-                    )}
-                    {/* Pope 保持者は支払いを免除されるので、伏せ手でも出す。 */}
-                    {o.holdsPope && ` · ${t('holdsPope')}`}
-                  </div>
-                  {playing && (
-                    <div
-                      className="flex gap-1 justify-center flex-wrap"
-                      role="img"
-                      aria-label={t('opponentHandAriaLabel', { name: `CPU${o.id.toString()}`, n: o.cardCount })}
-                    >
-                      {Array.from({ length: o.cardCount }, (_, i) => (
-                        <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
-                      ))}
+                      {o.id === state.dealerIdx && (
+                        <span data-testid={`pj-dealer-${o.id.toString()}`}> · {t('dealerBadge')}</span>
+                      )}
+                      {/* Pope 保持者は支払いを免除されるので、伏せ手でも出す。 */}
+                      {o.holdsPope && ` · ${t('holdsPope')}`}
                     </div>
-                  )}
-                </div>
-              ))}
-            </div>
+                    {playing && (
+                      <div
+                        className="flex gap-1 justify-center flex-wrap"
+                        role="img"
+                        aria-label={t('opponentHandAriaLabel', { name: `CPU${o.id.toString()}`, n: o.cardCount })}
+                      >
+                        {Array.from({ length: o.cardCount }, (_, i) => (
+                          <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </CpuAccordion>
 
             {state.playedPile.length > 0 && (
               <div className="text-center mb-3">
@@ -325,36 +367,13 @@ function PopeJoanPageContent() {
                 )}
                 {human?.holdsPope && ` · ${t('holdsPope')}`}
               </div>
-              <div className="flex gap-1 justify-center flex-wrap">
-                {(human?.cards ?? []).map((card, i) => {
-                  // **並びに従う義務がある。**出せない札を押せてしまうと、
-                  // サーバに弾かれて初めて分かる (#4934)。空リストは「情報が
-                  // 無い」なので制限しない。
-                  const restricting = isHumanTurn && (state.validPlays?.length ?? 0) > 0;
-                  const canPlay = !restricting || state.validPlays.includes(i);
-                  return (
-                    <button
-                      key={`hand-${i.toString()}`}
-                      type="button"
-                      data-hint-action="play"
-                      data-unplayable={restricting && !canPlay ? 'true' : undefined}
-                      aria-pressed={handIdx === i}
-                      disabled={restricting && !canPlay}
-                      aria-disabled={!isHumanTurn || !canPlay}
-                      onClick={() => isHumanTurn && canPlay && setHandIdx(handIdx === i ? null : i)}
-                      className={[
-                        'rounded transition-transform',
-                        restricting && !canPlay ? 'opacity-40' : '',
-                        isHumanTurn ? 'hover:-translate-y-2' : 'opacity-60',
-                        handIdx === i ? 'ring-2 ring-ds-accent -translate-y-2' : '',
-                        frontendHintEnabled && state.hint?.cardIndex === i ? 'ring-2 ring-ds-warning' : '',
-                      ].join(' ')}
-                    >
-                      <AnimatedCard card={card} width={cardWidth} draggable={false} />
-                    </button>
-                  );
-                })}
-              </div>
+              {isLargeDesktop ? (
+                <CardFan itemWidth={cardWidth} data-testid="pj-card-fan">
+                  {(human?.cards ?? []).map(renderHandCard)}
+                </CardFan>
+              ) : (
+                <div className="flex gap-1 justify-center flex-wrap">{(human?.cards ?? []).map(renderHandCard)}</div>
+              )}
               {isHumanTurn && (
                 <div className="text-[10px] text-ds-text-muted mt-1">
                   {state.runSuit < 0 ? t('selectLead') : t('selectFollow')}

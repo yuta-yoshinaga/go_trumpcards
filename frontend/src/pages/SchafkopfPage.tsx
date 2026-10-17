@@ -276,6 +276,41 @@ function SchafkopfPageContent() {
               <span>{t('contractLabel', { contract: contractLabel })}</span>
             </div>
 
+            {canPick && (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 items-center" data-tutorial="sh-action-buttons">
+                {/* Only the contracts that outrank the standing bid: a button
+                  the server is bound to refuse is worse than no button. */}
+                {beatable.includes(CONTRACT_RUFSPIEL) && (
+                  <button type="button" className={btnPrimary} onClick={handlePick} disabled={loading}>
+                    {t('pickButton')}
+                  </button>
+                )}
+                {beatable.includes(CONTRACT_WENZ) && (
+                  <button type="button" className={btnPrimary} onClick={() => handleDeclare(1)} disabled={loading}>
+                    {t('wenzButton')}
+                  </button>
+                )}
+                {/* Solo names its own trump, so each suit is its own button
+                  rather than a declare-then-choose second step. */}
+                {beatable.includes(CONTRACT_SOLO) &&
+                  SOLO_SUITS.map((suit) => {
+                    const suitName = t(`suit.${SUIT_KEYS[suit]}`);
+                    return (
+                      <button
+                        key={`solo-${suit}`}
+                        type="button"
+                        className={btnPrimary}
+                        onClick={() => handleDeclare(2, suit)}
+                        disabled={loading}
+                        aria-label={t('soloButtonAriaLabel', { suit: suitName })}
+                      >
+                        {t('soloButton', { suit: suitName })}
+                      </button>
+                    );
+                  })}
+              </div>
+            )}
+
             {(isPlayPhase || isTrickEnd) && (
               <div className="mb-2 text-center text-sm text-ds-text-muted" data-testid="schafkopf-round-points">
                 {t(state.roundPickerPointsTeamTotal ? 'roundProgress.pickerPoints' : 'roundProgress.pickerOnlyPoints', {
@@ -397,25 +432,6 @@ function SchafkopfPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
-          </div>
-
-          {/* Footer */}
-          <GameFooter className={`${gameTheme.schafkopf.footer} px-4 py-2.5`}>
-            {humanPlayer && (
-              <PlayerHandSection
-                humanPlayer={humanPlayer}
-                selectedCardIndices={selectedCardIndices}
-                toggleCard={toggleCard}
-                cardWidth={cardWidth}
-                isMobile={isMobile}
-                dataTutorialPrefix="sh"
-                validIndices={canPlay ? state.playableIndices : undefined}
-                // 出せる札にリングを出す。validIndices は出せない札を伏せる
-                // だけで、どれが出せるかを目で見つける手がかりにならない。
-                legalIndices={canPlay ? state.playableIndices : undefined}
-                restrictedTooltip={t('playButton')}
-              />
-            )}
 
             <ErrorAlert message={error} onRetry={retry} />
 
@@ -434,90 +450,83 @@ function SchafkopfPageContent() {
             </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-            <div className="flex flex-wrap gap-2 items-center" data-tutorial="sh-action-buttons">
-              {canPick && (
-                <>
-                  {/* Only the contracts that outrank the standing bid: a button
-                      the server is bound to refuse is worse than no button. */}
-                  {beatable.includes(CONTRACT_RUFSPIEL) && (
-                    <button type="button" className={btnPrimary} onClick={handlePick} disabled={loading}>
-                      {t('pickButton')}
+            <GameResetButton
+              isGameEnd={isGameEnd}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+              dataTutorial="sh-reset-button"
+            />
+            <CardNavShortcutsPanel data-testid="schafkopf-kbd-shortcuts" />
+          </div>
+
+          {/* Footer */}
+          <GameFooter
+            className={`${gameTheme.schafkopf.footer} px-4 py-2.5`}
+            actions={
+              canPick || canCall || canPlay || isTrickEnd || isRoundEnd ? (
+                <div className="flex flex-wrap gap-1 items-center">
+                  {canPick && (
+                    <button type="button" className={btnSecondary} onClick={handlePass} disabled={loading}>
+                      {t('passButton')}
                     </button>
                   )}
-                  {beatable.includes(CONTRACT_WENZ) && (
-                    <button type="button" className={btnPrimary} onClick={() => handleDeclare(1)} disabled={loading}>
-                      {t('wenzButton')}
-                    </button>
-                  )}
-                  {/* Solo names its own trump, so each suit is its own button
-                      rather than a declare-then-choose second step. */}
-                  {beatable.includes(CONTRACT_SOLO) &&
-                    SOLO_SUITS.map((suit) => {
+                  {canCall &&
+                    state.callableSuits.map((suit) => {
+                      // callableSuits are the three fail suits (♠♣♦), all present in SUIT_KEYS.
                       const suitName = t(`suit.${SUIT_KEYS[suit]}`);
                       return (
                         <button
-                          key={`solo-${suit}`}
+                          key={`call-${suit}`}
                           type="button"
                           className={btnPrimary}
-                          onClick={() => handleDeclare(2, suit)}
+                          onClick={() => handleCall(suit)}
                           disabled={loading}
-                          aria-label={t('soloButtonAriaLabel', { suit: suitName })}
+                          aria-label={t('callButtonAriaLabel', { suit: suitName })}
                         >
-                          {t('soloButton', { suit: suitName })}
+                          {t('callButton', { suit: suitName })}
                         </button>
                       );
                     })}
-                  <button type="button" className={btnSecondary} onClick={handlePass} disabled={loading}>
-                    {t('passButton')}
-                  </button>
-                </>
-              )}
-              {canCall &&
-                state.callableSuits.map((suit) => {
-                  // callableSuits are the three fail suits (♠♣♦), all present in SUIT_KEYS.
-                  const suitName = t(`suit.${SUIT_KEYS[suit]}`);
-                  return (
+                  {canPlay && (
                     <button
-                      key={`call-${suit}`}
                       type="button"
                       className={btnPrimary}
-                      onClick={() => handleCall(suit)}
-                      disabled={loading}
-                      aria-label={t('callButtonAriaLabel', { suit: suitName })}
+                      onClick={handlePlay}
+                      disabled={loading || selectedCardIndices.length !== 1}
                     >
-                      {t('callButton', { suit: suitName })}
+                      {t('playButton')}
                     </button>
-                  );
-                })}
-              {canPlay && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-              {isTrickEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                  {t('nextTrick')}
-                </button>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="sh-reset-button"
+                  )}
+                  {isTrickEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
+                      {t('nextTrick')}
+                    </button>
+                  )}
+                  {isRoundEnd && (
+                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                      {t('nextRound')}
+                    </button>
+                  )}
+                </div>
+              ) : null
+            }
+          >
+            {humanPlayer && (
+              <PlayerHandSection
+                humanPlayer={humanPlayer}
+                selectedCardIndices={selectedCardIndices}
+                toggleCard={toggleCard}
+                cardWidth={cardWidth}
+                isMobile={isMobile}
+                dataTutorialPrefix="sh"
+                validIndices={canPlay ? state.playableIndices : undefined}
+                // 出せる札にリングを出す。validIndices は出せない札を伏せる
+                // だけで、どれが出せるかを目で見つける手がかりにならない。
+                legalIndices={canPlay ? state.playableIndices : undefined}
+                restrictedTooltip={t('playButton')}
               />
-            </div>
-            <CardNavShortcutsPanel data-testid="schafkopf-kbd-shortcuts" />
+            )}
           </GameFooter>
         </>
       )}

@@ -212,6 +212,104 @@ beforeEach(() => {
 });
 
 describe('MarriagePage', () => {
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, message: 'Footer message test' });
+    renderWithProviders(<MarriagePage />);
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(within(footerMessage).getByRole('status')).toHaveTextContent('Footer message test');
+  });
+
+  it('shows the round end reason without repeating the phase label', async () => {
+    mockExec.mockResolvedValue({
+      ...roundEndState,
+      declarerIdx: 0,
+      messageCode: 'marriage.roundEnd',
+    });
+    renderWithProviders(<MarriagePage />);
+
+    expect(await screen.findByText('あなたが宣言してラウンド終了')).toBeInTheDocument();
+    expect(screen.getAllByText('ラウンド終了')).toHaveLength(1);
+  });
+
+  it('shows stock exhaustion as the round end reason', async () => {
+    mockExec.mockResolvedValue({ ...roundEndState, messageCode: 'marriage.roundEnd' });
+    renderWithProviders(<MarriagePage />);
+
+    expect(await screen.findByText('山札切れでラウンド終了')).toBeInTheDocument();
+    expect(screen.getAllByText('ラウンド終了')).toHaveLength(1);
+  });
+
+  it('renders the game message in the play area on mobile', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      message: 'Mobile play-area message',
+      messageCode: 'test.untranslated',
+    });
+    try {
+      renderWithProviders(<MarriagePage />);
+      await screen.findByText('Mobile play-area message');
+      const status = screen.getByText('Mobile play-area message').closest('[role="status"]');
+      if (!status) throw new Error('Mobile message must be inside its live region');
+      expect(status).toHaveTextContent('Mobile play-area message');
+      expect(status.closest('[data-testid="game-footer-message"]')).toBeNull();
+      expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it('renders desktop hand cards through PlayerHandSection', async () => {
+    renderWithProviders(<MarriagePage />);
+    const footer = await screen.findByTestId('game-footer-content');
+    const hand = footer.querySelector('[data-tutorial="marriage-player-hand"]');
+    expect(hand?.querySelector('[data-hand-card-index="0"]')).toBeInTheDocument();
+  });
+
+  it('shows maal for a CPU with a positive maal score at round end', async () => {
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      phase: 2,
+      players: [drawPhaseState.players[0], player({ id: 1, isHuman: false, maal: 20 })],
+    });
+    renderWithProviders(<MarriagePage />);
+    const cpuMaal = await screen.findAllByTestId('marriage-maal');
+    expect(cpuMaal.length).toBeGreaterThan(0);
+    expect(cpuMaal[0]).toHaveTextContent('20');
+  });
+
+  it('collapses CPU details and rules on mobile while keeping their content in the DOM', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    renderWithProviders(<MarriagePage />);
+    const accordion = await screen.findByTestId('cpu-accordion');
+    expect(accordion).not.toHaveAttribute('open');
+    expect(accordion).toHaveTextContent('CPU');
+    const rules = screen.getByTestId('marriage-maal-rule').closest('details');
+    expect(rules).not.toHaveAttribute('open');
+    expect(screen.getByTestId('marriage-maal-rule')).not.toBeVisible();
+    const scoreDetails = screen.getByTestId('marriage-score-table');
+    expect(scoreDetails).not.toHaveAttribute('open');
+    expect(within(scoreDetails).getByRole('table')).not.toBeVisible();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+    mockExec.mockClear();
+  });
+
+  it('keeps the Maal rules open on desktop', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    renderWithProviders(<MarriagePage />);
+    const rules = (await screen.findByTestId('marriage-maal-rule')).closest('details');
+    expect(rules).toHaveAttribute('open');
+    expect(screen.getByTestId('marriage-score-table')).toHaveAttribute('open');
+    expect(within(screen.getByTestId('marriage-score-table')).getByRole('table')).toBeVisible();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+    mockExec.mockClear();
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<MarriagePage />);
@@ -238,6 +336,29 @@ describe('MarriagePage', () => {
     });
   });
 
+  it('keeps the draw action in the persistent footer actions row', async () => {
+    renderWithProviders(<MarriagePage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: '山札から引く' })).toBeInTheDocument();
+    expect(within(actions).getByRole('button', { name: '捨て札から引く' })).toBeInTheDocument();
+    expect(actions.querySelector('[data-tutorial="marriage-draw-area"]')).toBeInTheDocument();
+  });
+
+  it('keeps the hand in the footer while rendering reset controls in the play area', async () => {
+    renderWithProviders(<MarriagePage />);
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const footer = footerContent.parentElement;
+    const playArea = footer?.previousElementSibling;
+    const resetButton = screen.getByRole('button', { name: 'リセット' });
+
+    expect(within(footerContent).getByRole('button', { name: '♠ A' })).toBeInTheDocument();
+    expect(footerContent.querySelector('[data-tutorial="marriage-reset-button"]')).not.toBeInTheDocument();
+    expect(playArea).toContainElement(resetButton);
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: '山札から引く' }),
+    ).toBeInTheDocument();
+  });
+
   it('marks wild-rank cards in the human hand with a WILD badge', async () => {
     const wildInHandState: MarriageResponse = {
       ...drawPhaseState,
@@ -256,10 +377,10 @@ describe('MarriagePage', () => {
     renderWithProviders(<MarriagePage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
     // Two of the three hand cards are wild (the rank-5 card and the printed joker).
-    expect(screen.getAllByTestId('marriage-wild-badge')).toHaveLength(2);
+    expect(document.querySelectorAll('[data-trump="true"]')).toHaveLength(2);
     // The non-wild ace carries no wild annotation in its label.
     expect(screen.getByRole('button', { name: '♠ A' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /♦ 5 .*ワイルド/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /♦ 5 .*WILD/ })).toBeInTheDocument();
   });
 
   it('marks the adjacent ranks as wild and leaves other ranks unmarked', async () => {
@@ -282,9 +403,9 @@ describe('MarriagePage', () => {
     renderWithProviders(<MarriagePage />);
     await waitFor(() => expect(screen.getByAltText('♠ 8')).toBeInTheDocument());
 
-    expect(screen.getAllByTestId('marriage-wild-badge')).toHaveLength(2);
-    expect(screen.getByRole('button', { name: /♠ 8 .*ワイルド/ })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /♥ 6 .*ワイルド/ })).toBeInTheDocument();
+    expect(document.querySelectorAll('[data-trump="true"]')).toHaveLength(2);
+    expect(screen.getByRole('button', { name: /♠ 8 .*WILD/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /♥ 6 .*WILD/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '♦ 9' })).toBeInTheDocument();
   });
 
@@ -308,9 +429,9 @@ describe('MarriagePage', () => {
     renderWithProviders(<MarriagePage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
 
-    expect(screen.getAllByTestId('marriage-wild-badge')).toHaveLength(2);
-    expect(screen.getByRole('button', { name: /♠ A .*ワイルド/ })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /♥ K .*ワイルド/ })).toBeInTheDocument();
+    expect(document.querySelectorAll('[data-trump="true"]')).toHaveLength(2);
+    expect(screen.getByRole('button', { name: /♠ A .*WILD/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /♥ K .*WILD/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '♦ J' })).toBeInTheDocument();
   });
 
@@ -334,8 +455,8 @@ describe('MarriagePage', () => {
     renderWithProviders(<MarriagePage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
 
-    expect(screen.getAllByTestId('marriage-wild-badge')).toHaveLength(1);
-    expect(screen.getByRole('button', { name: /ワイルド/ })).toBeInTheDocument();
+    expect(document.querySelectorAll('[data-trump="true"]')).toHaveLength(1);
+    expect(screen.getByRole('button', { name: /WILD/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '♠ A' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '♥ K' })).toBeInTheDocument();
   });
@@ -458,7 +579,7 @@ describe('MarriagePage', () => {
     const meldCard = screen.getByRole('button', { name: /♠ 3.*純シーケンス1/ });
     expect(meldCard).toBeInTheDocument();
     expect(meldCard).toHaveAccessibleName(/純シーケンス1/);
-    expect(meldCard.querySelector('[aria-hidden="true"]')).toHaveTextContent('1');
+    expect(meldCard.querySelector('[data-testid^="card-role-badge-"]')).toHaveTextContent('1');
     // Declare button is never blocked by the preview.
     expect(screen.getByRole('button', { name: '宣言' })).not.toBeDisabled();
   });
@@ -646,6 +767,74 @@ describe('MarriagePage', () => {
     expect(cardBtn).toHaveAttribute('aria-pressed', 'true');
     fireEvent.click(cardBtn);
     expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('uses stacked MobileHandGrid rows on mobile and preserves card selection', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      players: [
+        player({
+          cards: Array.from({ length: 22 }, (_, index) => ({ design: 'SPADE' as const, value: (index % 13) + 1 })),
+        }),
+        drawPhaseState.players[1],
+      ],
+    });
+    renderWithProviders(<MarriagePage />);
+
+    const rows = await screen.findAllByTestId('hand-row');
+    expect(rows.length).toBeGreaterThanOrEqual(2);
+    expect(Number.parseFloat((rows[1] as HTMLElement).style.marginTop)).toBeLessThan(0);
+    const card = screen.getAllByRole('button', { name: '♠ A' })[0];
+    expect(card).toBeDefined();
+    if (!card) return;
+    expect(card).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(card);
+    expect(card).toHaveAttribute('aria-pressed', 'true');
+
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
+  it('announces wild cards in the mobile hand', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      players: [player({ cards: [{ design: 'DIAMOND', value: 5 }] }), drawPhaseState.players[1]],
+    });
+    renderWithProviders(<MarriagePage />);
+
+    try {
+      const wildCard = await screen.findByAltText('♦ 5');
+      const wildButton = wildCard.closest('button');
+      expect(wildButton?.getAttribute('aria-label')).toContain('WILD');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it('announces meld membership once in the mobile hand', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    mockExec.mockResolvedValue(declareValidState);
+    renderWithProviders(<MarriagePage />);
+
+    try {
+      fireEvent.click((await screen.findByAltText('♣ 2')).closest('button') as HTMLButtonElement);
+      const meldCard = await screen.findByAltText('♠ 3');
+      await waitFor(() =>
+        expect(meldCard.closest('button')).toHaveAttribute('aria-label', expect.stringContaining('の一部')),
+      );
+      const meldName = meldCard.closest('button')?.getAttribute('aria-label') ?? '';
+      expect(meldName.match(/の一部/g)).toHaveLength(1);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+      window.dispatchEvent(new Event('resize'));
+    }
   });
 
   it('card buttons have aria-label with card name', async () => {

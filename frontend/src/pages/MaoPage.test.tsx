@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, maoApi } from '../api/gameApi';
 import i18n from '../i18n';
@@ -10,6 +10,12 @@ import { MaoPage } from './MaoPage';
 vi.mock('../api/gameApi', () => ({
   maoApi: { exec: vi.fn() },
   actionLogApi: { mao: vi.fn() },
+}));
+
+const mobileState = vi.hoisted(() => ({ isMobile: false }));
+vi.mock('../hooks/useCardDimensions', async () => ({
+  ...(await vi.importActual<typeof import('../hooks/useCardDimensions')>('../hooks/useCardDimensions')),
+  useIsMobile: () => mobileState.isMobile,
 }));
 
 const mockPlaySound = vi.fn();
@@ -73,6 +79,7 @@ const penaltyState: MaoResponse = { ...playPhaseState, penaltyDrawCount: 4 };
 const rulePenaltyState: MaoResponse = { ...playPhaseState, rulePenalty: true };
 
 beforeEach(() => {
+  mobileState.isMobile = false;
   mockExec.mockReset();
   mockPlaySound.mockReset();
   mockExec.mockResolvedValue(playPhaseState);
@@ -87,6 +94,26 @@ beforeEach(() => {
 const sayWordLive = () => document.querySelector('[role="status"][aria-live="polite"][aria-atomic="true"]');
 
 describe('MaoPage', () => {
+  it('collapses CPU seats and scores on mobile, and opens scores on desktop', async () => {
+    mobileState.isMobile = true;
+    const { unmount } = renderWithProviders(<MaoPage />);
+    await waitFor(() => expect(screen.getByTestId('mao-score-table')).toBeInTheDocument());
+
+    const cpuAccordion = screen.getByTestId('cpu-accordion');
+    const scoreTable = screen.getByTestId('mao-score-table');
+    expect(cpuAccordion).not.toHaveAttribute('open');
+    expect(within(cpuAccordion).queryByText(/CPU 1:/)).not.toBeVisible();
+    expect(scoreTable).not.toHaveAttribute('open');
+    expect(within(scoreTable).getByRole('table')).not.toBeVisible();
+
+    unmount();
+    mobileState.isMobile = false;
+    renderWithProviders(<MaoPage />);
+    const desktopScores = await screen.findByTestId('mao-score-table');
+    expect(desktopScores).toHaveAttribute('open');
+    expect(within(desktopScores).getByRole('table')).toBeVisible();
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<MaoPage />);

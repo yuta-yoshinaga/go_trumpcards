@@ -299,7 +299,7 @@ describe('KlondikePage', () => {
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(readyState);
-    fireEvent.click(screen.getByRole('button', { name: '自動完成' }));
+    fireEvent.click(screen.getByRole('button', { name: 'オートコンプリート' }));
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
   });
@@ -669,7 +669,7 @@ describe('KlondikePage', () => {
 
     // Draw, hint, autocomplete, giveup buttons should not be visible
     expect(screen.queryByRole('button', { name: 'ヒント' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: '自動完成' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'オートコンプリート' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'ギブアップ' })).not.toBeInTheDocument();
   });
 
@@ -772,7 +772,7 @@ describe('KlondikePage', () => {
     const footerButtons = screen.getAllByRole('button').filter((btn) => btn.closest('.shrink-0.border-t'));
     const buttonNames = footerButtons.map((btn) => btn.textContent);
     expect(buttonNames).not.toContain('ヒント');
-    expect(buttonNames).not.toContain('自動完成');
+    expect(buttonNames).not.toContain('オートコンプリート');
     expect(buttonNames).not.toContain('ギブアップ');
   });
 

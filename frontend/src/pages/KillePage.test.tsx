@@ -14,6 +14,15 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockExec = vi.mocked(killeApi.exec);
+const mobileState = { isMobile: false };
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useIsMobile: () => mobileState.isMobile,
+    useCardDimensions: () => ({ ...actual.useCardDimensions(), isMobile: mobileState.isMobile }),
+  };
+});
 
 /** A Kille card: single suit, so the procedural fields carry the identity. */
 const killeCard = (value: number, label: string, color: string) => ({
@@ -64,6 +73,7 @@ function makeState(overrides?: Partial<KilleResponse>): KilleResponse {
 
 describe('KillePage', () => {
   beforeEach(() => {
+    mobileState.isMobile = false;
     vi.clearAllMocks();
     mockExec.mockResolvedValue(makeState());
   });
@@ -71,6 +81,14 @@ describe('KillePage', () => {
   it('resets on mount', async () => {
     renderWithProviders(<KillePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('keeps the stock count label together while wrapping the info row', async () => {
+    renderWithProviders(<KillePage />);
+    const stock = await screen.findByTestId('kille-stock');
+    expect(stock).toHaveTextContent('山札: 38枚');
+    expect(stock).toHaveClass('whitespace-nowrap');
+    expect(document.querySelector('[data-tutorial="kille-info"]')).toHaveClass('flex', 'flex-wrap');
   });
 
   it('exchanges and stands pat', async () => {
@@ -97,8 +115,32 @@ describe('KillePage', () => {
   // 交換で渡ってきた道化が最弱になるのはこのゲーム最大の罠なので、常時出す。
   it('states the inverted Harlequin rule permanently', async () => {
     renderWithProviders(<KillePage />);
-    await waitFor(() => expect(screen.getByTestId('kille-rules-note')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('kille-rules-note')).toBeVisible());
     expect(screen.getByTestId('kille-rules-note')).toHaveTextContent('最強ではなく最弱');
+  });
+
+  it('collapses reference information and CPU rows on mobile while keeping the human row visible', async () => {
+    mobileState.isMobile = true;
+    renderWithProviders(<KillePage />);
+    await screen.findAllByTestId('kille-player');
+    expect(screen.getByTestId('kille-rules')).not.toHaveAttribute('open');
+    expect(screen.getByTestId('kille-rules-note')).not.toBeVisible();
+    expect(screen.getByTestId('kille-ladder')).not.toHaveAttribute('open');
+    expect(screen.getByTestId('kille-effect-legend')).not.toBeVisible();
+    expect(screen.getByTestId('cpu-accordion')).not.toHaveAttribute('open');
+    expect(screen.getByText('あなた')).toBeVisible();
+    expect(screen.getByText('CPU 1')).not.toBeVisible();
+  });
+
+  it('opens reference information and CPU rows on desktop', async () => {
+    renderWithProviders(<KillePage />);
+    await screen.findAllByTestId('kille-player');
+    expect(screen.getByTestId('kille-rules')).toHaveAttribute('open');
+    expect(screen.getByTestId('kille-rules-note')).toBeVisible();
+    expect(screen.getByTestId('kille-ladder')).toHaveAttribute('open');
+    expect(screen.getByTestId('kille-effect-legend')).toBeVisible();
+    expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
+    expect(screen.getAllByTestId('kille-player')).toHaveLength(4);
   });
 
   it('shows Japanese card names in the strength ladder and effect guide', async () => {
@@ -131,7 +173,7 @@ describe('KillePage', () => {
   it('shows every number rank in strength order between the special cards', async () => {
     renderWithProviders(<KillePage />);
     const ladder = await screen.findByTestId('kille-ladder');
-    const ranks = Array.from(ladder.querySelectorAll(':scope > div:nth-child(2) > span')).map(
+    const ranks = Array.from(ladder.querySelectorAll(':scope > div > div:nth-child(2) > span')).map(
       (rank) => rank.textContent,
     );
     expect(ranks).toEqual([
@@ -382,5 +424,28 @@ describe('KillePage', () => {
     const events = await screen.findByTestId('kille-events');
     expect(events).toHaveAttribute('aria-live', 'polite');
     expect(events).toBeEmptyDOMElement();
+  });
+  it('renders the game message in the footer message slot', async () => {
+    mockExec.mockResolvedValue({ ...makeState(), message: 'Footer guidance' });
+    renderWithProviders(<KillePage />);
+
+    const footerMessage = await screen.findByTestId('game-footer-message');
+    expect(footerMessage.querySelector('[role="status"], [role="alert"]')).toHaveTextContent('Footer guidance');
+  });
+  it('renders the game message in the play area instead of the footer on mobile', async () => {
+    mobileState.isMobile = true;
+    mockExec.mockResolvedValue({ ...makeState(), message: 'Mobile guidance' });
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    renderWithProviders(<KillePage />);
+
+    const messageText = await screen.findByText('Mobile guidance');
+    const message = messageText.closest('[role="status"], [role="alert"]');
+    expect(message?.closest('.flex-1.overflow-y-auto')).not.toBeNull();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
+    window.dispatchEvent(new Event('resize'));
+    mobileState.isMobile = false;
   });
 });

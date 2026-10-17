@@ -1,7 +1,9 @@
 import { useCallback, useMemo } from 'react';
 import { reversisApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardFan } from '../components/CardFan';
 import { CardImage } from '../components/CardImage';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -170,33 +172,58 @@ function ReversisPageContent() {
               data-testid="rv-pool"
               data-tutorial="reversis-pool"
             >
-              {t('header.pool', { pool: String(state.pool) })}
+              {t('header.pool', { pool: String(state.pool) }).split(/[（(]/, 1)[0]}
             </div>
 
-            {/* 失点の配分と印付きの2枚も盤面には出ない。 */}
-            <div
+            <details
               className="mb-3 rounded bg-black/30 px-3 py-2 text-ds-text-muted text-sm text-center"
-              data-testid="rv-penalty-rule"
-              data-tutorial="reversis-penalty"
+              data-testid="rv-rules"
             >
-              {t('header.penaltyRule')}
-            </div>
-
-            <div className="flex flex-wrap justify-center gap-2 mb-4">
-              {state.players.map((p) => (
-                <div
-                  key={p.id}
-                  className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
-                  data-testid={`rv-seat-${p.id.toString()}`}
-                >
-                  <span className="text-ds-text-primary">
-                    {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
-                  </span>
-                  {': '}
-                  {t('header.seat', { chips: String(p.chips), penalty: String(p.roundPenalty) })} [{markStr(p)}]
+              <summary className="cursor-pointer select-none" data-tutorial="reversis-penalty">
+                ルール / Rules
+              </summary>
+              <div className="mt-2">
+                <div data-testid="rv-penalty-rule">{t('header.penaltyRule')}</div>
+                <div>
+                  {t('header.pool', { pool: String(state.pool) })
+                    .replace(/^[^(（]*[（(]/, '')
+                    .replace(/[）)]$/, '')}
                 </div>
-              ))}
+              </div>
+            </details>
+
+            <div className="mb-2 flex justify-center" data-testid="rv-human-seat">
+              {human && (
+                <div
+                  className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
+                  data-testid={`rv-seat-${human.id.toString()}`}
+                  data-tutorial="reversis-seats"
+                >
+                  <span className="text-ds-text-primary">{t('header.you')}</span>
+                  {': '}
+                  {t('header.seat', { chips: String(human.chips), penalty: String(human.roundPenalty) })} [
+                  {markStr(human)}]
+                </div>
+              )}
             </div>
+            <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length} dataTutorial="reversis-seats">
+              <div className="flex flex-wrap justify-center gap-2 mb-4">
+                {state.players
+                  .filter((p) => !p.isHuman)
+                  .map((p) => (
+                    <div
+                      key={p.id}
+                      className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
+                      data-testid={`rv-seat-${p.id.toString()}`}
+                      data-tutorial="reversis-seats"
+                    >
+                      <span className="text-ds-text-primary">{t('header.cpu', { idx: String(p.id) })}</span>
+                      {': '}
+                      {t('header.seat', { chips: String(p.chips), penalty: String(p.roundPenalty) })} [{markStr(p)}]
+                    </div>
+                  ))}
+              </div>
+            </CpuAccordion>
 
             {(isRoundEnd || isGameEnd) && (
               <section
@@ -250,7 +277,7 @@ function ReversisPageContent() {
                 <div className="text-ds-text-muted text-sm mb-1">
                   {t('header.you')}: {human.cardCount}
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <CardFan itemWidth={cardWidth}>
                   {human.cards.map((card, idx) => (
                     <button
                       key={`${card.design}-${card.value}-${idx}`}
@@ -291,7 +318,7 @@ function ReversisPageContent() {
                       </span>
                     </button>
                   ))}
-                </div>
+                </CardFan>
               </div>
             )}
 

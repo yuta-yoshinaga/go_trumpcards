@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardBackFan } from '../components/CardBackFan';
+import { CardFan } from '../components/CardFan';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -9,10 +12,9 @@ import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
-import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useBidWhistGame } from '../hooks/useBidWhistGame';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
@@ -113,6 +115,7 @@ function BidWhistPageContent() {
     reset,
   } = useBidWhistGame();
   const { cardWidth } = useCardDimensions();
+  const isMobile = useIsMobile();
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -221,6 +224,10 @@ function BidWhistPageContent() {
   const canExchange = selectedCardIndices.length === KITTY_SIZE;
   const handleExchange = () => exchange([...selectedCardIndices]);
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.bidwhist')}
@@ -274,32 +281,30 @@ function BidWhistPageContent() {
             </div>
 
             {/* CPU players */}
-            <div className="flex justify-center gap-6 flex-wrap">
-              {state.players
-                .filter((p) => !p.isHuman)
-                .map((p) => (
-                  <div key={p.id} className="text-center">
-                    <div className="text-xs text-ds-text-muted mb-1 flex items-center justify-center gap-1">
-                      <span>{tc('player.cpu', { id: p.id })}</span>
-                      <span>
-                        ({t('teamShort', { team: p.team })}) {p.trickCount}🂠
-                      </span>
-                      {state.dealerIdx === p.id && (
-                        <span className="text-ds-accent" data-testid="bidwhist-dealer-badge">
-                          [{t('dealerBadge')}]
+            <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+              <div className="flex justify-center gap-6 flex-wrap">
+                {state.players
+                  .filter((p) => !p.isHuman)
+                  .map((p) => (
+                    <div key={p.id} className="text-center">
+                      <div className="text-xs text-ds-text-muted mb-1 flex items-center justify-center gap-1">
+                        <span>{tc('player.cpu', { id: p.id })}</span>
+                        <span>
+                          ({t('teamShort', { team: p.team })}) {p.trickCount}🂠
                         </span>
-                      )}
-                      {p.isDeclarer && <span className="font-bold text-ds-warning">★</span>}
-                      {p.passed && <span className="opacity-60">{t('passed')}</span>}
+                        {state.dealerIdx === p.id && (
+                          <span className="text-ds-accent" data-testid="bidwhist-dealer-badge">
+                            [{t('dealerBadge')}]
+                          </span>
+                        )}
+                        {p.isDeclarer && <span className="font-bold text-ds-warning">★</span>}
+                        {p.passed && <span className="opacity-60">{t('passed')}</span>}
+                      </div>
+                      <CardBackFan count={Math.min(p.cardCount, 13)} width={cardWidth * 0.4} />
                     </div>
-                    <div className="flex gap-0.5 justify-center">
-                      {Array.from({ length: Math.min(p.cardCount, 13) }, (_, i) => (
-                        <AnimatedCardBack key={i} width={cardWidth * 0.4} />
-                      ))}
-                    </div>
-                  </div>
-                ))}
-            </div>
+                  ))}
+              </div>
+            </CpuAccordion>
 
             {/* Current trick */}
             <div className="py-3 bg-black/20 rounded-lg" data-tutorial="bw-trick">
@@ -370,7 +375,7 @@ function BidWhistPageContent() {
                   <span>{t('kittyLegend')}</span>
                 </div>
               )}
-              <div className="flex flex-wrap justify-center gap-2">
+              <CardFan itemWidth={cardWidth + 6}>
                 {human.cards.map((c, i) => {
                   const selected = selectedCardIndices.includes(i);
                   const selectable = isHumanPlayTurn || isHumanExchange;
@@ -397,7 +402,7 @@ function BidWhistPageContent() {
                       {fromKitty && (
                         <span
                           aria-hidden="true"
-                          className="absolute top-0 right-0 rounded-bl bg-ds-warning px-1 text-[10px] font-bold text-white leading-tight"
+                          className="absolute top-0 right-0 rounded-bl bg-ds-warning px-1 text-[10px] font-bold text-ds-text-on-accent leading-tight"
                           data-testid={`kitty-badge-${i}`}
                         >
                           {t('kittyBadge')}
@@ -406,14 +411,10 @@ function BidWhistPageContent() {
                     </button>
                   );
                 })}
-              </div>
+              </CardFan>
             </div>
+            {isMobile && messageBox}
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
             {/* サーバーのヒント。押したときだけ出す (#4814)。isRequestedHint は
                 HintOutput が付ける `hintRequested` を待つので、常時表示にはならない。 */}
             {state.hint && isRequestedHint(state) && (
@@ -458,17 +459,23 @@ function BidWhistPageContent() {
             ]}
           />
 
-          <GameFooter className={`${gameTheme.bidwhist.footer} px-4 py-2.5`}>
+          <GameFooter
+            message={isMobile ? undefined : messageBox}
+            className={`${gameTheme.bidwhist.footer} px-4 py-2.5`}
+          >
             <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="bw-actions">
               {isHumanBidTurn && (
                 <>
-                  <div className="w-full text-center text-xs text-ds-text-muted" data-testid="bid-direction-help">
-                    {DIRECTIONS.map((d) => (
-                      <span key={d.id} className="mx-1 inline-block">
-                        {t(d.key)}: {t(d.meaningKey)}
-                      </span>
-                    ))}
-                  </div>
+                  <details open={!isMobile || undefined} className="w-full text-center text-xs text-ds-text-muted">
+                    <summary className="cursor-pointer">{t('rules')}</summary>
+                    <div data-testid="bid-direction-help">
+                      {DIRECTIONS.map((d) => (
+                        <span key={d.id} className="mx-1 inline-block">
+                          {t(d.key)}: {t(d.meaningKey)}
+                        </span>
+                      ))}
+                    </div>
+                  </details>
                   <label
                     htmlFor="bw-bid-tricks"
                     className="text-xs text-ds-text-muted self-center"
@@ -518,7 +525,7 @@ function BidWhistPageContent() {
                           disabled={disabled}
                           aria-disabled={disabled}
                           aria-label={reason ? `${t(d.key)} — ${reason}` : undefined}
-                          className="px-3 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
+                          className="px-3 py-2 rounded-lg bg-ds-info text-ds-text-on-accent text-sm disabled:opacity-40"
                           data-testid={`bid-dir-${d.id}`}
                         >
                           {t(d.key)}
@@ -530,7 +537,7 @@ function BidWhistPageContent() {
                     type="button"
                     onClick={pass}
                     disabled={loading}
-                    className="px-4 py-2 rounded-lg bg-ds-warning text-white text-sm disabled:opacity-40"
+                    className="px-4 py-2 rounded-lg bg-ds-warning text-ds-text-on-accent text-sm disabled:opacity-40"
                     data-testid="pass-button"
                   >
                     {t('passButton')}
@@ -552,7 +559,7 @@ function BidWhistPageContent() {
                       aria-label={t('trumpSuitButtonAriaLabel', { glyph: s.glyph, suit: tc(SUIT_I18N_KEYS[s.id]) })}
                       onClick={() => declareTrump(s.id)}
                       disabled={loading}
-                      className="px-3 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
+                      className="px-3 py-2 rounded-lg bg-ds-info text-ds-text-on-accent text-sm disabled:opacity-40"
                       data-testid={`trump-${s.id}`}
                     >
                       {s.glyph}
@@ -566,7 +573,7 @@ function BidWhistPageContent() {
                   type="button"
                   onClick={handleExchange}
                   disabled={loading || !canExchange}
-                  className="px-4 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
+                  className="px-4 py-2 rounded-lg bg-ds-info text-ds-text-on-accent text-sm disabled:opacity-40"
                   data-testid="exchange-button"
                 >
                   {t('exchangeButton', { count: selectedCardIndices.length })}
@@ -578,7 +585,7 @@ function BidWhistPageContent() {
                   type="button"
                   onClick={handlePlay}
                   disabled={loading || selectedIdx === undefined}
-                  className="px-4 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
+                  className="px-4 py-2 rounded-lg bg-ds-info text-ds-text-on-accent text-sm disabled:opacity-40"
                   data-testid="play-button"
                 >
                   {t('playButton')}
@@ -592,7 +599,7 @@ function BidWhistPageContent() {
                   type="button"
                   onClick={requestHint}
                   disabled={loading}
-                  className="px-4 py-2 rounded-lg bg-ds-success text-white text-sm disabled:opacity-40"
+                  className="px-4 py-2 rounded-lg bg-ds-success text-ds-text-on-accent text-sm disabled:opacity-40"
                   data-testid="bidwhist-hint-button"
                 >
                   {t('hintButton')}
@@ -604,7 +611,7 @@ function BidWhistPageContent() {
                   type="button"
                   onClick={nextTrick}
                   disabled={loading}
-                  className="px-4 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
+                  className="px-4 py-2 rounded-lg bg-ds-info text-ds-text-on-accent text-sm disabled:opacity-40"
                   data-testid="next-button"
                 >
                   {t('nextTrickButton')}
@@ -616,7 +623,7 @@ function BidWhistPageContent() {
                   type="button"
                   onClick={nextRound}
                   disabled={loading}
-                  className="px-4 py-2 rounded-lg bg-ds-info text-white text-sm disabled:opacity-40"
+                  className="px-4 py-2 rounded-lg bg-ds-info text-ds-text-on-accent text-sm disabled:opacity-40"
                   data-testid="nextround-button"
                 >
                   {t('nextRoundButton')}

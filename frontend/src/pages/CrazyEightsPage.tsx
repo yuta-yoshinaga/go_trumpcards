@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import type { crazyeightsApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -14,7 +15,7 @@ import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -136,6 +137,7 @@ function CrazyEightsPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('crazyeights', state);
   const { cardWidth } = useCardDimensions();
+  const isMobile = useIsMobile();
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('crazyeights');
   const cliConfig: CliGameConfig<CrazyEightsResponse, Parameters<typeof crazyeightsApi.exec>> = useMemo(
@@ -331,17 +333,21 @@ function CrazyEightsPageContent() {
               {/* Right: info sidebar */}
               <div>
                 {/* CPU players */}
-                {state.players
-                  .filter((p) => !p.isHuman)
-                  .map((p) => (
-                    <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                      <div className="text-ds-text-muted text-sm">
-                        {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                        {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
-                        {t('roundScore', { score: p.roundScore })}
-                      </div>
-                    </div>
-                  ))}
+                <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+                  <div className="flex flex-wrap gap-2">
+                    {state.players
+                      .filter((p) => !p.isHuman)
+                      .map((p) => (
+                        <div key={p.id} className="p-2 rounded bg-black/30">
+                          <div className="text-ds-text-muted text-sm">
+                            {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                            {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
+                            {t('roundScore', { score: p.roundScore })}
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </CpuAccordion>
 
                 <details className="mb-2 p-2 rounded bg-black/30" data-testid="crazyeights-point-legend">
                   <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
@@ -372,8 +378,12 @@ function CrazyEightsPageContent() {
                 </details>
 
                 {/* Score table */}
-                <div className="my-3 p-2 rounded bg-black/30">
-                  <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
+                <details
+                  className="my-3 p-2 rounded bg-black/30"
+                  data-testid="ce-score-table"
+                  open={!isMobile || undefined}
+                >
+                  <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('scores')}</summary>
                   {/* Reaching the limit ends the game, but the number lived only
                       in the settings panel, so the table's bare scores gave no
                       sense of how near that was. Hearts/Spades print the same
@@ -441,7 +451,7 @@ function CrazyEightsPageContent() {
                       })}
                     </tbody>
                   </table>
-                </div>
+                </details>
               </div>
             </div>
           </div>

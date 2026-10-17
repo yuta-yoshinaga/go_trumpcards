@@ -369,7 +369,6 @@ function CuckooPageContent() {
 
             <ErrorAlert message={error} onRetry={retry} />
 
-            {isHumanTurn && <div className="text-ds-text-muted text-xs mb-2">{t('turnNotice')}</div>}
             {isHumanRefuseTarget && (
               <>
                 <div className="text-ds-text-muted text-xs mb-2" data-testid="cuckoo-refuse-notice">

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { vintApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -132,11 +133,15 @@ function VintPageContent() {
   );
   const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('vint', VINT_PHASE_KEYS);
 
   if (!state)
     return <GameSkeleton gameKey="vint" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 13 }} />;
+
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
 
   const human = state.players.find((p) => p.isHuman);
   const isBid = state.phase === VintPhase.BID;
@@ -180,6 +185,22 @@ function VintPageContent() {
   };
 
   const result = state.lastResult;
+  const renderPlayer = (p: (typeof state.players)[number]) => (
+    <div
+      key={`player-${p.id}`}
+      data-testid="vint-player"
+      className={`text-sm py-0.5 flex items-center gap-2 ${
+        p.isCurrentTurn && !isGameEnd ? 'text-ds-warning' : 'text-ds-text-muted'
+      } ${p.isHuman ? 'font-semibold' : ''}`}
+    >
+      <span>{playerLabel(p.id, p.isHuman)}</span>
+      <span>({t('team', { n: p.team })})</span>
+      {p.isDealer && <span className="text-ds-accent">[{t('dealer')}]</span>}
+      {p.isDeclarer && <span className="text-ds-success">[{t('declarer')}]</span>}
+      <span>{t('tricksWon', { n: p.tricksWon })}</span>
+      {!p.isHuman && p.cards.length === 0 && <span>{t('hiddenHand', { count: p.cardCount })}</span>}
+    </div>
+  );
 
   return (
     <GamePageShell
@@ -220,23 +241,29 @@ function VintPageContent() {
               </div>
             )}
 
-            {/* No dummy — the rule that separates this from bridge. */}
-            <div className="mb-2 text-center text-ds-text-muted text-xs" data-testid="vint-no-dummy">
-              {t('noDummyNote')}
-            </div>
-
-            {/* The bidding order — reversed from bridge. */}
-            <div className="mb-2 p-2 rounded bg-black/20 text-xs" data-testid="vint-ladder">
-              <div className="mb-1 text-ds-text-primary">{t('ladderTitle')}</div>
-              <div className="flex flex-wrap gap-x-3">
-                {DENOMS.map((d) => (
-                  <span key={d} className={d === 0 ? 'text-ds-text-muted' : 'text-ds-text-primary'}>
-                    {denomLabel(d)} ({state.trickValues[d]})
-                  </span>
-                ))}
+            <details
+              className="mb-2 rounded bg-black/20 p-2 text-xs"
+              data-testid="vint-rules"
+              open={!isMobile || undefined}
+            >
+              <summary className="cursor-pointer select-none text-ds-text-primary">{t('rules')}</summary>
+              <div className="pt-2">
+                <div className="mb-2 text-center text-ds-text-muted" data-testid="vint-no-dummy">
+                  {t('noDummyNote')}
+                </div>
+                <div data-testid="vint-ladder">
+                  <div className="mb-1 text-ds-text-primary">{t('ladderTitle')}</div>
+                  <div className="flex flex-wrap gap-x-3">
+                    {DENOMS.map((d) => (
+                      <span key={d} className={d === 0 ? 'text-ds-text-muted' : 'text-ds-text-primary'}>
+                        {denomLabel(d)} ({state.trickValues[d]})
+                      </span>
+                    ))}
+                  </div>
+                  <div className="mt-1 text-ds-text-muted">{t('ladderNote')}</div>
+                </div>
               </div>
-              <div className="mt-1 text-ds-text-muted">{t('ladderNote')}</div>
-            </div>
+            </details>
 
             {/* **相方がどの組・レベルで宣言し、誰がどこで降りたかは公開情報で、続けるか
                 降りるかの判断そのもの。**パス (level=0) も区別して並べる (#7389)。 */}
@@ -262,8 +289,12 @@ function VintPageContent() {
             )}
 
             {/* Score sheet */}
-            <div className="mb-2 p-2 rounded bg-black/20 text-sm" data-testid="vint-scores">
-              <div className="mb-1 text-ds-text-primary">{t('scoreTitle')}</div>
+            <details
+              className="mb-2 p-2 rounded bg-black/20 text-sm"
+              data-testid="vint-scores"
+              open={!isMobile || undefined}
+            >
+              <summary className="mb-1 cursor-pointer select-none text-ds-text-primary">{t('scoreTitle')}</summary>
               <div>
                 {t('team', { n: 0 })}: {t('below')} {state.below[0]} / {t('above')} {state.above[0]} / {t('games')}{' '}
                 {state.gamesWon[0]}
@@ -273,28 +304,16 @@ function VintPageContent() {
                 {state.gamesWon[1]}
               </div>
               <div className="text-xs text-ds-text-muted">{t('gameTargetNote', { n: state.gameTarget })}</div>
-            </div>
+            </details>
 
             {/* Players */}
-            <div className="mb-2 p-2 rounded bg-black/30" data-tutorial="vint-players">
-              <div className="mb-1 text-ds-text-primary text-sm">{t('playersTitle')}</div>
-              {state.players.map((p) => (
-                <div
-                  key={`player-${p.id}`}
-                  data-testid="vint-player"
-                  className={`text-sm py-0.5 flex items-center gap-2 ${
-                    p.isCurrentTurn && !isGameEnd ? 'text-ds-warning' : 'text-ds-text-muted'
-                  } ${p.isHuman ? 'font-semibold' : ''}`}
-                >
-                  <span>{playerLabel(p.id, p.isHuman)}</span>
-                  <span>({t('team', { n: p.team })})</span>
-                  {p.isDealer && <span className="text-ds-accent">[{t('dealer')}]</span>}
-                  {p.isDeclarer && <span className="text-ds-success">[{t('declarer')}]</span>}
-                  <span>{t('tricksWon', { n: p.tricksWon })}</span>
-                  {!p.isHuman && p.cards.length === 0 && <span>{t('hiddenHand', { count: p.cardCount })}</span>}
-                </div>
-              ))}
+            <div className="mb-1 flex justify-center" data-testid="vint-human-seat">
+              {human && renderPlayer(human)}
             </div>
+            <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length} dataTutorial="vint-players">
+              <div className="mb-1 text-ds-text-primary text-sm">{t('playersTitle')}</div>
+              {state.players.filter((p) => !p.isHuman).map(renderPlayer)}
+            </CpuAccordion>
 
             {/* Trick */}
             {state.trick.length > 0 && (
@@ -344,23 +363,120 @@ function VintPageContent() {
                 )}
               </div>
             )}
-
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
+            {isMobile && messageBox}
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+
+            <ErrorAlert message={error} onRetry={retry} />
+
+            <label className="flex items-center gap-1 text-ds-text-primary text-xs w-full justify-center cursor-pointer min-h-[44px]">
+              <input
+                type="checkbox"
+                checked={frontendHintEnabled}
+                onChange={(e) => setFrontendHintEnabled(e.target.checked)}
+              />
+              {tc('hint.toggle', { ns: 'tutorial' })}
+            </label>
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            {isGameEnd && (
+              <div className="text-ds-text-primary text-sm font-semibold">{humanWon ? t('win') : t('lose')}</div>
+            )}
+            <GameResetButton
+              isGameEnd={isGameEnd}
+              onReset={handleManualReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+              dataTutorial="vint-reset-button"
+            />
           </div>
 
           {/* Footer */}
-          <GameFooter className={`${gameTheme.vint.footer} px-4 py-2.5`}>
+          <GameFooter
+            message={isMobile ? undefined : messageBox}
+            className={`${gameTheme.vint.footer} px-4 py-2.5`}
+            actions={
+              isHumanBid || isHumanPlay || isHandEnd ? (
+                <div className="flex flex-wrap gap-2 items-center" data-tutorial="vint-actions">
+                  {isHumanBid && (
+                    <>
+                      <label className="text-ds-text-muted text-xs flex items-center gap-1" htmlFor="vint-level-select">
+                        {t('levelLabel')}
+                        <select
+                          id="vint-level-select"
+                          className="bg-black/30 text-ds-text-primary rounded px-1 min-h-[44px]"
+                          value={bidLevel}
+                          onChange={(e) => setBidLevel(Number(e.target.value))}
+                        >
+                          {levels.map((l) => (
+                            <option key={l} value={l} disabled={!vintLevelHasLegalBid(l, state.highBid)}>
+                              {l}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label className="text-ds-text-muted text-xs flex items-center gap-1" htmlFor="vint-denom-select">
+                        {t('denomLabel')}
+                        <select
+                          id="vint-denom-select"
+                          className="bg-black/30 text-ds-text-primary rounded px-1 min-h-[44px]"
+                          value={bidDenom}
+                          onChange={(e) => setBidDenom(Number(e.target.value))}
+                        >
+                          {DENOMS.map((d) => (
+                            <option key={d} value={d} disabled={!vintBidBeats(d, bidLevel, state.highBid)}>
+                              {denomLabel(d)}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={handleBid}
+                        disabled={loading || !bidIsLegal}
+                        data-testid="vint-bid-button"
+                      >
+                        {t('bidButton')}
+                      </button>
+                      <span className="text-ds-text-primary text-sm" data-testid="vint-selected-trick-value">
+                        {t('selectedTrickValue', { n: state.trickValues[bidDenom] + (bidLevel - 1) * 10 })}
+                      </span>
+                      {!bidIsLegal && (
+                        <span className="text-ds-warning text-xs" data-testid="vint-bid-too-low">
+                          {t('bidMustBeat')}
+                        </span>
+                      )}
+                      <button type="button" className={btnWarning} onClick={() => exec('pass')} disabled={loading}>
+                        {t('passButton')}
+                      </button>
+                    </>
+                  )}
+
+                  {isHumanPlay && (
+                    <button
+                      type="button"
+                      className={btnSuccess}
+                      onClick={handlePlay}
+                      disabled={loading || selected === null}
+                    >
+                      {t('playButton')}
+                    </button>
+                  )}
+
+                  {isHandEnd && !isGameEnd && (
+                    <button type="button" className={btnSuccess} onClick={() => exec('next')} disabled={loading}>
+                      {t('nextHand')}
+                    </button>
+                  )}
+                </div>
+              ) : null
+            }
+          >
             <div className="mb-2" data-tutorial="vint-hand">
               <div className="text-ds-text-muted text-xs mb-1">{t('yourHand')}</div>
               <div className="flex flex-wrap gap-1">
@@ -382,8 +498,6 @@ function VintPageContent() {
               </div>
             </div>
 
-            <ErrorAlert message={error} onRetry={retry} />
-
             {isHumanBid && (
               <div className="text-ds-text-muted text-xs mb-2" data-testid="vint-bid-notice">
                 {t('bidNotice')}
@@ -394,104 +508,6 @@ function VintPageContent() {
                 {t('playNotice')}
               </div>
             )}
-
-            <label className="flex items-center gap-1 text-ds-text-primary text-xs w-full justify-center cursor-pointer min-h-[44px]">
-              <input
-                type="checkbox"
-                checked={frontendHintEnabled}
-                onChange={(e) => setFrontendHintEnabled(e.target.checked)}
-              />
-              {tc('hint.toggle', { ns: 'tutorial' })}
-            </label>
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            <div className="flex flex-wrap gap-2 items-center" data-tutorial="vint-actions">
-              {isHumanBid && (
-                <>
-                  <label className="text-ds-text-muted text-xs flex items-center gap-1" htmlFor="vint-level-select">
-                    {t('levelLabel')}
-                    <select
-                      id="vint-level-select"
-                      className="bg-black/30 text-ds-text-primary rounded px-1 min-h-[44px]"
-                      value={bidLevel}
-                      onChange={(e) => setBidLevel(Number(e.target.value))}
-                    >
-                      {levels.map((l) => (
-                        <option key={l} value={l} disabled={!vintLevelHasLegalBid(l, state.highBid)}>
-                          {l}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label className="text-ds-text-muted text-xs flex items-center gap-1" htmlFor="vint-denom-select">
-                    {t('denomLabel')}
-                    <select
-                      id="vint-denom-select"
-                      className="bg-black/30 text-ds-text-primary rounded px-1 min-h-[44px]"
-                      value={bidDenom}
-                      onChange={(e) => setBidDenom(Number(e.target.value))}
-                    >
-                      {DENOMS.map((d) => (
-                        <option key={d} value={d} disabled={!vintBidBeats(d, bidLevel, state.highBid)}>
-                          {denomLabel(d)}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleBid}
-                    disabled={loading || !bidIsLegal}
-                    data-testid="vint-bid-button"
-                  >
-                    {t('bidButton')}
-                  </button>
-                  <span className="text-ds-text-primary text-sm" data-testid="vint-selected-trick-value">
-                    {t('selectedTrickValue', { n: state.trickValues[bidDenom] + (bidLevel - 1) * 10 })}
-                  </span>
-                  {!bidIsLegal && (
-                    <span className="text-ds-warning text-xs" data-testid="vint-bid-too-low">
-                      {t('bidMustBeat')}
-                    </span>
-                  )}
-                  <button type="button" className={btnWarning} onClick={() => exec('pass')} disabled={loading}>
-                    {t('passButton')}
-                  </button>
-                </>
-              )}
-
-              {isHumanPlay && (
-                <button
-                  type="button"
-                  className={btnSuccess}
-                  onClick={handlePlay}
-                  disabled={loading || selected === null}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-
-              {isHandEnd && !isGameEnd && (
-                <button type="button" className={btnSuccess} onClick={() => exec('next')} disabled={loading}>
-                  {t('nextHand')}
-                </button>
-              )}
-
-              {isGameEnd && (
-                <span className="text-ds-text-primary text-sm font-semibold mr-1">
-                  {humanWon ? t('win') : t('lose')}
-                </span>
-              )}
-
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="vint-reset-button"
-              />
-            </div>
           </GameFooter>
         </>
       )}

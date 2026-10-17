@@ -232,6 +232,20 @@ beforeEach(() => {
 });
 
 describe('HoldemPage', () => {
+  it('keeps the hand in the footer and places settings and shortcuts in the play area', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<HoldemPage />);
+
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const playArea = footerContent.closest('footer')?.parentElement?.querySelector(':scope > .flex-1.overflow-y-auto');
+
+    expect(footerContent.querySelector('[data-tutorial="he-player-hand"]')).toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('tournament-settings')).not.toBeInTheDocument();
+    expect(within(footerContent).queryByTestId('holdem-kbd-shortcuts')).not.toBeInTheDocument();
+    expect(playArea).toContainElement(screen.getByTestId('tournament-settings'));
+    expect(playArea).toContainElement(screen.getByTestId('holdem-kbd-shortcuts'));
+  });
+
   it('announces newly revealed community cards', async () => {
     mockExec.mockResolvedValue(flopState);
     renderWithProviders(<HoldemPage />);
@@ -483,7 +497,7 @@ describe('HoldemPage', () => {
     mockExec.mockResolvedValue(preFlopWithBetState);
     renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText('CPU行動:')).toBeInTheDocument());
-    expect(screen.getByText(/Player 1: ベット/)).toBeInTheDocument();
+    expect(screen.getByText(/CPU 1: ベット/)).toBeInTheDocument();
   });
 
   it('does not show CPU actions log when cpuActions is empty', async () => {
@@ -496,7 +510,7 @@ describe('HoldemPage', () => {
   it('shows amount in CPU action when amount > 0', async () => {
     mockExec.mockResolvedValue(preFlopWithBetState);
     renderWithProviders(<HoldemPage />);
-    await waitFor(() => expect(screen.getByText(/Player 1: ベット \(40\)/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/CPU 1: ベット \(40\)/)).toBeInTheDocument());
   });
 
   it('does not show amount when action amount is 0', async () => {
@@ -506,7 +520,7 @@ describe('HoldemPage', () => {
     });
     renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText('CPU行動:')).toBeInTheDocument());
-    expect(screen.getByText(/Player 1: チェック/)).toBeInTheDocument();
+    expect(screen.getByText(/CPU 1: チェック/)).toBeInTheDocument();
     expect(screen.queryByText(/\(0\)/)).not.toBeInTheDocument();
   });
 
@@ -516,7 +530,7 @@ describe('HoldemPage', () => {
       cpuActions: [{ playerIdx: 1, action: 99, amount: 0 }],
     });
     renderWithProviders(<HoldemPage />);
-    await waitFor(() => expect(screen.getByText(/Player 1: 不明/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/CPU 1: 不明/)).toBeInTheDocument());
   });
 
   // ---- round results ----
@@ -701,6 +715,9 @@ describe('HoldemPage', () => {
     mockExec.mockResolvedValue(preFlopState);
     renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: 'ベット' }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'チェック' })).toBeInTheDocument();
     expect(screen.getByText('コール不要（チェック可能）')).toBeInTheDocument();
     expect(screen.queryByText(/最小レイズ額/)).not.toBeInTheDocument();

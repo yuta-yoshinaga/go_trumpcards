@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"sort"
+	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -161,7 +162,14 @@ func (p *HeartsWebPresenter) buildMessage(h interfaces.HeartsGame, trick []*doma
 	}
 	switch h.GetPhase() {
 	case domain.HeartsPhasePass:
-		return "", "hearts.passPhase", nil
+		code := "hearts.passPhase.left"
+		switch h.GetPassDirection() {
+		case domain.HeartsPassRight:
+			code = "hearts.passPhase.right"
+		case domain.HeartsPassAcross:
+			code = "hearts.passPhase.across"
+		}
+		return "", code, map[string]string{"count": strconv.Itoa(domain.HeartsPassCardCount)}
 	case domain.HeartsPhasePlay:
 		if len(trick) == 0 {
 			return "", "hearts.playPhase.lead", nil

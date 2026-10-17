@@ -85,6 +85,76 @@ afterEach(() => {
 });
 
 describe('ClockSolitairePage', () => {
+  it('renders all pile labels and progress badges above the clock cards', async () => {
+    renderWithProviders(<ClockSolitairePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    for (let i = 0; i < 13; i++) {
+      expect(screen.getByTestId(`clock-pile-label-${i.toString()}`)).toBeVisible();
+      expect(screen.getByTestId(`clock-pile-progress-${i.toString()}`)).toBeVisible();
+    }
+    expect(screen.getByTestId('clock-pile-label-0')).toHaveClass('z-20');
+    expect(screen.getByTestId('clock-pile-progress-0')).toHaveClass('z-20');
+    expect(screen.getByTestId('clock-pile-progress-11')).toHaveStyle({ top: '8px' });
+  });
+
+  it('tightens the clock radius on large desktop and keeps the develop radius at 800px', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    const large = renderWithProviders(<ClockSolitairePage />);
+    const largeFace = await screen.findByTestId('clock-face');
+    expect(largeFace).toHaveStyle({ width: '430px', height: '480px' });
+    large.unmount();
+
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 800 });
+    const desktop = renderWithProviders(<ClockSolitairePage />);
+    const desktopFace = await screen.findByTestId('clock-face');
+    expect(desktopFace).toHaveStyle({ width: '436px', height: '460px' });
+    desktop.unmount();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+    window.dispatchEvent(new Event('resize'));
+  });
+
+  it('scales pile labels and progress positions with compact and full-size cards', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 });
+    const compact = renderWithProviders(<ClockSolitairePage />);
+    const compactFace = await screen.findByTestId('clock-face');
+    expect(compactFace).toHaveStyle({ width: '410px', height: '450px' });
+    expect(screen.getByTestId('clock-pile-label-0')).toHaveStyle({ left: '72.8px' });
+    expect(screen.getByTestId('clock-pile-progress-0')).toHaveStyle({ left: '82px' });
+    compact.unmount();
+
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
+    const fullSize = renderWithProviders(<ClockSolitairePage />);
+    const fullSizeFace = await screen.findByTestId('clock-face');
+    expect(fullSizeFace).toHaveStyle({ width: '430px', height: '480px' });
+    expect(screen.getByTestId('clock-pile-label-0')).toHaveStyle({ left: '91px' });
+    expect(screen.getByTestId('clock-pile-progress-0')).toHaveStyle({ left: '102.5px' });
+    fullSize.unmount();
+
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+    window.dispatchEvent(new Event('resize'));
+  });
+
+  it.each([
+    [640, 60],
+    [375, 40],
+  ])('keeps pile badge offsets at their original pixel positions at %i px', async (width, cardWidth) => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: width });
+    const { unmount } = renderWithProviders(<ClockSolitairePage />);
+    await screen.findByTestId('clock-face');
+
+    const posX = Math.cos(-Math.PI / 3);
+    expect(screen.getByTestId('clock-pile-label-0')).toHaveStyle({ left: `${cardWidth / 2 + posX * 82}px` });
+    expect(screen.getByTestId('clock-pile-progress-0')).toHaveStyle({ left: `${cardWidth / 2 + posX * 105}px` });
+
+    unmount();
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+    window.dispatchEvent(new Event('resize'));
+  });
+
   it('fits the clock face to narrow viewports and updates after resizing', async () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: 320 });

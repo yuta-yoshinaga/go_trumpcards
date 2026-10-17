@@ -2,17 +2,19 @@ import { useCallback, useMemo } from 'react';
 import { ramsApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
+import { CpuAccordion } from '../components/CpuAccordion';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -73,6 +75,7 @@ function RamsPageContent() {
     retry,
   } = useGameApi<RamsResponse, Parameters<typeof ramsApi.exec>>(ramsApi.exec);
   const { cardWidth } = useCardDimensions();
+  const isMobile = useIsMobile();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('rams', state);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('rams');
@@ -208,43 +211,45 @@ function RamsPageContent() {
               </div>
             </div>
 
-            <div className="flex flex-wrap justify-center gap-2 mb-4">
-              {state.players.map((p) => (
-                <div
-                  key={p.id}
-                  className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
-                  data-testid={`rm-seat-${p.id.toString()}`}
-                >
-                  <span className="text-ds-text-primary">
-                    {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
-                  </span>
-                  {/* **参加判断もリードも親の左隣から始まる** (#5748)。3〜5 人卓で
+            <CpuAccordion playerCount={state.players.length}>
+              <div className="flex flex-wrap justify-center gap-2 mb-4">
+                {state.players.map((p) => (
+                  <div
+                    key={p.id}
+                    className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
+                    data-testid={`rm-seat-${p.id.toString()}`}
+                  >
+                    <span className="text-ds-text-primary">
+                      {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
+                    </span>
+                    {/* **参加判断もリードも親の左隣から始まる** (#5748)。3〜5 人卓で
                       毎ラウンド 1 つ回るので、誰が親かが出ていないと自分が何番目に
                       決断するのか読めない。 */}
-                  {p.id === state.dealerIdx && (
-                    <span
-                      className={`ml-1 rounded px-1.5 py-0.5 text-xs ${badgeWarningColors}`}
-                      data-testid={`rm-dealer-${p.id.toString()}`}
-                    >
-                      <span aria-hidden="true">{t('dealerBadge')}</span>
-                      <span className="sr-only">{t('dealerAria')}</span>
-                    </span>
-                  )}
-                  {': '}
-                  {t('header.seat', { chips: String(p.chips), tricks: String(p.roundTricks) })} [{statusStr(p)}]
-                  {(() => {
-                    const movement = state.roundSettlement?.find((item) => item.playerIdx === p.id);
-                    if (!movement) return null;
-                    const delta = movement.payout - movement.penalty;
-                    return (
-                      <span className={delta >= 0 ? 'ml-1 text-ds-success' : 'ml-1 text-ds-error-text'}>
-                        {t('header.roundDelta', { delta })}
+                    {p.id === state.dealerIdx && (
+                      <span
+                        className={`ml-1 rounded px-1.5 py-0.5 text-xs ${badgeWarningColors}`}
+                        data-testid={`rm-dealer-${p.id.toString()}`}
+                      >
+                        <span aria-hidden="true">{t('dealerBadge')}</span>
+                        <span className="sr-only">{t('dealerAria')}</span>
                       </span>
-                    );
-                  })()}
-                </div>
-              ))}
-            </div>
+                    )}
+                    {': '}
+                    {t('header.seat', { chips: String(p.chips), tricks: String(p.roundTricks) })} [{statusStr(p)}]
+                    {(() => {
+                      const movement = state.roundSettlement?.find((item) => item.playerIdx === p.id);
+                      if (!movement) return null;
+                      const delta = movement.payout - movement.penalty;
+                      return (
+                        <span className={delta >= 0 ? 'ml-1 text-ds-success' : 'ml-1 text-ds-error-text'}>
+                          {t('header.roundDelta', { delta })}
+                        </span>
+                      );
+                    })()}
+                  </div>
+                ))}
+              </div>
+            </CpuAccordion>
 
             <div data-tutorial="rams-trick">
               <TrickDisplay
@@ -274,15 +279,78 @@ function RamsPageContent() {
               </div>
             )}
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
             <ErrorAlert message={error} onRetry={retry} />
 
+            {hintEnabled && hint && (
+              <div className="mt-3 flex justify-center">
+                <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />
+              </div>
+            )}
+
+            <SettingsPanel
+              title={tc('settings.title')}
+              groups={[{ items: [hintCheckboxItem(tc, hintEnabled, setHintEnabled)] }]}
+            />
+          </div>
+
+          <GameFooter
+            className={`${gameTheme.rams.footer} px-4 py-2.5`}
+            tall={isMobile}
+            message={
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            }
+            actions={
+              <div className="flex flex-wrap gap-2" data-tutorial="rams-decide" data-testid="rm-primary-actions">
+                {/* 参加選択は配り直後の一度きり。 */}
+                {isDecide && !isGameEnd && (
+                  <>
+                    <button
+                      type="button"
+                      className={btnWarning}
+                      onClick={handlePlayIn}
+                      disabled={loading}
+                      data-testid="rm-in-btn"
+                    >
+                      {t('actions.playIn')}
+                    </button>
+                    <button
+                      type="button"
+                      className={btnSuccess}
+                      onClick={handlePassOut}
+                      disabled={loading}
+                      data-testid="rm-out-btn"
+                    >
+                      {t('actions.passOut')}
+                    </button>
+                  </>
+                )}
+                {isRoundEnd && !isGameEnd && (
+                  <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                    {t('actions.nextRound')}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={() => requestConfirm(handleReset)}
+                  disabled={loading}
+                >
+                  {t('actions.reset')}
+                </button>
+                {!isGameEnd && (
+                  <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
+                    {t('actions.giveUp')}
+                  </button>
+                )}
+              </div>
+            }
+          >
             {human && human.cards.length > 0 && (
-              <div className="mt-4" data-tutorial="rams-hand">
+              <div className="mb-2" data-tutorial="rams-hand">
                 <div className="text-ds-text-muted text-sm mb-1">
                   {t('header.you')}: {human.cardCount}
                 </div>
@@ -318,62 +386,7 @@ function RamsPageContent() {
                 </span>
               </div>
             )}
-
-            {hintEnabled && hint && (
-              <div className="mt-3 flex justify-center">
-                <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />
-              </div>
-            )}
-
-            <div className="mt-4 flex flex-wrap gap-2" data-tutorial="rams-decide">
-              {/* 参加選択は配り直後の一度きり。 */}
-              {isDecide && !isGameEnd && (
-                <>
-                  <button
-                    type="button"
-                    className={btnWarning}
-                    onClick={handlePlayIn}
-                    disabled={loading}
-                    data-testid="rm-in-btn"
-                  >
-                    {t('actions.playIn')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnSuccess}
-                    onClick={handlePassOut}
-                    disabled={loading}
-                    data-testid="rm-out-btn"
-                  >
-                    {t('actions.passOut')}
-                  </button>
-                </>
-              )}
-              {isRoundEnd && !isGameEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('actions.nextRound')}
-                </button>
-              )}
-              <button
-                type="button"
-                className={btnPrimary}
-                onClick={() => requestConfirm(handleReset)}
-                disabled={loading}
-              >
-                {t('actions.reset')}
-              </button>
-              {!isGameEnd && (
-                <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
-                  {t('actions.giveUp')}
-                </button>
-              )}
-            </div>
-
-            <SettingsPanel
-              title={tc('settings.title')}
-              groups={[{ items: [hintCheckboxItem(tc, hintEnabled, setHintEnabled)] }]}
-            />
-          </div>
+          </GameFooter>
 
           <ActionLogSection
             isEndPhase={isGameEnd}
