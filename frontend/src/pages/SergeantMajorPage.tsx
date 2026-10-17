@@ -6,6 +6,7 @@ import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { HintTooltip } from '../components/hint/HintTooltip';
@@ -79,7 +80,7 @@ function SergeantMajorPageContent() {
     exec: dispatch,
     retry,
   } = useGameApi<SergeantMajorResponse, Parameters<typeof sergeantmajorApi.exec>>(sergeantmajorApi.exec);
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('sergeantmajor', state);
   const [picked, setPicked] = useState<number[]>([]);
 
@@ -172,6 +173,10 @@ function SergeantMajorPageContent() {
     if (state.winnerIdx < 0) return t('result.tie');
     return t('result.cpu', { name: t('header.cpu', { idx: String(state.winnerIdx) }) });
   })();
+
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
 
   return (
     <GamePageShell
@@ -298,24 +303,109 @@ function SergeantMajorPageContent() {
               </div>
             )}
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
+            {isMobile && messageBox}
             <ErrorAlert message={error} onRetry={retry} />
 
-            {human && human.cards.length > 0 && (
-              <div className="mt-4" data-tutorial="sm-hand">
-                <div className="text-ds-text-muted text-sm mb-1">
-                  {t('header.you')}: {human.cardCount}
-                </div>
+            {hintEnabled && hint && (
+              <div className="mt-3 flex justify-center">
+                <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />
+              </div>
+            )}
+
+            <SettingsPanel
+              title={tc('settings.title')}
+              groups={[{ items: [hintCheckboxItem(tc, hintEnabled, setHintEnabled)] }]}
+            />
+          </div>
+
+          <GameFooter
+            message={isMobile ? undefined : messageBox}
+            tall={true}
+            className="px-4 py-2"
+            actions={
+              <div className="flex flex-wrap gap-2" data-tutorial="sm-actions">
                 {isHumanDiscardTurn && (
-                  <div className="text-ds-text-primary text-sm mb-1" data-testid="sm-discard-progress">
+                  <div className="w-full text-ds-text-primary text-sm" data-testid="sm-discard-progress">
                     {t('actions.discardProgress', { n: String(picked.length), total: String(state.discardCount) })}
                   </div>
                 )}
-                <div className="flex flex-wrap gap-2">
+                {isHumanTrumpTurn &&
+                  SUITS.map((suit) => (
+                    <button
+                      key={suit}
+                      type="button"
+                      className={btnWarning}
+                      onClick={() => handleTrump(suit)}
+                      disabled={loading}
+                      data-testid={`sm-trump-${suit.toString()}-btn`}
+                    >
+                      {t('actions.trump', { suit: suitSymbolAt(suit, '?') })}
+                    </button>
+                  ))}
+                {/* **ちょうど 4 枚選ぶまで確定できない。** サーバが必ず拒否する操作は出さない。 */}
+                {isHumanDiscardTurn && (
+                  <button
+                    type="button"
+                    className={btnWarning}
+                    onClick={handleDiscard}
+                    disabled={loading || picked.length !== state.discardCount}
+                    aria-disabled={picked.length !== state.discardCount}
+                    data-testid="sm-discard-btn"
+                  >
+                    {t('actions.discard', { n: String(picked.length), total: String(state.discardCount) })}
+                  </button>
+                )}
+                {isRoundEnd && !isGameEnd && human && human.surplus !== 0 && (
+                  <div
+                    className="w-full text-center mb-2 text-sm text-ds-accent"
+                    role="status"
+                    data-testid="sm-forfeit-notice"
+                  >
+                    {human.surplus < 0
+                      ? t('roundEnd.forfeitWarn', { n: String(-human.surplus) })
+                      : t('roundEnd.forfeitGain', { n: String(human.surplus) })}
+                  </div>
+                )}
+                {isRoundEnd && !isGameEnd && (
+                  <p
+                    className="w-full text-center mb-2 text-sm text-ds-text-muted"
+                    data-testid="sm-round-exchange-rule"
+                  >
+                    {t('roundEnd.exchangeRule')}
+                  </p>
+                )}
+                {isRoundEnd && !isGameEnd && (
+                  <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                    {t('actions.nextRound')}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={() => requestConfirm(handleReset)}
+                  disabled={loading}
+                >
+                  {t('actions.reset')}
+                </button>
+                {!isGameEnd && (
+                  <button
+                    type="button"
+                    className={btnDanger}
+                    onClick={() => requestGiveUpConfirm(() => void dispatch('giveup'))}
+                    disabled={loading}
+                  >
+                    {t('actions.giveUp')}
+                  </button>
+                )}
+              </div>
+            }
+          >
+            {human && human.cards.length > 0 && (
+              <div data-tutorial="sm-hand">
+                <div className="text-ds-text-muted text-sm mb-1">
+                  {t('header.you')}: {human.cardCount}
+                </div>
+                <div className={`flex flex-wrap ${isMobile ? 'gap-1' : 'gap-2'}`}>
                   {human.cards.map((card, idx) => (
                     <button
                       key={`${card.design}-${card.value}-${idx}`}
@@ -363,86 +453,7 @@ function SergeantMajorPageContent() {
                 </div>
               </div>
             )}
-
-            {hintEnabled && hint && (
-              <div className="mt-3 flex justify-center">
-                <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />
-              </div>
-            )}
-
-            <div className="mt-4 flex flex-wrap gap-2" data-tutorial="sm-actions">
-              {isHumanTrumpTurn &&
-                SUITS.map((suit) => (
-                  <button
-                    key={suit}
-                    type="button"
-                    className={btnWarning}
-                    onClick={() => handleTrump(suit)}
-                    disabled={loading}
-                    data-testid={`sm-trump-${suit.toString()}-btn`}
-                  >
-                    {t('actions.trump', { suit: suitSymbolAt(suit, '?') })}
-                  </button>
-                ))}
-              {/* **ちょうど 4 枚選ぶまで確定できない。** サーバが必ず拒否する操作は出さない。 */}
-              {isHumanDiscardTurn && (
-                <button
-                  type="button"
-                  className={btnWarning}
-                  onClick={handleDiscard}
-                  disabled={loading || picked.length !== state.discardCount}
-                  aria-disabled={picked.length !== state.discardCount}
-                  data-testid="sm-discard-btn"
-                >
-                  {t('actions.discard', { n: String(picked.length), total: String(state.discardCount) })}
-                </button>
-              )}
-              {isRoundEnd && !isGameEnd && human && human.surplus !== 0 && (
-                <div
-                  className="w-full text-center mb-2 text-sm text-ds-accent"
-                  role="status"
-                  data-testid="sm-forfeit-notice"
-                >
-                  {human.surplus < 0
-                    ? t('roundEnd.forfeitWarn', { n: String(-human.surplus) })
-                    : t('roundEnd.forfeitGain', { n: String(human.surplus) })}
-                </div>
-              )}
-              {isRoundEnd && !isGameEnd && (
-                <p className="w-full text-center mb-2 text-sm text-ds-text-muted" data-testid="sm-round-exchange-rule">
-                  {t('roundEnd.exchangeRule')}
-                </p>
-              )}
-              {isRoundEnd && !isGameEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('actions.nextRound')}
-                </button>
-              )}
-              <button
-                type="button"
-                className={btnPrimary}
-                onClick={() => requestConfirm(handleReset)}
-                disabled={loading}
-              >
-                {t('actions.reset')}
-              </button>
-              {!isGameEnd && (
-                <button
-                  type="button"
-                  className={btnDanger}
-                  onClick={() => requestGiveUpConfirm(() => void dispatch('giveup'))}
-                  disabled={loading}
-                >
-                  {t('actions.giveUp')}
-                </button>
-              )}
-            </div>
-
-            <SettingsPanel
-              title={tc('settings.title')}
-              groups={[{ items: [hintCheckboxItem(tc, hintEnabled, setHintEnabled)] }]}
-            />
-          </div>
+          </GameFooter>
 
           <ActionLogSection
             isEndPhase={isGameEnd}

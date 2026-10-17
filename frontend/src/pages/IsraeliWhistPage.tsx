@@ -6,6 +6,7 @@ import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { HintTooltip } from '../components/hint/HintTooltip';
@@ -102,7 +103,7 @@ function IsraeliWhistPageContent() {
     exec: dispatch,
     retry,
   } = useGameApi<IsraeliWhistResponse, Parameters<typeof israeliwhistApi.exec>>(israeliwhistApi.exec);
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('israeliwhist', state);
   const previousStateRef = useRef<IsraeliWhistResponse | null>(null);
   const [cpuBidAnnouncement, setCpuBidAnnouncement] = useState('');
@@ -232,6 +233,10 @@ function IsraeliWhistPageContent() {
     return t('result.lose', { idx: String(state.winnerIdx) });
   })();
 
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.israeliwhist')}
@@ -339,19 +344,127 @@ function IsraeliWhistPageContent() {
               </div>
             )}
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
+            {isMobile && messageBox}
             <ErrorAlert message={error} onRetry={retry} />
 
+            {hintEnabled && hint && (
+              <div className="mt-3 flex justify-center">
+                <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />
+              </div>
+            )}
+
+            {/* **ノルマ下限と禁止値はボタンの有効・無効にしか出ていなかった。**
+                押せるボタンを探して下限を逆算するしかなく、読み上げでは 1 つずつ
+                確かめることになる。CUI が出しているのと同じ 2 行を出す。 */}
+            {isHumanBidTurn && (state.minimumBid > 0 || state.restrictedBid >= 0) && (
+              <div className="mt-4 text-ds-text-muted text-sm" data-testid="iw-limits">
+                {state.minimumBid > 0 && <div>{t('bidQuota', { n: state.minimumBid })}</div>}
+                {state.restrictedBid >= 0 && <div>{t('bidRestricted', { n: state.restrictedBid })}</div>}
+              </div>
+            )}
+
+            <SettingsPanel
+              title={tc('settings.title')}
+              groups={[{ items: [hintCheckboxItem(tc, hintEnabled, setHintEnabled)] }]}
+            />
+          </div>
+
+          <GameFooter
+            message={isMobile ? undefined : messageBox}
+            tall
+            className="px-4 py-2"
+            actions={
+              <div className="flex flex-wrap gap-2" data-tutorial="iw-actions">
+                {isHumanAuctionTurn && (
+                  <>
+                    {/* **入札は数とスートの両方で1つ。** スートごとにボタンを出す。 */}
+                    {SUITS.map((suit) => {
+                      // **スートごとに必要な数が違う。** 全部同じ数を送ると、
+                      // 序列で負けるスートはサーバに拒否される。
+                      const bid = minBidForSuit(suit, state.highBid, state.highSuit);
+                      const barred = bid > TRICKS_PER_ROUND;
+                      return (
+                        <button
+                          key={suit}
+                          type="button"
+                          className={btnWarning}
+                          onClick={() => handleAuction(bid, suit)}
+                          disabled={loading || barred}
+                          aria-disabled={barred}
+                          aria-label={t('actions.auction', {
+                            n: String(bid),
+                            suit: tc(SUIT_TRANSLATION_KEYS[suit]),
+                          })}
+                          data-testid={`iw-auction-${suit.toString()}-btn`}
+                        >
+                          {t('actions.auction', { n: String(bid), suit: suitSymbolAt(suit, '?') })}
+                        </button>
+                      );
+                    })}
+                    {/* **最後の1人は降りられない。** 押せないボタンを出さない。 */}
+                    {mustBid ? (
+                      <span className="self-center text-ds-text-muted text-sm" data-testid="iw-must-bid">
+                        {t('mustBid')}
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        className={btnSuccess}
+                        onClick={handleAuctionPass}
+                        disabled={loading}
+                        data-testid="iw-pass-btn"
+                      >
+                        {t('actions.pass')}
+                      </button>
+                    )}
+                  </>
+                )}
+                {isHumanBidTurn &&
+                  BIDS.map((bid) => {
+                    // **サーバが必ず拒否する宣言は出さない。** 落札者のノルマ未満と、
+                    // 合計が13になる値がそれにあたる。
+                    const barred = bid < state.minimumBid || bid === state.restrictedBid;
+                    return (
+                      <button
+                        key={bid}
+                        type="button"
+                        className={btnWarning}
+                        onClick={() => handleBid(bid)}
+                        disabled={loading || barred}
+                        aria-disabled={barred}
+                        data-testid={`iw-bid-${bid.toString()}-btn`}
+                      >
+                        {String(bid)}
+                      </button>
+                    );
+                  })}
+                {isRoundEnd && !isGameEnd && (
+                  <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                    {t('actions.nextRound')}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={() => requestConfirm(handleReset)}
+                  disabled={loading}
+                >
+                  {t('actions.reset')}
+                </button>
+                {!isGameEnd && (
+                  <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
+                    {t('actions.giveUp')}
+                  </button>
+                )}
+              </div>
+            }
+          >
             {human && human.cards.length > 0 && (
-              <div className="mt-4" data-tutorial="iw-hand">
+              <div data-tutorial="iw-hand">
                 <div className="text-ds-text-muted text-sm mb-1">
                   {t('header.you')}: {human.cardCount}
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <div className={`flex flex-wrap ${isMobile ? 'gap-1' : 'gap-2'}`}>
                   {human.cards.map((card, idx) => {
                     const unplayable = isHumanTurn && !legalRing.has(idx);
                     return (
@@ -377,112 +490,7 @@ function IsraeliWhistPageContent() {
                 </span>
               </div>
             )}
-
-            {hintEnabled && hint && (
-              <div className="mt-3 flex justify-center">
-                <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />
-              </div>
-            )}
-
-            {/* **ノルマ下限と禁止値はボタンの有効・無効にしか出ていなかった。**
-                押せるボタンを探して下限を逆算するしかなく、読み上げでは 1 つずつ
-                確かめることになる。CUI が出しているのと同じ 2 行を出す。 */}
-            {isHumanBidTurn && (state.minimumBid > 0 || state.restrictedBid >= 0) && (
-              <div className="mt-4 text-ds-text-muted text-sm" data-testid="iw-limits">
-                {state.minimumBid > 0 && <div>{t('bidQuota', { n: state.minimumBid })}</div>}
-                {state.restrictedBid >= 0 && <div>{t('bidRestricted', { n: state.restrictedBid })}</div>}
-              </div>
-            )}
-
-            <div className="mt-4 flex flex-wrap gap-2" data-tutorial="iw-actions">
-              {isHumanAuctionTurn && (
-                <>
-                  {/* **入札は数とスートの両方で1つ。** スートごとにボタンを出す。 */}
-                  {SUITS.map((suit) => {
-                    // **スートごとに必要な数が違う。** 全部同じ数を送ると、
-                    // 序列で負けるスートはサーバに拒否される。
-                    const bid = minBidForSuit(suit, state.highBid, state.highSuit);
-                    const barred = bid > TRICKS_PER_ROUND;
-                    return (
-                      <button
-                        key={suit}
-                        type="button"
-                        className={btnWarning}
-                        onClick={() => handleAuction(bid, suit)}
-                        disabled={loading || barred}
-                        aria-disabled={barred}
-                        aria-label={t('actions.auction', {
-                          n: String(bid),
-                          suit: tc(SUIT_TRANSLATION_KEYS[suit]),
-                        })}
-                        data-testid={`iw-auction-${suit.toString()}-btn`}
-                      >
-                        {t('actions.auction', { n: String(bid), suit: suitSymbolAt(suit, '?') })}
-                      </button>
-                    );
-                  })}
-                  {/* **最後の1人は降りられない。** 押せないボタンを出さない。 */}
-                  {mustBid ? (
-                    <span className="self-center text-ds-text-muted text-sm" data-testid="iw-must-bid">
-                      {t('mustBid')}
-                    </span>
-                  ) : (
-                    <button
-                      type="button"
-                      className={btnSuccess}
-                      onClick={handleAuctionPass}
-                      disabled={loading}
-                      data-testid="iw-pass-btn"
-                    >
-                      {t('actions.pass')}
-                    </button>
-                  )}
-                </>
-              )}
-              {isHumanBidTurn &&
-                BIDS.map((bid) => {
-                  // **サーバが必ず拒否する宣言は出さない。** 落札者のノルマ未満と、
-                  // 合計が13になる値がそれにあたる。
-                  const barred = bid < state.minimumBid || bid === state.restrictedBid;
-                  return (
-                    <button
-                      key={bid}
-                      type="button"
-                      className={btnWarning}
-                      onClick={() => handleBid(bid)}
-                      disabled={loading || barred}
-                      aria-disabled={barred}
-                      data-testid={`iw-bid-${bid.toString()}-btn`}
-                    >
-                      {String(bid)}
-                    </button>
-                  );
-                })}
-              {isRoundEnd && !isGameEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('actions.nextRound')}
-                </button>
-              )}
-              <button
-                type="button"
-                className={btnPrimary}
-                onClick={() => requestConfirm(handleReset)}
-                disabled={loading}
-              >
-                {t('actions.reset')}
-              </button>
-              {!isGameEnd && (
-                <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
-                  {t('actions.giveUp')}
-                </button>
-              )}
-            </div>
-
-            <SettingsPanel
-              title={tc('settings.title')}
-              groups={[{ items: [hintCheckboxItem(tc, hintEnabled, setHintEnabled)] }]}
-            />
-          </div>
+          </GameFooter>
 
           <ActionLogSection
             isEndPhase={isGameEnd}

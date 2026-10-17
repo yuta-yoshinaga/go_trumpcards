@@ -6,6 +6,7 @@ import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { HintTooltip } from '../components/hint/HintTooltip';
@@ -70,7 +71,7 @@ function TeenDoPaanchPageContent() {
     exec: dispatch,
     retry,
   } = useGameApi<TeenDoPaanchResponse, Parameters<typeof teendopaanchApi.exec>>(teendopaanchApi.exec);
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('teendopaanch', state);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('teendopaanch');
@@ -149,6 +150,10 @@ function TeenDoPaanchPageContent() {
     if (state.winnerIdx < 0) return t('result.tie');
     return t('result.cpu', { name: t('header.cpu', { idx: String(state.winnerIdx) }) });
   })();
+
+  const messageBox = (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
 
   return (
     <GamePageShell
@@ -261,19 +266,76 @@ function TeenDoPaanchPageContent() {
               </div>
             )}
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
+            {isMobile && messageBox}
             <ErrorAlert message={error} onRetry={retry} />
 
+            {hintEnabled && hint && (
+              <div className="mt-3 flex justify-center">
+                <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />
+              </div>
+            )}
+
+            <div role="status" aria-live="polite" data-testid="td-trump-guidance">
+              {isHumanTrumpTurn && <span className="text-ds-text-primary">{t('actions.chooseTrump')}</span>}
+              {isHumanTurn && state.trumpSuit > 0 && (
+                <span className="text-ds-accent font-semibold">
+                  {t('actions.trumpSetNext', { suit: suitSymbolAt(state.trumpSuit, '?') })}
+                </span>
+              )}
+            </div>
+
+            <SettingsPanel
+              title={tc('settings.title')}
+              groups={[{ items: [hintCheckboxItem(tc, hintEnabled, setHintEnabled)] }]}
+            />
+          </div>
+
+          <GameFooter
+            message={isMobile ? undefined : messageBox}
+            tall={false}
+            className="px-4 py-2"
+            actions={
+              <div className="flex flex-wrap gap-2" data-tutorial="td-actions">
+                {isHumanTrumpTurn &&
+                  SUITS.map((suit) => (
+                    <button
+                      key={suit}
+                      type="button"
+                      className={btnWarning}
+                      onClick={() => handleTrump(suit)}
+                      disabled={loading}
+                      data-testid={`td-trump-${suit.toString()}-btn`}
+                    >
+                      {t('actions.trump', { suit: suitSymbolAt(suit, '?') })}
+                    </button>
+                  ))}
+                {isRoundEnd && !isGameEnd && (
+                  <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                    {t('actions.nextRound')}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={() => requestConfirm(handleReset)}
+                  disabled={loading}
+                >
+                  {t('actions.reset')}
+                </button>
+                {!isGameEnd && (
+                  <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
+                    {t('actions.giveUp')}
+                  </button>
+                )}
+              </div>
+            }
+          >
             {human && human.cards.length > 0 && (
-              <div className="mt-4" data-tutorial="td-hand">
+              <div data-tutorial="td-hand">
                 <div className="text-ds-text-muted text-sm mb-1">
                   {t('header.you')}: {human.cardCount}
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <div className={`flex flex-wrap ${isMobile ? 'gap-1' : 'gap-2'}`}>
                   {human.cards.map((card, idx) => {
                     const playable = legalRing.has(idx);
                     const blocked = isHumanTurn && !playable;
@@ -300,61 +362,7 @@ function TeenDoPaanchPageContent() {
                 </span>
               </div>
             )}
-
-            {hintEnabled && hint && (
-              <div className="mt-3 flex justify-center">
-                <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />
-              </div>
-            )}
-
-            <div className="mt-4 flex flex-wrap gap-2" data-tutorial="td-actions">
-              {isHumanTrumpTurn &&
-                SUITS.map((suit) => (
-                  <button
-                    key={suit}
-                    type="button"
-                    className={btnWarning}
-                    onClick={() => handleTrump(suit)}
-                    disabled={loading}
-                    data-testid={`td-trump-${suit.toString()}-btn`}
-                  >
-                    {t('actions.trump', { suit: suitSymbolAt(suit, '?') })}
-                  </button>
-                ))}
-              {isRoundEnd && !isGameEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('actions.nextRound')}
-                </button>
-              )}
-              <button
-                type="button"
-                className={btnPrimary}
-                onClick={() => requestConfirm(handleReset)}
-                disabled={loading}
-              >
-                {t('actions.reset')}
-              </button>
-              {!isGameEnd && (
-                <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
-                  {t('actions.giveUp')}
-                </button>
-              )}
-            </div>
-
-            <div role="status" aria-live="polite" data-testid="td-trump-guidance">
-              {isHumanTrumpTurn && <span className="text-ds-text-primary">{t('actions.chooseTrump')}</span>}
-              {isHumanTurn && state.trumpSuit > 0 && (
-                <span className="text-ds-accent font-semibold">
-                  {t('actions.trumpSetNext', { suit: suitSymbolAt(state.trumpSuit, '?') })}
-                </span>
-              )}
-            </div>
-
-            <SettingsPanel
-              title={tc('settings.title')}
-              groups={[{ items: [hintCheckboxItem(tc, hintEnabled, setHintEnabled)] }]}
-            />
-          </div>
+          </GameFooter>
 
           <ActionLogSection
             isEndPhase={isGameEnd}

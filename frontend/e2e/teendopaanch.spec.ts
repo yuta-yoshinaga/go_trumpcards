@@ -6,7 +6,7 @@ import { navigateTo, TIMEOUT_ACTION, TIMEOUT_TRANSITION } from './helpers';
 const legalCard = (page: Page) => page.locator('button.ring-ds-success');
 
 // ノルマ 5 の席のときだけ出る切り札ボタン。
-const trumpBtn = (page: Page) => page.locator('[data-testid^="td-trump-"]:not([disabled])');
+const trumpBtn = (page: Page) => page.locator('[data-testid^="td-trump-"][data-testid$="-btn"]:not([disabled])');
 
 test.describe('3-2-5 E2E', () => {
   test('navigates to teendopaanch and renders initial game state', async ({ page }) => {
