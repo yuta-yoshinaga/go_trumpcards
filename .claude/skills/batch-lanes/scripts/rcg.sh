@@ -3,6 +3,17 @@ source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 # rcg.sh <slot> — run the receipt and exit 0 only when every gate passed.
 # On success it stamps gate<slot>.ok with the worktree hash; ship.sh/shipp.sh/fixpush.sh refuse without a matching stamp.
 slot="$1"
+pidfile="$BATCH_STATE/rcg$slot.pid"
+if [[ -s "$pidfile" ]]; then
+  old_pid=$(cat "$pidfile")
+  stop_tree() {
+    local parent="$1" child
+    while read -r child; do [[ -n "$child" ]] && stop_tree "$child"; done < <(pgrep -P "$parent" 2>/dev/null || true)
+    kill "$parent" 2>/dev/null || true
+  }
+  if [[ "$old_pid" =~ ^[0-9]+$ ]] && kill -0 "$old_pid" 2>/dev/null && [[ "$old_pid" != "$$" ]]; then stop_tree "$old_pid"; fi
+fi
+printf '%s\n' "$$" > "$pidfile"
 started="$(date +%s%N)"
 printf '%s\n' "$started" > "$BATCH_STATE/rcg$slot.started"
 exec 9>"$BATCH_STATE/receipt.lock"

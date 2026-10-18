@@ -151,7 +151,7 @@ fi
 ! grep -q 'gh pr view .*codecov' "$SCRIPTS/land.sh" || fail "land.sh retains result-free codecov pipeline"
 grep -q 'CLAUDE_CO_AUTHOR' "$SCRIPTS/ship.sh" || fail "ship.sh does not support CLAUDE_CO_AUTHOR"
 grep -q 'BATCH_DELEGATED_TO' "$SCRIPTS/ship.sh" || fail "ship.sh does not support BATCH_DELEGATED_TO"
-grep -q 'Delegated-To:.*BATCH_DELEGATED_TO:-codex (dele -k edit)' "$SCRIPTS/fixpush.sh" || fail "fixpush.sh does not retain the default delegated-to metadata"
+grep -q 'Delegated-To:.*delegated_to' "$SCRIPTS/fixpush.sh" || fail "fixpush.sh does not write inferred delegated-to metadata"
 grep -q 'gh pr merge .*>/dev/null' "$SCRIPTS/land.sh" || fail "land.sh does not suppress merge stdout"
 grep -q 'Failed to merge PR' "$SCRIPTS/land.sh" || fail "land.sh does not report merge failures"
 grep -q 'go_trumpcards 固有の規約' "$SCRIPTS/receipt.sh" || fail "receipt.sh does not explain project-specific conventions"
@@ -769,5 +769,80 @@ GH
   ship_case 47 feat/11824-x 'summary' '' 1
   [ "$(cat "$tmp/ship-47.rc")" = 0 ] || fail 'ship rejected ALLOW_BRANCH_ISSUE_MISMATCH'
 ) || exit 1
+
+# Regressions from the batch-lanes handoff.
+(
+  idrepo="$tmp/ident-retained"; mkdir -p "$idrepo"; git init -q "$idrepo"
+  git -C "$idrepo" config user.email test@example.com; git -C "$idrepo" config user.name test
+  printf 'const cardToOutputWithFace = true;\n' > "$idrepo/a.ts"
+  git -C "$idrepo" add . && git -C "$idrepo" commit -qm base
+  printf 'const cardsToOutputWithFace = true;\nconst retained = cardToOutputWithFace;\n' > "$idrepo/a.ts"
+  out=$(bash "$SCRIPTS/identgone.sh" "$idrepo")
+  [[ "$out" != *'WARN IDENT_GONE a.ts cardToOutputWithFace'* ]] || fail "retained old identifier was warned: $out"
+) || exit 1
+(
+  mkdir -p "$tmp/e2e-wts/wt-ib88/frontend" "$tmp/e2e-bin" "$tmp/e2e-state"
+  cat > "$tmp/e2e-bin/bunx" <<'BIN'
+#!/usr/bin/env bash
+printf '<%s>\n' "$@" > "$E2E_ARGS_FILE"
+BIN
+  chmod +x "$tmp/e2e-bin/bunx"
+  E2E_SKIP_BUILD=1 E2E_ARGS_FILE="$tmp/e2e-args" BATCH_REPO="$ROOT" BATCH_WT_ROOT="$tmp/e2e-wts" BATCH_STATE="$tmp/e2e-state" PATH="$tmp/e2e-bin:$PATH" bash "$SCRIPTS/e2e.sh" 88 '--grep=two words'
+  grep -qx '<--grep=two words>' "$tmp/e2e-args" || fail "e2e.sh split a spaced Playwright argument: $(cat "$tmp/e2e-args")"
+) || exit 1
+(
+  [[ -x "$SCRIPTS/mutate.sh" ]] || fail 'mutate.sh is missing'
+) || exit 1
+(
+  repo="$tmp/delegation-repo"; state="$tmp/delegation-state"
+  mkdir -p "$repo" "$state"; git init -q "$repo"
+  git -C "$repo" config user.email test@example.com; git -C "$repo" config user.name test
+  printf 'base\n' > "$repo/file"; git -C "$repo" add file; git -C "$repo" commit -qm base
+  git -C "$repo" checkout -qb feat/current
+  printf 'feat/current\n' > "$state/slot9.branch"
+  touch -t 202001010000 "$state/slot9.branch"
+  printf 'dele: old-backend ok\n' > "$state/go-9-old.log"; touch -t 201901010000 "$state/go-9-old.log"
+  printf 'dele: new-backend ok\n' > "$state/go-9-new.log"
+  out=$(BATCH_REPO="$repo" BATCH_STATE="$state" bash -c 'source "$1"; delegated_to 9' _ "$SCRIPTS/common.sh")
+  [ "$out" = new-backend ] || fail "delegated_to included old log or missed new log: $out"
+  printf 'feat/other\n' > "$state/slot9.branch"
+  out=$(BATCH_REPO="$repo" BATCH_STATE="$state" bash -c 'source "$1"; delegated_to 9' _ "$SCRIPTS/common.sh")
+  [ "$out" = unknown ] || fail "delegated_to did not report unknown for mismatched branch: $out"
+) || exit 1
+(
+  repo="$tmp/mutate-repo"; state="$tmp/mutate-state"; root="$tmp/mutate-wts"
+  mkdir -p "$repo" "$state" "$root/wt-ib9"; git init -q "$root/wt-ib9"
+  git -C "$root/wt-ib9" config user.email test@example.com; git -C "$root/wt-ib9" config user.name test
+  printf 'original\n' > "$root/wt-ib9/target"
+  git -C "$root/wt-ib9" add target; git -C "$root/wt-ib9" commit -qm original
+  printf 'mutated\n' > "$root/wt-ib9/target"
+  git -C "$root/wt-ib9" add target; git -C "$root/wt-ib9" commit -qm mutation
+  mutation_ref=$(git -C "$root/wt-ib9" rev-parse HEAD)
+  git -C "$root/wt-ib9" switch -q --detach HEAD~1
+  cat > "$tmp/fake-e2e.sh" <<'E2E'
+#!/usr/bin/env bash
+[[ "${E2E_ALWAYS_FAIL:-0}" == 1 ]] && exit 1
+if [[ "$(cat "$BATCH_WT_ROOT/wt-ib$1/target")" == mutated && "${E2E_MUTATION_FAIL:-0}" == 1 ]]; then exit 1; fi
+exit 0
+E2E
+  chmod +x "$tmp/fake-e2e.sh"
+  run_mutate() {
+    BATCH_REPO="$root/wt-ib9" BATCH_WT_ROOT="$root" BATCH_STATE="$state" BATCH_E2E_SCRIPT="$tmp/fake-e2e.sh" \
+      E2E_ALWAYS_FAIL="${E2E_ALWAYS_FAIL:-0}" E2E_MUTATION_FAIL="${E2E_MUTATION_FAIL:-0}" \
+      bash "$SCRIPTS/mutate.sh" 9 "$mutation_ref:target"
+  }
+  if E2E_ALWAYS_FAIL=1 run_mutate >"$tmp/mutate-baseline.out" 2>&1; then fail 'mutate.sh accepted a failing baseline'; fi
+  grep -qx 'ERROR baseline failed' "$tmp/mutate-baseline.out" || fail "baseline failure was not reported: $(cat "$tmp/mutate-baseline.out")"
+  [ "$(cat "$root/wt-ib9/target")" = original ] || fail 'mutate.sh changed target after baseline failure'
+  out=$(E2E_MUTATION_FAIL=1 run_mutate) || fail "mutate.sh failed mutation-detection case: $out"
+  [ "$out" = DETECTED ] || fail "mutate.sh did not report DETECTED: $out"
+  [ "$(cat "$root/wt-ib9/target")" = original ] || fail 'mutate.sh did not restore target after detection'
+  out=$(run_mutate) || fail "mutate.sh failed non-detection case: $out"
+  [ "$out" = 'NOT DETECTED' ] || fail "mutate.sh did not report NOT DETECTED: $out"
+  [ "$(cat "$root/wt-ib9/target")" = original ] || fail 'mutate.sh did not restore target after non-detection'
+) || exit 1
+grep -q 'rcg\$slot.pid' "$SCRIPTS/rcg.sh" || fail 'rcg.sh does not track per-slot gate pid'
+grep -q 'delegated_to "\$s"' "$SCRIPTS/ship.sh" || fail 'ship.sh does not infer Delegated-To from lane logs'
+grep -q 'delegated_to "\$1"' "$SCRIPTS/fixpush.sh" || fail 'fixpush.sh does not infer Delegated-To from lane logs'
 
 echo "batch-lanes script tests passed"

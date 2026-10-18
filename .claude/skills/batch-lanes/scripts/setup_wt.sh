@@ -14,5 +14,6 @@ else
   git worktree add -q --detach "$wt" origin/develop; cd "$wt"
 fi
 git checkout -q -b "feat/$n-$g"
+printf '%s\n' "$(git branch --show-current)" > "$BATCH_STATE/slot$slot.branch"
 [ -d frontend/node_modules ] || (cd frontend && bun install --frozen-lockfile >/dev/null 2>&1)
 echo "$wt $(git branch --show-current)"

@@ -28,7 +28,7 @@ if ((${#files[@]})); then git add -- "${files[@]}"; fi
 git commit -q -F - <<M
 $3
 
-Delegated-To: ${BATCH_DELEGATED_TO:-codex (dele -k edit)}
+Delegated-To: $(delegated_to "$1")
 ${CLAUDE_CO_AUTHOR:+Co-Authored-By: $CLAUDE_CO_AUTHOR}
 ${CLAUDE_SESSION_URL:+Claude-Session: $CLAUDE_SESSION_URL}
 M

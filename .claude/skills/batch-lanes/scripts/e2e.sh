@@ -48,7 +48,7 @@ status=0
 for i in "${!run_starts[@]}"; do
   start="${run_starts[$i]}"; end="${run_starts[$((i + 1))]:-${#run_args[@]}}"
   args=("${run_args[@]:start:end-start}")
-  echo "run $((i + 1)): ${args[*]}"
+  printf 'run %s:' "$((i + 1))"; printf ' %q' "${args[@]}"; printf '\n'
   (cd "$wt/frontend" && E2E_PORT="$port" E2E_EXTERNAL_SERVER=1 bunx playwright test --reporter=line "${args[@]}") || status=1
 done
 exit "$status"
