@@ -62,7 +62,8 @@ func TestPageOneWebPresenter_Output(t *testing.T) {
 		// 英語でプレイしていても日本語の一文が出る。
 		assert.Empty(t, out["message"])
 		params := out["messageParams"].(map[string]interface{})
-		assert.Equal(t, "CPU 1", params["name"])
+		assert.NotContains(t, result, "cuiPlayerCpu")
+		assert.Equal(t, []interface{}{float64(1)}, out["penaltySeats"])
 		assert.Equal(t, "2", params["count"])
 	})
 
@@ -78,8 +79,7 @@ func TestPageOneWebPresenter_Output(t *testing.T) {
 		assert.NoError(t, json.Unmarshal([]byte(result), &out))
 		assert.Equal(t, "pageone.penaltyApplied", out["messageCode"])
 		params := out["messageParams"].(map[string]interface{})
-		assert.Contains(t, params["name"], "CPU 1")
-		assert.Contains(t, params["name"], "CPU 2")
+		assert.Equal(t, []interface{}{float64(1), float64(2)}, out["penaltySeats"])
 		assert.Equal(t, "2", params["count"])
 	})
 
@@ -93,8 +93,8 @@ func TestPageOneWebPresenter_Output(t *testing.T) {
 		var out map[string]interface{}
 		assert.NoError(t, json.Unmarshal([]byte(result), &out))
 		assert.Equal(t, "pageone.penaltyApplied", out["messageCode"])
-		params := out["messageParams"].(map[string]interface{})
-		assert.Equal(t, "あなた", params["name"])
+		assert.NotContains(t, result, "cuiPlayerYou")
+		assert.Equal(t, []interface{}{float64(0)}, out["penaltySeats"])
 	})
 
 	t.Run("must declare phase", func(t *testing.T) {

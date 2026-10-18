@@ -350,7 +350,9 @@ func TestCrazyFourPokerWebPresenterServesTheQueensUpPayouts(t *testing.T) {
 			Multiplier int    `json:"multiplier"`
 		} `json:"queensUpPayouts"`
 	}
-	require.NoError(t, json.Unmarshal([]byte(new(CrazyFourPokerWebPresenter).Output(g, nil)), &out))
+	response := new(CrazyFourPokerWebPresenter).Output(g, nil)
+	require.NoError(t, json.Unmarshal([]byte(response), &out))
+	assert.NotContains(t, response, "crazyfourpoker.fourAces")
 
 	want := domain.CrazyFourPokerQueensUpPayout()
 	require.Len(t, out.QueensUpPayouts, len(want))
@@ -397,9 +399,9 @@ func TestCrazyFourPokerWebPresenterServesTheSuperBonusPayouts(t *testing.T) {
 	g := newCrazyFourPokerForPresenter(t)
 	var out struct {
 		SuperBonusPayouts []struct {
-			Hand int    `json:"hand"`
-			Name string `json:"name"`
-			Odds string `json:"odds"`
+			Hand     int    `json:"hand"`
+			FourAces bool   `json:"fourAces"`
+			Odds     string `json:"odds"`
 		} `json:"superBonusPayouts"`
 	}
 	require.NoError(t, json.Unmarshal([]byte(new(CrazyFourPokerWebPresenter).Output(g, nil)), &out))
@@ -408,12 +410,13 @@ func TestCrazyFourPokerWebPresenterServesTheSuperBonusPayouts(t *testing.T) {
 	// 先頭は 4 枚のエースの別枠。
 	require.Len(t, out.SuperBonusPayouts, len(want)+1)
 	assert.Equal(t, "200", out.SuperBonusPayouts[0].Odds, "4 枚のエースは 200:1")
+	assert.True(t, out.SuperBonusPayouts[0].FourAces)
 	assert.Equal(t, "30", out.SuperBonusPayouts[1].Odds, "フォーカードは 30:1（300 ではない）")
 
 	for i, w := range want {
 		row := out.SuperBonusPayouts[i+1]
 		assert.Equal(t, w.Hand, row.Hand)
-		assert.Equal(t, domain.FourCardHandNames[w.Hand], row.Name)
+		assert.False(t, row.FourAces)
 		assert.Equal(t, crazyFourPokerMultStr(w.Multiplier), row.Odds)
 	}
 }

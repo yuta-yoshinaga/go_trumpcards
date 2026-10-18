@@ -98,8 +98,8 @@ export interface CrazyFourPokerResponse extends BaseGameResponse {
 export interface CrazyFourPokerSuperBonusRow {
   /** 4-card hand rank. */
   hand: number;
-  /** Display name of the hand. */
-  name: string;
+  /** True only for the separate four aces payout row. */
+  fourAces?: boolean;
   /** The X in X:1, already formatted. */
   odds: string;
 }

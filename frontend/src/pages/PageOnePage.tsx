@@ -238,7 +238,18 @@ function PageOnePageContent() {
                 <GameMessageBox
                   message={state.message}
                   messageCode={state.messageCode}
-                  messageParams={state.messageParams}
+                  messageParams={
+                    state.messageCode === 'pageone.penaltyApplied' && state.penaltySeats
+                      ? {
+                          ...state.messageParams,
+                          name: state.penaltySeats
+                            .map((seat) => state.players[seat])
+                            .filter((player) => player !== undefined)
+                            .map((player) => playerName(player.id, player.isHuman))
+                            .join(t('listSeparator')),
+                        }
+                      : state.messageParams
+                  }
                 />
 
                 <ActionLogSection
