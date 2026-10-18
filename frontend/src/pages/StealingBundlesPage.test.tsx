@@ -72,6 +72,15 @@ beforeEach(() => {
 });
 
 describe('StealingBundlesPage', () => {
+  it('renders the hand and selected turn actions in the game footer', async () => {
+    renderWithProviders(<StealingBundlesPage />);
+    const footer = await screen.findByTestId('game-footer-content');
+    expect(within(footer).getAllByRole('button', { name: /を選ぶ$/ })).toHaveLength(4);
+    fireEvent.click(within(footer).getAllByRole('button', { name: /を選ぶ$/ })[0]);
+    const actions = screen.getByTestId('game-footer-actions');
+    expect(await within(actions).findByTestId('sb-take-btn')).toBeInTheDocument();
+  });
+
   it('collapses rules and CPU seats on mobile and opens CPU seats on desktop', async () => {
     const { unmount } = renderWithProviders(<StealingBundlesPage />);
     const rules = await screen.findByTestId('sb-rule');

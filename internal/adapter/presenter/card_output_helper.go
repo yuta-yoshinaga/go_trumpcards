@@ -25,6 +25,11 @@ type CardFace struct {
 	Label string // 隅のランク／名称ラベル（例 "Wizard", "XXI"）
 	Color string // 色調トークン（例 "red", "black", "purple", "green"）
 	Deck  string // デッキ系統ID（例 "wizard"）。非空なら手続き描画へ切り替える
+	// Month は花札の月 (1..12) を表す。
+	Month int
+	// Kind は花札の種別コード。bright/animal/ribbon/chaff/gwang/yeol/tti/pi の 8 値で、
+	// ゴーストップだけ韓国語由来の種別名を使う。
+	Kind string
 }
 
 // faceProvider はドメインの Card を CardFace 記述子に対応付ける。標準52枚
@@ -32,7 +37,7 @@ type CardFace struct {
 type faceProvider func(card *domain.Card) *CardFace
 
 // cardToOutputWithFace はカードを WebOutputCard に変換し、faceProvider が
-// 記述子を返した札には手続き描画用フィールド（Glyph/Label/Color/Deck）を
+// 記述子を返した札には手続き描画用フィールド（Glyph/Label/Color/Deck/Month/Kind）を
 // 付与する (nil → nil)。fp が nil を返す標準札は cardToOutput と同一出力。
 func cardToOutputWithFace(card *domain.Card, fp faceProvider) *controller.WebOutputCard {
 	out := cardToOutput(card)
@@ -44,6 +49,8 @@ func cardToOutputWithFace(card *domain.Card, fp faceProvider) *controller.WebOut
 		out.Label = face.Label
 		out.Color = face.Color
 		out.Deck = face.Deck
+		out.Month = face.Month
+		out.Kind = face.Kind
 	}
 	return out
 }
@@ -127,7 +134,7 @@ func trickCardsToOutput(trick []*domain.TrickCard) []*controller.WebOutputTrickC
 // trickCardsToOutputWithFace は trickCardsToOutput の手続き描画版。
 //
 // 非52枚デッキの6ゲーム（Cego / FrenchTarot / Koenigrufen / Rook / Scarto /
-// Wizard）は、トリック中の札にも Glyph/Label/Color/Deck を載せる必要がある
+// Wizard）は、トリック中の札にも Glyph/Label/Color/Deck/Month/Kind を載せる必要がある
 // (ADR-0033)。face 引数のない trickCardsToOutput にこれらを寄せると、トリック
 // 表示だけ手続き描画のメタデータが落ちて標準札として描かれる — 型にもテストにも
 // 現れない、静かな表示バグになる。

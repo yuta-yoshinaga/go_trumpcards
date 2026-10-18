@@ -69,14 +69,14 @@ describe('HachiHachiPage', () => {
     renderWithProviders(<HachiHachiPage />);
     const unplayable = await screen.findByTestId('hand-card-0');
     const playable = screen.getByTestId('hand-card-1');
-    expect(unplayable).toHaveAccessibleName(/3月 タネ.*出せません$/);
-    expect(playable).toHaveAccessibleName(/7月 カス.*出せます$/);
+    expect(unplayable).toHaveAccessibleName(/桜·タネ 🌸.*出せません$/);
+    expect(playable).toHaveAccessibleName(/萩·カス 🎋.*出せます$/);
 
     const originalLanguage = i18n.language;
     await i18n.changeLanguage('en');
     try {
-      expect(unplayable).toHaveAccessibleName(/3月 タネ.*not playable$/);
-      expect(playable).toHaveAccessibleName(/7月 カス.*playable$/);
+      expect(unplayable).toHaveAccessibleName(/Cherry·Animal 🌸.*not playable$/);
+      expect(playable).toHaveAccessibleName(/Clover·Chaff 🎋.*playable$/);
     } finally {
       await i18n.changeLanguage(originalLanguage);
     }
@@ -128,8 +128,8 @@ describe('HachiHachiPage', () => {
     await waitFor(() => expect(screen.getByTestId('hachihachi-field-pick')).toBeInTheDocument());
     const first = await screen.findByTestId('field-card-0');
     const second = screen.getByTestId('field-card-2');
-    expect(first).toHaveAccessibleName(/3月 カス.*捕獲候補$/);
-    expect(second).toHaveAccessibleName(/8月 光.*捕獲候補ではありません$/);
+    expect(first).toHaveAccessibleName(/桜·カス 🌸.*捕獲候補$/);
+    expect(second).toHaveAccessibleName(/芒·光 🌕.*捕獲候補ではありません$/);
   });
 
   it('shows the next-round button at round end and dispatches nextround', async () => {

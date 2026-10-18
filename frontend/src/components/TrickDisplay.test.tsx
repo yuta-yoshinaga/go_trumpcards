@@ -107,6 +107,25 @@ describe('TrickDisplay', () => {
     expect(screen.getByAltText('1 of Spades · 11 points · not trump')).toBeInTheDocument();
   });
 
+  it('applies optional detail wrapping classes within the card width', () => {
+    render(
+      <TrickDisplay
+        currentTrick={[{ playerIdx: 0, card, points: 0, isTrump: true }]}
+        players={players}
+        cardWidth={40}
+        label="Current trick"
+        cardAriaLabelFor={() => 'Ace of Spades'}
+        cardDetailFor={() => '0点 · 切り札ではない'}
+        cardDetailClassName="break-keep [overflow-wrap:anywhere]"
+      />,
+    );
+
+    const detail = screen.getByText('0点 · 切り札ではない');
+    expect(detail).toHaveClass('break-keep', '[overflow-wrap:anywhere]');
+    expect(detail).toHaveStyle({ maxWidth: '40px' });
+    expect(screen.getByAltText('Ace of Spades · 0点 · 切り札ではない')).toBeInTheDocument();
+  });
+
   it('keeps the legacy parenthesized format when a card has only a badge', () => {
     render(
       <TrickDisplay

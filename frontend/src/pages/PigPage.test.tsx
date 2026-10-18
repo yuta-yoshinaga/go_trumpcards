@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { pigApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
@@ -47,6 +47,14 @@ beforeEach(() => {
 });
 
 describe('PigPage', () => {
+  it('renders the pass hand in the game footer', async () => {
+    renderWithProviders(<PigPage />);
+    const footer = await screen.findByTestId('game-footer-content');
+    expect(within(footer).getAllByRole('button', { name: /へ渡す$/ })).toHaveLength(4);
+    const actions = screen.getByTestId('game-footer-actions');
+    expect(within(actions).getByRole('button', { name: 'リセット' })).toBeInTheDocument();
+  });
+
   it('resets on mount', async () => {
     renderWithProviders(<PigPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
@@ -237,7 +245,7 @@ describe('PigPage', () => {
     renderWithProviders(<PigPage />);
 
     expect(await screen.findByTestId('pig-signal-alert')).toHaveTextContent(/1人.*気づ/);
-    const btn = screen.getByTestId('pig-signal-btn');
+    const btn = within(screen.getByTestId('game-footer-actions')).getByTestId('pig-signal-btn');
     expect(btn).toBeEnabled();
     // 合図の場面では札を渡せない。
     expect(screen.getAllByRole('button', { name: /へ渡す$/ })[0]).toHaveAttribute('aria-disabled', 'true');
@@ -296,7 +304,7 @@ describe('PigPage', () => {
     expect(await screen.findByTestId('pig-round-end')).toHaveTextContent(/CPU1 が気づくのに遅れ/);
 
     mockExec.mockClear();
-    fireEvent.click(screen.getByTestId('pig-next-btn'));
+    fireEvent.click(within(screen.getByTestId('game-footer-actions')).getByTestId('pig-next-btn'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('next'));
   });
 

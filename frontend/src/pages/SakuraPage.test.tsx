@@ -199,8 +199,8 @@ describe('SakuraPage', () => {
     renderWithProviders(<SakuraPage />);
     fireEvent.click(await screen.findByTestId('hand-card-0'));
 
-    expect(screen.getByRole('button', { name: '松に鶴 🌸、場札0、選択候補' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '梅に鶯 🌕、場札1、選択候補' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '桜·カス 🌸、場札0、選択候補' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '芒·光 🌕、場札1、選択候補' })).toBeInTheDocument();
     const unavailable = screen.getByRole('button', { name: '桜に幕、場札2、候補ではありません' });
     expect(unavailable).toHaveAttribute('aria-disabled', 'true');
     expect(unavailable).toHaveAttribute('aria-describedby', 'sakura-field-disabled-reason');

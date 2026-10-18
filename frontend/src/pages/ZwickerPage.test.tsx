@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { zwickerApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -67,6 +67,26 @@ describe('ZwickerPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockExec.mockResolvedValue(makeState());
+  });
+
+  it('renders the hand and capture controls in the game footer', async () => {
+    renderWithProviders(<ZwickerPage />);
+    const footer = within(await screen.findByTestId('game-footer-content'));
+    expect(footer.getByText(/あなたの手札/)).toBeInTheDocument();
+    expect(footer.getAllByRole('button').filter((button) => button.dataset.hintAction === 'discard')).toHaveLength(3);
+    const actions = within(screen.getByTestId('game-footer-actions'));
+    expect(actions.getByRole('button', { name: '取る' })).toBeInTheDocument();
+    expect(actions.getByRole('button', { name: 'ビルド' })).toBeInTheDocument();
+    expect(actions.getByRole('button', { name: '置く' })).toBeInTheDocument();
+  });
+
+  it('renders the value picker in the game footer actions', async () => {
+    renderWithProviders(<ZwickerPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    pickHand(0);
+    const actions = within(screen.getByTestId('game-footer-actions'));
+    expect(actions.getByTestId('zwicker-value-picker')).toBeInTheDocument();
   });
 
   it('resets on mount', async () => {
