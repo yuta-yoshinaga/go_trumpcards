@@ -4,6 +4,7 @@ import { useFocusTrap } from '../hooks/useFocusTrap';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import type { ActionLogEntry } from '../types/card';
 import { cardLabel } from '../utils/cardUtils';
+import { hanafudaLabel } from '../utils/hanafudaLabel';
 
 /** Props for {@link ActionLogPanel}. */
 export interface ActionLogPanelProps {
@@ -13,10 +14,13 @@ export interface ActionLogPanelProps {
 
 function formatEntry(entry: ActionLogEntry, t: (key: string, opts?: Record<string, unknown>) => string): string {
   const player = entry.playerIdx < 0 ? t('actionLog.system') : t('actionLog.player', { idx: entry.playerIdx });
-  const detailParams = entry.detailParams
+  const params = entry.detailParams ? { ...entry.detailParams } : undefined;
+  const cardName = entry.cards?.[0] ? hanafudaLabel(entry.cards[0]) : undefined;
+  if (params && params.card !== undefined && cardName) params.card = cardName;
+  const detailParams = params
     ? Object.fromEntries(
-        Object.entries(entry.detailParams).map(([key, value]) =>
-          key.endsWith('Key') ? [key.slice(0, -3), t(value, entry.detailParams)] : [key, value],
+        Object.entries(params).map(([key, value]) =>
+          key.endsWith('Key') ? [key.slice(0, -3), t(value, params)] : [key, value],
         ),
       )
     : undefined;

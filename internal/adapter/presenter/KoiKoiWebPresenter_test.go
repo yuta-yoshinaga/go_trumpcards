@@ -147,7 +147,8 @@ func TestKoiKoiWebPresenter_ActionLog(t *testing.T) {
 	p := new(presenter.KoiKoiWebPresenter)
 	var decoded struct {
 		Entries []struct {
-			DetailCode string `json:"detailCode"`
+			DetailCode string           `json:"detailCode"`
+			Cards      []map[string]any `json:"cards"`
 		} `json:"entries"`
 	}
 	require.NoError(t, json.Unmarshal([]byte(p.ActionLogOutput(g)), &decoded))
@@ -159,6 +160,13 @@ func TestKoiKoiWebPresenter_ActionLog(t *testing.T) {
 		}
 	}
 	assert.True(t, foundPlay, "active game should include the played card")
+	for _, entry := range decoded.Entries {
+		if entry.DetailCode == "koikoi.log.play" {
+			require.NotEmpty(t, entry.Cards)
+			assert.NotZero(t, entry.Cards[0]["month"])
+			assert.NotEmpty(t, entry.Cards[0]["kind"])
+		}
+	}
 }
 
 // TestKoiKoiWebPresenter_RoundResult は shobu で確定した勝者ラウンドが lastRoundResult

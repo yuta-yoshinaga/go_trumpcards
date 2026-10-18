@@ -157,6 +157,41 @@ describe('ActionLogPanel', () => {
     expect(screen.queryByText(/missing\.actionLog\.detail/)).not.toBeInTheDocument();
   });
 
+  it('uses localized hanafuda card identity for card detail params only when available', async () => {
+    i18n.addResourceBundle('en', 'common', { 'test.actionLogHanafuda': 'Captured {{card}}' }, true, true);
+    i18n.addResourceBundle('ja', 'common', { 'test.actionLogHanafuda': '{{card}} を獲得' }, true, true);
+    const entries: ActionLogEntry[] = [
+      {
+        turnNumber: 1,
+        playerIdx: 0,
+        actionType: 'capture',
+        detail: '',
+        detailCode: 'test.actionLogHanafuda',
+        detailParams: { card: '松·光' },
+        cards: [{ design: 'SPADE', value: 0, deck: 'hanafuda', month: 1, kind: 'bright' }],
+      },
+      {
+        turnNumber: 2,
+        playerIdx: 0,
+        actionType: 'capture',
+        detail: '',
+        detailCode: 'test.actionLogHanafuda',
+        detailParams: { card: 'legacy card' },
+        cards: [{ design: 'SPADE', value: 1 }],
+      },
+    ];
+    await i18n.changeLanguage('en');
+    const enRender = render(<ActionLogPanel entries={entries} onClose={vi.fn()} />);
+    expect(screen.getByText(/Captured Pine·Bright/)).toBeInTheDocument();
+    expect(screen.getByText(/Captured legacy card/)).toBeInTheDocument();
+    enRender.unmount();
+
+    await i18n.changeLanguage('ja');
+    render(<ActionLogPanel entries={entries} onClose={vi.fn()} />);
+    expect(screen.getByText(/松·光 を獲得/)).toBeInTheDocument();
+    expect(screen.getByText(/legacy card を獲得/)).toBeInTheDocument();
+  });
+
   it('shows empty message when entries is empty', () => {
     render(<ActionLogPanel entries={[]} onClose={vi.fn()} />);
     expect(screen.getByText('棋譜はありません。')).toBeInTheDocument();

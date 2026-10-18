@@ -52,6 +52,85 @@ describe('HachiHachiPage', () => {
     expect(screen.getByTestId('hachihachi-result-live')).toBeEmptyDOMElement();
   });
 
+  it('localizes capture message card names in Japanese and English', async () => {
+    const originalLanguage = i18n.language;
+    mockExec.mockResolvedValue(
+      makeHachiHachiState({
+        messageCode: 'hachihachi.drawCapture',
+        messageParams: { card: '松·光', captured: '松·カス' },
+        messageCards: [
+          { design: 'SPADE', value: 0, deck: 'hanafuda', month: 1, kind: 'bright' },
+          { design: 'SPADE', value: 1, deck: 'hanafuda', month: 1, kind: 'chaff' },
+        ],
+      }),
+    );
+    await i18n.changeLanguage('ja');
+    const firstRender = renderWithProviders(<HachiHachiPage />);
+    try {
+      expect(await screen.findByText('めくり札 松·光 が 松·カス を獲得しました')).toBeInTheDocument();
+      firstRender.unmount();
+      await i18n.changeLanguage('en');
+      renderWithProviders(<HachiHachiPage />);
+      expect(await screen.findByText('Drawn card Pine·Bright captured Pine·Chaff')).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage(originalLanguage);
+    }
+  });
+
+  it('keeps the server captured text when the message has no captured cards', async () => {
+    mockExec.mockResolvedValue(
+      makeHachiHachiState({
+        messageCode: 'hachihachi.drawCapture',
+        messageParams: { card: '松·光', captured: 'サーバの取り札' },
+        messageCards: [{ design: 'SPADE', value: 0, deck: 'hanafuda', month: 1, kind: 'bright' }],
+      }),
+    );
+
+    renderWithProviders(<HachiHachiPage />);
+
+    expect(await screen.findByText('めくり札 松·光 が サーバの取り札 を獲得しました')).toBeInTheDocument();
+  });
+
+  it('keeps the server card text when the first message card has no hanafuda label', async () => {
+    mockExec.mockResolvedValue(
+      makeHachiHachiState({
+        messageCode: 'hachihachi.drawCapture',
+        messageParams: { card: 'サーバの札', captured: '松·カス' },
+        messageCards: [{ design: 'SPADE', value: 0, deck: 'hanafuda' }],
+      }),
+    );
+
+    renderWithProviders(<HachiHachiPage />);
+
+    expect(await screen.findByText('めくり札 サーバの札 が 松·カス を獲得しました')).toBeInTheDocument();
+  });
+
+  it('localizes capture message with multiple captured cards joined by listSeparator', async () => {
+    const originalLanguage = i18n.language;
+    mockExec.mockResolvedValue(
+      makeHachiHachiState({
+        messageCode: 'hachihachi.drawCapture',
+        messageParams: { card: '松·光', captured: '松·カス、梅·カス' },
+        messageCards: [
+          { design: 'SPADE', value: 0, deck: 'hanafuda', month: 1, kind: 'bright' },
+          { design: 'SPADE', value: 1, deck: 'hanafuda', month: 1, kind: 'chaff' },
+          { design: 'HEART', value: 1, deck: 'hanafuda', month: 2, kind: 'chaff' },
+        ],
+      }),
+    );
+    await i18n.changeLanguage('ja');
+    const firstRender = renderWithProviders(<HachiHachiPage />);
+    try {
+      expect(await screen.findByText('めくり札 松·光 が 松·カス、梅·カス を獲得しました')).toBeInTheDocument();
+      firstRender.unmount();
+      await i18n.changeLanguage('en');
+      renderWithProviders(<HachiHachiPage />);
+      expect(await screen.findByText('Drawn card Pine·Bright captured Pine·Chaff, Plum·Chaff')).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage(originalLanguage);
+    }
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<HachiHachiPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
