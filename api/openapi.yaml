@@ -46556,6 +46556,10 @@ components:
       type: object
       description: Current state of the Page One game
       properties:
+        penaltySeats:
+          type: array
+          items:
+            type: integer
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -62249,8 +62253,8 @@ components:
             properties:
               hand:
                 type: integer
-              name:
-                type: string
+              fourAces:
+                type: boolean
               odds:
                 type: string
         config:

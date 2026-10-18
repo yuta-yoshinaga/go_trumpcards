@@ -188,9 +188,7 @@ function CrazyFourPokerPageContent() {
       row.hand === state.playerHandRank &&
       (row.hand !== FOUR_CARD_HAND_PAIR ||
         crazyFourPokerPairAtLeast(state.playerBest, state.playerHandRank, SUPER_BONUS_MIN_PAIR)) &&
-      (fourAces
-        ? row.name.includes('エース') || row.name.includes('Ace')
-        : !row.name.includes('エース') && !row.name.includes('Ace')),
+      (fourAces ? row.fourAces === true : row.fourAces !== true),
   );
   const superReturn =
     state.superBet === 0
@@ -321,10 +319,9 @@ function CrazyFourPokerPageContent() {
                 <table className="text-xs text-ds-text-muted mx-auto" data-testid="c4p-superbonus-payouts">
                   <caption className="sr-only">{t('label.superBonusPayouts')}</caption>
                   <tbody>
-                    {/* 先頭行は 4 枚のエースの別枠 (役はフォーカードと同じ番号なので、名前はサーバの訳を使う)。 */}
                     {state.superBonusPayouts?.map((row, i) => (
-                      <tr key={`sb-${row.hand}-${row.name}`}>
-                        <td className="pr-3 text-left">{i === 0 ? row.name : t(`rank.${row.hand}`)}</td>
+                      <tr key={`sb-${row.hand}-${row.fourAces ? 'four-aces' : i}`}>
+                        <td className="pr-3 text-left">{row.fourAces ? t('fourAces') : t(`rank.${row.hand}`)}</td>
                         <td className="text-right">{t('label.payoutOdds', { n: row.odds })}</td>
                       </tr>
                     ))}

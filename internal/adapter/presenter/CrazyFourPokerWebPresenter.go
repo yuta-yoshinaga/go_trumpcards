@@ -6,7 +6,6 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // crazyFourPokerQueensUpRows はドメインの配当表を出力形に変換する。
@@ -33,17 +32,13 @@ func crazyFourPokerSuperBonusRows() []*controller.CrazyFourPokerSuperBonusRow {
 	src := domain.CrazyFourPokerSuperBonusPayout()
 	out := make([]*controller.CrazyFourPokerSuperBonusRow, 0, len(src)+1)
 	out = append(out, &controller.CrazyFourPokerSuperBonusRow{
-		Hand: domain.FourCardHandFourOfAKind,
-		Name: i18n.T("crazyfourpoker.fourAces"),
-		Odds: crazyFourPokerMultStr(domain.CrazyFourPokerFourAcesPayout),
+		Hand:     domain.FourCardHandFourOfAKind,
+		FourAces: true,
+		Odds:     crazyFourPokerMultStr(domain.CrazyFourPokerFourAcesPayout),
 	})
 	for _, r := range src {
-		name := ""
-		if r.Hand >= 0 && r.Hand < len(domain.FourCardHandNames) {
-			name = domain.FourCardHandNames[r.Hand]
-		}
 		out = append(out, &controller.CrazyFourPokerSuperBonusRow{
-			Hand: r.Hand, Name: name, Odds: crazyFourPokerMultStr(r.Multiplier),
+			Hand: r.Hand, Odds: crazyFourPokerMultStr(r.Multiplier),
 		})
 	}
 	return out

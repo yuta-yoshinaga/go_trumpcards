@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { crazyfourpokerApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CrazyFourPokerResponse } from '../types/card';
 import { CRAZY_FOUR_POKER_RESULT } from '../types/games/crazyfourpoker';
@@ -62,9 +63,9 @@ const base: CrazyFourPokerResponse = {
     { hand: 2, name: 'Pair', multiplier: 1 },
   ],
   superBonusPayouts: [
-    { hand: 8, name: '4 枚のエース', odds: '200' },
-    { hand: 8, name: 'Four of a Kind', odds: '30' },
-    { hand: 5, name: 'Flush', odds: '1.5' },
+    { hand: 8, fourAces: true, odds: '200' },
+    { hand: 8, odds: '30' },
+    { hand: 5, odds: '1.5' },
   ],
   message: '',
 };
@@ -103,7 +104,7 @@ describe('CrazyFourPokerPage', () => {
 
     const superBonus = await screen.findByTestId('c4p-superbonus-payouts');
     const queensUp = screen.getByTestId('c4p-queensup-payouts');
-    expect(within(superBonus).getByText('4 枚のエース')).toBeInTheDocument();
+    expect(within(superBonus).getByText('4枚のエース')).toBeInTheDocument();
     expect(within(superBonus).getByText('フォーカード')).toBeInTheDocument();
     expect(within(superBonus).getByText('フラッシュ')).toBeInTheDocument();
     expect(within(queensUp).getByText('フォーカード')).toBeInTheDocument();
@@ -130,6 +131,25 @@ describe('CrazyFourPokerPage', () => {
     expect(
       within(playArea.querySelector('[data-tutorial="c4p-hand"]') as HTMLElement).getByTestId('c4p-player-rank'),
     ).toBeInTheDocument();
+  });
+
+  it('uses the regular Super Bonus payout row for four of a kind without four aces', async () => {
+    mockApi.mockResolvedValue(
+      dealt({
+        phase: CrazyFourPokerPhase.RESULT,
+        playerHand: [king, king, king, king, five],
+        playerBest: [king, king, king, king],
+        playerHandRank: 8,
+        superBonusPayouts: [
+          { hand: 8, fourAces: true, odds: '200' },
+          { hand: 8, odds: '30' },
+        ],
+        result: CRAZY_FOUR_POKER_RESULT.win,
+      }),
+    );
+    renderWithProviders(<CrazyFourPokerPage />);
+
+    expect(await screen.findByTestId('c4p-result')).toHaveTextContent('Super Bonus（フォーカード）: 1500');
   });
 
   // **賭ける前に見えなければ意味がない** (#5775)。倍率はサーバの配当表そのまま。
@@ -478,15 +498,19 @@ describe('CrazyFourPokerPage', () => {
 
   // **Super Bonus はアンティに必ず付く賭け。**任意の Queens Up は配当表が見えて、
   // 必須の側だけ見えないのは逆だった。
-  it('shows the Super Bonus payout table before the bet', async () => {
+  it.each([
+    ['ja', '4枚のエース'],
+    ['en', 'Four Aces'],
+  ])('shows translated Super Bonus labels in %s', async (language, label) => {
+    await i18n.changeLanguage(language);
     mockApi.mockResolvedValue(base);
     renderWithProviders(<CrazyFourPokerPage />);
 
     const table = await screen.findByTestId('c4p-superbonus-payouts');
     // 端数のある行まで出る（1/10 単位の内部表現をそのまま出すと 15:1 に化ける）。
-    expect(table).toHaveTextContent('4 枚のエース');
-    expect(table).toHaveTextContent('200倍');
-    expect(table).toHaveTextContent('1.5倍');
+    expect(table).toHaveTextContent(label);
+    expect(table).toHaveTextContent(language === 'ja' ? '200倍' : '200:1');
+    expect(table).toHaveTextContent(language === 'ja' ? '1.5倍' : '1.5:1');
     // Queens Up の表も従来どおり残っている。
     expect(screen.getByTestId('c4p-queensup-payouts')).toBeInTheDocument();
   });

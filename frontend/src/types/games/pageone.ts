@@ -28,6 +28,7 @@ export interface PageOneRoundScore {
 
 /** Full Page One game state returned from the API. */
 export interface PageOneResponse extends BaseGameResponse {
+  penaltySeats?: number[];
   players: PageOnePlayerData[];
   phase: number;
   roundNumber: number;
