@@ -6,6 +6,7 @@ import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { HintTooltip } from '../components/hint/HintTooltip';
@@ -76,7 +77,7 @@ function SchnapsenPageContent() {
     exec: dispatch,
     retry,
   } = useGameApi<SchnapsenResponse, Parameters<typeof schnapsenApi.exec>>(schnapsenApi.exec);
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('schnapsen', state);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('schnapsen');
@@ -248,23 +249,90 @@ function SchnapsenPageContent() {
               </div>
             )}
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
+            {isMobile && (
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            )}
             <ErrorAlert message={error} onRetry={retry} />
 
-            {/* Human hand */}
+            {/* Frontend hint */}
+            {hintEnabled && hint && (
+              <div className="mt-3 flex justify-center">
+                <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />
+              </div>
+            )}
+
+            {/* Phase-specific controls */}
+            <SettingsPanel
+              title={tc('settings.title')}
+              groups={[
+                {
+                  items: [hintCheckboxItem(tc, hintEnabled, setHintEnabled)],
+                },
+              ]}
+            />
+          </div>
+
+          <GameFooter
+            tall
+            message={
+              isMobile ? undefined : (
+                <GameMessageBox
+                  message={state.message}
+                  messageCode={state.messageCode}
+                  messageParams={state.messageParams}
+                />
+              )
+            }
+            dataTutorial="schnapsen-actions"
+            className={`${gameTheme.schnapsen.footer} px-4 py-2.5`}
+            actions={
+              <div className="flex flex-wrap gap-2">
+                {isTrickEnd && (
+                  <button type="button" className={btnSuccess} onClick={handleNext} disabled={loading}>
+                    {t('actions.next')}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={() => requestConfirm(handleReset)}
+                  disabled={loading}
+                >
+                  {t('actions.reset')}
+                </button>
+                {isHumanTurn &&
+                  human?.cards.map((card, idx) => {
+                    if (!marriageSet.has(idx)) return null;
+                    const marriagePoints = DESIGN_TO_SUIT[card.design] === state.trumpSuit ? 40 : 20;
+                    return (
+                      <button
+                        key={`marriage-${idx.toString()}`}
+                        type="button"
+                        onClick={() => handleMarriage(idx)}
+                        disabled={loading}
+                        className={`${btnWarning} text-xs px-2 py-1 ${marriagePoints === 40 ? 'font-bold ring-2 ring-ds-accent ring-offset-2 ring-offset-ds-bg' : ''}`}
+                        data-testid={`schnapsen-marriage-${idx.toString()}`}
+                        data-royal={marriagePoints === 40 ? 'true' : undefined}
+                        aria-label={t('actions.marriageAria', {
+                          suit: suitSymbol(card.design),
+                          points: marriagePoints,
+                        })}
+                      >
+                        👑 {t('actions.marriagePoints', { points: marriagePoints })}
+                      </button>
+                    );
+                  })}
+              </div>
+            }
+          >
             {human && human.cards.length > 0 && (
-              <div className="mt-4" data-tutorial="schnapsen-hand">
+              <div data-tutorial="schnapsen-hand">
                 <div className="text-ds-text-muted text-sm mb-1">
-                  <span className="whitespace-nowrap">
-                    {t('header.you')}: {human.cardCount}
-                  </span>{' '}
-                  <span className="whitespace-nowrap">
-                    / {t('header.tricks')}: {human.trickCount}
-                  </span>
+                  {t('header.you')}: {human.cardCount} / {t('header.tricks')}: {human.trickCount}
                 </div>
                 {showLegalGuide && (
                   <div
@@ -283,83 +351,32 @@ function SchnapsenPageContent() {
                 <div className="flex flex-wrap gap-2">
                   {human.cards.map((card, idx) => {
                     const legal = legalRing.has(idx);
-                    const marriagePoints = DESIGN_TO_SUIT[card.design] === state.trumpSuit ? 40 : 20;
                     return (
-                      <div key={`${card.design}-${card.value}-${idx}`} className="flex flex-col items-center gap-1">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (showLegalGuide && !legal) return;
-                            handlePlay(idx);
-                          }}
-                          disabled={loading || !isHumanTurn}
-                          aria-disabled={showLegalGuide && !legal ? 'true' : undefined}
-                          aria-describedby={showLegalGuide && !legal ? 'schnapsen-illegal-play-reason' : undefined}
-                          aria-label={
-                            showLegalGuide
-                              ? t(legal ? 'actions.playLegalAria' : 'actions.playIllegalAria', { card: cardAlt(card) })
-                              : t('actions.playAria', { card: cardAlt(card) })
-                          }
-                          className={`disabled:opacity-50 aria-disabled:opacity-50 aria-disabled:cursor-not-allowed ${legal ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
-                        >
-                          <CardImage card={card} width={cardWidth} />
-                        </button>
-                        {isHumanTurn && marriageSet.has(idx) && (
-                          <button
-                            type="button"
-                            onClick={() => handleMarriage(idx)}
-                            disabled={loading}
-                            className={`${btnWarning} text-xs px-2 py-1 ${marriagePoints === 40 ? 'font-bold ring-2 ring-ds-accent ring-offset-2 ring-offset-ds-bg' : ''}`}
-                            data-testid={`schnapsen-marriage-${idx.toString()}`}
-                            data-royal={marriagePoints === 40 ? 'true' : undefined}
-                            aria-label={t('actions.marriageAria', {
-                              suit: suitSymbol(card.design),
-                              points: marriagePoints,
-                            })}
-                          >
-                            👑 {t('actions.marriagePoints', { points: marriagePoints })}
-                          </button>
-                        )}
-                      </div>
+                      <button
+                        key={`${card.design}-${card.value}-${idx}`}
+                        type="button"
+                        onClick={() => {
+                          if (showLegalGuide && !legal) return;
+                          handlePlay(idx);
+                        }}
+                        disabled={loading || !isHumanTurn}
+                        aria-disabled={showLegalGuide && !legal ? 'true' : undefined}
+                        aria-describedby={showLegalGuide && !legal ? 'schnapsen-illegal-play-reason' : undefined}
+                        aria-label={
+                          showLegalGuide
+                            ? t(legal ? 'actions.playLegalAria' : 'actions.playIllegalAria', { card: cardAlt(card) })
+                            : t('actions.playAria', { card: cardAlt(card) })
+                        }
+                        className={`disabled:opacity-50 aria-disabled:opacity-50 aria-disabled:cursor-not-allowed ${legal ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
+                      >
+                        <CardImage card={card} width={cardWidth} />
+                      </button>
                     );
                   })}
                 </div>
               </div>
             )}
-
-            {/* Frontend hint */}
-            {hintEnabled && hint && (
-              <div className="mt-3 flex justify-center">
-                <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />
-              </div>
-            )}
-
-            {/* Phase-specific controls */}
-            <div className="mt-4 flex flex-wrap gap-2" data-tutorial="schnapsen-actions">
-              {isTrickEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNext} disabled={loading}>
-                  {t('actions.next')}
-                </button>
-              )}
-              <button
-                type="button"
-                className={btnPrimary}
-                onClick={() => requestConfirm(handleReset)}
-                disabled={loading}
-              >
-                {t('actions.reset')}
-              </button>
-            </div>
-
-            <SettingsPanel
-              title={tc('settings.title')}
-              groups={[
-                {
-                  items: [hintCheckboxItem(tc, hintEnabled, setHintEnabled)],
-                },
-              ]}
-            />
-          </div>
+          </GameFooter>
 
           <ActionLogSection
             isEndPhase={isGameEnd}

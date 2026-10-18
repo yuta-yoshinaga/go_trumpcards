@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { schnapsenApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
@@ -61,6 +61,26 @@ beforeEach(() => {
 });
 
 describe('SchnapsenPage', () => {
+  it('keeps the hand in the footer content and reset in its action row', async () => {
+    renderWithProviders(<SchnapsenPage />);
+    const content = await screen.findByTestId('game-footer-content');
+    expect(within(content).getAllByRole('button', { name: /を出す/ })).toHaveLength(5);
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: 'リセット' }),
+    ).toBeInTheDocument();
+  });
+
+  it('keeps the game message out of the footer at mobile width', async () => {
+    const previousWidth = window.innerWidth;
+    window.innerWidth = 375;
+    const view = renderWithProviders(<SchnapsenPage />);
+    expect(await screen.findByTestId('game-footer-content')).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+    view.unmount();
+    window.innerWidth = previousWidth;
+    window.dispatchEvent(new Event('resize'));
+  });
+
   it('shows the action log button during play', async () => {
     renderWithProviders(<SchnapsenPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '棋譜を見る' })).toBeInTheDocument());
