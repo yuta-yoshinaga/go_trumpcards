@@ -129,7 +129,9 @@ for (const viewport of NOWRAP_VIEWPORTS) {
             if (![...element.childNodes].some((node) => node.nodeType === Node.TEXT_NODE && !!node.textContent?.trim()))
               continue;
             const style = getComputedStyle(element);
-            if (!/nowrap|pre/.test(`${style.whiteSpace} ${style.textWrapMode ?? ''}`)) continue;
+            // Only text that cannot wrap: `pre-wrap` / `pre-line` wrap and are out of scope.
+            if (style.whiteSpace !== 'nowrap' && style.whiteSpace !== 'pre' && style.textWrapMode !== 'nowrap')
+              continue;
             // Absolutely positioned labels are intentional placements outside their parent box.
             if (style.position === 'absolute' || style.position === 'fixed') continue;
             if (
@@ -164,6 +166,7 @@ for (const viewport of NOWRAP_VIEWPORTS) {
             const parentStyle = getComputedStyle(parent);
             // Only the nearest box can intentionally scroll this label horizontally.
             // Ancestor overflow-y:auto can compute overflow-x:visible to auto and hide real defects.
+            if (/auto|scroll/.test(parentStyle.overflowX)) continue;
             const parentRect = parent.getBoundingClientRect();
             const right =
               parentRect.right -
