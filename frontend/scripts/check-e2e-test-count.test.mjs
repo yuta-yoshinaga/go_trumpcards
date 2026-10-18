@@ -10,7 +10,7 @@ afterAll(() => {
   for (const dir of dirs) rmSync(dir, { recursive: true, force: true });
 });
 
-function run(output, limit = '500') {
+function run(output, limit = '500', { exitCode = 0, baselineMode = 'valid' } = {}) {
   const dir = mkdtempSync(join(tmpdir(), 'e2e-count-'));
   dirs.push(dir);
   const bin = join(dir, 'bin');
@@ -22,8 +22,13 @@ function run(output, limit = '500') {
   const quotedData = data.replaceAll("'", "'\\''");
   const quotedArgs = args.replaceAll("'", "'\\''");
   writeFileSync(data, output);
-  writeFileSync(baseline, JSON.stringify({ max: Number(limit), reason: 'test fixture' }));
-  writeFileSync(script, `#!/bin/sh\nprintf '%s' "$*" > '${quotedArgs}'\ncat '${quotedData}'\n`);
+  if (baselineMode !== 'missing') {
+    writeFileSync(
+      baseline,
+      baselineMode === 'invalid' ? '{ broken json' : JSON.stringify({ max: Number(limit), reason: 'test fixture' }),
+    );
+  }
+  writeFileSync(script, `#!/bin/sh\nprintf '%s' "$*" > '${quotedArgs}'\ncat '${quotedData}'\nexit ${exitCode}\n`);
   chmodSync(script, 0o755);
   const result = spawnSync('bun', [SCRIPT], {
     encoding: 'utf8',
@@ -48,6 +53,12 @@ describe('check-e2e-test-count', () => {
     expect(args).toBe('playwright test --list');
   });
 
+  it('accepts a singular test count', () => {
+    const { status, out } = run('Total: 1 test\n');
+    expect(status).toBe(1);
+    expect(out).toContain('at least');
+  });
+
   it('fails above the baseline', () => {
     const { status, out } = run('Total: 4001 tests in 12 files\n', '4000');
     expect(status).toBe(1);
@@ -58,5 +69,24 @@ describe('check-e2e-test-count', () => {
     const { status, out } = run('No tests found\n');
     expect(status).toBe(1);
     expect(out).toContain('at least');
+  });
+
+  it('fails when bunx exits unsuccessfully', () => {
+    const { status, out } = run('Total: 4000 tests in 12 files\n', '5000', { exitCode: 2 });
+    expect(status).toBe(1);
+    expect(out).toContain('e2e-test-count: could not list');
+  });
+
+  it('fails when the baseline max is invalid', () => {
+    const { status, out } = run('Total: 4000 tests in 12 files\n', 'not-a-number');
+    expect(status).toBe(1);
+    expect(out).toContain('e2e-test-count: invalid max');
+  });
+
+  it.each(['missing', 'invalid'])('fails with a prefixed error when baseline JSON is %s', (baselineMode) => {
+    const { status, out } = run('Total: 4000 tests in 12 files\n', '5000', { baselineMode });
+    expect(status).toBe(1);
+    expect(out).toContain('e2e-test-count: could not read or parse baseline JSON');
+    expect(out).not.toContain('SyntaxError');
   });
 });

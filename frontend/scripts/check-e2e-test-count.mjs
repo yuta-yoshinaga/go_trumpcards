@@ -6,10 +6,17 @@ import { fileURLToPath } from 'node:url';
 import { assertFloor } from './lib/floor.mjs';
 
 const SCRIPT_DIR = fileURLToPath(new URL('.', import.meta.url));
+// PLAYWRIGHT_LIST_GUARD_BASELINE is the test seam for supplying a fixture baseline.
 const BASELINE_PATH = process.env.PLAYWRIGHT_LIST_GUARD_BASELINE ?? `${SCRIPT_DIR}e2e-test-count-baseline.json`;
 const MIN_TESTS = 3800;
 
-const baseline = JSON.parse(await readFile(BASELINE_PATH, 'utf8'));
+let baseline;
+try {
+  baseline = JSON.parse(await readFile(BASELINE_PATH, 'utf8'));
+} catch {
+  console.error(`e2e-test-count: could not read or parse baseline JSON at ${BASELINE_PATH}`);
+  process.exit(1);
+}
 if (!Number.isInteger(baseline.max) || baseline.max <= 0) {
   console.error(`e2e-test-count: invalid max in ${BASELINE_PATH}`);
   process.exit(1);
@@ -26,7 +33,7 @@ if (result.exitCode !== 0) {
   process.exit(1);
 }
 
-const match = `${stdout}\n${stderr}`.match(/^Total:\s+(\d+) tests\b/m);
+const match = `${stdout}\n${stderr}`.match(/^Total:\s+(\d+) tests?\b/m);
 const count = match ? Number(match[1]) : 0;
 assertFloor('e2e-test-count', count, MIN_TESTS, 'Playwright E2E tests');
 
