@@ -69,6 +69,7 @@ const playing = (over: Partial<BalootResponse> = {}) =>
   makeState({ phase: 1, mode: 1, declarerIdx: 0, ...over } as Partial<BalootResponse>);
 
 beforeEach(() => {
+  mobileState.isMobile = true;
   vi.clearAllMocks();
   mockExec.mockResolvedValue(makeState());
 });
@@ -84,6 +85,17 @@ describe('BalootPage', () => {
     expect(footerContent).toContainElement(hand);
     expect(footerActions).toContainElement(screen.getByRole('button', { name: 'リセット' }));
     expect(footerActions).toContainElement(screen.getByRole('button', { name: '投了' }));
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+  });
+
+  it('keeps the declaration choices in the action row on mobile', async () => {
+    mobileState.isMobile = true;
+    mockExec.mockResolvedValue(makeState({ phase: 0, currentPlayerIdx: 0 } as Partial<BalootResponse>));
+    renderWithProviders(<BalootPage />);
+    const actions = await screen.findByTestId('game-footer-actions');
+    expect(actions).toContainElement(screen.getByTestId('bl-sun-btn'));
+    expect(actions).toContainElement(screen.getByTestId('bl-pass-btn'));
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
   });
 
   it('collapses rules and CPU seats on mobile and opens them on desktop', async () => {
@@ -101,9 +113,38 @@ describe('BalootPage', () => {
     mobileState.isMobile = false;
     renderWithProviders(<BalootPage />);
     expect(await screen.findByTestId('bl-rules')).toHaveAttribute('open');
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
     expect(screen.getByText(/A=11 > 10/)).toBeVisible();
     expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
     expect(screen.getByTestId('bl-seat-1')).toBeVisible();
+  });
+
+  it('places the trick display before reference information', async () => {
+    mobileState.isMobile = false;
+    mockExec.mockResolvedValue(
+      playing({
+        currentTrick: [{ playerIdx: 0, card: card('SPADE', 1) }],
+      }),
+    );
+    renderWithProviders(<BalootPage />);
+
+    const trick = await screen.findByTestId('baloot-trick');
+    const scoreArea = screen.getByTestId('bl-score');
+    const orderArea = screen.getByTestId('bl-order');
+    const seatsArea = screen.getByTestId('baloot-seats');
+
+    expect(trick.compareDocumentPosition(scoreArea) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(trick.compareDocumentPosition(orderArea) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(trick.compareDocumentPosition(seatsArea) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('keeps the game message in the play area and out of the footer on desktop', async () => {
+    mobileState.isMobile = false;
+    mockExec.mockResolvedValue(makeState({ messageCode: 'baloot.declare.choose' }));
+    renderWithProviders(<BalootPage />);
+
+    expect(await screen.findByText(/モードを宣言してください/)).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
   });
 
   it('resets on mount', async () => {

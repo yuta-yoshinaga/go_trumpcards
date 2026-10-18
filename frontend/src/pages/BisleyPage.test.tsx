@@ -63,6 +63,41 @@ describe('BisleyPage', () => {
     vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
   });
 
+  it('places settings details inside scrollable play area on mobile and outside on desktop', async () => {
+    const original = window.innerWidth;
+    mockExec.mockResolvedValue(playingState);
+    try {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+      window.dispatchEvent(new Event('resize'));
+      const { container: mobileContainer, unmount } = renderWithProviders(<BisleyPage />);
+      const mobileSettingsDetails = (await screen.findByText('設定')).closest('details');
+      const mobileTableau = mobileContainer.querySelector('[data-tutorial="bisley-tableau"]');
+      const mobilePlayArea = mobileTableau?.closest('.overflow-y-auto');
+      expect(mobilePlayArea).not.toBeNull();
+      expect(mobileSettingsDetails).not.toBeNull();
+      expect(mobilePlayArea?.contains(mobileSettingsDetails)).toBe(true);
+      expect(
+        mobileTableau &&
+          mobileSettingsDetails &&
+          mobileTableau.compareDocumentPosition(mobileSettingsDetails) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+      unmount();
+
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 });
+      window.dispatchEvent(new Event('resize'));
+      const { container: desktopContainer } = renderWithProviders(<BisleyPage />);
+      const desktopSettingsDetails = (await screen.findByText('設定')).closest('details');
+      const desktopTableau = desktopContainer.querySelector('[data-tutorial="bisley-tableau"]');
+      const desktopPlayArea = desktopTableau?.closest('.overflow-y-auto');
+      expect(desktopPlayArea).not.toBeNull();
+      expect(desktopSettingsDetails).not.toBeNull();
+      expect(desktopPlayArea?.contains(desktopSettingsDetails)).toBe(false);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: original });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
   it('calls reset on initial render', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BisleyPage />);

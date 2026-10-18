@@ -139,7 +139,7 @@ function FreeCellPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('freecell', state);
-  const { cardHeight, cardOverlap, cardWidth } = useCardDimensions();
+  const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [timerVersion, setTimerVersion] = useState(0);
   // CLI mode
@@ -281,6 +281,17 @@ function FreeCellPageContent() {
     selectedSource.cell === cell &&
     selectedSource.cardIndex === cardIndex;
 
+  const settingsPanel = (
+    <SettingsPanel
+      title={tc('settings.title')}
+      groups={[
+        {
+          items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)],
+        },
+      ]}
+    />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.freecell')}
@@ -298,12 +309,25 @@ function FreeCellPageContent() {
       cancelGiveUp={cancelGiveUp}
       headerExtra={
         <>
-          <span>
-            {t('moveCount')}: {state.moveCount}
-          </span>
-          <span data-testid="freecell-timer">
-            {t('timer')}: {formatElapsedTime(elapsedSeconds)}
-          </span>
+          {isMobile ? (
+            <details className="text-sm text-ds-text-muted" data-testid="freecell-progress">
+              <summary className="cursor-pointer">
+                {t('moveCount')}: {state.moveCount}
+              </summary>
+              <span data-testid="freecell-timer">
+                {t('timer')}: {formatElapsedTime(elapsedSeconds)}
+              </span>
+            </details>
+          ) : (
+            <>
+              <span data-testid="freecell-progress">
+                {t('moveCount')}: {state.moveCount}
+              </span>
+              <span data-testid="freecell-timer">
+                {t('timer')}: {formatElapsedTime(elapsedSeconds)}
+              </span>
+            </>
+          )}
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
       }
@@ -632,17 +656,10 @@ function FreeCellPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+            {isMobile && settingsPanel}
           </div>
 
-          {/* Settings */}
-          <SettingsPanel
-            title={tc('settings.title')}
-            groups={[
-              {
-                items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)],
-              },
-            ]}
-          />
+          {!isMobile && settingsPanel}
 
           <GameFooter className={`${gameTheme.freecell.footer} px-4 py-2.5`}>
             <ErrorAlert message={error ?? hintError} onRetry={retry} />

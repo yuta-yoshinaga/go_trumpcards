@@ -7218,5 +7218,12 @@
   "hanafuda.monthShort.10": "Oct",
   "hanafuda.monthShort.11": "Nov",
   "hanafuda.monthShort.12": "Dec",
-  "hanafuda.cornerLabel": "{{month}}"
+  "hanafuda.cornerLabel": "{{month}}",
+  "unsunkaruta.cardLabel": "{{rank}} of {{suit}}",
+  "unsunkaruta.corner.sota": "Sot",
+  "unsunkaruta.corner.uma": "Uma",
+  "unsunkaruta.corner.kiri": "Kir",
+  "unsunkaruta.corner.un": "Un",
+  "unsunkaruta.corner.sun": "Sun",
+  "unsunkaruta.corner.robai": "Rob"
 }
