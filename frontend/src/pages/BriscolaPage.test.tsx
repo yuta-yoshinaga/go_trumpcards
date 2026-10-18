@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import i18n from 'i18next';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, briscolaApi } from '../api/gameApi';
@@ -60,6 +60,26 @@ afterEach(async () => {
 });
 
 describe('BriscolaPage', () => {
+  it('keeps the hand in the footer content and turn actions in its action row', async () => {
+    renderWithProviders(<BriscolaPage />);
+    const content = await screen.findByTestId('game-footer-content');
+    expect(within(content).getAllByRole('button', { name: /を出す/ })).toHaveLength(3);
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: 'ヒント' }),
+    ).toBeInTheDocument();
+  });
+
+  it('keeps the game message out of the footer at mobile width', async () => {
+    const previousWidth = window.innerWidth;
+    window.innerWidth = 375;
+    const view = renderWithProviders(<BriscolaPage />);
+    expect(await screen.findByTestId('game-footer-content')).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+    view.unmount();
+    window.innerWidth = previousWidth;
+    window.dispatchEvent(new Event('resize'));
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<BriscolaPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
