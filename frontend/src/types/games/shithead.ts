@@ -37,6 +37,7 @@ export interface ShitheadConfig {
 
 /** Full Shithead game state returned from the API. */
 export interface ShitheadResponse extends BaseGameResponse {
+  rankings?: { seat: number; rank: number; shithead?: boolean }[];
   players: ShitheadPlayerData[];
   currentTurn: number;
   currentSource: string;

@@ -69,6 +69,7 @@ type ShitheadWebOutput struct {
 	SevenActive   bool                       `json:"sevenActive"`
 	GameEndFlag   bool                       `json:"gameEndFlag"`
 	Config        ShitheadWebConfig          `json:"config"`
+	Rankings      []WebOutputRanking         `json:"rankings"`
 	CpuActions    []*ShitheadWebOutputAction `json:"cpuActions"`
 	HumanAction   *ShitheadWebOutputAction   `json:"humanAction"`
 	WebOutputBase

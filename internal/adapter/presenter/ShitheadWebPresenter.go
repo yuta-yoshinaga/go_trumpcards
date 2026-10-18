@@ -1,13 +1,9 @@
 package presenter
 
 import (
-	"fmt"
-	"strconv"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // ShitheadWebPresenter シットヘッドWebプレゼンタークラス
@@ -69,9 +65,17 @@ func (swp *ShitheadWebPresenter) Output(sg interfaces.ShitheadGame, lastErr erro
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else if sg.GetGameEndFlag() {
-		resObj.Message = swp.buildResultMessage(sg)
+		resObj.Rankings = make([]controller.WebOutputRanking, 0)
+		for i := 0; i < sg.GetPlayerCnt(); i++ {
+			player := sg.GetPlayer(i)
+			if player != nil && player.GetRank() > 0 {
+				resObj.Rankings = append(resObj.Rankings, controller.WebOutputRanking{
+					Seat: i, Rank: player.GetRank(), Shithead: player.GetRank() == sg.GetPlayerCnt(),
+				})
+			}
+		}
 		resObj.MessageCode = "shithead.result.rankings"
-		resObj.MessageParams = map[string]string{"rankings": resObj.Message}
+		resObj.MessageParams = map[string]string{}
 	}
 
 	return marshalOrError(resObj)
@@ -90,24 +94,6 @@ func shitheadActionToOutput(a *domain.ShitheadCpuAction) *controller.ShitheadWeb
 		Burned:      a.Burned,
 		Skipped:     a.Skipped,
 	}
-}
-
-// buildResultMessage ゲーム終了メッセージ
-func (swp *ShitheadWebPresenter) buildResultMessage(sg interfaces.ShitheadGame) string {
-	msg := "ゲーム終了！ "
-	for i := 0; i < sg.GetPlayerCnt(); i++ {
-		player := sg.GetPlayer(i)
-		if player == nil {
-			continue
-		}
-		name := webPlayerName(player.GetIsHuman(), i)
-		rankStr := i18n.Tf("shithead.resultRank", "rank", strconv.Itoa(player.GetRank()))
-		if player.GetRank() == sg.GetPlayerCnt() {
-			rankStr += i18n.T("shithead.resultShithead")
-		}
-		msg += fmt.Sprintf("%s:%s ", name, rankStr)
-	}
-	return msg
 }
 
 // ActionLogOutput 棋譜をJSON出力

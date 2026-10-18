@@ -50,8 +50,10 @@
     "playLow": "You lead — shed your weaker cards first"
   },
   "result": {
-    "rankings": "Game Over! {{rankings}}"
+    "rankings": "Game Over! {{rankings}}",
+    "rankN": "Rank {{rank}}"
   },
+  "rankingEntry": "{{seat}}: {{rank}}",
   "playType": {
     "single": "Single",
     "pair": "Pair",

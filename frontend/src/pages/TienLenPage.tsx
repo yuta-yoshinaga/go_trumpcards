@@ -32,6 +32,7 @@ import {
 } from '../utils/cli/commands/tienlenCommands';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatGameRankings } from '../utils/formatGameRankings';
 import { findPlayerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { classifyTienLenCombo, type TienLenCombo, tienLenPlayability } from '../utils/tienLenComboValidator';
@@ -160,6 +161,17 @@ function TienLenPageContent() {
   const showInvalidCombo = isHumanTurn && selectedIndices.length > 0 && !hasValidCombo;
   const showComboType = isHumanTurn && selectedIndices.length > 0 && hasValidCombo;
   const phaseName = isGameEnd ? t('phase.end') : t('phase.play');
+  const resultParams = state.rankings
+    ? {
+        rankings: formatGameRankings(
+          state.rankings,
+          (seat) => (seat === 0 ? tc('player.you') : tc('player.cpu', { id: seat })),
+          (rank) => t('result.rankN', { rank }),
+          (seat, rank) => t('rankingEntry', { seat, rank }),
+          t('listSeparator'),
+        ),
+      }
+    : state.messageParams;
 
   return (
     <GamePageShell
@@ -270,11 +282,7 @@ function TienLenPageContent() {
                 {t(`unplayable.${playability}`)}
               </p>
             )}
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
+            <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={resultParams} />
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
           </div>
 

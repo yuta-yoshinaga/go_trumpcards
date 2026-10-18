@@ -56,6 +56,7 @@ type ZhengWebOutput struct {
 	CpuActions        []*ZhengWebOutputAction `json:"cpuActions"`
 	HumanAction       *ZhengWebOutputAction   `json:"humanAction"`
 	Config            ZhengWebConfig          `json:"config"`
+	Rankings          []WebOutputRanking      `json:"rankings"`
 	WebOutputBase
 }
 

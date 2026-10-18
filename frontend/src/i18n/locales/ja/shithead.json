@@ -74,5 +74,9 @@
     "play": "{{name}} が {{cards}} を出しました",
     "burned": "場札焼却!",
     "skipped": "次をスキップ"
-  }
+  },
+  "resultRank": "順位={{rank}}",
+  "resultShithead": "（シットヘッド）",
+  "rankingEntry": "{{seat}}: {{rank}}",
+  "listSeparator": "、"
 }

@@ -41959,6 +41959,11 @@ components:
           $ref: '#/components/schemas/TienLenAction'
         config:
           $ref: '#/components/schemas/TienLenConfig'
+        rankings:
+          type: array
+          description: Present when the game ends; seat and rank are localized by the client.
+          items:
+            $ref: '#/components/schemas/WebOutputRanking'
         message:
           type: string
         messageCode:
@@ -81420,6 +81425,11 @@ components:
               type: boolean
             skipped:
               type: boolean
+        rankings:
+          type: array
+          description: Present when the game ends; seat and rank are localized by the client.
+          items:
+            $ref: '#/components/schemas/WebOutputRanking'
         message:
           type: string
         messageCode:
@@ -81428,6 +81438,17 @@ components:
           type: object
           additionalProperties:
             type: string
+
+    WebOutputRanking:
+      type: object
+      description: Untranslated player rank for frontend localization.
+      properties:
+        seat:
+          type: integer
+        rank:
+          type: integer
+        shithead:
+          type: boolean
 
     SixCardGolfResponse:
       type: object
@@ -83249,6 +83270,11 @@ components:
           type: integer
         gameEndFlag:
           type: boolean
+        rankings:
+          type: array
+          description: Present when the game ends; seat and rank are localized by the client.
+          items:
+            $ref: '#/components/schemas/WebOutputRanking'
         cpuActions:
           type: array
           items:

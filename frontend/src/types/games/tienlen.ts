@@ -29,6 +29,7 @@ export type TienLenConfigInput = TienLenConfig;
 
 /** Full Tien Len game state returned from the API. */
 export interface TienLenResponse extends BaseGameResponse {
+  rankings?: { seat: number; rank: number }[];
   players: TienLenPlayerData[];
   currentTurn: number;
   tableCards: Card[];

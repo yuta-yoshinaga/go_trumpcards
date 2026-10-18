@@ -55,6 +55,7 @@ type TienLenWebOutput struct {
 	CpuActions        []*TienLenWebOutputAction `json:"cpuActions"`
 	HumanAction       *TienLenWebOutputAction   `json:"humanAction"`
 	Config            TienLenWebConfig          `json:"config"`
+	Rankings          []WebOutputRanking        `json:"rankings"`
 	WebOutputBase
 }
 
