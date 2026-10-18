@@ -1,0 +1,4 @@
+{
+  "max": 5705,
+  "reason": "Initial ratchet from the current Playwright test list; update with an explanation when intentionally adding E2E tests."
+}
