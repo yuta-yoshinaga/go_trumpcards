@@ -33,17 +33,7 @@ const GAME_ACTION_SELECTOR = 'button, [role="button"], [tabindex="0"]';
 
 // These routes have a confirmed first-action layout defect tracked by #11883.
 // Their first-action assertion is inverted so a fix makes the test fail until this list is updated.
-const KNOWN_FIRST_ACTION_FAILURES = [
-  '/bisley',
-  '/briscola',
-  '/estimation',
-  '/freecell',
-  '/grandfathersclock',
-  '/pasur',
-  '/polignac',
-  '/quodlibet',
-  '/schnapsen',
-];
+const KNOWN_FIRST_ACTION_FAILURES = ['/briscola', '/estimation', '/pasur', '/polignac', '/quodlibet', '/schnapsen'];
 
 // These routes fail depending on the deal; omit only their first-action assertion (#11883).
 const DEAL_DEPENDENT_FIRST_ACTION_FAILURES = ['/tienlen', '/minibridge', '/nainjaune', '/baloot', '/escoba'];

@@ -413,6 +413,17 @@ function BisleyPageContent() {
     );
   };
 
+  const settingsPanel = (
+    <SettingsPanel
+      title={tc('settings.title')}
+      groups={[
+        {
+          items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)],
+        },
+      ]}
+    />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.bisley')}
@@ -498,16 +509,10 @@ function BisleyPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+            {isMobile && settingsPanel}
           </div>
 
-          <SettingsPanel
-            title={tc('settings.title')}
-            groups={[
-              {
-                items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)],
-              },
-            ]}
-          />
+          {!isMobile && settingsPanel}
 
           <GameFooter className={`${gameTheme.bisley.footer} px-4 py-2.5`}>
             <ErrorAlert message={error ?? hintError} onRetry={retry} />

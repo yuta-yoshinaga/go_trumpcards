@@ -83,6 +83,44 @@ afterEach(async () => {
 });
 
 describe('FreeCellPage', () => {
+  it('compacts progress on mobile and places settings details inside scrollable play area', async () => {
+    const original = window.innerWidth;
+    try {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+      window.dispatchEvent(new Event('resize'));
+      const { container: mobileContainer, unmount } = renderWithProviders(<FreeCellPage />);
+      expect((await screen.findByTestId('freecell-progress')).tagName).toBe('DETAILS');
+      expect(screen.getByTestId('freecell-timer')).toBeInTheDocument();
+      const mobileSettingsDetails = (await screen.findByText('設定')).closest('details');
+      const mobileTableau = mobileContainer.querySelector('[data-tutorial="fc-tableau"]');
+      const mobilePlayArea = mobileTableau?.closest('.overflow-y-auto');
+      expect(mobilePlayArea).not.toBeNull();
+      expect(mobileSettingsDetails).not.toBeNull();
+      expect(mobilePlayArea?.contains(mobileSettingsDetails)).toBe(true);
+      expect(
+        mobileTableau &&
+          mobileSettingsDetails &&
+          mobileTableau.compareDocumentPosition(mobileSettingsDetails) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+      unmount();
+
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 });
+      window.dispatchEvent(new Event('resize'));
+      const { container: desktopContainer } = renderWithProviders(<FreeCellPage />);
+      expect((await screen.findByTestId('freecell-progress')).tagName).toBe('SPAN');
+      expect(screen.getByTestId('freecell-timer')).toBeInTheDocument();
+      const desktopSettingsDetails = (await screen.findByText('設定')).closest('details');
+      const desktopTableau = desktopContainer.querySelector('[data-tutorial="fc-tableau"]');
+      const desktopPlayArea = desktopTableau?.closest('.overflow-y-auto');
+      expect(desktopPlayArea).not.toBeNull();
+      expect(desktopSettingsDetails).not.toBeNull();
+      expect(desktopPlayArea?.contains(desktopSettingsDetails)).toBe(false);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: original });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
   it('shows the persistent double-click foundation hint', async () => {
     renderWithProviders(<FreeCellPage />);
     expect(await screen.findByTestId('fc-doubleclick-hint')).toHaveTextContent('ダブルクリック');
