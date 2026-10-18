@@ -64,6 +64,151 @@ const gameOverState: GrandfathersClockResponse = {
 };
 
 describe('GrandfathersClockPage', () => {
+  it('places settings details inside scrollable play area on mobile and outside on desktop, and tightens mobile margins', async () => {
+    const original = window.innerWidth;
+    mockExec.mockResolvedValue(playingState);
+    try {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+      window.dispatchEvent(new Event('resize'));
+      const { container: mobileContainer, unmount } = renderWithProviders(<GrandfathersClockPage />);
+      const mobileSettingsDetails = (await screen.findByText('設定')).closest('details');
+      const mobileTableau = mobileContainer.querySelector('[data-tutorial="gc-tableau"]');
+      const mobilePlayArea = mobileTableau?.closest('.overflow-y-auto');
+      const mobileClock = mobileContainer.querySelector('[data-tutorial="gc-clock"]');
+      expect(mobilePlayArea).not.toBeNull();
+      expect(mobilePlayArea).toHaveClass('pt-1');
+      expect(mobileClock).toHaveClass('mb-1');
+      expect(mobileSettingsDetails).not.toBeNull();
+      expect(mobilePlayArea?.contains(mobileSettingsDetails)).toBe(true);
+      expect(
+        mobileTableau &&
+          mobileSettingsDetails &&
+          mobileTableau.compareDocumentPosition(mobileSettingsDetails) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+      unmount();
+
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 });
+      window.dispatchEvent(new Event('resize'));
+      const { container: desktopContainer } = renderWithProviders(<GrandfathersClockPage />);
+      const desktopSettingsDetails = (await screen.findByText('設定')).closest('details');
+      const desktopTableau = desktopContainer.querySelector('[data-tutorial="gc-tableau"]');
+      const desktopPlayArea = desktopTableau?.closest('.overflow-y-auto');
+      const desktopClock = desktopContainer.querySelector('[data-tutorial="gc-clock"]');
+      expect(desktopPlayArea).not.toBeNull();
+      expect(desktopPlayArea).toHaveClass('pt-3');
+      expect(desktopClock).toHaveClass('mb-3');
+      expect(desktopSettingsDetails).not.toBeNull();
+      expect(desktopPlayArea?.contains(desktopSettingsDetails)).toBe(false);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: original });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it('shows mobile control descriptions only while playing, matching the described controls', async () => {
+    const original = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      mockExec.mockResolvedValue(playingState);
+      const { unmount } = renderWithProviders(<GrandfathersClockPage />);
+      const redo = await screen.findByRole('button', { name: 'やり直す' });
+      const autoComplete = screen.getByTestId('autocomplete-button');
+      expect(document.getElementById('gc-redo-unavailable')).toBeInTheDocument();
+      expect(document.getElementById(redo.getAttribute('aria-describedby') ?? '')).toBeInTheDocument();
+      expect(document.getElementById(autoComplete.getAttribute('aria-describedby') ?? '')).toBeInTheDocument();
+      unmount();
+
+      mockExec.mockResolvedValue(gameOverState);
+      renderWithProviders(<GrandfathersClockPage />);
+      await screen.findByTestId('gc-gameover-summary');
+      expect(screen.queryByRole('button', { name: 'やり直す' })).not.toBeInTheDocument();
+      expect(screen.queryByTestId('autocomplete-button')).not.toBeInTheDocument();
+      expect(document.getElementById('gc-redo-unavailable')).not.toBeInTheDocument();
+      expect(document.getElementById('gc-autocomplete-reason')).not.toBeInTheDocument();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: original });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
+  it('places control descriptions inside play area on mobile and inside footer on desktop', async () => {
+    const original = window.innerWidth;
+    mockExec.mockResolvedValue(playingState);
+    try {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+      window.dispatchEvent(new Event('resize'));
+      const { container: mobileContainer, unmount } = renderWithProviders(<GrandfathersClockPage />);
+      const mobileAutoCompleteReason = await screen.findByText('文字盤を配り札より先へ進めると有効になります');
+      const mobileRedoUnavailable = screen.getByText('やり直せる手がありません');
+      const mobileFooter = mobileContainer.querySelector('footer');
+      const mobileTableau = mobileContainer.querySelector('[data-tutorial="gc-tableau"]');
+      const mobilePlayArea = mobileTableau?.closest('.overflow-y-auto');
+
+      expect(mobilePlayArea).toBeInstanceOf(HTMLElement);
+      expect(mobileFooter).toBeInstanceOf(HTMLElement);
+
+      // Outside footer on mobile
+      expect(mobileFooter?.contains(mobileAutoCompleteReason)).toBe(false);
+      expect(mobileFooter?.contains(mobileRedoUnavailable)).toBe(false);
+
+      // Inside play area on mobile
+      expect(mobilePlayArea?.contains(mobileAutoCompleteReason)).toBe(true);
+      expect(mobilePlayArea?.contains(mobileRedoUnavailable)).toBe(true);
+
+      // After tableau, before settings details
+      const mobileSettingsDetails = (await screen.findByText('設定')).closest('details');
+      expect(mobileSettingsDetails).not.toBeNull();
+      expect(
+        mobileTableau &&
+          mobileAutoCompleteReason &&
+          mobileTableau.compareDocumentPosition(mobileAutoCompleteReason) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+      expect(
+        mobileAutoCompleteReason &&
+          mobileSettingsDetails &&
+          mobileAutoCompleteReason.compareDocumentPosition(mobileSettingsDetails) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+
+      // aria-describedby references preserved
+      const mobileAutoCompleteBtn = screen.getByTestId('autocomplete-button');
+      expect(mobileAutoCompleteBtn).toHaveAttribute('aria-describedby', 'gc-autocomplete-reason');
+      const mobileRedoBtn = screen.getByRole('button', { name: 'やり直す' });
+      expect(mobileRedoBtn).toHaveAttribute('aria-describedby', 'gc-redo-unavailable');
+
+      unmount();
+
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 });
+      window.dispatchEvent(new Event('resize'));
+      const { container: desktopContainer } = renderWithProviders(<GrandfathersClockPage />);
+      const desktopAutoCompleteReason = await screen.findByText('文字盤を配り札より先へ進めると有効になります');
+      const desktopRedoUnavailable = screen.getByText('やり直せる手がありません');
+      const desktopFooter = desktopContainer.querySelector('footer');
+      const desktopTableau = desktopContainer.querySelector('[data-tutorial="gc-tableau"]');
+      const desktopPlayArea = desktopTableau?.closest('.overflow-y-auto');
+
+      expect(desktopPlayArea).toBeInstanceOf(HTMLElement);
+      expect(desktopFooter).toBeInstanceOf(HTMLElement);
+
+      // Inside footer on desktop
+      expect(desktopFooter?.contains(desktopAutoCompleteReason)).toBe(true);
+      expect(desktopFooter?.contains(desktopRedoUnavailable)).toBe(true);
+
+      // Outside play area on desktop
+      expect(desktopPlayArea?.contains(desktopAutoCompleteReason)).toBe(false);
+      expect(desktopPlayArea?.contains(desktopRedoUnavailable)).toBe(false);
+
+      // aria-describedby references preserved
+      const desktopAutoCompleteBtn = screen.getByTestId('autocomplete-button');
+      expect(desktopAutoCompleteBtn).toHaveAttribute('aria-describedby', 'gc-autocomplete-reason');
+      const desktopRedoBtn = screen.getByRole('button', { name: 'やり直す' });
+      expect(desktopRedoBtn).toHaveAttribute('aria-describedby', 'gc-redo-unavailable');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: original });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
   afterEach(() => {
     vi.useRealTimers();
   });
