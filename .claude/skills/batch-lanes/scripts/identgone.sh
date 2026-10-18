@@ -113,7 +113,10 @@ for path in paths:
         ) and old_names[name] == new_names[candidate]]
         if candidates:
             best=min(candidates, key=lambda candidate:(edit_distance(name,candidate),candidate))
-            print(f'WARN IDENT_GONE {path} {name} -> {best}')
+            if old_names[name] > 0 and new_names[name] > 0:
+                print(f'NOTE IDENT_GONE {path} {name}')
+            else:
+                print(f'WARN IDENT_GONE {path} {name} -> {best}')
         else:
             print(f'NOTE IDENT_GONE {path} {name}')
 PY

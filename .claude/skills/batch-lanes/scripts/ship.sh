@@ -45,7 +45,9 @@ if [[ "${ALLOW_STALE_BASE:-}" != 1 ]]; then
 fi
 if ((${#files[@]})); then git add -- "${files[@]}"; fi
 metadata=()
-[[ -n "${BATCH_DELEGATED_TO:-codex (dele -k edit)}" ]] && metadata+=("Delegated-To: ${BATCH_DELEGATED_TO:-codex (dele -k edit)}")
+# BATCH_DELEGATED_TO remains the explicit override for inferred lane authors.
+delegation=$(delegated_to "$s")
+metadata+=("Delegated-To: $delegation")
 [[ -n "${CLAUDE_CO_AUTHOR:-}" ]] && metadata+=("Co-Authored-By: $CLAUDE_CO_AUTHOR")
 closes_line="Closes #$n"
 prbody_has_ref "$n" "$summ" && closes_line=''
