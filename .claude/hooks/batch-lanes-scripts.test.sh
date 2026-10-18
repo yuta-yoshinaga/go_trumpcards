@@ -236,6 +236,7 @@ export BATCH_STATE="$tmp/state"
 cat >"$tmp/dele" <<'STUB'
 #!/usr/bin/env bash
 touch "$DELE_CALLED"
+printf 'delegated\n' > "$DELE_WORKTREE/result"
 STUB
 chmod +x "$tmp/dele"
 if PATH="$tmp:$PATH" DELE_CALLED="$tmp/called" \
@@ -244,10 +245,42 @@ if PATH="$tmp:$PATH" DELE_CALLED="$tmp/called" \
 fi
 [ ! -e "$tmp/called" ] || fail "go.sh invoked dele without a prompt"
 mkdir -p "$tmp/wt-ib1"
+git -C "$tmp/wt-ib1" init -q
+git -C "$tmp/wt-ib1" config user.email test@example.com
+git -C "$tmp/wt-ib1" config user.name test
+printf 'base\n' > "$tmp/wt-ib1/base"
+git -C "$tmp/wt-ib1" add base && git -C "$tmp/wt-ib1" commit -qm base
 printf 'delegate this issue\n' > "$tmp/prompt.md"
-PATH="$tmp:$PATH" DELE_CALLED="$tmp/called" BATCH_WT_ROOT="$tmp" \
+PATH="$tmp:$PATH" DELE_CALLED="$tmp/called" DELE_WORKTREE="$tmp/wt-ib1" BATCH_WT_ROOT="$tmp" \
   bash "$SCRIPTS/go.sh" 1 123 "$tmp/prompt.md" >/dev/null 2>&1 || fail "go.sh rejected a non-empty prompt"
 [ -e "$tmp/called" ] || fail "go.sh did not invoke dele for a valid prompt"
+cat >"$tmp/dele" <<'STUB'
+#!/usr/bin/env bash
+exit 0
+STUB
+chmod +x "$tmp/dele"
+mkdir -p "$tmp/empty-state"
+if PATH="$tmp:$PATH" BATCH_STATE="$tmp/empty-state" BATCH_WT_ROOT="$tmp" \
+  bash "$SCRIPTS/go.sh" 1 124 "$tmp/prompt.md" >"$tmp/no-change.out" 2>&1; then
+  fail "go.sh accepted a successful delegation with no work"
+fi
+grep -q '^WARN NO_CHANGE' "$tmp/no-change.out" || fail "go.sh omitted NO_CHANGE warning: $(cat "$tmp/no-change.out")"
+
+# A pre-existing modified file must still count as work when the delegate edits it again.
+printf 'initial edit\n' >> "$tmp/wt-ib1/base"
+cat >"$tmp/dele" <<'STUB'
+#!/usr/bin/env bash
+printf 'delegated edit\n' >> "$DELE_WORKTREE/base"
+exit 0
+STUB
+chmod +x "$tmp/dele"
+if PATH="$tmp:$PATH" BATCH_STATE="$tmp/empty-state" BATCH_WT_ROOT="$tmp" \
+  DELE_WORKTREE="$tmp/wt-ib1" bash "$SCRIPTS/go.sh" 1 125 "$tmp/prompt.md" >"$tmp/changed-existing.out" 2>&1; then
+  :
+else
+  fail "go.sh rejected a successful edit to an already modified file: $(cat "$tmp/changed-existing.out")"
+fi
+! grep -q '^WARN NO_CHANGE' "$tmp/changed-existing.out" || fail "go.sh warned NO_CHANGE after editing an already modified file"
 
 if BATCH_REPO="$ROOT" bash "$SCRIPTS/sweep.sh" >"$tmp/sweep.out" 2>&1; then
   fail "sweep.sh accepted an unset BATCH_BRANCH_RE"
@@ -380,6 +413,16 @@ BATCH_STATE="$tmp/testing-state" BATCH_TESTING=1 bash "$SCRIPTS/receipt.sh" 1 ||
 [ "$(page_test_for frontend/src/pages/ExamplePage.tsx)" = "frontend/src/pages/ExamplePage.test.tsx" ] || fail "page test mapping"
 [ "$(page_test_for frontend/src/utils/cards/cardValue.ts)" = "frontend/src/utils/cards/cardValue.test.ts" ] || fail "utility test mapping"
 [ -z "$(page_test_for frontend/src/pages/ExamplePage.test.tsx)" ] || fail "test file mapped as source"
+(
+  game_repo="$tmp/receipt-games"
+  mkdir -p "$game_repo/frontend/src/constants" "$game_repo/frontend/src/pages"
+  printf "export const gameRoutes = [{ path: '/unsunkaruta', page: 'UnsunKaruta' }];\n" > "$game_repo/frontend/src/constants/gameRoutes.ts"
+  touch "$game_repo/frontend/src/pages/UnsunKarutaPage.test.tsx"
+  selected=$(receipt_game_tests "$game_repo" feat/1-unsunkaruta-labels)
+  grep -qx 'frontend/src/pages/UnsunKarutaPage.test.tsx' <<<"$selected" || fail "receipt missed route test from game branch: $selected"
+  selected=$(receipt_game_tests "$game_repo" feat/1-no-such-game)
+  grep -qx 'WARN NO_TEST_MATCH' <<<"$selected" || fail "receipt did not warn on empty test selection: $selected"
+) || exit 1
 BATCH_TESTING=1 source "$SCRIPTS/waitdone.sh"
 printf '100\n' > "$tmp/start"
 printf '99 101\n' > "$tmp/result"
