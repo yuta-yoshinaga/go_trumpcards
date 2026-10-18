@@ -7218,5 +7218,12 @@
   "hanafuda.monthShort.10": "紅",
   "hanafuda.monthShort.11": "柳",
   "hanafuda.monthShort.12": "桐",
-  "hanafuda.cornerLabel": "{{month}}·{{kind}}"
+  "hanafuda.cornerLabel": "{{month}}·{{kind}}",
+  "unsunkaruta.cardLabel": "{{rank}}・{{suit}}",
+  "unsunkaruta.corner.sota": "ソウ",
+  "unsunkaruta.corner.uma": "ウマ",
+  "unsunkaruta.corner.kiri": "キリ",
+  "unsunkaruta.corner.un": "ウン",
+  "unsunkaruta.corner.sun": "スン",
+  "unsunkaruta.corner.robai": "ロバ"
 }

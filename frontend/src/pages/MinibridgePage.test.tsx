@@ -159,17 +159,17 @@ describe('MinibridgePage', () => {
     expect(await screen.findByTestId('mb-trick-layout')).not.toHaveClass('[&>div]:my-1');
   });
 
-  it('keeps the hand and game message in the play area outside the footer', async () => {
+  it('keeps the hand in the footer and the mobile game message in the play area', async () => {
     mockExec.mockResolvedValue(playing({ message: 'プレイ中です' }));
     renderWithProviders(<MinibridgePage />);
     const hand = await screen.findByTestId('mb-hand-area');
     const footer = screen.getByRole('contentinfo');
     const message = screen.getByText('プレイ中です');
-    const playArea = hand.closest('.flex-1.overflow-y-auto');
+    const content = screen.getByTestId('game-footer-content');
+    const playArea = message.closest('.flex-1.overflow-y-auto');
     expect(playArea).not.toBeNull();
-    expect(playArea).toContainElement(hand);
+    expect(content).toContainElement(hand);
     expect(playArea).toContainElement(message);
-    expect(footer).not.toContainElement(hand);
     expect(footer).not.toContainElement(message);
   });
 
@@ -562,7 +562,7 @@ describe('MinibridgePage', () => {
     expect(screen.getAllByAltText(cardAlt(dummyCard))).toHaveLength(1);
   });
 
-  it('places the human dummy trick beside the hand and closes CPU seats on large desktop', async () => {
+  it('keeps the human dummy trick in the play area and hand in the footer on large desktop', async () => {
     mockExec.mockResolvedValue(playing({ declarerIdx: 2, dummyIdx: 0 } as Partial<MinibridgeResponse>));
     mobileState.isMobile = false;
     mobileState.breakpoint = 'largeDesktop';
@@ -570,7 +570,9 @@ describe('MinibridgePage', () => {
 
     const layout = await screen.findByTestId('mb-card-layout');
     expect(layout).toHaveClass('lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]');
-    expect(layout).toContainElement(screen.getByTestId('mb-trick-layout'));
+    expect(screen.getByTestId('game-footer-content')).toContainElement(screen.getByTestId('mb-hand-area'));
+    expect(screen.getByTestId('mb-hand-area')).toHaveClass('lg:col-start-1');
+    expect(screen.getByTestId('game-footer-content')).not.toContainElement(screen.getByTestId('mb-trick-layout'));
     expect(layout).toContainElement(screen.getByTestId('mb-hand-area'));
     expect(screen.getByTestId('cpu-accordion')).not.toHaveAttribute('open');
   });

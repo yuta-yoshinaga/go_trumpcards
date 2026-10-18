@@ -131,6 +131,16 @@ describe('TienLenPage', () => {
     expect(card0).toHaveAttribute('aria-pressed', 'true');
   });
 
+  it('places the hand in footer content and play controls in footer actions on mobile', async () => {
+    renderWithProviders(<TienLenPage />);
+    const content = await screen.findByTestId('game-footer-content');
+    const actions = screen.getByTestId('game-footer-actions');
+    expect(screen.getByRole('contentinfo')).toHaveClass('max-h-[60vh]');
+    expect(content).toContainElement(document.querySelector('[data-tutorial="tl-player-hand"]'));
+    expect(within(actions).getByTestId('play-button')).toBeInTheDocument();
+    expect(within(actions).getByTestId('pass-button')).toBeInTheDocument();
+  });
+
   it('disables hand card selection outside the human turn', async () => {
     mockExec.mockResolvedValue(makeState({ currentTurn: 1 }));
     renderWithProviders(<TienLenPage />);

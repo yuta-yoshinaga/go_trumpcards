@@ -11,7 +11,7 @@ import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useEscobaGame } from '../hooks/useEscobaGame';
@@ -138,6 +138,7 @@ function EscobaPageContent() {
     retry,
   } = useEscobaGame();
   const { cardWidth } = useCardDimensions();
+  const isMobile = useIsMobile();
 
   const { playSound } = useSound();
   // Flash a badge and a click when any player's escobaCount rises — sweeping the
@@ -380,52 +381,23 @@ function EscobaPageContent() {
               </div>
             </div>
 
-            {/* Human hand */}
-            <div className="text-center" data-tutorial="es-player-hand">
-              <div className="text-xs text-ds-text-muted mb-1">
-                {tc('player.you')} —{' '}
-                {t('label.humanStats', {
-                  cards: human.handCount,
-                  captured: human.capturedCount,
-                  escoba: human.escobaCount,
-                })}
+            {/* Your captured pile — collapsible viewer (CPU piles stay count-only). */}
+            <details className="mt-3 mx-auto max-w-md bg-black/25 rounded-lg" data-testid="captured-viewer">
+              <summary className="cursor-pointer select-none px-3 py-2 text-xs text-ds-text-muted">
+                {t('captured.summary', { count: human.capturedCount })}
+              </summary>
+              <div className="px-3 pb-3">
+                {human.capturedCards.length === 0 ? (
+                  <span className="text-ds-text-muted text-xs">{t('captured.empty')}</span>
+                ) : (
+                  <div className="flex flex-wrap justify-center gap-1" data-testid="captured-cards">
+                    {human.capturedCards.map((c, i) => (
+                      <AnimatedCard key={i} card={c} width={cardWidth * 0.55} />
+                    ))}
+                  </div>
+                )}
               </div>
-              <div className="flex flex-wrap justify-center gap-2">
-                {human.cards.map((c, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => isHumanTurn && setHandIndex(handIndex === i ? null : i)}
-                    disabled={!isHumanTurn}
-                    aria-pressed={handIndex === i}
-                    className={`rounded transition-all ${
-                      handIndex === i ? 'ring-2 ring-ds-info -translate-y-2' : ''
-                    } ${isHumanTurn ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
-                    data-testid={`hand-card-${i}`}
-                  >
-                    <AnimatedCard card={c} width={cardWidth} />
-                  </button>
-                ))}
-              </div>
-
-              {/* Your captured pile — collapsible viewer (CPU piles stay count-only). */}
-              <details className="mt-3 mx-auto max-w-md bg-black/25 rounded-lg" data-testid="captured-viewer">
-                <summary className="cursor-pointer select-none px-3 py-2 text-xs text-ds-text-muted">
-                  {t('captured.summary', { count: human.capturedCount })}
-                </summary>
-                <div className="px-3 pb-3">
-                  {human.capturedCards.length === 0 ? (
-                    <span className="text-ds-text-muted text-xs">{t('captured.empty')}</span>
-                  ) : (
-                    <div className="flex flex-wrap justify-center gap-1" data-testid="captured-cards">
-                      {human.capturedCards.map((c, i) => (
-                        <AnimatedCard key={i} card={c} width={cardWidth * 0.55} />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </details>
-            </div>
+            </details>
 
             {/* Round-end score breakdown */}
             {isRoundEnd && detail && (
@@ -486,11 +458,13 @@ function EscobaPageContent() {
               </div>
             )}
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
+            {isMobile && (
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            )}
           </div>
 
           <SettingsPanel
@@ -512,59 +486,99 @@ function EscobaPageContent() {
             ]}
           />
 
-          <GameFooter className={`${gameTheme.escoba.footer} px-4 py-2.5`}>
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="es-actions">
-              <button
-                type="button"
-                onClick={() => {
-                  if (!loading && canTake) play();
-                }}
-                aria-disabled={loading || !canTake}
-                className="px-4 py-2 rounded-lg bg-ds-info text-ds-text-on-accent font-medium aria-disabled:opacity-40 aria-disabled:cursor-not-allowed text-sm"
-                data-testid="take-button"
-              >
-                {t('button.take')}
-              </button>
-              <button
-                type="button"
-                onClick={play}
-                disabled={loading || !canLay}
-                className="px-4 py-2 rounded-lg bg-ds-warning text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
-                data-testid="lay-button"
-              >
-                {t('button.lay')}
-              </button>
-              {isHumanTurn && mustCapture && (
-                <span className="text-xs text-ds-warning" data-testid="escoba-must-capture">
-                  {t('mustCapture')}
-                </span>
-              )}
-              {isRoundEnd && (
+          <GameFooter
+            className={`${gameTheme.escoba.footer} px-4 py-2.5`}
+            message={
+              isMobile ? undefined : (
+                <GameMessageBox
+                  message={state.message}
+                  messageCode={state.messageCode}
+                  messageParams={state.messageParams}
+                />
+              )
+            }
+            tall
+            actions={
+              <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="es-actions">
+                <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
                 <button
                   type="button"
-                  onClick={handleNextRound}
-                  disabled={loading}
-                  className="px-4 py-2 rounded-lg bg-ds-info/70 text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
-                  data-testid="next-round-button"
+                  onClick={() => {
+                    if (!loading && canTake) play();
+                  }}
+                  aria-disabled={loading || !canTake}
+                  className="px-4 py-2 rounded-lg bg-ds-info text-ds-text-on-accent font-medium aria-disabled:opacity-40 aria-disabled:cursor-not-allowed text-sm"
+                  data-testid="take-button"
                 >
-                  {t('button.nextRound')}
+                  {t('button.take')}
                 </button>
-              )}
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={onReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="es-reset-button"
-              />
-              <ActionLogSection
-                isEndPhase={isGameEnd}
-                actionLog={actionLog}
-                showActionLog={showActionLog}
-                hideActionLog={hideActionLog}
-              />
+                <button
+                  type="button"
+                  onClick={play}
+                  disabled={loading || !canLay}
+                  className="px-4 py-2 rounded-lg bg-ds-warning text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                  data-testid="lay-button"
+                >
+                  {t('button.lay')}
+                </button>
+                {isHumanTurn && mustCapture && (
+                  <span className="text-xs text-ds-warning" data-testid="escoba-must-capture">
+                    {t('mustCapture')}
+                  </span>
+                )}
+                {isRoundEnd && (
+                  <button
+                    type="button"
+                    onClick={handleNextRound}
+                    disabled={loading}
+                    className="px-4 py-2 rounded-lg bg-ds-info/70 text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                    data-testid="next-round-button"
+                  >
+                    {t('button.nextRound')}
+                  </button>
+                )}
+                <GameResetButton
+                  isGameEnd={isGameEnd}
+                  onReset={onReset}
+                  requestConfirm={requestConfirm}
+                  loading={loading}
+                  dataTutorial="es-reset-button"
+                />
+                <ActionLogSection
+                  isEndPhase={isGameEnd}
+                  actionLog={actionLog}
+                  showActionLog={showActionLog}
+                  hideActionLog={hideActionLog}
+                />
+              </div>
+            }
+          >
+            <div className="text-center" data-tutorial="es-player-hand">
+              <div className="text-xs text-ds-text-muted mb-1">
+                {tc('player.you')} —{' '}
+                {t('label.humanStats', {
+                  cards: human.handCount,
+                  captured: human.capturedCount,
+                  escoba: human.escobaCount,
+                })}
+              </div>
+              <div className="flex flex-wrap justify-center gap-2">
+                {human.cards.map((c, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => isHumanTurn && setHandIndex(handIndex === i ? null : i)}
+                    disabled={!isHumanTurn}
+                    aria-pressed={handIndex === i}
+                    className={`rounded transition-all ${
+                      handIndex === i ? 'ring-2 ring-ds-info -translate-y-2' : ''
+                    } ${isHumanTurn ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
+                    data-testid={`hand-card-${i}`}
+                  >
+                    <AnimatedCard card={c} width={cardWidth} />
+                  </button>
+                ))}
+              </div>
             </div>
           </GameFooter>
         </>

@@ -27,9 +27,10 @@ type CardFace struct {
 	Deck  string // デッキ系統ID（例 "wizard"）。非空なら手続き描画へ切り替える
 	// Month は花札の月 (1..12) を表す。
 	Month int
-	// Kind は花札の種別コード。bright/animal/ribbon/chaff/gwang/yeol/tti/pi の 8 値で、
-	// ゴーストップだけ韓国語由来の種別名を使う。
+	// Kind は花札の種別コード、またはウンスンカルタの絵札ランクコード。
 	Kind string
+	// UnsunSuit はウンスンカルタのスートコード。
+	UnsunSuit string
 }
 
 // faceProvider はドメインの Card を CardFace 記述子に対応付ける。標準52枚
@@ -37,7 +38,7 @@ type CardFace struct {
 type faceProvider func(card *domain.Card) *CardFace
 
 // cardToOutputWithFace はカードを WebOutputCard に変換し、faceProvider が
-// 記述子を返した札には手続き描画用フィールド（Glyph/Label/Color/Deck/Month/Kind）を
+// 記述子を返した札には手続き描画用フィールド（Glyph/Label/Color/Deck/Month/Kind/UnsunSuit）を
 // 付与する (nil → nil)。fp が nil を返す標準札は cardToOutput と同一出力。
 func cardToOutputWithFace(card *domain.Card, fp faceProvider) *controller.WebOutputCard {
 	out := cardToOutput(card)
@@ -51,6 +52,7 @@ func cardToOutputWithFace(card *domain.Card, fp faceProvider) *controller.WebOut
 		out.Deck = face.Deck
 		out.Month = face.Month
 		out.Kind = face.Kind
+		out.UnsunSuit = face.UnsunSuit
 	}
 	return out
 }

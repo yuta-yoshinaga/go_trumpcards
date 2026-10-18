@@ -239,6 +239,115 @@ function TienLenPageContent() {
               )}
             </div>
 
+            {showComboType && (
+              <p
+                role="status"
+                data-testid="tl-combo-type"
+                className={`mb-1 text-center text-xs font-semibold ${isBomb ? 'text-ds-warning' : 'text-ds-info'}`}
+              >
+                {`${t('selectedPlayLabel')}: ${t('comboBadge', {
+                  type: t(`playType.${selectedCombo}`),
+                  count: selectedCards.length,
+                })}`}
+                {isBomb && ` · ${t('bombLabel')}`}
+              </p>
+            )}
+            {showInvalidCombo && (
+              <p
+                role="status"
+                data-testid="tl-invalid-combo"
+                className="mb-1 text-center font-medium text-ds-warning text-xs"
+              >
+                {t('invalidCombo')}
+              </p>
+            )}
+            {isHumanTurn && hasValidCombo && playability !== 'ok' && (
+              <p
+                role="status"
+                data-testid="tl-unplayable-reason"
+                className="mb-1 text-center font-medium text-ds-warning text-xs"
+              >
+                {t(`unplayable.${playability}`)}
+              </p>
+            )}
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+          </div>
+
+          <SettingsPanel
+            title={tc('settings.title')}
+            groups={[
+              {
+                items: [
+                  {
+                    type: 'select' as const,
+                    id: 'cpuDifficulty',
+                    label: t('settings.cpuDifficulty'),
+                    value: String(configInput.cpuDifficulty ?? 1),
+                    options: difficultyOptions,
+                    onSelect: (v: string) => handleConfigChange('cpuDifficulty', Number.parseInt(v, 10)),
+                  },
+                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
+                ],
+              },
+            ]}
+          />
+          <ReplaySpeedSettingsPanel />
+
+          <GameFooter
+            className={`${gameTheme.tienlen.footer} px-4 py-2.5`}
+            tall
+            actions={
+              <div className="flex gap-2 justify-center flex-wrap" data-tutorial="tl-play-pass">
+                <button
+                  type="button"
+                  onClick={handlePlay}
+                  disabled={loading || !canPlay}
+                  aria-disabled={isHumanTurn && hasValidCombo && playability !== 'ok' ? 'true' : undefined}
+                  className="px-4 py-2 rounded-lg bg-ds-info hover:bg-ds-info text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                  data-testid="play-button"
+                >
+                  {t('playButton')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!canPass) return;
+                    handlePass();
+                  }}
+                  disabled={loading || !isHumanTurn}
+                  aria-disabled={isHumanTurn && state.tableCards.length === 0 ? 'true' : undefined}
+                  aria-describedby={isHumanTurn && state.tableCards.length === 0 ? 'tl-pass-unavailable' : undefined}
+                  className="px-4 py-2 rounded-lg bg-ds-warning hover:bg-ds-warning text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed aria-disabled:opacity-40 aria-disabled:cursor-not-allowed text-sm"
+                  data-testid="pass-button"
+                >
+                  {t('passButton')}
+                </button>
+                {isHumanTurn && state.tableCards.length === 0 && (
+                  <span id="tl-pass-unavailable" className="sr-only">
+                    {t('passUnavailable')}
+                  </span>
+                )}
+                <GameResetButton
+                  isGameEnd={isGameEnd}
+                  onReset={onReset}
+                  requestConfirm={requestConfirm}
+                  loading={loading}
+                  dataTutorial="tl-reset-button"
+                />
+                <ActionLogSection
+                  isEndPhase={isGameEnd}
+                  actionLog={actionLog}
+                  showActionLog={showActionLog}
+                  hideActionLog={hideActionLog}
+                />
+              </div>
+            }
+          >
             {/* Human hand */}
             <div className="text-center" data-tutorial="tl-player-hand">
               <div className="text-xs text-ds-text-muted mb-1 flex items-center justify-center gap-1">
@@ -271,111 +380,6 @@ function TienLenPageContent() {
                   );
                 })}
               </CardFan>
-            </div>
-
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-          </div>
-
-          <SettingsPanel
-            title={tc('settings.title')}
-            groups={[
-              {
-                items: [
-                  {
-                    type: 'select' as const,
-                    id: 'cpuDifficulty',
-                    label: t('settings.cpuDifficulty'),
-                    value: String(configInput.cpuDifficulty ?? 1),
-                    options: difficultyOptions,
-                    onSelect: (v: string) => handleConfigChange('cpuDifficulty', Number.parseInt(v, 10)),
-                  },
-                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
-                ],
-              },
-            ]}
-          />
-          <ReplaySpeedSettingsPanel />
-
-          <GameFooter className={`${gameTheme.tienlen.footer} px-4 py-2.5`}>
-            {showComboType && (
-              <p
-                role="status"
-                data-testid="tl-combo-type"
-                className={`mb-1 text-center text-xs font-semibold ${isBomb ? 'text-ds-warning' : 'text-ds-info'}`}
-              >
-                {`${t('selectedPlayLabel')}: ${t('comboBadge', {
-                  type: t(`playType.${selectedCombo}`),
-                  count: selectedCards.length,
-                })}`}
-                {isBomb && ` · ${t('bombLabel')}`}
-              </p>
-            )}
-            {showInvalidCombo && (
-              <p
-                role="status"
-                data-testid="tl-invalid-combo"
-                className="mb-1 text-center font-medium text-ds-warning text-xs"
-              >
-                {t('invalidCombo')}
-              </p>
-            )}
-            {isHumanTurn && hasValidCombo && playability !== 'ok' && (
-              <p
-                role="status"
-                data-testid="tl-unplayable-reason"
-                className="mb-1 text-center font-medium text-ds-warning text-xs"
-              >
-                {t(`unplayable.${playability}`)}
-              </p>
-            )}
-            <div className="flex gap-2 justify-center flex-wrap" data-tutorial="tl-play-pass">
-              <button
-                type="button"
-                onClick={handlePlay}
-                disabled={loading || !canPlay}
-                aria-disabled={isHumanTurn && hasValidCombo && playability !== 'ok' ? 'true' : undefined}
-                className="px-4 py-2 rounded-lg bg-ds-info hover:bg-ds-info text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
-                data-testid="play-button"
-              >
-                {t('playButton')}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  if (!canPass) return;
-                  handlePass();
-                }}
-                disabled={loading || !isHumanTurn}
-                aria-disabled={isHumanTurn && state.tableCards.length === 0 ? 'true' : undefined}
-                aria-describedby={isHumanTurn && state.tableCards.length === 0 ? 'tl-pass-unavailable' : undefined}
-                className="px-4 py-2 rounded-lg bg-ds-warning hover:bg-ds-warning text-ds-text-on-accent font-medium disabled:opacity-40 disabled:cursor-not-allowed aria-disabled:opacity-40 aria-disabled:cursor-not-allowed text-sm"
-                data-testid="pass-button"
-              >
-                {t('passButton')}
-              </button>
-              {isHumanTurn && state.tableCards.length === 0 && (
-                <span id="tl-pass-unavailable" className="sr-only">
-                  {t('passUnavailable')}
-                </span>
-              )}
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={onReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="tl-reset-button"
-              />
-              <ActionLogSection
-                isEndPhase={isGameEnd}
-                actionLog={actionLog}
-                showActionLog={showActionLog}
-                hideActionLog={hideActionLog}
-              />
             </div>
           </GameFooter>
         </>

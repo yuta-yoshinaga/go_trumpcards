@@ -223,41 +223,6 @@ function NainJaunePageContent() {
               </section>
             )}
 
-            <CpuAccordion playerCount={opponents.length}>
-              <div className="flex justify-center gap-4 mb-3 flex-wrap">
-                {opponents.map((o) => (
-                  <div key={`opp-${o.id.toString()}`} className="text-center">
-                    <div className="text-game-text-muted text-xs mb-1">
-                      {/* 点も出す。支払いは枚数ではなく点数。 */}
-                      {t('seat', { name: `CPU${o.id.toString()}`, chips: o.chips, n: o.cardCount, pts: o.points })}
-                    </div>
-                    <div
-                      className={`flex justify-center ${o.hidden ? 'flex-nowrap' : 'gap-1 flex-wrap'}`}
-                      role="img"
-                      aria-label={t('opponentHandAriaLabel', { name: `CPU${o.id.toString()}`, n: o.cardCount })}
-                    >
-                      {o.hidden
-                        ? Array.from({ length: o.cardCount }, (_, i) => (
-                            <CardBack
-                              key={`opp-${o.id.toString()}-c${i.toString()}`}
-                              width={18}
-                              className={i > 0 ? '-ml-3' : undefined}
-                            />
-                          ))
-                        : o.cards.map((card, i) => (
-                            <AnimatedCard
-                              key={`opp-${o.id.toString()}-c${i.toString()}`}
-                              card={card}
-                              width={cardWidth}
-                              draggable={false}
-                            />
-                          ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CpuAccordion>
-
             {state.playedPile.length > 0 && (
               <div className="text-center mb-3">
                 <div className="text-game-text-muted text-xs mb-1">
@@ -301,12 +266,101 @@ function NainJaunePageContent() {
               </div>
             )}
 
+            <CpuAccordion playerCount={opponents.length}>
+              <div className="flex justify-center gap-4 mb-3 flex-wrap">
+                {opponents.map((o) => (
+                  <div key={`opp-${o.id.toString()}`} className="text-center">
+                    <div className="text-game-text-muted text-xs mb-1">
+                      {/* 点も出す。支払いは枚数ではなく点数。 */}
+                      {t('seat', { name: `CPU${o.id.toString()}`, chips: o.chips, n: o.cardCount, pts: o.points })}
+                    </div>
+                    <div
+                      className={`flex justify-center ${o.hidden ? 'flex-nowrap' : 'gap-1 flex-wrap'}`}
+                      role="img"
+                      aria-label={t('opponentHandAriaLabel', { name: `CPU${o.id.toString()}`, n: o.cardCount })}
+                    >
+                      {o.hidden
+                        ? Array.from({ length: o.cardCount }, (_, i) => (
+                            <CardBack
+                              key={`opp-${o.id.toString()}-c${i.toString()}`}
+                              width={18}
+                              className={i > 0 ? '-ml-3' : undefined}
+                            />
+                          ))
+                        : o.cards.map((card, i) => (
+                            <AnimatedCard
+                              key={`opp-${o.id.toString()}-c${i.toString()}`}
+                              card={card}
+                              width={cardWidth}
+                              draggable={false}
+                            />
+                          ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CpuAccordion>
+
             {dealOver && state.dealWinner >= 0 && (
               <div className="text-center text-sm mb-3" data-testid="nainjaune-deal-result">
                 {state.dealWinner === 0 ? t('dealResultYou') : t('dealResult', { n: state.dealWinner })}
               </div>
             )}
 
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
+            <ErrorAlert message={error} onRetry={retry} />
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            <ActionLogSection
+              isEndPhase={ended}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
+          </div>
+
+          {/* Polite live region: turn arrival, compartment payouts, deal end. */}
+          <span className="sr-only" role="status" aria-live="polite" data-testid="nainjaune-turn-announce">
+            {liveMsg}
+          </span>
+          <GameFooter
+            className={`${gameTheme.nainjaune.footer} px-4 py-2.5`}
+            actions={
+              <div className="flex gap-2 items-center flex-wrap">
+                {isHumanTurn && (
+                  <button
+                    type="button"
+                    className={`${btnPrimary} min-h-11`}
+                    disabled={handIdx === null}
+                    onClick={() => {
+                      if (handIdx !== null) {
+                        game.handlePlay(handIdx);
+                        setHandIdx(null);
+                      }
+                    }}
+                  >
+                    {t('play')}
+                  </button>
+                )}
+                {dealOver && !ended && (
+                  <button type="button" className={`${btnPrimary} min-h-11`} onClick={game.handleNextDeal}>
+                    {t('nextDeal')}
+                  </button>
+                )}
+                <GameResetButton
+                  isGameEnd={ended}
+                  onReset={game.handleReset}
+                  requestConfirm={requestConfirm}
+                  loading={loading}
+                  dataTutorial="nj-reset-button"
+                />
+              </div>
+            }
+          >
             <div className="text-center" data-tutorial="nj-hand">
               <div className="text-game-text-muted text-xs mb-1">
                 {t('yourHand')}
@@ -351,57 +405,6 @@ function NainJaunePageContent() {
                   {state.runRank === 0 ? t('selectLead') : t('selectFollow', { rank: state.runRank + 1 })}
                 </div>
               )}
-              <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-            </div>
-
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
-            <ActionLogSection
-              isEndPhase={ended}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
-          </div>
-
-          <GameFooter className={`${gameTheme.nainjaune.footer} px-4 py-2.5`}>
-            {/* Polite live region: turn arrival, compartment payouts, deal end. */}
-            <span className="sr-only" role="status" aria-live="polite" data-testid="nainjaune-turn-announce">
-              {liveMsg}
-            </span>
-            <ErrorAlert message={error} onRetry={retry} />
-            <div className="flex gap-2 items-center flex-wrap">
-              {isHumanTurn && (
-                <button
-                  type="button"
-                  className={`${btnPrimary} min-h-11`}
-                  disabled={handIdx === null}
-                  onClick={() => {
-                    if (handIdx !== null) {
-                      game.handlePlay(handIdx);
-                      setHandIdx(null);
-                    }
-                  }}
-                >
-                  {t('play')}
-                </button>
-              )}
-              {dealOver && !ended && (
-                <button type="button" className={`${btnPrimary} min-h-11`} onClick={game.handleNextDeal}>
-                  {t('nextDeal')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={ended}
-                onReset={game.handleReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="nj-reset-button"
-              />
             </div>
           </GameFooter>
         </>

@@ -81,6 +81,8 @@ describe('NainJaunePage', () => {
       return element as HTMLElement;
     });
     expect(hand.querySelectorAll('button[data-hint-action="play"]')).toHaveLength(3);
+    expect(screen.getByTestId('game-footer-content')).toContainElement(hand);
+    expect(screen.getByTestId('game-footer-actions')).toContainElement(screen.getByRole('button', { name: '出す' }));
   });
   beforeEach(() => {
     mobileState.isMobile = true;
@@ -121,6 +123,14 @@ describe('NainJaunePage', () => {
     renderWithProviders(<NainJaunePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.getByTestId('cpu-accordion')).toHaveAttribute('open');
+  });
+
+  it('renders the played pile before the CPU reference information', async () => {
+    mockExec.mockResolvedValue(makeState({ playedPile: [card('HEART', 5), card('DIAMOND', 9)] }));
+    renderWithProviders(<NainJaunePage />);
+    const pile = await screen.findByTestId('nainjaune-played-recent');
+    const cpuSeats = screen.getByTestId('cpu-accordion');
+    expect(pile.compareDocumentPosition(cpuSeats) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it('stacks small CPU card backs in one row while keeping the hand count', async () => {
