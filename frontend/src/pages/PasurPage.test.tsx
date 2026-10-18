@@ -19,11 +19,11 @@ vi.mock('../hooks/useGameHint', () => ({
 }));
 
 const mockExec = vi.mocked(pasurApi.exec);
-const mobileState = vi.hoisted(() => ({ isMobile: true }));
+const mobileState = vi.hoisted(() => ({ useIsMobile: vi.fn(() => true) }));
 
 vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
-  useIsMobile: () => mobileState.isMobile,
+  useIsMobile: mobileState.useIsMobile,
 }));
 
 const card = (design: string, value: number): Card => ({ design, value }) as unknown as Card;
@@ -70,12 +70,36 @@ function makeState(overrides: Partial<PasurResponse> = {}): PasurResponse {
 }
 
 beforeEach(() => {
-  mobileState.isMobile = true;
+  mobileState.useIsMobile.mockReturnValue(true);
   vi.clearAllMocks();
   mockExec.mockResolvedValue(makeState());
 });
 
 describe('PasurPage', () => {
+  it('places the mobile hand in footer content and capture choices in footer actions', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<PasurPage />);
+    const hand = await screen.findByTestId('game-footer-content');
+    expect(hand.querySelector('[data-tutorial="ps-hand"] button')).toBeInTheDocument();
+    const handCard = hand.querySelector('[data-tutorial="ps-hand"] button');
+    expect(handCard).not.toBeNull();
+    if (handCard) fireEvent.click(handCard);
+    const actions = screen.getByTestId('game-footer-actions');
+    expect(actions.querySelector('[data-testid="ps-take-0-btn"]')).toBeInTheDocument();
+    expect(actions.querySelector('[data-testid="ps-trail-btn"]')).toBeNull();
+  });
+
+  it('does not create a footer on desktop', async () => {
+    mobileState.useIsMobile.mockReturnValue(false);
+    mockExec.mockResolvedValue(makeState());
+    try {
+      renderWithProviders(<PasurPage />);
+      await screen.findByTestId('ps-table');
+      expect(screen.queryByTestId('game-footer-content')).toBeNull();
+    } finally {
+      mobileState.useIsMobile.mockReturnValue(true);
+    }
+  });
   it('resets on mount', async () => {
     renderWithProviders(<PasurPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
@@ -407,6 +431,55 @@ describe('PasurPage soor options', () => {
     renderWithProviders(<PasurPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.queryByTestId('ps-options')).not.toBeInTheDocument();
+  });
+
+  it('renders capture options in the main play area on desktop when a card is picked on human turn', async () => {
+    mobileState.useIsMobile.mockReturnValue(false);
+    mockExec.mockResolvedValue(makeState());
+    try {
+      renderWithProviders(<PasurPage />);
+      // 初期状態 (picked === null) では ps-options は存在しないが、手札は存在する
+      expect(await screen.findByTestId('ps-table')).toBeInTheDocument();
+      const handCards = screen.getAllByRole('button', { name: /を選ぶ$/ });
+      expect(handCards.length).toBeGreaterThan(0);
+      expect(screen.queryByTestId('ps-options')).not.toBeInTheDocument();
+
+      // カードを選択すると (picked !== null && isHumanTurn)、デスクトップのメイン領域に ps-options が現れる
+      fireEvent.click(handCards[0]);
+      const options = await screen.findByTestId('ps-options');
+      expect(options).toBeInTheDocument();
+      expect(screen.getByTestId('ps-take-0-btn')).toBeInTheDocument();
+      expect(screen.getByTestId('ps-take-1-2-btn')).toBeInTheDocument();
+      // デスクトップなので GameFooter の actions には入っていない
+      expect(screen.queryByTestId('game-footer-actions')).not.toBeInTheDocument();
+
+      // 選び直すボタンを押すと再び未選択 (picked === null) に戻る
+      fireEvent.click(screen.getByRole('button', { name: '選び直す' }));
+      expect(screen.queryByTestId('ps-options')).not.toBeInTheDocument();
+      expect(screen.getByTestId('ps-table')).toBeInTheDocument();
+    } finally {
+      mobileState.useIsMobile.mockReturnValue(true);
+    }
+  });
+
+  it('does not render capture options on desktop when it is not the human turn', async () => {
+    mobileState.useIsMobile.mockReturnValue(false);
+    mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1 }));
+    try {
+      renderWithProviders(<PasurPage />);
+      expect(await screen.findByTestId('ps-table')).toBeInTheDocument();
+      // 人間の手番バッジは出ず、CPU席は存在する
+      expect(screen.queryByTestId('ps-turn-0')).not.toBeInTheDocument();
+      expect(screen.getByTestId('ps-seat-1')).toBeInTheDocument();
+      // 手番外なので手札の選択ボタンは disabled
+      const handCards = screen.getAllByRole('button', { name: /を選ぶ$/ });
+      expect(handCards[0]).toBeDisabled();
+      fireEvent.click(handCards[0]);
+      // options は表示されない
+      expect(screen.queryByTestId('ps-options')).not.toBeInTheDocument();
+    } finally {
+      mobileState.useIsMobile.mockReturnValue(true);
+    }
   });
 });
 

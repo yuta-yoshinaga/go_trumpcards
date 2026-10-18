@@ -31,13 +31,6 @@ const VISIBLE_PX = 52;
 /** Controls a player can activate: buttons, button roles, and focusable custom widgets. */
 const GAME_ACTION_SELECTOR = 'button, [role="button"], [tabindex="0"]';
 
-// These routes have a confirmed first-action layout defect tracked by #11883.
-// Their first-action assertion is inverted so a fix makes the test fail until this list is updated.
-const KNOWN_FIRST_ACTION_FAILURES = ['/estimation', '/pasur', '/quodlibet'];
-
-// These routes fail depending on the deal; omit only their first-action assertion (#11883).
-const DEAL_DEPENDENT_FIRST_ACTION_FAILURES: readonly string[] = [];
-
 /**
  * Pages whose footer content overflowed at the start of #11655 (and the very large hands), minus
  * the ones whose hand lives in the play area (Crazy Four Poker, Double Attack, Double Exposure,
@@ -149,12 +142,6 @@ test('route list is complete', () => {
 test('every strict footer-hand page is a game route', () => {
   const missingPages = FOOTER_HAND_PAGES.filter((path) => !routes.includes(path));
   expect(missingPages, `footer-hand pages missing from game routes: ${missingPages.join(', ')}`).toEqual([]);
-});
-
-test('known first-action failure routes are game routes', () => {
-  for (const path of [...KNOWN_FIRST_ACTION_FAILURES, ...DEAL_DEPENDENT_FIRST_ACTION_FAILURES]) {
-    expect(routes, `${path} remains a game route`).toContain(path);
-  }
 });
 
 /** Enforces the 52px visibility rule, with strict presence floors for known footer-hand pages. */
@@ -290,22 +277,6 @@ async function checkFirstActionVisibility(page: import('@playwright/test').Page,
     expect
       .soft(result.actionableCount, `First-action check: /hearts actionable game controls on initial load`)
       .toBeGreaterThan(0);
-  }
-  if (DEAL_DEPENDENT_FIRST_ACTION_FAILURES.includes(path)) {
-    test.info().annotations.push({
-      type: 'known first-action issue',
-      description: `${path}: first-action visibility depends on the deal (#11883).`,
-    });
-    return;
-  }
-  if (KNOWN_FIRST_ACTION_FAILURES.includes(path)) {
-    expect
-      .soft(
-        result.visible,
-        `First-action check: ${path}: known #11883 failure; remove this route when fixed. ${VISIBLE_PX}px visible control expected to remain absent: ${JSON.stringify(result)}`,
-      )
-      .toHaveLength(0);
-    return;
   }
   if (result.actionableCount === 0) {
     test.info().annotations.push({

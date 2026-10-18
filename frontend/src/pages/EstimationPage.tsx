@@ -6,13 +6,14 @@ import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -74,6 +75,7 @@ function EstimationPageContent() {
     retry,
   } = useGameApi<EstimationResponse, Parameters<typeof estimationApi.exec>>(estimationApi.exec);
   const { cardWidth } = useCardDimensions();
+  const isMobile = useIsMobile();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('estimation', state);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('estimation');
@@ -164,6 +166,118 @@ function EstimationPageContent() {
     if (state.winnerIdx < 0) return t('result.tie');
     return t('result.lose', { idx: String(state.winnerIdx) });
   })();
+
+  const handCards = human && human.cards.length > 0 && (
+    <div className={isMobile ? undefined : 'mt-4'} data-tutorial="est-hand">
+      <div className="text-ds-text-muted text-sm mb-1">
+        {t('header.you')}: {human.cardCount}
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {human.cards.map((card, idx) => {
+          const unplayable = isHumanTurn && !legalRing.has(idx);
+          return (
+            <button
+              key={`${card.design}-${card.value}-${idx}`}
+              type="button"
+              disabled={loading || !isHumanTurn}
+              onClick={() => {
+                if (!unplayable) handlePlay(idx);
+              }}
+              aria-disabled={unplayable || undefined}
+              aria-describedby={unplayable ? 'est-play-unavailable' : undefined}
+              aria-label={t('actions.playAria', { card: cardAlt(card) })}
+              className={`disabled:opacity-50 disabled:cursor-not-allowed aria-disabled:opacity-50 aria-disabled:cursor-not-allowed ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
+            >
+              <CardImage card={card} width={cardWidth} />
+            </button>
+          );
+        })}
+      </div>
+      <span id="est-play-unavailable" className="sr-only">
+        {t('actions.playUnavailable')}
+      </span>
+    </div>
+  );
+
+  const actionButtons = (
+    <div className={`${isMobile ? '' : 'mt-4 '}flex flex-wrap gap-2`} data-tutorial="est-actions">
+      {isHumanTrumpTurn &&
+        SUITS.map((suit) => (
+          <button
+            key={suit}
+            type="button"
+            className={btnWarning}
+            onClick={() => handleTrump(suit)}
+            disabled={loading}
+            aria-label={t('actions.trumpAria', {
+              suit: suitSymbolAt(suit, '?'),
+              suitName: tc(`common.suit.${SUIT_NAME_KEYS[suit]}`),
+            })}
+            data-testid={`est-trump-${suit.toString()}-btn`}
+          >
+            {t('actions.trump', { suit: suitSymbolAt(suit, '?') })}
+          </button>
+        ))}
+      {isHumanBidTurn &&
+        BIDS.map((bid) => {
+          // **禁止値は押せなくする。** 合計が13になる宣言はサーバが必ず
+          // 拒否するので、押させてから断るより出さないほうが正直。
+          const barred = bid === state.restrictedBid;
+          return (
+            <button
+              key={bid}
+              type="button"
+              className={btnWarning}
+              onClick={() => handleBid(bid)}
+              disabled={loading || barred}
+              aria-disabled={barred}
+              // **裸の数字は読み上げでは意味を持たない。**何の宣言なのか、
+              // 押せない値はなぜ押せないのかまで名前に載せる。
+              aria-label={
+                barred
+                  ? // **0 は「Dash Call」であって「0 トリック」ではない。**
+                    // 押せる側でそう名乗っている以上、禁止された側でも同じ名で呼ぶ。
+                    bid === 0
+                    ? t('actions.bidDashBarredAria', { total: TRICKS_PER_ROUND })
+                    : t('actions.bidBarredAria', { n: bid, total: TRICKS_PER_ROUND })
+                  : bid === 0
+                    ? t('actions.bidDashAria')
+                    : t('actions.bidAria', { n: bid })
+              }
+              data-testid={`est-bid-${bid.toString()}-btn`}
+            >
+              {bid === 0 ? t('actions.dash') : String(bid)}
+            </button>
+          );
+        })}
+      {isHumanBidTurn && state.restrictedBid >= 0 && (
+        <p
+          className="w-full text-center text-sm text-ds-text-muted"
+          data-testid="est-restricted-bid-explanation"
+          aria-live="polite"
+        >
+          {t('actions.bidRestrictedExplanation', {
+            sum: TRICKS_PER_ROUND - state.restrictedBid,
+            bid: state.restrictedBid,
+            total: TRICKS_PER_ROUND,
+          })}
+        </p>
+      )}
+      {isRoundEnd && !isGameEnd && (
+        <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+          {t('actions.nextRound')}
+        </button>
+      )}
+      <button type="button" className={btnPrimary} onClick={() => requestConfirm(handleReset)} disabled={loading}>
+        {t('actions.reset')}
+      </button>
+      {!isGameEnd && (
+        <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
+          {t('actions.giveUp')}
+        </button>
+      )}
+    </div>
+  );
 
   return (
     <GamePageShell
@@ -264,132 +378,26 @@ function EstimationPageContent() {
             />
             <ErrorAlert message={error} onRetry={retry} />
 
-            {human && human.cards.length > 0 && (
-              <div className="mt-4" data-tutorial="est-hand">
-                <div className="text-ds-text-muted text-sm mb-1">
-                  {t('header.you')}: {human.cardCount}
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {human.cards.map((card, idx) => {
-                    const unplayable = isHumanTurn && !legalRing.has(idx);
-                    return (
-                      <button
-                        key={`${card.design}-${card.value}-${idx}`}
-                        type="button"
-                        disabled={loading || !isHumanTurn}
-                        onClick={() => {
-                          if (!unplayable) handlePlay(idx);
-                        }}
-                        aria-disabled={unplayable || undefined}
-                        aria-describedby={unplayable ? 'est-play-unavailable' : undefined}
-                        aria-label={t('actions.playAria', { card: cardAlt(card) })}
-                        className={`disabled:opacity-50 disabled:cursor-not-allowed aria-disabled:opacity-50 aria-disabled:cursor-not-allowed ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
-                      >
-                        <CardImage card={card} width={cardWidth} />
-                      </button>
-                    );
-                  })}
-                </div>
-                <span id="est-play-unavailable" className="sr-only">
-                  {t('actions.playUnavailable')}
-                </span>
-              </div>
-            )}
-
             {hintEnabled && hint && (
               <div className="mt-3 flex justify-center">
                 <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />
               </div>
             )}
 
-            <div className="mt-4 flex flex-wrap gap-2" data-tutorial="est-actions">
-              {isHumanTrumpTurn &&
-                SUITS.map((suit) => (
-                  <button
-                    key={suit}
-                    type="button"
-                    className={btnWarning}
-                    onClick={() => handleTrump(suit)}
-                    disabled={loading}
-                    aria-label={t('actions.trumpAria', {
-                      suit: suitSymbolAt(suit, '?'),
-                      suitName: tc(`common.suit.${SUIT_NAME_KEYS[suit]}`),
-                    })}
-                    data-testid={`est-trump-${suit.toString()}-btn`}
-                  >
-                    {t('actions.trump', { suit: suitSymbolAt(suit, '?') })}
-                  </button>
-                ))}
-              {isHumanBidTurn &&
-                BIDS.map((bid) => {
-                  // **禁止値は押せなくする。** 合計が13になる宣言はサーバが必ず
-                  // 拒否するので、押させてから断るより出さないほうが正直。
-                  const barred = bid === state.restrictedBid;
-                  return (
-                    <button
-                      key={bid}
-                      type="button"
-                      className={btnWarning}
-                      onClick={() => handleBid(bid)}
-                      disabled={loading || barred}
-                      aria-disabled={barred}
-                      // **裸の数字は読み上げでは意味を持たない。**何の宣言なのか、
-                      // 押せない値はなぜ押せないのかまで名前に載せる。
-                      aria-label={
-                        barred
-                          ? // **0 は「Dash Call」であって「0 トリック」ではない。**
-                            // 押せる側でそう名乗っている以上、禁止された側でも同じ名で呼ぶ。
-                            bid === 0
-                            ? t('actions.bidDashBarredAria', { total: TRICKS_PER_ROUND })
-                            : t('actions.bidBarredAria', { n: bid, total: TRICKS_PER_ROUND })
-                          : bid === 0
-                            ? t('actions.bidDashAria')
-                            : t('actions.bidAria', { n: bid })
-                      }
-                      data-testid={`est-bid-${bid.toString()}-btn`}
-                    >
-                      {bid === 0 ? t('actions.dash') : String(bid)}
-                    </button>
-                  );
-                })}
-              {isHumanBidTurn && state.restrictedBid >= 0 && (
-                <p
-                  className="w-full text-center text-sm text-ds-text-muted"
-                  data-testid="est-restricted-bid-explanation"
-                  aria-live="polite"
-                >
-                  {t('actions.bidRestrictedExplanation', {
-                    sum: TRICKS_PER_ROUND - state.restrictedBid,
-                    bid: state.restrictedBid,
-                    total: TRICKS_PER_ROUND,
-                  })}
-                </p>
-              )}
-              {isRoundEnd && !isGameEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('actions.nextRound')}
-                </button>
-              )}
-              <button
-                type="button"
-                className={btnPrimary}
-                onClick={() => requestConfirm(handleReset)}
-                disabled={loading}
-              >
-                {t('actions.reset')}
-              </button>
-              {!isGameEnd && (
-                <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
-                  {t('actions.giveUp')}
-                </button>
-              )}
-            </div>
+            {!isMobile && handCards}
+            {!isMobile && actionButtons}
 
             <SettingsPanel
               title={tc('settings.title')}
               groups={[{ items: [hintCheckboxItem(tc, hintEnabled, setHintEnabled)] }]}
             />
           </div>
+
+          {isMobile && (
+            <GameFooter className={`${gameTheme.estimation.footer} px-4 py-2.5`} tall actions={actionButtons}>
+              {handCards}
+            </GameFooter>
+          )}
 
           <ActionLogSection
             isEndPhase={isGameEnd}
