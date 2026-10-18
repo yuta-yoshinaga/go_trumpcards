@@ -13,6 +13,7 @@ describe('ManualButton', () => {
   it('renders a button with translated label', () => {
     render(<ManualButton gamePath="/" />);
     const btn = screen.getByRole('button', { name: 'マニュアル' });
+    expect(btn).toHaveAttribute('data-app-chrome');
     expect(btn).toBeInTheDocument();
   });
 
