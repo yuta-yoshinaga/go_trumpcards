@@ -12,6 +12,8 @@ import { navigateTo } from './helpers';
  * layout fix uses whitespace-nowrap units with flex-wrap and must not restore
  * a minimum width (#11729). Ordinary sentence and paytable exceptions are
  * separately documented and limited to the observed mobile viewport.
+ * The nowrap check shares this test to fit the CI 30-minute shard limit without
+ * adding page loads; 1024px is omitted because 1280px also catches the Binokel defect.
  */
 
 // Match desktop-action-visibility.spec.ts: derive paths from the route source.
@@ -22,12 +24,6 @@ const gameRoutesSource = readFileSync(
 const routes = [...gameRoutesSource.matchAll(/path:\s*'([^']+)'/g)].map(([, path]) => path);
 const VIEWPORTS = [
   { width: 375, height: 667 },
-  { width: 1280, height: 800 },
-] as const;
-
-const NOWRAP_VIEWPORTS = [
-  { width: 375, height: 667 },
-  { width: 1024, height: 768 },
   { width: 1280, height: 800 },
 ] as const;
 
@@ -101,27 +97,7 @@ for (const viewport of VIEWPORTS) {
           { minLength: 2, maxLength: 10, topTolerance: 4, minOpacity: 0.1 },
         );
 
-        if (result.checked === 0) {
-          test.info().annotations.push({ type: 'skipped page', description: `${path}: no eligible text nodes` });
-        }
-        const failures = result.wrapped.filter((label) => !isAllowedLabelWrap(path, label, viewport));
-        expect(
-          failures,
-          `${path} (${viewport.width}x${viewport.height}) has short text nodes wrapped mid-word; checked ${result.checked}, whitespace wraps ${result.spaceBreaks}`,
-        ).toEqual([]);
-      });
-    }
-  });
-}
-
-for (const viewport of NOWRAP_VIEWPORTS) {
-  test.describe(`nowrap overflow ${viewport.width}x${viewport.height}`, () => {
-    test.use({ viewport });
-
-    for (const path of routes) {
-      test(`${path} nowrap text stays within its nearest parent content box`, async ({ page }) => {
-        await navigateTo(page, path);
-        const result = await page.evaluate(() => {
+        const nowrapResult = await page.evaluate(() => {
           const out: string[] = [];
           let checked = 0;
           const main = document.querySelector('main') || document.body;
@@ -185,15 +161,29 @@ for (const viewport of NOWRAP_VIEWPORTS) {
           return { checked, out };
         });
         if (result.checked === 0) {
+          test.info().annotations.push({ type: 'skipped page', description: `${path}: no eligible text nodes` });
+        }
+        const failures = result.wrapped.filter((label) => !isAllowedLabelWrap(path, label, viewport));
+        expect
+          .soft(
+            failures,
+            `Mid-word check: ${path} (${viewport.width}x${viewport.height}) has short text nodes wrapped mid-word; checked ${result.checked}, whitespace wraps ${result.spaceBreaks}`,
+          )
+          .toEqual([]);
+        if (nowrapResult.checked === 0) {
           test.info().annotations.push({ type: 'skipped page', description: `${path}: no eligible nowrap text nodes` });
         }
         if (path === '/binokel') {
-          expect(result.checked, `${path} eligible nowrap text nodes checked`).toBeGreaterThanOrEqual(1);
+          expect
+            .soft(nowrapResult.checked, `Nowrap check: ${path} eligible nowrap text nodes checked`)
+            .toBeGreaterThanOrEqual(1);
         }
-        expect(
-          result.out,
-          `${path} (${viewport.width}x${viewport.height}) has nowrap text outside its nearest parent content box`,
-        ).toEqual([]);
+        expect
+          .soft(
+            nowrapResult.out,
+            `Nowrap check: ${path} (${viewport.width}x${viewport.height}) has nowrap text outside its nearest parent content box`,
+          )
+          .toEqual([]);
       });
     }
   });
