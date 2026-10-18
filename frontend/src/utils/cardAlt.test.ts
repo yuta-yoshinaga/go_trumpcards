@@ -44,6 +44,23 @@ describe('cardAlt', () => {
     await i18n.changeLanguage('ja');
   });
 
+  it('uses the localized Unsun Karuta name without the server glyph', async () => {
+    const sota = {
+      design: 'SPADE',
+      value: 10,
+      deck: 'unsun',
+      kind: 'sota',
+      unsunSuit: 'pao',
+      label: 'ソウタ',
+      glyph: '棒',
+    } as const;
+    await i18n.changeLanguage('ja');
+    expect(cardAlt(sota)).toBe('ソウタ・ぱお');
+    await i18n.changeLanguage('en');
+    expect(cardAlt(sota)).toBe('Sota of Pao');
+    await i18n.changeLanguage('ja');
+  });
+
   it('uses the descriptor label alone when no glyph is present', () => {
     expect(cardAlt({ design: 'JOKER', value: 1, label: 'Jester', deck: 'wizard' })).toBe('Jester');
   });

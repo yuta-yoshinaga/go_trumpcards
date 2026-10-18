@@ -235,7 +235,7 @@ func TestUnsunKarutaWebPresenter_Output(t *testing.T) {
 	i18n.SetLang("ja")
 	p := new(presenter.UnsunKarutaWebPresenter)
 	g := unsunKarutaGame()
-	g.GetPlayer(0).AddTrick([]*domain.Card{domain.NewCard(domain.UnsunKarutaSuitPao, 9, false)})
+	g.GetPlayer(0).AddTrick([]*domain.Card{domain.NewCard(domain.UnsunKarutaSuitPao, domain.UnsunKarutaSota, false)})
 	unsunKarutaAdvanceToHuman(g)
 
 	var res map[string]any
@@ -268,6 +268,9 @@ func TestUnsunKarutaWebPresenter_Output(t *testing.T) {
 	assert.Equal(t, "unsun", first["deck"])
 	assert.NotEmpty(t, first["glyph"])
 	assert.NotEmpty(t, first["label"])
+	captured := teamTricks[0].([]any)[0].([]any)[0].(map[string]any)
+	assert.Equal(t, "sota", captured["kind"])
+	assert.Equal(t, "pao", captured["unsunSuit"])
 
 	// **味方は席番号では分からない。** humanTeam が無いと画面が組を出せない。
 	assert.Equal(t, float64(domain.UnsunKarutaTeamOf(0)), res["humanTeam"])
