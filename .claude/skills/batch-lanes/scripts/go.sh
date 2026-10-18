@@ -11,7 +11,7 @@ result="$BATCH_STATE/r$2.txt"
 before=$(bash "$(dirname "${BASH_SOURCE[0]}")/treehash.sh" "$1")
 if (cd "$wt" && dele -k edit -w -d "$wt" "$(cat "$prompt")") >"$log" 2>&1; then rc=0; else rc=$?; fi
 after=$(bash "$(dirname "${BASH_SOURCE[0]}")/treehash.sh" "$1")
-if [[ "$before" == "$after" ]] && ! grep -q 'VERDICT: NOT_PLANNED' "$log"; then
+if [[ "$before" == "$after" ]] && ! grep -qE '^VERDICT: NOT_PLANNED' "$log"; then
   echo 'WARN NO_CHANGE' | tee -a "$log" >&2
   (( rc != 0 )) || rc=1
 fi

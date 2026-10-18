@@ -266,6 +266,21 @@ if PATH="$tmp:$PATH" BATCH_STATE="$tmp/empty-state" BATCH_WT_ROOT="$tmp" \
 fi
 grep -q '^WARN NO_CHANGE' "$tmp/no-change.out" || fail "go.sh omitted NO_CHANGE warning: $(cat "$tmp/no-change.out")"
 
+# The prompt template may be echoed into the delegate log; only a report whose
+# first line is NOT_PLANNED can suppress NO_CHANGE.
+cat >"$tmp/dele" <<'STUB'
+#!/usr/bin/env bash
+printf '%s\n' 'The instructions say: write VERDICT: NOT_PLANNED only when the premise is wrong.'
+printf '%s\n' 'VERDICT: IMPLEMENTED'
+exit 0
+STUB
+chmod +x "$tmp/dele"
+if PATH="$tmp:$PATH" BATCH_STATE="$tmp/empty-state" BATCH_WT_ROOT="$tmp" \
+  bash "$SCRIPTS/go.sh" 1 126 "$tmp/prompt.md" >"$tmp/template-no-change.out" 2>&1; then
+  fail "go.sh accepted an unchanged delegation whose prompt quoted NOT_PLANNED"
+fi
+grep -q '^WARN NO_CHANGE' "$tmp/template-no-change.out" || fail "go.sh suppressed NO_CHANGE because prompt text contained NOT_PLANNED: $(cat "$tmp/template-no-change.out")"
+
 # A pre-existing modified file must still count as work when the delegate edits it again.
 printf 'initial edit\n' >> "$tmp/wt-ib1/base"
 cat >"$tmp/dele" <<'STUB'
@@ -416,10 +431,23 @@ BATCH_STATE="$tmp/testing-state" BATCH_TESTING=1 bash "$SCRIPTS/receipt.sh" 1 ||
 (
   game_repo="$tmp/receipt-games"
   mkdir -p "$game_repo/frontend/src/constants" "$game_repo/frontend/src/pages"
-  printf "export const gameRoutes = [{ path: '/unsunkaruta', page: 'UnsunKaruta' }];\n" > "$game_repo/frontend/src/constants/gameRoutes.ts"
+  printf "export const gameRoutes = [\n  { path: '/unsunkaruta', page: 'UnsunKaruta' },\n  { path: '/five-card-stud', page: 'FiveCardStud' },\n  { path: '/warlords', page: 'WarlordsWebPresenter' },\n  { path: '/war', page: 'War' },\n];\n" > "$game_repo/frontend/src/constants/gameRoutes.ts"
   touch "$game_repo/frontend/src/pages/UnsunKarutaPage.test.tsx"
+  touch "$game_repo/frontend/src/pages/FiveCardStudPage.test.tsx"
+  touch "$game_repo/frontend/src/pages/WarPage.test.tsx"
+  touch "$game_repo/frontend/src/pages/WarlordsWebPresenterPage.test.tsx"
   selected=$(receipt_game_tests "$game_repo" feat/1-unsunkaruta-labels)
   grep -qx 'frontend/src/pages/UnsunKarutaPage.test.tsx' <<<"$selected" || fail "receipt missed route test from game branch: $selected"
+  selected=$(receipt_game_tests "$game_repo" feat/1-five-card-stud-fix)
+  grep -qx 'frontend/src/pages/FiveCardStudPage.test.tsx' <<<"$selected" || fail "receipt missed multiword game route test: $selected"
+  RECEIPT_CHANGED=(internal/domain/warlords/WarlordsWebPresenter.go)
+  selected=$(receipt_game_tests "$game_repo" feat/1-warlords-change)
+  grep -qx 'frontend/src/pages/WarlordsWebPresenterPage.test.tsx' <<<"$selected" || fail "receipt did not match exact Warlords branch name: $selected"
+  if [[ "$selected" == *WarPage.test.tsx* ]]; then fail "Warlords branch selected WarPage.test.tsx: $selected"; fi
+  path=outer-path
+  RECEIPT_CHANGED=(internal/i18n/locales/ja/Other.json)
+  receipt_game_tests "$game_repo" feat/1-no-such-game >/dev/null
+  [[ "$path" == outer-path ]] || fail "receipt_game_tests leaked its path variable into caller scope"
   selected=$(receipt_game_tests "$game_repo" feat/1-no-such-game)
   grep -qx 'WARN NO_TEST_MATCH' <<<"$selected" || fail "receipt did not warn on empty test selection: $selected"
 ) || exit 1

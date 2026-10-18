@@ -9,24 +9,39 @@ page_test_for() {
   esac
 }
 receipt_game_tests() {
-  local repo="$1" branch="$2" routes game page test matched=0 compact
+  local repo="$1" branch="$2" routes game page test matched=0 compact path start end
   routes="$repo/frontend/src/constants/gameRoutes.ts"
   local -a names=() branch_words=()
   IFS=- read -r -a branch_words <<<"${branch##*/}"
   [[ -f "$routes" ]] && while IFS= read -r page; do
     compact="$(tr '[:upper:]' '[:lower:]' <<<"$page" | tr -cd '[:alnum:]')"
     local selected=0
-    for game in "${branch_words[@]}"; do
-      game="$(tr '[:upper:]' '[:lower:]' <<<"$game" | tr -cd '[:alnum:]')"
-      if [[ -n "$game" && "$compact" == "$game" ]]; then selected=1; break; fi
+    for ((start=0; start<${#branch_words[@]}; start++)); do
+      game=""
+      for ((end=start; end<${#branch_words[@]}; end++)); do
+        game+="$(tr '[:upper:]' '[:lower:]' <<<"${branch_words[end]}" | tr -cd '[:alnum:]')"
+        if [[ -n "$game" && "$compact" == "$game" ]]; then selected=1; break 2; fi
+      done
     done
+    if (( ! selected )); then
+      for ((start=0; start<${#branch_words[@]}; start++)); do
+        game=""
+        for ((end=start; end<${#branch_words[@]}; end++)); do
+          game+="$(tr '[:upper:]' '[:lower:]' <<<"${branch_words[end]}" | tr -cd '[:alnum:]')"
+          if [[ -n "$game" && "$compact" == "$game"* ]]; then
+            candidate="${page:${#game}:1}"
+            [[ -n "$candidate" && "$candidate" =~ [A-Z] ]] && { selected=1; break 2; }
+          fi
+        done
+      done
+    fi
     if (( ! selected )); then
       for path in "${RECEIPT_CHANGED[@]:-}"; do
         case "$path" in
           *WebPresenter.go|*CuiPresenter.go|internal/i18n/locales/*/*.json|frontend/src/i18n/locales/*/*.json)
             game="${path##*/}"; game="${game%.go}"; game="${game%.json}"
             game="$(tr '[:upper:]' '[:lower:]' <<<"$game" | tr -cd '[:alnum:]')"
-            [[ "$game" == "$compact"* ]] && { selected=1; break; } ;;
+            [[ "$game" == "$compact" ]] && { selected=1; break; } ;;
         esac
       done
     fi
