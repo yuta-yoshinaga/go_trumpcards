@@ -12,6 +12,8 @@ import { navigateTo } from './helpers';
  * layout fix uses whitespace-nowrap units with flex-wrap and must not restore
  * a minimum width (#11729). Ordinary sentence and paytable exceptions are
  * separately documented and limited to the observed mobile viewport.
+ * The nowrap check shares this test to fit the CI 30-minute shard limit without
+ * adding page loads; 1024px is omitted because 1280px also catches the Binokel defect.
  */
 
 // Match desktop-action-visibility.spec.ts: derive paths from the route source.
@@ -95,14 +97,93 @@ for (const viewport of VIEWPORTS) {
           { minLength: 2, maxLength: 10, topTolerance: 4, minOpacity: 0.1 },
         );
 
+        const nowrapResult = await page.evaluate(() => {
+          const out: string[] = [];
+          let checked = 0;
+          const main = document.querySelector('main') || document.body;
+          for (const element of main.querySelectorAll<HTMLElement>('*')) {
+            if (![...element.childNodes].some((node) => node.nodeType === Node.TEXT_NODE && !!node.textContent?.trim()))
+              continue;
+            const style = getComputedStyle(element);
+            // Only text that cannot wrap: `pre-wrap` / `pre-line` wrap and are out of scope.
+            if (style.whiteSpace !== 'nowrap' && style.whiteSpace !== 'pre' && style.textWrapMode !== 'nowrap')
+              continue;
+            // Absolutely positioned labels are intentional placements outside their parent box.
+            if (style.position === 'absolute' || style.position === 'fixed') continue;
+            if (
+              style.overflow === 'hidden' ||
+              style.overflow === 'clip' ||
+              style.overflowX === 'hidden' ||
+              style.overflowX === 'clip'
+            )
+              continue;
+            if (element.closest('[aria-hidden="true"],.sr-only,[role="tooltip"]')) continue;
+            const details = element.closest('details');
+            if (details && !details.open && !element.closest('summary')) continue;
+            let opacity = 1;
+            let invisible = false;
+            for (let ancestor: HTMLElement | null = element; ancestor; ancestor = ancestor.parentElement) {
+              const ancestorStyle = getComputedStyle(ancestor);
+              opacity *= Number.parseFloat(ancestorStyle.opacity);
+              if (
+                ancestorStyle.visibility === 'hidden' ||
+                ancestorStyle.display === 'none' ||
+                ancestorStyle.contentVisibility === 'hidden'
+              )
+                invisible = true;
+            }
+            const rect = element.getBoundingClientRect();
+            if (invisible || opacity < 0.05 || rect.width < 1 || rect.height < 1) continue;
+            checked++;
+            let parent = element.parentElement;
+            while (parent && ['contents', 'inline'].includes(getComputedStyle(parent).display))
+              parent = parent.parentElement;
+            if (!parent) continue;
+            const parentStyle = getComputedStyle(parent);
+            // Only the nearest box can intentionally scroll this label horizontally.
+            // Ancestor overflow-y:auto can compute overflow-x:visible to auto and hide real defects.
+            if (/auto|scroll/.test(parentStyle.overflowX)) continue;
+            const parentRect = parent.getBoundingClientRect();
+            const right =
+              parentRect.right -
+              Number.parseFloat(parentStyle.paddingRight) -
+              Number.parseFloat(parentStyle.borderRightWidth);
+            const left =
+              parentRect.left +
+              Number.parseFloat(parentStyle.paddingLeft) +
+              Number.parseFloat(parentStyle.borderLeftWidth);
+            const overflow = Math.max(rect.right - right, left - rect.left);
+            if (overflow > 3)
+              out.push(
+                `${element.textContent?.trim().replace(/\s+/g, ' ').slice(0, 24)}|+${Math.round(overflow)}px|w${Math.round(parentRect.width)}`,
+              );
+          }
+          return { checked, out };
+        });
         if (result.checked === 0) {
           test.info().annotations.push({ type: 'skipped page', description: `${path}: no eligible text nodes` });
         }
         const failures = result.wrapped.filter((label) => !isAllowedLabelWrap(path, label, viewport));
-        expect(
-          failures,
-          `${path} (${viewport.width}x${viewport.height}) has short text nodes wrapped mid-word; checked ${result.checked}, whitespace wraps ${result.spaceBreaks}`,
-        ).toEqual([]);
+        expect
+          .soft(
+            failures,
+            `Mid-word check: ${path} (${viewport.width}x${viewport.height}) has short text nodes wrapped mid-word; checked ${result.checked}, whitespace wraps ${result.spaceBreaks}`,
+          )
+          .toEqual([]);
+        if (nowrapResult.checked === 0) {
+          test.info().annotations.push({ type: 'skipped page', description: `${path}: no eligible nowrap text nodes` });
+        }
+        if (path === '/binokel') {
+          expect
+            .soft(nowrapResult.checked, `Nowrap check: ${path} eligible nowrap text nodes checked`)
+            .toBeGreaterThanOrEqual(1);
+        }
+        expect
+          .soft(
+            nowrapResult.out,
+            `Nowrap check: ${path} (${viewport.width}x${viewport.height}) has nowrap text outside its nearest parent content box`,
+          )
+          .toEqual([]);
       });
     }
   });
