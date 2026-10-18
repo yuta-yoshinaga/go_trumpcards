@@ -39625,8 +39625,12 @@ components:
           maximum: 12
         kind:
           type: string
-          description: Hanafuda card category.
-          enum: [bright, animal, ribbon, chaff, gwang, yeol, tti, pi]
+          description: Hanafuda category or Unsun Karuta face rank code.
+          enum: [bright, animal, ribbon, chaff, gwang, yeol, tti, pi, sota, uma, kiri, un, sun, robai]
+        unsunSuit:
+          type: string
+          description: Unsun Karuta suit code.
+          enum: [pao, isu, kotsu, oru, kuru]
         glyph:
           type: string
           description: "Symbol drawn in the centre of the card. Set only for cards from non-52-card decks."

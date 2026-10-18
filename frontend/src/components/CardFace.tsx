@@ -1,5 +1,6 @@
 import type { Card } from '../types/card';
 import { hanafudaCornerLabel, hanafudaLabel } from '../utils/hanafudaLabel';
+import { unsunKarutaCornerLabel, unsunKarutaLabel } from '../utils/unsunKarutaLabel';
 
 /**
  * Maps a backend color token to a concrete card-ink hex color. Procedural
@@ -68,10 +69,10 @@ export function CardFace({
   const h = w * CARD_ASPECT;
   const ink = inkColor(card.color);
   const hanafudaGoldLabel = card.deck === 'hanafuda' && card.color === 'gold';
-  const label = hanafudaLabel(card) ?? card.label ?? String(card.value);
-  const cornerLabel = hanafudaCornerLabel(card) ?? label;
+  const label = hanafudaLabel(card) ?? unsunKarutaLabel(card) ?? card.label ?? String(card.value);
+  const cornerLabel = hanafudaCornerLabel(card) ?? unsunKarutaCornerLabel(card) ?? label;
   const glyph = card.glyph ?? label.charAt(0);
-  const defaultAriaLabel = card.glyph ? `${label} ${card.glyph}` : label;
+  const defaultAriaLabel = card.deck === 'unsun' ? label : card.glyph ? `${label} ${card.glyph}` : label;
 
   const cornerBase: React.CSSProperties = {
     position: 'absolute',

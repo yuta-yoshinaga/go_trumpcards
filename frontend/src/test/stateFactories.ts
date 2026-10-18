@@ -5370,6 +5370,18 @@ const unsunCard = (
   // 丸物 (コツ・オウル・クル) は赤、長物 (パオ・イス) は黒。
   color: design === 'SPADE' || design === 'CLOVER' ? 'black' : 'red',
   deck: 'unsun',
+  unsunSuit: ({ SPADE: 'pao', CLOVER: 'isu', HEART: 'kotsu', DIAMOND: 'oru', JOKER: 'kuru' } as const)[design],
+  ...(['sota', 'uma', 'kiri', 'un', 'sun', 'robai'][value - 10]
+    ? {
+        kind: ['sota', 'uma', 'kiri', 'un', 'sun', 'robai'][value - 10] as
+          | 'sota'
+          | 'uma'
+          | 'kiri'
+          | 'un'
+          | 'sun'
+          | 'robai',
+      }
+    : {}),
 });
 
 /** A CPU seat at the eight-handed table; cards are hidden. */

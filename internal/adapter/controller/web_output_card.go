@@ -16,6 +16,8 @@ type WebOutputCard struct {
 	// Kind は花札の種別コード。bright/animal/ribbon/chaff/gwang/yeol/tti/pi の 8 値で、
 	// ゴーストップだけ韓国語由来の種別名を使う。
 	Kind string `json:"kind,omitempty"`
+	// UnsunSuit はウンスンカルタのスートコード。
+	UnsunSuit string `json:"unsunSuit,omitempty"`
 	// Glyph は中央に描画する記号（例 "✦"）。非52枚デッキの札のみ設定する。
 	Glyph string `json:"glyph,omitempty"`
 	// Label は隅に描画するランク／名称ラベル（例 "Wizard", "XXI"）。

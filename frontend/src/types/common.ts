@@ -23,6 +23,11 @@ export interface BaseGameResponse {
 
 /** Hanafuda card category reported by the web API. */
 export type HanafudaKind = 'bright' | 'animal' | 'ribbon' | 'chaff' | 'gwang' | 'yeol' | 'tti' | 'pi';
+/** Unsun Karuta face-card rank code. */
+export type UnsunKarutaFaceKind = 'sota' | 'uma' | 'kiri' | 'un' | 'sun' | 'robai';
+
+/** Unsun Karuta suit code. */
+export type UnsunKarutaSuit = 'pao' | 'isu' | 'kotsu' | 'oru' | 'kuru';
 
 /**
  * A playing card with suit design and numeric value.
@@ -46,8 +51,10 @@ export interface Card {
   color?: string;
   /** Hanafuda month (1–12), used to localize the card label. */
   month?: number;
-  /** Hanafuda card category, used to localize the card label. */
-  kind?: HanafudaKind;
+  /** Hanafuda category or Unsun Karuta face rank, used to localize the label. */
+  kind?: HanafudaKind | UnsunKarutaFaceKind;
+  /** Unsun Karuta suit code. */
+  unsunSuit?: UnsunKarutaSuit;
   /** Deck family id (e.g. "wizard"); when set, the card renders procedurally. */
   deck?: string;
   /**

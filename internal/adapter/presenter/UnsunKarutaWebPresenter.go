@@ -35,6 +35,10 @@ func unsunKarutaFace(card *domain.Card) *CardFace {
 		domain.UnsunKarutaRobai: "ロバイ",
 	}
 	label, ok := labels[card.GetValue()]
+	kind := map[int]string{
+		domain.UnsunKarutaSota: "sota", domain.UnsunKarutaUma: "uma", domain.UnsunKarutaKiri: "kiri",
+		domain.UnsunKarutaUn: "un", domain.UnsunKarutaSun: "sun", domain.UnsunKarutaRobai: "robai",
+	}[card.GetValue()]
 	if !ok {
 		label = strconv.Itoa(card.GetValue())
 	}
@@ -48,7 +52,10 @@ func unsunKarutaFace(card *domain.Card) *CardFace {
 	if domain.UnsunKarutaIsRoundSuit(card.GetDesign()) {
 		colour = "red"
 	}
-	return &CardFace{Glyph: glyph, Label: label, Color: colour, Deck: "unsun"}
+	return &CardFace{Glyph: glyph, Label: label, Color: colour, Deck: "unsun", Kind: kind, UnsunSuit: map[int]string{
+		domain.UnsunKarutaSuitPao: "pao", domain.UnsunKarutaSuitIsu: "isu", domain.UnsunKarutaSuitKotsu: "kotsu",
+		domain.UnsunKarutaSuitOru: "oru", domain.UnsunKarutaSuitKuru: "kuru",
+	}[card.GetDesign()]}
 }
 
 // UnsunKarutaWebPresenter はうんすんカルタの Web プレゼンター。

@@ -43,6 +43,25 @@ describe('CardFace', () => {
     expect(screen.getByText('✦')).toBeInTheDocument();
   });
 
+  it('renders Unsun Karuta with a compact corner and a full accessible name', async () => {
+    const card: Card = {
+      design: 'SPADE',
+      value: 10,
+      deck: 'unsun',
+      kind: 'sota',
+      unsunSuit: 'pao',
+      glyph: '棒',
+      label: 'ソウタ',
+    };
+    await i18n.changeLanguage('en');
+    render(<CardFace card={card} />);
+    expect(screen.getAllByText('Sot')).toHaveLength(2);
+    expect(screen.getByRole('img')).toHaveAttribute('aria-label', 'Sota of Pao');
+    // The centre keeps the language-neutral suit pictograph; a word would not fit a 24px card.
+    expect(screen.getByText('棒')).toBeInTheDocument();
+    await i18n.changeLanguage('ja');
+  });
+
   it('builds an accessible aria-label from label and glyph', () => {
     render(<CardFace card={wizardCard} />);
     expect(screen.getByRole('img')).toHaveAttribute('aria-label', 'Wizard ✦');
