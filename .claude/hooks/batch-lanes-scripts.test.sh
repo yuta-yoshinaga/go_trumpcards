@@ -450,6 +450,12 @@ BATCH_STATE="$tmp/testing-state" BATCH_TESTING=1 bash "$SCRIPTS/receipt.sh" 1 ||
   [[ "$path" == outer-path ]] || fail "receipt_game_tests leaked its path variable into caller scope"
   selected=$(receipt_game_tests "$game_repo" feat/1-no-such-game)
   grep -qx 'WARN NO_TEST_MATCH' <<<"$selected" || fail "receipt did not warn on empty test selection: $selected"
+  RECEIPT_CHANGED=(internal/adapter/presenter/web_presenter_i18n_guard_test.go)
+  selected=$(receipt_game_tests "$game_repo" feat/1-no-such-game)
+  [[ -z "$selected" ]] || fail "receipt warned on a change no page renders: $selected"
+  RECEIPT_CHANGED=(internal/adapter/presenter/web_presenter_i18n_guard_test.go frontend/src/utils/x.ts)
+  selected=$(receipt_game_tests "$game_repo" feat/1-no-such-game)
+  grep -qx 'WARN NO_TEST_MATCH' <<<"$selected" || fail "receipt did not warn when a frontend file changed: $selected"
 ) || exit 1
 BATCH_TESTING=1 source "$SCRIPTS/waitdone.sh"
 printf '100\n' > "$tmp/start"

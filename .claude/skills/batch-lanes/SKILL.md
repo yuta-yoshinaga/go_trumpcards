@@ -44,7 +44,7 @@ The flows require `dele`, `gh`, `jq`, `flock`, `bun`, `go`, and `golangci-lint`,
 - `stopsrv.sh`: stop server processes listening on lane ports by numeric slot (or all slots when omitted).
 - `busy.sh`: report delegation processes writing in a worktree.
 - `treehash.sh`: hash the worktree state for the gate stamp.
-- `receipt.sh`: run relevant Vitest files plus frontend and backend checks for a worktree; route selection joins consecutive branch words and requires exact game-name matches; `WARN NO_TEST_MATCH` means branch or changed-game selection found no page test.
+- `receipt.sh`: run relevant Vitest files plus frontend and backend checks for a worktree; route selection joins consecutive branch words and requires exact game-name matches; `WARN NO_TEST_MATCH` means branch or changed-game selection found no page test; it is not reported when no changed file is under `frontend/`, a `*Presenter.go`, or a Go locale, since no page renders such a change.
 - `rc.sh`: save a concise receipt with test shrink and dead-code warnings.
 - `overlap.sh`: report files changed by this lane and another active lane; set `ALLOW_OVERLAP="file ..."` to suppress known shared files.
 - `rc.sh` also records `WARN WORKER_BUILD`, `WARN UNUSED_NEW_SYMBOL`, and `WARN PATCH_BRANCH_GAP`; set `ALLOW_WORKER_BUILD=1`, `ALLOW_UNUSED="name ..."`, or `ALLOW_PATCH_GAPS=1` to allow known exceptions.
