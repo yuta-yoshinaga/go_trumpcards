@@ -2,15 +2,12 @@ import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect, test } from '@playwright/test';
+import { AUXILIARY_ACTION_LABELS } from './auxiliaryActions';
 import { DESKTOP_VIEWPORTS } from './desktopViewports';
 import { navigateTo } from './helpers';
 
 const guidanceSelector =
   '[role="status"].glass-panel, [role="alert"].glass-panel, [role="status"] .glass-panel, [role="alert"] .glass-panel';
-
-const marriageJa = JSON.parse(
-  readFileSync(resolve(dirname(fileURLToPath(import.meta.url)), '../src/i18n/locales/ja/marriage.json'), 'utf8'),
-) as { discardHistory: { show: string } };
 
 // Cards stay visible in the hand and are not phase actions; exclude every card marker used by game pages.
 const CARD_BUTTON_SELECTORS = [
@@ -21,32 +18,6 @@ const CARD_BUTTON_SELECTORS = [
   '[data-testid*="card"]',
 ] as const;
 const CARD_IMAGE_ALT_PATTERN = /^(?:[♠♥♦♣]\s*)?(?:[2-9]|10|[AJQK])(?:\s*[♠♥♦♣])?$/i;
-
-// Labels are the Japanese UI strings in src/i18n/locales/ja/common.json.
-const AUXILIARY_ACTION_LABELS = [
-  'リセット',
-  '次のゲーム',
-  'リセット確認',
-  '投了確認',
-  '投了',
-  'ギブアップ',
-  'ヒント',
-  '棋譜を見る',
-  '棋譜',
-  '設定',
-  'チュートリアル',
-  'CLI',
-  '説明を表示',
-  '説明を非表示',
-  'ヘルプ',
-  'ルール',
-  '言語',
-  '日本語',
-  'English',
-  'ゲームナビゲーション',
-  'お気に入りに追加',
-  marriageJa.discardHistory.show,
-] as const;
 
 // Match desktop-board-visibility.spec.ts: derive paths from the route source, never maintain a list here.
 const gameRoutesSource = readFileSync(

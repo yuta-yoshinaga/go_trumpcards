@@ -979,6 +979,8 @@ describe('SambaPage', () => {
     renderWithProviders(<SambaPage />);
     await waitFor(() => expect(screen.getByTestId('sa-frozen-badge')).toBeInTheDocument());
     expect(screen.getByTestId('sa-frozen-badge')).toHaveClass('shrink-0', 'whitespace-nowrap');
+    // The round line repeats the state as [フリーズ中]; it wrapped inside the word at 375px (label-wrap.spec).
+    expect(screen.getByText('[フリーズ中]')).toHaveClass('whitespace-nowrap');
     expect(screen.getByTestId('sa-discard-pile')).toHaveClass(
       'bg-ds-surface',
       'border-ds-border-subtle',
