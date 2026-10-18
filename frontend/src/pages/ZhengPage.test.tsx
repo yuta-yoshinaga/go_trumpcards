@@ -400,11 +400,33 @@ describe('ZhengPage', () => {
         ],
         message: 'fallback',
         messageCode: 'zheng.result.rankings',
-        messageParams: { rankings: 'あなた:1位 ' },
+        rankings: [
+          { seat: 0, rank: 1 },
+          { seat: 1, rank: 2 },
+        ],
+        messageParams: {},
       }),
     );
     renderWithProviders(<ZhengPage />);
-    expect(await screen.findByText(/ゲーム終了/)).toBeInTheDocument();
+    expect(await screen.findByText('ゲーム終了！ あなた: 1位、CPU 1: 2位')).toBeInTheDocument();
+  });
+
+  it('localizes the game-end rankings message in English', async () => {
+    await i18n.changeLanguage('en');
+    mockExec.mockResolvedValue(
+      makeState({
+        gameEndFlag: true,
+        rankings: [
+          { seat: 0, rank: 1 },
+          { seat: 1, rank: 2 },
+        ],
+        messageCode: 'zheng.result.rankings',
+        messageParams: {},
+      }),
+    );
+    renderWithProviders(<ZhengPage />);
+    expect(await screen.findByText('Game Over! You: Rank 1, CPU 1: Rank 2')).toBeInTheDocument();
+    await i18n.changeLanguage('ja');
   });
   // **理由の無い無効化は、故障と区別が付かない。**読み上げ側には
   // announce.yourTurnLead があるのに、画面には手がかりが無かった (#6516)。

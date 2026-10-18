@@ -30,6 +30,7 @@ export type ZhengConfigInput = ZhengConfig;
 
 /** Full Zheng Shangyou game state returned from the API. */
 export interface ZhengResponse extends BaseGameResponse {
+  rankings?: { seat: number; rank: number }[];
   players: ZhengPlayerData[];
   currentTurn: number;
   tableCards: Card[];

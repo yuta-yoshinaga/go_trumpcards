@@ -3,13 +3,8 @@
 package presenter
 
 import (
-	"fmt"
-	"strconv"
-	"strings"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // ZhengWebPresenter 争上游 Webプレゼンタークラス
@@ -70,35 +65,18 @@ func (p *ZhengWebPresenter) Output(zg interfaces.ZhengGame, lastErr error) strin
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else if zg.GetGameEndFlag() {
-		rankings := p.buildRankings(zg)
-		// MessageParams carries only the rankings; the frontend wraps it with the
-		// localised "zheng.result.rankings" template (e.g. "Game Over! {{rankings}}"),
-		// so the prefix must NOT be embedded here (it would double up). Message is the
-		// plain-text fallback used when the client does not resolve messageCode.
-		resObj.Message = i18n.T("zheng.gameEnd") + " " + rankings
+		resObj.Rankings = make([]controller.WebOutputRanking, 0)
+		for i := 0; i < zg.GetPlayerCnt(); i++ {
+			player := zg.GetPlayer(i)
+			if player != nil && player.GetRank() >= 1 && player.GetRank() <= 4 {
+				resObj.Rankings = append(resObj.Rankings, controller.WebOutputRanking{Seat: i, Rank: player.GetRank()})
+			}
+		}
 		resObj.MessageCode = "zheng.result.rankings"
-		resObj.MessageParams = map[string]string{"rankings": rankings}
+		resObj.MessageParams = map[string]string{}
 	}
 
 	return marshalOrError(resObj)
-}
-
-// buildRankings ゲーム終了時の順位文字列（接頭辞なし）を生成する
-func (p *ZhengWebPresenter) buildRankings(zg interfaces.ZhengGame) string {
-	var b strings.Builder
-	for i := 0; i < zg.GetPlayerCnt(); i++ {
-		player := zg.GetPlayer(i)
-		if player == nil {
-			continue
-		}
-		rank := player.GetRank()
-		if rank < 1 || rank > 4 {
-			continue
-		}
-		name := webPlayerName(player.GetIsHuman(), i)
-		fmt.Fprintf(&b, "%s:%s ", name, i18n.Tf("zheng.rankN", "rank", strconv.Itoa(rank)))
-	}
-	return b.String()
 }
 
 // ActionLogOutput 棋譜をJSON出力

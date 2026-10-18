@@ -374,6 +374,34 @@ describe('TienLenPage', () => {
     expect(screen.getByText('— 7')).toBeInTheDocument();
   });
 
+  it('localizes result rankings in Japanese and English', async () => {
+    for (const [language, expected] of [
+      ['ja', 'あなた: 1位、CPU 1: 2位'],
+      ['en', 'You: Rank 1, CPU 1: Rank 2'],
+    ] as const) {
+      await i18n.changeLanguage(language);
+      mockExec.mockResolvedValue(
+        makeState({
+          gameEndFlag: true,
+          rankings: [
+            { seat: 0, rank: 1 },
+            { seat: 1, rank: 2 },
+          ],
+          message: 'fallback',
+          messageCode: 'tienlen.result.rankings',
+          messageParams: {},
+        }),
+      );
+      const { unmount } = renderWithProviders(<TienLenPage />);
+      await screen.findByTestId('tl-rules');
+      await waitFor(() =>
+        expect(screen.getAllByRole('status').some((node) => node.textContent?.includes(expected))).toBe(true),
+      );
+      unmount();
+    }
+    await i18n.changeLanguage('ja');
+  });
+
   it('renders CPU hands in compact card back fans', async () => {
     renderWithProviders(<TienLenPage />);
     expect(await screen.findAllByTestId('card-back-fan')).not.toHaveLength(0);

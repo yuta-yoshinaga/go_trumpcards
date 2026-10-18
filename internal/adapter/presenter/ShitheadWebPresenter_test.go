@@ -10,7 +10,6 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func TestShitheadWebPresenter_Output(t *testing.T) {
@@ -58,19 +57,20 @@ func TestShitheadWebPresenter_Output(t *testing.T) {
 		out := p.Output(s, nil)
 		var parsed controller.ShitheadWebOutput
 		assert.NoError(t, json.Unmarshal([]byte(out), &parsed))
-		assert.Contains(t, parsed.Message, "ゲーム終了")
 		assert.Equal(t, "shithead.result.rankings", parsed.MessageCode)
-
-		i18n.SetLang("en")
-		out = p.Output(s, nil)
-		assert.NoError(t, json.Unmarshal([]byte(out), &parsed))
-		assert.Contains(t, parsed.Message, "rank=")
-		assert.Contains(t, parsed.Message, "(Shithead)")
-		i18n.SetLang("ja")
-		out = p.Output(s, nil)
-		assert.NoError(t, json.Unmarshal([]byte(out), &parsed))
-		assert.Contains(t, parsed.Message, "順位=")
-		assert.Contains(t, parsed.Message, "(シットヘッド)")
+		assert.NotEmpty(t, parsed.Rankings)
+		shitheadFound := false
+		for _, ranking := range parsed.Rankings {
+			if ranking.Shithead {
+				shitheadFound = ranking.Rank == 4
+			}
+		}
+		assert.True(t, shitheadFound)
+		assert.NotContains(t, parsed.Message, "shithead.resultRank")
+		assert.NotContains(t, parsed.Message, "ゲーム終了！")
+		assert.NotContains(t, parsed.MessageParams, "shithead.resultRank")
+		assert.NotContains(t, out, "shithead.resultRank")
+		assert.NotContains(t, out, "ゲーム終了！")
 	})
 }
 

@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { shitheadApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { ShitheadResponse } from '../types/card';
 import { ShitheadPage } from './ShitheadPage';
@@ -81,6 +82,41 @@ beforeEach(() => {
 });
 
 describe('ShitheadPage', () => {
+  it('localizes result rankings in Japanese and English', async () => {
+    for (const [language, expected] of [
+      ['ja', 'あなた: 順位=1、CPU1: 順位=4（シットヘッド）'],
+      ['en', 'You: Rank 1, CPU1: Rank 4 (Shithead)'],
+    ] as const) {
+      await i18n.changeLanguage(language);
+      await waitFor(() => expect(document.documentElement.lang).toBe(language));
+      mockExec.mockResolvedValue({
+        ...gameEndState,
+        rankings: [
+          { seat: 0, rank: 1 },
+          { seat: 1, rank: 4, shithead: true },
+        ],
+        messageCode: 'shithead.result.rankings',
+        messageParams: {},
+      });
+      const { unmount } = renderWithProviders(<ShitheadPage />);
+      const localizedRank = language === 'ja' ? 'あなた: 順位=1' : 'You: Rank 1';
+      await waitFor(() =>
+        expect(
+          screen
+            .getAllByRole('status')
+            .some(
+              (node) =>
+                node.classList.contains('glass-panel') &&
+                node.textContent?.includes(localizedRank) &&
+                node.textContent.includes(expected.slice(expected.indexOf('CPU'))),
+            ),
+        ).toBe(true),
+      );
+      unmount();
+    }
+    await i18n.changeLanguage('ja');
+  });
+
   it('shows the revealed card in the feed when a blind play picks up the pile', async () => {
     mockExec.mockResolvedValue({
       ...humanTurnState,

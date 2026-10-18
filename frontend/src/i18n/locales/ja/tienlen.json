@@ -53,7 +53,8 @@
     "playLow": "弱いカードから出しましょう"
   },
   "result": {
-    "rankings": "ゲーム終了！ {{rankings}}"
+    "rankings": "ゲーム終了！ {{rankings}}",
+    "rankN": "{{rank}}位"
   },
   "playType": {
     "single": "シングル",
@@ -67,5 +68,7 @@
     "tienlenLead": "場が空いている。一番弱い札から捌こう",
     "tienlenFollow": "場を超える中で一番弱い札を出そう",
     "tienlenPass": "場を超える札が無い。パスしよう"
-  }
+  },
+  "listSeparator": "、",
+  "rankingEntry": "{{seat}}: {{rank}}"
 }

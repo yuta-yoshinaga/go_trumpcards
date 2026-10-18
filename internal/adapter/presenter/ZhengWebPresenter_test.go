@@ -136,13 +136,13 @@ func TestZhengWebPresenter_Output(t *testing.T) {
 		players[3].SetRank(4)
 		var out controller.ZhengWebOutput
 		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, nil)), &out))
-		assert.Contains(t, out.Message, "あなた:1位")
 		assert.Equal(t, "zheng.result.rankings", out.MessageCode)
-		// The rankings param must not embed the "ゲーム終了！" prefix — the frontend
-		// template adds it, so embedding it here would double up.
-		assert.Contains(t, out.MessageParams["rankings"], "あなた:1位")
-		assert.Contains(t, out.MessageParams["rankings"], "CPU 1:2位")
-		assert.NotContains(t, out.MessageParams["rankings"], "ゲーム終了")
+		assert.Equal(t, []controller.WebOutputRanking{{Seat: 0, Rank: 1}, {Seat: 1, Rank: 2}, {Seat: 2, Rank: 3}, {Seat: 3, Rank: 4}}, out.Rankings)
+		assert.NotContains(t, out.Message, "zheng.rankN")
+		assert.NotContains(t, out.Message, "ゲーム終了！")
+		assert.NotContains(t, out.MessageParams, "rankings")
+		assert.NotContains(t, string(p.Output(m, nil)), "ゲーム終了！")
+		assert.NotContains(t, string(p.Output(m, nil)), "zheng.rankN")
 	})
 }
 

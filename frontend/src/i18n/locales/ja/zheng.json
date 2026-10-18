@@ -50,8 +50,10 @@
     "playLow": "リードです。弱いカードから出しましょう"
   },
   "result": {
-    "rankings": "ゲーム終了！ {{rankings}}"
+    "rankings": "ゲーム終了！ {{rankings}}",
+    "rankN": "{{rank}}位"
   },
+  "rankingEntry": "{{seat}}: {{rank}}",
   "playType": {
     "single": "シングル",
     "pair": "ペア",
