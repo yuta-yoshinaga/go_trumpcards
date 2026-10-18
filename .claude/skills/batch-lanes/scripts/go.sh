@@ -8,7 +8,13 @@ wt="$WT_ROOT/wt-ib$1"
 run="$(date +%Y%m%d%H%M%S)-$$"
 log="$BATCH_STATE/go-$1-$run.log"
 result="$BATCH_STATE/r$2.txt"
+before=$(bash "$(dirname "${BASH_SOURCE[0]}")/treehash.sh" "$1")
 if (cd "$wt" && dele -k edit -w -d "$wt" "$(cat "$prompt")") >"$log" 2>&1; then rc=0; else rc=$?; fi
+after=$(bash "$(dirname "${BASH_SOURCE[0]}")/treehash.sh" "$1")
+if [[ "$before" == "$after" ]] && ! grep -qE '^VERDICT: NOT_PLANNED' "$log"; then
+  echo 'WARN NO_CHANGE' | tee -a "$log" >&2
+  (( rc != 0 )) || rc=1
+fi
 cp "$log" "$result"
 echo "DONE slot=$1 issue=$2 exit=$rc log=$log"
 exit "$rc"
