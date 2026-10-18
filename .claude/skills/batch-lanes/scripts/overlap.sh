@@ -22,15 +22,6 @@ if (( ! gh_available )); then
   printf 'NOTE LANE_OVERLAP gh unavailable; committed lanes not checked\n'
 fi
 
-collect() {
-  local wt="$1"
-  {
-    git -C "$wt" diff --name-only -z origin/develop...HEAD 2>/dev/null || true
-    git -C "$wt" diff --name-only -z HEAD 2>/dev/null || true
-    git -C "$wt" ls-files --others --exclude-standard -z 2>/dev/null || true
-  } | sort -zu
-}
-
 mapfile -d '' mine_files < <(collect "$mine")
 shopt -s nullglob
 for other in "$WT_ROOT"/wt-ib*; do

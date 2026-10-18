@@ -28,5 +28,13 @@ while IFS=$'\t' read -r -u 3 pr branch; do
     n=$(gh pr view $pr --json comments -q '[.comments[]|select(.author.login=="github-actions")]|length')
     [ "$n" -gt 0 ] && echo "REVIEW-READY $pr"; continue
   fi
-  [ "$pend" = 0 ] && "$B/land.sh" "$pr"
+  if [ "$pend" = 0 ]; then
+    land_out=''; land_rc=0
+    land_out=$("$B/land.sh" "$pr" 2>&1) || land_rc=$?
+    if [ "$land_rc" = 4 ]; then
+      grep '^LANE-GATING ' <<<"$land_out" || true
+    else
+      printf '%s\n' "$land_out"
+    fi
+  fi
 done 3< <(jq -r '.[]|[.number,.headRefName]|@tsv' <<<"$prs")
