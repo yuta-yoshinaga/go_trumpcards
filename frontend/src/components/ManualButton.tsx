@@ -19,6 +19,7 @@ export function ManualButton({ gamePath }: ManualButtonProps) {
     <>
       <button
         type="button"
+        data-app-chrome
         className={`${btnSecondary} text-xs`}
         onClick={handleOpen}
         aria-label={t('manual.button')}

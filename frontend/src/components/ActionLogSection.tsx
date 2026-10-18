@@ -43,7 +43,7 @@ export function ActionLogSection({
     <>
       {(isEndPhase || availableDuringPlay) && !actionLog && (
         <div className="text-center my-2">
-          <button type="button" ref={triggerRef} className={btnSecondary} onClick={showActionLog}>
+          <button type="button" ref={triggerRef} className={btnSecondary} onClick={showActionLog} data-app-chrome>
             {tc('actionLog.view')}
           </button>
         </div>

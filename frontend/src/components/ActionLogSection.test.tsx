@@ -31,6 +31,7 @@ describe('ActionLogSection', () => {
       <ActionLogSection isEndPhase={true} actionLog={null} showActionLog={showActionLog} hideActionLog={vi.fn()} />,
     );
     expect(screen.getByRole('button', { name: '棋譜を見る' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '棋譜を見る' })).toHaveAttribute('data-app-chrome');
     expect(screen.queryByTestId('action-log-panel')).not.toBeInTheDocument();
   });
 

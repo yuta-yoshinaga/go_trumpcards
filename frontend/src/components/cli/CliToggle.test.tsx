@@ -9,6 +9,7 @@ describe('CliToggle', () => {
     expect(label).toBeInTheDocument();
     expect(label).toHaveClass('hidden', 'sm:inline');
     expect(screen.getByRole('button', { name: 'CLIモードに切り替え' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'CLIモードに切り替え' })).toHaveAttribute('data-app-chrome');
   });
 
   it('shows GUI label (destination) when in CLI mode', () => {

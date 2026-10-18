@@ -9,6 +9,7 @@ describe('GameResetButton', () => {
     render(<GameResetButton isGameEnd={false} onReset={onReset} requestConfirm={requestConfirm} />);
 
     const button = screen.getByRole('button', { name: 'リセット' });
+    expect(button).toHaveAttribute('data-app-chrome');
     fireEvent.click(button);
 
     expect(requestConfirm).toHaveBeenCalledTimes(1);

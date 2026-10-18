@@ -8,6 +8,7 @@ export function TutorialButton() {
   const { start } = useTutorialContext();
   return (
     <button
+      data-app-chrome
       type="button"
       className={`${btnSecondary} text-xs`}
       onClick={start}

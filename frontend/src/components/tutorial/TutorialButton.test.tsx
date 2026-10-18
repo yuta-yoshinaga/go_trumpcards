@@ -16,6 +16,7 @@ describe('TutorialButton', () => {
     render(<TutorialButton />);
     const btn = screen.getByRole('button', { name: 'チュートリアル' });
     expect(btn).toBeInTheDocument();
+    expect(btn).toHaveAttribute('data-app-chrome');
     expect(btn).toHaveTextContent('?');
   });
 

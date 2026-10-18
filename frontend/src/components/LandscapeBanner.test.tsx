@@ -17,6 +17,7 @@ describe('LandscapeBanner', () => {
   it('has hidden portrait:flex sm:hidden classes for responsive visibility', () => {
     const { container } = render(<LandscapeBanner message="Test" />);
     const banner = container.firstElementChild;
+    expect(banner).toHaveAttribute('data-app-chrome');
     expect(banner?.className).toContain('hidden');
     expect(banner?.className).toContain('portrait:flex');
     expect(banner?.className).toContain('sm:hidden');

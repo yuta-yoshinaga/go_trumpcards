@@ -58,6 +58,7 @@ export function CliToggle({ cliEnabled, onToggle }: CliToggleProps) {
 
   return (
     <button
+      data-app-chrome
       type="button"
       onClick={onToggle}
       aria-label={cliEnabled ? t('cli.switchToGui') : t('cli.switchToCli')}
