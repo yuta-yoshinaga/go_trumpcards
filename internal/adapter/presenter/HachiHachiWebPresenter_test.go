@@ -143,6 +143,9 @@ func TestHachiHachiWebPresenterDrawCaptureMessageIsTransient(t *testing.T) {
 	require.NoError(t, json.Unmarshal([]byte(p.Output(g, nil)), &decoded))
 	assert.Equal(t, "hachihachi.drawCapture", decoded["messageCode"])
 	assert.Equal(t, "松·カス", decoded["messageParams"].(map[string]any)["captured"])
+	messageCards := decoded["messageCards"].([]any)
+	assert.Equal(t, float64(1), messageCards[0].(map[string]any)["month"])
+	assert.Equal(t, "ribbon", messageCards[0].(map[string]any)["kind"])
 
 	g.SetActionLogForTest([]*domain.ActionLogEntry{{ActionType: "draw", Cards: []*domain.Card{drawn}}})
 	decoded = nil
@@ -174,11 +177,56 @@ func TestHachiHachiWebPresenter_HintOutput(t *testing.T) {
 	assert.Contains(t, decoded, "hint")
 }
 
+func hachihachiPlayOut(t *testing.T, g *domain.HachiHachi) {
+	t.Helper()
+	for range 20000 {
+		if g.GetGameEndFlag() {
+			return
+		}
+		switch g.GetPhase() {
+		case domain.HachiHachiPhasePlay:
+			if g.IsHumanTurn() {
+				require.NoError(t, g.PlayerPlay(0, -1))
+			} else {
+				g.CpuPlay()
+			}
+		case domain.HachiHachiPhaseRoundEnd:
+			g.NextRound()
+		case domain.HachiHachiPhaseGameEnd:
+			return
+		}
+	}
+	t.Fatal("終局しなかった")
+}
+
 func TestHachiHachiWebPresenter_ActionLog(t *testing.T) {
 	g := domain.NewDefaultHachiHachi()
+	cfg := domain.DefaultHachiHachiConfig()
+	cfg.TargetRounds = 1
+	g.SetConfig(cfg)
 	g.Reset()
 	p := new(presenter.HachiHachiWebPresenter)
 	assert.NotEmpty(t, p.ActionLogOutput(g))
+
+	hachihachiPlayOut(t, g)
+	var decoded struct {
+		Entries []struct {
+			ActionType string           `json:"actionType"`
+			Cards      []map[string]any `json:"cards"`
+		} `json:"entries"`
+	}
+	require.NoError(t, json.Unmarshal([]byte(p.ActionLogOutput(g)), &decoded))
+	assert.NotEmpty(t, decoded.Entries)
+	var foundCardWithFace bool
+	for _, entry := range decoded.Entries {
+		if len(entry.Cards) > 0 {
+			assert.NotZero(t, entry.Cards[0]["month"])
+			assert.NotEmpty(t, entry.Cards[0]["kind"])
+			foundCardWithFace = true
+			break
+		}
+	}
+	assert.True(t, foundCardWithFace, "action log should include card with face (month and kind)")
 }
 
 // TestHachiHachiWebPresenter_RoundResult はラウンド精算後の lastRoundResult が

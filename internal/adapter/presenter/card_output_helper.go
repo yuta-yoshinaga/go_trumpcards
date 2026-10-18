@@ -102,6 +102,18 @@ func cardsToOutput(cards []*domain.Card) []*controller.WebOutputCard {
 	return result
 }
 
+// cardsToOutputWithFace converts cards to WebOutputCards with optional face metadata.
+func cardsToOutputWithFace(cards []*domain.Card, fp faceProvider) []*controller.WebOutputCard {
+	if cards == nil {
+		return nil
+	}
+	out := make([]*controller.WebOutputCard, len(cards))
+	for i, c := range cards {
+		out[i] = cardToOutputWithFace(c, fp)
+	}
+	return out
+}
+
 // buildTrickCards はトリックカードスライスをマッパー関数で変換する汎用ヘルパー
 func buildTrickCards[TC any, OUT any](trick []TC, mapper func(TC) OUT) []OUT {
 	out := make([]OUT, 0, len(trick))

@@ -154,11 +154,59 @@ func TestGoStopWebPresenter_HintOutput(t *testing.T) {
 	assert.Contains(t, decoded, "hint")
 }
 
+func gostopPlayOut(t *testing.T, g *domain.GoStop) {
+	t.Helper()
+	for range 20000 {
+		if g.GetGameEndFlag() {
+			return
+		}
+		switch g.GetPhase() {
+		case domain.GoStopPhasePlay:
+			if g.IsHumanTurn() {
+				require.NoError(t, g.PlayerPlay(0, -1))
+			} else {
+				g.CpuPlay()
+			}
+		case domain.GoStopPhaseGoDecision:
+			if g.IsHumanTurn() {
+				require.NoError(t, g.PlayerDecide(false))
+			} else {
+				g.CpuDecide()
+			}
+		case domain.GoStopPhaseRoundEnd:
+			g.NextRound()
+		case domain.GoStopPhaseGameEnd:
+			return
+		}
+	}
+	t.Fatal("終局しなかった")
+}
+
 func TestGoStopWebPresenter_ActionLog(t *testing.T) {
 	g := domain.NewDefaultGoStop()
 	g.Reset()
 	p := new(presenter.GoStopWebPresenter)
 	assert.NotEmpty(t, p.ActionLogOutput(g))
+
+	gostopPlayOut(t, g)
+	var decoded struct {
+		Entries []struct {
+			ActionType string           `json:"actionType"`
+			Cards      []map[string]any `json:"cards"`
+		} `json:"entries"`
+	}
+	require.NoError(t, json.Unmarshal([]byte(p.ActionLogOutput(g)), &decoded))
+	assert.NotEmpty(t, decoded.Entries)
+	var foundCardWithFace bool
+	for _, entry := range decoded.Entries {
+		if len(entry.Cards) > 0 {
+			assert.NotZero(t, entry.Cards[0]["month"])
+			assert.NotEmpty(t, entry.Cards[0]["kind"])
+			foundCardWithFace = true
+			break
+		}
+	}
+	assert.True(t, foundCardWithFace, "action log should include card with face (month and kind)")
 }
 
 // TestGoStopWebPresenter_RoundResult は stop で確定した勝者ラウンドが lastRoundResult

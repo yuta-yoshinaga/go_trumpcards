@@ -108,6 +108,8 @@ export interface HachiHachiResponse extends BaseGameResponse {
   /** Settlement of the most recently completed round (RoundEnd phase), or null. */
   lastRoundResult?: HachiHachiRoundResult | null;
   hint?: HachiHachiHint | null;
+  /** Face described cards used to localize the latest capture message. */
+  messageCards?: Card[];
   config: HachiHachiConfig;
 }
 
