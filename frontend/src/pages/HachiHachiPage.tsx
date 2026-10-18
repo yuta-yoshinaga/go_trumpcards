@@ -496,6 +496,7 @@ function HachiHachiPageContent() {
   );
 }
 
+/** Replaces Hanafuda card placeholders in message params with labels in the active language. */
 function localizedMessageParams(
   params: Record<string, string> | undefined,
   cards: HachiHachiResponse['messageCards'],

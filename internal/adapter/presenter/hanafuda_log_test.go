@@ -12,6 +12,18 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
+type finishedGoStop struct{ *domain.GoStop }
+
+func (g finishedGoStop) GetGameEndFlag() bool { return true }
+
+type finishedSakura struct{ *domain.Sakura }
+
+func (g finishedSakura) GetGameEndFlag() bool { return true }
+
+type finishedHachiHachi struct{ *domain.HachiHachi }
+
+func (g finishedHachiHachi) GetGameEndFlag() bool { return true }
+
 func TestActionLogToJSONWithFaceIncludesHanafudaIdentity(t *testing.T) {
 	card := domain.NewCard(1, 1, false)
 	entry := &domain.ActionLogEntry{Cards: []*domain.Card{card}}
@@ -42,6 +54,15 @@ func TestCuiHanafudaCardLabelsFollowLanguage(t *testing.T) {
 		assert.Contains(t, localized[0].DetailParams["card"], tc.expectedMonth)
 		assert.Equal(t, "旧ラベル", entry.DetailParams["card"], "the source detail params must remain unchanged")
 	}
+}
+
+func TestActionLogWithCardLabelsSkipsNilEntriesAndAbsentCardParams(t *testing.T) {
+	entry := &domain.ActionLogEntry{PlayerIdx: 0, Cards: []*domain.Card{domain.NewCard(1, 1, false)}}
+	entries := actionLogWithCardLabels([]*domain.ActionLogEntry{nil, entry}, gostopCuiCardStr)
+	require.Len(t, entries, 1)
+	assert.NotNil(t, entries[0])
+	assert.NotContains(t, entries[0].DetailParams, "card")
+	assert.NotPanics(t, func() { actionLogToTextWithNames(entries, nil) })
 }
 
 func TestCuiHanafudaActionLogOutputFollowsLanguage(t *testing.T) {
@@ -108,12 +129,21 @@ func TestCuiHanafudaActionLogOutputFollowsLanguage(t *testing.T) {
 	}
 	require.NotNil(t, gostopCard)
 
+	// These three presenters historically hide the transcript until game end.
+	empty := i18n.T("cuiActionLogEmpty") + "\n"
+	assert.Equal(t, empty, pSakura.ActionLogOutput(gSakura))
+	assert.Equal(t, empty, pHachi.ActionLogOutput(gHachi))
+	assert.Equal(t, empty, pGoStop.ActionLogOutput(gGoStop))
+	finishedSakuraGame := finishedSakura{gSakura}
+	finishedHachiGame := finishedHachiHachi{gHachi}
+	finishedGoStopGame := finishedGoStop{gGoStop}
+
 	// 日本語表示の検証 (解決後の札名が含まれること)
 	i18n.SetLang("ja")
 	assert.Contains(t, pKoi.ActionLogOutput(gKoi), koikoiCuiCardStr(koiCard))
-	assert.Contains(t, pSakura.ActionLogOutput(gSakura), sakuraCuiCardStr(sakuraCard))
-	assert.Contains(t, pHachi.ActionLogOutput(gHachi), hachihachiCuiCardStr(hachiCard))
-	assert.Contains(t, pGoStop.ActionLogOutput(gGoStop), gostopCuiCardStr(gostopCard))
+	assert.Contains(t, pSakura.ActionLogOutput(finishedSakuraGame), sakuraCuiCardStr(sakuraCard))
+	assert.Contains(t, pHachi.ActionLogOutput(finishedHachiGame), hachihachiCuiCardStr(hachiCard))
+	assert.Contains(t, pGoStop.ActionLogOutput(finishedGoStopGame), gostopCuiCardStr(gostopCard))
 
 	// 英語表示の検証 (解決後の英語札名が含まれ、元の固定日本語札名が残らないこと)
 	i18n.SetLang("en")
@@ -121,15 +151,15 @@ func TestCuiHanafudaActionLogOutputFollowsLanguage(t *testing.T) {
 	assert.Contains(t, enKoi, koikoiCuiCardStr(koiCard))
 	assert.NotContains(t, enKoi, domain.HachiHachiCardLabel(koiCard))
 
-	enSakura := pSakura.ActionLogOutput(gSakura)
+	enSakura := pSakura.ActionLogOutput(finishedSakuraGame)
 	assert.Contains(t, enSakura, sakuraCuiCardStr(sakuraCard))
 	assert.NotContains(t, enSakura, domain.HachiHachiCardLabel(sakuraCard))
 
-	enHachi := pHachi.ActionLogOutput(gHachi)
+	enHachi := pHachi.ActionLogOutput(finishedHachiGame)
 	assert.Contains(t, enHachi, hachihachiCuiCardStr(hachiCard))
 	assert.NotContains(t, enHachi, domain.HachiHachiCardLabel(hachiCard))
 
-	enGoStop := pGoStop.ActionLogOutput(gGoStop)
+	enGoStop := pGoStop.ActionLogOutput(finishedGoStopGame)
 	assert.Contains(t, enGoStop, gostopCuiCardStr(gostopCard))
 	assert.NotContains(t, enGoStop, domain.HachiHachiCardLabel(gostopCard))
 }

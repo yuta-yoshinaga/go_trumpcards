@@ -66,6 +66,14 @@ func actionLogOutputTextForSeats[P cuiPlayer, G seatedGame[P]](game G) string {
 	return actionLogOutputTextWithNames(game, func(idx int) string { return cuiPlayerName(game.GetPlayer(idx), idx) })
 }
 
+// actionLogOutputTextLabeled renders a finished game's action log with seat names and localized card labels.
+func actionLogOutputTextLabeled(game gameEndLogger, nameOf func(idx int) string, label func(*domain.Card) string) string {
+	if !game.GetGameEndFlag() {
+		return actionLogToTextWithNames(nil, nameOf)
+	}
+	return actionLogToTextWithNames(actionLogWithCardLabels(game.GetActionLog(), label), nameOf)
+}
+
 // actionLogOutputTextForSeatList is actionLogOutputTextForSeats for the games
 // whose interface exposes the seats as a slice rather than by index.
 func actionLogOutputTextForSeatList[P cuiPlayer](game gameEndLogger, players []P) string {
@@ -89,6 +97,7 @@ func actionLogOutputJSON(game gameEndLogger) string {
 	return actionLogOutputJSONWithFace(game, nil)
 }
 
+// actionLogOutputJSONWithFace returns a finished game's action log with card faces, or an empty log before game end.
 func actionLogOutputJSONWithFace(game gameEndLogger, fp faceProvider) string {
 	if !game.GetGameEndFlag() {
 		return actionLogToJSONWithFace(nil, fp)
@@ -101,6 +110,7 @@ func actionLogToJSON(entries []*domain.ActionLogEntry) string {
 	return actionLogToJSONWithFace(entries, nil)
 }
 
+// actionLogToJSONWithFace converts action-log entries to JSON with card-face metadata.
 func actionLogToJSONWithFace(entries []*domain.ActionLogEntry, fp faceProvider) string {
 	out := &controller.ActionLogWebOutput{
 		Entries: make([]*controller.ActionLogWebEntry, len(entries)),
@@ -112,7 +122,7 @@ func actionLogToJSONWithFace(entries []*domain.ActionLogEntry, fp faceProvider) 
 			ActionType:   e.ActionType,
 			DetailCode:   e.DetailCode,
 			DetailParams: e.DetailParams,
-			Cards:        actionLogCardsToOutput(e.Cards, fp),
+			Cards:        cardsToOutputWithFace(e.Cards, fp),
 		}
 	}
 	return marshalOrError(out)
@@ -179,32 +189,26 @@ func latestActions(entries []*domain.ActionLogEntry, actionType string) []*domai
 	return entries[start:end]
 }
 
-func actionLogCardsToOutput(cards []*domain.Card, fp faceProvider) []*controller.WebOutputCard {
-	if cards == nil {
-		return nil
-	}
-	out := make([]*controller.WebOutputCard, len(cards))
-	for i, card := range cards {
-		out[i] = cardToOutputWithFace(card, fp)
-	}
-	return out
-}
-
+// actionLogWithCardLabels copies entries and replaces an existing card detail label without mutating the source.
 func actionLogWithCardLabels(entries []*domain.ActionLogEntry, label func(*domain.Card) string) []*domain.ActionLogEntry {
-	out := make([]*domain.ActionLogEntry, len(entries))
-	for i, e := range entries {
+	out := make([]*domain.ActionLogEntry, 0, len(entries))
+	for _, e := range entries {
 		if e == nil {
 			continue
 		}
 		cp := *e
 		if len(e.Cards) > 0 && label != nil {
+			if _, ok := e.DetailParams["card"]; !ok {
+				out = append(out, &cp)
+				continue
+			}
 			cp.DetailParams = make(map[string]string, len(e.DetailParams)+1)
 			for k, v := range e.DetailParams {
 				cp.DetailParams[k] = v
 			}
 			cp.DetailParams["card"] = label(e.Cards[0])
 		}
-		out[i] = &cp
+		out = append(out, &cp)
 	}
 	return out
 }

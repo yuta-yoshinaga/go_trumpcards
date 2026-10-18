@@ -100,6 +100,7 @@ func cardsToOutput(cards []*domain.Card) []*controller.WebOutputCard {
 	return result
 }
 
+// cardsToOutputWithFace converts cards to WebOutputCards with optional face metadata.
 func cardsToOutputWithFace(cards []*domain.Card, fp faceProvider) []*controller.WebOutputCard {
 	if cards == nil {
 		return nil
