@@ -86,14 +86,22 @@ func actionLogOutputTextNamedBy(game gameEndLogger, nameOf func(idx int) string)
 
 // actionLogOutputJSON returns the action log as JSON, or an empty log if the game is not finished.
 func actionLogOutputJSON(game gameEndLogger) string {
+	return actionLogOutputJSONWithFace(game, nil)
+}
+
+func actionLogOutputJSONWithFace(game gameEndLogger, fp faceProvider) string {
 	if !game.GetGameEndFlag() {
-		return actionLogToJSON(nil)
+		return actionLogToJSONWithFace(nil, fp)
 	}
-	return actionLogToJSON(game.GetActionLog())
+	return actionLogToJSONWithFace(game.GetActionLog(), fp)
 }
 
 // actionLogToJSON 棋譜をJSON文字列に変換する
 func actionLogToJSON(entries []*domain.ActionLogEntry) string {
+	return actionLogToJSONWithFace(entries, nil)
+}
+
+func actionLogToJSONWithFace(entries []*domain.ActionLogEntry, fp faceProvider) string {
 	out := &controller.ActionLogWebOutput{
 		Entries: make([]*controller.ActionLogWebEntry, len(entries)),
 	}
@@ -104,7 +112,7 @@ func actionLogToJSON(entries []*domain.ActionLogEntry) string {
 			ActionType:   e.ActionType,
 			DetailCode:   e.DetailCode,
 			DetailParams: e.DetailParams,
-			Cards:        cardsToOutput(e.Cards),
+			Cards:        actionLogCardsToOutput(e.Cards, fp),
 		}
 	}
 	return marshalOrError(out)
@@ -169,4 +177,34 @@ func latestActions(entries []*domain.ActionLogEntry, actionType string) []*domai
 		return nil
 	}
 	return entries[start:end]
+}
+
+func actionLogCardsToOutput(cards []*domain.Card, fp faceProvider) []*controller.WebOutputCard {
+	if cards == nil {
+		return nil
+	}
+	out := make([]*controller.WebOutputCard, len(cards))
+	for i, card := range cards {
+		out[i] = cardToOutputWithFace(card, fp)
+	}
+	return out
+}
+
+func actionLogWithCardLabels(entries []*domain.ActionLogEntry, label func(*domain.Card) string) []*domain.ActionLogEntry {
+	out := make([]*domain.ActionLogEntry, len(entries))
+	for i, e := range entries {
+		if e == nil {
+			continue
+		}
+		cp := *e
+		if len(e.Cards) > 0 && label != nil {
+			cp.DetailParams = make(map[string]string, len(e.DetailParams)+1)
+			for k, v := range e.DetailParams {
+				cp.DetailParams[k] = v
+			}
+			cp.DetailParams["card"] = label(e.Cards[0])
+		}
+		out[i] = &cp
+	}
+	return out
 }

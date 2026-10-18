@@ -215,5 +215,5 @@ func (p *GoStopWebPresenter) HintOutput(g interfaces.GoStopGame) string {
 
 // ActionLogOutput は棋譜を JSON 出力する。
 func (p *GoStopWebPresenter) ActionLogOutput(g interfaces.GoStopGame) string {
-	return actionLogOutputJSON(g)
+	return actionLogOutputJSONWithFace(g, gostopFace)
 }

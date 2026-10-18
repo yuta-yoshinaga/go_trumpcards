@@ -3042,6 +3042,7 @@ const baseHachiHachiState: HachiHachiResponse = {
   isHumanTurn: true,
   lastRoundResult: null,
   hint: null,
+  messageCards: [],
   message: '',
   config: { cpuDifficulty: 1, targetRounds: 3 },
 };

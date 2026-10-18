@@ -234,8 +234,9 @@ func TestSakuraWebPresenter_ActionLogOutput(t *testing.T) {
 	sakuraPlayOut(t, g)
 	var ended struct {
 		Entries []struct {
-			ActionType string `json:"actionType"`
-			Detail     string `json:"detail"`
+			ActionType string           `json:"actionType"`
+			Detail     string           `json:"detail"`
+			Cards      []map[string]any `json:"cards"`
 		} `json:"entries"`
 	}
 	require.NoError(t, json.Unmarshal([]byte(p.ActionLogOutput(g)), &ended))
@@ -246,6 +247,13 @@ func TestSakuraWebPresenter_ActionLogOutput(t *testing.T) {
 	}
 	assert.Positive(t, types["deal"], "配りが記録されていない")
 	assert.Positive(t, types["play"], "着手が記録されていない")
+	for _, entry := range ended.Entries {
+		if entry.ActionType == "play" && len(entry.Cards) > 0 {
+			assert.NotZero(t, entry.Cards[0]["month"])
+			assert.NotEmpty(t, entry.Cards[0]["kind"])
+			break
+		}
+	}
 	assert.Positive(t, types["round"], "ラウンド結果が記録されていない")
 }
 

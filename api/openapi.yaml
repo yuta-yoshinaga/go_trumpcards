@@ -78591,6 +78591,10 @@ components:
               score:
                 type: integer
                 description: "This seat's running match score."
+        messageCards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
         message:
           type: string
 

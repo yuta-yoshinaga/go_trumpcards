@@ -97,6 +97,7 @@ type HachiHachiWebOutput struct {
 	IsHumanTurn     bool                            `json:"isHumanTurn"`
 	LastRoundResult *HachiHachiWebOutputRoundResult `json:"lastRoundResult"`
 	Hint            *HachiHachiWebOutputHint        `json:"hint,omitempty"`
+	MessageCards    []*WebOutputCard                `json:"messageCards,omitempty"`
 	WebOutputBase
 	Config HachiHachiWebConfigOutput `json:"config"`
 }
