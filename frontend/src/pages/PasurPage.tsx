@@ -7,6 +7,7 @@ import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { HintTooltip } from '../components/hint/HintTooltip';
@@ -265,7 +266,7 @@ function PasurPageContent() {
             />
             <ErrorAlert message={error} onRetry={retry} />
 
-            {human && human.cards.length > 0 && (
+            {!isMobile && human && human.cards.length > 0 && (
               <div className="mt-4" data-tutorial="ps-hand">
                 <div className="text-ds-text-muted text-sm mb-1">
                   {t('header.you')}: {human.cardCount}
@@ -303,7 +304,7 @@ function PasurPageContent() {
             )}
 
             {/* **候補はサーバが送ったものだけ。** ここで 11 の部分集合を作り直さない。 */}
-            {picked !== null && isHumanTurn && (
+            {!isMobile && picked !== null && isHumanTurn && (
               <div className="mt-3" data-testid="ps-options">
                 <div className="text-ds-text-muted text-sm mb-1">{t('actions.pick')}</div>
                 <div className="flex flex-wrap gap-2">
@@ -371,27 +372,143 @@ function PasurPageContent() {
               </div>
             )}
 
-            <div className="mt-4 flex flex-wrap gap-2" data-tutorial="ps-actions">
-              <button
-                type="button"
-                className={btnPrimary}
-                onClick={() => requestConfirm(handleReset)}
-                disabled={loading}
-              >
-                {t('actions.reset')}
-              </button>
-              {!isGameEnd && (
-                <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
-                  {t('actions.giveUp')}
+            {!isMobile && (
+              <div className="mt-4 flex flex-wrap gap-2" data-tutorial="ps-actions">
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={() => requestConfirm(handleReset)}
+                  disabled={loading}
+                >
+                  {t('actions.reset')}
                 </button>
-              )}
-            </div>
+                {!isGameEnd && (
+                  <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
+                    {t('actions.giveUp')}
+                  </button>
+                )}
+              </div>
+            )}
 
             <SettingsPanel
               title={tc('settings.title')}
               groups={[{ items: [hintCheckboxItem(tc, hintEnabled, setHintEnabled)] }]}
             />
           </div>
+
+          {isMobile && (
+            <GameFooter
+              className={`${gameTheme.pasur.footer} px-4 py-2.5`}
+              tall
+              actions={
+                <div className="flex flex-wrap gap-2" data-tutorial="ps-actions">
+                  {picked !== null && isHumanTurn && (
+                    <div data-testid="ps-options">
+                      <div className="text-ds-text-muted text-sm mb-1">{t('actions.pick')}</div>
+                      <div className="flex flex-wrap gap-2">
+                        {pickedOptions.map((option, optionIdx) => {
+                          const breakdown = state.captureScores?.[picked]?.[optionIdx] ?? { normal: 0, soorBonus: 0 };
+                          const isSoor = option.length === state.table.length && state.table.length > 0;
+                          return (
+                            <button
+                              key={`opt-${option.join('-')}`}
+                              type="button"
+                              className={isSoor ? `${btnSuccess} ring-2 ring-ds-success` : btnWarning}
+                              onClick={() => handlePlay(picked, option)}
+                              disabled={loading}
+                              data-testid={`ps-take-${option.join('-')}-btn`}
+                            >
+                              {t('actions.take', {
+                                cards: option
+                                  .map((i) =>
+                                    t('actions.indexedCard', { idx: String(i), card: cardAlt(state.table[i]) }),
+                                  )
+                                  .join(t('listSeparator')),
+                              })}
+                              <span className="ml-2 text-ds-text-muted" data-testid={`ps-score-${option.join('-')}`}>
+                                {t('actions.scoreBreakdown', {
+                                  normal: String(breakdown.normal),
+                                  bonus: String(breakdown.soorBonus),
+                                  total: String(breakdown.normal + breakdown.soorBonus),
+                                })}
+                              </span>
+                              {isSoor && (
+                                <span className="ml-1 font-bold" data-testid={`ps-soor-${option.join('-')}`}>
+                                  <span aria-hidden="true">[{t('actions.takeSoor')}]</span>
+                                  <span className="sr-only">{t('actions.takeSoorAria')}</span>
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
+                        {canTrail ? (
+                          <button
+                            type="button"
+                            className={btnWarning}
+                            onClick={() => handlePlay(picked, [])}
+                            disabled={loading}
+                            data-testid="ps-trail-btn"
+                          >
+                            {t('actions.trail')}
+                          </button>
+                        ) : (
+                          <span className="text-ds-text-muted text-sm self-center" data-testid="ps-must-capture">
+                            {t('actions.mustCapture')}
+                          </span>
+                        )}
+                        <button type="button" className={btnPrimary} onClick={() => setPicked(null)} disabled={loading}>
+                          {t('actions.cancel')}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={() => requestConfirm(handleReset)}
+                    disabled={loading}
+                  >
+                    {t('actions.reset')}
+                  </button>
+                  {!isGameEnd && (
+                    <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
+                      {t('actions.giveUp')}
+                    </button>
+                  )}
+                </div>
+              }
+            >
+              {isMobile && human && human.cards.length > 0 && (
+                <div data-tutorial="ps-hand">
+                  <div className="text-ds-text-muted text-sm mb-1">
+                    {t('header.you')}: {human.cardCount}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {human.cards.map((card, idx) => {
+                      const canCapture = (state.captureOptions[idx]?.length ?? 0) > 0;
+                      return (
+                        <button
+                          key={`${card.design}-${card.value}-${idx}`}
+                          type="button"
+                          onClick={() => setPicked(picked === idx ? null : idx)}
+                          disabled={loading || !isHumanTurn}
+                          aria-pressed={picked === idx}
+                          aria-label={t('actions.selectAria', { card: cardAlt(card) })}
+                          aria-describedby={`ps-capture-status-${idx}`}
+                          className={`disabled:opacity-50 ${picked === idx ? 'rounded-lg ring-2 ring-ds-warning' : canCapture ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
+                        >
+                          <CardImage card={card} width={cardWidth} />
+                          <span id={`ps-capture-status-${idx}`} className="sr-only">
+                            {t(canCapture ? 'actions.captureAvailable' : 'actions.noCapture')}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </GameFooter>
+          )}
 
           <ActionLogSection
             isEndPhase={isGameEnd}

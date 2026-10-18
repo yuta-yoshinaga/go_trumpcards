@@ -36,12 +36,9 @@ const GAME_ACTION_SELECTOR = 'button, [role="button"], [tabindex="0"]';
 const KNOWN_FIRST_ACTION_FAILURES = [
   '/bisley',
   '/briscola',
-  '/estimation',
   '/freecell',
   '/grandfathersclock',
-  '/pasur',
   '/polignac',
-  '/quodlibet',
   '/schnapsen',
 ];
 

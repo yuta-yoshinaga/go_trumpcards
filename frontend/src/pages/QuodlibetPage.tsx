@@ -267,7 +267,6 @@ function QuodlibetPageContent() {
               </p>
             )}
 
-            {!isMobile && contractChoices}
             <div className={lgTwoColGrid}>
               <div>
                 {state.isShedding ? (
@@ -412,37 +411,7 @@ function QuodlibetPageContent() {
               </div>
             </div>
             {isMobile && messageBox}
-            {isMobile && contractChoices}
-
-            <ActionLogSection
-              isEndPhase={isGameEnd}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
-          </div>
-
-          <GameFooter
-            message={!isMobile ? messageBox : undefined}
-            className={`${gameTheme.quodlibet.footer} px-4 py-2.5`}
-          >
-            {humanPlayer && (
-              <PlayerHandSection
-                humanPlayer={humanPlayer}
-                selectedCardIndices={selectedCardIndices}
-                toggleCard={toggleCard}
-                cardWidth={cardWidth}
-                isMobile={isMobile}
-                dataTutorialPrefix="quodlibet"
-                validIndices={handValidIndices}
-                legalIndices={handValidIndices}
-                restrictedTooltip={t('restrictedTooltip')}
-              />
-            )}
-
             <ErrorAlert message={error} onRetry={retry} />
-
-            {/* ライブ領域は常設 (#5955)。 */}
             <div data-testid="quodlibet-hint-live" role="status" aria-live="polite">
               {isRequestedHint(state) && (state.hint || state.hintContract >= 0) && (
                 <div className="text-ds-warning text-sm mb-2">
@@ -458,50 +427,79 @@ function QuodlibetPageContent() {
             </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
-            <div className="flex flex-wrap gap-2 items-center" data-tutorial="quodlibet-action-buttons">
-              {canPlay && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                  data-testid="quodlibet-play"
-                >
-                  {t('playButton')}
-                </button>
-              )}
-              {/* **パスできるのは出せる札が 1 枚も無いときだけ。** 常設すると
-                  「出せるのに降りる」ができてしまい、シェディングが壊れる。 */}
-              {canPlay && state.canPass && (
-                <button
-                  type="button"
-                  className={btnSuccess}
-                  onClick={handlePass}
-                  disabled={loading}
-                  data-testid="quodlibet-pass"
-                >
-                  {t('passButton')}
-                </button>
-              )}
-              {isDealEnd && (
-                <button
-                  type="button"
-                  className={btnSuccess}
-                  onClick={handleNextDeal}
-                  disabled={loading}
-                  data-testid="quodlibet-next-deal"
-                >
-                  {t('nextDeal')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="quodlibet-reset-button"
+            <ActionLogSection
+              isEndPhase={isGameEnd}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
+          </div>
+
+          <GameFooter
+            message={!isMobile ? messageBox : undefined}
+            className={`${gameTheme.quodlibet.footer} px-4 py-2.5`}
+            tall
+            actions={
+              <>
+                {contractChoices}
+                <div className="flex flex-wrap gap-2 items-center" data-tutorial="quodlibet-action-buttons">
+                  {canPlay && (
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handlePlay}
+                      disabled={loading || selectedCardIndices.length !== 1}
+                      data-testid="quodlibet-play"
+                    >
+                      {t('playButton')}
+                    </button>
+                  )}
+                  {canPlay && state.canPass && (
+                    <button
+                      type="button"
+                      className={btnSuccess}
+                      onClick={handlePass}
+                      disabled={loading}
+                      data-testid="quodlibet-pass"
+                    >
+                      {t('passButton')}
+                    </button>
+                  )}
+                  {isDealEnd && (
+                    <button
+                      type="button"
+                      className={btnSuccess}
+                      onClick={handleNextDeal}
+                      disabled={loading}
+                      data-testid="quodlibet-next-deal"
+                    >
+                      {t('nextDeal')}
+                    </button>
+                  )}
+                  <GameResetButton
+                    isGameEnd={isGameEnd}
+                    onReset={handleManualReset}
+                    requestConfirm={requestConfirm}
+                    loading={loading}
+                    dataTutorial="quodlibet-reset-button"
+                  />
+                </div>
+              </>
+            }
+          >
+            {humanPlayer && (
+              <PlayerHandSection
+                humanPlayer={humanPlayer}
+                selectedCardIndices={selectedCardIndices}
+                toggleCard={toggleCard}
+                cardWidth={cardWidth}
+                isMobile={isMobile}
+                dataTutorialPrefix="quodlibet"
+                validIndices={handValidIndices}
+                legalIndices={handValidIndices}
+                restrictedTooltip={t('restrictedTooltip')}
               />
-            </div>
+            )}
           </GameFooter>
         </>
       )}
