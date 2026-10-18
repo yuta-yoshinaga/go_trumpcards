@@ -39,7 +39,7 @@ if [[ "${ALLOW_STALE_BASE:-}" != 1 ]]; then
   overlap=$(comm -12 <(printf '%s\n' "${files[@]}" | LC_ALL=C sort -u) <(printf '%s\n' "$upstream" | LC_ALL=C sort -u))
   if [[ -n "$overlap" ]]; then
     printf '%s\n' "$overlap" >&2
-    echo "REFUSED: develop changed these files after this lane branched; merge origin/develop into the lane first" >&2
+    echo "REFUSED: develop changed these files after this lane branched; run sync.sh $s, then rcg.sh $s" >&2
     exit 1
   fi
 fi
