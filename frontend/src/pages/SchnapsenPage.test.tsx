@@ -103,6 +103,8 @@ describe('SchnapsenPage', () => {
     expect(screen.getByTestId('schnapsen-phase')).toHaveTextContent(/第1フェーズ/);
     expect(pointsLabel?.className).toContain('whitespace-nowrap');
     expect(pointsLabel?.querySelector('span.whitespace-nowrap')).toBeNull();
+    const handSummary = screen.getByText(/あなた: 5/).closest('div');
+    expect(handSummary?.querySelectorAll('span.whitespace-nowrap')).toHaveLength(2);
   });
 
   it('labels trick cards with the card and the player who played them', async () => {
@@ -153,6 +155,7 @@ describe('SchnapsenPage', () => {
     renderWithProviders(<SchnapsenPage />);
     const m3 = await screen.findByTestId('schnapsen-marriage-3');
     expect(m3).toHaveTextContent('マリアージュ宣言 (20点)');
+    expect(m3).toHaveTextContent('♣');
     expect(m3.getAttribute('aria-label')).toContain('♣');
     expect(m3.getAttribute('aria-label')).toContain('20');
     expect(m3).not.toHaveAttribute('data-royal');

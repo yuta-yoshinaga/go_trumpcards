@@ -310,7 +310,9 @@ function BriscolaPageContent() {
                     points: briscolaCardPoints(card.value),
                   })}
                   aria-pressed={selectedIdx === idx}
-                  className={`rounded disabled:opacity-50 ${selectedIdx === idx ? 'ring-2 ring-ds-accent -translate-y-1 transition-transform' : ''}`}
+                  className={`rounded disabled:opacity-50 ${
+                    selectedIdx === idx ? 'ring-2 ring-ds-accent -translate-y-1 transition-transform' : ''
+                  }`}
                 >
                   <AnimatedCard card={card} width={cardWidth} />
                 </button>

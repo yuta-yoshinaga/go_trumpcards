@@ -265,7 +265,6 @@ function SchnapsenPageContent() {
               </div>
             )}
 
-            {/* Phase-specific controls */}
             <SettingsPanel
               title={tc('settings.title')}
               groups={[
@@ -322,7 +321,7 @@ function SchnapsenPageContent() {
                           points: marriagePoints,
                         })}
                       >
-                        👑 {t('actions.marriagePoints', { points: marriagePoints })}
+                        👑 {suitSymbol(card.design)} {t('actions.marriagePoints', { points: marriagePoints })}
                       </button>
                     );
                   })}
@@ -332,7 +331,12 @@ function SchnapsenPageContent() {
             {human && human.cards.length > 0 && (
               <div data-tutorial="schnapsen-hand">
                 <div className="text-ds-text-muted text-sm mb-1">
-                  {t('header.you')}: {human.cardCount} / {t('header.tricks')}: {human.trickCount}
+                  <span className="whitespace-nowrap">
+                    {t('header.you')}: {human.cardCount}
+                  </span>{' '}
+                  <span className="whitespace-nowrap">
+                    / {t('header.tricks')}: {human.trickCount}
+                  </span>
                 </div>
                 {showLegalGuide && (
                   <div
