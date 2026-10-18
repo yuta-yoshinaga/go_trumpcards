@@ -46,7 +46,7 @@ const KNOWN_FIRST_ACTION_FAILURES = [
 ];
 
 // These routes fail depending on the deal; omit only their first-action assertion (#11883).
-const DEAL_DEPENDENT_FIRST_ACTION_FAILURES = ['/tienlen', '/minibridge', '/nainjaune', '/baloot', '/escoba'];
+const DEAL_DEPENDENT_FIRST_ACTION_FAILURES = ['/tienlen', '/minibridge', '/nainjaune'];
 
 /**
  * Pages whose footer content overflowed at the start of #11655 (and the very large hands), minus

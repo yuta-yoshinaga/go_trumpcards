@@ -188,6 +188,15 @@ function BalootPageContent() {
               <span>{t('header.target', { target: String(state.config.target) })}</span>
             </div>
 
+            <div data-testid="baloot-trick" data-tutorial="baloot-trick">
+              <TrickDisplay
+                currentTrick={state.currentTrick}
+                players={state.players}
+                cardWidth={cardWidth}
+                label={t('currentTrick')}
+              />
+            </div>
+
             <div className="text-ds-text-primary text-center mb-2" data-testid="bl-score">
               <div data-testid="bl-cumulative-score">
                 {t('header.cumulativeScore', { t0: String(state.scores[0] ?? 0), t1: String(state.scores[1] ?? 0) })}
@@ -236,7 +245,11 @@ function BalootPageContent() {
             </div>
 
             {/* Baloot（切り札の K+Q）は Hokom のときだけ成立する。 */}
-            <div className="flex flex-wrap justify-center items-start gap-2 mb-4" data-tutorial="baloot-seats">
+            <div
+              className="flex flex-wrap justify-center items-start gap-2 mb-4"
+              data-testid="baloot-seats"
+              data-tutorial="baloot-seats"
+            >
               {state.players
                 .filter((p) => p.isHuman)
                 .map((p) => (
@@ -307,15 +320,6 @@ function BalootPageContent() {
               </CpuAccordion>
             </div>
 
-            <div data-tutorial="baloot-trick">
-              <TrickDisplay
-                currentTrick={state.currentTrick}
-                players={state.players}
-                cardWidth={cardWidth}
-                label={t('currentTrick')}
-              />
-            </div>
-
             {resultBanner && (
               <div className="text-center text-xl my-4 text-ds-accent font-semibold" role="status">
                 {resultBanner}
@@ -335,56 +339,6 @@ function BalootPageContent() {
               </div>
             )}
 
-            <div className="mt-4 flex flex-wrap gap-2" data-tutorial="baloot-declare">
-              {isHumanDeclareTurn && (
-                <>
-                  <button
-                    type="button"
-                    className={btnWarning}
-                    onClick={handleSun}
-                    disabled={loading}
-                    data-testid="bl-sun-btn"
-                  >
-                    {t('actions.sun')}
-                  </button>
-                  {/* **Hokom はスートまで選ばせる。** モードだけでは序列が決まらない。 */}
-                  {SUITS.map((suit) => (
-                    <button
-                      key={suit}
-                      type="button"
-                      className={btnWarning}
-                      onClick={() => handleHokom(suit)}
-                      disabled={loading}
-                      data-testid={`bl-hokom-${suit.toString()}-btn`}
-                    >
-                      {t('actions.hokom', { suit: suitSymbolAt(suit, '?') })}
-                    </button>
-                  ))}
-                  {/* **親は見送れない。** 押せないボタンを出さない。 */}
-                  {humanIsDealer ? (
-                    <span className="self-center text-ds-text-muted text-sm" data-testid="bl-dealer-stuck">
-                      {t('dealerStuck')}
-                    </span>
-                  ) : (
-                    <button
-                      type="button"
-                      className={btnSuccess}
-                      onClick={handlePass}
-                      disabled={loading}
-                      data-testid="bl-pass-btn"
-                    >
-                      {t('actions.pass')}
-                    </button>
-                  )}
-                </>
-              )}
-              {isRoundEnd && !isGameEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('actions.nextRound')}
-                </button>
-              )}
-            </div>
-
             <SettingsPanel
               title={tc('settings.title')}
               groups={[{ items: [hintCheckboxItem(tc, hintEnabled, setHintEnabled)] }]}
@@ -393,8 +347,56 @@ function BalootPageContent() {
 
           <GameFooter
             className={`${gameTheme.baloot.footer} px-4 py-2.5`}
+            tall
             actions={
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2" data-tutorial="baloot-declare">
+                {isHumanDeclareTurn && (
+                  <>
+                    <button
+                      type="button"
+                      className={btnWarning}
+                      onClick={handleSun}
+                      disabled={loading}
+                      data-testid="bl-sun-btn"
+                    >
+                      {t('actions.sun')}
+                    </button>
+                    {/* **Hokom はスートまで選ばせる。** モードだけでは序列が決まらない。 */}
+                    {SUITS.map((suit) => (
+                      <button
+                        key={suit}
+                        type="button"
+                        className={btnWarning}
+                        onClick={() => handleHokom(suit)}
+                        disabled={loading}
+                        data-testid={`bl-hokom-${suit.toString()}-btn`}
+                      >
+                        {t('actions.hokom', { suit: suitSymbolAt(suit, '?') })}
+                      </button>
+                    ))}
+                    {/* **親は見送れない。** 押せないボタンを出さない。 */}
+                    {humanIsDealer ? (
+                      <span className="self-center text-ds-text-muted text-sm" data-testid="bl-dealer-stuck">
+                        {t('dealerStuck')}
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        className={btnSuccess}
+                        onClick={handlePass}
+                        disabled={loading}
+                        data-testid="bl-pass-btn"
+                      >
+                        {t('actions.pass')}
+                      </button>
+                    )}
+                  </>
+                )}
+                {isRoundEnd && !isGameEnd && (
+                  <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                    {t('actions.nextRound')}
+                  </button>
+                )}
                 <button
                   type="button"
                   className={btnPrimary}
@@ -412,7 +414,7 @@ function BalootPageContent() {
             }
           >
             {human && human.cards.length > 0 && (
-              <div className="mt-2" data-tutorial="baloot-hand">
+              <div data-tutorial="baloot-hand">
                 <div className="text-ds-text-muted text-sm mb-1">
                   {t('header.you')}: {human.cardCount}
                 </div>
