@@ -47,7 +47,7 @@ if ((${#files[@]})); then git add -- "${files[@]}"; fi
 metadata=()
 # BATCH_DELEGATED_TO remains the explicit override for inferred lane authors.
 delegation=$(delegated_to "$s")
-[[ -n "$delegation" ]] && metadata+=("Delegated-To: $delegation")
+metadata+=("Delegated-To: $delegation")
 [[ -n "${CLAUDE_CO_AUTHOR:-}" ]] && metadata+=("Co-Authored-By: $CLAUDE_CO_AUTHOR")
 closes_line="Closes #$n"
 prbody_has_ref "$n" "$summ" && closes_line=''

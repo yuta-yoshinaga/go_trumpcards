@@ -794,20 +794,29 @@ BIN
   [[ -x "$SCRIPTS/mutate.sh" ]] || fail 'mutate.sh is missing'
 ) || exit 1
 (
-  repo="$tmp/delegation-repo"; state="$tmp/delegation-state"
-  mkdir -p "$repo" "$state"; git init -q "$repo"
+  repo="$tmp/delegation-repo"; state="$tmp/delegation-state"; root="$tmp/delegation-wts"
+  mkdir -p "$repo" "$state" "$root/wt-ib9"; git init -q "$repo"
   git -C "$repo" config user.email test@example.com; git -C "$repo" config user.name test
   printf 'base\n' > "$repo/file"; git -C "$repo" add file; git -C "$repo" commit -qm base
   git -C "$repo" checkout -qb feat/current
+  git -C "$repo" switch -q -c feat/main
+  git -C "$root/wt-ib9" init -q
+  git -C "$root/wt-ib9" config user.email test@example.com; git -C "$root/wt-ib9" config user.name test
+  printf 'lane\n' > "$root/wt-ib9/file"; git -C "$root/wt-ib9" add file; git -C "$root/wt-ib9" commit -qm lane
+  git -C "$root/wt-ib9" switch -q -c feat/current
   printf 'feat/current\n' > "$state/slot9.branch"
   touch -t 202001010000 "$state/slot9.branch"
   printf 'dele: old-backend ok\n' > "$state/go-9-old.log"; touch -t 201901010000 "$state/go-9-old.log"
   printf 'dele: new-backend ok\n' > "$state/go-9-new.log"
-  out=$(BATCH_REPO="$repo" BATCH_STATE="$state" bash -c 'source "$1"; delegated_to 9' _ "$SCRIPTS/common.sh")
+  out=$(BATCH_REPO="$repo" BATCH_WT_ROOT="$root" BATCH_STATE="$state" bash -c 'source "$1"; delegated_to 9' _ "$SCRIPTS/common.sh")
   [ "$out" = new-backend ] || fail "delegated_to included old log or missed new log: $out"
   printf 'feat/other\n' > "$state/slot9.branch"
-  out=$(BATCH_REPO="$repo" BATCH_STATE="$state" bash -c 'source "$1"; delegated_to 9' _ "$SCRIPTS/common.sh")
+  out=$(BATCH_REPO="$repo" BATCH_WT_ROOT="$root" BATCH_STATE="$state" bash -c 'source "$1"; delegated_to 9' _ "$SCRIPTS/common.sh")
   [ "$out" = unknown ] || fail "delegated_to did not report unknown for mismatched branch: $out"
+  printf 'feat/current\n' > "$state/slot9.branch"
+  touch -t 202001010000 "$state/slot9.branch"
+  out=$(BATCH_REPO="$repo" BATCH_WT_ROOT="$root" BATCH_STATE="$state" bash -c 'source "$1"; delegated_to 9' _ "$SCRIPTS/common.sh")
+  [ "$out" = new-backend ] || fail "delegated_to did not use lane branch when repo branch differs: $out"
 ) || exit 1
 (
   repo="$tmp/mutate-repo"; state="$tmp/mutate-state"; root="$tmp/mutate-wts"
@@ -835,14 +844,24 @@ E2E
   grep -qx 'ERROR baseline failed' "$tmp/mutate-baseline.out" || fail "baseline failure was not reported: $(cat "$tmp/mutate-baseline.out")"
   [ "$(cat "$root/wt-ib9/target")" = original ] || fail 'mutate.sh changed target after baseline failure'
   out=$(E2E_MUTATION_FAIL=1 run_mutate) || fail "mutate.sh failed mutation-detection case: $out"
-  [ "$out" = DETECTED ] || fail "mutate.sh did not report DETECTED: $out"
+  grep -q "^backup: $state/mutate\." <<<"$out" || fail "mutate.sh did not print backup path: $out"
+  grep -qx DETECTED <<<"$out" || fail "mutate.sh did not report DETECTED: $out"
   [ "$(cat "$root/wt-ib9/target")" = original ] || fail 'mutate.sh did not restore target after detection'
   out=$(run_mutate) || fail "mutate.sh failed non-detection case: $out"
-  [ "$out" = 'NOT DETECTED' ] || fail "mutate.sh did not report NOT DETECTED: $out"
+  grep -qx 'NOT DETECTED' <<<"$out" || fail "mutate.sh did not report NOT DETECTED: $out"
   [ "$(cat "$root/wt-ib9/target")" = original ] || fail 'mutate.sh did not restore target after non-detection'
 ) || exit 1
 grep -q 'rcg\$slot.pid' "$SCRIPTS/rcg.sh" || fail 'rcg.sh does not track per-slot gate pid'
+(
+  state="$tmp/rcg-reuse-state"; mkdir -p "$state"
+  sleep 60 & unrelated_pid=$!
+  printf '%s\n' "$unrelated_pid" > "$state/rcg98.pid"
+  BATCH_REPO="$ROOT" BATCH_STATE="$state" BATCH_WT_ROOT="$tmp" E2E_GATE=0 bash "$SCRIPTS/rcg.sh" 98 >/dev/null 2>&1 || true
+  if ! kill -0 "$unrelated_pid" 2>/dev/null; then fail 'rcg.sh killed unrelated process whose PID was reused'; fi
+  kill "$unrelated_pid" 2>/dev/null || true; wait "$unrelated_pid" 2>/dev/null || true
+) || exit 1
 grep -q 'delegated_to "\$s"' "$SCRIPTS/ship.sh" || fail 'ship.sh does not infer Delegated-To from lane logs'
+! grep -q '\[\[ -n "\$delegation" \]\]' "$SCRIPTS/ship.sh" || fail 'ship.sh retains dead empty-delegation check'
 grep -q 'delegated_to "\$1"' "$SCRIPTS/fixpush.sh" || fail 'fixpush.sh does not infer Delegated-To from lane logs'
 
 echo "batch-lanes script tests passed"

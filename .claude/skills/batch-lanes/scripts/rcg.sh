@@ -11,7 +11,11 @@ if [[ -s "$pidfile" ]]; then
     while read -r child; do [[ -n "$child" ]] && stop_tree "$child"; done < <(pgrep -P "$parent" 2>/dev/null || true)
     kill "$parent" 2>/dev/null || true
   }
-  if [[ "$old_pid" =~ ^[0-9]+$ ]] && kill -0 "$old_pid" 2>/dev/null && [[ "$old_pid" != "$$" ]]; then stop_tree "$old_pid"; fi
+  if [[ "$old_pid" =~ ^[0-9]+$ ]] && kill -0 "$old_pid" 2>/dev/null && [[ "$old_pid" != "$$" ]] \
+    && tr '\0' '\n' < "/proc/$old_pid/cmdline" 2>/dev/null | grep -Eq '(^|/)rcg[.]sh$' \
+    && tr '\0' '\n' < "/proc/$old_pid/cmdline" 2>/dev/null | grep -Fxq -- "$slot"; then
+    stop_tree "$old_pid"
+  fi
 fi
 printf '%s\n' "$$" > "$pidfile"
 started="$(date +%s%N)"

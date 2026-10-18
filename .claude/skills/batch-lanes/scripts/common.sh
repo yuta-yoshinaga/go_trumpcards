@@ -22,7 +22,7 @@ delegated_to() {
   local slot="$1" log backend branch_file current_branch
   if [[ -n "${BATCH_DELEGATED_TO:-}" ]]; then printf '%s' "$BATCH_DELEGATED_TO"; return; fi
   branch_file="$BATCH_STATE/slot$slot.branch"
-  current_branch=$(git -C "$REPO" branch --show-current 2>/dev/null || true)
+  current_branch=$(git -C "$WT_ROOT/wt-ib$slot" branch --show-current 2>/dev/null || true)
   if [[ ! -f "$branch_file" || -z "$current_branch" || "$(cat "$branch_file")" != "$current_branch" ]]; then
     printf 'unknown'
     return

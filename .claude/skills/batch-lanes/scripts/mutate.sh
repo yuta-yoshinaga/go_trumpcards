@@ -10,6 +10,7 @@ wt="$WT_ROOT/wt-ib$slot"
 target="$wt/$path"
 [[ -f "$target" ]] || { echo "missing target: $target" >&2; exit 2; }
 backup=$(mktemp "$BATCH_STATE/mutate.XXXXXX")
+echo "backup: $backup"
 cp -p "$target" "$backup"
 restored=0
 restore() {
