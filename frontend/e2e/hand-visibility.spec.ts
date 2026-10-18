@@ -230,7 +230,7 @@ async function checkFirstActionVisibility(page: import('@playwright/test').Page,
       // Keep app-bar controls out of this check; only controls in the game main count.
       // This also includes GameFooter actions inside the main content.
       const main = document.querySelector('main');
-      if (!main) throw new Error('Game main content was not found');
+      if (!main) return { mainFound: false, actionableCount: 0, visible: [], mostVisible: null };
       const controls = [...main.querySelectorAll<HTMLElement>(actionSelector)].filter((element) => {
         if (element.matches(':disabled') || element.getAttribute('aria-disabled') === 'true') return false;
         if (element.closest('[data-app-chrome], header, nav, [data-testid="phase-indicator"]')) return false;
@@ -286,11 +286,16 @@ async function checkFirstActionVisibility(page: import('@playwright/test').Page,
       });
       const visible = measured.filter((control) => control.visibleHeight >= Math.min(visiblePx, control.height));
       const mostVisible = [...measured].sort((a, b) => b.visibleHeight - a.visibleHeight || a.top - b.top)[0] ?? null;
-      return { actionableCount: actionable.length, visible, mostVisible };
+      return { mainFound: true, actionableCount: actionable.length, visible, mostVisible };
     },
     { visiblePx: VISIBLE_PX, auxiliaryLabels: AUXILIARY_ACTION_LABELS, actionSelector: GAME_ACTION_SELECTOR },
   );
 
+  // A missing <main> fails this check softly instead of throwing, so the hand check still runs.
+  if (!result.mainFound) {
+    expect.soft(result.mainFound, `First-action check: ${path}: game main content was not found`).toBe(true);
+    return;
+  }
   if (path === '/hearts') {
     expect
       .soft(result.actionableCount, `First-action check: /hearts actionable game controls on initial load`)
