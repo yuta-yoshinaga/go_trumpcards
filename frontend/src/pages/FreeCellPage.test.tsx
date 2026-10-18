@@ -89,8 +89,13 @@ describe('FreeCellPage', () => {
       Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
       window.dispatchEvent(new Event('resize'));
       const { container: mobileContainer, unmount } = renderWithProviders(<FreeCellPage />);
-      expect((await screen.findByTestId('freecell-progress')).tagName).toBe('DETAILS');
-      expect(screen.getByTestId('freecell-timer')).toBeInTheDocument();
+      const mobileProgress = await screen.findByTestId('freecell-progress');
+      expect(mobileProgress.tagName).toBe('DETAILS');
+      expect(mobileProgress.querySelector('summary')).toHaveTextContent('手数: 5');
+      expect(mobileProgress).not.toHaveAttribute('open');
+      fireEvent.click(mobileProgress.querySelector('summary') as HTMLElement);
+      expect(screen.getByTestId('freecell-timer')).toHaveTextContent('経過時間: 00:00');
+      expect(mobileProgress.textContent).toBe('手数: 5経過時間: 00:00');
       const mobileSettingsDetails = (await screen.findByText('設定')).closest('details');
       const mobileTableau = mobileContainer.querySelector('[data-tutorial="fc-tableau"]');
       const mobilePlayArea = mobileTableau?.closest('.overflow-y-auto');

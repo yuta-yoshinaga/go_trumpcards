@@ -311,8 +311,9 @@ function FreeCellPageContent() {
         <>
           {isMobile ? (
             <details className="text-sm text-ds-text-muted" data-testid="freecell-progress">
-              <summary className="cursor-pointer">{t('moveCount')}</summary>
-              <span>{state.moveCount} · </span>
+              <summary className="cursor-pointer">
+                {t('moveCount')}: {state.moveCount}
+              </summary>
               <span data-testid="freecell-timer">
                 {t('timer')}: {formatElapsedTime(elapsedSeconds)}
               </span>

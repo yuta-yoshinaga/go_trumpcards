@@ -105,6 +105,33 @@ describe('GrandfathersClockPage', () => {
     }
   });
 
+  it('shows mobile control descriptions only while playing, matching the described controls', async () => {
+    const original = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      mockExec.mockResolvedValue(playingState);
+      const { unmount } = renderWithProviders(<GrandfathersClockPage />);
+      const redo = await screen.findByRole('button', { name: 'やり直す' });
+      const autoComplete = screen.getByTestId('autocomplete-button');
+      expect(document.getElementById('gc-redo-unavailable')).toBeInTheDocument();
+      expect(document.getElementById(redo.getAttribute('aria-describedby') ?? '')).toBeInTheDocument();
+      expect(document.getElementById(autoComplete.getAttribute('aria-describedby') ?? '')).toBeInTheDocument();
+      unmount();
+
+      mockExec.mockResolvedValue(gameOverState);
+      renderWithProviders(<GrandfathersClockPage />);
+      await screen.findByTestId('gc-gameover-summary');
+      expect(screen.queryByRole('button', { name: 'やり直す' })).not.toBeInTheDocument();
+      expect(screen.queryByTestId('autocomplete-button')).not.toBeInTheDocument();
+      expect(document.getElementById('gc-redo-unavailable')).not.toBeInTheDocument();
+      expect(document.getElementById('gc-autocomplete-reason')).not.toBeInTheDocument();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: original });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
   it('places control descriptions inside play area on mobile and inside footer on desktop', async () => {
     const original = window.innerWidth;
     mockExec.mockResolvedValue(playingState);
