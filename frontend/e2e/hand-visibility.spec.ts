@@ -2,10 +2,12 @@ import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect, test } from '@playwright/test';
+import { AUXILIARY_ACTION_LABELS } from './auxiliaryActions';
 import { navigateTo } from './helpers';
 
 /**
  * Every hand card stays reachable without scrolling the footer at 375×667 (#11655) and 1280×800 (#11701).
+ * The phone test also checks first-action visibility in this same page load to reduce E2E shard time (#11889).
  *
  * Since #11611 pins `actions` to the bottom of `GameFooter`, the rest of the footer
  * (`game-footer-content`) is a nested scroller inside the mobile cap, and a hand placed there
@@ -26,6 +28,25 @@ import { navigateTo } from './helpers';
  */
 /** Height of a card's top strip that must stay visible: rank corner plus a 44px tap target. */
 const VISIBLE_PX = 52;
+/** Controls a player can activate: buttons, button roles, and focusable custom widgets. */
+const GAME_ACTION_SELECTOR = 'button, [role="button"], [tabindex="0"]';
+
+// These routes have a confirmed first-action layout defect tracked by #11883.
+// Their first-action assertion is inverted so a fix makes the test fail until this list is updated.
+const KNOWN_FIRST_ACTION_FAILURES = [
+  '/bisley',
+  '/briscola',
+  '/estimation',
+  '/freecell',
+  '/grandfathersclock',
+  '/pasur',
+  '/polignac',
+  '/quodlibet',
+  '/schnapsen',
+];
+
+// These routes fail depending on the deal; omit only their first-action assertion (#11883).
+const DEAL_DEPENDENT_FIRST_ACTION_FAILURES = ['/tienlen', '/minibridge', '/nainjaune', '/baloot', '/escoba'];
 
 /**
  * Pages whose footer content overflowed at the start of #11655 (and the very large hands), minus
@@ -140,9 +161,14 @@ test('every strict footer-hand page is a game route', () => {
   expect(missingPages, `footer-hand pages missing from game routes: ${missingPages.join(', ')}`).toEqual([]);
 });
 
+test('known first-action failure routes are game routes', () => {
+  for (const path of [...KNOWN_FIRST_ACTION_FAILURES, ...DEAL_DEPENDENT_FIRST_ACTION_FAILURES]) {
+    expect(routes, `${path} remains a game route`).toContain(path);
+  }
+});
+
 /** Enforces the 52px visibility rule, with strict presence floors for known footer-hand pages. */
 async function checkHandVisibility(page: import('@playwright/test').Page, path: string) {
-  await navigateTo(page, path);
   // Cards deal in with a staggered slide-up animation; measure their resting positions, not
   // the last cards still sliding into place. A not-yet-started (pending) animation counts as
   // unfinished; infinite ones (e.g. a pulsing highlight) never finish, so they are not awaited.
@@ -172,7 +198,7 @@ async function checkHandVisibility(page: import('@playwright/test').Page, path: 
   }, VISIBLE_PX);
   const requiresFooterHand = FOOTER_HAND_PAGES.includes(path);
   if (!result.found) {
-    if (requiresFooterHand) expect(result.found, `${path}: game-footer-content not found`).toBe(true);
+    if (requiresFooterHand) expect.soft(result.found, `Hand check: ${path}: game-footer-content not found`).toBe(true);
     test.info().annotations.push({
       type: 'skipped page',
       description: 'game-footer-content was not present on this route.',
@@ -181,7 +207,7 @@ async function checkHandVisibility(page: import('@playwright/test').Page, path: 
   }
   if (result.cards === 0) {
     if (requiresFooterHand) {
-      expect(result.cards, `${path}: no hand cards found in the footer content`).toBeGreaterThan(0);
+      expect.soft(result.cards, `Hand check: ${path}: no hand cards found in the footer content`).toBeGreaterThan(0);
     }
     test.info().annotations.push({
       type: 'skipped page',
@@ -189,16 +215,124 @@ async function checkHandVisibility(page: import('@playwright/test').Page, path: 
     });
     return;
   }
-  expect(
-    result.hidden,
-    `${path}: cards whose top ${VISIBLE_PX}px is below the footer content (tops: ${result.hidden.join(', ')})`,
-  ).toEqual([]);
+  expect
+    .soft(
+      result.hidden,
+      `Hand check: ${path}: cards whose top ${VISIBLE_PX}px is below the footer content (tops: ${result.hidden.join(', ')})`,
+    )
+    .toEqual([]);
+}
+
+/** Checks the first actionable game control in an already loaded page. */
+async function checkFirstActionVisibility(page: import('@playwright/test').Page, path: string) {
+  const result = await page.evaluate(
+    ({ visiblePx, auxiliaryLabels, actionSelector }) => {
+      // Keep app-bar controls out of this check; only controls in the game main count.
+      // This also includes GameFooter actions inside the main content.
+      const main = document.querySelector('main');
+      if (!main) throw new Error('Game main content was not found');
+      const controls = [...main.querySelectorAll<HTMLElement>(actionSelector)].filter((element) => {
+        if (element.matches(':disabled') || element.getAttribute('aria-disabled') === 'true') return false;
+        if (element.closest('[data-app-chrome], header, nav, [data-testid="phase-indicator"]')) return false;
+        const label = (element.getAttribute('aria-label') || element.textContent || '').trim().replace(/\s+/g, ' ');
+        if (auxiliaryLabels.includes(label)) return false;
+        return true;
+      });
+      const isRendered = (element: HTMLElement) => {
+        if (element.closest('[aria-hidden="true"], .sr-only')) return false;
+        const details = element.closest('details:not([open])');
+        if (details && !element.closest('summary')) return false;
+        for (let ancestor: HTMLElement | null = element; ancestor; ancestor = ancestor.parentElement) {
+          const style = getComputedStyle(ancestor);
+          if (style.display === 'none' || style.visibility === 'hidden' || Number.parseFloat(style.opacity) < 0.05) {
+            return false;
+          }
+        }
+        const rect = element.getBoundingClientRect();
+        return rect.width >= 4 && rect.height >= 4;
+      };
+      const visibleHeight = (element: HTMLElement) => {
+        const rect = element.getBoundingClientRect();
+        let top = Math.max(rect.top, 0);
+        let bottom = Math.min(rect.bottom, window.innerHeight);
+        let clipBottom: number | null = null;
+        for (
+          let ancestor = element.parentElement;
+          ancestor && ancestor !== document.body;
+          ancestor = ancestor.parentElement
+        ) {
+          if (/^(auto|scroll|hidden)$/.test(getComputedStyle(ancestor).overflowY)) {
+            const clip = ancestor.getBoundingClientRect();
+            top = Math.max(top, clip.top);
+            if (clip.bottom < bottom) clipBottom = clip.bottom;
+            bottom = Math.min(bottom, clip.bottom);
+          }
+        }
+        return { height: Math.max(0, bottom - top), clipBottom };
+      };
+      const actionable = controls.filter(isRendered);
+      const measured = actionable.map((element) => {
+        const rect = element.getBoundingClientRect();
+        const visibility = visibleHeight(element);
+        return {
+          label: (element.getAttribute('aria-label') || element.textContent || '(unlabelled)')
+            .trim()
+            .replace(/\s+/g, ' '),
+          top: Math.round(rect.top),
+          visibleHeight: visibility.height,
+          height: rect.height,
+          clipBottom: visibility.clipBottom === null ? null : Math.round(visibility.clipBottom),
+        };
+      });
+      const visible = measured.filter((control) => control.visibleHeight >= Math.min(visiblePx, control.height));
+      const mostVisible = [...measured].sort((a, b) => b.visibleHeight - a.visibleHeight || a.top - b.top)[0] ?? null;
+      return { actionableCount: actionable.length, visible, mostVisible };
+    },
+    { visiblePx: VISIBLE_PX, auxiliaryLabels: AUXILIARY_ACTION_LABELS, actionSelector: GAME_ACTION_SELECTOR },
+  );
+
+  if (path === '/hearts') {
+    expect
+      .soft(result.actionableCount, `First-action check: /hearts actionable game controls on initial load`)
+      .toBeGreaterThan(0);
+  }
+  if (DEAL_DEPENDENT_FIRST_ACTION_FAILURES.includes(path)) {
+    test.info().annotations.push({
+      type: 'known first-action issue',
+      description: `${path}: first-action visibility depends on the deal (#11883).`,
+    });
+    return;
+  }
+  if (KNOWN_FIRST_ACTION_FAILURES.includes(path)) {
+    expect
+      .soft(
+        result.visible,
+        `First-action check: ${path}: known #11883 failure; remove this route when fixed. ${VISIBLE_PX}px visible control expected to remain absent: ${JSON.stringify(result)}`,
+      )
+      .toHaveLength(0);
+    return;
+  }
+  if (result.actionableCount === 0) {
+    test.info().annotations.push({
+      type: 'skipped first-action check',
+      description: 'No actionable game controls on initial load (for example, a CPU turn).',
+    });
+    return;
+  }
+  expect
+    .soft(
+      result.visible,
+      `First-action check: ${path}: no actionable control has ${VISIBLE_PX}px visible (or its full height when shorter): ${JSON.stringify(result)}`,
+    )
+    .not.toHaveLength(0);
 }
 
 test.describe('phone 375x667', () => {
   test.use({ viewport: { width: 375, height: 667 } });
   for (const path of routes) {
     test(`${path} keeps every footer hand card reachable on a phone`, async ({ page }) => {
+      await navigateTo(page, path);
+      await checkFirstActionVisibility(page, path);
       await checkHandVisibility(page, path);
     });
   }
@@ -208,6 +342,7 @@ test.describe('desktop 1280x800', () => {
   test.use({ viewport: { width: 1280, height: 800 } });
   for (const path of routes) {
     test(`${path} keeps every footer hand card reachable on a desktop`, async ({ page }) => {
+      await navigateTo(page, path);
       await checkHandVisibility(page, path);
     });
   }
