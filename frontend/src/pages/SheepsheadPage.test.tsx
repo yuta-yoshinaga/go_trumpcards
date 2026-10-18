@@ -123,6 +123,8 @@ describe('SheepsheadPage', () => {
     const trickCards = await screen.findByTestId('trick-display-cards');
     expect(trickCards).toHaveTextContent('11点 · 切り札ではない');
     expect(trickCards).toHaveTextContent('4点 · 切り札ではない');
+    expect(trickCards.querySelector('.break-keep')).toHaveClass('[overflow-wrap:anywhere]');
+    expect(screen.getByAltText(/11点 · 切り札ではない/)).toBeInTheDocument();
   });
 
   it('announces a newly completed trick winner and leaves the text unchanged without a new trick', async () => {

@@ -308,6 +308,7 @@ function SheepsheadPageContent() {
                       trump: t(trickCard.isTrump ? 'trump' : 'notTrump'),
                     });
                   }}
+                  cardDetailClassName="break-keep [overflow-wrap:anywhere]"
                 />
                 {isTrickEnd && state.leadPlayerIdx >= 0 && (
                   <div
