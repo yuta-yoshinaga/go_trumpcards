@@ -53,7 +53,15 @@ receipt_game_tests() {
     printf '%s\n' "${test#"$repo/"}"
     matched=1
   done
-  (( matched )) || printf '%s\n' 'WARN NO_TEST_MATCH'
+  (( matched )) && return 0
+  # A change no page renders (e.g. a Go-only test) has no page test to miss.
+  if ((${#RECEIPT_CHANGED[@]})); then
+    for path in "${RECEIPT_CHANGED[@]}"; do
+      case "$path" in frontend/*|*Presenter.go|internal/i18n/locales/*) printf '%s\n' 'WARN NO_TEST_MATCH'; return 0 ;; esac
+    done
+    return 0
+  fi
+  printf '%s\n' 'WARN NO_TEST_MATCH'
 }
 if [[ "${BATCH_TESTING:-}" = 1 ]]; then return 0 2>/dev/null || exit 0; fi
 slot="$1"; wt="$WT_ROOT/wt-ib$slot"; cd "$wt" || exit 1
