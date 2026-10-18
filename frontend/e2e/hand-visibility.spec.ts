@@ -36,7 +36,7 @@ const GAME_ACTION_SELECTOR = 'button, [role="button"], [tabindex="0"]';
 const KNOWN_FIRST_ACTION_FAILURES = ['/briscola', '/estimation', '/pasur', '/polignac', '/quodlibet', '/schnapsen'];
 
 // These routes fail depending on the deal; omit only their first-action assertion (#11883).
-const DEAL_DEPENDENT_FIRST_ACTION_FAILURES = ['/tienlen', '/minibridge', '/nainjaune'];
+const DEAL_DEPENDENT_FIRST_ACTION_FAILURES: readonly string[] = [];
 
 /**
  * Pages whose footer content overflowed at the start of #11655 (and the very large hands), minus
