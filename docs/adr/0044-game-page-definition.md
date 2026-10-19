@@ -30,7 +30,7 @@ Issue #11912。
 
 試作結果 (AcesUp): 496 行 → 372 行、import 40 → 20、手配線していた横断シンボル 19 種 → 0 種。`AcesUpPage.test.tsx` (37 件) と `e2e/acesup.spec.ts` は無変更で通過。guard スクリプトの変更は 0 本。
 
-2 ページ目 (Hearts、trick-taking・カード選択・パスフェーズ): 744 行 → 680 行、import 43 → 26、横断シンボルの手配線は `hintCheckboxItem` (ゲーム固有設定と並べるため) を除いて 0。足した口は `cardNav` (カード番号キー操作、62 ページが `useCardKeyboardNav` を使う)、`FooterHand` / `FooterStatus`、`actionsTutorialId`、`settingsPlacement` (設定パネルが盤面の上か下かは 169 / 172 ページで二分)、`landscapeBanner` (91 ページだけが出すので既定は false)。`HeartsPage.test.tsx` と `e2e/hearts.spec.ts` は無変更で通過。
+2 ページ目 (Hearts、trick-taking・カード選択・パスフェーズ): 744 行 → 680 行、import 43 → 26、横断シンボルの手配線は `hintCheckboxItem` (ゲーム固有設定と並べるため) を除いて 0。足した口は `cardNav` (カード番号キー操作、62 ページが `useCardKeyboardNav` を使う)、`FooterHand` / `FooterStatus`、`actionsTutorialId`、`settingsPlacement` (設定パネルが盤面の上か下かは概算 169 / 172 ページで二分。ソース上の行位置の比較による)、`landscapeBanner` (91 ページだけが出すので既定は false)。`HeartsPage.test.tsx` と `e2e/hearts.spec.ts` は無変更で通過。
 
 ## Consequences
 

@@ -101,8 +101,12 @@ export interface GameDefinition<S, G extends GameHookBase<S, A>, A extends unkno
   /** Plain function returning whether shortcuts are enabled. Defaults to true. Must not call hooks. */
   shortcutsEnabled?: (ctx: GamePageContext<S, G, V>) => boolean;
   shortcutsTestId?: string;
-  /** Plain function returning card keyboard navigation handlers. Must not call hooks. */
-  cardNav?: (ctx: GamePageContext<S, G, V>) => Omit<UseCardKeyboardNavOptions, 'enabled'> & { enabled: boolean };
+  /**
+   * Plain function returning card keyboard navigation handlers. Must not call hooks.
+   * When set, `shortcutsTestId` goes to the card-nav panel; an action panel added by
+   * `shortcuts` alongside it has no test id.
+   */
+  cardNav?: (ctx: GamePageContext<S, G, V>) => UseCardKeyboardNavOptions;
   /** Plain function returning settings groups. Must not call hooks. */
   settings?: (ctx: GamePageContext<S, G, V>) => SettingsGroup[];
   /** Controls whether settings appear before or after the scrollable game content. Defaults to bottom. */
