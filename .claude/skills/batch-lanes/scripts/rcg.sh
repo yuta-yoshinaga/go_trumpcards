@@ -11,9 +11,7 @@ if [[ -s "$pidfile" ]]; then
     while read -r child; do [[ -n "$child" ]] && stop_tree "$child"; done < <(pgrep -P "$parent" 2>/dev/null || true)
     kill "$parent" 2>/dev/null || true
   }
-  if [[ "$old_pid" =~ ^[0-9]+$ ]] && kill -0 "$old_pid" 2>/dev/null && [[ "$old_pid" != "$$" ]] \
-    && tr '\0' '\n' < "/proc/$old_pid/cmdline" 2>/dev/null | grep -Eq '(^|/)rcg[.]sh$' \
-    && tr '\0' '\n' < "/proc/$old_pid/cmdline" 2>/dev/null | grep -Fxq -- "$slot"; then
+  if rcg_live "$slot" "$old_pid"; then
     stop_tree "$old_pid"
   fi
 fi
@@ -23,6 +21,8 @@ printf '%s\n' "$started" > "$BATCH_STATE/rcg$slot.started"
 exec 9>"$BATCH_STATE/receipt.lock"
 flock -x 9
 rm -f "$BATCH_STATE/gate$slot.ok"
+# Report develop changes that overlap this lane; NOTE lines are informational to the gate.
+while IFS= read -r file; do [[ -n "$file" ]] && echo "NOTE STALE_BASE $file (run sync.sh $slot)"; done < <(stale_base_files "$WT_ROOT/wt-ib$slot")
 "$B/rc.sh" "$slot" >/dev/null
 rc=$?
 f="$BATCH_STATE/rc$slot.txt"

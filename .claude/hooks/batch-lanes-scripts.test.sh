@@ -941,6 +941,103 @@ grep -q 'delegated_to "\$s"' "$SCRIPTS/ship.sh" || fail 'ship.sh does not infer 
 ! grep -q '\[\[ -n "\$delegation" \]\]' "$SCRIPTS/ship.sh" || fail 'ship.sh retains dead empty-delegation check'
 grep -q 'delegated_to "\$1"' "$SCRIPTS/fixpush.sh" || fail 'fixpush.sh does not infer Delegated-To from lane logs'
 
+
+# Shared file collection, stale-base overlap, and lane gating behavior.
+(
+  repo="$tmp/gating-repo"; root="$tmp/gating-wts"; state="$tmp/gating-state"; bin="$tmp/gating-bin"
+  mkdir -p "$root/wt-ib7" "$state" "$bin"
+  git init -q "$repo"; git -C "$repo" config user.email t@t; git -C "$repo" config user.name t
+  printf 'base\n' > "$repo/shared"; printf 'base\n' > "$repo/elsewhere"
+  git -C "$repo" add .; git -C "$repo" commit -qm base; git -C "$repo" branch -M develop
+  git init -q --bare "$tmp/gating-origin.git"; git -C "$tmp/gating-origin.git" symbolic-ref HEAD refs/heads/develop
+  git -C "$repo" remote add origin "$tmp/gating-origin.git"; git -C "$repo" push -q -u origin develop; git -C "$repo" fetch -q origin
+  git -C "$repo" worktree add -qb lane "$root/wt-ib7" origin/develop
+  printf 'dirty\n' > "$root/wt-ib7/shared"
+  cat > "$bin/gh" <<'GH'
+#!/usr/bin/env bash
+if [[ "$*" == *'--json files'* ]]; then printf '%s\n' "${PR_FILES:-shared}"; elif [[ "$*" == *headRefName* ]]; then echo lane; else exit 0; fi
+GH
+  chmod +x "$bin/gh"
+  cat > "$root/wt-ib7/rcg.sh" <<'RG'
+#!/usr/bin/env bash
+sleep 60
+RG
+  chmod +x "$root/wt-ib7/rcg.sh"
+  "$root/wt-ib7/rcg.sh" 7 & gatepid=$!
+  trap 'kill "$gatepid" 2>/dev/null || true; wait "$gatepid" 2>/dev/null || true' EXIT
+  printf '%s\n' "$gatepid" > "$state/rcg7.pid"; printf '123\n' > "$state/reviewed.txt"
+  # Use an isolated merge gate; overlap returns before any merge gate work.
+  out=''; rc=0
+  PATH="$bin:$PATH" BATCH_REPO="$repo" BATCH_WT_ROOT="$root" BATCH_STATE="$state" BATCH_SKIP_CODECOV=1 bash "$SCRIPTS/land.sh" 123 >"$tmp/land.out" 2>&1 || rc=$?
+  out=$(cat "$tmp/land.out")
+  [[ "$rc" = 4 ]] || fail "land.sh did not return 4 for live overlap (rc=$rc): $out"
+  grep -qx 'LANE-GATING slot=7 shared' <<<"$out" || fail "land.sh omitted LANE-GATING line: $out"
+  rc=0
+  out=$(PATH="$bin:$PATH" PR_FILES=elsewhere BATCH_REPO="$repo" BATCH_WT_ROOT="$root" BATCH_STATE="$state" BATCH_SKIP_CODECOV=1 bash "$SCRIPTS/land.sh" 123 2>&1) || rc=$?
+  [[ "$rc" != 4 ]] || fail "land.sh returned 4 for a disjoint file: $out"
+  [[ "$out" != *LANE-GATING* ]] || fail "land.sh reported a disjoint file: $out"
+  out=$(PATH="$bin:$PATH" BATCH_REPO="$repo" BATCH_WT_ROOT="$root" BATCH_STATE="$state" BATCH_SKIP_CODECOV=1 ALLOW_LANE_GATING=1 bash "$SCRIPTS/land.sh" 123 2>&1) || true
+  [[ "$out" != *LANE-GATING* ]] || fail "ALLOW_LANE_GATING did not bypass check: $out"
+  kill "$gatepid" 2>/dev/null || true; wait "$gatepid" 2>/dev/null || true
+  printf '%s\n' 99999999 > "$state/rcg7.pid"
+  out=$(PATH="$bin:$PATH" BATCH_REPO="$repo" BATCH_WT_ROOT="$root" BATCH_STATE="$state" BATCH_SKIP_CODECOV=1 bash "$SCRIPTS/land.sh" 123 2>&1) || true
+  [[ "$out" != *LANE-GATING* ]] || fail "land.sh treated dead gate as live: $out"
+  # Develop changed shared after branch point; only lane overlap is returned.
+  printf 'develop\n' >> "$repo/shared"; printf 'develop\n' >> "$repo/elsewhere"
+  git -C "$repo" add .; git -C "$repo" commit -qm develop-change; git -C "$repo" push -q origin develop; git -C "$root/wt-ib7" fetch -q origin
+  printf 'lane\n' > "$root/wt-ib7/shared"; printf 'lane\n' > "$root/wt-ib7/local-only"
+  stale=$(BATCH_REPO="$repo" BATCH_WT_ROOT="$root" BATCH_STATE="$state" bash -c 'source "$1"; stale_base_files "$2"' _ "$SCRIPTS/common.sh" "$root/wt-ib7")
+  grep -qx shared <<<"$stale" || fail "stale-base overlap missing: $stale"
+  [[ "$stale" != *elsewhere* && "$stale" != *local-only* ]] || fail "stale-base included non-overlap: $stale"
+) || exit 1
+
+# sweep preserves the retry signal, and drain stops when review is ready.
+(
+  mkdir -p "$tmp/sweep-bin" "$tmp/sweep-state"
+  cat > "$tmp/sweep-bin/gh" <<'GH'
+#!/usr/bin/env bash
+case "$*" in
+  *'pr list'*) echo '[{"number":1,"headRefName":"feat/1-x"}]' ;;
+  *mergeable*) echo MERGEABLE ;;
+  *'pr checks'*) echo '[]' ;;
+  *comments*) echo 1 ;;
+  *) exit 0 ;;
+esac
+GH
+  chmod +x "$tmp/sweep-bin/gh"
+  printf '1\n' > "$tmp/sweep-state/reviewed.txt"
+  # Stub the invoked land helper through a temporary copy of the script directory.
+  cp -R "$SCRIPTS" "$tmp/sweep-scripts"
+  cat > "$tmp/sweep-scripts/land.sh" <<'LAND'
+#!/usr/bin/env bash
+echo 'LANE-GATING slot=2 shared'
+exit 4
+LAND
+  chmod +x "$tmp/sweep-scripts/land.sh"
+  out=$(PATH="$tmp/sweep-bin:$PATH" BATCH_REPO="$ROOT" BATCH_STATE="$tmp/sweep-state" BATCH_BRANCH_RE='^feat/' bash "$tmp/sweep-scripts/sweep.sh") || fail "sweep failed: $out"
+  grep -q '^LANE-GATING slot=2 shared$' <<<"$out" && ! grep -q '^FAIL' <<<"$out" || fail "sweep mishandled lane gating: $out"
+  cat > "$tmp/sweep-scripts/land.sh" <<'LAND'
+#!/usr/bin/env bash
+echo 'WAIT: codecov/patch is still pending'
+exit 3
+LAND
+  chmod +x "$tmp/sweep-scripts/land.sh"
+  out=$(PATH="$tmp/sweep-bin:$PATH" BATCH_REPO="$ROOT" BATCH_STATE="$tmp/sweep-state" BATCH_BRANCH_RE='^feat/' bash "$tmp/sweep-scripts/sweep.sh") || fail "sweep failed on pending codecov: $out"
+  grep -qx 'WAIT: codecov/patch is still pending' <<<"$out" || fail "sweep dropped codecov wait output: $out"
+  ! grep -q '^FAIL' <<<"$out" || fail "sweep added FAIL for pending codecov: $out"
+  cat > "$tmp/sweep-bin/sweep.sh" <<'SWEEP'
+#!/usr/bin/env bash
+echo 'REVIEW-READY 1'
+SWEEP
+  chmod +x "$tmp/sweep-bin/sweep.sh"
+  # drain resolves its sibling sweep.sh from its script directory.
+  # A private script directory allows the sweep stub and a fast gh response.
+  mkdir -p "$tmp/drain-scripts"; cp "$SCRIPTS/common.sh" "$tmp/drain-scripts/common.sh"; cp "$SCRIPTS/drain.sh" "$tmp/drain-scripts/drain.sh"; cp "$tmp/sweep-bin/sweep.sh" "$tmp/drain-scripts/sweep.sh"
+  rc=0; PATH="$tmp/sweep-bin:$PATH" BATCH_REPO="$ROOT" BATCH_STATE="$tmp/sweep-state" BATCH_BRANCH_RE='^feat/' timeout 20 bash "$tmp/drain-scripts/drain.sh" >"$tmp/drain.out" 2>&1 || rc=$?
+  [[ "$rc" != 124 ]] || fail "drain timed out instead of stopping on REVIEW-READY: $(cat "$tmp/drain.out")"
+  [[ "$rc" = 0 ]] || fail "drain did not exit 0 on REVIEW-READY: $(cat "$tmp/drain.out")"
+) || exit 1
+
 (
   setup_sync() {
     tag="$1"; SY_REPO="$tmp/sync-$tag-main"; SY_ROOT="$tmp/sync-$tag-lanes"; SY_STATE="$tmp/sync-$tag-state"

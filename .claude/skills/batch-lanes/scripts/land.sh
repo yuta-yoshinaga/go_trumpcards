@@ -1,11 +1,28 @@
 #!/bin/bash
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
-# usage: land.sh <pr> — gate (with expected SHA = remote branch tip) then squash-merge. Caller must have read reviews.
+# usage: land.sh <pr> — gate (with expected SHA = remote branch tip) then squash-merge. Exit 4 means LANE-GATING; ALLOW_LANE_GATING=1 bypasses it. Caller must have read reviews.
 cd "$REPO"
 pr="$1"
 if ! grep -qx "$pr" "$BATCH_STATE/reviewed.txt"; then
   echo "REFUSED: PR $pr is not in reviewed.txt -- read its reviews first" >&2
   exit 1
+fi
+if [[ "${ALLOW_LANE_GATING:-}" != 1 ]]; then
+  pr_files=$(gh pr view "$pr" --json files -q '.files[].path')
+  while IFS= read -r pidfile; do
+    [[ -s "$pidfile" ]] || continue
+    slot="${pidfile##*/rcg}"; slot="${slot%.pid}"
+    rcg_live "$slot" "$(cat "$pidfile")" || continue
+    wt="$WT_ROOT/wt-ib$slot"
+    [[ -d "$wt" ]] || continue
+    mapfile -d '' -t lane_files < <(collect "$wt")
+    for file in "${lane_files[@]}"; do
+      if grep -Fxq -- "$file" <<<"$pr_files"; then
+        echo "LANE-GATING slot=$slot $file"
+        exit 4
+      fi
+    done
+  done < <(find "$BATCH_STATE" -maxdepth 1 -type f -name 'rcg*.pid' -print | sort -V)
 fi
 if [[ "${BATCH_SKIP_CODECOV:-}" == 1 ]]; then
   echo "SKIP: codecov/patch check skipped by BATCH_SKIP_CODECOV=1" >&2

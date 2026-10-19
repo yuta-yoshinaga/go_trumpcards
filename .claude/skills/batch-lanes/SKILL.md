@@ -19,9 +19,9 @@ Helper scripts for Claude while `improve-batch` delegates several issues into se
 
 1. `setup_wt.sh`: create or prepare `wt-ib<slot>` and branch it for an issue.
 2. `go.sh`: delegate an issue using the exact prompt file supplied as argument 3 or `BATCH_PROMPT_FILE`.
-3. `rcg.sh`: serialize and run the receipt gate for that slot.
+3. `rcg.sh`: serialize and run the receipt gate for that slot, then wait with `waitdone.sh <slot>`.
 4. `ship.sh`: commit a gated issue worktree and open its PR.
-5. `triage.sh` / `sweep.sh`: review posted automated feedback and land reviewed, green PRs; `drain.sh` repeats the sweep.
+5. `triage.sh` / `sweep.sh`: review posted automated feedback and land reviewed, green PRs; after ship, use `drain.sh` to retry pending PRs every 5 minutes. It exits on FAIL, CONFLICT, REVIEW-READY, or all merged. This replaces hand-written `sleep` loops.
 6. `fx.sh` and `gofx.sh`: prepare a fixup worktree and delegate a fix prompt.
 7. `fixpush.sh`: push a gated fix and reply on the PR.
 8. `drain.sh`: wait for the selected batch PRs to merge.
@@ -51,7 +51,7 @@ The flows require `dele`, `gh`, `jq`, `flock`, `bun`, `go`, and `golangci-lint`,
 - `rc.sh` also records `WARN WORKER_BUILD`, `WARN UNUSED_NEW_SYMBOL`, and `WARN PATCH_BRANCH_GAP`; set `ALLOW_WORKER_BUILD=1`, `ALLOW_UNUSED="name ..."`, or `ALLOW_PATCH_GAPS=1` to allow known exceptions.
 - `identgone.sh`: report a removed identifier as `WARN IDENT_GONE <file> <old> -> <new>` when a newly appearing identifier in the same changed `.ts`, `.tsx`, or `.go` file contains it, is contained by it (both names at least 6 characters), or is within case-insensitive edit distance 2 (both names at least 6 characters), and both identifiers have the same occurrence count. When several candidates qualify, the closest edit distance wins, with name order breaking ties. Other removals are `NOTE IDENT_GONE` and do not fail the receipt. Comments, strings, and numeric literal fragments are ignored. Set `ALLOW_IDENT_GONE="name1 name2"` to suppress either report for known intentional removals; the names apply regardless of file.
 - `rc.sh` also reruns the Go test functions the change adds or edits (`repeattests.sh`, `-count=50`) and records `WARN DEAL_DEPENDENT` when one fails, which usually means it depends on the deal. Set `REPEAT_TESTS_COUNT` to change the count, or `0` to skip.
-- `rcg.sh`: serialize receipt gates with `flock` and write a fresh slot result.
+- `rcg.sh`: serialize receipt gates with `flock` and write a fresh slot result. Before the receipt, `NOTE STALE_BASE <file> (run sync.sh <slot>)` reports files changed on develop since the lane branched.
 - `rcg.sh` records its PID per slot and stops the previous gate process tree only when `/proc` confirms it is an `rcg.sh` for that slot; `mutate.sh <slot> <ref>:<path> <e2e args...>` prints its `backup: <path>` before checking, first verifies the unmutated lane passes the same E2E command, then temporarily swaps the file for a mutation check and restores it on exit. A failed baseline reports `ERROR baseline failed`; only a failure after mutation reports `DETECTED`.
 - `e2e.sh`: build and run a lane's Playwright specs on its isolated port, with at most two lanes running concurrently.
 - Set `E2E_SKIP_BUILD=1` to skip frontend/backend builds, server startup, and the port check; this assumes a server is already running on the lane's port.
@@ -62,7 +62,7 @@ The flows require `dele`, `gh`, `jq`, `flock`, `bun`, `go`, and `golangci-lint`,
 - `sweep.sh`: land eligible reviewed batch PRs and report blocked ones.
 - `sweep.sh` reports `UNSWEPT` for open PRs outside `BATCH_BRANCH_RE`; set `BATCH_UNSWEPT_IGNORE="<pr ...>"` to ignore intentional non-batch PRs.
 - `triage.sh`: inspect automated review feedback and mark clean reviews as read.
-- `land.sh`: require the PR to be listed in `reviewed.txt`, require a passing `codecov/patch` result when the PR changes production Go or TypeScript, then run the merge gate and squash-merge. It refuses if a worktree on the PR branch has a running delegation, uncommitted changes, unpushed commits, or cannot be compared with origin (`ALLOW_LANE_PENDING=1`). Missing or pending coverage exits 3 to wait. `BATCH_SKIP_CODECOV=1` bypasses the coverage check; unreviewed PRs are never bypassed.
+- `land.sh`: require the PR to be listed in `reviewed.txt`, require a passing `codecov/patch` result when the PR changes production Go or TypeScript, then run the merge gate and squash-merge. It refuses if a worktree on the PR branch has a running delegation, uncommitted changes, unpushed commits, or cannot be compared with origin (`ALLOW_LANE_PENDING=1`). Missing or pending coverage exits 3 to wait. An overlapping live gate prints `LANE-GATING` and exits 4; `ALLOW_LANE_GATING=1` bypasses this check. `BATCH_SKIP_CODECOV=1` bypasses the coverage check; unreviewed PRs are never bypassed.
 - `waitfor.sh`: wait for a shell condition up to a timeout.
 - `waitdone.sh`: wait for a slot's `rcg` result written after its latest start.
 - `drain.sh`: repeatedly sweep the selected batch until it is clear or blocked.
