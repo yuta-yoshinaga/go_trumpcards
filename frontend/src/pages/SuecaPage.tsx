@@ -24,7 +24,7 @@ import { CPU_DIFFICULTY_OPTIONS, TARGET_GAME_POINTS_OPTIONS, useSuecaGame } from
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { SuecaResponse } from '../types/card';
+import type { Card, SuecaResponse } from '../types/card';
 import type { SuecaPlayer } from '../types/games/sueca';
 import { SuecaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
@@ -154,13 +154,9 @@ function SuecaPageContent() {
   const isGameEnd = state.phase === SuecaPhase.GAME_END || state.gameEndFlag;
 
   const canPlay = isPlayPhase && isHumanTurn;
-  // A stale selection or incomplete state can briefly outlive the hand update.
-  const selectedCardNames = humanPlayer
-    ? selectedCardIndices.flatMap((idx) => {
-        const card = humanPlayer.cards[idx];
-        return card ? [cardAlt(card)] : [];
-      })
-    : [];
+  // Sueca states always contain one human player, and selection indices come
+  // from that player's hand. Treat violations as invalid game state.
+  const selectedCardNames = selectedCardIndices.map((idx) => cardAlt((humanPlayer as SuecaPlayer).cards[idx] as Card));
   const humanTeam = humanIdx % 2;
   const trumpSymbol = suitSymbolAt(state.trumpSuit, '');
   const playerTeamLabel = (p: SuecaPlayer) =>

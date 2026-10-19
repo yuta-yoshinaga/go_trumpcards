@@ -244,11 +244,9 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
     if (isMuckPhase && !wasMuckPhaseRef.current) {
       muckButtonRef.current?.focus();
     } else if (!isMuckPhase && wasMuckPhaseRef.current) {
-      const heading = document.querySelector<HTMLElement>('h1');
-      if (heading) {
-        heading.tabIndex = -1;
-        heading.focus();
-      }
+      const heading = document.querySelector<HTMLElement>('h1') as HTMLElement;
+      heading.tabIndex = -1;
+      heading.focus();
     }
     wasMuckPhaseRef.current = isMuckPhase;
   }, [gameKey, isMuckPhase]);

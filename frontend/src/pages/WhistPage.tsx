@@ -30,6 +30,7 @@ import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { WhistResponse } from '../types/card';
+import type { WhistPlayerData } from '../types/games/whist';
 import { WhistPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
@@ -425,12 +426,12 @@ function WhistPageContent() {
                   entries={[
                     {
                       name: t('team', { n: 0 }),
-                      roundScore: state.players.find((player) => player.team === 0)?.roundScore ?? 0,
+                      roundScore: (state.players.find((player) => player.team === 0) as WhistPlayerData).roundScore,
                       cumulativeScore: state.teamScores[0],
                     },
                     {
                       name: t('team', { n: 1 }),
-                      roundScore: state.players.find((player) => player.team === 1)?.roundScore ?? 0,
+                      roundScore: (state.players.find((player) => player.team === 1) as WhistPlayerData).roundScore,
                       cumulativeScore: state.teamScores[1],
                     },
                   ]}
