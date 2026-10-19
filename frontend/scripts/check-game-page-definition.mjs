@@ -31,6 +31,9 @@ try {
   process.exit(1);
 }
 const baseline = new Set(entries);
+// The rule the docs state: the page's export is built by the factory. A bare
+// `createGamePage(` substring would also match a comment or an unused call.
+const isMigrated = (source) => /^export const \w+Page = createGamePage\(/m.test(source);
 let failed = false;
 for (const entry of entries) {
   if (!pages.includes(entry)) {
@@ -42,11 +45,11 @@ let migrated = 0;
 for (const page of pages) {
   const source = await readFile(`${PAGES_DIR}/${page}`, 'utf8');
   if (baseline.has(page)) {
-    if (source.includes('createGamePage(')) {
+    if (isMigrated(source)) {
       console.error(`game-page-definition: ${page}: migrated — remove it from the baseline`);
       failed = true;
     }
-  } else if (!source.includes('createGamePage(')) {
+  } else if (!isMigrated(source)) {
     console.error(
       `game-page-definition: ${page}: new page must be built with createGamePage (ADR-0044); clone from a migrated page (AcesUpPage / HeartsPage) or migrate the clone source first. Do not add it to the baseline`,
     );
@@ -56,6 +59,7 @@ for (const page of pages) {
   }
 }
 if (failed) process.exit(1);
+// The fixture override is a test seam only; CI never sets it, so the real floor applies there.
 if (process.env.GAME_PAGE_DEFINITION_PAGES) {
   assertFloor('game-page-definition', pages.length, 1, 'fixture game pages');
 } else {

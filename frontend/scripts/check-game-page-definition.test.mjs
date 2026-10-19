@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 
 const SCRIPT = join(process.cwd(), 'scripts/check-game-page-definition.mjs');
+const MIGRATED = 'export const AcesUpPage = createGamePage(def);';
 const dirs = [];
 afterAll(() => {
   for (const dir of dirs) rmSync(dir, { recursive: true, force: true });
@@ -12,7 +13,7 @@ afterAll(() => {
 
 function run({
   pages = {
-    AcesUpPage: 'export const AcesUpPage = createGamePage(def);',
+    AcesUpPage: MIGRATED,
     HeartsPage: 'export const HeartsPage = createGamePage(def);',
     OldPage: 'export default function OldPage() {}',
   },
@@ -41,10 +42,18 @@ describe('check-game-page-definition', () => {
 
   it('rejects a new hand-wired page', () => {
     const result = run({
-      pages: { ...{ AcesUpPage: 'createGamePage(' }, NewPage: 'export default function NewPage() {}', OldPage: 'Old' },
+      pages: { AcesUpPage: MIGRATED, NewPage: 'export default function NewPage() {}', OldPage: 'Old' },
     });
     expect(result.status).toBe(1);
     expect(result.out).toContain('new page must be built with createGamePage (ADR-0044)');
+  });
+
+  it('does not count a createGamePage mention outside the page export as migrated', () => {
+    const result = run({
+      pages: { AcesUpPage: MIGRATED, NewPage: '// createGamePage(def) later\nexport function NewPage() {}', OldPage: 'Old' },
+    });
+    expect(result.status).toBe(1);
+    expect(result.out).toContain('NewPage.tsx: new page must be built with createGamePage');
   });
 
   it('rejects a migrated baseline page', () => {
