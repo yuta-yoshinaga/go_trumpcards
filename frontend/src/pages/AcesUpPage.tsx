@@ -361,6 +361,7 @@ const acesUpDefinition: GameDefinition<AcesUpResponse, AcesUpGame, Parameters<ty
   ],
   shortcutsEnabled: ({ state }) => state.phase === AcesUpPhase.PLAYING,
   shortcutsTestId: 'aces-up-kbd-shortcuts',
+  landscapeBanner: true,
   resetTutorialId: 'acesup-reset-button',
   HeaderExtra,
   LiveRegion,

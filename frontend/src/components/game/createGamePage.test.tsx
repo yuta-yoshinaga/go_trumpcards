@@ -31,6 +31,9 @@ interface Game extends GameHookBase<State, unknown[]> {
 const reset = vi.fn();
 const giveUp = vi.fn();
 const shortcut = vi.fn();
+const cardToggle = vi.fn();
+const cardConfirm = vi.fn();
+const cardClear = vi.fn();
 const retry = vi.fn();
 
 const defaultBaseGame: Game = {
@@ -179,6 +182,51 @@ describe('createGamePage', () => {
     expect(shortcut).not.toHaveBeenCalled();
   });
 
+  it('binds card navigation, disables it while busy, and renders its shortcuts instead of action shortcuts', () => {
+    const Page = createGamePage({
+      key: 'acesup',
+      useGame: useFakeGame,
+      tutorial: [],
+      skeleton: { kind: 'centered', rows: [1] },
+      cli: () => ({ parseCommand: () => ({ args: [] }), formatResponse: () => 'state', helpText: ['help'] }),
+      busy: (game) => game.loading,
+      phase: ({ state }) => ({ name: 'playing', ended: state.ended }),
+      cardNav: () => ({
+        cardCount: 2,
+        onToggle: cardToggle,
+        onConfirm: cardConfirm,
+        onClear: cardClear,
+        enabled: true,
+      }),
+      shortcuts: () => [{ key: 'x', action: shortcut, label: 'draw' }],
+      shortcutsTestId: 'card-shortcuts',
+      Board,
+    });
+    const view = renderWithProviders(<Page />);
+    fireEvent.keyDown(document, { key: '1' });
+    fireEvent.keyDown(document, { key: 'Enter' });
+    expect(cardToggle).toHaveBeenCalledWith(0);
+    expect(cardConfirm).toHaveBeenCalledTimes(1);
+    expect(screen.getByTestId('card-shortcuts')).toBeInTheDocument();
+    const actionShortcutSummary = view.container.querySelectorAll('footer details summary')[1];
+    expect(actionShortcutSummary).toBeDefined();
+    if (actionShortcutSummary) fireEvent.click(actionShortcutSummary);
+    expect(screen.getByText('山札をめくる')).toBeInTheDocument();
+
+    currentGame = { ...currentGame, loading: true };
+    view.rerender(<Page />);
+    fireEvent.keyDown(document, { key: '1' });
+    fireEvent.keyDown(document, { key: 'Enter' });
+    expect(cardToggle).toHaveBeenCalledTimes(1);
+    expect(cardConfirm).toHaveBeenCalledTimes(1);
+  });
+
+  it('uses action shortcuts when card navigation is absent', () => {
+    const Page = makeDefinition({ shortcuts: true });
+    renderWithProviders(<Page />);
+    expect(screen.getByText('キーボードショートカット')).toBeInTheDocument();
+  });
+
   it('uses default hint settings or custom settings', () => {
     const DefaultPage = makeDefinition();
     const view = renderWithProviders(<DefaultPage />);
@@ -228,6 +276,32 @@ describe('createGamePage', () => {
     const resetButton = screen.getByRole('button', { name: 'リセット' });
     expect(giveUpButton.parentElement).toHaveClass('flex', 'gap-2', 'items-center', 'flex-wrap');
     expect(resetButton.parentElement).toBe(giveUpButton.parentElement);
+  });
+
+  it('places FooterHand before errors and FooterStatus before the actions row', () => {
+    const Page = createGamePage({
+      key: 'acesup',
+      useGame: useFakeGame,
+      tutorial: [],
+      skeleton: { kind: 'centered', rows: [1] },
+      cli: () => ({ parseCommand: () => ({ args: [] }), formatResponse: () => 'state', helpText: ['help'] }),
+      phase: ({ state }) => ({ name: 'playing', ended: state.ended }),
+      FooterHand: () => <div data-testid="footer-hand" />,
+      FooterStatus: () => <div data-testid="footer-status" />,
+      actionsTutorialId: 'actions-tutorial',
+      Board,
+    });
+    currentGame = { ...currentGame, error: 'failure' };
+    renderWithProviders(<Page />);
+    const hand = screen.getByTestId('footer-hand');
+    const error = screen.getByRole('alert');
+    const status = screen.getByTestId('footer-status');
+    const actions = screen.getByRole('button', { name: 'リセット' }).parentElement;
+    expect(hand.compareDocumentPosition(error) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(error.compareDocumentPosition(status) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(actions).not.toBeNull();
+    if (actions) expect(status.compareDocumentPosition(actions) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(actions).toHaveAttribute('data-tutorial', 'actions-tutorial');
   });
 
   it('hides the action log before resetting', () => {
@@ -439,13 +513,69 @@ describe('createGamePage', () => {
     expect(screen.getByTestId('test-shortcuts-panel')).toBeInTheDocument();
   });
 
-  it('renders LandscapeBanner in GUI mode only and unmounts it in CLI mode', async () => {
+  it('omits LandscapeBanner by default and renders it in GUI mode only when enabled', async () => {
     const Page = makeDefinition();
-    renderWithProviders(<Page />);
+    const defaultView = renderWithProviders(<Page />);
+    expect(screen.queryByText('横画面での表示を推奨します')).not.toBeInTheDocument();
+    defaultView.unmount();
+
+    const BannerPage = createGamePage({
+      key: 'acesup',
+      useGame: useFakeGame,
+      tutorial: [],
+      skeleton: { kind: 'centered', rows: [1] },
+      cli: () => ({ parseCommand: () => ({ args: [] }), formatResponse: () => 'state', helpText: ['help'] }),
+      phase: ({ state }) => ({ name: 'playing', ended: state.ended }),
+      landscapeBanner: true,
+      Board,
+    });
+    const view = renderWithProviders(<BannerPage />);
     expect(screen.getByText('横画面での表示を推奨します')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
     await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument());
     expect(screen.queryByText('横画面での表示を推奨します')).not.toBeInTheDocument();
+    view.unmount();
+  });
+
+  it('places settings before or after the scroll content according to settingsPlacement', () => {
+    const settings = () => [
+      { items: [{ type: 'checkbox' as const, id: 'test-setting', label: 'Test', checked: false }] },
+    ];
+    const TopPage = createGamePage({
+      key: 'acesup',
+      useGame: useFakeGame,
+      tutorial: [],
+      skeleton: { kind: 'centered', rows: [1] },
+      cli: () => ({ parseCommand: () => ({ args: [] }), formatResponse: () => 'state', helpText: ['help'] }),
+      phase: ({ state }) => ({ name: 'playing', ended: state.ended }),
+      settings,
+      settingsPlacement: 'top',
+      Board,
+    });
+    const { unmount } = renderWithProviders(<TopPage />);
+    const topSettings = screen.getByText('設定').parentElement;
+    const topBoard = screen.getByTestId('board');
+    expect(topSettings).not.toBeNull();
+    if (topSettings)
+      expect(topSettings.compareDocumentPosition(topBoard) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    unmount();
+    const BottomPage = createGamePage({
+      key: 'acesup',
+      useGame: useFakeGame,
+      tutorial: [],
+      skeleton: { kind: 'centered', rows: [1] },
+      cli: () => ({ parseCommand: () => ({ args: [] }), formatResponse: () => 'state', helpText: ['help'] }),
+      phase: ({ state }) => ({ name: 'playing', ended: state.ended }),
+      settings,
+      settingsPlacement: 'bottom',
+      Board,
+    });
+    renderWithProviders(<BottomPage />);
+    const bottomSettings = screen.getByText('設定').parentElement;
+    const bottomBoard = screen.getByTestId('board');
+    expect(bottomSettings).not.toBeNull();
+    if (bottomSettings)
+      expect(bottomBoard.compareDocumentPosition(bottomSettings) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 });
