@@ -543,7 +543,7 @@ make_e2egate_case() {
   mkdir -p "$repo/frontend/src/pages" "$repo/frontend/src/constants" "$repo/frontend/e2e" "$wtroot"
   git init -q "$repo"; git -C "$repo" config user.email test@example.com; git -C "$repo" config user.name test
   printf "export const gameRoutes = [{ path: '/wrong' }, { path: '/poker', page: 'Poker' }, { path: '/', page: 'BlackJack' }];\n" > "$repo/frontend/src/constants/gameRoutes.ts"
-  for spec in desktop-board-visibility desktop-hand-visibility game-message-visibility hand-visibility mobile-viewport text-contrast duplicate-text poker poker-paytable-mobile pokerx; do touch "$repo/frontend/e2e/$spec.spec.ts"; done
+  for spec in desktop-board-visibility desktop-hand-visibility game-message-visibility mobile-viewport text-contrast route-sweep poker poker-paytable-mobile pokerx; do touch "$repo/frontend/e2e/$spec.spec.ts"; done
   mkdir -p "$repo/frontend/src/components" "$repo/frontend/src/i18n/locales/en"
   printf "import { helper } from './helpers';\n" > "$repo/frontend/e2e/poker.spec.ts"
   touch "$repo/frontend/e2e/helpers.ts" "$repo/frontend/src/components/Other.tsx" "$repo/frontend/src/i18n/locales/en/common.json" "$repo/frontend/src/components/a.test.tsx"
@@ -560,10 +560,22 @@ make_e2egate_case() {
     helper) printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/e2e/helpers.ts" ;;
     spec) printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/e2e/poker.spec.ts" ;;
     ignored) printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/src/i18n/locales/en/common.json"; printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/src/components/a.test.tsx" ;;
+    missing) rm "$wtroot/wt-ib1/frontend/e2e/route-sweep.spec.ts"; printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/src/components/Other.tsx" ;;
   esac
+  if [[ "$changed" == missing ]]; then
+    error="$tmp/e2egate-missing.err"
+    if E2E_SWEEP_REPEAT=3 BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$SCRIPTS/e2egate.sh" --dry-run 1 >"$tmp/e2egate-missing.out" 2>"$error"; then
+      fail "e2egate accepted missing route-sweep spec"
+    else
+      status=$?
+      [[ $status == 2 ]] || fail "missing sweep spec exited $status instead of 2"
+    fi
+    grep -qx 'e2egate: sweep spec route-sweep.spec.ts does not exist' "$error" || fail "missing sweep diagnostic incorrect: $(cat "$error")"
+    return
+  fi
   output=$(E2E_SWEEP_REPEAT=3 BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$SCRIPTS/e2egate.sh" --dry-run 1) || fail "e2egate $name dry-run failed"
   if [[ "$changed" == shared || "$changed" == component ]]; then
-    for spec in desktop-board-visibility desktop-hand-visibility game-message-visibility hand-visibility mobile-viewport text-contrast duplicate-text; do grep -q "e2e/$spec.spec.ts" <<< "$output" || fail "sweep omitted $spec: $output"; done
+    for spec in desktop-board-visibility desktop-hand-visibility game-message-visibility mobile-viewport text-contrast route-sweep; do grep -q "e2e/$spec.spec.ts" <<< "$output" || fail "sweep omitted $spec: $output"; done
   elif [[ "$changed" == page ]]; then
     grep -q 'run 1: e2e/poker.spec.ts$' <<< "$output" || fail "page game spec has grep or was omitted: $output"
     grep -q 'run 2: e2e/poker-paytable-mobile.spec.ts$' <<< "$output" || fail "page route extra spec was omitted: $output"
@@ -582,7 +594,7 @@ STUB
     chmod +x "$exec_scripts/e2e.sh"
     E2E_SWEEP_REPEAT=3 E2EGATE_ARGS="$tmp/e2egate-args-$name" BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$exec_scripts/e2egate.sh" 1 || fail "page e2egate execution failed"
     expected="$tmp/e2egate-expected-$name"
-    printf '%s\n' 1 e2e/poker.spec.ts e2e/poker-paytable-mobile.spec.ts --- e2e/desktop-board-visibility.spec.ts e2e/desktop-hand-visibility.spec.ts e2e/duplicate-text.spec.ts e2e/game-message-visibility.spec.ts e2e/hand-visibility.spec.ts e2e/mobile-viewport.spec.ts e2e/text-contrast.spec.ts --grep '/poker\b' --pass-with-no-tests --repeat-each=3 > "$expected"
+    printf '%s\n' 1 e2e/poker.spec.ts e2e/poker-paytable-mobile.spec.ts --- e2e/desktop-board-visibility.spec.ts e2e/desktop-hand-visibility.spec.ts e2e/game-message-visibility.spec.ts e2e/mobile-viewport.spec.ts e2e/route-sweep.spec.ts e2e/text-contrast.spec.ts --grep '/poker\b' --pass-with-no-tests --repeat-each=3 > "$expected"
     diff -u "$expected" "$tmp/e2egate-args-$name" || fail "page execution passed wrong args"
     E2E_SWEEP_REPEAT=1 E2EGATE_ARGS="$tmp/e2egate-args-$name" BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$exec_scripts/e2egate.sh" 1 || fail "page e2egate repeat=1 execution failed"
     ! grep -q -- '--repeat-each' "$tmp/e2egate-args-$name" || fail "repeat=1 added repeat arg"
@@ -614,13 +626,14 @@ make_e2egate_case component component
 make_e2egate_case helper helper
 make_e2egate_case ignored ignored
 make_e2egate_case empty none
+make_e2egate_case missing missing
 
 # Removed route references are repeated; moves are excluded, including during full sweeps.
 (
   repo="$tmp/e2egate-removed"; wtroot="$tmp/e2egate-removed-wts"
   mkdir -p "$repo/frontend/e2e" "$repo/frontend/src/components" "$wtroot"
   git -C "$repo" init -q; git -C "$repo" config user.email test@example.com; git -C "$repo" config user.name test
-  for spec in desktop-board-visibility desktop-hand-visibility game-message-visibility hand-visibility mobile-viewport text-contrast duplicate-text; do touch "$repo/frontend/e2e/$spec.spec.ts"; done
+  for spec in desktop-board-visibility desktop-hand-visibility game-message-visibility mobile-viewport text-contrast route-sweep; do touch "$repo/frontend/e2e/$spec.spec.ts"; done
   printf "const route = '/baloot';\n" > "$repo/frontend/e2e/helpers.ts"
   printf 'base\n' > "$repo/frontend/src/components/shared.tsx"
   git -C "$repo" add .
@@ -641,7 +654,7 @@ STUB
   chmod +x "$exec_scripts/e2e.sh"
   E2E_SWEEP_REPEAT=3 E2EGATE_ARGS="$tmp/e2egate-removed-args" BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-removed-state" bash "$exec_scripts/e2egate.sh" 1 || fail "removed route execution failed"
   expected="$tmp/e2egate-removed-expected"
-  printf '%s\n' 1 e2e/desktop-board-visibility.spec.ts e2e/desktop-hand-visibility.spec.ts e2e/duplicate-text.spec.ts e2e/game-message-visibility.spec.ts e2e/hand-visibility.spec.ts e2e/mobile-viewport.spec.ts e2e/text-contrast.spec.ts --grep '/baloot\b' --pass-with-no-tests --repeat-each=3 ---CALL--- > "$expected"
+  printf '%s\n' 1 e2e/desktop-board-visibility.spec.ts e2e/desktop-hand-visibility.spec.ts e2e/game-message-visibility.spec.ts e2e/mobile-viewport.spec.ts e2e/route-sweep.spec.ts e2e/text-contrast.spec.ts --grep '/baloot\b' --pass-with-no-tests --repeat-each=3 ---CALL--- > "$expected"
   diff -u "$expected" "$tmp/e2egate-removed-args" || fail "removed route execution passed wrong args"
   printf 'common\n' >> "$wtroot/wt-ib1/frontend/src/components/shared.tsx"
   full=$(E2E_SWEEP_REPEAT=3 BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-removed-state" bash "$SCRIPTS/e2egate.sh" --dry-run 1) || fail "full sweep with removed route dry-run failed"

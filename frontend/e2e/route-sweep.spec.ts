@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { DESKTOP_VIEWPORT_COMPACT, DESKTOP_VIEWPORT_LARGE, PHONE_VIEWPORT } from './desktopViewports';
 import { navigateTo } from './helpers';
 import { checkAction } from './sweeps/action';
-import { checkBoard } from './sweeps/board';
+import { checkBoard, PAGES as FIXED_BOARD_PAGES } from './sweeps/board';
 import { checkCover } from './sweeps/cover';
 import { checkDuplicate } from './sweeps/duplicate';
 import { checkFirstAction } from './sweeps/firstAction';
@@ -14,13 +14,9 @@ import { allGameRoutes } from './sweeps/routes';
  * Route sweep tests (#11922): consolidates the six per-game-route E2E sweeps into
  * ONE page load per (route, viewport).
  *
- * Check ordering:
- * None of the sweep checks mutate DOM or scroll state. They perform read-only layout and tree
- * measurements. In the 375x667 suite, checkFirstAction runs before checkHand to measure the
- * initial actionable state before finite card animations settle. checkHand and checkBoard
- * internally await finite animations (waitForAnimations) before layout measurement.
- * checkAction, checkCover, checkLabel, and checkDuplicate run subsequent read-only DOM and
- * computed-style scans.
+ * Check ordering (#11922): checks that did not wait in the original per-spec sweeps run first,
+ * immediately after navigation, to preserve their timing. Hand and Board checks run last because
+ * they wait for animations; a wait timeout records a soft failure and cannot skip a non-waiting check.
  */
 
 test('route list is complete', () => {
@@ -43,9 +39,9 @@ test.describe('phone 375x667', () => {
     test(`${path} passes the route sweep checks`, async ({ page }) => {
       await navigateTo(page, path);
       await checkFirstAction(page, path, PHONE_VIEWPORT);
-      await checkHand(page, path, PHONE_VIEWPORT);
       await checkLabel(page, path, PHONE_VIEWPORT);
       await checkDuplicate(page, path, PHONE_VIEWPORT);
+      await checkHand(page, path, PHONE_VIEWPORT);
     });
   }
 });
@@ -55,9 +51,11 @@ test.describe('desktop compact 1024x800', () => {
   for (const path of allGameRoutes) {
     test(`${path} passes the route sweep checks`, async ({ page }) => {
       await navigateTo(page, path);
-      await checkBoard(page, path, DESKTOP_VIEWPORT_COMPACT);
       await checkAction(page, path, DESKTOP_VIEWPORT_COMPACT);
       await checkCover(page, path, DESKTOP_VIEWPORT_COMPACT);
+      if (!FIXED_BOARD_PAGES.includes(path as (typeof FIXED_BOARD_PAGES)[number])) {
+        await checkBoard(page, path, DESKTOP_VIEWPORT_COMPACT);
+      }
     });
   }
 });
@@ -67,12 +65,14 @@ test.describe('desktop large 1280x800', () => {
   for (const path of allGameRoutes) {
     test(`${path} passes the route sweep checks`, async ({ page }) => {
       await navigateTo(page, path);
-      await checkHand(page, path, DESKTOP_VIEWPORT_LARGE);
-      await checkBoard(page, path, DESKTOP_VIEWPORT_LARGE);
       await checkAction(page, path, DESKTOP_VIEWPORT_LARGE);
       await checkCover(page, path, DESKTOP_VIEWPORT_LARGE);
       await checkLabel(page, path, DESKTOP_VIEWPORT_LARGE);
       await checkDuplicate(page, path, DESKTOP_VIEWPORT_LARGE);
+      await checkHand(page, path, DESKTOP_VIEWPORT_LARGE);
+      if (!FIXED_BOARD_PAGES.includes(path as (typeof FIXED_BOARD_PAGES)[number])) {
+        await checkBoard(page, path, DESKTOP_VIEWPORT_LARGE);
+      }
     });
   }
 });

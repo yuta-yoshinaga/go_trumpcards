@@ -25,8 +25,8 @@ test('defines the phone and desktop viewport breakpoints', () => {
   expect(DESKTOP_VIEWPORTS).toEqual([DESKTOP_VIEWPORT_LARGE, DESKTOP_VIEWPORT_COMPACT]);
 });
 
-// The fixed list also proves the card selector still finds cards (count > 0). Every other game is
-// held to the same rule in route-sweep.spec.ts (#11727).
+// The fixed list proves the card selector still finds cards (count > 0); route-sweep skips these
+// paths to avoid duplicate coverage (#11727, #11922).
 for (const viewport of DESKTOP_VIEWPORTS) {
   test.describe(`${viewport.width}x${viewport.height}`, () => {
     test.use({ viewport });

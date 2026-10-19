@@ -38,7 +38,7 @@ export const PAGES = [
 
 // #11700 excludes CPU-seat cards, face-up cards inside accordions, stud door cards, and discard history.
 // Samba is excluded because opposing-team meld cards can fall below the play area depending on the deal.
-export const excludedGamePaths = new Set([
+const excludedGamePaths = new Set([
   '/soko',
   '/fivecardstud',
   '/sevencardstud',
@@ -57,7 +57,7 @@ export const excludedGamePaths = new Set([
 ]);
 
 // Accordion's 52-card row is an intentional horizontal scroller, so only the horizontal rule skips it.
-export const horizontalScrollExemptions = new Set(['/accordion']);
+const horizontalScrollExemptions = new Set(['/accordion']);
 
 /**
  * Waits for the deal animation, then returns the face-up board cards, those whose top 52px is hidden,
@@ -65,7 +65,13 @@ export const horizontalScrollExemptions = new Set(['/accordion']);
  * whose rendered width exceeds the viewport's large-desktop card width by more than 1.5x.
  */
 export async function measureBoardCards(page: Page, path: string, viewportWidth?: number) {
-  await waitForAnimations(page);
+  let settled = true;
+  try {
+    await waitForAnimations(page);
+  } catch {
+    settled = false;
+  }
+  expect.soft(settled, `Board check: ${path}: animations did not settle`).toBe(true);
   const skipHorizontal = horizontalScrollExemptions.has(path);
   return page.evaluate(
     ({ visiblePxX, visiblePxY, skipHorizontal, maxCardWidth, cardSelector }) => {

@@ -30,7 +30,7 @@ for helper in "${helper_paths[@]}"; do
     grep -Eq "from[[:space:]]+['\"][^'\"]*${import_path//./\\.}(['\"]|\.)|import[[:space:]]+['\"][^'\"]*${import_path//./\\.}(['\"]|\.)" "$wt/frontend/e2e/$spec" && explicit_specs+=("$spec")
   done < <(cd "$wt/frontend/e2e" && printf '%s\n' *.spec.ts)
 done
-sweep=(desktop-board-visibility desktop-hand-visibility game-message-visibility hand-visibility mobile-viewport text-contrast duplicate-text)
+sweep=(desktop-board-visibility desktop-hand-visibility game-message-visibility mobile-viewport text-contrast route-sweep)
 repeat="${E2E_SWEEP_REPEAT:-10}"
 [[ "$repeat" =~ ^[0-9]+$ ]] || { echo "E2E_SWEEP_REPEAT must be numeric" >&2; exit 2; }
 repeat_arg=()
@@ -100,6 +100,12 @@ PY
   if (( full_sweep || page_change || ${#removed_route_args[@]} )); then
     run_specs+=("${sweep[@]/%/.spec.ts}")
   fi
+fi
+if (( full_sweep || page_change || ${#removed_route_args[@]} )); then
+  for name in "${sweep[@]}"; do
+    spec="$name.spec.ts"
+    [[ -f "$wt/frontend/e2e/$spec" ]] || { echo "e2egate: sweep spec $spec does not exist" >&2; exit 2; }
+  done
 fi
 mapfile -t run_specs < <(printf '%s\n' "${run_specs[@]}" | sort -u | while IFS= read -r spec; do [[ -f "$wt/frontend/e2e/$spec" ]] && printf '%s\n' "$spec"; done)
 page_specs=(); sweep_specs=(); other_specs=()

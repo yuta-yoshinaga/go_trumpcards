@@ -1,8 +1,6 @@
 import { expect, type Page, test } from '@playwright/test';
 import { waitForAnimations } from '../helpers';
 
-export { checkFirstAction } from './firstAction';
-
 /** Height of a card's top strip that must stay visible: rank corner plus a 44px tap target. */
 const VISIBLE_PX = 52;
 
@@ -108,7 +106,13 @@ export const FOOTER_HAND_PAGES: readonly string[] = [
 export async function checkHand(page: Page, path: string, _viewport: { width: number; height: number }): Promise<void> {
   // Cards deal in with a staggered slide-up animation; measure their resting positions, not
   // the last cards still sliding into place.
-  await waitForAnimations(page);
+  let settled = true;
+  try {
+    await waitForAnimations(page);
+  } catch {
+    settled = false;
+  }
+  expect.soft(settled, `Hand check: ${path}: animations did not settle`).toBe(true);
   const result = await page.evaluate((visiblePx) => {
     const footer = document.querySelector('[data-testid="game-footer-content"]');
     if (!footer) return { found: false, cards: 0, hidden: [] as number[] };
