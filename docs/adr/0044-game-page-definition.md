@@ -34,7 +34,7 @@ Issue #11912。
 
 ## Consequences
 
-次の横断機能は `createGamePage` 1 ファイルの変更で済む。一斉移行はしない: 新規ゲームは new-game スキルから定義で作る、既存ページは触るついでに移行。ページ単位の guard は、移行済みページが増えたら `createGamePage` 1 ファイルの検査に置き換えられる（「387 ページ → 1 ファイル」になった guard 数を成果指標にする）。
+次の横断機能は `createGamePage` 1 ファイルの変更で済む。一斉移行はしない: 新規ゲームは new-game スキルから定義で作る、既存ページは触るついでに移行。`frontend/scripts/check-game-page-definition.mjs` は手配線の新規ページを拒み、`frontend/scripts/game-page-definition-baseline.txt` の行数が未移行ページ数になる（移行した PR でその行を消す、行を足すのは禁止）。ページ単位の guard を `createGamePage` 1 ファイルの検査へ置き換えられる時期は、この行数で判断する。
 
 まだ表現できないもの: CPU ログやモバイル/デスクトップで分かれるサイドバー — Hearts では不要だった (サイドバーは `lgTwoColGrid` を Board 内で完結)。必要になるページを移すときに定義へ足す (#11915)。
 
