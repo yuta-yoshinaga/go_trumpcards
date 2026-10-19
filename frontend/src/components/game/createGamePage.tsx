@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next';
-import { type ComponentType, useCallback, useMemo } from 'react';
+import { type ComponentType, useCallback } from 'react';
 import type { actionLogApi } from '../../api/gameApi';
 import type { ActionBinding } from '../../hooks/useActionKeyboardNav';
 import { useActionKeyboardNav } from '../../hooks/useActionKeyboardNav';
@@ -20,14 +20,14 @@ import { type SettingsGroup, SettingsPanel } from '../common/SettingsPanel';
 import type { ErrorAlertProps } from '../ErrorAlert';
 import { ErrorAlert } from '../ErrorAlert';
 import { GameFooter } from '../GameFooter';
-import { GamePageShell } from '../GamePageShell';
+import { GamePageShell, type GamePageShellProps, type GiveUpConfirmProps } from '../GamePageShell';
 import { GameResetButton } from '../GameResetButton';
 import { LandscapeBanner } from '../LandscapeBanner';
 import { GameSkeleton, type GameSkeletonProps } from '../skeleton/GameSkeleton';
 import { withTutorial } from '../tutorial/withTutorial';
 
 /** Common state and actions returned by a game hook. */
-export interface GameHookBase<S> {
+export interface GameHookBase<S, A extends unknown[] = any[]> {
   state: S | null;
   loading: boolean;
   error: string | null;
@@ -35,63 +35,101 @@ export interface GameHookBase<S> {
   retry: ErrorAlertProps['onRetry'];
   handleReset: () => void;
   handleGiveUp?: () => void;
-  exec: (...args: never[]) => Promise<unknown>;
+  exec: (...args: A) => Promise<void>;
 }
 
 /** Values shared by the game-specific slots rendered by {@link createGamePage}. */
-export interface GamePageContext<S, G extends GameHookBase<S>> {
+export interface GamePageContext<S, G extends GameHookBase<S, any>, V = undefined> {
   game: G;
   state: S;
   t: TFunction;
   tc: TFunction;
   busy: boolean;
   requestConfirm: (action: () => void) => void;
-  confirmGiveUpAction: () => void;
+  confirmGiveUpAction: (() => void) | undefined;
   frontendHint: UseGameHintReturn;
   showActionLog: () => void;
   hideActionLog: () => void;
+  view: V;
 }
 
 type GamePageKey = keyof typeof actionLogApi & HintGameName & keyof typeof gameTheme & GameKey;
 
-/** Definition for the game-specific pieces and CLI configuration of a page. */
-export interface GameDefinition<S, G extends GameHookBase<S>, A extends unknown[]> {
+/**
+ * Definition for the game-specific pieces and CLI configuration of a page.
+ *
+ * Board, FooterActions, and HeaderExtra unmount in CLI mode, so state that must
+ * persist belongs in useGame or useView. phase, shortcuts, settings, cli, and shell
+ * are plain functions that must not call hooks.
+ */
+export interface GameDefinition<S, G extends GameHookBase<S, A>, A extends unknown[], V = undefined> {
   key: GamePageKey;
   useGame: () => G;
+  /**
+   * Optional view hook for state that must survive CLI toggling.
+   * Called unconditionally on every render before the early return on null state.
+   */
+  useView?: (input: { game: G; t: TFunction; tc: TFunction }) => V;
   tutorial: TutorialStep[];
   skeleton: GameSkeletonProps['layout'];
-  cli: Omit<CliGameConfig<S, A>, 'gameName'>;
+  /** Plain function returning CLI configuration and optional success callback. Must not call hooks. */
+  cli: (ctx: { game: G; state: S | null; view: V }) => Omit<CliGameConfig<S, A>, 'gameName'> & {
+    onCommandSuccess?: (args: A) => void;
+  };
   busy?: (game: G) => boolean;
-  phase: (ctx: GamePageContext<S, G>) => { name: string; ended: boolean; won?: boolean };
-  shortcuts?: (ctx: GamePageContext<S, G>) => ActionBinding[];
-  shortcutsEnabled?: (ctx: GamePageContext<S, G>) => boolean;
+  /** Plain function computing the current phase display. Must not call hooks. */
+  phase: (ctx: GamePageContext<S, G, V>) => { name: string; ended: boolean; won?: boolean };
+  /** Plain function returning action shortcuts. Must not call hooks. */
+  shortcuts?: (ctx: GamePageContext<S, G, V>) => ActionBinding[];
+  /** Plain function returning whether shortcuts are enabled. Defaults to true. Must not call hooks. */
+  shortcutsEnabled?: (ctx: GamePageContext<S, G, V>) => boolean;
   shortcutsTestId?: string;
-  settings?: (ctx: GamePageContext<S, G>) => SettingsGroup[];
+  /** Plain function returning settings groups. Must not call hooks. */
+  settings?: (ctx: GamePageContext<S, G, V>) => SettingsGroup[];
   resetTutorialId?: string;
-  HeaderExtra?: ComponentType<GamePageContext<S, G>>;
-  LiveRegion?: ComponentType<GamePageContext<S, G>>;
-  Board: ComponentType<GamePageContext<S, G>>;
-  FooterActions?: ComponentType<GamePageContext<S, G>>;
+  HeaderExtra?: ComponentType<GamePageContext<S, G, V>>;
+  LiveRegion?: ComponentType<GamePageContext<S, G, V>>;
+  Board: ComponentType<GamePageContext<S, G, V>>;
+  FooterActions?: ComponentType<GamePageContext<S, G, V>>;
+  /** Plain function returning additional shell props spread into GamePageShell. Must not call hooks. */
+  shell?: (
+    ctx: GamePageContext<S, G, V>,
+  ) => Pick<GamePageShellProps, 'isHumanTurn' | 'onCelebrate' | 'lossShow' | 'headerEnd' | 'outerKey'>;
+  /** Plain function replacing game.handleReset on manual reset. Must not call hooks. */
+  reset?: (ctx: GamePageContext<S, G, V>) => void;
+  /** Replacement class for the main scrollable content area. Defaults to "pt-3 px-4 lg:px-8". */
+  contentClassName?: string;
 }
 
 /** Builds a game page from shared wiring and a game-specific definition. */
-export function createGamePage<S, G extends GameHookBase<S>, A extends unknown[]>(
-  def: GameDefinition<S, G, A>,
+export function createGamePage<S, G extends GameHookBase<S, A>, A extends unknown[], V = undefined>(
+  def: GameDefinition<S, G, A, V>,
 ): ComponentType {
+  const useView = def.useView ?? (() => undefined as V);
+
   function Content() {
     const setup = useGamePageSetup(def.key);
     const game = def.useGame();
     const state = game.state;
+    const view = useView({ game, t: setup.t, tc: setup.tc });
     const frontendHint = useGameHint(def.key, state);
     const cliMode = useCliMode(def.key);
-    const cliConfig = useMemo(() => ({ gameName: def.key, ...def.cli }), []);
-    const { handleCommand } = useCliGame(game.exec as unknown as (...args: A) => Promise<void>, cliConfig, state, {
-      addInput: cliMode.addInput,
-      addOutput: cliMode.addOutput,
-      addError: cliMode.addError,
-      clearLog: cliMode.clearLog,
-    });
-    const confirmGiveUpAction = useGiveUpConfirm(game.handleGiveUp ?? (() => undefined), setup.requestGiveUpConfirm);
+    const { onCommandSuccess, ...rawCliConfig } = def.cli({ game, state, view });
+    const cliConfig = { gameName: def.key, ...rawCliConfig };
+    const { handleCommand } = useCliGame(
+      game.exec,
+      cliConfig,
+      state,
+      {
+        addInput: cliMode.addInput,
+        addOutput: cliMode.addOutput,
+        addError: cliMode.addError,
+        clearLog: cliMode.clearLog,
+      },
+      { onCommandSuccess },
+    );
+    const rawConfirmGiveUpAction = useGiveUpConfirm(game.handleGiveUp ?? (() => undefined), setup.requestGiveUpConfirm);
+    const confirmGiveUpAction = game.handleGiveUp !== undefined ? rawConfirmGiveUpAction : undefined;
     const busy = def.busy ? def.busy(game) : game.loading;
     const context =
       state === null
@@ -107,14 +145,19 @@ export function createGamePage<S, G extends GameHookBase<S>, A extends unknown[]
             frontendHint,
             showActionLog: setup.showActionLog,
             hideActionLog: setup.hideActionLog,
-          } satisfies GamePageContext<S, G>);
+            view,
+          } satisfies GamePageContext<S, G, V>);
     const shortcuts = context ? (def.shortcuts?.(context) ?? []) : [];
     const shortcutsEnabled = context ? (def.shortcutsEnabled?.(context) ?? true) : false;
     useActionKeyboardNav({ bindings: shortcuts, enabled: shortcutsEnabled && !busy });
     const handleManualReset = useCallback(() => {
       setup.hideActionLog();
-      game.handleReset();
-    }, [game.handleReset, setup.hideActionLog]);
+      if (def.reset && context) {
+        def.reset(context);
+      } else {
+        game.handleReset();
+      }
+    }, [context, game.handleReset, setup.hideActionLog]);
 
     if (!state || !context) return <GameSkeleton gameKey={def.key} layout={def.skeleton} />;
 
@@ -128,6 +171,16 @@ export function createGamePage<S, G extends GameHookBase<S>, A extends unknown[]
     const LiveRegion = def.LiveRegion;
     const Board = def.Board;
     const FooterActions = def.FooterActions;
+    const shellProps = def.shell?.(context);
+    const giveUpProps: GiveUpConfirmProps =
+      game.handleGiveUp !== undefined
+        ? {
+            giveUpConfirmOpen: setup.giveUpConfirmOpen,
+            confirmGiveUp: setup.confirmGiveUp,
+            cancelGiveUp: setup.cancelGiveUp,
+          }
+        : {};
+
     return (
       <GamePageShell
         title={setup.tc(`nav.${def.key}`)}
@@ -140,15 +193,14 @@ export function createGamePage<S, G extends GameHookBase<S>, A extends unknown[]
         confirmOpen={setup.confirmOpen}
         confirmReset={setup.confirmReset}
         cancelReset={setup.cancelReset}
-        giveUpConfirmOpen={setup.giveUpConfirmOpen}
-        confirmGiveUp={setup.confirmGiveUp}
-        cancelGiveUp={setup.cancelGiveUp}
+        {...giveUpProps}
         headerExtra={
           <>
             {HeaderExtra && <HeaderExtra {...context} />}
             <CliToggle cliEnabled={cliMode.cliEnabled} onToggle={cliMode.toggleCli} />
           </>
         }
+        {...shellProps}
       >
         {LiveRegion && <LiveRegion {...context} />}
         {cliMode.cliEnabled ? (
@@ -156,7 +208,7 @@ export function createGamePage<S, G extends GameHookBase<S>, A extends unknown[]
         ) : (
           <>
             <LandscapeBanner message={setup.t('landscapeBanner')} />
-            <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
+            <div className={`flex-1 overflow-y-auto ${def.contentClassName ?? 'pt-3 px-4 lg:px-8'}`}>
               <Board {...context} />
               <ActionLogSection
                 isEndPhase={phase.ended}
@@ -185,5 +237,6 @@ export function createGamePage<S, G extends GameHookBase<S>, A extends unknown[]
       </GamePageShell>
     );
   }
+  Content.displayName = `${def.key}PageContent`;
   return withTutorial(Content, def.key, def.tutorial);
 }

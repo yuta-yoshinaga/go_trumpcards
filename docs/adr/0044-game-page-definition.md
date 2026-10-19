@@ -24,7 +24,7 @@ Issue #11912。
 
 ## Decision
 
-`GameDefinition { key, useGame, tutorial, skeleton, cli, busy?, phase, shortcuts?, shortcutsEnabled?, shortcutsTestId?, settings?, resetTutorialId?, HeaderExtra?, LiveRegion?, Board, FooterActions? }` を宣言し `createGamePage(def)` が横断配線を 1 か所で行う。ページは named export (`export const XPage = createGamePage(def)`) を保つので `App.tsx` の `import.meta.glob` ルーティングは無変更。
+`GameDefinition { key, useGame, useView?, tutorial, skeleton, cli, busy?, phase, shortcuts?, shortcutsEnabled?, shortcutsTestId?, settings?, resetTutorialId?, HeaderExtra?, LiveRegion?, Board, FooterActions?, shell?, reset?, contentClassName? }` を宣言し `createGamePage(def)` が横断配線を 1 か所で行う。ページは named export (`export const XPage = createGamePage(def)`) を保つので `App.tsx` の `import.meta.glob` ルーティングは無変更。
 
 `cli` は `parseCommand`/`formatResponse`/`helpText` の名前のままページに置く (`check-cli-hint-reachable` がページの `parseCommand:` を grep するため)。ヒントの描画はゲーム固有なので `Board` に残す (`check-hint-live-region` / `check-hint-gate` はページファイルを読むので無変更で通る)。
 
@@ -34,6 +34,6 @@ Issue #11912。
 
 次の横断機能は `createGamePage` 1 ファイルの変更で済む。一斉移行はしない: 新規ゲームは new-game スキルから定義で作る、既存ページは触るついでに移行。ページ単位の guard は、移行済みページが増えたら `createGamePage` 1 ファイルの検査に置き換えられる（「387 ページ → 1 ファイル」になった guard 数を成果指標にする）。
 
-まだ表現できないもの: `isHumanTurn` / `lossShow` / `onCelebrate` / `headerEnd` / `outerKey` など `GamePageShell` の残りの props、CPU ログやモバイル/デスクトップで分かれるサイドバー — Hearts/Holdem を移すときに定義へ足す。
+まだ表現できないもの: CPU ログやモバイル/デスクトップで分かれるサイドバー — Hearts/Holdem を移すときに定義へ足す。
 
 スコープ外: フロントのルール二重実装 (#11913)、`types/` の `openapi.yaml` からの生成。

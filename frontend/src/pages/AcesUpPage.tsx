@@ -337,11 +337,11 @@ const acesUpDefinition: GameDefinition<AcesUpResponse, AcesUpGame, Parameters<ty
   useGame: useAcesUpGame,
   tutorial: ACESUP_TUTORIAL_STEPS,
   skeleton: { kind: 'tiered-rows', rows: [4, 4, 4, 4], columns: true },
-  cli: {
+  cli: () => ({
     parseCommand: parseAcesUpCommand,
     formatResponse: formatAcesUpState,
     helpText: ACESUP_HELP,
-  },
+  }),
   busy: (game) => game.loading || game.isRemovingAll,
   phase: ({ state, t }) => {
     const isGameClear = state.phase === AcesUpPhase.GAME_CLEAR;
@@ -355,7 +355,7 @@ const acesUpDefinition: GameDefinition<AcesUpResponse, AcesUpGame, Parameters<ty
   shortcuts: ({ game, confirmGiveUpAction }) => [
     { key: 'd', action: game.handleDraw, label: 'draw' },
     { key: 'h', action: game.handleHint, label: 'hint' },
-    { key: 'g', action: confirmGiveUpAction, label: 'giveUp' },
+    { key: 'g', action: confirmGiveUpAction ?? (() => undefined), label: 'giveUp' },
     { key: 'z', action: game.handleUndo, label: 'undo' },
   ],
   shortcutsEnabled: ({ state }) => state.phase === AcesUpPhase.PLAYING,
