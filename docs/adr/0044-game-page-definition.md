@@ -28,7 +28,7 @@ Issue #11912。
 
 `cli` は `parseCommand`/`formatResponse`/`helpText` の名前のままページに置く (`check-cli-hint-reachable` がページの `parseCommand:` を grep するため)。ヒントの描画はゲーム固有なので `Board` に残す (`check-hint-live-region` / `check-hint-gate` はページファイルを読むので無変更で通る)。
 
-試作結果 (AcesUp): 496 行 → 371 行、import 40 → 20、手配線していた横断シンボル 19 種 → 0 種。`AcesUpPage.test.tsx` (37 件) と `e2e/acesup.spec.ts` は無変更で通過。guard スクリプトの変更は 0 本。
+試作結果 (AcesUp): 496 行 → 372 行、import 40 → 20、手配線していた横断シンボル 19 種 → 0 種。`AcesUpPage.test.tsx` (37 件) と `e2e/acesup.spec.ts` は無変更で通過。guard スクリプトの変更は 0 本。
 
 ## Consequences
 
