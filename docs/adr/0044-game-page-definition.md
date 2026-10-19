@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed（AcesUp 1 ページで試作。全面採用はユーザ承認後）
+Accepted（2026-10-19、2 ページ目の Hearts が定義の拡張だけで移行できたため）
 
 ## Date
 
@@ -24,16 +24,18 @@ Issue #11912。
 
 ## Decision
 
-`GameDefinition { key, useGame, useView?, tutorial, skeleton, cli, busy?, phase, shortcuts?, shortcutsEnabled?, shortcutsTestId?, settings?, resetTutorialId?, HeaderExtra?, LiveRegion?, Board, FooterActions?, shell?, reset?, contentClassName? }` を宣言し `createGamePage(def)` が横断配線を 1 か所で行う。ページは named export (`export const XPage = createGamePage(def)`) を保つので `App.tsx` の `import.meta.glob` ルーティングは無変更。
+`GameDefinition { key, useGame, useView?, tutorial, skeleton, cli, busy?, phase, shortcuts?, shortcutsEnabled?, shortcutsTestId?, cardNav?, settings?, settingsPlacement?, landscapeBanner?, resetTutorialId?, actionsTutorialId?, HeaderExtra?, LiveRegion?, Board, FooterHand?, FooterStatus?, FooterActions?, shell?, reset?, contentClassName? }` を宣言し `createGamePage(def)` が横断配線を 1 か所で行う。ページは named export (`export const XPage = createGamePage(def)`) を保つので `App.tsx` の `import.meta.glob` ルーティングは無変更。
 
 `cli` は `parseCommand`/`formatResponse`/`helpText` の名前のままページに置く (`check-cli-hint-reachable` がページの `parseCommand:` を grep するため)。ヒントの描画はゲーム固有なので `Board` に残す (`check-hint-live-region` / `check-hint-gate` はページファイルを読むので無変更で通る)。
 
 試作結果 (AcesUp): 496 行 → 372 行、import 40 → 20、手配線していた横断シンボル 19 種 → 0 種。`AcesUpPage.test.tsx` (37 件) と `e2e/acesup.spec.ts` は無変更で通過。guard スクリプトの変更は 0 本。
 
+2 ページ目 (Hearts、trick-taking・カード選択・パスフェーズ): 744 行 → 680 行、import 43 → 26、横断シンボルの手配線は `hintCheckboxItem` (ゲーム固有設定と並べるため) を除いて 0。足した口は `cardNav` (カード番号キー操作、62 ページが `useCardKeyboardNav` を使う)、`FooterHand` / `FooterStatus`、`actionsTutorialId`、`settingsPlacement` (設定パネルが盤面の上か下かは 169 / 172 ページで二分)、`landscapeBanner` (91 ページだけが出すので既定は false)。`HeartsPage.test.tsx` と `e2e/hearts.spec.ts` は無変更で通過。
+
 ## Consequences
 
 次の横断機能は `createGamePage` 1 ファイルの変更で済む。一斉移行はしない: 新規ゲームは new-game スキルから定義で作る、既存ページは触るついでに移行。ページ単位の guard は、移行済みページが増えたら `createGamePage` 1 ファイルの検査に置き換えられる（「387 ページ → 1 ファイル」になった guard 数を成果指標にする）。
 
-まだ表現できないもの: CPU ログやモバイル/デスクトップで分かれるサイドバー — Hearts/Holdem を移すときに定義へ足す。
+まだ表現できないもの: CPU ログやモバイル/デスクトップで分かれるサイドバー — Hearts では不要だった (サイドバーは `lgTwoColGrid` を Board 内で完結)。必要になるページを移すときに定義へ足す (#11915)。
 
 スコープ外: フロントのルール二重実装 (#11913)、`types/` の `openapi.yaml` からの生成。

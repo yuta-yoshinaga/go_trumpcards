@@ -3,6 +3,7 @@ import type { ComponentType } from 'react';
 import type { actionLogApi } from '../../api/gameApi';
 import type { ActionBinding } from '../../hooks/useActionKeyboardNav';
 import { useActionKeyboardNav } from '../../hooks/useActionKeyboardNav';
+import { type UseCardKeyboardNavOptions, useCardKeyboardNav } from '../../hooks/useCardKeyboardNav';
 import { useCliGame } from '../../hooks/useCliGame';
 import { useCliMode } from '../../hooks/useCliMode';
 import { type HintGameName, type UseGameHintReturn, useGameHint } from '../../hooks/useGameHint';
@@ -14,6 +15,7 @@ import type { CliGameConfig } from '../../utils/cli/types';
 import { hintCheckboxItem } from '../../utils/settingsItems';
 import { ActionLogSection } from '../ActionLogSection';
 import { ActionShortcutsPanel } from '../ActionShortcutsPanel';
+import { CardNavShortcutsPanel } from '../CardNavShortcutsPanel';
 import { CliTerminal } from '../cli/CliTerminal';
 import { CliToggle } from '../cli/CliToggle';
 import { type SettingsGroup, SettingsPanel } from '../common/SettingsPanel';
@@ -39,7 +41,7 @@ export interface GameHookBase<S, A extends unknown[] = never> {
   error: string | null;
   hintError?: string | null;
   retry: ErrorAlertProps['onRetry'];
-  handleReset: () => void;
+  handleReset?: () => void;
   handleGiveUp?: () => void;
   exec: (...args: A) => Promise<void>;
 }
@@ -58,6 +60,15 @@ export interface GamePageContext<S, G extends GameHookBase<S, never>, V = undefi
   hideActionLog: () => void;
   view: V;
 }
+
+/** Card navigation used when a page has no `cardNav` or no state yet; the hook still runs to keep hook order. */
+const NO_CARD_NAV: UseCardKeyboardNavOptions = {
+  cardCount: 0,
+  onToggle: () => undefined,
+  onConfirm: () => undefined,
+  onClear: () => undefined,
+  enabled: false,
+};
 
 type GamePageKey = keyof typeof actionLogApi & HintGameName & keyof typeof gameTheme & GameKey;
 
@@ -90,12 +101,24 @@ export interface GameDefinition<S, G extends GameHookBase<S, A>, A extends unkno
   /** Plain function returning whether shortcuts are enabled. Defaults to true. Must not call hooks. */
   shortcutsEnabled?: (ctx: GamePageContext<S, G, V>) => boolean;
   shortcutsTestId?: string;
+  /** Plain function returning card keyboard navigation handlers. Must not call hooks. */
+  cardNav?: (ctx: GamePageContext<S, G, V>) => Omit<UseCardKeyboardNavOptions, 'enabled'> & { enabled: boolean };
   /** Plain function returning settings groups. Must not call hooks. */
   settings?: (ctx: GamePageContext<S, G, V>) => SettingsGroup[];
+  /** Controls whether settings appear before or after the scrollable game content. Defaults to bottom. */
+  settingsPlacement?: 'top' | 'bottom';
+  /** Whether to render the landscape recommendation banner. Defaults to false. */
+  landscapeBanner?: boolean;
   resetTutorialId?: string;
+  /** Tutorial identifier applied to the footer actions row. */
+  actionsTutorialId?: string;
   HeaderExtra?: ComponentType<GamePageContext<S, G, V>>;
   LiveRegion?: ComponentType<GamePageContext<S, G, V>>;
   Board: ComponentType<GamePageContext<S, G, V>>;
+  /** Optional hand content rendered first in the game footer. */
+  FooterHand?: ComponentType<GamePageContext<S, G, V>>;
+  /** Optional status content rendered after errors and before footer actions. */
+  FooterStatus?: ComponentType<GamePageContext<S, G, V>>;
   FooterActions?: ComponentType<GamePageContext<S, G, V>>;
   /** Plain function returning additional shell props spread into GamePageShell. Must not call hooks. */
   shell?: (
@@ -156,6 +179,8 @@ export function createGamePage<S, G extends GameHookBase<S, A>, A extends unknow
     const shortcuts = context ? (def.shortcuts?.(context) ?? []) : [];
     const shortcutsEnabled = context ? (def.shortcutsEnabled?.(context) ?? true) : false;
     useActionKeyboardNav({ bindings: shortcuts, enabled: shortcutsEnabled && !busy });
+    const cardNav = (context && def.cardNav?.(context)) || NO_CARD_NAV;
+    useCardKeyboardNav({ ...cardNav, enabled: cardNav.enabled && !busy });
     // `context` is rebuilt every render, so this is a plain closure; the reset
     // button and confirm dialog read it at click time.
     const handleManualReset = () => {
@@ -163,7 +188,7 @@ export function createGamePage<S, G extends GameHookBase<S, A>, A extends unknow
       if (def.reset && context) {
         def.reset(context);
       } else {
-        game.handleReset();
+        game.handleReset?.();
       }
     };
 
@@ -178,6 +203,8 @@ export function createGamePage<S, G extends GameHookBase<S, A>, A extends unknow
     const HeaderExtra = def.HeaderExtra;
     const LiveRegion = def.LiveRegion;
     const Board = def.Board;
+    const FooterHand = def.FooterHand;
+    const FooterStatus = def.FooterStatus;
     const FooterActions = def.FooterActions;
     const shellProps = def.shell?.(context);
     const giveUpProps: GiveUpConfirmProps =
@@ -215,7 +242,8 @@ export function createGamePage<S, G extends GameHookBase<S, A>, A extends unknow
           <CliTerminal logEntries={cliMode.logEntries} onCommand={handleCommand} disabled={game.loading} />
         ) : (
           <>
-            <LandscapeBanner message={setup.t('landscapeBanner')} />
+            {def.landscapeBanner && <LandscapeBanner message={setup.t('landscapeBanner')} />}
+            {def.settingsPlacement === 'top' && <SettingsPanel title={setup.tc('settings.title')} groups={settings} />}
             <div className={`flex-1 overflow-y-auto ${def.contentClassName ?? 'pt-3 px-4 lg:px-8'}`}>
               <Board {...context} />
               <ActionLogSection
@@ -225,10 +253,12 @@ export function createGamePage<S, G extends GameHookBase<S, A>, A extends unknow
                 hideActionLog={setup.hideActionLog}
               />
             </div>
-            <SettingsPanel title={setup.tc('settings.title')} groups={settings} />
+            {def.settingsPlacement !== 'top' && <SettingsPanel title={setup.tc('settings.title')} groups={settings} />}
             <GameFooter className={`${gameTheme[def.key].footer} px-4 py-2.5`}>
+              {FooterHand && <FooterHand {...context} />}
               <ErrorAlert message={game.error ?? game.hintError ?? null} onRetry={game.retry} />
-              <div className="flex gap-2 items-center flex-wrap">
+              {FooterStatus && <FooterStatus {...context} />}
+              <div className="flex gap-2 items-center flex-wrap" data-tutorial={def.actionsTutorialId}>
                 {FooterActions && <FooterActions {...context} />}
                 <GameResetButton
                   isGameEnd={phase.ended}
@@ -238,7 +268,12 @@ export function createGamePage<S, G extends GameHookBase<S, A>, A extends unknow
                   dataTutorial={def.resetTutorialId}
                 />
               </div>
-              <ActionShortcutsPanel bindings={shortcuts} data-testid={def.shortcutsTestId} />
+              {def.cardNav ? (
+                <CardNavShortcutsPanel data-testid={def.shortcutsTestId} />
+              ) : (
+                <ActionShortcutsPanel bindings={shortcuts} data-testid={def.shortcutsTestId} />
+              )}
+              {def.cardNav && def.shortcuts && <ActionShortcutsPanel bindings={shortcuts} />}
             </GameFooter>
           </>
         )}
