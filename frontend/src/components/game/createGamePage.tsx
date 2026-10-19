@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next';
-import { type ComponentType, useCallback } from 'react';
+import type { ComponentType } from 'react';
 import type { actionLogApi } from '../../api/gameApi';
 import type { ActionBinding } from '../../hooks/useActionKeyboardNav';
 import { useActionKeyboardNav } from '../../hooks/useActionKeyboardNav';
@@ -26,8 +26,14 @@ import { LandscapeBanner } from '../LandscapeBanner';
 import { GameSkeleton, type GameSkeletonProps } from '../skeleton/GameSkeleton';
 import { withTutorial } from '../tutorial/withTutorial';
 
-/** Common state and actions returned by a game hook. */
-export interface GameHookBase<S, A extends unknown[] = any[]> {
+/**
+ * Common state and actions returned by a game hook.
+ *
+ * `A` defaults to `never` so `GamePageContext` can accept any game hook without
+ * repeating its CLI argument tuple: `exec` is parameter-contravariant, so every
+ * concrete `exec` is assignable to `(...args: never) => Promise<void>`.
+ */
+export interface GameHookBase<S, A extends unknown[] = never> {
   state: S | null;
   loading: boolean;
   error: string | null;
@@ -39,7 +45,7 @@ export interface GameHookBase<S, A extends unknown[] = any[]> {
 }
 
 /** Values shared by the game-specific slots rendered by {@link createGamePage}. */
-export interface GamePageContext<S, G extends GameHookBase<S, any>, V = undefined> {
+export interface GamePageContext<S, G extends GameHookBase<S, never>, V = undefined> {
   game: G;
   state: S;
   t: TFunction;
@@ -150,14 +156,16 @@ export function createGamePage<S, G extends GameHookBase<S, A>, A extends unknow
     const shortcuts = context ? (def.shortcuts?.(context) ?? []) : [];
     const shortcutsEnabled = context ? (def.shortcutsEnabled?.(context) ?? true) : false;
     useActionKeyboardNav({ bindings: shortcuts, enabled: shortcutsEnabled && !busy });
-    const handleManualReset = useCallback(() => {
+    // `context` is rebuilt every render, so this is a plain closure; the reset
+    // button and confirm dialog read it at click time.
+    const handleManualReset = () => {
       setup.hideActionLog();
       if (def.reset && context) {
         def.reset(context);
       } else {
         game.handleReset();
       }
-    }, [context, game.handleReset, setup.hideActionLog]);
+    };
 
     if (!state || !context) return <GameSkeleton gameKey={def.key} layout={def.skeleton} />;
 

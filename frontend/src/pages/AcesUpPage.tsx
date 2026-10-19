@@ -355,6 +355,7 @@ const acesUpDefinition: GameDefinition<AcesUpResponse, AcesUpGame, Parameters<ty
   shortcuts: ({ game, confirmGiveUpAction }) => [
     { key: 'd', action: game.handleDraw, label: 'draw' },
     { key: 'h', action: game.handleHint, label: 'hint' },
+    // AcesUp always has handleGiveUp, so the fallback only satisfies the optional type.
     { key: 'g', action: confirmGiveUpAction ?? (() => undefined), label: 'giveUp' },
     { key: 'z', action: game.handleUndo, label: 'undo' },
   ],
