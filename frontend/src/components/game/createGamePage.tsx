@@ -168,14 +168,16 @@ export function createGamePage<S, G extends GameHookBase<S>, A extends unknown[]
             <SettingsPanel title={setup.tc('settings.title')} groups={settings} />
             <GameFooter className={`${gameTheme[def.key].footer} px-4 py-2.5`}>
               <ErrorAlert message={game.error ?? game.hintError ?? null} onRetry={game.retry} />
-              {FooterActions && <FooterActions {...context} />}
-              <GameResetButton
-                isGameEnd={phase.ended}
-                onReset={handleManualReset}
-                requestConfirm={setup.requestConfirm}
-                loading={busy}
-                dataTutorial={def.resetTutorialId}
-              />
+              <div className="flex gap-2 items-center flex-wrap">
+                {FooterActions && <FooterActions {...context} />}
+                <GameResetButton
+                  isGameEnd={phase.ended}
+                  onReset={handleManualReset}
+                  requestConfirm={setup.requestConfirm}
+                  loading={busy}
+                  dataTutorial={def.resetTutorialId}
+                />
+              </div>
               <ActionShortcutsPanel bindings={shortcuts} data-testid={def.shortcutsTestId} />
             </GameFooter>
           </>

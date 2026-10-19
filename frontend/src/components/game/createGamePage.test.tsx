@@ -134,6 +134,15 @@ describe('createGamePage', () => {
     expect(giveUp).not.toHaveBeenCalled();
   });
 
+  it('groups game footer actions and reset together', () => {
+    const Page = makeDefinition();
+    renderWithProviders(<Page />);
+    const giveUpButton = screen.getByRole('button', { name: 'Give up' });
+    const resetButton = screen.getByRole('button', { name: 'リセット' });
+    expect(giveUpButton.parentElement).toHaveClass('flex', 'gap-2', 'items-center', 'flex-wrap');
+    expect(resetButton.parentElement).toBe(giveUpButton.parentElement);
+  });
+
   it('hides the action log before resetting', () => {
     const Page = makeDefinition();
     currentGame = { ...currentGame, state: { ended: true } };
@@ -148,7 +157,6 @@ describe('createGamePage', () => {
   });
 
   it('shows hintError when the game error is null', () => {
-    currentGame = { ...currentGame, hintError: 'Hint unavailable' };
     const Page = makeDefinition();
     currentGame = { ...currentGame, hintError: 'Hint unavailable' };
     renderWithProviders(<Page />);
