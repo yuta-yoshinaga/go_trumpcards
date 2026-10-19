@@ -1038,4 +1038,48 @@ SWEEP
   [[ "$rc" = 0 ]] || fail "drain did not exit 0 on REVIEW-READY: $(cat "$tmp/drain.out")"
 ) || exit 1
 
+(
+  setup_sync() {
+    tag="$1"; SY_REPO="$tmp/sync-$tag-main"; SY_ROOT="$tmp/sync-$tag-lanes"; SY_STATE="$tmp/sync-$tag-state"
+    mkdir -p "$SY_ROOT" "$SY_STATE"; git init -q --bare "$tmp/sync-$tag-origin.git"; git init -q "$SY_REPO"
+    git -C "$SY_REPO" config user.email test@example.com; git -C "$SY_REPO" config user.name test
+    printf 'base\n' > "$SY_REPO/tracked"; printf 'base\n' > "$SY_REPO/delete-me"; printf 'base\n' > "$SY_REPO/upstream"
+    git -C "$SY_REPO" add tracked delete-me upstream; git -C "$SY_REPO" -c user.name=test -c user.email=test@example.com commit -qm base
+    git -C "$SY_REPO" branch -M develop; git -C "$SY_REPO" remote add origin "$tmp/sync-$tag-origin.git"
+    git -C "$SY_REPO" push -q -u origin develop; git -C "$SY_REPO" fetch -q origin
+    git -C "$SY_REPO" worktree add -qb lane "$SY_ROOT/wt-ib1" origin/develop; SY_LANE="$SY_ROOT/wt-ib1"
+  }
+  setup_sync clean
+  printf 'lane edit\n' > "$SY_LANE/tracked"; rm "$SY_LANE/delete-me"; printf new > "$SY_LANE/new-file"
+  printf 'develop\n' >> "$SY_REPO/upstream"; git -C "$SY_REPO" add upstream; git -C "$SY_REPO" commit -qm upstream; git -C "$SY_REPO" push -q origin develop
+  out=$(BATCH_REPO="$SY_REPO" BATCH_WT_ROOT="$SY_ROOT" BATCH_STATE="$SY_STATE" bash "$SCRIPTS/sync.sh" 1) || fail "sync clean failed: $out"
+  grep -qx "backup: $SY_STATE/sync1.patch" <<<"$out" || fail 'sync backup missing'
+  [ "$(git -C "$SY_LANE" rev-parse HEAD)" = "$(git -C "$SY_LANE" rev-parse origin/develop)" ] || fail 'sync HEAD incorrect'
+  [ "$(cat "$SY_LANE/tracked")" = 'lane edit' ] && [ -f "$SY_LANE/new-file" ] && [ ! -e "$SY_LANE/delete-me" ] && grep -q develop "$SY_LANE/upstream" || fail 'sync did not preserve files'
+  [ -f "$SY_STATE/sync1.patch" ] && [[ "$(git -C "$SY_LANE" status --porcelain)" == *'?? new-file'* ]] && [[ "$(git -C "$SY_LANE" status --porcelain)" == *' D delete-me'* ]] || fail 'sync backup/status incorrect'
+
+  setup_sync conflict; printf 'lane\n' > "$SY_LANE/tracked"; printf 'keep me\n' > "$SY_LANE/conflict-untracked"; oldhead=$(git -C "$SY_LANE" rev-parse HEAD); oldstatus=$(git -C "$SY_LANE" status --porcelain)
+  printf 'develop\n' > "$SY_REPO/tracked"; git -C "$SY_REPO" add tracked; git -C "$SY_REPO" commit -qm upstream; git -C "$SY_REPO" push -q origin develop
+  if BATCH_REPO="$SY_REPO" BATCH_WT_ROOT="$SY_ROOT" BATCH_STATE="$SY_STATE" bash "$SCRIPTS/sync.sh" 1 >"$tmp/sync-conflict.out" 2>&1; then fail 'sync conflict succeeded'; else rc=$?; [ "$rc" = 2 ] || fail "conflict exit $rc"; fi
+  grep -qx 'CONFLICT tracked' "$tmp/sync-conflict.out" || fail 'conflict filename missing'
+  [ "$(git -C "$SY_LANE" rev-parse HEAD)" = "$oldhead" ] && [ "$(git -C "$SY_LANE" status --porcelain)" = "$oldstatus" ] && [ "$(cat "$SY_LANE/tracked")" = lane ] && [ "$(cat "$SY_LANE/conflict-untracked")" = 'keep me' ] && [[ "$(git -C "$SY_LANE" status --porcelain)" == *'?? conflict-untracked'* ]] && ! git -C "$SY_LANE" rev-parse -q --verify MERGE_HEAD >/dev/null || fail 'conflict restore incorrect'
+
+  setup_sync fetch-failure; printf 'local edit\n' > "$SY_LANE/tracked"; printf 'keep me\n' > "$SY_LANE/untracked"; oldhead=$(git -C "$SY_LANE" rev-parse HEAD); oldstatus=$(git -C "$SY_LANE" status --porcelain)
+  git -C "$SY_LANE" remote set-url origin "$tmp/sync-fetch-failure-missing.git"
+  if BATCH_REPO="$SY_REPO" BATCH_WT_ROOT="$SY_ROOT" BATCH_STATE="$SY_STATE" bash "$SCRIPTS/sync.sh" 1 >"$tmp/sync-fetch-failure.out" 2>&1; then fail 'sync with failed fetch succeeded'; else rc=$?; [ "$rc" = 1 ] || fail "fetch failure exit $rc"; fi
+  [ "$(git -C "$SY_LANE" rev-parse HEAD)" = "$oldhead" ] && [ "$(git -C "$SY_LANE" status --porcelain)" = "$oldstatus" ] || fail 'fetch failure changed lane HEAD/status'
+
+  setup_sync busy; printf dirty >> "$SY_LANE/tracked"; oldhead=$(git -C "$SY_LANE" rev-parse HEAD); oldstatus=$(git -C "$SY_LANE" status --porcelain)
+  busy_scripts="$tmp/sync-busy-scripts"; mkdir -p "$busy_scripts"; cp "$SCRIPTS/common.sh" "$SCRIPTS/sync.sh" "$busy_scripts/"
+  printf '#!/usr/bin/env bash\nexit 0\n' > "$busy_scripts/busy.sh"; chmod +x "$busy_scripts"/*.sh
+  if BATCH_REPO="$SY_REPO" BATCH_WT_ROOT="$SY_ROOT" BATCH_STATE="$SY_STATE" bash "$busy_scripts/sync.sh" 1 >"$tmp/sync-busy.out" 2>&1; then fail 'busy sync succeeded'; else rc=$?; [ "$rc" = 1 ] || fail "busy exit $rc"; fi
+  grep -qx 'REFUSED: a delegation is running in wt-ib1' "$tmp/sync-busy.out" || fail 'busy refusal missing'
+  [ "$(git -C "$SY_LANE" rev-parse HEAD)" = "$oldhead" ] && [ "$(git -C "$SY_LANE" status --porcelain)" = "$oldstatus" ] || fail 'busy check changed lane'
+
+  setup_sync commits; printf own >> "$SY_LANE/tracked"; git -C "$SY_LANE" add tracked; git -C "$SY_LANE" -c user.name=test -c user.email=test@example.com commit -qm own
+  oldhead=$(git -C "$SY_LANE" rev-parse HEAD); oldstatus=$(git -C "$SY_LANE" status --porcelain)
+  if BATCH_REPO="$SY_REPO" BATCH_WT_ROOT="$SY_ROOT" BATCH_STATE="$SY_STATE" bash "$SCRIPTS/sync.sh" 1 >"$tmp/sync-commits.out" 2>&1; then fail 'committed lane accepted'; else rc=$?; [ "$rc" = 1 ] || fail "committed exit $rc"; fi
+  grep -qx 'REFUSED: lane has commits; merge by hand' "$tmp/sync-commits.out" || fail 'committed refusal missing'
+  [ "$(git -C "$SY_LANE" rev-parse HEAD)" = "$oldhead" ] && [ "$(git -C "$SY_LANE" status --porcelain)" = "$oldstatus" ] || fail 'commit refusal changed lane'
+) || exit 1
 echo "batch-lanes script tests passed"
