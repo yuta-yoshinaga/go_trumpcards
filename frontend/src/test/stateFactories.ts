@@ -488,6 +488,7 @@ const baseHeartsState: HeartsResponse = {
   roundNumber: 1,
   trickNumber: 1,
   currentPlayerIdx: 0,
+  validPlays: [],
   currentTrick: [],
   trickPoints: 0,
   heartsBroken: false,

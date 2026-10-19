@@ -18,7 +18,6 @@ import type { TutorialStep } from '../types/tutorial';
 import { suitSymbolAt } from '../utils/cardAlt';
 import { HEARTS_HELP, parseHeartsCommand } from '../utils/cli/commands/heartsCommands';
 import { formatHeartsState } from '../utils/cli/formatters/heartsFormatter';
-import { heartsLegalPlayIndices } from '../utils/heartsLegal';
 import { heartsNearPointLimit } from '../utils/heartsLimit';
 import { heartsPassTarget } from '../utils/heartsPass';
 import { shootTheMoonAlertIdx } from '../utils/heartsShootMoonAlert';
@@ -392,17 +391,8 @@ function Board({ game, state, t, tc, view }: HeartsContext) {
 function FooterHand({ game, state, view }: HeartsContext) {
   const humanPlayer = state.players.find((player) => player.isHuman);
   const isHumanTurn = state.phase === HeartsPhase.PLAY && state.players[state.currentPlayerIdx]?.isHuman === true;
-  // On the human's play turn, mirror the server's legal-move rules
-  // (internal/domain/Hearts.go validatePlay) so legal cards are ringed and
-  // illegal ones are dimmed with a reason tooltip.
-  const heartsPlayCtx = {
-    currentTrick: state.currentTrick,
-    heartsBroken: state.heartsBroken,
-    trickNumber: state.trickNumber,
-    omnibusJD: state.config.omnibusJD,
-  };
-  const legalPlayIndices =
-    isHumanTurn && humanPlayer ? heartsLegalPlayIndices(humanPlayer.cards, heartsPlayCtx) : undefined;
+  // The server computes legality from internal/domain/Hearts.go validatePlay (ADR-0045).
+  const legalPlayIndices = isHumanTurn ? state.validPlays : undefined;
   return humanPlayer ? (
     <PlayerHandSection
       humanPlayer={humanPlayer}

@@ -10,7 +10,7 @@ Proposed (Hearts で試作)
 
 ## Context
 
-Issue #11913。フロントがルールを再実装した client-side mirror は 32 本 (pages 8 / utils 17 / utils/hints 7)。一方 `validPlays` / `validPlayIndices` をサーバから受け取る型が既に 18 本ある。mirror に意図 (往復なしの即時フィードバック) の記録はない。合法手は状態と同じ応答に乗るので、データ化しても往復は増えない。Hearts の `heartsLegal.ts` は「合法カードを強調する」ためだけに作られ、`validatePlay` (`internal/domain/Hearts.go`) の写しだった。
+Issue #11913。フロントがルールを再実装した client-side mirror は 31 本 (pages 8 / utils 16 / utils/hints 7)。一方 `validPlays` / `validPlayIndices` をサーバから受け取る型が既に 18 本ある。mirror に意図 (往復なしの即時フィードバック) の記録はない。合法手は状態と同じ応答に乗るので、データ化しても往復は増えない。Hearts の `heartsLegal.ts` は「合法カードを強調する」ためだけに作られ、`validatePlay` (`internal/domain/Hearts.go`) の写しだった。
 
 代替案:
 
