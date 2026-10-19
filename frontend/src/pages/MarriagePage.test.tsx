@@ -279,7 +279,7 @@ describe('MarriagePage', () => {
     const cpuMaal = await screen.findAllByTestId('marriage-maal');
     expect(cpuMaal.length).toBeGreaterThan(0);
     expect(cpuMaal[0]).toHaveTextContent('20');
-    // Each badge is one unit: マール 5 / 純シーケンス有 wrapped inside the word at 1280px (label-wrap.spec).
+    // Each badge is one unit: マール 5 / 純シーケンス有 wrapped inside the word at 1280px (route-sweep.spec.ts / sweeps/label.ts).
     for (const maal of cpuMaal) expect(maal).toHaveClass('whitespace-nowrap');
   });
 

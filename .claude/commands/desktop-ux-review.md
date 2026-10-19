@@ -108,7 +108,7 @@ agent-browser screenshot "/tmp/desktop-screenshots/keyboard-focus.png"
 
 スクリーンショット確認の前に、プレイエリアのはみ出しを数値で絞り込む。サーバー起動後に `.claude/commands/scripts/play-area-overflow.sh` を実行する（例: `bash .claude/commands/scripts/play-area-overflow.sh -p 8080 -n 5 -j 4`、ゲーム指定も可能）。配り依存が大きいため、モバイルは複数回リロードした最悪値を使う。目安は mobile ≤300px / desktop ≤600px。`frontend/e2e/play-area-budget.spec.ts` も同じ指標で上限を固定している。
 
-デスクトップの決定的な確認には `.claude/commands/scripts/desktop-visibility.sh` を使う。全ゲームを board モードで測定し、手札コンテナがあるカードゲームは `-m hand <game>=<手札コンテナのCSSセレクタ>` でも測定する。カードの上端から52pxが表示領域に隠れているカードを課題とする（`frontend/e2e/desktop-board-visibility.spec.ts` および `frontend/e2e/desktop-hand-visibility.spec.ts` と同じ判定）。プレイエリアのはみ出し予算だけでは見逃しがあり、2026-10-12時点で78ゲームが予算内でも表向きカードが画面外だった。
+デスクトップの決定的な確認には `.claude/commands/scripts/desktop-visibility.sh` を使う。全ゲームを board モードで測定し、手札コンテナがあるカードゲームは `-m hand <game>=<手札コンテナのCSSセレクタ>` でも測定する。カードの上端から52pxが表示領域に隠れているカードを課題とする（`frontend/e2e/sweeps/board.ts`（`frontend/e2e/route-sweep.spec.ts` / `frontend/e2e/desktop-board-visibility.spec.ts`）および `frontend/e2e/desktop-hand-visibility.spec.ts` と同じ判定）。プレイエリアのはみ出し予算だけでは見逃しがあり、2026-10-12時点で78ゲームが予算内でも表向きカードが画面外だった。
 
 ### 4. スクリーンショット確認
 

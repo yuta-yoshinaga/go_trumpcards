@@ -1,80 +1,16 @@
-import { readFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { expect, type Page, test } from '@playwright/test';
-import { BOARD_CARD_QUERY_SELECTOR } from '../src/utils/boardCardSelector';
-import { DESKTOP_VIEWPORTS, getDesktopCardWidthLimit, VISIBLE_PX_X, VISIBLE_PX_Y } from './desktopViewports';
+import { expect, test } from '@playwright/test';
+import {
+  DESKTOP_VIEWPORT_COMPACT,
+  DESKTOP_VIEWPORT_LARGE,
+  DESKTOP_VIEWPORTS,
+  getDesktopCardWidthLimit,
+  PHONE_VIEWPORT,
+  VISIBLE_PX_Y,
+} from './desktopViewports';
 import { navigateTo, waitForAnimations, waitForLoaded } from './helpers';
+import { measureBoardCards, PAGES } from './sweeps/board';
 
 /** #11702: use the same 52px visible-card rule as #11655 for desktop boards. */
-
-const PAGES = [
-  '/grandfathersclock',
-  '/agnes',
-  '/bigben',
-  '/colorado',
-  '/slyfox',
-  '/penguin',
-  '/kingalbert',
-  '/americantoad',
-  '/terrace',
-  '/crescent',
-  '/sthelena',
-  '/pyramid',
-  '/montecarlo',
-  '/eightoff',
-  '/matrimony',
-  '/royalcotillion',
-  '/flowergarden',
-  '/alaska',
-  '/braid',
-  '/osmosis',
-  '/crazyquilt',
-  '/sevens',
-  '/beleagueredcastle',
-  '/citadel',
-  '/russiansolitaire',
-  '/clocksolitaire',
-  '/indianpoker',
-  '/sixcardgolf',
-  '/openfacechinese',
-  '/canasta',
-] as const;
-
-// Read the route declarations as text so this spec does not load the app's React modules.
-const gameRoutesSource = readFileSync(
-  resolve(dirname(fileURLToPath(import.meta.url)), '../src/constants/gameRoutes.ts'),
-  'utf8',
-);
-const allGamePaths = [...gameRoutesSource.matchAll(/path:\s*'([^']+)'/g)].map(([, path]) => path);
-
-// A tight floor (383 routes today): a regex or file-layout change that drops games fails here by name
-// instead of silently shrinking the sweep.
-test('reads the full game route list for the all-games sweep', () => {
-  expect(allGamePaths.length, 'game route path declarations found').toBeGreaterThanOrEqual(360);
-});
-
-// #11700 excludes CPU-seat cards, face-up cards inside accordions, stud door cards, and discard history.
-// Samba is excluded because opposing-team meld cards can fall below the play area depending on the deal.
-const excludedGamePaths = new Set([
-  '/soko',
-  '/fivecardstud',
-  '/sevencardstud',
-  '/sevencardstudhilo',
-  '/chicago',
-  '/nertz',
-  '/pan',
-  '/bolivia',
-  '/indianrummy',
-  '/burraco',
-  '/biriba',
-  '/baseballpoker',
-  '/samba',
-  // The last discarded pair is discard history, which #11700 left out of the rule.
-  '/oldmaid',
-]);
-// Accordion's 52-card row is an intentional horizontal scroller, so only the horizontal rule skips it.
-const horizontalScrollExemptions = new Set(['/accordion']);
 
 test('uses the large-desktop card widths for each desktop breakpoint', () => {
   expect(getDesktopCardWidthLimit(1024)).toBe(120);
@@ -82,95 +18,23 @@ test('uses the large-desktop card widths for each desktop breakpoint', () => {
   expect(getDesktopCardWidthLimit(1280)).toBe(150);
 });
 
-/**
- * Waits for the deal animation, then returns the face-up board cards, those whose top 52px is hidden,
- * those with less than VISIBLE_PX_X showing beside a horizontally clipping ancestor, and cards
- * whose rendered width exceeds the viewport's large-desktop card width by more than 1.5x.
- */
-async function measureBoardCards(page: Page, path: string) {
-  await waitForAnimations(page);
-  const skipHorizontal = horizontalScrollExemptions.has(path);
-  return page.evaluate(
-    ({ visiblePxX, visiblePxY, skipHorizontal, maxCardWidth, cardSelector }) => {
-      // A role=img node containing card images is a visual group (for example Salic Law's retired
-      // queens), not another card. Standalone role=img cards such as tarot remain in the selector.
-      const cards = [...document.querySelectorAll(cardSelector)].filter((element) => {
-        const label = `${element.getAttribute('alt') ?? ''} ${element.getAttribute('aria-label') ?? ''}`;
-        const box = element.getBoundingClientRect();
-        // CPU hands inside the shared accordion are reference only (#11700); they may scroll.
-        if (element.closest('[data-testid="cpu-accordion"]')) return false;
-        return box.width >= 20 && box.height >= 30 && !/裏|back/i.test(label);
-      });
-      const hidden = cards.flatMap((element) => {
-        const box = element.getBoundingClientRect();
-        let visibleBottom = window.innerHeight;
-        for (let ancestor = element.parentElement; ancestor; ancestor = ancestor.parentElement) {
-          const style = getComputedStyle(ancestor);
-          if (/^(auto|scroll|hidden|clip)$/.test(style.overflowY) && ancestor.scrollHeight > ancestor.clientHeight) {
-            visibleBottom = Math.min(visibleBottom, ancestor.getBoundingClientRect().bottom);
-          }
-        }
-        return box.top + visiblePxY > visibleBottom ? [Math.round(box.top)] : [];
-      });
-      const hiddenX = skipHorizontal
-        ? []
-        : cards.flatMap((element) => {
-            const box = element.getBoundingClientRect();
-            let visibleLeft = 0;
-            let visibleRight = window.innerWidth;
-            for (let ancestor = element.parentElement; ancestor; ancestor = ancestor.parentElement) {
-              const style = getComputedStyle(ancestor);
-              if (
-                /^(auto|scroll|hidden|clip)$/.test(style.overflowX) &&
-                // Ignore subpixel rounding noise in scroll/client width measurements.
-                ancestor.scrollWidth > ancestor.clientWidth + 1
-              ) {
-                const bounds = ancestor.getBoundingClientRect();
-                visibleLeft = Math.max(visibleLeft, bounds.left);
-                visibleRight = Math.min(visibleRight, bounds.right);
-              }
-            }
-            return box.left + visiblePxX > visibleRight || box.right - visiblePxX < visibleLeft
-              ? [Math.round(box.left)]
-              : [];
-          });
-      const oversized = cards.flatMap((element) => {
-        const width = element.getBoundingClientRect().width;
-        return width > maxCardWidth ? [{ width: Math.round(width), alt: element.getAttribute('alt') ?? '' }] : [];
-      });
-      return { count: cards.length, hidden, hiddenX, oversized };
-    },
-    {
-      visiblePxX: VISIBLE_PX_X,
-      visiblePxY: VISIBLE_PX_Y,
-      skipHorizontal,
-      maxCardWidth: getDesktopCardWidthLimit(page.viewportSize()?.width ?? 1280),
-      cardSelector: BOARD_CARD_QUERY_SELECTOR,
-    },
-  );
-}
+test('defines the phone and desktop viewport breakpoints', () => {
+  expect(PHONE_VIEWPORT).toEqual({ width: 375, height: 667 });
+  expect(DESKTOP_VIEWPORT_LARGE).toEqual({ width: 1280, height: 800 });
+  expect(DESKTOP_VIEWPORT_COMPACT).toEqual({ width: 1024, height: 800 });
+  expect(DESKTOP_VIEWPORTS).toEqual([DESKTOP_VIEWPORT_LARGE, DESKTOP_VIEWPORT_COMPACT]);
+});
 
 // The fixed list also proves the card selector still finds cards (count > 0). Every other game is
-// held to the same rule (#11727); a game may open with no face-up card, so only "none hidden" applies there.
+// held to the same rule in route-sweep.spec.ts (#11727).
 for (const viewport of DESKTOP_VIEWPORTS) {
   test.describe(`${viewport.width}x${viewport.height}`, () => {
     test.use({ viewport });
     for (const path of PAGES) {
       test(`${path} keeps every board card visible on desktop`, async ({ page }) => {
         await navigateTo(page, path);
-        const result = await measureBoardCards(page, path);
+        const result = await measureBoardCards(page, path, viewport.width);
         expect(result.count, `${path}: no board cards found`).toBeGreaterThan(0);
-        expect(result.hidden, `${path}: board cards hidden below their play area`).toEqual([]);
-        expect(result.hiddenX, `${path}: board cards hidden beside their play area`).toEqual([]);
-        expect(result.oversized, `${path}: board cards wider than allowed (width and alt)`).toEqual([]);
-      });
-    }
-
-    const fixedPaths = new Set<string>(PAGES);
-    for (const path of allGamePaths.filter((p) => !fixedPaths.has(p) && !excludedGamePaths.has(p))) {
-      test(`${path} (all-games sweep) keeps every board card visible on desktop`, async ({ page }) => {
-        await navigateTo(page, path);
-        const result = await measureBoardCards(page, path);
         expect(result.hidden, `${path}: board cards hidden below their play area`).toEqual([]);
         expect(result.hiddenX, `${path}: board cards hidden beside their play area`).toEqual([]);
         expect(result.oversized, `${path}: board cards wider than allowed (width and alt)`).toEqual([]);
