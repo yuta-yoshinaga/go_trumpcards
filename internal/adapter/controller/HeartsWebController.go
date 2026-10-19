@@ -54,6 +54,7 @@ type HeartsWebOutput struct {
 	RoundNumber      int                      `json:"roundNumber"`
 	TrickNumber      int                      `json:"trickNumber"`
 	CurrentPlayerIdx int                      `json:"currentPlayerIdx"`
+	ValidPlays       []int                    `json:"validPlays"`
 	CurrentTrick     []*WebOutputTrickCard    `json:"currentTrick"`
 	TrickPoints      int                      `json:"trickPoints"`
 	HeartsBroken     bool                     `json:"heartsBroken"`
