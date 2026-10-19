@@ -242,11 +242,9 @@ function GapsPageContent() {
       confirmGiveUp={confirmGiveUp}
       cancelGiveUp={cancelGiveUp}
       headerExtra={
-        <>
-          <span>
-            {t('moveCount')}: {state.moveCount}
-          </span>
-        </>
+        <span>
+          {t('moveCount')}: {state.moveCount}
+        </span>
       }
     >
       <ConfirmDialog

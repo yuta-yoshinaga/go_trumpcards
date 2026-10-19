@@ -332,7 +332,7 @@ describe('SchnapsenPage', () => {
   it('shows the Japanese card guide when opened', async () => {
     renderWithProviders(<SchnapsenPage />);
     const guide = await screen.findByTestId('schnapsen-card-guide');
-    fireEvent.click(guide.querySelector('summary')!);
+    fireEvent.click(guide.querySelector('summary') as HTMLElement);
 
     expect(guide).toHaveTextContent('カード点: A=11点、10=10点、K=4点、Q=3点、J=2点。');
     expect(guide).toHaveTextContent('同じスートの強さ: A > 10 > K > Q > J。');

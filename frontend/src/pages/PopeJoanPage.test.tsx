@@ -103,7 +103,7 @@ describe('PopeJoanPage', () => {
     expect(ruleText).toBeInTheDocument();
     expect(ruleText?.parentElement?.tagName).not.toBe('SUMMARY');
     expect(ruleText).not.toBeVisible();
-    fireEvent.click(ruleDetails.querySelector('summary')!);
+    fireEvent.click(ruleDetails.querySelector('summary') as HTMLElement);
     expect(ruleDetails).toHaveAttribute('open');
     expect(ruleText).toBeVisible();
     const cpuDetails = screen.getByTestId('cpu-accordion');
@@ -245,7 +245,7 @@ describe('PopeJoanPage', () => {
   it('shows both rules permanently', async () => {
     renderWithProviders(<PopeJoanPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
-    fireEvent.click(screen.getByTestId('pj-rule-details').querySelector('summary')!);
+    fireEvent.click(screen.getByTestId('pj-rule-details').querySelector('summary') as HTMLElement);
     expect(screen.getByText(/トランプの札でしか取れません/)).toBeInTheDocument();
     expect(screen.getByText(/♦8 が抜いてあるので/)).toBeInTheDocument();
     expect(screen.getByText(/めくり札がポープ.*ディーラーが対応する区画を即時に獲得/)).toBeInTheDocument();
@@ -440,9 +440,9 @@ describe('PopeJoanPage', () => {
         expect(buttons[0]).not.toHaveAttribute('data-unplayable');
         expect(buttons[1]).toBeDisabled();
         expect(buttons[1]).toHaveAttribute('data-unplayable', 'true');
-        fireEvent.click(buttons[0]!);
+        fireEvent.click(buttons[0] as HTMLElement);
         expect(buttons[0]).toHaveAttribute('aria-pressed', 'true');
-        fireEvent.click(buttons[0]!);
+        fireEvent.click(buttons[0] as HTMLElement);
         expect(buttons[0]).toHaveAttribute('aria-pressed', 'false');
       },
     );

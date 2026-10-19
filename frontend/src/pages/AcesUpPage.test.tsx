@@ -92,10 +92,10 @@ describe('AcesUpPage', () => {
     expect(liveRegion).toBeEmptyDOMElement();
 
     const callsBeforeActions = mockExec.mock.calls.length;
-    fireEvent.click(screen.getAllByRole('button', { name: '配る' }).at(-1)!);
+    fireEvent.click(screen.getAllByRole('button', { name: '配る' }).at(-1) as HTMLElement);
     await waitFor(() => expect(liveRegion).toHaveTextContent('手数: 4、除去済み: 5、山札: 44'));
 
-    fireEvent.click(screen.getAllByRole('button', { name: '配る' }).at(-1)!);
+    fireEvent.click(screen.getAllByRole('button', { name: '配る' }).at(-1) as HTMLElement);
     await waitFor(() => expect(mockExec).toHaveBeenCalledTimes(callsBeforeActions + 2));
     expect(liveRegion).toHaveTextContent('手数: 4、除去済み: 5、山札: 44');
   });
@@ -110,10 +110,10 @@ describe('AcesUpPage', () => {
     renderWithProviders(<AcesUpPage />);
 
     const liveRegion = await screen.findByTestId('acesup-progress-live');
-    fireEvent.click(screen.getAllByRole('button', { name: '配る' }).at(-1)!);
+    fireEvent.click(screen.getAllByRole('button', { name: '配る' }).at(-1) as HTMLElement);
     await waitFor(() => expect(liveRegion).toHaveTextContent('山札: 40'));
 
-    fireEvent.click(screen.getAllByRole('button', { name: '配る' }).at(-1)!);
+    fireEvent.click(screen.getAllByRole('button', { name: '配る' }).at(-1) as HTMLElement);
     await waitFor(() => expect(liveRegion).toHaveTextContent('山札がなくなりました'));
   });
 

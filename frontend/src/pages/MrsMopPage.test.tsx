@@ -457,7 +457,7 @@ describe('MrsMopPage', () => {
     renderWithProviders(<MrsMopPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
-    fireEvent.click(screen.getByAltText('♠ K').closest('button')!);
+    fireEvent.click(screen.getByAltText('♠ K').closest('button') as HTMLButtonElement);
     await waitFor(() => {
       expect(screen.getByTestId('spd-empty-col-2').closest('.flex-1')).toHaveAttribute('data-legal-target', 'true');
       expect(screen.getByTestId('spd-empty-col-2').closest('.flex-1')).toHaveClass('ring-ds-info');
@@ -467,13 +467,13 @@ describe('MrsMopPage', () => {
     expect(occupiedColumn).not.toHaveClass('ring-ds-info');
 
     // Choosing another card in the selected column replaces the source selection.
-    fireEvent.click(screen.getByAltText('♠ Q').closest('button')!);
+    fireEvent.click(screen.getByAltText('♠ Q').closest('button') as HTMLButtonElement);
     await waitFor(() => expect(screen.getByAltText('♠ Q').closest('button')).toHaveAttribute('aria-pressed', 'true'));
     expect(occupiedColumn).toHaveAttribute('data-legal-target', 'true');
     expect(occupiedColumn).toHaveClass('ring-ds-info');
 
     // Selecting the same source again clears both the selection and its legal destinations.
-    fireEvent.click(screen.getByAltText('♠ Q').closest('button')!);
+    fireEvent.click(screen.getByAltText('♠ Q').closest('button') as HTMLButtonElement);
     await waitFor(() => {
       expect(screen.getByTestId('spd-empty-col-2').closest('.flex-1')).not.toHaveAttribute('data-legal-target');
       expect(screen.getByTestId('spd-empty-col-2').closest('.flex-1')).not.toHaveClass('ring-ds-info');
@@ -490,7 +490,7 @@ describe('MrsMopPage', () => {
     renderWithProviders(<MrsMopPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
-    fireEvent.click(screen.getByAltText('♠ K').closest('button')!);
+    fireEvent.click(screen.getByAltText('♠ K').closest('button') as HTMLButtonElement);
     expect(screen.getByTestId('mrsMop-selection-status')).toHaveTextContent('移動先はありません');
     expect(document.querySelectorAll('[data-legal-target="true"]')).toHaveLength(0);
   });
@@ -513,7 +513,7 @@ describe('MrsMopPage', () => {
     expect(btn).toHaveAttribute('aria-disabled', 'true');
     const descriptionId = btn.getAttribute('aria-describedby');
     expect(descriptionId).toBeTruthy();
-    expect(document.getElementById(descriptionId!)).toHaveTextContent('先に移動する札を選んでください');
+    expect(document.getElementById(descriptionId as string)).toHaveTextContent('先に移動する札を選んでください');
 
     fireEvent.click(btn);
     await flushPendingDispatch();

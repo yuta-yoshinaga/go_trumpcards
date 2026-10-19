@@ -156,7 +156,7 @@ describe('UnsunKarutaPage', () => {
       await waitFor(() => {
         const wrappers = Array.from(cards.querySelectorAll<HTMLElement>('[data-player-idx]'));
         expect(wrappers).toHaveLength(8);
-        const advancePx = Number.parseFloat(wrappers[1]!.style.marginLeft) + 100 + 8;
+        const advancePx = Number.parseFloat(wrappers[1].style.marginLeft) + 100 + 8;
         expect(100 + 7 * advancePx).toBeLessThanOrEqual(rowWidth - 24);
         for (const wrapper of wrappers.slice(1)) {
           expect(Number.parseFloat(wrapper.style.marginLeft) + 100 + 8).toBe(advancePx);

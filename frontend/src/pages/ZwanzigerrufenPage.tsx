@@ -95,7 +95,6 @@ function ZwanzigerrufenPageContent() {
   } = useGameHint('zwanzigerrufen', state);
 
   // Fetch a fresh game on mount.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
   useMountReset(callApi);
 
   const resetWithConfig = useCallback(() => {

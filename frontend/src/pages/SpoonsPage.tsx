@@ -161,7 +161,6 @@ function SpoonsPageContent() {
   const [cpuDifficulty, setCpuDifficulty] = useState(1);
 
   // Fetch a fresh game on mount.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
   useMountReset(exec);
 
   const handleConfigChange = (value: string) => {

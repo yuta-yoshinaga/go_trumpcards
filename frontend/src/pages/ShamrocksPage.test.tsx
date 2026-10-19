@@ -256,9 +256,9 @@ describe('ShamrocksPage', () => {
     renderWithProviders(<ShamrocksPage />);
     await screen.findByTestId('autocomplete-button');
     expect(
-      [...document.querySelector('[data-tutorial="ll-action-buttons"]')!.querySelectorAll('button')].map((button) =>
-        button.getAttribute('data-testid'),
-      ),
+      [
+        ...(document.querySelector('[data-tutorial="ll-action-buttons"]') as HTMLElement).querySelectorAll('button'),
+      ].map((button) => button.getAttribute('data-testid')),
     ).toEqual(['autocomplete-button', 'undo-button', 'hint-button']);
     for (const [testid, cmd] of [
       ['autocomplete-button', 'ac'],

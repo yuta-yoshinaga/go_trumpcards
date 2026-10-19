@@ -6593,7 +6593,7 @@
   "matrimony.log.giveup": "Gave up",
   "memory.log.match": "Move: {{value1}}, {{value2}}",
   "memory.log.miss": "Move: {{value1}}, {{value2}}",
-  "missmilligan.log.deal": "Dealt cards",
+  "missmilligan.log.deal": "Dealt {{value1}} cards from the stock, one per column",
   "missmilligan.log.move": "Move: {{value1}}, {{value2}}, {{value3}}",
   "missmilligan.log.waive": "Move: {{value1}}, {{value2}}",
   "missmilligan.log.giveup": "Gave up",

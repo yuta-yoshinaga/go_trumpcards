@@ -6593,7 +6593,7 @@
   "matrimony.log.giveup": "ギブアップしました",
   "memory.log.match": "ペア獲得: 位置{{value1}},位置{{value2}}",
   "memory.log.miss": "不一致: 位置{{value1}},位置{{value2}}",
-  "missmilligan.log.deal": "山札→各列に{{value1}}枚配布",
+  "missmilligan.log.deal": "山札から各列に1枚ずつ、計{{value1}}枚配布",
   "missmilligan.log.move": "タブロー列{{value1}}→タブロー列{{value2}}({{value3}}枚)",
   "missmilligan.log.waive": "列{{value1}}から{{value2}}枚を保持",
   "missmilligan.log.giveup": "ギブアップしました",

@@ -103,7 +103,6 @@ function SixBidSoloPageContent() {
   const [selected, setSelected] = useState<number | null>(null);
 
   // Fetch a fresh game on mount.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
   useMountReset(exec);
 
   // CLI mode

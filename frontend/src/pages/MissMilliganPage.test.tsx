@@ -167,7 +167,7 @@ describe('MissMilliganPage', () => {
     expect(target).toHaveAttribute('aria-disabled', 'true');
     const descriptionId = target.getAttribute('aria-describedby');
     expect(descriptionId).toBeTruthy();
-    expect(document.getElementById(descriptionId!)).toHaveTextContent('先に移動する札を選んでください');
+    expect(document.getElementById(descriptionId as string)).toHaveTextContent('先に移動する札を選んでください');
 
     fireEvent.click(target);
     await flushPendingDispatch();

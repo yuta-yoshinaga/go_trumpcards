@@ -390,7 +390,7 @@ function TressettePageContent() {
                     </thead>
                     <tbody>
                       {teamLabels.map((label, idx) => {
-                        const score = state.teamScores[idx]!;
+                        const score = state.teamScores[idx] as number;
                         const pointsRemaining = state.config.targetPoints - score;
 
                         return (

@@ -141,7 +141,6 @@ function OpenFaceChinesePageContent() {
   const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   // Fetch a fresh game on mount.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
   useMountReset(exec);
 
   const phaseNames = usePhaseNames('openfacechinese', OFC_PHASE_KEYS);

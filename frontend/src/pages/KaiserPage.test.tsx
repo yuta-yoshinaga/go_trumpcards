@@ -303,9 +303,9 @@ describe('KaiserPage', () => {
 
     expect(hand[0]).toHaveAttribute('aria-pressed', 'false');
     expect(hand[0]).toHaveAccessibleName();
-    fireEvent.click(hand[0]!);
+    fireEvent.click(hand[0]);
     expect(handButtons()[0]).toHaveAttribute('aria-pressed', 'true');
-    fireEvent.click(handButtons()[0]!);
+    fireEvent.click(handButtons()[0]);
     expect(handButtons()[0]).toHaveAttribute('aria-pressed', 'false');
   });
 
