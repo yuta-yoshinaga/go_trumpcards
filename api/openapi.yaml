@@ -43548,6 +43548,7 @@ components:
         - roundNumber
         - trickNumber
         - currentPlayerIdx
+        - validPlays
         - currentTrick
         - heartsBroken
         - passDirection
@@ -43584,6 +43585,11 @@ components:
           type: integer
           description: Index of the player whose turn it is
           example: 0
+        validPlays:
+          type: array
+          description: Hand indices the human player may legally play now; empty when it is not the human's play turn
+          items:
+            type: integer
         currentTrick:
           type: array
           description: Cards played in the current trick so far

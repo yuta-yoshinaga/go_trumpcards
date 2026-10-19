@@ -7,6 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -25,6 +26,7 @@ func setupHeartsWebMock() *interfaces.MockHeartsGame {
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.HeartsPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
+	m.On("GetValidPlayIndices", 0).Return([]int{})
 	m.On("GetPassDirection").Return(domain.HeartsPassLeft)
 	m.On("GetWinnerIdx").Return(-1)
 	m.On("GetLeadPlayerIdx").Return(0)
@@ -36,6 +38,25 @@ func setupHeartsWebMock() *interfaces.MockHeartsGame {
 	m.On("GetHint").Return(nil).Maybe()
 
 	return m
+}
+
+func TestHeartsWebPresenterValidPlays(t *testing.T) {
+	h := domain.NewDefaultHearts()
+	h.SetPhase(domain.HeartsPhasePlay)
+	h.SetTrickNumber(1)
+	h.SetCurrentPlayerIdx(0)
+	h.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+	h.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+	want := h.GetValidPlayIndices(0)
+	var out controller.HeartsWebOutput
+	result := new(presenter.HeartsWebPresenter).Output(h, nil)
+	require.NoError(t, json.Unmarshal([]byte(result), &out))
+	assert.Equal(t, want, out.ValidPlays)
+	assert.Contains(t, result, `"validPlays":[0]`)
+
+	h.SetCurrentPlayerIdx(1)
+	result = new(presenter.HeartsWebPresenter).Output(h, nil)
+	assert.Contains(t, result, `"validPlays":[]`)
 }
 
 func TestHeartsWebPresenter_VoidSuits(t *testing.T) {

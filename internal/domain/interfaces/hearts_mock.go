@@ -45,6 +45,15 @@ func (_m *MockHeartsGame) PlayerPlay(cardIndex int) error {
 	return ret.Error(0)
 }
 
+// GetValidPlayIndices モック
+func (_m *MockHeartsGame) GetValidPlayIndices(playerIdx int) []int {
+	ret := _m.Called(playerIdx)
+	if val, ok := ret.Get(0).([]int); ok {
+		return val
+	}
+	return nil
+}
+
 // CpuPlay モック
 func (_m *MockHeartsGame) CpuPlay() {
 	_m.Called()

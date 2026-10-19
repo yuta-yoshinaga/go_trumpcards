@@ -3,10 +3,99 @@
 package domain
 
 import (
+	"math/rand"
+	"slices"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
+
+func TestHearts_GetValidPlayIndices(t *testing.T) {
+	t.Run("first trick requires two clubs", func(t *testing.T) {
+		h := newInternalTestHearts()
+		h.phase, h.currentPlayerIdx, h.trickNumber = HeartsPhasePlay, 0, 1
+		h.players[0].AddCard(NewCard(CardDesignHeart, 2, false))
+		h.players[0].AddCard(NewCard(CardDesignClover, 2, false))
+		h.players[0].AddCard(NewCard(CardDesignSpade, 3, false))
+		assert.Equal(t, []int{1}, h.GetValidPlayIndices(0))
+	})
+	t.Run("unbroken hearts are excluded from lead when a non-heart exists", func(t *testing.T) {
+		h := newInternalTestHearts()
+		h.phase, h.currentPlayerIdx = HeartsPhasePlay, 0
+		h.players[0].AddCard(NewCard(CardDesignHeart, 2, false))
+		h.players[0].AddCard(NewCard(CardDesignSpade, 3, false))
+		assert.Equal(t, []int{1}, h.GetValidPlayIndices(0))
+	})
+	t.Run("all hearts may lead when they are the whole hand", func(t *testing.T) {
+		h := newInternalTestHearts()
+		h.phase, h.currentPlayerIdx = HeartsPhasePlay, 0
+		h.players[0].AddCard(NewCard(CardDesignHeart, 2, false))
+		h.players[0].AddCard(NewCard(CardDesignHeart, 3, false))
+		assert.Equal(t, []int{0, 1}, h.GetValidPlayIndices(0))
+	})
+	t.Run("must follow suit", func(t *testing.T) {
+		h := newInternalTestHearts()
+		h.phase, h.currentPlayerIdx = HeartsPhasePlay, 0
+		h.players[0].AddCard(NewCard(CardDesignClover, 2, false))
+		h.players[0].AddCard(NewCard(CardDesignHeart, 2, false))
+		h.currentTrick = []*TrickCard{{PlayerIdx: 1, Card: NewCard(CardDesignClover, 3, false)}}
+		assert.Equal(t, []int{0}, h.GetValidPlayIndices(0))
+	})
+	t.Run("first trick void excludes points except omnibus jack", func(t *testing.T) {
+		h := newInternalTestHearts()
+		h.phase, h.currentPlayerIdx, h.trickNumber = HeartsPhasePlay, 0, 1
+		h.config.OmnibusJD = false
+		h.currentTrick = []*TrickCard{{PlayerIdx: 1, Card: NewCard(CardDesignClover, 3, false)}}
+		for _, card := range []*Card{NewCard(CardDesignHeart, 2, false), NewCard(CardDesignSpade, 12, false), NewCard(CardDesignDiamond, 11, false), NewCard(CardDesignSpade, 3, false)} {
+			h.players[0].AddCard(card)
+		}
+		assert.Equal(t, []int{2, 3}, h.GetValidPlayIndices(0))
+		h.config.OmnibusJD = true
+		assert.Equal(t, []int{3}, h.GetValidPlayIndices(0))
+	})
+	t.Run("wrong turn, phase, and index return non-nil empty", func(t *testing.T) {
+		h := newInternalTestHearts()
+		h.phase, h.currentPlayerIdx = HeartsPhasePlay, 0
+		h.players[0].AddCard(NewCard(CardDesignSpade, 3, false))
+		for _, idx := range []int{1, -1, HeartsPlayerCnt} {
+			got := h.GetValidPlayIndices(idx)
+			assert.NotNil(t, got)
+			assert.Empty(t, got)
+		}
+		h.phase = HeartsPhasePass
+		got := h.GetValidPlayIndices(0)
+		assert.NotNil(t, got)
+		assert.Empty(t, got)
+	})
+	t.Run("matches validatePlay across randomized deals", func(t *testing.T) {
+		for seed := int64(0); seed < 200; seed++ {
+			h := newInternalTestHearts()
+			h.phase, h.currentPlayerIdx = HeartsPhasePlay, int(seed%HeartsPlayerCnt)
+			cards := make([]*Card, 0, 52)
+			for suit := CardDesignSpade; suit <= CardDesignMax; suit++ {
+				for value := 1; value <= 13; value++ {
+					cards = append(cards, NewCard(suit, value, false))
+				}
+			}
+			rand.New(rand.NewSource(seed)).Shuffle(len(cards), func(i, j int) { cards[i], cards[j] = cards[j], cards[i] })
+			for i, card := range cards {
+				h.players[i/13].AddCard(card)
+			}
+			h.trickNumber = int(seed%HeartsHandSize) + 1
+			if seed%3 != 0 {
+				h.currentTrick = []*TrickCard{{PlayerIdx: (h.currentPlayerIdx + 1) % HeartsPlayerCnt, Card: NewCard(CardDesignClover, 5, false)}}
+			}
+			if seed%2 == 0 {
+				h.heartsBroken = true
+			}
+			valid := h.GetValidPlayIndices(h.currentPlayerIdx)
+			player := h.players[h.currentPlayerIdx]
+			for i := 0; i < player.GetCardsSize(); i++ {
+				assert.Equal(t, h.validatePlay(h.currentPlayerIdx, player.GetCard(i)) == nil, slices.Contains(valid, i), "seed %d, index %d", seed, i)
+			}
+		}
+	})
+}
 
 func newInternalTestHearts() *Hearts {
 	players := []*HeartsPlayer{

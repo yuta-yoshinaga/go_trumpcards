@@ -1111,6 +1111,15 @@ func (h *Hearts) getValidPlayIndices(playerIdx int) []int {
 	return validPlayIndices(h.players[playerIdx], func(c *Card) bool { return h.validatePlay(playerIdx, c) == nil })
 }
 
+// GetValidPlayIndices 現在プレイ可能な手札のインデックスを返す。
+// フェーズがプレイ中でない場合、指定プレイヤーが手番でない場合、または範囲外の場合は空スライスを返す。
+func (h *Hearts) GetValidPlayIndices(playerIdx int) []int {
+	if h.phase != HeartsPhasePlay || playerIdx != h.currentPlayerIdx || playerIdx < 0 || playerIdx >= len(h.players) {
+		return []int{}
+	}
+	return h.getValidPlayIndices(playerIdx)
+}
+
 // heartsJSON is the JSON wire format for Hearts.
 type heartsJSON struct {
 	TrumpCards       *TrumpCards              `json:"tc"`

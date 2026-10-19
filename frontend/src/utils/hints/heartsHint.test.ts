@@ -67,6 +67,7 @@ function makeState(overrides: Partial<HeartsResponse> = {}): HeartsResponse {
     message: '',
     config: { cpuDifficulty: 0, pointLimit: 100, omnibusJD: false },
     ...overrides,
+    validPlays: overrides.validPlays ?? [],
   };
 }
 
