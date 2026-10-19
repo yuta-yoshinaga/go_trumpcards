@@ -31,7 +31,7 @@ Shared building blocks:
 | `GamePageShell` | Background + heading + phase indicator + reset dialog wrapper (most pages use this) |
 | `TutorialWrapper` | Tutorial provider + i18n init (always wraps the exported `XPage`) |
 | `useCliMode` + `useCliGame` + `<CliTerminal>` + `<CliToggle>` | CLI fallback mode, available on most pages. Per-game parsing/formatting lives in `src/utils/cli/commands/<game>Commands.ts` + `src/utils/cli/formatters/<game>Formatter.ts` |
-| `createGamePage(def)` (`src/components/game/createGamePage.tsx`) | Assembles shell, CLI toggle/terminal, hint settings, action log, reset/give-up, skeleton, error alert and keyboard shortcuts from a `GameDefinition`; prototype on AcesUpPage (ADR-0044) |
+| `createGamePage(def)` (`src/components/game/createGamePage.tsx`) | Assembles shell, CLI toggle/terminal, hint settings, action log, reset/give-up, skeleton, error alert and keyboard shortcuts from a `GameDefinition`; prototype on AcesUpPage (ADR-0044). `scripts/check-game-page-definition.mjs` guards new pages. |
 
 ## Traps that tests do not catch
 
