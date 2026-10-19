@@ -50,7 +50,11 @@ describe('check-game-page-definition', () => {
 
   it('does not count a createGamePage mention outside the page export as migrated', () => {
     const result = run({
-      pages: { AcesUpPage: MIGRATED, NewPage: '// createGamePage(def) later\nexport function NewPage() {}', OldPage: 'Old' },
+      pages: {
+        AcesUpPage: MIGRATED,
+        NewPage: '// createGamePage(def) later\nexport function NewPage() {}',
+        OldPage: 'Old',
+      },
     });
     expect(result.status).toBe(1);
     expect(result.out).toContain('NewPage.tsx: new page must be built with createGamePage');
