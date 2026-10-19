@@ -202,7 +202,7 @@ describe('CassinoPage', () => {
     const name = build.getAttribute('aria-label');
     expect(name).toBeTruthy();
     fireEvent.click(build);
-    expect(screen.getByRole('button', { name: name!, pressed: true })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: name as string, pressed: true })).toBeInTheDocument();
   });
 
   it('take button is disabled until both hand and table are selected', async () => {

@@ -90,7 +90,7 @@ describe('TrexPage', () => {
     expect(ruleText).toBeInTheDocument();
     expect(ruleText?.parentElement?.tagName).not.toBe('SUMMARY');
     expect(ruleText).not.toBeVisible();
-    fireEvent.click(ruleDetails.querySelector('summary')!);
+    fireEvent.click(ruleDetails.querySelector('summary') as HTMLElement);
     expect(ruleDetails).toHaveAttribute('open');
     expect(ruleText).toBeVisible();
     const cpuDetails = screen.getByTestId('cpu-accordion');
@@ -120,7 +120,7 @@ describe('TrexPage', () => {
   it('shows both rules permanently and the deal counter', async () => {
     renderWithProviders(<TrexPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
-    fireEvent.click(screen.getByTestId('tx-rule-details').querySelector('summary')!);
+    fireEvent.click(screen.getByTestId('tx-rule-details').querySelector('summary') as HTMLElement);
     expect(screen.getByText(/同じ契約は1王国に1度だけ/)).toBeInTheDocument();
     expect(screen.getByText(/Jを起点/)).toBeInTheDocument();
     expect(screen.getByText(/ディール: 0\/20/)).toBeInTheDocument();

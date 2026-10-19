@@ -365,7 +365,7 @@ function ThreeCardBragPageContent() {
 
           {/* Footer */}
           <GameFooter className={`${gameTheme.threecardbrag.footer} px-4 py-2.5`}>
-            {state.isShowdown ? null : humanPlayer && humanPlayer.seen && humanPlayer.cards.length > 0 ? (
+            {state.isShowdown ? null : humanPlayer?.seen && humanPlayer.cards.length > 0 ? (
               <PlayerHandSection
                 humanPlayer={humanPlayer}
                 selectedCardIndices={[]}

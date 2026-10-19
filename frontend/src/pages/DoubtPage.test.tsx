@@ -946,7 +946,10 @@ describe('DoubtPage', () => {
   it('announces the current CPU tell in a persistent live region', async () => {
     mockExec.mockResolvedValue({
       ...doubtPhaseCpuPlayedState,
-      lastAction: { ...doubtPhaseCpuPlayedState.lastAction!, hasTell: true },
+      lastAction: {
+        ...(doubtPhaseCpuPlayedState.lastAction as NonNullable<DoubtResponse['lastAction']>),
+        hasTell: true,
+      },
     });
     renderWithProviders(<DoubtPage />);
 

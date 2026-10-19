@@ -36,7 +36,7 @@ describe('valid command arrays', () => {
     let inspected = 0;
 
     for (const file of files) {
-      const source = ts.createSourceFile(file, sources[file]!, ts.ScriptTarget.Latest, true);
+      const source = ts.createSourceFile(file, sources[file], ts.ScriptTarget.Latest, true);
       const declarations = new Map<string, Set<string> | null>();
       const visit = (node: ts.Node): void => {
         if (ts.isSwitchStatement(node) && ts.isIdentifier(node.expression) && node.expression.text === 'cmd') {

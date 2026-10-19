@@ -406,7 +406,10 @@ describe('LooPage', () => {
       ...roundEndState,
       // 非 null なのは fixture の定義から明らか。`?.` を挟むと部分型になり、
       // 必須フィールドを落とした形が通ってしまう。
-      lastDealDetail: { ...roundEndState.lastDealDetail!, potCarry: 0 },
+      lastDealDetail: {
+        ...(roundEndState.lastDealDetail as NonNullable<typeof roundEndState.lastDealDetail>),
+        potCarry: 0,
+      },
     });
     renderWithProviders(<LooPage />);
 

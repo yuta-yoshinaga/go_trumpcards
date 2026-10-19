@@ -94,7 +94,6 @@ function VintPageContent() {
   const [selected, setSelected] = useState<number | null>(null);
 
   // Fetch a fresh game on mount.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
   useMountReset(exec);
 
   // **選択が下から追い越されたら前に送る。**他家が上を宣言すると、選んだままの

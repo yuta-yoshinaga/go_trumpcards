@@ -94,7 +94,6 @@ function TablanetPageContent() {
   } = useGameHint('tablanet', state);
 
   // Fetch a fresh game on mount.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
   useMountReset(callApi);
 
   // Captures and tablas are shown only via animation and count updates (the web

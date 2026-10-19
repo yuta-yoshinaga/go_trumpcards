@@ -49,7 +49,7 @@
   "errNotPlaying": "The game is not in the playing phase",
   "errNoAutoMove": "No card can be auto-completed",
   "errNothingToUndo": "Nothing to undo",
-  "log.deal": "Dealt cards",
+  "log.deal": "Dealt {{value1}} cards from the stock, one per column",
   "log.move": "Move: {{value1}}, {{value2}}, {{value3}}",
   "log.waive": "Move: {{value1}}, {{value2}}",
   "log.giveup": "Gave up"

@@ -464,7 +464,7 @@ describe('SpiderPage', () => {
     expect(firstColumnCard).toHaveAttribute('aria-label', '♠ K（列0・上から1枚目・移動可能な連続札1枚）');
     expect(secondColumnCard).toHaveAttribute('aria-label', '♥ 5（列1・上から2枚目・移動可能な連続札1枚）');
     expect(firstColumnCard).toHaveAttribute('aria-pressed', 'false');
-    fireEvent.click(firstColumnCard!);
+    fireEvent.click(firstColumnCard as HTMLButtonElement);
     await waitFor(() => expect(firstColumnCard).toHaveAttribute('aria-pressed', 'true'));
   });
 

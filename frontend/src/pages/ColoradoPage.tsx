@@ -453,7 +453,7 @@ function ColoradoPageContent() {
                 const selected = source?.kind === 'tableau' && source.idx === idx;
                 // A pile is a target for the waste always, and for the stock
                 // only while it is empty.
-                const isTarget = source?.kind === 'waste' || (source?.kind === 'stock' && isEmpty) ? true : false;
+                const isTarget = source?.kind === 'waste' || (source?.kind === 'stock' && isEmpty);
                 return (
                   <div
                     key={`t-${idx.toString()}`}

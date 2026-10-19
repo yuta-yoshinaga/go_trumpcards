@@ -101,7 +101,6 @@ function ShamrocksPageContent() {
     if (state.phase === ShamrocksPhase.PLAYING && stats.clearRecorded) markPlaying();
   }, [state, stats.clearRecorded, recordClear, markPlaying]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
   useMountReset(exec);
 
   // Clear a stale source selection (and any hint highlight) whenever the board

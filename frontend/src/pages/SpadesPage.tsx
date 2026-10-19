@@ -627,16 +627,9 @@ function SpadesPageContent() {
               isHumanBidTurn || isHumanTurn || isTrickEnd || isRoundEnd ? (
                 <div className="flex gap-2 items-center">
                   {isHumanBidTurn && (
-                    <>
-                      <button
-                        type="button"
-                        className={btnPrimary}
-                        onClick={() => handleBid(bidValue)}
-                        disabled={loading}
-                      >
-                        {t('bidButton')}
-                      </button>
-                    </>
+                    <button type="button" className={btnPrimary} onClick={() => handleBid(bidValue)} disabled={loading}>
+                      {t('bidButton')}
+                    </button>
                   )}
                   {isHumanTurn && (
                     <button

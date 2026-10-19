@@ -788,7 +788,7 @@ describe('BakersGamePage', () => {
     expect(target).toHaveAttribute('aria-disabled', 'true');
     const hintId = target.getAttribute('aria-describedby');
     expect(hintId).toBeTruthy();
-    expect(document.getElementById(hintId!)).toHaveTextContent('先に移動する札を選んでください');
+    expect(document.getElementById(hintId as string)).toHaveTextContent('先に移動する札を選んでください');
     fireEvent.click(target);
     await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());

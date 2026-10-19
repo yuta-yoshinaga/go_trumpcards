@@ -105,7 +105,6 @@ function SimpleSimonPageContent() {
     [selected, state],
   );
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
   useMountReset(exec);
 
   // Clear a stale selection and any auto-move notice whenever the board changes

@@ -73,7 +73,6 @@ function RussianBankPageContent() {
   const hintTimerRef = useRef<number | null>(null);
 
   // Fetch a fresh game on mount.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
   useMountReset(exec);
 
   // Clear any hint highlight (and stale source selection) whenever the board

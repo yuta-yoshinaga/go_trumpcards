@@ -198,7 +198,7 @@ describe('NapoleonsSquarePage', () => {
     for (const button of cardButtons) {
       expect(button.className).toContain('min-h-11');
     }
-    fireEvent.dragStart(cardButtons[0]!, { dataTransfer: { setData: vi.fn(), effectAllowed: 'none' } });
+    fireEvent.dragStart(cardButtons[0], { dataTransfer: { setData: vi.fn(), effectAllowed: 'none' } });
     expect(cardButtons[0]).toHaveClass('opacity-50');
     expect(screen.getByRole('button', { name: '空のタブロー列 2' }).className).toContain('min-h-11');
   });

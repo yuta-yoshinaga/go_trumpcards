@@ -228,7 +228,7 @@ describe('ChineseTenPage', () => {
     renderWithProviders(<ChineseTenPage />);
     await waitFor(() => expect(screen.getByAltText('♦ 9')).toBeInTheDocument());
 
-    fireEvent.click(screen.getByAltText('♦ 9').closest('button')!);
+    fireEvent.click(screen.getByAltText('♦ 9').closest('button') as HTMLButtonElement);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('select', undefined, 1));
   });
 

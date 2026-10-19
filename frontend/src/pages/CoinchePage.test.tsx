@@ -163,16 +163,16 @@ describe('CoinchePage', () => {
     const table = cumulativeRowHeader.closest('table');
     expect(table).not.toBeNull();
 
-    const headers = Array.from(table!.querySelectorAll('thead th'));
+    const headers = Array.from((table as HTMLTableElement).querySelectorAll('thead th'));
     expect(headers).toHaveLength(3);
     expect(headers[0]).toHaveAttribute('scope', 'col');
     expect(headers[0]).toHaveTextContent('');
     expect(headers[1]).toHaveTextContent('チーム0');
     expect(headers[2]).toHaveTextContent('チーム1');
 
-    const rowHeaders = Array.from(table!.querySelectorAll('tbody th[scope="row"]'));
+    const rowHeaders = Array.from((table as HTMLTableElement).querySelectorAll('tbody th[scope="row"]'));
     expect(rowHeaders.map((header) => header.textContent)).toEqual(['累計得点', 'ラウンド得点']);
-    for (const row of Array.from(table!.querySelectorAll<HTMLTableRowElement>('tbody tr'))) {
+    for (const row of Array.from((table as HTMLTableElement).querySelectorAll<HTMLTableRowElement>('tbody tr'))) {
       expect(row.cells[0].tagName).toBe('TH');
       expect(row.cells).toHaveLength(3);
       expect(row.cells[1].tagName).toBe('TD');

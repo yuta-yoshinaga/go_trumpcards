@@ -148,8 +148,8 @@ describe('PiquetPage', () => {
 
   it('renders the translated per-player stats line', async () => {
     const state = makeState();
-    Object.assign(state.players[0]!, { declScore: 4, trickScore: 8, bonusScore: 10, roundScore: 22 });
-    Object.assign(state.players[1]!, { declScore: 3, trickScore: 6, bonusScore: 2, roundScore: 11 });
+    Object.assign(state.players[0], { declScore: 4, trickScore: 8, bonusScore: 10, roundScore: 22 });
+    Object.assign(state.players[1], { declScore: 3, trickScore: 6, bonusScore: 2, roundScore: 11 });
     mockExec.mockResolvedValue(state);
     renderWithProviders(<PiquetPage />);
     await waitFor(() => expect(screen.getAllByText(/手札: 12/).length).toBeGreaterThan(0));
@@ -169,9 +169,9 @@ describe('PiquetPage', () => {
   ])('shows hand counts and the selected exchange preview for turn %s', async (exchangeTurn, humanIdx) => {
     const state = makeState({ exchangeTurn });
     if (humanIdx === 1) {
-      state.players[0]!.isHuman = false;
-      state.players[1]!.isHuman = true;
-      state.players[1]!.cards = state.players[0]!.cards;
+      state.players[0].isHuman = false;
+      state.players[1].isHuman = true;
+      state.players[1].cards = state.players[0].cards;
     }
     mockExec.mockResolvedValue(state);
     renderWithProviders(<PiquetPage />);
