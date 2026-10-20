@@ -25,7 +25,10 @@ vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
 
 const mockExec = vi.mocked(batakApi.exec);
 
-const playPhaseState = makeBatakState({ validPlayIndices: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] });
+const playPhaseState = makeBatakState({
+  validPlayIndices: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+  playRejectCodes: Array(13).fill(''),
+});
 
 const bidPhaseState = makeBatakState({
   phase: 0,
@@ -324,7 +327,7 @@ describe('BatakPage', () => {
   });
 
   it('marks cards outside validPlayIndices as aria-disabled with tooltip on human play turn', async () => {
-    const must = makeBatakState({ validPlayIndices: [0] });
+    const must = makeBatakState({ validPlayIndices: [0], playRejectCodes: ['', 'shared.errFollowLeadSuit'] });
     mockExec.mockResolvedValue(must);
     renderWithProviders(<BatakPage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
@@ -337,10 +340,7 @@ describe('BatakPage', () => {
     // Critical accessibility constraint: aria-disabled cards must stay focusable
     // so keyboard / screen-reader users can reach the tooltip explaining the rule.
     expect(blocked).not.toBeDisabled();
-    expect(blocked).toHaveAttribute(
-      'title',
-      'このカードは出せません (リードスートに従うか、ボイドならスペードで切ってください)',
-    );
+    expect(blocked).toHaveAttribute('title', 'このカードは出せません (リードスートに従ってください)');
 
     fireEvent.click(blocked);
     expect(screen.getByRole('button', { name: '出す' })).toBeDisabled();
@@ -349,11 +349,12 @@ describe('BatakPage', () => {
   it('shows the reason-specific tooltip for each illegal Batak play', async () => {
     const stateFor = (
       cards: { design: 'SPADE' | 'HEART' | 'DIAMOND'; value: number }[],
-      validPlayIndices: number[],
+      rejectCodes: string[],
       currentTrick: BatakResponse['currentTrick'],
     ) =>
       makeBatakState({
-        validPlayIndices,
+        validPlayIndices: [],
+        playRejectCodes: rejectCodes,
         currentTrick,
         players: makeBatakState().players.map((player, index) =>
           index === 0 ? { ...player, cards, cardCount: cards.length } : player,
@@ -367,7 +368,7 @@ describe('BatakPage', () => {
             { design: 'SPADE', value: 1 },
             { design: 'HEART', value: 11 },
           ],
-          [1],
+          ['batak.errSpadesNotBroken', ''],
           [],
         ),
         card: '♠ A',
@@ -379,7 +380,7 @@ describe('BatakPage', () => {
             { design: 'DIAMOND', value: 3 },
             { design: 'HEART', value: 11 },
           ],
-          [0],
+          ['', 'shared.errFollowLeadSuit'],
           [{ playerIdx: 1, card: { design: 'DIAMOND', value: 3 } }],
         ),
         card: '♥ J',
@@ -391,7 +392,7 @@ describe('BatakPage', () => {
             { design: 'HEART', value: 11 },
             { design: 'SPADE', value: 1 },
           ],
-          [1],
+          ['batak.errMustTrumpWhenVoid', ''],
           [{ playerIdx: 1, card: { design: 'DIAMOND', value: 3 } }],
         ),
         card: '♥ J',
@@ -406,6 +407,53 @@ describe('BatakPage', () => {
       expect(screen.getByAltText(card).closest('button')).toHaveAttribute('title', tooltip);
       cleanup();
     }
+  });
+
+  it('uses the server reason even when local card state disagrees', async () => {
+    const state = makeBatakState({
+      playRejectCodes: ['', 'shared.errFollowLeadSuit'],
+      currentTrick: [],
+      validPlayIndices: [0],
+    });
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<BatakPage />);
+    await waitFor(() => expect(screen.getByAltText('♥ J')).toBeInTheDocument());
+    expect(screen.getByAltText('♥ J').closest('button')).toHaveAttribute(
+      'title',
+      'このカードは出せません (リードスートに従ってください)',
+    );
+  });
+
+  it('ignores unknown rejection codes', async () => {
+    mockExec.mockResolvedValue(
+      makeBatakState({ validPlayIndices: Array.from({ length: 13 }, (_, i) => i), playRejectCodes: ['unknown.code'] }),
+    );
+    renderWithProviders(<BatakPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    expect(screen.getByAltText('♠ A').closest('button')).not.toHaveAttribute('title');
+  });
+
+  it('falls back to the generic restricted tooltip for an unknown code on an illegal card', async () => {
+    mockExec.mockResolvedValue(makeBatakState({ validPlayIndices: [1, 2, 3], playRejectCodes: ['unknown.reason'] }));
+    renderWithProviders(<BatakPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    expect(screen.getByAltText('♠ A').closest('button')).toHaveAttribute(
+      'title',
+      'このカードは出せません (リードスートに従うか、ボイドならスペードで切ってください)',
+    );
+  });
+
+  it('does not show rejection titles on a CPU turn', async () => {
+    mockExec.mockResolvedValue(
+      makeBatakState({
+        currentPlayerIdx: 1,
+        validPlayIndices: Array.from({ length: 13 }, (_, i) => i),
+        playRejectCodes: ['batak.errSpadesNotBroken'],
+      }),
+    );
+    renderWithProviders(<BatakPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    expect(screen.getByAltText('♠ A').closest('button')).not.toHaveAttribute('title');
   });
 
   it('does not show play button when not human turn', async () => {

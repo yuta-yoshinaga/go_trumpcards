@@ -76,6 +76,32 @@ func TestBatak_Reset(t *testing.T) {
 	}
 }
 
+func TestBatak_GetPlayRejectCodes(t *testing.T) {
+	t.Run("spades not broken and playable card", func(t *testing.T) {
+		cb := newTestBatak()
+		cb.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		cb.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		setupBatakPlay(cb, 0, 0)
+		codes := cb.GetPlayRejectCodes(0)
+		assert.Equal(t, cb.GetPlayer(0).GetCardsSize(), len(codes))
+		assert.Equal(t, []string{"batak.errSpadesNotBroken", ""}, codes)
+	})
+	t.Run("follow lead suit", func(t *testing.T) {
+		cb := newTestBatak()
+		cb.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		cb.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		cb.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignDiamond, 3, false)}})
+		assert.Equal(t, []string{"shared.errFollowLeadSuit", ""}, cb.GetPlayRejectCodes(0))
+	})
+	t.Run("must trump when void", func(t *testing.T) {
+		cb := newTestBatak()
+		cb.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		cb.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		cb.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignDiamond, 3, false)}})
+		assert.Equal(t, []string{"batak.errMustTrumpWhenVoid", ""}, cb.GetPlayRejectCodes(0))
+	})
+}
+
 func TestBatak_Reset_ClearsAccumulated(t *testing.T) {
 	cb := newTestBatak()
 	cb.Reset()

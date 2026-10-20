@@ -74,4 +74,6 @@ export interface BatakResponse extends BaseGameResponse {
    * Empty array outside the play phase / when it is not the human's turn.
    */
   validPlayIndices: number[];
+  /** Per hand card, the server's rejection message code; empty when playable or when not the human's play turn. */
+  playRejectCodes: string[];
 }

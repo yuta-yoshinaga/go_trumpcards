@@ -835,6 +835,7 @@ const baseBatakState: BatakResponse = {
   message: '',
   config: { cpuDifficulty: 1, maxRounds: 5 },
   validPlayIndices: [],
+  playRejectCodes: [],
 };
 
 /**

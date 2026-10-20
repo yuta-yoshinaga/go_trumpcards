@@ -83472,6 +83472,11 @@ components:
           description: Indices in the human player's hand legal to play this turn
           items:
             type: integer
+        playRejectCodes:
+          type: array
+          description: "Per hand card, the message code of the rule that forbids playing it now; empty string when playable. Empty array when it is not the human's play turn."
+          items:
+            type: string
         config:
           type: object
           properties:
