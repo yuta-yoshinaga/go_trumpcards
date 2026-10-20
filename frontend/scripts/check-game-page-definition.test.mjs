@@ -50,7 +50,7 @@ describe('check-game-page-definition', () => {
     );
   });
 
-  const wrapper = "import { OldPage } from './OldPage';\nexport const VariantPage = OldPage;\n";
+  const wrapper = "import { OldPage } from './OldPage';\nexport function VariantPage() { return <OldPage />; }\n";
   it('passes a wrapper omitted from the baseline', () => {
     const result = run({
       pages: { AcesUpPage: MIGRATED, VariantPage: wrapper, OldPage: 'Old' },
@@ -59,6 +59,20 @@ describe('check-game-page-definition', () => {
     });
     expect(result.status).toBe(0);
     expect(result.out).toContain('1 wrappers');
+  });
+
+  it('treats a sibling page import with its own JSX as hand-wired', () => {
+    const result = run({
+      pages: {
+        AcesUpPage: MIGRATED,
+        VariantPage: `import { OldPage } from './OldPage';\nexport function VariantPage() { return <main><h1>Own page</h1></main>; }`,
+        OldPage: 'Old',
+      },
+      baseline: '# fixture\nOldPage.tsx\n',
+      routes: "export const routes = [{ page: 'AcesUp' }, { page: 'Variant' }, { page: 'Old' }];",
+    });
+    expect(result.status).toBe(1);
+    expect(result.out).toContain('VariantPage.tsx: new page must be built with createGamePage');
   });
 
   it('rejects a wrapper in the baseline', () => {

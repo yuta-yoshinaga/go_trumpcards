@@ -39,6 +39,7 @@ try {
   process.exit(1);
 }
 const routedPages = new Set([...routesSource.matchAll(/\bpage\s*:\s*['"]([^'"]+)['"]/g)].map((match) => match[1]));
+const routeCount = routedPages.size;
 const baseline = new Set(entries);
 // The rule the docs state: the page's export is built by the factory. A bare
 // `createGamePage(` substring would also match a comment or an unused call.
@@ -47,11 +48,15 @@ let failed = false;
 const wrappers = new Map();
 for (const page of pages) {
   const source = await readFile(`${PAGES_DIR}/${page}`, 'utf8');
-  const importMatch = source.match(/^import\s+(?:[\s\S]*?)\s+from\s+['"]\.\/([\w]+Page)['"];?\s*$/m);
-  if (importMatch) wrappers.set(page, importMatch[1]);
-  if (importMatch && /\bGamePageShell\b/.test(source)) {
+  const importMatch = source.match(/^import\s+([^;\n]*?)\s+from\s+['"]\.\/([\w]+Page)['"]/m);
+  // A wrapper must render only its imported page as JSX; an incidental helper import is not a wrapper.
+  const jsxTags = [...source.matchAll(/<\/?([A-Za-z][\w.]*)\b[^>]*>/g)].map((match) => match[1]);
+  const importedNames = importMatch ? [...importMatch[1].matchAll(/\b([A-Z]\w*)\b/g)].map((match) => match[1]) : [];
+  const isWrapper = importMatch && new Set(jsxTags).size === 1 && jsxTags.every((tag) => importedNames.includes(tag));
+  if (isWrapper) wrappers.set(page, importMatch[2]);
+  if (isWrapper && /\bGamePageShell\b/.test(source)) {
     console.error(
-      `game-page-definition: ${page}: wrapper of ${importMatch[1]} imports GamePageShell — account for it as a real page`,
+      `game-page-definition: ${page}: wrapper of ${importMatch[2]} imports GamePageShell — account for it as a real page`,
     );
     failed = true;
   }
@@ -96,6 +101,7 @@ if (process.env.GAME_PAGE_DEFINITION_PAGES) {
   assertFloor('game-page-definition', pages.length, 380, 'game pages');
   assertFloor('game-page-definition', nonRoutedCount, 4, 'non-routed pages');
   assertFloor('game-page-definition', wrapperCount, 8, 'variant wrappers');
+  assertFloor('game-page-definition', routeCount, 300, 'routed pages parsed from gameRoutes.ts');
 }
 assertFloor('game-page-definition', entries.length, 1, 'baseline pages');
 console.log(
