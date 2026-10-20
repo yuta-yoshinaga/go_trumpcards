@@ -17,6 +17,7 @@ import (
 func mustPrsiOutputJSON(msg string) string {
 	out := &controller.PrsiWebOutput{
 		Players:       []*controller.PrsiWebOutputPlayer{},
+		ValidPlays:    []int{},
 		WinnerIdx:     -1,
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}

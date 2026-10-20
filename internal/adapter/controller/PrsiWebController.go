@@ -33,6 +33,7 @@ type PrsiWebOutput struct {
 	Players          []*PrsiWebOutputPlayer `json:"players"`
 	Phase            int                    `json:"phase"`
 	CurrentPlayerIdx int                    `json:"currentPlayerIdx"`
+	ValidPlays       []int                  `json:"validPlays"`
 	DiscardTop       *WebOutputCard         `json:"discardTop"`
 	DrawPileCount    int                    `json:"drawPileCount"`
 	DiscardPileCount int                    `json:"discardPileCount"`
@@ -73,6 +74,7 @@ var NewPrsiWebController, NewPrsiWebControllerWithProvider = webControllerPair[u
 func newPrsiDefaultOutput(msg string) *PrsiWebOutput {
 	return &PrsiWebOutput{
 		Players:       make([]*PrsiWebOutputPlayer, 0),
+		ValidPlays:    make([]int, 0),
 		WinnerIdx:     -1,
 		WebOutputBase: WebOutputBase{Message: msg},
 	}

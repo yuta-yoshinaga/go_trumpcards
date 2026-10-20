@@ -29,9 +29,10 @@ Issue #11913。フロントがルールを再実装した client-side mirror は
 
 Euchre は `GetValidPlayIndices` が既にあったため domain の変更は不要で、presenter の手番判定とレスポンス field の追加だけで移行できた。Belote、Omi、Wizard、Coinche、Bezique も同じく domain 変更なしで移行した。Bezique は終盤 (山札切れ) で後手のときだけリングを出す表示条件をフロントに残している。`isEndgame` はサーバの値なので規則の写しではない。
 
+CrazyEights と Prsi は domain に `GetValidPlayIndices` があったが interface に出ていなかったため、interface と手書きの mock に足して同じ形で移行した。Prsi は hook の `canPlay` が「出す」を止めているので、その判定も `validPlays` から決める。Prsi のペナルティ中の読み上げ文はサーバの `penaltyDrawCount` を見る表示条件として残している。
+
 `frontend/src/utils` に残る合法性まわりの写し (2026-10-20 に実物を数えた):
 
-- `validPlays` の形で移せるが interface と mock の変更が要る: CrazyEights、Prsi (2 本)。
 - 合法かどうかではなく「なぜ出せないか」の理由の写し: Batak、Call Break (2 本)。どちらも合法手は既にサーバから受け取っている。
 - ソリティアの移動先・動かせる札の計算: `*LegalTargets.ts` 18 本と `shamrocksLegalMove.ts`、`triPeaksPlayable.ts` (20 本)。どれも選択中の札や盤面に対する計算で、手札の添字の列である `validPlays` では置き換えられない。移すなら別の応答の設計 (この ADR の改訂) が要る。
 - 写しではないもの: `schnapsenLegal.ts` と `michiganPlayable.ts` はサーバから受け取った値の表示条件だけを持つ。
