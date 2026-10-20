@@ -25,6 +25,7 @@ function makeState(overrides?: Partial<WizardResponse>): WizardResponse {
     handSize: 3,
     trickNumber: 2,
     currentPlayerIdx: 0,
+    validPlays: [],
     bidPlayerIdx: 0,
     dealerIdx: 1,
     currentTrick: [],

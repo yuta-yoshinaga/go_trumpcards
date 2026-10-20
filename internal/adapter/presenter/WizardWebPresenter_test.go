@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -35,6 +36,7 @@ func setupWizardWebMock() *interfaces.MockWizardGame {
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.WizardPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
+	m.On("GetValidPlayIndices", 0).Return([]int{}).Maybe()
 	m.On("GetBidPlayerIdx").Return(0)
 	m.On("GetDealerIdx").Return(0)
 	m.On("GetTrumpCard").Return(domain.NewCard(domain.CardDesignHeart, 5, false))
@@ -49,6 +51,40 @@ func setupWizardWebMock() *interfaces.MockWizardGame {
 	m.On("GetHint").Return(nil).Maybe()
 
 	return m
+}
+
+func TestWizardWebPresenterValidPlays(t *testing.T) {
+	p := new(presenter.WizardWebPresenter)
+	t.Run("human play turn", func(t *testing.T) {
+		m, _ := setupWizardWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+		m.On("GetValidPlayIndices", 0).Return([]int{1, 3})
+		result := p.Output(m, nil)
+		var out controller.WizardWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &out))
+		assert.Equal(t, []int{1, 3}, out.ValidPlays)
+		assert.Contains(t, result, `"validPlays":[1,3]`)
+	})
+	t.Run("CPU turn", func(t *testing.T) {
+		m, _ := setupWizardWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentPlayerIdx")
+		m.On("GetCurrentPlayerIdx").Return(1)
+		// A non-empty domain answer proves the presenter's gate, not the mock, yields [].
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+		m.On("GetValidPlayIndices", mock.Anything).Return([]int{0, 1}).Maybe()
+		result := p.Output(m, nil)
+		assert.Contains(t, result, `"validPlays":[]`)
+	})
+	t.Run("outside play phase", func(t *testing.T) {
+		m, _ := setupWizardWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.WizardPhaseBid)
+		// A non-empty domain answer proves the presenter's gate, not the mock, yields [].
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+		m.On("GetValidPlayIndices", mock.Anything).Return([]int{0, 1}).Maybe()
+		result := p.Output(m, nil)
+		assert.Contains(t, result, `"validPlays":[]`)
+	})
 }
 
 func setupWizardWebMockWithPlayers() (*interfaces.MockWizardGame, []*domain.WizardPlayer) {

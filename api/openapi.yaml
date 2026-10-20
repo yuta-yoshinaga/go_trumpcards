@@ -83124,6 +83124,8 @@ components:
       type: object
       additionalProperties: true
       description: Game state after the command was processed.
+      required:
+        - validPlays
       properties:
         messageCode:
           type: string
@@ -83162,6 +83164,11 @@ components:
           type: integer
         currentPlayerIdx:
           type: integer
+        validPlays:
+          type: array
+          description: Hand indices the human player may legally play now; empty when it is not the human's play turn
+          items:
+            type: integer
         bidPlayerIdx:
           type: integer
         dealerIdx:

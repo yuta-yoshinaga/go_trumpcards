@@ -49,6 +49,7 @@ type WizardWebOutput struct {
 	HandSize         int                      `json:"handSize"`
 	TrickNumber      int                      `json:"trickNumber"`
 	CurrentPlayerIdx int                      `json:"currentPlayerIdx"`
+	ValidPlays       []int                    `json:"validPlays"`
 	BidPlayerIdx     int                      `json:"bidPlayerIdx"`
 	DealerIdx        int                      `json:"dealerIdx"`
 	TrumpCard        *WebOutputCard           `json:"trumpCard"`
