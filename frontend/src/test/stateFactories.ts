@@ -1084,6 +1084,7 @@ const baseCoincheState: CoincheResponse = {
   roundNumber: 1,
   trickNumber: 0,
   currentPlayerIdx: 0,
+  validPlays: [],
   bidPlayerIdx: 0,
   dealerIdx: 3,
   trumpSuit: 0,

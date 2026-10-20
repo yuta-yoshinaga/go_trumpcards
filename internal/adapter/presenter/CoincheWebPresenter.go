@@ -67,6 +67,15 @@ func (p *CoincheWebPresenter) buildBase(b interfaces.CoincheGame) *controller.Co
 
 	resObj.CurrentTrick = trickCardsToOutput(b.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(b)
+	resObj.ValidPlays = make([]int, 0)
+	if b.GetPhase() == domain.CoinchePhasePlay {
+		for i := 0; i < b.GetPlayerCnt(); i++ {
+			if b.GetPlayer(i).GetIsHuman() && b.GetCurrentPlayerIdx() == i {
+				resObj.ValidPlays = intSliceOrEmpty(b.GetValidPlayIndices(i))
+				break
+			}
+		}
+	}
 	return resObj
 }
 
