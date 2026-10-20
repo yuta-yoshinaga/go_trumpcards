@@ -49,6 +49,7 @@ const playPhaseState: PrsiResponse = {
   ],
   phase: 0,
   currentPlayerIdx: 0,
+  validPlays: [1],
   discardTop: { design: 'HEART', value: 7 },
   drawPileCount: 30,
   discardPileCount: 3,
@@ -84,6 +85,7 @@ const cpuTurnState: PrsiResponse = {
 const penaltyState: PrsiResponse = {
   ...playPhaseState,
   penaltyDrawCount: 2,
+  validPlays: [0],
 };
 
 const noDiscardState: PrsiResponse = {
@@ -116,8 +118,8 @@ describe('PrsiPage', () => {
     });
   });
 
-  it('highlights legal cards and dims illegal ones on the human turn', async () => {
-    // Discard top ♥7; hand has ♥J (legal — same suit) and ♠A (illegal).
+  it('follows server legal indices when highlighting cards', async () => {
+    // The server marks ♥J playable and ♠A illegal.
     renderWithProviders(<PrsiPage />);
     // aria-label には合法/非合法が入るようになったので (#5684)、カード名で引く。
     const legal = (await screen.findByAltText('♥ J')).closest('button') as HTMLButtonElement;
@@ -129,11 +131,24 @@ describe('PrsiPage', () => {
     expect(illegal).toHaveAttribute('title', 'このカードは出せません（スート・数字のいずれも不一致）');
   });
 
+  it('uses server legality when it contradicts the former client rule', async () => {
+    // With a ♥7 on top, the former mirror rejected ♠A and allowed ♥J. Server says the reverse.
+    mockExec.mockResolvedValue({ ...playPhaseState, validPlays: [0] });
+    renderWithProviders(<PrsiPage />);
+    const serverLegal = (await screen.findByAltText('♠ A')).closest('button') as HTMLButtonElement;
+    const formerRuleLegal = screen.getByAltText('♥ J').closest('button') as HTMLButtonElement;
+    expect(serverLegal).toHaveAttribute('data-legal', 'true');
+    expect(serverLegal).toHaveAttribute('aria-label', expect.stringContaining('出せます'));
+    expect(formerRuleLegal).toHaveAttribute('data-legal', 'false');
+    expect(formerRuleLegal).toHaveAttribute('aria-label', expect.stringContaining('出せません'));
+  });
+
   it('does not mark card legality on a CPU turn', async () => {
     mockExec.mockResolvedValue(cpuTurnState);
     renderWithProviders(<PrsiPage />);
     const card = await screen.findByLabelText('♥ J');
     expect(card).not.toHaveAttribute('data-legal');
+    expect(screen.getByAltText('♠ A').closest('button')).not.toHaveAttribute('data-legal');
   });
 
   it('renders play and draw buttons when human turn', async () => {

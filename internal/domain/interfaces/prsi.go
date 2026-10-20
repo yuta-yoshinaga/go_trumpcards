@@ -9,6 +9,8 @@ type PrsiGame interface {
 	Reset()
 	// PlayerPlay プレイヤーがカードを出す
 	PlayerPlay(cardIndex int) error
+	// GetValidPlayIndices 現在プレイ可能な手札のインデックスを取得する
+	GetValidPlayIndices(playerIdx int) []int
 	// PlayerDraw プレイヤーが山札からカードを引く
 	PlayerDraw() error
 	// CpuPlay CPUプレイヤーが1ターン実行する
