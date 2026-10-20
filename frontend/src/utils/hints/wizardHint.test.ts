@@ -57,6 +57,7 @@ function makeState(overrides: Partial<WizardResponse> = {}): WizardResponse {
     leadPlayerIdx: 0,
     config: { cpuDifficulty: 0 },
     message: '',
+    validPlays: [],
     ...overrides,
   };
 }

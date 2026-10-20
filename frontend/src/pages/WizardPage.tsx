@@ -43,7 +43,6 @@ import { ohHellBidSummary } from '../utils/ohHellBid';
 import { findPlayerName, playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { type WizardBidOutcome, wizardBidAccuracy } from '../utils/wizardBidAccuracy';
-import { isWizardLegalPlay } from '../utils/wizardLegal';
 
 /** DOM id linking each illegal card button to the shared screen-reader reason text. */
 const WIZARD_ILLEGAL_REASON_ID = 'wiz-illegal-reason';
@@ -271,19 +270,8 @@ function WizardPageContent() {
     };
   };
 
-  // On the human's play turn, compute which hand cards are legal to play so the
-  // UI can highlight them. Mirrors Wizard.validatePlay in internal/domain/Wizard.go:
-  // Wizard/Jester are always legal; a normal card must follow the led suit while
-  // the player still holds it. `undefined` off-turn leaves every card unstyled.
-  const trickCards = state.currentTrick.map((tc) => tc.card);
-  const humanHand = humanPlayer?.cards ?? [];
-  const legalIndices =
-    isHumanTurn && humanPlayer
-      ? humanHand.reduce<number[]>((acc, card, idx) => {
-          if (isWizardLegalPlay(card, trickCards, humanHand)) acc.push(idx);
-          return acc;
-        }, [])
-      : undefined;
+  // The server computes legality from internal/domain/Wizard.go (ADR-0045).
+  const legalIndices = isHumanTurn ? state.validPlays : undefined;
 
   // At round/game end, `state.players` still carries the finished round's bid and
   // trickCount, so we can summarize how far each player's actual tricks landed

@@ -98,6 +98,15 @@ func (p *WizardWebPresenter) buildBase(o interfaces.WizardGame) *controller.Wiza
 
 	resObj.CurrentTrick = trickCardsToOutputWithFace(o.GetCurrentTrick(), wizardFace)
 	resObj.Players = p.buildPlayersOutput(o)
+	resObj.ValidPlays = make([]int, 0)
+	if o.GetPhase() == domain.WizardPhasePlay {
+		for i := 0; i < o.GetPlayerCnt(); i++ {
+			if o.GetPlayer(i).GetIsHuman() && o.GetCurrentPlayerIdx() == i {
+				resObj.ValidPlays = intSliceOrEmpty(o.GetValidPlayIndices(i))
+				break
+			}
+		}
+	}
 	return resObj
 }
 
