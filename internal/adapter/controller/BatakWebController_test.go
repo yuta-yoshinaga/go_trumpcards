@@ -20,6 +20,7 @@ func mustBatakOutputJSON(msg string) string {
 		Players:          []*controller.BatakWebOutputPlayer{},
 		CurrentTrick:     []*controller.WebOutputTrickCard{},
 		ValidPlayIndices: []int{},
+		PlayRejectCodes:  []string{},
 		WinnerIdx:        -1,
 		DeclarerIdx:      -1,
 		HighBid:          0,

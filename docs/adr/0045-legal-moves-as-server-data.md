@@ -31,9 +31,10 @@ Euchre は `GetValidPlayIndices` が既にあったため domain の変更は不
 
 CrazyEights と Prsi は domain に `GetValidPlayIndices` があったが interface に出ていなかったため、interface と手書きの mock に足して同じ形で移行した。Prsi は hook の `canPlay` が「出す」を止めているので、その判定も `validPlays` から決める。Prsi のペナルティ中の読み上げ文はサーバの `penaltyDrawCount` を見る表示条件として残している。
 
+Batak と Call Break は「なぜ出せないか」のツールチップを写しで計算していた。domain に `GetPlayRejectCodes` を足し、`validatePlay` が返すエラーのメッセージコードを手札と同じ並びで `playRejectCodes` として返す (出せる札は空文字)。ページはコードを既存のツールチップの文言に対応させるだけで、知らないコードは汎用のツールチップに任せる。合法手そのもの (`validPlayIndices`) の返し方は変えていない。
+
 `frontend/src/utils` に残る合法性まわりの写し (2026-10-20 に実物を数えた):
 
-- 合法かどうかではなく「なぜ出せないか」の理由の写し: Batak、Call Break (2 本)。どちらも合法手は既にサーバから受け取っている。
 - ソリティアの移動先・動かせる札の計算: `*LegalTargets.ts` 18 本と `shamrocksLegalMove.ts`、`triPeaksPlayable.ts` (20 本)。どれも選択中の札や盤面に対する計算で、手札の添字の列である `validPlays` では置き換えられない。移すなら別の応答の設計 (この ADR の改訂) が要る。
 - 写しではないもの: `schnapsenLegal.ts` と `michiganPlayable.ts` はサーバから受け取った値の表示条件だけを持つ。
 

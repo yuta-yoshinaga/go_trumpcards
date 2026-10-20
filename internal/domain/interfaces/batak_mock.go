@@ -161,3 +161,12 @@ func (m *MockBatakGame) GetValidPlayIndices(playerIdx int) []int {
 	}
 	return nil
 }
+
+// GetPlayRejectCodes モック
+func (m *MockBatakGame) GetPlayRejectCodes(playerIdx int) []string {
+	args := m.Called(playerIdx)
+	if val, ok := args.Get(0).([]string); ok {
+		return val
+	}
+	return nil
+}

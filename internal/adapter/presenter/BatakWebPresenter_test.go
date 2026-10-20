@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -22,6 +23,7 @@ func setupBatakWebMock() *interfaces.MockBatakGame {
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.BatakPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
+	m.On("IsHumanTurn").Return(true)
 	m.On("GetBidPlayerIdx").Return(0)
 	m.On("GetWinnerIdx").Return(-1)
 	m.On("GetLeadPlayerIdx").Return(0)
@@ -50,7 +52,41 @@ func setupBatakWebMockWithPlayers() (*interfaces.MockBatakGame, []*domain.BatakP
 		m.On("GetScoreBreakdown", i).Return(domain.BatakScoreBreakdown{})
 	}
 	m.On("GetValidPlayIndices", 0).Return([]int{})
+	m.On("GetPlayRejectCodes", 0).Return([]string{}).Maybe()
 	return m, players
+}
+
+func TestBatakWebPresenterPlayRejectCodes(t *testing.T) {
+	p := new(presenter.BatakWebPresenter)
+	t.Run("human play turn", func(t *testing.T) {
+		m, _ := setupBatakWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPlayRejectCodes")
+		m.On("GetPlayRejectCodes", 0).Return([]string{"", "shared.errFollowLeadSuit"})
+		var got controller.BatakWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, nil)), &got))
+		assert.Equal(t, []string{"", "shared.errFollowLeadSuit"}, got.PlayRejectCodes)
+	})
+	for _, tc := range []struct {
+		name      string
+		phase     domain.BatakPhase
+		humanTurn bool
+	}{
+		{name: "cpu turn", phase: domain.BatakPhasePlay, humanTurn: false},
+		{name: "non-play phase", phase: domain.BatakPhaseBid, humanTurn: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			m, _ := setupBatakWebMockWithPlayers()
+			m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "IsHumanTurn")
+			m.On("IsHumanTurn").Return(tc.humanTurn)
+			m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+			m.On("GetPhase").Return(tc.phase)
+			m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPlayRejectCodes")
+			m.On("GetPlayRejectCodes", mock.Anything).Return([]string{"x"}).Maybe()
+			var got controller.BatakWebOutput
+			assert.NoError(t, json.Unmarshal([]byte(p.Output(m, nil)), &got))
+			assert.Equal(t, []string{}, got.PlayRejectCodes)
+		})
+	}
 }
 
 func TestBatakWebPresenter_Output(t *testing.T) {
