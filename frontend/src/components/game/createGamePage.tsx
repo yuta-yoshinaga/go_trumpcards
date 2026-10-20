@@ -98,7 +98,7 @@ export interface GameDefinition<S, G extends GameHookBase<S, A>, A extends unkno
   phase: (ctx: GamePageContext<S, G, V>) => { name: string; ended: boolean; won?: boolean };
   /** Plain function returning action shortcuts. Must not call hooks. */
   shortcuts?: (ctx: GamePageContext<S, G, V>) => ActionBinding[];
-  /** Plain function returning pinned primary footer actions. Must not call hooks. Its presence selects the pinned footer layout. */
+  /** Plain function returning pinned primary footer actions. Must not call hooks. Its presence selects the pinned footer layout. Return null (not undefined) on turns with no actions. */
   primaryActions?: (ctx: GamePageContext<S, G, V>) => ReactNode;
   /** Plain function returning persistent footer guidance. Must not call hooks. */
   message?: (ctx: GamePageContext<S, G, V>) => ReactNode;
@@ -292,7 +292,7 @@ export function createGamePage<S, G extends GameHookBase<S, A>, A extends unknow
             {def.primaryActions ? (
               <GameFooter
                 className={`${gameTheme[def.key].footer} px-4 py-2.5`}
-                actions={primaryActions}
+                actions={primaryActions ?? null}
                 message={message}
               >
                 {FooterHand && <FooterHand {...context} />}

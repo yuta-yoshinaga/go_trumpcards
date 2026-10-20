@@ -377,6 +377,22 @@ describe('createGamePage', () => {
     expect(screen.getByRole('button', { name: 'リセット' }).closest('[data-testid="game-footer-content"]')).toBeNull();
   });
 
+  it('keeps the pinned footer layout when primaryActions returns undefined', () => {
+    const Page = createGamePage({
+      key: 'acesup',
+      useGame: useFakeGame,
+      tutorial: [],
+      skeleton: { kind: 'centered', rows: [1] },
+      cli: () => ({ parseCommand: () => ({ args: [] }), formatResponse: () => 'state', helpText: ['help'] }),
+      phase: ({ state }) => ({ name: 'playing', ended: state.ended }),
+      primaryActions: () => undefined,
+      Board,
+    });
+    renderWithProviders(<Page />);
+    expect(screen.getByTestId('game-footer-content')).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-actions')).not.toBeInTheDocument();
+  });
+
   it('hides the action log before resetting', () => {
     const Page = makeDefinition();
     currentGame = { ...currentGame, state: { ended: true } };
