@@ -640,7 +640,7 @@ describe('BeleagueredCastlePage foundation layout', () => {
     const { container } = renderWithProviders(<BeleagueredCastlePage />);
     await waitFor(() => {
       const foundation = container.querySelector('[data-tutorial="bc-foundation"]');
-      expect(foundation).toHaveClass('flex-col', 'lg:grid-cols-2');
+      expect(foundation).toHaveClass('flex-col', 'lg:grid', 'lg:grid-cols-2');
     });
   });
 });

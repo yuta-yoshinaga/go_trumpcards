@@ -371,7 +371,7 @@ function CitadelPageContent() {
                   {[0, 1, 2, 3].map(renderTableauColumn)}
                 </div>
 
-                {/* 4 foundations × (120px card + 20px label) = 560px, fitting the 800px viewport. */}
+                {/* Foundations stay in one column below lg; at lg+ they use a 2x2 grid to fit the 800px desktop play area (#11923). */}
                 <div
                   className={`flex flex-col items-center gap-1 sm:gap-2 mb-3 lg:grid lg:grid-cols-2 lg:self-start ${isMobile ? 'flex-none' : ''}`}
                   data-tutorial="bc-foundation"
