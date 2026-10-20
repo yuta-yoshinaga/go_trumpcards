@@ -31,3 +31,9 @@ func TestBuildWinnerWebMessage_CPU(t *testing.T) {
 	assert.Equal(t, "spades.result.cpuWin", code)
 	assert.Equal(t, map[string]string{"cpuId": "2"}, params)
 }
+
+func TestStringSliceOrEmpty(t *testing.T) {
+	assert.Equal(t, []string{}, stringSliceOrEmpty(nil))
+	input := []string{"x"}
+	assert.Equal(t, input, stringSliceOrEmpty(input))
+}

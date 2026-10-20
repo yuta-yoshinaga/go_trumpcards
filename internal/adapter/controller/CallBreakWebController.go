@@ -62,6 +62,7 @@ type CallBreakWebOutput struct {
 	LeadPlayerIdx    int                         `json:"leadPlayerIdx"`
 	Hint             *CallBreakWebOutputHint     `json:"hint,omitempty"`
 	ValidPlayIndices []int                       `json:"validPlayIndices"`
+	PlayRejectCodes  []string                    `json:"playRejectCodes"`
 	WebOutputBase
 	Config CallBreakWebOutputConfig `json:"config"`
 }
@@ -99,6 +100,7 @@ func newCallBreakDefaultOutput(msg string) *CallBreakWebOutput {
 		Players:          make([]*CallBreakWebOutputPlayer, 0),
 		CurrentTrick:     make([]*WebOutputTrickCard, 0),
 		ValidPlayIndices: make([]int, 0),
+		PlayRejectCodes:  make([]string, 0),
 		WinnerIdx:        -1,
 		WebOutputBase:    WebOutputBase{Message: msg},
 	}

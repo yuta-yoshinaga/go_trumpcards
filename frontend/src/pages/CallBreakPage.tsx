@@ -38,7 +38,6 @@ import { scoreTableClass } from '../styles/scoreTableStyles';
 import type { CallBreakResponse } from '../types/card';
 import { CallBreakPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { type CallBreakIllegalReason, callBreakIllegalReason } from '../utils/callBreakIllegalReason';
 import { cardAlt } from '../utils/cardAlt';
 import { CALLBREAK_HELP, parseCallBreakCommand } from '../utils/cli/commands/callbreakCommands';
 import { formatCallBreakState } from '../utils/cli/formatters/callbreakFormatter';
@@ -192,7 +191,6 @@ function CallBreakPageContent() {
   if (!state)
     return <GameSkeleton gameKey="callbreak" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 5 }} />;
 
-  const humanPlayer = state.players.find((p) => p.isHuman);
   const bidValue = bidSelection.roundNumber === state.roundNumber ? bidSelection.value : 1;
   const isBidPhase = state.phase === CallBreakPhase.BID;
   const isPlayPhase = state.phase === CallBreakPhase.PLAY;
@@ -201,20 +199,17 @@ function CallBreakPageContent() {
   const isGameEnd = state.phase === CallBreakPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
   const isHumanBidTurn = isBidPhase && state.players[state.bidPlayerIdx]?.isHuman === true;
+  const humanPlayer = state.players.find((p) => p.isHuman);
+  const rejectReasonKeys: Record<string, string> = {
+    'callbreak.errSpadesNotBroken': 'spadesNotBrokenTooltip',
+    'shared.errFollowLeadSuit': 'followSuitTooltip',
+    'callbreak.errMustTrump': 'mustTrumpSpadeTooltip',
+  };
   const cardTitleFor = (idx: number): string | undefined => {
-    const reason = callBreakIllegalReason(
-      idx,
-      humanPlayer?.cards ?? [],
-      state.currentTrick,
-      state.spadesBroken,
-      state.validPlayIndices,
-    );
-    const reasonKeys: Record<CallBreakIllegalReason, string> = {
-      spadesNotBroken: 'spadesNotBrokenTooltip',
-      followSuit: 'followSuitTooltip',
-      mustTrumpSpade: 'mustTrumpSpadeTooltip',
-    };
-    return reason ? t(reasonKeys[reason]) : undefined;
+    // The server computes this reason from CallBreak.go validatePlay (ADR-0045).
+    const code = state.playRejectCodes[idx];
+    const key = code ? rejectReasonKeys[code] : undefined;
+    return key ? t(key) : undefined;
   };
 
   const messageBox = (
