@@ -66,7 +66,6 @@ CassinoPage.tsx
 CatchTenPage.tsx
 CegoPage.tsx
 ChemindeFerPage.tsx
-ChicagoPage.tsx
 ChinchonPage.tsx
 ChinesePokerPage.tsx
 ChineseTenPage.tsx
@@ -89,7 +88,6 @@ CourchevelPage.tsx
 CourtPiecePage.tsx
 CrazyEightsPage.tsx
 CrazyFourPokerPage.tsx
-CrazyPineapplePage.tsx
 CrazyQuiltPage.tsx
 CrescentPage.tsx
 CribbagePage.tsx
@@ -106,11 +104,8 @@ DeuceToSevenPage.tsx
 DeucesWildPage.tsx
 DilotiPage.tsx
 DiplomatPage.tsx
-DiscoverPage.tsx
-DiscoverResultPage.tsx
 DoppelkopfPage.tsx
 DoubleAttackPage.tsx
-DoubleExposurePage.tsx
 DoubleKlondikePage.tsx
 DoubtPage.tsx
 DoudizhuPage.tsx
@@ -121,7 +116,6 @@ DurakPage.tsx
 EasthavenPage.tsx
 EcartePage.tsx
 EgyptianRatscrewPage.tsx
-EightGamePage.tsx
 EightOffPage.tsx
 EscobaPage.tsx
 EstimationPage.tsx
@@ -167,7 +161,6 @@ HoneymoonBridgePage.tsx
 HorsePage.tsx
 IndianPokerPage.tsx
 IndianRummyPage.tsx
-IrishPokerPage.tsx
 IronCrossPage.tsx
 IsraeliWhistPage.tsx
 JassPage.tsx
@@ -189,7 +182,6 @@ KoenigrufenPage.tsx
 KoiKoiPage.tsx
 LaBelleLuciePage.tsx
 LaughAndLieDownPage.tsx
-LegalPage.tsx
 LetItRidePage.tsx
 LingerLongerPage.tsx
 LiteraturePage.tsx
@@ -225,7 +217,6 @@ NarcoticPage.tsx
 NertzPage.tsx
 NinetyNinePage.tsx
 NiuNiuPage.tsx
-NotFoundPage.tsx
 OasisPokerPage.tsx
 OhHellPage.tsx
 OichoKabuPage.tsx
@@ -294,7 +285,6 @@ SedmaPage.tsx
 SergeantMajorPage.tsx
 SetteEMezzoPage.tsx
 SevenBridgePage.tsx
-SevenCardStudHiLoPage.tsx
 SevenCardStudPage.tsx
 SevenTwentySevenPage.tsx
 SevensPage.tsx
@@ -315,10 +305,8 @@ SlapjackPage.tsx
 SlobberhannesPage.tsx
 SlyFoxPage.tsx
 SnapPage.tsx
-SokoPage.tsx
 SoloWhistPage.tsx
 SomersetPage.tsx
-Spanish21Page.tsx
 SpeculationPage.tsx
 SpeedPage.tsx
 SpiderPage.tsx
