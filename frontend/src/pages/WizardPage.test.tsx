@@ -65,6 +65,7 @@ const playPhaseState: WizardResponse = {
   handSize: 5,
   trickNumber: 1,
   currentPlayerIdx: 0,
+  validPlays: [0, 1],
   bidPlayerIdx: 0,
   dealerIdx: 3,
   currentTrick: [],
@@ -215,6 +216,7 @@ describe('WizardPage', () => {
 
     mockExec.mockResolvedValueOnce({
       ...playPhaseState,
+      validPlays: [1],
       currentTrick: [
         { playerIdx: 0, card: { design: 'SPADE', value: 1 } },
         { playerIdx: 1, card: { design: 'HEART', value: 5 } },
@@ -657,6 +659,7 @@ describe('WizardPage', () => {
   it('prevents selecting illegal cards on the human play turn', async () => {
     mockExec.mockResolvedValue({
       ...playPhaseState,
+      validPlays: [1],
       currentTrick: [{ playerIdx: 3, card: { design: 'HEART', value: 4 } }],
     });
     renderWithProviders(<WizardPage />);
@@ -675,6 +678,7 @@ describe('WizardPage', () => {
   it('allows deselecting a selected card after it becomes illegal', async () => {
     mockExec.mockResolvedValueOnce(playPhaseState).mockResolvedValueOnce({
       ...followSuitState,
+      validPlays: [1],
       players: [
         {
           ...followSuitState.players[0],
@@ -875,18 +879,18 @@ describe('WizardPage', () => {
   });
 
   describe('legal-play highlighting', () => {
-    it('rings every card when leading (empty trick)', async () => {
-      mockExec.mockResolvedValue(playPhaseState);
+    it('rings exactly server indices even when they disagree with client rules', async () => {
+      mockExec.mockResolvedValue({ ...followSuitState, validPlays: [0] });
       renderWithProviders(<WizardPage />);
       const spade = await screen.findByRole('button', { name: '♠ A' });
       const heart = screen.getByRole('button', { name: '♥ J' });
       expect(spade.className).toContain('ring-ds-success');
-      expect(heart.className).toContain('ring-ds-success');
-      expect(spade).not.toHaveAttribute('title');
+      expect(heart.className).not.toContain('ring-ds-success');
+      expect(heart).toHaveAttribute('title');
     });
 
     it('rings only led-suit and Wizard/Jester cards when following, dimming the rest', async () => {
-      mockExec.mockResolvedValue(followSuitState);
+      mockExec.mockResolvedValue({ ...followSuitState, validPlays: [1, 2] });
       renderWithProviders(<WizardPage />);
       const heart = await screen.findByRole('button', { name: '♥ J' });
       const wizard = screen.getByRole('button', { name: 'Wizard ✦' });
@@ -902,7 +906,7 @@ describe('WizardPage', () => {
     });
 
     it('does not highlight the hand off the human play turn', async () => {
-      mockExec.mockResolvedValue({ ...playPhaseState, currentPlayerIdx: 1 });
+      mockExec.mockResolvedValue({ ...playPhaseState, currentPlayerIdx: 1, validPlays: [0, 1] });
       renderWithProviders(<WizardPage />);
       const spade = await screen.findByRole('button', { name: '♠ A' });
       expect(spade.className).not.toContain('ring-ds-success');

@@ -564,3 +564,14 @@ describe('FortressPage destination preview', () => {
     }
   });
 });
+
+describe('FortressPage foundation layout', () => {
+  it('keeps foundations in a mobile column and enables two desktop columns', async () => {
+    mockExec.mockResolvedValue(playingState);
+    const { container } = renderWithProviders(<FortressPage />);
+    await waitFor(() => {
+      const foundation = container.querySelector('[data-tutorial="fortress-foundation"]');
+      expect(foundation).toHaveClass('flex-col', 'lg:grid', 'lg:grid-cols-2');
+    });
+  });
+});

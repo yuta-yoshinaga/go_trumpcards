@@ -45345,6 +45345,8 @@ components:
     OmiResponse:
       type: object
       description: Current state of the Omi game
+      required:
+        - validPlays
       properties:
         players:
           type: array
@@ -45376,6 +45378,11 @@ components:
           type: integer
         currentPlayerIdx:
           type: integer
+        validPlays:
+          type: array
+          description: Hand indices the human player may legally play now; empty when it is not the human's play turn
+          items:
+            type: integer
         trumpCallerIdx:
           type: integer
         bidPlayerIdx:
@@ -66490,6 +66497,7 @@ components:
         - roundNumber
         - trickNumber
         - currentPlayerIdx
+        - validPlays
         - bidPlayerIdx
         - dealerIdx
         - trumpSuit
@@ -66524,6 +66532,11 @@ components:
           type: integer
         currentPlayerIdx:
           type: integer
+        validPlays:
+          type: array
+          description: Hand indices the human player may legally play now; empty when it is not the human's play turn
+          items:
+            type: integer
         bidPlayerIdx:
           type: integer
         dealerIdx:
@@ -83130,6 +83143,8 @@ components:
       type: object
       additionalProperties: true
       description: Game state after the command was processed.
+      required:
+        - validPlays
       properties:
         messageCode:
           type: string
@@ -83168,6 +83183,11 @@ components:
           type: integer
         currentPlayerIdx:
           type: integer
+        validPlays:
+          type: array
+          description: Hand indices the human player may legally play now; empty when it is not the human's play turn
+          items:
+            type: integer
         bidPlayerIdx:
           type: integer
         dealerIdx:

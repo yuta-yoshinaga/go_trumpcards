@@ -364,7 +364,10 @@ function FortressPageContent() {
                 {leftCols.map(renderTableauColumn)}
               </div>
 
-              <div className="flex flex-col items-center gap-1 sm:gap-2 mb-3" data-tutorial="fortress-foundation">
+              <div
+                className="flex flex-col items-center gap-1 sm:gap-2 mb-3 lg:grid lg:grid-cols-2 lg:self-start"
+                data-tutorial="fortress-foundation"
+              >
                 {state.foundation.map((pile, idx) => {
                   const foundationZone: FortressMoveZone = { zone: 'foundation', col: idx };
                   const isFoundationHintTarget = hint?.toZone === 'foundation' && hint.toCol === idx;

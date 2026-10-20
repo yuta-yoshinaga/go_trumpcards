@@ -35,7 +35,6 @@ import { cardAlt } from '../utils/cardAlt';
 import { OMI_HELP, parseOmiCommand } from '../utils/cli/commands/omiCommands';
 import { formatOmiState } from '../utils/cli/formatters/omiFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { omiLegalPlayIndices } from '../utils/omiLegalPlay';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -184,11 +183,8 @@ function OmiPageContent() {
   const isPlayPhaseForKbd = state?.phase === OmiPhase.PLAY;
   const isHumanTurnForKbd = isPlayPhaseForKbd && state?.players[state.currentPlayerIdx]?.isHuman === true;
   const humanCardCountForKbd = state?.players.find((p) => p.isHuman)?.cards?.length ?? 0;
-  const humanPlayerForKbd = state?.players.find((p) => p.isHuman);
-  const legalPlayIndicesForKbd =
-    isHumanTurnForKbd && humanPlayerForKbd
-      ? omiLegalPlayIndices(humanPlayerForKbd.cards, state?.currentTrick[0]?.card, state?.trumpSuit ?? 0)
-      : undefined;
+  // The server computes legality from internal/domain/Omi.go (ADR-0045).
+  const legalPlayIndicesForKbd = isHumanTurnForKbd ? state?.validPlays : undefined;
   const toggleLegalCard = useCallback(
     (index: number) => {
       if (legalPlayIndicesForKbd?.includes(index)) toggleCard(index);
@@ -239,7 +235,7 @@ function OmiPageContent() {
   // Human calls trump when they are the trump caller (bidPlayerIdx = trumpCallerIdx)
   const isHumanCallTrump = isCallTrumpPhase && state.bidPlayerIdx === humanIdx;
 
-  // Legal play highlighting: follow suit if possible, any card if void
+  // The server computes legality from internal/domain/Omi.go (ADR-0045).
   const legalPlayIndices = legalPlayIndicesForKbd;
 
   const suitName = (suit: number) => (SUIT_NAMES[suit] ? t(SUIT_NAMES[suit]) : '');

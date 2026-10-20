@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
@@ -75,6 +76,9 @@ func TestEuchreWebPresenterValidPlays(t *testing.T) {
 		cpuMock, _ := setupEuchreWebMockWithPlayers()
 		cpuMock.ExpectedCalls = removeMockCall(cpuMock.ExpectedCalls, "GetCurrentPlayerIdx")
 		cpuMock.On("GetCurrentPlayerIdx").Return(1)
+		// A non-empty domain answer proves the presenter's gate, not the mock, yields [].
+		cpuMock.ExpectedCalls = removeMockCall(cpuMock.ExpectedCalls, "GetValidPlayIndices")
+		cpuMock.On("GetValidPlayIndices", mock.Anything).Return([]int{0, 1}).Maybe()
 		cpuResult := p.Output(cpuMock, nil)
 		assert.Contains(t, cpuResult, `"validPlays":[]`)
 	})
@@ -82,6 +86,9 @@ func TestEuchreWebPresenterValidPlays(t *testing.T) {
 		phaseMock, _ := setupEuchreWebMockWithPlayers()
 		phaseMock.ExpectedCalls = removeMockCall(phaseMock.ExpectedCalls, "GetPhase")
 		phaseMock.On("GetPhase").Return(domain.EuchrePhasePickUp)
+		// A non-empty domain answer proves the presenter's gate, not the mock, yields [].
+		phaseMock.ExpectedCalls = removeMockCall(phaseMock.ExpectedCalls, "GetValidPlayIndices")
+		phaseMock.On("GetValidPlayIndices", mock.Anything).Return([]int{0, 1}).Maybe()
 		phaseResult := p.Output(phaseMock, nil)
 		assert.Contains(t, phaseResult, `"validPlays":[]`)
 	})

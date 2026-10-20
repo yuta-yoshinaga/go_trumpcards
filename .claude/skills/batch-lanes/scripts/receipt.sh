@@ -82,7 +82,8 @@ for file in "${changed[@]}"; do
     [[ -f "frontend/$candidate" ]] && siblings+=("$candidate")
   fi
   [[ "$file" =~ ^frontend/src/components/[A-Za-z]+\.tsx$ ]] && components+=("${file##*/}")
-  [[ "$file" =~ ^frontend/src/(utils|hooks)/[^/]+\.tsx?$ && ! "$file" =~ \.test\. ]] && new_sources+=("$file")
+  # a deleted source needs no test; only a source still on disk can be MISSING_TEST
+  [[ "$file" =~ ^frontend/src/(utils|hooks)/[^/]+\.tsx?$ && ! "$file" =~ \.test\. && -f "$file" ]] && new_sources+=("$file")
   [[ "$file" =~ ^frontend/.*\.(tsx?|json)$ ]] && fmt+=("${file#frontend/}")
   [[ "$file" =~ \.(tsx?|go)$ ]] && mut_files+=("$file")
 done
