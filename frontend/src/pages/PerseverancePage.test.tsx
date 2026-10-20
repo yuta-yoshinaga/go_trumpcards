@@ -75,6 +75,7 @@ const playingState: PerseveranceResponse = {
   canUndo: false,
   isStalemate: false,
   redealsLeft: 2,
+  legalTargets: { 'tableau-0-1': { tableau: [1], foundation: [] }, 'tableau-0-0': { tableau: [], foundation: [] } },
   message: '',
 };
 
@@ -489,6 +490,7 @@ describe('PerseverancePage legal targets', () => {
     mockExec.mockResolvedValue({
       ...playingState,
       tableau: makeTableau([[{ card: card('SPADE', 1), faceUp: true }]]),
+      legalTargets: { 'tableau-0-0': { tableau: [], foundation: [0, 1, 2, 3] } },
     });
     renderWithProviders(<PerseverancePage />);
     fireEvent.click(await screen.findByRole('button', { name: '♠ A' }));
@@ -509,6 +511,37 @@ describe('PerseverancePage legal targets', () => {
 
   // **押せなくはしない。**押せなくすると E2E の「最初の列をクリック」が
   // 別の列を掴む。
+  it('follows server destinations even when they contradict client rules', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      legalTargets: { 'tableau-0-1': { tableau: [2], foundation: [0] } },
+    });
+    renderWithProviders(<PerseverancePage />);
+    fireEvent.click(await screen.findByRole('button', { name: '♠ 5' }));
+    await waitFor(() => expect(document.querySelectorAll('[data-legal-target="true"]').length).toBe(2));
+    const columns = document.querySelector('[data-tutorial="bd-tableau"]')?.children;
+    expect(columns?.[2]).toHaveAttribute('data-legal-target', 'true');
+    expect(columns?.[1]).not.toHaveAttribute('data-legal-target');
+  });
+
+  it('uses the three-part source key for a buried run preview', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau([
+        [
+          { card: card('SPADE', 13), faceUp: true },
+          { card: card('SPADE', 12), faceUp: true },
+          { card: card('SPADE', 11), faceUp: true },
+        ],
+      ]),
+      legalTargets: { 'tableau-0-0': { tableau: [3], foundation: [] } },
+    });
+    renderWithProviders(<PerseverancePage />);
+    const buried = await screen.findByRole('button', { name: '♠ K' });
+    fireEvent.mouseEnter(buried);
+    await waitFor(() => expect(document.querySelectorAll('[data-preview-target="true"]')).toHaveLength(1));
+  });
+
   it('leaves the illegal targets clickable', async () => {
     await selectSpadeFive();
     // **合法な移動先を選んではいけない。**♠6 は ♠5 の合法な置き先なので、

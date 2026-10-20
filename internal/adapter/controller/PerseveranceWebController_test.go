@@ -17,6 +17,7 @@ func mustPerseveranceOutputJSON(msg string) string {
 	out := &controller.PerseveranceWebOutput{
 		Tableau:       [][]*controller.PerseveranceWebOutputTableauCard{},
 		Foundation:    [][]*controller.WebOutputCard{},
+		LegalTargets:  map[string]controller.PerseveranceWebOutputTargets{},
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)

@@ -662,6 +662,36 @@ func TestPerseverance_LegalTargets(t *testing.T) {
 	})
 }
 
+func TestPerseverance_LegalTargetsFrom(t *testing.T) {
+	bd := setupPlayingPerseverance()
+	clearPVTableau(bd)
+	var tableau [domain.PerseveranceTableauCnt][]*domain.PerseveranceTableauCard
+	tableau[0] = []*domain.PerseveranceTableauCard{makePVTableauCard(domain.CardDesignHeart, 13)}
+	tableau[1] = []*domain.PerseveranceTableauCard{makePVTableauCard(domain.CardDesignSpade, 9), makePVTableauCard(domain.CardDesignSpade, 7), makePVTableauCard(domain.CardDesignSpade, 6)}
+	tableau[2] = []*domain.PerseveranceTableauCard{makePVTableauCard(domain.CardDesignHeart, 2)}
+	tableau[3] = []*domain.PerseveranceTableauCard{makePVTableauCard(domain.CardDesignSpade, 8)}
+	bd.SetTableau(tableau)
+
+	t.Run("buried run head has tableau destinations and no foundation targets", func(t *testing.T) {
+		tab, found := bd.LegalTargetsFrom(1, 1)
+		assert.Equal(t, []int{3}, tab)
+		assert.Empty(t, found)
+		assert.NotContains(t, tab, 1, "the source column cannot accept its own head")
+	})
+	t.Run("non run start returns nil", func(t *testing.T) {
+		tab, found := bd.LegalTargetsFrom(1, 0)
+		assert.Nil(t, tab)
+		assert.Nil(t, found)
+	})
+	t.Run("bottom card matches legacy LegalTargets", func(t *testing.T) {
+		tab, found := bd.LegalTargetsFrom(2, 0)
+		oldTab, oldFound := bd.LegalTargets(2)
+		assert.Equal(t, oldTab, tab)
+		assert.Equal(t, oldFound, found)
+		assert.NotEmpty(t, found, "the bottom-card case includes its legal foundation")
+	})
+}
+
 // --- Perseverance's four divergences from Baker's Dozen ---
 //
 // Perseverance is cloned from Baker's Dozen, and a clone's tests pass by

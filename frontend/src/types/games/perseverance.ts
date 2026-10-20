@@ -27,6 +27,8 @@ export interface PerseveranceResponse extends BaseGameResponse {
   isStalemate: boolean;
   /** Remaining gather-and-redeal chances (0–2). */
   redealsLeft: number;
+  /** Legal destinations keyed by `tableau-<column>-<cardIndex>` source. */
+  legalTargets: Record<string, { tableau: number[]; foundation: number[] }>;
   undoToEscape?: number;
   hint?: PerseveranceHint;
 }

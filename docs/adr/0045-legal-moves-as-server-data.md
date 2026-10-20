@@ -45,7 +45,7 @@ Batak と Call Break は「なぜ出せないか」のツールチップを写�
 
 `frontend/src/utils` に残る合法性まわりの写し (2026-10-20 に実物を数えた):
 
-- ソリティアの移動先・動かせる札の計算: `*LegalTargets.ts` と `shamrocksLegalMove.ts`、`triPeaksPlayable.ts`。Decision の改訂 (2026-10-20) の形で、触るついでに 1 ゲーム 1 PR で移す。Baker's Dozen は移行済み。
+- ソリティアの移動先・動かせる札の計算: `*LegalTargets.ts` と `shamrocksLegalMove.ts`、`triPeaksPlayable.ts`。Decision の改訂 (2026-10-20) の形で、触るついでに 1 ゲーム 1 PR で移す。Baker's Dozen と Perseverance は移行済み。Perseverance は domain に、埋もれた札から始まる並びの移動先を返す `LegalTargetsFrom(col, cardIndex)` を足し、キーを `tableau-<col>-<cardIndex>` にした。掴める札の判定 (`perseveranceStartsRun.ts`、`runStarts` の写し) はまだ残っている。
 - 写しではないもの: `schnapsenLegal.ts` と `michiganPlayable.ts` はサーバから受け取った値の表示条件だけを持つ。
 
 スコープ外: `utils/hints` の約 370 本の戦略ヒント (どれを出すべきか) は規則ではなく助言なので対象外。対象は合法性の写しだけ。

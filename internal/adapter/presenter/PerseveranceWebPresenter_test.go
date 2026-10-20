@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -52,6 +53,14 @@ func parsePerseveranceOutput(t *testing.T, jsonStr string) *controller.Persevera
 func setupPerseveranceOutputMock(g *interfaces.MockPerseveranceGame) {
 	setupPerseveranceWebMockDefaults(g)
 	g.On("GetHint").Return(nil).Maybe()
+	setupPerseveranceRunStartsEmptyMock(g)
+	g.On("LegalTargetsFrom", mock.Anything, mock.Anything).Return([]int(nil), []int(nil)).Maybe()
+}
+
+func setupPerseveranceRunStartsEmptyMock(g *interfaces.MockPerseveranceGame) {
+	for col := range domain.PerseveranceTableauCnt {
+		g.On("RunStarts", col).Return([]int(nil)).Maybe()
+	}
 }
 
 func TestPerseveranceWebPresenter_Output(t *testing.T) {
@@ -65,6 +74,7 @@ func TestPerseveranceWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 0, result.MoveCount)
 		assert.Len(t, result.Tableau, domain.PerseveranceTableauCnt)
 		assert.Len(t, result.Foundation, domain.PerseveranceFoundationCnt)
+		assert.Empty(t, result.LegalTargets)
 		assert.Equal(t, "perseverance.playing", result.MessageCode)
 	})
 
@@ -125,6 +135,25 @@ func TestPerseveranceWebPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestPerseveranceWebPresenter_LegalTargets(t *testing.T) {
+	g := new(interfaces.MockPerseveranceGame)
+	setupPerseveranceWebMockDefaults(g)
+	g.On("GetHint").Return(nil).Maybe()
+	for col := range domain.PerseveranceTableauCnt {
+		if col != 2 {
+			g.On("RunStarts", col).Return([]int(nil)).Maybe()
+		}
+	}
+	g.On("RunStarts", 2).Return([]int{1, 3})
+	g.On("LegalTargetsFrom", 2, 1).Return([]int{5}, []int(nil))
+	g.On("LegalTargetsFrom", 2, 3).Return([]int(nil), []int{0})
+	out := parsePerseveranceOutput(t, new(PerseveranceWebPresenter).Output(g, nil))
+	assert.Equal(t, map[string]controller.PerseveranceWebOutputTargets{
+		"tableau-2-1": {Tableau: []int{5}, Foundation: []int{}},
+		"tableau-2-3": {Tableau: []int{}, Foundation: []int{0}},
+	}, out.LegalTargets)
+}
+
 // **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
 // レスポンスで、ページの state にはマージされない。ここが埋まっていないと
 // フロントの `state.hint` は常に undefined で、それを読む分岐が全部死ぬ (#4483)。
@@ -134,6 +163,7 @@ func TestPerseveranceWebPresenter_OutputCarriesTheHint(t *testing.T) {
 	bg := new(interfaces.MockPerseveranceGame)
 	setupPerseveranceWebMockDefaults(bg)
 	bg.On("GetHint").Return(hint).Maybe()
+	setupPerseveranceRunStartsEmptyMock(bg)
 
 	result := parsePerseveranceOutput(t, new(PerseveranceWebPresenter).Output(bg, nil))
 	if result.Hint == nil {
@@ -147,6 +177,7 @@ func TestPerseveranceWebPresenter_HintOutput(t *testing.T) {
 	t.Run("with hint", func(t *testing.T) {
 		bg := new(interfaces.MockPerseveranceGame)
 		setupPerseveranceWebMockDefaults(bg)
+		setupPerseveranceRunStartsEmptyMock(bg)
 		bg.On("GetHint").Return(&domain.PerseveranceHint{
 			FromCol:   0,
 			CardIndex: 3,
@@ -159,11 +190,13 @@ func TestPerseveranceWebPresenter_HintOutput(t *testing.T) {
 		assert.NotNil(t, result.Hint)
 		assert.Equal(t, "foundation", result.Hint.ToZone)
 		assert.Equal(t, "perseverance.hintAvailable", result.MessageCode)
+		assert.Empty(t, result.LegalTargets)
 	})
 
 	t.Run("no hint", func(t *testing.T) {
 		bg := new(interfaces.MockPerseveranceGame)
 		setupPerseveranceWebMockDefaults(bg)
+		setupPerseveranceRunStartsEmptyMock(bg)
 		bg.On("GetHint").Return((*domain.PerseveranceHint)(nil))
 
 		p := new(PerseveranceWebPresenter)
@@ -198,8 +231,8 @@ func TestPerseveranceWebPresenter_ActionLogOutput(t *testing.T) {
 	})
 }
 
-// #5581: Web には `targets` に当たる操作が無く、置ける先は盤面から
-// `perseveranceLegalTargets` が作る。TargetsOutput は通常の盤面をそのまま返すこと ──
+// #5581: Web には `targets` に当たる操作が無く、置ける先は presenter が
+// legalTargets として返す。TargetsOutput は通常の盤面を返すこと ──
 // CUI 専用の応答が Web の経路に紛れ込まないように。
 func TestPerseveranceWebPresenter_TargetsOutputIsTheOrdinaryBoard(t *testing.T) {
 	g := domain.NewDefaultPerseverance()

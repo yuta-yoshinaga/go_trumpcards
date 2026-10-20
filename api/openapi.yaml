@@ -80120,6 +80120,21 @@ components:
     PerseveranceResponse:
       type: object
       properties:
+        legalTargets:
+          type: object
+          description: 'Legal destinations keyed by movable source id ("tableau-<col>-<cardIndex>").'
+          additionalProperties:
+            type: object
+            description: Where that run may move, by destination kind.
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
