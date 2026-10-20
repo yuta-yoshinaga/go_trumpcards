@@ -38,7 +38,6 @@ import { formatPrsiState } from '../utils/cli/formatters/prsiFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
-import { isPrsiLegalPlay } from '../utils/prsiLegal';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const PRSI_PHASE_KEYS: Readonly<Record<number, string>> = {
@@ -349,9 +348,8 @@ function PrsiPageContent() {
             {humanPlayer && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="prsi-player-hand">
                 {humanPlayer.cards.map((card, idx) => {
-                  // On the human's turn, highlight legal cards (matching suit/rank, or a 7 under
-                  // penalty) and dim the rest with a reason tooltip, so the rule is visible at a glance.
-                  const legal = !isHumanTurn || isPrsiLegalPlay(card, state.discardTop, state.penaltyDrawCount);
+                  // The server computes legality; penalty state remains a display-only explanation.
+                  const legal = !isHumanTurn || state.validPlays.includes(idx);
                   // **合法/非合法が title と見た目にしか無かった** (#5684)。title は
                   // スクリーンリーダーで安定して読まれる保証がなく、data-legal は
                   // アクセシビリティツリーに出ない。CUI は本文で出している。

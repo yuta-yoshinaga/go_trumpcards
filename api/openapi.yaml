@@ -55599,6 +55599,11 @@ components:
           example: 0
         currentPlayerIdx:
           type: integer
+        validPlays:
+          type: array
+          description: Hand indices the human may legally play; empty outside the human's play turn.
+          items:
+            type: integer
         discardTop:
           nullable: true
           allOf:

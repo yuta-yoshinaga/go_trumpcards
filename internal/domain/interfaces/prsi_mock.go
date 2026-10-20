@@ -15,8 +15,17 @@ type MockPrsiGame struct {
 
 func (m *MockPrsiGame) Reset()                         { m.Called() }
 func (m *MockPrsiGame) PlayerPlay(cardIndex int) error { return m.Called(cardIndex).Error(0) }
-func (m *MockPrsiGame) PlayerDraw() error              { return m.Called().Error(0) }
-func (m *MockPrsiGame) CpuPlay()                       { m.Called() }
+
+// GetValidPlayIndices モック
+func (m *MockPrsiGame) GetValidPlayIndices(playerIdx int) []int {
+	ret := m.Called(playerIdx)
+	if val, ok := ret.Get(0).([]int); ok {
+		return val
+	}
+	return nil
+}
+func (m *MockPrsiGame) PlayerDraw() error { return m.Called().Error(0) }
+func (m *MockPrsiGame) CpuPlay()          { m.Called() }
 func (m *MockPrsiGame) GetConfig() domain.PrsiConfig {
 	return m.Called().Get(0).(domain.PrsiConfig)
 }

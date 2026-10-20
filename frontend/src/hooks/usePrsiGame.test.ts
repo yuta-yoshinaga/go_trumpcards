@@ -29,6 +29,7 @@ const defaultState: PrsiResponse = {
   ],
   phase: 0,
   currentPlayerIdx: 0,
+  validPlays: [],
   discardTop: { design: 'HEART', value: 9 },
   drawPileCount: 30,
   discardPileCount: 3,
@@ -42,6 +43,7 @@ const defaultState: PrsiResponse = {
 
 const playableState: PrsiResponse = {
   ...defaultState,
+  validPlays: [0, 1],
   players: defaultState.players.map((player) =>
     player.isHuman
       ? {
@@ -88,7 +90,7 @@ describe('usePrsiGame', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0));
   });
 
-  it('does not play a selected card that is illegal on the discard pile', async () => {
+  it('does not play a selected card absent from validPlays', async () => {
     mockExec.mockResolvedValue(defaultState);
     const { result } = renderHook(() => usePrsiGame(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.state).not.toBeNull());
@@ -101,18 +103,19 @@ describe('usePrsiGame', () => {
     expect(mockExec).not.toHaveBeenCalled();
   });
 
-  it('allows only a 7 while a penalty is active', async () => {
+  it('canPlay follows validPlays even when discardTop/penalty would say otherwise', async () => {
     mockExec.mockResolvedValue({
       ...playableState,
       penaltyDrawCount: 2,
+      validPlays: [0],
     });
     const { result } = renderHook(() => usePrsiGame(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.state).not.toBeNull());
     act(() => result.current.toggleCard(0));
-    expect(result.current.canPlay).toBe(false);
+    expect(result.current.canPlay).toBe(true);
     act(() => result.current.toggleCard(0));
     act(() => result.current.toggleCard(1));
-    expect(result.current.canPlay).toBe(true);
+    expect(result.current.canPlay).toBe(false);
   });
 
   it('handlePlay does nothing when no card selected', async () => {
