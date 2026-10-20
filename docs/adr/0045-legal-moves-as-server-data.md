@@ -2,11 +2,13 @@
 
 ## Status
 
-Proposed (Hearts で試作)
+Accepted (Hearts #11917 と Euchre で同じ形のまま移行できた)
 
 ## Date
 
 2026-10-19
+
+更新: 2026-10-20
 
 ## Context
 
@@ -24,5 +26,7 @@ Issue #11913。フロントがルールを再実装した client-side mirror は
 ## Consequences
 
 規則の SSoT が Go domain に一本化される。mirror 削除ごとにフロントのテストも消える。CLI/CUI も同じ関数を使える。
+
+Euchre は `GetValidPlayIndices` が既にあったため domain の変更は不要で、presenter の手番判定とレスポンス field の追加だけで移行できた。残る mirror は 30 本。
 
 スコープ外: `utils/hints` の約 370 本の戦略ヒント (どれを出すべきか) は規則ではなく助言なので対象外。対象は合法性の写しだけ。

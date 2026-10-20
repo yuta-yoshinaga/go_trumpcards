@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -22,6 +23,7 @@ func setupEuchreWebMock() *interfaces.MockEuchreGame {
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.EuchrePhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
+	m.On("GetValidPlayIndices", 0).Return([]int{})
 	m.On("GetBidPlayerIdx").Return(0)
 	m.On("GetDealerIdx").Return(0)
 	m.On("GetTrumpSuit").Return(1)
@@ -52,6 +54,37 @@ func setupEuchreWebMockWithPlayers() (*interfaces.MockEuchreGame, []*domain.Euch
 	m.On("GetPlayer", 2).Return(players[2])
 	m.On("GetPlayer", 3).Return(players[3])
 	return m, players
+}
+
+func TestEuchreWebPresenterValidPlays(t *testing.T) {
+	p := new(presenter.EuchreWebPresenter)
+	m, players := setupEuchreWebMockWithPlayers()
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+	want := []int{0, 1}
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+	m.On("GetValidPlayIndices", 0).Return(want)
+
+	result := p.Output(m, nil)
+	var out controller.EuchreWebOutput
+	require.NoError(t, json.Unmarshal([]byte(result), &out))
+	assert.Equal(t, want, out.ValidPlays)
+	assert.Contains(t, result, `"validPlays":[0,1]`)
+
+	t.Run("CPU turn", func(t *testing.T) {
+		cpuMock, _ := setupEuchreWebMockWithPlayers()
+		cpuMock.ExpectedCalls = removeMockCall(cpuMock.ExpectedCalls, "GetCurrentPlayerIdx")
+		cpuMock.On("GetCurrentPlayerIdx").Return(1)
+		cpuResult := p.Output(cpuMock, nil)
+		assert.Contains(t, cpuResult, `"validPlays":[]`)
+	})
+	t.Run("outside play phase", func(t *testing.T) {
+		phaseMock, _ := setupEuchreWebMockWithPlayers()
+		phaseMock.ExpectedCalls = removeMockCall(phaseMock.ExpectedCalls, "GetPhase")
+		phaseMock.On("GetPhase").Return(domain.EuchrePhasePickUp)
+		phaseResult := p.Output(phaseMock, nil)
+		assert.Contains(t, phaseResult, `"validPlays":[]`)
+	})
 }
 
 func TestEuchreWebPresenter_Output(t *testing.T) {

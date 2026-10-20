@@ -40,6 +40,7 @@ function makeState(overrides: Partial<EuchreResponse> = {}): EuchreResponse {
     message: '',
     config: { cpuDifficulty: 0, pointLimit: 10 },
     ...overrides,
+    validPlays: overrides.validPlays ?? [],
   };
 }
 
