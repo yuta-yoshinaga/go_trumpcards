@@ -8,7 +8,9 @@ This directory contains the React frontend (Vite + React + TypeScript).
 
 ## Standard page structure
 
-Every game page (`src/pages/<X>Page.tsx`) follows the same skeleton — copy from an existing page like `SpadesPage.tsx` or `HeartsPage.tsx` rather than inventing a new structure. Key elements:
+New and migrated pages (Spades, Hearts, AcesUp): write a `GameDefinition` and `export const XPage = createGamePage(def)`; the factory supplies the TutorialWrapper split, mount-time reset, skeleton, GamePageShell, CLI toggle, settings, action log, reset button and shortcuts. Hooks go in `useView`; `phase`/`shortcuts`/`primaryActions`/`message` are plain functions that must not call hooks; `primaryActions` selects GameFooter's pinned action row.
+
+Hand-wired pages (not yet migrated; see `scripts/game-page-definition-baseline.txt`) follow this skeleton:
 
 1. **Outer `XPage` exports the TutorialWrapper, inner `XPageContent` holds the implementation** — this split is required because `TutorialWrapper` provides the context that hooks inside `XPageContent` consume.
 2. **Standard hooks**: `useGamePageSetup(gameName)` provides i18n + action-log + reset-confirm state; `useGameApi(apiFn, opts)` manages server state with loading / error / retry.
@@ -31,7 +33,7 @@ Shared building blocks:
 | `GamePageShell` | Background + heading + phase indicator + reset dialog wrapper (most pages use this) |
 | `TutorialWrapper` | Tutorial provider + i18n init (always wraps the exported `XPage`) |
 | `useCliMode` + `useCliGame` + `<CliTerminal>` + `<CliToggle>` | CLI fallback mode, available on most pages. Per-game parsing/formatting lives in `src/utils/cli/commands/<game>Commands.ts` + `src/utils/cli/formatters/<game>Formatter.ts` |
-| `createGamePage(def)` (`src/components/game/createGamePage.tsx`) | Assembles shell, CLI toggle/terminal, hint settings, action log, reset/give-up, skeleton, error alert and keyboard shortcuts from a `GameDefinition`; prototype on AcesUpPage (ADR-0044). `scripts/check-game-page-definition.mjs` guards new pages. |
+| `createGamePage(def)` (`src/components/game/createGamePage.tsx`) | Assembles shell, CLI toggle/terminal, hint settings, action log, reset/give-up, skeleton, error alert and keyboard shortcuts from a `GameDefinition`; used by AcesUp, Hearts and Spades (ADR-0044). `scripts/check-game-page-definition.mjs` guards new pages. |
 
 ## Traps that tests do not catch
 

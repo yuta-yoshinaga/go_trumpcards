@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next';
-import type { ComponentType } from 'react';
+import type { ComponentType, ReactNode } from 'react';
 import type { actionLogApi } from '../../api/gameApi';
 import type { ActionBinding } from '../../hooks/useActionKeyboardNav';
 import { useActionKeyboardNav } from '../../hooks/useActionKeyboardNav';
@@ -98,6 +98,10 @@ export interface GameDefinition<S, G extends GameHookBase<S, A>, A extends unkno
   phase: (ctx: GamePageContext<S, G, V>) => { name: string; ended: boolean; won?: boolean };
   /** Plain function returning action shortcuts. Must not call hooks. */
   shortcuts?: (ctx: GamePageContext<S, G, V>) => ActionBinding[];
+  /** Plain function returning pinned primary footer actions. Must not call hooks. Its presence selects the pinned footer layout. Return null (not undefined) on turns with no actions. */
+  primaryActions?: (ctx: GamePageContext<S, G, V>) => ReactNode;
+  /** Plain function returning persistent footer guidance. Must not call hooks. */
+  message?: (ctx: GamePageContext<S, G, V>) => ReactNode;
   /** Plain function returning whether shortcuts are enabled. Defaults to true. Must not call hooks. */
   shortcutsEnabled?: (ctx: GamePageContext<S, G, V>) => boolean;
   shortcutsTestId?: string;
@@ -210,7 +214,33 @@ export function createGamePage<S, G extends GameHookBase<S, A>, A extends unknow
     const FooterHand = def.FooterHand;
     const FooterStatus = def.FooterStatus;
     const FooterActions = def.FooterActions;
+    const primaryActions = def.primaryActions?.(context);
+    const message = def.message?.(context);
     const shellProps = def.shell?.(context);
+    // The error alert, status, action row and shortcuts sit inside the footer in the legacy layout and
+    // at the end of the scrolling content when `primaryActions` pins the footer's action row.
+    const footerControls = (
+      <>
+        <ErrorAlert message={game.error ?? game.hintError ?? null} onRetry={game.retry} />
+        {FooterStatus && <FooterStatus {...context} />}
+        <div className="flex gap-2 items-center flex-wrap" data-tutorial={def.actionsTutorialId}>
+          {FooterActions && <FooterActions {...context} />}
+          <GameResetButton
+            isGameEnd={phase.ended}
+            onReset={handleManualReset}
+            requestConfirm={setup.requestConfirm}
+            loading={busy}
+            dataTutorial={def.resetTutorialId}
+          />
+        </div>
+        {def.cardNav ? (
+          <CardNavShortcutsPanel data-testid={def.shortcutsTestId} />
+        ) : (
+          <ActionShortcutsPanel bindings={shortcuts} data-testid={def.shortcutsTestId} />
+        )}
+        {def.cardNav && def.shortcuts && <ActionShortcutsPanel bindings={shortcuts} />}
+      </>
+    );
     const giveUpProps: GiveUpConfirmProps =
       game.handleGiveUp !== undefined
         ? {
@@ -256,29 +286,23 @@ export function createGamePage<S, G extends GameHookBase<S, A>, A extends unknow
                 showActionLog={setup.showActionLog}
                 hideActionLog={setup.hideActionLog}
               />
+              {def.primaryActions && footerControls}
             </div>
             {def.settingsPlacement !== 'top' && <SettingsPanel title={setup.tc('settings.title')} groups={settings} />}
-            <GameFooter className={`${gameTheme[def.key].footer} px-4 py-2.5`}>
-              {FooterHand && <FooterHand {...context} />}
-              <ErrorAlert message={game.error ?? game.hintError ?? null} onRetry={game.retry} />
-              {FooterStatus && <FooterStatus {...context} />}
-              <div className="flex gap-2 items-center flex-wrap" data-tutorial={def.actionsTutorialId}>
-                {FooterActions && <FooterActions {...context} />}
-                <GameResetButton
-                  isGameEnd={phase.ended}
-                  onReset={handleManualReset}
-                  requestConfirm={setup.requestConfirm}
-                  loading={busy}
-                  dataTutorial={def.resetTutorialId}
-                />
-              </div>
-              {def.cardNav ? (
-                <CardNavShortcutsPanel data-testid={def.shortcutsTestId} />
-              ) : (
-                <ActionShortcutsPanel bindings={shortcuts} data-testid={def.shortcutsTestId} />
-              )}
-              {def.cardNav && def.shortcuts && <ActionShortcutsPanel bindings={shortcuts} />}
-            </GameFooter>
+            {def.primaryActions ? (
+              <GameFooter
+                className={`${gameTheme[def.key].footer} px-4 py-2.5`}
+                actions={primaryActions ?? null}
+                message={message}
+              >
+                {FooterHand && <FooterHand {...context} />}
+              </GameFooter>
+            ) : (
+              <GameFooter className={`${gameTheme[def.key].footer} px-4 py-2.5`} message={message}>
+                {FooterHand && <FooterHand {...context} />}
+                {footerControls}
+              </GameFooter>
+            )}
           </>
         )}
       </GamePageShell>
