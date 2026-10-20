@@ -38,4 +38,5 @@ if [[ "${ALLOW_PATCH_GAPS:-}" != 1 ]] && git -C "$wt" diff --name-only HEAD -- f
   fi
 fi
 bash "$B/overlap.sh" "$1" >> "$BATCH_STATE/rc$1.txt"
+bash "$B/adrcheck.sh" "$1" >> "$BATCH_STATE/rc$1.txt"
 echo RC_DONE >> "$BATCH_STATE/rc$1.txt"; cat "$BATCH_STATE/rc$1.txt"

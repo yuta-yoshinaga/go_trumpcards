@@ -29,6 +29,7 @@ while IFS= read -r -d '' path; do
 done < <(git ls-files -o --exclude-standard -z)
 echo "backup: $patch"
 orig=$(git rev-parse HEAD)
+orig_ref=$(git symbolic-ref --short -q HEAD || git rev-parse --short HEAD)
 
 # Fetch before staging or committing the lane's WIP so a fetch failure leaves
 # the lane's HEAD and working tree untouched.
@@ -66,5 +67,6 @@ else
     git reset -q --soft "$orig"
     git reset -q
   fi
+  echo "lane kept on $orig_ref; to rebase by hand: git stash -u && git merge --ff-only origin/develop && git stash pop"
   exit 2
 fi
