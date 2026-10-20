@@ -117,4 +117,43 @@ chmod +x "$race/scripts/"*.sh
 output="$(BATCH_REPO="$race/repo" BATCH_WT_ROOT="$race/wts" BATCH_STATE="$race/state" bash "$race/scripts/rcg.sh" 1 2>&1)" && fail "rcg accepted a worktree change during E2E"
 grep -q 'GATE: worktree changed during e2e' <<< "$output" || fail "rcg omitted worktree race error: $output"
 [[ ! -e "$race/state/gate1.ok" ]] || fail "rcg stamped a worktree changed during E2E"
+
+# Lint output without an explicit success receipt must not pass the gate.
+lint_gate() {
+  local name="$1" lint_lines="$2" want_pass="$3" expected_gate="${4:-GATE: lint unverified}"
+  local base="$tmp/$name" repo="$tmp/$name/repo" wts="$tmp/$name/wts" state="$tmp/$name/state"
+  mkdir -p "$repo" "$wts" "$base/scripts" "$state"
+  git init -q "$repo"; git -C "$repo" config user.email test@example.com; git -C "$repo" config user.name test
+  printf 'base\n' > "$repo/file"; git -C "$repo" add file; git -C "$repo" commit -qm base
+  git -C "$repo" worktree add -q -b lane "$wts/wt-ib1" HEAD
+  for script in common.sh treehash.sh rcg.sh; do cp "$SCRIPTS/$script" "$base/scripts/"; done
+  cat > "$base/scripts/rc.sh" <<STUB
+#!/usr/bin/env bash
+{
+  echo CHECK=ok
+  echo TYPE=ok
+$lint_lines
+  echo E2E_GATE=0
+} > "\$BATCH_STATE/rc\$1.txt"
+STUB
+  chmod +x "$base/scripts/"*.sh
+  local output rc=0
+  output="$(BATCH_REPO="$repo" BATCH_WT_ROOT="$wts" BATCH_STATE="$state" E2E_GATE=0 bash "$base/scripts/rcg.sh" 1 2>&1)" || rc=$?
+  if [[ "$want_pass" == yes ]]; then
+    [[ $rc -eq 0 ]] || fail "$name gate should pass: $output"
+    grep -q '^GATE: ok$' <<< "$output" || fail "$name omitted success: $output"
+    [[ -s "$state/gate1.ok" ]] || fail "$name did not stamp gate ok"
+  else
+    [[ $rc -ne 0 ]] || fail "$name gate should fail: $output"
+    grep -q "^$expected_gate$" <<< "$output" || fail "$name omitted lint error: $output"
+    [[ ! -e "$state/gate1.ok" ]] || fail "$name stamped unverified lint"
+  fi
+}
+lint_gate lint_unverified '  echo "LINT: Error: parallel golangci-lint is running"' no
+lint_gate lint_verified $'  echo "LINT: 0 issues."\n  echo LINT=ok' yes
+lint_gate lint_failed $'  echo "LINT: 2 issues."\n  echo LINT=FAIL' no 'GATE: lint failed'
+
+for script in "$SCRIPTS/receipt.sh" "$SCRIPTS/rcg.sh"; do bash -n "$script" || fail "bash -n $script"; done
+grep -q -- '--allow-parallel-runners' "$SCRIPTS/receipt.sh" || fail 'receipt.sh omits parallel-runner flag'
+grep -q '^  if \[\[ \$lint_rc -eq 0 \]\]; then echo LINT=ok;' "$SCRIPTS/receipt.sh" || fail 'receipt.sh omits LINT=ok receipt'
 echo "batch-lanes gate tests passed"
