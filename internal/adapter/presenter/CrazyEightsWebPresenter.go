@@ -33,15 +33,7 @@ func (p *CrazyEightsWebPresenter) Output(g interfaces.CrazyEightsGame, lastErr e
 	}
 
 	resObj.Players = p.buildPlayersOutput(g)
-	resObj.ValidPlays = make([]int, 0)
-	if g.GetPhase() == domain.CrazyEightsPhasePlay {
-		for i := 0; i < g.GetPlayerCnt(); i++ {
-			if g.GetPlayer(i).GetIsHuman() && g.GetCurrentPlayerIdx() == i {
-				resObj.ValidPlays = intSliceOrEmpty(g.GetValidPlayIndices(i))
-				break
-			}
-		}
-	}
+	resObj.ValidPlays = humanTurnValidPlays[*domain.CrazyEightsPlayer](g, g.GetPhase() == domain.CrazyEightsPhasePlay)
 	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(g, lastErr)
 
 	return marshalOrError(resObj)

@@ -32,15 +32,7 @@ func (p *PrsiWebPresenter) Output(g interfaces.PrsiGame, lastErr error) string {
 	}
 
 	resObj.Players = p.buildPlayersOutput(g)
-	resObj.ValidPlays = make([]int, 0)
-	if g.GetPhase() == domain.PrsiPhasePlay {
-		for i := 0; i < g.GetPlayerCnt(); i++ {
-			if g.GetPlayer(i).GetIsHuman() && g.GetCurrentPlayerIdx() == i {
-				resObj.ValidPlays = intSliceOrEmpty(g.GetValidPlayIndices(i))
-				break
-			}
-		}
-	}
+	resObj.ValidPlays = humanTurnValidPlays[*domain.PrsiPlayer](g, g.GetPhase() == domain.PrsiPhasePlay)
 	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(g, lastErr)
 
 	return marshalOrError(resObj)
