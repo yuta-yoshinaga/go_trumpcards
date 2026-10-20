@@ -42,6 +42,8 @@ export interface BeloteResponse extends BaseGameResponse {
   roundNumber: number;
   trickNumber: number;
   currentPlayerIdx: number;
+  /** Hand indices the human may legally play; empty outside the human's play turn. */
+  validPlays: number[];
   bidPlayerIdx: number;
   dealerIdx: number;
   trumpSuit: number;

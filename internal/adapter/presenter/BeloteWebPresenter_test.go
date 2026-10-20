@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -21,6 +22,7 @@ func setupBeloteWebMock() *interfaces.MockBeloteGame {
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.BelotePhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
+	m.On("GetValidPlayIndices", 0).Return([]int{})
 	m.On("GetBidPlayerIdx").Return(0)
 	m.On("GetDealerIdx").Return(0)
 	m.On("GetTrumpSuit").Return(1)
@@ -41,6 +43,37 @@ func setupBeloteWebMock() *interfaces.MockBeloteGame {
 	m.On("GetHint").Return(nil).Maybe()
 
 	return m
+}
+
+func TestBeloteWebPresenterValidPlays(t *testing.T) {
+	p := new(presenter.BeloteWebPresenter)
+	t.Run("human play turn", func(t *testing.T) {
+		m, _ := setupBeloteWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+		m.On("GetValidPlayIndices", 0).Return([]int{0, 2})
+		result := p.Output(m, nil)
+		assert.Contains(t, result, `"validPlays":[0,2]`)
+	})
+	t.Run("CPU turn", func(t *testing.T) {
+		m, _ := setupBeloteWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentPlayerIdx")
+		m.On("GetCurrentPlayerIdx").Return(1)
+		// A non-empty domain answer proves the presenter's gate, not the mock, yields [].
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+		m.On("GetValidPlayIndices", mock.Anything).Return([]int{0, 1}).Maybe()
+		result := p.Output(m, nil)
+		assert.Contains(t, result, `"validPlays":[]`)
+	})
+	t.Run("outside play phase", func(t *testing.T) {
+		m, _ := setupBeloteWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.BelotePhaseTrickEnd)
+		// A non-empty domain answer proves the presenter's gate, not the mock, yields [].
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+		m.On("GetValidPlayIndices", mock.Anything).Return([]int{0, 1}).Maybe()
+		result := p.Output(m, nil)
+		assert.Contains(t, result, `"validPlays":[]`)
+	})
 }
 
 func setupBeloteWebMockWithPlayers() (*interfaces.MockBeloteGame, []*domain.BelotePlayer) {
