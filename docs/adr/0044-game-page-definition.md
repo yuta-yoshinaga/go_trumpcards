@@ -36,7 +36,7 @@ Issue #11912。
 
 ## Consequences
 
-次の横断機能は `createGamePage` 1 ファイルの変更で済む。一斉移行はしない: 新規ゲームは new-game スキルから定義で作る、既存ページは触るついでに移行。`frontend/scripts/check-game-page-definition.mjs` は手配線の新規ページを拒み、`frontend/scripts/game-page-definition-baseline.txt` の行数が未移行ページ数になる（移行した PR でその行を消す、行を足すのは禁止）。行を足すこと自体は機械的には止めていない: CI の浅い checkout には develop 側のベースラインが無いので、足された行はレビューで見る。ページ単位の guard を `createGamePage` 1 ファイルの検査へ置き換えられる時期は、この行数で判断する。
+次の横断機能は `createGamePage` 1 ファイルの変更で済む。一斉移行はしない: 新規ゲームは new-game スキルから定義で作る、既存ページは触るついでに移行。`frontend/scripts/check-game-page-definition.mjs` は手配線の新規ページを拒み、`frontend/scripts/game-page-definition-baseline.txt` の行数が未移行ページ数になる（移行した PR でその行を消す、行を足すのは禁止）。行を足すこと自体は機械的には止めていない: CI の浅い checkout には develop 側のベースラインが無いので、足された行はレビューで見る。ページ単位の guard を `createGamePage` 1 ファイルの検査へ置き換えられる時期は、この行数で判断する。数えるのはゲームとして経路に載り、自分で配線しているページだけ。別のページをそのまま描く派生ページ 8 本（DoubleExposure など）は元のページと一緒に移り、ゲームでないページ 4 本（Discover、DiscoverResult、Legal、NotFound）は対象外なので、ベースラインから外した（384 → 372 行）。
 
 まだ表現できないもの: CPU ログやモバイル/デスクトップで分かれるサイドバー — Hearts では不要だった (サイドバーは `lgTwoColGrid` を Board 内で完結)。必要になるページを移すときに定義へ足す (#11915)。
 
