@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { DESKTOP_VIEWPORT_COMPACT, DESKTOP_VIEWPORT_LARGE, PHONE_VIEWPORT } from './desktopViewports';
 import { navigateTo } from './helpers';
 import { checkAction } from './sweeps/action';
-import { checkBoard, PAGES as FIXED_BOARD_PAGES } from './sweeps/board';
+import { checkBoard, isFixedBoardPage } from './sweeps/board';
 import { checkCover } from './sweeps/cover';
 import { checkDuplicate } from './sweeps/duplicate';
 import { checkFirstAction } from './sweeps/firstAction';
@@ -53,7 +53,7 @@ test.describe('desktop compact 1024x800', () => {
       await navigateTo(page, path);
       await checkAction(page, path, DESKTOP_VIEWPORT_COMPACT);
       await checkCover(page, path, DESKTOP_VIEWPORT_COMPACT);
-      if (!FIXED_BOARD_PAGES.includes(path as (typeof FIXED_BOARD_PAGES)[number])) {
+      if (!isFixedBoardPage(path)) {
         await checkBoard(page, path, DESKTOP_VIEWPORT_COMPACT);
       }
     });
@@ -70,7 +70,7 @@ test.describe('desktop large 1280x800', () => {
       await checkLabel(page, path, DESKTOP_VIEWPORT_LARGE);
       await checkDuplicate(page, path, DESKTOP_VIEWPORT_LARGE);
       await checkHand(page, path, DESKTOP_VIEWPORT_LARGE);
-      if (!FIXED_BOARD_PAGES.includes(path as (typeof FIXED_BOARD_PAGES)[number])) {
+      if (!isFixedBoardPage(path)) {
         await checkBoard(page, path, DESKTOP_VIEWPORT_LARGE);
       }
     });

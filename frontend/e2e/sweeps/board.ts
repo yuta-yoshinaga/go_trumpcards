@@ -36,6 +36,11 @@ export const PAGES = [
   '/canasta',
 ] as const;
 
+/** Returns whether the path is in the fixed board page list, which desktop-board-visibility.spec.ts covers. */
+export function isFixedBoardPage(path: string): boolean {
+  return (PAGES as readonly string[]).includes(path);
+}
+
 // #11700 excludes CPU-seat cards, face-up cards inside accordions, stud door cards, and discard history.
 // Samba is excluded because opposing-team meld cards can fall below the play area depending on the deal.
 const excludedGamePaths = new Set([
@@ -144,7 +149,7 @@ export async function checkBoard(page: Page, path: string, viewport: { width: nu
   }
 
   const result = await measureBoardCards(page, path, viewport.width);
-  if (PAGES.includes(path as (typeof PAGES)[number])) {
+  if (isFixedBoardPage(path)) {
     expect.soft(result.count, `Board check: ${path}: no board cards found`).toBeGreaterThan(0);
   }
   expect.soft(result.hidden, `Board check: ${path}: board cards hidden below their play area`).toEqual([]);

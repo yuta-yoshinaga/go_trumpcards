@@ -8,7 +8,7 @@ import { assertFloor } from './lib/floor.mjs';
 const SCRIPT_DIR = fileURLToPath(new URL('.', import.meta.url));
 // PLAYWRIGHT_LIST_GUARD_BASELINE is the test seam for supplying a fixture baseline.
 const BASELINE_PATH = process.env.PLAYWRIGHT_LIST_GUARD_BASELINE ?? `${SCRIPT_DIR}e2e-test-count-baseline.json`;
-const MIN_TESTS = 1400;
+const MIN_TESTS = 1550;
 
 let baseline;
 try {
