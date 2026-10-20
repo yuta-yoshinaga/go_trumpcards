@@ -40,6 +40,8 @@ export interface OmiResponse extends BaseGameResponse {
   roundNumber: number;
   trickNumber: number;
   currentPlayerIdx: number;
+  /** Hand indices the human may legally play; empty outside the human's play turn. */
+  validPlays: number[];
   /** Index of the player who calls trump (= bidPlayerIdx). */
   trumpCallerIdx: number;
   bidPlayerIdx: number;

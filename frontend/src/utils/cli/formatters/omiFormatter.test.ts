@@ -21,6 +21,7 @@ function makeState(overrides?: Partial<OmiResponse>): OmiResponse {
     roundNumber: 1,
     trickNumber: 3,
     currentPlayerIdx: 0,
+    validPlays: [],
     trumpCallerIdx: 1,
     bidPlayerIdx: 1,
     dealerIdx: 1,

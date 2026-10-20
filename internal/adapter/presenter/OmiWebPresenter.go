@@ -73,6 +73,15 @@ func (p *OmiWebPresenter) buildBase(e interfaces.OmiGame) *controller.OmiWebOutp
 
 	resObj.CurrentTrick = trickCardsToOutput(e.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(e)
+	resObj.ValidPlays = make([]int, 0)
+	if e.GetPhase() == domain.OmiPhasePlay {
+		for i := 0; i < e.GetPlayerCnt(); i++ {
+			if e.GetPlayer(i).GetIsHuman() && e.GetCurrentPlayerIdx() == i {
+				resObj.ValidPlays = intSliceOrEmpty(e.GetValidPlayIndices(i))
+				break
+			}
+		}
+	}
 	return resObj
 }
 
