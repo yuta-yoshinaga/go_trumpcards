@@ -500,7 +500,15 @@ func (bd *Perseverance) LegalTargets(fromCol int) (tableau []int, foundation []i
 	if fromCol < 0 || fromCol >= PerseveranceTableauCnt || len(bd.tableau[fromCol]) == 0 {
 		return nil, nil
 	}
-	card := bd.tableau[fromCol][len(bd.tableau[fromCol])-1].Card
+	return bd.LegalTargetsFrom(fromCol, len(bd.tableau[fromCol])-1)
+}
+
+// LegalTargetsFrom returns destinations for the movable run beginning at cardIndex.
+func (bd *Perseverance) LegalTargetsFrom(fromCol, cardIndex int) (tableau []int, foundation []int) {
+	if fromCol < 0 || fromCol >= PerseveranceTableauCnt || cardIndex < 0 || cardIndex >= len(bd.tableau[fromCol]) || !bd.isRun(fromCol, cardIndex) {
+		return nil, nil
+	}
+	card := bd.tableau[fromCol][cardIndex].Card
 	// 自分の列を明示的に飛ばす分岐は置かない。一番下の札は自分自身なので
 	// 「1 つ下のランク」にはならず、canPlaceOnTableau が必ず false を返す
 	// (テストで固定してある)。置いてもどのテストでも区別できない分岐になる。
@@ -509,9 +517,11 @@ func (bd *Perseverance) LegalTargets(fromCol int) (tableau []int, foundation []i
 			tableau = append(tableau, col)
 		}
 	}
-	for f := range PerseveranceFoundationCnt {
-		if bd.canPlaceOnFoundation(card, f) {
-			foundation = append(foundation, f)
+	if cardIndex == len(bd.tableau[fromCol])-1 {
+		for f := range PerseveranceFoundationCnt {
+			if bd.canPlaceOnFoundation(card, f) {
+				foundation = append(foundation, f)
+			}
 		}
 	}
 	return tableau, foundation

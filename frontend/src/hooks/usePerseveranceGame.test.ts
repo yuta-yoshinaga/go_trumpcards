@@ -27,6 +27,7 @@ const baseState: PerseveranceResponse = {
   canUndo: false,
   isStalemate: false,
   redealsLeft: 2,
+  legalTargets: {},
   message: '',
 };
 
