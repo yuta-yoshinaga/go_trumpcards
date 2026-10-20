@@ -37,3 +37,11 @@ func intSliceOrEmpty(in []int) []int {
 	}
 	return in
 }
+
+// stringSliceOrEmpty normalizes nil slices to empty slices for JSON output.
+func stringSliceOrEmpty(in []string) []string {
+	if in == nil {
+		return make([]string, 0)
+	}
+	return in
+}

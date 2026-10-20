@@ -63,6 +63,8 @@ export interface CallBreakResponse extends BaseGameResponse {
    * Empty array outside the play phase / when it is not the human's turn.
    */
   validPlayIndices: number[];
+  /** Per hand card, the server rule rejection message code; empty string when playable. */
+  playRejectCodes: string[];
 }
 
 // --- Pitch (Setback / Auction Pitch) ---

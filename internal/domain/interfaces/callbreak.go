@@ -61,4 +61,6 @@ type CallBreakGame interface {
 	GetHint() *domain.CallBreakHint
 	// GetValidPlayIndices プレイ可能なカードのインデックスを返す
 	GetValidPlayIndices(playerIdx int) []int
+	// GetPlayRejectCodes returns per-card rule rejection message codes in hand order.
+	GetPlayRejectCodes(playerIdx int) []string
 }

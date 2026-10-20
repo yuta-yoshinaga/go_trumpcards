@@ -754,6 +754,7 @@ const baseCallBreakState: CallBreakResponse = {
   message: '',
   config: { cpuDifficulty: 1, maxRounds: 5 },
   validPlayIndices: [],
+  playRejectCodes: [],
 };
 
 /**

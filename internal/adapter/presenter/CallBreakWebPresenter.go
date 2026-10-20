@@ -57,12 +57,16 @@ func (p *CallBreakWebPresenter) buildBase(cb interfaces.CallBreakGame) *controll
 	for i := 0; i < cb.GetPlayerCnt(); i++ {
 		if pl := cb.GetPlayer(i); pl != nil && pl.GetIsHuman() {
 			resObj.ValidPlayIndices = cb.GetValidPlayIndices(i)
+			if cb.GetPhase() == domain.CallBreakPhasePlay && cb.GetCurrentPlayerIdx() == i {
+				resObj.PlayRejectCodes = stringSliceOrEmpty(cb.GetPlayRejectCodes(i))
+			}
 			break
 		}
 	}
 	if resObj.ValidPlayIndices == nil {
 		resObj.ValidPlayIndices = make([]int, 0)
 	}
+	resObj.PlayRejectCodes = stringSliceOrEmpty(resObj.PlayRejectCodes)
 	return resObj
 }
 

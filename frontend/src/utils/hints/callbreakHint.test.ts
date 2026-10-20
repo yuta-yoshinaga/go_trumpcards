@@ -66,6 +66,7 @@ function makeState(overrides: Partial<CallBreakResponse> = {}): CallBreakRespons
     message: '',
     config: { cpuDifficulty: 1, maxRounds: 5 },
     validPlayIndices: [],
+    playRejectCodes: [],
     ...overrides,
   };
 }
