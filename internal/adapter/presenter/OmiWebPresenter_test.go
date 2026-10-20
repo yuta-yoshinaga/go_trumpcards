@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
@@ -57,12 +58,18 @@ func TestOmiWebPresenterValidPlays(t *testing.T) {
 		cpuMock, _ := setupOmiWebMockWithPlayers()
 		cpuMock.ExpectedCalls = removeMockCall(cpuMock.ExpectedCalls, "GetCurrentPlayerIdx")
 		cpuMock.On("GetCurrentPlayerIdx").Return(1)
+		// A non-empty domain answer proves the presenter's gate, not the mock, yields [].
+		cpuMock.ExpectedCalls = removeMockCall(cpuMock.ExpectedCalls, "GetValidPlayIndices")
+		cpuMock.On("GetValidPlayIndices", mock.Anything).Return([]int{0, 1}).Maybe()
 		assert.Contains(t, p.Output(cpuMock, nil), `"validPlays":[]`)
 	})
 	t.Run("outside play phase", func(t *testing.T) {
 		phaseMock, _ := setupOmiWebMockWithPlayers()
 		phaseMock.ExpectedCalls = removeMockCall(phaseMock.ExpectedCalls, "GetPhase")
 		phaseMock.On("GetPhase").Return(domain.OmiPhaseCallTrump)
+		// A non-empty domain answer proves the presenter's gate, not the mock, yields [].
+		phaseMock.ExpectedCalls = removeMockCall(phaseMock.ExpectedCalls, "GetValidPlayIndices")
+		phaseMock.On("GetValidPlayIndices", mock.Anything).Return([]int{0, 1}).Maybe()
 		assert.Contains(t, p.Output(phaseMock, nil), `"validPlays":[]`)
 	})
 }
