@@ -23,6 +23,7 @@ func setupOmiWebMock() *interfaces.MockOmiGame {
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.OmiPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
+	m.On("GetValidPlayIndices", 0).Return([]int{})
 	m.On("GetTrumpCallerIdx").Return(0)
 	m.On("GetDealerIdx").Return(0)
 	m.On("GetTrumpSuit").Return(1)
@@ -36,6 +37,34 @@ func setupOmiWebMock() *interfaces.MockOmiGame {
 	m.On("GetHint").Return(nil).Maybe()
 
 	return m
+}
+
+func TestOmiWebPresenterValidPlays(t *testing.T) {
+	p := new(presenter.OmiWebPresenter)
+	t.Run("human play turn", func(t *testing.T) {
+		m, _ := setupOmiWebMockWithPlayers()
+		want := []int{0, 1}
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+		m.On("GetValidPlayIndices", 0).Return(want)
+		result := p.Output(m, nil)
+		var out controller.OmiWebOutput
+		require.NoError(t, json.Unmarshal([]byte(result), &out))
+		assert.Equal(t, want, out.ValidPlays)
+		assert.Contains(t, result, `"validPlays":[0,1]`)
+	})
+
+	t.Run("CPU turn", func(t *testing.T) {
+		cpuMock, _ := setupOmiWebMockWithPlayers()
+		cpuMock.ExpectedCalls = removeMockCall(cpuMock.ExpectedCalls, "GetCurrentPlayerIdx")
+		cpuMock.On("GetCurrentPlayerIdx").Return(1)
+		assert.Contains(t, p.Output(cpuMock, nil), `"validPlays":[]`)
+	})
+	t.Run("outside play phase", func(t *testing.T) {
+		phaseMock, _ := setupOmiWebMockWithPlayers()
+		phaseMock.ExpectedCalls = removeMockCall(phaseMock.ExpectedCalls, "GetPhase")
+		phaseMock.On("GetPhase").Return(domain.OmiPhaseCallTrump)
+		assert.Contains(t, p.Output(phaseMock, nil), `"validPlays":[]`)
+	})
 }
 
 func setupOmiWebMockWithPlayers() (*interfaces.MockOmiGame, []*domain.OmiPlayer) {
