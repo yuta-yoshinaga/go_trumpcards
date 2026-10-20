@@ -28,7 +28,6 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BeziqueMeld, BeziqueResponse } from '../types/card';
 import { BeziquePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { beziqueEndgameLegalIndices, beziqueSuitDesign } from '../utils/beziqueLegal';
 import { suitSymbolAt } from '../utils/cardAlt';
 import { cardLabel } from '../utils/cardUtils';
 import { BEZIQUE_HELP, parseBeziqueCommand } from '../utils/cli/commands/beziqueCommands';
@@ -186,15 +185,10 @@ function BeziquePageContent() {
   // hits 0 the game switches to phase 2 and the existing endgameNotice takes over.
   const stockLow = !state.isEndgame && state.stockRemaining > 0 && state.stockRemaining <= STOCK_LOW_THRESHOLD;
 
-  // During the endgame (phase 2) the follower must follow suit and win if able.
-  // Ring the legal-to-play cards so the human sees the constraint before playing.
-  // Only meaningful when following a lead: while leading (or before the endgame)
-  // every card is legal, so no highlight is shown. The backend still validates.
+  // The server computes legality from internal/domain/Bezique.go validatePlay (ADR-0045).
+  // Keep the existing endgame follower display gate; the backend validates every play.
   const leadCard = state.currentTrick[0]?.card ?? null;
-  const legalIndices =
-    isHumanPlayTurn && state.isEndgame && leadCard != null && humanPlayer != null
-      ? beziqueEndgameLegalIndices(humanPlayer.cards, leadCard, beziqueSuitDesign(state.trumpSuit))
-      : undefined;
+  const legalIndices = isHumanPlayTurn && state.isEndgame && leadCard != null ? state.validPlays : undefined;
 
   /** Builds a localized label for one declarable meld. */
   const meldLabel = (m: BeziqueMeld): string => {

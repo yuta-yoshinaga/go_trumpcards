@@ -54,12 +54,12 @@ const gameEndState = makeBeziqueState({
 });
 const endgameState = makeBeziqueState({ phase: 0, currentPlayerIdx: 0, stockRemaining: 0, isEndgame: true });
 // Endgame human FOLLOW turn: opponent led ♠K; hand is ♠Q / ♦J / ♥A, trump ♥.
-// Holding ♠ forces following ♠ (♠Q cannot beat ♠K, so it is the only legal card).
 const endgameFollowState = makeBeziqueState({
   phase: 0,
   currentPlayerIdx: 0,
   stockRemaining: 0,
   isEndgame: true,
+  validPlays: [0],
   trumpSuit: 3,
   currentTrick: [{ playerIdx: 1, card: { design: 'SPADE', value: 13 } }],
 });
@@ -317,20 +317,28 @@ describe('BeziquePage', () => {
     expect(await screen.findByTestId('bezique-endgame-live')).toBeEmptyDOMElement();
   });
 
-  it('rings only the legal cards during an endgame follow turn', async () => {
-    mockExec.mockResolvedValue(endgameFollowState);
+  it('rings exactly server indices when they disagree with client rules', async () => {
+    // ♦J would violate follow-suit here; the server response is the display source.
+    mockExec.mockResolvedValue({ ...endgameFollowState, validPlays: [1] });
     renderWithProviders(<BeziquePage />);
-    const legal = (await screen.findByAltText('♠ Q')).closest('button');
-    const illegalDiamond = screen.getByAltText('♦ J').closest('button');
-    const illegalHeart = screen.getByAltText('♥ A').closest('button');
-    // ♠Q is the only legal follow → it alone carries the success ring marker.
-    expect(legal).toHaveAttribute('data-legal', 'true');
-    expect(illegalDiamond).not.toHaveAttribute('data-legal');
-    expect(illegalHeart).not.toHaveAttribute('data-legal');
+    const spade = (await screen.findByAltText('♠ Q')).closest('button');
+    const diamond = screen.getByAltText('♦ J').closest('button');
+    const heart = screen.getByAltText('♥ A').closest('button');
+    expect(spade).not.toHaveAttribute('data-legal');
+    expect(diamond).toHaveAttribute('data-legal', 'true');
+    expect(heart).not.toHaveAttribute('data-legal');
+  });
+
+  it('rings exactly the validPlays indices on the human endgame follow turn', async () => {
+    mockExec.mockResolvedValue({ ...endgameFollowState, validPlays: [0, 2] });
+    renderWithProviders(<BeziquePage />);
+    expect((await screen.findByAltText('♠ Q')).closest('button')).toHaveAttribute('data-legal', 'true');
+    expect(screen.getByAltText('♦ J').closest('button')).not.toHaveAttribute('data-legal');
+    expect(screen.getByAltText('♥ A').closest('button')).toHaveAttribute('data-legal', 'true');
   });
 
   it('keeps an illegal card clickable during the endgame (backend still validates)', async () => {
-    mockExec.mockResolvedValue(endgameFollowState);
+    mockExec.mockResolvedValue({ ...endgameFollowState, validPlays: [0] });
     renderWithProviders(<BeziquePage />);
     const illegal = (await screen.findByAltText('♦ J')).closest('button');
     // Ring-only highlighting must never block clicks: the card stays enabled.
@@ -342,6 +350,14 @@ describe('BeziquePage', () => {
     fireEvent.click(screen.getByRole('button', { name: '出す' }));
     // ♦J is index 1 in the hand; the play still dispatches so the server can reject it.
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 1 }));
+  });
+
+  it('does not ring server indices when it is not the human play turn', async () => {
+    mockExec.mockResolvedValue({ ...endgameFollowState, currentPlayerIdx: 1, validPlays: [0, 1, 2] });
+    renderWithProviders(<BeziquePage />);
+    expect((await screen.findByAltText('♠ Q')).closest('button')).not.toHaveAttribute('data-legal');
+    expect(screen.getByAltText('♦ J').closest('button')).not.toHaveAttribute('data-legal');
+    expect(screen.getByAltText('♥ A').closest('button')).not.toHaveAttribute('data-legal');
   });
 
   it('does not ring any card before the endgame (all cards legal)', async () => {

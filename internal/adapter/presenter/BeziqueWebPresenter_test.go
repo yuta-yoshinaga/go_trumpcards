@@ -8,6 +8,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -58,6 +60,47 @@ func setupBeziqueWebMockWithPlayers(trumpCard *domain.Card) (*interfaces.MockBez
 	m.On("GetMatchScore", 0).Return(118)
 	m.On("GetMatchScore", 1).Return(45)
 	return m, players
+}
+
+func TestBeziqueWebPresenterValidPlays(t *testing.T) {
+	p := new(presenter.BeziqueWebPresenter)
+
+	t.Run("human play turn passes through domain indices", func(t *testing.T) {
+		m, _ := setupBeziqueWebMockWithPlayers(nil)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+		m.On("GetValidPlayIndices", 0).Return([]int{0, 2, 4})
+		got := p.Output(m, nil)
+		var out controller.BeziqueWebOutput
+		require.NoError(t, json.Unmarshal([]byte(got), &out))
+		assert.Equal(t, []int{0, 2, 4}, out.ValidPlays)
+	})
+
+	t.Run("human play turn passes through full hand outside endgame", func(t *testing.T) {
+		m, _ := setupBeziqueWebMockWithPlayers(nil)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+		m.On("GetValidPlayIndices", 0).Return([]int{0, 1, 2, 3, 4, 5, 6, 7, 8})
+		got := p.Output(m, nil)
+		assert.Contains(t, got, `"validPlays":[0,1,2,3,4,5,6,7,8]`)
+	})
+
+	t.Run("CPU turn", func(t *testing.T) {
+		m, _ := setupBeziqueWebMockWithPlayers(nil)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentPlayerIdx")
+		m.On("GetCurrentPlayerIdx").Return(1)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+		m.On("GetValidPlayIndices", mock.Anything).Return([]int{0, 1}).Maybe()
+		assert.Contains(t, p.Output(m, nil), `"validPlays":[]`)
+	})
+
+	t.Run("outside play phase", func(t *testing.T) {
+		m, _ := setupBeziqueWebMockWithPlayers(nil)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.BeziquePhaseMeld)
+		m.On("GetAvailableMelds", 0).Return([]domain.BeziqueMeld{})
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+		m.On("GetValidPlayIndices", mock.Anything).Return([]int{0, 1}).Maybe()
+		assert.Contains(t, p.Output(m, nil), `"validPlays":[]`)
+	})
 }
 
 func TestBeziqueWebPresenter_Output_InitialState(t *testing.T) {

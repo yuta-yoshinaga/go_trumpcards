@@ -3633,6 +3633,7 @@ const baseBeziqueState: BeziqueResponse = {
   roundNumber: 1,
   trickNumber: 1,
   currentPlayerIdx: 0,
+  validPlays: [],
   leadPlayerIdx: 0,
   dealerIdx: 1,
   trumpSuit: 3,
