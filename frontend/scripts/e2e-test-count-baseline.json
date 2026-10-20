@@ -1,4 +1,4 @@
 {
-  "max": 2345,
-  "reason": "Lowered manually for #11922 (sweeps consolidated to one load per route/viewport); update with an explanation when intentionally adding E2E tests. Lowering the limit must be done manually."
+  "max": 2353,
+  "reason": "Lowered manually for #11922 (sweeps consolidated to one load per route/viewport); added eight #11923 castle-foundation viewport checks. Lowering the limit must be done manually."
 }

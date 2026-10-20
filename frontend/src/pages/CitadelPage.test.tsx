@@ -619,3 +619,14 @@ describe('CitadelPage selection status announcement', () => {
     }
   });
 });
+
+describe('CitadelPage foundation layout', () => {
+  it('keeps foundations in a mobile column and enables two desktop columns', async () => {
+    mockExec.mockResolvedValue(playingState);
+    const { container } = renderWithProviders(<CitadelPage />);
+    await waitFor(() => {
+      const foundation = container.querySelector('[data-tutorial="bc-foundation"]');
+      expect(foundation).toHaveClass('flex-col', 'lg:grid', 'lg:grid-cols-2');
+    });
+  });
+});
