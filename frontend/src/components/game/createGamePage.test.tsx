@@ -300,8 +300,81 @@ describe('createGamePage', () => {
     expect(hand.compareDocumentPosition(error) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(error.compareDocumentPosition(status) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(actions).not.toBeNull();
+    if (actions) {
+      expect(status.compareDocumentPosition(actions) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      expect(actions).toHaveAttribute('data-tutorial', 'actions-tutorial');
+      expect(actions.closest('footer')).not.toBeNull();
+    }
+    expect(hand.closest('footer')).not.toBeNull();
+    expect(error.closest('footer')).not.toBeNull();
+    expect(status.closest('footer')).not.toBeNull();
+  });
+
+  it('uses the pinned footer form and moves supporting content after the action log', () => {
+    const Page = createGamePage({
+      key: 'acesup',
+      useGame: useFakeGame,
+      tutorial: [],
+      skeleton: { kind: 'centered', rows: [1] },
+      cli: () => ({ parseCommand: () => ({ args: [] }), formatResponse: () => 'state', helpText: ['help'] }),
+      phase: ({ state }) => ({ name: 'playing', ended: state.ended }),
+      shortcuts: () => [{ key: 'x', action: shortcut, label: 'draw' }],
+      shortcutsTestId: 'pinned-shortcuts',
+      primaryActions: () => <button type="button">Primary</button>,
+      message: () => <span>Guidance</span>,
+      FooterHand: () => <div data-testid="pinned-hand" />,
+      FooterStatus: () => <div data-testid="pinned-status" />,
+      FooterActions: () => <div data-testid="pinned-actions" />,
+      Board,
+    });
+    currentGame = { ...currentGame, state: { ended: true }, error: 'failure' };
+    renderWithProviders(<Page />);
+
+    const content = screen.getByTestId('game-footer-content');
+    const pinnedActions = screen.getByTestId('game-footer-actions');
+    const message = screen.getByTestId('game-footer-message');
+    const actionLog = screen.getByRole('button', { name: '棋譜を見る' });
+    const error = screen.getByRole('alert');
+    const status = screen.getByTestId('pinned-status');
+    const actions = screen.getByTestId('pinned-actions').parentElement;
+    const shortcuts = screen.getByTestId('pinned-shortcuts');
+    const scrollingContent = actionLog.closest('[class*="overflow-y-auto"]');
+    expect(content).toContainElement(screen.getByTestId('pinned-hand'));
+    expect(pinnedActions).toHaveTextContent('Primary');
+    expect(message).toHaveTextContent('Guidance');
+    expect(error.closest('[data-testid="game-footer-content"]')).toBeNull();
+    expect(status.closest('[data-testid="game-footer-content"]')).toBeNull();
+    expect(actions?.closest('[data-testid="game-footer-content"]')).toBeNull();
+    expect(shortcuts.closest('[data-testid="game-footer-content"]')).toBeNull();
+    expect(scrollingContent).toContainElement(error);
+    expect(scrollingContent).toContainElement(status);
+    if (actions) expect(scrollingContent).toContainElement(actions);
+    expect(scrollingContent).toContainElement(shortcuts);
+    expect(error.closest('footer')).toBeNull();
+    expect(status.closest('footer')).toBeNull();
+    if (actions) expect(actions.closest('footer')).toBeNull();
+    expect(shortcuts.closest('footer')).toBeNull();
+    expect(actionLog.compareDocumentPosition(error) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(error.compareDocumentPosition(status) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     if (actions) expect(status.compareDocumentPosition(actions) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(actions).toHaveAttribute('data-tutorial', 'actions-tutorial');
+    if (actions) expect(actions.compareDocumentPosition(shortcuts) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('keeps the pinned footer layout when primaryActions returns null without an actions element', () => {
+    const Page = createGamePage({
+      key: 'acesup',
+      useGame: useFakeGame,
+      tutorial: [],
+      skeleton: { kind: 'centered', rows: [1] },
+      cli: () => ({ parseCommand: () => ({ args: [] }), formatResponse: () => 'state', helpText: ['help'] }),
+      phase: ({ state }) => ({ name: 'playing', ended: state.ended }),
+      primaryActions: () => null,
+      Board,
+    });
+    renderWithProviders(<Page />);
+    expect(screen.getByTestId('game-footer-content')).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-actions')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'リセット' }).closest('[data-testid="game-footer-content"]')).toBeNull();
   });
 
   it('hides the action log before resetting', () => {
