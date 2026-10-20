@@ -64,7 +64,10 @@ grep -q 'patch-branch-gaps.sh' "$SCRIPTS/rc.sh" || fail "rc.sh does not call pat
 run_gap_gate() {
   local name="$1" develop_text="$2" gap="$3" classification="$4" want_pass="$5"
   local base="$tmp/$name" repo="$tmp/$name/repo" wtroot="$tmp/$name/wts" state="$tmp/$name/state"
-  mkdir -p "$repo/frontend/src/pages" "$base/scripts" "$state"
+  mkdir -p "$repo/frontend/src/pages" "$repo/frontend/e2e" "$base/scripts" "$state"
+  for spec in desktop-board-visibility desktop-hand-visibility game-message-visibility mobile-viewport text-contrast route-sweep; do
+    touch "$repo/frontend/e2e/$spec.spec.ts"
+  done
   git init -q "$repo"
   git -C "$repo" config user.email test@example.com
   git -C "$repo" config user.name test
@@ -78,6 +81,7 @@ run_gap_gate() {
   printf '\n// change\n' >> "$wtroot/wt-ib1/frontend/src/pages/sample.tsx"
   printf '#!/usr/bin/env bash\nprintf "%%s\\n" "$GAP_OUTPUT"\nexit 1\n' > "$wtroot/wt-ib1/.claude/skills/patch-branch-gaps/scripts/patch-branch-gaps.sh"
   for script in common.sh rc.sh rcg.sh treehash.sh e2egate.sh; do cp "$SCRIPTS/$script" "$base/scripts/"; done
+  printf '#!/usr/bin/env bash\nexit 0\n' > "$base/scripts/e2e.sh"
   for stub in workerbuild unusedsym repeattests biomeignore; do printf '#!/usr/bin/env bash\nexit 0\n' > "$base/scripts/$stub.sh"; done
   printf '#!/usr/bin/env bash\necho CHECK=ok\necho TYPE=ok\n' > "$base/scripts/receipt.sh"
   chmod +x "$base/scripts/"*.sh

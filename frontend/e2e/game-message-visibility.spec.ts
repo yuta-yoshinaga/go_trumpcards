@@ -112,7 +112,7 @@ test.describe('375x667 mobile viewport', () => {
   test.use({ viewport: { width: 375, height: 667 } });
 
   // Below sm the footer is capped at 45vh, so the guidance stays in the play area there and
-  // leaves the footer to the hand (hand-visibility.spec.ts guards the hand itself).
+  // leaves the footer to the hand (route-sweep.spec.ts / sweeps/hand.ts guards the hand itself).
   for (const path of MESSAGE_PAGES) {
     test(`${path} keeps its game message out of the footer on a phone`, async ({ page }) => {
       await navigateTo(page, path);

@@ -1,4 +1,4 @@
 {
-  "max": 5705,
-  "reason": "Initial ratchet from the current Playwright test list; update with an explanation when intentionally adding E2E tests. Lowering the limit must be done manually."
+  "max": 2345,
+  "reason": "Lowered manually for #11922 (sweeps consolidated to one load per route/viewport); update with an explanation when intentionally adding E2E tests. Lowering the limit must be done manually."
 }
