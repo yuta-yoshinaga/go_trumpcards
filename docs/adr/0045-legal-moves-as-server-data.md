@@ -23,6 +23,16 @@ Issue #11913。フロントがルールを再実装した client-side mirror は
 
 合法手は domain の検証関数 (`validatePlay` 等) を再利用した `GetValidPlayIndices` から presenter が `validPlays` として返す。フロントは受け取った添字を表示に使うだけで、規則を持たない。移行は 1 ゲーム 1 PR、触るついで (ADR-0044 と同じ方針)。WASM の gzip 残容量を確認してから着手する (extra7 は 2026-10-18 実測 852,512 B / 1 MB)。
 
+### 改訂 (2026-10-20): ソリティアの移動先
+
+手札の添字の列では表せない「選んだ札をどこに置けるか」も、同じ方針でサーバのデータにする。ユーザ承認済み (#11913 の改訂案)。
+
+- 形は Bristol (#4813) で既に使っているものに揃える。通常の状態応答に、移動元ごとの移動先を載せる: `legalTargets: Record<string, { tableau: number[]; foundation: number[] }>`。移動先の無い移動元はキーごと省く。
+- キーは `"<zone>-<col>"`。埋もれた札から並びごと動かせるゲームでは `"<zone>-<col>-<cardIndex>"` にする (Perseverance)。
+- 判定は domain の `canPlaceOn*` などをそのまま通す。presenter には規則を書かない。
+- #5581 で Baker's Dozen と Perseverance がこの形を見送った理由は「CUI 専用の応答が Web の経路に紛れ込む」ことだった (`targets` コマンドの応答を Web に使う案だった)。この改訂では `targets` の経路は使わず、通常の盤面の応答に載せるので、その心配は当たらない。
+- 試しに移すのは Baker's Dozen と Perseverance。残りは触るついでに 1 ゲーム 1 PR で移す。MrsMop のように移動元の形が違うゲームは、そのときにキーの形を決める。
+
 ## Consequences
 
 規則の SSoT が Go domain に一本化される。mirror 削除ごとにフロントのテストも消える。CLI/CUI も同じ関数を使える。
@@ -35,7 +45,7 @@ Batak と Call Break は「なぜ出せないか」のツールチップを写�
 
 `frontend/src/utils` に残る合法性まわりの写し (2026-10-20 に実物を数えた):
 
-- ソリティアの移動先・動かせる札の計算: `*LegalTargets.ts` 18 本と `shamrocksLegalMove.ts`、`triPeaksPlayable.ts` (20 本)。どれも選択中の札や盤面に対する計算で、手札の添字の列である `validPlays` では置き換えられない。移すなら別の応答の設計 (この ADR の改訂) が要る。
+- ソリティアの移動先・動かせる札の計算: `*LegalTargets.ts` と `shamrocksLegalMove.ts`、`triPeaksPlayable.ts`。Decision の改訂 (2026-10-20) の形で、触るついでに 1 ゲーム 1 PR で移す。Baker's Dozen は移行済み。
 - 写しではないもの: `schnapsenLegal.ts` と `michiganPlayable.ts` はサーバから受け取った値の表示条件だけを持つ。
 
 スコープ外: `utils/hints` の約 370 本の戦略ヒント (どれを出すべきか) は規則ではなく助言なので対象外。対象は合法性の写しだけ。
