@@ -32,7 +32,6 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BakersDozenResponse } from '../types/card';
 import { BakersDozenPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { bakersDozenLegalTargets } from '../utils/bakersDozenLegalTargets';
 import { cardAlt } from '../utils/cardAlt';
 import { BAKERSDOZEN_HELP, parseBakersDozenCommand } from '../utils/cli/commands/bakersdozenCommands';
 import { formatBakersDozenState } from '../utils/cli/formatters/bakersdozenFormatter';
@@ -230,13 +229,21 @@ function BakersDozenPageContent() {
   // **枠を出すだけで、押せなくはしない。**押せなくすると E2E の
   // 「最初の列をクリック」が別の列を掴んでしまう。
   // **選ぶ前に行き先が見える (#4454)。** hover / フォーカス中の札にも、選択後と
-  // まったく同じ計算を当てる ── 判定を二重に持たないので食い違わない。
+  // まったく同じサーバー由来の集合を当てる。
   const previewSource = preview.source;
+  const legalForSource =
+    previewSource?.zone === 'tableau' && previewSource.col !== undefined
+      ? state.legalTargets[`tableau-${previewSource.col}`]
+      : undefined;
+  // 判定は BakersDozen.go の canPlaceOn* を通してサーバーが計算する (ADR-0045)。
+  const legalTargets = {
+    tableau: new Set(legalForSource?.tableau ?? []),
+    foundation: new Set(legalForSource?.foundation ?? []),
+  };
   const previewedCard =
     previewSource?.zone === 'tableau' && previewSource.col !== undefined && previewSource.cardIndex !== undefined
       ? state.tableau[previewSource.col]?.[previewSource.cardIndex]?.card
       : undefined;
-  const legalTargets = bakersDozenLegalTargets(state.tableau, state.foundation, previewedCard);
   const destinationAnnouncement = previewedCard
     ? t('destinationAnnouncement', {
         card: cardAlt(previewedCard),

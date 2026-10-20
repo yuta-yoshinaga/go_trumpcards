@@ -17,6 +17,7 @@ func mustBakersDozenOutputJSON(msg string) string {
 	out := &controller.BakersDozenWebOutput{
 		Tableau:       [][]*controller.BakersDozenWebOutputTableauCard{},
 		Foundation:    [][]*controller.WebOutputCard{},
+		LegalTargets:  map[string]controller.BakersDozenWebOutputTargets{},
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)

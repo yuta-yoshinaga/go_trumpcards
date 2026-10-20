@@ -35,6 +35,9 @@ func setupBakersDozenWebMockDefaults(bg *interfaces.MockBakersDozenGame) {
 
 	var foundation [domain.BakersDozenFoundationCnt][]*domain.Card
 	bg.On("GetFoundation").Return(foundation).Maybe()
+	for col := 0; col < domain.BakersDozenTableauCnt; col++ {
+		bg.On("LegalTargets", col).Return(nil, nil).Maybe()
+	}
 }
 
 func parseBakersDozenOutput(t *testing.T, jsonStr string) *controller.BakersDozenWebOutput {
@@ -121,6 +124,30 @@ func TestBakersDozenWebPresenter_Output(t *testing.T) {
 		p := new(BakersDozenWebPresenter)
 		result := parseBakersDozenOutput(t, p.Output(bg, nil))
 		assert.Equal(t, "bakersdozen.stalemate", result.MessageCode)
+	})
+}
+
+func TestBakersDozenWebPresenter_OutputLegalTargets(t *testing.T) {
+	t.Run("includes legal destinations for non-empty sources", func(t *testing.T) {
+		bg := new(interfaces.MockBakersDozenGame)
+		setupBakersDozenOutputMock(bg)
+		bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "LegalTargets")
+		bg.On("LegalTargets", 0).Return([]int{3}, []int{1})
+		for col := 1; col < domain.BakersDozenTableauCnt; col++ {
+			bg.On("LegalTargets", col).Return(nil, nil).Maybe()
+		}
+
+		var raw map[string]json.RawMessage
+		assert.NoError(t, json.Unmarshal([]byte(new(BakersDozenWebPresenter).Output(bg, nil)), &raw))
+		assert.JSONEq(t, `{"tableau-0":{"tableau":[3],"foundation":[1]}}`, string(raw["legalTargets"]))
+	})
+
+	t.Run("omits sources without destinations", func(t *testing.T) {
+		bg := new(interfaces.MockBakersDozenGame)
+		setupBakersDozenOutputMock(bg)
+		var raw map[string]json.RawMessage
+		assert.NoError(t, json.Unmarshal([]byte(new(BakersDozenWebPresenter).Output(bg, nil)), &raw))
+		assert.JSONEq(t, `{}`, string(raw["legalTargets"]))
 	})
 }
 

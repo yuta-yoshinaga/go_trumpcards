@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -32,6 +33,7 @@ func (p *BakersDozenWebPresenter) Output(bd interfaces.BakersDozenGame, lastErr 
 			}
 		}
 	}
+	resObj.LegalTargets = p.buildLegalTargets(bd)
 
 	// ファンデーション
 	foundation := bd.GetFoundation()
@@ -83,6 +85,29 @@ func (p *BakersDozenWebPresenter) Output(bd interfaces.BakersDozenGame, lastErr 
 	return marshalOrError(resObj)
 }
 
+// buildLegalTargets returns the domain's legal destinations for every source column.
+func (p *BakersDozenWebPresenter) buildLegalTargets(g interfaces.BakersDozenGame) map[string]controller.BakersDozenWebOutputTargets {
+	out := make(map[string]controller.BakersDozenWebOutputTargets)
+	tableauState := g.GetTableau()
+	for col := 0; col < domain.BakersDozenTableauCnt; col++ {
+		if len(tableauState[col]) == 0 {
+			continue
+		}
+		tableau, foundation := g.LegalTargets(col)
+		if len(tableau) == 0 && len(foundation) == 0 {
+			continue
+		}
+		if tableau == nil {
+			tableau = []int{}
+		}
+		if foundation == nil {
+			foundation = []int{}
+		}
+		out["tableau-"+strconv.Itoa(col)] = controller.BakersDozenWebOutputTargets{Tableau: tableau, Foundation: foundation}
+	}
+	return out
+}
+
 // HintOutput ヒントをJSON出力
 func (p *BakersDozenWebPresenter) HintOutput(bd interfaces.BakersDozenGame) string {
 	hint := bd.GetHint()
@@ -108,8 +133,8 @@ func (p *BakersDozenWebPresenter) HintOutput(bd interfaces.BakersDozenGame) stri
 
 // TargetsOutput は Web では通常の盤面をそのまま返す。
 //
-// 置ける先の強調は `bakersDozenLegalTargets` がこの盤面から作っている ──
-// Web には `targets` に当たる操作が無く、選択した瞬間に見えている (#5581)。
+// 合法な移動先は通常の盤面レスポンスの `legalTargets` で返す。
+// Web には CUI の `targets` に当たる操作はない (#5581)。
 // ここで別の形を返すと、CUI 専用の応答が Web の経路に紛れ込む。
 func (p *BakersDozenWebPresenter) TargetsOutput(bd interfaces.BakersDozenGame, _ int) string {
 	return p.Output(bd, nil)
