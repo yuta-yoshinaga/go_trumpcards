@@ -37,7 +37,7 @@ The flows require `dele`, `gh`, `jq`, `flock`, `bun`, `go`, and `golangci-lint`,
 
 - `common.sh`: resolve repository, worktree, and shared state paths and validate required environment.
 - `setup_wt.sh`: fetch `develop` and prepare a clean issue worktree.
-- `sync.sh <slot>`: merge `origin/develop` into a lane while preserving its changes as uncommitted work; after syncing, rerun `rcg.sh <slot>` before `ship.sh`.
+- `sync.sh <slot>`: merge `origin/develop` into a lane while preserving its changes as uncommitted work; after syncing, rerun `rcg.sh <slot>` before `ship.sh`. On conflict it restores the lane and prints the original ref plus a manual stash/fast-forward rebase command.
 - `combined.sh`: merge matching open batch branches into a scratch build and repeat the supplied Playwright guard specs; this catches deal-dependent failures like the Mushi and Desmoche failures found only after combining slices.
 - `go.sh`: run `dele` for a prompt file in an issue worktree and save a fresh per-run log; only a line starting with `VERDICT: NOT_PLANNED` suppresses `WARN NO_CHANGE`, which otherwise fails the delegation.
 - `gofx.sh`: run `dele` for a prompt file in a fixup worktree after checking a PR branch; the slot must be numeric like `fx.sh`'s.
@@ -48,6 +48,7 @@ The flows require `dele`, `gh`, `jq`, `flock`, `bun`, `go`, and `golangci-lint`,
 - `receipt.sh`: run relevant Vitest files plus frontend and backend checks for a worktree; route selection joins consecutive branch words and requires exact game-name matches; `WARN NO_TEST_MATCH` means branch or changed-game selection found no page test; it is not reported when no changed file is under `frontend/`, a `*Presenter.go`, or a Go locale, since no page renders such a change.
 - `rc.sh`: save a concise receipt with test shrink and dead-code warnings.
 - `overlap.sh`: report files changed by this lane and another active lane; set `ALLOW_OVERLAP="file ..."` to suppress known shared files.
+- `adrcheck.sh <slot>`: warn for each changed `docs/adr/*.md`; set `ALLOW_ADR_EDIT=1` when the orchestrator writes the ADR progress line after sync and before ship.
 - `rc.sh` also records `WARN WORKER_BUILD`, `WARN UNUSED_NEW_SYMBOL`, and `WARN PATCH_BRANCH_GAP`; set `ALLOW_WORKER_BUILD=1`, `ALLOW_UNUSED="name ..."`, or `ALLOW_PATCH_GAPS=1` to allow known exceptions.
 - `identgone.sh`: report a removed identifier as `WARN IDENT_GONE <file> <old> -> <new>` when a newly appearing identifier in the same changed `.ts`, `.tsx`, or `.go` file contains it, is contained by it (both names at least 6 characters), or is within case-insensitive edit distance 2 (both names at least 6 characters), and both identifiers have the same occurrence count. When several candidates qualify, the closest edit distance wins, with name order breaking ties. Other removals are `NOTE IDENT_GONE` and do not fail the receipt. Comments, strings, and numeric literal fragments are ignored. Set `ALLOW_IDENT_GONE="name1 name2"` to suppress either report for known intentional removals; the names apply regardless of file.
 - `rc.sh` also reruns the Go test functions the change adds or edits (`repeattests.sh`, `-count=50`) and records `WARN DEAL_DEPENDENT` when one fails, which usually means it depends on the deal. Set `REPEAT_TESTS_COUNT` to change the count, or `0` to skip.

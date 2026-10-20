@@ -143,6 +143,27 @@ GH
   grep -qx 'WARN LANE_OVERLAP shared slots=1,2' <<<"$out" || fail "overlap.sh skipped a dirty detached lane: $out"
 ) || exit 1
 grep -q 'overlap.sh" "\$1" >> "\$BATCH_STATE/rc\$1.txt"' "$SCRIPTS/rc.sh" || fail "rc.sh no longer records overlap.sh in the receipt"
+grep -q 'adrcheck.sh" "\$1" >> "\$BATCH_STATE/rc\$1.txt"' "$SCRIPTS/rc.sh" || fail "rc.sh no longer records adrcheck.sh in the receipt"
+
+# adrcheck.sh uses the lane's changed paths and allows orchestrator-written ADR progress lines.
+(
+  repo="$tmp/adrcheck"; root="$tmp/adrcheck-lanes"; state="$tmp/adrcheck-state"
+  mkdir -p "$root"; git init -q --bare "$tmp/adrcheck-origin.git"; git init -q "$repo"
+  git -C "$repo" config user.email test@example.com; git -C "$repo" config user.name test
+  mkdir -p "$repo/docs/adr"; printf 'base\n' > "$repo/tracked"; printf 'decision\n' > "$repo/docs/adr/0001-test.md"
+  git -C "$repo" add tracked docs/adr/0001-test.md; git -C "$repo" commit -qm base
+  git -C "$repo" branch -M develop; git -C "$repo" remote add origin "$tmp/adrcheck-origin.git"
+  git -C "$repo" push -q -u origin develop; git -C "$repo" fetch -q origin
+  git -C "$repo" worktree add -qb lane "$root/wt-ib1" origin/develop
+  printf 'progress\n' >> "$root/wt-ib1/docs/adr/0001-test.md"
+  out=$(BATCH_REPO="$repo" BATCH_WT_ROOT="$root" BATCH_STATE="$state" bash "$SCRIPTS/adrcheck.sh" 1)
+  grep -qx 'WARN ADR_EDIT docs/adr/0001-test.md' <<<"$out" || fail "adrcheck.sh missed ADR edit: $out"
+  out=$(ALLOW_ADR_EDIT=1 BATCH_REPO="$repo" BATCH_WT_ROOT="$root" BATCH_STATE="$state" bash "$SCRIPTS/adrcheck.sh" 1)
+  [[ -z "$out" ]] || fail "adrcheck.sh ignored ALLOW_ADR_EDIT: $out"
+  printf 'decision\n' > "$root/wt-ib1/docs/adr/0001-test.md"
+  out=$(BATCH_REPO="$repo" BATCH_WT_ROOT="$root" BATCH_STATE="$state" bash "$SCRIPTS/adrcheck.sh" 1)
+  [[ -z "$out" ]] || fail "adrcheck.sh warned on unchanged ADR: $out"
+)
 ! grep -R -nE 'git status --porcelain \| awk' "$SCRIPTS" || fail "status paths are parsed as whitespace fields"
 if grep -R -n '/tmp/' "$SCRIPTS" >"$tmp/tmp-paths.out" 2>&1; then
   fail "batch scripts contain hardcoded /tmp paths: $(cat "$tmp/tmp-paths.out")"
@@ -1076,6 +1097,7 @@ SWEEP
   printf 'develop\n' > "$SY_REPO/tracked"; git -C "$SY_REPO" add tracked; git -C "$SY_REPO" commit -qm upstream; git -C "$SY_REPO" push -q origin develop
   if BATCH_REPO="$SY_REPO" BATCH_WT_ROOT="$SY_ROOT" BATCH_STATE="$SY_STATE" bash "$SCRIPTS/sync.sh" 1 >"$tmp/sync-conflict.out" 2>&1; then fail 'sync conflict succeeded'; else rc=$?; [ "$rc" = 2 ] || fail "conflict exit $rc"; fi
   grep -qx 'CONFLICT tracked' "$tmp/sync-conflict.out" || fail 'conflict filename missing'
+  grep -qx 'lane kept on lane; to rebase by hand: git stash -u && git merge --ff-only origin/develop && git stash pop' "$tmp/sync-conflict.out" || fail 'conflict recovery instructions missing'
   [ "$(git -C "$SY_LANE" rev-parse HEAD)" = "$oldhead" ] && [ "$(git -C "$SY_LANE" status --porcelain)" = "$oldstatus" ] && [ "$(cat "$SY_LANE/tracked")" = lane ] && [ "$(cat "$SY_LANE/conflict-untracked")" = 'keep me' ] && [[ "$(git -C "$SY_LANE" status --porcelain)" == *'?? conflict-untracked'* ]] && ! git -C "$SY_LANE" rev-parse -q --verify MERGE_HEAD >/dev/null || fail 'conflict restore incorrect'
 
   setup_sync fetch-failure; printf 'local edit\n' > "$SY_LANE/tracked"; printf 'keep me\n' > "$SY_LANE/untracked"; oldhead=$(git -C "$SY_LANE" rev-parse HEAD); oldstatus=$(git -C "$SY_LANE" status --porcelain)
