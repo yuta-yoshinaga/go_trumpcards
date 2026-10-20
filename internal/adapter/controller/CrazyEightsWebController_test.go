@@ -18,6 +18,7 @@ import (
 func mustCrazyEightsOutputJSON(msg string) string {
 	out := &controller.CrazyEightsWebOutput{
 		Players:          []*controller.CrazyEightsWebOutputPlayer{},
+		ValidPlays:       []int{},
 		DiscardPileCount: 0,
 		WinnerIdx:        -1,
 		WebOutputBase:    controller.WebOutputBase{Message: msg},
@@ -30,7 +31,7 @@ func mustCrazyEightsOutputJSON(msg string) string {
 }
 
 func TestCrazyEightsWebController_Method(t *testing.T) {
-	mockOutput := `{"players":[],"phase":0,"roundNumber":0,"currentPlayerIdx":0,"discardTop":null,"discardPileCount":0,"drawPileCount":0,"chosenSuit":0,"gameEndFlag":false,"winnerIdx":-1,"message":"","config":{"cpuDifficulty":0,"pointLimit":0}}`
+	mockOutput := `{"players":[],"phase":0,"roundNumber":0,"currentPlayerIdx":0,"validPlays":[],"discardTop":null,"discardPileCount":0,"drawPileCount":0,"chosenSuit":0,"gameEndFlag":false,"winnerIdx":-1,"message":"","config":{"cpuDifficulty":0,"pointLimit":0}}`
 	expectedBody := mockOutput
 
 	siMock := new(usecase.MockCrazyEightsInteractor)

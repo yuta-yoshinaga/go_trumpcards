@@ -13,9 +13,16 @@ type MockCrazyEightsGame struct {
 	mock.Mock
 }
 
-func (m *MockCrazyEightsGame) Reset()                          { m.Called() }
-func (m *MockCrazyEightsGame) NextRound()                      { m.Called() }
-func (m *MockCrazyEightsGame) PlayerPlay(cardIndex int) error  { return m.Called(cardIndex).Error(0) }
+func (m *MockCrazyEightsGame) Reset()                         { m.Called() }
+func (m *MockCrazyEightsGame) NextRound()                     { m.Called() }
+func (m *MockCrazyEightsGame) PlayerPlay(cardIndex int) error { return m.Called(cardIndex).Error(0) }
+func (m *MockCrazyEightsGame) GetValidPlayIndices(playerIdx int) []int {
+	ret := m.Called(playerIdx)
+	if val, ok := ret.Get(0).([]int); ok {
+		return val
+	}
+	return nil
+}
 func (m *MockCrazyEightsGame) PlayerChooseSuit(suit int) error { return m.Called(suit).Error(0) }
 func (m *MockCrazyEightsGame) PlayerDraw() error               { return m.Called().Error(0) }
 func (m *MockCrazyEightsGame) CpuPlay()                        { m.Called() }

@@ -41,6 +41,7 @@ const playPhaseState: CrazyEightsResponse = {
   phase: 0,
   roundNumber: 1,
   currentPlayerIdx: 0,
+  validPlays: [1],
   discardTop: { design: 'HEART', value: 7 },
   discardPileCount: 3,
   drawPileCount: 30,
@@ -180,20 +181,21 @@ describe('CrazyEightsPage', () => {
     mobileState.isMobile = true;
   });
 
-  it('highlights legal cards and dims illegal ones on the human turn', async () => {
-    // Discard top ♥7; hand has ♥J (legal — same suit) and ♠A (illegal).
+  it('uses server legality even when it contradicts the Crazy Eights rules', async () => {
+    // On ♥7, the old mirror rejects ♠A and allows ♥J; the server deliberately says otherwise.
+    mockExec.mockResolvedValue({ ...playPhaseState, validPlays: [0] });
     renderWithProviders(<CrazyEightsPage />);
-    const legal = await screen.findByLabelText('♥ J');
-    const illegal = screen.getByLabelText('♠ A');
-    expect(legal).toHaveAttribute('data-legal', 'true');
-    expect(legal.className).toContain('ring-ds-success');
-    expect(illegal).toHaveAttribute('data-legal', 'false');
-    expect(illegal.className).toContain('opacity-50');
-    expect(illegal).toHaveAttribute('title', 'このカードは出せません（スート・数字・8 のいずれも不一致）');
+    const serverLegal = await screen.findByLabelText('♠ A');
+    const serverIllegal = screen.getByLabelText('♥ J');
+    expect(serverLegal).toHaveAttribute('data-legal', 'true');
+    expect(serverLegal.className).toContain('ring-ds-success');
+    expect(serverIllegal).toHaveAttribute('data-legal', 'false');
+    expect(serverIllegal.className).toContain('opacity-50');
+    expect(serverIllegal).toHaveAttribute('title', 'このカードは出せません（スート・数字・8 のいずれも不一致）');
   });
 
   it('does not mark card legality on a CPU turn', async () => {
-    mockExec.mockResolvedValue(cpuTurnState);
+    mockExec.mockResolvedValue({ ...cpuTurnState, validPlays: [0, 1] });
     renderWithProviders(<CrazyEightsPage />);
     const card = await screen.findByLabelText('♥ J');
     expect(card).not.toHaveAttribute('data-legal');
@@ -926,6 +928,19 @@ describe('CrazyEightsPage', () => {
     // Display re-sorted ♠ before ♥.
     expect(handOrder(container)).toEqual(['♠ 3', '♥ 5']);
     expect(screen.getByTestId('ce-sort-suit')).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('keeps legal highlighting tied to original hand indices after sorting', async () => {
+    localStorage.clear();
+    mockExec.mockResolvedValue({ ...sortableHandState, validPlays: [0] });
+    const { container } = renderWithProviders(<CrazyEightsPage />);
+    await screen.findByTestId('ce-sort-suit');
+    fireEvent.click(screen.getByTestId('ce-sort-suit'));
+    const spade = screen.getByLabelText('♠ 3');
+    const heart = screen.getByLabelText('♥ 5');
+    expect(handOrder(container)).toEqual(['♠ 3', '♥ 5']);
+    expect(spade).toHaveAttribute('data-legal', 'false');
+    expect(heart).toHaveAttribute('data-legal', 'true');
   });
 
   it('plays the correct ORIGINAL index after the display is sorted', async () => {

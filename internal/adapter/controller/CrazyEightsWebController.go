@@ -38,6 +38,7 @@ type CrazyEightsWebOutput struct {
 	Phase            int                           `json:"phase"`
 	RoundNumber      int                           `json:"roundNumber"`
 	CurrentPlayerIdx int                           `json:"currentPlayerIdx"`
+	ValidPlays       []int                         `json:"validPlays"`
 	DiscardTop       *WebOutputCard                `json:"discardTop"`
 	DiscardPileCount int                           `json:"discardPileCount"`
 	DrawPileCount    int                           `json:"drawPileCount"`
@@ -79,6 +80,7 @@ var NewCrazyEightsWebController, NewCrazyEightsWebControllerWithProvider = webCo
 func newCrazyEightsDefaultOutput(msg string) *CrazyEightsWebOutput {
 	return &CrazyEightsWebOutput{
 		Players:       make([]*CrazyEightsWebOutputPlayer, 0),
+		ValidPlays:    make([]int, 0),
 		WinnerIdx:     -1,
 		WebOutputBase: WebOutputBase{Message: msg},
 	}

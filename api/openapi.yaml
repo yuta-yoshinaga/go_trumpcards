@@ -46249,6 +46249,11 @@ components:
           additionalProperties:
             type: string
           description: Interpolation parameters for the message template keyed by placeholder name.
+        validPlays:
+          type: array
+          description: Hand indices the human player may legally play now; empty when it is not the human's play turn
+          items:
+            type: integer
 
     # -------------------------------------------------------------------------
     # Macau

@@ -21,6 +21,7 @@ function makeState(overrides: Partial<CrazyEightsResponse> = {}): CrazyEightsRes
     phase: CrazyEightsPhase.PLAY,
     roundNumber: 1,
     currentPlayerIdx: 0,
+    validPlays: [],
     discardTop: card('HEART', 7),
     discardPileCount: 3,
     drawPileCount: 20,
