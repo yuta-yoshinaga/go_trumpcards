@@ -50,6 +50,7 @@ function makeState(overrides: Partial<CoincheResponse> = {}): CoincheResponse {
     roundNumber: 1,
     trickNumber: 0,
     currentPlayerIdx: 0,
+    validPlays: [],
     bidPlayerIdx: 0,
     dealerIdx: 3,
     trumpSuit: 0,
@@ -409,6 +410,7 @@ describe('CoinchePage', () => {
         trumpSuit: 1,
         trickNumber: 3,
         currentPlayerIdx: 1,
+        validPlays: [0, 1, 2],
         makerTeam: 0,
         roundBeloteBonus: [20, 0],
       }),
@@ -532,23 +534,27 @@ describe('CoinchePage', () => {
     await waitFor(() => expect(screen.queryByText(/おすすめ: 110/)).not.toBeInTheDocument());
   });
 
-  it('rings only the legal follow-suit card during the human play turn', async () => {
-    // Trump ♠(1). Opponent leads ♥; the human holds ♥10 so must follow ♥.
-    // Only ♥10 is legal; ♠J and ♣9 are illegal.
+  it('rings exactly server indices when they disagree with client rules', async () => {
+    // The server allows ♠J even though the client mirror would require following ♥.
     mockExec.mockResolvedValue(
       makeState({
         phase: CoinchePhase.PLAY,
         trumpSuit: 1,
         currentPlayerIdx: 0,
-        makerTeam: 0,
+        validPlays: [0],
         currentTrick: [{ playerIdx: 1, card: card('HEART', 13) }],
       }),
     );
     renderWithProviders(<CoinchePage />);
-    const legalCard = await screen.findByRole('button', { name: '♥ 10' });
-    const illegalCard = screen.getByRole('button', { name: '♠ J' });
-    expect(legalCard).toHaveAttribute('data-legal', 'true');
-    expect(illegalCard).not.toHaveAttribute('data-legal');
+    expect(await screen.findByRole('button', { name: '♠ J' })).toHaveAttribute('data-legal', 'true');
+    expect(screen.getByRole('button', { name: '♥ 10' })).not.toHaveAttribute('data-legal');
+  });
+
+  it('rings exactly the server-specified index set', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: CoinchePhase.PLAY, validPlays: [1] }));
+    renderWithProviders(<CoinchePage />);
+    expect(await screen.findByRole('button', { name: '♥ 10' })).toHaveAttribute('data-legal', 'true');
+    expect(screen.getByRole('button', { name: '♠ J' })).not.toHaveAttribute('data-legal');
   });
 
   it('keeps an illegal card clickable so the backend still validates the play', async () => {
@@ -559,6 +565,7 @@ describe('CoinchePage', () => {
         phase: CoinchePhase.PLAY,
         trumpSuit: 1,
         currentPlayerIdx: 0,
+        validPlays: [1],
         makerTeam: 0,
         currentTrick: [{ playerIdx: 1, card: card('HEART', 13) }],
       }),

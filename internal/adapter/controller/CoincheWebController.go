@@ -54,6 +54,7 @@ type CoincheWebOutput struct {
 	RoundNumber      int                       `json:"roundNumber"`
 	TrickNumber      int                       `json:"trickNumber"`
 	CurrentPlayerIdx int                       `json:"currentPlayerIdx"`
+	ValidPlays       []int                     `json:"validPlays"`
 	BidPlayerIdx     int                       `json:"bidPlayerIdx"`
 	DealerIdx        int                       `json:"dealerIdx"`
 	TrumpSuit        int                       `json:"trumpSuit"`
