@@ -38,6 +38,28 @@ func intSliceOrEmpty(in []int) []int {
 	return in
 }
 
+type humanSeat interface{ GetIsHuman() bool }
+
+type turnGame[P humanSeat] interface {
+	GetPlayerCnt() int
+	GetCurrentPlayerIdx() int
+	GetPlayer(int) P
+	GetValidPlayIndices(int) []int
+}
+
+// humanTurnValidPlays returns legal hand indices when it is a human's turn in
+// the play phase; otherwise it returns an empty non-nil slice for JSON output.
+func humanTurnValidPlays[P humanSeat](g turnGame[P], inPlay bool) []int {
+	if !inPlay {
+		return make([]int, 0)
+	}
+	cur := g.GetCurrentPlayerIdx()
+	if cur < 0 || cur >= g.GetPlayerCnt() || !g.GetPlayer(cur).GetIsHuman() {
+		return make([]int, 0)
+	}
+	return intSliceOrEmpty(g.GetValidPlayIndices(cur))
+}
+
 // stringSliceOrEmpty normalizes nil slices to empty slices for JSON output.
 func stringSliceOrEmpty(in []string) []string {
 	if in == nil {
