@@ -120,7 +120,7 @@ grep -q 'GATE: worktree changed during e2e' <<< "$output" || fail "rcg omitted w
 
 # Lint output without an explicit success receipt must not pass the gate.
 lint_gate() {
-  local name="$1" lint_lines="$2" want_pass="$3"
+  local name="$1" lint_lines="$2" want_pass="$3" expected_gate="${4:-GATE: lint unverified}"
   local base="$tmp/$name" repo="$tmp/$name/repo" wts="$tmp/$name/wts" state="$tmp/$name/state"
   mkdir -p "$repo" "$wts" "$base/scripts" "$state"
   git init -q "$repo"; git -C "$repo" config user.email test@example.com; git -C "$repo" config user.name test
@@ -145,12 +145,13 @@ STUB
     [[ -s "$state/gate1.ok" ]] || fail "$name did not stamp gate ok"
   else
     [[ $rc -ne 0 ]] || fail "$name gate should fail: $output"
-    grep -q '^GATE: lint unverified$' <<< "$output" || fail "$name omitted lint error: $output"
+    grep -q "^$expected_gate$" <<< "$output" || fail "$name omitted lint error: $output"
     [[ ! -e "$state/gate1.ok" ]] || fail "$name stamped unverified lint"
   fi
 }
 lint_gate lint_unverified '  echo "LINT: Error: parallel golangci-lint is running"' no
 lint_gate lint_verified $'  echo "LINT: 0 issues."\n  echo LINT=ok' yes
+lint_gate lint_failed $'  echo "LINT: 2 issues."\n  echo LINT=FAIL' no 'GATE: lint failed'
 
 for script in "$SCRIPTS/receipt.sh" "$SCRIPTS/rcg.sh"; do bash -n "$script" || fail "bash -n $script"; done
 grep -q -- '--allow-parallel-runners' "$SCRIPTS/receipt.sh" || fail 'receipt.sh omits parallel-runner flag'
