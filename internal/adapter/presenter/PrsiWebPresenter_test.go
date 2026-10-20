@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -32,6 +33,7 @@ func setupPrsiWebMock() *interfaces.MockPrsiGame {
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.PrsiPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
+	m.On("GetValidPlayIndices", mock.Anything).Return([]int{}).Maybe()
 	m.On("GetWinnerIdx").Return(-1)
 	m.On("GetConfig").Return(domain.DefaultPrsiConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
@@ -47,6 +49,36 @@ func setupPrsiWebMockWithPlayers() (*interfaces.MockPrsiGame, []*domain.PrsiPlay
 	m.On("GetPlayer", 2).Return(players[2])
 	m.On("GetPlayer", 3).Return(players[3])
 	return m, players
+}
+
+func TestPrsiWebPresenterValidPlays(t *testing.T) {
+	p := new(presenter.PrsiWebPresenter)
+	t.Run("human play turn", func(t *testing.T) {
+		m, _ := setupPrsiWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+		m.On("GetValidPlayIndices", 0).Return([]int{0, 2})
+		result := p.Output(m, nil)
+		var out controller.PrsiWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &out))
+		assert.Equal(t, []int{0, 2}, out.ValidPlays)
+		assert.Contains(t, result, `"validPlays":[0,2]`)
+	})
+	t.Run("CPU turn", func(t *testing.T) {
+		m, _ := setupPrsiWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+		m.On("GetValidPlayIndices", mock.Anything).Return([]int{0, 1}).Maybe()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentPlayerIdx")
+		m.On("GetCurrentPlayerIdx").Return(1)
+		assert.Contains(t, p.Output(m, nil), `"validPlays":[]`)
+	})
+	t.Run("outside play phase", func(t *testing.T) {
+		m, _ := setupPrsiWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+		m.On("GetValidPlayIndices", mock.Anything).Return([]int{0, 1}).Maybe()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.PrsiPhase(99))
+		assert.Contains(t, p.Output(m, nil), `"validPlays":[]`)
+	})
 }
 
 func TestPrsiWebPresenter_Output(t *testing.T) {
@@ -66,6 +98,7 @@ func TestPrsiWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 11, resObj.DrawPileCount)
 		assert.Equal(t, 3, resObj.DiscardPileCount)
 		assert.Equal(t, -1, resObj.WinnerIdx)
+		assert.Contains(t, result, `"validPlays":[]`)
 		assert.Nil(t, resObj.DiscardTop)
 		assert.Equal(t, "prsi.playPhase", resObj.MessageCode)
 

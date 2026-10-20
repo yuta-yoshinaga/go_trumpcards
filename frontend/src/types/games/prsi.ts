@@ -21,6 +21,8 @@ export interface PrsiResponse extends BaseGameResponse {
   players: PrsiPlayerData[];
   phase: number;
   currentPlayerIdx: number;
+  /** Hand indices the human may legally play; empty outside the human's play turn. */
+  validPlays: number[];
   discardTop: Card | null;
   drawPileCount: number;
   discardPileCount: number;
