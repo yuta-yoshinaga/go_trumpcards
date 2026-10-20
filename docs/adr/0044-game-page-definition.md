@@ -24,7 +24,7 @@ Issue #11912。
 
 ## Decision
 
-`GameDefinition { key, useGame, useView?, tutorial, skeleton, cli, busy?, phase, shortcuts?, shortcutsEnabled?, shortcutsTestId?, cardNav?, settings?, settingsPlacement?, landscapeBanner?, resetTutorialId?, actionsTutorialId?, HeaderExtra?, LiveRegion?, Board, FooterHand?, FooterStatus?, FooterActions?, shell?, reset?, contentClassName? }` を宣言し `createGamePage(def)` が横断配線を 1 か所で行う。ページは named export (`export const XPage = createGamePage(def)`) を保つので `App.tsx` の `import.meta.glob` ルーティングは無変更。
+`GameDefinition { key, useGame, useView?, tutorial, skeleton, cli, busy?, phase, shortcuts?, shortcutsEnabled?, shortcutsTestId?, primaryActions?, message?, cardNav?, settings?, settingsPlacement?, landscapeBanner?, resetTutorialId?, actionsTutorialId?, HeaderExtra?, LiveRegion?, Board, FooterHand?, FooterStatus?, FooterActions?, shell?, reset?, contentClassName? }` を宣言し `createGamePage(def)` が横断配線を 1 か所で行う。ページは named export (`export const XPage = createGamePage(def)`) を保つので `App.tsx` の `import.meta.glob` ルーティングは無変更。
 
 `cli` は `parseCommand`/`formatResponse`/`helpText` の名前のままページに置く (`check-cli-hint-reachable` がページの `parseCommand:` を grep するため)。ヒントの描画はゲーム固有なので `Board` に残す (`check-hint-live-region` / `check-hint-gate` はページファイルを読むので無変更で通る)。
 
@@ -32,10 +32,12 @@ Issue #11912。
 
 2 ページ目 (Hearts、trick-taking・カード選択・パスフェーズ): 744 行 → 680 行、import 43 → 26、横断シンボルの手配線は `hintCheckboxItem` (ゲーム固有設定と並べるため) を除いて 0。足した口は `cardNav` (カード番号キー操作、62 ページが `useCardKeyboardNav` を使う)、`FooterHand` / `FooterStatus`、`actionsTutorialId`、`settingsPlacement` (設定パネルが盤面の上か下かは概算 169 / 172 ページで二分。ソース上の行位置の比較による)、`landscapeBanner` (91 ページだけが出すので既定は false)。`HeartsPage.test.tsx` と `e2e/hearts.spec.ts` は無変更で通過。
 
+3 ページ目 (Spades) は、固定アクションを `primaryActions`、デスクトップの案内を `message` で渡して移行した。
+
 ## Consequences
 
 次の横断機能は `createGamePage` 1 ファイルの変更で済む。一斉移行はしない: 新規ゲームは new-game スキルから定義で作る、既存ページは触るついでに移行。`frontend/scripts/check-game-page-definition.mjs` は手配線の新規ページを拒み、`frontend/scripts/game-page-definition-baseline.txt` の行数が未移行ページ数になる（移行した PR でその行を消す、行を足すのは禁止）。行を足すこと自体は機械的には止めていない: CI の浅い checkout には develop 側のベースラインが無いので、足された行はレビューで見る。ページ単位の guard を `createGamePage` 1 ファイルの検査へ置き換えられる時期は、この行数で判断する。
 
-まだ表現できないもの: CPU ログやモバイル/デスクトップで分かれるサイドバー — Hearts では不要だった (サイドバーは `lgTwoColGrid` を Board 内で完結)。必要になるページを移すときに定義へ足す (#11915)。
+まだ表現できないもの: CPU ログやモバイル/デスクトップで分かれるサイドバー — Hearts では不要だった (サイドバーは `lgTwoColGrid` を Board 内で完結)。固定アクション付きフッターは `primaryActions` / `message` で表現できる。必要になるページを移すときに定義へ足す (#11915)。
 
 スコープ外: フロントのルール二重実装 (#11913)、`types/` の `openapi.yaml` からの生成。

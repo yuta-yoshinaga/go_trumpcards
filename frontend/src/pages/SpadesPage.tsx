@@ -1,28 +1,13 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useState } from 'react';
 import type { spadesApi } from '../api/gameApi';
-import { ActionLogSection } from '../components/ActionLogSection';
-import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
-import { CliTerminal } from '../components/cli/CliTerminal';
-import { CliToggle } from '../components/cli/CliToggle';
-import { SettingsPanel } from '../components/common/SettingsPanel';
-import { ErrorAlert } from '../components/ErrorAlert';
-import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageShell } from '../components/GamePageShell';
-import { GameResetButton } from '../components/GameResetButton';
+import { createGamePage, type GameDefinition, type GamePageContext } from '../components/game/createGamePage';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { PlayerHandSection } from '../components/PlayerHandSection';
 import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { ScrollFadeHint } from '../components/ScrollFadeHint';
-import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
-import { withTutorial } from '../components/tutorial/withTutorial';
 import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
-import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
-import { useCliGame } from '../hooks/useCliGame';
-import { useCliMode } from '../hooks/useCliMode';
-import { useGameHint } from '../hooks/useGameHint';
-import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import {
   BAG_PENALTY_THRESHOLD_OPTIONS,
@@ -34,14 +19,12 @@ import {
 import { badgeError, badgeInfo, badgeSuccess, badgeWarning } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
-import { gameTheme } from '../styles/gameTheme';
 import { scoreTableClass } from '../styles/scoreTableStyles';
 import type { SpadesResponse } from '../types/card';
 import { SpadesPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { parseSpadesCommand, SPADES_HELP } from '../utils/cli/commands/spadesCommands';
 import { formatSpadesState } from '../utils/cli/formatters/spadesFormatter';
-import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { spadesBagWarning, spadesBidProgress } from '../utils/spadesBid';
@@ -109,91 +92,30 @@ const SPADES_PHASE_KEYS: Readonly<Record<number, string>> = {
   [SpadesPhase.GAME_END]: 'gameEnd',
 };
 
-/** Renders the Spades game page with bidding, trick play, and scoring. */
-export const SpadesPage = withTutorial(SpadesPageContent, 'spades', SP_TUTORIAL_STEPS);
-/** Inner content of the Spades page, wrapped by TutorialProvider. */
-function SpadesPageContent() {
+type SpadesGame = ReturnType<typeof useSpadesGame>;
+type SpadesContext = GamePageContext<SpadesResponse, SpadesGame, SpadesView>;
+
+function useSpadesView() {
   const isLargeDesktop = useBreakpoint() === 'largeDesktop';
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('spades');
-  const {
-    state,
-    loading,
-    error,
-    exec,
-    retry,
-    spadesConfig,
-    selectedCardIndices,
-    toggleCard,
-    clearSelection,
-    handleConfigChange,
-    handleBid,
-    handlePlay,
-    handleNextTrick,
-    handleNextRound,
-    hint,
-    hintError,
-    hintLoading,
-    handleHint,
-  } = useSpadesGame();
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('spades', state);
   const { cardWidth, isMobile } = useCardDimensions();
   const [bidValue, setBidValue] = useState(1);
-  // CLI mode
-  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('spades');
-  const cliConfig: CliGameConfig<SpadesResponse, Parameters<typeof spadesApi.exec>> = useMemo(
-    () => ({
-      gameName: 'spades',
-      parseCommand: parseSpadesCommand,
-      formatResponse: formatSpadesState,
-      helpText: SPADES_HELP,
-    }),
-    [],
-  );
-  const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
-
-  const isPlayPhaseForKbd = state?.phase === SpadesPhase.PLAY;
-  const isHumanTurnForKbd = isPlayPhaseForKbd && state?.players[state.currentPlayerIdx]?.isHuman === true;
-  const humanCardCountForKbd = state?.players.find((p) => p.isHuman)?.cards?.length ?? 0;
-
-  const confirmAction = useCallback(() => {
-    handlePlay();
-  }, [handlePlay]);
-
-  useCardKeyboardNav({
-    cardCount: humanCardCountForKbd,
-    onToggle: toggleCard,
-    onConfirm: confirmAction,
-    onClear: clearSelection,
-    enabled: !!isHumanTurnForKbd && !loading,
-  });
-
   const phaseNames = usePhaseNames('spades', SPADES_PHASE_KEYS);
+  return { isLargeDesktop, cardWidth, isMobile, bidValue, setBidValue, phaseNames };
+}
 
-  const runAction = exec;
-  const handleManualReset = useCallback(() => {
-    hideActionLog();
-    void runAction('reset', undefined, undefined, {
-      cpuDifficulty: spadesConfig.cpuDifficulty,
-      pointLimit: spadesConfig.pointLimit,
-      nilBonus: spadesConfig.nilBonus,
-      bagPenaltyThreshold: spadesConfig.bagPenaltyThreshold,
-    });
-  }, [
-    runAction,
-    hideActionLog,
-    spadesConfig.cpuDifficulty,
-    spadesConfig.pointLimit,
-    spadesConfig.nilBonus,
-    spadesConfig.bagPenaltyThreshold,
-  ]);
+type SpadesView = ReturnType<typeof useSpadesView>;
 
-  if (!state)
-    return <GameSkeleton gameKey="spades" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 5 }} />;
+function SpadesMessageBox({ state }: Pick<SpadesContext, 'state'>) {
+  return (
+    <div data-tutorial="sp-bags-info">
+      <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+    </div>
+  );
+}
+
+function Board({ state, t, tc, busy, view }: SpadesContext) {
+  const { isLargeDesktop, cardWidth, isMobile, bidValue, setBidValue } = view;
+  const loading = busy;
 
   const humanPlayer = state.players.find((p) => p.isHuman);
   const isBidPhase = state.phase === SpadesPhase.BID;
@@ -201,7 +123,6 @@ function SpadesPageContent() {
   const isTrickEnd = state.phase === SpadesPhase.TRICK_END;
   const isRoundEnd = state.phase === SpadesPhase.ROUND_END;
   const isGameEnd = state.phase === SpadesPhase.GAME_END || state.gameEndFlag;
-  const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
   const isHumanBidTurn = isBidPhase && state.players[state.bidPlayerIdx]?.isHuman === true;
   // Bid-contract progress for the human player, shown during the play phase.
   const bidProgress =
@@ -218,459 +139,450 @@ function SpadesPageContent() {
     return w.level === 'danger' ? 'text-ds-warning font-bold' : 'text-ds-warning';
   };
 
-  const messageBox = (
-    <div data-tutorial="sp-bags-info">
-      <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
-    </div>
-  );
-
   return (
-    <GamePageShell
-      title={tc('nav.spades')}
-      gameThemeBg={gameTheme.spades.bg}
-      phaseName={phaseNames[state.phase]}
-      isHumanTurn={isHumanBidTurn || isHumanTurn}
-      gamePath="/spades"
-      gameEndFlag={!!state?.gameEndFlag}
-      loading={loading}
-      confirmOpen={confirmOpen}
-      confirmReset={confirmReset}
-      cancelReset={cancelReset}
-      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
-    >
-      {cliEnabled ? (
-        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
-      ) : (
-        <>
-          {/* Settings */}
-          <SettingsPanel
-            title={t('settings.title')}
-            groups={[
-              {
-                items: [
-                  {
-                    type: 'select',
-                    id: 'cpuDifficulty',
-                    label: t('settings.cpuDifficulty'),
-                    value: spadesConfig.cpuDifficulty,
-                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
-                      value: o.value,
-                      label: t(`settings.${o.label.toLowerCase()}`),
-                    })),
-                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
-                  },
-                  {
-                    type: 'select',
-                    id: 'pointLimit',
-                    label: t('settings.pointLimit'),
-                    value: spadesConfig.pointLimit,
-                    options: POINT_LIMIT_OPTIONS.map((v) => ({ value: v, label: String(v) })),
-                    onSelect: (v) => handleConfigChange('pointLimit', v),
-                  },
-                  {
-                    type: 'select',
-                    id: 'nilBonus',
-                    label: t('settings.nilBonus'),
-                    value: spadesConfig.nilBonus,
-                    options: NIL_BONUS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
-                    onSelect: (v) => handleConfigChange('nilBonus', v),
-                    tooltip: t('settings.nextGameNote'),
-                    testId: 'sp-setting-nil-bonus',
-                  },
-                  {
-                    type: 'select',
-                    id: 'bagPenaltyThreshold',
-                    label: t('settings.bagPenaltyThreshold'),
-                    value: spadesConfig.bagPenaltyThreshold,
-                    options: BAG_PENALTY_THRESHOLD_OPTIONS.map((v) => ({ value: v, label: String(v) })),
-                    onSelect: (v) => handleConfigChange('bagPenaltyThreshold', v),
-                    tooltip: t('settings.nextGameNote'),
-                    testId: 'sp-setting-bag-threshold',
-                  },
-                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
-                ],
-              },
-            ]}
-          />
-
-          {/* Scrollable area */}
-          <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            {isHumanBidTurn && (
-              <fieldset className="m-0 border-0 p-0" aria-label={t('bidPhase')}>
-                <div className="grid grid-cols-7 gap-1 justify-center">
-                  {[0, ...Array.from({ length: 13 }, (_, i) => i + 1)].map((v) => (
-                    <button
-                      key={v}
-                      type="button"
-                      className={
-                        v === bidValue
-                          ? `${btnSecondary} min-w-[44px] ring-2 ring-ds-warning`
-                          : `${btnSecondary} min-w-[44px]`
-                      }
-                      aria-pressed={bidValue === v}
-                      onClick={() => setBidValue(v)}
-                      disabled={loading}
-                    >
-                      {v === 0 ? t('nilButton') : v}
-                    </button>
-                  ))}
-                </div>
-              </fieldset>
-            )}
-
-            {/* Round/Trick info */}
-            <div className="text-ds-text-primary flex flex-wrap justify-center gap-x-4 gap-y-1 text-center mb-2">
-              <span className="whitespace-nowrap">{t('round', { n: state.roundNumber })}</span>
-              <span className="whitespace-nowrap">{t('trick', { n: state.trickNumber })}</span>
-              <span className="whitespace-nowrap">{state.spadesBroken ? t('spadesBroken') : t('spadesNotBroken')}</span>
-            </div>
-
-            {(bidProgress || humanBagWarning) && (
-              <div className="text-center mb-2 flex flex-wrap gap-2 justify-center items-center">
-                {bidProgress && (
-                  <span
-                    data-testid="sp-bid-progress"
-                    className={
-                      bidProgress.kind === 'nilFail'
-                        ? badgeWarning
-                        : bidProgress.kind === 'made'
-                          ? badgeSuccess
-                          : badgeInfo
-                    }
-                  >
-                    {bidProgress.kind === 'remaining'
-                      ? t('bidProgress.remaining', { n: bidProgress.remaining })
-                      : bidProgress.kind === 'made'
-                        ? t('bidProgress.made', { bags: bidProgress.bags })
-                        : bidProgress.kind === 'nilFail'
-                          ? t('bidProgress.nilFail')
-                          : t('bidProgress.nilOk')}
-                  </span>
-                )}
-                {humanBagWarning && (
-                  <span
-                    data-testid="sp-bag-warning"
-                    className={
-                      humanBagWarning.level === 'danger' ? `${badgeError} motion-safe:animate-pulse` : badgeWarning
-                    }
-                  >
-                    {t('bagWarning', { bags: humanBagWarning.bags, threshold: humanBagWarning.threshold })}
-                  </span>
-                )}
-              </div>
-            )}
-
-            <div className={lgTwoColGrid}>
-              {/* Left: game play area */}
-              <div>
-                {/* Bid phase instruction */}
-                {isHumanBidTurn && (
-                  <div className="text-ds-warning text-center mb-2" data-tutorial="sp-bid-controls">
-                    {t('bidPhase')}
-                  </div>
-                )}
-
-                {/* Current trick */}
-                <TrickDisplay
-                  currentTrick={state.currentTrick}
-                  players={state.players}
-                  cardWidth={cardWidth}
-                  label={t('currentTrick')}
-                  winnerIdx={
-                    state.phase === SpadesPhase.TRICK_END || state.phase === SpadesPhase.ROUND_END
-                      ? state.leadPlayerIdx
-                      : undefined
-                  }
-                  winnerLabel={t('trickWinnerBadge')}
-                  dataTutorial="sp-trick-display"
-                />
-              </div>
-
-              {/* Right: info sidebar */}
-              <div>
-                {/* CPU players */}
-                {isMobile ? (
-                  <details className="mb-2 p-2 rounded bg-black/30">
-                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
-                      {tc('label.cpuOpponents', { count: state.players.filter((p) => !p.isHuman).length })}
-                    </summary>
-                    <div className="mt-1">
-                      {state.players
-                        .filter((p) => !p.isHuman)
-                        .map((p) => (
-                          <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                            {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                            {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
-                            {t('roundScore', { score: p.roundScore })} |{' '}
-                            {p.bid >= 0 ? t('bid', { n: p.bid }) : t('bidNone')} | {t('bags', { count: p.bags })}
-                          </div>
-                        ))}
-                    </div>
-                  </details>
-                ) : (
-                  state.players
-                    .filter((p) => !p.isHuman)
-                    .map((p) => (
-                      <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                        <div className="flex flex-wrap gap-x-1 text-ds-text-muted text-sm">
-                          <span className="whitespace-nowrap">
-                            {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })}
-                          </span>
-                          <span className="whitespace-nowrap">
-                            {t('cumulativeScore', { score: p.cumulativeScore })}
-                          </span>
-                          <span className="whitespace-nowrap">{t('roundScore', { score: p.roundScore })}</span>
-                          <span className="whitespace-nowrap">
-                            {p.bid >= 0 ? t('bid', { n: p.bid }) : t('bidNone')}
-                          </span>
-                          <span className="whitespace-nowrap">{t('bags', { count: p.bags })}</span>
-                        </div>
-                      </div>
-                    ))
-                )}
-
-                {/* Score table */}
-                {isMobile ? (
-                  <details
-                    className="my-3 p-2 rounded bg-black/30 relative"
-                    data-tutorial="sp-score-table"
-                    open={isRoundEnd || isGameEnd || undefined}
-                  >
-                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('scores')}</summary>
-                    <div className="overflow-x-auto -mx-2 px-2">
-                      <table
-                        className={scoreTableClass(
-                          isLargeDesktop,
-                          'w-full text-sm text-ds-text-muted min-w-[360px]',
-                          'mt-1',
-                        )}
-                      >
-                        <thead>
-                          <tr>
-                            <th scope="col" className="text-left whitespace-nowrap text-[10px]">
-                              {t('scoresPlayer')}
-                            </th>
-                            <th scope="col" className="whitespace-nowrap text-[10px]">
-                              {t('scoresBid')}
-                            </th>
-                            <th scope="col" className="whitespace-nowrap text-[10px]">
-                              {t('scoresTricks')}
-                            </th>
-                            <th scope="col" className="whitespace-nowrap text-[10px]">
-                              {t('scoresBags')}
-                            </th>
-                            <th scope="col" className="whitespace-nowrap text-[10px]">
-                              {t('scoresRound')}
-                            </th>
-                            <th scope="col" className="whitespace-nowrap text-[10px]">
-                              {t('scoresTotal')}
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {state.players.map((p) => (
-                            <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
-                              <th scope="row" className="text-left">
-                                {playerName(p.id, p.isHuman)}
-                              </th>
-                              <td className="text-center">{p.bid >= 0 ? p.bid : '-'}</td>
-                              <td className="text-center">{p.trickCount}</td>
-                              <td
-                                className={`text-center ${bagCellClass(p.bags)}`}
-                                data-testid={`sp-bags-cell-${p.id}`}
-                              >
-                                {p.bags}
-                              </td>
-                              <td className="text-center">
-                                {p.roundScore}
-                                {(isRoundEnd || isGameEnd) && (
-                                  <div className="text-xs" data-testid={`sp-score-breakdown-${p.id}`}>
-                                    {t('scoreBreakdown', {
-                                      bid: p.scoreBreakdown.bidScore,
-                                      overtricks: p.scoreBreakdown.overtrickScore,
-                                      nil: p.scoreBreakdown.nilScore,
-                                      penalty: p.scoreBreakdown.bagPenalty,
-                                    })}
-                                  </div>
-                                )}
-                              </td>
-                              <td className="text-center">{p.cumulativeScore}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                    <ScrollFadeHint />
-                  </details>
-                ) : (
-                  <div className="my-3 p-2 rounded bg-black/30 relative" data-tutorial="sp-score-table">
-                    <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
-                    <div className="overflow-x-auto -mx-2 px-2">
-                      <table
-                        className={scoreTableClass(isLargeDesktop, 'w-full text-sm text-ds-text-muted min-w-[360px]')}
-                      >
-                        <thead>
-                          <tr>
-                            <th scope="col" className="text-left whitespace-nowrap text-[10px]">
-                              {t('scoresPlayer')}
-                            </th>
-                            <th scope="col" className="whitespace-nowrap text-[10px]">
-                              {t('scoresBid')}
-                            </th>
-                            <th scope="col" className="whitespace-nowrap text-[10px]">
-                              {t('scoresTricks')}
-                            </th>
-                            <th scope="col" className="whitespace-nowrap text-[10px]">
-                              {t('scoresBags')}
-                            </th>
-                            <th scope="col" className="whitespace-nowrap text-[10px]">
-                              {t('scoresRound')}
-                            </th>
-                            <th scope="col" className="whitespace-nowrap text-[10px]">
-                              {t('scoresTotal')}
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {state.players.map((p) => (
-                            <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
-                              <th scope="row" className="text-left">
-                                {playerName(p.id, p.isHuman)}
-                              </th>
-                              <td className="text-center">{p.bid >= 0 ? p.bid : '-'}</td>
-                              <td className="text-center">{p.trickCount}</td>
-                              <td
-                                className={`text-center ${bagCellClass(p.bags)}`}
-                                data-testid={`sp-bags-cell-${p.id}`}
-                              >
-                                {p.bags}
-                              </td>
-                              <td className="text-center">
-                                {p.roundScore}
-                                {(isRoundEnd || isGameEnd) && (
-                                  <div className="text-xs" data-testid={`sp-score-breakdown-${p.id}`}>
-                                    {t('scoreBreakdown', {
-                                      bid: p.scoreBreakdown.bidScore,
-                                      overtricks: p.scoreBreakdown.overtrickScore,
-                                      nil: p.scoreBreakdown.nilScore,
-                                      penalty: p.scoreBreakdown.bagPenalty,
-                                    })}
-                                  </div>
-                                )}
-                              </td>
-                              <td className="text-center">{p.cumulativeScore}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                )}
-                <RoundScoreAnnouncement
-                  active={isRoundEnd || isGameEnd}
-                  entries={state.players.map((p) => ({
-                    name: playerName(p.id, p.isHuman),
-                    roundScore: p.roundScore,
-                    cumulativeScore: p.cumulativeScore,
-                  }))}
-                />
-              </div>
-            </div>
-
-            {/* Action log */}
-            {isMobile && messageBox}
-            <ActionLogSection
-              isEndPhase={isGameEnd}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
-
-            <ErrorAlert message={error ?? hintError} onRetry={retry} />
-
-            {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
-                付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
-                読み上げられないことがある (#5955, #6663)。 */}
-            <div data-testid="spades-hint-live" role="status" aria-live="polite">
-              {hint && (
-                <div className="text-ds-warning text-sm mb-2">
-                  {hint.bid != null
-                    ? `${t('hintBid')}: ${hint.bid} (${t(`hintReason.${hint.reason}`)})`
-                    : `${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`}
-                </div>
-              )}
-            </div>
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            <div data-tutorial="sp-play-button">
-              {(isHumanBidTurn || isHumanTurn) && (
-                <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
-                  {tc('button.hint')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={!!isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="sp-reset-button"
-              />
-            </div>
-            <CardNavShortcutsPanel data-testid="spades-kbd-shortcuts" />
+    <>
+      {isHumanBidTurn && (
+        <fieldset className="m-0 border-0 p-0" aria-label={t('bidPhase')}>
+          <div className="grid grid-cols-7 gap-1 justify-center">
+            {[0, ...Array.from({ length: 13 }, (_, i) => i + 1)].map((v) => (
+              <button
+                key={v}
+                type="button"
+                className={
+                  v === bidValue
+                    ? `${btnSecondary} min-w-[44px] ring-2 ring-ds-warning`
+                    : `${btnSecondary} min-w-[44px]`
+                }
+                aria-pressed={bidValue === v}
+                onClick={() => setBidValue(v)}
+                disabled={loading}
+              >
+                {v === 0 ? t('nilButton') : v}
+              </button>
+            ))}
           </div>
-
-          {/* Footer */}
-          <GameFooter
-            className={`${gameTheme.spades.footer} px-4 py-2.5`}
-            message={!isMobile && messageBox}
-            actions={
-              isHumanBidTurn || isHumanTurn || isTrickEnd || isRoundEnd ? (
-                <div className="flex gap-2 items-center">
-                  {isHumanBidTurn && (
-                    <button type="button" className={btnPrimary} onClick={() => handleBid(bidValue)} disabled={loading}>
-                      {t('bidButton')}
-                    </button>
-                  )}
-                  {isHumanTurn && (
-                    <button
-                      type="button"
-                      className={btnPrimary}
-                      onClick={handlePlay}
-                      disabled={loading || selectedCardIndices.length !== 1}
-                    >
-                      {t('playButton')}
-                    </button>
-                  )}
-                  {isTrickEnd && (
-                    <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                      {t('nextTrick')}
-                    </button>
-                  )}
-                  {isRoundEnd && (
-                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                      {t('nextRound')}
-                    </button>
-                  )}
-                </div>
-              ) : null
-            }
-          >
-            {/* Human cards */}
-            {humanPlayer && (
-              <PlayerHandSection
-                humanPlayer={humanPlayer}
-                selectedCardIndices={selectedCardIndices}
-                toggleCard={toggleCard}
-                cardWidth={cardWidth}
-                isMobile={isMobile}
-                dataTutorialPrefix="sp"
-                validIndices={isHumanTurn ? state.validPlayIndices : undefined}
-                restrictedTooltip={t('restrictedCard')}
-              />
-            )}
-          </GameFooter>
-        </>
+        </fieldset>
       )}
-    </GamePageShell>
+
+      {/* Round/Trick info */}
+      <div className="text-ds-text-primary flex flex-wrap justify-center gap-x-4 gap-y-1 text-center mb-2">
+        <span className="whitespace-nowrap">{t('round', { n: state.roundNumber })}</span>
+        <span className="whitespace-nowrap">{t('trick', { n: state.trickNumber })}</span>
+        <span className="whitespace-nowrap">{state.spadesBroken ? t('spadesBroken') : t('spadesNotBroken')}</span>
+      </div>
+
+      {(bidProgress || humanBagWarning) && (
+        <div className="text-center mb-2 flex flex-wrap gap-2 justify-center items-center">
+          {bidProgress && (
+            <span
+              data-testid="sp-bid-progress"
+              className={
+                bidProgress.kind === 'nilFail' ? badgeWarning : bidProgress.kind === 'made' ? badgeSuccess : badgeInfo
+              }
+            >
+              {bidProgress.kind === 'remaining'
+                ? t('bidProgress.remaining', { n: bidProgress.remaining })
+                : bidProgress.kind === 'made'
+                  ? t('bidProgress.made', { bags: bidProgress.bags })
+                  : bidProgress.kind === 'nilFail'
+                    ? t('bidProgress.nilFail')
+                    : t('bidProgress.nilOk')}
+            </span>
+          )}
+          {humanBagWarning && (
+            <span
+              data-testid="sp-bag-warning"
+              className={humanBagWarning.level === 'danger' ? `${badgeError} motion-safe:animate-pulse` : badgeWarning}
+            >
+              {t('bagWarning', { bags: humanBagWarning.bags, threshold: humanBagWarning.threshold })}
+            </span>
+          )}
+        </div>
+      )}
+
+      <div className={lgTwoColGrid}>
+        {/* Left: game play area */}
+        <div>
+          {/* Bid phase instruction */}
+          {isHumanBidTurn && (
+            <div className="text-ds-warning text-center mb-2" data-tutorial="sp-bid-controls">
+              {t('bidPhase')}
+            </div>
+          )}
+
+          {/* Current trick */}
+          <TrickDisplay
+            currentTrick={state.currentTrick}
+            players={state.players}
+            cardWidth={cardWidth}
+            label={t('currentTrick')}
+            winnerIdx={
+              state.phase === SpadesPhase.TRICK_END || state.phase === SpadesPhase.ROUND_END
+                ? state.leadPlayerIdx
+                : undefined
+            }
+            winnerLabel={t('trickWinnerBadge')}
+            dataTutorial="sp-trick-display"
+          />
+        </div>
+
+        {/* Right: info sidebar */}
+        <div>
+          {/* CPU players */}
+          {isMobile ? (
+            <details className="mb-2 p-2 rounded bg-black/30">
+              <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
+                {tc('label.cpuOpponents', { count: state.players.filter((p) => !p.isHuman).length })}
+              </summary>
+              <div className="mt-1">
+                {state.players
+                  .filter((p) => !p.isHuman)
+                  .map((p) => (
+                    <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
+                      {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                      {t('cumulativeScore', { score: p.cumulativeScore })} | {t('roundScore', { score: p.roundScore })}{' '}
+                      | {p.bid >= 0 ? t('bid', { n: p.bid }) : t('bidNone')} | {t('bags', { count: p.bags })}
+                    </div>
+                  ))}
+              </div>
+            </details>
+          ) : (
+            state.players
+              .filter((p) => !p.isHuman)
+              .map((p) => (
+                <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
+                  <div className="flex flex-wrap gap-x-1 text-ds-text-muted text-sm">
+                    <span className="whitespace-nowrap">
+                      {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })}
+                    </span>
+                    <span className="whitespace-nowrap">{t('cumulativeScore', { score: p.cumulativeScore })}</span>
+                    <span className="whitespace-nowrap">{t('roundScore', { score: p.roundScore })}</span>
+                    <span className="whitespace-nowrap">{p.bid >= 0 ? t('bid', { n: p.bid }) : t('bidNone')}</span>
+                    <span className="whitespace-nowrap">{t('bags', { count: p.bags })}</span>
+                  </div>
+                </div>
+              ))
+          )}
+
+          {/* Score table */}
+          {isMobile ? (
+            <details
+              className="my-3 p-2 rounded bg-black/30 relative"
+              data-tutorial="sp-score-table"
+              open={isRoundEnd || isGameEnd || undefined}
+            >
+              <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('scores')}</summary>
+              <div className="overflow-x-auto -mx-2 px-2">
+                <table
+                  className={scoreTableClass(isLargeDesktop, 'w-full text-sm text-ds-text-muted min-w-[360px]', 'mt-1')}
+                >
+                  <thead>
+                    <tr>
+                      <th scope="col" className="text-left whitespace-nowrap text-[10px]">
+                        {t('scoresPlayer')}
+                      </th>
+                      <th scope="col" className="whitespace-nowrap text-[10px]">
+                        {t('scoresBid')}
+                      </th>
+                      <th scope="col" className="whitespace-nowrap text-[10px]">
+                        {t('scoresTricks')}
+                      </th>
+                      <th scope="col" className="whitespace-nowrap text-[10px]">
+                        {t('scoresBags')}
+                      </th>
+                      <th scope="col" className="whitespace-nowrap text-[10px]">
+                        {t('scoresRound')}
+                      </th>
+                      <th scope="col" className="whitespace-nowrap text-[10px]">
+                        {t('scoresTotal')}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {state.players.map((p) => (
+                      <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
+                        <th scope="row" className="text-left">
+                          {playerName(p.id, p.isHuman)}
+                        </th>
+                        <td className="text-center">{p.bid >= 0 ? p.bid : '-'}</td>
+                        <td className="text-center">{p.trickCount}</td>
+                        <td className={`text-center ${bagCellClass(p.bags)}`} data-testid={`sp-bags-cell-${p.id}`}>
+                          {p.bags}
+                        </td>
+                        <td className="text-center">
+                          {p.roundScore}
+                          {(isRoundEnd || isGameEnd) && (
+                            <div className="text-xs" data-testid={`sp-score-breakdown-${p.id}`}>
+                              {t('scoreBreakdown', {
+                                bid: p.scoreBreakdown.bidScore,
+                                overtricks: p.scoreBreakdown.overtrickScore,
+                                nil: p.scoreBreakdown.nilScore,
+                                penalty: p.scoreBreakdown.bagPenalty,
+                              })}
+                            </div>
+                          )}
+                        </td>
+                        <td className="text-center">{p.cumulativeScore}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <ScrollFadeHint />
+            </details>
+          ) : (
+            <div className="my-3 p-2 rounded bg-black/30 relative" data-tutorial="sp-score-table">
+              <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
+              <div className="overflow-x-auto -mx-2 px-2">
+                <table className={scoreTableClass(isLargeDesktop, 'w-full text-sm text-ds-text-muted min-w-[360px]')}>
+                  <thead>
+                    <tr>
+                      <th scope="col" className="text-left whitespace-nowrap text-[10px]">
+                        {t('scoresPlayer')}
+                      </th>
+                      <th scope="col" className="whitespace-nowrap text-[10px]">
+                        {t('scoresBid')}
+                      </th>
+                      <th scope="col" className="whitespace-nowrap text-[10px]">
+                        {t('scoresTricks')}
+                      </th>
+                      <th scope="col" className="whitespace-nowrap text-[10px]">
+                        {t('scoresBags')}
+                      </th>
+                      <th scope="col" className="whitespace-nowrap text-[10px]">
+                        {t('scoresRound')}
+                      </th>
+                      <th scope="col" className="whitespace-nowrap text-[10px]">
+                        {t('scoresTotal')}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {state.players.map((p) => (
+                      <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
+                        <th scope="row" className="text-left">
+                          {playerName(p.id, p.isHuman)}
+                        </th>
+                        <td className="text-center">{p.bid >= 0 ? p.bid : '-'}</td>
+                        <td className="text-center">{p.trickCount}</td>
+                        <td className={`text-center ${bagCellClass(p.bags)}`} data-testid={`sp-bags-cell-${p.id}`}>
+                          {p.bags}
+                        </td>
+                        <td className="text-center">
+                          {p.roundScore}
+                          {(isRoundEnd || isGameEnd) && (
+                            <div className="text-xs" data-testid={`sp-score-breakdown-${p.id}`}>
+                              {t('scoreBreakdown', {
+                                bid: p.scoreBreakdown.bidScore,
+                                overtricks: p.scoreBreakdown.overtrickScore,
+                                nil: p.scoreBreakdown.nilScore,
+                                penalty: p.scoreBreakdown.bagPenalty,
+                              })}
+                            </div>
+                          )}
+                        </td>
+                        <td className="text-center">{p.cumulativeScore}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+          <RoundScoreAnnouncement
+            active={isRoundEnd || isGameEnd}
+            entries={state.players.map((p) => ({
+              name: playerName(p.id, p.isHuman),
+              roundScore: p.roundScore,
+              cumulativeScore: p.cumulativeScore,
+            }))}
+          />
+        </div>
+      </div>
+
+      {isMobile && <SpadesMessageBox state={state} />}
+    </>
   );
 }
+
+function FooterHand({ game, state, t, view }: SpadesContext) {
+  const humanPlayer = state.players.find((player) => player.isHuman);
+  const isHumanTurn = state.phase === SpadesPhase.PLAY && state.players[state.currentPlayerIdx]?.isHuman === true;
+  return humanPlayer ? (
+    <PlayerHandSection
+      humanPlayer={humanPlayer}
+      selectedCardIndices={game.selectedCardIndices}
+      toggleCard={game.toggleCard}
+      cardWidth={view.cardWidth}
+      isMobile={view.isMobile}
+      dataTutorialPrefix="sp"
+      validIndices={isHumanTurn ? state.validPlayIndices : undefined}
+      restrictedTooltip={t('restrictedCard')}
+    />
+  ) : null;
+}
+
+function FooterStatus({ game, t, frontendHint }: SpadesContext) {
+  return (
+    <>
+      {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
+          付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
+          読み上げられないことがある (#5955, #6663)。 */}
+      <div data-testid="spades-hint-live" role="status" aria-live="polite">
+        {game.hint && (
+          <div className="text-ds-warning text-sm mb-2">
+            {game.hint.bid != null
+              ? `${t('hintBid')}: ${game.hint.bid} (${t(`hintReason.${game.hint.reason}`)})`
+              : `${t('hintPlay')}: [${game.hint.cardIndex}] (${t(`hintReason.${game.hint.reason}`)})`}
+          </div>
+        )}
+      </div>
+      <FrontendHintTooltip hint={frontendHint.hint} enabled={frontendHint.hintEnabled} t={t} />
+    </>
+  );
+}
+
+function FooterActions({ game, state, tc, busy }: SpadesContext) {
+  const isBidTurn = state.phase === SpadesPhase.BID && state.players[state.bidPlayerIdx]?.isHuman === true;
+  const isHumanTurn = state.phase === SpadesPhase.PLAY && state.players[state.currentPlayerIdx]?.isHuman === true;
+  if (!isBidTurn && !isHumanTurn) return null;
+  return (
+    <button type="button" className={btnSuccess} onClick={game.handleHint} disabled={busy || game.hintLoading}>
+      {tc('button.hint')}
+    </button>
+  );
+}
+
+function primaryActions({ game, state, t, busy, view }: SpadesContext) {
+  const isHumanBidTurn = state.phase === SpadesPhase.BID && state.players[state.bidPlayerIdx]?.isHuman === true;
+  const isHumanTurn = state.phase === SpadesPhase.PLAY && state.players[state.currentPlayerIdx]?.isHuman === true;
+  const isTrickEnd = state.phase === SpadesPhase.TRICK_END;
+  const isRoundEnd = state.phase === SpadesPhase.ROUND_END;
+  if (!isHumanBidTurn && !isHumanTurn && !isTrickEnd && !isRoundEnd) return null;
+  return (
+    <div className="flex gap-2 items-center">
+      {isHumanBidTurn && (
+        <button type="button" className={btnPrimary} onClick={() => game.handleBid(view.bidValue)} disabled={busy}>
+          {t('bidButton')}
+        </button>
+      )}
+      {isHumanTurn && (
+        <button
+          type="button"
+          className={btnPrimary}
+          onClick={game.handlePlay}
+          disabled={busy || game.selectedCardIndices.length !== 1}
+        >
+          {t('playButton')}
+        </button>
+      )}
+      {isTrickEnd && (
+        <button type="button" className={btnSuccess} onClick={game.handleNextTrick} disabled={busy}>
+          {t('nextTrick')}
+        </button>
+      )}
+      {isRoundEnd && (
+        <button type="button" className={btnSuccess} onClick={game.handleNextRound} disabled={busy}>
+          {t('nextRound')}
+        </button>
+      )}
+    </div>
+  );
+}
+
+const spadesDefinition: GameDefinition<SpadesResponse, SpadesGame, Parameters<typeof spadesApi.exec>, SpadesView> = {
+  key: 'spades',
+  useGame: useSpadesGame,
+  useView: useSpadesView,
+  tutorial: SP_TUTORIAL_STEPS,
+  skeleton: { kind: 'trick-taking', trickArea: true, footerHandSize: 5 },
+  cli: () => ({
+    parseCommand: parseSpadesCommand,
+    formatResponse: formatSpadesState,
+    helpText: SPADES_HELP,
+  }),
+  phase: ({ state, view }) => ({
+    name: view.phaseNames[state.phase],
+    ended: state.phase === SpadesPhase.GAME_END || state.gameEndFlag,
+  }),
+  shell: ({ state }) => ({
+    isHumanTurn:
+      (state.phase === SpadesPhase.BID && state.players[state.bidPlayerIdx]?.isHuman === true) ||
+      (state.phase === SpadesPhase.PLAY && state.players[state.currentPlayerIdx]?.isHuman === true),
+  }),
+  reset: ({ game }) => {
+    void game.exec('reset', undefined, undefined, {
+      cpuDifficulty: game.spadesConfig.cpuDifficulty,
+      pointLimit: game.spadesConfig.pointLimit,
+      nilBonus: game.spadesConfig.nilBonus,
+      bagPenaltyThreshold: game.spadesConfig.bagPenaltyThreshold,
+    });
+  },
+  settings: ({ game, t, tc, frontendHint }) => [
+    {
+      items: [
+        {
+          type: 'select',
+          id: 'cpuDifficulty',
+          label: t('settings.cpuDifficulty'),
+          value: game.spadesConfig.cpuDifficulty,
+          options: CPU_DIFFICULTY_OPTIONS.map((option) => ({
+            value: option.value,
+            label: t(`settings.${option.label.toLowerCase()}`),
+          })),
+          onSelect: (value) => game.handleConfigChange('cpuDifficulty', value),
+        },
+        {
+          type: 'select',
+          id: 'pointLimit',
+          label: t('settings.pointLimit'),
+          value: game.spadesConfig.pointLimit,
+          options: POINT_LIMIT_OPTIONS.map((value) => ({ value, label: String(value) })),
+          onSelect: (value) => game.handleConfigChange('pointLimit', value),
+        },
+        {
+          type: 'select',
+          id: 'nilBonus',
+          label: t('settings.nilBonus'),
+          value: game.spadesConfig.nilBonus,
+          options: NIL_BONUS_OPTIONS.map((value) => ({ value, label: String(value) })),
+          onSelect: (value) => game.handleConfigChange('nilBonus', value),
+          tooltip: t('settings.nextGameNote'),
+          testId: 'sp-setting-nil-bonus',
+        },
+        {
+          type: 'select',
+          id: 'bagPenaltyThreshold',
+          label: t('settings.bagPenaltyThreshold'),
+          value: game.spadesConfig.bagPenaltyThreshold,
+          options: BAG_PENALTY_THRESHOLD_OPTIONS.map((value) => ({ value, label: String(value) })),
+          onSelect: (value) => game.handleConfigChange('bagPenaltyThreshold', value),
+          tooltip: t('settings.nextGameNote'),
+          testId: 'sp-setting-bag-threshold',
+        },
+        hintCheckboxItem(tc, frontendHint.hintEnabled, frontendHint.setHintEnabled),
+      ],
+    },
+  ],
+  settingsPlacement: 'top',
+  contentClassName: `pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`,
+  primaryActions,
+  message: (ctx) => !ctx.view.isMobile && <SpadesMessageBox state={ctx.state} />,
+  cardNav: ({ game, state }) => ({
+    cardCount: state.players.find((player) => player.isHuman)?.cards?.length ?? 0,
+    onToggle: game.toggleCard,
+    onConfirm: game.handlePlay,
+    onClear: game.clearSelection,
+    enabled: state.phase === SpadesPhase.PLAY && state.players[state.currentPlayerIdx]?.isHuman === true,
+  }),
+  shortcutsTestId: 'spades-kbd-shortcuts',
+  resetTutorialId: 'sp-reset-button',
+  actionsTutorialId: 'sp-play-button',
+  Board,
+  FooterHand,
+  FooterStatus,
+  FooterActions,
+};
+
+/** Renders the Spades game page with bidding, trick play, and scoring. */
+export const SpadesPage = createGamePage(spadesDefinition);

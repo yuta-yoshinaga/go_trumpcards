@@ -318,7 +318,6 @@ SnapPage.tsx
 SokoPage.tsx
 SoloWhistPage.tsx
 SomersetPage.tsx
-SpadesPage.tsx
 Spanish21Page.tsx
 SpeculationPage.tsx
 SpeedPage.tsx

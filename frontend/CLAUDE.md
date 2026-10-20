@@ -8,7 +8,7 @@ This directory contains the React frontend (Vite + React + TypeScript).
 
 ## Standard page structure
 
-Every game page (`src/pages/<X>Page.tsx`) follows the same skeleton — copy from an existing page like `SpadesPage.tsx` or `HeartsPage.tsx` rather than inventing a new structure. Key elements:
+Every game page (`src/pages/<X>Page.tsx`) follows the same skeleton — copy from an existing page like `SpadesPage.tsx` or `HeartsPage.tsx`, both built from a `GameDefinition` via `createGamePage`, rather than inventing a new structure. Key elements:
 
 1. **Outer `XPage` exports the TutorialWrapper, inner `XPageContent` holds the implementation** — this split is required because `TutorialWrapper` provides the context that hooks inside `XPageContent` consume.
 2. **Standard hooks**: `useGamePageSetup(gameName)` provides i18n + action-log + reset-confirm state; `useGameApi(apiFn, opts)` manages server state with loading / error / retry.
