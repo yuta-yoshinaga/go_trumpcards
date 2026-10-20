@@ -383,7 +383,10 @@ function BeleagueredCastlePageContent() {
               </div>
 
               {/* 4 foundations × (120px card + 20px label) = 560px, fitting the 800px viewport. */}
-              <div className="flex flex-col items-center gap-1 sm:gap-2 mb-3" data-tutorial="bc-foundation">
+              <div
+                className="flex flex-col items-center gap-1 sm:gap-2 mb-3 lg:grid lg:grid-cols-2 lg:self-start"
+                data-tutorial="bc-foundation"
+              >
                 {state.foundation.map((pile, idx) => {
                   const foundationZone: BeleagueredCastleMoveZone = { zone: 'foundation', col: idx };
                   return (

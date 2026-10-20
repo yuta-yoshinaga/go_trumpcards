@@ -633,3 +633,14 @@ describe('BeleagueredCastlePage move count announcement', () => {
     }
   });
 });
+
+describe('BeleagueredCastlePage foundation layout', () => {
+  it('keeps foundations in a mobile column and enables two desktop columns', async () => {
+    mockExec.mockResolvedValue(playingState);
+    const { container } = renderWithProviders(<BeleagueredCastlePage />);
+    await waitFor(() => {
+      const foundation = container.querySelector('[data-tutorial="bc-foundation"]');
+      expect(foundation).toHaveClass('flex-col', 'lg:grid-cols-2');
+    });
+  });
+});

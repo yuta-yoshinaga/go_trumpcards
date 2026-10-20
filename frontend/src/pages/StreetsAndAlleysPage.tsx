@@ -373,7 +373,10 @@ function StreetsAndAlleysPageContent() {
                 {[0, 1, 2, 3].map(renderTableauColumn)}
               </div>
 
-              <div className="flex flex-col items-center gap-1 sm:gap-2 mb-3" data-tutorial="sa-foundation">
+              <div
+                className="flex flex-col items-center gap-1 sm:gap-2 mb-3 lg:grid lg:grid-cols-2 lg:self-start"
+                data-tutorial="sa-foundation"
+              >
                 {state.foundation.map((pile, idx) => {
                   const foundationZone: StreetsAndAlleysMoveZone = { zone: 'foundation', col: idx };
                   return (

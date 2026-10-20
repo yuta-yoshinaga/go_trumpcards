@@ -373,7 +373,7 @@ function CitadelPageContent() {
 
                 {/* 4 foundations × (120px card + 20px label) = 560px, fitting the 800px viewport. */}
                 <div
-                  className={`flex flex-col items-center gap-1 sm:gap-2 mb-3 ${isMobile ? 'flex-none' : ''}`}
+                  className={`flex flex-col items-center gap-1 sm:gap-2 mb-3 lg:grid lg:grid-cols-2 lg:self-start ${isMobile ? 'flex-none' : ''}`}
                   data-tutorial="bc-foundation"
                 >
                   {state.foundation.map((pile, idx) => {
