@@ -24,6 +24,7 @@ function makeState(overrides: Partial<BeloteResponse> = {}): BeloteResponse {
     roundNumber: 1,
     trickNumber: 1,
     currentPlayerIdx: 0,
+    validPlays: [],
     bidPlayerIdx: 0,
     dealerIdx: 3,
     trumpSuit: 1,

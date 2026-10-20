@@ -29,6 +29,6 @@ Issue #11913。フロントがルールを再実装した client-side mirror は
 
 Euchre は `GetValidPlayIndices` が既にあったため domain の変更は不要で、presenter の手番判定とレスポンス field の追加だけで移行できた。残る mirror は 30 本。
 
-Wizard も `GetValidPlayIndices` が既にあり domain 変更なし。
+Belote、Omi、Wizard も `GetValidPlayIndices` が既にあり domain 変更なし。
 
 スコープ外: `utils/hints` の約 370 本の戦略ヒント (どれを出すべきか) は規則ではなく助言なので対象外。対象は合法性の写しだけ。

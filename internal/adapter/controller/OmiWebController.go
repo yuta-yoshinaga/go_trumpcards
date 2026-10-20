@@ -48,6 +48,7 @@ type OmiWebOutput struct {
 	RoundNumber      int                   `json:"roundNumber"`
 	TrickNumber      int                   `json:"trickNumber"`
 	CurrentPlayerIdx int                   `json:"currentPlayerIdx"`
+	ValidPlays       []int                 `json:"validPlays"`
 	TrumpCallerIdx   int                   `json:"trumpCallerIdx"`
 	BidPlayerIdx     int                   `json:"bidPlayerIdx"`
 	DealerIdx        int                   `json:"dealerIdx"`
