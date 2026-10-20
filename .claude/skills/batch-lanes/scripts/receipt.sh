@@ -116,7 +116,18 @@ flock "$BATCH_STATE/tsc.lock" bun run typecheck >"$BATCH_STATE/tc$slot.log" 2>&1
 cd ..
 if [ -n "$go" ] || printf '%s\n' "${changed[@]}" | grep -q internal/i18n/locales/; then go build ./... && echo BUILD=ok; flock "$BATCH_STATE/gotest.lock" go test -tags test ./... 2>&1 | grep -vE '^(ok|\?)' | tail -15; echo GOTEST_DONE
 elif printf '%s\n' "${changed[@]}" | grep -q frontend/src/i18n/locales/; then echo "GOTEST(frontend-locale guards)"; flock "$BATCH_STATE/gotest.lock" go test -tags test ./internal/infrastructure/games/ ./internal/adapter/presenter/ ./internal/i18n/... 2>&1 | grep -vE '^(ok|\?)' | tail -15; echo GOTEST_DONE; fi
+if [[ -z "$go" ]] && printf '%s\n' "${changed[@]}" | grep -qx 'api/openapi.yaml'; then
+  echo 'GOTEST(OpenAPI)'
+  flock "$BATCH_STATE/gotest.lock" go test -tags test ./internal/infrastructure/games/ -run 'TestOpenAPI' 2>&1 | grep -vE '^(ok|\?)' | tail -15
+  echo GOTEST_DONE
+fi
 if ((${#mut_files[@]})); then grep -nE '\{false &&|if \(true\)' -- "${mut_files[@]}" </dev/null 2>/dev/null && echo MUTANT_LEFT; fi
-if [ -n "$go" ]; then export PATH=$PATH:"$(go env GOPATH)/bin"; gi=$(goimports -l "${go_files[@]}"); [ -n "$gi" ] && echo "GOIMPORTS: $gi"; flock "$BATCH_STATE/lint.lock" golangci-lint run --build-tags test ./internal/... 2>&1 | tail -3 | sed 's/^/LINT: /'; fi
+if [ -n "$go" ]; then
+  export PATH=$PATH:"$(go env GOPATH)/bin"
+  gi=$(goimports -l "${go_files[@]}"); [ -n "$gi" ] && echo "GOIMPORTS: $gi"
+  lint_out=$(flock "$BATCH_STATE/lint.lock" golangci-lint run --allow-parallel-runners --build-tags test ./internal/... 2>&1); lint_rc=$?
+  tail -3 <<< "$lint_out" | sed 's/^/LINT: /'
+  if [[ $lint_rc -eq 0 ]]; then echo LINT=ok; else echo LINT=FAIL; fi
+fi
 "$B/fieldcheck.sh" "$wt"
 python3 "$B/e2echeck.py" "$wt"

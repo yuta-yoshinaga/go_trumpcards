@@ -31,8 +31,9 @@ printf '%s %s\n' "$started" "$(date +%s%N)" > "$BATCH_STATE/rcg$slot.result"
 grep -E "==|FAIL|WARN|NOTE|CHECK|TYPE|Tests |LINT|GOIMPORTS|MUTANT|MISSING" $f
 grep -q '^CHECK=ok' $f || { echo "GATE: check failed"; exit 1; }
 grep -q '^TYPE=ok' $f || { echo "GATE: typecheck failed"; exit 1; }
+if grep -q '^LINT' "$f" && ! grep -q '^LINT=ok' "$f"; then echo "GATE: lint unverified"; exit 1; fi
 # NOTE lines quote source text, which may itself contain FAIL or WARN; they never fail the gate.
-grep -v '^NOTE ' $f | grep -qE 'FAIL|MUTANT_LEFT|MISSING_TEST|GOIMPORTS:|LINT: [1-9]|WARN' && { echo "GATE: failure/warning present"; exit 1; }
+grep -v '^NOTE ' $f | grep -qE 'FAIL|MUTANT_LEFT|MISSING_TEST|GOIMPORTS:|LINT: [1-9]|LINT=FAIL|WARN' && { echo "GATE: failure/warning present"; exit 1; }
 if [[ "${E2E_GATE:-1}" == 0 ]]; then
   echo "NOTE E2E_GATE skipped"
 else
