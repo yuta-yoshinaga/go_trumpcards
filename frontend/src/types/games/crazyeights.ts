@@ -42,6 +42,8 @@ export interface CrazyEightsResponse extends BaseGameResponse {
   phase: number;
   roundNumber: number;
   currentPlayerIdx: number;
+  /** Hand indices the human player may legally play now; empty outside their play turn. */
+  validPlays: number[];
   discardTop: Card | null;
   discardPileCount: number;
   drawPileCount: number;

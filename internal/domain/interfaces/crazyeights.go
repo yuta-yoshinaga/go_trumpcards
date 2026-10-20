@@ -11,6 +11,8 @@ type CrazyEightsGame interface {
 	NextRound()
 	// PlayerPlay プレイヤーがカードを出す
 	PlayerPlay(cardIndex int) error
+	// GetValidPlayIndices 指定プレイヤーが現在プレイ可能な手札のインデックスを取得する
+	GetValidPlayIndices(playerIdx int) []int
 	// PlayerChooseSuit プレイヤーがスートを選択する
 	PlayerChooseSuit(suit int) error
 	// PlayerDraw プレイヤーが山札からカードを引く

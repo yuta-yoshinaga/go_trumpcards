@@ -21,6 +21,7 @@ function createWrapper() {
 }
 
 const defaultState: CrazyEightsResponse = {
+  validPlays: [],
   players: [
     { id: 0, isHuman: true, cardCount: 5, cards: [{ design: 'SPADE', value: 8 }], roundScore: 0, cumulativeScore: 0 },
     { id: 1, isHuman: false, cardCount: 5, cards: [], roundScore: 0, cumulativeScore: 0 },
