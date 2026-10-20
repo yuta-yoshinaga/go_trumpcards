@@ -70953,6 +70953,8 @@ components:
     BeziqueResponse:
       type: object
       description: Current state of the Bezique game
+      required:
+        - validPlays
       properties:
         messageParams:
           type: object
@@ -71027,6 +71029,11 @@ components:
         currentPlayerIdx:
           type: integer
           description: Index of the player whose turn it is
+        validPlays:
+          type: array
+          description: Hand indices the human player may legally play now; empty when it is not the human's play turn
+          items:
+            type: integer
         leadPlayerIdx:
           type: integer
           description: Index of the player who led the current trick

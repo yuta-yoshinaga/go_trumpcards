@@ -60,6 +60,7 @@ type BeziqueWebOutput struct {
 	RoundNumber      int                       `json:"roundNumber"`
 	TrickNumber      int                       `json:"trickNumber"`
 	CurrentPlayerIdx int                       `json:"currentPlayerIdx"`
+	ValidPlays       []int                     `json:"validPlays"`
 	LeadPlayerIdx    int                       `json:"leadPlayerIdx"`
 	DealerIdx        int                       `json:"dealerIdx"`
 	TrumpSuit        int                       `json:"trumpSuit"`
