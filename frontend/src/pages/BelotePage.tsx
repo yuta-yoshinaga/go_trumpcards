@@ -25,7 +25,6 @@ import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import { BelotePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { beloteLegalPlayIndices } from '../utils/beloteLegal';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -167,13 +166,8 @@ function BelotePageContent() {
   const humanIdx = state.players.findIndex((p) => p.isHuman);
   const isHumanBidTurn = (isBidPickUp || isBidCallTrump) && state.bidPlayerIdx === humanIdx;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
-  // Legal-play highlight: compute the follow-suit / trump-obligation legal set
-  // on the human's play turn only (mirrors internal/domain/Belote.go validatePlay).
-  // Ring-only, additive — illegal cards stay clickable and the backend still validates.
-  const legalPlayIndices =
-    isHumanTurn && humanPlayer
-      ? beloteLegalPlayIndices(humanPlayer.cards, state.currentTrick, state.trumpSuit, humanIdx)
-      : undefined;
+  // The server computes legality from internal/domain/Belote.go validatePlay (ADR-0045).
+  const legalPlayIndices = isHumanTurn ? state.validPlays : undefined;
   const faceUpSuit = state.faceUpCard?.design;
   const allSuits = [1, 2, 3, 4];
   const faceUpSuitNum =
