@@ -80,6 +80,15 @@ func (p *EuchreWebPresenter) buildBase(e interfaces.EuchreGame) *controller.Euch
 
 	resObj.CurrentTrick = trickCardsToOutput(e.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(e)
+	resObj.ValidPlays = make([]int, 0)
+	if e.GetPhase() == domain.EuchrePhasePlay {
+		for i := 0; i < e.GetPlayerCnt(); i++ {
+			if e.GetPlayer(i).GetIsHuman() && e.GetCurrentPlayerIdx() == i {
+				resObj.ValidPlays = intSliceOrEmpty(e.GetValidPlayIndices(i))
+				break
+			}
+		}
+	}
 	return resObj
 }
 

@@ -21,6 +21,7 @@ function makeState(overrides?: Partial<EuchreResponse>): EuchreResponse {
     roundNumber: 1,
     trickNumber: 3,
     currentPlayerIdx: 0,
+    validPlays: [],
     bidPlayerIdx: 0,
     dealerIdx: 1,
     trumpSuit: 1,

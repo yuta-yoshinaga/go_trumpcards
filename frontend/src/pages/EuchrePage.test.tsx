@@ -55,6 +55,7 @@ const playPhaseState: EuchreResponse = {
   roundNumber: 1,
   trickNumber: 1,
   currentPlayerIdx: 0,
+  validPlays: [0, 1],
   bidPlayerIdx: 0,
   dealerIdx: 3,
   trumpSuit: 1,
@@ -489,25 +490,26 @@ describe('EuchrePage', () => {
     expect(cardBtn2).toHaveAttribute('aria-label', '\u2665 J');
   });
 
-  it('rings every card as legal when leading the trick', async () => {
-    // playPhaseState has an empty currentTrick → the human leads → all legal.
+  it('rings exactly server indices even when they disagree with client rules', async () => {
+    const state = {
+      ...playPhaseState,
+      validPlays: [1],
+      currentTrick: [{ playerIdx: 3, card: { design: 'SPADE' as const, value: 12 } }],
+    };
+    mockExec.mockResolvedValue(state);
     renderWithProviders(<EuchrePage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
 
     const spadeBtn = screen.getByAltText('♠ A').closest('button') as HTMLButtonElement;
     const heartBtn = screen.getByAltText('♥ J').closest('button') as HTMLButtonElement;
-    expect(spadeBtn).toHaveAttribute('data-legal', 'true');
+    expect(spadeBtn).not.toHaveAttribute('data-legal');
     expect(heartBtn).toHaveAttribute('data-legal', 'true');
+    fireEvent.click(spadeBtn);
+    expect(spadeBtn).toHaveAttribute('aria-pressed', 'true');
   });
 
-  it('rings only the legal follow-suit card and leaves clicks unblocked', async () => {
-    // Lead a spade with trump = spade → the human (♠A, ♥J) must follow spade,
-    // so only ♠A is legal; ♥J is not ringed but must still be clickable.
-    const followState: EuchreResponse = {
-      ...playPhaseState,
-      currentTrick: [{ playerIdx: 3, card: { design: 'SPADE', value: 12 } }],
-    };
-    mockExec.mockResolvedValue(followState);
+  it('rings exactly the server-specified index set', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, validPlays: [0] });
     renderWithProviders(<EuchrePage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
 
@@ -523,12 +525,13 @@ describe('EuchrePage', () => {
 
   it('does not ring cards when it is not the human play turn', async () => {
     // Trick-end phase is not a human play turn → no legal ring.
-    mockExec.mockResolvedValue(trickEndState);
+    mockExec.mockResolvedValue({ ...playPhaseState, currentPlayerIdx: 1, validPlays: [0, 1] });
     renderWithProviders(<EuchrePage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
 
     const spadeBtn = screen.getByAltText('♠ A').closest('button') as HTMLButtonElement;
     expect(spadeBtn).not.toHaveAttribute('data-legal');
+    expect(screen.getByAltText('♥ J').closest('button')).not.toHaveAttribute('data-legal');
   });
 
   it('reset button calls apiExec', async () => {
