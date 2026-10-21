@@ -17,6 +17,7 @@ func mustBeleagueredCastleOutputJSON(msg string) string {
 	out := &controller.BeleagueredCastleWebOutput{
 		Tableau:       [][]*controller.BeleagueredCastleWebOutputTableauCard{},
 		Foundation:    [][]*controller.WebOutputCard{},
+		LegalTargets:  map[string]controller.BeleagueredCastleWebOutputTargets{},
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)

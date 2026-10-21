@@ -32,6 +32,9 @@ func setupBeleagueredCastleWebMockDefaults(bg *interfaces.MockBeleagueredCastleG
 		}
 	}
 	bg.On("GetTableau").Return(tableau).Maybe()
+	for col := 0; col < domain.BeleagueredCastleTableauCnt; col++ {
+		bg.On("LegalTargets", col).Return(nil, nil).Maybe()
+	}
 
 	var foundation [domain.BeleagueredCastleFoundationCnt][]*domain.Card
 	for i := range domain.BeleagueredCastleFoundationCnt {
@@ -141,6 +144,42 @@ func TestBeleagueredCastleWebPresenter_OutputCarriesTheHint(t *testing.T) {
 		t.Fatal("Output must carry the hint -- the frontend reads state.hint")
 	}
 	assert.Equal(t, 2, result.Hint.FromCol)
+}
+
+func TestBeleagueredCastleWebPresenter_LegalTargets(t *testing.T) {
+	for _, method := range []struct {
+		name   string
+		render func(*BeleagueredCastleWebPresenter, interfaces.BeleagueredCastleGame) string
+	}{
+		{"Output", func(p *BeleagueredCastleWebPresenter, g interfaces.BeleagueredCastleGame) string {
+			return p.Output(g, nil)
+		}},
+		{"HintOutput", func(p *BeleagueredCastleWebPresenter, g interfaces.BeleagueredCastleGame) string {
+			return p.HintOutput(g)
+		}},
+	} {
+		t.Run(method.name+" includes targets", func(t *testing.T) {
+			g := new(interfaces.MockBeleagueredCastleGame)
+			setupBeleagueredCastleWebMockDefaults(g)
+			g.On("GetHint").Return((*domain.BeleagueredCastleHint)(nil)).Maybe()
+			g.ExpectedCalls = filterCalls(g.ExpectedCalls, "LegalTargets")
+			g.On("LegalTargets", 0).Return([]int{3}, []int{1})
+			for col := 1; col < domain.BeleagueredCastleTableauCnt; col++ {
+				g.On("LegalTargets", col).Return(nil, nil)
+			}
+			var raw map[string]json.RawMessage
+			assert.NoError(t, json.Unmarshal([]byte(method.render(new(BeleagueredCastleWebPresenter), g)), &raw))
+			assert.JSONEq(t, `{"tableau-0":{"tableau":[3],"foundation":[1]}}`, string(raw["legalTargets"]))
+		})
+		t.Run(method.name+" returns empty map without destinations", func(t *testing.T) {
+			g := new(interfaces.MockBeleagueredCastleGame)
+			setupBeleagueredCastleWebMockDefaults(g)
+			g.On("GetHint").Return((*domain.BeleagueredCastleHint)(nil)).Maybe()
+			var raw map[string]json.RawMessage
+			assert.NoError(t, json.Unmarshal([]byte(method.render(new(BeleagueredCastleWebPresenter), g)), &raw))
+			assert.JSONEq(t, `{}`, string(raw["legalTargets"]))
+		})
+	}
 }
 
 func TestBeleagueredCastleWebPresenter_HintOutput(t *testing.T) {
