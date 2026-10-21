@@ -23,6 +23,7 @@ func (p *PerseveranceWebPresenter) Output(bd interfaces.PerseveranceGame, lastEr
 	// serialise tc.Card and the FaceUp field is effectively a constant true.
 	tableau := bd.GetTableau()
 	resObj.Tableau = make([][]*controller.PerseveranceWebOutputTableauCard, domain.PerseveranceTableauCnt)
+	resObj.RunStarts = p.buildRunStarts(bd)
 	for i := range domain.PerseveranceTableauCnt {
 		colCards := tableau[i]
 		resObj.Tableau[i] = make([]*controller.PerseveranceWebOutputTableauCard, len(colCards))
@@ -93,6 +94,7 @@ func (p *PerseveranceWebPresenter) HintOutput(bd interfaces.PerseveranceGame) st
 	resObj := new(controller.PerseveranceWebOutput)
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, bd, int(bd.GetPhase()))
 	resObj.Tableau = make([][]*controller.PerseveranceWebOutputTableauCard, 0)
+	resObj.RunStarts = p.buildRunStarts(bd)
 	resObj.Foundation = make([][]*controller.WebOutputCard, 0)
 	resObj.LegalTargets = p.buildLegalTargets(bd)
 
@@ -109,6 +111,17 @@ func (p *PerseveranceWebPresenter) HintOutput(bd interfaces.PerseveranceGame) st
 	}
 
 	return marshalOrError(resObj)
+}
+
+func (p *PerseveranceWebPresenter) buildRunStarts(g interfaces.PerseveranceGame) [][]int {
+	out := make([][]int, domain.PerseveranceTableauCnt)
+	for col := range domain.PerseveranceTableauCnt {
+		out[col] = g.RunStarts(col)
+		if out[col] == nil {
+			out[col] = []int{}
+		}
+	}
+	return out
 }
 
 // TargetsOutput は Web では通常の盤面をそのまま返す。

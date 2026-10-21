@@ -154,6 +154,37 @@ func TestPerseveranceWebPresenter_LegalTargets(t *testing.T) {
 	}, out.LegalTargets)
 }
 
+func TestPerseveranceWebPresenter_RunStarts(t *testing.T) {
+	for _, output := range []struct {
+		name string
+		call func(*PerseveranceWebPresenter, interfaces.PerseveranceGame) string
+	}{
+		{name: "Output", call: func(p *PerseveranceWebPresenter, g interfaces.PerseveranceGame) string { return p.Output(g, nil) }},
+		{name: "HintOutput", call: func(p *PerseveranceWebPresenter, g interfaces.PerseveranceGame) string { return p.HintOutput(g) }},
+	} {
+		t.Run(output.name, func(t *testing.T) {
+			g := new(interfaces.MockPerseveranceGame)
+			setupPerseveranceWebMockDefaults(g)
+			g.On("GetHint").Return((*domain.PerseveranceHint)(nil)).Maybe()
+			g.On("LegalTargetsFrom", mock.Anything, mock.Anything).Return([]int(nil), []int(nil)).Maybe()
+			for col := range domain.PerseveranceTableauCnt {
+				starts := []int(nil)
+				if col == 2 {
+					starts = []int{0, 2}
+				}
+				g.On("RunStarts", col).Return(starts).Maybe()
+			}
+			got := parsePerseveranceOutput(t, output.call(new(PerseveranceWebPresenter), g))
+			want := make([][]int, domain.PerseveranceTableauCnt)
+			for col := range want {
+				want[col] = []int{}
+			}
+			want[2] = []int{0, 2}
+			assert.Equal(t, want, got.RunStarts)
+		})
+	}
+}
+
 // **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
 // レスポンスで、ページの state にはマージされない。ここが埋まっていないと
 // フロントの `state.hint` は常に undefined で、それを読む分岐が全部死ぬ (#4483)。

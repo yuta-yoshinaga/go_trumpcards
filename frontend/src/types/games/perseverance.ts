@@ -20,6 +20,8 @@ export interface PerseveranceHint {
 /** Full Perseverance game state returned from the API. */
 export interface PerseveranceResponse extends BaseGameResponse {
   tableau: PerseveranceTableauCard[][];
+  /** Card indices that start a movable descending same-suit run in each tableau column. */
+  runStarts: number[][];
   foundation: Card[][];
   phase: number;
   moveCount: number;

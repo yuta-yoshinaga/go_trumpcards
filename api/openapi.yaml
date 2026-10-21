@@ -80152,6 +80152,13 @@ components:
     PerseveranceResponse:
       type: object
       properties:
+        runStarts:
+          type: array
+          description: Card indices that start a movable run, one array per tableau column.
+          items:
+            type: array
+            items:
+              type: integer
         legalTargets:
           type: object
           description: 'Legal destinations keyed by movable source id ("tableau-<col>-<cardIndex>").'

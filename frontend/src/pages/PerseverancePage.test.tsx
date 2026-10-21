@@ -75,6 +75,7 @@ const playingState: PerseveranceResponse = {
   canUndo: false,
   isStalemate: false,
   redealsLeft: 2,
+  runStarts: [[1], [], [], [], [], [], [], [], [], [], [], []],
   legalTargets: { 'tableau-0-1': { tableau: [1], foundation: [] }, 'tableau-0-0': { tableau: [], foundation: [] } },
   message: '',
 };
@@ -120,7 +121,7 @@ describe('PerseverancePage', () => {
     expect(screen.queryByTestId('bd-last-card-0')).not.toBeInTheDocument();
   });
 
-  it('marks every card that starts a run, but not a card that cannot be grabbed', async () => {
+  it('uses the server run starts to mark cards that can be grabbed', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<PerseverancePage />);
 
@@ -129,6 +130,23 @@ describe('PerseverancePage', () => {
     expect(movable.className).toContain('ring-1');
     expect(movable.className).toContain('ring-ds-success/60');
     expect(blocked.className).not.toContain('ring-ds-success');
+  });
+
+  it('follows server run starts when they disagree with the old client rule', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      runStarts: [[0], [], [], [], [], [], [], [], [], [], [], []],
+    });
+    renderWithProviders(<PerseverancePage />);
+
+    // ♠K is not a run start under the old client rule, while ♠5 is; the server says the reverse.
+    const serverGrab = await screen.findByRole('button', { name: '♠ K' });
+    const oldRuleOnly = screen.getByRole('button', { name: '♠ 5' });
+    expect(serverGrab.className).toContain('ring-ds-success');
+    expect(oldRuleOnly.className).not.toContain('ring-ds-success');
+    expect(oldRuleOnly.className).toContain('cursor-default');
+    fireEvent.click(serverGrab);
+    expect(serverGrab).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('gives selection and warning rings priority over the subtle grab ring', async () => {
@@ -490,6 +508,7 @@ describe('PerseverancePage legal targets', () => {
     mockExec.mockResolvedValue({
       ...playingState,
       tableau: makeTableau([[{ card: card('SPADE', 1), faceUp: true }]]),
+      runStarts: [[0], [], [], [], [], [], [], [], [], [], [], []],
       legalTargets: { 'tableau-0-0': { tableau: [], foundation: [0, 1, 2, 3] } },
     });
     renderWithProviders(<PerseverancePage />);
@@ -534,6 +553,7 @@ describe('PerseverancePage legal targets', () => {
           { card: card('SPADE', 11), faceUp: true },
         ],
       ]),
+      runStarts: [[0, 1, 2], [], [], [], [], [], [], [], [], [], [], []],
       legalTargets: { 'tableau-0-0': { tableau: [3], foundation: [] } },
     });
     renderWithProviders(<PerseverancePage />);
