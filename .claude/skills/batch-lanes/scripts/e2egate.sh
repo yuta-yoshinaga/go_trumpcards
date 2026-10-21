@@ -8,8 +8,11 @@ slot="${1:?usage: e2egate.sh [--dry-run] <slot>}"; shift
 wt="$WT_ROOT/wt-ib$slot"
 [[ -d "$wt" ]] || { echo "missing lane worktree: $wt" >&2; exit 2; }
 mapfile -t changed < <({ git -C "$wt" diff --name-only origin/develop...HEAD; git -C "$wt" diff --name-only; git -C "$wt" diff --cached --name-only; git -C "$wt" ls-files --others --exclude-standard; } | sort -u)
+mapfile -t deleted < <({ git -C "$wt" diff --name-only --diff-filter=D origin/develop...HEAD; git -C "$wt" diff --name-only --diff-filter=D; git -C "$wt" diff --cached --name-only --diff-filter=D; } | sort -u)
+declare -A deleted_paths=()
+for path in "${deleted[@]}"; do deleted_paths["$path"]=1; done
 frontend=0; full_sweep=0; page_change=0
-declare -a explicit_specs=() pages=() helper_paths=()
+declare -a explicit_specs=() pages=() helper_paths=() skipped_paths=()
 for path in "${changed[@]}"; do
   [[ "$path" == frontend/* ]] || continue
   frontend=1
@@ -19,7 +22,20 @@ for path in "${changed[@]}"; do
     frontend/src/pages/*Page.tsx) page_change=1; pages+=("${path#frontend/src/pages/}") ;;
     frontend/src/i18n/locales/*|frontend/src/**/*.test.ts|frontend/src/**/*.test.tsx|frontend/src/*.test.ts|frontend/src/*.test.tsx) ;;
     frontend/playwright.config.ts) full_sweep=1 ;;
-    frontend/src/*) full_sweep=1 ;;
+    frontend/src/*)
+      if [[ -n "${deleted_paths[$path]:-}" && ! -e "$wt/$path" ]]; then
+        skipped_paths+=("$path (deleted source)")
+      elif [[ "$path" == frontend/src/types/* ]]; then
+        diff="$( { git -C "$wt" diff origin/develop...HEAD -- "$path"; git -C "$wt" diff HEAD -- "$path"; } )"
+        if ! grep -Eq '^[+-][[:space:]]*export[[:space:]]+(const|enum|function|class|let)\b' <<<"$diff"; then
+          skipped_paths+=("$path (type-only diff)")
+        else
+          full_sweep=1
+        fi
+      else
+        full_sweep=1
+      fi
+      ;;
   esac
 done
 # Helpers are exercised by every E2E spec that imports them.
@@ -148,6 +164,7 @@ if (( frontend )); then
   fi
 fi
 if (( dry_run )); then
+  for skipped in "${skipped_paths[@]}"; do printf 'NOTE e2egate skipped full sweep for %s\n' "$skipped"; done
   run=0
   display_call() {
     local spec_name="$1" filters="$2"
@@ -182,6 +199,7 @@ if (( dry_run )); then
   done
   exit 0
 fi
+for skipped in "${skipped_paths[@]}"; do printf 'NOTE e2egate skipped full sweep for %s\n' "$skipped" >&2; done
 for var in "${call_vars[@]}"; do
   declare -n local_args="$var"
   "$B/e2e.sh" "$slot" "${local_args[@]}"
