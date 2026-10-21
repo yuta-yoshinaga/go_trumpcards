@@ -44,6 +44,35 @@ func TestNewFlowerGarden(t *testing.T) {
 	assert.Equal(t, domain.FlowerGardenPhase(0), fg.GetPhase())
 }
 
+func TestFlowerGarden_LegalTargets(t *testing.T) {
+	fg := setupPlayingFlowerGarden()
+	clearFGTableau(fg)
+	var tableau [domain.FlowerGardenTableauCnt][]*domain.FlowerGardenTableauCard
+	tableau[0] = []*domain.FlowerGardenTableauCard{makeFGTableauCard(domain.CardDesignHeart, 7)}
+	tableau[1] = []*domain.FlowerGardenTableauCard{makeFGTableauCard(domain.CardDesignSpade, 8)}
+	tableau[2] = []*domain.FlowerGardenTableauCard{makeFGTableauCard(domain.CardDesignHeart, 8)}
+	fg.SetTableau(tableau)
+	targets, foundation := fg.LegalTargets(0)
+	assert.Equal(t, []int{1, 2, 3, 4, 5}, targets)
+	assert.Empty(t, foundation)
+	fg.SetTableau([domain.FlowerGardenTableauCnt][]*domain.FlowerGardenTableauCard{})
+	targets, foundation = fg.LegalTargets(0)
+	assert.Nil(t, targets)
+	assert.Nil(t, foundation)
+}
+
+func TestFlowerGarden_ReserveLegalTargets(t *testing.T) {
+	fg := setupPlayingFlowerGarden()
+	clearFGTableau(fg)
+	fg.SetReserve([]*domain.Card{nil, makeFGCard(domain.CardDesignSpade, 1)})
+	targets, foundation := fg.ReserveLegalTargets(0)
+	assert.Nil(t, targets)
+	assert.Nil(t, foundation)
+	targets, foundation = fg.ReserveLegalTargets(1)
+	assert.Len(t, targets, domain.FlowerGardenTableauCnt)
+	assert.Equal(t, []int{0}, foundation)
+}
+
 func TestFlowerGarden_Reset(t *testing.T) {
 	fg := setupPlayingFlowerGarden()
 

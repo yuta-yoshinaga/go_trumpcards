@@ -50,6 +50,16 @@ func (_m *MockFlowerGardenGame) GetHint() *domain.FlowerGardenHint {
 	return v.(*domain.FlowerGardenHint)
 }
 
+func (_m *MockFlowerGardenGame) LegalTargets(fromCol int) ([]int, []int) {
+	ret := _m.Called(fromCol)
+	return ret.Get(0).([]int), ret.Get(1).([]int)
+}
+
+func (_m *MockFlowerGardenGame) ReserveLegalTargets(reserveIdx int) ([]int, []int) {
+	ret := _m.Called(reserveIdx)
+	return ret.Get(0).([]int), ret.Get(1).([]int)
+}
+
 func (_m *MockFlowerGardenGame) AutoComplete() error {
 	ret := _m.Called()
 	return ret.Error(0)

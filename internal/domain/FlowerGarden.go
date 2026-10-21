@@ -550,6 +550,40 @@ func (fg *FlowerGarden) findFoundation(card *Card) int {
 	return -1
 }
 
+// LegalTargets returns destinations for the bottom card in a tableau column.
+func (fg *FlowerGarden) LegalTargets(fromCol int) (tableau, foundation []int) {
+	if fromCol < 0 || fromCol >= FlowerGardenTableauCnt || len(fg.tableau[fromCol]) == 0 {
+		return nil, nil
+	}
+	card := fg.tableau[fromCol][len(fg.tableau[fromCol])-1].Card
+	for col := range FlowerGardenTableauCnt {
+		if col != fromCol && fg.canPlaceOnTableau(card, col) {
+			tableau = append(tableau, col)
+		}
+	}
+	if f := fg.findFoundation(card); f >= 0 {
+		foundation = []int{f}
+	}
+	return tableau, foundation
+}
+
+// ReserveLegalTargets returns destinations for a reserve cell.
+func (fg *FlowerGarden) ReserveLegalTargets(reserveIdx int) (tableau, foundation []int) {
+	if reserveIdx < 0 || reserveIdx >= len(fg.reserve) || fg.reserve[reserveIdx] == nil {
+		return nil, nil
+	}
+	card := fg.reserve[reserveIdx]
+	for col := range FlowerGardenTableauCnt {
+		if fg.canPlaceOnTableau(card, col) {
+			tableau = append(tableau, col)
+		}
+	}
+	if f := fg.findFoundation(card); f >= 0 {
+		foundation = []int{f}
+	}
+	return tableau, foundation
+}
+
 // checkGameClear ゲームクリア判定
 func (fg *FlowerGarden) checkGameClear() {
 	for i := range FlowerGardenFoundationCnt {

@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -44,6 +45,25 @@ func setupFlowerGardenWebMockDefaults(bg *interfaces.MockFlowerGardenGame) {
 		foundation[i] = []*domain.Card{domain.NewCard(domain.CardDesignSpade+i, 1, false)}
 	}
 	bg.On("GetFoundation").Return(foundation).Maybe()
+	bg.On("LegalTargets", mock.AnythingOfType("int")).Return([]int{}, []int{}).Maybe()
+	bg.On("ReserveLegalTargets", mock.AnythingOfType("int")).Return([]int{}, []int{}).Maybe()
+}
+
+func filterFlowerGardenCalls(calls []*mock.Call, methods ...string) []*mock.Call {
+	filtered := make([]*mock.Call, 0, len(calls))
+	for _, call := range calls {
+		keep := true
+		for _, method := range methods {
+			if call.Method == method {
+				keep = false
+				break
+			}
+		}
+		if keep {
+			filtered = append(filtered, call)
+		}
+	}
+	return filtered
 }
 
 func parseFlowerGardenOutput(t *testing.T, jsonStr string) *controller.FlowerGardenWebOutput {
@@ -73,6 +93,7 @@ func TestFlowerGardenWebPresenter_Output(t *testing.T) {
 		assert.Len(t, result.Tableau, domain.FlowerGardenTableauCnt)
 		assert.Len(t, result.Reserve, domain.FlowerGardenReserveCnt)
 		assert.Len(t, result.Foundation, domain.FlowerGardenFoundationCnt)
+		assert.Empty(t, result.LegalTargets)
 		assert.Equal(t, "flowergarden.playing", result.MessageCode)
 	})
 
@@ -144,6 +165,29 @@ func TestFlowerGardenWebPresenter_Output(t *testing.T) {
 		assert.Nil(t, result.Reserve[0])
 		assert.NotNil(t, result.Reserve[1])
 	})
+}
+
+func TestFlowerGardenWebPresenter_LegalTargetsInBothOutputs(t *testing.T) {
+	bg := new(interfaces.MockFlowerGardenGame)
+	setupFlowerGardenOutputMock(bg)
+	bg.ExpectedCalls = filterFlowerGardenCalls(bg.ExpectedCalls, "GetTableau", "GetReserve", "LegalTargets", "ReserveLegalTargets")
+	var tableau [domain.FlowerGardenTableauCnt][]*domain.FlowerGardenTableauCard
+	tableau[0] = []*domain.FlowerGardenTableauCard{{Card: domain.NewCard(domain.CardDesignHeart, 5, false), FaceUp: true}}
+	bg.On("GetTableau").Return(tableau).Maybe()
+	reserve := make([]*domain.Card, domain.FlowerGardenReserveCnt)
+	reserve[1] = domain.NewCard(domain.CardDesignSpade, 1, false)
+	bg.On("GetReserve").Return(reserve).Maybe()
+	bg.On("LegalTargets", mock.Anything).Return([]int{2}, []int{}).Maybe()
+	bg.On("ReserveLegalTargets", mock.Anything).Return([]int{}, []int{0}).Maybe()
+	p := new(FlowerGardenWebPresenter)
+	want := map[string]controller.FlowerGardenWebOutputTargets{
+		"tableau-0": {Tableau: []int{2}, Foundation: []int{}},
+		"reserve-1": {Tableau: []int{}, Foundation: []int{0}},
+	}
+	assert.Equal(t, want, parseFlowerGardenOutput(t, p.Output(bg, nil)).LegalTargets)
+	assert.Contains(t, p.Output(bg, nil), `"legalTargets":{"reserve-1":{"tableau":[],"foundation":[0]},"tableau-0":{"tableau":[2],"foundation":[]}}`)
+	assert.Equal(t, want, parseFlowerGardenOutput(t, p.HintOutput(bg)).LegalTargets)
+	assert.Contains(t, p.HintOutput(bg), `"legalTargets":{"reserve-1":{"tableau":[],"foundation":[0]},"tableau-0":{"tableau":[2],"foundation":[]}}`)
 }
 
 // **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
