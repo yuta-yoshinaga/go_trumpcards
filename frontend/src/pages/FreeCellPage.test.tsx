@@ -25,6 +25,7 @@ const playingState: FreeCellResponse = {
   tableau: [[card('SPADE', 13)], [card('HEART', 12)], [], [], [], [], [], []],
   freeCells: [null, null, null, null],
   foundation: [[], [], [], []],
+  legalTargets: {},
   // 空きセル4 + 空き列6 → (1+4) * 2^6 = 320。空き列宛てはその列を経由地に使えず 160。
   maxMovableCards: 320,
   maxMovableCardsToEmptyColumn: 160,
@@ -472,6 +473,7 @@ describe('FreeCellPage', () => {
       ...playingState,
       tableau: [[card('SPADE', 2)], [], [], [], [], [], [], []],
       foundation: [[card('SPADE', 1)], [], [], []],
+      legalTargets: { 'tableau-0-0': { tableau: [], foundation: [3] } },
     });
     renderWithProviders(<FreeCellPage />);
     const cardImg = await screen.findByAltText('♠ 2');
@@ -483,7 +485,7 @@ describe('FreeCellPage', () => {
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', expect.objectContaining({ zone: 'tableau', col: 0 }), {
         zone: 'foundation',
-        col: 0,
+        col: 3,
       }),
     );
   });
@@ -493,6 +495,7 @@ describe('FreeCellPage', () => {
       ...playingState,
       tableau: [[card('SPADE', 13)], [], [], [], [], [], [], []],
       foundation: [[], [], [], []],
+      legalTargets: {},
     });
     renderWithProviders(<FreeCellPage />);
     const cardImg = await screen.findByAltText('♠ K');
@@ -500,7 +503,7 @@ describe('FreeCellPage', () => {
 
     mockExec.mockClear();
     fireEvent.doubleClick(cardButton);
-    await Promise.resolve();
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 
@@ -509,6 +512,7 @@ describe('FreeCellPage', () => {
       ...playingState,
       freeCells: [card('SPADE', 1), null, null, null],
       foundation: [[], [], [], []],
+      legalTargets: { 'freecell-0': { tableau: [], foundation: [2] } },
     });
     renderWithProviders(<FreeCellPage />);
     const cardImg = await screen.findByAltText('♠ A');
@@ -518,7 +522,7 @@ describe('FreeCellPage', () => {
     mockExec.mockResolvedValue(playingState);
     fireEvent.doubleClick(cardButton);
     await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'freecell', cell: 0 }, { zone: 'foundation', col: 0 }),
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'freecell', cell: 0 }, { zone: 'foundation', col: 2 }),
     );
   });
 
@@ -535,6 +539,7 @@ describe('FreeCellPage', () => {
     mockExec.mockClear();
     fireEvent.click(cardButton);
     await waitFor(() => expect(cardButton.className).toContain('ring-2'));
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 

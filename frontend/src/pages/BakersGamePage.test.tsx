@@ -25,6 +25,7 @@ const playingState: FreeCellResponse = {
   tableau: [[card('SPADE', 13)], [card('HEART', 12)], [], [], [], [], [], []],
   freeCells: [null, null, null, null],
   foundation: [[], [], [], []],
+  legalTargets: {},
   // 空きセル4 + 空き列6 → (1+4) * 2^6 = 320。空き列宛てはその列を経由地に使えず 160。
   maxMovableCards: 320,
   maxMovableCardsToEmptyColumn: 160,

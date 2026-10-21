@@ -43938,6 +43938,7 @@ components:
         - stockCount
         - waste
         - foundation
+        - legalTargets
         - phase
         - moveCount
         - drawCount
@@ -44301,6 +44302,7 @@ components:
         - tableau
         - freeCells
         - foundation
+        - legalTargets
         - maxMovableCards
         - maxMovableCardsToEmptyColumn
         - phase
@@ -44335,6 +44337,21 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/Card'
+        legalTargets:
+          type: object
+          description: Legal destinations keyed by tableau suffix or free cell source.
+          additionalProperties:
+            type: object
+            required: [tableau, foundation]
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         maxMovableCards:
           type: integer
           description: >-

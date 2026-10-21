@@ -128,6 +128,7 @@ describe('useGameHint', () => {
       tableau: [[{ design: 'SPADE', value: 1 }], [], [], [], [], [], [], []],
       freeCells: [null, null, null, null],
       foundation: [[], [], [], []],
+      legalTargets: {},
       maxMovableCards: 1280,
       maxMovableCardsToEmptyColumn: 640,
       phase: 0,

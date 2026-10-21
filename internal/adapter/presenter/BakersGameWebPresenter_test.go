@@ -19,6 +19,9 @@ func TestBakersGameWebPresenterOutputPlaying(t *testing.T) {
 	f := domain.NewDefaultBakersGame()
 	f.Reset()
 	f.SetPhase(domain.FreeCellPhasePlaying)
+	var tableau [domain.FreeCellTableauCnt][]*domain.Card
+	tableau[0] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}
+	f.SetTableau(tableau)
 
 	result := p.Output(f, nil)
 
@@ -171,6 +174,31 @@ func TestBakersGameWebPresenterHintOutputNoHint(t *testing.T) {
 	var out controller.FreeCellWebOutput
 	assert.NoError(t, json.Unmarshal([]byte(result), &out))
 	assert.Equal(t, "bakersgame.noHint", out.MessageCode)
+}
+
+func TestBakersGameWebPresenterLegalTargetsInBothOutputs(t *testing.T) {
+	for _, output := range []struct {
+		name  string
+		phase domain.FreeCellPhase
+		call  func(*BakersGameWebPresenter, interfaces.FreeCellGame) string
+	}{
+		{name: "output", phase: domain.FreeCellPhasePlaying, call: func(p *BakersGameWebPresenter, f interfaces.FreeCellGame) string { return p.Output(f, nil) }},
+		{name: "hint output without hint", phase: domain.FreeCellPhaseGameOver, call: func(p *BakersGameWebPresenter, f interfaces.FreeCellGame) string { return p.HintOutput(f) }},
+	} {
+		t.Run(output.name, func(t *testing.T) {
+			f := domain.NewDefaultBakersGame()
+			f.Reset()
+			f.SetPhase(output.phase)
+			var tableau [domain.FreeCellTableauCnt][]*domain.Card
+			tableau[0] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}
+			f.SetTableau(tableau)
+
+			var out controller.FreeCellWebOutput
+			assert.NoError(t, json.Unmarshal([]byte(output.call(new(BakersGameWebPresenter), f)), &out))
+			assert.Equal(t, controller.FreeCellWebOutputTargets{Tableau: []int{1, 2, 3, 4, 5, 6, 7}, Foundation: []int{0}}, out.LegalTargets["tableau-0-0"])
+			assert.NotNil(t, out.LegalTargets)
+		})
+	}
 }
 
 func TestBakersGameWebPresenterActionLog(t *testing.T) {

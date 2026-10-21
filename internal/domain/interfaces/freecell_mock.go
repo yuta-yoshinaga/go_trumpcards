@@ -42,6 +42,16 @@ func (_m *MockFreeCellGame) MoveFreeCellToFoundation(cell int) error {
 	return ret.Error(0)
 }
 
+func (_m *MockFreeCellGame) LegalTargetsFrom(col, cardIndex int) ([]int, []int) {
+	ret := _m.Called(col, cardIndex)
+	return ret.Get(0).([]int), ret.Get(1).([]int)
+}
+
+func (_m *MockFreeCellGame) FreeCellLegalTargets(cell int) ([]int, []int) {
+	ret := _m.Called(cell)
+	return ret.Get(0).([]int), ret.Get(1).([]int)
+}
+
 func (_m *MockFreeCellGame) GiveUp() {
 	_m.Called()
 }

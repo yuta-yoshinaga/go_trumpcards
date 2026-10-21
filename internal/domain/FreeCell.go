@@ -178,6 +178,47 @@ func (f *FreeCell) MoveTableauToTableau(fromCol, cardIndex, toCol int) error {
 	return nil
 }
 
+// LegalTargetsFrom returns legal tableau and foundation destinations for a valid tableau suffix.
+func (f *FreeCell) LegalTargetsFrom(col, cardIndex int) (tableau, foundation []int) {
+	if col < 0 || col >= FreeCellTableauCnt || cardIndex < 0 || cardIndex >= len(f.tableau[col]) {
+		return nil, nil
+	}
+	cards := f.tableau[col][cardIndex:]
+	if !f.isValidTableauSequence(cards) {
+		return nil, nil
+	}
+	for toCol := 0; toCol < FreeCellTableauCnt; toCol++ {
+		if toCol != col && len(cards) <= f.maxMovableCards(toCol) && f.canPlaceOnTableau(cards[0], toCol) {
+			tableau = append(tableau, toCol)
+		}
+	}
+	if len(cards) == 1 {
+		idx := cards[0].GetDesign() - 1
+		if idx >= 0 && idx < FreeCellFoundationCnt && f.canPlaceOnFoundation(cards[0], idx) {
+			foundation = []int{idx}
+		}
+	}
+	return tableau, foundation
+}
+
+// FreeCellLegalTargets returns legal destinations for a card in a free cell; empty cells return nil slices.
+func (f *FreeCell) FreeCellLegalTargets(cell int) (tableau, foundation []int) {
+	if cell < 0 || cell >= FreeCellCellCnt || f.freeCells[cell] == nil {
+		return nil, nil
+	}
+	card := f.freeCells[cell]
+	for col := 0; col < FreeCellTableauCnt; col++ {
+		if f.canPlaceOnTableau(card, col) {
+			tableau = append(tableau, col)
+		}
+	}
+	idx := card.GetDesign() - 1
+	if idx >= 0 && idx < FreeCellFoundationCnt && f.canPlaceOnFoundation(card, idx) {
+		foundation = []int{idx}
+	}
+	return tableau, foundation
+}
+
 // MoveTableauToFoundation タブローからファンデーションにカードを移動
 func (f *FreeCell) MoveTableauToFoundation(col int) error {
 	if f.phase != FreeCellPhasePlaying {

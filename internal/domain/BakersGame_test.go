@@ -68,6 +68,23 @@ func TestBakersGameMoveTableauSameSuitOnly(t *testing.T) {
 	assert.Empty(t, b.tableau[2])
 }
 
+func TestBakersGameLegalTargetsRespectSameSuit(t *testing.T) {
+	b := setupPlayingBakersGame()
+	clearTableauFC(b)
+	b.tableau[0] = []*Card{makeCard(CardDesignSpade, 8)}
+	b.tableau[1] = []*Card{makeCard(CardDesignHeart, 7)}
+
+	tableau, _ := b.LegalTargetsFrom(1, 0)
+	assert.NotContains(t, tableau, 0, "different-suit descending card is not a Baker's Game target")
+
+	f := NewDefaultFreeCell()
+	clearTableauFC(f)
+	f.tableau[0] = []*Card{makeCard(CardDesignSpade, 8)}
+	f.tableau[1] = []*Card{makeCard(CardDesignHeart, 7)}
+	tableau, _ = f.LegalTargetsFrom(1, 0)
+	assert.Contains(t, tableau, 0, "the same move is legal in FreeCell")
+}
+
 func TestBakersGameIsValidTableauSequence(t *testing.T) {
 	b := NewDefaultBakersGame()
 	sameSuit := []*Card{makeCard(CardDesignClover, 9), makeCard(CardDesignClover, 8), makeCard(CardDesignClover, 7)}

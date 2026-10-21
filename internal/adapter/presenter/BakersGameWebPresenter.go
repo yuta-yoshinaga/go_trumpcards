@@ -31,6 +31,7 @@ func (p *BakersGameWebPresenter) Output(f interfaces.FreeCellGame, lastErr error
 			resObj.Tableau[i][j] = cardToOutput(c)
 		}
 	}
+	resObj.LegalTargets = buildFreeCellLegalTargets(f)
 
 	// フリーセル
 	freeCells := f.GetFreeCells()
@@ -108,6 +109,7 @@ func (p *BakersGameWebPresenter) HintOutput(f interfaces.FreeCellGame) string {
 	resObj.FreeCells = make([]*controller.WebOutputCard, 0)
 	resObj.Tableau = make([][]*controller.WebOutputCard, 0)
 	resObj.Foundation = make([][]*controller.WebOutputCard, 0)
+	resObj.LegalTargets = buildFreeCellLegalTargets(f)
 
 	if hint != nil {
 		resObj.Hint = &controller.FreeCellWebOutputHint{
