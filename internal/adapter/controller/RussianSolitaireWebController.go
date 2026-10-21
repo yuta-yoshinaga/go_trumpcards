@@ -32,11 +32,18 @@ type RussianSolitaireWebOutputHint struct {
 
 // RussianSolitaireWebOutput ロシアンソリティアWebアウトプット
 type RussianSolitaireWebOutput struct {
-	Tableau    [][]*KlondikeWebOutputTableauCard `json:"tableau"`
-	Foundation [][]*WebOutputCard                `json:"foundation"`
-	Hint       *RussianSolitaireWebOutputHint    `json:"hint,omitempty"`
+	Tableau      [][]*KlondikeWebOutputTableauCard           `json:"tableau"`
+	Foundation   [][]*WebOutputCard                          `json:"foundation"`
+	LegalTargets map[string]RussianSolitaireWebOutputTargets `json:"legalTargets"`
+	Hint         *RussianSolitaireWebOutputHint              `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase
+}
+
+// RussianSolitaireWebOutputTargets holds legal destinations for one source card.
+type RussianSolitaireWebOutputTargets struct {
+	Tableau    []int `json:"tableau"`
+	Foundation []int `json:"foundation"`
 }
 
 // RussianSolitaireWebController ロシアンソリティアWebコントローラークラス
@@ -52,6 +59,7 @@ func newRussianSolitaireDefaultOutput(msg string) *RussianSolitaireWebOutput {
 	return &RussianSolitaireWebOutput{
 		Tableau:       make([][]*KlondikeWebOutputTableauCard, 0),
 		Foundation:    make([][]*WebOutputCard, 0),
+		LegalTargets:  make(map[string]RussianSolitaireWebOutputTargets),
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }

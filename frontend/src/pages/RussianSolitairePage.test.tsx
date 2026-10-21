@@ -44,6 +44,7 @@ const playingState: RussianSolitaireResponse = {
     [{ card: card('CLOVER', 2), faceUp: true }],
   ],
   foundation: [[], [], [], []],
+  legalTargets: {},
   phase: 0,
   moveCount: 0,
   canUndo: false,
@@ -159,6 +160,7 @@ describe('RussianSolitairePage', () => {
       tableau: playingState.tableau.map((column, index) =>
         index === 4 ? [{ card: card('SPADE', 12), faceUp: true }] : column,
       ),
+      legalTargets: { 'tableau-4-0': { tableau: [0], foundation: [] } },
     });
     renderWithProviders(<RussianSolitairePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
@@ -180,6 +182,7 @@ describe('RussianSolitairePage', () => {
       tableau: playingState.tableau.map((column, index) =>
         index === 4 ? [{ card: card('SPADE', 1), faceUp: true }] : column,
       ),
+      legalTargets: { 'tableau-4-0': { tableau: [], foundation: [0] } },
     });
     renderWithProviders(<RussianSolitairePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
@@ -187,6 +190,18 @@ describe('RussianSolitairePage', () => {
     const spadeFoundation = screen.getByRole('button', { name: '空の組札 (♠)' });
     fireEvent.click(screen.getByRole('button', { name: '♠ A' }));
     expect(spadeFoundation).toHaveClass('ring-ds-success');
+  });
+
+  it('follows server destinations even when they contradict client rules', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      legalTargets: { 'tableau-4-0': { tableau: [5], foundation: [] } },
+    });
+    renderWithProviders(<RussianSolitairePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    fireEvent.click(screen.getByRole('button', { name: '♠ 3' }));
+    expect(screen.getByRole('button', { name: '♥ 7' })).toHaveClass('ring-ds-success');
   });
 
   it('moves by click to a legal tableau destination', async () => {
@@ -197,6 +212,7 @@ describe('RussianSolitairePage', () => {
         [{ card: card('SPADE', 8), faceUp: true }],
         ...playingState.tableau.slice(2),
       ],
+      legalTargets: { 'tableau-0-0': { tableau: [1], foundation: [] } },
     });
     renderWithProviders(<RussianSolitairePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

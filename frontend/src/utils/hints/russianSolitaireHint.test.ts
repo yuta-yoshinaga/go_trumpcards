@@ -6,6 +6,7 @@ function makeState(overrides: Partial<RussianSolitaireResponse> = {}): RussianSo
   return {
     tableau: [[], [], [], [], [], [], []],
     foundation: [[], [], [], []],
+    legalTargets: {},
     phase: 0,
     moveCount: 0,
     canUndo: false,
