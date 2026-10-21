@@ -605,6 +605,36 @@ describe('FortyAndEightPage', () => {
     expect(container.querySelectorAll('[data-eligible-tableau="true"]')[0]).toBeInTheDocument();
   });
 
+  it('shows no destinations for a buried tableau selection but shows them for the top card', async () => {
+    const stackedState: FortyAndEightResponse = {
+      ...playingState,
+      tableau: makeTableau([
+        [
+          { card: card('HEART', 4), faceUp: true },
+          { card: card('CLOVER', 9), faceUp: true },
+          { card: card('SPADE', 13), faceUp: true },
+        ],
+      ]),
+      legalTargets: { 'tableau-0': { tableau: [1], foundation: [0] } },
+    };
+    mockExec.mockResolvedValue(stackedState);
+    const { container } = renderWithProviders(<FortyAndEightPage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+
+    const buriedButton = screen.getByAltText('♥ 4').closest('button') as HTMLButtonElement;
+    fireEvent.click(buriedButton);
+    await waitFor(() => expect(buriedButton).toHaveAttribute('aria-pressed', 'true'));
+    expect(container.querySelectorAll('[data-eligible-tableau="true"]')).toHaveLength(0);
+    expect(container.querySelectorAll('[data-eligible-foundation="true"]')).toHaveLength(0);
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+    fireEvent.click(screen.getByAltText('♠ K').closest('button') as HTMLButtonElement);
+    await waitFor(() => {
+      expect(container.querySelectorAll('[data-eligible-tableau="true"]')).toHaveLength(1);
+      expect(container.querySelectorAll('[data-eligible-foundation="true"]')).toHaveLength(1);
+    });
+  });
+
   // 列に札が積まれている状態でしか `isTop` の分岐は効かない。1列1枚の盤面では
   // どの札も最上段なので、ガードを消しても全テストが通ってしまう（実測）。
   it('rings only the top card of a stacked column, not the cards buried under it', async () => {

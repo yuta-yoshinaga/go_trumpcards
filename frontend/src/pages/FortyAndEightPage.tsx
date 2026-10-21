@@ -155,9 +155,18 @@ function FortyAndEightPageContent() {
 
   // Resolve the actual card behind the currently selected source zone so we can
   // highlight the foundation piles it may legally move to (#3288).
-  const legalTargets = selectedSource
-    ? state?.legalTargets[selectedSource.zone === 'waste' ? 'waste' : `tableau-${selectedSource.col}`]
+  const legalTargetKey = selectedSource
+    ? selectedSource.zone === 'waste'
+      ? 'waste'
+      : selectedSource.zone === 'tableau' &&
+          selectedSource.col !== undefined &&
+          state !== null &&
+          (selectedSource.cardIndex === undefined ||
+            selectedSource.cardIndex === state.tableau[selectedSource.col]?.length - 1)
+        ? `tableau-${selectedSource.col}`
+        : undefined
     : undefined;
+  const legalTargets = legalTargetKey ? state?.legalTargets[legalTargetKey] : undefined;
 
   const isPlayingForKbd = state?.phase === FortyAndEightPhase.PLAYING;
 
