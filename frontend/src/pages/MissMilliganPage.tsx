@@ -34,8 +34,6 @@ import { cardAlt } from '../utils/cardAlt';
 import { MISSMILLIGAN_HELP, parseMissMilliganCommand } from '../utils/cli/commands/missmilliganCommands';
 import { formatMissMilliganState } from '../utils/cli/formatters/missmilliganFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { missMilliganLegalTargets } from '../utils/missMilliganLegalTargets';
-import { isMissMilliganRun } from '../utils/missMilliganRuns';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦', '♠', '♣', '♥', '♦'] as const;
@@ -163,25 +161,21 @@ function MissMilliganPageContent() {
   const foundationPercent = Math.round((foundationCount / TOTAL_CARDS) * 100);
   const autoCompleteReady = state.foundation.some((pile) => pile.length > 0);
   const isHolding = state.waived.length > 0;
-  const selectedCard =
-    selectedSource?.zone === 'tableau' && selectedSource.col !== undefined && selectedSource.cardIndex !== undefined
-      ? state.tableau[selectedSource.col]?.[selectedSource.cardIndex]?.card
-      : selectedSource?.zone === 'waived'
-        ? state.waived[0]
-        : undefined;
   const selectedTableauRunIsLegal =
     selectedSource?.zone === 'tableau' && selectedSource.col !== undefined && selectedSource.cardIndex !== undefined
-      ? isMissMilliganRun(state.tableau[selectedSource.col] ?? [], selectedSource.cardIndex)
+      ? state.runStarts[selectedSource.col].includes(selectedSource.cardIndex)
       : selectedSource?.zone === 'waived';
-  const legalTargets = selectedTableauRunIsLegal
-    ? missMilliganLegalTargets(
-        state.tableau,
-        state.foundation,
-        selectedCard,
-        selectedSource?.zone === 'tableau' ? selectedSource.col : undefined,
-        selectedSource?.zone === 'tableau' ? selectedSource.cardIndex : undefined,
-      )
-    : { tableau: new Set<number>(), foundation: new Set<number>() };
+  const targetKey =
+    selectedSource?.zone === 'waived'
+      ? 'waived'
+      : selectedSource?.zone === 'tableau' && selectedSource.col !== undefined && selectedSource.cardIndex !== undefined
+        ? `tableau-${selectedSource.col}-${selectedSource.cardIndex}`
+        : '';
+  const serverTargets = selectedTableauRunIsLegal ? state.legalTargets[targetKey] : undefined;
+  const legalTargets = {
+    tableau: new Set(serverTargets?.tableau ?? []),
+    foundation: new Set(serverTargets?.foundation ?? []),
+  };
 
   const isSourceSelected = (zone: string, col?: number, cardIndex?: number) =>
     selectedSource !== null &&
@@ -193,10 +187,11 @@ function MissMilliganPageContent() {
   // ボタンが cardIndex を渡していなかったので常に最上段 1 枚だけだった (#6352)。
   // 選択が別の列や別のゾーンにあるときは渡さない — 渡すと関係のない列の
   // 途中から退避しようとする。
-  const waiveCardIndex = (colIdx: number): number | undefined =>
-    selectedSource !== null && selectedSource.zone === 'tableau' && selectedSource.col === colIdx
-      ? selectedSource.cardIndex
-      : undefined;
+  const waiveCardIndex = (colIdx: number): number | undefined => {
+    if (selectedSource === null || selectedSource.zone !== 'tableau' || selectedSource.col !== colIdx) return undefined;
+    const index = selectedSource.cardIndex;
+    return index !== undefined && state.runStarts[colIdx].includes(index) ? index : undefined;
+  };
 
   const renderTableauColumn = (colIdx: number) => {
     const col = state.tableau[colIdx] ?? [];

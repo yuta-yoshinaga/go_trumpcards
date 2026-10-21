@@ -40,9 +40,11 @@ type MissMilliganWebOutputHint struct {
 
 // MissMilliganWebOutput ミス・ミリガン Web アウトプット
 type MissMilliganWebOutput struct {
-	Tableau    [][]*MissMilliganWebOutputTableauCard `json:"tableau"`
-	StockCount int                                   `json:"stockCount"`
-	Foundation [][]*WebOutputCard                    `json:"foundation"`
+	RunStarts    [][]int                                 `json:"runStarts"`
+	LegalTargets map[string]MissMilliganWebOutputTargets `json:"legalTargets"`
+	Tableau      [][]*MissMilliganWebOutputTableauCard   `json:"tableau"`
+	StockCount   int                                     `json:"stockCount"`
+	Foundation   [][]*WebOutputCard                      `json:"foundation"`
 	// Waived は保持中の札。空でない間は配り足しもウェイブもできない。
 	Waived []*WebOutputCard `json:"waived"`
 	// CanWaive は今ウェイブできるか（山札を使い切り、まだ何も保持していない）。
@@ -50,6 +52,11 @@ type MissMilliganWebOutput struct {
 	Hint     *MissMilliganWebOutputHint `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase
+}
+
+type MissMilliganWebOutputTargets struct {
+	Tableau    []int `json:"tableau"`
+	Foundation []int `json:"foundation"`
 }
 
 // MissMilliganWebController ミス・ミリガン Web コントローラークラス
@@ -63,6 +70,7 @@ var NewMissMilliganWebController, NewMissMilliganWebControllerWithProvider = web
 
 func newMissMilliganDefaultOutput(msg string) *MissMilliganWebOutput {
 	return &MissMilliganWebOutput{
+		RunStarts: make([][]int, 0), LegalTargets: make(map[string]MissMilliganWebOutputTargets),
 		Tableau:       make([][]*MissMilliganWebOutputTableauCard, 0),
 		Foundation:    make([][]*WebOutputCard, 0),
 		Waived:        make([]*WebOutputCard, 0),

@@ -39530,6 +39530,27 @@ components:
       type: object
       description: Response payload for /missmilligan/exec
       properties:
+        runStarts:
+          type: array
+          description: Card indices that begin movable runs, one array per tableau column.
+          items:
+            type: array
+            items:
+              type: integer
+        legalTargets:
+          type: object
+          description: 'Legal destinations keyed by movable source ("tableau-<col>-<cardIndex>" or "waived").'
+          additionalProperties:
+            type: object
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
