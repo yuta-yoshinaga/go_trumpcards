@@ -39,6 +39,8 @@ type TriPeaksWebOutput struct {
 	// useTriPeaksScore にしか無く、CUI からは参照する値が存在しなかった (#5511)。
 	Score int `json:"score"`
 	Combo int `json:"combo"`
+	// PlayableCells holds exposed tableau coordinates as "row-col" keys.
+	PlayableCells []string `json:"playableCells"`
 	SolitaireWebOutputBase
 	WebOutputBase
 }
@@ -56,6 +58,7 @@ func newTriPeaksDefaultOutput(msg string) *TriPeaksWebOutput {
 	return &TriPeaksWebOutput{
 		Layout:        make([][]*TriPeaksWebOutputCard, 0),
 		Waste:         make([]*WebOutputCard, 0),
+		PlayableCells: make([]string, 0),
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }

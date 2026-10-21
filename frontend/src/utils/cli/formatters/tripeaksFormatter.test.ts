@@ -4,6 +4,7 @@ import { formatTripeaksState } from './tripeaksFormatter';
 
 function makeState(overrides?: Partial<TriPeaksResponse>): TriPeaksResponse {
   return {
+    playableCells: [],
     layout: [
       [{ card: { design: 'SPADE', value: 1 }, removed: false, exposed: false }],
       [

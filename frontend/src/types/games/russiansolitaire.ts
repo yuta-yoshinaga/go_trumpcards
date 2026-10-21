@@ -14,6 +14,7 @@ export interface RussianSolitaireHint {
 
 /** API response shape for a Russian Solitaire game. */
 export interface RussianSolitaireResponse extends BaseGameResponse {
+  legalTargets: Record<string, { tableau: number[]; foundation: number[] }>;
   tableau: KlondikeTableauCard[][];
   foundation: Card[][];
   phase: number;

@@ -16,7 +16,7 @@ func triPeaksIntPtr(v int) *int { return &v }
 
 func setupTriPeaksWebTest(t *testing.T) (*usecase.MockTriPeaksInteractor, *controller.TriPeaksWebController, string) {
 	t.Helper()
-	mockOutput := `{"layout":[],"stockCount":0,"waste":[],"phase":0,"moveCount":0,"message":""}`
+	mockOutput := `{"layout":[],"stockCount":0,"waste":[],"playableCells":[],"phase":0,"moveCount":0,"message":""}`
 	tiMock := new(usecase.MockTriPeaksInteractor)
 	factory := func() uc.TriPeaksInteractorIF { return tiMock }
 	ctrl := controller.NewTriPeaksWebController(factory)

@@ -38,7 +38,6 @@ import { cardAlt } from '../utils/cardAlt';
 import { parseRussianSolitaireCommand, RS_HELP } from '../utils/cli/commands/russiansolitaireCommands';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
-import { russianSolitaireLegalTargets } from '../utils/russianSolitaireLegalTargets';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { isTableauAllFaceUp } from '../utils/solitaireUtils';
 
@@ -306,10 +305,15 @@ function RussianSolitairePageContent() {
     selectedSource.zone === zone &&
     selectedSource.col === col &&
     selectedSource.cardIndex === cardIndex;
-  const legalTargets =
+  const targetKey =
     selectedSource?.zone === 'tableau' && selectedSource.col !== undefined && selectedSource.cardIndex !== undefined
-      ? russianSolitaireLegalTargets(state, selectedSource.col, selectedSource.cardIndex)
-      : { tableau: new Set<number>(), foundation: new Set<number>() };
+      ? `tableau-${selectedSource.col}-${selectedSource.cardIndex}`
+      : null;
+  const sourceTargets = targetKey ? state.legalTargets[targetKey] : undefined;
+  const legalTargets = {
+    tableau: new Set(sourceTargets?.tableau ?? []),
+    foundation: new Set(sourceTargets?.foundation ?? []),
+  };
 
   return (
     <GamePageShell

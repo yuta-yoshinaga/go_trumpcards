@@ -73,6 +73,31 @@ func TestRussianSolitaire_Reset(t *testing.T) {
 	}
 }
 
+func TestRussianSolitaire_LegalTargetsFrom(t *testing.T) {
+	r := setupPlayingRussianSolitaire()
+	clearRussianSolitaireTableau(r)
+	var tab [domain.RussianSolitaireTableauCnt][]*domain.KlondikeTableauCard
+	tab[0] = []*domain.KlondikeTableauCard{makeTableauCard(domain.CardDesignSpade, 7, true), makeTableauCard(domain.CardDesignHeart, 6, true)}
+	tab[1] = []*domain.KlondikeTableauCard{makeTableauCard(domain.CardDesignSpade, 8, true)}
+	tab[2] = []*domain.KlondikeTableauCard{makeTableauCard(domain.CardDesignSpade, 6, true)}
+	r.SetTableau(tab)
+	got, found := r.LegalTargetsFrom(0, 0)
+	assert.Contains(t, got, 1)
+	assert.NotContains(t, got, 0)
+	assert.Empty(t, found)
+	tab[0][0].FaceUp = false
+	r.SetTableau(tab)
+	got, found = r.LegalTargetsFrom(0, 0)
+	assert.Nil(t, got)
+	assert.Nil(t, found)
+	var foundationTableau [domain.RussianSolitaireTableauCnt][]*domain.KlondikeTableauCard
+	foundationTableau[0] = []*domain.KlondikeTableauCard{makeTableauCard(domain.CardDesignSpade, 1, true)}
+	r.SetTableau(foundationTableau)
+	got, found = r.LegalTargetsFrom(0, 0)
+	assert.Empty(t, got)
+	assert.Equal(t, []int{0}, found)
+}
+
 func TestRussianSolitaire_MoveTableauToTableau(t *testing.T) {
 	t.Run("valid move - same suit descending", func(t *testing.T) {
 		r := newTestRussianSolitaire()

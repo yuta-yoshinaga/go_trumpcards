@@ -200,6 +200,13 @@ describe('HasenpfefferPage', () => {
     }
   });
 
+  it('renders the pass action in the pinned footer during the human bid turn', async () => {
+    renderWithProviders(<HasenpfefferPage />);
+
+    const passButton = await screen.findByTestId('hpf-pass-btn');
+    expect(passButton.closest('[data-testid="game-footer-actions"]')).not.toBeNull();
+  });
+
   // **上限が立っていたら宣言できない。** 降りるボタンだけが残る。
   it('offers no bid at all once the maximum is standing', async () => {
     mockExec.mockResolvedValue(makeState({ minBid: 0 }));

@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -32,6 +33,7 @@ func (p *RussianSolitaireWebPresenter) Output(r interfaces.RussianSolitaireGame,
 			resObj.Tableau[i][j] = outTC
 		}
 	}
+	resObj.LegalTargets = buildRussianSolitaireLegalTargets(r, tableau)
 
 	// ファンデーション
 	foundation := r.GetFoundation()
@@ -95,6 +97,7 @@ func (p *RussianSolitaireWebPresenter) HintOutput(r interfaces.RussianSolitaireG
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, r, int(r.GetPhase()))
 	resObj.Tableau = make([][]*controller.KlondikeWebOutputTableauCard, 0)
 	resObj.Foundation = make([][]*controller.WebOutputCard, 0)
+	resObj.LegalTargets = buildRussianSolitaireLegalTargets(r, r.GetTableau())
 
 	if hint != nil {
 		resObj.Hint = &controller.RussianSolitaireWebOutputHint{
@@ -109,6 +112,29 @@ func (p *RussianSolitaireWebPresenter) HintOutput(r interfaces.RussianSolitaireG
 	}
 
 	return marshalOrError(resObj)
+}
+
+func buildRussianSolitaireLegalTargets(r interfaces.RussianSolitaireGame, tableau [domain.RussianSolitaireTableauCnt][]*domain.KlondikeTableauCard) map[string]controller.RussianSolitaireWebOutputTargets {
+	out := make(map[string]controller.RussianSolitaireWebOutputTargets)
+	for col, cards := range tableau {
+		for cardIndex, card := range cards {
+			if !card.FaceUp {
+				continue
+			}
+			tab, foundation := r.LegalTargetsFrom(col, cardIndex)
+			if len(tab) == 0 && len(foundation) == 0 {
+				continue
+			}
+			if tab == nil {
+				tab = []int{}
+			}
+			if foundation == nil {
+				foundation = []int{}
+			}
+			out["tableau-"+strconv.Itoa(col)+"-"+strconv.Itoa(cardIndex)] = controller.RussianSolitaireWebOutputTargets{Tableau: tab, Foundation: foundation}
+		}
+	}
+	return out
 }
 
 // ActionLogOutput 棋譜をJSON出力
