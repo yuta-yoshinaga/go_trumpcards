@@ -34,9 +34,10 @@ type FreeCellWebOutputHint struct {
 
 // FreeCellWebOutput フリーセルWebアウトプット
 type FreeCellWebOutput struct {
-	Tableau    [][]*WebOutputCard `json:"tableau"`
-	FreeCells  []*WebOutputCard   `json:"freeCells"`
-	Foundation [][]*WebOutputCard `json:"foundation"`
+	Tableau      [][]*WebOutputCard                  `json:"tableau"`
+	FreeCells    []*WebOutputCard                    `json:"freeCells"`
+	Foundation   [][]*WebOutputCard                  `json:"foundation"`
+	LegalTargets map[string]FreeCellWebOutputTargets `json:"legalTargets"`
 	// MaxMovableCards / MaxMovableCardsToEmptyColumn はドメインが決めた上限を
 	// そのまま運ぶ。フロントで数え直すと、空き列を経由地に使えない分の差
 	// (ドメインの maxMovableCards(toCol)) が抜け、動かせない束を「動かせる」と
@@ -46,6 +47,12 @@ type FreeCellWebOutput struct {
 	Hint                         *FreeCellWebOutputHint `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase
+}
+
+// FreeCellWebOutputTargets holds legal tableau and foundation destinations for one source.
+type FreeCellWebOutputTargets struct {
+	Tableau    []int `json:"tableau"`
+	Foundation []int `json:"foundation"`
 }
 
 // FreeCellWebController フリーセルWebコントローラークラス
@@ -62,6 +69,7 @@ func newFreeCellDefaultOutput(msg string) *FreeCellWebOutput {
 		Tableau:       make([][]*WebOutputCard, 0),
 		FreeCells:     make([]*WebOutputCard, 0),
 		Foundation:    make([][]*WebOutputCard, 0),
+		LegalTargets:  make(map[string]FreeCellWebOutputTargets),
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }

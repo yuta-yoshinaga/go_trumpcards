@@ -21,6 +21,10 @@ type FreeCellGame interface {
 	MoveFreeCellToTableau(cell, col int) error
 	// MoveFreeCellToFoundation フリーセルからファンデーションにカードを移動する
 	MoveFreeCellToFoundation(cell int) error
+	// LegalTargetsFrom returns destinations for a valid tableau suffix.
+	LegalTargetsFrom(col, cardIndex int) (tableau, foundation []int)
+	// FreeCellLegalTargets returns destinations for a free-cell card.
+	FreeCellLegalTargets(cell int) (tableau, foundation []int)
 	// GetHint ヒントを取得する
 	GetHint() *domain.FreeCellHint
 	// CanAutoComplete いまオートコンプリートを押せば最後まで通るかを返す

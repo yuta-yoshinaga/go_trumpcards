@@ -14,6 +14,8 @@ export interface FreeCellHint {
 
 /** Full FreeCell game state returned from the API. */
 export interface FreeCellResponse extends BaseGameResponse {
+  /** Legal destinations keyed by tableau suffix or free-cell source. */
+  legalTargets: Record<string, { tableau: number[]; foundation: number[] }>;
   tableau: (Card | null)[][];
   freeCells: (Card | null)[];
   foundation: Card[][];

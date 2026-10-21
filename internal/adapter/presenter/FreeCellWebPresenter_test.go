@@ -33,6 +33,19 @@ func TestFreeCellWebPresenterOutputPlaying(t *testing.T) {
 	assert.Equal(t, "freecell.playing", out.MessageCode)
 }
 
+func TestFreeCellWebPresenterOutputLegalTargets(t *testing.T) {
+	f := domain.NewFreeCell(domain.NewTrumpCards(0))
+	f.Reset()
+	f.SetPhase(domain.FreeCellPhasePlaying)
+	var tableau [domain.FreeCellTableauCnt][]*domain.Card
+	tableau[0] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}
+	f.SetTableau(tableau)
+
+	var out controller.FreeCellWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(new(FreeCellWebPresenter).Output(f, nil)), &out))
+	assert.Contains(t, out.LegalTargets, "tableau-0-0")
+}
+
 func TestFreeCellWebPresenterOutputGameClear(t *testing.T) {
 	p := new(FreeCellWebPresenter)
 	f := domain.NewFreeCell(domain.NewTrumpCards(0))
@@ -259,4 +272,39 @@ func TestFreeCellWebPresenterEmptyColumnLimitIsLower(t *testing.T) {
 
 	assert.Less(t, out.MaxMovableCardsToEmptyColumn, out.MaxMovableCards,
 		"空き列自身を経由地に使えないぶん上限は下がる")
+}
+
+func TestFreeCellWebPresenterHintOutputLegalTargetsNormalisation(t *testing.T) {
+	fg := new(interfaces.MockFreeCellGame)
+	var tableau [domain.FreeCellTableauCnt][]*domain.Card
+	tableau[0] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 3, false), domain.NewCard(domain.CardDesignHeart, 2, false)}
+	tableau[1] = []*domain.Card{domain.NewCard(domain.CardDesignClover, 4, false)}
+	fg.On("GetTableau").Return(tableau).Once()
+	fg.On("LegalTargetsFrom", 0, 0).Return([]int(nil), []int(nil)).Once()
+	fg.On("LegalTargetsFrom", 0, 1).Return([]int(nil), []int{2}).Once()
+	fg.On("LegalTargetsFrom", 1, 0).Return([]int{3}, []int(nil)).Once()
+	var cells [domain.FreeCellCellCnt]*domain.Card
+	cells[0] = domain.NewCard(domain.CardDesignDiamond, 1, false)
+	cells[1] = domain.NewCard(domain.CardDesignSpade, 13, false)
+	cells[2] = domain.NewCard(domain.CardDesignHeart, 13, false)
+	fg.On("GetFreeCells").Return(cells).Once()
+	fg.On("FreeCellLegalTargets", 0).Return([]int(nil), []int{3}).Once()
+	fg.On("FreeCellLegalTargets", 1).Return([]int{0}, []int(nil)).Once()
+	fg.On("FreeCellLegalTargets", 2).Return([]int(nil), []int(nil)).Once()
+	fg.On("GetHint").Return((*domain.FreeCellHint)(nil)).Once()
+	fg.On("GetPhase").Return(domain.FreeCellPhasePlaying).Once()
+	fg.On("GetMoveCount").Return(0).Once()
+	fg.On("CanUndo").Return(false).Once()
+	fg.On("IsStalemate").Return(false).Once()
+	fg.On("UndoToEscape").Return(0).Once()
+
+	var out controller.FreeCellWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(new(FreeCellWebPresenter).HintOutput(fg)), &out))
+	assert.Equal(t, map[string]controller.FreeCellWebOutputTargets{
+		"tableau-0-1": {Tableau: []int{}, Foundation: []int{2}},
+		"tableau-1-0": {Tableau: []int{3}, Foundation: []int{}},
+		"freecell-0":  {Tableau: []int{}, Foundation: []int{3}},
+		"freecell-1":  {Tableau: []int{0}, Foundation: []int{}},
+	}, out.LegalTargets)
+	fg.AssertExpectations(t)
 }

@@ -15,6 +15,7 @@ function makeState(overrides?: Partial<FreeCellResponse>): FreeCellResponse {
     isStalemate: false,
     message: '',
     ...overrides,
+    legalTargets: {},
   };
 }
 

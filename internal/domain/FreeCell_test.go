@@ -22,6 +22,28 @@ func setupPlayingFreeCell() *FreeCell {
 	return f
 }
 
+func TestFreeCellLegalTargets(t *testing.T) {
+	f := setupPlayingFreeCell()
+	clearTableauFC(f)
+	f.tableau[0] = []*Card{makeCard(CardDesignSpade, 7), makeCard(CardDesignHeart, 6)}
+	f.tableau[1] = []*Card{makeCard(CardDesignClover, 7)}
+	tab, foundation := f.LegalTargetsFrom(0, 1)
+	assert.Contains(t, tab, 1)
+	assert.Empty(t, foundation)
+	invalidTableau, invalidFoundation := f.LegalTargetsFrom(0, -1)
+	assert.Nil(t, invalidTableau)
+	assert.Nil(t, invalidFoundation)
+	f.tableau[0] = []*Card{makeCard(CardDesignSpade, 1)}
+	_, foundation = f.LegalTargetsFrom(0, 0)
+	assert.Equal(t, []int{0}, foundation)
+	f.freeCells[0] = makeCard(CardDesignHeart, 1)
+	_, foundation = f.FreeCellLegalTargets(0)
+	assert.Equal(t, []int{2}, foundation)
+	emptyTableau, emptyFoundation := f.FreeCellLegalTargets(1)
+	assert.Nil(t, emptyTableau)
+	assert.Nil(t, emptyFoundation)
+}
+
 func clearTableauFC(f *FreeCell) {
 	for i := 0; i < FreeCellTableauCnt; i++ {
 		f.tableau[i] = nil
