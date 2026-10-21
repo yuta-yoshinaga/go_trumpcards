@@ -12,6 +12,7 @@ const baseState = (overrides: Partial<FortyThievesResponse> = {}): FortyThievesR
   stockCount: 30,
   waste: [card('CLOVER', 9)],
   foundation: [[], [card('DIAMOND', 1)]],
+  legalTargets: {},
   phase: FortyThievesPhase.PLAYING,
   moveCount: 7,
   canUndo: true,

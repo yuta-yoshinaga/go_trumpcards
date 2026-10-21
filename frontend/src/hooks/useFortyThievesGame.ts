@@ -1,7 +1,6 @@
 import { useCallback, useState } from 'react';
 import { type FortyThievesMoveZone, fortyThievesApi } from '../api/gameApi';
-import type { Card, FortyThievesHint } from '../types/card';
-import { fortyThievesFoundationTarget } from '../utils/fortyThievesFoundationTarget';
+import type { FortyThievesHint } from '../types/card';
 
 import { useSolitaireGameBase } from './useSolitaireGameBase';
 
@@ -70,20 +69,19 @@ export function useFortyThievesGame() {
   );
 
   /**
-   * Double-click / double-tap shortcut: auto-send an exposed top card (from the
-   * waste or a tableau column) straight to a foundation when a legal target
-   * exists; otherwise do nothing (no error, selection cleared). Mirrors the
-   * Easthaven foundation shortcut. `source` is the card's own zone.
+   * Double-click / double-tap shortcut: send an exposed card to its server supplied foundation target.
    */
   const handleFoundationShortcut = useCallback(
-    (source: FortyThievesMoveZone, card: Card) => {
-      const target = fortyThievesFoundationTarget(card, state?.foundation ?? []);
-      if (!target) return;
+    (source: FortyThievesMoveZone) => {
+      const key = source.zone === 'waste' ? 'waste' : source.col === undefined ? null : `tableau-${source.col}`;
+      if (key === null) return;
+      const target = state?.legalTargets[key]?.foundation[0];
+      if (target === undefined) return;
       setHint(null);
-      exec('move', source, target);
+      exec('move', source, { zone: 'foundation', col: target });
       setSelectedSource(null);
     },
-    [state?.foundation, exec, setHint],
+    [state?.legalTargets, exec, setHint],
   );
 
   return {
