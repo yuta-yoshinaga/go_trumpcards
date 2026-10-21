@@ -1059,7 +1059,8 @@ describe('BakersGamePage', () => {
       mockExec.mockResolvedValue({
         ...playingState,
         tableau: [[card('SPADE', 2)], [], [], [], [], [], [], []],
-        foundation: [[card('SPADE', 1)], [], [], []],
+        foundation: [[], [], [], []],
+        legalTargets: { 'tableau-0-0': { tableau: [], foundation: [2] } },
       });
       renderWithProviders(<BakersGamePage />);
       const cardButton = (await screen.findByAltText('♠ 2')).closest('button') as HTMLButtonElement;
@@ -1070,7 +1071,7 @@ describe('BakersGamePage', () => {
       await waitFor(() =>
         expect(mockExec).toHaveBeenCalledWith('move', expect.objectContaining({ zone: 'tableau', col: 0 }), {
           zone: 'foundation',
-          col: 0,
+          col: 2,
         }),
       );
     });
@@ -1080,6 +1081,7 @@ describe('BakersGamePage', () => {
         ...playingState,
         freeCells: [card('SPADE', 1), null, null, null],
         foundation: [[], [], [], []],
+        legalTargets: { 'freecell-0': { tableau: [], foundation: [0] } },
       });
       renderWithProviders(<BakersGamePage />);
       const cardButton = (await screen.findByAltText('♠ A')).closest('button') as HTMLButtonElement;
@@ -1098,6 +1100,7 @@ describe('BakersGamePage', () => {
         tableau: [[card('SPADE', 13)], [], [], [], [], [], [], []],
         freeCells: [null, null, null, null],
         foundation: [[], [], [], []],
+        legalTargets: {},
       });
       renderWithProviders(<BakersGamePage />);
       const cardButton = (await screen.findByAltText('♠ K')).closest('button') as HTMLButtonElement;
@@ -1119,13 +1122,14 @@ describe('BakersGamePage', () => {
         tableau: [[card('SPADE', 13)], [], [], [], [], [], [], []],
         freeCells: [card('HEART', 5), card('CLOVER', 6), card('DIAMOND', 7), card('SPADE', 8)],
         foundation: [[], [], [], []],
+        legalTargets: {},
       });
       renderWithProviders(<BakersGamePage />);
       const cardButton = (await screen.findByAltText('♠ K')).closest('button') as HTMLButtonElement;
 
       mockExec.mockClear();
       fireEvent.doubleClick(cardButton);
-      await Promise.resolve();
+      await flushPendingDispatch();
       expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
     });
 
@@ -1140,7 +1144,7 @@ describe('BakersGamePage', () => {
 
       mockExec.mockClear();
       fireEvent.click(cardButton);
-      await Promise.resolve();
+      await flushPendingDispatch();
       expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
       expect(cardButton).toHaveAttribute('aria-pressed', 'true');
     });
