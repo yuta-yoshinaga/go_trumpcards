@@ -19,6 +19,9 @@ func TestBakersGameWebPresenterOutputPlaying(t *testing.T) {
 	f := domain.NewDefaultBakersGame()
 	f.Reset()
 	f.SetPhase(domain.FreeCellPhasePlaying)
+	var tableau [domain.FreeCellTableauCnt][]*domain.Card
+	tableau[0] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}
+	f.SetTableau(tableau)
 
 	result := p.Output(f, nil)
 
@@ -192,7 +195,7 @@ func TestBakersGameWebPresenterLegalTargetsInBothOutputs(t *testing.T) {
 
 			var out controller.FreeCellWebOutput
 			assert.NoError(t, json.Unmarshal([]byte(output.call(new(BakersGameWebPresenter), f)), &out))
-			assert.Contains(t, out.LegalTargets, "tableau-0-0")
+			assert.Equal(t, controller.FreeCellWebOutputTargets{Tableau: []int{1, 2, 3, 4, 5, 6, 7}, Foundation: []int{0}}, out.LegalTargets["tableau-0-0"])
 			assert.NotNil(t, out.LegalTargets)
 		})
 	}
