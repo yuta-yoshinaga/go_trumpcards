@@ -25,6 +25,8 @@ type SomersetGame interface {
 	GetTableau() [domain.SomersetTableauCnt][]*domain.SomersetTableauCard
 	// GetFoundation ファンデーションを取得する
 	GetFoundation() [domain.SomersetFoundationCnt][]*domain.Card
+	// LegalTargets returns the legal destinations for the bottom card in a column.
+	LegalTargets(fromCol int) (tableau []int, foundation []int)
 	// GetTotalCardCount returns the total number of cards in the deck.
 	GetTotalCardCount() int
 	// AllFaceUp 全カードが表向きかを返す

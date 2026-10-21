@@ -675,6 +675,7 @@ export function makeSomersetState(overrides?: Partial<SomersetResponse>): Somers
   return {
     tableau: Array.from({ length: 10 }, () => []),
     foundation: [[], [], [], []],
+    legalTargets: {},
     totalCardCount: 52,
     phase: 0,
     moveCount: 0,

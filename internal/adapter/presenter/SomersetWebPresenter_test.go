@@ -39,6 +39,44 @@ func setupSomersetWebMockDefaults(bg *interfaces.MockSomersetGame) {
 		foundation[i] = []*domain.Card{domain.NewCard(domain.CardDesignSpade+i, 1, false)}
 	}
 	bg.On("GetFoundation").Return(foundation).Maybe()
+	for col := 0; col < domain.SomersetTableauCnt; col++ {
+		bg.On("LegalTargets", col).Return(nil, nil).Maybe()
+	}
+}
+
+func TestSomersetWebPresenter_LegalTargets(t *testing.T) {
+	for _, output := range []struct {
+		name   string
+		render func(*SomersetWebPresenter, interfaces.SomersetGame) string
+	}{
+		{"Output", func(p *SomersetWebPresenter, g interfaces.SomersetGame) string { return p.Output(g, nil) }},
+		{"HintOutput", func(p *SomersetWebPresenter, g interfaces.SomersetGame) string { return p.HintOutput(g) }},
+	} {
+		t.Run(output.name, func(t *testing.T) {
+			t.Run("includes destinations", func(t *testing.T) {
+				g := new(interfaces.MockSomersetGame)
+				setupSomersetOutputMock(g)
+				g.ExpectedCalls = filterCalls(g.ExpectedCalls, "LegalTargets")
+				for col := 0; col < domain.SomersetTableauCnt; col++ {
+					if col == 0 {
+						g.On("LegalTargets", col).Return([]int{3}, []int{1})
+					} else {
+						g.On("LegalTargets", col).Return(nil, nil)
+					}
+				}
+				var raw map[string]json.RawMessage
+				assert.NoError(t, json.Unmarshal([]byte(output.render(new(SomersetWebPresenter), g)), &raw))
+				assert.JSONEq(t, `{"tableau-0":{"tableau":[3],"foundation":[1]}}`, string(raw["legalTargets"]))
+			})
+			t.Run("omits sources with no destinations", func(t *testing.T) {
+				g := new(interfaces.MockSomersetGame)
+				setupSomersetOutputMock(g)
+				var raw map[string]json.RawMessage
+				assert.NoError(t, json.Unmarshal([]byte(output.render(new(SomersetWebPresenter), g)), &raw))
+				assert.JSONEq(t, `{}`, string(raw["legalTargets"]))
+			})
+		})
+	}
 }
 
 func parseSomersetOutput(t *testing.T, jsonStr string) *controller.SomersetWebOutput {

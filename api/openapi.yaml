@@ -81952,6 +81952,20 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/Card'
+        legalTargets:
+          type: object
+          description: Legal destinations keyed by source column, e.g. tableau-0. Sources with no destinations are omitted.
+          additionalProperties:
+            type: object
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         totalCardCount:
           type: integer
           description: Total number of cards in the game's deck.

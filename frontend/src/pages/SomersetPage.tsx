@@ -37,7 +37,6 @@ import { parseSomersetCommand, SOMERSET_HELP } from '../utils/cli/commands/somer
 import { formatSomersetState } from '../utils/cli/formatters/somersetFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
-import { somersetLegalTargets } from '../utils/somersetLegalTargets';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
 
@@ -223,13 +222,17 @@ function SomersetPageContent() {
   // **枠を出すだけで、押せなくはしない。**押せなくすると E2E の
   // 「最初の列をクリック」が別の列を掴んでしまう。
   // **選ぶ前に行き先が見える (#4454)。** hover / フォーカス中の札にも、選択後と
-  // まったく同じ計算を当てる ── 判定を二重に持たないので食い違わない。
+  // まったく同じサーバー由来の集合を選択・hover に当てる。
   const previewSource = preview.source;
-  const previewedCard =
-    previewSource?.zone === 'tableau' && previewSource.col !== undefined && previewSource.cardIndex !== undefined
-      ? state.tableau[previewSource.col]?.[previewSource.cardIndex]?.card
+  const legalForSource =
+    previewSource?.zone === 'tableau' && previewSource.col !== undefined
+      ? state.legalTargets[`tableau-${previewSource.col}`]
       : undefined;
-  const legalTargets = somersetLegalTargets(state.tableau, state.foundation, previewedCard);
+  // The server computes targets through Somerset.go canPlaceOn* (ADR-0045).
+  const legalTargets = {
+    tableau: new Set(legalForSource?.tableau ?? []),
+    foundation: new Set(legalForSource?.foundation ?? []),
+  };
   /** Ring for a legal destination: softer while it is only a hover preview. */
   const targetRing = preview.isPreview ? ' rounded ring-2 ring-ds-success/70' : ' rounded ring-2 ring-ds-success';
 

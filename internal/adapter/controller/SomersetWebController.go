@@ -39,12 +39,19 @@ type SomersetWebOutputHint struct {
 
 // SomersetWebOutput Somerset Web アウトプット
 type SomersetWebOutput struct {
-	Tableau        [][]*SomersetWebOutputTableauCard `json:"tableau"`
-	Foundation     [][]*WebOutputCard                `json:"foundation"`
-	TotalCardCount int                               `json:"totalCardCount"`
-	Hint           *SomersetWebOutputHint            `json:"hint,omitempty"`
+	Tableau        [][]*SomersetWebOutputTableauCard   `json:"tableau"`
+	Foundation     [][]*WebOutputCard                  `json:"foundation"`
+	LegalTargets   map[string]SomersetWebOutputTargets `json:"legalTargets"`
+	TotalCardCount int                                 `json:"totalCardCount"`
+	Hint           *SomersetWebOutputHint              `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase
+}
+
+// SomersetWebOutputTargets は 1 つの移動元から置ける先。
+type SomersetWebOutputTargets struct {
+	Tableau    []int `json:"tableau"`
+	Foundation []int `json:"foundation"`
 }
 
 // SomersetWebController Somerset Web コントローラークラス
@@ -60,6 +67,7 @@ func newSomersetDefaultOutput(msg string) *SomersetWebOutput {
 	return &SomersetWebOutput{
 		Tableau:        make([][]*SomersetWebOutputTableauCard, 0),
 		Foundation:     make([][]*WebOutputCard, 0),
+		LegalTargets:   make(map[string]SomersetWebOutputTargets),
 		TotalCardCount: domain.CardCnt,
 		WebOutputBase:  WebOutputBase{Message: msg},
 	}

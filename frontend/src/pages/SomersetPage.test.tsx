@@ -61,6 +61,7 @@ const playingState: SomersetResponse = {
     [],
   ]),
   foundation: [[card('SPADE', 1)], [card('CLOVER', 1)], [card('HEART', 1)], [card('DIAMOND', 1)]],
+  legalTargets: { 'tableau-0': { tableau: [1, 2, 3, 4, 5, 6, 7, 8, 9], foundation: [] } },
   totalCardCount: 52,
   phase: 0,
   moveCount: 3,
@@ -436,6 +437,17 @@ describe('SomersetPage', () => {
       expect(markedColumns().sort()).toEqual(['#1', '#2', '#3', '#4', '#5', '#6', '#7', '#8', '#9']);
     });
 
+    it('follows server targets when they contradict the local rule mirror', async () => {
+      mockExec.mockResolvedValue({
+        ...playingState,
+        legalTargets: { 'tableau-0': { tableau: [2], foundation: [] } },
+      });
+      renderWithProviders(<SomersetPage />);
+      fireEvent.click(await screen.findByRole('button', { name: '♠ 5、列0・位置1' }));
+      expect(document.querySelector('[data-legal-target="true"] [aria-hidden="true"]')).toHaveTextContent('#2');
+      expect(markedColumns()).toEqual(['#2']);
+    });
+
     // **空の組札の唯一の受け手は A。**そこが光らないと、A にとって置き先が
     // 無いように見える (#5958)。リングは組札を包む要素側にあるので closest で辿る。
     it('marks the empty foundations when an ace is selected', async () => {
@@ -443,6 +455,7 @@ describe('SomersetPage', () => {
         ...playingState,
         tableau: makeTableau([[{ card: card('SPADE', 1), faceUp: true }]]),
         foundation: [[], [], [], []],
+        legalTargets: { 'tableau-0': { tableau: [1, 2, 3, 4, 5, 6, 7, 8, 9], foundation: [0, 1, 2, 3] } },
       });
       renderWithProviders(<SomersetPage />);
       fireEvent.click(await screen.findByRole('button', { name: '♠ A、列0・位置0' }));
@@ -468,6 +481,7 @@ describe('SomersetPage', () => {
       mockExec.mockResolvedValue({
         ...playingState,
         tableau: makeTableau([[{ card: card('SPADE', 2), faceUp: true }]]),
+        legalTargets: { 'tableau-0': { tableau: [1, 2, 3, 4, 5, 6, 7, 8, 9], foundation: [0] } },
       });
       renderWithProviders(<SomersetPage />);
       fireEvent.click(await screen.findByRole('button', { name: '♠ 2、列0・位置0' }));

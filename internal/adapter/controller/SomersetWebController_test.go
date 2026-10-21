@@ -18,6 +18,7 @@ func mustSomersetOutputJSON(msg string) string {
 	out := &controller.SomersetWebOutput{
 		Tableau:        [][]*controller.SomersetWebOutputTableauCard{},
 		Foundation:     [][]*controller.WebOutputCard{},
+		LegalTargets:   map[string]controller.SomersetWebOutputTargets{},
 		TotalCardCount: domain.NewDefaultSomerset().GetTotalCardCount(),
 		WebOutputBase:  controller.WebOutputBase{Message: msg},
 	}
