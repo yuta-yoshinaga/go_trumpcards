@@ -54,6 +54,7 @@ type MissMilliganWebOutput struct {
 	WebOutputBase
 }
 
+// MissMilliganWebOutputTargets is where the card at one source may legally go: tableau columns and foundation piles.
 type MissMilliganWebOutputTargets struct {
 	Tableau    []int `json:"tableau"`
 	Foundation []int `json:"foundation"`
