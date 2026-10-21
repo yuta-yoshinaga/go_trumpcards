@@ -388,3 +388,21 @@ func TestShamrocksGetMovableFans(t *testing.T) {
 	assert.Empty(t, g.GetMovableFans())
 	assert.False(t, g.hasAnyLegalMove())
 }
+
+func TestShamrocksLegalTargets(t *testing.T) {
+	g := newLlGameSH()
+	llClearSH(g)
+	g.fans = [][]*Card{{llCardSH(CardDesignSpade, 1)}, {llCardSH(CardDesignHeart, 7)}, {llCardSH(CardDesignHeart, 8)}, {}}
+	fans, foundation := g.LegalTargets(0)
+	assert.Equal(t, []int{3}, fans)
+	assert.Equal(t, []int{0}, foundation)
+	fans, foundation = g.LegalTargets(1)
+	assert.Equal(t, []int{2, 3}, fans)
+	assert.Empty(t, foundation)
+	fans, foundation = g.LegalTargets(3)
+	assert.Empty(t, fans)
+	assert.Empty(t, foundation)
+	fans, foundation = g.LegalTargets(-1)
+	assert.Empty(t, fans)
+	assert.Empty(t, foundation)
+}

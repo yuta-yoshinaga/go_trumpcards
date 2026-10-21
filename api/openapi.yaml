@@ -73787,6 +73787,20 @@ components:
           type: integer
         canUndo:
           type: boolean
+        legalTargets:
+          type: object
+          description: Legal destinations keyed by source fan (fan-<index>); sources without moves are omitted.
+          additionalProperties:
+            type: object
+            properties:
+              fan:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         hint:
           type: object
           nullable: true

@@ -10,6 +10,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
 func TestShamrocksWebPresenter_Output(t *testing.T) {
@@ -23,9 +24,34 @@ func TestShamrocksWebPresenter_Output(t *testing.T) {
 		// appear on the wire either -- a client reading it would show "0 left"
 		// for a counter that never existed.
 		assert.NotContains(t, out, `"redealsLeft"`)
+		assert.Contains(t, out, `"legalTargets"`)
 		for _, frag := range []string{`"fans"`, `"foundation"`, `"canUndo"`, `"messageCode":"shamrocks.playing"`} {
 			assert.Contains(t, out, frag)
 		}
+	})
+
+	t.Run("hint output includes targets and ended empty targets", func(t *testing.T) {
+		g := llStateSH(t, `{"fn":[[{"d":1,"v":1,"w":true}]],"ph":0}`)
+		assert.Contains(t, p.HintOutput(g), `"legalTargets":{"fan-0":{"fan":[],"foundation":[0]}}`)
+		assert.Contains(t, p.HintOutput(llStateSH(t, `{"ph":2}`)), `"legalTargets":{}`)
+	})
+
+	t.Run("nil destination lists serialize as empty arrays in both outputs", func(t *testing.T) {
+		g := new(interfaces.MockShamrocksGame)
+		g.On("GetPhase").Return(domain.ShamrocksPhasePlaying)
+		g.On("GetMoveCount").Return(0)
+		g.On("CanUndo").Return(false)
+		g.On("GetFans").Return([][]*domain.Card{})
+		g.On("GetFoundation").Return([domain.ShamrocksFoundationCnt][]*domain.Card{})
+		g.On("GetMovableFans").Return([]int{0, 1})
+		g.On("LegalTargets", 0).Return([]int(nil), []int{2})
+		g.On("LegalTargets", 1).Return([]int{3}, []int(nil))
+		g.On("GetHint").Return((*domain.ShamrocksHint)(nil))
+		for _, output := range []string{p.Output(g, nil), p.HintOutput(g)} {
+			assert.Contains(t, output, `"fan-0":{"fan":[],"foundation":[2]}`)
+			assert.Contains(t, output, `"fan-1":{"fan":[3],"foundation":[]}`)
+		}
+		g.AssertExpectations(t)
 	})
 
 	t.Run("error surfaced", func(t *testing.T) {
