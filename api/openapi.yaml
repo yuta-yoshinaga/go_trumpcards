@@ -81124,6 +81124,20 @@ components:
           type: array
         foundation:
           type: array
+        legalTargets:
+          type: object
+          additionalProperties:
+            type: object
+            required: [tableau, foundation]
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         phase:
           type: integer
         moveCount:

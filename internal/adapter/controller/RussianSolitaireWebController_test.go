@@ -17,6 +17,7 @@ func mustRussianSolitaireOutputJSON(msg string) string {
 	out := &controller.RussianSolitaireWebOutput{
 		Tableau:       [][]*controller.KlondikeWebOutputTableauCard{},
 		Foundation:    [][]*controller.WebOutputCard{},
+		LegalTargets:  map[string]controller.RussianSolitaireWebOutputTargets{},
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
@@ -27,7 +28,7 @@ func mustRussianSolitaireOutputJSON(msg string) string {
 }
 
 func TestRussianSolitaireWebController_Method(t *testing.T) {
-	mockOutput := `{"tableau":[],"foundation":[],"phase":0,"moveCount":0,"message":""}`
+	mockOutput := mustRussianSolitaireOutputJSON("")
 	expectedBody := mockOutput
 
 	riMock := new(usecase.MockRussianSolitaireInteractor)

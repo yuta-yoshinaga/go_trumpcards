@@ -23,6 +23,8 @@ type RussianSolitaireGame interface {
 	GetMoveCount() int
 	// GetTableau タブローを取得する
 	GetTableau() [domain.RussianSolitaireTableauCnt][]*domain.KlondikeTableauCard
+	// LegalTargetsFrom returns destinations for the selected tableau card.
+	LegalTargetsFrom(fromCol, cardIndex int) ([]int, []int)
 	// GetFoundation ファンデーションを取得する
 	GetFoundation() [domain.RussianSolitaireFoundationCnt][]*domain.Card
 	// AllFaceUp 全カードが表向きかを返す

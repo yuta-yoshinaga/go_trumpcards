@@ -80,6 +80,13 @@ func (_m *MockRussianSolitaireGame) GetTableau() [domain.RussianSolitaireTableau
 	return ret.Get(0).([domain.RussianSolitaireTableauCnt][]*domain.KlondikeTableauCard)
 }
 
+func (_m *MockRussianSolitaireGame) LegalTargetsFrom(fromCol, cardIndex int) ([]int, []int) {
+	ret := _m.Called(fromCol, cardIndex)
+	tab, _ := ret.Get(0).([]int)
+	foundation, _ := ret.Get(1).([]int)
+	return tab, foundation
+}
+
 func (_m *MockRussianSolitaireGame) GetFoundation() [domain.RussianSolitaireFoundationCnt][]*domain.Card {
 	ret := _m.Called()
 	return ret.Get(0).([domain.RussianSolitaireFoundationCnt][]*domain.Card)

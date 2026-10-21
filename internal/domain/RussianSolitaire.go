@@ -337,6 +337,29 @@ func (y *RussianSolitaire) canPlaceOnFoundation(card *Card, fIdx int) bool {
 	return canPlaceOnFoundationPile(y.foundation[fIdx], card)
 }
 
+// LegalTargetsFrom returns destinations for a face-up card in the tableau.
+func (y *RussianSolitaire) LegalTargetsFrom(fromCol, cardIndex int) (tableau, foundation []int) {
+	if fromCol < 0 || fromCol >= RussianSolitaireTableauCnt || cardIndex < 0 || cardIndex >= len(y.tableau[fromCol]) {
+		return nil, nil
+	}
+	tc := y.tableau[fromCol][cardIndex]
+	if !tc.FaceUp {
+		return nil, nil
+	}
+	for col := range RussianSolitaireTableauCnt {
+		if col != fromCol && y.canPlaceOnTableau(tc.Card, col) {
+			tableau = append(tableau, col)
+		}
+	}
+	if cardIndex == len(y.tableau[fromCol])-1 {
+		pile := tc.Card.GetDesign() - 1
+		if pile >= 0 && pile < RussianSolitaireFoundationCnt && y.canPlaceOnFoundation(tc.Card, pile) {
+			foundation = append(foundation, pile)
+		}
+	}
+	return tableau, foundation
+}
+
 // autoFlipTableau タブローの最上部の裏カードを自動フリップ
 func (y *RussianSolitaire) autoFlipTableau(col int) {
 	autoFlipTopCard(y.tableau[col])

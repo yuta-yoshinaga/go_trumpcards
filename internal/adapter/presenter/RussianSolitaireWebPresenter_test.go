@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -15,6 +16,7 @@ import (
 )
 
 func setupRussianSolitaireWebMockDefaults(rg *interfaces.MockRussianSolitaireGame) {
+	rg.On("LegalTargetsFrom", mock.Anything, mock.Anything).Return([]int(nil), []int(nil)).Maybe()
 	rg.On("GetPhase").Return(domain.RussianSolitairePhasePlaying).Maybe()
 	rg.On("GetMoveCount").Return(0).Maybe()
 	rg.On("CanUndo").Return(false).Maybe()
@@ -57,6 +59,7 @@ func TestRussianSolitaireWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 0, result.Phase)
 		assert.Equal(t, 0, result.MoveCount)
 		assert.Equal(t, "russiansolitaire.playing", result.MessageCode)
+		assert.Empty(t, result.LegalTargets)
 	})
 
 	t.Run("stalemate with escape available", func(t *testing.T) {
@@ -149,6 +152,33 @@ func TestRussianSolitaireWebPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestRussianSolitaireWebPresenter_LegalTargets(t *testing.T) {
+	for _, hintOutput := range []bool{false, true} {
+		g := new(interfaces.MockRussianSolitaireGame)
+		setupRussianSolitaireOutputMock(g)
+		for i := len(g.ExpectedCalls) - 1; i >= 0; i-- {
+			if g.ExpectedCalls[i].Method == "GetTableau" || g.ExpectedCalls[i].Method == "LegalTargetsFrom" {
+				g.ExpectedCalls = append(g.ExpectedCalls[:i], g.ExpectedCalls[i+1:]...)
+			}
+		}
+		var tableau [domain.RussianSolitaireTableauCnt][]*domain.KlondikeTableauCard
+		tableau[0] = []*domain.KlondikeTableauCard{{Card: domain.NewCard(domain.CardDesignSpade, domain.CardValueMin+1, false), FaceUp: true}}
+		g.On("GetTableau").Return(tableau).Maybe()
+		g.On("LegalTargetsFrom", 0, 0).Return([]int{2}, []int(nil)).Maybe()
+		var rawOutput string
+		p := new(RussianSolitaireWebPresenter)
+		if hintOutput {
+			g.On("GetHint").Return((*domain.RussianSolitaireHint)(nil)).Maybe()
+			rawOutput = p.HintOutput(g)
+		} else {
+			rawOutput = p.Output(g, nil)
+		}
+		var fields map[string]json.RawMessage
+		assert.NoError(t, json.Unmarshal([]byte(rawOutput), &fields))
+		assert.JSONEq(t, `{"tableau-0-0":{"tableau":[2],"foundation":[]}}`, string(fields["legalTargets"]))
+	}
+}
+
 // **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
 // レスポンスで、ページの state にはマージされない (#4483)。
 func TestRussianSolitaireWebPresenterOutputCarriesTheHint(t *testing.T) {
@@ -177,6 +207,7 @@ func TestRussianSolitaireWebPresenterOutputCarriesTheHint(t *testing.T) {
 func TestRussianSolitaireWebPresenter_HintOutput(t *testing.T) {
 	t.Run("with hint", func(t *testing.T) {
 		rg := new(interfaces.MockRussianSolitaireGame)
+		setupRussianSolitaireWebMockDefaults(rg)
 		rg.On("GetPhase").Return(domain.RussianSolitairePhasePlaying).Maybe()
 		rg.On("GetMoveCount").Return(0).Maybe()
 		rg.On("CanUndo").Return(false).Maybe()
@@ -197,6 +228,7 @@ func TestRussianSolitaireWebPresenter_HintOutput(t *testing.T) {
 
 	t.Run("no hint", func(t *testing.T) {
 		rg := new(interfaces.MockRussianSolitaireGame)
+		setupRussianSolitaireWebMockDefaults(rg)
 		rg.On("GetPhase").Return(domain.RussianSolitairePhasePlaying).Maybe()
 		rg.On("GetMoveCount").Return(0).Maybe()
 		rg.On("CanUndo").Return(false).Maybe()
@@ -208,6 +240,7 @@ func TestRussianSolitaireWebPresenter_HintOutput(t *testing.T) {
 		result := parseRussianSolitaireOutput(t, p.HintOutput(rg))
 		assert.Nil(t, result.Hint)
 		assert.Equal(t, "russiansolitaire.noHint", result.MessageCode)
+		assert.Empty(t, result.LegalTargets)
 	})
 }
 
