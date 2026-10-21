@@ -18,6 +18,7 @@ func mustKingAlbertOutputJSON(msg string) string {
 		Tableau:       [][]*controller.KingAlbertWebOutputTableauCard{},
 		Reserve:       []*controller.WebOutputCard{},
 		Foundation:    [][]*controller.WebOutputCard{},
+		LegalTargets:  map[string]controller.KingAlbertWebOutputTargets{},
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)

@@ -21,6 +21,10 @@ type KingAlbertGame interface {
 	MoveReserveToFoundation(reserveIdx int) error
 	// GetHint ヒントを取得する
 	GetHint() *domain.KingAlbertHint
+	// LegalTargets returns destinations for a tableau source.
+	LegalTargets(fromCol int) (tableau, foundation []int)
+	// ReserveLegalTargets returns destinations for a reserve source.
+	ReserveLegalTargets(reserveIdx int) (tableau, foundation []int)
 	// GetPhase 現在のフェーズを取得する
 	GetPhase() domain.KingAlbertPhase
 	// GetMoveCount 移動回数を取得する

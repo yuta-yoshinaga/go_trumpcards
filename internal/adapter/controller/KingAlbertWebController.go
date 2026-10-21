@@ -39,12 +39,19 @@ type KingAlbertWebOutputHint struct {
 
 // KingAlbertWebOutput King Albert Web アウトプット
 type KingAlbertWebOutput struct {
-	Tableau    [][]*KingAlbertWebOutputTableauCard `json:"tableau"`
-	Reserve    []*WebOutputCard                    `json:"reserve"`
-	Foundation [][]*WebOutputCard                  `json:"foundation"`
-	Hint       *KingAlbertWebOutputHint            `json:"hint,omitempty"`
+	Tableau      [][]*KingAlbertWebOutputTableauCard   `json:"tableau"`
+	Reserve      []*WebOutputCard                      `json:"reserve"`
+	Foundation   [][]*WebOutputCard                    `json:"foundation"`
+	LegalTargets map[string]KingAlbertWebOutputTargets `json:"legalTargets"`
+	Hint         *KingAlbertWebOutputHint              `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase
+}
+
+// KingAlbertWebOutputTargets contains destinations for one source.
+type KingAlbertWebOutputTargets struct {
+	Tableau    []int `json:"tableau"`
+	Foundation []int `json:"foundation"`
 }
 
 // KingAlbertWebController King Albert Web コントローラークラス
@@ -61,6 +68,7 @@ func newKingAlbertDefaultOutput(msg string) *KingAlbertWebOutput {
 		Tableau:       make([][]*KingAlbertWebOutputTableauCard, 0),
 		Reserve:       make([]*WebOutputCard, 0),
 		Foundation:    make([][]*WebOutputCard, 0),
+		LegalTargets:  make(map[string]KingAlbertWebOutputTargets),
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }
