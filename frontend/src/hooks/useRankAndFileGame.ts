@@ -1,7 +1,6 @@
 import { useCallback, useState } from 'react';
 import { type RankAndFileMoveZone, rankAndFileApi } from '../api/gameApi';
-import type { Card, RankAndFileHint } from '../types/card';
-import { rankAndFileFoundationTarget } from '../utils/rankAndFileFoundationTarget';
+import type { RankAndFileHint } from '../types/card';
 import { useSolitaireGameBase } from './useSolitaireGameBase';
 
 /** Hook that manages Rank and File game state, source selection, hints, and moves. */
@@ -69,14 +68,20 @@ export function useRankAndFileGame() {
    * Easthaven foundation shortcut. `source` is the card's own zone.
    */
   const handleFoundationShortcut = useCallback(
-    (source: RankAndFileMoveZone, card: Card) => {
-      const target = rankAndFileFoundationTarget(card, state?.foundation ?? []);
-      if (!target) return;
+    (source: RankAndFileMoveZone) => {
+      const key =
+        source.zone === 'waste'
+          ? 'waste'
+          : source.col !== undefined && source.cardIndex !== undefined
+            ? `tableau-${source.col}-${source.cardIndex}`
+            : '';
+      const targetCol = key ? state?.legalTargets[key]?.foundation[0] : undefined;
+      if (targetCol === undefined) return;
       setHint(null);
-      exec('move', source, target);
+      exec('move', source, { zone: 'foundation', col: targetCol });
       setSelectedSource(null);
     },
-    [state?.foundation, exec, setHint],
+    [state?.legalTargets, exec, setHint],
   );
 
   return {

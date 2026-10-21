@@ -31,6 +31,12 @@ const card = (design: CardDesign, value: number): Card => ({ design, value });
 const playingState: RankAndFileResponse = {
   // 列 0 / 1 の先頭札は掴める。列 1 の 2 枚目は並びが切れていて掴めない。
   sequenceStarts: [[0], [0], [], [], [], [], [], [], [], []],
+  legalTargets: {
+    waste: { tableau: [2, 3, 4, 5, 6, 7, 8, 9], foundation: [] },
+    'tableau-0-0': { tableau: [2, 3, 4, 5, 6, 7, 8, 9], foundation: [] },
+    'tableau-1-0': { tableau: [0], foundation: [] },
+    'tableau-1-1': { tableau: [0], foundation: [] },
+  },
   tableau: makeTableau([
     [{ card: card('SPADE', 13), faceUp: true }],
     [
@@ -347,6 +353,13 @@ describe('RankAndFilePage', () => {
     );
   });
 
+  it('follows server destinations even when they contradict client rules', async () => {
+    renderWithProviders(<RankAndFilePage />);
+    await waitFor(() => expect(screen.getByTestId('rf-tableau-top-1')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('rf-tableau-top-1'));
+    expect(await screen.findByTestId('rf-move-target-announcement')).toHaveTextContent('場札列0');
+  });
+
   it('announces when a selected source has no legal destinations', async () => {
     const blockedState: RankAndFileResponse = {
       ...playingState,
@@ -356,6 +369,7 @@ describe('RankAndFilePage', () => {
         ),
       ),
       foundation: Array.from({ length: 8 }, () => [card('HEART', 13)]),
+      legalTargets: {},
     };
     mockExec.mockResolvedValue(blockedState);
     renderWithProviders(<RankAndFilePage />);
@@ -514,6 +528,7 @@ describe('RankAndFilePage', () => {
       tableau: makeTableau([[{ card: card('SPADE', 1), faceUp: true }]]),
       waste: [],
       foundation: [[], [], [], [], [], [], [], []],
+      legalTargets: { 'tableau-0-0': { tableau: [], foundation: [0] } },
     };
     mockExec.mockResolvedValue(aceState);
     renderWithProviders(<RankAndFilePage />);
@@ -538,6 +553,7 @@ describe('RankAndFilePage', () => {
       tableau: makeTableau([]),
       waste: [card('SPADE', 1)],
       foundation: [[], [], [], [], [], [], [], []],
+      legalTargets: { waste: { tableau: [], foundation: [0] } },
     };
     mockExec.mockResolvedValue(aceWasteState);
     renderWithProviders(<RankAndFilePage />);
@@ -948,7 +964,7 @@ describe('RankAndFilePage grabbable edge cases', () => {
   it('treats a column with no served entry as ungrabbable', async () => {
     // `state.sequenceStarts[colIdx] ?? []` の右辺。列の数より短い配列が
     // 来ても落ちず、掴めない扱いになること。
-    mockExec.mockResolvedValue({ ...playingState, sequenceStarts: [] });
+    mockExec.mockResolvedValue({ ...playingState, sequenceStarts: [], legalTargets: {} });
     renderWithProviders(<RankAndFilePage />);
     const card = await screen.findByTestId('rf-tableau-top-0');
     expect(card.getAttribute('aria-label')).toContain('掴めません');

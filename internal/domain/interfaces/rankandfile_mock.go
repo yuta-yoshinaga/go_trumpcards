@@ -123,6 +123,18 @@ func (_m *MockRankAndFileGame) LegalTargets(fromCol, cardIndex int) []int {
 	return v
 }
 
+// LegalTargetsFrom mocks sequence destinations.
+func (_m *MockRankAndFileGame) LegalTargetsFrom(fromCol, cardIndex int) ([]int, []int) {
+	args := _m.Called(fromCol, cardIndex)
+	return args.Get(0).([]int), args.Get(1).([]int)
+}
+
+// WasteLegalTargets mocks waste destinations.
+func (_m *MockRankAndFileGame) WasteLegalTargets() ([]int, []int) {
+	args := _m.Called()
+	return args.Get(0).([]int), args.Get(1).([]int)
+}
+
 func (_m *MockRankAndFileGame) GetFoundation() [domain.RankAndFileFoundationCnt][]*domain.Card {
 	ret := _m.Called()
 	return ret.Get(0).([domain.RankAndFileFoundationCnt][]*domain.Card)

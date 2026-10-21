@@ -80952,6 +80952,19 @@ components:
     RankAndFileResponse:
       type: object
       properties:
+        legalTargets:
+          type: object
+          description: "Legal destinations keyed by waste or tableau-<column>-<cardIndex>."
+          additionalProperties:
+            type: object
+            required: [tableau, foundation]
+            properties:
+              tableau:
+                type: array
+                items: { type: integer }
+              foundation:
+                type: array
+                items: { type: integer }
         messageParams:
           type: object
           description: "Substitution values for `messageCode`. Absent when the message takes none."
