@@ -40,8 +40,8 @@ if [[ "${E2E_GATE:-1}" == 0 ]]; then
 else
   gate_hash="$("$B/treehash.sh" "$slot")"
   flock -u 9
+  exec 9>&-
   "$B/e2egate.sh" "$slot" || { echo "GATE: e2e failed"; exit 1; }
-  flock -x 9
   [[ "$gate_hash" == "$("$B/treehash.sh" "$slot")" ]] || { echo "GATE: worktree changed during e2e"; exit 1; }
   printf '%s\n' "$gate_hash" > "$BATCH_STATE/gate$slot.ok"
 fi

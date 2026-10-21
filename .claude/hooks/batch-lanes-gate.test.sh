@@ -118,6 +118,28 @@ output="$(BATCH_REPO="$race/repo" BATCH_WT_ROOT="$race/wts" BATCH_STATE="$race/s
 grep -q 'GATE: worktree changed during e2e' <<< "$output" || fail "rcg omitted worktree race error: $output"
 [[ ! -e "$race/state/gate1.ok" ]] || fail "rcg stamped a worktree changed during E2E"
 
+# A queued receipt holding the shared lock must not delay post-E2E hash/stamp work.
+queued="$tmp/e2e-queued-lock"; mkdir -p "$queued/repo" "$queued/wts" "$queued/scripts" "$queued/state"
+git init -q "$queued/repo"; git -C "$queued/repo" config user.email test@example.com; git -C "$queued/repo" config user.name test
+printf 'base\n' > "$queued/repo/file"; git -C "$queued/repo" add file; git -C "$queued/repo" commit -qm base
+git -C "$queued/repo" worktree add -q -b lane "$queued/wts/wt-ib1" HEAD
+for script in common.sh treehash.sh rcg.sh; do cp "$SCRIPTS/$script" "$queued/scripts/"; done
+cat > "$queued/scripts/rc.sh" <<'STUB'
+#!/usr/bin/env bash
+echo CHECK=ok > "$BATCH_STATE/rc$1.txt"
+echo TYPE=ok >> "$BATCH_STATE/rc$1.txt"
+STUB
+cat > "$queued/scripts/e2egate.sh" <<'STUB'
+#!/usr/bin/env bash
+(flock -x "$BATCH_STATE/receipt.lock" sleep 15) >/dev/null 2>&1 </dev/null &
+exit 0
+STUB
+chmod +x "$queued/scripts/"*.sh
+start_time=$SECONDS
+output="$(BATCH_REPO="$queued/repo" BATCH_WT_ROOT="$queued/wts" BATCH_STATE="$queued/state" timeout 5 bash "$queued/scripts/rcg.sh" 1 2>&1)" || fail "rcg waited on queued receipt lock: $output"
+[[ $((SECONDS - start_time)) -lt 5 ]] || fail "rcg exceeded five seconds with queued receipt lock"
+[[ -s "$queued/state/gate1.ok" ]] || fail "rcg did not stamp gate success while queued receipt held lock"
+
 # Lint output without an explicit success receipt must not pass the gate.
 lint_gate() {
   local name="$1" lint_lines="$2" want_pass="$3" expected_gate="${4:-GATE: lint unverified}"

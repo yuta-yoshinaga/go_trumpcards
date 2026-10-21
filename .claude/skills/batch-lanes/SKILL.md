@@ -76,7 +76,7 @@ Shared issue delegation rules are in [`templates/tail.md`](templates/tail.md). T
 
 ## Known traps
 
-- A gate can start while another lane is running Vitest; `rcg.sh` holds a lock in the shared state directory so importer runs execute one at a time.
+- `rcg.sh` holds the shared state lock for the receipt, releases it before E2E, then checks the worktree hash and writes its per-slot gate stamp without reacquiring the lock.
 - Gate success is tied to the current worktree hash. Any edits after `rcg.sh` require another gate before shipping.
 - `go.sh` and `gofx.sh` require an existing, non-empty prompt path; an omitted or empty prompt never starts `dele`.
 - Pass a prompt path directly. A prefix plus issue/PR tag can accidentally select a different or empty file.
