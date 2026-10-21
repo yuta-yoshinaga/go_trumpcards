@@ -15,6 +15,7 @@ import (
 
 func mustEasthavenOutputJSON(msg string) string {
 	out := &controller.EasthavenWebOutput{
+		LegalTargets:  map[string]controller.EasthavenWebOutputTargets{},
 		Tableau:       [][]*controller.KlondikeWebOutputTableauCard{},
 		Foundation:    [][]*controller.WebOutputCard{},
 		WebOutputBase: controller.WebOutputBase{Message: msg},
@@ -27,7 +28,7 @@ func mustEasthavenOutputJSON(msg string) string {
 }
 
 func TestEasthavenWebController_Method(t *testing.T) {
-	mockOutput := `{"tableau":[],"foundation":[],"phase":0,"moveCount":0,"message":""}`
+	mockOutput := `{"legalTargets":{},"tableau":[],"foundation":[],"phase":0,"moveCount":0,"message":""}`
 	expectedBody := mockOutput
 
 	eiMock := new(usecase.MockEasthavenInteractor)

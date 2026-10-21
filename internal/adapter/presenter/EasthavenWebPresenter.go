@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -18,6 +19,7 @@ func (p *EasthavenWebPresenter) Output(e interfaces.EasthavenGame, lastErr error
 	resObj := new(controller.EasthavenWebOutput)
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, e, int(e.GetPhase()))
 	resObj.StockCount = e.GetStockCount()
+	resObj.LegalTargets = p.buildLegalTargets(e)
 
 	// タブロー
 	tableau := e.GetTableau()
@@ -101,6 +103,7 @@ func (p *EasthavenWebPresenter) HintOutput(e interfaces.EasthavenGame) string {
 	resObj.StockCount = e.GetStockCount()
 	resObj.Tableau = make([][]*controller.KlondikeWebOutputTableauCard, 0)
 	resObj.Foundation = make([][]*controller.WebOutputCard, 0)
+	resObj.LegalTargets = p.buildLegalTargets(e)
 
 	if hint != nil {
 		resObj.Hint = &controller.EasthavenWebOutputHint{
@@ -115,6 +118,30 @@ func (p *EasthavenWebPresenter) HintOutput(e interfaces.EasthavenGame) string {
 	}
 
 	return marshalOrError(resObj)
+}
+
+func (p *EasthavenWebPresenter) buildLegalTargets(e interfaces.EasthavenGame) map[string]controller.EasthavenWebOutputTargets {
+	result := make(map[string]controller.EasthavenWebOutputTargets)
+	tableau := e.GetTableau()
+	for col := range domain.EasthavenTableauCnt {
+		for index, card := range tableau[col] {
+			if card == nil || !card.FaceUp {
+				continue
+			}
+			tab, foundation := e.LegalTargetsFrom(col, index)
+			if len(tab)+len(foundation) == 0 {
+				continue
+			}
+			if tab == nil {
+				tab = []int{}
+			}
+			if foundation == nil {
+				foundation = []int{}
+			}
+			result["tableau-"+strconv.Itoa(col)+"-"+strconv.Itoa(index)] = controller.EasthavenWebOutputTargets{Tableau: tab, Foundation: foundation}
+		}
+	}
+	return result
 }
 
 // ActionLogOutput 棋譜をJSON出力

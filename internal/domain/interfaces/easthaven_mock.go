@@ -32,6 +32,18 @@ func (_m *MockEasthavenGame) MoveTableauToFoundation(col int) error {
 	return ret.Error(0)
 }
 
+func (_m *MockEasthavenGame) LegalTargetsFrom(col, cardIndex int) ([]int, []int) {
+	ret := _m.Called(col, cardIndex)
+	var tableau, foundation []int
+	if ret.Get(0) != nil {
+		tableau = ret.Get(0).([]int)
+	}
+	if ret.Get(1) != nil {
+		foundation = ret.Get(1).([]int)
+	}
+	return tableau, foundation
+}
+
 func (_m *MockEasthavenGame) GiveUp() {
 	_m.Called()
 }

@@ -32,12 +32,19 @@ type EasthavenWebOutputHint struct {
 
 // EasthavenWebOutput イーストヘイブンWebアウトプット
 type EasthavenWebOutput struct {
-	Tableau    [][]*KlondikeWebOutputTableauCard `json:"tableau"`
-	Foundation [][]*WebOutputCard                `json:"foundation"`
-	StockCount int                               `json:"stockCount"`
-	Hint       *EasthavenWebOutputHint           `json:"hint,omitempty"`
+	LegalTargets map[string]EasthavenWebOutputTargets `json:"legalTargets"`
+	Tableau      [][]*KlondikeWebOutputTableauCard    `json:"tableau"`
+	Foundation   [][]*WebOutputCard                   `json:"foundation"`
+	StockCount   int                                  `json:"stockCount"`
+	Hint         *EasthavenWebOutputHint              `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase
+}
+
+// EasthavenWebOutputTargets lists legal tableau and foundation destinations.
+type EasthavenWebOutputTargets struct {
+	Tableau    []int `json:"tableau"`
+	Foundation []int `json:"foundation"`
 }
 
 // EasthavenWebController イーストヘイブンWebコントローラークラス
@@ -51,6 +58,7 @@ var NewEasthavenWebController, NewEasthavenWebControllerWithProvider = webContro
 
 func newEasthavenDefaultOutput(msg string) *EasthavenWebOutput {
 	return &EasthavenWebOutput{
+		LegalTargets:  make(map[string]EasthavenWebOutputTargets),
 		Tableau:       make([][]*KlondikeWebOutputTableauCard, 0),
 		Foundation:    make([][]*WebOutputCard, 0),
 		WebOutputBase: WebOutputBase{Message: msg},

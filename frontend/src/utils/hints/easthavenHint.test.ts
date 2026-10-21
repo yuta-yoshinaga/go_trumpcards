@@ -4,6 +4,7 @@ import { getEasthavenHint } from './easthavenHint';
 
 function makeState(overrides: Partial<EasthavenResponse> = {}): EasthavenResponse {
   return {
+    legalTargets: {},
     tableau: [[], [], [], [], [], [], []],
     foundation: [[], [], [], []],
     stockCount: 31,

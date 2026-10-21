@@ -159,6 +159,45 @@ func TestEasthavenWebPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestEasthavenWebPresenter_LegalTargets(t *testing.T) {
+	for _, output := range []struct {
+		name   string
+		render func(*EasthavenWebPresenter, interfaces.EasthavenGame) string
+	}{
+		{"output", func(p *EasthavenWebPresenter, g interfaces.EasthavenGame) string { return p.Output(g, nil) }},
+		{"hint no-hint", func(p *EasthavenWebPresenter, g interfaces.EasthavenGame) string { return p.HintOutput(g) }},
+	} {
+		t.Run(output.name, func(t *testing.T) {
+			g := new(interfaces.MockEasthavenGame)
+			var tableau [domain.EasthavenTableauCnt][]*domain.KlondikeTableauCard
+			tableau[0] = []*domain.KlondikeTableauCard{
+				{Card: domain.NewCard(domain.CardDesignSpade, 1, true), FaceUp: true},
+				{Card: domain.NewCard(domain.CardDesignHeart, 2, true), FaceUp: true},
+				{Card: domain.NewCard(domain.CardDesignClover, 3, true), FaceUp: false},
+				{Card: domain.NewCard(domain.CardDesignDiamond, 4, true), FaceUp: true},
+			}
+			if output.name == "hint no-hint" {
+				tableau[0] = append(tableau[0], nil)
+			}
+			g.On("GetTableau").Return(tableau).Maybe()
+			g.On("LegalTargetsFrom", 0, 0).Return([]int(nil), []int{1}).Maybe()
+			g.On("LegalTargetsFrom", 0, 1).Return([]int{2}, []int(nil)).Maybe()
+			g.On("LegalTargetsFrom", 0, 3).Return([]int(nil), []int(nil)).Maybe()
+			setupEasthavenOutputMock(g)
+			got := parseEasthavenOutput(t, output.render(new(EasthavenWebPresenter), g))
+			assert.Equal(t, controller.EasthavenWebOutputTargets{Tableau: []int{}, Foundation: []int{1}}, got.LegalTargets["tableau-0-0"])
+			assert.Equal(t, controller.EasthavenWebOutputTargets{Tableau: []int{2}, Foundation: []int{}}, got.LegalTargets["tableau-0-1"])
+			assert.Len(t, got.LegalTargets, 2)
+		})
+	}
+	t.Run("empty map", func(t *testing.T) {
+		g := new(interfaces.MockEasthavenGame)
+		setupEasthavenOutputMock(g)
+		got := parseEasthavenOutput(t, new(EasthavenWebPresenter).Output(g, nil))
+		assert.Empty(t, got.LegalTargets)
+	})
+}
+
 // **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
 // レスポンスで、ページの state にはマージされない (#4483)。
 func TestEasthavenWebPresenter_OutputCarriesTheHint(t *testing.T) {
@@ -184,6 +223,8 @@ func TestEasthavenWebPresenter_HintOutput(t *testing.T) {
 		eg.On("CanUndo").Return(false).Maybe()
 		eg.On("IsStalemate").Return(false).Maybe()
 		eg.On("UndoToEscape").Return(0).Maybe()
+		var emptyTableau [domain.EasthavenTableauCnt][]*domain.KlondikeTableauCard
+		eg.On("GetTableau").Return(emptyTableau).Maybe()
 		eg.On("GetHint").Return(&domain.EasthavenHint{FromCol: 0, CardIndex: 1, ToZone: "foundation", ToCol: 0})
 
 		p := new(EasthavenWebPresenter)
@@ -200,6 +241,8 @@ func TestEasthavenWebPresenter_HintOutput(t *testing.T) {
 		eg.On("CanUndo").Return(false).Maybe()
 		eg.On("IsStalemate").Return(false).Maybe()
 		eg.On("UndoToEscape").Return(0).Maybe()
+		var emptyTableau [domain.EasthavenTableauCnt][]*domain.KlondikeTableauCard
+		eg.On("GetTableau").Return(emptyTableau).Maybe()
 		eg.On("GetHint").Return((*domain.EasthavenHint)(nil))
 
 		p := new(EasthavenWebPresenter)
