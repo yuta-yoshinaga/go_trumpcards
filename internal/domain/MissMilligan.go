@@ -322,6 +322,66 @@ func (mm *MissMilligan) MoveWaivedToFoundation() error {
 	return nil
 }
 
+// RunStarts returns the tableau indices that begin movable descending runs.
+func (mm *MissMilligan) RunStarts(col int) []int {
+	starts := make([]int, 0)
+	if col < 0 || col >= MissMilliganTableauCnt {
+		return starts
+	}
+	for idx := range mm.tableau[col] {
+		if missMilliganIsRun(mm.tableau[col][idx:]) {
+			starts = append(starts, idx)
+		}
+	}
+	return starts
+}
+
+// LegalTargetsFrom returns every legal destination for a tableau run.
+func (mm *MissMilligan) LegalTargetsFrom(col, cardIndex int) (tableau, foundation []int) {
+	tableau, foundation = make([]int, 0), make([]int, 0)
+	if col < 0 || col >= MissMilliganTableauCnt || cardIndex < 0 || cardIndex >= len(mm.tableau[col]) {
+		return
+	}
+	group := mm.tableau[col][cardIndex:]
+	if !missMilliganIsRun(group) {
+		return
+	}
+	for to := range MissMilliganTableauCnt {
+		if to != col && mm.canPlaceOnTableau(group[0].Card, to) {
+			tableau = append(tableau, to)
+		}
+	}
+	if cardIndex == len(mm.tableau[col])-1 {
+		for f := range MissMilliganFoundationCnt {
+			if mm.canPlaceOnFoundation(group[0].Card, f) {
+				foundation = append(foundation, f)
+			}
+		}
+	}
+	return
+}
+
+// WaivedLegalTargets returns destinations for the currently waived run.
+func (mm *MissMilligan) WaivedLegalTargets() (tableau, foundation []int) {
+	tableau, foundation = make([]int, 0), make([]int, 0)
+	if len(mm.waived) == 0 {
+		return
+	}
+	for col := range MissMilliganTableauCnt {
+		if mm.canPlaceOnTableau(mm.waived[0], col) {
+			tableau = append(tableau, col)
+		}
+	}
+	if len(mm.waived) == 1 {
+		for f := range MissMilliganFoundationCnt {
+			if mm.canPlaceOnFoundation(mm.waived[0], f) {
+				foundation = append(foundation, f)
+			}
+		}
+	}
+	return
+}
+
 // GiveUp ギブアップ
 func (mm *MissMilligan) GiveUp() {
 	if mm.phase == MissMilliganPhasePlaying {

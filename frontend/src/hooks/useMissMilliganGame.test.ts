@@ -20,6 +20,8 @@ vi.mock('../api/gameApi', () => ({
 const mockExec = vi.mocked(missMilliganApi.exec);
 
 const baseState: MissMilliganResponse = {
+  runStarts: Array.from({ length: 8 }, () => []),
+  legalTargets: {},
   tableau: Array.from({ length: 8 }, () => []),
   stockCount: 96,
   foundation: Array.from({ length: 8 }, () => []),

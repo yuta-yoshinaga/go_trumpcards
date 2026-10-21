@@ -15,6 +15,7 @@ import (
 
 func mustMissMilliganOutputJSON(msg string) string {
 	out := &controller.MissMilliganWebOutput{
+		RunStarts: [][]int{}, LegalTargets: map[string]controller.MissMilliganWebOutputTargets{},
 		Tableau:       [][]*controller.MissMilliganWebOutputTableauCard{},
 		Foundation:    [][]*controller.WebOutputCard{},
 		Waived:        []*controller.WebOutputCard{},
@@ -28,7 +29,7 @@ func mustMissMilliganOutputJSON(msg string) string {
 }
 
 func TestMissMilliganWebController_Method(t *testing.T) {
-	mockOutput := `{"tableau":[],"stockCount":0,"foundation":[],"waived":[],"canWaive":false,"phase":0,"moveCount":0,"message":""}`
+	mockOutput := mustMissMilliganOutputJSON("")
 
 	miMock := new(usecase.MockMissMilliganInteractor)
 	miMock.On("Reset").Return(mockOutput)

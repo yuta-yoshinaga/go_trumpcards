@@ -13,6 +13,36 @@ type MockMissMilliganGame struct {
 	mock.Mock
 }
 
+func (_m *MockMissMilliganGame) RunStarts(col int) []int {
+	ret := _m.Called(col)
+	if ret.Get(0) == nil {
+		return nil
+	}
+	return ret.Get(0).([]int)
+}
+func (_m *MockMissMilliganGame) LegalTargetsFrom(col, cardIndex int) ([]int, []int) {
+	ret := _m.Called(col, cardIndex)
+	var t, f []int
+	if ret.Get(0) != nil {
+		t = ret.Get(0).([]int)
+	}
+	if ret.Get(1) != nil {
+		f = ret.Get(1).([]int)
+	}
+	return t, f
+}
+func (_m *MockMissMilliganGame) WaivedLegalTargets() ([]int, []int) {
+	ret := _m.Called()
+	var t, f []int
+	if ret.Get(0) != nil {
+		t = ret.Get(0).([]int)
+	}
+	if ret.Get(1) != nil {
+		f = ret.Get(1).([]int)
+	}
+	return t, f
+}
+
 func (_m *MockMissMilliganGame) Reset() {
 	_m.Called()
 }

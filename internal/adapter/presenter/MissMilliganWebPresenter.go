@@ -16,6 +16,8 @@ type MissMilliganWebPresenter struct{}
 // Output ゲーム状態をJSON出力
 func (p *MissMilliganWebPresenter) Output(mm interfaces.MissMilliganGame, lastErr error) string {
 	resObj := new(controller.MissMilliganWebOutput)
+	resObj.LegalTargets = p.buildLegalTargets(mm)
+	resObj.RunStarts = p.buildRunStarts(mm)
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, mm, int(mm.GetPhase()))
 
 	// タブロー — 規則上すべて表向きだが、将来の伏せ札バリアントで状態が漏れない
@@ -108,6 +110,8 @@ func (p *MissMilliganWebPresenter) Output(mm interfaces.MissMilliganGame, lastEr
 func (p *MissMilliganWebPresenter) HintOutput(mm interfaces.MissMilliganGame) string {
 	hint := mm.GetHint()
 	resObj := new(controller.MissMilliganWebOutput)
+	resObj.LegalTargets = p.buildLegalTargets(mm)
+	resObj.RunStarts = p.buildRunStarts(mm)
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, mm, int(mm.GetPhase()))
 	resObj.Tableau = make([][]*controller.MissMilliganWebOutputTableauCard, 0)
 	resObj.Foundation = make([][]*controller.WebOutputCard, 0)
@@ -127,6 +131,34 @@ func (p *MissMilliganWebPresenter) HintOutput(mm interfaces.MissMilliganGame) st
 	}
 
 	return marshalOrError(resObj)
+}
+
+func (p *MissMilliganWebPresenter) buildRunStarts(mm interfaces.MissMilliganGame) [][]int {
+	result := make([][]int, domain.MissMilliganTableauCnt)
+	for col := range domain.MissMilliganTableauCnt {
+		result[col] = mm.RunStarts(col)
+		if result[col] == nil {
+			result[col] = []int{}
+		}
+	}
+	return result
+}
+
+func (p *MissMilliganWebPresenter) buildLegalTargets(mm interfaces.MissMilliganGame) map[string]controller.MissMilliganWebOutputTargets {
+	result := make(map[string]controller.MissMilliganWebOutputTargets)
+	for col := range domain.MissMilliganTableauCnt {
+		for _, idx := range mm.RunStarts(col) {
+			t, f := mm.LegalTargetsFrom(col, idx)
+			if len(t)+len(f) > 0 {
+				result[fmt.Sprintf("tableau-%d-%d", col, idx)] = controller.MissMilliganWebOutputTargets{Tableau: t, Foundation: f}
+			}
+		}
+	}
+	t, f := mm.WaivedLegalTargets()
+	if len(t)+len(f) > 0 {
+		result["waived"] = controller.MissMilliganWebOutputTargets{Tableau: t, Foundation: f}
+	}
+	return result
 }
 
 // ActionLogOutput 棋譜をJSON出力
