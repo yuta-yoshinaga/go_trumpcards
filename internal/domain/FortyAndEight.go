@@ -252,6 +252,44 @@ func (ft *FortyAndEight) MoveTableauToTableau(fromCol, cardIndex, toCol int) err
 	return nil
 }
 
+// LegalTargets returns every tableau column and foundation pile that accepts the selected tableau card.
+func (ft *FortyAndEight) LegalTargets(col int) (tableau, foundation []int) {
+	if col < 0 || col >= FortyAndEightTableauCnt || len(ft.tableau[col]) == 0 {
+		return []int{}, []int{}
+	}
+	card := ft.tableau[col][len(ft.tableau[col])-1].Card
+	for i := range FortyAndEightTableauCnt {
+		if i != col && ft.canPlaceOnTableau(card, i) {
+			tableau = append(tableau, i)
+		}
+	}
+	for i := range FortyAndEightFoundationCnt {
+		if ft.canPlaceOnFoundation(card, i) {
+			foundation = append(foundation, i)
+		}
+	}
+	return
+}
+
+// WasteLegalTargets returns every tableau column and foundation pile that accepts the waste top card.
+func (ft *FortyAndEight) WasteLegalTargets() (tableau, foundation []int) {
+	if len(ft.waste) == 0 {
+		return []int{}, []int{}
+	}
+	card := ft.waste[len(ft.waste)-1]
+	for i := range FortyAndEightTableauCnt {
+		if ft.canPlaceOnTableau(card, i) {
+			tableau = append(tableau, i)
+		}
+	}
+	for i := range FortyAndEightFoundationCnt {
+		if ft.canPlaceOnFoundation(card, i) {
+			foundation = append(foundation, i)
+		}
+	}
+	return
+}
+
 // MoveTableauToFoundation タブローからファンデーションにカードを移動
 func (ft *FortyAndEight) MoveTableauToFoundation(col int) error {
 	if ft.phase != FortyAndEightPhasePlaying {

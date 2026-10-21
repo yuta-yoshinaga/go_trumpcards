@@ -34,8 +34,6 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { FORTYANDEIGHT_HELP, parseFortyandeightCommand } from '../utils/cli/commands/fortyandeightCommands';
 import { formatFortyandeightState } from '../utils/cli/formatters/fortyandeightFormatter';
-import { fortyAndEightFoundationTargets } from '../utils/fortyAndEightFoundationTargets';
-import { fortyAndEightTableauTargets } from '../utils/fortyAndEightTableauTargets';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { isTableauAllFaceUp } from '../utils/solitaireUtils';
 
@@ -157,26 +155,9 @@ function FortyAndEightPageContent() {
 
   // Resolve the actual card behind the currently selected source zone so we can
   // highlight the foundation piles it may legally move to (#3288).
-  const selectedCard = useMemo(() => {
-    if (!state || !selectedSource) return null;
-    if (selectedSource.zone === 'waste') return state.waste[state.waste.length - 1] ?? null;
-    if (
-      selectedSource.zone === 'tableau' &&
-      selectedSource.col !== undefined &&
-      selectedSource.cardIndex !== undefined
-    ) {
-      return state.tableau[selectedSource.col]?.[selectedSource.cardIndex]?.card ?? null;
-    }
-    return null;
-  }, [state, selectedSource]);
-  const eligibleFoundations = useMemo(
-    () => fortyAndEightFoundationTargets(selectedCard, state?.foundation ?? []),
-    [selectedCard, state?.foundation],
-  );
-  const eligibleTableaus = useMemo(
-    () => fortyAndEightTableauTargets(selectedCard, state?.tableau ?? []),
-    [selectedCard, state?.tableau],
-  );
+  const legalTargets = selectedSource
+    ? state?.legalTargets[selectedSource.zone === 'waste' ? 'waste' : `tableau-${selectedSource.col}`]
+    : undefined;
 
   const isPlayingForKbd = state?.phase === FortyAndEightPhase.PLAYING;
 
@@ -339,7 +320,7 @@ function FortyAndEightPageContent() {
               <div className="flex gap-1 sm:gap-2 flex-wrap" data-tutorial="f8-foundation">
                 {state.foundation.map((pile, idx) => {
                   const foundationZone: FortyAndEightMoveZone = { zone: 'foundation', col: idx };
-                  const isEligible = eligibleFoundations.has(idx);
+                  const isEligible = Boolean(legalTargets?.foundation.includes(idx));
                   const topCard = pile[pile.length - 1];
                   const remaining = 13 - pile.length;
                   const progress = topCard
@@ -412,7 +393,7 @@ function FortyAndEightPageContent() {
             <div className="flex gap-1 sm:gap-2 mb-3" data-tutorial="f8-tableau">
               {state.tableau.map((col, colIdx) => {
                 const tableauColZone: FortyAndEightMoveZone = { zone: 'tableau', col: colIdx };
-                const isEligible = eligibleTableaus.has(colIdx);
+                const isEligible = Boolean(legalTargets?.tableau.includes(colIdx));
                 return (
                   <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
                     <DropZone

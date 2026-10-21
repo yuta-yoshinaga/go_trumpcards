@@ -12,6 +12,7 @@ const baseState = (overrides: Partial<FortyAndEightResponse> = {}): FortyAndEigh
   stockCount: 30,
   waste: [card('CLOVER', 9)],
   foundation: [[], [card('DIAMOND', 1)]],
+  legalTargets: {},
   redealUsed: false,
   canRedeal: false,
   phase: FortyAndEightPhase.PLAYING,

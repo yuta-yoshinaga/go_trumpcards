@@ -18,6 +18,7 @@ func mustFortyAndEightOutputJSON(msg string) string {
 		Tableau:       [][]*controller.FortyAndEightWebOutputTableauCard{},
 		Waste:         []*controller.WebOutputCard{},
 		Foundation:    [][]*controller.WebOutputCard{},
+		LegalTargets:  map[string]controller.FortyAndEightWebOutputTargets{},
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
@@ -28,7 +29,7 @@ func mustFortyAndEightOutputJSON(msg string) string {
 }
 
 func TestFortyAndEightWebController_Method(t *testing.T) {
-	mockOutput := `{"tableau":[],"stockCount":0,"waste":[],"foundation":[],"redealUsed":false,"canRedeal":false,"phase":0,"moveCount":0,"message":""}`
+	mockOutput := `{"tableau":[],"stockCount":0,"waste":[],"foundation":[],"redealUsed":false,"canRedeal":false,"legalTargets":{},"phase":0,"moveCount":0,"message":""}`
 	expectedBody := mockOutput
 
 	fiMock := new(usecase.MockFortyAndEightInteractor)
