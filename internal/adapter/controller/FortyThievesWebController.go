@@ -37,13 +37,20 @@ type FortyThievesWebOutputHint struct {
 	ToCol     int    `json:"toCol"`
 }
 
+// FortyThievesWebOutputTargets lists tableau and foundation destinations.
+type FortyThievesWebOutputTargets struct {
+	Tableau    []int `json:"tableau"`
+	Foundation []int `json:"foundation"`
+}
+
 // FortyThievesWebOutput フォーティシーブスWebアウトプット
 type FortyThievesWebOutput struct {
-	Tableau    [][]*FortyThievesWebOutputTableauCard `json:"tableau"`
-	StockCount int                                   `json:"stockCount"`
-	Waste      []*WebOutputCard                      `json:"waste"`
-	Foundation [][]*WebOutputCard                    `json:"foundation"`
-	Hint       *FortyThievesWebOutputHint            `json:"hint,omitempty"`
+	Tableau      [][]*FortyThievesWebOutputTableauCard   `json:"tableau"`
+	StockCount   int                                     `json:"stockCount"`
+	Waste        []*WebOutputCard                        `json:"waste"`
+	Foundation   [][]*WebOutputCard                      `json:"foundation"`
+	Hint         *FortyThievesWebOutputHint              `json:"hint,omitempty"`
+	LegalTargets map[string]FortyThievesWebOutputTargets `json:"legalTargets"`
 	SolitaireWebOutputBase
 	WebOutputBase
 }
@@ -62,6 +69,7 @@ func newFortyThievesDefaultOutput(msg string) *FortyThievesWebOutput {
 		Tableau:       make([][]*FortyThievesWebOutputTableauCard, 0),
 		Waste:         make([]*WebOutputCard, 0),
 		Foundation:    make([][]*WebOutputCard, 0),
+		LegalTargets:  map[string]FortyThievesWebOutputTargets{},
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }

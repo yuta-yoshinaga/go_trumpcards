@@ -20,6 +20,7 @@ func (p *FortyAndEightWebPresenter) Output(ft interfaces.FortyAndEightGame, last
 	resObj.StockCount = ft.GetStockCount()
 	resObj.RedealUsed = ft.GetRedealUsed()
 	resObj.CanRedeal = ft.CanRedeal()
+	resObj.LegalTargets = p.buildLegalTargets(ft)
 
 	// ウェイスト
 	waste := ft.GetWaste()
@@ -106,6 +107,7 @@ func (p *FortyAndEightWebPresenter) HintOutput(ft interfaces.FortyAndEightGame) 
 	resObj.StockCount = ft.GetStockCount()
 	resObj.RedealUsed = ft.GetRedealUsed()
 	resObj.CanRedeal = ft.CanRedeal()
+	resObj.LegalTargets = p.buildLegalTargets(ft)
 	resObj.Waste = make([]*controller.WebOutputCard, 0)
 	resObj.Tableau = make([][]*controller.FortyAndEightWebOutputTableauCard, 0)
 	resObj.Foundation = make([][]*controller.WebOutputCard, 0)
@@ -124,6 +126,30 @@ func (p *FortyAndEightWebPresenter) HintOutput(ft interfaces.FortyAndEightGame) 
 	}
 
 	return marshalOrError(resObj)
+}
+
+// buildLegalTargets returns legal destinations for the waste top and each tableau column.
+func (p *FortyAndEightWebPresenter) buildLegalTargets(ft interfaces.FortyAndEightGame) map[string]controller.FortyAndEightWebOutputTargets {
+	result := make(map[string]controller.FortyAndEightWebOutputTargets)
+	add := func(key string, tableau, foundation []int) {
+		if len(tableau) == 0 && len(foundation) == 0 {
+			return
+		}
+		if tableau == nil {
+			tableau = []int{}
+		}
+		if foundation == nil {
+			foundation = []int{}
+		}
+		result[key] = controller.FortyAndEightWebOutputTargets{Tableau: tableau, Foundation: foundation}
+	}
+	t, f := ft.WasteLegalTargets()
+	add("waste", t, f)
+	for col := range domain.FortyAndEightTableauCnt {
+		t, f = ft.LegalTargets(col)
+		add(fmt.Sprintf("tableau-%d", col), t, f)
+	}
+	return result
 }
 
 // ActionLogOutput 棋譜をJSON出力

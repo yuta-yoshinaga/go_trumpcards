@@ -37,15 +37,22 @@ type FortyAndEightWebOutputHint struct {
 	ToCol     int    `json:"toCol"`
 }
 
+// FortyAndEightWebOutputTargets contains legal destinations for one source.
+type FortyAndEightWebOutputTargets struct {
+	Tableau    []int `json:"tableau"`
+	Foundation []int `json:"foundation"`
+}
+
 // FortyAndEightWebOutput フォーティ・アンド・エイトWebアウトプット
 type FortyAndEightWebOutput struct {
-	Tableau    [][]*FortyAndEightWebOutputTableauCard `json:"tableau"`
-	StockCount int                                    `json:"stockCount"`
-	Waste      []*WebOutputCard                       `json:"waste"`
-	Foundation [][]*WebOutputCard                     `json:"foundation"`
-	RedealUsed bool                                   `json:"redealUsed"`
-	CanRedeal  bool                                   `json:"canRedeal"`
-	Hint       *FortyAndEightWebOutputHint            `json:"hint,omitempty"`
+	Tableau      [][]*FortyAndEightWebOutputTableauCard   `json:"tableau"`
+	StockCount   int                                      `json:"stockCount"`
+	Waste        []*WebOutputCard                         `json:"waste"`
+	Foundation   [][]*WebOutputCard                       `json:"foundation"`
+	RedealUsed   bool                                     `json:"redealUsed"`
+	CanRedeal    bool                                     `json:"canRedeal"`
+	Hint         *FortyAndEightWebOutputHint              `json:"hint,omitempty"`
+	LegalTargets map[string]FortyAndEightWebOutputTargets `json:"legalTargets"`
 	SolitaireWebOutputBase
 	WebOutputBase
 }
@@ -64,6 +71,7 @@ func newFortyAndEightDefaultOutput(msg string) *FortyAndEightWebOutput {
 		Tableau:       make([][]*FortyAndEightWebOutputTableauCard, 0),
 		Waste:         make([]*WebOutputCard, 0),
 		Foundation:    make([][]*WebOutputCard, 0),
+		LegalTargets:  make(map[string]FortyAndEightWebOutputTargets),
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }

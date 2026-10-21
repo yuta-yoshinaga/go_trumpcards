@@ -23,6 +23,10 @@ type FortyAndEightGame interface {
 	MoveTableauToTableau(fromCol, cardIndex, toCol int) error
 	// MoveTableauToFoundation タブローからファンデーションにカードを移動する
 	MoveTableauToFoundation(col int) error
+	// LegalTargets returns all tableau columns and foundations accepting the top card in a column.
+	LegalTargets(col int) (tableau, foundation []int)
+	// WasteLegalTargets returns all tableau columns and foundations accepting the waste top card.
+	WasteLegalTargets() (tableau, foundation []int)
 	// GetHint ヒントを取得する
 	GetHint() *domain.FortyAndEightHint
 	// GetPhase 現在のフェーズを取得する

@@ -78085,12 +78085,38 @@ components:
         redealUsed:
           type: boolean
           description: "True once the single permitted redeal has been taken."
+        legalTargets:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         message:
           type: string
 
     FortyThievesResponse:
       type: object
       properties:
+        legalTargets:
+          type: object
+          description: "Legal destinations keyed by waste or tableau-<column>."
+          additionalProperties:
+            type: object
+            required: [tableau, foundation]
+            properties:
+              tableau:
+                type: array
+                items: { type: integer }
+              foundation:
+                type: array
+                items: { type: integer }
         messageParams:
           type: object
           description: "Substitution values for `messageCode`. Absent when the message takes none."

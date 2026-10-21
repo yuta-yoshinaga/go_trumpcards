@@ -329,6 +329,74 @@ func TestFortyThieves_MoveTableauToTableau(t *testing.T) {
 	})
 }
 
+func TestFortyThieves_LegalTargets(t *testing.T) {
+	ft := newTestFortyThieves()
+	ft.Reset()
+	clearFTTableau(ft)
+	var tableau [domain.FortyThievesTableauCnt][]*domain.FortyThievesTableauCard
+	tableau[0] = []*domain.FortyThievesTableauCard{makeFTTableauCard(domain.CardDesignSpade, 5)}
+	tableau[1] = []*domain.FortyThievesTableauCard{makeFTTableauCard(domain.CardDesignSpade, 6)}
+	for col := 2; col < domain.FortyThievesTableauCnt; col++ {
+		tableau[col] = []*domain.FortyThievesTableauCard{makeFTTableauCard(domain.CardDesignHeart, 6)}
+	}
+	ft.SetTableau(tableau)
+	var foundation [domain.FortyThievesFoundationCnt][]*domain.Card
+	foundation[2] = []*domain.Card{makeFTCard(domain.CardDesignSpade, 1), makeFTCard(domain.CardDesignSpade, 4)}
+	ft.SetFoundation(foundation)
+	tabTargets, foundationTargets := ft.LegalTargets(0)
+	assert.Equal(t, []int{1}, tabTargets)
+	assert.Equal(t, []int{2}, foundationTargets)
+	invalidTableau, invalidFoundation := ft.LegalTargets(-1)
+	assert.Empty(t, invalidTableau)
+	assert.Empty(t, invalidFoundation)
+}
+
+func TestFortyThieves_WasteLegalTargets(t *testing.T) {
+	ft := newTestFortyThieves()
+	ft.Reset()
+	clearFTTableau(ft)
+	var tableau [domain.FortyThievesTableauCnt][]*domain.FortyThievesTableauCard
+	tableau[0] = []*domain.FortyThievesTableauCard{makeFTTableauCard(domain.CardDesignHeart, 6)}
+	ft.SetTableau(tableau)
+	ft.SetWaste([]*domain.Card{makeFTCard(domain.CardDesignHeart, 5)})
+	tabTargets, foundationTargets := ft.WasteLegalTargets()
+	assert.Equal(t, []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, tabTargets)
+	assert.Empty(t, foundationTargets)
+	ft.SetWaste([]*domain.Card{makeFTCard(domain.CardDesignSpade, 1)})
+	_, foundationTargets = ft.WasteLegalTargets()
+	assert.Equal(t, []int{0}, foundationTargets)
+}
+
+func TestFortyThieves_FoundationLegalTargets(t *testing.T) {
+	tests := []struct {
+		name       string
+		card       *domain.Card
+		foundation [domain.FortyThievesFoundationCnt][]*domain.Card
+		want       []int
+	}{
+		{name: "ace uses first empty pile", card: makeFTCard(domain.CardDesignSpade, 1), want: []int{0}},
+		{name: "non ace cannot start a pile", card: makeFTCard(domain.CardDesignSpade, 2), want: []int{}},
+		{name: "next same suit rank", card: makeFTCard(domain.CardDesignHeart, 3), foundation: [domain.FortyThievesFoundationCnt][]*domain.Card{1: {makeFTCard(domain.CardDesignHeart, 1), makeFTCard(domain.CardDesignHeart, 2)}}, want: []int{1}},
+		{name: "rank gap rejected", card: makeFTCard(domain.CardDesignSpade, 3), foundation: [domain.FortyThievesFoundationCnt][]*domain.Card{0: {makeFTCard(domain.CardDesignSpade, 1)}}, want: []int{}},
+		{name: "duplicate ace uses next empty pile", card: makeFTCard(domain.CardDesignSpade, 1), foundation: [domain.FortyThievesFoundationCnt][]*domain.Card{0: {makeFTCard(domain.CardDesignSpade, 1)}}, want: []int{1}},
+		{name: "suit must match", card: makeFTCard(domain.CardDesignSpade, 2), foundation: [domain.FortyThievesFoundationCnt][]*domain.Card{0: {makeFTCard(domain.CardDesignHeart, 1)}}, want: []int{}},
+		{name: "later matching pile is accepted", card: makeFTCard(domain.CardDesignHeart, 2), foundation: [domain.FortyThievesFoundationCnt][]*domain.Card{0: {makeFTCard(domain.CardDesignSpade, 1)}, 6: {makeFTCard(domain.CardDesignHeart, 1)}}, want: []int{6}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ft := newTestFortyThieves()
+			ft.Reset()
+			clearFTTableau(ft)
+			var tableau [domain.FortyThievesTableauCnt][]*domain.FortyThievesTableauCard
+			tableau[0] = []*domain.FortyThievesTableauCard{{Card: tt.card, FaceUp: true}}
+			ft.SetTableau(tableau)
+			ft.SetFoundation(tt.foundation)
+			_, foundationTargets := ft.LegalTargets(0)
+			assert.Equal(t, tt.want, foundationTargets)
+		})
+	}
+}
+
 func TestFortyThieves_MoveTableauToFoundation(t *testing.T) {
 	t.Run("move ace to foundation", func(t *testing.T) {
 		ft := newTestFortyThieves()

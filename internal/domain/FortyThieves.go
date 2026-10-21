@@ -486,6 +486,44 @@ func (ft *FortyThieves) UndoN(n int) error {
 	return undoN(ft, n)
 }
 
+// LegalTargets returns tableau and first accepting foundation destinations for the top card in col.
+func (ft *FortyThieves) LegalTargets(col int) (tableau, foundation []int) {
+	tableau = make([]int, 0)
+	foundation = make([]int, 0)
+	if col < 0 || col >= FortyThievesTableauCnt || len(ft.tableau[col]) == 0 || ft.phase != FortyThievesPhasePlaying {
+		return tableau, foundation
+	}
+	card := ft.tableau[col][len(ft.tableau[col])-1].Card
+	for target := range FortyThievesTableauCnt {
+		if target != col && ft.canPlaceOnTableau(card, target) {
+			tableau = append(tableau, target)
+		}
+	}
+	if target := ft.findFoundation(card); target >= 0 {
+		foundation = append(foundation, target)
+	}
+	return tableau, foundation
+}
+
+// WasteLegalTargets returns tableau and first accepting foundation destinations for the waste top card.
+func (ft *FortyThieves) WasteLegalTargets() (tableau, foundation []int) {
+	tableau = make([]int, 0)
+	foundation = make([]int, 0)
+	if len(ft.waste) == 0 || ft.phase != FortyThievesPhasePlaying {
+		return tableau, foundation
+	}
+	card := ft.waste[len(ft.waste)-1]
+	for target := range FortyThievesTableauCnt {
+		if ft.canPlaceOnTableau(card, target) {
+			tableau = append(tableau, target)
+		}
+	}
+	if target := ft.findFoundation(card); target >= 0 {
+		foundation = append(foundation, target)
+	}
+	return tableau, foundation
+}
+
 // --- Private helpers ---
 
 // canPlaceOnTableau タブローにカードを置けるか判定（同スート降順）

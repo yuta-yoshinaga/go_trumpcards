@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -18,6 +19,7 @@ func (p *FortyThievesWebPresenter) Output(ft interfaces.FortyThievesGame, lastEr
 	resObj := new(controller.FortyThievesWebOutput)
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, ft, int(ft.GetPhase()))
 	resObj.StockCount = ft.GetStockCount()
+	resObj.LegalTargets = p.buildLegalTargets(ft)
 
 	// ウェイスト
 	waste := ft.GetWaste()
@@ -102,6 +104,7 @@ func (p *FortyThievesWebPresenter) HintOutput(ft interfaces.FortyThievesGame) st
 	resObj := new(controller.FortyThievesWebOutput)
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, ft, int(ft.GetPhase()))
 	resObj.StockCount = ft.GetStockCount()
+	resObj.LegalTargets = p.buildLegalTargets(ft)
 	resObj.Waste = make([]*controller.WebOutputCard, 0)
 	resObj.Tableau = make([][]*controller.FortyThievesWebOutputTableauCard, 0)
 	resObj.Foundation = make([][]*controller.WebOutputCard, 0)
@@ -120,6 +123,34 @@ func (p *FortyThievesWebPresenter) HintOutput(ft interfaces.FortyThievesGame) st
 	}
 
 	return marshalOrError(resObj)
+}
+
+func (p *FortyThievesWebPresenter) buildLegalTargets(ft interfaces.FortyThievesGame) map[string]controller.FortyThievesWebOutputTargets {
+	result := make(map[string]controller.FortyThievesWebOutputTargets)
+	for col := 0; col < domain.FortyThievesTableauCnt; col++ {
+		tableau, foundation := ft.LegalTargets(col)
+		if len(tableau)+len(foundation) == 0 {
+			continue
+		}
+		if tableau == nil {
+			tableau = []int{}
+		}
+		if foundation == nil {
+			foundation = []int{}
+		}
+		result["tableau-"+strconv.Itoa(col)] = controller.FortyThievesWebOutputTargets{Tableau: tableau, Foundation: foundation}
+	}
+	tableau, foundation := ft.WasteLegalTargets()
+	if len(tableau)+len(foundation) > 0 {
+		if tableau == nil {
+			tableau = []int{}
+		}
+		if foundation == nil {
+			foundation = []int{}
+		}
+		result["waste"] = controller.FortyThievesWebOutputTargets{Tableau: tableau, Foundation: foundation}
+	}
+	return result
 }
 
 // ActionLogOutput 棋譜をJSON出力

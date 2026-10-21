@@ -321,7 +321,7 @@ function FortyThievesPageContent() {
                         if (selectedSource) return;
                         handleSelectSource({ zone: 'waste' });
                       }}
-                      onDoubleClick={() => handleFoundationShortcut({ zone: 'waste' }, wasteDisplay[0])}
+                      onDoubleClick={() => handleFoundationShortcut({ zone: 'waste' })}
                       disabled={!isPlaying || loading}
                       aria-label={cardAlt(wasteDisplay[0])}
                       aria-pressed={isSourceSelected('waste')}
@@ -480,9 +480,7 @@ function FortyThievesPageContent() {
                                     }}
                                     onDoubleClick={
                                       // Only the exposed top card can jump to a foundation.
-                                      isLast && tc.card
-                                        ? () => handleFoundationShortcut(cardZone, tc.card as Card)
-                                        : undefined
+                                      isLast && tc.card ? () => handleFoundationShortcut(cardZone) : undefined
                                     }
                                     disabled={!isPlaying || loading}
                                     aria-label={cardAlt(tc.card)}

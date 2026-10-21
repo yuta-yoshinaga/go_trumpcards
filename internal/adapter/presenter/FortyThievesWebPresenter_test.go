@@ -37,6 +37,10 @@ func setupFortyThievesWebMockDefaults(fg *interfaces.MockFortyThievesGame) {
 
 	var foundation [domain.FortyThievesFoundationCnt][]*domain.Card
 	fg.On("GetFoundation").Return(foundation).Maybe()
+	for col := 0; col < domain.FortyThievesTableauCnt; col++ {
+		fg.On("LegalTargets", col).Return([]int{}, []int{}).Maybe()
+	}
+	fg.On("WasteLegalTargets").Return([]int{}, []int{}).Maybe()
 }
 
 func parseFortyThievesOutput(t *testing.T, jsonStr string) *controller.FortyThievesWebOutput {
@@ -68,6 +72,7 @@ func TestFortyThievesWebPresenter_Output(t *testing.T) {
 		assert.Empty(t, result.Waste)
 		assert.Len(t, result.Tableau, domain.FortyThievesTableauCnt)
 		assert.Len(t, result.Foundation, domain.FortyThievesFoundationCnt)
+		assert.Empty(t, result.LegalTargets)
 		assert.Equal(t, "fortythieves.playing", result.MessageCode)
 	})
 
@@ -196,6 +201,33 @@ func TestFortyThievesWebPresenter_HintOutput(t *testing.T) {
 		assert.Nil(t, result.Hint)
 		assert.Equal(t, "fortythieves.noHint", result.MessageCode)
 	})
+}
+
+func TestFortyThievesWebPresenter_LegalTargets(t *testing.T) {
+	ft := new(interfaces.MockFortyThievesGame)
+	setupFortyThievesOutputMock(ft)
+	ft.ExpectedCalls = filterCalls(ft.ExpectedCalls, "LegalTargets")
+	for col := 0; col < domain.FortyThievesTableauCnt; col++ {
+		switch col {
+		case 0:
+			ft.On("LegalTargets", col).Return([]int(nil), []int{3}).Maybe()
+		case 1:
+			ft.On("LegalTargets", col).Return([]int{4}, []int(nil)).Maybe()
+		default:
+			ft.On("LegalTargets", col).Return([]int(nil), []int(nil)).Maybe()
+		}
+	}
+	ft.ExpectedCalls = filterCalls(ft.ExpectedCalls, "WasteLegalTargets")
+	ft.On("WasteLegalTargets").Return([]int(nil), []int{2}).Maybe()
+	result := parseFortyThievesOutput(t, new(FortyThievesWebPresenter).Output(ft, nil))
+	assert.Equal(t, controller.FortyThievesWebOutputTargets{Tableau: []int{}, Foundation: []int{3}}, result.LegalTargets["tableau-0"])
+	assert.Equal(t, controller.FortyThievesWebOutputTargets{Tableau: []int{4}, Foundation: []int{}}, result.LegalTargets["tableau-1"])
+	assert.NotContains(t, result.LegalTargets, "tableau-2")
+	assert.Equal(t, controller.FortyThievesWebOutputTargets{Tableau: []int{}, Foundation: []int{2}}, result.LegalTargets["waste"])
+	ft.ExpectedCalls = filterCalls(ft.ExpectedCalls, "WasteLegalTargets")
+	ft.On("WasteLegalTargets").Return([]int{7}, []int(nil)).Maybe()
+	result = parseFortyThievesOutput(t, new(FortyThievesWebPresenter).Output(ft, nil))
+	assert.Equal(t, controller.FortyThievesWebOutputTargets{Tableau: []int{7}, Foundation: []int{}}, result.LegalTargets["waste"])
 }
 
 func TestFortyThievesWebPresenter_ActionLogOutput(t *testing.T) {
