@@ -25,6 +25,8 @@ type BeleagueredCastleGame interface {
 	GetTableau() [domain.BeleagueredCastleTableauCnt][]*domain.BeleagueredCastleTableauCard
 	// GetFoundation ファンデーションを取得する
 	GetFoundation() [domain.BeleagueredCastleFoundationCnt][]*domain.Card
+	// LegalTargets returns the destinations that accept the top card of a tableau column.
+	LegalTargets(fromCol int) (tableau []int, foundation []int)
 	// AllFaceUp 全カードが表向きかを返す
 	AllFaceUp() bool
 	// IsStalemate 手詰まり状態を取得する

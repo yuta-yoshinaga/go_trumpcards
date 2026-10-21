@@ -49472,6 +49472,7 @@ components:
         - undoToEscape
         - score
         - difficulty
+        - legalTargets
         - message
       properties:
         entries:
@@ -49508,6 +49509,20 @@ components:
         difficulty:
           type: integer
           enum: [1, 2, 4]
+        legalTargets:
+          type: object
+          description: 'Legal destinations for each source card, keyed by source id ("tableau-<col>-<cardIndex>").'
+          additionalProperties:
+            type: object
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         hint:
           $ref: '#/components/schemas/MrsMopHint'
         message:
@@ -75067,6 +75082,21 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/Card'
+        legalTargets:
+          type: object
+          description: 'Legal destinations for each source column, keyed by source id ("tableau-0").'
+          additionalProperties:
+            type: object
+            description: "Where that source may move, by destination kind."
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         moveCount:
           type: integer
         canUndo:
@@ -75151,6 +75181,23 @@ components:
               type: string
             toCol:
               type: integer
+        legalTargets:
+          type: object
+          description: 'Legal destinations for each source column, keyed by source id ("tableau-0").'
+          additionalProperties:
+            type: object
+            description: "Where that source may move, by destination kind."
+            properties:
+              tableau:
+                type: array
+                description: "Tableau column indices the card may move to."
+                items:
+                  type: integer
+              foundation:
+                type: array
+                description: "Foundation pile indices the card may move to."
+                items:
+                  type: integer
         message:
           type: string
         messageCode:
@@ -77809,6 +77856,23 @@ components:
               type: string
             toCol:
               type: integer
+        legalTargets:
+          type: object
+          description: 'Legal destinations for each source column, keyed by source id ("tableau-0").'
+          additionalProperties:
+            type: object
+            description: "Where that source may move, by destination kind."
+            properties:
+              tableau:
+                type: array
+                description: "Tableau column indices the card may move to."
+                items:
+                  type: integer
+              foundation:
+                type: array
+                description: "Foundation pile indices the card may move to."
+                items:
+                  type: integer
         message:
           type: string
         messageCode:
@@ -80120,6 +80184,13 @@ components:
     PerseveranceResponse:
       type: object
       properties:
+        runStarts:
+          type: array
+          description: Card indices that start a movable run, one array per tableau column.
+          items:
+            type: array
+            items:
+              type: integer
         legalTargets:
           type: object
           description: 'Legal destinations keyed by movable source id ("tableau-<col>-<cardIndex>").'
@@ -82101,6 +82172,21 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/Card'
+        legalTargets:
+          type: object
+          description: 'Legal destinations for each source column, keyed by source id ("tableau-0").'
+          additionalProperties:
+            type: object
+            description: "Where that source may move, by destination kind."
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         hint:
           type: object
           properties:

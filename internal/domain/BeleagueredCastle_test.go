@@ -38,6 +38,37 @@ func clearBCTableau(bc *domain.BeleagueredCastle) {
 	bc.SetTableau(empty)
 }
 
+func TestBeleagueredCastle_LegalTargets(t *testing.T) {
+	bc := setupPlayingBeleagueredCastle()
+	clearBCTableau(bc)
+	var tableau [domain.BeleagueredCastleTableauCnt][]*domain.BeleagueredCastleTableauCard
+	tableau[0] = []*domain.BeleagueredCastleTableauCard{makeBCTableauCard(domain.CardDesignHeart, 4)}
+	tableau[1] = []*domain.BeleagueredCastleTableauCard{makeBCTableauCard(domain.CardDesignSpade, 5)}
+	tableau[2] = []*domain.BeleagueredCastleTableauCard{makeBCTableauCard(domain.CardDesignDiamond, 9)}
+	for col := 3; col < domain.BeleagueredCastleTableauCnt; col++ {
+		tableau[col] = []*domain.BeleagueredCastleTableauCard{makeBCTableauCard(domain.CardDesignClover, 9)}
+	}
+	bc.SetTableau(tableau)
+	targets, _ := bc.LegalTargets(0)
+	assert.Equal(t, []int{1}, targets)
+	assert.NotContains(t, targets, 0)
+
+	// An ace is accepted by every empty foundation.
+	clearBCTableau(bc)
+	tableau[0] = []*domain.BeleagueredCastleTableauCard{makeBCTableauCard(domain.CardDesignHeart, 1)}
+	bc.SetTableau(tableau)
+	bc.SetFoundation([domain.BeleagueredCastleFoundationCnt][]*domain.Card{})
+	_, foundations := bc.LegalTargets(0)
+	assert.Equal(t, []int{0, 1, 2, 3}, foundations)
+
+	clearBCTableau(bc)
+	for _, col := range []int{0, -1, domain.BeleagueredCastleTableauCnt} {
+		tab, found := bc.LegalTargets(col)
+		assert.Nil(t, tab)
+		assert.Nil(t, found)
+	}
+}
+
 func TestNewBeleagueredCastle(t *testing.T) {
 	bc := newTestBeleagueredCastle()
 	assert.NotNil(t, bc)

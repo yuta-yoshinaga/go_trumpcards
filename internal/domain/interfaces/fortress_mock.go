@@ -80,6 +80,14 @@ func (_m *MockFortressGame) GetTableau() [domain.FortressTableauCnt][]*domain.Fo
 	return ret.Get(0).([domain.FortressTableauCnt][]*domain.FortressTableauCard)
 }
 
+// LegalTargets returns destinations for the top card in a tableau column.
+func (_m *MockFortressGame) LegalTargets(fromCol int) ([]int, []int) {
+	ret := _m.Called(fromCol)
+	tab, _ := ret.Get(0).([]int)
+	foundation, _ := ret.Get(1).([]int)
+	return tab, foundation
+}
+
 func (_m *MockFortressGame) GetFoundation() [domain.FortressFoundationCnt][]*domain.Card {
 	ret := _m.Called()
 	return ret.Get(0).([domain.FortressFoundationCnt][]*domain.Card)

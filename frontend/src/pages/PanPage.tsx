@@ -442,13 +442,23 @@ function PanPageContent() {
                   <table className="w-full text-sm text-ds-text-muted">
                     <thead>
                       <tr>
-                        <th scope="col" className="text-left">
+                        <th scope="col" className="text-left whitespace-nowrap">
                           {t('scoresPlayer')}
                         </th>
-                        <th scope="col">{t('scoresChips')}</th>
-                        {isRoundEnd && <th scope="col">{t('scoresHandPoints')}</th>}
-                        <th scope="col">{t('scoresRound')}</th>
-                        <th scope="col">{t('scoresTotal')}</th>
+                        <th scope="col" className="whitespace-nowrap">
+                          {t('scoresChips')}
+                        </th>
+                        {isRoundEnd && (
+                          <th scope="col" className="whitespace-nowrap">
+                            {t('scoresHandPoints')}
+                          </th>
+                        )}
+                        <th scope="col" className="whitespace-nowrap">
+                          {t('scoresRound')}
+                        </th>
+                        <th scope="col" className="whitespace-nowrap">
+                          {t('scoresTotal')}
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -457,7 +467,7 @@ function PanPageContent() {
                           <td>
                             {playerName(p.id, p.isHuman)}
                             {playerIdx === state.dealerIdx && (
-                              <span className="ml-1 rounded-sm bg-ds-surface px-1 text-ds-accent">
+                              <span className="ml-1 rounded-sm bg-ds-surface px-1 text-ds-accent whitespace-nowrap">
                                 {t('dealerBadge')}
                               </span>
                             )}

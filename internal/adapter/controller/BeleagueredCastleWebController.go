@@ -38,11 +38,18 @@ type BeleagueredCastleWebOutputHint struct {
 
 // BeleagueredCastleWebOutput Beleaguered Castle Web アウトプット
 type BeleagueredCastleWebOutput struct {
-	Tableau    [][]*BeleagueredCastleWebOutputTableauCard `json:"tableau"`
-	Foundation [][]*WebOutputCard                         `json:"foundation"`
-	Hint       *BeleagueredCastleWebOutputHint            `json:"hint,omitempty"`
+	Tableau      [][]*BeleagueredCastleWebOutputTableauCard   `json:"tableau"`
+	Foundation   [][]*WebOutputCard                           `json:"foundation"`
+	LegalTargets map[string]BeleagueredCastleWebOutputTargets `json:"legalTargets"`
+	Hint         *BeleagueredCastleWebOutputHint              `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase
+}
+
+// BeleagueredCastleWebOutputTargets lists destinations for one source column.
+type BeleagueredCastleWebOutputTargets struct {
+	Tableau    []int `json:"tableau"`
+	Foundation []int `json:"foundation"`
 }
 
 // BeleagueredCastleWebController Beleaguered Castle Web コントローラークラス
@@ -58,6 +65,7 @@ func newBeleagueredCastleDefaultOutput(msg string) *BeleagueredCastleWebOutput {
 	return &BeleagueredCastleWebOutput{
 		Tableau:       make([][]*BeleagueredCastleWebOutputTableauCard, 0),
 		Foundation:    make([][]*WebOutputCard, 0),
+		LegalTargets:  make(map[string]BeleagueredCastleWebOutputTargets),
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }

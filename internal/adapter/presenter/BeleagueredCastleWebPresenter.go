@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -33,6 +34,7 @@ func (p *BeleagueredCastleWebPresenter) Output(bc interfaces.BeleagueredCastleGa
 			}
 		}
 	}
+	resObj.LegalTargets = p.buildLegalTargets(bc)
 
 	// ファンデーション
 	foundation := bc.GetFoundation()
@@ -91,6 +93,7 @@ func (p *BeleagueredCastleWebPresenter) HintOutput(bc interfaces.BeleagueredCast
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, bc, int(bc.GetPhase()))
 	resObj.Tableau = make([][]*controller.BeleagueredCastleWebOutputTableauCard, 0)
 	resObj.Foundation = make([][]*controller.WebOutputCard, 0)
+	resObj.LegalTargets = p.buildLegalTargets(bc)
 
 	if hint != nil {
 		resObj.Hint = &controller.BeleagueredCastleWebOutputHint{
@@ -105,6 +108,28 @@ func (p *BeleagueredCastleWebPresenter) HintOutput(bc interfaces.BeleagueredCast
 	}
 
 	return marshalOrError(resObj)
+}
+
+// buildLegalTargets returns legal destinations for non-empty source columns.
+func (p *BeleagueredCastleWebPresenter) buildLegalTargets(g interfaces.BeleagueredCastleGame) map[string]controller.BeleagueredCastleWebOutputTargets {
+	out := make(map[string]controller.BeleagueredCastleWebOutputTargets)
+	for col, cards := range g.GetTableau() {
+		if len(cards) == 0 {
+			continue
+		}
+		tableau, foundation := g.LegalTargets(col)
+		if len(tableau) == 0 && len(foundation) == 0 {
+			continue
+		}
+		if tableau == nil {
+			tableau = []int{}
+		}
+		if foundation == nil {
+			foundation = []int{}
+		}
+		out["tableau-"+strconv.Itoa(col)] = controller.BeleagueredCastleWebOutputTargets{Tableau: tableau, Foundation: foundation}
+	}
+	return out
 }
 
 // ActionLogOutput 棋譜をJSON出力

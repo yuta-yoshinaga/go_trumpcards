@@ -37,7 +37,6 @@ import { cardAlt } from '../utils/cardAlt';
 import { PERSEVERANCE_HELP, parsePerseveranceCommand } from '../utils/cli/commands/perseveranceCommands';
 import { formatPerseveranceState } from '../utils/cli/formatters/perseveranceFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { perseveranceStartsRun } from '../utils/perseveranceStartsRun';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
@@ -407,12 +406,10 @@ function PerseverancePageContent() {
                               cardIndex: cardIdx,
                             };
                             const isTop = cardIdx === col.length - 1;
-                            // **掴めるのは上札だけではない。**同スート降順の並びは
-                            // 一括で動かせるので、その開始位置ならどれでも掴める。
-                            // クローン元 (Baker's Dozen) は 1 枚ずつなので isTop だけで
-                            // 足りたが、それを残すとこの game の看板ルールが UI から
-                            // 一切使えなくなる。
-                            const canGrab = perseveranceStartsRun(col, cardIdx);
+                            // **掴めるのは上札だけではない。**同スート降順の並びは一括で
+                            // 動かせるので、その開始位置ならどれでも掴める。判定はサーバが
+                            // Perseverance.go の runStarts から返す (ADR-0045)。
+                            const canGrab = state.runStarts[colIdx].includes(cardIdx);
                             const isLastInCol = isTop && col.length === 1;
                             const isSelected = isSourceSelected('tableau', colIdx, cardIdx);
                             const showEmptyColumnWarning = isLastInCol && isSelected;

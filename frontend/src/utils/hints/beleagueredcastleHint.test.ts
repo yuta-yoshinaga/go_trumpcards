@@ -5,6 +5,7 @@ import { getBeleagueredcastleHint } from './beleagueredcastleHint';
 function makeState(overrides?: Partial<BeleagueredCastleResponse>): BeleagueredCastleResponse {
   return {
     tableau: Array.from({ length: 8 }, () => []),
+    legalTargets: {},
     foundation: [[], [], [], []],
     phase: 0,
     moveCount: 0,

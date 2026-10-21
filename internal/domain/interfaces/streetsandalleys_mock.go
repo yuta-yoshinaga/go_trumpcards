@@ -85,6 +85,19 @@ func (_m *MockStreetsAndAlleysGame) GetFoundation() [domain.StreetsAndAlleysFoun
 	return ret.Get(0).([domain.StreetsAndAlleysFoundationCnt][]*domain.Card)
 }
 
+// LegalTargets mocks the legal destinations for the bottom card in a column.
+func (_m *MockStreetsAndAlleysGame) LegalTargets(fromCol int) ([]int, []int) {
+	ret := _m.Called(fromCol)
+	var tableau, foundation []int
+	if ret.Get(0) != nil {
+		tableau = ret.Get(0).([]int)
+	}
+	if ret.Get(1) != nil {
+		foundation = ret.Get(1).([]int)
+	}
+	return tableau, foundation
+}
+
 func (_m *MockStreetsAndAlleysGame) AllFaceUp() bool {
 	ret := _m.Called()
 	return ret.Bool(0)

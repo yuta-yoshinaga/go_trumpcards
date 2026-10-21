@@ -45,6 +45,7 @@ type PerseveranceWebOutputTargets struct {
 // PerseveranceWebOutput パーシビアランスWebアウトプット
 type PerseveranceWebOutput struct {
 	Tableau      [][]*PerseveranceWebOutputTableauCard   `json:"tableau"`
+	RunStarts    [][]int                                 `json:"runStarts"`
 	Foundation   [][]*WebOutputCard                      `json:"foundation"`
 	Hint         *PerseveranceWebOutputHint              `json:"hint,omitempty"`
 	LegalTargets map[string]PerseveranceWebOutputTargets `json:"legalTargets"`
@@ -66,6 +67,7 @@ var NewPerseveranceWebController, NewPerseveranceWebControllerWithProvider = web
 func newPerseveranceDefaultOutput(msg string) *PerseveranceWebOutput {
 	return &PerseveranceWebOutput{
 		Tableau:       make([][]*PerseveranceWebOutputTableauCard, 0),
+		RunStarts:     make([][]int, 0),
 		Foundation:    make([][]*WebOutputCard, 0),
 		LegalTargets:  make(map[string]PerseveranceWebOutputTargets),
 		WebOutputBase: WebOutputBase{Message: msg},

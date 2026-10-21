@@ -298,6 +298,27 @@ func (c *Citadel) canPlaceOnTableau(card *Card, col int) bool {
 	return card.GetValue() == topCard.GetValue()-1
 }
 
+// LegalTargets returns the destinations for the top card in tableau column fromCol.
+func (c *Citadel) LegalTargets(fromCol int) (tableau []int, foundation []int) {
+	if fromCol < 0 || fromCol >= CitadelTableauCnt || len(c.tableau[fromCol]) == 0 {
+		return nil, nil
+	}
+	card := c.tableau[fromCol][len(c.tableau[fromCol])-1].Card
+	// The source column needs no explicit skip: a card cannot be placed on itself,
+	// and canPlaceOnTableau already rejects it (including for empty destinations).
+	for col := range CitadelTableauCnt {
+		if c.canPlaceOnTableau(card, col) {
+			tableau = append(tableau, col)
+		}
+	}
+	for f := range CitadelFoundationCnt {
+		if canPlaceOnFoundationPile(c.foundation[f], card) {
+			foundation = append(foundation, f)
+		}
+	}
+	return tableau, foundation
+}
+
 // findFoundation カードを置けるファンデーションのインデックスを探す（見つからない場合-1）
 func (c *Citadel) findFoundation(card *Card) int {
 	return columnFindFoundation(c.foundation[:], card)

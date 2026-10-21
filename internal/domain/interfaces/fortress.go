@@ -23,6 +23,8 @@ type FortressGame interface {
 	GetMoveCount() int
 	// GetTableau タブローを取得する
 	GetTableau() [domain.FortressTableauCnt][]*domain.FortressTableauCard
+	// LegalTargets returns destinations for the top card in a tableau column.
+	LegalTargets(fromCol int) ([]int, []int)
 	// GetFoundation ファンデーションを取得する
 	GetFoundation() [domain.FortressFoundationCnt][]*domain.Card
 	// AllFaceUp 全カードが表向きかを返す

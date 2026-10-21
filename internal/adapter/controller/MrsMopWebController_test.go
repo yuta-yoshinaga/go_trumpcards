@@ -18,6 +18,7 @@ import (
 func mustMrsMopOutputJSON(msg string) string {
 	out := &controller.MrsMopWebOutput{
 		Tableau:       [][]*controller.MrsMopWebOutputTableauCard{},
+		LegalTargets:  map[string]controller.MrsMopWebOutputTargets{},
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)

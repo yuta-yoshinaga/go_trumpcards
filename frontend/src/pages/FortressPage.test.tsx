@@ -46,6 +46,7 @@ const playingState: FortressResponse = {
     [],
   ]),
   foundation: [[card('SPADE', 1)], [card('CLOVER', 1)], [card('HEART', 1)], [card('DIAMOND', 1)]],
+  legalTargets: { 'tableau-0': { tableau: [1, 2, 3, 4, 5, 6, 7, 8, 9], foundation: [] } },
   phase: 0,
   moveCount: 3,
   canUndo: false,
@@ -323,6 +324,18 @@ describe('FortressPage', () => {
 
     // ♠5 は ♠6 の上 (Fortress は同スート) と、空き列すべてに置ける。自分の列 #0 は
     // 相手が ♠5 自身なので置けない。
+    it('follows server targets when they contradict the local rule mirror', async () => {
+      mockExec.mockResolvedValue({
+        ...playingState,
+        legalTargets: { 'tableau-0': { tableau: [4], foundation: [] } },
+      });
+      renderWithProviders(<FortressPage />);
+      fireEvent.click(await screen.findByRole('button', { name: /^♠ 5、/ }));
+      await waitFor(() => expect(markedColumns()).toContain('#4'));
+      expect(markedColumns()).toEqual(['#4']);
+      expect(screen.getByRole('button', { name: /^♠ 6、/ }).closest('[data-legal-target="true"]')).toBeNull();
+    });
+
     it('marks the ranks-down column and every empty column, but not the source column', async () => {
       mockExec.mockResolvedValue(playingState);
       renderWithProviders(<FortressPage />);
@@ -338,6 +351,7 @@ describe('FortressPage', () => {
         ...playingState,
         tableau: makeTableau([[{ card: card('SPADE', 1), faceUp: true }]]),
         foundation: [[], [], [], []],
+        legalTargets: { 'tableau-0': { tableau: [1, 2, 3, 4, 5, 6, 7, 8, 9], foundation: [0, 1, 2, 3] } },
       });
       renderWithProviders(<FortressPage />);
       fireEvent.click(await screen.findByRole('button', { name: /^♠ A、/ }));
@@ -363,6 +377,7 @@ describe('FortressPage', () => {
       mockExec.mockResolvedValue({
         ...playingState,
         tableau: makeTableau([[{ card: card('SPADE', 2), faceUp: true }]]),
+        legalTargets: { 'tableau-0': { tableau: [1, 2, 3, 4, 5, 6, 7, 8, 9], foundation: [0] } },
       });
       renderWithProviders(<FortressPage />);
       fireEvent.click(await screen.findByRole('button', { name: /^♠ 2、/ }));

@@ -44,6 +44,42 @@ func TestNewFortress(t *testing.T) {
 	assert.Equal(t, domain.FortressPhase(0), bc.GetPhase())
 }
 
+func TestFortress_LegalTargets(t *testing.T) {
+	t.Run("returns the only matching tableau column and excludes its own column", func(t *testing.T) {
+		f := newTestFortress()
+		clearFortressTableau(f)
+		var tab [domain.FortressTableauCnt][]*domain.FortressTableauCard
+		tab[0] = []*domain.FortressTableauCard{makeFortressTableauCard(domain.CardDesignSpade, 5)}
+		tab[1] = []*domain.FortressTableauCard{makeFortressTableauCard(domain.CardDesignSpade, 4)}
+		tab[2] = []*domain.FortressTableauCard{makeFortressTableauCard(domain.CardDesignHeart, 4)}
+		for col := 3; col < domain.FortressTableauCnt; col++ {
+			tab[col] = []*domain.FortressTableauCard{makeFortressTableauCard(domain.CardDesignSpade, 2)}
+		}
+		f.SetTableau(tab)
+		tableau, _ := f.LegalTargets(0)
+		assert.Equal(t, []int{1}, tableau)
+	})
+	t.Run("returns every accepting empty foundation for an ace", func(t *testing.T) {
+		f := newTestFortress()
+		clearFortressTableau(f)
+		var tab [domain.FortressTableauCnt][]*domain.FortressTableauCard
+		tab[0] = []*domain.FortressTableauCard{makeFortressTableauCard(domain.CardDesignSpade, 1)}
+		f.SetTableau(tab)
+		_, foundation := f.LegalTargets(0)
+		assert.Equal(t, []int{0, 1, 2, 3}, foundation)
+	})
+	t.Run("empty and out of range sources return nil", func(t *testing.T) {
+		f := newTestFortress()
+		clearFortressTableau(f)
+		tab, foundation := f.LegalTargets(0)
+		assert.Nil(t, tab)
+		assert.Nil(t, foundation)
+		tab, foundation = f.LegalTargets(domain.FortressTableauCnt)
+		assert.Nil(t, tab)
+		assert.Nil(t, foundation)
+	})
+}
+
 func TestFortress_Reset(t *testing.T) {
 	f := setupPlayingFortress()
 

@@ -38,11 +38,18 @@ type FortressWebOutputHint struct {
 
 // FortressWebOutput Fortress Web アウトプット
 type FortressWebOutput struct {
-	Tableau    [][]*FortressWebOutputTableauCard `json:"tableau"`
-	Foundation [][]*WebOutputCard                `json:"foundation"`
-	Hint       *FortressWebOutputHint            `json:"hint,omitempty"`
+	Tableau      [][]*FortressWebOutputTableauCard   `json:"tableau"`
+	Foundation   [][]*WebOutputCard                  `json:"foundation"`
+	LegalTargets map[string]FortressWebOutputTargets `json:"legalTargets"`
+	Hint         *FortressWebOutputHint              `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase
+}
+
+// FortressWebOutputTargets contains destinations accepted from one source.
+type FortressWebOutputTargets struct {
+	Tableau    []int `json:"tableau"`
+	Foundation []int `json:"foundation"`
 }
 
 // FortressWebController Fortress Web コントローラークラス
@@ -58,6 +65,7 @@ func newFortressDefaultOutput(msg string) *FortressWebOutput {
 	return &FortressWebOutput{
 		Tableau:       make([][]*FortressWebOutputTableauCard, 0),
 		Foundation:    make([][]*WebOutputCard, 0),
+		LegalTargets:  make(map[string]FortressWebOutputTargets),
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }
