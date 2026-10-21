@@ -19,6 +19,8 @@ export interface MrsMopTableauCard {
 /** Full MrsMop Solitaire game state returned from the API. */
 export interface MrsMopResponse extends BaseGameResponse {
   tableau: MrsMopTableauCard[][];
+  /** Legal destinations keyed by source card, for example `tableau-2-3`. */
+  legalTargets: Record<string, { tableau: number[]; foundation: number[] }>;
   stockCount: number;
   completedSuits: number;
   phase: number;

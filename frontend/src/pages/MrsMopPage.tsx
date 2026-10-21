@@ -40,7 +40,6 @@ import { cardAlt } from '../utils/cardAlt';
 import { MRSMOP_HELP, parseMrsMopCommand } from '../utils/cli/commands/mrsMopCommands';
 import { formatMrsMopState } from '../utils/cli/formatters/mrsMopFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { mrsMopLegalTargets } from '../utils/mrsMopLegalTargets';
 import { hintCheckboxItem } from '../utils/settingsItems';
 // **同スート降順の並び判定は Spider と同一の規則。**共有ヘルパをそのまま使う
 // (クローンが `mrsMopMovableRun` という存在しない名前に書き換えていた)。
@@ -202,7 +201,7 @@ function MrsMopPageContent() {
   const legalTargets = useMemo(
     () =>
       state && selectedSource?.zone === 'tableau'
-        ? mrsMopLegalTargets(state.tableau, selectedSource.col, selectedSource.cardIndex)
+        ? (state.legalTargets[`tableau-${selectedSource.col}-${selectedSource.cardIndex}`]?.tableau ?? [])
         : [],
     [state, selectedSource],
   );

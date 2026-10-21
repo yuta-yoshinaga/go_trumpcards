@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/stretchr/testify/mock"
+
 	"github.com/stretchr/testify/assert"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
@@ -35,6 +37,7 @@ func setupMrsMopWebMockDefaults(sg *interfaces.MockMrsMopGame) {
 		}
 	}
 	sg.On("GetTableau").Return(tableau).Maybe()
+	sg.On("LegalTargets", mock.Anything, mock.Anything).Return(-1, []int{}).Maybe()
 }
 
 func parseMrsMopOutput(t *testing.T, jsonStr string) *controller.MrsMopWebOutput {
@@ -51,6 +54,48 @@ func parseMrsMopOutput(t *testing.T, jsonStr string) *controller.MrsMopWebOutput
 func setupMrsMopOutputMock(g *interfaces.MockMrsMopGame) {
 	setupMrsMopWebMockDefaults(g)
 	g.On("GetHint").Return(nil).Maybe()
+}
+
+func TestMrsMopWebPresenter_LegalTargets(t *testing.T) {
+	for _, hintOutput := range []bool{false, true} {
+		g := new(interfaces.MockMrsMopGame)
+		setupMrsMopOutputMock(g)
+		tableau := g.GetTableau()
+		for i := 0; i < 5; i++ {
+			tableau[2] = append(tableau[2], &domain.MrsMopTableauCard{Card: domain.NewCard(domain.CardDesignSpade, i+1, false), FaceUp: true})
+		}
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetTableau")
+		g.On("GetTableau").Return(tableau).Maybe()
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "LegalTargets")
+		g.On("LegalTargets", 2, -1).Return(3, []int(nil))
+		g.On("LegalTargets", 2, 3).Return(3, []int{5})
+		g.On("LegalTargets", 2, 4).Return(4, []int{})
+		g.On("LegalTargets", mock.Anything, mock.Anything).Return(-1, []int{}).Maybe()
+		p := new(MrsMopWebPresenter)
+		var raw string
+		if hintOutput {
+			raw = p.HintOutput(g)
+		} else {
+			raw = p.Output(g, nil)
+		}
+		var got map[string]json.RawMessage
+		assert.NoError(t, json.Unmarshal([]byte(raw), &got))
+		assert.JSONEq(t, `{"tableau-2-3":{"tableau":[5],"foundation":[]}}`, string(got["legalTargets"]))
+	}
+	for _, hintOutput := range []bool{false, true} {
+		g := new(interfaces.MockMrsMopGame)
+		setupMrsMopOutputMock(g)
+		p := new(MrsMopWebPresenter)
+		var raw string
+		if hintOutput {
+			raw = p.HintOutput(g)
+		} else {
+			raw = p.Output(g, nil)
+		}
+		var got map[string]json.RawMessage
+		assert.NoError(t, json.Unmarshal([]byte(raw), &got))
+		assert.JSONEq(t, `{}`, string(got["legalTargets"]))
+	}
 }
 
 func TestMrsMopWebPresenter_Output(t *testing.T) {
@@ -215,6 +260,7 @@ func TestMrsMopWebPresenter_HintOutput(t *testing.T) {
 		sg.On("GetDifficulty").Return(domain.MrsMopDifficulty1Suit)
 		sg.On("IsStalemate").Return(false)
 		sg.On("UndoToEscape").Return(0)
+		sg.On("LegalTargets", mock.Anything, mock.Anything).Return(-1, []int{}).Maybe()
 
 		p := new(MrsMopWebPresenter)
 		result := parseMrsMopOutput(t, p.HintOutput(sg))
@@ -237,6 +283,7 @@ func TestMrsMopWebPresenter_HintOutput(t *testing.T) {
 		sg.On("GetDifficulty").Return(domain.MrsMopDifficulty1Suit)
 		sg.On("IsStalemate").Return(false)
 		sg.On("UndoToEscape").Return(0)
+		sg.On("LegalTargets", mock.Anything, mock.Anything).Return(-1, []int{}).Maybe()
 
 		p := new(MrsMopWebPresenter)
 		result := parseMrsMopOutput(t, p.HintOutput(sg))
@@ -257,6 +304,7 @@ func TestMrsMopWebPresenter_HintOutput_CanUndo(t *testing.T) {
 	sg.On("GetDifficulty").Return(domain.MrsMopDifficulty1Suit)
 	sg.On("IsStalemate").Return(false)
 	sg.On("UndoToEscape").Return(0)
+	sg.On("LegalTargets", mock.Anything, mock.Anything).Return(-1, []int{}).Maybe()
 
 	p := new(MrsMopWebPresenter)
 	result := parseMrsMopOutput(t, p.HintOutput(sg))
@@ -275,6 +323,7 @@ func TestMrsMopWebPresenter_HintOutput_Score(t *testing.T) {
 	sg.On("GetDifficulty").Return(domain.MrsMopDifficulty1Suit)
 	sg.On("IsStalemate").Return(false)
 	sg.On("UndoToEscape").Return(0)
+	sg.On("LegalTargets", mock.Anything, mock.Anything).Return(-1, []int{}).Maybe()
 
 	p := new(MrsMopWebPresenter)
 	result := parseMrsMopOutput(t, p.HintOutput(sg))
@@ -293,6 +342,7 @@ func TestMrsMopWebPresenter_HintOutput_Difficulty(t *testing.T) {
 	sg.On("GetDifficulty").Return(domain.MrsMopDifficulty4Suit)
 	sg.On("IsStalemate").Return(false)
 	sg.On("UndoToEscape").Return(0)
+	sg.On("LegalTargets", mock.Anything, mock.Anything).Return(-1, []int{}).Maybe()
 
 	p := new(MrsMopWebPresenter)
 	result := parseMrsMopOutput(t, p.HintOutput(sg))
@@ -352,7 +402,6 @@ func TestMrsMopWebPresenter_TargetsOutputReturnsTheBoard(t *testing.T) {
 	setupMrsMopOutputMock(sg)
 	p := new(MrsMopWebPresenter)
 
-	// 添字が何であっても盤面と同じ。ドメインの LegalTargets は呼ばない。
+	// 添字が何であっても legalTargets を含む通常の盤面を返す。
 	assert.JSONEq(t, p.Output(sg, nil), p.TargetsOutput(sg, 3, -1))
-	sg.AssertNotCalled(t, "LegalTargets", 3, -1)
 }

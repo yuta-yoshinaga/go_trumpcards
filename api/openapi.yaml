@@ -49472,6 +49472,7 @@ components:
         - undoToEscape
         - score
         - difficulty
+        - legalTargets
         - message
       properties:
         entries:
@@ -49508,6 +49509,20 @@ components:
         difficulty:
           type: integer
           enum: [1, 2, 4]
+        legalTargets:
+          type: object
+          description: 'Legal destinations for each source card, keyed by source id ("tableau-<col>-<cardIndex>").'
+          additionalProperties:
+            type: object
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         hint:
           $ref: '#/components/schemas/MrsMopHint'
         message:

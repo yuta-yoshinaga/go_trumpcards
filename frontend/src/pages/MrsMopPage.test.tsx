@@ -60,6 +60,7 @@ function makeTableau(cols: MrsMopTableauCard[][]): MrsMopTableauCard[][] {
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 
 const playingState: MrsMopResponse = {
+  legalTargets: {},
   tableau: makeTableau([
     [{ card: card('SPADE', 13), faceUp: true }],
     [
@@ -410,6 +411,10 @@ describe('MrsMopPage', () => {
         ],
         [{ card: card('DIAMOND', 13), faceUp: true }],
       ]),
+      legalTargets: {
+        'tableau-0-1': { tableau: [1], foundation: [] },
+        'tableau-0-0': { tableau: [1], foundation: [] },
+      },
     });
     renderWithProviders(<MrsMopPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
@@ -453,6 +458,10 @@ describe('MrsMopPage', () => {
         ],
         [{ card: card('DIAMOND', 13), faceUp: true }],
       ]),
+      legalTargets: {
+        'tableau-0-0': { tableau: [2], foundation: [] },
+        'tableau-0-1': { tableau: [1], foundation: [] },
+      },
     });
     renderWithProviders(<MrsMopPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
@@ -486,13 +495,22 @@ describe('MrsMopPage', () => {
         { card: card('SPADE', col === 0 ? 13 : 5), faceUp: true },
       ]),
     );
-    mockExec.mockResolvedValue({ ...playingState, tableau: blockedTableau });
+    mockExec.mockResolvedValue({ ...playingState, tableau: blockedTableau, legalTargets: {} });
     renderWithProviders(<MrsMopPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
     fireEvent.click(screen.getByAltText('♠ K').closest('button') as HTMLButtonElement);
     expect(screen.getByTestId('mrsMop-selection-status')).toHaveTextContent('移動先はありません');
     expect(document.querySelectorAll('[data-legal-target="true"]')).toHaveLength(0);
+  });
+
+  it('follows server targets when they contradict the local rule', async () => {
+    mockExec.mockResolvedValue({ ...playingState, legalTargets: { 'tableau-0-0': { tableau: [1], foundation: [] } } });
+    renderWithProviders(<MrsMopPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ K')).toBeInTheDocument());
+    fireEvent.click(screen.getByAltText('♠ K').closest('button') as HTMLButtonElement);
+    expect(screen.getByAltText('♥ 5').closest('.flex-1')).toHaveAttribute('data-legal-target', 'true');
+    expect(screen.getByTestId('spd-empty-col-2').closest('.flex-1')).not.toHaveAttribute('data-legal-target');
   });
 
   it('includes zero-based tableau column and card index in card and empty-column names', async () => {
