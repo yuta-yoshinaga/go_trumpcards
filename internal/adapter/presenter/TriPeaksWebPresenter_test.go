@@ -20,6 +20,7 @@ func setupTriPeaksWebMockDefaults(tg *interfaces.MockTriPeaksGame) {
 	tg.On("GetStockCount").Return(23).Maybe()
 	tg.On("GetScore").Return(0).Maybe()
 	tg.On("GetCombo").Return(0).Maybe()
+	tg.On("PlayableCells").Return([][2]int{{3, 0}, {3, 2}}).Maybe()
 	tg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	tg.On("CanUndo").Return(false).Maybe()
 	tg.On("IsStalemate").Return(false).Maybe()
@@ -77,6 +78,32 @@ func TestTriPeaksWebPresenterOutput_Playing(t *testing.T) {
 	assert.Equal(t, 23, out.StockCount)
 	assert.Equal(t, "tripeaks.playing", out.MessageCode)
 	assert.Len(t, out.Layout, domain.TriPeaksRowCnt)
+	assert.JSONEq(t, `["3-0","3-2"]`, mustJSON(t, out.PlayableCells))
+}
+
+func TestTriPeaksWebPresenterPlayableCellsOnOutputAndHintOutput(t *testing.T) {
+	for _, output := range []struct {
+		name   string
+		render func(interfaces.TriPeaksGame) string
+	}{
+		{name: "output", render: func(g interfaces.TriPeaksGame) string { return new(TriPeaksWebPresenter).Output(g, nil) }},
+		{name: "hint", render: func(g interfaces.TriPeaksGame) string { return new(TriPeaksWebPresenter).HintOutput(g) }},
+	} {
+		t.Run(output.name, func(t *testing.T) {
+			g := new(interfaces.MockTriPeaksGame)
+			setupTriPeaksWebMockDefaults(g)
+			g.On("GetHint").Return(nil).Maybe()
+			got := output.render(g)
+			assert.Contains(t, got, `"playableCells":["3-0","3-2"]`)
+		})
+	}
+}
+
+func mustJSON(t *testing.T, v any) string {
+	t.Helper()
+	b, err := json.Marshal(v)
+	assert.NoError(t, err)
+	return string(b)
 }
 
 func TestTriPeaksWebPresenterOutput_Error(t *testing.T) {
@@ -94,6 +121,7 @@ func TestTriPeaksWebPresenterOutput_Stalemate(t *testing.T) {
 	tg := new(interfaces.MockTriPeaksGame)
 	setupTriPeaksOutputMock(tg)
 	tg.ExpectedCalls = nil
+	tg.On("PlayableCells").Return([][2]int{}).Maybe()
 	tg.On("GetPhase").Return(domain.TriPeaksPhasePlaying).Maybe()
 	tg.On("GetMoveCount").Return(5).Maybe()
 	tg.On("GetStockCount").Return(0).Maybe()
@@ -122,6 +150,7 @@ func TestTriPeaksWebPresenterOutput_GameClear(t *testing.T) {
 	tg := new(interfaces.MockTriPeaksGame)
 	setupTriPeaksOutputMock(tg)
 	tg.ExpectedCalls = nil
+	tg.On("PlayableCells").Return([][2]int{}).Maybe()
 	tg.On("GetPhase").Return(domain.TriPeaksPhaseGameClear).Maybe()
 	tg.On("GetMoveCount").Return(10).Maybe()
 	tg.On("GetStockCount").Return(0).Maybe()
@@ -151,6 +180,7 @@ func TestTriPeaksWebPresenterOutput_GameOver(t *testing.T) {
 	tg := new(interfaces.MockTriPeaksGame)
 	setupTriPeaksOutputMock(tg)
 	tg.ExpectedCalls = nil
+	tg.On("PlayableCells").Return([][2]int{}).Maybe()
 	tg.On("GetPhase").Return(domain.TriPeaksPhaseGameOver).Maybe()
 	tg.On("GetMoveCount").Return(5).Maybe()
 	tg.On("GetStockCount").Return(0).Maybe()
@@ -209,6 +239,7 @@ func TestTriPeaksWebPresenterHintOutput(t *testing.T) {
 		tg.On("GetStockCount").Return(23)
 		tg.On("GetScore").Return(0).Maybe()
 		tg.On("GetCombo").Return(0).Maybe()
+		tg.On("PlayableCells").Return([][2]int{{3, 0}})
 		tg.On("CanUndo").Return(false)
 		tg.On("IsStalemate").Return(false)
 		tg.On("UndoToEscape").Return(0)
@@ -230,6 +261,7 @@ func TestTriPeaksWebPresenterHintOutput(t *testing.T) {
 		tg.On("GetStockCount").Return(0)
 		tg.On("GetScore").Return(0).Maybe()
 		tg.On("GetCombo").Return(0).Maybe()
+		tg.On("PlayableCells").Return([][2]int(nil))
 		tg.On("CanUndo").Return(false)
 		tg.On("IsStalemate").Return(false)
 		tg.On("UndoToEscape").Return(0)
@@ -240,6 +272,7 @@ func TestTriPeaksWebPresenterHintOutput(t *testing.T) {
 
 		assert.Nil(t, out.Hint)
 		assert.Equal(t, "tripeaks.noHint", out.MessageCode)
+		assert.JSONEq(t, `[]`, mustJSON(t, out.PlayableCells))
 	})
 }
 

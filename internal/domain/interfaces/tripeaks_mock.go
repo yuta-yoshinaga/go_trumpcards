@@ -113,6 +113,14 @@ func (_m *MockTriPeaksGame) IsExposed(row, col int) bool {
 	return ret.Get(0).(bool)
 }
 
+func (_m *MockTriPeaksGame) PlayableCells() [][2]int {
+	ret := _m.Called()
+	if ret.Get(0) == nil {
+		return nil
+	}
+	return ret.Get(0).([][2]int)
+}
+
 func (_m *MockTriPeaksGame) AllRemoved() bool {
 	ret := _m.Called()
 	return ret.Get(0).(bool)

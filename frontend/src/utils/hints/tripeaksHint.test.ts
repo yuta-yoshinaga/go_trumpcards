@@ -5,6 +5,7 @@ import { getTriPeaksHint } from './tripeaksHint';
 
 function makeState(overrides: Partial<TriPeaksResponse> = {}): TriPeaksResponse {
   return {
+    playableCells: [],
     layout: [
       [{ card: { design: 'SPADE', value: 5 }, removed: false, exposed: true }],
       [{ card: { design: 'HEART', value: 8 }, removed: false, exposed: true }],

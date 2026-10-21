@@ -149,6 +149,7 @@ func TestTriPeaksCuiPresenterOutput_PeakRemainingMarksOnlyEmptyPeaks(t *testing.
 
 func setupTriPeaksCuiMockDefaults(tg *interfaces.MockTriPeaksGame) {
 	tg.On("GetPhase").Return(domain.TriPeaksPhasePlaying).Maybe()
+	tg.On("PlayableCells").Return([][2]int{}).Maybe()
 	tg.On("GetMoveCount").Return(0).Maybe()
 	tg.On("CanUndo").Return(false).Maybe()
 	tg.On("GetScore").Return(0).Maybe()
@@ -196,6 +197,7 @@ func TestTriPeaksCuiPresenterOutput_PlayableAndBlocked(t *testing.T) {
 	tg.On("IsStalemate").Return(false).Maybe()
 	// Waste top is a 2: adjacent to Ace(1) and 3, with K-A wrap also possible.
 	tg.On("GetWaste").Return([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 2, false)}).Maybe()
+	tg.On("PlayableCells").Return([][2]int{{3, 0}}).Maybe()
 
 	var layout [domain.TriPeaksRowCnt][domain.TriPeaksColCnt]*domain.TriPeaksCard
 	// (3,0)=A exposed & adjacent->playable; (3,1)=5 blocked; (3,2)=9 exposed but not adjacent.
@@ -234,6 +236,7 @@ func TestTriPeaksCuiPresenterOutput_Stalemate(t *testing.T) {
 	tg := new(interfaces.MockTriPeaksGame)
 	setupTriPeaksCuiMockDefaults(tg)
 	tg.ExpectedCalls = nil
+	tg.On("PlayableCells").Return([][2]int{}).Maybe()
 	tg.On("GetPhase").Return(domain.TriPeaksPhasePlaying).Maybe()
 	tg.On("GetMoveCount").Return(5).Maybe()
 	tg.On("CanUndo").Return(false).Maybe()
@@ -258,6 +261,7 @@ func TestTriPeaksCuiPresenterOutput_GameClear(t *testing.T) {
 	tg := new(interfaces.MockTriPeaksGame)
 	setupTriPeaksCuiMockDefaults(tg)
 	tg.ExpectedCalls = nil
+	tg.On("PlayableCells").Return([][2]int{}).Maybe()
 	tg.On("GetPhase").Return(domain.TriPeaksPhaseGameClear).Maybe()
 	tg.On("GetMoveCount").Return(10).Maybe()
 	tg.On("CanUndo").Return(false).Maybe()
@@ -278,6 +282,7 @@ func TestTriPeaksCuiPresenterOutput_GameOver(t *testing.T) {
 	tg := new(interfaces.MockTriPeaksGame)
 	setupTriPeaksCuiMockDefaults(tg)
 	tg.ExpectedCalls = nil
+	tg.On("PlayableCells").Return([][2]int{}).Maybe()
 	tg.On("GetPhase").Return(domain.TriPeaksPhaseGameOver).Maybe()
 	tg.On("GetMoveCount").Return(5).Maybe()
 	tg.On("CanUndo").Return(false).Maybe()
@@ -298,6 +303,7 @@ func TestTriPeaksCuiPresenterOutput_WithWaste(t *testing.T) {
 	tg := new(interfaces.MockTriPeaksGame)
 	setupTriPeaksCuiMockDefaults(tg)
 	tg.ExpectedCalls = nil
+	tg.On("PlayableCells").Return([][2]int{}).Maybe()
 	tg.On("GetPhase").Return(domain.TriPeaksPhasePlaying).Maybe()
 	tg.On("GetMoveCount").Return(1).Maybe()
 	tg.On("CanUndo").Return(false).Maybe()

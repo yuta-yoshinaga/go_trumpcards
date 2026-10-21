@@ -139,6 +139,35 @@ func TestTriPeaks_Remove_KAWrap(t *testing.T) {
 	assert.True(t, tp.layout[3][0].Removed)
 }
 
+func TestTriPeaks_PlayableCells(t *testing.T) {
+	t.Run("exposed adjacent cards including K-A wrap", func(t *testing.T) {
+		tp := setupTriPeaksForRemove(t)
+		tp.layout[3][0] = &TriPeaksCard{Card: NewCard(CardDesignSpade, 2, true)}
+		tp.layout[3][1] = &TriPeaksCard{Card: NewCard(CardDesignSpade, 13, true)}
+		tp.waste = []*Card{NewCard(CardDesignHeart, 1, true)}
+		assert.Equal(t, [][2]int{{3, 0}, {3, 1}}, tp.PlayableCells())
+	})
+	t.Run("excludes blocked and removed cards", func(t *testing.T) {
+		tp := setupTriPeaksForRemove(t)
+		tp.layout[2][0] = &TriPeaksCard{Card: NewCard(CardDesignSpade, 5, true)}
+		tp.layout[3][1] = &TriPeaksCard{Card: NewCard(CardDesignHeart, 7, true)}
+		tp.layout[3][2] = &TriPeaksCard{Card: NewCard(CardDesignHeart, 5, true), Removed: true}
+		assert.Equal(t, [][2]int{{3, 0}}, tp.PlayableCells())
+	})
+	t.Run("empty waste", func(t *testing.T) {
+		tp := setupTriPeaksForRemove(t)
+		tp.waste = nil
+		assert.Empty(t, tp.PlayableCells())
+	})
+}
+
+func TestTriPeaks_PlayableCellsMutationDoesNotChangeLayout(t *testing.T) {
+	tp := setupTriPeaksForRemove(t)
+	cells := tp.PlayableCells()
+	cells[0] = [2]int{0, 0}
+	assert.Equal(t, [][2]int{{3, 0}}, tp.PlayableCells())
+}
+
 func TestTriPeaks_Remove_AKWrap(t *testing.T) {
 	tp := setupTriPeaksForRemove(t)
 	// Place A at (3,0), waste top is K

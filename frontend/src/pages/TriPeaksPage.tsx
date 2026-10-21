@@ -39,7 +39,6 @@ import { formatTripeaksState } from '../utils/cli/formatters/tripeaksFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { comboAnnouncement } from '../utils/comboAnnounce';
 import { hintCheckboxItem } from '../utils/settingsItems';
-import { triPeaksPlayableCells } from '../utils/triPeaksPlayable';
 
 /** Valid column positions per row in the TriPeaks tableau. */
 const VALID_COLS: readonly number[][] = [
@@ -257,11 +256,9 @@ function TriPeaksPageContent() {
     return <GameSkeleton gameKey="tripeaks" layout={{ kind: 'tiered-rows', rows: [3, 6, 9, 10], stockWaste: true }} />;
 
   const isPlaying = state.phase === TriPeaksPhase.PLAYING;
-  // Rank of the waste top, used to ring playable (±1 with K-A wrap) tableau cards.
-  const wasteTopValue = state.waste.length > 0 ? state.waste[state.waste.length - 1].value : undefined;
   // **リングと合計は同じ集合を読む。**別々に数えると、光っている札の数と
   // ヘッダーの数字がずれる。CUI の playableCount と揃える (#4783)。
-  const playableCells = isPlaying ? triPeaksPlayableCells(state.layout, wasteTopValue) : new Set<string>();
+  const playableCells = isPlaying ? new Set(state.playableCells) : new Set<string>();
   const isGameClear = state.phase === TriPeaksPhase.GAME_CLEAR;
   const isGameOver = state.phase === TriPeaksPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;

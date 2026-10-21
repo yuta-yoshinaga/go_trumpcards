@@ -50662,6 +50662,12 @@ components:
           description: Cards in the waste pile (top card is the last element)
           items:
             $ref: '#/components/schemas/Card'
+        playableCells:
+          type: array
+          description: Tableau coordinates playable onto the waste top, formatted as "row-col".
+          items:
+            type: string
+            pattern: '^[0-3]-(0|[1-9])$'
         phase:
           type: integer
           description: "Game phase: 0 = Playing, 1 = GameClear, 2 = GameOver"

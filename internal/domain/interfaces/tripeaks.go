@@ -44,6 +44,8 @@ type TriPeaksGame interface {
 	GetLayout() [domain.TriPeaksRowCnt][domain.TriPeaksColCnt]*domain.TriPeaksCard
 	// IsExposed カードが露出しているかを返す
 	IsExposed(row, col int) bool
+	// PlayableCells returns exposed tableau coordinates playable onto the waste top.
+	PlayableCells() [][2]int
 	// AllRemoved 全タブローカードが除去されたかを返す
 	AllRemoved() bool
 	// IsStalemate 手詰まり状態を取得する

@@ -241,6 +241,28 @@ func (t *TriPeaks) Remove(row, col int) error {
 	return nil
 }
 
+// PlayableCells returns tableau coordinates (row, column) for every exposed,
+// present card adjacent to the waste top. It is empty when the waste is empty.
+func (t *TriPeaks) PlayableCells() [][2]int {
+	if len(t.waste) == 0 {
+		return make([][2]int, 0)
+	}
+	top := t.waste[len(t.waste)-1]
+	cells := make([][2]int, 0)
+	for row := range TriPeaksRowCnt {
+		for col := range TriPeaksColCnt {
+			tc := t.layout[row][col]
+			if tc == nil || tc.Card == nil || tc.Removed || !t.isExposed(row, col) {
+				continue
+			}
+			if t.isAdjacentRank(tc.Card, top) {
+				cells = append(cells, [2]int{row, col})
+			}
+		}
+	}
+	return cells
+}
+
 // GiveUp ギブアップ
 func (t *TriPeaks) GiveUp() {
 	if t.phase == TriPeaksPhasePlaying {
