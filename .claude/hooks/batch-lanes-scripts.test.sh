@@ -587,6 +587,8 @@ make_e2egate_case() {
     missing) rm "$wtroot/wt-ib1/frontend/e2e/route-sweep.spec.ts"; printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/src/components/Other.tsx" ;;
     deleted_type_page) rm "$wtroot/wt-ib1/frontend/src/utils/obsolete.ts"; printf '\nexport type Other = string;\n' >> "$wtroot/wt-ib1/frontend/src/types/index.ts"; printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/src/pages/PokerPage.tsx" ;;
     type_runtime) sed -i 's/export const runtime = true;/export const runtime = false;/' "$wtroot/wt-ib1/frontend/src/types/index.ts" ;;
+    type_large) for ((i=0; i<2200; i++)); do printf '// %s\n' 'large type-only comment padding line with enough bytes to exceed the pipe buffer' >> "$wtroot/wt-ib1/frontend/src/types/index.ts"; done; sed -i 's/export const runtime = true;/export const runtime = false;/' "$wtroot/wt-ib1/frontend/src/types/index.ts" ;;
+    restored_deleted) cp "$wtroot/wt-ib1/frontend/src/utils/obsolete.ts" "$tmp/e2egate-restored-source"; rm "$wtroot/wt-ib1/frontend/src/utils/obsolete.ts"; git -C "$wtroot/wt-ib1" add frontend/src/utils/obsolete.ts; cp "$tmp/e2egate-restored-source" "$wtroot/wt-ib1/frontend/src/utils/obsolete.ts" ;;
     deleted_component) rm "$wtroot/wt-ib1/frontend/src/utils/obsolete.ts"; printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/src/components/Other.tsx" ;;
   esac
   if [[ "$changed" == missing ]]; then
@@ -601,7 +603,7 @@ make_e2egate_case() {
     return
   fi
   output=$(E2E_SWEEP_REPEAT=3 BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$SCRIPTS/e2egate.sh" --dry-run 1) || fail "e2egate $name dry-run failed"
-  if [[ "$changed" == shared || "$changed" == component || "$changed" == type_runtime || "$changed" == deleted_component ]]; then
+  if [[ "$changed" == shared || "$changed" == component || "$changed" == type_runtime || "$changed" == type_large || "$changed" == deleted_component || "$changed" == restored_deleted ]]; then
     for spec in desktop-board-visibility desktop-hand-visibility game-message-visibility mobile-viewport text-contrast route-sweep; do grep -q "e2e/$spec.spec.ts" <<< "$output" || fail "sweep omitted $spec: $output"; done
   elif [[ "$changed" == page ]]; then
     grep -q 'run 1: e2e/poker.spec.ts$' <<< "$output" || fail "page game spec has grep or was omitted: $output"
@@ -632,6 +634,14 @@ STUB
     [[ $(grep -c '^run ' <<< "$output") == 3 ]] || fail "deleted/type-only changes triggered an unfiltered sweep: $output"
     grep -q 'NOTE e2egate skipped full sweep for frontend/src/utils/obsolete.ts (deleted source)' <<< "$output" || fail "deleted source note omitted: $output"
     grep -q 'NOTE e2egate skipped full sweep for frontend/src/types/index.ts (type-only diff)' <<< "$output" || fail "type-only note omitted: $output"
+    exec_scripts="$tmp/e2egate-exec-$name"
+    mkdir -p "$exec_scripts"
+    cp "$SCRIPTS/common.sh" "$SCRIPTS/e2egate.sh" "$exec_scripts/"
+    printf '#!/usr/bin/env bash\nprintf "%%s\\n" "$@" > "$E2EGATE_ARGS"\n' > "$exec_scripts/e2e.sh"
+    chmod +x "$exec_scripts/e2e.sh"
+    E2E_SWEEP_REPEAT=1 E2EGATE_ARGS="$tmp/e2egate-args-$name" BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$exec_scripts/e2egate.sh" 1 >"$tmp/e2egate-real.out" 2>"$tmp/e2egate-real.err" || fail "real e2egate execution failed"
+    grep -q '^NOTE e2egate skipped full sweep for frontend/src/utils/obsolete.ts (deleted source)$' "$tmp/e2egate-real.err" || fail "real run omitted deleted source note: $(cat "$tmp/e2egate-real.err")"
+    grep -q '^NOTE e2egate skipped full sweep for frontend/src/types/index.ts (type-only diff)$' "$tmp/e2egate-real.err" || fail "real run omitted type-only note: $(cat "$tmp/e2egate-real.err")"
   elif [[ "$changed" == helper ]]; then
     grep -q 'run 1: e2e/poker.spec.ts' <<< "$output" || fail "helper edit omitted importing spec: $output"
     [[ $(grep -c '^run ' <<< "$output") == 1 ]] || fail "helper edit selected non-importing specs: $output"
@@ -662,6 +672,8 @@ make_e2egate_case empty none
 make_e2egate_case missing missing
 make_e2egate_case deleted-type-page deleted_type_page
 make_e2egate_case types-runtime type_runtime
+make_e2egate_case types-large type_large
+make_e2egate_case restored-deleted restored_deleted
 make_e2egate_case deleted-component deleted_component
 
 # Removed route references are repeated; moves are excluded, including during full sweeps.

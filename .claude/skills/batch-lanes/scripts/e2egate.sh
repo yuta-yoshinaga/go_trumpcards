@@ -23,10 +23,15 @@ for path in "${changed[@]}"; do
     frontend/src/i18n/locales/*|frontend/src/**/*.test.ts|frontend/src/**/*.test.tsx|frontend/src/*.test.ts|frontend/src/*.test.tsx) ;;
     frontend/playwright.config.ts) full_sweep=1 ;;
     frontend/src/*)
-      if [[ -n "${deleted_paths[$path]:-}" ]]; then
+      if [[ -n "${deleted_paths[$path]:-}" && ! -e "$wt/$path" ]]; then
         skipped_paths+=("$path (deleted source)")
-      elif [[ "$path" == frontend/src/types/* ]] && ! { { git -C "$wt" diff origin/develop...HEAD -- "$path"; git -C "$wt" diff HEAD -- "$path"; } | grep -Eq '^[+-][[:space:]]*export[[:space:]]+(const|enum|function|class|let)\b'; }; then
-        skipped_paths+=("$path (type-only diff)")
+      elif [[ "$path" == frontend/src/types/* ]]; then
+        diff="$( { git -C "$wt" diff origin/develop...HEAD -- "$path"; git -C "$wt" diff HEAD -- "$path"; } )"
+        if ! grep -Eq '^[+-][[:space:]]*export[[:space:]]+(const|enum|function|class|let)\b' <<<"$diff"; then
+          skipped_paths+=("$path (type-only diff)")
+        else
+          full_sweep=1
+        fi
       else
         full_sweep=1
       fi
@@ -194,6 +199,7 @@ if (( dry_run )); then
   done
   exit 0
 fi
+for skipped in "${skipped_paths[@]}"; do printf 'NOTE e2egate skipped full sweep for %s\n' "$skipped" >&2; done
 for var in "${call_vars[@]}"; do
   declare -n local_args="$var"
   "$B/e2e.sh" "$slot" "${local_args[@]}"
