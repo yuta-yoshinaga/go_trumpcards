@@ -231,7 +231,7 @@ func (g *Shamrocks) GiveUp() {
 // GetMovableFans はいま動かせる扇のインデックスを返す。
 //
 // **盤全体に手があるかは、この集合が空かどうかと同じ問い。** 規則は 1 つ、
-// 呼ぶ側が 2 つ (`LegalTargets` と `hasAnyLegalMove`)。Web はサーバの `legalTargets` を読む (ADR-0045)。
+// 呼ぶ側が 2 つ (`hasAnyLegalMove` と、Web の presenter で `legalTargets` を作る `buildLegalTargets`。ADR-0045)。
 func (g *Shamrocks) GetMovableFans() []int {
 	idxs := make([]int, 0, len(g.fans))
 	for i := range g.fans {
