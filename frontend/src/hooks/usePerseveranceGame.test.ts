@@ -21,6 +21,7 @@ const mockExec = vi.mocked(perseveranceApi.exec);
 
 const baseState: PerseveranceResponse = {
   tableau: Array.from({ length: 13 }, () => []),
+  runStarts: Array.from({ length: 12 }, () => []),
   foundation: [[], [], [], []],
   phase: 0,
   moveCount: 0,
