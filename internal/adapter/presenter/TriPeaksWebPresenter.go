@@ -19,6 +19,7 @@ func (pr *TriPeaksWebPresenter) Output(t interfaces.TriPeaksGame, lastErr error)
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, t, int(t.GetPhase()))
 	resObj.StockCount = t.GetStockCount()
 	resObj.Score, resObj.Combo = t.GetScore(), t.GetCombo()
+	resObj.PlayableCells = triPeaksPlayableCellKeys(t.PlayableCells())
 
 	// ウェイスト
 	waste := t.GetWaste()
@@ -97,6 +98,7 @@ func (pr *TriPeaksWebPresenter) HintOutput(t interfaces.TriPeaksGame) string {
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, t, int(t.GetPhase()))
 	resObj.StockCount = t.GetStockCount()
 	resObj.Score, resObj.Combo = t.GetScore(), t.GetCombo()
+	resObj.PlayableCells = triPeaksPlayableCellKeys(t.PlayableCells())
 	resObj.Waste = make([]*controller.WebOutputCard, 0)
 	resObj.Layout = make([][]*controller.TriPeaksWebOutputCard, 0)
 
@@ -112,6 +114,14 @@ func (pr *TriPeaksWebPresenter) HintOutput(t interfaces.TriPeaksGame) string {
 	}
 
 	return marshalOrError(resObj)
+}
+
+func triPeaksPlayableCellKeys(cells [][2]int) []string {
+	keys := make([]string, 0, len(cells))
+	for _, cell := range cells {
+		keys = append(keys, fmt.Sprintf("%d-%d", cell[0], cell[1]))
+	}
+	return keys
 }
 
 // ActionLogOutput 棋譜をJSON出力

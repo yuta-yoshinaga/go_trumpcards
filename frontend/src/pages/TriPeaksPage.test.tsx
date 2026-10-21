@@ -59,6 +59,7 @@ function makeTestLayout(): TriPeaksCard[][] {
 }
 
 const playingState: TriPeaksResponse = {
+  playableCells: ['3-0'],
   layout: makeTestLayout(),
   stockCount: 20,
   waste: [card('CLOVER', 4)],
@@ -106,7 +107,7 @@ describe('TriPeaksPage playable summary', () => {
   });
 
   it('recommends a draw when nothing is playable and the stock still has cards', async () => {
-    mockExec.mockResolvedValue({ ...playingState, waste: [card('CLOVER', 9)] });
+    mockExec.mockResolvedValue({ ...playingState, playableCells: [], waste: [card('CLOVER', 9)] });
     renderWithProviders(<TriPeaksPage />);
     await waitFor(() => expect(screen.getByTestId('tp-playable')).toHaveTextContent('今出せるカード: 0枚'));
     expect(screen.getByTestId('tp-playable')).toHaveTextContent('ドロー推奨');
@@ -114,7 +115,7 @@ describe('TriPeaksPage playable summary', () => {
 
   // **山札が尽きていれば勧めない。**この枝を踏まないと、常に推奨する実装でも通る。
   it('does not recommend a draw once the stock is empty', async () => {
-    mockExec.mockResolvedValue({ ...playingState, waste: [card('CLOVER', 9)], stockCount: 0 });
+    mockExec.mockResolvedValue({ ...playingState, playableCells: [], waste: [card('CLOVER', 9)], stockCount: 0 });
     renderWithProviders(<TriPeaksPage />);
     await waitFor(() => expect(screen.getByTestId('tp-playable')).toHaveTextContent('今出せるカード: 0枚'));
     expect(screen.getByTestId('tp-playable')).not.toHaveTextContent('ドロー推奨');
@@ -129,7 +130,7 @@ describe('TriPeaksPage playable summary', () => {
   });
 
   it('announces when no cards can be removed after the stock is empty', async () => {
-    mockExec.mockResolvedValue({ ...playingState, waste: [card('CLOVER', 9)], stockCount: 0 });
+    mockExec.mockResolvedValue({ ...playingState, playableCells: [], waste: [card('CLOVER', 9)], stockCount: 0 });
     renderWithProviders(<TriPeaksPage />);
     await waitFor(() =>
       expect(screen.getByTestId('tp-stock-empty-guidance')).toHaveTextContent('山札切れ: 除去できるカードはありません'),
@@ -162,6 +163,15 @@ describe('TriPeaksPage', () => {
     expect(screen.getByLabelText(/♠ 5/)).toHaveClass('ring-ds-success/70');
     expect(screen.getByLabelText('♥ 6')).not.toHaveClass('ring-ds-success/70');
     expect(screen.getByLabelText('♦ 10')).not.toHaveClass('ring-ds-success/70');
+  });
+
+  it('follows server playableCells even when they contradict the client rule', async () => {
+    mockExec.mockResolvedValue({ ...playingState, playableCells: ['3-1'] });
+    renderWithProviders(<TriPeaksPage />);
+    await waitFor(() => expect(screen.getByLabelText(/♥ 6/)).toBeInTheDocument());
+    expect(screen.getByLabelText(/♥ 6/)).toHaveClass('ring-ds-success/70');
+    expect(screen.getByLabelText(/♠ 5/)).not.toHaveClass('ring-ds-success/70');
+    expect(screen.getByTestId('tp-playable')).toHaveTextContent('今出せるカード: 1枚');
   });
 
   it('prefers the hint ring over the playable ring on the same card', async () => {
@@ -203,7 +213,7 @@ describe('TriPeaksPage', () => {
   });
 
   it('shows no playable ring when the waste is empty', async () => {
-    mockExec.mockResolvedValue({ ...playingState, waste: [] });
+    mockExec.mockResolvedValue({ ...playingState, playableCells: [], waste: [] });
     renderWithProviders(<TriPeaksPage />);
     await waitFor(() => expect(screen.getByLabelText(/♠ 5/)).toBeInTheDocument());
     expect(screen.getByLabelText(/♠ 5/)).not.toHaveClass('ring-ds-success/70');

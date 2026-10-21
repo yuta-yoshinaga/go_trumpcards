@@ -12,17 +12,6 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-// triPeaksAdjacentRank reports whether two ranks differ by one, treating
-// King(13) and Ace(1) as adjacent (mirrors the domain's isAdjacentRank, which
-// is unexported, and the frontend's isTriPeaksAdjacent).
-func triPeaksAdjacentRank(v1, v2 int) bool {
-	diff := v1 - v2
-	if diff < 0 {
-		diff = -diff
-	}
-	return diff == 1 || diff == 12
-}
-
 // tripeaksComboMin is the chain length worth naming. It matches the web badge,
 // which appears from 2: a "combo" of 1 is just an ordinary removal.
 const tripeaksComboMin = 2
@@ -63,16 +52,12 @@ func (pr *TriPeaksCuiPresenter) Output(t interfaces.TriPeaksGame, lastErr error)
 	return buildCuiOutput(i18n.T("tripeaks.helpTitle"), func(b *strings.Builder) {
 		layout := t.GetLayout()
 
-		// Waste top drives the ±1 playable check for exposed tableau cards.
 		waste := t.GetWaste()
-		var wasteTop *domain.Card
-		if len(waste) > 0 {
-			wasteTop = waste[len(waste)-1]
-		}
 
 		// Count exposed tableau cards playable onto the current waste top so the
 		// summary line below can spare the player from scanning all four rows.
-		playableCount := 0
+		playableCells := t.PlayableCells()
+		playableCount := len(playableCells)
 
 		// Tableau (with row indent)
 		for row := range domain.TriPeaksRowCnt {
@@ -94,9 +79,8 @@ func (pr *TriPeaksCuiPresenter) Output(t interfaces.TriPeaksGame, lastErr error)
 				case !t.IsExposed(row, col):
 					// Blocked cards hide coordinates: they cannot be taken yet.
 					b.WriteString(i18n.Tf("tripeaks.blockedCard", "card", cuiCardStr(tc.Card)))
-				case wasteTop != nil && triPeaksAdjacentRank(tc.Card.GetValue(), wasteTop.GetValue()):
+				case containsTriPeaksCell(playableCells, row, col):
 					// Exposed and ±1 from the waste top: playable now (trailing *).
-					playableCount++
 					b.WriteString(i18n.Tf("tripeaks.playableCard",
 						"row", strconv.Itoa(row),
 						"col", strconv.Itoa(col),
@@ -178,6 +162,15 @@ func (pr *TriPeaksCuiPresenter) Output(t interfaces.TriPeaksGame, lastErr error)
 			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
 		}
 	})
+}
+
+func containsTriPeaksCell(cells [][2]int, row, col int) bool {
+	for _, cell := range cells {
+		if cell[0] == row && cell[1] == col {
+			return true
+		}
+	}
+	return false
 }
 
 // HintOutput emits the current TriPeaks hint.

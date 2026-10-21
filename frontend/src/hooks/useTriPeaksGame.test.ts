@@ -20,6 +20,7 @@ function createWrapper() {
 }
 
 const defaultState: TriPeaksResponse = {
+  playableCells: [],
   layout: [[{ card: null, removed: true, exposed: false }]],
   stockCount: 20,
   waste: [],
