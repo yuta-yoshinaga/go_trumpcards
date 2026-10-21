@@ -17,6 +17,7 @@ type ShamrocksWebPresenter struct{}
 func (p *ShamrocksWebPresenter) Output(g interfaces.ShamrocksGame, lastErr error) string {
 	resObj := p.buildBaseOutput(g)
 	p.fillBoard(resObj, g)
+	p.buildLegalTargets(resObj, g)
 
 	// **受動ヒントは Output() でも埋める。**盤面のリングなど `state.hint` を読む
 	// 分岐は、ヒントボタンを押していないときにも動く。ここで埋めないとそれらは
@@ -59,6 +60,7 @@ func (p *ShamrocksWebPresenter) Output(g interfaces.ShamrocksGame, lastErr error
 func (p *ShamrocksWebPresenter) HintOutput(g interfaces.ShamrocksGame) string {
 	resObj := p.buildBaseOutput(g)
 	p.fillBoard(resObj, g)
+	p.buildLegalTargets(resObj, g)
 	if hint := g.GetHint(); hint != nil {
 		resObj.Hint = &controller.ShamrocksWebOutputHint{
 			FromFan:      hint.FromFan,
@@ -91,11 +93,26 @@ func (p *ShamrocksWebPresenter) fillBoard(resObj *controller.ShamrocksWebOutput,
 	resObj.Foundation = pilesToOutputSH(foundation[:])
 }
 
+func (p *ShamrocksWebPresenter) buildLegalTargets(resObj *controller.ShamrocksWebOutput, g interfaces.ShamrocksGame) {
+	resObj.LegalTargets = make(map[string]controller.ShamrocksWebOutputTargets)
+	for _, fan := range g.GetMovableFans() {
+		fans, foundation := g.LegalTargets(fan)
+		if fans == nil {
+			fans = make([]int, 0)
+		}
+		if foundation == nil {
+			foundation = make([]int, 0)
+		}
+		resObj.LegalTargets[fmt.Sprintf("fan-%d", fan)] = controller.ShamrocksWebOutputTargets{Fan: fans, Foundation: foundation}
+	}
+}
+
 func (p *ShamrocksWebPresenter) buildBaseOutput(g interfaces.ShamrocksGame) *controller.ShamrocksWebOutput {
 	return &controller.ShamrocksWebOutput{
-		Phase:     int(g.GetPhase()),
-		MoveCount: g.GetMoveCount(),
-		CanUndo:   g.CanUndo(),
+		Phase:        int(g.GetPhase()),
+		MoveCount:    g.GetMoveCount(),
+		CanUndo:      g.CanUndo(),
+		LegalTargets: make(map[string]controller.ShamrocksWebOutputTargets),
 	}
 }
 

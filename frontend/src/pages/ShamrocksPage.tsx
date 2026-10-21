@@ -26,7 +26,6 @@ import { ShamrocksPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { hintCheckboxItem } from '../utils/settingsItems';
-import { fitsFoundation, shamrocksMovableFans } from '../utils/shamrocksLegalMove';
 
 /** Shamrocks tutorial step definitions. */
 const LL_TUTORIAL_STEPS: TutorialStep[] = [
@@ -135,9 +134,8 @@ function ShamrocksPageContent() {
   // **どの扇が動かせるかは、ヒント (4秒で消える) を押さないと分からなかった** (#5678)。
   // 同バッチの他ゲームと同じく「押す前に分かる」形にする。ヒントの強調とは別の
   // 控えめなリングにして、推奨手と混ざらないようにする。
-  const movableFans = shamrocksMovableFans(state.fans, state.foundation);
-  // **同じ走査を 2 度しない。** 動かせる扇が 1 つも無いことが「詰み」。
-  const hasLegalMove = movableFans.size > 0;
+  const movableFans = new Set(Object.keys(state.legalTargets).map((key) => Number(key.slice('fan-'.length))));
+  const hasLegalMove = Object.keys(state.legalTargets).length > 0;
   // **Shamrocks はリディールを持たない。** 合法手が尽きた時点でそれが詰みで、
   // 集め直して続ける道は無い。ラ・ベル・リュシー版はここを redealsLeft > 0 で
   // 出し分けていたが、この盤ではリディール自体が存在しないので分岐も要らない。
@@ -166,9 +164,8 @@ function ShamrocksPageContent() {
   // The move to highlight, only while the highlight is active.
   const hint = showHint ? state.hint : undefined;
   const hintFoundation = hint?.toFoundation === true;
-  const selectedCard = selected === null ? undefined : state.fans[selected]?.at(-1);
-  const foundationAcceptsSelected = (pile: Card[]) =>
-    selectedCard !== undefined && fitsFoundation(selectedCard, [pile]);
+  const foundationAcceptsSelected = (idx: number) =>
+    selected !== null && state.legalTargets[`fan-${selected}`]?.foundation.includes(idx) === true;
 
   // Picking a fan: first click selects the source; second click moves to that fan.
   const pickFan = (idx: number) => {
@@ -275,9 +272,9 @@ function ShamrocksPageContent() {
                 <button
                   type="button"
                   key={`fnd-${i}`}
-                  className={`flex min-h-[44px] min-w-[44px] items-center justify-center rounded ${foundationAcceptsSelected(pile) ? 'ring-1 ring-ds-success cursor-pointer' : ''}`}
-                  onClick={foundationAcceptsSelected(pile) ? sendToFoundation : undefined}
-                  disabled={!canAct || !foundationAcceptsSelected(pile)}
+                  className={`flex min-h-[44px] min-w-[44px] items-center justify-center rounded ${foundationAcceptsSelected(i) ? 'ring-1 ring-ds-success cursor-pointer' : ''}`}
+                  onClick={foundationAcceptsSelected(i) ? sendToFoundation : undefined}
+                  disabled={!canAct || !foundationAcceptsSelected(i)}
                   aria-label={
                     topCard
                       ? t('foundationAriaLabel', { card: cardAlt(topCard) })
