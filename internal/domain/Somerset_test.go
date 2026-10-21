@@ -78,6 +78,41 @@ func TestSomerset_Reset(t *testing.T) {
 	assert.Equal(t, 10, domain.SomersetTableauCnt)
 }
 
+func TestSomerset_LegalTargets(t *testing.T) {
+	t.Run("returns exactly the matching tableau and excludes its own column", func(t *testing.T) {
+		var tableau [domain.SomersetTableauCnt][]*domain.SomersetTableauCard
+		for col := range domain.SomersetTableauCnt {
+			tableau[col] = []*domain.SomersetTableauCard{makeSomersetTableauCard(domain.CardDesignSpade, 6)}
+		}
+		tableau[0] = []*domain.SomersetTableauCard{makeSomersetTableauCard(domain.CardDesignSpade, 5)}
+		tableau[1] = []*domain.SomersetTableauCard{makeSomersetTableauCard(domain.CardDesignHeart, 6)}
+		tableau[2] = []*domain.SomersetTableauCard{makeSomersetTableauCard(domain.CardDesignClover, 6)}
+		game := newTestSomerset()
+		game.SetTableau(tableau)
+		got, _ := game.LegalTargets(0)
+		assert.Equal(t, []int{1}, got)
+	})
+	t.Run("returns every accepting empty foundation for an ace", func(t *testing.T) {
+		var tableau [domain.SomersetTableauCnt][]*domain.SomersetTableauCard
+		var foundation [domain.SomersetFoundationCnt][]*domain.Card
+		tableau[0] = []*domain.SomersetTableauCard{makeSomersetTableauCard(domain.CardDesignSpade, 1)}
+		foundation[1] = []*domain.Card{domain.NewCard(domain.CardDesignHeart, 1, false)}
+		game := newTestSomerset()
+		game.SetTableau(tableau)
+		game.SetFoundation(foundation)
+		_, got := game.LegalTargets(0)
+		assert.Equal(t, []int{0, 2, 3}, got)
+	})
+	t.Run("empty and out-of-range columns return nil", func(t *testing.T) {
+		game := newTestSomerset()
+		for _, col := range []int{-1, 0, domain.SomersetTableauCnt} {
+			tableau, foundation := game.LegalTargets(col)
+			assert.Nil(t, tableau)
+			assert.Nil(t, foundation)
+		}
+	})
+}
+
 // seedSomersetAce puts the suit's Ace on foundation fIdx. Somerset deals every
 // card to the tableau, so any test about building a foundation has to place the
 // Ace itself -- Beleaguered Castle's Reset did that for free.

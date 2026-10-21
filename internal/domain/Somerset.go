@@ -277,6 +277,27 @@ func (bc *Somerset) canPlaceOnTableau(card *Card, col int) bool {
 		card.GetValue() == topCard.GetValue()-1
 }
 
+// LegalTargets は列 fromCol の一番下の札を置ける先を返す。
+func (bc *Somerset) LegalTargets(fromCol int) (tableau []int, foundation []int) {
+	if fromCol < 0 || fromCol >= SomersetTableauCnt || len(bc.tableau[fromCol]) == 0 {
+		return nil, nil
+	}
+	card := bc.tableau[fromCol][len(bc.tableau[fromCol])-1].Card
+	// 自分の列を明示的に飛ばす分岐は置かない。一番下の札自身に置けるかは
+	// canPlaceOnTableau が必ず false を返す。
+	for col := range SomersetTableauCnt {
+		if bc.canPlaceOnTableau(card, col) {
+			tableau = append(tableau, col)
+		}
+	}
+	for i := range SomersetFoundationCnt {
+		if canPlaceOnFoundationPile(bc.foundation[i], card) {
+			foundation = append(foundation, i)
+		}
+	}
+	return tableau, foundation
+}
+
 // somersetIsBlack reports whether a card is a spade or a club. Yukon has the
 // same predicate but as a method on its own type, so it cannot be reused.
 func somersetIsBlack(card *Card) bool {

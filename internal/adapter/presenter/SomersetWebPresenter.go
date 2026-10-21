@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -33,6 +34,7 @@ func (p *SomersetWebPresenter) Output(bc interfaces.SomersetGame, lastErr error)
 			}
 		}
 	}
+	resObj.LegalTargets = p.buildLegalTargets(bc)
 
 	// ファンデーション
 	foundation := bc.GetFoundation()
@@ -92,6 +94,7 @@ func (p *SomersetWebPresenter) HintOutput(bc interfaces.SomersetGame) string {
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, bc, int(bc.GetPhase()))
 	resObj.Tableau = make([][]*controller.SomersetWebOutputTableauCard, 0)
 	resObj.Foundation = make([][]*controller.WebOutputCard, 0)
+	resObj.LegalTargets = p.buildLegalTargets(bc)
 
 	if hint != nil {
 		resObj.Hint = &controller.SomersetWebOutputHint{
@@ -106,6 +109,28 @@ func (p *SomersetWebPresenter) HintOutput(bc interfaces.SomersetGame) string {
 	}
 
 	return marshalOrError(resObj)
+}
+
+func (p *SomersetWebPresenter) buildLegalTargets(g interfaces.SomersetGame) map[string]controller.SomersetWebOutputTargets {
+	out := make(map[string]controller.SomersetWebOutputTargets)
+	tableauState := g.GetTableau()
+	for col := 0; col < domain.SomersetTableauCnt; col++ {
+		if len(tableauState[col]) == 0 {
+			continue
+		}
+		tableau, foundation := g.LegalTargets(col)
+		if len(tableau) == 0 && len(foundation) == 0 {
+			continue
+		}
+		if tableau == nil {
+			tableau = []int{}
+		}
+		if foundation == nil {
+			foundation = []int{}
+		}
+		out["tableau-"+strconv.Itoa(col)] = controller.SomersetWebOutputTargets{Tableau: tableau, Foundation: foundation}
+	}
+	return out
 }
 
 // ActionLogOutput 棋譜をJSON出力

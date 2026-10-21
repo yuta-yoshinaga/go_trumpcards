@@ -22,6 +22,7 @@ const mockExec = vi.mocked(somersetApi.exec);
 const baseState: SomersetResponse = {
   tableau: Array.from({ length: 8 }, () => []),
   foundation: [[], [], [], []],
+  legalTargets: {},
   totalCardCount: 52,
   phase: 0,
   moveCount: 0,
