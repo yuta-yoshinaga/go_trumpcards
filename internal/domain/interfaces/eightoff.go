@@ -33,6 +33,10 @@ type EightOffGame interface {
 	GetFreeCells() [domain.EightOffCellCnt]*domain.Card
 	// GetFoundation ファンデーションを取得する
 	GetFoundation() [domain.EightOffFoundationCnt][]*domain.Card
+	// LegalTargetsFrom returns legal destinations for a tableau suffix.
+	LegalTargetsFrom(col, cardIndex int) ([]int, []int)
+	// FreeCellLegalTargets returns legal destinations for a free-cell card.
+	FreeCellLegalTargets(cell int) ([]int, []int)
 	// IsStalemate 手詰まり状態を取得する
 	IsStalemate() bool
 }

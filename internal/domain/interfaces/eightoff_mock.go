@@ -105,6 +105,30 @@ func (_m *MockEightOffGame) GetFoundation() [domain.EightOffFoundationCnt][]*dom
 	return ret.Get(0).([domain.EightOffFoundationCnt][]*domain.Card)
 }
 
+func (_m *MockEightOffGame) LegalTargetsFrom(col, cardIndex int) ([]int, []int) {
+	ret := _m.Called(col, cardIndex)
+	var tableau, foundation []int
+	if ret.Get(0) != nil {
+		tableau = ret.Get(0).([]int)
+	}
+	if ret.Get(1) != nil {
+		foundation = ret.Get(1).([]int)
+	}
+	return tableau, foundation
+}
+
+func (_m *MockEightOffGame) FreeCellLegalTargets(cell int) ([]int, []int) {
+	ret := _m.Called(cell)
+	var tableau, foundation []int
+	if ret.Get(0) != nil {
+		tableau = ret.Get(0).([]int)
+	}
+	if ret.Get(1) != nil {
+		foundation = ret.Get(1).([]int)
+	}
+	return tableau, foundation
+}
+
 func (_m *MockEightOffGame) GetActionLog() []*domain.ActionLogEntry {
 	ret := _m.Called()
 	v := ret.Get(0)

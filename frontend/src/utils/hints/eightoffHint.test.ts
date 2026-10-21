@@ -14,6 +14,7 @@ function card(design: Card['design'], value: number) {
 
 function makeState(overrides: Partial<EightOffResponse> = {}): EightOffResponse {
   return {
+    legalTargets: {},
     tableau: [
       [card(S, 7), card(S, 6)],
       [card(D, 10), card(D, 9)],
