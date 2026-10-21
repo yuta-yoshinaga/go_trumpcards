@@ -36,10 +36,6 @@ import { cardAlt } from '../utils/cardAlt';
 import { EIGHTOFF_HELP, parseEightOffCommand } from '../utils/cli/commands/eightoffCommands';
 import { formatEightoffState } from '../utils/cli/formatters/eightoffFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { eightOffAutoCompleteReady } from '../utils/eightOffAutoComplete';
-import { eightOffFoundationTarget } from '../utils/eightOffFoundationTarget';
-import { eightOffFreeCellTableauTargets } from '../utils/eightOffFreeCellTableauTargets';
-import { eightOffTableauTargets } from '../utils/eightOffTableauTargets';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
@@ -189,11 +185,11 @@ function EightOffPageContent() {
   // exists; otherwise do nothing (single-click selection is left untouched).
   // Mirrors the FreeCell / Easthaven foundation shortcut.
   const handleFoundationShortcut = useCallback(
-    (source: EightOffMoveZone, card: Card) => {
+    (source: EightOffMoveZone, key: string) => {
       if (!state) return;
-      const target = eightOffFoundationTarget(card, state.foundation);
-      if (!target) return;
-      dispatchMove(source, target);
+      const targetFoundation = state.legalTargets[key]?.foundation;
+      if (!targetFoundation || targetFoundation.length === 0) return;
+      dispatchMove(source, { zone: 'foundation', col: targetFoundation[0] });
     },
     [state, dispatchMove],
   );
@@ -215,7 +211,9 @@ function EightOffPageContent() {
   // Ready exactly when the sweep would move something. The BeleagueredCastle /
   // StreetsAndAlleys shortcut (`some(p => p.length > 1)`) does not transfer: their Reset
   // seeds the four aces onto the foundations, Eight Off's starts them empty.
-  const autoCompleteReady = state ? eightOffAutoCompleteReady(state.freeCells, state.tableau, state.foundation) : false;
+  const autoCompleteReady = state
+    ? Object.values(state.legalTargets).some((targets) => targets.foundation.length > 0)
+    : false;
 
   const actionBindings = useMemo(
     () => [
@@ -264,16 +262,16 @@ function EightOffPageContent() {
   const supermoveLimit = (1 + emptyFreeCells) * 2 ** emptyTableauCols;
   const tableauTargets =
     selectedSource?.zone === 'tableau' && selectedSource.col !== undefined && selectedSource.cardIndex !== undefined
-      ? eightOffTableauTargets(state.tableau, state.freeCells, selectedSource.col, selectedSource.cardIndex)
+      ? state.legalTargets[`tableau-${selectedSource.col}-${selectedSource.cardIndex}`]?.tableau || []
       : null;
   const tableauTargetLabels = tableauTargets?.map((column) => t('tableauColumnLabel', { column: column + 1 })) ?? [];
-  if (tableauTargets && selectedSource?.col !== undefined && selectedSource.cardIndex !== undefined) {
-    const selectedStack = state.tableau[selectedSource.col]?.slice(selectedSource.cardIndex) ?? [];
-    if (selectedStack.length === 1) {
-      const selectedCard = selectedStack[0];
-      const foundationTarget = selectedCard ? eightOffFoundationTarget(selectedCard, state.foundation) : null;
-      if (foundationTarget) tableauTargetLabels.push(t('foundation'));
-    }
+  if (
+    tableauTargets &&
+    selectedSource?.col !== undefined &&
+    selectedSource.cardIndex !== undefined &&
+    (state.legalTargets[`tableau-${selectedSource.col}-${selectedSource.cardIndex}`]?.foundation.length || 0) > 0
+  ) {
+    tableauTargetLabels.push(t('foundation'));
   }
   const tableauMoveGuide =
     tableauTargets === null
@@ -288,10 +286,14 @@ function EightOffPageContent() {
     selectedSource?.zone === 'freecell' && selectedSource.cell !== undefined
       ? state.freeCells[selectedSource.cell]
       : null;
-  const freeCellTargets = freeCellCard ? eightOffFreeCellTableauTargets(state.tableau, freeCellCard) : [];
-  const freeCellTargetLabels = freeCellTargets.map((column) => t('tableauColumnLabel', { column: column + 1 }));
-  if (freeCellCard && eightOffFoundationTarget(freeCellCard, state.foundation))
-    freeCellTargetLabels.push(t('foundation'));
+  const freeCellLegalTargets =
+    selectedSource?.zone === 'freecell' && selectedSource.cell !== undefined
+      ? state.legalTargets[`freecell-${selectedSource.cell}`]
+      : undefined;
+  const freeCellTargetLabels = (freeCellLegalTargets?.tableau || []).map((column) =>
+    t('tableauColumnLabel', { column: column + 1 }),
+  );
+  if ((freeCellLegalTargets?.foundation.length || 0) > 0) freeCellTargetLabels.push(t('foundation'));
   const freeCellMoveGuide =
     freeCellCard === null
       ? ''
@@ -395,7 +397,7 @@ function EightOffPageContent() {
                               if (e.detail >= 2) return;
                               handleSelectSource(freeCellZone);
                             }}
-                            onDoubleClick={() => handleFoundationShortcut(freeCellZone, card)}
+                            onDoubleClick={() => handleFoundationShortcut(freeCellZone, `freecell-${idx.toString()}`)}
                             disabled={!isPlaying || loading}
                             aria-label={cardAlt(card)}
                             aria-pressed={isSourceSelected('freecell', undefined, idx)}
@@ -584,7 +586,13 @@ function EightOffPageContent() {
                                       onDoubleClick={
                                         // Only a column's exposed top card can move
                                         // straight to a foundation.
-                                        isTopCard ? () => handleFoundationShortcut(cardZone, card) : undefined
+                                        isTopCard
+                                          ? () =>
+                                              handleFoundationShortcut(
+                                                cardZone,
+                                                `tableau-${colIdx.toString()}-${cardIdx.toString()}`,
+                                              )
+                                          : undefined
                                       }
                                       disabled={!isPlaying || loading}
                                       // 上限超過は title とリングだけで示していたので、

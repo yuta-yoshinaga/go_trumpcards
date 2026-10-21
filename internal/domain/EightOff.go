@@ -546,6 +546,48 @@ func (e *EightOff) canPlaceOnFoundation(card *Card, fIdx int) bool {
 	return canPlaceOnFoundationPile(e.foundation[fIdx], card)
 }
 
+// LegalTargetsFrom returns tableau destinations for a movable suffix and a foundation destination for its top card.
+func (e *EightOff) LegalTargetsFrom(col, cardIndex int) (tableau, foundation []int) {
+	if col < 0 || col >= EightOffTableauCnt || cardIndex < 0 || cardIndex >= len(e.tableau[col]) {
+		return []int{}, []int{}
+	}
+	moving := e.tableau[col][cardIndex:]
+	if !e.isValidTableauSequence(moving) {
+		return []int{}, []int{}
+	}
+	for toCol := 0; toCol < EightOffTableauCnt; toCol++ {
+		if toCol == col || len(moving) > e.maxMovableCards(toCol) || !e.canPlaceOnTableau(moving[0], toCol) {
+			continue
+		}
+		tableau = append(tableau, toCol)
+	}
+	if cardIndex == len(e.tableau[col])-1 {
+		fIdx := moving[0].GetDesign() - 1
+		if fIdx >= 0 && fIdx < EightOffFoundationCnt && e.canPlaceOnFoundation(moving[0], fIdx) {
+			foundation = []int{fIdx}
+		}
+	}
+	return tableau, foundation
+}
+
+// FreeCellLegalTargets returns tableau destinations and the foundation destination for a free-cell card.
+func (e *EightOff) FreeCellLegalTargets(cell int) (tableau, foundation []int) {
+	if cell < 0 || cell >= EightOffCellCnt || e.freeCells[cell] == nil {
+		return []int{}, []int{}
+	}
+	card := e.freeCells[cell]
+	for col := 0; col < EightOffTableauCnt; col++ {
+		if e.canPlaceOnTableau(card, col) {
+			tableau = append(tableau, col)
+		}
+	}
+	fIdx := card.GetDesign() - 1
+	if fIdx >= 0 && fIdx < EightOffFoundationCnt && e.canPlaceOnFoundation(card, fIdx) {
+		foundation = []int{fIdx}
+	}
+	return tableau, foundation
+}
+
 // isSameSuit 同じスートかどうか判定
 func (e *EightOff) isSameSuit(card1, card2 *Card) bool {
 	return card1.GetDesign() == card2.GetDesign()

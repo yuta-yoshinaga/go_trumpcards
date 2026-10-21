@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -17,6 +18,7 @@ type EightOffWebPresenter struct{}
 func (p *EightOffWebPresenter) Output(e interfaces.EightOffGame, lastErr error) string {
 	resObj := new(controller.EightOffWebOutput)
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, e, int(e.GetPhase()))
+	resObj.LegalTargets = p.buildLegalTargets(e)
 
 	// タブロー
 	tableau := e.GetTableau()
@@ -98,6 +100,7 @@ func (p *EightOffWebPresenter) HintOutput(e interfaces.EightOffGame) string {
 	resObj.FreeCells = make([]*controller.WebOutputCard, 0)
 	resObj.Tableau = make([][]*controller.WebOutputCard, 0)
 	resObj.Foundation = make([][]*controller.WebOutputCard, 0)
+	resObj.LegalTargets = p.buildLegalTargets(e)
 
 	if hint != nil {
 		resObj.Hint = &controller.EightOffWebOutputHint{
@@ -113,6 +116,42 @@ func (p *EightOffWebPresenter) HintOutput(e interfaces.EightOffGame) string {
 	}
 
 	return marshalOrError(resObj)
+}
+
+func (p *EightOffWebPresenter) buildLegalTargets(e interfaces.EightOffGame) map[string]controller.EightOffWebOutputTargets {
+	result := make(map[string]controller.EightOffWebOutputTargets)
+	for col, cards := range e.GetTableau() {
+		for index := range cards {
+			tab, foundation := e.LegalTargetsFrom(col, index)
+			if len(tab)+len(foundation) == 0 {
+				continue
+			}
+			if tab == nil {
+				tab = []int{}
+			}
+			if foundation == nil {
+				foundation = []int{}
+			}
+			result["tableau-"+strconv.Itoa(col)+"-"+strconv.Itoa(index)] = controller.EightOffWebOutputTargets{Tableau: tab, Foundation: foundation}
+		}
+	}
+	for cell, card := range e.GetFreeCells() {
+		if card == nil {
+			continue
+		}
+		tab, foundation := e.FreeCellLegalTargets(cell)
+		if len(tab)+len(foundation) == 0 {
+			continue
+		}
+		if tab == nil {
+			tab = []int{}
+		}
+		if foundation == nil {
+			foundation = []int{}
+		}
+		result["freecell-"+strconv.Itoa(cell)] = controller.EightOffWebOutputTargets{Tableau: tab, Foundation: foundation}
+	}
+	return result
 }
 
 // ActionLogOutput 棋譜をJSON出力
