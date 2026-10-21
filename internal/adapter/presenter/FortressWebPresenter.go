@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -33,6 +34,7 @@ func (p *FortressWebPresenter) Output(bc interfaces.FortressGame, lastErr error)
 			}
 		}
 	}
+	resObj.LegalTargets = p.buildLegalTargets(bc)
 
 	// ファンデーション
 	foundation := bc.GetFoundation()
@@ -91,6 +93,7 @@ func (p *FortressWebPresenter) HintOutput(bc interfaces.FortressGame) string {
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, bc, int(bc.GetPhase()))
 	resObj.Tableau = make([][]*controller.FortressWebOutputTableauCard, 0)
 	resObj.Foundation = make([][]*controller.WebOutputCard, 0)
+	resObj.LegalTargets = p.buildLegalTargets(bc)
 
 	if hint != nil {
 		resObj.Hint = &controller.FortressWebOutputHint{
@@ -105,6 +108,28 @@ func (p *FortressWebPresenter) HintOutput(bc interfaces.FortressGame) string {
 	}
 
 	return marshalOrError(resObj)
+}
+
+// buildLegalTargets returns server-computed destinations for movable source columns.
+func (p *FortressWebPresenter) buildLegalTargets(g interfaces.FortressGame) map[string]controller.FortressWebOutputTargets {
+	out := make(map[string]controller.FortressWebOutputTargets)
+	for col, cards := range g.GetTableau() {
+		if len(cards) == 0 {
+			continue
+		}
+		tableau, foundation := g.LegalTargets(col)
+		if len(tableau) == 0 && len(foundation) == 0 {
+			continue
+		}
+		if tableau == nil {
+			tableau = []int{}
+		}
+		if foundation == nil {
+			foundation = []int{}
+		}
+		out["tableau-"+strconv.Itoa(col)] = controller.FortressWebOutputTargets{Tableau: tableau, Foundation: foundation}
+	}
+	return out
 }
 
 // ActionLogOutput 棋譜をJSON出力

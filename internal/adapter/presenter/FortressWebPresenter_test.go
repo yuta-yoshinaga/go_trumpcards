@@ -32,6 +32,9 @@ func setupFortressWebMockDefaults(bg *interfaces.MockFortressGame) {
 		}
 	}
 	bg.On("GetTableau").Return(tableau).Maybe()
+	for col := 0; col < domain.FortressTableauCnt; col++ {
+		bg.On("LegalTargets", col).Return(nil, nil).Maybe()
+	}
 
 	var foundation [domain.FortressFoundationCnt][]*domain.Card
 	for i := range domain.FortressFoundationCnt {
@@ -125,6 +128,38 @@ func TestFortressWebPresenter_Output(t *testing.T) {
 		result := parseFortressOutput(t, p.Output(bg, nil))
 		assert.Equal(t, "fortress.stalemate", result.MessageCode)
 	})
+}
+
+func TestFortressWebPresenter_LegalTargets(t *testing.T) {
+	for _, output := range []struct {
+		name   string
+		render func(*FortressWebPresenter, interfaces.FortressGame) string
+	}{
+		{"Output", func(p *FortressWebPresenter, g interfaces.FortressGame) string { return p.Output(g, nil) }},
+		{"HintOutput", (*FortressWebPresenter).HintOutput},
+	} {
+		t.Run(output.name+" includes destinations", func(t *testing.T) {
+			g := new(interfaces.MockFortressGame)
+			setupFortressWebMockDefaults(g)
+			g.On("GetHint").Return(nil).Maybe()
+			g.ExpectedCalls = filterCalls(g.ExpectedCalls, "LegalTargets")
+			g.On("LegalTargets", 0).Return([]int{3}, []int{1}).Maybe()
+			for col := 1; col < domain.FortressTableauCnt; col++ {
+				g.On("LegalTargets", col).Return(nil, nil).Maybe()
+			}
+			var raw map[string]json.RawMessage
+			assert.NoError(t, json.Unmarshal([]byte(output.render(new(FortressWebPresenter), g)), &raw))
+			assert.JSONEq(t, `{"tableau-0":{"tableau":[3],"foundation":[1]}}`, string(raw["legalTargets"]))
+		})
+		t.Run(output.name+" omits sources without destinations", func(t *testing.T) {
+			g := new(interfaces.MockFortressGame)
+			setupFortressWebMockDefaults(g)
+			g.On("GetHint").Return(nil).Maybe()
+			var raw map[string]json.RawMessage
+			assert.NoError(t, json.Unmarshal([]byte(output.render(new(FortressWebPresenter), g)), &raw))
+			assert.JSONEq(t, `{}`, string(raw["legalTargets"]))
+		})
+	}
 }
 
 // **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の

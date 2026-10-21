@@ -77856,6 +77856,23 @@ components:
               type: string
             toCol:
               type: integer
+        legalTargets:
+          type: object
+          description: 'Legal destinations for each source column, keyed by source id ("tableau-0").'
+          additionalProperties:
+            type: object
+            description: "Where that source may move, by destination kind."
+            properties:
+              tableau:
+                type: array
+                description: "Tableau column indices the card may move to."
+                items:
+                  type: integer
+              foundation:
+                type: array
+                description: "Foundation pile indices the card may move to."
+                items:
+                  type: integer
         message:
           type: string
         messageCode:
