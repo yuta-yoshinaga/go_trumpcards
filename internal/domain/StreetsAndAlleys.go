@@ -382,6 +382,26 @@ func (sa *StreetsAndAlleys) canPlaceOnTableau(card *Card, col int) bool {
 	return card.GetValue() == topCard.GetValue()-1
 }
 
+// LegalTargets は列 fromCol の一番下の札を置ける先を返す。
+// 判定には既存の canPlaceOnTableau と findFoundation を使い、規則を二重に持たない。
+func (sa *StreetsAndAlleys) LegalTargets(fromCol int) (tableau []int, foundation []int) {
+	if fromCol < 0 || fromCol >= StreetsAndAlleysTableauCnt || len(sa.tableau[fromCol]) == 0 {
+		return nil, nil
+	}
+	card := sa.tableau[fromCol][len(sa.tableau[fromCol])-1].Card
+	// 自分の列を飛ばす分岐は不要。一番下の札は自分自身なので、canPlaceOnTableau
+	// は必ず false を返す。
+	for col := range StreetsAndAlleysTableauCnt {
+		if sa.canPlaceOnTableau(card, col) {
+			tableau = append(tableau, col)
+		}
+	}
+	if fIdx := sa.findFoundation(card); fIdx >= 0 {
+		foundation = []int{fIdx}
+	}
+	return tableau, foundation
+}
+
 // canPlaceOnFoundation ファンデーションにカードを置けるか判定
 func (sa *StreetsAndAlleys) canPlaceOnFoundation(card *Card, fIdx int) bool {
 	return canPlaceOnFoundationPile(sa.foundation[fIdx], card)

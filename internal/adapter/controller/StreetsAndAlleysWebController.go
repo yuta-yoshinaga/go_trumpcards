@@ -38,11 +38,18 @@ type StreetsAndAlleysWebOutputHint struct {
 
 // StreetsAndAlleysWebOutput Streets and Alleys Web アウトプット
 type StreetsAndAlleysWebOutput struct {
-	Tableau    [][]*StreetsAndAlleysWebOutputTableauCard `json:"tableau"`
-	Foundation [][]*WebOutputCard                        `json:"foundation"`
-	Hint       *StreetsAndAlleysWebOutputHint            `json:"hint,omitempty"`
+	Tableau      [][]*StreetsAndAlleysWebOutputTableauCard   `json:"tableau"`
+	Foundation   [][]*WebOutputCard                          `json:"foundation"`
+	LegalTargets map[string]StreetsAndAlleysWebOutputTargets `json:"legalTargets"`
+	Hint         *StreetsAndAlleysWebOutputHint              `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase
+}
+
+// StreetsAndAlleysWebOutputTargets は移動元から置ける先。
+type StreetsAndAlleysWebOutputTargets struct {
+	Tableau    []int `json:"tableau"`
+	Foundation []int `json:"foundation"`
 }
 
 // StreetsAndAlleysWebController Streets and Alleys Web コントローラークラス
@@ -58,6 +65,7 @@ func newStreetsAndAlleysDefaultOutput(msg string) *StreetsAndAlleysWebOutput {
 	return &StreetsAndAlleysWebOutput{
 		Tableau:       make([][]*StreetsAndAlleysWebOutputTableauCard, 0),
 		Foundation:    make([][]*WebOutputCard, 0),
+		LegalTargets:  make(map[string]StreetsAndAlleysWebOutputTargets),
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }

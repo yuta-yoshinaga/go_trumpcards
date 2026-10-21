@@ -44,6 +44,7 @@ const playingState: StreetsAndAlleysResponse = {
     [],
   ]),
   foundation: [[card('SPADE', 1)], [card('CLOVER', 1)], [card('HEART', 1)], [card('DIAMOND', 1)]],
+  legalTargets: { 'tableau-0': { tableau: [1, 2, 3, 4, 5, 6, 7], foundation: [] } },
   phase: 0,
   moveCount: 3,
   canUndo: false,
@@ -204,6 +205,7 @@ describe('StreetsAndAlleysPage', () => {
         [{ card: card('SPADE', 5), faceUp: true }],
         ...Array.from({ length: 7 }, () => [{ card: card('HEART', 3), faceUp: true }]),
       ]),
+      legalTargets: {},
     });
     renderWithProviders(<StreetsAndAlleysPage />);
     fireEvent.click(await screen.findByRole('button', { name: /^♠ 5/ }));
@@ -228,6 +230,7 @@ describe('StreetsAndAlleysPage', () => {
         [],
         [],
       ]),
+      legalTargets: { 'tableau-0': { tableau: [1, 2, 3, 4, 5, 6, 7], foundation: [0] } },
     };
     mockExec.mockResolvedValue(previewState);
     renderWithProviders(<StreetsAndAlleysPage />);
@@ -285,6 +288,7 @@ describe('StreetsAndAlleysPage', () => {
         [],
       ]),
       foundation: [[], [card('CLOVER', 1)], [card('HEART', 1)], [card('DIAMOND', 1)]],
+      legalTargets: { 'tableau-0': { tableau: [], foundation: [0] } },
     };
     mockExec.mockResolvedValue(emptyFoundationState);
     renderWithProviders(<StreetsAndAlleysPage />);
@@ -560,6 +564,7 @@ describe('StreetsAndAlleysPage', () => {
         [],
         [],
       ]),
+      legalTargets: { 'tableau-0': { tableau: [1, 3, 4, 5, 6, 7], foundation: [] } },
     });
     renderWithProviders(<StreetsAndAlleysPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
@@ -597,6 +602,7 @@ describe('StreetsAndAlleysPage', () => {
         [],
         [],
       ]),
+      legalTargets: { 'tableau-1': { tableau: [], foundation: [0] } },
     });
     renderWithProviders(<StreetsAndAlleysPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
@@ -606,6 +612,17 @@ describe('StreetsAndAlleysPage', () => {
       const rung = screen.getAllByLabelText(/組札/).filter((f) => f.hasAttribute('data-target-candidate'));
       expect(rung).toHaveLength(1);
     });
+  });
+
+  it('follows server targets when they contradict the local rule mirror', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      legalTargets: { 'tableau-0': { tableau: [2], foundation: [] } },
+    });
+    renderWithProviders(<StreetsAndAlleysPage />);
+    fireEvent.click(await screen.findByRole('button', { name: /^♠ 5/ }));
+    expect(screen.getByRole('button', { name: '空のタブロー列2' })).toHaveAttribute('data-target-candidate', 'true');
+    expect(screen.getByRole('button', { name: '♥ 6、タブロー列1' })).not.toHaveAttribute('data-target-candidate');
   });
 });
 

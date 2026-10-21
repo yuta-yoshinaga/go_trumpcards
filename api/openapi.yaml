@@ -82119,6 +82119,21 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/Card'
+        legalTargets:
+          type: object
+          description: 'Legal destinations for each source column, keyed by source id ("tableau-0").'
+          additionalProperties:
+            type: object
+            description: "Where that source may move, by destination kind."
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         hint:
           type: object
           properties:

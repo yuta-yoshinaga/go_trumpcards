@@ -21,6 +21,8 @@ export interface StreetsAndAlleysHint {
 export interface StreetsAndAlleysResponse extends BaseGameResponse {
   tableau: StreetsAndAlleysTableauCard[][];
   foundation: Card[][];
+  /** Legal destinations for each source column, keyed as `"tableau-0"`. The server derives these from the game's placement rules. */
+  legalTargets: Record<string, { tableau: number[]; foundation: number[] }>;
   phase: number;
   moveCount: number;
   canUndo: boolean;

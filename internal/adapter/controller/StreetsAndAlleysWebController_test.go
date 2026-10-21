@@ -17,6 +17,7 @@ func mustStreetsAndAlleysOutputJSON(msg string) string {
 	out := &controller.StreetsAndAlleysWebOutput{
 		Tableau:       [][]*controller.StreetsAndAlleysWebOutputTableauCard{},
 		Foundation:    [][]*controller.WebOutputCard{},
+		LegalTargets:  map[string]controller.StreetsAndAlleysWebOutputTargets{},
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
@@ -27,7 +28,7 @@ func mustStreetsAndAlleysOutputJSON(msg string) string {
 }
 
 func TestStreetsAndAlleysWebController_Method(t *testing.T) {
-	mockOutput := `{"tableau":[],"foundation":[],"phase":0,"moveCount":0,"message":""}`
+	mockOutput := `{"tableau":[],"foundation":[],"legalTargets":{},"phase":0,"moveCount":0,"message":""}`
 	expectedBody := mockOutput
 
 	biMock := new(usecase.MockStreetsAndAlleysInteractor)
