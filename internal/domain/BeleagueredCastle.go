@@ -392,6 +392,26 @@ func (bc *BeleagueredCastle) canPlaceOnFoundation(card *Card, fIdx int) bool {
 	return canPlaceOnFoundationPile(bc.foundation[fIdx], card)
 }
 
+// LegalTargets returns every tableau column and foundation pile that accepts the top card of fromCol.
+func (bc *BeleagueredCastle) LegalTargets(fromCol int) (tableau []int, foundation []int) {
+	if fromCol < 0 || fromCol >= BeleagueredCastleTableauCnt || len(bc.tableau[fromCol]) == 0 {
+		return nil, nil
+	}
+	card := bc.tableau[fromCol][len(bc.tableau[fromCol])-1].Card
+	// No explicit own-column skip is needed: a column's top card cannot be placed on itself.
+	for col := range BeleagueredCastleTableauCnt {
+		if bc.canPlaceOnTableau(card, col) {
+			tableau = append(tableau, col)
+		}
+	}
+	for f := range BeleagueredCastleFoundationCnt {
+		if bc.canPlaceOnFoundation(card, f) {
+			foundation = append(foundation, f)
+		}
+	}
+	return tableau, foundation
+}
+
 // findFoundation カードを置けるファンデーションのインデックスを探す（見つからない場合-1）
 func (bc *BeleagueredCastle) findFoundation(card *Card) int {
 	for i := range BeleagueredCastleFoundationCnt {

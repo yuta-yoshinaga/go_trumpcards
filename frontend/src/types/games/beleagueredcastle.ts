@@ -21,6 +21,8 @@ export interface BeleagueredCastleHint {
 export interface BeleagueredCastleResponse extends BaseGameResponse {
   tableau: BeleagueredCastleTableauCard[][];
   foundation: Card[][];
+  /** Legal destinations per tableau source, keyed as `tableau-<col>`. */
+  legalTargets: Record<string, { tableau: number[]; foundation: number[] }>;
   phase: number;
   moveCount: number;
   canUndo: boolean;
