@@ -218,6 +218,20 @@ describe('PanPage', () => {
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
   });
 
+  it('prevents score table headers and dealer badge from wrapping', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<PanPage />);
+
+    const scoreTable = await screen.findByTestId('pan-score-table');
+    const headers = within(scoreTable).getAllByRole('columnheader');
+    expect(headers).toHaveLength(5);
+    for (const header of headers) {
+      expect(header).toHaveClass('whitespace-nowrap');
+    }
+
+    expect(within(scoreTable).getByText('ディーラー')).toHaveClass('whitespace-nowrap');
+  });
+
   it('keeps CPU melds and their chip units inside the CPU accordion', async () => {
     mockExec.mockResolvedValue(valleMeldState);
     const originalWidth = window.innerWidth;
