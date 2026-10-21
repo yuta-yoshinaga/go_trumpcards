@@ -35,7 +35,6 @@ import { cardAlt } from '../utils/cardAlt';
 import { FORTRESS_HELP, parseFortressCommand } from '../utils/cli/commands/fortressCommands';
 import { formatFortressState } from '../utils/cli/formatters/fortressFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { fortressLegalTargets } from '../utils/fortressLegalTargets';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
@@ -207,13 +206,14 @@ function FortressPageContent() {
   // **枠を出すだけで、押せなくはしない。**押せなくすると E2E の
   // 「最初の列をクリック」が別の列を掴んでしまう。
   // **選ぶ前に行き先が見える (#4454)。** hover / フォーカス中の札にも、選択後と
-  // まったく同じ計算を当てる ── 判定を二重に持たないので食い違わない。
+  // 同じサーバー由来の集合を当てる。判定は Fortress.go の canPlaceOn* が計算する (ADR-0045)。
   const previewSource = preview.source;
-  const previewedCard =
-    previewSource?.zone === 'tableau' && previewSource.col !== undefined && previewSource.cardIndex !== undefined
-      ? state.tableau[previewSource.col]?.[previewSource.cardIndex]?.card
-      : undefined;
-  const legalTargets = fortressLegalTargets(state.tableau, state.foundation, previewedCard);
+  const legalForSource =
+    previewSource?.zone === 'tableau' ? state.legalTargets[`tableau-${previewSource.col}`] : undefined;
+  const legalTargets = {
+    tableau: new Set(legalForSource?.tableau ?? []),
+    foundation: new Set(legalForSource?.foundation ?? []),
+  };
   /** Ring for a legal destination: softer while it is only a hover preview. */
   const targetRing = preview.isPreview ? ' rounded ring-2 ring-ds-success/70' : ' rounded ring-2 ring-ds-success';
 

@@ -17,6 +17,7 @@ func mustFortressOutputJSON(msg string) string {
 	out := &controller.FortressWebOutput{
 		Tableau:       [][]*controller.FortressWebOutputTableauCard{},
 		Foundation:    [][]*controller.WebOutputCard{},
+		LegalTargets:  map[string]controller.FortressWebOutputTargets{},
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
