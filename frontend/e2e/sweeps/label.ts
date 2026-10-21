@@ -1,5 +1,6 @@
 import { expect, type Page, test } from '@playwright/test';
 import { isAllowedLabelWrap } from '../../src/utils/labelWrapAllowlist';
+import { waitForAnimations } from '../helpers';
 
 /**
  * Guards #11824: short labels can wrap in the middle of a word when squeezed.
@@ -7,6 +8,14 @@ import { isAllowedLabelWrap } from '../../src/utils/labelWrapAllowlist';
  * characters land on different lines; whitespace line wraps are allowed.
  */
 export async function checkLabel(page: Page, path: string, viewport: { width: number; height: number }): Promise<void> {
+  let settled = true;
+  try {
+    await waitForAnimations(page);
+  } catch {
+    settled = false;
+  }
+  expect.soft(settled, `Label check: ${path}: animations did not settle`).toBe(true);
+
   const result = await page.evaluate(
     ({ minLength, maxLength, topTolerance, minOpacity }) => {
       const out: string[] = [];
