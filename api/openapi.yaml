@@ -78085,6 +78085,19 @@ components:
         redealUsed:
           type: boolean
           description: "True once the single permitted redeal has been taken."
+        legalTargets:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         message:
           type: string
 

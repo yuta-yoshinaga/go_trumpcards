@@ -45,6 +45,7 @@ const playingState: FortyAndEightResponse = {
   stockCount: 60,
   waste: [card('CLOVER', 3)],
   foundation: [[], [], [], [], [], [], [], []],
+  legalTargets: {},
   redealUsed: false,
   canRedeal: false,
   phase: 0,
@@ -95,6 +96,7 @@ const aceWasteState: FortyAndEightResponse = {
   ...playingState,
   waste: [card('SPADE', 1)],
   foundation: [[], [], [], [], [], [], [], []],
+  legalTargets: { waste: { tableau: [], foundation: [0, 1, 2, 3, 4, 5, 6, 7] } },
 };
 
 // Waste holds ♠2 and foundation pile 0 tops out at ♠A, so only pile 0 is a legal target (#3288).
@@ -102,6 +104,7 @@ const singleTargetState: FortyAndEightResponse = {
   ...playingState,
   waste: [card('SPADE', 2)],
   foundation: [[card('SPADE', 1)], [], [], [], [], [], [], []],
+  legalTargets: { waste: { tableau: [], foundation: [0] } },
 };
 
 const withHintState: FortyAndEightResponse = {
@@ -548,6 +551,7 @@ describe('FortyAndEightPage', () => {
       ]),
       waste: [card('SPADE', 12)], // ♠Q
       foundation: [[], [], [], [], [], [], [], []],
+      legalTargets: { waste: { tableau: [0, 3], foundation: [] } },
     };
     mockExec.mockResolvedValue(tableauState);
     const { container } = renderWithProviders(<FortyAndEightPage />);
@@ -585,6 +589,52 @@ describe('FortyAndEightPage', () => {
     expect(spadeJackButton.className).not.toContain('ring-ds-info');
   });
 
+  it('uses server destinations even when they disagree with the card rules', async () => {
+    const disagreement: FortyAndEightResponse = {
+      ...playingState,
+      legalTargets: { waste: { tableau: [6], foundation: [4] } },
+    };
+    mockExec.mockResolvedValue(disagreement);
+    const { container } = renderWithProviders(<FortyAndEightPage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+    fireEvent.click(screen.getByAltText('♣ 3').closest('button') as HTMLButtonElement);
+    await waitFor(() => {
+      expect(container.querySelectorAll('[data-eligible-tableau="true"]')).toHaveLength(1);
+      expect(container.querySelectorAll('[data-eligible-foundation="true"]')).toHaveLength(1);
+    });
+    expect(container.querySelectorAll('[data-eligible-tableau="true"]')[0]).toBeInTheDocument();
+  });
+
+  it('shows no destinations for a buried tableau selection but shows them for the top card', async () => {
+    const stackedState: FortyAndEightResponse = {
+      ...playingState,
+      tableau: makeTableau([
+        [
+          { card: card('HEART', 4), faceUp: true },
+          { card: card('CLOVER', 9), faceUp: true },
+          { card: card('SPADE', 13), faceUp: true },
+        ],
+      ]),
+      legalTargets: { 'tableau-0': { tableau: [1], foundation: [0] } },
+    };
+    mockExec.mockResolvedValue(stackedState);
+    const { container } = renderWithProviders(<FortyAndEightPage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+
+    const buriedButton = screen.getByAltText('♥ 4').closest('button') as HTMLButtonElement;
+    fireEvent.click(buriedButton);
+    await waitFor(() => expect(buriedButton).toHaveAttribute('aria-pressed', 'true'));
+    expect(container.querySelectorAll('[data-eligible-tableau="true"]')).toHaveLength(0);
+    expect(container.querySelectorAll('[data-eligible-foundation="true"]')).toHaveLength(0);
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+    fireEvent.click(screen.getByAltText('♠ K').closest('button') as HTMLButtonElement);
+    await waitFor(() => {
+      expect(container.querySelectorAll('[data-eligible-tableau="true"]')).toHaveLength(1);
+      expect(container.querySelectorAll('[data-eligible-foundation="true"]')).toHaveLength(1);
+    });
+  });
+
   // 列に札が積まれている状態でしか `isTop` の分岐は効かない。1列1枚の盤面では
   // どの札も最上段なので、ガードを消しても全テストが通ってしまう（実測）。
   it('rings only the top card of a stacked column, not the cards buried under it', async () => {
@@ -607,6 +657,7 @@ describe('FortyAndEightPage', () => {
       ]),
       waste: [card('SPADE', 12)],
       foundation: [[], [], [], [], [], [], [], []],
+      legalTargets: { waste: { tableau: [0], foundation: [] } },
     };
     mockExec.mockResolvedValue(stackedState);
     const { container } = renderWithProviders(<FortyAndEightPage />);

@@ -421,6 +421,61 @@ func TestFortyAndEight_MoveTableauToTableau(t *testing.T) {
 	})
 }
 
+func TestFortyAndEight_LegalTargets(t *testing.T) {
+	ft := newTestFortyAndEight()
+	clearF8Tableau(ft)
+	var tableau [domain.FortyAndEightTableauCnt][]*domain.FortyAndEightTableauCard
+	tableau[0] = []*domain.FortyAndEightTableauCard{makeF8TableauCard(domain.CardDesignSpade, 1)}
+	tableau[2] = []*domain.FortyAndEightTableauCard{makeF8TableauCard(domain.CardDesignSpade, 9)}
+	ft.SetTableau(tableau)
+	var foundation [domain.FortyAndEightFoundationCnt][]*domain.Card
+	foundation[0] = []*domain.Card{makeF8Card(domain.CardDesignSpade, 1)}
+	foundation[1] = []*domain.Card{makeF8Card(domain.CardDesignSpade, 1)}
+	ft.SetFoundation(foundation)
+	tableauTargets, foundationTargets := ft.LegalTargets(0)
+	assert.Equal(t, []int{1, 3, 4, 5, 6, 7}, tableauTargets)    // empty columns; excludes source
+	assert.Equal(t, []int{2, 3, 4, 5, 6, 7}, foundationTargets) // every empty foundation accepts an ace
+	assert.Empty(t, func() []int { a, _ := ft.LegalTargets(7); return a }())
+
+	ft.SetWaste([]*domain.Card{makeF8Card(domain.CardDesignHeart, 1)})
+	tableauTargets, foundationTargets = ft.WasteLegalTargets()
+	assert.Equal(t, []int{1, 3, 4, 5, 6, 7}, tableauTargets)
+	assert.Equal(t, []int{2, 3, 4, 5, 6, 7}, foundationTargets)
+	ft.SetWaste(nil)
+	tableauTargets, foundationTargets = ft.WasteLegalTargets()
+	assert.Empty(t, tableauTargets)
+	assert.Empty(t, foundationTargets)
+}
+
+func TestFortyAndEight_LegalTargets_RuleCases(t *testing.T) {
+	ft := newTestFortyAndEight()
+	clearF8Tableau(ft)
+	var tableau [domain.FortyAndEightTableauCnt][]*domain.FortyAndEightTableauCard
+	tableau[0] = []*domain.FortyAndEightTableauCard{makeF8TableauCard(domain.CardDesignSpade, 8)}
+	tableau[1] = []*domain.FortyAndEightTableauCard{makeF8TableauCard(domain.CardDesignSpade, 9)}
+	tableau[2] = []*domain.FortyAndEightTableauCard{makeF8TableauCard(domain.CardDesignHeart, 9)}
+	tableau[3] = []*domain.FortyAndEightTableauCard{makeF8TableauCard(domain.CardDesignSpade, 7)}
+	ft.SetTableau(tableau)
+	tableauTargets, _ := ft.LegalTargets(0)
+	assert.Equal(t, []int{1, 4, 5, 6, 7}, tableauTargets)
+
+	var foundation [domain.FortyAndEightFoundationCnt][]*domain.Card
+	foundation[0] = []*domain.Card{makeF8Card(domain.CardDesignSpade, 7)}
+	foundation[1] = []*domain.Card{makeF8Card(domain.CardDesignSpade, 6)}
+	foundation[2] = []*domain.Card{makeF8Card(domain.CardDesignHeart, 7)}
+	foundation[3] = []*domain.Card{makeF8Card(domain.CardDesignSpade, 7)}
+	ft.SetFoundation(foundation)
+	_, foundationTargets := ft.LegalTargets(0)
+	assert.Equal(t, []int{0, 3}, foundationTargets)
+
+	// A non-Ace can use any empty tableau column, while no empty foundation accepts it.
+	ft.SetTableau([domain.FortyAndEightTableauCnt][]*domain.FortyAndEightTableauCard{})
+	ft.SetWaste([]*domain.Card{makeF8Card(domain.CardDesignClover, 5)})
+	tableauTargets, foundationTargets = ft.WasteLegalTargets()
+	assert.Equal(t, []int{0, 1, 2, 3, 4, 5, 6, 7}, tableauTargets)
+	assert.Empty(t, foundationTargets)
+}
+
 func TestFortyAndEight_MoveTableauToFoundation(t *testing.T) {
 	t.Run("move ace to foundation", func(t *testing.T) {
 		ft := newTestFortyAndEight()

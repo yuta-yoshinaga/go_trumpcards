@@ -47,6 +47,18 @@ func (_m *MockFortyAndEightGame) MoveTableauToFoundation(col int) error {
 	return ret.Error(0)
 }
 
+// LegalTargets mocks the domain's LegalTargets method.
+func (_m *MockFortyAndEightGame) LegalTargets(col int) ([]int, []int) {
+	ret := _m.Called(col)
+	return ret.Get(0).([]int), ret.Get(1).([]int)
+}
+
+// WasteLegalTargets mocks the domain's WasteLegalTargets method.
+func (_m *MockFortyAndEightGame) WasteLegalTargets() ([]int, []int) {
+	ret := _m.Called()
+	return ret.Get(0).([]int), ret.Get(1).([]int)
+}
+
 func (_m *MockFortyAndEightGame) GiveUp() {
 	_m.Called()
 }
