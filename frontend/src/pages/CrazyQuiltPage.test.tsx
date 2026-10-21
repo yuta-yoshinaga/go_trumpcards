@@ -38,6 +38,7 @@ const playingState: CrazyQuiltResponse = {
   foundation: Array.from({ length: 8 }, () => []),
   stockCount: 32,
   waste: [],
+  legalTargets: {},
   phase: 0,
   moveCount: 3,
   canUndo: false,
@@ -62,6 +63,18 @@ describe('CrazyQuiltPage', () => {
     await waitFor(() => expect(screen.getByTestId('cq-cell-0')).toBeInTheDocument());
     expect(screen.getByTestId('cq-cell-63')).toBeInTheDocument();
     expect(screen.queryByTestId('cq-cell-64')).not.toBeInTheDocument();
+  });
+
+  it('uses server destinations even when they disagree with the former client rule', async () => {
+    const state = { ...playingState, legalTargets: { 'quilt-0': { foundation: [7], waste: false } } };
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<CrazyQuiltPage />);
+    await waitFor(() => expect(screen.getByTestId('cq-cell-0')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('cq-cell-0'));
+    await waitFor(() =>
+      expect(screen.getByTestId('cq-foundation-7')).toHaveAttribute('data-valid-destination', 'true'),
+    );
+    expect(screen.getByTestId('cq-foundation-0')).not.toHaveAttribute('data-valid-destination');
   });
 
   it('shows foundation progress and updates it after a card moves there', async () => {
@@ -216,7 +229,11 @@ describe('CrazyQuiltPage', () => {
   });
 
   it('announces and highlights only legal destinations for the selected quilt card', async () => {
-    mockExec.mockResolvedValue({ ...playingState, waste: [card('CLOVER', 2)] });
+    mockExec.mockResolvedValue({
+      ...playingState,
+      waste: [card('CLOVER', 2)],
+      legalTargets: { 'quilt-0': { foundation: [], waste: true } },
+    });
     renderWithProviders(<CrazyQuiltPage />);
     const source = await screen.findByTestId('cq-cell-0');
     fireEvent.click(source);
@@ -235,7 +252,12 @@ describe('CrazyQuiltPage', () => {
   it('announces foundation destinations for a selected waste card', async () => {
     const foundation = Array.from({ length: 8 }, () => [] as Card[]);
     foundation[2] = [card('HEART', 7)];
-    mockExec.mockResolvedValue({ ...playingState, foundation, waste: [card('HEART', 8)] });
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation,
+      waste: [card('HEART', 8)],
+      legalTargets: { waste: { foundation: [2], waste: false } },
+    });
     renderWithProviders(<CrazyQuiltPage />);
 
     const waste = await screen.findByTestId('cq-waste');

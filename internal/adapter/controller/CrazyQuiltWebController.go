@@ -30,6 +30,12 @@ type CrazyQuiltWebOutputHint struct {
 	ToIdx    int    `json:"toIdx"`
 }
 
+// CrazyQuiltWebOutputTargets contains server-computed destinations for one source.
+type CrazyQuiltWebOutputTargets struct {
+	Foundation []int `json:"foundation"`
+	Waste      bool  `json:"waste"`
+}
+
 // CrazyQuiltWebOutput クレイジーキルト Web アウトプット
 type CrazyQuiltWebOutput struct {
 	// Quilt はマス番号順（row*8+col）。取り除いたマスは null。
@@ -40,11 +46,12 @@ type CrazyQuiltWebOutput struct {
 	// FoundationAscending は基礎札ごとの向き。true が A→K、false が K→A。
 	FoundationAscending []bool `json:"foundationAscending"`
 	// RedealsLeft は残りの組み直し回数。
-	RedealsLeft int                      `json:"redealsLeft"`
-	Foundation  [][]*WebOutputCard       `json:"foundation"`
-	StockCount  int                      `json:"stockCount"`
-	Waste       []*WebOutputCard         `json:"waste"`
-	Hint        *CrazyQuiltWebOutputHint `json:"hint,omitempty"`
+	RedealsLeft  int                                   `json:"redealsLeft"`
+	Foundation   [][]*WebOutputCard                    `json:"foundation"`
+	StockCount   int                                   `json:"stockCount"`
+	Waste        []*WebOutputCard                      `json:"waste"`
+	LegalTargets map[string]CrazyQuiltWebOutputTargets `json:"legalTargets"`
+	Hint         *CrazyQuiltWebOutputHint              `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase
 }
@@ -65,6 +72,7 @@ func newCrazyQuiltDefaultOutput(msg string) *CrazyQuiltWebOutput {
 		FoundationAscending: make([]bool, 0),
 		Foundation:          make([][]*WebOutputCard, 0),
 		Waste:               make([]*WebOutputCard, 0),
+		LegalTargets:        make(map[string]CrazyQuiltWebOutputTargets),
 		WebOutputBase:       WebOutputBase{Message: msg},
 	}
 }

@@ -35,7 +35,6 @@ import { CRAZYQUILT_HELP, parseCrazyQuiltCommand } from '../utils/cli/commands/c
 import { formatCrazyQuiltState } from '../utils/cli/formatters/crazyquiltFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isCrazyQuiltVertical } from '../utils/crazyQuiltCells';
-import { crazyQuiltLegalTargets } from '../utils/crazyQuiltLegalTargets';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦', '♠', '♣', '♥', '♦'] as const;
@@ -175,30 +174,25 @@ function CrazyQuiltPageContent() {
   const isSourceSelected = (zone: string, col?: number) =>
     selectedSource !== null && selectedSource.zone === zone && selectedSource.col === col;
 
-  const wasteTop = state.waste.length > 0 ? state.waste[state.waste.length - 1] : null;
   const wasteZone: CrazyQuiltMoveZone = { zone: 'waste' };
+  const wasteTop = state.waste.length > 0 ? state.waste[state.waste.length - 1] : null;
   // キルトの札を選んでいる間だけ、捨て札が置き先になる。
   const quiltSelected = selectedSource?.zone === 'quilt';
-  const selectedCard =
+  const sourceTargets =
     selectedSource?.zone === 'quilt'
-      ? state.quilt[selectedSource.col ?? -1]
+      ? state.legalTargets[`quilt-${selectedSource.col}`]
       : selectedSource?.zone === 'waste'
-        ? wasteTop
-        : null;
-  const legalTargets = crazyQuiltLegalTargets(
-    state.foundation,
-    state.foundationAscending,
-    wasteTop,
-    selectedCard,
-    selectedSource?.zone === 'quilt',
-  );
-  const canReachWaste = legalTargets.waste;
-  const validFoundationTargets = legalTargets.foundation;
+        ? state.legalTargets.waste
+        : undefined;
+  const canReachWaste = sourceTargets?.waste === true;
+  const validFoundationTargets = sourceTargets?.foundation;
   const destinationSummary = selectedSource
     ? t('keyboardDestinations', {
         destinations: (() => {
           const destinations = [
-            ...validFoundationTargets.flatMap((valid, idx) => (valid ? [t('frontendHint.foundation', { idx })] : [])),
+            ...(validFoundationTargets
+              ? validFoundationTargets.map((idx) => t('frontendHint.foundation', { idx }))
+              : []),
             ...(canReachWaste ? [t('frontendHint.waste')] : []),
           ];
           return destinations.length > 0 ? destinations.join(t('listSeparator')) : t('noKeyboardDestinations');
@@ -323,8 +317,9 @@ function CrazyQuiltPageContent() {
                               ascending ? 'foundationAscendingAriaLabel' : 'foundationDescendingAriaLabel',
                               { suit: FOUNDATION_SUITS[idx], idx, count: pile.length },
                             )}
-                            data-valid-destination={validFoundationTargets[idx] ? 'true' : undefined}
-                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${validFoundationTargets[idx] ? 'ring-2 ring-ds-success' : ''}`}
+                            data-valid-destination={validFoundationTargets?.includes(idx) ? 'true' : undefined}
+                            data-testid={`cq-foundation-${idx}`}
+                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${validFoundationTargets?.includes(idx) ? 'ring-2 ring-ds-success' : ''}`}
                           >
                             <AnimatedCard
                               card={pile[pile.length - 1]}
@@ -345,8 +340,9 @@ function CrazyQuiltPageContent() {
                               { suit: FOUNDATION_SUITS[idx], idx },
                             )}
                             style={{ width: dims.cw, height: dims.ch }}
-                            data-valid-destination={validFoundationTargets[idx] ? 'true' : undefined}
-                            className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite} ${validFoundationTargets[idx] ? 'ring-2 ring-ds-success' : ''}`}
+                            data-valid-destination={validFoundationTargets?.includes(idx) ? 'true' : undefined}
+                            data-testid={`cq-foundation-${idx}`}
+                            className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite} ${validFoundationTargets?.includes(idx) ? 'ring-2 ring-ds-success' : ''}`}
                           >
                             {/* 空の組札は「何から始まるか」がそのまま次に要る札。 */}
                             {ascending ? 'A' : 'K'}

@@ -17,6 +17,8 @@ export interface CrazyQuiltHint {
 
 /** Full Crazy Quilt game state returned from the API. */
 export interface CrazyQuiltResponse extends BaseGameResponse {
+  /** Server-computed destinations keyed by source. Quilt keys use row-major `row * 8 + col` indices (0..63). */
+  legalTargets: Record<string, { foundation: number[]; waste: boolean }>;
   /**
    * The 64 quilt cells in row-major order (`row * 8 + col`). A cell whose card
    * has been taken is `null`.

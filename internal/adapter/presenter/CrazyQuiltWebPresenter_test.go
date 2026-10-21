@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -22,6 +23,9 @@ func setupCrazyQuiltWebMockDefaults(g *interfaces.MockCrazyQuiltGame) {
 	g.On("UndoToEscape").Return(0).Maybe()
 	g.On("GetStockCount").Return(32).Maybe()
 	g.On("GetWaste").Return([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 9, true)}).Maybe()
+	g.On("LegalTargets", 0).Return([]int{2}, true).Maybe()
+	g.On("LegalTargets", mock.Anything).Return([]int{}, false).Maybe()
+	g.On("WasteLegalTargets").Return([]int{1}).Maybe()
 
 	// キルトは 64 マス。マス 5 だけ空けて、空きマスの描画も踏む。
 	var quilt [domain.CrazyQuiltCells]*domain.Card
@@ -78,6 +82,9 @@ func TestCrazyQuiltWebPresenter_Output(t *testing.T) {
 			result.FoundationAscending)
 		assert.Len(t, result.Foundation, domain.CrazyQuiltFoundationCnt)
 		assert.Len(t, result.Waste, 1)
+		assert.Equal(t, []int{2}, result.LegalTargets["quilt-0"].Foundation)
+		assert.True(t, result.LegalTargets["quilt-0"].Waste)
+		assert.Equal(t, []int{1}, result.LegalTargets["waste"].Foundation)
 		assert.Equal(t, "crazyquilt.playing", result.MessageCode)
 	})
 
@@ -163,7 +170,37 @@ func TestCrazyQuiltWebPresenter_HintOutput(t *testing.T) {
 		result := parseCrazyQuiltOutput(t, new(CrazyQuiltWebPresenter).HintOutput(g))
 		assert.Nil(t, result.Hint)
 		assert.Equal(t, "crazyquilt.noHint", result.MessageCode)
+		assert.Contains(t, result.LegalTargets, "quilt-0")
 	})
+}
+
+func TestCrazyQuiltWebPresenter_LegalTargetsEmpty(t *testing.T) {
+	g := new(interfaces.MockCrazyQuiltGame)
+	setupCrazyQuiltOutputMock(g)
+	g.ExpectedCalls = filterCalls(g.ExpectedCalls, "LegalTargets")
+	g.ExpectedCalls = filterCalls(g.ExpectedCalls, "WasteLegalTargets")
+	g.On("LegalTargets", mock.Anything).Return([]int{}, false).Maybe()
+	g.On("WasteLegalTargets").Return([]int{})
+
+	assert.Empty(t, parseCrazyQuiltOutput(t, new(CrazyQuiltWebPresenter).Output(g, nil)).LegalTargets)
+	assert.Empty(t, parseCrazyQuiltOutput(t, new(CrazyQuiltWebPresenter).HintOutput(g)).LegalTargets)
+}
+
+func TestCrazyQuiltWebPresenter_LegalTargetsNormalizesNilFoundation(t *testing.T) {
+	g := new(interfaces.MockCrazyQuiltGame)
+	setupCrazyQuiltOutputMock(g)
+	g.ExpectedCalls = filterCalls(g.ExpectedCalls, "LegalTargets")
+	g.ExpectedCalls = filterCalls(g.ExpectedCalls, "WasteLegalTargets")
+	g.On("LegalTargets", 1).Return([]int(nil), true)
+	g.On("LegalTargets", mock.Anything).Return([]int{}, false).Maybe()
+	g.On("WasteLegalTargets").Return([]int{})
+
+	for _, result := range []string{
+		new(CrazyQuiltWebPresenter).Output(g, nil),
+		new(CrazyQuiltWebPresenter).HintOutput(g),
+	} {
+		assert.Equal(t, []int{}, parseCrazyQuiltOutput(t, result).LegalTargets["quilt-1"].Foundation)
+	}
 }
 
 func TestCrazyQuiltWebPresenter_ActionLogOutput(t *testing.T) {
