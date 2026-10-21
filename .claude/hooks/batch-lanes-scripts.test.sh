@@ -566,9 +566,11 @@ make_e2egate_case() {
   git init -q "$repo"; git -C "$repo" config user.email test@example.com; git -C "$repo" config user.name test
   printf "export const gameRoutes = [{ path: '/wrong' }, { path: '/poker', page: 'Poker' }, { path: '/', page: 'BlackJack' }];\n" > "$repo/frontend/src/constants/gameRoutes.ts"
   for spec in desktop-board-visibility desktop-hand-visibility game-message-visibility mobile-viewport text-contrast route-sweep poker poker-paytable-mobile pokerx; do touch "$repo/frontend/e2e/$spec.spec.ts"; done
-  mkdir -p "$repo/frontend/src/components" "$repo/frontend/src/i18n/locales/en"
+  mkdir -p "$repo/frontend/src/components" "$repo/frontend/src/i18n/locales/en" "$repo/frontend/src/types" "$repo/frontend/src/utils"
   printf "import { helper } from './helpers';\n" > "$repo/frontend/e2e/poker.spec.ts"
   touch "$repo/frontend/e2e/helpers.ts" "$repo/frontend/src/components/Other.tsx" "$repo/frontend/src/i18n/locales/en/common.json" "$repo/frontend/src/components/a.test.tsx"
+  printf 'export interface Thing { name: string }\nexport const runtime = true;\n' > "$repo/frontend/src/types/index.ts"
+  printf 'export const helper = true;\n' > "$repo/frontend/src/utils/obsolete.ts"
   touch "$repo/frontend/src/pages/PokerPage.tsx" "$repo/frontend/src/components/GameFooter.tsx" "$repo/frontend/base.ts"
   git -C "$repo" add .
   tree=$(git -C "$repo" write-tree)
@@ -583,6 +585,9 @@ make_e2egate_case() {
     spec) printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/e2e/poker.spec.ts" ;;
     ignored) printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/src/i18n/locales/en/common.json"; printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/src/components/a.test.tsx" ;;
     missing) rm "$wtroot/wt-ib1/frontend/e2e/route-sweep.spec.ts"; printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/src/components/Other.tsx" ;;
+    deleted_type_page) rm "$wtroot/wt-ib1/frontend/src/utils/obsolete.ts"; printf '\nexport type Other = string;\n' >> "$wtroot/wt-ib1/frontend/src/types/index.ts"; printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/src/pages/PokerPage.tsx" ;;
+    type_runtime) sed -i 's/export const runtime = true;/export const runtime = false;/' "$wtroot/wt-ib1/frontend/src/types/index.ts" ;;
+    deleted_component) rm "$wtroot/wt-ib1/frontend/src/utils/obsolete.ts"; printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/src/components/Other.tsx" ;;
   esac
   if [[ "$changed" == missing ]]; then
     error="$tmp/e2egate-missing.err"
@@ -596,7 +601,7 @@ make_e2egate_case() {
     return
   fi
   output=$(E2E_SWEEP_REPEAT=3 BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$SCRIPTS/e2egate.sh" --dry-run 1) || fail "e2egate $name dry-run failed"
-  if [[ "$changed" == shared || "$changed" == component ]]; then
+  if [[ "$changed" == shared || "$changed" == component || "$changed" == type_runtime || "$changed" == deleted_component ]]; then
     for spec in desktop-board-visibility desktop-hand-visibility game-message-visibility mobile-viewport text-contrast route-sweep; do grep -q "e2e/$spec.spec.ts" <<< "$output" || fail "sweep omitted $spec: $output"; done
   elif [[ "$changed" == page ]]; then
     grep -q 'run 1: e2e/poker.spec.ts$' <<< "$output" || fail "page game spec has grep or was omitted: $output"
@@ -621,6 +626,12 @@ STUB
     E2E_SWEEP_REPEAT=1 E2EGATE_ARGS="$tmp/e2egate-args-$name" BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$exec_scripts/e2egate.sh" 1 || fail "page e2egate repeat=1 execution failed"
     ! grep -q -- '--repeat-each' "$tmp/e2egate-args-$name" || fail "repeat=1 added repeat arg"
     ! grep -q 'e2e/e2e/' "$tmp/e2egate-args-$name" || fail "page execution doubled e2e prefix"
+  elif [[ "$changed" == deleted_type_page ]]; then
+    grep -q '^run 1: e2e/poker.spec.ts$' <<< "$output" || fail "page game spec omitted with deleted/type-only changes: $output"
+    grep -qF -- '--grep /poker\b --pass-with-no-tests --repeat-each=3' <<< "$output" || fail "page route-filtered sweep omitted for deleted/type-only changes: $output"
+    [[ $(grep -c '^run ' <<< "$output") == 3 ]] || fail "deleted/type-only changes triggered an unfiltered sweep: $output"
+    grep -q 'NOTE e2egate skipped full sweep for frontend/src/utils/obsolete.ts (deleted source)' <<< "$output" || fail "deleted source note omitted: $output"
+    grep -q 'NOTE e2egate skipped full sweep for frontend/src/types/index.ts (type-only diff)' <<< "$output" || fail "type-only note omitted: $output"
   elif [[ "$changed" == helper ]]; then
     grep -q 'run 1: e2e/poker.spec.ts' <<< "$output" || fail "helper edit omitted importing spec: $output"
     [[ $(grep -c '^run ' <<< "$output") == 1 ]] || fail "helper edit selected non-importing specs: $output"
@@ -649,6 +660,9 @@ make_e2egate_case helper helper
 make_e2egate_case ignored ignored
 make_e2egate_case empty none
 make_e2egate_case missing missing
+make_e2egate_case deleted-type-page deleted_type_page
+make_e2egate_case types-runtime type_runtime
+make_e2egate_case deleted-component deleted_component
 
 # Removed route references are repeated; moves are excluded, including during full sweeps.
 (
