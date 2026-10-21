@@ -665,3 +665,48 @@ func TestCitadel_GetHint_SkipsSingletonToEmptyColumn(t *testing.T) {
 		assert.True(t, c.IsStalemate())
 	})
 }
+
+func TestCitadel_LegalTargets(t *testing.T) {
+	c := newTestCitadel()
+	c.Reset()
+	clearCitadelTableau(c)
+	var tableau [domain.CitadelTableauCnt][]*domain.CitadelTableauCard
+	tableau[0] = []*domain.CitadelTableauCard{makeCitadelTableauCard(domain.CardDesignHeart, 4)}
+	tableau[1] = []*domain.CitadelTableauCard{makeCitadelTableauCard(domain.CardDesignSpade, 5)}
+	for col := 2; col < domain.CitadelTableauCnt; col++ {
+		tableau[col] = []*domain.CitadelTableauCard{makeCitadelTableauCard(domain.CardDesignClover, 9)}
+	}
+	c.SetTableau(tableau)
+	var foundation [domain.CitadelFoundationCnt][]*domain.Card
+	foundation[0] = []*domain.Card{makeCitadelCard(domain.CardDesignSpade, 1)}
+	foundation[1] = []*domain.Card{makeCitadelCard(domain.CardDesignClover, 1)}
+	foundation[2] = []*domain.Card{makeCitadelCard(domain.CardDesignHeart, 1)}
+	foundation[3] = []*domain.Card{makeCitadelCard(domain.CardDesignDiamond, 1)}
+	c.SetFoundation(foundation)
+
+	t.Run("lists only the fitting tableau column", func(t *testing.T) {
+		tab, found := c.LegalTargets(0)
+		assert.Equal(t, []int{1}, tab)
+		assert.Empty(t, found)
+		assert.NotContains(t, tab, 0, "the source column is never a destination")
+	})
+
+	t.Run("ace lists every empty foundation", func(t *testing.T) {
+		tableau[0] = []*domain.CitadelTableauCard{makeCitadelTableauCard(domain.CardDesignSpade, 1)}
+		c.SetTableau(tableau)
+		c.SetFoundation([domain.CitadelFoundationCnt][]*domain.Card{})
+		_, found := c.LegalTargets(0)
+		assert.Equal(t, []int{0, 1, 2, 3}, found)
+	})
+
+	t.Run("empty or out of range source returns nil slices", func(t *testing.T) {
+		tab, found := c.LegalTargets(3)
+		assert.Nil(t, tab)
+		assert.Nil(t, found)
+		for _, col := range []int{-1, domain.CitadelTableauCnt} {
+			tab, found = c.LegalTargets(col)
+			assert.Nil(t, tab)
+			assert.Nil(t, found)
+		}
+	})
+}

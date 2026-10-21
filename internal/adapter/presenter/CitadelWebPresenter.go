@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -33,6 +34,8 @@ func (p *CitadelWebPresenter) Output(bc interfaces.CitadelGame, lastErr error) s
 			}
 		}
 	}
+
+	resObj.LegalTargets = p.buildLegalTargets(bc)
 
 	// ファンデーション
 	foundation := bc.GetFoundation()
@@ -84,6 +87,29 @@ func (p *CitadelWebPresenter) Output(bc interfaces.CitadelGame, lastErr error) s
 	return marshalOrError(resObj)
 }
 
+// buildLegalTargets returns the domain's legal destinations for every source column.
+func (p *CitadelWebPresenter) buildLegalTargets(g interfaces.CitadelGame) map[string]controller.CitadelWebOutputTargets {
+	out := make(map[string]controller.CitadelWebOutputTargets)
+	tableauState := g.GetTableau()
+	for col := 0; col < domain.CitadelTableauCnt; col++ {
+		if len(tableauState[col]) == 0 {
+			continue
+		}
+		tableau, foundation := g.LegalTargets(col)
+		if len(tableau) == 0 && len(foundation) == 0 {
+			continue
+		}
+		if tableau == nil {
+			tableau = []int{}
+		}
+		if foundation == nil {
+			foundation = []int{}
+		}
+		out["tableau-"+strconv.Itoa(col)] = controller.CitadelWebOutputTargets{Tableau: tableau, Foundation: foundation}
+	}
+	return out
+}
+
 // HintOutput ヒントをJSON出力
 func (p *CitadelWebPresenter) HintOutput(bc interfaces.CitadelGame) string {
 	hint := bc.GetHint()
@@ -91,6 +117,7 @@ func (p *CitadelWebPresenter) HintOutput(bc interfaces.CitadelGame) string {
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, bc, int(bc.GetPhase()))
 	resObj.Tableau = make([][]*controller.CitadelWebOutputTableauCard, 0)
 	resObj.Foundation = make([][]*controller.WebOutputCard, 0)
+	resObj.LegalTargets = p.buildLegalTargets(bc)
 
 	if hint != nil {
 		resObj.Hint = &controller.CitadelWebOutputHint{
