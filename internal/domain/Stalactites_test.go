@@ -32,6 +32,59 @@ func setupPlayingStalactites() *Stalactites {
 	return f
 }
 
+func TestStalactitesLegalTargets(t *testing.T) {
+	f := setupPlayingStalactites()
+	f.baseRank = 8
+	clearTableauFCStal(f)
+	clearCellsStal(f)
+	var tableau [StalactitesTableauCnt][]*Card
+	tableau[0] = []*Card{makeCardStal(CardDesignSpade, 8)}
+	tableau[1] = []*Card{makeCardStal(CardDesignHeart, 9)}
+	f.SetTableau(tableau)
+	var foundation [StalactitesFoundationCnt][]*Card
+	foundation[0] = []*Card{makeCardStal(CardDesignDiamond, 7)}
+	foundation[1] = []*Card{makeCardStal(CardDesignClover, 7)}
+	f.SetFoundation(foundation)
+	tab, piles := f.LegalTargetsFrom(0)
+	assert.Equal(t, []int{1, 2, 3, 4, 5, 6, 7}, tab)
+	assert.Equal(t, []int{0}, piles, "continue an existing pile before opening an empty one; suits are ignored")
+	badTab, badFoundation := f.LegalTargetsFrom(-1)
+	assert.Nil(t, badTab)
+	assert.Nil(t, badFoundation)
+	f.SetCells([StalactitesCellCnt]*Card{makeCardStal(CardDesignSpade, 8)})
+	cellTab, cellFoundation := f.CellLegalTargets(0)
+	assert.Equal(t, []int{1, 2, 3, 4, 5, 6, 7}, cellTab)
+	assert.Equal(t, []int{0}, cellFoundation)
+	badTab, badFoundation = f.CellLegalTargets(StalactitesCellCnt)
+	assert.Nil(t, badTab)
+	assert.Nil(t, badFoundation)
+}
+
+func TestStalactitesLegalTargetsFoundationRules(t *testing.T) {
+	f := setupPlayingStalactites()
+	f.baseRank = 7
+	var tableau [StalactitesTableauCnt][]*Card
+	var foundation [StalactitesFoundationCnt][]*Card
+	tableau[0] = []*Card{makeCardStal(CardDesignHeart, 7)}
+	f.SetTableau(tableau)
+	_, target := f.LegalTargetsFrom(0)
+	assert.Equal(t, []int{0}, target, "any suit can open the first empty pile at the base rank")
+	tableau[0][0] = makeCardStal(CardDesignSpade, 1)
+	f.SetTableau(tableau)
+	_, target = f.LegalTargetsFrom(0)
+	assert.Empty(t, target, "Ace has no special status when the base rank is seven")
+	foundation[0] = []*Card{makeCardStal(CardDesignSpade, 13)}
+	f.SetFoundation(foundation)
+	tableau[0][0] = makeCardStal(CardDesignClover, 1)
+	f.SetTableau(tableau)
+	_, target = f.LegalTargetsFrom(0)
+	assert.Equal(t, []int{0}, target, "King wraps to Ace regardless of suit")
+	tableau[0][0] = makeCardStal(CardDesignClover, 2)
+	f.SetTableau(tableau)
+	_, target = f.LegalTargetsFrom(0)
+	assert.Empty(t, target, "only the wrapped Ace follows a King")
+}
+
 // clearCellsStal empties the four stalactite cells.
 //
 // Stalactites deals INTO the cells, so unlike FreeCell there is no free cell at

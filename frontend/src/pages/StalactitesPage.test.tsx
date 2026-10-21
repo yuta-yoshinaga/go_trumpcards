@@ -23,6 +23,7 @@ const mockExec = vi.mocked(stalactitesApi.exec);
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 
 const playingState: StalactitesResponse = {
+  legalTargets: {},
   tableau: [[card('SPADE', 13)], [card('HEART', 12)], [], [], [], [], [], []],
   baseRank: 1,
   cells: [null, null, null, null],
@@ -455,6 +456,8 @@ describe('StalactitesPage', () => {
       ...playingState,
       tableau: [[card('SPADE', 2)], [], [], [], [], [], [], []],
       foundation: [[card('SPADE', 1)], [], [], []],
+      // Server intentionally chooses another accepting pile than the old client rule.
+      legalTargets: { 'tableau-0': { tableau: [], foundation: [2] } },
     });
     renderWithProviders(<StalactitesPage />);
     const cardImg = await screen.findByAltText('♠ 2');
@@ -466,7 +469,7 @@ describe('StalactitesPage', () => {
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', expect.objectContaining({ zone: 'tableau', col: 0 }), {
         zone: 'foundation',
-        col: 0,
+        col: 2,
       }),
     );
   });
@@ -476,6 +479,7 @@ describe('StalactitesPage', () => {
       ...playingState,
       tableau: [[card('SPADE', 13)], [], [], [], [], [], [], []],
       foundation: [[], [], [], []],
+      legalTargets: {},
     });
     renderWithProviders(<StalactitesPage />);
     const cardImg = await screen.findByAltText('♠ K');
@@ -493,6 +497,7 @@ describe('StalactitesPage', () => {
       baseRank: 1,
       cells: [card('SPADE', 1), null, null, null],
       foundation: [[], [], [], []],
+      legalTargets: { 'stalactites-0': { tableau: [], foundation: [0] } },
     });
     renderWithProviders(<StalactitesPage />);
     const cardImg = await screen.findByAltText('♠ A');

@@ -16,6 +16,7 @@ import (
 
 func mustStalactitesOutputJSON(msg string) string {
 	out := &controller.StalactitesWebOutput{
+		LegalTargets:  map[string]controller.StalactitesWebOutputTargets{},
 		Tableau:       [][]*controller.WebOutputCard{},
 		Cells:         []*controller.WebOutputCard{},
 		Foundation:    [][]*controller.WebOutputCard{},

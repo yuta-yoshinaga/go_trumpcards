@@ -14,6 +14,7 @@ export interface StalactitesHint {
 
 /** Full Stalactites game state returned from the API. */
 export interface StalactitesResponse extends BaseGameResponse {
+  legalTargets: Record<string, { tableau: number[]; foundation: number[] }>;
   tableau: (Card | null)[][];
   cells: (Card | null)[];
   foundation: Card[][];

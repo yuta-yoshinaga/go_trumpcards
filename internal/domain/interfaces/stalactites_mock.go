@@ -13,6 +13,16 @@ type MockStalactitesGame struct {
 	mock.Mock
 }
 
+func (_m *MockStalactitesGame) LegalTargetsFrom(col int) ([]int, []int) {
+	ret := _m.Called(col)
+	return ret.Get(0).([]int), ret.Get(1).([]int)
+}
+
+func (_m *MockStalactitesGame) CellLegalTargets(cell int) ([]int, []int) {
+	ret := _m.Called(cell)
+	return ret.Get(0).([]int), ret.Get(1).([]int)
+}
+
 func (_m *MockStalactitesGame) Reset() {
 	_m.Called()
 }

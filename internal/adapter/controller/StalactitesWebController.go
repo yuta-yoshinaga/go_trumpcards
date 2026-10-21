@@ -34,9 +34,10 @@ type StalactitesWebOutputHint struct {
 
 // StalactitesWebOutput フリーセルWebアウトプット
 type StalactitesWebOutput struct {
-	Tableau    [][]*WebOutputCard `json:"tableau"`
-	Cells      []*WebOutputCard   `json:"cells"`
-	Foundation [][]*WebOutputCard `json:"foundation"`
+	LegalTargets map[string]StalactitesWebOutputTargets `json:"legalTargets"`
+	Tableau      [][]*WebOutputCard                     `json:"tableau"`
+	Cells        []*WebOutputCard                       `json:"cells"`
+	Foundation   [][]*WebOutputCard                     `json:"foundation"`
 	// MaxMovableCards / MaxMovableCardsToEmptyColumn はドメインが決めた上限を
 	// そのまま運ぶ。フロントで数え直すと、空き列を経由地に使えない分の差
 	// (ドメインの maxMovableCards(toCol)) が抜け、動かせない束を「動かせる」と
@@ -52,6 +53,12 @@ type StalactitesWebOutput struct {
 	WebOutputBase
 }
 
+// StalactitesWebOutputTargets lists tableau and foundation destinations.
+type StalactitesWebOutputTargets struct {
+	Tableau    []int `json:"tableau"`
+	Foundation []int `json:"foundation"`
+}
+
 // StalactitesWebController フリーセルWebコントローラークラス
 type StalactitesWebController = GameWebController[usecase.StalactitesInteractorIF, StalactitesWebInput, *StalactitesWebOutput]
 
@@ -63,6 +70,7 @@ var NewStalactitesWebController, NewStalactitesWebControllerWithProvider = webCo
 
 func newStalactitesDefaultOutput(msg string) *StalactitesWebOutput {
 	return &StalactitesWebOutput{
+		LegalTargets:  map[string]StalactitesWebOutputTargets{},
 		Tableau:       make([][]*WebOutputCard, 0),
 		Cells:         make([]*WebOutputCard, 0),
 		Foundation:    make([][]*WebOutputCard, 0),
