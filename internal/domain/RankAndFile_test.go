@@ -1069,6 +1069,21 @@ func TestRankAndFile_LegalTargetsFromAndWasteLegalTargets(t *testing.T) {
 	assert.Len(t, found, 1)
 }
 
+func TestRankAndFile_LegalTargetsFromFoundationAndEmptyWaste(t *testing.T) {
+	ft := setupPlayingRankAndFile()
+	clearRFTableau(ft)
+	var tableau [domain.RankAndFileTableauCnt][]*domain.RankAndFileTableauCard
+	tableau[0] = []*domain.RankAndFileTableauCard{makeRFTableauCard(domain.CardDesignHeart, 1)}
+	ft.SetTableau(tableau)
+
+	_, foundation := ft.LegalTargetsFrom(0, 0)
+	assert.Equal(t, []int{0}, foundation, "an ace can start the first empty foundation")
+
+	tab, foundation := ft.WasteLegalTargets()
+	assert.Nil(t, tab, "empty waste has no tableau targets")
+	assert.Nil(t, foundation, "empty waste has no foundation targets")
+}
+
 // **CUI の短縮形が届くこと。**`m <from> <to>` は cardIndex に -1 を渡す
 // (コントローラのコメントどおり「上札を動かす」の意)。範囲チェックが素直に
 // -1 を弾くと、ヘルプに載っている短縮形が必ず "invalid card index" で失敗する。

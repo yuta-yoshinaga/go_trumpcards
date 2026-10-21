@@ -284,3 +284,72 @@ func TestRankAndFileWebPresenter_SequenceStartsNeverNull(t *testing.T) {
 		assert.Empty(t, starts)
 	}
 }
+
+func TestRankAndFileWebPresenter_LegalTargets(t *testing.T) {
+	t.Run("tableau and waste targets use empty arrays for nil zones", func(t *testing.T) {
+		fg := new(interfaces.MockRankAndFileGame)
+		setupRankAndFileOutputMock(fg)
+		fg.ExpectedCalls = filterCalls(fg.ExpectedCalls, "SequenceStarts")
+		fg.ExpectedCalls = filterCalls(fg.ExpectedCalls, "LegalTargetsFrom")
+		fg.ExpectedCalls = filterCalls(fg.ExpectedCalls, "WasteLegalTargets")
+		for col := range domain.RankAndFileTableauCnt {
+			if col == 2 {
+				fg.On("SequenceStarts", col).Return([]int{3})
+				fg.On("LegalTargetsFrom", col, 3).Return([]int(nil), []int{1})
+				continue
+			}
+			fg.On("SequenceStarts", col).Return([]int(nil))
+		}
+		fg.On("WasteLegalTargets").Return([]int{4}, []int(nil))
+
+		result := new(RankAndFileWebPresenter).Output(fg, nil)
+		assert.Contains(t, result, `"legalTargets":{"tableau-2-3":{"tableau":[],"foundation":[1]},"waste":{"tableau":[4],"foundation":[]}}`)
+	})
+
+	t.Run("tableau target has empty foundation array", func(t *testing.T) {
+		fg := new(interfaces.MockRankAndFileGame)
+		setupRankAndFileOutputMock(fg)
+		fg.ExpectedCalls = filterCalls(fg.ExpectedCalls, "SequenceStarts")
+		fg.ExpectedCalls = filterCalls(fg.ExpectedCalls, "LegalTargetsFrom")
+		for col := range domain.RankAndFileTableauCnt {
+			if col == 2 {
+				fg.On("SequenceStarts", col).Return([]int{3})
+				fg.On("LegalTargetsFrom", col, 3).Return([]int{5}, []int(nil))
+				continue
+			}
+			fg.On("SequenceStarts", col).Return([]int(nil))
+		}
+		fg.On("WasteLegalTargets").Return([]int(nil), []int(nil))
+
+		result := new(RankAndFileWebPresenter).Output(fg, nil)
+		assert.Contains(t, result, `"legalTargets":{"tableau-2-3":{"tableau":[5],"foundation":[]}}`)
+	})
+
+	t.Run("waste target has empty tableau array", func(t *testing.T) {
+		fg := new(interfaces.MockRankAndFileGame)
+		setupRankAndFileOutputMock(fg)
+		fg.ExpectedCalls = filterCalls(fg.ExpectedCalls, "SequenceStarts")
+		fg.ExpectedCalls = filterCalls(fg.ExpectedCalls, "WasteLegalTargets")
+		for col := range domain.RankAndFileTableauCnt {
+			fg.On("SequenceStarts", col).Return([]int(nil))
+		}
+		fg.On("WasteLegalTargets").Return([]int(nil), []int{0})
+
+		result := new(RankAndFileWebPresenter).Output(fg, nil)
+		assert.Contains(t, result, `"legalTargets":{"waste":{"tableau":[],"foundation":[0]}}`)
+	})
+}
+
+func TestRankAndFileWebPresenter_OutputFoundationCards(t *testing.T) {
+	fg := new(interfaces.MockRankAndFileGame)
+	setupRankAndFileOutputMock(fg)
+	fg.ExpectedCalls = filterCalls(fg.ExpectedCalls, "GetFoundation")
+	var foundation [domain.RankAndFileFoundationCnt][]*domain.Card
+	foundation[0] = []*domain.Card{domain.NewCard(domain.CardDesignHeart, 1, false)}
+	fg.On("GetFoundation").Return(foundation)
+
+	result := parseRankAndFileOutput(t, new(RankAndFileWebPresenter).Output(fg, nil))
+	assert.Len(t, result.Foundation[0], 1)
+	assert.Equal(t, "HEART", result.Foundation[0][0].Design)
+	assert.Equal(t, 1, result.Foundation[0][0].Value)
+}
