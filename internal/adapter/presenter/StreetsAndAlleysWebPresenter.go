@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -23,6 +24,7 @@ func (p *StreetsAndAlleysWebPresenter) Output(bc interfaces.StreetsAndAlleysGame
 	// hidden-deal variant would not silently leak state through this presenter.
 	tableau := bc.GetTableau()
 	resObj.Tableau = make([][]*controller.StreetsAndAlleysWebOutputTableauCard, domain.StreetsAndAlleysTableauCnt)
+	resObj.LegalTargets = p.buildLegalTargets(bc)
 	for i := range domain.StreetsAndAlleysTableauCnt {
 		colCards := tableau[i]
 		resObj.Tableau[i] = make([]*controller.StreetsAndAlleysWebOutputTableauCard, len(colCards))
@@ -91,6 +93,7 @@ func (p *StreetsAndAlleysWebPresenter) HintOutput(bc interfaces.StreetsAndAlleys
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, bc, int(bc.GetPhase()))
 	resObj.Tableau = make([][]*controller.StreetsAndAlleysWebOutputTableauCard, 0)
 	resObj.Foundation = make([][]*controller.WebOutputCard, 0)
+	resObj.LegalTargets = p.buildLegalTargets(bc)
 
 	if hint != nil {
 		resObj.Hint = &controller.StreetsAndAlleysWebOutputHint{
@@ -105,6 +108,28 @@ func (p *StreetsAndAlleysWebPresenter) HintOutput(bc interfaces.StreetsAndAlleys
 	}
 
 	return marshalOrError(resObj)
+}
+
+func (p *StreetsAndAlleysWebPresenter) buildLegalTargets(g interfaces.StreetsAndAlleysGame) map[string]controller.StreetsAndAlleysWebOutputTargets {
+	out := make(map[string]controller.StreetsAndAlleysWebOutputTargets)
+	tableauState := g.GetTableau()
+	for col := 0; col < domain.StreetsAndAlleysTableauCnt; col++ {
+		if len(tableauState[col]) == 0 {
+			continue
+		}
+		tableau, foundation := g.LegalTargets(col)
+		if len(tableau) == 0 && len(foundation) == 0 {
+			continue
+		}
+		if tableau == nil {
+			tableau = []int{}
+		}
+		if foundation == nil {
+			foundation = []int{}
+		}
+		out["tableau-"+strconv.Itoa(col)] = controller.StreetsAndAlleysWebOutputTargets{Tableau: tableau, Foundation: foundation}
+	}
+	return out
 }
 
 // ActionLogOutput 棋譜をJSON出力
