@@ -57,6 +57,90 @@ func easthavenMoveErrorState() *domain.Easthaven {
 	return e
 }
 
+func TestEasthaven_LegalTargetsFrom(t *testing.T) {
+	e := setupPlayingEasthaven()
+	clearEasthavenTableau(e)
+	var tab [domain.EasthavenTableauCnt][]*domain.KlondikeTableauCard
+	tab[0] = []*domain.KlondikeTableauCard{makeTableauCard(domain.CardDesignSpade, 6, true), makeTableauCard(domain.CardDesignHeart, 5, true)}
+	tab[1] = []*domain.KlondikeTableauCard{makeTableauCard(domain.CardDesignHeart, 7, true)}
+	tab[2] = []*domain.KlondikeTableauCard{makeTableauCard(domain.CardDesignSpade, 6, true)}
+	tab[3] = []*domain.KlondikeTableauCard{makeTableauCard(domain.CardDesignSpade, 1, true)}
+	e.SetTableau(tab)
+
+	gotTableau, gotFoundation := e.LegalTargetsFrom(0, 0)
+	assert.Equal(t, []int{1}, gotTableau)
+	assert.Empty(t, gotFoundation, "a multi-card sequence cannot move to foundation")
+	gotTableau, gotFoundation = e.LegalTargetsFrom(0, 1)
+	assert.Equal(t, []int{2}, gotTableau)
+	assert.Empty(t, gotFoundation)
+	gotTableau, gotFoundation = e.LegalTargetsFrom(3, 0)
+	assert.Empty(t, gotTableau)
+	assert.Equal(t, []int{0}, gotFoundation)
+	gotTableau, gotFoundation = e.LegalTargetsFrom(0, 2)
+	assert.Empty(t, gotTableau)
+	assert.Empty(t, gotFoundation)
+	gotTableau, gotFoundation = e.LegalTargetsFrom(-1, 0)
+	assert.Empty(t, gotTableau)
+	assert.Empty(t, gotFoundation)
+	gotTableau, gotFoundation = e.LegalTargetsFrom(0, 3)
+	assert.Empty(t, gotTableau)
+	assert.Empty(t, gotFoundation)
+	tab[0][1].FaceUp = false
+	e.SetTableau(tab)
+	gotTableau, gotFoundation = e.LegalTargetsFrom(0, 0)
+	assert.Empty(t, gotTableau, "every card in the suffix must be face-up")
+	assert.Empty(t, gotFoundation)
+	gotTableau, gotFoundation = e.LegalTargetsFrom(0, 1)
+	assert.Empty(t, gotTableau, "a face-down source cannot move")
+	assert.Empty(t, gotFoundation)
+}
+
+func TestEasthaven_LegalTargetsFromKingToEmptyColumns(t *testing.T) {
+	e := setupPlayingEasthaven()
+	clearEasthavenTableau(e)
+	var tableau [domain.EasthavenTableauCnt][]*domain.KlondikeTableauCard
+	tableau[2] = []*domain.KlondikeTableauCard{makeTableauCard(domain.CardDesignSpade, domain.CardValueMax, true)}
+	e.SetTableau(tableau)
+	got, foundation := e.LegalTargetsFrom(2, 0)
+	assert.Equal(t, []int{0, 1, 3, 4, 5, 6}, got)
+	assert.Empty(t, foundation)
+}
+
+func TestEasthaven_LegalTargetsFromFoundationRules(t *testing.T) {
+	e := setupPlayingEasthaven()
+	clearEasthavenTableau(e)
+	var tableau [domain.EasthavenTableauCnt][]*domain.KlondikeTableauCard
+	for col, design := range []int{domain.CardDesignSpade, domain.CardDesignClover, domain.CardDesignHeart, domain.CardDesignDiamond} {
+		tableau[col] = []*domain.KlondikeTableauCard{makeTableauCard(design, 1, true)}
+	}
+	e.SetTableau(tableau)
+	for pile := range domain.EasthavenFoundationCnt {
+		_, targets := e.LegalTargetsFrom(pile, 0)
+		assert.Equal(t, []int{pile}, targets)
+	}
+
+	var foundation [domain.EasthavenFoundationCnt][]*domain.Card
+	foundation[0] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, true)}
+	e.SetFoundation(foundation)
+	tableau[0] = []*domain.KlondikeTableauCard{makeTableauCard(domain.CardDesignSpade, 2, true)}
+	e.SetTableau(tableau)
+	_, targets := e.LegalTargetsFrom(0, 0)
+	assert.Equal(t, []int{0}, targets, "the next rank on the matching foundation is legal")
+
+	tableau[0] = []*domain.KlondikeTableauCard{makeTableauCard(domain.CardDesignSpade, 3, true)}
+	e.SetTableau(tableau)
+	_, targets = e.LegalTargetsFrom(0, 0)
+	assert.Empty(t, targets, "a rank gap is not legal")
+	tableau[0] = []*domain.KlondikeTableauCard{makeTableauCard(domain.CardDesignHeart, 2, true)}
+	e.SetTableau(tableau)
+	_, targets = e.LegalTargetsFrom(0, 0)
+	assert.Empty(t, targets, "a different suit cannot use another pile")
+	tableau[0] = []*domain.KlondikeTableauCard{makeTableauCard(99, 1, true)}
+	e.SetTableau(tableau)
+	_, targets = e.LegalTargetsFrom(0, 0)
+	assert.Empty(t, targets, "unknown design has no foundation pile")
+}
+
 func TestEasthaven_ValidationErrorsHaveCodes(t *testing.T) {
 	t.Run("deal validation", func(t *testing.T) {
 		e := setupPlayingEasthaven()

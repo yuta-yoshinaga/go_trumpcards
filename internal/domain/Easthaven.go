@@ -225,6 +225,30 @@ func (e *Easthaven) MoveTableauToFoundation(col int) error {
 	return nil
 }
 
+// LegalTargetsFrom returns legal tableau columns and the matching foundation pile for a face-up sequence.
+func (e *Easthaven) LegalTargetsFrom(col, cardIndex int) ([]int, []int) {
+	tableau, foundation := []int{}, []int{}
+	if col < 0 || col >= EasthavenTableauCnt || cardIndex < 0 || cardIndex >= len(e.tableau[col]) {
+		return tableau, foundation
+	}
+	sequence := e.tableau[col][cardIndex:]
+	if len(sequence) == 0 || sequence[0] == nil || sequence[0].Card == nil || !sequence[0].FaceUp || !e.isValidEasthavenSequence(sequence) {
+		return tableau, foundation
+	}
+	for toCol := range EasthavenTableauCnt {
+		if toCol != col && e.canPlaceOnTableau(sequence[0].Card, toCol) {
+			tableau = append(tableau, toCol)
+		}
+	}
+	if cardIndex == len(e.tableau[col])-1 {
+		pile := sequence[0].Card.GetDesign() - 1
+		if pile >= 0 && pile < EasthavenFoundationCnt && e.canPlaceOnFoundation(sequence[0].Card, pile) {
+			foundation = append(foundation, pile)
+		}
+	}
+	return tableau, foundation
+}
+
 // GiveUp ギブアップ
 func (e *Easthaven) GiveUp() {
 	if e.phase == EasthavenPhasePlaying {

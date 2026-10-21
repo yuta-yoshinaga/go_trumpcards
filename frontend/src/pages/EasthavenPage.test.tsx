@@ -16,6 +16,7 @@ const mockExec = vi.mocked(easthavenApi.exec);
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 
 const playingState: EasthavenResponse = {
+  legalTargets: {},
   tableau: [
     [
       { card: null, faceUp: false },
@@ -422,6 +423,7 @@ describe('EasthavenPage', () => {
   it('double-clicking a foundation-playable top card auto-moves it to the foundation', async () => {
     const aceState: EasthavenResponse = {
       ...playingState,
+      legalTargets: { 'tableau-4-0': { tableau: [], foundation: [0] } },
       tableau: [
         [
           { card: null, faceUp: false },
@@ -459,6 +461,32 @@ describe('EasthavenPage', () => {
     fireEvent.doubleClick(screen.getByRole('button', { name: '♥ 8' }));
     await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
+  it('follows server foundation targets even when the card rule disagrees', async () => {
+    const serverState = { ...playingState, legalTargets: { 'tableau-1-0': { tableau: [], foundation: [2] } } };
+    mockExec.mockResolvedValue(serverState);
+    renderWithProviders(<EasthavenPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    fireEvent.doubleClick(screen.getByRole('button', { name: '♥ 8' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'tableau', col: 1 }, { zone: 'foundation', col: 2 }),
+    );
+  });
+
+  it('does nothing when the server legal target key or source index is missing', async () => {
+    const targetMaps: EasthavenResponse['legalTargets'][] = [{}, { 'tableau-1-99': { tableau: [], foundation: [2] } }];
+    for (const legalTargets of targetMaps) {
+      mockExec.mockResolvedValue({ ...playingState, legalTargets });
+      const { unmount } = renderWithProviders(<EasthavenPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+      mockExec.mockClear();
+      fireEvent.doubleClick(screen.getByRole('button', { name: '♥ 8' }));
+      await flushPendingDispatch();
+      expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+      unmount();
+    }
   });
 
   it('renders a full from→to sentence for a to-foundation hint', async () => {

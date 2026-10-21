@@ -17,6 +17,8 @@ type EasthavenGame interface {
 	MoveTableauToTableau(fromCol, cardIndex, toCol int) error
 	// MoveTableauToFoundation タブローからファンデーションにカードを移動する
 	MoveTableauToFoundation(col int) error
+	// LegalTargetsFrom returns legal tableau and foundation destinations for a face-up sequence.
+	LegalTargetsFrom(col, cardIndex int) ([]int, []int)
 	// GetHint ヒントを取得する
 	GetHint() *domain.EasthavenHint
 	// GetPhase 現在のフェーズを取得する
