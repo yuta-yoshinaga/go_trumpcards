@@ -18,6 +18,7 @@ func mustRankAndFileOutputJSON(msg string) string {
 		Tableau:       [][]*controller.RankAndFileWebOutputTableauCard{},
 		Waste:         []*controller.WebOutputCard{},
 		Foundation:    [][]*controller.WebOutputCard{},
+		LegalTargets:  map[string]controller.RankAndFileWebOutputTargets{},
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
@@ -28,7 +29,7 @@ func mustRankAndFileOutputJSON(msg string) string {
 }
 
 func TestRankAndFileWebController_Method(t *testing.T) {
-	mockOutput := `{"tableau":[],"stockCount":0,"waste":[],"foundation":[],"phase":0,"moveCount":0,"message":""}`
+	mockOutput := `{"tableau":[],"stockCount":0,"waste":[],"foundation":[],"legalTargets":{},"phase":0,"moveCount":0,"message":""}`
 	expectedBody := mockOutput
 
 	fiMock := new(usecase.MockRankAndFileInteractor)

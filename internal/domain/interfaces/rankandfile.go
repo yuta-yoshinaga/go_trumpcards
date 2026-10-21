@@ -36,6 +36,8 @@ type RankAndFileGame interface {
 	// SequenceStarts 列 col で掴める札の位置を取得する
 	SequenceStarts(col int) []int
 	LegalTargets(fromCol, cardIndex int) []int
+	LegalTargetsFrom(fromCol, cardIndex int) ([]int, []int)
+	WasteLegalTargets() ([]int, []int)
 	// GetFoundation ファンデーションを取得する
 	GetFoundation() [domain.RankAndFileFoundationCnt][]*domain.Card
 	// AllFaceUp 全カードが表向きかを返す

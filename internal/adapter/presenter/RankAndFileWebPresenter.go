@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -44,7 +45,6 @@ func (p *RankAndFileWebPresenter) Output(ft interfaces.RankAndFileGame, lastErr 
 			resObj.Tableau[i][j] = outTC
 		}
 	}
-
 	// **掴める札はドメインが決める。** `SequenceStarts` は UI が「掘り下げた札を
 	// 掴めるか」を判断するために置かれていたのに、誰も呼んでいなかった。
 	resObj.SequenceStarts = make([][]int, domain.RankAndFileTableauCnt)
@@ -55,6 +55,7 @@ func (p *RankAndFileWebPresenter) Output(ft interfaces.RankAndFileGame, lastErr 
 		}
 		resObj.SequenceStarts[i] = starts
 	}
+	resObj.LegalTargets = p.buildLegalTargets(ft)
 
 	// ファンデーション
 	foundation := ft.GetFoundation()
@@ -116,6 +117,7 @@ func (p *RankAndFileWebPresenter) HintOutput(ft interfaces.RankAndFileGame) stri
 	resObj.Waste = make([]*controller.WebOutputCard, 0)
 	resObj.Tableau = make([][]*controller.RankAndFileWebOutputTableauCard, 0)
 	resObj.Foundation = make([][]*controller.WebOutputCard, 0)
+	resObj.LegalTargets = p.buildLegalTargets(ft)
 
 	if hint != nil {
 		resObj.Hint = &controller.RankAndFileWebOutputHint{
@@ -131,6 +133,36 @@ func (p *RankAndFileWebPresenter) HintOutput(ft interfaces.RankAndFileGame) stri
 	}
 
 	return marshalOrError(resObj)
+}
+
+func (p *RankAndFileWebPresenter) buildLegalTargets(ft interfaces.RankAndFileGame) map[string]controller.RankAndFileWebOutputTargets {
+	result := make(map[string]controller.RankAndFileWebOutputTargets)
+	for col := 0; col < domain.RankAndFileTableauCnt; col++ {
+		for _, index := range ft.SequenceStarts(col) {
+			tab, foundation := ft.LegalTargetsFrom(col, index)
+			if len(tab)+len(foundation) == 0 {
+				continue
+			}
+			if tab == nil {
+				tab = []int{}
+			}
+			if foundation == nil {
+				foundation = []int{}
+			}
+			result["tableau-"+strconv.Itoa(col)+"-"+strconv.Itoa(index)] = controller.RankAndFileWebOutputTargets{Tableau: tab, Foundation: foundation}
+		}
+	}
+	tab, foundation := ft.WasteLegalTargets()
+	if len(tab)+len(foundation) > 0 {
+		if tab == nil {
+			tab = []int{}
+		}
+		if foundation == nil {
+			foundation = []int{}
+		}
+		result["waste"] = controller.RankAndFileWebOutputTargets{Tableau: tab, Foundation: foundation}
+	}
+	return result
 }
 
 // TargetsOutput returns the normal board response for Web clients.

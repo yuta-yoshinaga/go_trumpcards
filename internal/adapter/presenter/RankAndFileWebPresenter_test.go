@@ -38,7 +38,9 @@ func setupRankAndFileWebMockDefaults(fg *interfaces.MockRankAndFileGame) {
 	fg.On("GetTableau").Return(tableau).Maybe()
 	for i := range domain.RankAndFileTableauCnt {
 		fg.On("SequenceStarts", i).Return([]int{3}).Maybe()
+		fg.On("LegalTargetsFrom", i, 3).Return([]int{}, []int{}).Maybe()
 	}
+	fg.On("WasteLegalTargets").Return([]int{}, []int{}).Maybe()
 
 	var foundation [domain.RankAndFileFoundationCnt][]*domain.Card
 	fg.On("GetFoundation").Return(foundation).Maybe()

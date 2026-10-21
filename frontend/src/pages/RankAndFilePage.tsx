@@ -35,7 +35,6 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt, suitSymbol } from '../utils/cardAlt';
 import { parseRankandfileCommand, RANKANDFILE_HELP } from '../utils/cli/commands/rankandfileCommands';
 import { formatRankandfileState } from '../utils/cli/formatters/rankandfileFormatter';
-import { rankAndFileLegalTargets } from '../utils/rankAndFileLegalTargets';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { isTableauAllFaceUp } from '../utils/solitaireUtils';
 
@@ -216,7 +215,19 @@ function RankAndFilePageContent() {
         : (state.tableau[hint.fromCol]?.[hint.cardIndex]?.card ?? null);
   const hintCardName = hintCard ? cardAlt(hintCard) : '';
   const hintDest = hint ? formatHintZone(t, hint.toZone, hint.toCol) : '';
-  const legalTargets = selectedSource ? rankAndFileLegalTargets(state, selectedSource) : null;
+  const sourceKey =
+    selectedSource?.zone === 'waste'
+      ? 'waste'
+      : selectedSource?.col !== undefined && selectedSource.cardIndex !== undefined
+        ? `tableau-${selectedSource.col}-${selectedSource.cardIndex}`
+        : '';
+  const targetData = selectedSource ? state.legalTargets[sourceKey] : undefined;
+  const legalTargets = selectedSource
+    ? [
+        ...(targetData?.tableau ?? []).map((col) => ({ zone: 'tableau' as const, col })),
+        ...(targetData?.foundation ?? []).map((col) => ({ zone: 'foundation' as const, col })),
+      ]
+    : null;
   const legalTargetAnnouncement =
     legalTargets === null
       ? ''
@@ -321,7 +332,7 @@ function RankAndFilePageContent() {
                         if (selectedSource) return;
                         handleSelectSource({ zone: 'waste' });
                       }}
-                      onDoubleClick={() => handleFoundationShortcut({ zone: 'waste' }, wasteDisplay[0])}
+                      onDoubleClick={() => handleFoundationShortcut({ zone: 'waste' })}
                       disabled={!isPlaying || loading}
                       aria-label={cardAlt(wasteDisplay[0])}
                       aria-pressed={isSourceSelected('waste')}
@@ -478,9 +489,7 @@ function RankAndFilePageContent() {
                                     }}
                                     onDoubleClick={
                                       // Only the exposed top card can jump to a foundation.
-                                      isLast && tc.card
-                                        ? () => handleFoundationShortcut(cardZone, tc.card as Card)
-                                        : undefined
+                                      isLast && tc.card ? () => handleFoundationShortcut(cardZone) : undefined
                                     }
                                     disabled={!isPlaying || loading}
                                     // **「掴めない」は掴む場面でだけ言う。** 送り先を選んでいる

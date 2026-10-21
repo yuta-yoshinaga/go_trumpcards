@@ -23,6 +23,8 @@ export interface RankAndFileResponse extends BaseGameResponse {
   tableau: RankAndFileTableauCard[][];
   /** Per column, the card indices a run can be picked up from. */
   sequenceStarts: number[][];
+  /** Legal destinations keyed by movable source. */
+  legalTargets: Record<string, { tableau: number[]; foundation: number[] }>;
   stockCount: number;
   waste: Card[];
   foundation: Card[][];
