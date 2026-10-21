@@ -7,6 +7,10 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 // StalactitesGame フリーセルゲームインタフェース
 type StalactitesGame interface {
 	SolitaireGame
+	// LegalTargetsFrom returns legal destinations for a tableau top card.
+	LegalTargetsFrom(col int) (tableau, foundation []int)
+	// CellLegalTargets returns legal destinations for a free-cell card.
+	CellLegalTargets(cell int) (tableau, foundation []int)
 	// GetGameEndFlag reports whether the game has left the playing phase.
 	GetGameEndFlag() bool
 	// Reset ゲームを初期化する

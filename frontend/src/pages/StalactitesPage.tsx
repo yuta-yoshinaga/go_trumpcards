@@ -40,7 +40,6 @@ import { formatStalactitesState } from '../utils/cli/formatters/stalactitesForma
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { stalactitesAutoCompleteReady } from '../utils/stalactitesAutoComplete';
-import { stalactitesFoundationTarget } from '../utils/stalactitesFoundationTarget';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
 
@@ -185,10 +184,12 @@ function StalactitesPageContent() {
   // top card or a free-cell card) to its foundation when a legal target
   // exists; otherwise do nothing (no error, selection untouched).
   const handleFoundationShortcut = useCallback(
-    (source: StalactitesMoveZone, card: Card) => {
+    (source: StalactitesMoveZone) => {
       if (!state) return;
-      const target = stalactitesFoundationTarget(card, state.foundation, state.baseRank);
-      if (!target) return;
+      const key = source.zone === 'tableau' ? `tableau-${source.col}` : `stalactites-${source.cell}`;
+      const targetIndex = state.legalTargets[key]?.foundation[0];
+      if (targetIndex === undefined) return;
+      const target = { zone: 'foundation', col: targetIndex } as const;
       handleAutoFoundation(source, target);
     },
     [state, handleAutoFoundation],
@@ -359,7 +360,7 @@ function StalactitesPageContent() {
                               if (e.detail >= 2) return;
                               handleSelectSource(stalactitesZone);
                             }}
-                            onDoubleClick={() => handleFoundationShortcut(stalactitesZone, card)}
+                            onDoubleClick={() => handleFoundationShortcut(stalactitesZone)}
                             disabled={!isPlaying || loading}
                             aria-label={cardAlt(card)}
                             aria-pressed={isSourceSelected('stalactites', undefined, idx)}
@@ -559,7 +560,7 @@ function StalactitesPageContent() {
                                         // Only the exposed top card of a column can
                                         // move to a foundation.
                                         cardIdx === col.length - 1
-                                          ? () => handleFoundationShortcut(cardZone, card)
+                                          ? () => handleFoundationShortcut(cardZone)
                                           : undefined
                                       }
                                       disabled={!isPlaying || loading}

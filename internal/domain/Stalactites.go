@@ -192,6 +192,40 @@ func (f *Stalactites) MoveTableauToFoundation(col int) error {
 	return nil
 }
 
+// LegalTargetsFrom returns legal tableau and foundation destinations for a tableau column's top card.
+func (f *Stalactites) LegalTargetsFrom(col int) (tableau, foundation []int) {
+	if col < 0 || col >= StalactitesTableauCnt || len(f.tableau[col]) == 0 {
+		return nil, nil
+	}
+	card := f.tableau[col][len(f.tableau[col])-1]
+	for toCol := 0; toCol < StalactitesTableauCnt; toCol++ {
+		if toCol != col && f.canPlaceOnTableau(card, toCol) && f.maxMovableCards(toCol) >= 1 {
+			tableau = append(tableau, toCol)
+		}
+	}
+	if target := f.foundationIndexFor(card); target >= 0 {
+		foundation = []int{target}
+	}
+	return tableau, foundation
+}
+
+// CellLegalTargets returns legal tableau and foundation destinations for a free-cell card.
+func (f *Stalactites) CellLegalTargets(cell int) (tableau, foundation []int) {
+	if cell < 0 || cell >= StalactitesCellCnt || f.cells[cell] == nil {
+		return nil, nil
+	}
+	card := f.cells[cell]
+	for col := 0; col < StalactitesTableauCnt; col++ {
+		if f.canPlaceOnTableau(card, col) {
+			tableau = append(tableau, col)
+		}
+	}
+	if target := f.foundationIndexFor(card); target >= 0 {
+		foundation = []int{target}
+	}
+	return tableau, foundation
+}
+
 // MoveTableauToStalactites タブローからフリーセルにカードを移動
 func (f *Stalactites) MoveTableauToStalactites(col, cell int) error {
 	if f.phase != StalactitesPhasePlaying {

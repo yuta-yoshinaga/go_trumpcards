@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -16,6 +17,7 @@ type StalactitesWebPresenter struct{}
 // Output ゲーム状態をJSON出力
 func (p *StalactitesWebPresenter) Output(f interfaces.StalactitesGame, lastErr error) string {
 	resObj := new(controller.StalactitesWebOutput)
+	resObj.LegalTargets = p.buildLegalTargets(f)
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, f, int(f.GetPhase()))
 
 	// タブロー
@@ -103,6 +105,7 @@ func (p *StalactitesWebPresenter) HintOutput(f interfaces.StalactitesGame) strin
 	resObj.Cells = make([]*controller.WebOutputCard, 0)
 	resObj.Tableau = make([][]*controller.WebOutputCard, 0)
 	resObj.Foundation = make([][]*controller.WebOutputCard, 0)
+	resObj.LegalTargets = p.buildLegalTargets(f)
 
 	if hint != nil {
 		resObj.Hint = &controller.StalactitesWebOutputHint{
@@ -118,6 +121,37 @@ func (p *StalactitesWebPresenter) HintOutput(f interfaces.StalactitesGame) strin
 	}
 
 	return marshalOrError(resObj)
+}
+
+func (p *StalactitesWebPresenter) buildLegalTargets(f interfaces.StalactitesGame) map[string]controller.StalactitesWebOutputTargets {
+	result := make(map[string]controller.StalactitesWebOutputTargets)
+	for col := 0; col < domain.StalactitesTableauCnt; col++ {
+		tab, foundation := f.LegalTargetsFrom(col)
+		if len(tab)+len(foundation) == 0 {
+			continue
+		}
+		if tab == nil {
+			tab = []int{}
+		}
+		if foundation == nil {
+			foundation = []int{}
+		}
+		result["tableau-"+strconv.Itoa(col)] = controller.StalactitesWebOutputTargets{Tableau: tab, Foundation: foundation}
+	}
+	for cell := 0; cell < domain.StalactitesCellCnt; cell++ {
+		tab, foundation := f.CellLegalTargets(cell)
+		if len(tab)+len(foundation) == 0 {
+			continue
+		}
+		if tab == nil {
+			tab = []int{}
+		}
+		if foundation == nil {
+			foundation = []int{}
+		}
+		result["stalactites-"+strconv.Itoa(cell)] = controller.StalactitesWebOutputTargets{Tableau: tab, Foundation: foundation}
+	}
+	return result
 }
 
 // ActionLogOutput 棋譜をJSON出力
