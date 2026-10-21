@@ -18,6 +18,7 @@ func mustFlowerGardenOutputJSON(msg string) string {
 		Tableau:       [][]*controller.FlowerGardenWebOutputTableauCard{},
 		Reserve:       []*controller.WebOutputCard{},
 		Foundation:    [][]*controller.WebOutputCard{},
+		LegalTargets:  map[string]controller.FlowerGardenWebOutputTargets{},
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
@@ -28,7 +29,7 @@ func mustFlowerGardenOutputJSON(msg string) string {
 }
 
 func TestFlowerGardenWebController_Method(t *testing.T) {
-	mockOutput := `{"tableau":[],"reserve":[],"foundation":[],"phase":0,"moveCount":0,"message":""}`
+	mockOutput := `{"tableau":[],"reserve":[],"foundation":[],"legalTargets":{},"phase":0,"moveCount":0,"message":""}`
 	expectedBody := mockOutput
 
 	biMock := new(usecase.MockFlowerGardenInteractor)

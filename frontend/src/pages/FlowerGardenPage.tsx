@@ -29,14 +29,13 @@ import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { DESKTOP_COMPACT_CARD_WIDTH } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { Card, FlowerGardenResponse } from '../types/card';
+import type { FlowerGardenResponse } from '../types/card';
 import { FlowerGardenPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { FLOWERGARDEN_HELP, parseFlowerGardenCommand } from '../utils/cli/commands/flowergardenCommands';
 import { formatFlowerGardenState } from '../utils/cli/formatters/flowergardenFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { flowerGardenLegalTargets } from '../utils/flowerGardenLegalTargets';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
@@ -230,17 +229,16 @@ function FlowerGardenPageContent() {
     selectedSource.col === col &&
     selectedSource.cardIndex === cardIndex;
 
-  // 選択中の札そのもの。タブローは最上段しか動かせないので、列の一番上または指定indexを読む。
-  const selectedCard = ((): Card | null => {
-    if (!selectedSource || selectedSource.col === undefined) return null;
-    if (selectedSource.zone === 'reserve') return state.reserve[selectedSource.col] ?? null;
-    const col = state.tableau[selectedSource.col];
-    if (!col) return null;
-    if (selectedSource.cardIndex !== undefined) return col[selectedSource.cardIndex]?.card ?? null;
-    return col[col.length - 1]?.card ?? null;
-  })();
   // リングは**置ける先だけ**に付ける。
-  const legalTargets = flowerGardenLegalTargets(state.tableau, state.foundation, selectedCard);
+  const legalTargetKey =
+    selectedSource?.col === undefined
+      ? undefined
+      : `${selectedSource.zone === 'reserve' ? 'reserve' : 'tableau'}-${selectedSource.col}`;
+  const selectedLegalTargets = legalTargetKey ? state.legalTargets[legalTargetKey] : undefined;
+  const legalTargets = {
+    tableau: new Set(selectedLegalTargets?.tableau ?? []),
+    foundation: new Set(selectedLegalTargets?.foundation ?? []),
+  };
 
   const renderTableauColumn = (colIdx: number) => {
     const col = state.tableau[colIdx];

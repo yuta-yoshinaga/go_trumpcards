@@ -40,12 +40,19 @@ type FlowerGardenWebOutputHint struct {
 
 // FlowerGardenWebOutput Flower Garden Web アウトプット
 type FlowerGardenWebOutput struct {
-	Tableau    [][]*FlowerGardenWebOutputTableauCard `json:"tableau"`
-	Reserve    []*WebOutputCard                      `json:"reserve"`
-	Foundation [][]*WebOutputCard                    `json:"foundation"`
-	Hint       *FlowerGardenWebOutputHint            `json:"hint,omitempty"`
+	Tableau      [][]*FlowerGardenWebOutputTableauCard   `json:"tableau"`
+	Reserve      []*WebOutputCard                        `json:"reserve"`
+	Foundation   [][]*WebOutputCard                      `json:"foundation"`
+	LegalTargets map[string]FlowerGardenWebOutputTargets `json:"legalTargets"`
+	Hint         *FlowerGardenWebOutputHint              `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase
+}
+
+// FlowerGardenWebOutputTargets contains destinations for one source.
+type FlowerGardenWebOutputTargets struct {
+	Tableau    []int `json:"tableau"`
+	Foundation []int `json:"foundation"`
 }
 
 // FlowerGardenWebController Flower Garden Web コントローラークラス
@@ -62,6 +69,7 @@ func newFlowerGardenDefaultOutput(msg string) *FlowerGardenWebOutput {
 		Tableau:       make([][]*FlowerGardenWebOutputTableauCard, 0),
 		Reserve:       make([]*WebOutputCard, 0),
 		Foundation:    make([][]*WebOutputCard, 0),
+		LegalTargets:  make(map[string]FlowerGardenWebOutputTargets),
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }

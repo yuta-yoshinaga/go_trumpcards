@@ -21,6 +21,10 @@ type FlowerGardenGame interface {
 	MoveReserveToFoundation(reserveIdx int) error
 	// GetHint ヒントを取得する
 	GetHint() *domain.FlowerGardenHint
+	// LegalTargets returns destinations for a tableau source.
+	LegalTargets(fromCol int) (tableau, foundation []int)
+	// ReserveLegalTargets returns destinations for a reserve source.
+	ReserveLegalTargets(reserveIdx int) (tableau, foundation []int)
 	// GetPhase 現在のフェーズを取得する
 	GetPhase() domain.FlowerGardenPhase
 	// GetMoveCount 移動回数を取得する

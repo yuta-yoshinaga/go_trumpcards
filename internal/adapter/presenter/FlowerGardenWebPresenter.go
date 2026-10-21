@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -40,6 +41,7 @@ func (p *FlowerGardenWebPresenter) Output(bc interfaces.FlowerGardenGame, lastEr
 	for i, c := range reserve {
 		resObj.Reserve[i] = cardToOutput(c)
 	}
+	resObj.LegalTargets = buildFlowerGardenLegalTargets(bc)
 
 	// ファンデーション
 	foundation := bc.GetFoundation()
@@ -92,6 +94,38 @@ func (p *FlowerGardenWebPresenter) Output(bc interfaces.FlowerGardenGame, lastEr
 	return marshalOrError(resObj)
 }
 
+func buildFlowerGardenLegalTargets(bc interfaces.FlowerGardenGame) map[string]controller.FlowerGardenWebOutputTargets {
+	out := make(map[string]controller.FlowerGardenWebOutputTargets)
+	for col, cards := range bc.GetTableau() {
+		if len(cards) == 0 {
+			continue
+		}
+		tableau, foundation := bc.LegalTargets(col)
+		if len(tableau) == 0 && len(foundation) == 0 {
+			continue
+		}
+		out["tableau-"+strconv.Itoa(col)] = controller.FlowerGardenWebOutputTargets{Tableau: flowerGardenNonNilInts(tableau), Foundation: flowerGardenNonNilInts(foundation)}
+	}
+	for idx, card := range bc.GetReserve() {
+		if card == nil {
+			continue
+		}
+		tableau, foundation := bc.ReserveLegalTargets(idx)
+		if len(tableau) == 0 && len(foundation) == 0 {
+			continue
+		}
+		out["reserve-"+strconv.Itoa(idx)] = controller.FlowerGardenWebOutputTargets{Tableau: flowerGardenNonNilInts(tableau), Foundation: flowerGardenNonNilInts(foundation)}
+	}
+	return out
+}
+
+func flowerGardenNonNilInts(values []int) []int {
+	if values == nil {
+		return []int{}
+	}
+	return values
+}
+
 // HintOutput ヒントをJSON出力
 func (p *FlowerGardenWebPresenter) HintOutput(bc interfaces.FlowerGardenGame) string {
 	hint := bc.GetHint()
@@ -100,6 +134,7 @@ func (p *FlowerGardenWebPresenter) HintOutput(bc interfaces.FlowerGardenGame) st
 	resObj.Tableau = make([][]*controller.FlowerGardenWebOutputTableauCard, 0)
 	resObj.Reserve = make([]*controller.WebOutputCard, 0)
 	resObj.Foundation = make([][]*controller.WebOutputCard, 0)
+	resObj.LegalTargets = buildFlowerGardenLegalTargets(bc)
 
 	if hint != nil {
 		resObj.Hint = &controller.FlowerGardenWebOutputHint{
