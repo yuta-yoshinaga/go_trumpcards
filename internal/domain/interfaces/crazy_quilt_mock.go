@@ -52,6 +52,16 @@ func (_m *MockCrazyQuiltGame) MoveWasteToFoundation() error {
 	return ret.Error(0)
 }
 
+func (_m *MockCrazyQuiltGame) LegalTargets(idx int) ([]int, bool) {
+	ret := _m.Called(idx)
+	return ret.Get(0).([]int), ret.Bool(1)
+}
+
+func (_m *MockCrazyQuiltGame) WasteLegalTargets() []int {
+	ret := _m.Called()
+	return ret.Get(0).([]int)
+}
+
 func (_m *MockCrazyQuiltGame) GiveUp() {
 	_m.Called()
 }

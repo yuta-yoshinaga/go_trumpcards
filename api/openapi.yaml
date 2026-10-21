@@ -57995,6 +57995,22 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Card'
+        legalTargets:
+          type: object
+          description: >-
+            Server-computed destinations keyed by source. Quilt keys are quilt-<idx>,
+            where idx is the row-major cell index row*8+col (0..63); waste is the
+            waste-top source. Sources without a destination are omitted.
+          additionalProperties:
+            type: object
+            required: [foundation, waste]
+            properties:
+              foundation:
+                type: array
+                items:
+                  type: integer
+              waste:
+                type: boolean
         phase:
           type: integer
           description: "0=Playing, 1=GameClear, 2=GameOver"

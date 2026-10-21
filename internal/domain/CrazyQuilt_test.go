@@ -257,6 +257,31 @@ func TestCrazyQuilt_CanPlaceOnFoundation_RejectsUnseededAndFull(t *testing.T) {
 	assert.False(t, c.canPlaceOnFoundation(NewCard(CardDesignSpade, 1, true), 0), "already complete")
 }
 
+func TestCrazyQuilt_LegalTargets(t *testing.T) {
+	c := newTestCrazyQuilt()
+	clearCrazyQuiltBoard(c)
+	c.quilt[0] = NewCard(CardDesignSpade, 2, true)
+	c.foundation[0] = []*Card{NewCard(CardDesignSpade, 1, true)}
+	c.waste = []*Card{NewCard(CardDesignHeart, 3, true)}
+	foundation, waste := c.LegalTargets(0)
+	assert.Equal(t, []int{0}, foundation)
+	assert.True(t, waste)
+
+	assert.Empty(t, c.WasteLegalTargets())
+	c.waste[0] = NewCard(CardDesignSpade, 2, true)
+	assert.Equal(t, []int{0}, c.WasteLegalTargets())
+	assert.Empty(t, mustLegalTargets(c, 1))
+	_, unavailableWaste := c.LegalTargets(-1)
+	assert.False(t, unavailableWaste)
+	c.phase = CrazyQuiltPhaseGameOver
+	assert.Empty(t, c.WasteLegalTargets())
+}
+
+func mustLegalTargets(c *CrazyQuilt, idx int) []int {
+	foundation, _ := c.LegalTargets(idx)
+	return foundation
+}
+
 func TestCrazyQuilt_FindFoundation(t *testing.T) {
 	c := newTestCrazyQuilt()
 	clearCrazyQuiltBoard(c)

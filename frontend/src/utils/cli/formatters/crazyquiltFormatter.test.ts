@@ -11,6 +11,7 @@ function makeState(overrides?: Partial<CrazyQuiltResponse>): CrazyQuiltResponse 
     foundation: Array.from({ length: 8 }, () => []),
     stockCount: 32,
     waste: [],
+    legalTargets: {},
     phase: 0,
     moveCount: 0,
     canUndo: false,

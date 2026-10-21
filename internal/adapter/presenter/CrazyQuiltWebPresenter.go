@@ -50,6 +50,7 @@ func (p *CrazyQuiltWebPresenter) Output(c interfaces.CrazyQuiltGame, lastErr err
 	for i, card := range waste {
 		resObj.Waste[i] = cardToOutput(card)
 	}
+	resObj.LegalTargets = p.buildLegalTargets(c, quilt)
 
 	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
 	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
@@ -98,6 +99,7 @@ func (p *CrazyQuiltWebPresenter) HintOutput(c interfaces.CrazyQuiltGame) string 
 	resObj.FoundationAscending = make([]bool, 0)
 	resObj.Foundation = make([][]*controller.WebOutputCard, 0)
 	resObj.Waste = make([]*controller.WebOutputCard, 0)
+	resObj.LegalTargets = p.buildLegalTargets(c, c.GetQuilt())
 
 	if hint != nil {
 		resObj.Hint = &controller.CrazyQuiltWebOutputHint{
@@ -112,6 +114,30 @@ func (p *CrazyQuiltWebPresenter) HintOutput(c interfaces.CrazyQuiltGame) string 
 	}
 
 	return marshalOrError(resObj)
+}
+
+func (p *CrazyQuiltWebPresenter) buildLegalTargets(c interfaces.CrazyQuiltGame, quilt [domain.CrazyQuiltCells]*domain.Card) map[string]controller.CrazyQuiltWebOutputTargets {
+	targets := make(map[string]controller.CrazyQuiltWebOutputTargets)
+	for idx, card := range quilt {
+		if card == nil {
+			continue
+		}
+		foundation, waste := c.LegalTargets(idx)
+		if len(foundation) > 0 || waste {
+			targets[fmt.Sprintf("quilt-%d", idx)] = controller.CrazyQuiltWebOutputTargets{Foundation: crazyQuiltNonNilInts(foundation), Waste: waste}
+		}
+	}
+	if foundation := c.WasteLegalTargets(); len(foundation) > 0 {
+		targets["waste"] = controller.CrazyQuiltWebOutputTargets{Foundation: crazyQuiltNonNilInts(foundation)}
+	}
+	return targets
+}
+
+func crazyQuiltNonNilInts(values []int) []int {
+	if values == nil {
+		return []int{}
+	}
+	return values
 }
 
 // ActionLogOutput 棋譜をJSON出力
