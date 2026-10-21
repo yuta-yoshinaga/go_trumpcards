@@ -39,6 +39,7 @@ const playingState: KingAlbertResponse = {
   ]),
   reserve: [card('DIAMOND', 7), null, null, null, null, null, null],
   foundation: [[card('SPADE', 1)], [card('CLOVER', 1)], [card('HEART', 1)], [card('DIAMOND', 1)]],
+  legalTargets: { 'tableau-0': { tableau: [1, 2, 3, 4, 5, 6, 7, 8], foundation: [] } },
   phase: 0,
   moveCount: 3,
   canUndo: false,
@@ -378,6 +379,7 @@ describe('KingAlbertPage', () => {
       ...playingState,
       reserve: [card('DIAMOND', 1), null, null, null, null, null, null],
       foundation: [[card('SPADE', 1)], [card('CLOVER', 1)], [card('HEART', 1)], []],
+      legalTargets: { 'reserve-0': { tableau: [0, 1, 2, 3, 4, 5, 6, 7, 8], foundation: [3] } },
     });
     renderWithProviders(<KingAlbertPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
@@ -394,7 +396,11 @@ describe('KingAlbertPage', () => {
     localStorage.clear();
     mockExec.mockReset();
     // ♦2 を予備に置くと、♦A の組札だけが候補になる。
-    mockExec.mockResolvedValue({ ...playingState, reserve: [card('DIAMOND', 2), null, null, null, null, null, null] });
+    mockExec.mockResolvedValue({
+      ...playingState,
+      reserve: [card('DIAMOND', 2), null, null, null, null, null, null],
+      legalTargets: { 'reserve-0': { tableau: [], foundation: [3] } },
+    });
     renderWithProviders(<KingAlbertPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
@@ -403,6 +409,15 @@ describe('KingAlbertPage', () => {
       const rung = screen.getAllByLabelText(/組札/).filter((f) => f.hasAttribute('data-target-candidate'));
       expect(rung).toHaveLength(1);
     });
+  });
+
+  it('follows server destinations when they contradict client rules', async () => {
+    mockExec.mockResolvedValue({ ...playingState, legalTargets: { 'tableau-0': { tableau: [2], foundation: [] } } });
+    renderWithProviders(<KingAlbertPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: '♥ 5、列0・位置1' }));
+    expect(screen.getByRole('button', { name: '♣ 6、列1・位置0' })).not.toHaveAttribute('data-target-candidate');
+    expect(screen.getByRole('button', { name: '空のタブロー列 2' })).toHaveAttribute('data-target-candidate');
   });
 });
 

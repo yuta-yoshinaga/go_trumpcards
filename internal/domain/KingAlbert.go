@@ -550,6 +550,40 @@ func (ka *KingAlbert) findFoundation(card *Card) int {
 	return -1
 }
 
+// LegalTargets returns destinations for the top card in a tableau column.
+func (ka *KingAlbert) LegalTargets(fromCol int) (tableau, foundation []int) {
+	if fromCol < 0 || fromCol >= KingAlbertTableauCnt || len(ka.tableau[fromCol]) == 0 {
+		return nil, nil
+	}
+	card := ka.tableau[fromCol][len(ka.tableau[fromCol])-1].Card
+	for col := range KingAlbertTableauCnt {
+		if col != fromCol && ka.canPlaceOnTableau(card, col) {
+			tableau = append(tableau, col)
+		}
+	}
+	if f := ka.findFoundation(card); f >= 0 {
+		foundation = []int{f}
+	}
+	return tableau, foundation
+}
+
+// ReserveLegalTargets returns destinations for a reserve cell.
+func (ka *KingAlbert) ReserveLegalTargets(reserveIdx int) (tableau, foundation []int) {
+	if reserveIdx < 0 || reserveIdx >= len(ka.reserve) || ka.reserve[reserveIdx] == nil {
+		return nil, nil
+	}
+	card := ka.reserve[reserveIdx]
+	for col := range KingAlbertTableauCnt {
+		if ka.canPlaceOnTableau(card, col) {
+			tableau = append(tableau, col)
+		}
+	}
+	if f := ka.findFoundation(card); f >= 0 {
+		foundation = []int{f}
+	}
+	return tableau, foundation
+}
+
 // checkGameClear ゲームクリア判定
 func (ka *KingAlbert) checkGameClear() {
 	for i := range KingAlbertFoundationCnt {

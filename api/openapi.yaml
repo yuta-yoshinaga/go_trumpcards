@@ -79082,6 +79082,20 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/Card'
+        legalTargets:
+          type: object
+          additionalProperties:
+            type: object
+            required: [tableau, foundation]
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         hint:
           type: object
           properties:

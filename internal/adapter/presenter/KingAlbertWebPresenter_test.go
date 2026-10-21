@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -44,6 +45,8 @@ func setupKingAlbertWebMockDefaults(bg *interfaces.MockKingAlbertGame) {
 		foundation[i] = []*domain.Card{domain.NewCard(domain.CardDesignSpade+i, 1, false)}
 	}
 	bg.On("GetFoundation").Return(foundation).Maybe()
+	bg.On("LegalTargets", mock.AnythingOfType("int")).Return([]int{}, []int{}).Maybe()
+	bg.On("ReserveLegalTargets", mock.AnythingOfType("int")).Return([]int{}, []int{}).Maybe()
 }
 
 func parseKingAlbertOutput(t *testing.T, jsonStr string) *controller.KingAlbertWebOutput {
@@ -61,6 +64,23 @@ func setupKingAlbertOutputMock(g *interfaces.MockKingAlbertGame) {
 	g.On("GetHint").Return(nil).Maybe()
 }
 
+func filterKingAlbertCalls(calls []*mock.Call, methods ...string) []*mock.Call {
+	filtered := make([]*mock.Call, 0, len(calls))
+	for _, call := range calls {
+		keep := true
+		for _, method := range methods {
+			if call.Method == method {
+				keep = false
+				break
+			}
+		}
+		if keep {
+			filtered = append(filtered, call)
+		}
+	}
+	return filtered
+}
+
 func TestKingAlbertWebPresenter_Output(t *testing.T) {
 	t.Run("initial state", func(t *testing.T) {
 		bg := new(interfaces.MockKingAlbertGame)
@@ -73,6 +93,7 @@ func TestKingAlbertWebPresenter_Output(t *testing.T) {
 		assert.Len(t, result.Tableau, domain.KingAlbertTableauCnt)
 		assert.Len(t, result.Reserve, domain.KingAlbertReserveCnt)
 		assert.Len(t, result.Foundation, domain.KingAlbertFoundationCnt)
+		assert.Empty(t, result.LegalTargets)
 		assert.Equal(t, "kingalbert.playing", result.MessageCode)
 	})
 
@@ -208,6 +229,30 @@ func TestKingAlbertWebPresenter_HintOutput(t *testing.T) {
 		assert.Nil(t, result.Hint)
 		assert.Equal(t, "kingalbert.noHint", result.MessageCode)
 	})
+}
+
+func TestKingAlbertWebPresenter_LegalTargetsInBothOutputs(t *testing.T) {
+	bg := new(interfaces.MockKingAlbertGame)
+	setupKingAlbertOutputMock(bg)
+	bg.ExpectedCalls = filterKingAlbertCalls(bg.ExpectedCalls, "GetTableau", "GetReserve", "LegalTargets", "ReserveLegalTargets")
+	var tableau [domain.KingAlbertTableauCnt][]*domain.KingAlbertTableauCard
+	tableau[0] = []*domain.KingAlbertTableauCard{{Card: domain.NewCard(domain.CardDesignHeart, 5, false), FaceUp: true}}
+	bg.On("GetTableau").Return(tableau).Maybe()
+	reserve := make([]*domain.Card, domain.KingAlbertReserveCnt)
+	reserve[1] = domain.NewCard(domain.CardDesignSpade, 1, false)
+	bg.On("GetReserve").Return(reserve).Maybe()
+	bg.On("LegalTargets", mock.Anything).Return([]int{2}, []int{}).Maybe()
+	bg.On("ReserveLegalTargets", mock.Anything).Return([]int{}, []int{0}).Maybe()
+	p := new(KingAlbertWebPresenter)
+	want := map[string]controller.KingAlbertWebOutputTargets{
+		"tableau-0": {Tableau: []int{2}, Foundation: []int{}},
+		"reserve-1": {Tableau: []int{}, Foundation: []int{0}},
+	}
+	assert.Equal(t, want, parseKingAlbertOutput(t, p.Output(bg, nil)).LegalTargets)
+	assert.Contains(t, p.Output(bg, nil), `"legalTargets":{"reserve-1":{"tableau":[],"foundation":[0]},"tableau-0":{"tableau":[2],"foundation":[]}}`)
+	hintOutput := p.HintOutput(bg)
+	assert.Equal(t, want, parseKingAlbertOutput(t, hintOutput).LegalTargets)
+	assert.Contains(t, hintOutput, `"legalTargets":{"reserve-1":{"tableau":[],"foundation":[0]},"tableau-0":{"tableau":[2],"foundation":[]}}`)
 }
 
 func TestKingAlbertWebPresenter_ActionLogOutput(t *testing.T) {

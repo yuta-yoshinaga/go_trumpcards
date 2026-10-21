@@ -23,6 +23,7 @@ const baseState: KingAlbertResponse = {
   tableau: Array.from({ length: 9 }, () => []),
   reserve: Array.from({ length: 7 }, () => null),
   foundation: [[], [], [], []],
+  legalTargets: {},
   phase: 0,
   moveCount: 0,
   canUndo: false,

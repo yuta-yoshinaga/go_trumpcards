@@ -39,7 +39,6 @@ import { cardAlt } from '../utils/cardAlt';
 import { KINGALBERT_HELP, parseKingAlbertCommand } from '../utils/cli/commands/kingalbertCommands';
 import { formatKingAlbertState } from '../utils/cli/formatters/kingalbertFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { kingAlbertLegalTargets } from '../utils/kingAlbertLegalTargets';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
@@ -225,7 +224,15 @@ function KingAlbertPageContent() {
   })();
   // リングは**置ける先だけ**に付ける。「選択中なら全部光る」だと、エラーになる手を
   // 勧めることになる (#5598)。
-  const legalTargets = kingAlbertLegalTargets(state.tableau, state.foundation, selectedCard);
+  const legalTargetKey =
+    selectedSource?.col === undefined
+      ? undefined
+      : `${selectedSource.zone === 'reserve' ? 'reserve' : 'tableau'}-${selectedSource.col}`;
+  const selectedLegalTargets = legalTargetKey ? state.legalTargets[legalTargetKey] : undefined;
+  const legalTargets = {
+    tableau: new Set(selectedLegalTargets?.tableau ?? []),
+    foundation: new Set(selectedLegalTargets?.foundation ?? []),
+  };
   const selectedSourceAnnouncement =
     selectedSource && selectedCard
       ? selectedSource.zone === 'reserve'

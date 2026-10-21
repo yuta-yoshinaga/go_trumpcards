@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -40,6 +41,7 @@ func (p *KingAlbertWebPresenter) Output(bc interfaces.KingAlbertGame, lastErr er
 	for i, c := range reserve {
 		resObj.Reserve[i] = cardToOutput(c)
 	}
+	resObj.LegalTargets = p.buildLegalTargets(bc)
 
 	// ファンデーション
 	foundation := bc.GetFoundation()
@@ -91,6 +93,38 @@ func (p *KingAlbertWebPresenter) Output(bc interfaces.KingAlbertGame, lastErr er
 	return marshalOrError(resObj)
 }
 
+func (p *KingAlbertWebPresenter) buildLegalTargets(bc interfaces.KingAlbertGame) map[string]controller.KingAlbertWebOutputTargets {
+	out := make(map[string]controller.KingAlbertWebOutputTargets)
+	for col, cards := range bc.GetTableau() {
+		if len(cards) == 0 {
+			continue
+		}
+		tableau, foundation := bc.LegalTargets(col)
+		if len(tableau) == 0 && len(foundation) == 0 {
+			continue
+		}
+		out["tableau-"+strconv.Itoa(col)] = controller.KingAlbertWebOutputTargets{Tableau: nonNilInts(tableau), Foundation: nonNilInts(foundation)}
+	}
+	for idx, card := range bc.GetReserve() {
+		if card == nil {
+			continue
+		}
+		tableau, foundation := bc.ReserveLegalTargets(idx)
+		if len(tableau) == 0 && len(foundation) == 0 {
+			continue
+		}
+		out["reserve-"+strconv.Itoa(idx)] = controller.KingAlbertWebOutputTargets{Tableau: nonNilInts(tableau), Foundation: nonNilInts(foundation)}
+	}
+	return out
+}
+
+func nonNilInts(values []int) []int {
+	if values == nil {
+		return []int{}
+	}
+	return values
+}
+
 // HintOutput ヒントをJSON出力
 func (p *KingAlbertWebPresenter) HintOutput(bc interfaces.KingAlbertGame) string {
 	hint := bc.GetHint()
@@ -99,6 +133,7 @@ func (p *KingAlbertWebPresenter) HintOutput(bc interfaces.KingAlbertGame) string
 	resObj.Tableau = make([][]*controller.KingAlbertWebOutputTableauCard, 0)
 	resObj.Reserve = make([]*controller.WebOutputCard, 0)
 	resObj.Foundation = make([][]*controller.WebOutputCard, 0)
+	resObj.LegalTargets = p.buildLegalTargets(bc)
 
 	if hint != nil {
 		resObj.Hint = &controller.KingAlbertWebOutputHint{
