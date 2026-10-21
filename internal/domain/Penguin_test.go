@@ -34,6 +34,30 @@ func clearFreeCellsPG(p *Penguin) {
 	}
 }
 
+func TestPenguinLegalTargets(t *testing.T) {
+	p := setupPlayingPenguin()
+	clearTableauPG(p)
+	clearFreeCellsPG(p)
+	p.baseRank = 4
+	p.tableau[0] = []*Card{makeCard(CardDesignSpade, 5), makeCard(CardDesignSpade, 4)}
+	p.tableau[1] = []*Card{makeCard(CardDesignSpade, 6)}
+	tab, foundation := p.LegalTargetsFrom(0, 0)
+	assert.Contains(t, tab, 1, "valid suffix may move onto same-suit descending target")
+	assert.Empty(t, foundation, "foundation only accepts the exposed top card")
+	_, foundation = p.LegalTargetsFrom(0, 1)
+	assert.Equal(t, []int{0}, foundation, "base-rank card starts its suit foundation")
+
+	p.foundation[0] = []*Card{makeCard(CardDesignSpade, 13)}
+	p.tableau[2] = []*Card{makeCard(CardDesignSpade, 1)}
+	_, foundation = p.LegalTargetsFrom(2, 0)
+	assert.Equal(t, []int{0}, foundation, "foundation wraps King to Ace")
+
+	p.freeCells[0] = makeCard(CardDesignSpade, 1)
+	_, foundation = p.FreeCellLegalTargets(0)
+	assert.Equal(t, []int{0}, foundation)
+	assert.Nil(t, func() []int { _, f := p.FreeCellLegalTargets(1); return f }())
+}
+
 // --- Reset tests ---
 
 func TestPenguinReset(t *testing.T) {

@@ -24,6 +24,7 @@ const playingState: PenguinResponse = {
   tableau: [[card('SPADE', 13)], [card('HEART', 12)], [], [], [], [], []],
   freeCells: [card('DIAMOND', 3), card('CLOVER', 5), card('HEART', 7), null, null, null, null],
   foundation: [[], [], [], []],
+  legalTargets: {},
   baseRank: 4,
   maxMovableCards: 8,
   maxMovableCardsToEmptyColumn: 4,
@@ -420,6 +421,7 @@ describe('PenguinPage', () => {
     mockExec.mockResolvedValue({
       ...playingState,
       tableau: [[card('SPADE', 4)], [], [], [], [], [], []],
+      legalTargets: { 'tableau-0-0': { tableau: [], foundation: [0] } },
     });
     renderWithProviders(<PenguinPage />);
     const cardButton = (await screen.findByAltText('♠ 4')).closest('button') as HTMLButtonElement;
@@ -433,6 +435,25 @@ describe('PenguinPage', () => {
         'move',
         { zone: 'tableau', col: 0, cardIndex: 0 },
         { zone: 'foundation', col: 0 },
+      ),
+    );
+  });
+
+  it('follows server legal targets when they disagree with the former client rule', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: [[card('SPADE', 4)], [], [], [], [], [], []],
+      legalTargets: { 'tableau-0-0': { tableau: [], foundation: [2] } },
+    });
+    renderWithProviders(<PenguinPage />);
+    const cardButton = (await screen.findByAltText('♠ 4')).closest('button') as HTMLButtonElement;
+    mockExec.mockClear();
+    fireEvent.doubleClick(cardButton);
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith(
+        'move',
+        { zone: 'tableau', col: 0, cardIndex: 0 },
+        { zone: 'foundation', col: 2 },
       ),
     );
   });

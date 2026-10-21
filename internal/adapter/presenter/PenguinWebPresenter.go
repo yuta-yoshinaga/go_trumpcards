@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -16,6 +17,7 @@ type PenguinWebPresenter struct{}
 // Output ゲーム状態をJSON出力
 func (p *PenguinWebPresenter) Output(pg interfaces.PenguinGame, lastErr error) string {
 	resObj := new(controller.PenguinWebOutput)
+	resObj.LegalTargets = p.buildLegalTargets(pg)
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, pg, int(pg.GetPhase()))
 
 	// タブロー
@@ -97,10 +99,42 @@ func (p *PenguinWebPresenter) Output(pg interfaces.PenguinGame, lastErr error) s
 	return marshalOrError(resObj)
 }
 
+func (p *PenguinWebPresenter) buildLegalTargets(pg interfaces.PenguinGame) map[string]controller.PenguinWebOutputTargets {
+	out := make(map[string]controller.PenguinWebOutputTargets)
+	for col, cards := range pg.GetTableau() {
+		for cardIndex := range cards {
+			tableau, foundation := pg.LegalTargetsFrom(col, cardIndex)
+			if len(tableau) == 0 && len(foundation) == 0 {
+				continue
+			}
+			out["tableau-"+strconv.Itoa(col)+"-"+strconv.Itoa(cardIndex)] = controller.PenguinWebOutputTargets{Tableau: penguinNonNilInts(tableau), Foundation: penguinNonNilInts(foundation)}
+		}
+	}
+	for cell, card := range pg.GetFreeCells() {
+		if card == nil {
+			continue
+		}
+		tableau, foundation := pg.FreeCellLegalTargets(cell)
+		if len(tableau) == 0 && len(foundation) == 0 {
+			continue
+		}
+		out["freecell-"+strconv.Itoa(cell)] = controller.PenguinWebOutputTargets{Tableau: penguinNonNilInts(tableau), Foundation: penguinNonNilInts(foundation)}
+	}
+	return out
+}
+
+func penguinNonNilInts(values []int) []int {
+	if values == nil {
+		return []int{}
+	}
+	return values
+}
+
 // HintOutput ヒントをJSON出力
 func (p *PenguinWebPresenter) HintOutput(pg interfaces.PenguinGame) string {
 	hint := pg.GetHint()
 	resObj := new(controller.PenguinWebOutput)
+	resObj.LegalTargets = p.buildLegalTargets(pg)
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, pg, int(pg.GetPhase()))
 	resObj.FreeCells = make([]*controller.WebOutputCard, 0)
 	resObj.Tableau = make([][]*controller.WebOutputCard, 0)

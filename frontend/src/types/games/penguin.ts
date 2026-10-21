@@ -17,6 +17,7 @@ export interface PenguinResponse extends BaseGameResponse {
   tableau: (Card | null)[][];
   freeCells: (Card | null)[];
   foundation: Card[][];
+  legalTargets: Record<string, { tableau: number[]; foundation: number[] }>;
   baseRank: number;
   /** How many cards may move as one stack right now (from the domain). */
   maxMovableCards: number;
