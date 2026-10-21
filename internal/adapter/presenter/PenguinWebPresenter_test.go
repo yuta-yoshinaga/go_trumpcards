@@ -267,3 +267,40 @@ func TestPenguinWebPresenterEmptyColumnLimitIsLower(t *testing.T) {
 	assert.Less(t, out.MaxMovableCardsToEmptyColumn, out.MaxMovableCards,
 		"空き列自身を経由地に使えないぶん上限は下がる")
 }
+
+func TestPenguinWebPresenterLegalTargetsBothOutputsAndEmpty(t *testing.T) {
+	presenter := new(PenguinWebPresenter)
+	g := domain.NewPenguin(domain.NewTrumpCards(0))
+	g.Reset()
+	g.SetBaseRank(4)
+	var tableau [domain.PenguinTableauCnt][]*domain.Card
+	tableau[0] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 4, false)}
+	tableau[1] = []*domain.Card{domain.NewCard(domain.CardDesignJoker, 0, false)}
+	g.SetTableau(tableau)
+	var cells [domain.PenguinCellCnt]*domain.Card
+	cells[0] = domain.NewCard(domain.CardDesignHeart, 3, false)
+	cells[1] = domain.NewCard(domain.CardDesignJoker, 0, false)
+	g.SetFreeCells(cells)
+
+	for name, raw := range map[string]string{"output": presenter.Output(g, nil), "hint": presenter.HintOutput(g)} {
+		var out controller.PenguinWebOutput
+		require.NoError(t, json.Unmarshal([]byte(raw), &out), name)
+		assert.Equal(t, []int{0}, out.LegalTargets["tableau-0-0"].Foundation, name)
+		assert.Empty(t, out.LegalTargets["tableau-0-0"].Tableau, name)
+		assert.NotNil(t, out.LegalTargets["freecell-0"].Foundation, name)
+		assert.Empty(t, out.LegalTargets["freecell-0"].Foundation, name)
+		assert.NotNil(t, out.LegalTargets["freecell-0"].Tableau, name)
+		assert.NotEmpty(t, out.LegalTargets["freecell-0"].Tableau, name)
+		assert.NotContains(t, out.LegalTargets, "freecell-1", name)
+	}
+
+	g.SetTableau([domain.PenguinTableauCnt][]*domain.Card{})
+	g.SetFreeCells([domain.PenguinCellCnt]*domain.Card{})
+	var empty controller.PenguinWebOutput
+	require.NoError(t, json.Unmarshal([]byte(presenter.Output(g, nil)), &empty))
+	assert.Empty(t, empty.LegalTargets)
+	var noHint controller.PenguinWebOutput
+	g.SetPhase(domain.PenguinPhaseGameOver)
+	require.NoError(t, json.Unmarshal([]byte(presenter.HintOutput(g)), &noHint))
+	assert.Empty(t, noHint.LegalTargets)
+}

@@ -19,6 +19,7 @@ func mustPenguinOutputJSON(msg string) string {
 		Tableau:       [][]*controller.WebOutputCard{},
 		FreeCells:     []*controller.WebOutputCard{},
 		Foundation:    [][]*controller.WebOutputCard{},
+		LegalTargets:  map[string]controller.PenguinWebOutputTargets{},
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)

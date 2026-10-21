@@ -36,7 +36,6 @@ import { cardAlt } from '../utils/cardAlt';
 import { PENGUIN_HELP, parsePenguinCommand } from '../utils/cli/commands/penguinCommands';
 import { formatPenguinState } from '../utils/cli/formatters/penguinFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { penguinFoundationTarget } from '../utils/penguinFoundationTarget';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
@@ -146,6 +145,7 @@ function PenguinPageContent() {
     handleUndoEscape,
     handleSelectSource,
     handleSelectTarget,
+    handleFoundationShortcut,
     isAutoCompleting,
   } = usePenguinGame();
   const selectSourceHintId = useId();
@@ -201,17 +201,6 @@ function PenguinPageContent() {
       void apiExec('move', source, target);
     },
     [apiExec],
-  );
-  // Double-click / double-tap shortcut: auto-send an exposed card to its
-  // foundation when Penguin's base-rank and wraparound rules allow it.
-  const handleFoundationShortcut = useCallback(
-    (source: PenguinMoveZone, card: Card) => {
-      if (!state) return;
-      const target = penguinFoundationTarget(card, state.foundation, state.baseRank);
-      if (!target) return;
-      dispatchMove(source, target);
-    },
-    [state, dispatchMove],
   );
   const dnd = useSolitaireDragDrop<PenguinMoveZone>({
     onMove: dispatchMove,
@@ -386,7 +375,7 @@ function PenguinPageContent() {
                               if (e.detail >= 2) return;
                               handleSelectSource(freeCellZone);
                             }}
-                            onDoubleClick={() => handleFoundationShortcut(freeCellZone, card)}
+                            onDoubleClick={() => handleFoundationShortcut(freeCellZone)}
                             disabled={!isPlaying || loading}
                             aria-label={cardAlt(card)}
                             aria-pressed={isSourceSelected('freecell', undefined, idx)}
@@ -567,7 +556,7 @@ function PenguinPageContent() {
                                       }}
                                       onDoubleClick={
                                         col.length - 1 === cardIdx
-                                          ? () => handleFoundationShortcut(cardZone, card)
+                                          ? () => handleFoundationShortcut(cardZone)
                                           : undefined
                                       }
                                       disabled={!isPlaying || loading}

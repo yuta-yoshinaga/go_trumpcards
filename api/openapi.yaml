@@ -67605,6 +67605,20 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/Card'
+        legalTargets:
+          type: object
+          description: Legal destinations keyed by source (tableau-<col>-<cardIndex> or freecell-<cell>); sources without destinations are omitted.
+          additionalProperties:
+            type: object
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         baseRank:
           type: integer
           description: The base rank for foundations (1-13, determined by the first dealt card)

@@ -553,6 +553,55 @@ func (p *Penguin) SetFoundation(foundation [PenguinFoundationCnt][]*Card) {
 	p.foundation = foundation
 }
 
+// LegalTargetsFrom returns legal tableau and foundation destinations for a tableau suffix.
+func (p *Penguin) LegalTargetsFrom(col, cardIndex int) (tableau, foundation []int) {
+	if col < 0 || col >= PenguinTableauCnt || cardIndex < 0 || cardIndex >= len(p.tableau[col]) {
+		return nil, nil
+	}
+	cards := p.tableau[col][cardIndex:]
+	if !p.isValidTableauSequence(cards) {
+		return nil, nil
+	}
+	card := cards[0]
+	for toCol := range PenguinTableauCnt {
+		if toCol == col || !p.canPlaceOnTableau(card, toCol) {
+			continue
+		}
+		limit := p.GetMaxMovableCards()
+		if len(p.tableau[toCol]) == 0 {
+			limit = p.maxMovableCards(toCol)
+		}
+		if len(cards) <= limit {
+			tableau = append(tableau, toCol)
+		}
+	}
+	if cardIndex == len(p.tableau[col])-1 {
+		fIdx := card.GetDesign() - 1
+		if fIdx >= 0 && fIdx < PenguinFoundationCnt && p.canPlaceOnFoundation(card, fIdx) {
+			foundation = []int{fIdx}
+		}
+	}
+	return tableau, foundation
+}
+
+// FreeCellLegalTargets returns legal tableau and foundation destinations for a free cell.
+func (p *Penguin) FreeCellLegalTargets(cell int) (tableau, foundation []int) {
+	if cell < 0 || cell >= PenguinCellCnt || p.freeCells[cell] == nil {
+		return nil, nil
+	}
+	card := p.freeCells[cell]
+	for col := range PenguinTableauCnt {
+		if p.canPlaceOnTableau(card, col) {
+			tableau = append(tableau, col)
+		}
+	}
+	fIdx := card.GetDesign() - 1
+	if fIdx >= 0 && fIdx < PenguinFoundationCnt && p.canPlaceOnFoundation(card, fIdx) {
+		foundation = []int{fIdx}
+	}
+	return tableau, foundation
+}
+
 // --- Private helpers ---
 
 // nextRank ラップアラウンド付き次のランク (K→A)
