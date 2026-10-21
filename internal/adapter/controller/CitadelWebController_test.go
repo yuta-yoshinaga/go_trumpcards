@@ -17,6 +17,7 @@ func mustCitadelOutputJSON(msg string) string {
 	out := &controller.CitadelWebOutput{
 		Tableau:       [][]*controller.CitadelWebOutputTableauCard{},
 		Foundation:    [][]*controller.WebOutputCard{},
+		LegalTargets:  map[string]controller.CitadelWebOutputTargets{},
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)

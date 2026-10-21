@@ -23,6 +23,8 @@ type CitadelGame interface {
 	GetMoveCount() int
 	// GetTableau タブローを取得する
 	GetTableau() [domain.CitadelTableauCnt][]*domain.CitadelTableauCard
+	// LegalTargets returns the destinations for the top card in tableau column fromCol.
+	LegalTargets(fromCol int) ([]int, []int)
 	// GetFoundation ファンデーションを取得する
 	GetFoundation() [domain.CitadelFoundationCnt][]*domain.Card
 	// AllFaceUp 全カードが表向きかを返す

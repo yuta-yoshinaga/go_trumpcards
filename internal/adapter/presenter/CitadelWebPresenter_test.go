@@ -32,6 +32,9 @@ func setupCitadelWebMockDefaults(bg *interfaces.MockCitadelGame) {
 		}
 	}
 	bg.On("GetTableau").Return(tableau).Maybe()
+	for col := 0; col < domain.CitadelTableauCnt; col++ {
+		bg.On("LegalTargets", col).Return(nil, nil).Maybe()
+	}
 
 	var foundation [domain.CitadelFoundationCnt][]*domain.Card
 	for i := range domain.CitadelFoundationCnt {
@@ -141,6 +144,52 @@ func TestCitadelWebPresenter_OutputCarriesTheHint(t *testing.T) {
 		t.Fatal("Output must carry the hint -- the frontend reads state.hint")
 	}
 	assert.Equal(t, 2, result.Hint.FromCol)
+}
+
+func TestCitadelWebPresenter_LegalTargets(t *testing.T) {
+	for _, mode := range []string{"Output", "HintOutput"} {
+		t.Run(mode+" with targets", func(t *testing.T) {
+			bg := new(interfaces.MockCitadelGame)
+			setupCitadelOutputMock(bg)
+			bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "GetTableau")
+			bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "LegalTargets")
+			var tableau [domain.CitadelTableauCnt][]*domain.CitadelTableauCard
+			tableau[0] = []*domain.CitadelTableauCard{{Card: domain.NewCard(domain.CardDesignSpade, 5, false), FaceUp: true}}
+			bg.On("GetTableau").Return(tableau)
+			bg.On("LegalTargets", 0).Return([]int{3}, []int{1})
+			for col := 1; col < domain.CitadelTableauCnt; col++ {
+				bg.On("LegalTargets", col).Return(nil, nil).Maybe()
+			}
+			p := new(CitadelWebPresenter)
+			var response string
+			if mode == "Output" {
+				response = p.Output(bg, nil)
+			} else {
+				response = p.HintOutput(bg)
+			}
+			var decoded map[string]json.RawMessage
+			assert.NoError(t, json.Unmarshal([]byte(response), &decoded))
+			var targets json.RawMessage
+			assert.NoError(t, json.Unmarshal(decoded["legalTargets"], &targets))
+			assert.JSONEq(t, `{"tableau-0":{"tableau":[3],"foundation":[1]}}`, string(targets))
+		})
+		t.Run(mode+" omits empty sources", func(t *testing.T) {
+			bg := new(interfaces.MockCitadelGame)
+			setupCitadelOutputMock(bg)
+			bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "GetTableau")
+			bg.On("GetTableau").Return([domain.CitadelTableauCnt][]*domain.CitadelTableauCard{})
+			p := new(CitadelWebPresenter)
+			var response string
+			if mode == "Output" {
+				response = p.Output(bg, nil)
+			} else {
+				response = p.HintOutput(bg)
+			}
+			var decoded map[string]json.RawMessage
+			assert.NoError(t, json.Unmarshal([]byte(response), &decoded))
+			assert.JSONEq(t, `{}`, string(decoded["legalTargets"]))
+		})
+	}
 }
 
 func TestCitadelWebPresenter_HintOutput(t *testing.T) {

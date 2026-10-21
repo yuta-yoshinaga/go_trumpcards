@@ -33,7 +33,6 @@ import type { CitadelResponse } from '../types/card';
 import { CitadelPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
-import { citadelLegalTargets } from '../utils/citadelLegalTargets';
 import { CITADEL_HELP, parseCitadelCommand } from '../utils/cli/commands/citadelCommands';
 import { formatCitadelState } from '../utils/cli/formatters/citadelFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -200,13 +199,17 @@ function CitadelPageContent() {
   // **枠を出すだけで、押せなくはしない。**押せなくすると E2E の
   // 「最初の列をクリック」が別の列を掴んでしまう。
   // **選ぶ前に行き先が見える (#4454)。** hover / フォーカス中の札にも、選択後と
-  // まったく同じ計算を当てる ── 判定を二重に持たないので食い違わない。
+  // まったく同じサーバー由来の集合を当てる。
   const previewSource = preview.source;
-  const previewedCard =
-    previewSource?.zone === 'tableau' && previewSource.col !== undefined && previewSource.cardIndex !== undefined
-      ? state.tableau[previewSource.col]?.[previewSource.cardIndex]?.card
+  // 判定は Citadel.go の canPlaceOn* を通してサーバーが計算する (ADR-0045).
+  const legalForPreview =
+    previewSource?.zone === 'tableau' && previewSource.col !== undefined
+      ? state.legalTargets[`tableau-${previewSource.col}`]
       : undefined;
-  const legalTargets = citadelLegalTargets(state.tableau, state.foundation, previewedCard);
+  const legalTargets = {
+    tableau: new Set(legalForPreview?.tableau ?? []),
+    foundation: new Set(legalForPreview?.foundation ?? []),
+  };
   // **読み上げは選択中の札について数える。** legalTargets は preview.source
   // (ホバーまたは**フォーカス**で動く) の札のもので、キーボードで札を辿ると
   // 選択とずれる。ここだけ選択元から数え直す。
@@ -220,7 +223,14 @@ function CitadelPageContent() {
     selectedSource?.zone === 'tableau' && selectedSource.col !== undefined
       ? t('selectionTableauSource', { col: selectedSource.col })
       : '';
-  const selectedTargets = citadelLegalTargets(state.tableau, state.foundation, selectedCard);
+  const legalForSelection =
+    selectedSource?.zone === 'tableau' && selectedSource.col !== undefined
+      ? state.legalTargets[`tableau-${selectedSource.col}`]
+      : undefined;
+  const selectedTargets = {
+    tableau: new Set(legalForSelection?.tableau ?? []),
+    foundation: new Set(legalForSelection?.foundation ?? []),
+  };
   const legalTargetCount = selectedTargets.tableau.size + selectedTargets.foundation.size;
   /** Ring for a legal destination: softer while it is only a hover preview. */
   const targetRing = preview.isPreview ? ' rounded ring-2 ring-ds-success/70' : ' rounded ring-2 ring-ds-success';
