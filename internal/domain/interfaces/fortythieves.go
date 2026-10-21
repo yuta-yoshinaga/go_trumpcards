@@ -21,6 +21,10 @@ type FortyThievesGame interface {
 	MoveTableauToTableau(fromCol, cardIndex, toCol int) error
 	// MoveTableauToFoundation タブローからファンデーションにカードを移動する
 	MoveTableauToFoundation(col int) error
+	// LegalTargets reports legal destinations for the top card in a tableau column.
+	LegalTargets(col int) (tableau, foundation []int)
+	// WasteLegalTargets reports legal destinations for the waste top card.
+	WasteLegalTargets() (tableau, foundation []int)
 	// GetHint ヒントを取得する
 	GetHint() *domain.FortyThievesHint
 	// GetPhase 現在のフェーズを取得する
