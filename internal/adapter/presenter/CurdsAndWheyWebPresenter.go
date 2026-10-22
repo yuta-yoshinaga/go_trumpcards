@@ -88,6 +88,10 @@ func (p *CurdsAndWheyWebPresenter) ActionLogOutput(g interfaces.CurdsAndWheyGame
 func (p *CurdsAndWheyWebPresenter) fillBoard(resObj *controller.CurdsAndWheyWebOutput, g interfaces.CurdsAndWheyGame) {
 	cols := g.GetColumns()
 	resObj.Columns = pilesToOutput(cols[:])
+	resObj.RunStarts = make([][]int, len(cols))
+	for col := range cols {
+		resObj.RunStarts[col] = intSliceOrEmpty(g.RunStarts(col))
+	}
 }
 
 func (p *CurdsAndWheyWebPresenter) buildBaseOutput(g interfaces.CurdsAndWheyGame) *controller.CurdsAndWheyWebOutput {

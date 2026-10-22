@@ -107,6 +107,20 @@ func CurdsAndWheyMovableFrom(column []*Card) int {
 	return idx
 }
 
+// RunStarts returns the card indices that can start a movable run in column col.
+func (g *CurdsAndWhey) RunStarts(col int) []int {
+	if col < 0 || col >= CurdsAndWheyColCnt {
+		return []int{}
+	}
+	column := g.columns[col]
+	start := CurdsAndWheyMovableFrom(column)
+	starts := make([]int, 0, len(column)-start)
+	for i := start; i < len(column); i++ {
+		starts = append(starts, i)
+	}
+	return starts
+}
+
 func curdsAndWheyIsRun(cards []*Card) bool {
 	for i := 1; i < len(cards); i++ {
 		if cards[i].GetDesign() != cards[i-1].GetDesign() || cards[i].GetValue() != cards[i-1].GetValue()-1 {

@@ -20,6 +20,8 @@ export interface CurdsAndWheyResponse extends BaseGameResponse {
   phase: number;
   moveCount: number;
   canUndo: boolean;
+  /** Start indices of movable runs, one list per tableau column. */
+  runStarts: number[][];
   hint?: CurdsAndWheyHint;
 }
 

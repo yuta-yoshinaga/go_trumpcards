@@ -333,3 +333,13 @@ func TestCurdsAndWheyMovableFrom(t *testing.T) {
 		assert.Equal(t, 0, CurdsAndWheyMovableFrom(col))
 	})
 }
+
+func TestCurdsAndWheyRunStarts(t *testing.T) {
+	g := NewDefaultCurdsAndWhey()
+	g.columns[0] = []*Card{NewCard(CardDesignSpade, 9, false), NewCard(CardDesignSpade, 8, false), NewCard(CardDesignHeart, 7, false), NewCard(CardDesignHeart, 6, false)}
+	g.columns[1] = nil
+	assert.Equal(t, []int{2, 3}, g.RunStarts(0))
+	assert.Equal(t, []int{}, g.RunStarts(1))
+	assert.Equal(t, []int{}, g.RunStarts(-1))
+	assert.Equal(t, []int{}, g.RunStarts(CurdsAndWheyColCnt))
+}

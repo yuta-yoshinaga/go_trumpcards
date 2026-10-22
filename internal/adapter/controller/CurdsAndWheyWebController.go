@@ -33,6 +33,7 @@ type CurdsAndWheyWebOutput struct {
 	Phase          int                        `json:"phase"`
 	MoveCount      int                        `json:"moveCount"`
 	CanUndo        bool                       `json:"canUndo"`
+	RunStarts      [][]int                    `json:"runStarts"`
 	Hint           *CurdsAndWheyWebOutputHint `json:"hint,omitempty"`
 	WebOutputBase
 }
@@ -49,6 +50,7 @@ var NewCurdsAndWheyWebController, NewCurdsAndWheyWebControllerWithProvider = web
 func newCurdsAndWheyDefaultOutput(msg string) *CurdsAndWheyWebOutput {
 	return &CurdsAndWheyWebOutput{
 		Columns:       make([][]*WebOutputCard, 0),
+		RunStarts:     make([][]int, 0),
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }

@@ -32,4 +32,6 @@ type CurdsAndWheyGame interface {
 	GetCompletedSuits() int
 	// GetColumns タブロー列を取得する。
 	GetColumns() [domain.CurdsAndWheyColCnt][]*domain.Card
+	// RunStarts returns the indices that can start a movable run in column col.
+	RunStarts(col int) []int
 }
