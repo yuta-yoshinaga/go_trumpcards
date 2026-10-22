@@ -39427,6 +39427,20 @@ components:
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
           items:
             $ref: '#/components/schemas/ActionLogEntry'
+        legalTargets:
+          type: object
+          description: Legal destinations by source key; sources without a destination are omitted.
+          additionalProperties:
+            type: object
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         reserve:
           type: array
           description: Four fans of three cards. Only the last element of each is available.

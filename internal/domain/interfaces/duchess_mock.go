@@ -13,6 +13,21 @@ type MockDuchessGame struct {
 	mock.Mock
 }
 
+func (_m *MockDuchessGame) LegalTargetsFrom(col, cardIndex int) ([]int, []int) {
+	ret := _m.Called(col, cardIndex)
+	return ret.Get(0).([]int), ret.Get(1).([]int)
+}
+
+func (_m *MockDuchessGame) ReserveLegalTargets(fanIdx int) ([]int, []int) {
+	ret := _m.Called(fanIdx)
+	return ret.Get(0).([]int), ret.Get(1).([]int)
+}
+
+func (_m *MockDuchessGame) WasteLegalTargets() ([]int, []int) {
+	ret := _m.Called()
+	return ret.Get(0).([]int), ret.Get(1).([]int)
+}
+
 func (_m *MockDuchessGame) Reset() {
 	_m.Called()
 }
