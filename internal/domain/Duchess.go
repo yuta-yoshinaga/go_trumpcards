@@ -393,6 +393,8 @@ func (d *Duchess) LegalTargetsFrom(col, cardIndex int) (tableau, foundation []in
 }
 
 // ReserveLegalTargets returns tableau and foundation destinations for a reserve fan top card.
+// Unlike LegalTargetsFrom and WasteLegalTargets it does not apply emptyColumnIsReservedForReserve:
+// MoveReserveToTableau allows a reserve card onto an empty column, so this must too.
 func (d *Duchess) ReserveLegalTargets(fanIdx int) (tableau, foundation []int) {
 	if d.baseRank == 0 || fanIdx < 0 || fanIdx >= DuchessReserveCnt {
 		return nil, nil
