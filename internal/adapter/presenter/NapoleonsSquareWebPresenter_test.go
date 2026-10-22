@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -40,6 +41,9 @@ func setupNapoleonsSquareWebMockDefaults(g *interfaces.MockNapoleonsSquareGame) 
 		foundation[i] = []*domain.Card{domain.NewCard(domain.CardDesignSpade+i%4, 1, false)}
 	}
 	g.On("GetFoundation").Return(foundation).Maybe()
+	g.On("RunStarts", mock.AnythingOfType("int")).Return([]int(nil)).Maybe()
+	g.On("LegalTargetsFrom", mock.AnythingOfType("int"), mock.AnythingOfType("int")).Return([]int(nil), []int(nil)).Maybe()
+	g.On("WasteLegalTargets").Return([]int(nil), []int(nil)).Maybe()
 }
 
 func parseNapoleonsSquareOutput(t *testing.T, jsonStr string) *controller.NapoleonsSquareWebOutput {
@@ -146,6 +150,36 @@ func TestNapoleonsSquareWebPresenter_OutputCarriesTheHint(t *testing.T) {
 		result := new(NapoleonsSquareWebPresenter).Output(nsg, nil)
 		assert.NotContains(t, result, `"hint"`)
 	})
+}
+
+func TestNapoleonsSquareWebPresenter_LegalTargets(t *testing.T) {
+	g := new(interfaces.MockNapoleonsSquareGame)
+	g.On("RunStarts", 0).Return([]int{1, 3})
+	g.On("RunStarts", 1).Return([]int{2})
+	g.On("LegalTargetsFrom", 0, 1).Return([]int{2}, []int(nil))
+	g.On("LegalTargetsFrom", 0, 3).Return([]int(nil), []int{5})
+	g.On("LegalTargetsFrom", 1, 2).Return([]int(nil), []int(nil))
+	g.On("WasteLegalTargets").Return([]int(nil), []int{4})
+	setupNapoleonsSquareOutputMock(g)
+	out := parseNapoleonsSquareOutput(t, new(NapoleonsSquareWebPresenter).Output(g, nil))
+	assert.Equal(t, map[string]controller.NapoleonsSquareWebOutputTargets{
+		"tableau-0-1": {Tableau: []int{2}, Foundation: []int{}},
+		"tableau-0-3": {Tableau: []int{}, Foundation: []int{5}},
+		"waste":       {Tableau: []int{}, Foundation: []int{4}},
+	}, out.LegalTargets)
+	assert.NotNil(t, out.RunStarts[0])
+}
+
+func TestNapoleonsSquareWebPresenter_LegalTargetsWasteWithNilFoundationTargets(t *testing.T) {
+	g := new(interfaces.MockNapoleonsSquareGame)
+	setupNapoleonsSquareOutputMock(g)
+	g.ExpectedCalls = filterCalls(g.ExpectedCalls, "WasteLegalTargets")
+	g.On("WasteLegalTargets").Return([]int{2}, []int(nil))
+
+	out := parseNapoleonsSquareOutput(t, new(NapoleonsSquareWebPresenter).Output(g, nil))
+	assert.Equal(t, controller.NapoleonsSquareWebOutputTargets{
+		Tableau: []int{2}, Foundation: []int{},
+	}, out.LegalTargets["waste"])
 }
 
 func TestNapoleonsSquareWebPresenter_HintOutput(t *testing.T) {

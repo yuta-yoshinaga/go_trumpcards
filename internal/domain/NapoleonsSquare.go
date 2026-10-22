@@ -464,6 +464,56 @@ func (ns *NapoleonsSquare) GetFoundation() [NapoleonsSquareFoundationCnt][]*Card
 	return ns.foundation
 }
 
+// RunStarts returns the start indices of every movable same-suit descending run in a column.
+func (ns *NapoleonsSquare) RunStarts(col int) []int {
+	if col < 0 || col >= NapoleonsSquareTableauCnt {
+		return nil
+	}
+	starts := make([]int, 0)
+	for i := range ns.tableau[col] {
+		if napoleonsSquareIsRun(ns.tableau[col][i:]) {
+			starts = append(starts, i)
+		}
+	}
+	return starts
+}
+
+// LegalTargetsFrom returns legal tableau and first-foundation destinations for a tableau run.
+func (ns *NapoleonsSquare) LegalTargetsFrom(col, cardIndex int) (tableau, foundation []int) {
+	if col < 0 || col >= NapoleonsSquareTableauCnt || cardIndex < 0 || cardIndex >= len(ns.tableau[col]) || !napoleonsSquareIsRun(ns.tableau[col][cardIndex:]) {
+		return nil, nil
+	}
+	card := ns.tableau[col][cardIndex].Card
+	for to := range NapoleonsSquareTableauCnt {
+		if to != col && ns.canPlaceOnTableau(card, to) {
+			tableau = append(tableau, to)
+		}
+	}
+	if cardIndex == len(ns.tableau[col])-1 {
+		if f := ns.findFoundation(card); f >= 0 {
+			foundation = append(foundation, f)
+		}
+	}
+	return tableau, foundation
+}
+
+// WasteLegalTargets returns legal tableau and first-foundation destinations for the waste top.
+func (ns *NapoleonsSquare) WasteLegalTargets() (tableau, foundation []int) {
+	if len(ns.waste) == 0 {
+		return nil, nil
+	}
+	card := ns.waste[len(ns.waste)-1]
+	for col := range NapoleonsSquareTableauCnt {
+		if ns.canPlaceOnTableau(card, col) {
+			tableau = append(tableau, col)
+		}
+	}
+	if f := ns.findFoundation(card); f >= 0 {
+		foundation = append(foundation, f)
+	}
+	return tableau, foundation
+}
+
 // GetGameEndFlag ゲーム終了フラグ
 func (ns *NapoleonsSquare) GetGameEndFlag() bool { return ns.phase != NapoleonsSquarePhasePlaying }
 

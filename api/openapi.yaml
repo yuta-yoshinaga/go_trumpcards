@@ -34973,6 +34973,25 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/Card'
+        legalTargets:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
+        runStarts:
+          type: array
+          items:
+            type: array
+            items:
+              type: integer
         phase:
           type: integer
           description: "0=Playing, 1=GameClear, 2=GameOver"

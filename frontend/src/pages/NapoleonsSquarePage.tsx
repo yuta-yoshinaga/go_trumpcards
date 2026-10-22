@@ -35,7 +35,6 @@ import { valueName } from '../utils/cardUtils';
 import { NAPOLEONSSQUARE_HELP, parseNapoleonsSquareCommand } from '../utils/cli/commands/napoleonssquareCommands';
 import { formatNapoleonsSquareState } from '../utils/cli/formatters/napoleonssquareFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { isNapoleonsSquareRun } from '../utils/napoleonsSquareRuns';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 // Two foundations per suit; the order is pinned by domain.napoleonsSquareSuitOrder
@@ -243,7 +242,7 @@ function NapoleonsSquarePageContent() {
                 // unlike the one-card-at-a-time solitaires where only the top is.
                 const cardZone: NapoleonsSquareMoveZone = { zone: 'tableau', col: colIdx, cardIndex: cardIdx };
                 const isSelected = isSourceSelected('tableau', colIdx, cardIdx);
-                const runLength = isNapoleonsSquareRun(col, cardIdx) ? col.length - cardIdx : 0;
+                const runLength = state.runStarts[colIdx]?.includes(cardIdx) ? col.length - cardIdx : 0;
                 const runHintId = `ns-run-hint-${colIdx.toString()}-${cardIdx.toString()}`;
                 return (
                   <div
