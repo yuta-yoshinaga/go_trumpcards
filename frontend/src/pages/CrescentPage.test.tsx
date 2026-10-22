@@ -60,6 +60,7 @@ const playingState: CrescentResponse = {
   canUndo: false,
   isStalemate: false,
   noLegalMoves: false,
+  legalTargets: { 'tableau-0': { tableau: [1], foundation: [0] } },
   message: '',
 };
 
@@ -480,7 +481,7 @@ describe('CrescentPage', () => {
   });
 
   it('rings valid destinations when a source is selected (no hover needed)', async () => {
-    // col0 top ♠4 can go onto foundation ♠3 (asc) and onto tableau ♠5; ♥6 is invalid.
+    // The server's destinations deliberately contradict the old client mirror.
     const highlightState: CrescentResponse = {
       ...playingState,
       tableau: makeTableau([
@@ -498,6 +499,7 @@ describe('CrescentPage', () => {
         [card('HEART', 13)],
         [card('DIAMOND', 13)],
       ],
+      legalTargets: { 'tableau-0': { tableau: [2], foundation: [1] } },
     };
     mockExec.mockResolvedValue(highlightState);
 
@@ -515,10 +517,54 @@ describe('CrescentPage', () => {
     fireEvent.click(cardButton);
 
     await waitFor(() => expect(foundations.querySelectorAll('.ring-ds-success').length).toBeGreaterThan(0));
-    // Legal foundation destination(s) and exactly the ♠5 tableau column ring; the ♥6 column and source do not.
+    // Server-authorized ♥6 rings even though the old client rule mirror rejected it.
     expect(tableau.querySelectorAll('.ring-ds-success')).toHaveLength(1);
     const invalidTop = screen.getByAltText('♥ 6').closest('button') as HTMLButtonElement;
-    expect(invalidTop.className).toContain('opacity-40');
+    expect(invalidTop.className).not.toContain('opacity-40');
+  });
+
+  it('follows server legalTargets even when they contradict the old client rule', async () => {
+    localStorage.clear();
+    const serverOnlyState: CrescentResponse = {
+      ...playingState,
+      tableau: makeTableau([
+        [{ card: card('SPADE', 4), faceUp: true }],
+        [{ card: card('SPADE', 5), faceUp: true }],
+        [{ card: card('HEART', 6), faceUp: true }],
+      ]),
+      foundation: [
+        [card('SPADE', 3)],
+        [card('CLOVER', 1)],
+        [card('HEART', 1)],
+        [card('DIAMOND', 1)],
+        [card('SPADE', 13)],
+        [card('CLOVER', 13)],
+        [card('HEART', 13)],
+        [card('DIAMOND', 13)],
+      ],
+      // The old rule accepts ♠3→♠4 at foundation 0 and rejects the server's
+      // ♥6 tableau destination and foundation 1 destination.
+      legalTargets: { 'tableau-0': { tableau: [2], foundation: [1] } },
+    };
+    mockExec.mockResolvedValue(serverOnlyState);
+    const { container } = renderWithProviders(<CrescentPage />);
+    await screen.findByTestId('phase-indicator');
+
+    const source = screen.getByAltText('♠ 4').closest('button') as HTMLButtonElement;
+    fireEvent.click(source);
+
+    const tableau = container.querySelector('[data-tutorial="crescent-tableau"]') as HTMLElement;
+    const serverFoundation = screen.getByAltText('♣ A').closest('button')?.parentElement;
+    const oldRuleFoundation = screen.getByAltText('♠ 3').closest('button')?.parentElement;
+    await waitFor(() => expect(serverFoundation).toHaveClass('ring-2', 'ring-ds-success'));
+    expect(oldRuleFoundation).not.toHaveClass('ring-ds-success');
+    expect(tableau.querySelectorAll('.ring-ds-success')).toHaveLength(1);
+
+    const status = screen.getByTestId('cr-selection-status');
+    await waitFor(() => expect(status).toHaveTextContent('置ける場所が2箇所'));
+    expect(status).toHaveTextContent('タブロー列2');
+    expect(status).toHaveTextContent('組札1');
+    expect(status).not.toHaveTextContent('組札0');
   });
 
   it('clicking reset dispatches reset (after confirm)', async () => {
@@ -638,15 +684,14 @@ describe('CrescentPage', () => {
   it('announces how many legal destinations the selected card has', async () => {
     localStorage.clear();
     mockExec.mockReset();
-    mockExec.mockResolvedValue(playingState);
+    mockExec.mockResolvedValue({ ...playingState, legalTargets: {} });
     renderWithProviders(<CrescentPage />);
     const status = await screen.findByTestId('cr-selection-status');
     // Nothing selected yet, so the region stays empty rather than announcing noise.
     expect(status).toHaveTextContent('');
     expect(status).toHaveAttribute('aria-live', 'polite');
 
-    // ♠4 needs ♠2 and ♠3 on the ascending ♠A first, so it has nowhere to go —
-    // the dead end has to be announced too, not just left silent.
+    // The server reports no moves for this source, so the dead end is announced.
     fireEvent.click(screen.getByAltText('♠ 4').closest('button') as HTMLButtonElement);
     await waitFor(() => expect(status).toHaveTextContent('置ける場所はありません'));
   });
@@ -658,6 +703,7 @@ describe('CrescentPage', () => {
     mockExec.mockResolvedValue({
       ...playingState,
       tableau: makeTableau([[{ card: card('SPADE', 2), faceUp: true }]]),
+      legalTargets: { 'tableau-0': { tableau: [], foundation: [0] } },
     });
     renderWithProviders(<CrescentPage />);
     const status = await screen.findByTestId('cr-selection-status');

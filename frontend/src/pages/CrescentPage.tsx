@@ -41,7 +41,6 @@ import { cardAlt } from '../utils/cardAlt';
 import { CRESCENT_HELP, parseCrescentCommand } from '../utils/cli/commands/crescentCommands';
 import { formatCrescentState } from '../utils/cli/formatters/crescentFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { crescentCanPlaceOnFoundation, crescentCanPlaceOnTableau } from '../utils/crescentTargets';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
@@ -267,11 +266,14 @@ function CrescentPageContent() {
   // it survives touch/keyboard where there is no hover), and dim the other
   // playable tops so mistaken clicks stand out (#3257).
   const isFoundationTarget = (idx: number) =>
-    selectedCard !== null && crescentCanPlaceOnFoundation(selectedCard, state.foundation, idx);
+    selectedCard !== null &&
+    selectedSource?.zone === 'tableau' &&
+    state.legalTargets[`tableau-${selectedSource.col}`]?.foundation.includes(idx) === true;
   const isTableauTarget = (colIdx: number) =>
     selectedCard !== null &&
     !isSourceSelected('tableau', colIdx) &&
-    crescentCanPlaceOnTableau(selectedCard, state.tableau, colIdx);
+    selectedSource?.zone === 'tableau' &&
+    state.legalTargets[`tableau-${selectedSource.col}`]?.tableau.includes(colIdx) === true;
   const targetRingClass = (valid: boolean, active: boolean) =>
     valid && !active ? 'ring-2 ring-ds-success rounded' : '';
 

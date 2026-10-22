@@ -43,6 +43,9 @@ func setupCrescentWebMockDefaults(cg *interfaces.MockCrescentGame) {
 		foundation[i] = []*domain.Card{domain.NewCard(testCrescentFoundationSuit(i), domain.CardValueMax, false)}
 	}
 	cg.On("GetFoundation").Return(foundation).Maybe()
+	for col := 0; col < domain.CrescentTableauCnt; col++ {
+		cg.On("LegalTargets", col).Return([]int{}, []int{}).Maybe()
+	}
 }
 
 func parseCrescentOutput(t *testing.T, jsonStr string) *controller.CrescentWebOutput {
@@ -73,6 +76,7 @@ func TestCrescentWebPresenter_Output(t *testing.T) {
 		assert.False(t, result.NoLegalMoves)
 		assert.Len(t, result.Tableau, domain.CrescentTableauCnt)
 		assert.Len(t, result.Foundation, domain.CrescentFoundationCnt)
+		assert.Empty(t, result.LegalTargets)
 		assert.Equal(t, "crescent.playing", result.MessageCode)
 	})
 
@@ -122,6 +126,61 @@ func TestCrescentWebPresenter_Output(t *testing.T) {
 		result := parseCrescentOutput(t, p.Output(cg, nil))
 		assert.Equal(t, "crescent.stalemate", result.MessageCode)
 	})
+}
+
+func TestCrescentWebPresenter_LegalTargets(t *testing.T) {
+	for _, output := range []struct {
+		name string
+		call func(*CrescentWebPresenter, interfaces.CrescentGame) string
+	}{
+		{"output", func(p *CrescentWebPresenter, g interfaces.CrescentGame) string { return p.Output(g, nil) }},
+		{"hint output with hint", func(p *CrescentWebPresenter, g interfaces.CrescentGame) string { return p.HintOutput(g) }},
+		{"hint output without hint", func(p *CrescentWebPresenter, g interfaces.CrescentGame) string { return p.HintOutput(g) }},
+	} {
+		t.Run(output.name, func(t *testing.T) {
+			cg := new(interfaces.MockCrescentGame)
+			setupCrescentWebMockDefaults(cg)
+			cg.ExpectedCalls = filterCalls(cg.ExpectedCalls, "LegalTargets")
+			cg.On("GetHint").Return((*domain.CrescentHint)(nil)).Maybe()
+			cg.On("LegalTargets", 0).Return([]int(nil), []int{2}).Maybe()
+			cg.On("LegalTargets", 1).Return([]int{4}, []int(nil)).Maybe()
+			for col := 2; col < domain.CrescentTableauCnt; col++ {
+				cg.On("LegalTargets", col).Return([]int{}, []int{}).Maybe()
+			}
+			if output.name == "hint output without hint" {
+				cg.On("GetHint").Return((*domain.CrescentHint)(nil))
+			}
+			if output.name == "hint output with hint" {
+				cg.On("GetHint").Return(&domain.CrescentHint{FromCol: 0, ToZone: "tableau", ToCol: 4})
+			}
+			result := parseCrescentOutput(t, output.call(new(CrescentWebPresenter), cg))
+			assert.Equal(t, map[string]controller.CrescentWebOutputTargets{
+				"tableau-0": {Tableau: []int{}, Foundation: []int{2}},
+				"tableau-1": {Tableau: []int{4}, Foundation: []int{}},
+			}, result.LegalTargets)
+		})
+	}
+}
+
+func TestCrescentWebPresenter_LegalTargetsOmitsEmptySourcesAndDestinations(t *testing.T) {
+	cg := new(interfaces.MockCrescentGame)
+	setupCrescentWebMockDefaults(cg)
+	cg.ExpectedCalls = filterCalls(cg.ExpectedCalls, "LegalTargets")
+
+	var tableau [domain.CrescentTableauCnt][]*domain.CrescentTableauCard
+	tableau[0] = []*domain.CrescentTableauCard{{Card: domain.NewCard(domain.CardDesignSpade, 2, false), FaceUp: true}}
+	cg.ExpectedCalls = filterCalls(cg.ExpectedCalls, "GetTableau")
+	cg.On("GetTableau").Return(tableau)
+	// The empty source at column 1 must not be queried into the result. The
+	// non-empty source at column 0 has no destinations and must also be omitted.
+	cg.On("LegalTargets", 0).Return([]int{}, []int{})
+	for col := 2; col < domain.CrescentTableauCnt; col++ {
+		cg.On("LegalTargets", col).Return([]int{}, []int{}).Maybe()
+	}
+	cg.On("GetHint").Return((*domain.CrescentHint)(nil)).Maybe()
+
+	result := parseCrescentOutput(t, new(CrescentWebPresenter).Output(cg, nil))
+	assert.Empty(t, result.LegalTargets)
 }
 
 // **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
