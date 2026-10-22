@@ -17,6 +17,8 @@ type MrsMopGame interface {
 	MoveTableauToTableau(fromCol, cardIndex, toCol int) error
 	// LegalTargets 列 fromCol の札 cardIndex から始まる並びを置ける列を取得する
 	LegalTargets(fromCol, cardIndex int) (int, []int)
+	// RunStarts returns indices that can start a movable run in the given column.
+	RunStarts(col int) []int
 	// GetHint ヒントを取得する
 	GetHint() *domain.MrsMopHint
 	// GetPhase 現在のフェーズを取得する

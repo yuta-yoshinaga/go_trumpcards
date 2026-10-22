@@ -32,6 +32,12 @@ func (_m *MockMrsMopGame) LegalTargets(fromCol, cardIndex int) (int, []int) {
 	return ret.Int(0), v
 }
 
+func (_m *MockMrsMopGame) RunStarts(col int) []int {
+	ret := _m.Called(col)
+	v, _ := ret.Get(0).([]int)
+	return v
+}
+
 func (_m *MockMrsMopGame) GiveUp() {
 	_m.Called()
 }

@@ -4,6 +4,7 @@ import { formatMrsMopState } from './mrsMopFormatter';
 
 function makeState(overrides?: Partial<MrsMopResponse>): MrsMopResponse {
   return {
+    runStarts: Array.from({ length: 13 }, () => []),
     legalTargets: {},
     tableau: [[{ card: { design: 'SPADE', value: 13 }, faceUp: true }], []],
     stockCount: 0,

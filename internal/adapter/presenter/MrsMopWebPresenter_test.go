@@ -38,6 +38,13 @@ func setupMrsMopWebMockDefaults(sg *interfaces.MockMrsMopGame) {
 	}
 	sg.On("GetTableau").Return(tableau).Maybe()
 	sg.On("LegalTargets", mock.Anything, mock.Anything).Return(-1, []int{}).Maybe()
+	setupMrsMopRunStartsDefaults(sg)
+}
+
+func setupMrsMopRunStartsDefaults(sg *interfaces.MockMrsMopGame) {
+	for col := 0; col < domain.MrsMopTableauCnt; col++ {
+		sg.On("RunStarts", col).Return([]int{}).Maybe()
+	}
 }
 
 func parseMrsMopOutput(t *testing.T, jsonStr string) *controller.MrsMopWebOutput {
@@ -95,6 +102,27 @@ func TestMrsMopWebPresenter_LegalTargets(t *testing.T) {
 		var got map[string]json.RawMessage
 		assert.NoError(t, json.Unmarshal([]byte(raw), &got))
 		assert.JSONEq(t, `{}`, string(got["legalTargets"]))
+	}
+}
+
+func TestMrsMopWebPresenter_RunStarts(t *testing.T) {
+	for _, hintOutput := range []bool{false, true} {
+		g := new(interfaces.MockMrsMopGame)
+		setupMrsMopOutputMock(g)
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "RunStarts")
+		g.On("RunStarts", 0).Return([]int{1, 2})
+		g.On("RunStarts", 1).Return([]int(nil))
+		for col := 2; col < domain.MrsMopTableauCnt; col++ {
+			g.On("RunStarts", col).Return([]int{})
+		}
+		p := new(MrsMopWebPresenter)
+		raw := p.Output(g, nil)
+		if hintOutput {
+			raw = p.HintOutput(g)
+		}
+		var got map[string]json.RawMessage
+		assert.NoError(t, json.Unmarshal([]byte(raw), &got))
+		assert.JSONEq(t, `[[1,2],[],[],[],[],[],[],[],[],[],[],[],[]]`, string(got["runStarts"]))
 	}
 }
 
@@ -261,6 +289,7 @@ func TestMrsMopWebPresenter_HintOutput(t *testing.T) {
 		sg.On("IsStalemate").Return(false)
 		sg.On("UndoToEscape").Return(0)
 		sg.On("LegalTargets", mock.Anything, mock.Anything).Return(-1, []int{}).Maybe()
+		setupMrsMopRunStartsDefaults(sg)
 
 		p := new(MrsMopWebPresenter)
 		result := parseMrsMopOutput(t, p.HintOutput(sg))
@@ -284,6 +313,7 @@ func TestMrsMopWebPresenter_HintOutput(t *testing.T) {
 		sg.On("IsStalemate").Return(false)
 		sg.On("UndoToEscape").Return(0)
 		sg.On("LegalTargets", mock.Anything, mock.Anything).Return(-1, []int{}).Maybe()
+		setupMrsMopRunStartsDefaults(sg)
 
 		p := new(MrsMopWebPresenter)
 		result := parseMrsMopOutput(t, p.HintOutput(sg))
@@ -305,6 +335,7 @@ func TestMrsMopWebPresenter_HintOutput_CanUndo(t *testing.T) {
 	sg.On("IsStalemate").Return(false)
 	sg.On("UndoToEscape").Return(0)
 	sg.On("LegalTargets", mock.Anything, mock.Anything).Return(-1, []int{}).Maybe()
+	setupMrsMopRunStartsDefaults(sg)
 
 	p := new(MrsMopWebPresenter)
 	result := parseMrsMopOutput(t, p.HintOutput(sg))
@@ -324,6 +355,7 @@ func TestMrsMopWebPresenter_HintOutput_Score(t *testing.T) {
 	sg.On("IsStalemate").Return(false)
 	sg.On("UndoToEscape").Return(0)
 	sg.On("LegalTargets", mock.Anything, mock.Anything).Return(-1, []int{}).Maybe()
+	setupMrsMopRunStartsDefaults(sg)
 
 	p := new(MrsMopWebPresenter)
 	result := parseMrsMopOutput(t, p.HintOutput(sg))
@@ -343,6 +375,7 @@ func TestMrsMopWebPresenter_HintOutput_Difficulty(t *testing.T) {
 	sg.On("IsStalemate").Return(false)
 	sg.On("UndoToEscape").Return(0)
 	sg.On("LegalTargets", mock.Anything, mock.Anything).Return(-1, []int{}).Maybe()
+	setupMrsMopRunStartsDefaults(sg)
 
 	p := new(MrsMopWebPresenter)
 	result := parseMrsMopOutput(t, p.HintOutput(sg))

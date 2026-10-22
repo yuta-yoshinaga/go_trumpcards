@@ -49599,6 +49599,7 @@ components:
         - score
         - difficulty
         - legalTargets
+        - runStarts
         - message
       properties:
         entries:
@@ -49649,6 +49650,13 @@ components:
                 type: array
                 items:
                   type: integer
+        runStarts:
+          type: array
+          description: Movable run start indices by tableau column.
+          items:
+            type: array
+            items:
+              type: integer
         hint:
           $ref: '#/components/schemas/MrsMopHint'
         message:

@@ -21,6 +21,7 @@ function createWrapper() {
 }
 
 const defaultState: MrsMopResponse = {
+  runStarts: Array.from({ length: 13 }, () => []),
   legalTargets: {},
   tableau: [
     [{ card: { design: 'SPADE', value: 1 }, faceUp: true }],

@@ -14,6 +14,7 @@ function tc(design: Card['design'], value: number, faceUp = true): MrsMopTableau
 
 function makeState(overrides: Partial<MrsMopResponse> = {}): MrsMopResponse {
   return {
+    runStarts: Array.from({ length: 13 }, () => []),
     legalTargets: {},
     tableau: [[tc(S, 10), tc(S, 9), tc(S, 8)], [tc(H, 5, false), tc(H, 7), tc(H, 6)], [], [], [], [], [], [], [], []],
     stockCount: 0,

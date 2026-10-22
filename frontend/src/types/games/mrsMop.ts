@@ -21,6 +21,8 @@ export interface MrsMopResponse extends BaseGameResponse {
   tableau: MrsMopTableauCard[][];
   /** Legal destinations keyed by source card, for example `tableau-2-3`. */
   legalTargets: Record<string, { tableau: number[]; foundation: number[] }>;
+  /** Tableau indices that can start a movable run, grouped by column. */
+  runStarts: number[][];
   stockCount: number;
   completedSuits: number;
   phase: number;
