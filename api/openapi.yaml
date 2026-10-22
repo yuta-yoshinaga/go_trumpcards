@@ -49754,6 +49754,7 @@ components:
         - moveCount
         - canUndo
         - isStalemate
+        - legalTargets
         - message
       properties:
         entries:
@@ -65159,6 +65160,19 @@ components:
         isStalemate:
           type: boolean
           description: True when no two exposed cards sum to 14. With no stock, this is a loss.
+        legalTargets:
+          type: object
+          description: Legal destinations keyed by source column; columns without partners are omitted.
+          additionalProperties:
+            type: object
+            required: [tableau, foundation]
+            properties:
+              tableau:
+                type: array
+                items: { type: integer }
+              foundation:
+                type: array
+                items: { type: integer }
         hint:
           $ref: '#/components/schemas/FourteenOutHint'
         message:

@@ -6,6 +6,8 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 // FourteenOutGame はフォーティーンアウト・ソリティアのインタフェース。
 type FourteenOutGame interface {
+	// LegalTargets は col と同時に取り除ける列番号を昇順で返す
+	LegalTargets(col int) []int
 	// CountRemovablePairs 盤面に残っている取り除ける組の数
 	CountRemovablePairs() int
 	BaseGame
