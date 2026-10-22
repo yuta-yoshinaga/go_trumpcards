@@ -18,6 +18,8 @@ func mustNapoleonsSquareOutputJSON(msg string) string {
 		Tableau:       [][]*controller.NapoleonsSquareWebOutputTableauCard{},
 		Waste:         []*controller.WebOutputCard{},
 		Foundation:    [][]*controller.WebOutputCard{},
+		LegalTargets:  map[string]controller.NapoleonsSquareWebOutputTargets{},
+		RunStarts:     [][]int{},
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)

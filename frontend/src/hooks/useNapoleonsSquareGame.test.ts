@@ -24,6 +24,8 @@ const baseState: NapoleonsSquareResponse = {
   stockCount: 48,
   waste: [],
   foundation: Array.from({ length: 8 }, () => []),
+  legalTargets: {},
+  runStarts: Array.from({ length: 12 }, () => []),
   phase: 0,
   moveCount: 0,
   canUndo: false,
@@ -183,5 +185,23 @@ describe('useNapoleonsSquareGame', () => {
       ),
     );
     expect(result.current.selectedSource).toBeNull();
+  });
+
+  it('adapts server tableau targets before foundation targets', async () => {
+    mockExec.mockResolvedValue({ ...baseState, legalTargets: { 'tableau-0-1': { tableau: [2], foundation: [5] } } });
+    const { result } = renderHook(() => useNapoleonsSquareGame(), { wrapper: makeWrapper() });
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    act(() => result.current.handleSelectSource({ zone: 'tableau', col: 0, cardIndex: 1 }));
+    expect(result.current.legalTargets).toEqual([
+      { zone: 'tableau', col: 2 },
+      { zone: 'foundation', col: 5 },
+    ]);
+  });
+
+  it('returns no legal targets when the selected source has no server key', async () => {
+    const { result } = renderHook(() => useNapoleonsSquareGame(), { wrapper: makeWrapper() });
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    act(() => result.current.handleSelectSource({ zone: 'tableau', col: 9, cardIndex: 3 }));
+    expect(result.current.legalTargets).toEqual([]);
   });
 });

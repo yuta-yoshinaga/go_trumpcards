@@ -1,9 +1,10 @@
 import { useCallback, useState } from 'react';
 import { napoleonsSquareApi } from '../api/gameApi';
 import type { NapoleonsSquareHint, NapoleonsSquareMoveZone } from '../types/card';
-import { type NapoleonsSquareMoveSource, napoleonsSquareLegalTargets } from '../utils/napoleonsSquareLegalTargets';
 
 import { useSolitaireGameBase } from './useSolitaireGameBase';
+
+type NapoleonsSquareMoveSource = { zone: 'waste' } | { zone: 'tableau'; col: number; cardIndex: number };
 
 /** Hook that manages Napoleon's Square game state, source selection, hints, and moves. */
 export function useNapoleonsSquareGame() {
@@ -35,7 +36,19 @@ export function useNapoleonsSquareGame() {
     selectHint: (res) => res.hint,
   });
 
-  const legalTargets = state && selectedSource ? napoleonsSquareLegalTargets(state, selectedSource) : [];
+  const legalTargets =
+    state && selectedSource
+      ? (() => {
+          const key =
+            selectedSource.zone === 'waste' ? 'waste' : `tableau-${selectedSource.col}-${selectedSource.cardIndex}`;
+          const targets = state.legalTargets[key];
+          if (!targets) return [];
+          return [
+            ...targets.tableau.map((col) => ({ zone: 'tableau', col })),
+            ...targets.foundation.map((col) => ({ zone: 'foundation', col })),
+          ];
+        })()
+      : [];
 
   const handleDraw = useCallback(() => {
     setSelectedSource(null);
