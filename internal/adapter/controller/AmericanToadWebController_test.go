@@ -19,6 +19,7 @@ func mustAmericanToadOutputJSON(msg string) string {
 		Tableau:       [][]*controller.AmericanToadWebOutputTableauCard{},
 		Foundation:    [][]*controller.WebOutputCard{},
 		Waste:         []*controller.WebOutputCard{},
+		LegalTargets:  map[string]controller.AmericanToadWebOutputTargets{},
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
@@ -29,7 +30,7 @@ func mustAmericanToadOutputJSON(msg string) string {
 }
 
 func TestAmericanToadWebController_Method(t *testing.T) {
-	mockOutput := `{"reserve":[],"tableau":[],"foundation":[],"stockCount":0,"waste":[],"baseRank":0,"passesUsed":0,"canRedeal":false,"phase":0,"moveCount":0,"message":""}`
+	mockOutput := `{"reserve":[],"tableau":[],"foundation":[],"stockCount":0,"waste":[],"baseRank":0,"passesUsed":0,"canRedeal":false,"legalTargets":{},"phase":0,"moveCount":0,"message":""}`
 
 	aiMock := new(usecase.MockAmericanToadInteractor)
 	aiMock.On("Reset").Return(mockOutput)

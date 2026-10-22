@@ -7,6 +7,12 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 // AmericanToadGame アメリカン・トード ゲームインタフェース
 type AmericanToadGame interface {
 	SolitaireGame
+	// LegalTargetsFrom returns destinations for a movable tableau run.
+	LegalTargetsFrom(col, cardIndex int) (tableau, foundation []int)
+	// ReserveLegalTargets returns destinations for the reserve top card.
+	ReserveLegalTargets() (tableau, foundation []int)
+	// WasteLegalTargets returns destinations for the waste top card.
+	WasteLegalTargets() (tableau, foundation []int)
 	// GetGameEndFlag reports whether the game has left the playing phase.
 	GetGameEndFlag() bool
 	// Reset ゲームを初期化する

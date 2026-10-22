@@ -25,6 +25,7 @@ function makeTableau(cols: AmericanToadTableauCard[][]): AmericanToadTableauCard
 }
 
 const playingState: AmericanToadResponse = {
+  legalTargets: {},
   reserve: [card('CLOVER', 3), card('DIAMOND', 7)],
   tableau: makeTableau([
     [
@@ -471,6 +472,7 @@ describe('AmericanToadPage destination highlight', () => {
       ...playingState,
       reserve: [],
       tableau: makeTableau([[{ card: card('SPADE', 5), faceUp: true }]]),
+      legalTargets: { 'tableau-0-0': { tableau: [], foundation: [0, 4] } },
     });
     renderWithProviders(<AmericanToadPage />);
     fireEvent.click(await screen.findByRole('button', { name: /♠ 5/ }));
@@ -495,6 +497,7 @@ describe('AmericanToadPage destination highlight', () => {
         [{ card: card('SPADE', 9), faceUp: true }],
         [{ card: card('CLOVER', 4), faceUp: true }],
       ]),
+      legalTargets: { 'tableau-0-0': { tableau: [1], foundation: [] } },
     });
     renderWithProviders(<AmericanToadPage />);
     const source = await screen.findByRole('button', { name: /♠ 8/ });
@@ -507,17 +510,43 @@ describe('AmericanToadPage destination highlight', () => {
     expect(document.querySelector('[data-preview-target]')).toBeNull();
   });
 
+  it('uses server targets when they disagree with the former client rule', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      reserve: [],
+      tableau: makeTableau([[{ card: card('SPADE', 8), faceUp: true }], [{ card: card('SPADE', 9), faceUp: true }]]),
+      legalTargets: { 'tableau-0-0': { tableau: [], foundation: [] } },
+    });
+    renderWithProviders(<AmericanToadPage />);
+    fireEvent.click(await screen.findByRole('button', { name: /♠ 8/ }));
+    await waitFor(() => expect(targets()).toHaveLength(0));
+  });
+
   // **判定を二重に持たない。**hover のプレビューも同じ計算を通る。
   it('previews the same targets on hover, marked as a preview', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
       reserve: [],
       tableau: makeTableau([[{ card: card('SPADE', 8), faceUp: true }], [{ card: card('SPADE', 9), faceUp: true }]]),
+      legalTargets: { 'tableau-0-0': { tableau: [1], foundation: [] } },
     });
     renderWithProviders(<AmericanToadPage />);
     const source = await screen.findByRole('button', { name: /♠ 8/ });
     fireEvent.mouseEnter(source);
     await waitFor(() => expect(document.querySelector('[data-preview-target]')).not.toBeNull());
+  });
+
+  it('marks a legal foundation as the hovered preview target', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      reserve: [],
+      tableau: makeTableau([[{ card: card('SPADE', 5), faceUp: true }]]),
+      legalTargets: { 'tableau-0-0': { tableau: [], foundation: [0] } },
+    });
+    renderWithProviders(<AmericanToadPage />);
+    fireEvent.mouseEnter(await screen.findByRole('button', { name: /♠ 5/ }));
+
+    await waitFor(() => expect(document.querySelector('[data-preview-target="true"]')).not.toBeNull());
   });
 
   // 山札由来の札 (捨て札) を選んでも同じ判定を通る。ページの previewedCard は
@@ -528,6 +557,7 @@ describe('AmericanToadPage destination highlight', () => {
       reserve: [],
       waste: [card('SPADE', 7)],
       tableau: makeTableau([[{ card: card('SPADE', 8), faceUp: true }]]),
+      legalTargets: { waste: { tableau: [1], foundation: [] } },
     });
     renderWithProviders(<AmericanToadPage />);
     const waste = await screen.findByRole('button', { name: /♠ 7/ });
@@ -541,6 +571,7 @@ describe('AmericanToadPage destination highlight', () => {
       ...playingState,
       reserve: [card('SPADE', 7)],
       tableau: makeTableau([[{ card: card('SPADE', 8), faceUp: true }]]),
+      legalTargets: { reserve: { tableau: [1], foundation: [] } },
     });
     renderWithProviders(<AmericanToadPage />);
     const reserve = await screen.findByRole('button', { name: /リザーブの一番上/ });
@@ -587,6 +618,7 @@ describe('AmericanToadPage destination highlight', () => {
       reserve: [],
       waste: [card('DIAMOND', 9)],
       tableau: makeTableau([[{ card: card('SPADE', 8), faceUp: true }]]),
+      legalTargets: { waste: { tableau: [1], foundation: [] } },
     });
     renderWithProviders(<AmericanToadPage />);
     const waste = await screen.findByRole('button', { name: /♦ 9/ });

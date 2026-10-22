@@ -4,6 +4,7 @@ import { formatAmericanToadState } from './americantoadFormatter';
 
 function makeState(overrides?: Partial<AmericanToadResponse>): AmericanToadResponse {
   return {
+    legalTargets: {},
     reserve: [],
     tableau: Array.from({ length: 8 }, () => []),
     foundation: Array.from({ length: 8 }, () => []),

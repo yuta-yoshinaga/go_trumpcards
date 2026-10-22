@@ -25,6 +25,7 @@ export interface AmericanToadHint {
 
 /** Full American Toad game state returned from the API. */
 export interface AmericanToadResponse extends BaseGameResponse {
+  legalTargets: Record<string, { tableau: number[]; foundation: number[] }>;
   /** The 20-card reserve. Only the last element is available. */
   reserve: Card[];
   tableau: AmericanToadTableauCard[][];
