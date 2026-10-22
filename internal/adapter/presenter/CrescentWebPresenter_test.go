@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -141,19 +142,24 @@ func TestCrescentWebPresenter_LegalTargets(t *testing.T) {
 			cg := new(interfaces.MockCrescentGame)
 			setupCrescentWebMockDefaults(cg)
 			cg.ExpectedCalls = filterCalls(cg.ExpectedCalls, "LegalTargets")
-			cg.On("GetHint").Return((*domain.CrescentHint)(nil)).Maybe()
+			// testify uses the first matching expectation, so drop the shared
+			// GetHint default before each case registers its own.
+			cg.ExpectedCalls = filterCalls(cg.ExpectedCalls, "GetHint")
 			cg.On("LegalTargets", 0).Return([]int(nil), []int{2}).Maybe()
 			cg.On("LegalTargets", 1).Return([]int{4}, []int(nil)).Maybe()
 			for col := 2; col < domain.CrescentTableauCnt; col++ {
 				cg.On("LegalTargets", col).Return([]int{}, []int{}).Maybe()
 			}
-			if output.name == "hint output without hint" {
-				cg.On("GetHint").Return((*domain.CrescentHint)(nil))
-			}
-			if output.name == "hint output with hint" {
+			switch output.name {
+			case "hint output with hint":
 				cg.On("GetHint").Return(&domain.CrescentHint{FromCol: 0, ToZone: "tableau", ToCol: 4})
+			default:
+				cg.On("GetHint").Return((*domain.CrescentHint)(nil)).Maybe()
 			}
 			result := parseCrescentOutput(t, output.call(new(CrescentWebPresenter), cg))
+			if output.name == "hint output with hint" {
+				require.NotNil(t, result.Hint, "the with-hint case must actually carry a hint")
+			}
 			assert.Equal(t, map[string]controller.CrescentWebOutputTargets{
 				"tableau-0": {Tableau: []int{}, Foundation: []int{2}},
 				"tableau-1": {Tableau: []int{4}, Foundation: []int{}},
