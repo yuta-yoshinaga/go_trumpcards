@@ -37,6 +37,22 @@ func (_m *MockSultanGame) MoveWasteToFoundation() error {
 	return ret.Error(0)
 }
 
+func (_m *MockSultanGame) DivanLegalFoundations(divanIdx int) []int {
+	ret := _m.Called(divanIdx)
+	if ret.Get(0) == nil {
+		return nil
+	}
+	return ret.Get(0).([]int)
+}
+
+func (_m *MockSultanGame) WasteLegalFoundations() []int {
+	ret := _m.Called()
+	if ret.Get(0) == nil {
+		return nil
+	}
+	return ret.Get(0).([]int)
+}
+
 func (_m *MockSultanGame) GiveUp() {
 	_m.Called()
 }

@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -20,6 +21,7 @@ func (p *SultanWebPresenter) Output(su interfaces.SultanGame, lastErr error) str
 	resObj.StockCount = su.GetStockCount()
 	resObj.RedealCount = su.GetRedealCount()
 	resObj.CanRedeal = su.CanRedeal()
+	resObj.LegalTargets = p.buildLegalTargets(su)
 
 	// ウェイスト
 	waste := su.GetWaste()
@@ -93,6 +95,7 @@ func (p *SultanWebPresenter) HintOutput(su interfaces.SultanGame) string {
 	resObj.StockCount = su.GetStockCount()
 	resObj.RedealCount = su.GetRedealCount()
 	resObj.CanRedeal = su.CanRedeal()
+	resObj.LegalTargets = p.buildLegalTargets(su)
 	resObj.Waste = make([]*controller.WebOutputCard, 0)
 	resObj.Divan = make([]*controller.WebOutputCard, 0)
 	resObj.Foundation = make([][]*controller.WebOutputCard, 0)
@@ -109,6 +112,19 @@ func (p *SultanWebPresenter) HintOutput(su interfaces.SultanGame) string {
 	}
 
 	return marshalOrError(resObj)
+}
+
+func (p *SultanWebPresenter) buildLegalTargets(su interfaces.SultanGame) map[string]controller.SultanWebOutputTargets {
+	result := make(map[string]controller.SultanWebOutputTargets)
+	for i := 0; i < domain.SultanDivanCnt; i++ {
+		if foundations := su.DivanLegalFoundations(i); len(foundations) > 0 {
+			result["divan-"+strconv.Itoa(i)] = controller.SultanWebOutputTargets{Foundation: foundations}
+		}
+	}
+	if foundations := su.WasteLegalFoundations(); len(foundations) > 0 {
+		result["waste"] = controller.SultanWebOutputTargets{Foundation: foundations}
+	}
+	return result
 }
 
 // ActionLogOutput 棋譜をJSON出力

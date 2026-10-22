@@ -32,7 +32,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { parseSultanCommand, SULTAN_HELP } from '../utils/cli/commands/sultanCommands';
 import { formatSultanState } from '../utils/cli/formatters/sultanFormatter';
 import { hintCheckboxItem } from '../utils/settingsItems';
-import { canPlaceCardOnSultanFoundation, sultanFoundationInfo } from '../utils/sultanFoundation';
+import { sultanFoundationInfo } from '../utils/sultanFoundation';
 
 /**
  * Maximum number of waste redeals allowed in Sultan of Turkey.
@@ -182,7 +182,8 @@ function SultanPageContent() {
   // Waste display: show top card only
   const wasteDisplay = state.waste.slice(-1);
   const wasteCard = wasteDisplay[0];
-  const wastePlayable = wasteCard ? canPlaceCardOnSultanFoundation(wasteCard, state.foundation) : false;
+  const wasteTargets = state.legalTargets.waste;
+  const wastePlayable = wasteCard !== undefined && wasteTargets !== undefined && wasteTargets.foundation.length > 0;
 
   return (
     <GamePageShell
@@ -326,7 +327,9 @@ function SultanPageContent() {
             {/* Divan reserve (8 slots; null = played/empty) */}
             <div className="flex gap-1 sm:gap-2 mb-3 flex-wrap" data-tutorial="sultan-divan">
               {state.divan.map((dcard, idx) => {
-                const divanPlayable = dcard ? canPlaceCardOnSultanFoundation(dcard, state.foundation) : false;
+                const divanTargets = state.legalTargets[`divan-${idx}`];
+                const divanPlayable =
+                  dcard !== null && divanTargets !== undefined && divanTargets.foundation.length > 0;
                 return (
                   <div key={`divan-${idx.toString()}`} className="text-center">
                     <div className="text-game-text-muted text-xs mb-1">{idx}</div>

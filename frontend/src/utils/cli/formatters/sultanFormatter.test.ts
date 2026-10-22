@@ -6,6 +6,7 @@ import { formatSultanState } from './sultanFormatter';
 const card = (design: Card['design'], value: number): Card => ({ design, value });
 
 const baseState = (overrides: Partial<SultanResponse> = {}): SultanResponse => ({
+  legalTargets: {},
   foundation: [[card('SPADE', 13)], [card('HEART', 13), card('HEART', 1)]],
   divan: [card('CLOVER', 5), null],
   stockCount: 30,

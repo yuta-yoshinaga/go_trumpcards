@@ -29,6 +29,7 @@ const makeFoundationPile = (design: CardDesign, count: number): Card[] => {
 };
 
 const playingState: SultanResponse = {
+  legalTargets: {},
   foundation: [
     [card('SPADE', 13)],
     [card('SPADE', 13)],
@@ -89,6 +90,7 @@ const withHintState: SultanResponse = {
 
 const playablePreviewState: SultanResponse = {
   ...playingState,
+  legalTargets: { 'divan-0': { foundation: [4] }, waste: { foundation: [1] } },
   foundation: [
     [card('SPADE', 13)],
     [card('SPADE', 13), card('SPADE', 1)],
@@ -130,6 +132,19 @@ describe('SultanPage', () => {
     expect(screen.getByAltText('♥ A').closest('button')).toHaveAccessibleName(/配置できます/);
     expect(screen.getByAltText('♣ 2').closest('button')).toHaveAccessibleName(/配置できません/);
     expect(screen.getByAltText('♠ 2').closest('button')).toHaveAccessibleName(/配置できます/);
+  });
+
+  it('uses the server targets when they disagree with foundation card rules', async () => {
+    mockExec.mockResolvedValue({
+      ...playablePreviewState,
+      legalTargets: { 'divan-1': { foundation: [0] } },
+    });
+    renderWithProviders(<SultanPage />);
+    await waitFor(() => expect(screen.getByAltText('♥ A')).toBeInTheDocument());
+
+    expect(screen.getByAltText('♥ A').closest('button')).not.toHaveAttribute('data-playable');
+    expect(screen.getByAltText('♣ 2').closest('button')).toHaveAttribute('data-playable', 'true');
+    expect(screen.getByAltText('♠ 2').closest('button')).not.toHaveAttribute('data-playable');
   });
 
   it('renders skeleton when no state', () => {

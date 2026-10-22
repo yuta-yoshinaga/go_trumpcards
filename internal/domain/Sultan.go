@@ -265,6 +265,34 @@ func (su *Sultan) GetHint() *SultanHint {
 	return nil
 }
 
+// DivanLegalFoundations returns every foundation that accepts the card at divanIdx.
+// It returns an empty slice when the game is not playing or the slot is unavailable.
+func (su *Sultan) DivanLegalFoundations(divanIdx int) []int {
+	if su.phase != SultanPhasePlaying || divanIdx < 0 || divanIdx >= len(su.divan) || su.divan[divanIdx] == nil {
+		return []int{}
+	}
+	return su.legalFoundations(su.divan[divanIdx])
+}
+
+// WasteLegalFoundations returns every foundation that accepts the waste top card.
+// It returns an empty slice when the game is not playing or the waste is empty.
+func (su *Sultan) WasteLegalFoundations() []int {
+	if su.phase != SultanPhasePlaying || len(su.waste) == 0 {
+		return []int{}
+	}
+	return su.legalFoundations(su.waste[len(su.waste)-1])
+}
+
+func (su *Sultan) legalFoundations(card *Card) []int {
+	result := make([]int, 0, SultanFoundationCnt)
+	for i := range SultanFoundationCnt {
+		if su.canPlaceOnFoundation(card, i) {
+			result = append(result, i)
+		}
+	}
+	return result
+}
+
 // AutoComplete オートコンプリート（ディヴァン/ウェイストから自動でファンデーションへ移動）
 func (su *Sultan) AutoComplete() error {
 	if su.phase != SultanPhasePlaying {

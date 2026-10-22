@@ -15,6 +15,7 @@ import (
 
 func mustSultanOutputJSON(msg string) string {
 	out := &controller.SultanWebOutput{
+		LegalTargets:  map[string]controller.SultanWebOutputTargets{},
 		Foundation:    [][]*controller.WebOutputCard{},
 		Divan:         []*controller.WebOutputCard{},
 		Waste:         []*controller.WebOutputCard{},
@@ -28,7 +29,7 @@ func mustSultanOutputJSON(msg string) string {
 }
 
 func TestSultanWebController_Method(t *testing.T) {
-	mockOutput := `{"foundation":[],"divan":[],"stockCount":0,"waste":[],"redealCount":0,"canRedeal":false,"phase":0,"moveCount":0,"message":""}`
+	mockOutput := mustSultanOutputJSON("")
 	expectedBody := mockOutput
 
 	siMock := new(usecase.MockSultanInteractor)

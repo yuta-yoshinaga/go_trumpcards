@@ -28,15 +28,21 @@ type SultanWebOutputHint struct {
 	ToFoundation int    `json:"toFoundation"`
 }
 
+// SultanWebOutputTargets lists legal foundation destinations for a source.
+type SultanWebOutputTargets struct {
+	Foundation []int `json:"foundation"`
+}
+
 // SultanWebOutput スルタンWebアウトプット
 type SultanWebOutput struct {
-	Foundation  [][]*WebOutputCard   `json:"foundation"`
-	Divan       []*WebOutputCard     `json:"divan"`
-	StockCount  int                  `json:"stockCount"`
-	Waste       []*WebOutputCard     `json:"waste"`
-	RedealCount int                  `json:"redealCount"`
-	CanRedeal   bool                 `json:"canRedeal"`
-	Hint        *SultanWebOutputHint `json:"hint,omitempty"`
+	LegalTargets map[string]SultanWebOutputTargets `json:"legalTargets"`
+	Foundation   [][]*WebOutputCard                `json:"foundation"`
+	Divan        []*WebOutputCard                  `json:"divan"`
+	StockCount   int                               `json:"stockCount"`
+	Waste        []*WebOutputCard                  `json:"waste"`
+	RedealCount  int                               `json:"redealCount"`
+	CanRedeal    bool                              `json:"canRedeal"`
+	Hint         *SultanWebOutputHint              `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase
 }
@@ -52,6 +58,7 @@ var NewSultanWebController, NewSultanWebControllerWithProvider = webControllerPa
 
 func newSultanDefaultOutput(msg string) *SultanWebOutput {
 	return &SultanWebOutput{
+		LegalTargets:  make(map[string]SultanWebOutputTargets),
 		Foundation:    make([][]*WebOutputCard, 0),
 		Divan:         make([]*WebOutputCard, 0),
 		Waste:         make([]*WebOutputCard, 0),
