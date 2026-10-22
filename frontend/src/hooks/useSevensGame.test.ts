@@ -21,6 +21,7 @@ function createWrapper() {
 }
 
 const baseState: SevensResponse = {
+  validPlays: [],
   players: [
     {
       id: 0,

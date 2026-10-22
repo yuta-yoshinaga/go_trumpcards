@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { actionDesc, isCardPlayable, isPositionPlayable, listJokerPlacements, wrapValue } from './sevensUtils';
+import { actionDesc, isPositionPlayable, listJokerPlacements, wrapValue } from './sevensUtils';
 
 describe('wrapValue', () => {
   it('returns value unchanged for 1-13', () => {
@@ -68,24 +68,6 @@ describe('isPositionPlayable with tunnelSkipWidth', () => {
     const boardWith13 = [0, 8320, 128, 128, 128];
     // 13+3 → wrapValue(16) = 3, so 3 IS playable via tunnel wrap
     expect(isPositionPlayable(boardWith13, 1, 3, true, false, 3)).toBe(true);
-  });
-});
-
-describe('isCardPlayable with tunnelSkipWidth', () => {
-  const board7Only = [0, 128, 128, 128, 128];
-
-  it('passes tunnelSkipWidth through for normal cards', () => {
-    const card = { design: 'SPADE' as const, value: 4 };
-    expect(isCardPlayable(card, board7Only, false, false, [card], false, false, false, 3)).toBe(true);
-    expect(isCardPlayable(card, board7Only, false, false, [card], false, false, false, 0)).toBe(false);
-  });
-
-  it('passes tunnelSkipWidth through for joker playability', () => {
-    const joker = { design: 'JOKER' as const, value: 0 };
-    // With skip=0, board has 6 and 8 playable per suit = 8 positions
-    expect(isCardPlayable(joker, board7Only, false, false, [joker], false, false, false, 0)).toBe(true);
-    // With skip=3, additional positions are playable
-    expect(isCardPlayable(joker, board7Only, false, false, [joker], false, false, false, 3)).toBe(true);
   });
 });
 

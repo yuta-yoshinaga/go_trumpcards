@@ -1,5 +1,5 @@
 import { playerAreaBase } from '../styles/gameStyles';
-import type { Card, CardDesign, SevensAction } from '../types/card';
+import type { CardDesign, SevensAction } from '../types/card';
 import { suitName, valueName } from './cardUtils';
 import { findPlayerName } from './playerUtils';
 
@@ -106,32 +106,6 @@ export function listJokerPlacements(
     }
   }
   return result;
-}
-
-/** Check if a hand contains only joker cards. */
-export function hasOnlyJokers(cards: Card[]): boolean {
-  return cards.length > 0 && cards.every((c) => c.design === 'JOKER');
-}
-
-/** Check if a specific card can be played in Sevens. */
-export function isCardPlayable(
-  card: Card,
-  tablePlaced: number[],
-  tunnelEnabled: boolean,
-  noJokerFinish: boolean,
-  allCards: Card[],
-  endStopEnabled: boolean,
-  jokerConsecutiveBanned: boolean,
-  lastPlayedJoker: boolean,
-  tunnelSkipWidth = 0,
-): boolean {
-  if (card.design === 'JOKER') {
-    if (noJokerFinish && hasOnlyJokers(allCards)) return false;
-    if (jokerConsecutiveBanned && lastPlayedJoker) return false;
-    return hasAnyPlayablePosition(tablePlaced, tunnelEnabled, endStopEnabled, tunnelSkipWidth);
-  }
-  const suit = designToSuit[card.design];
-  return isPositionPlayable(tablePlaced, suit, card.value, tunnelEnabled, endStopEnabled, tunnelSkipWidth);
 }
 
 /** Build a human-readable description of a Sevens action. */

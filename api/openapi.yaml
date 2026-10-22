@@ -42340,6 +42340,7 @@ components:
         - gameEndFlag
         - cpuActions
         - humanAction
+        - validPlays
         - message
       properties:
         entries:
@@ -42405,7 +42406,11 @@ components:
           allOf:
             - $ref: '#/components/schemas/SevensAction'
           nullable: true
-          description: The human player's most recent action (null before first play)
+        validPlays:
+          type: array
+          items:
+            type: integer
+          description: Hand indices the human player may play now; empty when it is not the human's turn or the game is over.
         message:
           type: string
           description: |

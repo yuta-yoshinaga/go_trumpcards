@@ -71,6 +71,7 @@ type SevensWebOutput struct {
 	TablePlaced  [5]int                   `json:"tablePlaced"`
 	Config       SevensWebOutputConfig    `json:"config"`
 	GameEndFlag  bool                     `json:"gameEndFlag"`
+	ValidPlays   []int                    `json:"validPlays"`
 	CpuActions   []*SevensWebOutputAction `json:"cpuActions"`
 	HumanAction  *SevensWebOutputAction   `json:"humanAction"`
 	WebOutputBase
@@ -111,6 +112,7 @@ func newSevensDefaultOutput(msg string) *SevensWebOutput {
 	return &SevensWebOutput{
 		Players:       make([]*SevensWebOutputPlayer, 0),
 		CpuActions:    make([]*SevensWebOutputAction, 0),
+		ValidPlays:    []int{},
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }

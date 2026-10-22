@@ -4074,7 +4074,7 @@ func TestSevens_ActionLog_Reset(t *testing.T) {
 
 // #5479: IsPlayable は実装済みだったが interface に無く、CUI からは呼べなかった。
 // Web は SevensHumanArea.tsx が同じ判定をフロントで書き直して色を付けている。
-func TestSevens_GetPlayableCardIndices(t *testing.T) {
+func TestSevens_GetValidPlayIndices(t *testing.T) {
 	// 卓には最初から4枚の7が並んでいるので、6 と 8 が出せて 5 や J は出せない。
 	newGame := func(hand ...*domain.Card) (*domain.Sevens, []*domain.SevensPlayer) {
 		players := []*domain.SevensPlayer{
@@ -4100,30 +4100,38 @@ func TestSevens_GetPlayableCardIndices(t *testing.T) {
 			card(domain.CardDesignSpade, 11), // ♠7 から離れている → 出せない
 			card(domain.CardDesignHeart, 8),  // ♥7 の隣 → 出せる
 		)
-		assert.Equal(t, []int{0, 2}, s.GetPlayableCardIndices())
+		assert.Equal(t, []int{0, 2}, s.GetValidPlayIndices(0))
 	})
 
 	// **空スライスと nil を区別する。**7並べは「1枚も出せない」が普通に起きる
 	// (そこでパスする) 局面なので、判定していない状態と同じ扱いにはできない。
 	t.Run("returns an empty slice, not nil, when nothing is playable", func(t *testing.T) {
 		s, _ := newGame(card(domain.CardDesignSpade, 11))
-		got := s.GetPlayableCardIndices()
+		got := s.GetValidPlayIndices(0)
 		assert.NotNil(t, got)
 		assert.Empty(t, got)
 	})
 
-	t.Run("returns nil when it is not the human turn", func(t *testing.T) {
+	t.Run("uses tunnel skip width from the domain rules", func(t *testing.T) {
+		s, _ := newGame(card(domain.CardDesignSpade, 4))
+		cfg := domain.DefaultSevensConfig()
+		cfg.TunnelSkipWidth = 3
+		s.SetConfig(cfg)
+		assert.Equal(t, []int{0}, s.GetValidPlayIndices(0))
+	})
+
+	t.Run("returns an empty slice when it is not the human turn", func(t *testing.T) {
 		s, _ := newGame(card(domain.CardDesignSpade, 6), card(domain.CardDesignSpade, 8))
 		require.NoError(t, s.PlayerPlay(0)) // 手番が CPU へ移る
 		require.False(t, s.IsHumanTurn())
-		assert.Nil(t, s.GetPlayableCardIndices())
+		assert.Equal(t, []int{}, s.GetValidPlayIndices(0))
 	})
 
 	// ジョーカーは置ける場所が1つでもあれば出せる。IsPlayable がそう書いてある
 	// のをここでも通す — 印の判定を presenter 側に書き直さないため。
 	t.Run("marks a joker while the board still has room", func(t *testing.T) {
 		s, _ := newGame(domain.NewCard(domain.CardDesignJoker, 0, true))
-		assert.Equal(t, []int{0}, s.GetPlayableCardIndices())
+		assert.Equal(t, []int{0}, s.GetValidPlayIndices(0))
 	})
 
 	// **IsPlayable だけでは足りない。** ジョーカーは「置ける場所があるか」しか
@@ -4137,7 +4145,7 @@ func TestSevens_GetPlayableCardIndices(t *testing.T) {
 		s.SetConfig(cfg)
 		players[0].SetLastPlayedJoker(true)
 
-		assert.Equal(t, []int{1}, s.GetPlayableCardIndices(), "♠6 だけが残る")
+		assert.Equal(t, []int{1}, s.GetValidPlayIndices(0), "♠6 だけが残る")
 		// 実際に出そうとしても弾かれる (印と挙動が一致している)。
 		assert.Error(t, s.PlayerPlayJoker(0, domain.CardDesignSpade, 6))
 	})
@@ -4148,7 +4156,7 @@ func TestSevens_GetPlayableCardIndices(t *testing.T) {
 		cfg.NoJokerFinish = true
 		s.SetConfig(cfg)
 
-		assert.Empty(t, s.GetPlayableCardIndices())
+		assert.Empty(t, s.GetValidPlayIndices(0))
 		assert.Error(t, s.PlayerPlayJoker(0, domain.CardDesignSpade, 6))
 	})
 
@@ -4157,7 +4165,7 @@ func TestSevens_GetPlayableCardIndices(t *testing.T) {
 		s, players := newGame(domain.NewCard(domain.CardDesignJoker, 0, true),
 			card(domain.CardDesignSpade, 6))
 		players[0].SetLastPlayedJoker(true)
-		assert.Equal(t, []int{0, 1}, s.GetPlayableCardIndices())
+		assert.Equal(t, []int{0, 1}, s.GetValidPlayIndices(0))
 	})
 }
 

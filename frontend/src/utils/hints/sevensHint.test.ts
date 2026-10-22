@@ -6,6 +6,7 @@ const card = (design: Card['design'], value: number): Card => ({ design, value }
 
 function makeState(overrides: Partial<SevensResponse> = {}): SevensResponse {
   return {
+    validPlays: [],
     players: [
       {
         id: 0,

@@ -39,6 +39,7 @@ const defaultConfig = {
 const allSevensPlaced = [0, 128, 128, 128, 128]; // bit 7 set = 128
 
 const humanTurnState: SevensResponse = {
+  validPlays: [0, 2],
   players: [
     {
       id: 0,
@@ -173,6 +174,14 @@ afterEach(() => {
 });
 
 describe('SevensPage', () => {
+  it('uses server validPlays when they disagree with the client rule', async () => {
+    mockExec.mockResolvedValue({ ...humanTurnState, validPlays: [1] });
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => expect(screen.getByText('ボード')).toBeInTheDocument());
+    const highlighted = screen.getAllByTestId('playable-card');
+    expect(highlighted).toHaveLength(1);
+  });
+
   it('allows the taller mobile footer', async () => {
     renderWithProviders(<SevensPage />);
     expect((await screen.findByTestId('game-footer-content')).closest('footer')?.className).toContain('max-h-[60vh]');
@@ -843,6 +852,7 @@ describe('SevensPage', () => {
     const allPlaced = 0x3ffe; // bits 1-13 set = 16382
     const fullBoardState: SevensResponse = {
       ...humanTurnState,
+      validPlays: [],
       config: { ...defaultConfig, jokerCount: 1 },
       tablePlaced: [0, allPlaced, allPlaced, allPlaced, allPlaced],
       players: [
@@ -1211,6 +1221,7 @@ describe('SevensPage', () => {
   it('joker card is not playable when noJokerFinish is true and player has only jokers', async () => {
     const noJokerFinishOnlyJokers: SevensResponse = {
       ...humanTurnState,
+      validPlays: [],
       config: { ...defaultConfig, jokerCount: 1, noJokerFinish: true },
       players: [
         {
@@ -1676,6 +1687,7 @@ describe('SevensPage', () => {
   it('joker card is not playable when jokerConsecutiveBanned is true and lastPlayedJoker is true', async () => {
     const jcbState: SevensResponse = {
       ...humanTurnState,
+      validPlays: [1],
       config: { ...defaultConfig, jokerCount: 1, jokerConsecutiveBanned: true },
       players: [
         {
@@ -1701,6 +1713,7 @@ describe('SevensPage', () => {
   it('joker card is playable when jokerConsecutiveBanned is true but lastPlayedJoker is false', async () => {
     const jcbState: SevensResponse = {
       ...humanTurnState,
+      validPlays: [0, 1],
       config: { ...defaultConfig, jokerCount: 1, jokerConsecutiveBanned: true },
       players: [
         {
@@ -1726,6 +1739,7 @@ describe('SevensPage', () => {
   it('joker card is playable when jokerConsecutiveBanned is false even if lastPlayedJoker is true', async () => {
     const jcbState: SevensResponse = {
       ...humanTurnState,
+      validPlays: [0, 1],
       config: { ...defaultConfig, jokerCount: 1, jokerConsecutiveBanned: false },
       players: [
         {
