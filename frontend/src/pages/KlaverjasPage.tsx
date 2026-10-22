@@ -26,6 +26,13 @@ import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { KlaverjasResponse } from '../types/card';
+
+const playRejectReasonKeys: Record<string, string> = {
+  'shared.errFollowLeadSuit': 'followSuit',
+  'klaverjas.errMustPlayTrump': 'mustTrump',
+  'klaverjas.errMustOvertrump': 'mustOvertrump',
+};
+
 import { KlaverjasPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { suitSymbolAt } from '../utils/cardAlt';
@@ -33,7 +40,6 @@ import { KLAVERJAS_HELP, parseKlaverjasCommand } from '../utils/cli/commands/kla
 import { formatKlaverjasState } from '../utils/cli/formatters/klaverjasFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
-import { getKlaverjasPlayRestriction } from '../utils/klaverjasPlayRestriction';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -462,12 +468,8 @@ function KlaverjasPageContent() {
                   canPlay
                     ? (idx) => {
                         if (state.playableIndices.includes(idx)) return undefined;
-                        const reason = getKlaverjasPlayRestriction(
-                          humanPlayer.cards,
-                          state.currentTrick,
-                          state.trumpSuit,
-                          idx,
-                        );
+                        const code = state.playRejectCodes[idx];
+                        const reason = code ? playRejectReasonKeys[code] : undefined;
                         return reason ? t(`playRestriction.${reason}`) : undefined;
                       }
                     : undefined

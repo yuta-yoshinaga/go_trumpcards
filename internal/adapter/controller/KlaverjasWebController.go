@@ -55,6 +55,7 @@ type KlaverjasWebOutput struct {
 	RoundRoem          [domain.KlaverjasTeamCnt]int   `json:"roundRoem"`
 	RoundPlayerRoem    [domain.KlaverjasPlayerCnt]int `json:"roundPlayerRoem"`
 	PlayableIndices    []int                          `json:"playableIndices"`
+	PlayRejectCodes    []string                       `json:"playRejectCodes"`
 	GameEndFlag        bool                           `json:"gameEndFlag"`
 	WinnerTeam         int                            `json:"winnerTeam"`
 	IsHumanTurn        bool                           `json:"isHumanTurn"`
@@ -97,6 +98,7 @@ func newKlaverjasDefaultOutput(msg string) *KlaverjasWebOutput {
 		CurrentTrick:    make([]*WebOutputTrickCard, 0),
 		LastTrickTeam:   -1,
 		PlayableIndices: make([]int, 0),
+		PlayRejectCodes: make([]string, 0),
 		WinnerTeam:      -1,
 		WebOutputBase:   WebOutputBase{Message: msg},
 	}

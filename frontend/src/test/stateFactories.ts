@@ -1496,6 +1496,7 @@ const baseKlaverjasState: KlaverjasResponse = {
   roundRoem: [0, 0],
   roundPlayerRoem: [0, 0, 0, 0],
   playableIndices: [0, 1, 2],
+  playRejectCodes: [],
   gameEndFlag: false,
   winnerTeam: -1,
   isHumanTurn: true,

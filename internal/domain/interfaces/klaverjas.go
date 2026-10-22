@@ -66,6 +66,8 @@ type KlaverjasGame interface {
 	GetPlayer(i int) *domain.KlaverjasPlayer
 	// GetPlayableIndices プレイ可能なカードのインデックスを取得する
 	GetPlayableIndices(playerIdx int) []int
+	// GetPlayRejectCodes returns a validation message code per hand card; playable cards have an empty code.
+	GetPlayRejectCodes(playerIdx int) []string
 	// GetHint ヒントを取得する
 	GetHint() *domain.KlaverjasHint
 }

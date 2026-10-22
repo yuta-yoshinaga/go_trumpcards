@@ -69186,6 +69186,11 @@ components:
           items:
             type: integer
           description: Hand indices the human may legally play (Klaverjas obligation filtered)
+        playRejectCodes:
+          type: array
+          items:
+            type: string
+          description: One validation message code per hand card for a human play turn; empty for playable cards
         gameEndFlag:
           type: boolean
         winnerTeam:

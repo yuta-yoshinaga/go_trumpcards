@@ -23,6 +23,7 @@ func mustKlaverjasOutputJSON(msg string) string {
 		LastTrickPoints:    0,
 		LastTrickBonus:     0,
 		PlayableIndices:    []int{},
+		PlayRejectCodes:    []string{},
 		WinnerTeam:         -1,
 		WebOutputBase:      controller.WebOutputBase{Message: msg},
 	}
