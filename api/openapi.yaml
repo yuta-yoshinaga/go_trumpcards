@@ -39068,6 +39068,20 @@ components:
       type: object
       description: Response payload for /congress/exec
       properties:
+        legalTargets:
+          type: object
+          description: Legal destinations keyed by source (`tableau-<col>`, `waste`, or `stock`).
+          additionalProperties:
+            type: object
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."

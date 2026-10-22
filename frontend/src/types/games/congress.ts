@@ -17,6 +17,8 @@ export interface CongressHint {
 
 /** Full Congress game state returned from the API. */
 export interface CongressResponse extends BaseGameResponse {
+  /** Server-computed destinations keyed by source zone and pile. */
+  legalTargets: Record<string, { tableau: number[]; foundation: number[] }>;
   /** Eight piles, dealt one card each. Only the top card is available. */
   tableau: Card[][];
   /** Eight foundations, two per suit, opened by Aces and built up to Kings. */
