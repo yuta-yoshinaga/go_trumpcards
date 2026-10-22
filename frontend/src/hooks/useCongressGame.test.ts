@@ -20,6 +20,7 @@ vi.mock('../api/gameApi', () => ({
 const mockExec = vi.mocked(congressApi.exec);
 
 const baseState: CongressResponse = {
+  legalTargets: {},
   tableau: Array.from({ length: 8 }, () => []),
   foundation: Array.from({ length: 8 }, () => []),
   stockCount: 96,

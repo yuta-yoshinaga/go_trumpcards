@@ -35,7 +35,6 @@ import { cardAlt } from '../utils/cardAlt';
 import { CONGRESS_HELP, parseCongressCommand } from '../utils/cli/commands/congressCommands';
 import { formatCongressState } from '../utils/cli/formatters/congressFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { congressLegalTargets, congressSourceCard } from '../utils/congressLegalTargets';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { tableauDimensions } from '../utils/tableauDimensions';
 
@@ -66,6 +65,13 @@ function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => stri
   if (zone === 'waste') return t('frontendHint.waste');
   if (zone === 'stock') return t('frontendHint.stock');
   return t('frontendHint.tableau', { pile: idx });
+}
+
+/** Returns the legalTargets key for a move source, or an empty key when incomplete. */
+export function congressSourceKey(source: CongressMoveZone): string {
+  if (source.zone === 'tableau') return source.col === undefined ? '' : `tableau-${source.col}`;
+  if (source.zone === 'waste' || source.zone === 'stock') return source.zone;
+  return '';
 }
 
 function CongressPageContent() {
@@ -135,13 +141,13 @@ function CongressPageContent() {
       // useSolitaireDragDrop only invokes onMove while isPlaying is true, which
       // requires a loaded game state.
       const currentState = state as CongressResponse;
-      const sourceCard = congressSourceCard(currentState.tableau, currentState.waste, source);
-      const legalTargets = congressLegalTargets(currentState.tableau, currentState.foundation, sourceCard, source.zone);
+      const legalTargets = currentState.legalTargets[congressSourceKey(source)];
       const isLegal =
+        legalTargets !== undefined &&
         target.col !== undefined &&
         (target.zone === 'tableau'
-          ? legalTargets.tableau.has(target.col)
-          : target.zone === 'foundation' && legalTargets.foundation.has(target.col));
+          ? legalTargets.tableau.includes(target.col)
+          : target.zone === 'foundation' && legalTargets.foundation.includes(target.col));
       if (!isLegal) return;
       void game.exec('move', source, target);
     },
@@ -196,8 +202,7 @@ function CongressPageContent() {
   const wasteTop = state.waste.length > 0 ? state.waste[state.waste.length - 1] : null;
   const wasteZone: CongressMoveZone = { zone: 'waste' };
   const stockZone: CongressMoveZone = { zone: 'stock' };
-  const selectedCard = activeSource ? congressSourceCard(state.tableau, state.waste, activeSource) : null;
-  const legalTargets = congressLegalTargets(state.tableau, state.foundation, selectedCard, activeSource?.zone);
+  const legalTargets = activeSource ? state.legalTargets[congressSourceKey(activeSource)] : undefined;
   const targetRing = ' rounded ring-2 ring-ds-success';
 
   const renderPile = (pileIdx: number) => {
@@ -206,8 +211,8 @@ function CongressPageContent() {
     return (
       <div
         key={`pile-${pileIdx.toString()}`}
-        className={`flex-1 min-w-0${legalTargets.tableau.has(pileIdx) ? targetRing : ''}`}
-        data-legal-target={legalTargets.tableau.has(pileIdx) ? 'true' : undefined}
+        className={`flex-1 min-w-0${legalTargets?.tableau.includes(pileIdx) ? targetRing : ''}`}
+        data-legal-target={legalTargets?.tableau.includes(pileIdx) ? 'true' : undefined}
       >
         <div className="text-center text-xs text-ds-text-muted mb-0.5" aria-hidden="true">
           #{pileIdx}
@@ -335,8 +340,8 @@ function CongressPageContent() {
                   return (
                     <div
                       key={`f-${idx.toString()}`}
-                      className={`text-center${legalTargets.foundation.has(idx) ? targetRing : ''}`}
-                      data-legal-target={legalTargets.foundation.has(idx) ? 'true' : undefined}
+                      className={`text-center${legalTargets?.foundation.includes(idx) ? targetRing : ''}`}
+                      data-legal-target={legalTargets?.foundation.includes(idx) ? 'true' : undefined}
                     >
                       <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
                       <DropZone

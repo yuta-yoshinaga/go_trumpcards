@@ -60,6 +60,38 @@ func (_m *MockCongressGame) GetHint() *domain.CongressHint {
 	return v.(*domain.CongressHint)
 }
 
+func (_m *MockCongressGame) LegalTargets(fromPile int) ([]int, []int) {
+	ret := _m.Called(fromPile)
+	var tableau, foundation []int
+	if ret.Get(0) != nil {
+		tableau = ret.Get(0).([]int)
+	}
+	if ret.Get(1) != nil {
+		foundation = ret.Get(1).([]int)
+	}
+	return tableau, foundation
+}
+
+func (_m *MockCongressGame) WasteLegalTargets() ([]int, []int) {
+	ret := _m.Called()
+	var tableau, foundation []int
+	if ret.Get(0) != nil {
+		tableau = ret.Get(0).([]int)
+	}
+	if ret.Get(1) != nil {
+		foundation = ret.Get(1).([]int)
+	}
+	return tableau, foundation
+}
+
+func (_m *MockCongressGame) StockLegalTargets() []int {
+	ret := _m.Called()
+	if ret.Get(0) == nil {
+		return nil
+	}
+	return ret.Get(0).([]int)
+}
+
 func (_m *MockCongressGame) AutoComplete() error {
 	ret := _m.Called()
 	return ret.Error(0)

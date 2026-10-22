@@ -46,6 +46,37 @@ func TestNewCongress(t *testing.T) {
 	assert.NotNil(t, NewDefaultCongress())
 }
 
+func TestCongressLegalTargets(t *testing.T) {
+	c := newTestCongress()
+	clearCongressBoard(c)
+	c.tableau[0] = []*Card{NewCard(CardDesignSpade, 5, true)}
+	c.tableau[1] = []*Card{NewCard(CardDesignHeart, 6, true)}
+	c.foundation[0] = []*Card{NewCard(CardDesignSpade, 4, true)}
+	c.foundation[4] = []*Card{NewCard(CardDesignSpade, 4, true)}
+	tableau, foundation := c.LegalTargets(0)
+	assert.Equal(t, []int{1}, tableau)
+	assert.Equal(t, []int{0, 4}, foundation)
+	badTableau, badFoundation := c.LegalTargets(-1)
+	assert.Nil(t, badTableau)
+	assert.Nil(t, badFoundation)
+}
+
+func TestCongressWasteAndStockLegalTargets(t *testing.T) {
+	c := newTestCongress()
+	clearCongressBoard(c)
+	c.tableau[0] = []*Card{NewCard(CardDesignHeart, 6, true)}
+	c.waste = []*Card{NewCard(CardDesignSpade, 5, true)}
+	c.foundation[0] = []*Card{NewCard(CardDesignSpade, 4, true)}
+	c.foundation[4] = []*Card{NewCard(CardDesignSpade, 4, true)}
+	tableau, foundation := c.WasteLegalTargets()
+	assert.Equal(t, []int{0, 1, 2, 3, 4, 5, 6, 7}, tableau)
+	assert.Equal(t, []int{0, 4}, foundation)
+	c.stock = []*Card{NewCard(CardDesignHeart, 9, true)}
+	assert.Equal(t, []int{1, 2, 3, 4, 5, 6, 7}, c.StockLegalTargets())
+	c.stock = nil
+	assert.Nil(t, c.StockLegalTargets())
+}
+
 // The deal is 8 piles of ONE card with the other 96 as stock. #4419 puts all 96
 // into the tableau, which would leave the stock empty and contradict its own
 // rule 5 ("turn cards from the stock").
