@@ -74452,6 +74452,19 @@ components:
       properties:
         messageCode:
           type: string
+        legalTargets:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         tableau:
           type: array
           items:

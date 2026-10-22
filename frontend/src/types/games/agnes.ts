@@ -20,6 +20,7 @@ export interface AgnesHint {
 
 /** Full Agnes Sorel game state returned from the API. */
 export interface AgnesResponse extends BaseGameResponse {
+  legalTargets: Record<string, { tableau: number[]; foundation: number[] }>;
   tableau: AgnesTableauCard[][];
   stockCount: number;
   foundation: Card[][];

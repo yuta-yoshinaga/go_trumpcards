@@ -174,3 +174,27 @@ func TestAgnesWebPresenter_ActionLogOutput(t *testing.T) {
 		_ = p.ActionLogOutput(a)
 	})
 }
+
+func TestAgnesWebPresenter_LegalTargetsOnEveryStateOutput(t *testing.T) {
+	p := new(AgnesWebPresenter)
+	a := domain.NewDefaultAgnes()
+	a.Reset()
+	a.SetBaseRank(5)
+	var tab [domain.AgnesTableauCnt][]*domain.AgnesTableauCard
+	tab[0] = []*domain.AgnesTableauCard{{Card: domain.NewCard(domain.CardDesignSpade, 5, false), FaceUp: true}}
+	tab[1] = []*domain.AgnesTableauCard{{Card: domain.NewCard(domain.CardDesignHeart, 9, false), FaceUp: true}}
+	tab[2] = []*domain.AgnesTableauCard{{Card: domain.NewCard(domain.CardDesignSpade, 4, false), FaceUp: true}}
+	a.SetTableau(tab)
+	var foundation [domain.AgnesFoundationCnt][]*domain.Card
+	a.SetFoundation(foundation)
+	for name, output := range map[string]string{"output": p.Output(a, nil), "hint": p.HintOutput(a)} {
+		t.Run(name, func(t *testing.T) {
+			assert.Contains(t, output, `"tableau-0":{"tableau":[],"foundation":[0]}`)
+			assert.Contains(t, output, `"tableau-2":{"tableau":[0],"foundation":[]}`)
+			assert.NotContains(t, output, `"tableau-1"`, "source without destinations is omitted")
+		})
+	}
+	a.SetTableau([domain.AgnesTableauCnt][]*domain.AgnesTableauCard{})
+	assert.Contains(t, p.Output(a, nil), `"legalTargets":{}`)
+	assert.Contains(t, p.HintOutput(a), `"legalTargets":{}`)
+}

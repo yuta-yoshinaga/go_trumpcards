@@ -86,6 +86,19 @@ func (_m *MockAgnesGame) GetFoundation() [domain.AgnesFoundationCnt][]*domain.Ca
 	return ret.Get(0).([domain.AgnesFoundationCnt][]*domain.Card)
 }
 
+// LegalTargets mocks legal destination lookup.
+func (_m *MockAgnesGame) LegalTargets(fromCol int) ([]int, []int) {
+	ret := _m.Called(fromCol)
+	var tableau, foundation []int
+	if ret.Get(0) != nil {
+		tableau = ret.Get(0).([]int)
+	}
+	if ret.Get(1) != nil {
+		foundation = ret.Get(1).([]int)
+	}
+	return tableau, foundation
+}
+
 func (_m *MockAgnesGame) GetBaseRank() int {
 	ret := _m.Called()
 	return ret.Int(0)
