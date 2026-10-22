@@ -104,6 +104,15 @@ func (_m *MockSpideretteGame) GetTableau() [domain.SpideretteTableauCnt][]*domai
 	return ret.Get(0).([domain.SpideretteTableauCnt][]*domain.SpideretteTableauCard)
 }
 
+// RunStarts mocks the RunStarts call.
+func (_m *MockSpideretteGame) RunStarts(col int) []int {
+	ret := _m.Called(col)
+	if ret.Get(0) == nil {
+		return nil
+	}
+	return ret.Get(0).([]int)
+}
+
 // GetCompletedSuits mocks the GetCompletedSuits call.
 func (_m *MockSpideretteGame) GetCompletedSuits() int {
 	ret := _m.Called()

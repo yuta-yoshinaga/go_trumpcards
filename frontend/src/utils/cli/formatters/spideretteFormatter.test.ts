@@ -15,6 +15,7 @@ const baseState: SpideretteResponse = {
     [],
     [],
   ],
+  runStarts: [[0], [], [1], [], [], [], []],
   stockCount: 20,
   completedSuits: 1,
   score: 40,

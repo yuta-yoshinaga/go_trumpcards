@@ -15,6 +15,7 @@ function tc(design: Card['design'], value: number, faceUp = true): SpideretteTab
 function makeState(overrides: Partial<SpideretteResponse> = {}): SpideretteResponse {
   return {
     tableau: [[tc(S, 10), tc(S, 9), tc(S, 8)], [tc(H, 5, false), tc(H, 7), tc(H, 6)], [], [], [], [], []],
+    runStarts: [[0, 1, 2], [1, 2], [], [], [], [], []],
     stockCount: 20,
     completedSuits: 0,
     phase: SpiderettePhase.PLAYING,

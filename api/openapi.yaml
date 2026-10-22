@@ -49741,6 +49741,13 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/SpideretteTableauCard'
+        runStarts:
+          type: array
+          description: Movable run start indices, one array per tableau column.
+          items:
+            type: array
+            items:
+              type: integer
         stockCount:
           type: integer
         completedSuits:

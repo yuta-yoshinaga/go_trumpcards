@@ -27,6 +27,8 @@ type SpideretteGame interface {
 	GetDealsRemaining() int
 	// GetTableau タブローを取得する
 	GetTableau() [domain.SpideretteTableauCnt][]*domain.SpideretteTableauCard
+	// RunStarts returns the indices of movable sequence starts in a tableau column.
+	RunStarts(col int) []int
 	// GetCompletedSuits 完成スート数を取得する
 	GetCompletedSuits() int
 	// AllFaceUp 全カードが表向きかを返す

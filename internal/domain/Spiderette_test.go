@@ -22,6 +22,36 @@ func TestNewDefaultSpiderette(t *testing.T) {
 	assert.NotNil(t, s)
 }
 
+func TestSpideretteRunStarts(t *testing.T) {
+	tests := []struct {
+		name  string
+		cards []*SpideretteTableauCard
+		want  []int
+	}{
+		{name: "mixed column", cards: []*SpideretteTableauCard{
+			{Card: NewCard(CardDesignSpade, 8, false), FaceUp: true},
+			{Card: NewCard(CardDesignSpade, 7, false), FaceUp: true},
+			{Card: NewCard(CardDesignHeart, 6, false), FaceUp: true},
+		}, want: []int{2}},
+		{name: "face down start", cards: []*SpideretteTableauCard{
+			{Card: NewCard(CardDesignSpade, 8, false), FaceUp: false},
+			{Card: NewCard(CardDesignSpade, 7, false), FaceUp: true},
+		}, want: []int{1}},
+		{name: "single top card", cards: []*SpideretteTableauCard{
+			{Card: NewCard(CardDesignSpade, 8, false), FaceUp: true},
+		}, want: []int{0}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			game := NewDefaultSpiderette()
+			var tableau [SpideretteTableauCnt][]*SpideretteTableauCard
+			tableau[0] = tt.cards
+			game.SetTableau(tableau)
+			assert.Equal(t, tt.want, game.RunStarts(0))
+		})
+	}
+}
+
 func TestSpideretteReset(t *testing.T) {
 	s := NewDefaultSpiderette()
 	s.Reset()
