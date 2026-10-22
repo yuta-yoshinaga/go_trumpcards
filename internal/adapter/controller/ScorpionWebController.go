@@ -31,13 +31,20 @@ type ScorpionWebOutputHint struct {
 	ExposesFaceDown bool `json:"exposesFaceDown"`
 }
 
+// ScorpionWebOutputTargets contains legal destinations for one tableau source.
+type ScorpionWebOutputTargets struct {
+	Tableau    []int `json:"tableau"`
+	Foundation []int `json:"foundation"`
+}
+
 // ScorpionWebOutput スコーピオンWebアウトプット
 type ScorpionWebOutput struct {
-	Tableau           [][]*KlondikeWebOutputTableauCard `json:"tableau"`
-	StockCount        int                               `json:"stockCount"`
-	CompletedSuits    int                               `json:"completedSuits"`
-	CompletedSuitMask int                               `json:"completedSuitMask"`
-	Hint              *ScorpionWebOutputHint            `json:"hint,omitempty"`
+	Tableau           [][]*KlondikeWebOutputTableauCard   `json:"tableau"`
+	StockCount        int                                 `json:"stockCount"`
+	CompletedSuits    int                                 `json:"completedSuits"`
+	CompletedSuitMask int                                 `json:"completedSuitMask"`
+	Hint              *ScorpionWebOutputHint              `json:"hint,omitempty"`
+	LegalTargets      map[string]ScorpionWebOutputTargets `json:"legalTargets"`
 	SolitaireWebOutputBase
 	WebOutputBase
 }
@@ -54,6 +61,7 @@ var NewScorpionWebController, NewScorpionWebControllerWithProvider = webControll
 func newScorpionDefaultOutput(msg string) *ScorpionWebOutput {
 	return &ScorpionWebOutput{
 		Tableau:       make([][]*KlondikeWebOutputTableauCard, 0),
+		LegalTargets:  map[string]ScorpionWebOutputTargets{},
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }

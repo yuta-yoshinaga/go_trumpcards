@@ -5,6 +5,7 @@ import { getScorpionHint } from './scorpionHint';
 function makeState(overrides: Partial<ScorpionResponse> = {}): ScorpionResponse {
   return {
     tableau: [],
+    legalTargets: {},
     stockCount: 0,
     completedSuits: 0,
     completedSuitMask: 0,

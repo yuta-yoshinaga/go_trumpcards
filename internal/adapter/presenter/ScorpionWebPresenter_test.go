@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -29,6 +30,7 @@ func setupScorpionWebMockDefaults(sg *interfaces.MockScorpionGame) {
 		tableau[i] = make([]*domain.KlondikeTableauCard, 0)
 	}
 	sg.On("GetTableau").Return(tableau).Maybe()
+	sg.On("LegalTargetsFrom", mock.Anything, mock.Anything).Return([]int(nil), []int(nil)).Maybe()
 }
 
 func parseScorpionOutput(t *testing.T, jsonStr string) *controller.ScorpionWebOutput {
@@ -57,6 +59,7 @@ func TestScorpionWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 0, result.Phase)
 		assert.Equal(t, 3, result.StockCount)
 		assert.Equal(t, "scorpion.playing", result.MessageCode)
+		assert.Empty(t, result.LegalTargets)
 	})
 
 	t.Run("stalemate", func(t *testing.T) {
@@ -183,6 +186,44 @@ func TestScorpionWebPresenter_HintOutput(t *testing.T) {
 		assert.Nil(t, result.Hint)
 		assert.Equal(t, "scorpion.noHint", result.MessageCode)
 	})
+}
+
+func TestScorpionWebPresenter_LegalTargetsOnEveryOutput(t *testing.T) {
+	for _, tc := range []struct {
+		name   string
+		output func(*ScorpionWebPresenter, interfaces.ScorpionGame) string
+	}{
+		{"output", func(p *ScorpionWebPresenter, g interfaces.ScorpionGame) string { return p.Output(g, nil) }},
+		{"hint output without hint", func(p *ScorpionWebPresenter, g interfaces.ScorpionGame) string { return p.HintOutput(g) }},
+		{"legal moves output", func(p *ScorpionWebPresenter, g interfaces.ScorpionGame) string { return p.LegalMovesOutput(g, 0) }},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			sg := new(interfaces.MockScorpionGame)
+			setupScorpionWebMockDefaults(sg)
+			sg.ExpectedCalls = filterCalls(sg.ExpectedCalls, "LegalTargetsFrom")
+			// Face-down cards are not valid sources and must be skipped before
+			// asking the domain for their destinations.
+			var tableau [domain.ScorpionTableauCnt][]*domain.KlondikeTableauCard
+			tableau[0] = []*domain.KlondikeTableauCard{
+				{Card: domain.NewCard(domain.CardDesignHeart, 5, false), FaceUp: true},
+				{Card: domain.NewCard(domain.CardDesignSpade, 6, false), FaceUp: true},
+				{Card: domain.NewCard(domain.CardDesignClover, 8, false), FaceUp: true},
+				{Card: domain.NewCard(domain.CardDesignDiamond, 9, false), FaceUp: false},
+			}
+			sg.ExpectedCalls = filterCalls(sg.ExpectedCalls, "GetTableau")
+			sg.On("GetTableau").Return(tableau).Maybe()
+			sg.On("LegalTargetsFrom", 0, 0).Return([]int(nil), []int{2}).Maybe()
+			sg.On("LegalTargetsFrom", 0, 1).Return([]int{3}, []int(nil)).Maybe()
+			sg.On("LegalTargetsFrom", 0, 2).Return([]int(nil), []int(nil)).Maybe()
+			sg.On("GetHint").Return((*domain.ScorpionHint)(nil)).Maybe()
+			out := parseScorpionOutput(t, tc.output(new(ScorpionWebPresenter), sg))
+			assert.Equal(t, controller.ScorpionWebOutputTargets{Tableau: []int{}, Foundation: []int{2}}, out.LegalTargets["tableau-0-0"])
+			assert.Equal(t, controller.ScorpionWebOutputTargets{Tableau: []int{3}, Foundation: []int{}}, out.LegalTargets["tableau-0-1"])
+			assert.NotContains(t, out.LegalTargets, "tableau-0-2")
+			assert.NotContains(t, out.LegalTargets, "tableau-0-3")
+			assert.NotNil(t, out.LegalTargets)
+		})
+	}
 }
 
 func TestScorpionWebPresenter_ActionLogOutput(t *testing.T) {

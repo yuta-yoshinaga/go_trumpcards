@@ -28,6 +28,7 @@ const mockExec = vi.mocked(scorpionApi.exec);
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 
 const playingState: ScorpionResponse = {
+  legalTargets: { 'tableau-5-0': { tableau: [1], foundation: [] } },
   tableau: [
     [
       { card: null, faceUp: false },
@@ -765,5 +766,17 @@ describe('ScorpionPage destination preview', () => {
     // ♠3 の上に置ける札 (♠4) は場に無い。
     fireEvent.mouseEnter(screen.getByRole('button', { name: /♠ 3/ }));
     expect(screen.queryByTestId('sc-legal-target')).not.toBeInTheDocument();
+  });
+
+  it('follows server targets when they disagree with the client placement rule', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      legalTargets: { 'tableau-5-0': { tableau: [2], foundation: [] } },
+    });
+    renderWithProviders(<ScorpionPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    fireEvent.mouseEnter(heartSeven());
+    const serverTarget = await screen.findByTestId('sc-legal-target');
+    expect(serverTarget).toBe(screen.getByRole('button', { name: /♣ 5/ }));
   });
 });

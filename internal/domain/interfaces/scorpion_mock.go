@@ -27,6 +27,11 @@ func (_m *MockScorpionGame) MoveTableauToTableau(fromCol, cardIndex, toCol int) 
 	return ret.Error(0)
 }
 
+func (_m *MockScorpionGame) LegalTargetsFrom(col, cardIndex int) ([]int, []int) {
+	ret := _m.Called(col, cardIndex)
+	return ret.Get(0).([]int), ret.Get(1).([]int)
+}
+
 func (_m *MockScorpionGame) GiveUp() {
 	_m.Called()
 }

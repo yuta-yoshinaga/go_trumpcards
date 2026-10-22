@@ -15,6 +15,8 @@ type ScorpionGame interface {
 	Deal() error
 	// MoveTableauToTableau タブロー間でカードを移動する
 	MoveTableauToTableau(fromCol, cardIndex, toCol int) error
+	// LegalTargetsFrom returns legal tableau destinations for a face-up card.
+	LegalTargetsFrom(col, cardIndex int) (tableau, foundation []int)
 	// GetHint ヒントを取得する
 	GetHint() *domain.ScorpionHint
 	// GetPhase 現在のフェーズを取得する
