@@ -16,6 +16,7 @@ const mockExec = vi.mocked(accordionApi.exec);
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 
 const playingState: AccordionResponse = {
+  legalTargets: {},
   piles: [
     { cards: [card('SPADE', 1)], size: 1 },
     { cards: [card('HEART', 2)], size: 1 },
@@ -263,7 +264,7 @@ describe('AccordionPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo'));
   });
 
-  it('hovering a pile lights up legal -1/-3 merge targets', async () => {
+  it('follows server legal targets when they disagree with the old client rule', async () => {
     const hoverState: AccordionResponse = {
       ...playingState,
       piles: [
@@ -273,16 +274,26 @@ describe('AccordionPage', () => {
         { cards: [card('SPADE', 9)], size: 1 },
       ],
       pileCount: 4,
+      legalTargets: { 'pile-3': { tableau: [2] } },
     };
     mockExec.mockResolvedValue(hoverState);
     renderWithProviders(<AccordionPage />);
     const pile3 = await screen.findByRole('button', { name: /3:/ });
     fireEvent.mouseEnter(pile3);
     const pile0 = screen.getByRole('button', { name: /0:/ });
-    expect(pile0.dataset.hoverTarget).toBe('true');
-    expect(pile0.className).toContain('ring-ds-success');
-    // Adjacent pile (index 2) shares neither suit nor rank with SPADE 9.
-    expect(screen.getByRole('button', { name: /2:/ }).dataset.hoverTarget).toBe('false');
+    expect(pile0.dataset.hoverTarget).toBe('false');
+    expect(screen.getByRole('button', { name: /2:/ }).dataset.hoverTarget).toBe('true');
+  });
+
+  it('keeps server target ordering when describing selected pile offsets', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      legalTargets: { 'pile-3': { tableau: [2, 0] } },
+    });
+    renderWithProviders(<AccordionPage />);
+    fireEvent.click(await screen.findByRole('button', { name: /^3:/ }));
+    const status = screen.getByTestId('ac-selection-status');
+    await waitFor(() => expect(status.textContent).toContain('パイル2、パイル0'));
   });
 
   it('hover ring is suppressed on hintFrom pile even when it is a legal target', async () => {
@@ -296,6 +307,7 @@ describe('AccordionPage', () => {
         { cards: [card('SPADE', 9)], size: 1 },
       ],
       pileCount: 4,
+      legalTargets: { 'pile-3': { tableau: [0] } },
       hint: { fromIdx: 0, toIdx: 3 },
       messageCode: 'accordion.hintAvailable',
     };
@@ -356,6 +368,7 @@ describe('AccordionPage', () => {
         { cards: [card('CLOVER', 3)], size: 1 },
         { cards: [card('SPADE', 9)], size: 1 },
       ],
+      legalTargets: { 'pile-3': { tableau: [0] } },
     });
     renderWithProviders(<AccordionPage />);
     const pile3 = await screen.findByRole('button', { name: /^3:/ });
@@ -441,6 +454,7 @@ describe('AccordionPage', () => {
         { cards: [card('CLOVER', 3)], size: 1 },
         { cards: [card('DIAMOND', 4)], size: 1 },
       ],
+      legalTargets: { 'pile-1': { tableau: [0] } },
     });
     renderWithProviders(<AccordionPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
@@ -453,6 +467,7 @@ describe('AccordionPage', () => {
   });
 
   it('selecting pile 3 then clicking pile 0 (offset=3) dispatches a move', async () => {
+    mockExec.mockResolvedValue({ ...playingState, legalTargets: { 'pile-3': { tableau: [0] } } });
     renderWithProviders(<AccordionPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
@@ -555,6 +570,7 @@ describe('AccordionPage', () => {
         { cards: [card('CLOVER', 3)], size: 1 },
         { cards: [card('SPADE', 9)], size: 1 },
       ],
+      legalTargets: { 'pile-3': { tableau: [0] } },
     });
     renderWithProviders(<AccordionPage />);
     const pile3 = await screen.findByRole('button', { name: /^3: ♠ 9/ });
@@ -575,6 +591,7 @@ describe('AccordionPage', () => {
         { cards: [card('SPADE', 3)], size: 1 },
         { cards: [card('SPADE', 9)], size: 1 },
       ],
+      legalTargets: { 'pile-3': { tableau: [2, 0] } },
     });
     renderWithProviders(<AccordionPage />);
     const pile3 = await screen.findByRole('button', { name: /^3: ♠ 9/ });
@@ -596,6 +613,7 @@ describe('AccordionPage', () => {
         { cards: [card('CLOVER', 3)], size: 1 },
         { cards: [card('SPADE', 9)], size: 1 },
       ],
+      legalTargets: {},
     });
     renderWithProviders(<AccordionPage />);
     const pile1 = await screen.findByRole('button', { name: /^1: ♥ 2/ });
@@ -682,6 +700,7 @@ describe('AccordionPage', () => {
         { cards: [card('CLOVER', 3)], size: 1 },
         { cards: [card('DIAMOND', 4)], size: 1 },
       ],
+      legalTargets: { 'pile-1': { tableau: [0] } },
     };
     mockExec.mockResolvedValue(fourPileState);
     renderWithProviders(<AccordionPage />);
@@ -725,6 +744,7 @@ describe('AccordionPage', () => {
         { cards: [card('CLOVER', 3)], size: 1 },
         { cards: [card('SPADE', 9)], size: 1 },
       ],
+      legalTargets: { 'pile-3': { tableau: [0] } },
     });
     renderWithProviders(<AccordionPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
@@ -742,6 +762,7 @@ describe('AccordionPage', () => {
         { cards: [card('CLOVER', 3)], size: 1 },
         { cards: [card('SPADE', 9)], size: 1 },
       ],
+      legalTargets: { 'pile-3': { tableau: [0] } },
     };
     mockExec.mockResolvedValueOnce(readyState); // reset on mount
     mockExec.mockResolvedValue(gameClearState); // autocomplete response
@@ -767,6 +788,7 @@ describe('AccordionPage', () => {
         { cards: [card('CLOVER', 3)], size: 1 },
         { cards: [card('SPADE', 9)], size: 1 },
       ],
+      legalTargets: { 'pile-3': { tableau: [0] } },
     });
     mockExec.mockResolvedValue(gameClearState);
     renderWithProviders(<AccordionPage />);
@@ -794,6 +816,7 @@ describe('AccordionPage', () => {
         { cards: [card('CLOVER', 3)], size: 1 },
         { cards: [card('SPADE', 9)], size: 1 },
       ],
+      legalTargets: { 'pile-3': { tableau: [0] } },
     };
     mockExec.mockResolvedValueOnce(readyState);
 
