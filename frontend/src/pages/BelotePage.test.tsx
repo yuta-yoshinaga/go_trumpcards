@@ -102,6 +102,13 @@ beforeEach(() => {
 });
 
 describe('BelotePage', () => {
+  it('keeps the trump label on one line', async () => {
+    mockExec.mockResolvedValue(makeState({ trumpSuit: 4 }));
+    renderWithProviders(<BelotePage />);
+
+    expect(await screen.findByText('切り札: ♦ ダイヤ')).toHaveClass('whitespace-nowrap');
+  });
+
   it('renders the game message in the footer message slot', async () => {
     mockExec.mockResolvedValue(makeState({ message: 'Footer message location' }));
     renderWithProviders(<BelotePage />);
