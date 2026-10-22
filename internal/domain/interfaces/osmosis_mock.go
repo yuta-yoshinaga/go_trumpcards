@@ -25,6 +25,14 @@ func (_m *MockOsmosisGame) MoveWasteToFoundation(fIdx int) error {
 	return ret.Error(0)
 }
 
+func (_m *MockOsmosisGame) LegalTargets(zone string, col int) []int {
+	ret := _m.Called(zone, col)
+	if ret.Get(0) == nil {
+		return nil
+	}
+	return ret.Get(0).([]int)
+}
+
 func (_m *MockOsmosisGame) CanPlaceOnFoundation(card *domain.Card, fIdx int) bool {
 	ret := _m.Called(card, fIdx)
 	return ret.Bool(0)

@@ -12,6 +12,7 @@ export interface OsmosisHint {
 
 /** Full Osmosis game state returned from the API. */
 export interface OsmosisResponse extends BaseGameResponse {
+  legalTargets: Record<string, { tableau: number[]; foundation: number[] }>;
   reserve: Card[][];
   stockCount: number;
   waste: Card[];

@@ -5,11 +5,6 @@ function ranksIn(pile: Card[]): Set<number> {
   return new Set(pile.map((c) => c.value));
 }
 
-/** True if suit `s` is already the assigned suit of a foundation row other than `except`. */
-function suitAssigned(foundation: Card[][], s: string, except: number): boolean {
-  return foundation.some((pile, i) => i !== except && pile.length > 0 && pile[0].design === s);
-}
-
 /**
  * Ranks that can currently be added to foundation row `i`, mirroring the Osmosis
  * domain rule (`Osmosis.canPlaceOnFoundation`): an empty row accepts only the base
@@ -31,18 +26,4 @@ export function osmosisAllowedRanks(foundation: Card[][], baseRank: number, i: n
   }
   const above = ranksIn(foundation[i - 1]);
   return [...above].filter((r) => !have.has(r)).sort((a, b) => a - b);
-}
-
-/** Mirrors `Osmosis.canPlaceOnFoundation` for a specific candidate card. */
-export function osmosisCanPlace(foundation: Card[][], baseRank: number, i: number, card: Card): boolean {
-  const pile = foundation[i];
-  if (pile.length === 0) {
-    if (card.value !== baseRank) return false;
-    if (suitAssigned(foundation, card.design, i)) return false;
-    if (i === 0) return true;
-    return foundation[i - 1].length > 0;
-  }
-  if (pile[0].design !== card.design) return false;
-  if (i === 0) return true;
-  return ranksIn(foundation[i - 1]).has(card.value);
 }
