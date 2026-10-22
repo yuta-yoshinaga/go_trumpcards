@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
@@ -33,6 +34,7 @@ func setupBisleyWebMockDefaults(bg *interfaces.MockBisleyGame) {
 		}
 	}
 	bg.On("GetTableau").Return(tableau).Maybe()
+	bg.On("LegalTargets", mock.AnythingOfType("int")).Return([]int{}).Maybe()
 
 	var ace [domain.BisleyFoundationCnt][]*domain.Card
 	var king [domain.BisleyFoundationCnt][]*domain.Card
@@ -61,6 +63,38 @@ func setupBisleyOutputMock(g *interfaces.MockBisleyGame) {
 	g.On("GetHint").Return(nil).Maybe()
 }
 
+func TestBisleyWebPresenter_LegalTargets(t *testing.T) {
+	bg := new(interfaces.MockBisleyGame)
+	setupBisleyWebMockDefaults(bg)
+	var tableau [domain.BisleyTableauCnt][]*domain.BisleyTableauCard
+	tableau[0] = []*domain.BisleyTableauCard{{Card: domain.NewCard(domain.CardDesignSpade, 5, false), FaceUp: true}}
+	bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "GetTableau")
+	bg.On("GetTableau").Return(tableau).Maybe()
+	bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "LegalTargets")
+	bg.On("LegalTargets", 0).Return([]int{2}).Maybe()
+	bg.On("LegalTargets", 2).Return([]int{}).Maybe()
+	bg.On("LegalTargets", 3).Return([]int{}).Maybe()
+	for col := 4; col < domain.BisleyTableauCnt; col++ {
+		bg.On("LegalTargets", col).Return([]int{}).Maybe()
+	}
+	setupBisleyOutputMock(bg)
+	p := new(BisleyWebPresenter)
+	out := parseBisleyOutput(t, p.Output(bg, nil))
+	assert.Equal(t, []int{2}, out.LegalTargets["tableau-0"].Tableau)
+	_, exists := out.LegalTargets["tableau-1"]
+	assert.False(t, exists)
+
+	bg2 := new(interfaces.MockBisleyGame)
+	setupBisleyWebMockDefaults(bg2)
+	bg2.On("GetHint").Return(nil).Maybe()
+	for col := 0; col < domain.BisleyTableauCnt; col++ {
+		bg2.On("LegalTargets", col).Return([]int{}).Maybe()
+	}
+	hintOut := parseBisleyOutput(t, p.HintOutput(bg2))
+	assert.NotNil(t, hintOut.LegalTargets)
+	assert.Empty(t, hintOut.LegalTargets)
+}
+
 func TestBisleyWebPresenter_Output(t *testing.T) {
 	t.Run("initial state", func(t *testing.T) {
 		bg := new(interfaces.MockBisleyGame)
@@ -75,6 +109,8 @@ func TestBisleyWebPresenter_Output(t *testing.T) {
 		assert.Len(t, result.KingFoundations, domain.BisleyFoundationCnt)
 		assert.Equal(t, domain.CardValueMax, result.FoundationSize)
 		assert.Equal(t, "bisley.playing", result.MessageCode)
+		assert.NotNil(t, result.LegalTargets)
+		assert.Empty(t, result.LegalTargets)
 	})
 
 	t.Run("all face up", func(t *testing.T) {

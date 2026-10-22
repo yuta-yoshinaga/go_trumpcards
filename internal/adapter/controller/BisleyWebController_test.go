@@ -19,6 +19,7 @@ func mustBisleyOutputJSON(msg string) string {
 		AceFoundations:  [][]*controller.WebOutputCard{},
 		KingFoundations: [][]*controller.WebOutputCard{},
 		FoundationSize:  13,
+		LegalTargets:    map[string]controller.BisleyWebOutputTargets{},
 		WebOutputBase:   controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
