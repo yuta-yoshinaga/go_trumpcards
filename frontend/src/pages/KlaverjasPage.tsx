@@ -27,12 +27,6 @@ import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { KlaverjasResponse } from '../types/card';
 
-const playRejectReasonKeys: Record<string, string> = {
-  'shared.errFollowLeadSuit': 'followSuit',
-  'klaverjas.errMustPlayTrump': 'mustTrump',
-  'klaverjas.errMustOvertrump': 'mustOvertrump',
-};
-
 import { KlaverjasPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { suitSymbolAt } from '../utils/cardAlt';
@@ -42,6 +36,12 @@ import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
+
+const playRejectReasonKeys: Record<string, string> = {
+  'shared.errFollowLeadSuit': 'followSuit',
+  'klaverjas.errMustPlayTrump': 'mustTrump',
+  'klaverjas.errMustOvertrump': 'mustOvertrump',
+};
 
 /**
  * Card strength and points, strongest first (sync: `Klaverjas.trumpStrength` /
