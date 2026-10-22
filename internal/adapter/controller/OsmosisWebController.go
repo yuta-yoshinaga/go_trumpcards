@@ -28,13 +28,14 @@ type OsmosisWebOutputHint struct {
 	ToCol    int    `json:"toCol"`
 }
 
-// OsmosisWebOutput オズモシスWebアウトプット
 // OsmosisWebOutputTargets lists foundation destinations for a selectable source.
+// Tableau is always empty in Osmosis.
 type OsmosisWebOutputTargets struct {
 	Tableau    []int `json:"tableau"`
 	Foundation []int `json:"foundation"`
 }
 
+// OsmosisWebOutput オズモシスWebアウトプット
 type OsmosisWebOutput struct {
 	LegalTargets map[string]OsmosisWebOutputTargets `json:"legalTargets"`
 	Reserve      [][]*WebOutputCard                 `json:"reserve"`

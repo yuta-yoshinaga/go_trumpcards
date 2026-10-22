@@ -264,7 +264,11 @@ function OsmosisPageContent() {
           const clickBlocked = selected != null && topCardOf(selected) != null && !canPlace;
           const clickAllowed = canPlace;
           const isDropHover = dnd.isDropTarget(fZone);
-          const dragBlocked = isDropHover && !!draggedTargets && !draggedTargets.foundation.includes(i);
+          const dragBlocked =
+            isDropHover &&
+            dnd.dragSource != null &&
+            topCardOf(dnd.dragSource) != null &&
+            !draggedTargets?.foundation.includes(i);
           const blocked = clickBlocked || dragBlocked;
           return (
             <DropZone

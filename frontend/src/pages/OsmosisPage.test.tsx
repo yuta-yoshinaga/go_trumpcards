@@ -645,6 +645,38 @@ describe('OsmosisPage', () => {
       await waitFor(() => expect(foundation0.className).toContain('border-ds-error'));
       expect(foundation0).toHaveAttribute('title', 'この段には置けません');
     });
+
+    it('marks a dragged source with no legal-target entry as blocked', async () => {
+      mockExec.mockResolvedValue({
+        ...playingState,
+        legalTargets: { 'reserve-0': { tableau: [], foundation: [1] } },
+      });
+      renderWithProviders(<OsmosisPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+      const reserveBtn = screen.getByRole('button', { name: /リザーブ 1/ });
+      const dt = buildDataTransfer();
+      fireEvent.dragStart(reserveBtn, { dataTransfer: dt });
+      const foundation0 = screen.getByRole('button', { name: /^組札 0/ });
+      fireEvent.dragOver(foundation0.parentElement as HTMLElement, { dataTransfer: dt });
+      await waitFor(() => expect(foundation0.className).toContain('border-ds-error'));
+      expect(foundation0).toHaveAttribute('title', 'この段には置けません');
+    });
+
+    it('does not mark a dragged source as blocked when the hovered row is a target', async () => {
+      mockExec.mockResolvedValue({
+        ...playingState,
+        legalTargets: { 'reserve-0': { tableau: [], foundation: [1] } },
+      });
+      renderWithProviders(<OsmosisPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+      const reserveBtn = screen.getByRole('button', { name: /リザーブ 0/ });
+      const dt = buildDataTransfer();
+      fireEvent.dragStart(reserveBtn, { dataTransfer: dt });
+      const foundation1 = screen.getByRole('button', { name: /^組札 1/ });
+      fireEvent.dragOver(foundation1.parentElement as HTMLElement, { dataTransfer: dt });
+      await waitFor(() => expect(foundation1.className).not.toContain('border-ds-error'));
+      expect(foundation1).not.toHaveAttribute('title', 'この段には置けません');
+    });
   });
 });
 
