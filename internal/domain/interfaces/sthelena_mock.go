@@ -22,6 +22,18 @@ func (_m *MockStHelenaGame) MoveTableauToTableau(fromCol, toCol int) error {
 	return ret.Error(0)
 }
 
+func (_m *MockStHelenaGame) LegalTargets(fromCol int) ([]int, []int) {
+	ret := _m.Called(fromCol)
+	var tableau, foundation []int
+	if ret.Get(0) != nil {
+		tableau = ret.Get(0).([]int)
+	}
+	if ret.Get(1) != nil {
+		foundation = ret.Get(1).([]int)
+	}
+	return tableau, foundation
+}
+
 func (_m *MockStHelenaGame) MoveTableauToFoundation(fromCol, foundationIdx int) error {
 	ret := _m.Called(fromCol, foundationIdx)
 	return ret.Error(0)

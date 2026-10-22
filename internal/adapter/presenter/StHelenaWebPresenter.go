@@ -19,6 +19,7 @@ func (p *StHelenaWebPresenter) Output(cr interfaces.StHelenaGame, lastErr error)
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, cr, int(cr.GetPhase()))
 	resObj.RedealsRemaining = cr.GetRedealsRemaining()
 	resObj.RestrictionsActive = cr.RestrictionsActive()
+	resObj.LegalTargets = p.buildLegalTargets(cr)
 
 	tableau := cr.GetTableau()
 	resObj.Tableau = make([][]*controller.StHelenaWebOutputTableauCard, domain.StHelenaTableauCnt)
@@ -93,6 +94,7 @@ func (p *StHelenaWebPresenter) HintOutput(cr interfaces.StHelenaGame) string {
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, cr, int(cr.GetPhase()))
 	resObj.RedealsRemaining = cr.GetRedealsRemaining()
 	resObj.RestrictionsActive = cr.RestrictionsActive()
+	resObj.LegalTargets = p.buildLegalTargets(cr)
 	resObj.Tableau = make([][]*controller.StHelenaWebOutputTableauCard, 0)
 	resObj.Foundation = make([][]*controller.WebOutputCard, 0)
 
@@ -109,6 +111,19 @@ func (p *StHelenaWebPresenter) HintOutput(cr interfaces.StHelenaGame) string {
 	}
 
 	return marshalOrError(resObj)
+}
+
+// buildLegalTargets returns legal destinations keyed by tableau source column.
+func (p *StHelenaWebPresenter) buildLegalTargets(cr interfaces.StHelenaGame) map[string]controller.StHelenaWebOutputTargets {
+	out := make(map[string]controller.StHelenaWebOutputTargets)
+	for col := range domain.StHelenaTableauCnt {
+		tableau, foundation := cr.LegalTargets(col)
+		if len(tableau) == 0 && len(foundation) == 0 {
+			continue
+		}
+		out[fmt.Sprintf("tableau-%d", col)] = controller.StHelenaWebOutputTargets{Tableau: intSliceOrEmpty(tableau), Foundation: intSliceOrEmpty(foundation)}
+	}
+	return out
 }
 
 // ActionLogOutput 棋譜を JSON 出力する。

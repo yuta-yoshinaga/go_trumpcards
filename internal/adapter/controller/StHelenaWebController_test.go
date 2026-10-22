@@ -17,6 +17,7 @@ func mustStHelenaOutputJSON(msg string) string {
 	out := &controller.StHelenaWebOutput{
 		Tableau:       [][]*controller.StHelenaWebOutputTableauCard{},
 		Foundation:    [][]*controller.WebOutputCard{},
+		LegalTargets:  map[string]controller.StHelenaWebOutputTargets{},
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
