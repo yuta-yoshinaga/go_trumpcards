@@ -32,6 +32,7 @@ function makeGrid(): (Card | null)[][] {
 
 const playingState: GapsResponse = {
   grid: makeGrid(),
+  lockedPrefixLengths: [0, 0, 0, 0],
   redealsUsed: 0,
   redealsRemaining: 3,
   phase: 0,
@@ -72,6 +73,7 @@ beforeEach(() => {
 
 describe('GapsPage', () => {
   it('keeps all 13 columns aligned in one horizontally scrollable board while the page remains vertically scrollable', async () => {
+    mockedRun.mockResolvedValue({ ...playingState, lockedPrefixLengths: [12, 12, 12, 12] });
     renderWithProviders(<GapsPage />);
     const firstCell = await screen.findByTestId('gaps-locked-0-0');
     const board = firstCell.closest('[data-tutorial="gaps-grid"]') as HTMLElement;
@@ -87,6 +89,7 @@ describe('GapsPage', () => {
   });
 
   it('moves button focus by row and column with arrow keys using roving tab stops', async () => {
+    mockedRun.mockResolvedValue({ ...playingState, lockedPrefixLengths: [12, 12, 12, 12] });
     renderWithProviders(<GapsPage />);
     const first = await screen.findByTestId('gaps-locked-0-0');
     expect(first).toHaveAttribute('tabindex', '0');
@@ -100,6 +103,7 @@ describe('GapsPage', () => {
   });
 
   it('updates the roving tab stop when a cell receives focus before moving by arrow key', async () => {
+    mockedRun.mockResolvedValue({ ...playingState, lockedPrefixLengths: [12, 12, 12, 12] });
     renderWithProviders(<GapsPage />);
     const focusedCell = await screen.findByTestId('gaps-cell-0-12');
     fireEvent.focus(focusedCell);
@@ -114,6 +118,7 @@ describe('GapsPage', () => {
   });
 
   it('keeps focus within the board edges and leaves other keys alone', async () => {
+    mockedRun.mockResolvedValue({ ...playingState, lockedPrefixLengths: [12, 12, 12, 12] });
     renderWithProviders(<GapsPage />);
     const first = await screen.findByTestId('gaps-locked-0-0');
     fireEvent.keyDown(first, { key: 'ArrowLeft' });
@@ -138,6 +143,7 @@ describe('GapsPage', () => {
   });
 
   it('includes zero-based row and column in card names, preserving locked status', async () => {
+    mockedRun.mockResolvedValue({ ...playingState, lockedPrefixLengths: [12, 12, 12, 12] });
     renderWithProviders(<GapsPage />);
     expect(
       await screen.findByRole('button', { name: '♠ 2、行0・列0、ロック済み (次のリディール後も残ります)' }),
@@ -153,6 +159,15 @@ describe('GapsPage', () => {
     mockedRun.mockResolvedValue({ ...playingState, grid });
     renderWithProviders(<GapsPage />);
     expect(await screen.findByRole('button', { name: '♠ 5、行0・列0' })).toBeInTheDocument();
+  });
+
+  it('follows server locked prefix lengths when they disagree with the grid rule', async () => {
+    const grid = makeGrid();
+    grid[0][0] = card('SPADE', 5);
+    mockedRun.mockResolvedValue({ ...playingState, grid, lockedPrefixLengths: [1, 0, 0, 0] });
+    renderWithProviders(<GapsPage />);
+    expect(await screen.findByTestId('gaps-locked-0-0')).toBeInTheDocument();
+    expect(screen.getByTestId('gaps-redeal-button')).toHaveTextContent('1');
   });
 
   it('reflects the server-provided gap needs (needed / anySuit / blocked) in each cell aria-label and ghost preview', async () => {
@@ -254,6 +269,7 @@ describe('GapsPage', () => {
 
   it('shows how many locked cards a redeal will keep', async () => {
     // makeGrid: 4 rows each a full 2..13 run → 4 × 12 = 48 locked cards.
+    mockedRun.mockResolvedValue({ ...playingState, lockedPrefixLengths: [12, 12, 12, 12] });
     renderWithProviders(<GapsPage />);
     const btn = await screen.findByTestId('gaps-redeal-button');
     expect(btn).toHaveTextContent('(0/3)');
@@ -317,7 +333,7 @@ describe('GapsPage', () => {
   });
 
   it('highlights hint source and target cells with rings instead of coordinate text', async () => {
-    mockedRun.mockResolvedValue(withHintState); // from (1,0) card, to (0,12) gap
+    mockedRun.mockResolvedValue({ ...withHintState, lockedPrefixLengths: [12, 12, 12, 12] });
     renderWithProviders(<GapsPage />);
     const btn = await screen.findByRole('button', { name: 'ヒント' });
     fireEvent.click(btn);
@@ -344,6 +360,7 @@ describe('GapsPage', () => {
 
   it('renders a lock badge for each card that forms the row prefix starting from 2', async () => {
     // makeGrid seeds every row with 2..13 of the same suit ⇒ the first 12 cells of each row are locked.
+    mockedRun.mockResolvedValue({ ...playingState, lockedPrefixLengths: [12, 12, 12, 12] });
     renderWithProviders(<GapsPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     expect(screen.getByTestId('gaps-locked-0-0')).toBeInTheDocument();
