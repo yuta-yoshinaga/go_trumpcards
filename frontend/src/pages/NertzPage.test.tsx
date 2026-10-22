@@ -61,6 +61,7 @@ const playingState: NertzResponse = {
     },
   ],
   foundations: Array.from({ length: 8 }, () => ({ suit: -1, size: 0 })),
+  legalTargets: {},
   message: '',
 };
 
@@ -305,6 +306,29 @@ describe('NertzPage', () => {
     expect(screen.getByAltText('♥ A')).toBeInTheDocument();
   });
 
+  it('uses the tableau source key supplied by the server', async () => {
+    const state: NertzResponse = {
+      ...playingState,
+      legalTargets: { 'tableau-0-0': { tableau: [2], foundation: [] } },
+      players: [
+        {
+          ...playingState.players[0],
+          tableau: [[{ card: { design: 'SPADE', value: 5 }, faceUp: true }], [], [], []],
+        },
+        playingState.players[1],
+      ],
+    };
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/nertz']}>
+        <NertzPage />
+      </MemoryRouter>,
+    );
+    fireEvent.click(await screen.findByAltText('♠ 5'));
+    expect(screen.getByTestId('nertz-tableau-col-2')).toHaveAttribute('data-valid-target', 'true');
+    expect(screen.getByTestId('nertz-tableau-col-1')).not.toHaveAttribute('data-valid-target');
+  });
+
   it('renders per-player score progress bars scaled to the target score', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
@@ -405,13 +429,15 @@ describe('NertzPage', () => {
     );
   });
 
-  it('rings valid foundation and tableau drop targets while a source is selected', async () => {
+  it('follows server legal targets when they disagree with the client move rules', async () => {
     const foundations: NertzResponse['foundations'] = Array.from({ length: 8 }, () => ({ suit: -1, size: 0 }));
     // Foundation 0 holds ♥5 → only ♥6 completes it; empty foundations need an Ace.
     foundations[0] = { suit: 2, size: 5, top: { design: 'HEART', value: 5 } };
     const state: NertzResponse = {
       ...playingState,
       foundations,
+      // Deliberately disagree with the locally inferable rules: the server is authoritative.
+      legalTargets: { nertz: { tableau: [1], foundation: [1] } },
       players: [
         {
           ...playingState.players[0],
@@ -441,20 +467,19 @@ describe('NertzPage', () => {
     // Select the nertz pile (♥6).
     fireEvent.click(screen.getByAltText('♥ 6').closest('button') as HTMLElement);
 
-    // Foundation 0 (♥5) is a legal target; empty foundation 1 is not (needs an Ace).
+    // The server says foundation 1 is legal, even though its local state is empty.
     const f0 = screen.getByTestId('nertz-foundation-0');
-    expect(f0).toHaveAttribute('data-valid-target', 'true');
-    expect(f0.className).toContain('ring-ds-success');
+    expect(f0).not.toHaveAttribute('data-valid-target');
     const f1 = screen.getByTestId('nertz-foundation-1');
-    expect(f1).not.toHaveAttribute('data-valid-target');
-    expect(f1.className).toContain('opacity-60');
+    expect(f1).toHaveAttribute('data-valid-target', 'true');
+    expect(f1.className).toContain('ring-ds-success');
 
-    // Tableau: black-7 column and the empty column are legal; the others are not.
-    expect(screen.getByTestId('nertz-tableau-col-0')).toHaveAttribute('data-valid-target', 'true');
-    expect(screen.getByTestId('nertz-tableau-col-2')).toHaveAttribute('data-valid-target', 'true');
-    expect(screen.getByTestId('nertz-tableau-col-1')).not.toHaveAttribute('data-valid-target');
+    // The server allows column 1 and excludes locally plausible columns 0 and 2.
+    expect(screen.getByTestId('nertz-tableau-col-0')).not.toHaveAttribute('data-valid-target');
+    expect(screen.getByTestId('nertz-tableau-col-2')).not.toHaveAttribute('data-valid-target');
+    expect(screen.getByTestId('nertz-tableau-col-1')).toHaveAttribute('data-valid-target', 'true');
     expect(screen.getByTestId('nertz-tableau-col-3')).not.toHaveAttribute('data-valid-target');
-    expect(screen.getByTestId('nertz-tableau-col-0').className).toContain('ring-ds-success');
+    expect(screen.getByTestId('nertz-tableau-col-0').className).toContain('opacity-60');
 
     // Deselecting (click the source again) clears every ring.
     fireEvent.click(screen.getByAltText('♥ 6').closest('button') as HTMLElement);

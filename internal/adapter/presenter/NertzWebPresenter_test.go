@@ -45,6 +45,16 @@ func setupNertzWebMockDefaults(g *interfaces.MockNertzGame) {
 		newNertzFoundationWithAce(),
 		domain.NewNertzFoundation(),
 	}).Maybe()
+	g.On("LegalTargetsFrom", 0, 0).Return([]int(nil), []int(nil)).Maybe()
+	g.On("LegalTargetsFrom", 0, 1).Return([]int(nil), []int(nil)).Maybe()
+	g.On("LegalTargetsFrom", 0, 2).Return([]int(nil), []int(nil)).Maybe()
+	g.On("LegalTargetsFrom", 0, 3).Return([]int(nil), []int(nil)).Maybe()
+	g.On("LegalTargetsFrom", 1, 0).Return([]int(nil), []int(nil)).Maybe()
+	g.On("LegalTargetsFrom", 1, 1).Return([]int(nil), []int(nil)).Maybe()
+	g.On("LegalTargetsFrom", 1, 2).Return([]int(nil), []int(nil)).Maybe()
+	g.On("LegalTargetsFrom", 1, 3).Return([]int(nil), []int(nil)).Maybe()
+	g.On("NertzPileLegalTargets").Return([]int(nil), []int(nil)).Maybe()
+	g.On("WasteLegalTargets").Return([]int(nil), []int(nil)).Maybe()
 }
 
 func decodeNertzWebOutput(t *testing.T, raw string) *controller.NertzWebOutput {
@@ -223,6 +233,43 @@ func TestNertzWebPresenter_HintOutput(t *testing.T) {
 		out := decodeNertzWebOutput(t, raw)
 		assert.Equal(t, "nertz.noHint", out.MessageCode)
 		assert.Nil(t, out.Hint)
+	})
+}
+
+func TestNertzWebPresenter_LegalTargets(t *testing.T) {
+	t.Run("includes only sources with destinations and normalizes nil slices", func(t *testing.T) {
+		g := new(interfaces.MockNertzGame)
+		setupNertzOutputMock(g)
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "LegalTargetsFrom")
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "NertzPileLegalTargets")
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "WasteLegalTargets")
+		g.On("LegalTargetsFrom", 0, 0).Return([]int{2}, []int(nil))
+		g.On("NertzPileLegalTargets").Return([]int(nil), []int{3})
+		g.On("WasteLegalTargets").Return([]int(nil), []int{4})
+		out := decodeNertzWebOutput(t, new(NertzWebPresenter).Output(g, nil))
+		assert.Equal(t, controller.NertzWebOutputTargets{Tableau: []int{2}, Foundation: []int{}}, out.LegalTargets["tableau-0-0"])
+		assert.Equal(t, controller.NertzWebOutputTargets{Tableau: []int{}, Foundation: []int{3}}, out.LegalTargets["nertz"])
+		assert.Equal(t, controller.NertzWebOutputTargets{Tableau: []int{}, Foundation: []int{4}}, out.LegalTargets["waste"])
+	})
+	t.Run("empty board and no human produce an empty object", func(t *testing.T) {
+		g := new(interfaces.MockNertzGame)
+		setupNertzWebMockDefaults(g)
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetPlayers")
+		g.On("GetPlayers").Return([]*domain.NertzPlayer{newNertzPlayerWithCards("CPU", true, 0)}).Maybe()
+		g.On("GetHint").Return((*domain.NertzHint)(nil)).Maybe()
+		out := decodeNertzWebOutput(t, new(NertzWebPresenter).HintOutput(g))
+		require.NotNil(t, out.LegalTargets)
+		assert.Empty(t, out.LegalTargets)
+	})
+	t.Run("human with no movable source produces an empty object", func(t *testing.T) {
+		g := new(interfaces.MockNertzGame)
+		setupNertzOutputMock(g)
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetPlayers")
+		human := domain.NewNertzPlayer("You", false, 0)
+		g.On("GetPlayers").Return([]*domain.NertzPlayer{human}).Maybe()
+		out := decodeNertzWebOutput(t, new(NertzWebPresenter).Output(g, nil))
+		require.NotNil(t, out.LegalTargets)
+		assert.Empty(t, out.LegalTargets)
 	})
 }
 

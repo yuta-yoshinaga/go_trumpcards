@@ -49,6 +49,12 @@ type NertzGame interface {
 	GetPlayers() []*domain.NertzPlayer
 	// GetFoundations ファウンデーションスナップショット
 	GetFoundations() []*domain.NertzFoundation
+	// LegalTargetsFrom returns tableau and foundation destinations for a human tableau card.
+	LegalTargetsFrom(col, cardIndex int) (tableau, foundation []int)
+	// NertzPileLegalTargets returns destinations for the human Nertz pile top.
+	NertzPileLegalTargets() (tableau, foundation []int)
+	// WasteLegalTargets returns destinations for the human waste top.
+	WasteLegalTargets() (tableau, foundation []int)
 	// GetMoveCount 通算手数
 	GetMoveCount() int
 }
