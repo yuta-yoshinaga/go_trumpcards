@@ -16,6 +16,7 @@ import (
 func mustScorpionOutputJSON(msg string) string {
 	out := &controller.ScorpionWebOutput{
 		Tableau:       [][]*controller.KlondikeWebOutputTableauCard{},
+		LegalTargets:  map[string]controller.ScorpionWebOutputTargets{},
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
@@ -26,7 +27,7 @@ func mustScorpionOutputJSON(msg string) string {
 }
 
 func TestScorpionWebController_Method(t *testing.T) {
-	mockOutput := `{"tableau":[],"stockCount":0,"completedSuits":0,"phase":0,"moveCount":0,"message":""}`
+	mockOutput := `{"tableau":[],"stockCount":0,"completedSuits":0,"phase":0,"moveCount":0,"message":"","legalTargets":{}}`
 	expectedBody := mockOutput
 
 	siMock := new(usecase.MockScorpionInteractor)

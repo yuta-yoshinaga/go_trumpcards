@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -16,6 +17,7 @@ type ScorpionWebPresenter struct{}
 // Output ゲーム状態をJSON出力
 func (p *ScorpionWebPresenter) Output(s interfaces.ScorpionGame, lastErr error) string {
 	resObj := p.buildBase(s)
+	resObj.LegalTargets = p.buildLegalTargets(s)
 
 	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
 	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
@@ -57,6 +59,7 @@ func (p *ScorpionWebPresenter) Output(s interfaces.ScorpionGame, lastErr error) 
 // HintOutput ヒントをJSON出力
 func (p *ScorpionWebPresenter) HintOutput(s interfaces.ScorpionGame) string {
 	resObj := p.buildBase(s)
+	resObj.LegalTargets = p.buildLegalTargets(s)
 	hint := s.GetHint()
 	if hint != nil {
 		resObj.Hint = &controller.ScorpionWebOutputHint{
@@ -73,10 +76,29 @@ func (p *ScorpionWebPresenter) HintOutput(s interfaces.ScorpionGame) string {
 }
 
 // LegalMovesOutput は合法な移動先を返す。Web版は ScorpionPage が
-// scorpionLegalTargets でクライアント側に移動先を算出・ハイライトするため、
+// legalTargets のサーバデータで移動先をハイライトするため、
 // 通常の状態JSONへ委譲する。
 func (p *ScorpionWebPresenter) LegalMovesOutput(s interfaces.ScorpionGame, _ int) string {
 	return p.Output(s, nil)
+}
+
+func (p *ScorpionWebPresenter) buildLegalTargets(s interfaces.ScorpionGame) map[string]controller.ScorpionWebOutputTargets {
+	result := make(map[string]controller.ScorpionWebOutputTargets)
+	for col, cards := range s.GetTableau() {
+		for cardIndex, card := range cards {
+			if !card.FaceUp {
+				continue
+			}
+			tableau, foundation := s.LegalTargetsFrom(col, cardIndex)
+			if len(tableau)+len(foundation) == 0 {
+				continue
+			}
+			result["tableau-"+strconv.Itoa(col)+"-"+strconv.Itoa(cardIndex)] = controller.ScorpionWebOutputTargets{
+				Tableau: intSliceOrEmpty(tableau), Foundation: intSliceOrEmpty(foundation),
+			}
+		}
+	}
+	return result
 }
 
 // ActionLogOutput 棋譜をJSON出力

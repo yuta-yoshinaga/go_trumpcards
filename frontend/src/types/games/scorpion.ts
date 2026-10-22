@@ -21,6 +21,7 @@ export interface ScorpionHint {
 
 /** API response shape for a Scorpion game. */
 export interface ScorpionResponse extends BaseGameResponse {
+  legalTargets: Record<string, { tableau: number[]; foundation: number[] }>;
   tableau: KlondikeTableauCard[][];
   stockCount: number;
   completedSuits: number;

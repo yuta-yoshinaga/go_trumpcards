@@ -38,6 +38,57 @@ func TestNewScorpion(t *testing.T) {
 	assert.Equal(t, domain.ScorpionPhase(0), s.GetPhase())
 }
 
+func TestScorpion_LegalTargetsFrom(t *testing.T) {
+	s := newTestScorpion()
+	var tableau [domain.ScorpionTableauCnt][]*domain.KlondikeTableauCard
+	tableau[0] = []*domain.KlondikeTableauCard{makeTableauCard(domain.CardDesignHeart, 5, true), makeTableauCard(domain.CardDesignClover, 9, true)}
+	tableau[1] = []*domain.KlondikeTableauCard{makeTableauCard(domain.CardDesignHeart, 6, true)}
+	tableau[2] = []*domain.KlondikeTableauCard{}
+	tableau[3] = []*domain.KlondikeTableauCard{makeTableauCard(domain.CardDesignSpade, 6, true)}
+	tableau[4] = []*domain.KlondikeTableauCard{makeTableauCard(domain.CardDesignHeart, 6, false)}
+	s.SetTableau(tableau)
+
+	targets, foundation := s.LegalTargetsFrom(0, 0)
+	// MoveTableauToTableau checks the underlying card even when the destination top is face down.
+	assert.Equal(t, []int{1, 4}, targets)
+	assert.Empty(t, foundation)
+	// An empty column accepts Kings and is included in authoritative data.
+	tableau[0][0] = makeTableauCard(domain.CardDesignHeart, domain.CardValueMax, true)
+	tableau[0][1] = makeTableauCard(domain.CardDesignClover, 9, true)
+	s.SetTableau(tableau)
+	targets, foundation = s.LegalTargetsFrom(0, 0)
+	assert.Contains(t, targets, 2)
+	assert.Empty(t, foundation)
+	for _, tc := range [][2]int{{0, 1}, {4, 0}, {-1, 0}, {7, 0}, {0, 2}} {
+		targets, foundation = s.LegalTargetsFrom(tc[0], tc[1])
+		assert.Empty(t, targets)
+		assert.Empty(t, foundation)
+	}
+}
+
+func TestScorpion_LegalTargetsFromAllowsAnyFaceUpCardWithoutRunValidation(t *testing.T) {
+	s := newTestScorpion()
+	var tableau [domain.ScorpionTableauCnt][]*domain.KlondikeTableauCard
+	tableau[0] = []*domain.KlondikeTableauCard{
+		makeTableauCard(domain.CardDesignHeart, 5, true),
+		makeTableauCard(domain.CardDesignClover, 12, true), // Invalid run above the selected card is still carried.
+	}
+	tableau[1] = []*domain.KlondikeTableauCard{makeTableauCard(domain.CardDesignHeart, 6, true)}
+	s.SetTableau(tableau)
+	targets, _ := s.LegalTargetsFrom(0, 0)
+	assert.Equal(t, []int{1}, targets)
+}
+
+func TestScorpion_LegalTargetsFromIncludesEmptyKingColumns(t *testing.T) {
+	s := newTestScorpion()
+	var tableau [domain.ScorpionTableauCnt][]*domain.KlondikeTableauCard
+	tableau[0] = []*domain.KlondikeTableauCard{makeTableauCard(domain.CardDesignHeart, domain.CardValueMax, true)}
+	s.SetTableau(tableau)
+	targets, foundation := s.LegalTargetsFrom(0, 0)
+	assert.Equal(t, []int{1, 2, 3, 4, 5, 6}, targets)
+	assert.Empty(t, foundation)
+}
+
 func TestScorpion_Reset(t *testing.T) {
 	s := setupPlayingScorpion()
 

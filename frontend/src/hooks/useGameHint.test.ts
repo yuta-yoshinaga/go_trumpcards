@@ -762,6 +762,7 @@ describe('useGameHint', () => {
   it('routes scorpion through getScorpionHint (tableau move)', () => {
     localStorage.setItem('hint_enabled_scorpion', 'true');
     const state: ScorpionResponse = {
+      legalTargets: {},
       tableau: [],
       stockCount: 0,
       completedSuits: 0,
@@ -781,6 +782,7 @@ describe('useGameHint', () => {
   it('routes scorpion through getScorpionHint (deal stock)', () => {
     localStorage.setItem('hint_enabled_scorpion', 'true');
     const state: ScorpionResponse = {
+      legalTargets: {},
       tableau: [],
       stockCount: 3,
       completedSuits: 0,
