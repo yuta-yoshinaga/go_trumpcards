@@ -4127,6 +4127,20 @@ func TestSevens_GetValidPlayIndices(t *testing.T) {
 		assert.Equal(t, []int{}, s.GetValidPlayIndices(0))
 	})
 
+	// CUI は nil を「判定していない」、空スライスを「出せる札が無い」と読み分けて
+	// 後者だけ「出せるカードがありません」と出す。CPU の手番で空を返すと誤表示になる。
+	t.Run("GetPlayableCardIndices keeps nil for not-your-turn and empty for nothing playable", func(t *testing.T) {
+		s, _ := newGame(card(domain.CardDesignSpade, 6), card(domain.CardDesignSpade, 8))
+		require.NoError(t, s.PlayerPlay(0))
+		require.False(t, s.IsHumanTurn())
+		assert.Nil(t, s.GetPlayableCardIndices())
+
+		s, _ = newGame(card(domain.CardDesignSpade, 11))
+		got := s.GetPlayableCardIndices()
+		assert.NotNil(t, got)
+		assert.Empty(t, got)
+	})
+
 	// ジョーカーは置ける場所が1つでもあれば出せる。IsPlayable がそう書いてある
 	// のをここでも通す — 印の判定を presenter 側に書き直さないため。
 	t.Run("marks a joker while the board still has room", func(t *testing.T) {
