@@ -226,6 +226,28 @@ func (cr *Crescent) MoveTableauToFoundation(fromCol, foundationIdx int) error {
 	return nil
 }
 
+// LegalTargets returns the legal destinations for the top card in fromCol.
+// Invalid, empty, or non-playing sources return two empty slices.
+func (cr *Crescent) LegalTargets(fromCol int) (tableau, foundation []int) {
+	tableau = make([]int, 0)
+	foundation = make([]int, 0)
+	if cr.phase != CrescentPhasePlaying || fromCol < 0 || fromCol >= CrescentTableauCnt || len(cr.tableau[fromCol]) == 0 {
+		return tableau, foundation
+	}
+	card := cr.tableau[fromCol][len(cr.tableau[fromCol])-1].Card
+	for col := range CrescentTableauCnt {
+		if col != fromCol && cr.canPlaceOnTableau(card, col) {
+			tableau = append(tableau, col)
+		}
+	}
+	for idx := range CrescentFoundationCnt {
+		if cr.canPlaceOnFoundation(card, idx) {
+			foundation = append(foundation, idx)
+		}
+	}
+	return tableau, foundation
+}
+
 // Redeal は再配りを実行する。各タブロー列を逆順に並べ替える。残り回数 0 か非プレイ中ならエラー。
 func (cr *Crescent) Redeal() error {
 	if cr.phase != CrescentPhasePlaying {

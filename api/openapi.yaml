@@ -76946,6 +76946,20 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/Card'
+        legalTargets:
+          type: object
+          description: Legal destinations keyed by tableau source column (for example tableau-0).
+          additionalProperties:
+            type: object
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         redealsRemaining:
           type: integer
           description: Redeals left for this game (0..3)

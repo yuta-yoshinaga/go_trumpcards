@@ -27,6 +27,18 @@ func (_m *MockCrescentGame) MoveTableauToFoundation(fromCol, foundationIdx int) 
 	return ret.Error(0)
 }
 
+func (_m *MockCrescentGame) LegalTargets(fromCol int) ([]int, []int) {
+	ret := _m.Called(fromCol)
+	var tableau, foundation []int
+	if ret.Get(0) != nil {
+		tableau = ret.Get(0).([]int)
+	}
+	if ret.Get(1) != nil {
+		foundation = ret.Get(1).([]int)
+	}
+	return tableau, foundation
+}
+
 func (_m *MockCrescentGame) Redeal() error {
 	ret := _m.Called()
 	return ret.Error(0)

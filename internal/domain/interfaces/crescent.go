@@ -15,6 +15,8 @@ type CrescentGame interface {
 	MoveTableauToTableau(fromCol, toCol int) error
 	// MoveTableauToFoundation タブローからファンデーションへカードを移動する。
 	MoveTableauToFoundation(fromCol, foundationIdx int) error
+	// LegalTargets returns all legal destinations for the top card in fromCol.
+	LegalTargets(fromCol int) (tableau, foundation []int)
 	// Redeal 再配り (シャッフル) を実行する。
 	Redeal() error
 	// GetHint ヒントを取得する。
