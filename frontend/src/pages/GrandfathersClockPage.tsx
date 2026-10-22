@@ -188,20 +188,9 @@ function GrandfathersClockPageContent() {
   const isSourceSelected = (zone: string, col?: number) =>
     selectedSource !== null && selectedSource.zone === zone && selectedSource.col === col;
 
-  /**
-   * Mirrors the domain's conditional clock-face placement rule for the selected tableau top.
-   *
-   * domain_rule_quoted: `canPlaceOnFoundation` requires a non-nil card, a non-empty and
-   * incomplete face, the same suit as its top card, and the next rank (K wraps to A).
-   */
   const canPlaceSelectedOnFace = (fIdx: number): boolean => {
     if (selectedSource?.zone !== 'tableau' || selectedSource.col === undefined) return false;
-    const card = state.tableau[selectedSource.col]?.at(-1)?.card;
-    const face = state.foundation[fIdx];
-    const top = face?.cards.at(-1);
-    if (!card || !face || !top || face.complete) return false;
-    const nextRank = top.value >= 13 ? 1 : top.value + 1;
-    return card.design === top.design && card.value === nextRank;
+    return state.legalTargets[`tableau-${selectedSource.col}`]?.foundation.includes(fIdx) ?? false;
   };
 
   const renderTableauColumn = (colIdx: number) => {

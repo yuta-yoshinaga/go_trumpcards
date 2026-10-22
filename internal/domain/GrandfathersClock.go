@@ -391,6 +391,25 @@ func (gc *GrandfathersClock) GetTableau() [GrandfathersClockTableauCnt][]*Grandf
 	return gc.tableau
 }
 
+// LegalTargets returns the legal tableau and clock-face destinations for the top card in col.
+// Tableau destinations are currently omitted because the page does not highlight them.
+func (gc *GrandfathersClock) LegalTargets(col int) (tableau, foundation []int) {
+	if col < 0 || col >= GrandfathersClockTableauCnt {
+		return []int{}, []int{}
+	}
+	card := gc.topCard(col)
+	if card == nil {
+		return []int{}, []int{}
+	}
+	foundation = make([]int, 0, GrandfathersClockFoundationCnt)
+	for idx := range GrandfathersClockFoundationCnt {
+		if gc.canPlaceOnFoundation(card, idx) {
+			foundation = append(foundation, idx)
+		}
+	}
+	return []int{}, foundation
+}
+
 // GetGameEndFlag ゲーム終了フラグ
 func (gc *GrandfathersClock) GetGameEndFlag() bool {
 	return gc.phase != GrandfathersClockPhasePlaying

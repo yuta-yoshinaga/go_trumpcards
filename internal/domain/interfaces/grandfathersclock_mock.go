@@ -85,6 +85,18 @@ func (_m *MockGrandfathersClockGame) GetTableau() [domain.GrandfathersClockTable
 	return ret.Get(0).([domain.GrandfathersClockTableauCnt][]*domain.GrandfathersClockTableauCard)
 }
 
+func (_m *MockGrandfathersClockGame) LegalTargets(col int) ([]int, []int) {
+	ret := _m.Called(col)
+	var tableau, foundation []int
+	if ret.Get(0) != nil {
+		tableau = ret.Get(0).([]int)
+	}
+	if ret.Get(1) != nil {
+		foundation = ret.Get(1).([]int)
+	}
+	return tableau, foundation
+}
+
 func (_m *MockGrandfathersClockGame) IsFoundationComplete(fIdx int) bool {
 	ret := _m.Called(fIdx)
 	return ret.Bool(0)

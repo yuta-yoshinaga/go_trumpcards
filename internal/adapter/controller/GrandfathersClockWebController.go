@@ -43,12 +43,19 @@ type GrandfathersClockWebOutputHint struct {
 	ToIdx   int    `json:"toIdx"`
 }
 
+// GrandfathersClockWebOutputTargets contains legal destinations for one tableau source.
+type GrandfathersClockWebOutputTargets struct {
+	Tableau    []int `json:"tableau"`
+	Foundation []int `json:"foundation"`
+}
+
 // GrandfathersClockWebOutput グランドファーザーズ・クロック Web アウトプット
 type GrandfathersClockWebOutput struct {
-	Tableau    [][]*GrandfathersClockWebOutputTableauCard `json:"tableau"`
-	Foundation []*GrandfathersClockWebOutputFoundation    `json:"foundation"`
-	Hint       *GrandfathersClockWebOutputHint            `json:"hint,omitempty"`
-	CanRedo    bool                                       `json:"canRedo"`
+	Tableau      [][]*GrandfathersClockWebOutputTableauCard   `json:"tableau"`
+	Foundation   []*GrandfathersClockWebOutputFoundation      `json:"foundation"`
+	Hint         *GrandfathersClockWebOutputHint              `json:"hint,omitempty"`
+	CanRedo      bool                                         `json:"canRedo"`
+	LegalTargets map[string]GrandfathersClockWebOutputTargets `json:"legalTargets"`
 	SolitaireWebOutputBase
 	WebOutputBase
 }
@@ -66,6 +73,7 @@ func newGrandfathersClockDefaultOutput(msg string) *GrandfathersClockWebOutput {
 	return &GrandfathersClockWebOutput{
 		Tableau:       make([][]*GrandfathersClockWebOutputTableauCard, 0),
 		Foundation:    make([]*GrandfathersClockWebOutputFoundation, 0),
+		LegalTargets:  map[string]GrandfathersClockWebOutputTargets{},
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }

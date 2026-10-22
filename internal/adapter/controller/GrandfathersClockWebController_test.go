@@ -17,6 +17,7 @@ func mustGrandfathersClockOutputJSON(msg string) string {
 	out := &controller.GrandfathersClockWebOutput{
 		Tableau:       [][]*controller.GrandfathersClockWebOutputTableauCard{},
 		Foundation:    []*controller.GrandfathersClockWebOutputFoundation{},
+		LegalTargets:  map[string]controller.GrandfathersClockWebOutputTargets{},
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)

@@ -35129,6 +35129,19 @@ components:
           type: boolean
         isStalemate:
           type: boolean
+        legalTargets:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         undoToEscape:
           type: integer
           description: Number of undos needed to escape stalemate (0 = not stalemate, -1 = unreachable)
