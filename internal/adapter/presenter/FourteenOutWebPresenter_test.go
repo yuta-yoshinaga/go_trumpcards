@@ -7,6 +7,8 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/stretchr/testify/mock"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -19,6 +21,7 @@ func setupFourteenOutWebMockDefaults(g *interfaces.MockFourteenOutGame) {
 	g.On("GetPhase").Return(domain.FourteenOutPhasePlaying).Maybe()
 	g.On("GetRemovedCount").Return(0).Maybe()
 	g.On("CountRemovablePairs").Return(3).Maybe()
+	g.On("LegalTargets", mock.AnythingOfType("int")).Return([]int(nil)).Maybe()
 	g.On("CanUndo").Return(false).Maybe()
 	g.On("IsStalemate").Return(false).Maybe()
 	g.On("GetColumns").Return(foCuiColumns()).Maybe()
@@ -59,6 +62,7 @@ func TestFourteenOutWebPresenter_Output_PlayingStalemate(t *testing.T) {
 	g.On("CanUndo").Return(true).Maybe()
 	g.On("IsStalemate").Return(true).Maybe()
 	g.On("CountRemovablePairs").Return(3).Maybe()
+	g.On("LegalTargets", mock.AnythingOfType("int")).Return([]int(nil)).Maybe()
 	g.On("GetColumns").Return(foCuiColumns()).Maybe()
 	g.On("Hint").Return(nil).Maybe()
 
@@ -75,6 +79,7 @@ func TestFourteenOutWebPresenter_Output_GameClear(t *testing.T) {
 	g.On("CanUndo").Return(false).Maybe()
 	g.On("IsStalemate").Return(false).Maybe()
 	g.On("CountRemovablePairs").Return(3).Maybe()
+	g.On("LegalTargets", mock.AnythingOfType("int")).Return([]int(nil)).Maybe()
 	g.On("GetColumns").Return(foCuiColumns()).Maybe()
 	g.On("Hint").Return(nil).Maybe()
 
@@ -94,6 +99,7 @@ func TestFourteenOutWebPresenter_Output_GameOver(t *testing.T) {
 	g.On("CanUndo").Return(false).Maybe()
 	g.On("IsStalemate").Return(false).Maybe()
 	g.On("CountRemovablePairs").Return(3).Maybe()
+	g.On("LegalTargets", mock.AnythingOfType("int")).Return([]int(nil)).Maybe()
 	g.On("GetColumns").Return(foCuiColumns()).Maybe()
 	g.On("Hint").Return(nil).Maybe()
 
@@ -119,6 +125,7 @@ func TestFourteenOutWebPresenter_Output_SerialisesRaggedColumns(t *testing.T) {
 	g.On("CanUndo").Return(false).Maybe()
 	g.On("IsStalemate").Return(false).Maybe()
 	g.On("CountRemovablePairs").Return(3).Maybe()
+	g.On("LegalTargets", mock.AnythingOfType("int")).Return([]int(nil)).Maybe()
 	g.On("GetColumns").Return(foCuiColumns(
 		[]*domain.Card{foCuiCard(domain.CardDesignSpade, 3), foCuiCard(domain.CardDesignSpade, 9)},
 		[]*domain.Card{foCuiCard(domain.CardDesignHeart, 5)},
@@ -173,6 +180,32 @@ func TestFourteenOutWebPresenter_HintOutput_Remove(t *testing.T) {
 	assert.Equal(t, domain.FourteenOutHintActionRemove, out.Hint.Action)
 	assert.Equal(t, 1, out.Hint.FromCol)
 	assert.Equal(t, 2, out.Hint.ToCol)
+}
+
+func TestFourteenOutWebPresenter_LegalTargetsEveryOutputPath(t *testing.T) {
+	for _, output := range []struct {
+		name string
+		run  func(*FourteenOutWebPresenter, interfaces.FourteenOutGame) string
+	}{
+		{"output", func(p *FourteenOutWebPresenter, g interfaces.FourteenOutGame) string { return p.Output(g, nil) }},
+		{"hint output without hint", func(p *FourteenOutWebPresenter, g interfaces.FourteenOutGame) string { return p.HintOutput(g) }},
+	} {
+		t.Run(output.name, func(t *testing.T) {
+			g := new(interfaces.MockFourteenOutGame)
+			setupFourteenOutWebMockDefaults(g)
+			g.ExpectedCalls = filterCalls(g.ExpectedCalls, "LegalTargets")
+			g.On("LegalTargets", 0).Return([]int{2, 4})
+			g.On("LegalTargets", mock.AnythingOfType("int")).Return([]int(nil)).Maybe()
+			g.On("Hint").Return((*domain.FourteenOutHint)(nil)).Maybe()
+			out := parseFourteenOutOutput(t, output.run(new(FourteenOutWebPresenter), g))
+			assert.Equal(t, controller.FourteenOutWebOutputTargets{Tableau: []int{2, 4}, Foundation: []int{}}, out.LegalTargets["tableau-0"])
+			assert.NotNil(t, out.LegalTargets)
+		})
+	}
+	g := new(interfaces.MockFourteenOutGame)
+	setupFourteenOutOutputMock(g)
+	out := parseFourteenOutOutput(t, new(FourteenOutWebPresenter).Output(g, nil))
+	assert.Empty(t, out.LegalTargets)
 }
 
 func TestFourteenOutWebPresenter_HintOutput_None(t *testing.T) {

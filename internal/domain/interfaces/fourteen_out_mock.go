@@ -13,6 +13,15 @@ type MockFourteenOutGame struct {
 	mock.Mock
 }
 
+// LegalTargets は col と同時に取り除ける列番号を返す。
+func (m *MockFourteenOutGame) LegalTargets(col int) []int {
+	ret := m.Called(col)
+	if v, ok := ret.Get(0).([]int); ok {
+		return v
+	}
+	return nil
+}
+
 // CountRemovablePairs は取り除ける組の数を返す。
 func (m *MockFourteenOutGame) CountRemovablePairs() int {
 	args := m.Called()

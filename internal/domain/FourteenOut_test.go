@@ -389,3 +389,45 @@ func join(parts []string, sep string) string {
 	}
 	return out
 }
+
+func TestFourteenOutLegalTargetsReplacesClientRuleCases(t *testing.T) {
+	cases := []struct {
+		name string
+		cols [][]*domain.Card
+		from int
+		want []int
+	}{
+		{"all rank combinations summing to fourteen", [][]*domain.Card{{foCard(domain.CardDesignSpade, 13)}, {foCard(domain.CardDesignHeart, 1)}, {foCard(domain.CardDesignClover, 12)}, {foCard(domain.CardDesignDiamond, 2)}, {foCard(domain.CardDesignSpade, 11)}, {foCard(domain.CardDesignHeart, 3)}, {foCard(domain.CardDesignClover, 10)}, {foCard(domain.CardDesignDiamond, 4)}, {foCard(domain.CardDesignSpade, 9)}, {foCard(domain.CardDesignHeart, 5)}, {foCard(domain.CardDesignClover, 8)}, {foCard(domain.CardDesignDiamond, 6)}, {foCard(domain.CardDesignSpade, 7)}, {foCard(domain.CardDesignHeart, 7)}}, 0, []int{1}},
+		{"non-fourteen sums and equal ranks are rejected", [][]*domain.Card{{foCard(domain.CardDesignSpade, 8)}, {foCard(domain.CardDesignHeart, 4)}, {foCard(domain.CardDesignClover, 7)}, {foCard(domain.CardDesignDiamond, 13)}, {foCard(domain.CardDesignSpade, 2)}, {foCard(domain.CardDesignHeart, 8)}, {foCard(domain.CardDesignClover, 5)}, {foCard(domain.CardDesignDiamond, 5)}}, 0, nil},
+		{"distant columns and different suits pair", [][]*domain.Card{{foCard(domain.CardDesignSpade, 9)}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {foCard(domain.CardDesignDiamond, 5)}}, 0, []int{11}},
+		{"buried cards do not pair but the exposed tail does", [][]*domain.Card{{foCard(domain.CardDesignSpade, 9), foCard(domain.CardDesignSpade, 2)}, {foCard(domain.CardDesignHeart, 5)}}, 0, nil},
+		{"cleared source has no partners", [][]*domain.Card{{}, {foCard(domain.CardDesignHeart, 5)}}, 0, nil},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			g := newTestFourteenOut()
+			g.SetColumns(foBoard(tc.cols...))
+			assert.Equal(t, tc.want, g.LegalTargets(tc.from))
+		})
+	}
+	g := newTestFourteenOut()
+	g.SetColumns(foBoard([]*domain.Card{foCard(domain.CardDesignSpade, 7)}))
+	assert.Empty(t, g.LegalTargets(0), "a source never partners with itself")
+
+	g.SetColumns(foBoard([]*domain.Card{foCard(domain.CardDesignSpade, 7)}, []*domain.Card{foCard(domain.CardDesignHeart, 7)}))
+	assert.Equal(t, []int{1}, g.LegalTargets(0), "7 + 7 is a valid pair across two columns")
+}
+
+func TestFourteenOutLegalTargets(t *testing.T) {
+	g := newTestFourteenOut()
+	g.SetColumns(foBoard(
+		[]*domain.Card{foCard(domain.CardDesignSpade, 9)},
+		[]*domain.Card{foCard(domain.CardDesignHeart, 5)},
+		[]*domain.Card{foCard(domain.CardDesignClover, 5)},
+	))
+	assert.Equal(t, []int{1, 2}, g.LegalTargets(0))
+	assert.Equal(t, []int{0}, g.LegalTargets(1))
+	assert.Empty(t, g.LegalTargets(3))
+	assert.Empty(t, g.LegalTargets(99))
+	assert.Equal(t, 2, g.CountRemovablePairs())
+}

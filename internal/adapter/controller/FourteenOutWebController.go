@@ -33,6 +33,12 @@ type FourteenOutWebOutputHint struct {
 	ToCol   int    `json:"toCol"`
 }
 
+// FourteenOutWebOutputTargets は選択した列からの移動先を表す。
+type FourteenOutWebOutputTargets struct {
+	Tableau    []int `json:"tableau"`
+	Foundation []int `json:"foundation"`
+}
+
 // FourteenOutWebOutput はフォーティーンアウト・ソリティアの Web 出力。
 type FourteenOutWebOutput struct {
 	// Columns は 12 列。各列の末尾だけが露出している札。
@@ -40,10 +46,11 @@ type FourteenOutWebOutput struct {
 	Phase        int                           `json:"phase"`
 	RemovedCount int                           `json:"removedCount"`
 	// RemovablePairs は残っている取り除ける組の数。手が見えているかの判断材料。
-	RemovablePairs int                       `json:"removablePairs"`
-	CanUndo        bool                      `json:"canUndo"`
-	IsStalemate    bool                      `json:"isStalemate"`
-	Hint           *FourteenOutWebOutputHint `json:"hint,omitempty"`
+	RemovablePairs int                                    `json:"removablePairs"`
+	CanUndo        bool                                   `json:"canUndo"`
+	LegalTargets   map[string]FourteenOutWebOutputTargets `json:"legalTargets"`
+	IsStalemate    bool                                   `json:"isStalemate"`
+	Hint           *FourteenOutWebOutputHint              `json:"hint,omitempty"`
 	WebOutputBase
 }
 
@@ -59,6 +66,7 @@ var NewFourteenOutWebController, NewFourteenOutWebControllerWithProvider = webCo
 func newFourteenOutDefaultOutput(msg string) *FourteenOutWebOutput {
 	return &FourteenOutWebOutput{
 		Columns:       make([][]*FourteenOutWebOutputCard, 0),
+		LegalTargets:  make(map[string]FourteenOutWebOutputTargets),
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }

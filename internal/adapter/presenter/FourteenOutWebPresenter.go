@@ -16,6 +16,7 @@ type FourteenOutWebPresenter struct{}
 // Output はゲーム状態を JSON で出力する。
 func (pr *FourteenOutWebPresenter) Output(g interfaces.FourteenOutGame, lastErr error) string {
 	resObj := pr.buildBase(g)
+	resObj.LegalTargets = pr.buildLegalTargets(g)
 
 	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
 	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
@@ -58,6 +59,7 @@ func (pr *FourteenOutWebPresenter) Output(g interfaces.FourteenOutGame, lastErr 
 // HintOutput はヒントを JSON で出力する。
 func (pr *FourteenOutWebPresenter) HintOutput(g interfaces.FourteenOutGame) string {
 	resObj := pr.buildBase(g)
+	resObj.LegalTargets = pr.buildLegalTargets(g)
 	hint := g.Hint()
 	if hint != nil {
 		resObj.Hint = &controller.FourteenOutWebOutputHint{
@@ -70,6 +72,19 @@ func (pr *FourteenOutWebPresenter) HintOutput(g interfaces.FourteenOutGame) stri
 		resObj.MessageCode = "fourteenout.noHint"
 	}
 	return marshalOrError(resObj)
+}
+
+// buildLegalTargets returns partners for each source column with at least one partner.
+func (pr *FourteenOutWebPresenter) buildLegalTargets(g interfaces.FourteenOutGame) map[string]controller.FourteenOutWebOutputTargets {
+	targets := make(map[string]controller.FourteenOutWebOutputTargets)
+	for col := range g.GetColumns() {
+		partners := g.LegalTargets(col)
+		if len(partners) == 0 {
+			continue
+		}
+		targets[fmt.Sprintf("tableau-%d", col)] = controller.FourteenOutWebOutputTargets{Tableau: intSliceOrEmpty(partners), Foundation: intSliceOrEmpty(nil)}
+	}
+	return targets
 }
 
 // ActionLogOutput は棋譜を JSON で出力する。

@@ -24,7 +24,7 @@ import type { FourteenOutResponse } from '../types/card';
 import { FourteenOutPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
-import { countRemovablePairs, fourteenOutPartners, fourteenOutTail } from '../utils/fourteenoutRemovablePairs';
+
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const MC_PHASE_KEYS: Readonly<Record<number, string>> = {
@@ -43,6 +43,11 @@ const MC_TUTORIAL_STEPS: TutorialStep[] = [
   },
   { target: '[data-tutorial="mc-controls"]', messageKey: 'tutorial.controls', placement: 'top', advanceOn: 'next' },
 ];
+
+/** Returns the exposed card or null for an empty column. */
+function fourteenOutTail(col: FourteenOutResponse['columns'][number] | undefined) {
+  return col?.at(-1)?.card ?? null;
+}
 
 /** Renders the Fourteen Out game page. */
 export const FourteenOutPage = withTutorial(FourteenOutPageContent, 'fourteenout', MC_TUTORIAL_STEPS);
@@ -127,7 +132,7 @@ function FourteenOutPageContent() {
   const gameEnded = isGameClear || isGameOver;
 
   // How many pairs summing to 14 the exposed tails currently offer.
-  const removablePairs = useMemo(() => (state ? countRemovablePairs(state.columns) : 0), [state]);
+  const removablePairs = state ? state.removablePairs : 0;
   // 1 枚目を選んだあと、合計 14 になる相手の列。
   // **暗くしているのと同じ条件から読み上げも作る。** 別の式を書くと、
   // 見えている人と読み上げで違うことを言う日が来る。
@@ -136,10 +141,12 @@ function FourteenOutPageContent() {
     return dimmed ? ` (${t('label.noPair')})` : '';
   };
 
-  const partners = useMemo(
-    () => (state && selected !== null ? fourteenOutPartners(state.columns, selected) : new Set<number>()),
-    [selected, state],
-  );
+  const partners = useMemo(() => {
+    if (!state || selected === null) return new Set<number>();
+    const key = `tableau-${selected}`;
+    const targets = state.legalTargets[key];
+    return new Set<number>(targets ? targets.tableau : []);
+  }, [selected, state]);
   // **0 は補充の合図ではなく敗北の合図。**クローン元の Monte Carlo は山札から
   // 補充できたが、Fourteen Out に山札は無い。
   const noRemovablePairs = isPlaying && removablePairs === 0;

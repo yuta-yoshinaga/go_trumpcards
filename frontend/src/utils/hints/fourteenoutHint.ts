@@ -1,7 +1,6 @@
 import type { FourteenOutResponse } from '../../types/card';
 import type { HintResult } from '../../types/hint';
 import { FourteenOutPhase } from '../../types/phases';
-import { fourteenOutCanRemove } from '../fourteenoutRemovablePairs';
 
 /**
  * Returns a Fourteen Out hint:
@@ -12,8 +11,7 @@ import { fourteenOutCanRemove } from '../fourteenoutRemovablePairs';
  * 手が無いときに deal を勧めたが、Fourteen Out は最初に配り切る。組が無ければ
  * それが敗北で、勧める手は存在しない。
  *
- * Mirrors the backend's `forEachRemovablePair` scan (c2 > c1) so the same pair
- * is reported.
+ * Reads the server legal-target map and preserves the backend pair scan order.
  */
 export function getFourteenOutHint(state: FourteenOutResponse): HintResult | null {
   if (state.phase !== FourteenOutPhase.PLAYING) return null;
@@ -29,11 +27,9 @@ export function getFourteenOutHint(state: FourteenOutResponse): HintResult | nul
 }
 
 function findFirstPair(state: FourteenOutResponse): { c1: number; c2: number } | null {
-  const cols = state.columns;
-  for (let c1 = 0; c1 < cols.length; c1++) {
-    for (let c2 = c1 + 1; c2 < cols.length; c2++) {
-      if (fourteenOutCanRemove(cols, c1, c2)) return { c1, c2 };
-    }
+  for (let c1 = 0; c1 < state.columns.length; c1++) {
+    const targets = state.legalTargets[`tableau-${c1}`];
+    if (targets?.tableau.length) return { c1, c2: targets.tableau[0] };
   }
   return null;
 }
