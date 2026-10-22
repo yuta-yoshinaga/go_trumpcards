@@ -18,6 +18,7 @@ function makeState(overrides: Partial<MonteCarloResponse> = {}): MonteCarloRespo
     stockCount: 27,
     removedCount: 0,
     dealCount: 0,
+    removablePairs: 0,
     canUndo: false,
     isStalemate: false,
     message: '',

@@ -19,6 +19,7 @@ func setupMonteCarloWebMockDefaults(g *interfaces.MockMonteCarloGame) {
 	g.On("GetStockCount").Return(27).Maybe()
 	g.On("GetRemovedCount").Return(0).Maybe()
 	g.On("GetDealCount").Return(0).Maybe()
+	g.On("CountRemovablePairs").Return(3).Maybe()
 	g.On("CanUndo").Return(false).Maybe()
 	g.On("IsStalemate").Return(false).Maybe()
 	var board [domain.MonteCarloGridSize][domain.MonteCarloGridSize]*domain.Card
@@ -51,6 +52,7 @@ func TestMonteCarloWebPresenter_Output_Playing(t *testing.T) {
 	assert.Equal(t, "montecarlo.playing", out.MessageCode)
 	assert.Len(t, out.Board, domain.MonteCarloGridSize)
 	assert.Equal(t, 27, out.StockCount)
+	assert.Equal(t, 3, out.RemovablePairs)
 }
 
 func TestMonteCarloWebPresenter_Output_PlayingStalemate(t *testing.T) {
@@ -59,6 +61,7 @@ func TestMonteCarloWebPresenter_Output_PlayingStalemate(t *testing.T) {
 	g.On("GetStockCount").Return(0).Maybe()
 	g.On("GetRemovedCount").Return(40).Maybe()
 	g.On("GetDealCount").Return(3).Maybe()
+	g.On("CountRemovablePairs").Return(3).Maybe()
 	g.On("CanUndo").Return(true).Maybe()
 	g.On("IsStalemate").Return(true).Maybe()
 	var board [domain.MonteCarloGridSize][domain.MonteCarloGridSize]*domain.Card
@@ -69,6 +72,7 @@ func TestMonteCarloWebPresenter_Output_PlayingStalemate(t *testing.T) {
 	out := parseMonteCarloOutput(t, p.Output(g, nil))
 	assert.Equal(t, "montecarlo.stalemate", out.MessageCode)
 	assert.True(t, out.IsStalemate)
+	assert.Equal(t, 3, out.RemovablePairs)
 }
 
 func TestMonteCarloWebPresenter_Output_GameClear(t *testing.T) {
@@ -77,6 +81,7 @@ func TestMonteCarloWebPresenter_Output_GameClear(t *testing.T) {
 	g.On("GetStockCount").Return(0).Maybe()
 	g.On("GetRemovedCount").Return(52).Maybe()
 	g.On("GetDealCount").Return(5).Maybe()
+	g.On("CountRemovablePairs").Return(3).Maybe()
 	g.On("CanUndo").Return(false).Maybe()
 	g.On("IsStalemate").Return(false).Maybe()
 	var board [domain.MonteCarloGridSize][domain.MonteCarloGridSize]*domain.Card
@@ -88,6 +93,7 @@ func TestMonteCarloWebPresenter_Output_GameClear(t *testing.T) {
 	assert.Equal(t, "montecarlo.gameClear", out.MessageCode)
 	assert.Equal(t, "5", out.MessageParams["dealCount"])
 	assert.Equal(t, "52", out.MessageParams["removedCount"])
+	assert.Equal(t, 3, out.RemovablePairs)
 }
 
 func TestMonteCarloWebPresenter_Output_GameOver(t *testing.T) {
@@ -96,6 +102,7 @@ func TestMonteCarloWebPresenter_Output_GameOver(t *testing.T) {
 	g.On("GetStockCount").Return(0).Maybe()
 	g.On("GetRemovedCount").Return(20).Maybe()
 	g.On("GetDealCount").Return(2).Maybe()
+	g.On("CountRemovablePairs").Return(3).Maybe()
 	g.On("CanUndo").Return(false).Maybe()
 	g.On("IsStalemate").Return(false).Maybe()
 	var board [domain.MonteCarloGridSize][domain.MonteCarloGridSize]*domain.Card
@@ -105,6 +112,7 @@ func TestMonteCarloWebPresenter_Output_GameOver(t *testing.T) {
 	p := &MonteCarloWebPresenter{}
 	out := parseMonteCarloOutput(t, p.Output(g, nil))
 	assert.Equal(t, "montecarlo.gameOver", out.MessageCode)
+	assert.Equal(t, 3, out.RemovablePairs)
 }
 
 func TestMonteCarloWebPresenter_Output_Error(t *testing.T) {
@@ -121,6 +129,7 @@ func TestMonteCarloWebPresenter_Output_BoardWithCard(t *testing.T) {
 	g.On("GetStockCount").Return(27).Maybe()
 	g.On("GetRemovedCount").Return(0).Maybe()
 	g.On("GetDealCount").Return(0).Maybe()
+	g.On("CountRemovablePairs").Return(3).Maybe()
 	g.On("CanUndo").Return(false).Maybe()
 	g.On("IsStalemate").Return(false).Maybe()
 	var board [domain.MonteCarloGridSize][domain.MonteCarloGridSize]*domain.Card
@@ -132,6 +141,7 @@ func TestMonteCarloWebPresenter_Output_BoardWithCard(t *testing.T) {
 	out := parseMonteCarloOutput(t, p.Output(g, nil))
 	assert.NotNil(t, out.Board[0][0].Card)
 	assert.Nil(t, out.Board[0][1].Card)
+	assert.Equal(t, 3, out.RemovablePairs)
 }
 
 // **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の
@@ -174,6 +184,7 @@ func TestMonteCarloWebPresenter_HintOutput_Remove(t *testing.T) {
 	assert.Equal(t, domain.MonteCarloHintActionRemove, out.Hint.Action)
 	assert.Equal(t, 1, out.Hint.FromC)
 	assert.Equal(t, 2, out.Hint.ToC)
+	assert.Equal(t, 3, out.RemovablePairs)
 }
 
 func TestMonteCarloWebPresenter_HintOutput_Deal(t *testing.T) {
@@ -186,6 +197,7 @@ func TestMonteCarloWebPresenter_HintOutput_Deal(t *testing.T) {
 	assert.Equal(t, "montecarlo.hintAvailable", out.MessageCode)
 	assert.NotNil(t, out.Hint)
 	assert.Equal(t, domain.MonteCarloHintActionDeal, out.Hint.Action)
+	assert.Equal(t, 3, out.RemovablePairs)
 }
 
 func TestMonteCarloWebPresenter_HintOutput_None(t *testing.T) {
@@ -197,6 +209,7 @@ func TestMonteCarloWebPresenter_HintOutput_None(t *testing.T) {
 	out := parseMonteCarloOutput(t, p.HintOutput(g))
 	assert.Equal(t, "montecarlo.noHint", out.MessageCode)
 	assert.Nil(t, out.Hint)
+	assert.Equal(t, 3, out.RemovablePairs)
 }
 
 func TestMonteCarloWebPresenter_ActionLog_Playing(t *testing.T) {
