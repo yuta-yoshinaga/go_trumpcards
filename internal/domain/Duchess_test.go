@@ -439,6 +439,41 @@ func TestDuchess_AutoCompleteOnlyFeedsFoundations(t *testing.T) {
 	assert.Empty(t, d.GetReserve()[0])
 }
 
+func TestDuchess_LegalTargetsFollowDuchessMoveRules(t *testing.T) {
+	d := newTestDuchess()
+	var f [DuchessFoundationCnt][]*Card
+	f[0] = []*Card{NewCard(CardDesignSpade, 5, true)}
+	reserve := [][]*Card{{NewCard(CardDesignHeart, 4, true)}, nil, nil, nil}
+	setDuchessBoard(d, 5, f, reserve, [][]*Card{
+		{NewCard(CardDesignSpade, 9, true), NewCard(CardDesignHeart, 8, true)},
+		{NewCard(CardDesignClover, 9, true)}, {NewCard(CardDesignSpade, 6, true)}, nil,
+	}, nil, nil)
+	tableau, foundation := d.LegalTargetsFrom(0, 1)
+	assert.Equal(t, []int{1}, tableau)
+	assert.Empty(t, foundation, "a buried run head cannot move to a foundation")
+	_, foundation = d.LegalTargetsFrom(2, 0)
+	assert.Equal(t, []int{0}, foundation)
+
+	reserveTargets, reserveFoundation := d.ReserveLegalTargets(0)
+	assert.Equal(t, []int{3}, reserveTargets, "reserve may use empty columns despite remaining reserve cards")
+	assert.Empty(t, reserveFoundation)
+	wasteTargets, _ := d.WasteLegalTargets()
+	assert.Empty(t, wasteTargets, "waste may not use empty columns while reserve remains")
+}
+
+func TestDuchess_LegalTargetsRequireBaseRankAndValidRun(t *testing.T) {
+	d := newTestDuchess()
+	d.tableau[0] = []*DuchessTableauCard{{Card: NewCard(CardDesignSpade, 9, true), FaceUp: true}}
+	assert.Nil(t, func() []int { tab, _ := d.LegalTargetsFrom(0, 0); return tab }())
+	assert.Nil(t, func() []int { tab, _ := d.ReserveLegalTargets(0); return tab }())
+	assert.Nil(t, func() []int { tab, _ := d.WasteLegalTargets(); return tab }())
+	var f [DuchessFoundationCnt][]*Card
+	setDuchessBoard(d, 5, f, nil, [][]*Card{
+		{NewCard(CardDesignSpade, 9, true), NewCard(CardDesignClover, 7, true)}, nil, nil, nil,
+	}, nil, nil)
+	assert.Nil(t, func() []int { tab, _ := d.LegalTargetsFrom(0, 0); return tab }(), "invalid run has no destinations")
+}
+
 // AutoComplete must never make a tableau move, or it would shuffle the board
 // instead of clearing it — it drives off foundationHint, not GetHint.
 func TestDuchess_AutoCompleteIgnoresTableauMoves(t *testing.T) {

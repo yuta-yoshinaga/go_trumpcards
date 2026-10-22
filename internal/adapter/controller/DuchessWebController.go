@@ -41,11 +41,12 @@ type DuchessWebOutputHint struct {
 
 // DuchessWebOutput ダッチェス Web アウトプット
 type DuchessWebOutput struct {
-	Reserve    [][]*WebOutputCard               `json:"reserve"`
-	Tableau    [][]*DuchessWebOutputTableauCard `json:"tableau"`
-	Foundation [][]*WebOutputCard               `json:"foundation"`
-	StockCount int                              `json:"stockCount"`
-	Waste      []*WebOutputCard                 `json:"waste"`
+	LegalTargets map[string]DuchessWebOutputTargets `json:"legalTargets"`
+	Reserve      [][]*WebOutputCard                 `json:"reserve"`
+	Tableau      [][]*DuchessWebOutputTableauCard   `json:"tableau"`
+	Foundation   [][]*WebOutputCard                 `json:"foundation"`
+	StockCount   int                                `json:"stockCount"`
+	Waste        []*WebOutputCard                   `json:"waste"`
 	// BaseRank は 4 つの基礎札が始まるランク。0 は「まだ選ばれていない」。
 	BaseRank int `json:"baseRank"`
 	// AwaitingBaseRank が真の間は、リザーブから 1 枚選ぶ以外に何もできない。
@@ -55,6 +56,12 @@ type DuchessWebOutput struct {
 	Hint            *DuchessWebOutputHint `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase
+}
+
+// DuchessWebOutputTargets lists tableau and foundation destinations for one move source.
+type DuchessWebOutputTargets struct {
+	Tableau    []int `json:"tableau"`
+	Foundation []int `json:"foundation"`
 }
 
 // DuchessWebController ダッチェス Web コントローラークラス
@@ -72,6 +79,7 @@ func newDuchessDefaultOutput(msg string) *DuchessWebOutput {
 		Tableau:       make([][]*DuchessWebOutputTableauCard, 0),
 		Foundation:    make([][]*WebOutputCard, 0),
 		Waste:         make([]*WebOutputCard, 0),
+		LegalTargets:  make(map[string]DuchessWebOutputTargets),
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }

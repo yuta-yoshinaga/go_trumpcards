@@ -19,6 +19,7 @@ func mustDuchessOutputJSON(msg string) string {
 		Tableau:       [][]*controller.DuchessWebOutputTableauCard{},
 		Foundation:    [][]*controller.WebOutputCard{},
 		Waste:         []*controller.WebOutputCard{},
+		LegalTargets:  map[string]controller.DuchessWebOutputTargets{},
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
@@ -29,7 +30,7 @@ func mustDuchessOutputJSON(msg string) string {
 }
 
 func TestDuchessWebController_Method(t *testing.T) {
-	mockOutput := `{"reserve":[],"tableau":[],"foundation":[],"stockCount":0,"waste":[],"baseRank":0,"awaitingBaseRank":false,"phase":0,"moveCount":0,"message":""}`
+	mockOutput := `{"legalTargets":{},"reserve":[],"tableau":[],"foundation":[],"stockCount":0,"waste":[],"baseRank":0,"awaitingBaseRank":false,"phase":0,"moveCount":0,"message":""}`
 
 	miMock := new(usecase.MockDuchessInteractor)
 	miMock.On("Reset").Return(mockOutput)

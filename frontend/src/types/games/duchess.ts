@@ -25,6 +25,7 @@ export interface DuchessHint {
 
 /** Full Duchess game state returned from the API. */
 export interface DuchessResponse extends BaseGameResponse {
+  legalTargets: Record<string, { tableau: number[]; foundation: number[] }>;
   /** Four reserve fans of three cards; only the top of each is available. */
   reserve: Card[][];
   tableau: DuchessTableauCard[][];

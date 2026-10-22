@@ -27,6 +27,7 @@ function makeTableau(cols: DuchessTableauCard[][]): DuchessTableauCard[][] {
 }
 
 const playingState: DuchessResponse = {
+  legalTargets: {},
   reserve: [[card('CLOVER', 2)], [card('DIAMOND', 7)], [], []],
   tableau: makeTableau([
     [
@@ -233,10 +234,49 @@ describe('DuchessPage', () => {
     );
   });
 
-  it('highlights only legal destinations after selecting a tableau card', async () => {
+  it('shows no destinations for a tableau selection that is not a valid run', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      legalTargets: {},
+      tableau: makeTableau([
+        [
+          { card: card('SPADE', 9), faceUp: true },
+          { card: card('HEART', 7), faceUp: true },
+        ],
+      ]),
+    });
+    renderWithProviders(<DuchessPage />);
+    const source = await screen.findByRole('button', { name: '♠ 9（列0・上から1枚目）' });
+    fireEvent.click(source);
+    await waitFor(() => expect(source).toHaveAttribute('aria-pressed', 'true'));
+    expect(document.querySelectorAll('[data-legal-target="true"]')).toHaveLength(0);
+  });
+
+  it('shows tableau targets but no foundation target for a mid-run head', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [[card('SPADE', 8)], [], [], []],
+      legalTargets: { 'tableau-0-0': { tableau: [1], foundation: [] } },
+      tableau: makeTableau([
+        [
+          { card: card('SPADE', 9), faceUp: true },
+          { card: card('HEART', 8), faceUp: true },
+        ],
+        [{ card: card('HEART', 10), faceUp: true }],
+      ]),
+    });
+    renderWithProviders(<DuchessPage />);
+    const source = await screen.findByRole('button', { name: '♠ 9（列0・上から1枚目）' });
+    fireEvent.click(source);
+    await waitFor(() => expect(screen.getByText('#1').closest('[data-legal-target="true"]')).toBeInTheDocument());
+    expect(screen.getByText('♠').closest('[data-legal-target="true"]')).not.toBeInTheDocument();
+  });
+
+  it('follows server legal destinations even when they disagree with client rules', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
       reserve: [[], [], [], []],
+      legalTargets: { 'tableau-0-0': { tableau: [1, 3], foundation: [0] } },
       tableau: makeTableau([
         [{ card: card('SPADE', 9), faceUp: true }],
         [{ card: card('HEART', 10), faceUp: true }],
@@ -248,10 +288,11 @@ describe('DuchessPage', () => {
     const source = await screen.findByRole('button', { name: '♠ 9（列0・上から1枚目）' });
     fireEvent.click(source);
 
-    await waitFor(() => expect(document.querySelectorAll('[data-legal-target="true"]').length).toBe(2));
+    await waitFor(() => expect(document.querySelectorAll('[data-legal-target="true"]').length).toBe(3));
     expect(screen.getByText('#1').closest('[data-legal-target="true"]')).toBeInTheDocument();
     expect(screen.getByText('#3').closest('[data-legal-target="true"]')).toBeInTheDocument();
     expect(screen.getByText('#2').closest('[data-legal-target="true"]')).not.toBeInTheDocument();
+    expect(screen.getByText('♠').closest('[data-legal-target="true"]')).toBeInTheDocument();
   });
 
   it('does not highlight a foundation or tableau with an illegal rank or colour', async () => {
