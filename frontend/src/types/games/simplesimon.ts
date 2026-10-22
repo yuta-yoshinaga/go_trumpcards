@@ -22,6 +22,8 @@ export interface SimpleSimonResponse extends BaseGameResponse {
   canUndo: boolean;
   /** Start indices of movable runs, one list per tableau column. */
   runStarts: number[][];
+  /** Ordered legal destinations for each movable run. */
+  legalTargets: Record<string, { tableau: number[]; foundation: number[] }>;
   hint?: SimpleSimonHint;
 }
 

@@ -5,6 +5,7 @@ package controller_test
 import (
 	"bytes"
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
@@ -43,5 +44,11 @@ func TestSimpleSimonWebController_Exec(t *testing.T) {
 		}
 	})
 	t.Run("undo_n", func(t *testing.T) { run(t, `{"command":"undo_n","n":1,"sessionId":"s1"}`, http.StatusOK) })
-	t.Run("move missing params is bad request", func(t *testing.T) { run(t, `{"command":"m","fromCol":0,"sessionId":"s1"}`, http.StatusBadRequest) })
+	t.Run("move missing params is bad request", func(t *testing.T) {
+		rec := execRequest(t, ctrl.Exec, bytes.NewReader([]byte(`{"command":"m","fromCol":0,"sessionId":"default-targets"}`)))
+		rec.CodeIs(http.StatusBadRequest)
+		if !strings.Contains(rec.Body.String(), `"legalTargets":{}`) {
+			t.Errorf("expected empty legalTargets in default response, got %s", rec.Body.String())
+		}
+	})
 }

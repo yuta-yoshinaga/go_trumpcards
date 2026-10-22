@@ -28,14 +28,21 @@ type SimpleSimonWebOutputHint struct {
 
 // SimpleSimonWebOutput シンプル・サイモンのWebアウトプット。
 type SimpleSimonWebOutput struct {
-	Columns        [][]*WebOutputCard        `json:"columns"`
-	CompletedSuits int                       `json:"completedSuits"`
-	Phase          int                       `json:"phase"`
-	MoveCount      int                       `json:"moveCount"`
-	CanUndo        bool                      `json:"canUndo"`
-	RunStarts      [][]int                   `json:"runStarts"`
-	Hint           *SimpleSimonWebOutputHint `json:"hint,omitempty"`
+	LegalTargets   map[string]SimpleSimonWebOutputTargets `json:"legalTargets"`
+	Columns        [][]*WebOutputCard                     `json:"columns"`
+	CompletedSuits int                                    `json:"completedSuits"`
+	Phase          int                                    `json:"phase"`
+	MoveCount      int                                    `json:"moveCount"`
+	CanUndo        bool                                   `json:"canUndo"`
+	RunStarts      [][]int                                `json:"runStarts"`
+	Hint           *SimpleSimonWebOutputHint              `json:"hint,omitempty"`
 	WebOutputBase
+}
+
+// SimpleSimonWebOutputTargets lists tableau and foundation destinations.
+type SimpleSimonWebOutputTargets struct {
+	Tableau    []int `json:"tableau"`
+	Foundation []int `json:"foundation"`
 }
 
 // SimpleSimonWebController シンプル・サイモンのWebコントローラークラス。
@@ -50,6 +57,7 @@ var NewSimpleSimonWebController, NewSimpleSimonWebControllerWithProvider = webCo
 func newSimpleSimonDefaultOutput(msg string) *SimpleSimonWebOutput {
 	return &SimpleSimonWebOutput{
 		Columns:       make([][]*WebOutputCard, 0),
+		LegalTargets:  map[string]SimpleSimonWebOutputTargets{},
 		RunStarts:     make([][]int, 0),
 		WebOutputBase: WebOutputBase{Message: msg},
 	}

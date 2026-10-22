@@ -27,6 +27,7 @@ function makeState(overrides: Partial<SimpleSimonResponse> = {}): SimpleSimonRes
     moveCount: 0,
     canUndo: false,
     runStarts: [],
+    legalTargets: { 'tableau-1-0': { tableau: [0], foundation: [] } },
     message: '',
     ...stateOverrides,
   };
@@ -53,6 +54,20 @@ beforeEach(() => {
 });
 
 describe('SimpleSimonPage', () => {
+  it('uses the server destination order when it disagrees with the former client priority', async () => {
+    const columns: Card[][] = Array.from({ length: 10 }, () => []);
+    columns[0] = [card('CLOVER', 9), card('SPADE', 7)];
+    columns[1] = [card('SPADE', 8)];
+    columns[2] = [card('HEART', 8)];
+    const runStarts = Array.from({ length: 10 }, () => [] as number[]);
+    runStarts[0] = [1];
+    mockExec.mockResolvedValue(
+      makeState({ columns, runStarts, legalTargets: { 'tableau-0-1': { tableau: [2, 1], foundation: [] } } }),
+    );
+    renderWithProviders(<SimpleSimonPage />);
+    fireEvent.doubleClick(await screen.findByTestId('card-0-1'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('m', { fromCol: 0, cardIndex: 1, toCol: 2 }));
+  });
   it('follows server run starts when they disagree with the former client rule', async () => {
     const columns: Card[][] = Array.from({ length: 10 }, () => []);
     columns[0] = [card('SPADE', 9)];
@@ -327,6 +342,7 @@ describe('SimpleSimonPage', () => {
           columns[0] = [card('SPADE', 2)];
           return columns;
         })(),
+        legalTargets: {},
       }),
     );
     renderWithProviders(<SimpleSimonPage />);
@@ -583,6 +599,7 @@ describe('SimpleSimonPage', () => {
     mockExec.mockClear();
     fireEvent.doubleClick(srcCard);
     await waitFor(() => expect(screen.getByTestId('ss-automove-notice')).toBeInTheDocument());
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('m', expect.anything());
   });
 
