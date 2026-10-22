@@ -155,6 +155,52 @@ func (g *DoubleKlondike) findFoundation(card *Card) int {
 	return -1
 }
 
+// LegalTargetsFrom returns tableau destinations for the selected face-up card and
+// foundation destinations for the column's top card. Foundation moves take only
+// a column, so they always move its top card even when a buried card is selected.
+func (g *DoubleKlondike) LegalTargetsFrom(col, cardIndex int) (tableau, foundation []int) {
+	if col < 0 || col >= DoubleKlondikeTableauCnt || cardIndex < 0 || cardIndex >= len(g.tableau[col]) {
+		return []int{}, []int{}
+	}
+	selected := g.tableau[col][cardIndex]
+	if selected == nil || !selected.FaceUp || selected.Card == nil {
+		return []int{}, []int{}
+	}
+	for target := 0; target < DoubleKlondikeTableauCnt; target++ {
+		if target != col && g.canPlaceOnTableau(selected.Card, target) {
+			tableau = append(tableau, target)
+		}
+	}
+	top := g.tableau[col][len(g.tableau[col])-1]
+	if top != nil && top.FaceUp && top.Card != nil {
+		for target := 0; target < DoubleKlondikeFoundationCnt; target++ {
+			if g.canPlaceOnFoundation(top.Card, target) {
+				foundation = append(foundation, target)
+			}
+		}
+	}
+	return tableau, foundation
+}
+
+// WasteLegalTargets returns tableau and all foundation destinations for the waste top.
+func (g *DoubleKlondike) WasteLegalTargets() (tableau, foundation []int) {
+	if len(g.waste) == 0 {
+		return []int{}, []int{}
+	}
+	card := g.waste[len(g.waste)-1]
+	for target := 0; target < DoubleKlondikeTableauCnt; target++ {
+		if g.canPlaceOnTableau(card, target) {
+			tableau = append(tableau, target)
+		}
+	}
+	for target := 0; target < DoubleKlondikeFoundationCnt; target++ {
+		if g.canPlaceOnFoundation(card, target) {
+			foundation = append(foundation, target)
+		}
+	}
+	return tableau, foundation
+}
+
 // autoFlipTableau 列 col の最上位が裏向きなら表に返す。
 func (g *DoubleKlondike) autoFlipTableau(col int) {
 	cards := g.tableau[col]

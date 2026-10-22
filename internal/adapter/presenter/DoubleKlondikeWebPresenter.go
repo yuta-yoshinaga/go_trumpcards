@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -17,6 +18,7 @@ type DoubleKlondikeWebPresenter struct{}
 func (p *DoubleKlondikeWebPresenter) Output(g interfaces.DoubleKlondikeGame, lastErr error) string {
 	resObj := p.buildBaseOutput(g)
 	p.fillBoard(resObj, g)
+	resObj.LegalTargets = p.buildLegalTargets(g)
 
 	// **受動ヒントは Output() でも埋める。**盤面のリングなど `state.hint` を読む
 	// 分岐は、ヒントボタンを押していないときにも動く。ここで埋めないとそれらは
@@ -77,6 +79,7 @@ func (p *DoubleKlondikeWebPresenter) tableauOutput(g interfaces.DoubleKlondikeGa
 func (p *DoubleKlondikeWebPresenter) HintOutput(g interfaces.DoubleKlondikeGame) string {
 	resObj := p.buildBaseOutput(g)
 	p.fillBoard(resObj, g)
+	resObj.LegalTargets = p.buildLegalTargets(g)
 	if hint := g.GetHint(); hint != nil {
 		resObj.Hint = &controller.DoubleKlondikeWebOutputHint{
 			FromZone:  hint.FromZone,
@@ -90,6 +93,27 @@ func (p *DoubleKlondikeWebPresenter) HintOutput(g interfaces.DoubleKlondikeGame)
 		resObj.MessageCode = "doubleklondike.noHint"
 	}
 	return marshalOrError(resObj)
+}
+
+func (p *DoubleKlondikeWebPresenter) buildLegalTargets(g interfaces.DoubleKlondikeGame) map[string]controller.DoubleKlondikeWebOutputTargets {
+	result := make(map[string]controller.DoubleKlondikeWebOutputTargets)
+	for col, pile := range g.GetTableau() {
+		for index, card := range pile {
+			if card == nil || !card.FaceUp {
+				continue
+			}
+			tab, foundation := g.LegalTargetsFrom(col, index)
+			if len(tab)+len(foundation) == 0 {
+				continue
+			}
+			result["tableau-"+strconv.Itoa(col)+"-"+strconv.Itoa(index)] = controller.DoubleKlondikeWebOutputTargets{Tableau: intSliceOrEmpty(tab), Foundation: intSliceOrEmpty(foundation)}
+		}
+	}
+	tab, foundation := g.WasteLegalTargets()
+	if len(tab)+len(foundation) > 0 {
+		result["waste"] = controller.DoubleKlondikeWebOutputTargets{Tableau: intSliceOrEmpty(tab), Foundation: intSliceOrEmpty(foundation)}
+	}
+	return result
 }
 
 // ActionLogOutput 棋譜をJSON出力する。

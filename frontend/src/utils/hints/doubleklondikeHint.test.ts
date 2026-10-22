@@ -12,6 +12,7 @@ function makeState(overrides?: Partial<DoubleKlondikeResponse>): DoubleKlondikeR
     moveCount: 0,
     canUndo: false,
     isStalemate: false,
+    legalTargets: {},
     message: '',
     ...overrides,
   };

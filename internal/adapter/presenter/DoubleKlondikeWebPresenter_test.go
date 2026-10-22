@@ -51,6 +51,48 @@ func TestDoubleKlondikeWebPresenter_Output(t *testing.T) {
 		assert.Contains(t, p.HintOutput(dkState(t, `{"ph":2}`)), "doubleklondike.noHint")
 	})
 
+	t.Run("legal targets are present in both state outputs and empty when unavailable", func(t *testing.T) {
+		g := dkState(t, `{"wa":[{"d":1,"v":1,"w":true}],"ph":0}`)
+		for _, output := range []string{p.Output(g, nil), p.HintOutput(g)} {
+			var parsed struct {
+				LegalTargets map[string]struct {
+					Tableau    []int `json:"tableau"`
+					Foundation []int `json:"foundation"`
+				} `json:"legalTargets"`
+			}
+			if err := json.Unmarshal([]byte(output), &parsed); err != nil {
+				t.Fatal(err)
+			}
+			target, ok := parsed.LegalTargets["waste"]
+			if !ok || target.Tableau == nil || len(target.Tableau) != 0 || len(target.Foundation) != 8 {
+				t.Fatalf("waste targets = %#v", parsed.LegalTargets)
+			}
+		}
+		tableauOnly := dkState(t, `{"tb":[[{"c":{"d":1,"v":7,"w":true},"f":true}],[{"c":{"d":3,"v":8,"w":true},"f":true}]],"ph":0}`)
+		var parsed struct {
+			LegalTargets map[string]struct {
+				Tableau    []int `json:"tableau"`
+				Foundation []int `json:"foundation"`
+			} `json:"legalTargets"`
+		}
+		if err := json.Unmarshal([]byte(p.Output(tableauOnly, nil)), &parsed); err != nil {
+			t.Fatal(err)
+		}
+		target, ok := parsed.LegalTargets["tableau-0-0"]
+		if !ok || len(target.Tableau) != 1 || target.Foundation == nil || len(target.Foundation) != 0 {
+			t.Fatalf("tableau-only targets = %#v", parsed.LegalTargets)
+		}
+		for _, output := range []string{p.Output(dkState(t, `{"ph":2}`), nil), p.HintOutput(dkState(t, `{"ph":2}`))} {
+			var parsed map[string]json.RawMessage
+			if err := json.Unmarshal([]byte(output), &parsed); err != nil {
+				t.Fatal(err)
+			}
+			if string(parsed["legalTargets"]) != `{}` {
+				t.Fatalf("empty targets = %s", parsed["legalTargets"])
+			}
+		}
+	})
+
 	t.Run("action log is valid JSON", func(t *testing.T) {
 		g := domain.NewDefaultDoubleKlondike()
 		g.Reset()

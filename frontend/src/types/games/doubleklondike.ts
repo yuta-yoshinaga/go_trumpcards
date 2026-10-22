@@ -18,6 +18,12 @@ export interface DoubleKlondikeHint {
   toCol: number;
 }
 
+/** Legal destinations for one move source. */
+export interface DoubleKlondikeLegalTargets {
+  tableau: number[];
+  foundation: number[];
+}
+
 /** Full Double Klondike game state returned from the API. */
 export interface DoubleKlondikeResponse extends BaseGameResponse {
   /** The 9 tableau columns (top card is last). */
@@ -33,6 +39,7 @@ export interface DoubleKlondikeResponse extends BaseGameResponse {
   moveCount: number;
   canUndo: boolean;
   isStalemate: boolean;
+  legalTargets: Record<string, DoubleKlondikeLegalTargets>;
   hint?: DoubleKlondikeHint;
 }
 

@@ -5,6 +5,7 @@ package controller_test
 import (
 	"bytes"
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
@@ -48,7 +49,11 @@ func TestDoubleKlondikeWebController_Exec(t *testing.T) {
 	})
 	t.Run("undo_n", func(t *testing.T) { run(t, `{"command":"undo_n","n":1,"sessionId":"s1"}`, http.StatusOK) })
 	t.Run("missing params are bad requests", func(t *testing.T) {
-		run(t, `{"command":"mwt","sessionId":"s1"}`, http.StatusBadRequest)
+		rec := execRequest(t, ctrl.Exec, bytes.NewReader([]byte(`{"command":"mwt","sessionId":"s1"}`)))
+		rec.CodeIs(http.StatusBadRequest)
+		if !strings.Contains(rec.Body.String(), `"legalTargets":{}`) {
+			t.Fatalf("error output lacks empty legalTargets: %s", rec.Body.String())
+		}
 		run(t, `{"command":"mtf","sessionId":"s1"}`, http.StatusBadRequest)
 		run(t, `{"command":"mtt","fromCol":0,"sessionId":"s1"}`, http.StatusBadRequest)
 	})

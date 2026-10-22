@@ -36,16 +36,23 @@ type DoubleKlondikeWebOutputHint struct {
 
 // DoubleKlondikeWebOutput ダブル・クロンダイクのWebアウトプット。
 type DoubleKlondikeWebOutput struct {
-	Tableau     [][]*DoubleKlondikeWebOutputTableauCard `json:"tableau"`
-	StockCount  int                                     `json:"stockCount"`
-	Waste       []*WebOutputCard                        `json:"waste"`
-	Foundation  [][]*WebOutputCard                      `json:"foundation"`
-	Phase       int                                     `json:"phase"`
-	MoveCount   int                                     `json:"moveCount"`
-	CanUndo     bool                                    `json:"canUndo"`
-	IsStalemate bool                                    `json:"isStalemate"`
-	Hint        *DoubleKlondikeWebOutputHint            `json:"hint,omitempty"`
+	Tableau      [][]*DoubleKlondikeWebOutputTableauCard   `json:"tableau"`
+	StockCount   int                                       `json:"stockCount"`
+	Waste        []*WebOutputCard                          `json:"waste"`
+	Foundation   [][]*WebOutputCard                        `json:"foundation"`
+	Phase        int                                       `json:"phase"`
+	MoveCount    int                                       `json:"moveCount"`
+	CanUndo      bool                                      `json:"canUndo"`
+	IsStalemate  bool                                      `json:"isStalemate"`
+	Hint         *DoubleKlondikeWebOutputHint              `json:"hint,omitempty"`
+	LegalTargets map[string]DoubleKlondikeWebOutputTargets `json:"legalTargets"`
 	WebOutputBase
+}
+
+// DoubleKlondikeWebOutputTargets lists tableau and foundation destinations.
+type DoubleKlondikeWebOutputTargets struct {
+	Tableau    []int `json:"tableau"`
+	Foundation []int `json:"foundation"`
 }
 
 // DoubleKlondikeWebController ダブル・クロンダイクのWebコントローラークラス。
@@ -62,6 +69,7 @@ func newDoubleKlondikeDefaultOutput(msg string) *DoubleKlondikeWebOutput {
 		Tableau:       make([][]*DoubleKlondikeWebOutputTableauCard, 0),
 		Waste:         make([]*WebOutputCard, 0),
 		Foundation:    make([][]*WebOutputCard, 0),
+		LegalTargets:  map[string]DoubleKlondikeWebOutputTargets{},
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }

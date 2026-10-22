@@ -74270,6 +74270,20 @@ components:
           type: boolean
         isStalemate:
           type: boolean
+        legalTargets:
+          type: object
+          description: Legal tableau and foundation destinations keyed by source card.
+          additionalProperties:
+            type: object
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         hint:
           type: object
           nullable: true

@@ -4,6 +4,7 @@ package domain
 
 import (
 	"encoding/json"
+	"reflect"
 	"testing"
 )
 
@@ -273,6 +274,126 @@ func TestDoubleKlondike_AutoComplete(t *testing.T) {
 	}
 	if len(g.foundation[0]) != 3 {
 		t.Errorf("foundation = %d, want 3 (A-2-3)", len(g.foundation[0]))
+	}
+}
+
+func TestDoubleKlondike_LegalTargets(t *testing.T) {
+	g := newDkGame()
+	dkClear(g)
+	g.tableau[0] = []*DoubleKlondikeTableauCard{{Card: dblkCard(CardDesignSpade, 7), FaceUp: true}, {Card: dblkCard(CardDesignHeart, 6), FaceUp: true}}
+	g.tableau[1] = []*DoubleKlondikeTableauCard{{Card: dblkCard(CardDesignHeart, 8), FaceUp: true}}
+	g.tableau[2] = []*DoubleKlondikeTableauCard{{Card: dblkCard(CardDesignClover, 7), FaceUp: true}}
+	g.foundation[0] = []*Card{dblkCard(CardDesignHeart, 1), dblkCard(CardDesignHeart, 2), dblkCard(CardDesignHeart, 3), dblkCard(CardDesignHeart, 4), dblkCard(CardDesignHeart, 5)}
+	tab, foundation := g.LegalTargetsFrom(0, 0)
+	if !reflect.DeepEqual(tab, []int{1}) || !reflect.DeepEqual(foundation, []int{0}) {
+		t.Fatalf("buried 7 targets = %v/%v", tab, foundation)
+	}
+	tab, foundation = g.LegalTargetsFrom(0, 1)
+	if !reflect.DeepEqual(tab, []int{2}) || !reflect.DeepEqual(foundation, []int{0}) {
+		t.Fatalf("top 6 targets = %v/%v", tab, foundation)
+	}
+	g.tableau[3] = []*DoubleKlondikeTableauCard{{Card: dblkCard(CardDesignSpade, 13), FaceUp: false}}
+	tab, foundation = g.LegalTargetsFrom(3, 0)
+	if len(tab)+len(foundation) != 0 {
+		t.Fatalf("face-down targets = %v/%v", tab, foundation)
+	}
+	g.waste = []*Card{dblkCard(CardDesignSpade, 1)}
+	tab, foundation = g.WasteLegalTargets()
+	if !reflect.DeepEqual(foundation, []int{1, 2, 3, 4, 5, 6, 7}) || len(tab) != 0 {
+		t.Fatalf("waste targets = %v/%v", tab, foundation)
+	}
+	g.waste = nil
+	tab, foundation = g.WasteLegalTargets()
+	if tab == nil || foundation == nil || len(tab)+len(foundation) != 0 {
+		t.Fatalf("empty waste targets must be empty slices: %v/%v", tab, foundation)
+	}
+	// Out-of-bounds inputs return empty slices.
+	for _, tc := range [][2]int{{-1, 0}, {99, 0}, {0, -1}, {0, 99}} {
+		tab, foundation = g.LegalTargetsFrom(tc[0], tc[1])
+		if len(tab)+len(foundation) != 0 {
+			t.Fatalf("oob %v targets = %v/%v", tc, tab, foundation)
+		}
+	}
+	// King can move to empty columns (5..8 are empty; 3 has a face-down card); non-King cannot.
+	g.tableau[4] = []*DoubleKlondikeTableauCard{{Card: dblkCard(CardDesignHeart, 13), FaceUp: true}}
+	tab, _ = g.LegalTargetsFrom(4, 0)
+	if !reflect.DeepEqual(tab, []int{5, 6, 7, 8}) {
+		t.Fatalf("king targets = %v, want [5 6 7 8]", tab)
+	}
+	// Two foundations of the same suit both accept the card.
+	g.foundation[1] = []*Card{dblkCard(CardDesignHeart, 1), dblkCard(CardDesignHeart, 2), dblkCard(CardDesignHeart, 3), dblkCard(CardDesignHeart, 4), dblkCard(CardDesignHeart, 5)}
+	_, foundation = g.LegalTargetsFrom(0, 1) // Heart 6 at (0, 1)
+	if !reflect.DeepEqual(foundation, []int{0, 1}) {
+		t.Fatalf("dual foundation targets = %v, want [0 1]", foundation)
+	}
+}
+
+// TestDoubleKlondike_LegalTargetsRules re-homes the rule cases that used to live in the
+// deleted frontend doubleKlondikeTargets util test: the server is now the only judge.
+func TestDoubleKlondike_LegalTargetsRules(t *testing.T) {
+	has := func(xs []int, want int) bool {
+		for _, x := range xs {
+			if x == want {
+				return true
+			}
+		}
+		return false
+	}
+	g := newDkGame()
+	dkClear(g)
+	g.tableau[0] = []*DoubleKlondikeTableauCard{{Card: dblkCard(CardDesignSpade, 8), FaceUp: true}}
+	g.tableau[2] = []*DoubleKlondikeTableauCard{{Card: dblkCard(CardDesignHeart, 8), FaceUp: false}}
+	g.foundation[0] = []*Card{dblkCard(CardDesignSpade, 1)}
+	g.foundation[2] = []*Card{dblkCard(CardDesignSpade, 1)}
+	g.foundation[3] = []*Card{dblkCard(CardDesignHeart, 1), dblkCard(CardDesignHeart, 2)}
+
+	tableauCases := []struct {
+		name   string
+		design int
+		value  int
+		col    int
+		want   bool
+	}{
+		{"red card one rank below a black top", CardDesignHeart, 7, 0, true},
+		{"same colour is refused", CardDesignClover, 7, 0, false},
+		{"rank too low is refused", CardDesignHeart, 6, 0, false},
+		{"rank too high is refused", CardDesignHeart, 9, 0, false},
+		{"King goes to an empty column", CardDesignSpade, 13, 1, true},
+		{"non-King is refused on an empty column", CardDesignSpade, 12, 1, false},
+		{"column with a face-down top is refused", CardDesignSpade, 7, 2, false},
+	}
+	for _, tc := range tableauCases {
+		t.Run(tc.name, func(t *testing.T) {
+			g.tableau[4] = []*DoubleKlondikeTableauCard{{Card: dblkCard(tc.design, tc.value), FaceUp: true}}
+			tab, _ := g.LegalTargetsFrom(4, 0)
+			if got := has(tab, tc.col); got != tc.want {
+				t.Fatalf("targets %v contain col %d = %v, want %v", tab, tc.col, got, tc.want)
+			}
+		})
+	}
+
+	foundationCases := []struct {
+		name   string
+		design int
+		value  int
+		pile   int
+		want   bool
+	}{
+		{"Ace goes to an empty pile", CardDesignDiamond, 1, 1, true},
+		{"non-Ace is refused on an empty pile", CardDesignDiamond, 2, 1, false},
+		{"builds up in the same suit", CardDesignSpade, 2, 0, true},
+		{"other suit is refused", CardDesignHeart, 2, 0, false},
+		{"rank gap is refused", CardDesignSpade, 3, 0, false},
+		{"second pile of the same suit also accepts", CardDesignSpade, 2, 2, true},
+	}
+	for _, tc := range foundationCases {
+		t.Run(tc.name, func(t *testing.T) {
+			g.waste = []*Card{dblkCard(tc.design, tc.value)}
+			_, foundation := g.WasteLegalTargets()
+			if got := has(foundation, tc.pile); got != tc.want {
+				t.Fatalf("foundation targets %v contain pile %d = %v, want %v", foundation, tc.pile, got, tc.want)
+			}
+		})
 	}
 }
 

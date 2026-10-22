@@ -20,11 +20,9 @@ import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { Card } from '../types/card';
 import { DoubleKlondikePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
-import { doubleKlondikeCanPlaceOnFoundation, doubleKlondikeCanPlaceOnTableau } from '../utils/doubleKlondikeTargets';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** 2 デッキの総枚数。`DoubleKlondikeTotalCards` (internal/domain/DoubleKlondike.go) と同じ。 */
@@ -170,24 +168,11 @@ function DoubleKlondikePageContent() {
   // foundation must be judged on the top card — selecting a buried card of a run
   // is normal play, and judging the ring on it would promise a move the server
   // would never make.
-  const selectedCard: Card | null =
-    selected === null
-      ? null
-      : selected.zone === 'waste'
-        ? (state.waste[state.waste.length - 1] ?? null)
-        : (state.tableau[selected.col]?.[selected.idx]?.card ?? null);
-  const foundationSourceCard: Card | null =
-    selected === null
-      ? null
-      : selected.zone === 'waste'
-        ? selectedCard
-        : (state.tableau[selected.col]?.[state.tableau[selected.col].length - 1]?.card ?? null);
-  const isTableauTarget = (col: number) =>
-    selectedCard !== null &&
-    !(selected?.zone === 'tableau' && selected.col === col) &&
-    doubleKlondikeCanPlaceOnTableau(selectedCard, state.tableau, col);
-  const isFoundationTarget = (fIdx: number) =>
-    foundationSourceCard !== null && doubleKlondikeCanPlaceOnFoundation(foundationSourceCard, state.foundation, fIdx);
+  const selectedKey =
+    selected === null ? null : selected.zone === 'waste' ? 'waste' : `tableau-${selected.col}-${selected.idx}`;
+  const selectedTargets = selectedKey === null ? undefined : state.legalTargets[selectedKey];
+  const isTableauTarget = (col: number) => selectedTargets?.tableau.includes(col) ?? false;
+  const isFoundationTarget = (fIdx: number) => selectedTargets?.foundation.includes(fIdx) ?? false;
 
   // Click a tableau card: select it as a source, or move the current source here.
   const clickTableauCard = (col: number, idx: number) => {
