@@ -19,6 +19,8 @@ export interface BisleyHint {
 /** Full Bisley game state returned from the API. */
 export interface BisleyResponse extends BaseGameResponse {
   tableau: BisleyTableauCard[][];
+  /** Server-computed tableau destinations keyed by source column. */
+  legalTargets: Record<string, { tableau: number[] }>;
   /** Ascending foundations, one per suit, built A -> K. */
   aceFoundations: Card[][];
   /** Descending foundations, one per suit, built K -> A; empty until its King is played. */

@@ -35,13 +35,19 @@ type BisleyWebOutputHint struct {
 	ToIdx   int    `json:"toIdx"`
 }
 
+// BisleyWebOutputTargets lists legal tableau destinations for a Bisley source column.
+type BisleyWebOutputTargets struct {
+	Tableau []int `json:"tableau"`
+}
+
 // BisleyWebOutput ビズリー Web アウトプット
 type BisleyWebOutput struct {
-	Tableau         [][]*BisleyWebOutputTableauCard `json:"tableau"`
-	AceFoundations  [][]*WebOutputCard              `json:"aceFoundations"`
-	KingFoundations [][]*WebOutputCard              `json:"kingFoundations"`
-	FoundationSize  int                             `json:"foundationSize"`
-	Hint            *BisleyWebOutputHint            `json:"hint,omitempty"`
+	Tableau         [][]*BisleyWebOutputTableauCard   `json:"tableau"`
+	AceFoundations  [][]*WebOutputCard                `json:"aceFoundations"`
+	KingFoundations [][]*WebOutputCard                `json:"kingFoundations"`
+	FoundationSize  int                               `json:"foundationSize"`
+	LegalTargets    map[string]BisleyWebOutputTargets `json:"legalTargets"`
+	Hint            *BisleyWebOutputHint              `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase
 }
@@ -61,6 +67,7 @@ func newBisleyDefaultOutput(msg string) *BisleyWebOutput {
 		AceFoundations:  make([][]*WebOutputCard, 0),
 		KingFoundations: make([][]*WebOutputCard, 0),
 		FoundationSize:  domain.CardValueMax,
+		LegalTargets:    make(map[string]BisleyWebOutputTargets),
 		WebOutputBase:   WebOutputBase{Message: msg},
 	}
 }

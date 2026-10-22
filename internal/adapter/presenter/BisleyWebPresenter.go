@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -49,6 +50,8 @@ func (p *BisleyWebPresenter) Output(b interfaces.BisleyGame, lastErr error) stri
 	resObj.AceFoundations = bisleyFoundationsToOutput(b.GetAceFoundations())
 	resObj.KingFoundations = bisleyFoundationsToOutput(b.GetKingFoundations())
 	resObj.FoundationSize = b.GetFoundationSize()
+
+	resObj.LegalTargets = p.buildLegalTargets(b)
 
 	// メッセージ
 	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
@@ -103,6 +106,7 @@ func (p *BisleyWebPresenter) HintOutput(b interfaces.BisleyGame) string {
 	resObj.Tableau = make([][]*controller.BisleyWebOutputTableauCard, 0)
 	resObj.AceFoundations = make([][]*controller.WebOutputCard, 0)
 	resObj.KingFoundations = make([][]*controller.WebOutputCard, 0)
+	resObj.LegalTargets = p.buildLegalTargets(b)
 
 	if hint != nil {
 		resObj.Hint = &controller.BisleyWebOutputHint{
@@ -116,6 +120,22 @@ func (p *BisleyWebPresenter) HintOutput(b interfaces.BisleyGame) string {
 	}
 
 	return marshalOrError(resObj)
+}
+
+// buildLegalTargets returns legal tableau destinations keyed by source column.
+func (p *BisleyWebPresenter) buildLegalTargets(g interfaces.BisleyGame) map[string]controller.BisleyWebOutputTargets {
+	out := make(map[string]controller.BisleyWebOutputTargets)
+	for col, cards := range g.GetTableau() {
+		if len(cards) == 0 {
+			continue
+		}
+		targets := g.LegalTargets(col)
+		if len(targets) == 0 {
+			continue
+		}
+		out["tableau-"+strconv.Itoa(col)] = controller.BisleyWebOutputTargets{Tableau: intSliceOrEmpty(targets)}
+	}
+	return out
 }
 
 // ActionLogOutput 棋譜をJSON出力

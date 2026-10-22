@@ -34733,6 +34733,16 @@ components:
         foundationSize:
           type: integer
           description: Number of cards in one suit (the combined ascending and descending foundations).
+        legalTargets:
+          type: object
+          description: Legal tableau destinations keyed by source column (tableau-<col>).
+          additionalProperties:
+            type: object
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
         phase:
           type: integer
           description: "0=Playing, 1=GameClear, 2=GameOver"

@@ -32,8 +32,7 @@ import type { BisleyMoveZone, BisleyResponse } from '../types/card';
 import { BisleyPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { bisleyNextRank } from '../utils/bisleyNextRank';
-import { getBisleyStackTargets } from '../utils/bisleyStackTargets';
-import { cardAlt, suitSymbol } from '../utils/cardAlt';
+import { cardAlt } from '../utils/cardAlt';
 import { valueName } from '../utils/cardUtils';
 import { BISLEY_HELP, parseBisleyCommand } from '../utils/cli/commands/bisleyCommands';
 import { formatBisleyState } from '../utils/cli/formatters/bisleyFormatter';
@@ -244,16 +243,11 @@ function BisleyPageContent() {
                 // in a selected column would announce itself as selected.
                 const isSelected = isTop && isSourceSelected('tableau', colIdx);
                 // 局が終わったあとは動かせないので出さない（ボタンも disabled になる）。
-                const targets = isTop && isPlaying && tc2.card ? getBisleyStackTargets(tc2.card) : [];
+                const t2 = state.legalTargets[`tableau-${colIdx}`];
+                const targets = isTop && isPlaying && t2 ? t2.tableau : [];
                 const stackHintId = `bisley-stack-hint-${colIdx.toString()}`;
                 const stackHint =
-                  targets.length > 0
-                    ? t('stackTarget', {
-                        // **同スート限定**。ランクだけ並べると「どの 5 でも置ける」と
-                        // 読めてしまう (規則は同スートで1つ違い)。
-                        cards: targets.map((v) => `${suitSymbol(tc2.card?.design ?? '')} ${valueName(v)}`).join(' / '),
-                      })
-                    : '';
+                  targets.length > 0 ? t('moveTarget', { cols: targets.map((col) => col + 1).join(' / ') }) : '';
                 return (
                   <div
                     key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}

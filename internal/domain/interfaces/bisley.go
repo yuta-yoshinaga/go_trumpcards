@@ -11,6 +11,8 @@ type BisleyGame interface {
 	GetGameEndFlag() bool
 	// Reset ゲームを初期化する
 	Reset()
+	// LegalTargets returns the tableau columns where the top card in fromCol can be moved.
+	LegalTargets(fromCol int) []int
 	// MoveTableauToTableau タブロー間でカードを移動する
 	MoveTableauToTableau(fromCol, toCol int) error
 	// MoveTableauToAceFoundation タブローから昇順（エース側）の基礎札にカードを移動する
