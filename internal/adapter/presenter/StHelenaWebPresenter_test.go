@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
@@ -16,6 +17,7 @@ import (
 )
 
 func setupStHelenaWebMockDefaults(cg *interfaces.MockStHelenaGame) {
+	cg.On("LegalTargets", mock.Anything).Return([]int{}, []int{}).Maybe()
 	cg.On("GetPhase").Return(domain.StHelenaPhasePlaying).Maybe()
 	cg.On("GetMoveCount").Return(0).Maybe()
 	cg.On("GetRedealsRemaining").Return(domain.StHelenaMaxRedeals).Maybe()
@@ -224,4 +226,49 @@ func TestStHelenaWebPresenter_CarriesTheFirstDealRestriction(t *testing.T) {
 		require.NoError(t, json.Unmarshal([]byte(new(StHelenaWebPresenter).Output(cg, nil)), &out))
 		assert.Equal(t, active, out.RestrictionsActive)
 	}
+}
+
+func TestStHelenaWebPresenter_LegalTargetsInAllOutputs(t *testing.T) {
+	for _, outputPath := range []string{"output", "hint output", "hint output without hint"} {
+		t.Run(outputPath, func(t *testing.T) {
+			cg := new(interfaces.MockStHelenaGame)
+			setupStHelenaWebMockDefaults(cg)
+			cg.ExpectedCalls = filterCalls(cg.ExpectedCalls, "LegalTargets")
+			cg.On("LegalTargets", 0).Return([]int(nil), []int{0}).Maybe()
+			cg.On("LegalTargets", 1).Return([]int{2}, []int(nil)).Maybe()
+			for col := 2; col < domain.StHelenaTableauCnt; col++ {
+				cg.On("LegalTargets", col).Return([]int{}, []int{}).Maybe()
+			}
+			switch outputPath {
+			case "hint output":
+				cg.On("GetHint").Return(&domain.StHelenaHint{FromCol: 1, ToZone: "tableau", ToCol: 2}).Maybe()
+			default:
+				cg.On("GetHint").Return((*domain.StHelenaHint)(nil)).Maybe()
+			}
+
+			var jsonOutput string
+			if outputPath == "output" {
+				jsonOutput = new(StHelenaWebPresenter).Output(cg, nil)
+			} else {
+				jsonOutput = new(StHelenaWebPresenter).HintOutput(cg)
+			}
+			var out controller.StHelenaWebOutput
+			require.NoError(t, json.Unmarshal([]byte(jsonOutput), &out))
+			assert.Equal(t, map[string]controller.StHelenaWebOutputTargets{
+				"tableau-0": {Tableau: []int{}, Foundation: []int{0}},
+				"tableau-1": {Tableau: []int{2}, Foundation: []int{}},
+			}, out.LegalTargets)
+			if outputPath == "hint output without hint" {
+				assert.Nil(t, out.Hint)
+			}
+		})
+	}
+
+	t.Run("empty targets serialise as an object", func(t *testing.T) {
+		cg := new(interfaces.MockStHelenaGame)
+		setupStHelenaOutputMock(cg)
+		out := parseStHelenaOutput(t, new(StHelenaWebPresenter).Output(cg, nil))
+		assert.NotNil(t, out.LegalTargets)
+		assert.Empty(t, out.LegalTargets)
+	})
 }

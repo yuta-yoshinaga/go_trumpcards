@@ -38,6 +38,12 @@ type StHelenaWebOutputHint struct {
 	Redeal  bool   `json:"redeal"`
 }
 
+// StHelenaWebOutputTargets lists legal destinations for one tableau source.
+type StHelenaWebOutputTargets struct {
+	Tableau    []int `json:"tableau"`
+	Foundation []int `json:"foundation"`
+}
+
 // StHelenaWebOutput セント・ヘレナ・ソリティアの Web アウトプット。
 type StHelenaWebOutput struct {
 	Tableau          [][]*StHelenaWebOutputTableauCard `json:"tableau"`
@@ -45,8 +51,9 @@ type StHelenaWebOutput struct {
 	RedealsRemaining int                               `json:"redealsRemaining"`
 	// RestrictionsActive 初回の配りの送り先制限が効いているか。**UI はこれを見て
 	// 送れない組札を無効化する。**見ないと、押した瞬間にサーバが必ず拒む。
-	RestrictionsActive bool                   `json:"restrictionsActive"`
-	Hint               *StHelenaWebOutputHint `json:"hint,omitempty"`
+	RestrictionsActive bool                                `json:"restrictionsActive"`
+	LegalTargets       map[string]StHelenaWebOutputTargets `json:"legalTargets"`
+	Hint               *StHelenaWebOutputHint              `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase
 }
@@ -63,6 +70,7 @@ func newStHelenaDefaultOutput(msg string) *StHelenaWebOutput {
 	return &StHelenaWebOutput{
 		Tableau:       make([][]*StHelenaWebOutputTableauCard, 0),
 		Foundation:    make([][]*WebOutputCard, 0),
+		LegalTargets:  make(map[string]StHelenaWebOutputTargets),
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }

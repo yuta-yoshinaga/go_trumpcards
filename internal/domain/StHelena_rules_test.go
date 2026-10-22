@@ -34,6 +34,27 @@ func TestStHelena_TableauIgnoresSuit(t *testing.T) {
 	assert.Len(t, cr.GetTableau()[1], 0)
 }
 
+func TestStHelena_LegalTargetsReuseMoveRules(t *testing.T) {
+	cr := setupPlayingStHelena()
+	clearStHelenaTableau(cr)
+	clearStHelenaFoundation(cr)
+	var tb [domain.StHelenaTableauCnt][]*domain.StHelenaTableauCard
+	tb[0] = []*domain.StHelenaTableauCard{makeStHelenaTableauCard(domain.CardDesignSpade, 2)}
+	tb[1] = []*domain.StHelenaTableauCard{makeStHelenaTableauCard(domain.CardDesignHeart, 3)}
+	tb[2] = []*domain.StHelenaTableauCard{makeStHelenaTableauCard(domain.CardDesignSpade, 1)}
+	cr.SetTableau(tb)
+	var fnd [domain.StHelenaFoundationCnt][]*domain.Card
+	fnd[0] = []*domain.Card{makeStHelenaCard(domain.CardDesignSpade, 1)}
+	cr.SetFoundation(fnd)
+	tableau, foundation := cr.LegalTargets(0)
+	assert.Equal(t, []int{1, 2}, tableau)
+	assert.Empty(t, foundation) // Reachable rank-invalid foundation is excluded.
+	assert.Error(t, cr.MoveTableauToFoundation(0, 0))
+	invalidTableau, invalidFoundation := cr.LegalTargets(-1)
+	assert.Empty(t, invalidTableau)
+	assert.Empty(t, invalidFoundation)
+}
+
 // **K と A は繋がらない。**クレセントは A↔K の折り返しを許すので、その分岐を
 // 残すと置けないはずの手が置ける。
 func TestStHelena_KingAndAceDoNotWrap(t *testing.T) {

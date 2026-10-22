@@ -82389,6 +82389,20 @@ components:
         restrictionsActive:
           type: boolean
           description: Whether the first-deal reachability restriction is still in force
+        legalTargets:
+          type: object
+          description: Legal destinations keyed by tableau source column (tableau-<col>).
+          additionalProperties:
+            type: object
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         phase:
           type: integer
           description: Current game phase (0=Playing, 1=GameClear, 2=GameOver)

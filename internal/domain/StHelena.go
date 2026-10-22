@@ -213,6 +213,26 @@ func (cr *StHelena) MoveTableauToTableau(fromCol, toCol int) error {
 	return nil
 }
 
+// LegalTargets returns legal tableau and foundation destinations for the top card in fromCol.
+func (cr *StHelena) LegalTargets(fromCol int) (tableau, foundation []int) {
+	tableau, foundation = []int{}, []int{}
+	if cr.phase != StHelenaPhasePlaying || fromCol < 0 || fromCol >= StHelenaTableauCnt || len(cr.tableau[fromCol]) == 0 {
+		return tableau, foundation
+	}
+	card := cr.tableau[fromCol][len(cr.tableau[fromCol])-1].Card
+	for col := range StHelenaTableauCnt {
+		if col != fromCol && cr.canPlaceOnTableau(card, col) {
+			tableau = append(tableau, col)
+		}
+	}
+	for f := range StHelenaFoundationCnt {
+		if cr.columnCanReach(fromCol, f) && cr.canPlaceOnFoundation(card, f) {
+			foundation = append(foundation, f)
+		}
+	}
+	return tableau, foundation
+}
+
 // stHelenaColumnCanReach は初回の配りの間、列 fromCol が組札 fIdx へ送れるかを返す。
 //
 // **上 4 列は K 段 (降順、4..7) だけ、下 4 列は A 段 (昇順、0..3) だけ。**
