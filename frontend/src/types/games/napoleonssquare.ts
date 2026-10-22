@@ -31,6 +31,10 @@ export interface NapoleonsSquareResponse extends BaseGameResponse {
   waste: Card[];
   /** Eight foundations, two per suit, each seeded with its Ace at deal time. */
   foundation: Card[][];
+  /** Legal destinations keyed by tableau source or waste. */
+  legalTargets: Record<string, { tableau: number[]; foundation: number[] }>;
+  /** Movable run start indices for each tableau column. */
+  runStarts: number[][];
   phase: number;
   moveCount: number;
   canUndo: boolean;

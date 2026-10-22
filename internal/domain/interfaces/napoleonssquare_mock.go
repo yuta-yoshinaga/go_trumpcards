@@ -114,6 +114,38 @@ func (_m *MockNapoleonsSquareGame) GetFoundation() [domain.NapoleonsSquareFounda
 	return ret.Get(0).([domain.NapoleonsSquareFoundationCnt][]*domain.Card)
 }
 
+func (_m *MockNapoleonsSquareGame) LegalTargetsFrom(col, cardIndex int) ([]int, []int) {
+	ret := _m.Called(col, cardIndex)
+	var tableau, foundation []int
+	if ret.Get(0) != nil {
+		tableau = ret.Get(0).([]int)
+	}
+	if ret.Get(1) != nil {
+		foundation = ret.Get(1).([]int)
+	}
+	return tableau, foundation
+}
+
+func (_m *MockNapoleonsSquareGame) WasteLegalTargets() ([]int, []int) {
+	ret := _m.Called()
+	var tableau, foundation []int
+	if ret.Get(0) != nil {
+		tableau = ret.Get(0).([]int)
+	}
+	if ret.Get(1) != nil {
+		foundation = ret.Get(1).([]int)
+	}
+	return tableau, foundation
+}
+
+func (_m *MockNapoleonsSquareGame) RunStarts(col int) []int {
+	ret := _m.Called(col)
+	if ret.Get(0) == nil {
+		return nil
+	}
+	return ret.Get(0).([]int)
+}
+
 func (_m *MockNapoleonsSquareGame) AllFaceUp() bool {
 	ret := _m.Called()
 	return ret.Bool(0)
