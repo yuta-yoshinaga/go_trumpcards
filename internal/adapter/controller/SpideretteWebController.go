@@ -35,7 +35,6 @@ type SpideretteWebOutputHint struct {
 	ToCol     int `json:"toCol"`
 }
 
-// SpideretteWebOutput スパイダレットWebアウトプット
 // SpideretteWebOutputScoring はスコアの決まり (開始点 / 1手あたりの減点 / スート完成の加点)。
 type SpideretteWebOutputScoring struct {
 	Start       int `json:"start"`
@@ -43,6 +42,7 @@ type SpideretteWebOutputScoring struct {
 	SuitBonus   int `json:"suitBonus"`
 }
 
+// SpideretteWebOutput is the JSON response for Spiderette web commands.
 type SpideretteWebOutput struct {
 	Tableau        [][]*SpideretteWebOutputTableauCard `json:"tableau"`
 	StockCount     int                                 `json:"stockCount"`
@@ -50,8 +50,9 @@ type SpideretteWebOutput struct {
 	Score          int                                 `json:"score"`
 	// Scoring はスコアの決まり (#5593)。数字が動く理由を説明するのに要る。
 	// 訳文に焼き込むと、計算を変えたとき案内だけが古くなる。
-	Scoring SpideretteWebOutputScoring `json:"scoring"`
-	Hint    *SpideretteWebOutputHint   `json:"hint,omitempty"`
+	Scoring   SpideretteWebOutputScoring `json:"scoring"`
+	Hint      *SpideretteWebOutputHint   `json:"hint,omitempty"`
+	RunStarts [][]int                    `json:"runStarts"`
 	SolitaireWebOutputBase
 	WebOutputBase
 }
@@ -68,6 +69,7 @@ var NewSpideretteWebController, NewSpideretteWebControllerWithProvider = webCont
 func newSpideretteDefaultOutput(msg string) *SpideretteWebOutput {
 	return &SpideretteWebOutput{
 		Tableau:       make([][]*SpideretteWebOutputTableauCard, 0),
+		RunStarts:     make([][]int, 0),
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }

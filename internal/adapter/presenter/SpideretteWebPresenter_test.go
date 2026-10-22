@@ -35,6 +35,9 @@ func setupSpideretteWebMockDefaults(sg *interfaces.MockSpideretteGame) {
 		}
 	}
 	sg.On("GetTableau").Return(tableau).Maybe()
+	for col := range domain.SpideretteTableauCnt {
+		sg.On("RunStarts", col).Return([]int{}).Maybe()
+	}
 }
 
 func parseSpideretteOutput(t *testing.T, jsonStr string) *controller.SpideretteWebOutput {
@@ -210,6 +213,35 @@ func TestSpideretteWebPresenter_HintOutput(t *testing.T) {
 		assert.Equal(t, 3, result.Hint.ToCol)
 		assert.Equal(t, "spiderette.hintAvailable", result.MessageCode)
 	})
+}
+
+func TestSpideretteWebPresenter_RunStartsArePresentOnEveryOutput(t *testing.T) {
+	for _, output := range []struct {
+		name string
+		call func(*SpideretteWebPresenter, interfaces.SpideretteGame) string
+	}{
+		{name: "output", call: func(p *SpideretteWebPresenter, g interfaces.SpideretteGame) string { return p.Output(g, nil) }},
+		{name: "hint without a move", call: (*SpideretteWebPresenter).HintOutput},
+	} {
+		t.Run(output.name, func(t *testing.T) {
+			g := new(interfaces.MockSpideretteGame)
+			setupSpideretteWebMockDefaults(g)
+			g.On("GetHint").Return((*domain.SpideretteHint)(nil)).Maybe()
+			g.ExpectedCalls = filterCalls(g.ExpectedCalls, "RunStarts")
+			g.On("RunStarts", 0).Return([]int{2})
+			for col := 1; col < domain.SpideretteTableauCnt; col++ {
+				g.On("RunStarts", col).Return([]int(nil))
+			}
+			var got controller.SpideretteWebOutput
+			require.NoError(t, json.Unmarshal([]byte(output.call(new(SpideretteWebPresenter), g)), &got))
+			require.Len(t, got.RunStarts, domain.SpideretteTableauCnt)
+			assert.Equal(t, []int{2}, got.RunStarts[0])
+			for _, starts := range got.RunStarts[1:] {
+				assert.NotNil(t, starts, "nil starts must encode as []")
+				assert.Empty(t, starts)
+			}
+		})
+	}
 }
 
 func TestSpideretteWebPresenter_ActionLogOutput(t *testing.T) {

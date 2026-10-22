@@ -19,6 +19,8 @@ export interface SpideretteTableauCard {
 /** Full Spiderette Solitaire game state returned from the API. */
 export interface SpideretteResponse extends BaseGameResponse {
   tableau: SpideretteTableauCard[][];
+  /** Movable sequence start indices for each tableau column. */
+  runStarts: number[][];
   stockCount: number;
   completedSuits: number;
   score: number;
