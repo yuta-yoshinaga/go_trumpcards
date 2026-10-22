@@ -28,7 +28,6 @@ import { SimpleSimonPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { hintCheckboxItem } from '../utils/settingsItems';
-import { simpleSimonAutoMoveTarget } from '../utils/simpleSimonAutoMoveTarget';
 
 /** Simple Simon tutorial step definitions. */
 const SS_TUTORIAL_STEPS: TutorialStep[] = [
@@ -123,7 +122,8 @@ function SimpleSimonPageContent() {
   const autoMoveCard = useCallback(
     (currentState: SimpleSimonResponse, col: number, idx: number) => {
       if (!isPlayingForKbd || !currentState.runStarts[col].includes(idx)) return;
-      const toCol = simpleSimonAutoMoveTarget(currentState.columns, col, idx);
+      const targets = currentState.legalTargets[`tableau-${col}-${idx}`];
+      const toCol = targets ? targets.tableau[0] : null;
       if (toCol === null) {
         setSelected(null);
         setAutoMoveNotice(t('noAutoMove'));

@@ -74096,6 +74096,20 @@ components:
             type: array
             items:
               type: integer
+        legalTargets:
+          type: object
+          description: "Auto-move destinations keyed by tableau-<column>-<cardIndex> (one key per run start); tableau is ordered by auto-move priority and foundation is always empty."
+          additionalProperties:
+            type: object
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         hint:
           type: object
           nullable: true

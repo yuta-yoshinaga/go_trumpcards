@@ -119,6 +119,39 @@ func (g *SimpleSimon) RunStarts(col int) []int {
 	return starts
 }
 
+// AutoMoveTargets returns legal tableau destinations ordered by auto-move priority.
+// Same-suit links precede other rank links, which precede eligible empty columns.
+func (g *SimpleSimon) AutoMoveTargets(fromCol, cardIndex int) []int {
+	if fromCol < 0 || fromCol >= SimpleSimonColCnt || cardIndex < 0 || cardIndex >= len(g.columns[fromCol]) {
+		return []int{}
+	}
+	moving := g.columns[fromCol][cardIndex:]
+	if !simpleSimonIsRun(moving) {
+		return []int{}
+	}
+	var sameSuit, rankOnly, empty []int
+	for col := 0; col < SimpleSimonColCnt; col++ {
+		if col == fromCol || !g.canPlace(moving[0], col) {
+			continue
+		}
+		pile := g.columns[col]
+		if len(pile) == 0 {
+			if cardIndex > 0 {
+				empty = append(empty, col)
+			}
+		} else if pile[len(pile)-1].GetDesign() == moving[0].GetDesign() {
+			sameSuit = append(sameSuit, col)
+		} else {
+			rankOnly = append(rankOnly, col)
+		}
+	}
+	result := make([]int, 0, len(sameSuit)+len(rankOnly)+len(empty))
+	result = append(result, sameSuit...)
+	result = append(result, rankOnly...)
+	result = append(result, empty...)
+	return result
+}
+
 func simpleSimonIsRun(cards []*Card) bool {
 	for i := 1; i < len(cards); i++ {
 		if cards[i].GetDesign() != cards[i-1].GetDesign() || cards[i].GetValue() != cards[i-1].GetValue()-1 {

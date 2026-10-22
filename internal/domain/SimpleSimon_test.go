@@ -293,3 +293,40 @@ func TestSimpleSimonRunStarts(t *testing.T) {
 	assert.Equal(t, 1, SimpleSimonMovableFrom([]*Card{card(CardDesignHeart, 8), card(CardDesignSpade, 7), card(CardDesignSpade, 6)}))
 	assert.Equal(t, 1, SimpleSimonMovableFrom([]*Card{card(CardDesignSpade, 5), card(CardDesignSpade, 5)}))
 }
+
+func TestSimpleSimonAutoMoveTargets(t *testing.T) {
+	t.Run("priority tiers and lowest index within tier", func(t *testing.T) {
+		g := NewDefaultSimpleSimon()
+		ssClear(g)
+		g.columns[0] = []*Card{simonCard(CardDesignClover, 9), simonCard(CardDesignSpade, 7)}
+		g.columns[1] = []*Card{simonCard(CardDesignHeart, 8)}
+		g.columns[2] = []*Card{simonCard(CardDesignSpade, 8)}
+		g.columns[3] = []*Card{simonCard(CardDesignDiamond, 8)}
+		g.columns[4] = []*Card{simonCard(CardDesignSpade, 8)}
+		for i := 5; i < SimpleSimonColCnt; i++ {
+			g.columns[i] = []*Card{simonCard(CardDesignHeart, 2)}
+		}
+		assert.Equal(t, []int{2, 4, 1, 3}, g.AutoMoveTargets(0, 1))
+	})
+	t.Run("empty columns only when cardIndex is positive", func(t *testing.T) {
+		g := NewDefaultSimpleSimon()
+		ssClear(g)
+		g.columns[0] = []*Card{simonCard(CardDesignSpade, 7)}
+		assert.Empty(t, g.AutoMoveTargets(0, 0))
+		g.columns[0] = []*Card{simonCard(CardDesignSpade, 9), simonCard(CardDesignSpade, 7)}
+		assert.Equal(t, []int{1, 2, 3, 4, 5, 6, 7, 8, 9}, g.AutoMoveTargets(0, 1))
+	})
+	t.Run("source excluded and invalid run returns empty", func(t *testing.T) {
+		g := NewDefaultSimpleSimon()
+		ssClear(g)
+		g.columns[0] = []*Card{simonCard(CardDesignSpade, 8), simonCard(CardDesignSpade, 7)}
+		for i := 1; i < SimpleSimonColCnt; i++ {
+			g.columns[i] = []*Card{simonCard(CardDesignHeart, 2)}
+		}
+		assert.Empty(t, g.AutoMoveTargets(0, 1))
+		g.columns[0] = []*Card{simonCard(CardDesignSpade, 9), simonCard(CardDesignSpade, 7)}
+		assert.Empty(t, g.AutoMoveTargets(0, 0))
+		assert.Empty(t, g.AutoMoveTargets(0, 4))
+		assert.Empty(t, g.AutoMoveTargets(-1, 0))
+	})
+}

@@ -89,9 +89,23 @@ func (p *SimpleSimonWebPresenter) fillBoard(resObj *controller.SimpleSimonWebOut
 	cols := g.GetColumns()
 	resObj.Columns = pilesToOutput(cols[:])
 	resObj.RunStarts = make([][]int, len(cols))
+	resObj.LegalTargets = p.buildLegalTargets(g)
 	for col := range cols {
 		resObj.RunStarts[col] = intSliceOrEmpty(g.RunStarts(col))
 	}
+}
+
+func (p *SimpleSimonWebPresenter) buildLegalTargets(g interfaces.SimpleSimonGame) map[string]controller.SimpleSimonWebOutputTargets {
+	targets := make(map[string]controller.SimpleSimonWebOutputTargets)
+	for col := 0; col < domain.SimpleSimonColCnt; col++ {
+		for _, idx := range g.RunStarts(col) {
+			tableau := intSliceOrEmpty(g.AutoMoveTargets(col, idx))
+			if len(tableau) > 0 {
+				targets[fmt.Sprintf("tableau-%d-%d", col, idx)] = controller.SimpleSimonWebOutputTargets{Tableau: tableau, Foundation: []int{}}
+			}
+		}
+	}
+	return targets
 }
 
 func (p *SimpleSimonWebPresenter) buildBaseOutput(g interfaces.SimpleSimonGame) *controller.SimpleSimonWebOutput {
