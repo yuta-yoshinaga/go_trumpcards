@@ -57,6 +57,7 @@ func TestWaspWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 0, result.Phase)
 		assert.Equal(t, 3, result.StockCount)
 		assert.Equal(t, "wasp.playing", result.MessageCode)
+		assert.Empty(t, result.LegalTargets)
 	})
 
 	t.Run("stalemate", func(t *testing.T) {
@@ -162,6 +163,7 @@ func TestWaspWebPresenter_HintOutput(t *testing.T) {
 		assert.Equal(t, 3, result.Hint.ToCol)
 		assert.True(t, result.Hint.ExposesFaceDown, "HintOutput must forward ExposesFaceDown")
 		assert.Equal(t, "wasp.hintAvailable", result.MessageCode)
+		assert.Empty(t, result.LegalTargets)
 	})
 
 	t.Run("no hint", func(t *testing.T) {
@@ -173,7 +175,36 @@ func TestWaspWebPresenter_HintOutput(t *testing.T) {
 		result := parseWaspOutput(t, p.HintOutput(sg))
 		assert.Nil(t, result.Hint)
 		assert.Equal(t, "wasp.noHint", result.MessageCode)
+		assert.NotNil(t, result.LegalTargets)
+		assert.Empty(t, result.LegalTargets)
 	})
+}
+
+func TestWaspWebPresenter_LegalTargetsHaveEmptyFoundation(t *testing.T) {
+	for _, output := range []struct {
+		name string
+		call func(*WaspWebPresenter, interfaces.WaspGame) string
+	}{
+		{name: "output", call: func(p *WaspWebPresenter, g interfaces.WaspGame) string { return p.Output(g, nil) }},
+		{name: "hint output without hint", call: (*WaspWebPresenter).HintOutput},
+	} {
+		t.Run(output.name, func(t *testing.T) {
+			g := new(interfaces.MockWaspGame)
+			setupWaspWebMockDefaults(g)
+			var tableau [domain.WaspTableauCnt][]*domain.KlondikeTableauCard
+			tableau[0] = []*domain.KlondikeTableauCard{{Card: domain.NewCard(domain.CardDesignSpade, 5, false), FaceUp: true}}
+			tableau[1] = []*domain.KlondikeTableauCard{{Card: domain.NewCard(domain.CardDesignSpade, 6, false), FaceUp: true}}
+			tableau[2] = []*domain.KlondikeTableauCard{{Card: domain.NewCard(domain.CardDesignHeart, 3, false), FaceUp: false}}
+			g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetTableau")
+			g.On("GetTableau").Return(tableau).Maybe()
+			g.On("GetHint").Return((*domain.WaspHint)(nil)).Maybe()
+			g.On("LegalTargetsFrom", 0, 0).Return([]int{1}).Maybe()
+			g.On("LegalTargetsFrom", 1, 0).Return([]int(nil)).Maybe()
+			result := parseWaspOutput(t, output.call(new(WaspWebPresenter), g))
+			assert.Equal(t, controller.WaspWebOutputTargets{Tableau: []int{1}, Foundation: []int{}}, result.LegalTargets["tableau-0-0"])
+			assert.NotContains(t, result.LegalTargets, "tableau-1-0")
+		})
+	}
 }
 
 func TestWaspWebPresenter_LegalMovesOutput(t *testing.T) {

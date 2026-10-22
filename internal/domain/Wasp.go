@@ -391,6 +391,29 @@ func (s *Wasp) GetStockCount() int { return len(s.stock) }
 // GetTableau タブロー取得
 func (s *Wasp) GetTableau() [WaspTableauCnt][]*KlondikeTableauCard { return s.tableau }
 
+// LegalTargetsFrom returns non-empty tableau columns that accept the face-up
+// card at cardIndex and its suffix.
+func (s *Wasp) LegalTargetsFrom(fromCol, cardIndex int) []int {
+	if fromCol < 0 || fromCol >= WaspTableauCnt || cardIndex < 0 || cardIndex >= len(s.tableau[fromCol]) || !s.tableau[fromCol][cardIndex].FaceUp {
+		return nil
+	}
+	card := s.tableau[fromCol][cardIndex].Card
+	if card == nil {
+		return nil
+	}
+	var result []int
+	for col := range WaspTableauCnt {
+		if col == fromCol || len(s.tableau[col]) == 0 {
+			continue
+		}
+		top := s.tableau[col][len(s.tableau[col])-1]
+		if top.FaceUp && top.Card != nil && s.canPlaceOnTableau(card, col) {
+			result = append(result, col)
+		}
+	}
+	return result
+}
+
 // GetCompletedSuits 完成スート数取得
 func (s *Wasp) GetCompletedSuits() int { return s.completedSuits }
 

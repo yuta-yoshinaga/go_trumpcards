@@ -40,7 +40,6 @@ import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { isTableauAllFaceUp } from '../utils/solitaireUtils';
-import { waspLegalTargets } from '../utils/waspUtils';
 
 const noop = () => {};
 
@@ -303,14 +302,13 @@ function WaspPageContent() {
   const [emptyDealAttemptKey, setEmptyDealAttemptKey] = useState(0);
   const [dealBlockAnnouncement, setDealBlockAnnouncement] = useState('');
   const hasEmptyColumn = useMemo(() => state?.tableau.some((col) => col.length === 0) ?? false, [state?.tableau]);
-  // Columns the selected card may legally move onto (same suit, one rank higher).
-  // **選ぶ前に行き先が見える (#4454)。** hover / フォーカス中の札にも、選択後と
-  // まったく同じ計算を当てる ── 判定を二重に持たないので食い違わない。
+  // **選ぶ前に行き先が見える (#4454)。** 行き先はサーバーの判定を使う。
   const preview = useDestinationPreview<WaspMoveZone>(selectedSource);
-  const legalTargets = useMemo(
-    () => (preview.source && state ? waspLegalTargets(state.tableau, preview.source) : new Set<number>()),
-    [preview.source, state],
-  );
+  const legalTargets = useMemo(() => {
+    if (!preview.source || !state) return new Set<number>();
+    const targets = state.legalTargets[`tableau-${preview.source.col}-${preview.source.cardIndex}`];
+    return new Set(targets ? targets.tableau : []);
+  }, [preview.source, state]);
   const dealBlockedByEmpty = hasEmptyColumn && (state?.stockCount ?? 0) > 0;
   // ドメインの AllFaceUp は**ストックが空であること**も要求する (Wasp.go)。
   // 表向きだけで判定すると、山札が残った盤面でボタンが押せてしまい、押すと
