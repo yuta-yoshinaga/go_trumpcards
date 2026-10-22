@@ -457,3 +457,18 @@ func TestOsmosis_IsStalemate(t *testing.T) {
 		assert.False(t, o.IsStalemate())
 	})
 }
+
+func TestOsmosisLegalTargets(t *testing.T) {
+	o := setupPlayingOsmosis()
+	o.SetBaseRank(8)
+	o.SetFoundation([domain.OsmosisFoundationCnt][]*domain.Card{{osCard(domain.CardDesignSpade, 8), osCard(domain.CardDesignSpade, 9)}, {osCard(domain.CardDesignHeart, 8)}})
+	var reserve [domain.OsmosisReserveCnt][]*domain.Card
+	reserve[0] = []*domain.Card{osCard(domain.CardDesignHeart, 9)}
+	o.SetReserve(reserve)
+	o.SetWaste([]*domain.Card{osCard(domain.CardDesignSpade, 9)})
+	assert.Equal(t, []int{1}, o.LegalTargets("reserve", 0))
+	assert.Equal(t, []int{0}, o.LegalTargets("waste", 0))
+	assert.Empty(t, o.LegalTargets("reserve", -1))
+	assert.Empty(t, o.LegalTargets("reserve", domain.OsmosisReserveCnt))
+	assert.Empty(t, o.LegalTargets("tableau", 0))
+}

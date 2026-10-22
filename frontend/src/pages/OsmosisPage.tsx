@@ -36,7 +36,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { OSMOSIS_HELP, parseOsmosisCommand } from '../utils/cli/commands/osmosisCommands';
 import { formatOsmosisState } from '../utils/cli/formatters/osmosisFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { osmosisAllowedRanks, osmosisCanPlace } from '../utils/osmosisRules';
+import { osmosisAllowedRanks } from '../utils/osmosisRules';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Card rank value (1–13) → short display label. */
@@ -242,8 +242,13 @@ function OsmosisPageContent() {
   };
   // The card currently held via click selection or an in-flight drag; both drive
   // the "cannot place here" foundation-row highlight.
-  const selectedCard = topCardOf(selected);
-  const draggedCard = topCardOf(dnd.dragSource);
+  const targetsFor = (zone: OsmosisMoveZone | null) => {
+    if (!zone) return undefined;
+    if (zone.zone === 'waste') return state.legalTargets.waste;
+    return state.legalTargets[`reserve-${zone.col}`];
+  };
+  const selectedTargets = targetsFor(selected);
+  const draggedTargets = targetsFor(dnd.dragSource);
 
   const foundationBlock = (
     <div className={isLargeDesktop ? 'flex-1 min-w-0' : ''}>
@@ -255,12 +260,11 @@ function OsmosisPageContent() {
           const allowed = osmosisAllowedRanks(state.foundation, state.baseRank, i);
           // Click selection flags every invalid row; a drag only warns on the
           // row currently hovered (the drop target).
-          const canPlace = selectedCard != null && osmosisCanPlace(state.foundation, state.baseRank, i, selectedCard);
-          const clickBlocked = selectedCard != null && !canPlace;
+          const canPlace = !!selectedTargets && selectedTargets.foundation.includes(i);
+          const clickBlocked = selected != null && topCardOf(selected) != null && !canPlace;
           const clickAllowed = canPlace;
           const isDropHover = dnd.isDropTarget(fZone);
-          const dragBlocked =
-            isDropHover && draggedCard != null && !osmosisCanPlace(state.foundation, state.baseRank, i, draggedCard);
+          const dragBlocked = isDropHover && !!draggedTargets && !draggedTargets.foundation.includes(i);
           const blocked = clickBlocked || dragBlocked;
           return (
             <DropZone

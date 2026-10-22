@@ -13,6 +13,7 @@ function makeState(overrides: Partial<OsmosisResponse> = {}): OsmosisResponse {
     moveCount: 0,
     canUndo: false,
     isStalemate: false,
+    legalTargets: {},
     message: '',
     ...overrides,
   };

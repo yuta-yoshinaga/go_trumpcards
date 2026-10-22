@@ -18,6 +18,7 @@ const card = (design: CardDesign, value: number): Card => ({ design, value });
 
 const playingState: OsmosisResponse = {
   isStalemate: false,
+  legalTargets: { 'reserve-0': { tableau: [], foundation: [0] } },
   reserve: [[card('SPADE', 2)], [card('HEART', 9)], [card('CLOVER', 4)], [card('DIAMOND', 10)]],
   stockCount: 34,
   waste: [card('HEART', 4)],
@@ -317,6 +318,7 @@ describe('OsmosisPage', () => {
 
     mockExec.mockResolvedValueOnce({
       ...playingState,
+      legalTargets: {},
       reserve: [],
       waste: [],
       foundation: [],
@@ -463,6 +465,7 @@ describe('OsmosisPage', () => {
   it('includes the reserve top card in each reserve button name', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
+      legalTargets: {},
       reserve: [
         [card('SPADE', 2), card('DIAMOND', 7)],
         [card('HEART', 9), card('CLOVER', 4)],
@@ -518,6 +521,7 @@ describe('OsmosisPage', () => {
   it('renders an empty reserve slot while keeping cards in other reserve columns', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
+      legalTargets: {},
       reserve: [[], [card('HEART', 9)], ...playingState.reserve.slice(2)],
     });
     renderWithProviders(<OsmosisPage />);
@@ -531,6 +535,7 @@ describe('OsmosisPage', () => {
   it('selects the same reserve top card that its name announces', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
+      legalTargets: { 'reserve-0': { tableau: [], foundation: [0] } },
       reserve: [[card('SPADE', 2)], [card('SPADE', 3)], ...playingState.reserve.slice(2)],
     });
     renderWithProviders(<OsmosisPage />);
@@ -625,6 +630,10 @@ describe('OsmosisPage', () => {
     });
 
     it('marks a foundation row that cannot accept the dragged card with an error border', async () => {
+      mockExec.mockResolvedValue({
+        ...playingState,
+        legalTargets: { 'reserve-1': { tableau: [], foundation: [1] } },
+      });
       renderWithProviders(<OsmosisPage />);
       await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
       // Reserve col 1 top is ♥9 — wrong suit for the ♠ base row and not the base rank.
@@ -642,10 +651,29 @@ describe('OsmosisPage', () => {
 // #5625: 置けない段は赤枠と `title` だけで示していた。`title` は支援技術が
 // 読み上げる保証が無いので、キーボード/スクリーンリーダー利用者には**理由が
 // どこにも無い**状態だった。
+describe('OsmosisPage server legal targets', () => {
+  it('follows server targets when they disagree with the former client rule', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      legalTargets: { 'reserve-1': { tableau: [], foundation: [2] } },
+    });
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    fireEvent.click(screen.getByRole('button', { name: /リザーブ 1/ }));
+    const foundation2 = screen.getByRole('button', { name: /^組札 2/ });
+    await waitFor(() => expect(foundation2).toHaveAccessibleName('組札 2、置ける'));
+    fireEvent.click(foundation2);
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'reserve', col: 1 }, { zone: 'foundation', col: 2 }),
+    );
+  });
+});
+
 describe('OsmosisPage blocked foundation rows', () => {
   it('highlights only rows that accept the selected card and updates on selection change', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
+      legalTargets: { 'reserve-0': { tableau: [], foundation: [1] }, waste: { tableau: [], foundation: [0] } },
       reserve: [[card('HEART', 5)], ...playingState.reserve.slice(1)],
       waste: [card('SPADE', 7)],
     });

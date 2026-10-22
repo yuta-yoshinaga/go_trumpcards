@@ -21,6 +21,7 @@ func (p *OsmosisWebPresenter) Output(o interfaces.OsmosisGame, lastErr error) st
 	stalemate := resObj.IsStalemate
 
 	p.fillBoard(resObj, o)
+	resObj.LegalTargets = p.buildLegalTargets(o)
 
 	// メッセージ
 	// **受動ヒントは Output() でも埋める。**盤面のリングなど `state.hint` を読む
@@ -69,6 +70,7 @@ func (p *OsmosisWebPresenter) Output(o interfaces.OsmosisGame, lastErr error) st
 func (p *OsmosisWebPresenter) HintOutput(o interfaces.OsmosisGame) string {
 	resObj := p.buildBaseOutput(o)
 	p.fillBoard(resObj, o)
+	resObj.LegalTargets = p.buildLegalTargets(o)
 
 	hint := o.GetHint()
 	if hint != nil {
@@ -138,4 +140,25 @@ func (p *OsmosisWebPresenter) buildBaseOutput(o interfaces.OsmosisGame) *control
 		CanUndo:     o.CanUndo(),
 		IsStalemate: o.IsStalemate(),
 	}
+}
+
+// buildLegalTargets builds foundation destinations for each selectable source.
+func (p *OsmosisWebPresenter) buildLegalTargets(o interfaces.OsmosisGame) map[string]controller.OsmosisWebOutputTargets {
+	result := make(map[string]controller.OsmosisWebOutputTargets)
+	for i, pile := range o.GetReserve() {
+		if len(pile) == 0 {
+			continue
+		}
+		foundation := intSliceOrEmpty(o.LegalTargets("reserve", i))
+		if len(foundation) > 0 {
+			result[fmt.Sprintf("reserve-%d", i)] = controller.OsmosisWebOutputTargets{Tableau: []int{}, Foundation: foundation}
+		}
+	}
+	if waste := o.GetWaste(); len(waste) > 0 {
+		foundation := intSliceOrEmpty(o.LegalTargets("waste", 0))
+		if len(foundation) > 0 {
+			result["waste"] = controller.OsmosisWebOutputTargets{Tableau: []int{}, Foundation: foundation}
+		}
+	}
+	return result
 }
