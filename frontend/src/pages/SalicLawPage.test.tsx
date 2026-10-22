@@ -40,6 +40,10 @@ function makeTableau(piles: Card[][]): Card[][] {
 // **どの開いた列も底が K。**クローン元の Congress は 1 枚ずつ配るので K の無い
 // 列があり得たが、Salic Law でその盤は出ない。列2 は K だけ ＝ 唯一の置き場所。
 const playingState: SalicLawResponse = {
+  legalTargets: {
+    'tableau-0': { tableau: [2], foundation: [] },
+    'tableau-1': { tableau: [0, 2], foundation: [0, 1, 2] },
+  },
   tableau: makeTableau([
     [card('SPADE', 13), card('SPADE', 9)],
     [card('HEART', 13), card('CLOVER', 1)],
@@ -143,6 +147,7 @@ describe('SalicLawPage', () => {
   it('announces legal destinations and describes candidates after selecting a source, then clears on deselection', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
+      legalTargets: { ...playingState.legalTargets, 'tableau-0': { tableau: [2], foundation: [0] } },
       foundation: [[card('HEART', 8)], ...playingState.foundation.slice(1)],
     });
     renderWithProviders(<SalicLawPage />);
@@ -172,10 +177,43 @@ describe('SalicLawPage', () => {
         [card('HEART', 13), card('CLOVER', 2)],
         [card('DIAMOND', 13), card('DIAMOND', 5)],
       ]),
+      legalTargets: { 'tableau-1': playingState.legalTargets['tableau-1'] },
     });
     renderWithProviders(<SalicLawPage />);
     fireEvent.click(await screen.findByRole('button', { name: /♠ 9/ }));
     expect(screen.getByTestId('sl-destination-live')).toHaveTextContent('選択した札に合法な移動先はありません');
+  });
+
+  it('follows server supplied destinations when they disagree with the client rule', async () => {
+    const serverState = {
+      ...playingState,
+      legalTargets: { ...playingState.legalTargets, 'tableau-0': { tableau: [], foundation: [] } },
+    };
+    mockExec.mockResolvedValue(serverState);
+    const { unmount } = renderWithProviders(<SalicLawPage />);
+    fireEvent.click(await screen.findByRole('button', { name: /♠ 9/ }));
+    const bareKing = screen.getByTestId('sl-bare-king-2');
+    expect(document.getElementById(bareKing.getAttribute('aria-describedby') ?? '')).toHaveTextContent(
+      '移動先の候補ではありません',
+    );
+    mockExec.mockClear();
+    await flushPendingDispatch();
+    fireEvent.click(bareKing);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+    unmount();
+
+    mockExec.mockResolvedValue({
+      ...playingState,
+      legalTargets: { ...playingState.legalTargets, 'tableau-0': { tableau: [2], foundation: [] } },
+    });
+    renderWithProviders(<SalicLawPage />);
+    fireEvent.click(await screen.findByRole('button', { name: /♠ 9/ }));
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('sl-bare-king-2'));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'tableau', col: 0 }, { zone: 'tableau', col: 2 }),
+    );
   });
 
   it('calls reset on initial render', async () => {
@@ -391,6 +429,51 @@ describe('SalicLawPage', () => {
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'tableau', col: 1 }, { zone: 'foundation', col: 1 }),
     );
     expect(screen.getByTestId('sl-destination-live')).toHaveTextContent('');
+  });
+
+  it('sends a pile top to a server approved occupied foundation', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [[card('HEART', 8)], ...playingState.foundation.slice(1)],
+      legalTargets: { ...playingState.legalTargets, 'tableau-0': { tableau: [], foundation: [0] } },
+    });
+    renderWithProviders(<SalicLawPage />);
+    fireEvent.click(await screen.findByRole('button', { name: /♠ 9/ }));
+    const foundation = screen.getByRole('button', { name: /組札0/ });
+    expect(document.getElementById(foundation.getAttribute('aria-describedby') ?? '')).toHaveTextContent(
+      '移動先の候補です',
+    );
+    fireEvent.click(foundation);
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'tableau', col: 0 }, { zone: 'foundation', col: 0 }),
+    );
+  });
+
+  it('does not move to an occupied foundation omitted by the server', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [[card('HEART', 8)], ...playingState.foundation.slice(1)],
+      legalTargets: { 'tableau-1': playingState.legalTargets['tableau-1'] },
+    });
+    renderWithProviders(<SalicLawPage />);
+    fireEvent.click(await screen.findByRole('button', { name: /♠ 9/ }));
+    mockExec.mockClear();
+    await flushPendingDispatch();
+    fireEvent.click(screen.getByRole('button', { name: /組札0/ }));
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
+  it('describes an occupied foundation as requiring a selected source', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [[card('HEART', 8)], ...playingState.foundation.slice(1)],
+    });
+    renderWithProviders(<SalicLawPage />);
+    const foundation = await screen.findByRole('button', { name: /組札0/ });
+    expect(document.getElementById(foundation.getAttribute('aria-describedby') ?? '')).toHaveTextContent(
+      '先に移動する札を選んでください',
+    );
   });
 
   it('disables the stock once it runs out', async () => {

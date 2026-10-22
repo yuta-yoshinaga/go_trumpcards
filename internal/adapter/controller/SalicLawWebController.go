@@ -33,9 +33,10 @@ type SalicLawWebOutputHint struct {
 
 // SalicLawWebOutput サリカ法典 Web アウトプット
 type SalicLawWebOutput struct {
-	Tableau    [][]*WebOutputCard `json:"tableau"`
-	Foundation [][]*WebOutputCard `json:"foundation"`
-	StockCount int                `json:"stockCount"`
+	LegalTargets map[string]SalicLawWebOutputTargets `json:"legalTargets"`
+	Tableau      [][]*WebOutputCard                  `json:"tableau"`
+	Foundation   [][]*WebOutputCard                  `json:"foundation"`
+	StockCount   int                                 `json:"stockCount"`
 	// Queens 場から抜いたクイーン 8 枚。飾りとして表示するだけで動かせない。
 	Queens []*WebOutputCard `json:"queens"`
 	// OpenPiles 土台の K が据わって使えるようになった列の数。
@@ -44,6 +45,12 @@ type SalicLawWebOutput struct {
 	Hint            *SalicLawWebOutputHint `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase
+}
+
+// SalicLawWebOutputTargets lists the tableau and foundation destinations for one source.
+type SalicLawWebOutputTargets struct {
+	Tableau    []int `json:"tableau"`
+	Foundation []int `json:"foundation"`
 }
 
 // SalicLawWebController サリカ法典 Web コントローラークラス
@@ -60,6 +67,7 @@ func newSalicLawDefaultOutput(msg string) *SalicLawWebOutput {
 		Tableau:       make([][]*WebOutputCard, 0),
 		Foundation:    make([][]*WebOutputCard, 0),
 		Queens:        make([]*WebOutputCard, 0),
+		LegalTargets:  map[string]SalicLawWebOutputTargets{},
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }
