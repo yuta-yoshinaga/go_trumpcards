@@ -99,6 +99,8 @@ export interface KoenigrufenResponse extends BaseGameResponse {
   result: number;
   /** Indices in the human's hand that are legal to play (non-empty on human Play turn). */
   playableIndices: number[];
+  /** Indices in the human hand that may be buried during talon exchange. */
+  discardableIndices: number[];
   gameEndFlag: boolean;
   /** Winning player seat index, or -1 until the game ends (also -1 on a draw). */
   winnerPlayer: number;

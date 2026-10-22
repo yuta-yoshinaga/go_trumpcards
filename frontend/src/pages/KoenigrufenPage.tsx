@@ -107,32 +107,6 @@ function isKing(card: Card): boolean {
   );
 }
 
-/** True when the card is a Trull honour (Sküs, Pagat=trump 1, or XXI=trump 21), which can never be buried. */
-function isTrull(card: Card): boolean {
-  return card.color === 'gold' || (card.color === 'purple' && (card.value === 1 || card.value === 21));
-}
-
-/** True when the card is an ordinary trump (a tarock that is not a Trull honour). Trumps are buryable only when unavoidable. */
-function isPlainTrump(card: Card): boolean {
-  return card.color === 'purple' && card.value !== 1 && card.value !== 21;
-}
-
-/** True for an ordinary suit card (not a King, not a Trull honour, not a trump) — always buryable. */
-function isPlainBuryable(card: Card): boolean {
-  return !isKing(card) && !isTrull(card) && !isPlainTrump(card);
-}
-
-/**
- * Returns a predicate for cards that may NOT be buried in the talon exchange,
- * mirroring the backend rule: Kings and the Trull honours are never buryable,
- * and ordinary trumps are buryable only when there are fewer than 6 ordinary
- * suit cards to bury.
- */
-function makeUndiscardable(hand: Card[]): (card: Card) => boolean {
-  const allowTrump = hand.filter(isPlainBuryable).length < KOENIGRUFEN_DISCARD_COUNT;
-  return (card: Card) => isKing(card) || isTrull(card) || (isPlainTrump(card) && !allowTrump);
-}
-
 /** Renders the Königrufen (ケーニッヒルーフェン) game page: a 4-player 54-card tarock trick-taker with a Rufer auction, a King-calling phase that names a secret partner, a 6-card talon exchange, and captured-points deal scoring. */
 export const KoenigrufenPage = withTutorial(KoenigrufenPageContent, 'koenigrufen', KOENIGRUFEN_TUTORIAL_STEPS);
 
@@ -233,15 +207,7 @@ function KoenigrufenPageContent() {
       : [],
   );
 
-  // During the talon exchange, restrict selection to buryable cards (no Kings / Trull honours;
-  // ordinary trumps only when there are too few plain suit cards to bury).
-  const discardableIndices =
-    canDiscard && humanPlayer
-      ? (() => {
-          const undiscardable = makeUndiscardable(humanPlayer.cards);
-          return humanPlayer.cards.map((c, i) => (undiscardable(c) ? -1 : i)).filter((i) => i >= 0);
-        })()
-      : undefined;
+  const discardableIndices = canDiscard ? state.discardableIndices : undefined;
 
   const handValidIndices = canPlay ? state.playableIndices : canDiscard ? discardableIndices : undefined;
 

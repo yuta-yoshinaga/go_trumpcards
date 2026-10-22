@@ -79612,6 +79612,11 @@ components:
         result:
           type: integer
           description: "Whether the human seat's side won the deal."
+        discardableIndices:
+          type: array
+          description: "Human hand indices that may be buried during the talon exchange; empty outside the human discard turn."
+          items:
+            type: integer
         playableIndices:
           type: array
           description: "Indices in the human hand that may legally be played now."

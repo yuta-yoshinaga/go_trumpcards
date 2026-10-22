@@ -2583,6 +2583,7 @@ const baseKoenigrufenState: KoenigrufenResponse = {
   outcome: 0,
   teamPoints: 0,
   result: 0,
+  discardableIndices: [0, 1, 2, 3, 4, 5],
   playableIndices: [0, 1, 2, 3, 4],
   gameEndFlag: false,
   winnerPlayer: -1,

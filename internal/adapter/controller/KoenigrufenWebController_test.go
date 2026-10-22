@@ -16,17 +16,18 @@ import (
 
 func mustKoenigrufenOutputJSON(msg string) string {
 	out := &controller.KoenigrufenWebOutput{
-		Players:         []*controller.KoenigrufenWebOutputPlayer{},
-		CurrentTrick:    []*controller.WebOutputTrickCard{},
-		Talon:           []*controller.WebOutputCard{},
-		PlayableIndices: []int{},
-		DeclarerIdx:     -1,
-		HighestBidder:   -1,
-		CalledKing:      -1,
-		PartnerIdx:      -1,
-		LastTrickWinner: -1,
-		WinnerPlayer:    -1,
-		WebOutputBase:   controller.WebOutputBase{Message: msg},
+		Players:            []*controller.KoenigrufenWebOutputPlayer{},
+		CurrentTrick:       []*controller.WebOutputTrickCard{},
+		Talon:              []*controller.WebOutputCard{},
+		PlayableIndices:    []int{},
+		DiscardableIndices: []int{},
+		DeclarerIdx:        -1,
+		HighestBidder:      -1,
+		CalledKing:         -1,
+		PartnerIdx:         -1,
+		LastTrickWinner:    -1,
+		WinnerPlayer:       -1,
+		WebOutputBase:      controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {
