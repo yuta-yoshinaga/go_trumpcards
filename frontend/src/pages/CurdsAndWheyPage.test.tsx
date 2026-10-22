@@ -28,6 +28,18 @@ function makeState(overrides: Partial<CurdsAndWheyResponse> = {}): CurdsAndWheyR
     phase: 0,
     moveCount: 0,
     canUndo: false,
+    runStarts: Array.from({ length: 13 }, (_, col) => {
+      const column = columns[col];
+      if (column.length === 0) return [];
+      let start = column.length - 1;
+      while (
+        start > 0 &&
+        column[start - 1].design === column[start].design &&
+        column[start - 1].value === column[start].value + 1
+      )
+        start--;
+      return Array.from({ length: column.length - start }, (_, offset) => start + offset);
+    }),
     message: '',
     ...overrides,
   };
@@ -212,6 +224,7 @@ describe('CurdsAndWheyPage', () => {
           cols[3] = [card('SPADE', 9), card('HEART', 6), card('HEART', 5), card('HEART', 4)];
           return cols;
         })(),
+        runStarts: Array.from({ length: 13 }, (_, col) => (col === 3 ? [1, 2, 3] : col === 0 ? [0] : [])),
       }),
     );
     renderWithProviders(<CurdsAndWheyPage />);
@@ -232,6 +245,38 @@ describe('CurdsAndWheyPage', () => {
     expect(screen.getByTestId('card-3-1')).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByTestId('card-3-3')).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByTestId('card-3-0')).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('ignores a click on a card outside any movable run', async () => {
+    const state = makeState();
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<CurdsAndWheyPage />);
+    const invalidCard = await screen.findByTestId('card-0-0');
+    mockExec.mockClear();
+
+    // Make the already-rendered grabbable card stale so its handler sees it is no longer a run start.
+    state.runStarts[0] = [];
+    fireEvent.click(invalidCard);
+
+    expect(invalidCard).toHaveAttribute('aria-pressed', 'false');
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('m', expect.anything());
+  });
+
+  it('ignores a double-click on a card outside any movable run', async () => {
+    const state = makeState();
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<CurdsAndWheyPage />);
+    const invalidCard = await screen.findByTestId('card-0-0');
+    mockExec.mockClear();
+
+    // Make the already-rendered grabbable card stale so its handler sees it is no longer a run start.
+    state.runStarts[0] = [];
+    fireEvent.doubleClick(invalidCard);
+
+    expect(invalidCard).toHaveAttribute('aria-pressed', 'false');
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('m', expect.anything());
   });
 
   it('Escape clears the selected source without making a move', async () => {
@@ -283,6 +328,23 @@ describe('CurdsAndWheyPage', () => {
     const srcCard = await screen.findByTestId('card-1-0');
     mockExec.mockClear();
     fireEvent.doubleClick(srcCard);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('m', { fromCol: 1, cardIndex: 0, toCol: 0 }));
+  });
+
+  it('follows server run starts when they disagree with the former client rule', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ runStarts: Array.from({ length: 13 }, (_, col) => (col === 1 ? [0] : [])) }),
+    );
+    renderWithProviders(<CurdsAndWheyPage />);
+    const card0 = await screen.findByTestId('card-0-0');
+    expect(card0).toHaveAttribute('data-grabbable', 'false');
+    expect(card0).toBeDisabled();
+    card0.removeAttribute('disabled');
+    fireEvent.click(card0);
+    fireEvent.doubleClick(card0);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('m', expect.anything());
+    fireEvent.doubleClick(screen.getByTestId('card-1-0'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('m', { fromCol: 1, cardIndex: 0, toCol: 0 }));
   });
 

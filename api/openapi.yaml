@@ -74118,6 +74118,13 @@ components:
           type: integer
         canUndo:
           type: boolean
+        runStarts:
+          type: array
+          description: Movable run start indices for each tableau column.
+          items:
+            type: array
+            items:
+              type: integer
         hint:
           type: object
           nullable: true
