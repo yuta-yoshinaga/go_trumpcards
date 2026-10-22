@@ -82464,6 +82464,16 @@ components:
       additionalProperties: true
       description: Game state after the command was processed.
       properties:
+        legalTargets:
+          type: object
+          description: Legal foundation destinations keyed by divan-<index> or waste.
+          additionalProperties:
+            type: object
+            required: [foundation]
+            properties:
+              foundation:
+                type: array
+                items: { type: integer }
         phase:
           type: integer
         moveCount:
