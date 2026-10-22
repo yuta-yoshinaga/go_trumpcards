@@ -7,6 +7,8 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/stretchr/testify/mock"
+
 	"github.com/stretchr/testify/assert"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
@@ -15,6 +17,9 @@ import (
 )
 
 func setupAmericanToadWebMockDefaults(g *interfaces.MockAmericanToadGame) {
+	g.On("LegalTargetsFrom", mock.Anything, mock.Anything).Return([]int{}, []int{}).Maybe()
+	g.On("ReserveLegalTargets").Return([]int{}, []int{}).Maybe()
+	g.On("WasteLegalTargets").Return([]int{}, []int{}).Maybe()
 	g.On("GetPhase").Return(domain.AmericanToadPhasePlaying).Maybe()
 	g.On("GetMoveCount").Return(0).Maybe()
 	g.On("CanUndo").Return(false).Maybe()
@@ -186,6 +191,66 @@ func TestAmericanToadWebPresenter_HintOutput(t *testing.T) {
 		assert.Nil(t, result.Hint)
 		assert.Equal(t, "americantoad.noHint", result.MessageCode)
 	})
+}
+
+func TestAmericanToadWebPresenter_LegalTargets(t *testing.T) {
+	setup := func() *interfaces.MockAmericanToadGame {
+		g := new(interfaces.MockAmericanToadGame)
+		setupAmericanToadWebMockDefaults(g)
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "LegalTargetsFrom")
+		g.On("LegalTargetsFrom", 0, 0).Return([]int{2}, []int(nil)).Maybe()
+		// Other non-empty tableau columns have no legal targets in this fixture.
+		g.On("LegalTargetsFrom", mock.Anything, mock.Anything).Return([]int(nil), []int(nil)).Maybe()
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "ReserveLegalTargets")
+		g.On("ReserveLegalTargets").Return([]int(nil), []int{1, 5}).Maybe()
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "WasteLegalTargets")
+		g.On("WasteLegalTargets").Return([]int{3}, []int(nil)).Maybe()
+		g.On("GetHint").Return((*domain.AmericanToadHint)(nil)).Maybe()
+		return g
+	}
+	p := new(AmericanToadWebPresenter)
+	for _, output := range []string{p.Output(setup(), nil), p.HintOutput(setup())} {
+		got := parseAmericanToadOutput(t, output)
+		assert.Equal(t, []int{2}, got.LegalTargets["tableau-0-0"].Tableau)
+		assert.Empty(t, got.LegalTargets["tableau-0-0"].Foundation)
+		assert.Equal(t, []int{1, 5}, got.LegalTargets["reserve"].Foundation)
+		assert.Empty(t, got.LegalTargets["reserve"].Tableau)
+		assert.Equal(t, []int{3}, got.LegalTargets["waste"].Tableau)
+		assert.Empty(t, got.LegalTargets["waste"].Foundation)
+	}
+
+	// Exercise nil-array normalization for the alternate reserve and waste shapes.
+	alternateNilTargets := new(interfaces.MockAmericanToadGame)
+	setupAmericanToadWebMockDefaults(alternateNilTargets)
+	alternateNilTargets.ExpectedCalls = filterCalls(alternateNilTargets.ExpectedCalls, "ReserveLegalTargets")
+	alternateNilTargets.On("ReserveLegalTargets").Return([]int{4}, []int(nil)).Maybe()
+	alternateNilTargets.ExpectedCalls = filterCalls(alternateNilTargets.ExpectedCalls, "WasteLegalTargets")
+	alternateNilTargets.On("WasteLegalTargets").Return([]int(nil), []int{6}).Maybe()
+	alternateNilTargets.On("GetHint").Return((*domain.AmericanToadHint)(nil)).Maybe()
+	alternate := parseAmericanToadOutput(t, p.Output(alternateNilTargets, nil))
+	assert.Equal(t, []int{4}, alternate.LegalTargets["reserve"].Tableau)
+	assert.Empty(t, alternate.LegalTargets["reserve"].Foundation)
+	assert.Empty(t, alternate.LegalTargets["waste"].Tableau)
+	assert.Equal(t, []int{6}, alternate.LegalTargets["waste"].Foundation)
+
+	nilTableauTargets := setup()
+	nilTableauTargets.ExpectedCalls = filterCalls(nilTableauTargets.ExpectedCalls, "LegalTargetsFrom")
+	nilTableauTargets.On("LegalTargetsFrom", 0, 0).Return([]int(nil), []int{7}).Maybe()
+	nilTableauTargets.On("LegalTargetsFrom", mock.Anything, mock.Anything).Return([]int(nil), []int(nil)).Maybe()
+	nilTableau := parseAmericanToadOutput(t, p.Output(nilTableauTargets, nil))
+	assert.Empty(t, nilTableau.LegalTargets["tableau-0-0"].Tableau)
+	assert.Equal(t, []int{7}, nilTableau.LegalTargets["tableau-0-0"].Foundation)
+
+	empty := new(interfaces.MockAmericanToadGame)
+	setupAmericanToadWebMockDefaults(empty)
+	empty.ExpectedCalls = filterCalls(empty.ExpectedCalls, "LegalTargetsFrom")
+	empty.ExpectedCalls = filterCalls(empty.ExpectedCalls, "ReserveLegalTargets")
+	empty.ExpectedCalls = filterCalls(empty.ExpectedCalls, "WasteLegalTargets")
+	empty.On("LegalTargetsFrom", mock.Anything, mock.Anything).Return([]int(nil), []int(nil)).Maybe()
+	empty.On("ReserveLegalTargets").Return([]int(nil), []int(nil)).Maybe()
+	empty.On("WasteLegalTargets").Return([]int(nil), []int(nil)).Maybe()
+	empty.On("GetHint").Return((*domain.AmericanToadHint)(nil)).Maybe()
+	assert.Empty(t, parseAmericanToadOutput(t, p.Output(empty, nil)).LegalTargets)
 }
 
 func TestAmericanToadWebPresenter_ActionLogOutput(t *testing.T) {

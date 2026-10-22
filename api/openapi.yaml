@@ -39223,6 +39223,20 @@ components:
             Whether `draw` would recycle the waste into the stock: the stock is
             empty, the waste is not, and the single redeal is unspent. Sent so the
             client does not recompute the condition.
+        legalTargets:
+          type: object
+          description: Legal destinations keyed by source (`tableau-<col>-<cardIndex>`, `reserve`, or `waste`). Sources without destinations are omitted.
+          additionalProperties:
+            type: object
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         phase:
           type: integer
           description: "0=Playing, 1=GameClear, 2=GameOver"

@@ -13,6 +13,19 @@ type MockAmericanToadGame struct {
 	mock.Mock
 }
 
+func (_m *MockAmericanToadGame) LegalTargetsFrom(col, index int) ([]int, []int) {
+	r := _m.Called(col, index)
+	return r.Get(0).([]int), r.Get(1).([]int)
+}
+func (_m *MockAmericanToadGame) ReserveLegalTargets() ([]int, []int) {
+	r := _m.Called()
+	return r.Get(0).([]int), r.Get(1).([]int)
+}
+func (_m *MockAmericanToadGame) WasteLegalTargets() ([]int, []int) {
+	r := _m.Called()
+	return r.Get(0).([]int), r.Get(1).([]int)
+}
+
 func (_m *MockAmericanToadGame) Reset() {
 	_m.Called()
 }

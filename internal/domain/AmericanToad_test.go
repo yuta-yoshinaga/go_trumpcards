@@ -53,6 +53,33 @@ func fillAmericanToadColumns(at *AmericanToad) {
 	}
 }
 
+func TestAmericanToadLegalTargets(t *testing.T) {
+	t.Run("tableau runs never target empty columns and only run head has tableau targets", func(t *testing.T) {
+		at := NewDefaultAmericanToad()
+		clearAmericanToadBoard(at)
+		at.reserve = []*Card{NewCard(CardDesignHeart, 8, true)}
+		at.tableau[0] = atCol(NewCard(CardDesignSpade, 7, true), NewCard(CardDesignSpade, 6, true))
+		at.tableau[1] = atCol(NewCard(CardDesignSpade, 8, true))
+		tab, foundation := at.LegalTargetsFrom(0, 0)
+		assert.Equal(t, []int{1}, tab)
+		assert.Empty(t, foundation)
+		tab, _ = at.LegalTargetsFrom(0, 1)
+		assert.Empty(t, tab)
+	})
+	t.Run("reserve cannot manually fill empty tableau, waste can after reserve empties", func(t *testing.T) {
+		at := NewDefaultAmericanToad()
+		clearAmericanToadBoard(at)
+		at.tableau[0] = atCol(NewCard(CardDesignSpade, 7, true))
+		at.reserve = []*Card{NewCard(CardDesignSpade, 6, true)}
+		tab, _ := at.ReserveLegalTargets()
+		assert.Equal(t, []int{0}, tab)
+		at.reserve = nil
+		at.waste = []*Card{NewCard(CardDesignHeart, 6, true)}
+		tab, _ = at.WasteLegalTargets()
+		assert.Contains(t, tab, 1)
+	})
+}
+
 func TestNewAmericanToad(t *testing.T) {
 	assert.NotNil(t, NewAmericanToad(NewTrumpCardsWithDecks(2, 0)))
 	assert.NotNil(t, NewDefaultAmericanToad())

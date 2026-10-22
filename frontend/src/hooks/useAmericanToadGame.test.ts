@@ -20,6 +20,7 @@ vi.mock('../api/gameApi', () => ({
 const mockExec = vi.mocked(americanToadApi.exec);
 
 const baseState: AmericanToadResponse = {
+  legalTargets: {},
   reserve: [],
   tableau: Array.from({ length: 8 }, () => []),
   foundation: Array.from({ length: 8 }, () => []),
