@@ -14,6 +14,7 @@ function tc(design: Card['design'], value: number, faceUp = true): SpiderTableau
 
 function makeState(overrides: Partial<SpiderResponse> = {}): SpiderResponse {
   return {
+    runStarts: Array.from({ length: 10 }, () => []),
     tableau: [[tc(S, 10), tc(S, 9), tc(S, 8)], [tc(H, 5, false), tc(H, 7), tc(H, 6)], [], [], [], [], [], [], [], []],
     stockCount: 20,
     completedSuits: 0,

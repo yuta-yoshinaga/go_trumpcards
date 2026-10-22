@@ -17,6 +17,8 @@ type SpiderGame interface {
 	Deal() error
 	// MoveTableauToTableau タブロー間でカードを移動する
 	MoveTableauToTableau(fromCol, cardIndex, toCol int) error
+	// RunStarts returns face-up tableau indices whose suffix is a movable sequence.
+	RunStarts(col int) []int
 	// GetHint ヒントを取得する
 	GetHint() *domain.SpiderHint
 	// GetPhase 現在のフェーズを取得する
