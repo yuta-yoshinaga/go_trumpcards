@@ -45,19 +45,28 @@ Batak と Call Break は「なぜ出せないか」のツールチップを写�
 
 ### ソリティアの移動先 (2026-10-20〜22)
 
-Decision の改訂 (2026-10-20) の形で、Baker's Dozen と Perseverance から移した。Perseverance は domain に、埋もれた札から始まる並びの移動先を返す `LegalTargetsFrom(col, cardIndex)` を足し、キーを `tableau-<col>-<cardIndex>` にした。Beleaguered Castle、Citadel、Fortress、Somerset、Streets and Alleys は domain に `LegalTargets(fromCol)` を足して移行した。組札の候補は各ページの従来の表示に合わせた。castle 系の 4 本は受け入れる組札をすべて返し、Streets and Alleys は `findFoundation` が返す最初の 1 山だけを返す。Mrs. Mop は domain の既存の `LegalTargets(fromCol, cardIndex)` を presenter から呼ぶだけで移行した (`foundation` は常に空)。並びのまとまりを決める `spiderMovableRun` (Spider と共有) は残っている。Perseverance は掴める札も `runStarts` で返し、`perseveranceStartsRun.ts` を削除した。King Albert、Flower Garden、Russian Solitaire、Miss Milligan、Rank and File も移行した (2026-10-21)。King Albert と Flower Garden は予備の札置き場を `reserve-<idx>` のキーで返す。Rank and File は捨て札を `waste`、Miss Milligan は保留中の札を `waived` のキーで返す。Russian Solitaire は表向きの札ならどれでも動かせるので、札ごとに 3 部分のキーで返す。組札の候補は各ページの従来の表示に合わせた。King Albert、Flower Garden、Rank and File は最初の 1 山、Miss Milligan は受け入れる組札すべて、Russian Solitaire はスートで決まる 1 山。Miss Milligan は `missMilliganRuns.ts` (2026-10-20 の数え上げから漏れていた) の代わりに `runStarts` も返す。TriPeaks は、上札に乗せられる表の札を `playableCells: ["<row>-<col>"]` で返す (ユーザ承認済み、2026-10-21)。CUI の presenter が同じ判定を書き直していた `triPeaksAdjacentRank` も、domain の `PlayableCells()` に置き換えた。
+Decision の改訂 (2026-10-20) の形で、Baker's Dozen と Perseverance から移した。Perseverance は domain に、埋もれた札から始まる並びの移動先を返す `LegalTargetsFrom(col, cardIndex)` を足し、キーを `tableau-<col>-<cardIndex>` にした。Beleaguered Castle、Citadel、Fortress、Somerset、Streets and Alleys は domain に `LegalTargets(fromCol)` を足して移行した。組札の候補は各ページの従来の表示に合わせた。castle 系の 4 本は受け入れる組札をすべて返し、Streets and Alleys は `findFoundation` が返す最初の 1 山だけを返す。Mrs. Mop は domain の既存の `LegalTargets(fromCol, cardIndex)` を presenter から呼ぶだけで移行した (`foundation` は常に空)。Perseverance は掴める札も `runStarts` で返し、`perseveranceStartsRun.ts` を削除した。King Albert、Flower Garden、Russian Solitaire、Miss Milligan、Rank and File も移行した (2026-10-21)。King Albert と Flower Garden は予備の札置き場を `reserve-<idx>` のキーで返す。Rank and File は捨て札を `waste`、Miss Milligan は保留中の札を `waived` のキーで返す。Russian Solitaire は表向きの札ならどれでも動かせるので、札ごとに 3 部分のキーで返す。組札の候補は各ページの従来の表示に合わせた。King Albert、Flower Garden、Rank and File は最初の 1 山、Miss Milligan は受け入れる組札すべて、Russian Solitaire はスートで決まる 1 山。Miss Milligan は `missMilliganRuns.ts` (2026-10-20 の数え上げから漏れていた) の代わりに `runStarts` も返す。TriPeaks は、上札に乗せられる表の札を `playableCells: ["<row>-<col>"]` で返す (ユーザ承認済み、2026-10-21)。CUI の presenter が同じ判定を書き直していた `triPeaksAdjacentRank` も、domain の `PlayableCells()` に置き換えた。
 
 組札ショートカットの写し (`*FoundationTarget.ts`) も同じ `legalTargets` で置き換えた (2026-10-21)。FreeCell、Baker's Game (FreeCell と応答を共有)、Eight Off、Penguin、Stalactites、Easthaven、Forty Thieves、Forty and Eight。ショートカットは `legalTargets[key].foundation[0]` へ送るだけで、規則を持たない。組札の候補は各ページの従来の挙動に合わせた。Forty and Eight だけは受け入れる組札と列をすべて返し、Stalactites は `foundationIndexFor` の 1 山、他はスートで決まる 1 山か `findFoundation` の最初の 1 山。新しい応答の形 (ユーザ承認済み) として、Shamrocks は `fan-<idx>` のキーに `{ fan, foundation }`、Crazy Quilt は `quilt-<idx>` / `waste` のキーに `{ foundation, waste }` を返す。Napoleon's Square、Congress、Duchess、American Toad も移行した (2026-10-22)。移動元ごとの空き列の規則は domain の関数がそのまま表す。Congress の山札は空の山だけに置け、山札が尽きたら置き先を返さない。Duchess は基準ランクが決まるまで何も返さず、予備札だけは空き列に置ける。American Toad はタブローから空き列へは動かせない。Duchess と American Toad では、並びの先頭でない札を選んだときに移動先を出さず、並びの途中の先頭では組札を出さないようにした (以前の写しはこの 2 点を見ていなかった)。Sultan は場札の列が無いので `legalTargets: Record<"divan-<idx>" | "waste", { foundation: number[] }>` で返す (ユーザ承認済み)。Diplomat は既存の `tableauMoveTargets` を `legalTargets` に置き換えて削除し、組札の「次のランク」の表示用に `foundationNextRank` を足した (ユーザ承認済み)。
 
 ### 数え直し (2026-10-22)
 
-2026-10-20 の数え上げは、`*LegalTargets.ts` などのファイル名で探したため漏れがあった。`frontend/src/utils` と `pages` を、規則の写しを示すコメント (`Sync:` や domain の関数名) とファイル名で数え直すと、合法性や動かせる札の写しは次のとおり残っている。`utils/hints` (助言) と `utils/cli` は対象外。
+2026-10-20 の数え上げは、`*LegalTargets.ts` などのファイル名で探したため漏れがあった。`frontend/src/utils` と `pages` を、規則の写しを示すコメント (`Sync:` や domain の関数名) とファイル名で数え直した。`utils/hints` (助言) と `utils/cli` は対象外。
+
+既に承認済みの形で移せる 13 本は同じ日に移した (2026-10-22)。
+
+- `legalTargets`:
+  - Crescent、Salic Law、Double Klondike、Nertz は受け入れる組札をすべて返す。Double Klondike の組札は一番上の札で判定する。Nertz は自分の Nertz 山を `nertz` のキーで返し、人間のプレイヤーの分だけを載せる。
+  - Agnes はスートで決まる 1 山を返す。
+  - St. Helena は、どの列に届くかの制約も移動先の判定に含めて返す。
+  - Scorpion は空き列に置けるキングの移動先も返すが、ページの強調表示は一番下の札にしか付かないので、空き列の分は表示に使われない。
+- `runStarts`: Curds and Whey、Simple Simon、Spiderette、Spider、Mrs. Mop。`spiderMovableRun` は削除した。Spiderette の golden fixture は Go 側の試験 (`Spiderette_golden_test.go`) がまだ読むので残している。
+- `playRejectCodes`: Klaverjas。Batak / Call Break と同じ形で返す。
+
+移した後も、合法性や動かせる札の写しは次のとおり残っている。どれも新しい応答の形が要るので、承認を得てから移す。
 
 | ファイル | 中身 | 移し方 |
 |---|---|---|
-| `crescentTargets.ts`、`sthelenaTargets.ts`、`doubleKlondikeTargets.ts`、`saliclawTargets.ts`、`scorpionUtils.ts` (`scorpionLegalTargets`)、`agnesMoves.ts`、`pages/NertzPage.tsx` (`nertzFoundationAccepts` / `nertzTableauAccepts`) | 移動先の判定 | 承認済みの `legalTargets` |
-| `curdsAndWheyRun.ts`、`simpleSimonRun.ts`、`spideretteMoves.ts`、`solitaireUtils.ts` の `spiderMovableRun` (Spider と Mrs. Mop) | 掴める並びの判定 | 承認済みの `runStarts` |
-| `klaverjasPlayRestriction.ts` | 出せない理由 | 承認済みの `playRejectCodes` |
 | `bisleyStackTargets.ts`、`curdsAndWheyAutoMoveTarget.ts`、`simpleSimonAutoMoveTarget.ts` | 移動先と、クライアント側の優先順位 | 形を決める必要がある |
 | `fourteenoutRemovablePairs.ts`、`montecarloRemovablePairs.ts`、`gapsUtils.ts` | 取り除ける組、組の数、動かせない先頭の長さ | 新しいフィールドが要る |
 | `machiavelliRearrange.ts`、`doudizhuComboValidator.ts`、`burracoMeld.ts`、`panMeldCandidates.ts`、`tonkMeldIndices.ts`、`tongitsMeldIndices.ts` | 役や組み合わせの正しさ | 形を決める必要がある |
