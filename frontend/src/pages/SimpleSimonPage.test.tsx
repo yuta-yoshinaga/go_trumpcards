@@ -16,18 +16,35 @@ const mockExec = vi.mocked(simplesimonApi.exec);
 const card = (design: Card['design'], value: number): Card => ({ design, value });
 
 function makeState(overrides: Partial<SimpleSimonResponse> = {}): SimpleSimonResponse {
+  const { runStarts, ...stateOverrides } = overrides;
   const columns: Card[][] = Array.from({ length: 10 }, () => []);
   columns[0] = [card('SPADE', 9)];
   columns[1] = [card('SPADE', 8)];
-  return {
+  const state: SimpleSimonResponse = {
     columns,
     completedSuits: 0,
     phase: 0,
     moveCount: 0,
     canUndo: false,
+    runStarts: [],
     message: '',
-    ...overrides,
+    ...stateOverrides,
   };
+  state.runStarts =
+    runStarts ??
+    state.columns.map((column) => {
+      if (column.length === 0) return [];
+      let start = column.length - 1;
+      while (
+        start > 0 &&
+        column[start - 1].design === column[start].design &&
+        column[start - 1].value === column[start].value + 1
+      ) {
+        start--;
+      }
+      return Array.from({ length: column.length - start }, (_, offset) => start + offset);
+    });
+  return state;
 }
 
 beforeEach(() => {
@@ -36,6 +53,67 @@ beforeEach(() => {
 });
 
 describe('SimpleSimonPage', () => {
+  it('follows server run starts when they disagree with the former client rule', async () => {
+    const columns: Card[][] = Array.from({ length: 10 }, () => []);
+    columns[0] = [card('SPADE', 9)];
+    columns[1] = [card('SPADE', 8)];
+    mockExec.mockResolvedValue(makeState({ columns, runStarts: [[], [0], ...Array.from({ length: 8 }, () => [])] }));
+    renderWithProviders(<SimpleSimonPage />);
+    const staleByFormerRule = await screen.findByTestId('card-0-0');
+    expect(staleByFormerRule).toHaveAttribute('data-grabbable', 'false');
+    expect(staleByFormerRule).toBeDisabled();
+    const serverApproved = screen.getByTestId('card-1-0');
+    fireEvent.doubleClick(serverApproved);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('m', { fromCol: 1, cardIndex: 0, toCol: 0 }));
+  });
+
+  it('ignores click and double-click on a card that does not start a run', async () => {
+    const columns: Card[][] = Array.from({ length: 10 }, () => []);
+    columns[3] = [card('SPADE', 9)];
+    const runStarts: number[][] = Array.from({ length: 10 }, () => []);
+    mockExec.mockResolvedValue(makeState({ columns, runStarts }));
+    renderWithProviders(<SimpleSimonPage />);
+    const nonRunCard = await screen.findByTestId('card-3-0');
+    expect(nonRunCard).toBeDisabled();
+
+    mockExec.mockClear();
+    fireEvent.click(nonRunCard);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+    fireEvent.doubleClick(nonRunCard);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+    expect(nonRunCard).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('ignores a keyboard grab when the column has no run start', async () => {
+    const columns: Card[][] = Array.from({ length: 10 }, () => []);
+    columns[0] = [card('SPADE', 9)];
+    const runStarts: number[][] = Array.from({ length: 10 }, () => []);
+    mockExec.mockResolvedValue(makeState({ columns, runStarts }));
+    renderWithProviders(<SimpleSimonPage />);
+    const nonRunCard = await screen.findByTestId('card-0-0');
+
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: '1' });
+    await flushPendingDispatch();
+
+    expect(mockExec).not.toHaveBeenCalled();
+    expect(nonRunCard).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('ignores a keyboard grab when the selected column is empty', async () => {
+    renderWithProviders(<SimpleSimonPage />);
+    await screen.findByTestId('card-1-0');
+
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: '6' });
+    await flushPendingDispatch();
+
+    expect(mockExec).not.toHaveBeenCalled();
+    expect(screen.getByTestId('card-1-0')).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<SimpleSimonPage />);

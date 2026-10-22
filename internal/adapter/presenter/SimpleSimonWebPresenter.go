@@ -88,6 +88,10 @@ func (p *SimpleSimonWebPresenter) ActionLogOutput(g interfaces.SimpleSimonGame) 
 func (p *SimpleSimonWebPresenter) fillBoard(resObj *controller.SimpleSimonWebOutput, g interfaces.SimpleSimonGame) {
 	cols := g.GetColumns()
 	resObj.Columns = pilesToOutput(cols[:])
+	resObj.RunStarts = make([][]int, len(cols))
+	for col := range cols {
+		resObj.RunStarts[col] = intSliceOrEmpty(g.RunStarts(col))
+	}
 }
 
 func (p *SimpleSimonWebPresenter) buildBaseOutput(g interfaces.SimpleSimonGame) *controller.SimpleSimonWebOutput {

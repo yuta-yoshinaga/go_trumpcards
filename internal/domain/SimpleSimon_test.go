@@ -278,3 +278,18 @@ func TestSimpleSimonMovableFrom(t *testing.T) {
 		assert.Equal(t, 0, SimpleSimonMovableFrom(col))
 	})
 }
+
+func TestSimpleSimonRunStarts(t *testing.T) {
+	card := func(d, v int) *Card { return NewCard(d, v, false) }
+	g := NewDefaultSimpleSimon()
+	g.columns[0] = []*Card{card(CardDesignSpade, 9), card(CardDesignHeart, 6), card(CardDesignHeart, 5), card(CardDesignHeart, 4)}
+	g.columns[1] = nil
+	assert.Equal(t, []int{1, 2, 3}, g.RunStarts(0))
+	assert.Equal(t, []int{}, g.RunStarts(1))
+	assert.Equal(t, []int{}, g.RunStarts(-1))
+	assert.Equal(t, []int{}, g.RunStarts(SimpleSimonColCnt))
+	assert.Equal(t, 0, SimpleSimonMovableFrom(nil))
+	assert.Equal(t, 0, SimpleSimonMovableFrom([]*Card{card(CardDesignSpade, 5)}))
+	assert.Equal(t, 1, SimpleSimonMovableFrom([]*Card{card(CardDesignHeart, 8), card(CardDesignSpade, 7), card(CardDesignSpade, 6)}))
+	assert.Equal(t, 1, SimpleSimonMovableFrom([]*Card{card(CardDesignSpade, 5), card(CardDesignSpade, 5)}))
+}
