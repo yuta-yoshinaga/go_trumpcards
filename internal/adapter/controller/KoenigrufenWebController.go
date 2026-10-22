@@ -56,38 +56,39 @@ type KoenigrufenWebOutputHint struct {
 // KoenigrufenWebOutput ケーニッヒルーフェンのWebアウトプット。
 // PartnerIdx は partnerRevealed=true になるまで常に -1 を出力し、秘密のパートナーを漏らさない。
 type KoenigrufenWebOutput struct {
-	Players          []*KoenigrufenWebOutputPlayer    `json:"players"`
-	Phase            int                              `json:"phase"`
-	RoundNumber      int                              `json:"roundNumber"`
-	TrickNumber      int                              `json:"trickNumber"`
-	CurrentPlayerIdx int                              `json:"currentPlayerIdx"`
-	LeadPlayerIdx    int                              `json:"leadPlayerIdx"`
-	DealerIdx        int                              `json:"dealerIdx"`
-	BidPlayerIdx     int                              `json:"bidPlayerIdx"`
-	HighestBid       int                              `json:"highestBid"`
-	HighestBidder    int                              `json:"highestBidder"`
-	DeclarerIdx      int                              `json:"declarerIdx"`
-	Contract         int                              `json:"contract"`
-	CalledKing       int                              `json:"calledKing"`
-	PartnerIdx       int                              `json:"partnerIdx"`
-	PartnerRevealed  bool                             `json:"partnerRevealed"`
-	TalonCount       int                              `json:"talonCount"`
-	Talon            []*WebOutputCard                 `json:"talon"`
-	StashOwner       int                              `json:"stashOwner"`
-	CurrentTrick     []*WebOutputTrickCard            `json:"currentTrick"`
-	PlayerScores     [domain.KoenigrufenPlayerCnt]int `json:"playerScores"`
-	LastTrickWinner  int                              `json:"lastTrickWinner"`
-	Outcome          int                              `json:"outcome"`
-	TeamPoints       int                              `json:"teamPoints"`
-	Result           int                              `json:"result"`
-	PlayableIndices  []int                            `json:"playableIndices"`
-	GameEndFlag      bool                             `json:"gameEndFlag"`
-	WinnerPlayer     int                              `json:"winnerPlayer"`
-	IsHumanTurn      bool                             `json:"isHumanTurn"`
-	IsHumanBidTurn   bool                             `json:"isHumanBidTurn"`
-	IsHumanCall      bool                             `json:"isHumanCall"`
-	IsHumanDiscard   bool                             `json:"isHumanDiscard"`
-	Hint             *KoenigrufenWebOutputHint        `json:"hint,omitempty"`
+	Players            []*KoenigrufenWebOutputPlayer    `json:"players"`
+	Phase              int                              `json:"phase"`
+	RoundNumber        int                              `json:"roundNumber"`
+	TrickNumber        int                              `json:"trickNumber"`
+	CurrentPlayerIdx   int                              `json:"currentPlayerIdx"`
+	LeadPlayerIdx      int                              `json:"leadPlayerIdx"`
+	DealerIdx          int                              `json:"dealerIdx"`
+	BidPlayerIdx       int                              `json:"bidPlayerIdx"`
+	HighestBid         int                              `json:"highestBid"`
+	HighestBidder      int                              `json:"highestBidder"`
+	DeclarerIdx        int                              `json:"declarerIdx"`
+	Contract           int                              `json:"contract"`
+	CalledKing         int                              `json:"calledKing"`
+	PartnerIdx         int                              `json:"partnerIdx"`
+	PartnerRevealed    bool                             `json:"partnerRevealed"`
+	TalonCount         int                              `json:"talonCount"`
+	Talon              []*WebOutputCard                 `json:"talon"`
+	StashOwner         int                              `json:"stashOwner"`
+	CurrentTrick       []*WebOutputTrickCard            `json:"currentTrick"`
+	PlayerScores       [domain.KoenigrufenPlayerCnt]int `json:"playerScores"`
+	LastTrickWinner    int                              `json:"lastTrickWinner"`
+	Outcome            int                              `json:"outcome"`
+	TeamPoints         int                              `json:"teamPoints"`
+	Result             int                              `json:"result"`
+	PlayableIndices    []int                            `json:"playableIndices"`
+	DiscardableIndices []int                            `json:"discardableIndices"`
+	GameEndFlag        bool                             `json:"gameEndFlag"`
+	WinnerPlayer       int                              `json:"winnerPlayer"`
+	IsHumanTurn        bool                             `json:"isHumanTurn"`
+	IsHumanBidTurn     bool                             `json:"isHumanBidTurn"`
+	IsHumanCall        bool                             `json:"isHumanCall"`
+	IsHumanDiscard     bool                             `json:"isHumanDiscard"`
+	Hint               *KoenigrufenWebOutputHint        `json:"hint,omitempty"`
 	WebOutputBase
 	Config KoenigrufenWebOutputConfig `json:"config"`
 }
@@ -132,17 +133,18 @@ var NewKoenigrufenWebController, NewKoenigrufenWebControllerWithProvider = webCo
 
 func newKoenigrufenDefaultOutput(msg string) *KoenigrufenWebOutput {
 	return &KoenigrufenWebOutput{
-		Players:         make([]*KoenigrufenWebOutputPlayer, 0),
-		CurrentTrick:    make([]*WebOutputTrickCard, 0),
-		Talon:           make([]*WebOutputCard, 0),
-		PlayableIndices: make([]int, 0),
-		DeclarerIdx:     -1,
-		HighestBidder:   -1,
-		CalledKing:      -1,
-		PartnerIdx:      -1,
-		LastTrickWinner: -1,
-		WinnerPlayer:    -1,
-		WebOutputBase:   WebOutputBase{Message: msg},
+		Players:            make([]*KoenigrufenWebOutputPlayer, 0),
+		CurrentTrick:       make([]*WebOutputTrickCard, 0),
+		Talon:              make([]*WebOutputCard, 0),
+		PlayableIndices:    make([]int, 0),
+		DiscardableIndices: make([]int, 0),
+		DeclarerIdx:        -1,
+		HighestBidder:      -1,
+		CalledKing:         -1,
+		PartnerIdx:         -1,
+		LastTrickWinner:    -1,
+		WinnerPlayer:       -1,
+		WebOutputBase:      WebOutputBase{Message: msg},
 	}
 }
 

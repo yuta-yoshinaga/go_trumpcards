@@ -334,3 +334,19 @@ func TestKoenigrufenWebPresenterHintOutputMarksTheRequest(t *testing.T) {
 		t.Error("HintOutput must mark the response as a requested hint")
 	}
 }
+
+func TestKoenigrufenWebPresenter_OutputIncludesDiscardableIndicesForHumanDiscarder(t *testing.T) {
+	g := newKoenigrufenGame()
+	g.SetPhase(domain.KoenigrufenPhaseTalon)
+	g.SetDeclarerIdx(0)
+	g.GetPlayer(0).Reset()
+	g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+	g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, domain.KoenigrufenKingValue, false))
+	p := &presenter.KoenigrufenWebPresenter{}
+	var parsed controller.KoenigrufenWebOutput
+	require.NoError(t, json.Unmarshal([]byte(p.Output(g, nil)), &parsed))
+	assert.Equal(t, []int{0}, parsed.DiscardableIndices)
+	var hinted controller.KoenigrufenWebOutput
+	require.NoError(t, json.Unmarshal([]byte(p.HintOutput(g)), &hinted))
+	assert.Equal(t, []int{0}, hinted.DiscardableIndices)
+}

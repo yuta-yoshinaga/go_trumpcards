@@ -194,6 +194,15 @@ func (_m *MockKoenigrufenGame) GetPlayer(i int) *domain.KoenigrufenPlayer {
 	return nil
 }
 
+// DiscardableIndices モック
+func (_m *MockKoenigrufenGame) DiscardableIndices(playerIdx int) []int {
+	ret := _m.Called(playerIdx)
+	if v := ret.Get(0); v != nil {
+		return v.([]int)
+	}
+	return nil
+}
+
 // GetPlayableIndices モック
 func (_m *MockKoenigrufenGame) GetPlayableIndices(playerIdx int) []int {
 	ret := _m.Called(playerIdx)
