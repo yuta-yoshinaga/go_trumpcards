@@ -26,13 +26,14 @@ type CurdsAndWheyWebOutputHint struct {
 	ToCol     int `json:"toCol"`
 }
 
-// CurdsAndWheyWebOutput カーズ・アンド・ホエイのWebアウトプット。
-// CurdsAndWheyWebOutputTargets lists tableau and foundation destinations.
+// CurdsAndWheyWebOutputTargets は 1 つの移動元の自動移動先。Tableau は優先順で、
+// Foundation は常に空。
 type CurdsAndWheyWebOutputTargets struct {
 	Tableau    []int `json:"tableau"`
 	Foundation []int `json:"foundation"`
 }
 
+// CurdsAndWheyWebOutput カーズ・アンド・ホエイのWebアウトプット。
 type CurdsAndWheyWebOutput struct {
 	LegalTargets   map[string]CurdsAndWheyWebOutputTargets `json:"legalTargets"`
 	Columns        [][]*WebOutputCard                      `json:"columns"`
