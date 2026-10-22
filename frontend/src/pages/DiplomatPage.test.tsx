@@ -470,51 +470,6 @@ describe('DiplomatPage dead-end columns', () => {
     expect(await screen.findByRole('button', { name: /空の組札2/ })).toHaveAttribute('data-legal-target', 'true');
   });
 
-  it('double-click shortcut moves to the first foundation target', async () => {
-    mockExec.mockResolvedValue({
-      ...playingState,
-      legalTargets: { 'tableau-0': { tableau: [], foundation: [4, 1] } },
-    });
-    renderWithProviders(<DiplomatPage />);
-    fireEvent.doubleClick(await screen.findByRole('button', { name: '♠ 9' }));
-    await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'tableau', col: 0 }, { zone: 'foundation', col: 4 }),
-    );
-  });
-
-  it('double-click on waste moves to the first foundation target', async () => {
-    mockExec.mockResolvedValue({
-      ...playingState,
-      waste: [card('DIAMOND', 7)],
-      legalTargets: { waste: { tableau: [], foundation: [3] } },
-    });
-    renderWithProviders(<DiplomatPage />);
-    fireEvent.doubleClick(await screen.findByRole('button', { name: '♦ 7' }));
-    await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'waste' }, { zone: 'foundation', col: 3 }),
-    );
-  });
-
-  it('does not select a pile from a click event that belongs to a double click', async () => {
-    mockExec.mockResolvedValue(playingState);
-    renderWithProviders(<DiplomatPage />);
-    const card = await screen.findByRole('button', { name: '♠ 9' });
-    fireEvent.click(card, { detail: 2 });
-    expect(card).not.toHaveAttribute('aria-pressed', 'true');
-  });
-
-  it('does not run a foundation shortcut for a non-top tableau card', async () => {
-    mockExec.mockResolvedValue({
-      ...playingState,
-      tableau: makeTableau([[card('SPADE', 7), card('SPADE', 9)], [card('HEART', 8)]]),
-    });
-    renderWithProviders(<DiplomatPage />);
-    fireEvent.click(await screen.findByRole('button', { name: '♥ 8' }));
-    fireEvent.doubleClick(screen.getByRole('button', { name: '♠ 7' }));
-    await flushPendingDispatch();
-    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
-  });
-
   it('uses the server destination list for the selected waste card', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
@@ -525,14 +480,6 @@ describe('DiplomatPage dead-end columns', () => {
     fireEvent.click(await screen.findByRole('button', { name: '♦ 7' }));
     expect(await screen.findByRole('button', { name: /空の列 4/ })).toHaveAttribute('data-legal-target', 'true');
     expect(screen.getByRole('button', { name: /空の列 3/ })).not.toHaveAttribute('data-legal-target');
-  });
-
-  it('does not select waste from the click event that belongs to a double click', async () => {
-    mockExec.mockResolvedValue({ ...playingState, waste: [card('DIAMOND', 7)] });
-    renderWithProviders(<DiplomatPage />);
-    const waste = await screen.findByRole('button', { name: '♦ 7' });
-    fireEvent.click(waste, { detail: 2 });
-    expect(waste).not.toHaveAttribute('aria-pressed', 'true');
   });
 
   it('says in the accessible name that the Ace can still go to a foundation', async () => {

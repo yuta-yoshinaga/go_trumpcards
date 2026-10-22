@@ -89,8 +89,7 @@ function DiplomatPageContent() {
     cancelGiveUp,
   } = useGamePageSetup('diplomat');
   const game = useDiplomatGame();
-  const { state, loading, error, retry, hintError, selectedSource, hint, isAutoCompleting, handleFoundationShortcut } =
-    game;
+  const { state, loading, error, retry, hintError, selectedSource, hint, isAutoCompleting } = game;
   const wasAutoCompleting = useRef(isAutoCompleting);
   const [autoCompleteAnnouncement, setAutoCompleteAnnouncement] = useState('');
 
@@ -256,16 +255,12 @@ function DiplomatPageContent() {
                   >
                     <button
                       type="button"
-                      onClick={(e) => {
-                        if (e.detail >= 2) return;
+                      onClick={() => {
                         if (selectedSource) {
                           game.handleSelectTarget(pileZone);
                         } else if (isTop) {
                           game.handleSelectSource(pileZone);
                         }
-                      }}
-                      onDoubleClick={() => {
-                        if (isTop) handleFoundationShortcut(pileZone);
                       }}
                       disabled={!isPlaying || loading || (!isTop && !selectedSource)}
                       aria-label={isDeadEnd ? t('deadEndAria', { card: cardAlt(card) }) : cardAlt(card)}
@@ -449,10 +444,7 @@ function DiplomatPageContent() {
                   {wasteTop ? (
                     <button
                       type="button"
-                      onClick={(e) => {
-                        if (e.detail < 2) game.handleSelectSource(wasteZone);
-                      }}
-                      onDoubleClick={() => handleFoundationShortcut(wasteZone)}
+                      onClick={() => game.handleSelectSource(wasteZone)}
                       disabled={!isPlaying || loading}
                       aria-label={cardAlt(wasteTop)}
                       aria-describedby="diplomat-waste-count"
