@@ -219,6 +219,27 @@ func (c *SalicLaw) MoveTableauToFoundation(pile int) error {
 	return nil
 }
 
+// LegalTargets returns every legal destination for the movable top card in a tableau pile.
+// A source must contain more than its base king. Foundation targets include every open
+// foundation that accepts the card; tableau targets are other piles containing only a king.
+func (c *SalicLaw) LegalTargets(fromPile int) (tableau, foundation []int) {
+	if fromPile < 0 || fromPile >= SalicLawTableauCnt || len(c.tableau[fromPile]) <= 1 {
+		return nil, nil
+	}
+	card := c.tableauTop(fromPile)
+	for pile := range SalicLawTableauCnt {
+		if pile != fromPile && c.canPlaceOnTableau(card, pile) {
+			tableau = append(tableau, pile)
+		}
+	}
+	for pile := range SalicLawFoundationCnt {
+		if c.canPlaceOnFoundation(card, pile) {
+			foundation = append(foundation, pile)
+		}
+	}
+	return tableau, foundation
+}
+
 // MoveTableauToTableau タブロー列の一番上を「K だけの列」へ移す。
 // それ以外の積み方は無い。
 func (c *SalicLaw) MoveTableauToTableau(fromPile, toPile int) error {

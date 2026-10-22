@@ -17,6 +17,8 @@ export interface SalicLawHint {
 
 /** Full Salic Law game state returned from the API. */
 export interface SalicLawResponse extends BaseGameResponse {
+  /** Legal destinations keyed by source tableau pile. */
+  legalTargets: Record<string, { tableau: number[]; foundation: number[] }>;
   /**
    * Eight columns, each based on a king. A column past `openPiles` is empty
    * because its king has not been dealt yet.

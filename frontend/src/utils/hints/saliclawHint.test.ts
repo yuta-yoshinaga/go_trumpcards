@@ -4,6 +4,7 @@ import { getSalicLawHint } from './saliclawHint';
 
 function makeState(overrides?: Partial<SalicLawResponse>): SalicLawResponse {
   return {
+    legalTargets: {},
     tableau: Array.from({ length: 8 }, () => []),
     foundation: Array.from({ length: 8 }, () => []),
     stockCount: 95,

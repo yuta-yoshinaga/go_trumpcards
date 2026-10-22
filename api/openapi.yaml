@@ -81435,6 +81435,20 @@ components:
     SalicLawResponse:
       type: object
       properties:
+        legalTargets:
+          type: object
+          description: Legal tableau and foundation destinations keyed by source (for example tableau-0); sources without destinations are omitted.
+          additionalProperties:
+            type: object
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."

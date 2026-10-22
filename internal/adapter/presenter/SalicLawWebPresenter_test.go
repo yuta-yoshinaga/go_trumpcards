@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
@@ -16,6 +17,7 @@ import (
 )
 
 func setupSalicLawWebMockDefaults(g *interfaces.MockSalicLawGame) {
+	g.On("LegalTargets", mock.AnythingOfType("int")).Return(nil, nil).Maybe()
 	g.On("GetPhase").Return(domain.SalicLawPhasePlaying).Maybe()
 	g.On("GetMoveCount").Return(0).Maybe()
 	g.On("CanUndo").Return(false).Maybe()
@@ -61,6 +63,19 @@ func setupSalicLawOutputMock(g *interfaces.MockSalicLawGame) {
 }
 
 func TestSalicLawWebPresenter_Output(t *testing.T) {
+	t.Run("encodes legal targets with non-nil empty arrays", func(t *testing.T) {
+		g := new(interfaces.MockSalicLawGame)
+		setupSalicLawOutputMock(g)
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "LegalTargets")
+		g.On("LegalTargets", 0).Return([]int(nil), []int{2})
+		g.On("LegalTargets", 1).Return([]int{3}, []int(nil))
+		g.On("LegalTargets", mock.AnythingOfType("int")).Return(nil, nil).Maybe()
+		out := parseSalicLawOutput(t, new(SalicLawWebPresenter).Output(g, nil))
+		assert.Equal(t, map[string]controller.SalicLawWebOutputTargets{
+			"tableau-0": {Tableau: []int{}, Foundation: []int{2}},
+			"tableau-1": {Tableau: []int{3}, Foundation: []int{}},
+		}, out.LegalTargets)
+	})
 	t.Run("reports auto-complete availability", func(t *testing.T) {
 		g := new(interfaces.MockSalicLawGame)
 		setupSalicLawWebMockDefaults(g)
@@ -85,6 +100,7 @@ func TestSalicLawWebPresenter_Output(t *testing.T) {
 		assert.Len(t, result.Queens, domain.SalicLawQueenCnt)
 		assert.Equal(t, domain.SalicLawTableauCnt, result.OpenPiles)
 		assert.Equal(t, "saliclaw.playing", result.MessageCode)
+		assert.Empty(t, result.LegalTargets)
 	})
 
 	t.Run("stalemate", func(t *testing.T) {
@@ -160,6 +176,7 @@ func TestSalicLawWebPresenter_HintOutput(t *testing.T) {
 		assert.Equal(t, "tableau", result.Hint.ToZone)
 		assert.Equal(t, 3, result.Hint.ToIdx)
 		assert.Equal(t, "saliclaw.hintAvailable", result.MessageCode)
+		assert.NotNil(t, result.LegalTargets)
 	})
 
 	t.Run("no hint", func(t *testing.T) {
@@ -170,6 +187,8 @@ func TestSalicLawWebPresenter_HintOutput(t *testing.T) {
 		result := parseSalicLawOutput(t, new(SalicLawWebPresenter).HintOutput(g))
 		assert.Nil(t, result.Hint)
 		assert.Equal(t, "saliclaw.noHint", result.MessageCode)
+		assert.NotNil(t, result.LegalTargets)
+		assert.Empty(t, result.LegalTargets)
 	})
 }
 

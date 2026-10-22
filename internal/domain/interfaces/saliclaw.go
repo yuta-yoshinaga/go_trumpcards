@@ -17,6 +17,8 @@ type SalicLawGame interface {
 	MoveTableauToFoundation(pile int) error
 	// MoveTableauToTableau 「K だけの列」へ 1 枚移動する
 	MoveTableauToTableau(fromPile, toPile int) error
+	// LegalTargets returns every legal tableau and foundation destination for a movable tableau top.
+	LegalTargets(fromPile int) (tableau, foundation []int)
 	// CanAutoComplete reports whether a tableau card can currently be sent to a foundation.
 	CanAutoComplete() bool
 	// GetHint ヒントを取得する
