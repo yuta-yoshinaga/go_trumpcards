@@ -30,20 +30,28 @@ type DiplomatWebOutputHint struct {
 	ToIdx    int    `json:"toIdx"`
 }
 
+// DiplomatWebOutputTargets legal destinations for a Diplomat move source.
+type DiplomatWebOutputTargets struct {
+	Tableau    []int `json:"tableau"`
+	Foundation []int `json:"foundation"`
+}
+
 // DiplomatWebOutput ディプロマット Web アウトプット
 type DiplomatWebOutput struct {
-	Tableau [][]*WebOutputCard `json:"tableau"`
+	// LegalTargets maps each source key to its tableau and foundation destinations.
+	LegalTargets       map[string]DiplomatWebOutputTargets `json:"legalTargets"`
+	FoundationNextRank []int                               `json:"foundationNextRank"`
+	Tableau            [][]*WebOutputCard                  `json:"tableau"`
 	// TableauDeadEnd は列がタブロー間移動の受け皿として死んでいるか。
 	//
 	// **A の上には何も置けない。**判定はドメイン (DiplomatIsDeadEndTop) が持ち、
 	// 画面はそれを表示するだけにする。フロントで作り直すと、置ける規則が
 	// 変わったときに片方だけ古いままになる (#5741)。
-	TableauDeadEnd     []bool                 `json:"tableauDeadEnd"`
-	TableauMoveTargets [][]int                `json:"tableauMoveTargets"`
-	Foundation         [][]*WebOutputCard     `json:"foundation"`
-	StockCount         int                    `json:"stockCount"`
-	Waste              []*WebOutputCard       `json:"waste"`
-	Hint               *DiplomatWebOutputHint `json:"hint,omitempty"`
+	TableauDeadEnd []bool                 `json:"tableauDeadEnd"`
+	Foundation     [][]*WebOutputCard     `json:"foundation"`
+	StockCount     int                    `json:"stockCount"`
+	Waste          []*WebOutputCard       `json:"waste"`
+	Hint           *DiplomatWebOutputHint `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase
 }
@@ -61,7 +69,8 @@ func newDiplomatDefaultOutput(msg string) *DiplomatWebOutput {
 	return &DiplomatWebOutput{
 		Tableau:            make([][]*WebOutputCard, 0),
 		TableauDeadEnd:     make([]bool, 0),
-		TableauMoveTargets: make([][]int, 0),
+		LegalTargets:       make(map[string]DiplomatWebOutputTargets),
+		FoundationNextRank: make([]int, 0),
 		Foundation:         make([][]*WebOutputCard, 0),
 		Waste:              make([]*WebOutputCard, 0),
 		WebOutputBase:      WebOutputBase{Message: msg},

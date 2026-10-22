@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -28,7 +29,9 @@ func setupDiplomatWebMockDefaults(g *interfaces.MockDiplomatGame) {
 		tableau[i] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, i+2, true)}
 	}
 	g.On("GetTableau").Return(tableau).Maybe()
-	g.On("GetTableauMoveTargets").Return([domain.DiplomatTableauCnt + 1][]int{}).Maybe()
+	g.On("LegalTargets", mock.AnythingOfType("int")).Return([]int{}, []int{}).Maybe()
+	g.On("WasteLegalTargets").Return([]int{}, []int{}).Maybe()
+	g.On("FoundationNextRank").Return(make([]int, domain.DiplomatFoundationCnt)).Maybe()
 
 	var foundation [domain.DiplomatFoundationCnt][]*domain.Card
 	g.On("GetFoundation").Return(foundation).Maybe()
@@ -180,7 +183,9 @@ func TestDiplomatWebPresenter_MarksDeadEndColumns(t *testing.T) {
 	tableau[1] = []*domain.Card{domain.NewCard(domain.CardDesignHeart, 5, true), domain.NewCard(domain.CardDesignClover, 1, true)}
 	tableau[2] = []*domain.Card{domain.NewCard(domain.CardDesignClover, 1, true), domain.NewCard(domain.CardDesignHeart, 9, true)}
 	g.On("GetTableau").Return(tableau).Maybe()
-	g.On("GetTableauMoveTargets").Return([domain.DiplomatTableauCnt + 1][]int{}).Maybe()
+	g.On("LegalTargets", mock.AnythingOfType("int")).Return([]int{}, []int{}).Maybe()
+	g.On("WasteLegalTargets").Return([]int{}, []int{}).Maybe()
+	g.On("FoundationNextRank").Return(make([]int, domain.DiplomatFoundationCnt)).Maybe()
 	setupDiplomatOutputMock(g)
 
 	out := parseDiplomatOutput(t, new(DiplomatWebPresenter).Output(g, nil))
@@ -190,4 +195,64 @@ func TestDiplomatWebPresenter_MarksDeadEndColumns(t *testing.T) {
 	assert.True(t, out.TableauDeadEnd[1], "an Ace on top takes nothing")
 	assert.False(t, out.TableauDeadEnd[2], "a buried Ace does not end the column")
 	assert.False(t, out.TableauDeadEnd[3], "an empty column takes any card")
+}
+
+func TestDiplomatWebPresenter_LegalTargetsAndHintOutput(t *testing.T) {
+	g := new(interfaces.MockDiplomatGame)
+	setupDiplomatWebMockDefaults(g)
+	g.On("GetHint").Return(nil).Maybe()
+	g.ExpectedCalls = filterCalls(g.ExpectedCalls, "LegalTargets")
+	for i := range domain.DiplomatTableauCnt {
+		var tableau, foundation []int
+		switch i {
+		case 0:
+			foundation = []int{2}
+		case 1:
+			tableau = []int{3}
+		}
+		g.On("LegalTargets", i).Return(tableau, foundation).Maybe()
+	}
+	g.ExpectedCalls = filterCalls(g.ExpectedCalls, "WasteLegalTargets")
+	g.On("WasteLegalTargets").Return([]int(nil), []int{4}).Maybe()
+	g.ExpectedCalls = filterCalls(g.ExpectedCalls, "FoundationNextRank")
+	g.On("FoundationNextRank").Return(make([]int, domain.DiplomatFoundationCnt)).Maybe()
+	out := parseDiplomatOutput(t, new(DiplomatWebPresenter).Output(g, nil))
+	assert.Equal(t, []int{}, out.LegalTargets["tableau-0"].Tableau)
+	assert.Equal(t, []int{2}, out.LegalTargets["tableau-0"].Foundation)
+	assert.Equal(t, []int{3}, out.LegalTargets["tableau-1"].Tableau)
+	assert.Equal(t, []int{}, out.LegalTargets["tableau-1"].Foundation)
+	assert.Equal(t, []int{}, out.LegalTargets["waste"].Tableau)
+	assert.Equal(t, []int{4}, out.LegalTargets["waste"].Foundation)
+	assert.Equal(t, make([]int, domain.DiplomatFoundationCnt), out.FoundationNextRank)
+
+	hintOut := parseDiplomatOutput(t, new(DiplomatWebPresenter).HintOutput(g))
+	assert.Equal(t, out.LegalTargets, hintOut.LegalTargets)
+	assert.Equal(t, out.FoundationNextRank, hintOut.FoundationNextRank)
+}
+
+func TestDiplomatWebPresenter_EmptyLegalTargets(t *testing.T) {
+	g := new(interfaces.MockDiplomatGame)
+	setupDiplomatWebMockDefaults(g)
+	g.On("GetHint").Return(nil).Maybe()
+	g.ExpectedCalls = filterCalls(g.ExpectedCalls, "LegalTargets")
+	for i := range domain.DiplomatTableauCnt {
+		g.On("LegalTargets", i).Return([]int{}, []int{}).Maybe()
+	}
+	g.ExpectedCalls = filterCalls(g.ExpectedCalls, "FoundationNextRank")
+	g.On("FoundationNextRank").Return([]int(nil)).Maybe()
+
+	out := parseDiplomatOutput(t, new(DiplomatWebPresenter).Output(g, nil))
+	assert.Empty(t, out.LegalTargets)
+	assert.Equal(t, []int{}, out.FoundationNextRank)
+}
+
+func TestDiplomatWebPresenter_WasteLegalTargetsNormalizeNilFoundation(t *testing.T) {
+	g := new(interfaces.MockDiplomatGame)
+	setupDiplomatOutputMock(g)
+	g.ExpectedCalls = filterCalls(g.ExpectedCalls, "WasteLegalTargets")
+	g.On("WasteLegalTargets").Return([]int{2}, []int(nil)).Maybe()
+
+	out := parseDiplomatOutput(t, new(DiplomatWebPresenter).Output(g, nil))
+	assert.Equal(t, []int{2}, out.LegalTargets["waste"].Tableau)
+	assert.Equal(t, []int{}, out.LegalTargets["waste"].Foundation)
 }
