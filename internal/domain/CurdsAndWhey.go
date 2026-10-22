@@ -130,6 +130,37 @@ func curdsAndWheyIsRun(cards []*Card) bool {
 	return true
 }
 
+// AutoMoveTargets returns legal tableau destinations in the auto-move priority order:
+// same-suit links, same-rank links, then empty columns for a partial run.
+func (g *CurdsAndWhey) AutoMoveTargets(fromCol, cardIndex int) []int {
+	if fromCol < 0 || fromCol >= CurdsAndWheyColCnt || cardIndex < 0 || cardIndex >= len(g.columns[fromCol]) || !curdsAndWheyIsRun(g.columns[fromCol][cardIndex:]) {
+		return []int{}
+	}
+	card := g.columns[fromCol][cardIndex]
+	targets := make([]int, 0, CurdsAndWheyColCnt-1)
+	for to := 0; to < CurdsAndWheyColCnt; to++ {
+		if to != fromCol && len(g.columns[to]) > 0 {
+			top := g.columns[to][len(g.columns[to])-1]
+			if g.canPlace(card, to) && top.GetDesign() == card.GetDesign() && top.GetValue() == card.GetValue()+1 {
+				targets = append(targets, to)
+			}
+		}
+	}
+	for to := 0; to < CurdsAndWheyColCnt; to++ {
+		if to != fromCol && len(g.columns[to]) > 0 && g.canPlace(card, to) && g.columns[to][len(g.columns[to])-1].GetValue() == card.GetValue() {
+			targets = append(targets, to)
+		}
+	}
+	if cardIndex > 0 {
+		for to := 0; to < CurdsAndWheyColCnt; to++ {
+			if to != fromCol && len(g.columns[to]) == 0 {
+				targets = append(targets, to)
+			}
+		}
+	}
+	return targets
+}
+
 // canPlace card を列 toCol に置けるか。空列は任意。
 //
 // それ以外は次の 2 通り:

@@ -27,7 +27,6 @@ import type { Card } from '../types/card';
 import { CurdsAndWheyPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
-import { curdsAndWheyAutoMoveTarget } from '../utils/curdsAndWheyAutoMoveTarget';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Curds and Whey tutorial step definitions. */
@@ -182,7 +181,8 @@ function CurdsAndWheyPageContent() {
   // guard in the card's onClick.
   const autoMoveCard = (col: number, idx: number) => {
     if (!state.runStarts[col].includes(idx)) return;
-    const toCol = curdsAndWheyAutoMoveTarget(state.columns, col, idx);
+    const targets = state.legalTargets[`tableau-${col}-${idx}`];
+    const toCol = targets ? targets.tableau[0] : null;
     if (toCol === null) {
       setSelected(null);
       setAutoMoveNotice(t('noAutoMove'));

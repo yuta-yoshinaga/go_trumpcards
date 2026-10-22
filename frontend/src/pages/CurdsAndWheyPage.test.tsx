@@ -28,6 +28,7 @@ function makeState(overrides: Partial<CurdsAndWheyResponse> = {}): CurdsAndWheyR
     phase: 0,
     moveCount: 0,
     canUndo: false,
+    legalTargets: {},
     runStarts: Array.from({ length: 13 }, (_, col) => {
       const column = columns[col];
       if (column.length === 0) return [];
@@ -224,6 +225,7 @@ describe('CurdsAndWheyPage', () => {
           cols[3] = [card('SPADE', 9), card('HEART', 6), card('HEART', 5), card('HEART', 4)];
           return cols;
         })(),
+        legalTargets: {},
         runStarts: Array.from({ length: 13 }, (_, col) => (col === 3 ? [1, 2, 3] : col === 0 ? [0] : [])),
       }),
     );
@@ -323,7 +325,8 @@ describe('CurdsAndWheyPage', () => {
   });
 
   it('double-clicks a grabbable card to auto-move it to the best column', async () => {
-    // Default state: col0 = ♠9, col1 = ♠8. Double-clicking ♠8 links same-suit onto ♠9.
+    // The response marks col0 as the preferred destination for this source.
+    mockExec.mockResolvedValue(makeState({ legalTargets: { 'tableau-1-0': { tableau: [0], foundation: [] } } }));
     renderWithProviders(<CurdsAndWheyPage />);
     const srcCard = await screen.findByTestId('card-1-0');
     mockExec.mockClear();
@@ -331,9 +334,25 @@ describe('CurdsAndWheyPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('m', { fromCol: 1, cardIndex: 0, toCol: 0 }));
   });
 
+  it('uses server destination priority when it disagrees with the former client rule', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        legalTargets: { 'tableau-1-0': { tableau: [12, 0], foundation: [] } },
+      }),
+    );
+    renderWithProviders(<CurdsAndWheyPage />);
+    const source = await screen.findByTestId('card-1-0');
+    mockExec.mockClear();
+    fireEvent.doubleClick(source);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('m', { fromCol: 1, cardIndex: 0, toCol: 12 }));
+  });
+
   it('follows server run starts when they disagree with the former client rule', async () => {
     mockExec.mockResolvedValue(
-      makeState({ runStarts: Array.from({ length: 13 }, (_, col) => (col === 1 ? [0] : [])) }),
+      makeState({
+        runStarts: Array.from({ length: 13 }, (_, col) => (col === 1 ? [0] : [])),
+        legalTargets: { 'tableau-1-0': { tableau: [0], foundation: [] } },
+      }),
     );
     renderWithProviders(<CurdsAndWheyPage />);
     const card0 = await screen.findByTestId('card-0-0');

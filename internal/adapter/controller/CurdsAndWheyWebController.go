@@ -26,15 +26,23 @@ type CurdsAndWheyWebOutputHint struct {
 	ToCol     int `json:"toCol"`
 }
 
+// CurdsAndWheyWebOutputTargets は 1 つの移動元の自動移動先。Tableau は優先順で、
+// Foundation は常に空。
+type CurdsAndWheyWebOutputTargets struct {
+	Tableau    []int `json:"tableau"`
+	Foundation []int `json:"foundation"`
+}
+
 // CurdsAndWheyWebOutput カーズ・アンド・ホエイのWebアウトプット。
 type CurdsAndWheyWebOutput struct {
-	Columns        [][]*WebOutputCard         `json:"columns"`
-	CompletedSuits int                        `json:"completedSuits"`
-	Phase          int                        `json:"phase"`
-	MoveCount      int                        `json:"moveCount"`
-	CanUndo        bool                       `json:"canUndo"`
-	RunStarts      [][]int                    `json:"runStarts"`
-	Hint           *CurdsAndWheyWebOutputHint `json:"hint,omitempty"`
+	LegalTargets   map[string]CurdsAndWheyWebOutputTargets `json:"legalTargets"`
+	Columns        [][]*WebOutputCard                      `json:"columns"`
+	CompletedSuits int                                     `json:"completedSuits"`
+	Phase          int                                     `json:"phase"`
+	MoveCount      int                                     `json:"moveCount"`
+	CanUndo        bool                                    `json:"canUndo"`
+	RunStarts      [][]int                                 `json:"runStarts"`
+	Hint           *CurdsAndWheyWebOutputHint              `json:"hint,omitempty"`
 	WebOutputBase
 }
 
@@ -51,6 +59,7 @@ func newCurdsAndWheyDefaultOutput(msg string) *CurdsAndWheyWebOutput {
 	return &CurdsAndWheyWebOutput{
 		Columns:       make([][]*WebOutputCard, 0),
 		RunStarts:     make([][]int, 0),
+		LegalTargets:  map[string]CurdsAndWheyWebOutputTargets{},
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }
