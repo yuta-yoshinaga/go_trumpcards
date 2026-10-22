@@ -801,6 +801,7 @@ describe('useGameHint', () => {
   it('routes wasp through getWaspHint (tableau move)', () => {
     localStorage.setItem('hint_enabled_wasp', 'true');
     const state: WaspResponse = {
+      legalTargets: {},
       tableau: [],
       stockCount: 0,
       completedSuits: 0,
@@ -820,6 +821,7 @@ describe('useGameHint', () => {
   it('routes wasp through getWaspHint (deal stock)', () => {
     localStorage.setItem('hint_enabled_wasp', 'true');
     const state: WaspResponse = {
+      legalTargets: {},
       tableau: [],
       stockCount: 3,
       completedSuits: 0,

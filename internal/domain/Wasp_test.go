@@ -30,6 +30,24 @@ func clearWaspTableau(s *domain.Wasp) {
 	s.SetStock(nil)
 }
 
+func TestWasp_LegalTargetsFrom(t *testing.T) {
+	s := newTestWasp()
+	s.Reset()
+	clearWaspTableau(s)
+	var tableau [domain.WaspTableauCnt][]*domain.KlondikeTableauCard
+	tableau[0] = []*domain.KlondikeTableauCard{makeTableauCard(domain.CardDesignSpade, 7, true), makeTableauCard(domain.CardDesignHeart, 3, true)}
+	tableau[1] = []*domain.KlondikeTableauCard{makeTableauCard(domain.CardDesignSpade, 8, true)}
+	tableau[2] = []*domain.KlondikeTableauCard{makeTableauCard(domain.CardDesignHeart, 4, true)}
+	tableau[3] = []*domain.KlondikeTableauCard{makeTableauCard(domain.CardDesignSpade, 9, true)}
+	tableau[4] = []*domain.KlondikeTableauCard{makeTableauCard(domain.CardDesignSpade, 8, false)}
+	s.SetTableau(tableau)
+	assert.Equal(t, []int{1}, s.LegalTargetsFrom(0, 0), "a buried card moves with its suffix and only legal non-empty columns are returned")
+	assert.Equal(t, []int{2}, s.LegalTargetsFrom(0, 1), "the source column is excluded")
+	assert.Empty(t, s.LegalTargetsFrom(4, 0), "face-down cards have no destinations")
+	assert.Empty(t, s.LegalTargetsFrom(-1, 0))
+	assert.Empty(t, s.LegalTargetsFrom(0, 2))
+}
+
 // --- Tests ---
 
 func TestNewWasp(t *testing.T) {

@@ -21,6 +21,7 @@ export interface WaspHint {
 
 /** API response shape for a Wasp game. */
 export interface WaspResponse extends BaseGameResponse {
+  legalTargets: Record<string, { tableau: number[]; foundation: number[] }>;
   tableau: KlondikeTableauCard[][];
   stockCount: number;
   completedSuits: number;

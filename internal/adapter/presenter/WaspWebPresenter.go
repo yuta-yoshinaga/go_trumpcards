@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -16,6 +17,7 @@ type WaspWebPresenter struct{}
 // Output ゲーム状態をJSON出力
 func (p *WaspWebPresenter) Output(s interfaces.WaspGame, lastErr error) string {
 	resObj := p.buildBase(s)
+	resObj.LegalTargets = p.buildLegalTargets(s)
 
 	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
 	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
@@ -57,6 +59,7 @@ func (p *WaspWebPresenter) Output(s interfaces.WaspGame, lastErr error) string {
 // HintOutput ヒントをJSON出力
 func (p *WaspWebPresenter) HintOutput(s interfaces.WaspGame) string {
 	resObj := p.buildBase(s)
+	resObj.LegalTargets = p.buildLegalTargets(s)
 	hint := s.GetHint()
 	if hint != nil {
 		resObj.Hint = &controller.WaspWebOutputHint{
@@ -72,10 +75,28 @@ func (p *WaspWebPresenter) HintOutput(s interfaces.WaspGame) string {
 	return marshalOrError(resObj)
 }
 
-// LegalMovesOutput は合法な移動先を返す。Web版は WaspPage の waspLegalTargets が
-// クライアント側で移動先を算出・ハイライトするため、通常の状態JSONへ委譲する。
+// LegalMovesOutput は通常の状態JSONとともにサーバー算出の合法な移動先を返す。
 func (p *WaspWebPresenter) LegalMovesOutput(s interfaces.WaspGame, _ int) string {
 	return p.Output(s, nil)
+}
+
+func (p *WaspWebPresenter) buildLegalTargets(s interfaces.WaspGame) map[string]controller.WaspWebOutputTargets {
+	result := make(map[string]controller.WaspWebOutputTargets)
+	tableau := s.GetTableau()
+	for col := 0; col < domain.WaspTableauCnt; col++ {
+		for index, card := range tableau[col] {
+			if !card.FaceUp {
+				continue
+			}
+			tableau := s.LegalTargetsFrom(col, index)
+			if len(tableau) == 0 {
+				continue
+			}
+			key := "tableau-" + strconv.Itoa(col) + "-" + strconv.Itoa(index)
+			result[key] = controller.WaspWebOutputTargets{Tableau: intSliceOrEmpty(tableau), Foundation: []int{}}
+		}
+	}
+	return result
 }
 
 // ActionLogOutput 棋譜をJSON出力

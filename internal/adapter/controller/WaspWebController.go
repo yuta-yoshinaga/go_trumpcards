@@ -31,8 +31,15 @@ type WaspWebOutputHint struct {
 	ExposesFaceDown bool `json:"exposesFaceDown"`
 }
 
+// WaspWebOutputTargets lists tableau and foundation destinations for a movable card suffix.
+type WaspWebOutputTargets struct {
+	Tableau    []int `json:"tableau"`
+	Foundation []int `json:"foundation"`
+}
+
 // WaspWebOutput ワスプWebアウトプット
 type WaspWebOutput struct {
+	LegalTargets      map[string]WaspWebOutputTargets   `json:"legalTargets"`
 	Tableau           [][]*KlondikeWebOutputTableauCard `json:"tableau"`
 	StockCount        int                               `json:"stockCount"`
 	CompletedSuits    int                               `json:"completedSuits"`
@@ -54,6 +61,7 @@ var NewWaspWebController, NewWaspWebControllerWithProvider = webControllerPair[u
 func newWaspDefaultOutput(msg string) *WaspWebOutput {
 	return &WaspWebOutput{
 		Tableau:       make([][]*KlondikeWebOutputTableauCard, 0),
+		LegalTargets:  map[string]WaspWebOutputTargets{},
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }
