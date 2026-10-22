@@ -87,6 +87,61 @@ func TestSpiteAndMalice_Reset_RecoversInvalidConfig(t *testing.T) {
 	assert.Equal(t, SpiteAndMaliceGoalSizeDefault, g.GetConfig().GoalSize)
 }
 
+func TestSpiteAndMalice_LegalTargets(t *testing.T) {
+	t.Run("returns legal sources and ascending foundation indices", func(t *testing.T) {
+		g := newTestSpiteAndMalice()
+		g.SetPlayerHand(0, []*Card{mkCard(CardDesignSpade, 1), mkCard(CardDesignHeart, 6), mkCard(CardDesignClover, 7), mkCard(CardDesignDiamond, 13)})
+		g.SetPlayerSide(0, 0, []*Card{mkCard(CardDesignSpade, 2), mkCard(CardDesignHeart, 6)})
+		g.SetPlayerSide(0, 1, []*Card{mkCard(CardDesignSpade, 3)})
+		g.SetPlayerGoal(0, []*Card{mkCard(CardDesignHeart, 13)})
+		g.SetFoundation(0, []*Card{mkCard(CardDesignSpade, 1), mkCard(CardDesignHeart, 2), mkCard(CardDesignSpade, 13), mkCard(CardDesignHeart, 4), mkCard(CardDesignSpade, 5)}) // effective top 6
+		full := make([]*Card, SpiteAndMaliceFoundationMax)
+		for i := range full {
+			full[i] = mkCard(CardDesignSpade, 1)
+		}
+		g.SetFoundation(3, full)
+		assert.Equal(t, map[string][]int{
+			"hand-0": {1, 2}, "hand-1": {0}, "hand-3": {0, 1, 2},
+			"side-0": {0}, "goal": {0, 1, 2},
+		}, g.LegalTargets())
+	})
+
+	t.Run("non-wild next value and complete foundation reset", func(t *testing.T) {
+		g := newTestSpiteAndMalice()
+		for p := range SpiteAndMalicePlayerCnt {
+			g.SetPlayerHand(p, nil)
+			g.SetPlayerGoal(p, nil)
+			for side := range SpiteAndMaliceSideCnt {
+				g.SetPlayerSide(p, side, nil)
+			}
+		}
+		for f := range SpiteAndMaliceFoundationCnt {
+			g.SetFoundation(f, nil)
+		}
+		g.SetStock(nil)
+		g.SetCompleted(nil)
+		g.SetCurrent(SpiteAndMaliceHumanIdx)
+		g.SetPlayerHand(0, []*Card{mkCard(CardDesignSpade, 12)})
+		g.SetFoundation(0, []*Card{mkCard(CardDesignSpade, 11)})
+		full := make([]*Card, SpiteAndMaliceFoundationMax)
+		for i := range full {
+			full[i] = mkCard(CardDesignSpade, 1)
+		}
+		g.SetFoundation(1, full)
+		assert.Equal(t, map[string][]int{"hand-0": {0}}, g.LegalTargets())
+	})
+
+	t.Run("empty outside human turn or playing phase", func(t *testing.T) {
+		g := newTestSpiteAndMalice()
+		g.SetPlayerHand(0, []*Card{mkCard(CardDesignSpade, 1)})
+		g.SetCurrent(SpiteAndMaliceCpuIdx)
+		assert.Empty(t, g.LegalTargets())
+		g.SetCurrent(SpiteAndMaliceHumanIdx)
+		g.SetPhase(SpiteAndMalicePhaseGameOver)
+		assert.Empty(t, g.LegalTargets())
+	})
+}
+
 // --- PlayFromHand ---
 
 func TestSpiteAndMalice_PlayFromHand_StartsFoundationWithAce(t *testing.T) {

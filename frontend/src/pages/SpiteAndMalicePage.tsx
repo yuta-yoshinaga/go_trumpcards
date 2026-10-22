@@ -30,11 +30,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
-import {
-  canPlaceSpiteAndMaliceCardOnFoundation,
-  isGoalTopPlayableToFoundation,
-  isSpiteAndMaliceWild,
-} from '../utils/spiteAndMaliceUtils';
+import { isSpiteAndMaliceWild } from '../utils/spiteAndMaliceUtils';
 
 const samRunner = spiteAndMaliceApi;
 
@@ -162,14 +158,7 @@ function SpiteAndMalicePageContent() {
 
   const [selection, setSelection] = useState<Selection>(null);
   const [cpuSpeed, setCpuSpeed] = useState<SamCpuSpeed>(loadSamCpuSpeed);
-  const selectedCard = useMemo(() => {
-    const human = state?.players[0];
-    if (!human || !selection) return null;
-    if (selection.kind === 'hand') return human.hand[selection.idx] ?? null;
-    if (selection.kind === 'goal') return human.goalTop ?? null;
-    const side = human.sides[selection.idx];
-    return side[side.length - 1] ?? null;
-  }, [selection, state]);
+  const selectedLegalKey = selection?.kind === 'goal' ? 'goal' : selection ? `${selection.kind}-${selection.idx}` : '';
 
   const handleSelectCpuSpeed = useCallback((v: string) => {
     const speed: SamCpuSpeed = v === 'slow' || v === 'fast' ? v : 'normal';
@@ -263,21 +252,6 @@ function SpiteAndMalicePageContent() {
     [isHumanTurn, isGameOver],
   );
 
-  const handleFoundationClick = useCallback(
-    (fIdx: number) => {
-      if (!isHumanTurn || isGameOver || !selection) return;
-      if (selection.kind === 'hand') {
-        void apiCall('move', { zone: 'hand', idx: selection.idx }, { zone: 'foundation', idx: fIdx });
-      } else if (selection.kind === 'goal') {
-        void apiCall('move', { zone: 'goal' }, { zone: 'foundation', idx: fIdx });
-      } else {
-        void apiCall('move', { zone: 'side', idx: selection.idx }, { zone: 'foundation', idx: fIdx });
-      }
-      setSelection(null);
-    },
-    [apiCall, selection, isHumanTurn, isGameOver],
-  );
-
   const handleDiscardSide = useCallback(
     (sideIdx: number) => {
       if (!isHumanTurn || isGameOver) return;
@@ -290,6 +264,19 @@ function SpiteAndMalicePageContent() {
   if (error) return <ErrorAlert message={error} onRetry={retry} />;
 
   if (!state) return <GameSkeleton gameKey="spiteandmalice" layout={{ kind: 'tableau', topRow: 6, tableau: 7 }} />;
+
+  const handleFoundationClick = (fIdx: number) => {
+    if (!isHumanTurn || isGameOver || !selection || !state.legalTargets[selectedLegalKey]?.foundation.includes(fIdx))
+      return;
+    if (selection.kind === 'hand') {
+      void apiCall('move', { zone: 'hand', idx: selection.idx }, { zone: 'foundation', idx: fIdx });
+    } else if (selection.kind === 'goal') {
+      void apiCall('move', { zone: 'goal' }, { zone: 'foundation', idx: fIdx });
+    } else {
+      void apiCall('move', { zone: 'side', idx: selection.idx }, { zone: 'foundation', idx: fIdx });
+    }
+    setSelection(null);
+  };
 
   const phaseName = isGameOver ? t('phase.gameOver') : state.current === 1 ? t('phase.cpuTurn') : t('phase.playerTurn');
 
@@ -394,8 +381,8 @@ function SpiteAndMalicePageContent() {
                   playable={
                     isHumanTurn &&
                     !isGameOver &&
-                    selectedCard !== null &&
-                    canPlaceSpiteAndMaliceCardOnFoundation(selectedCard.value, state.foundationTops[idx], pile.length)
+                    !!selection &&
+                    (state.legalTargets[selectedLegalKey]?.foundation.includes(idx) ?? false)
                   }
                   selected={selection !== null}
                   selectSourceHintId={selectSourceHintId}
@@ -435,9 +422,7 @@ function SpiteAndMalicePageContent() {
                   ariaTop={(card, count) => t('aria.goalTop', { label: t('label.goal'), card, count })}
                   ariaEmpty={t('aria.goalEmpty', { label: t('label.goal') })}
                   remainingLabel={(count) => t('goalRemaining', { count })}
-                  playable={
-                    isHumanTurn && !isGameOver && isGoalTopPlayableToFoundation(human.goalTop, state.foundationTops)
-                  }
+                  playable={isHumanTurn && !isGameOver && state.legalTargets.goal !== undefined}
                 />
               </div>
 

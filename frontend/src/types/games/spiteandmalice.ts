@@ -23,6 +23,7 @@ export interface SpiteAndMaliceHint {
 
 /** API response shape for a Spite & Malice game. */
 export interface SpiteAndMaliceResponse extends BaseGameResponse {
+  legalTargets: Record<string, { foundation: number[] }>;
   phase: number;
   current: number;
   players: [SpiteAndMalicePlayerState, SpiteAndMalicePlayerState];

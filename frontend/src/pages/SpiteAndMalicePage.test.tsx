@@ -1,7 +1,8 @@
-import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { spiteAndMaliceApi } from '../api/gameApi';
 import i18n from '../i18n';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, SpiteAndMaliceResponse } from '../types/card';
 import { SpiteAndMalicePage } from './SpiteAndMalicePage';
@@ -35,6 +36,7 @@ const baseState: SpiteAndMaliceResponse = {
     },
   ],
   foundations: [[], [], [], []],
+  legalTargets: {},
   foundationTops: [0, 0, 0, 0],
   stockSize: 60,
   completedSize: 0,
@@ -209,11 +211,12 @@ describe('SpiteAndMalicePage', () => {
     expect(remainingCount.className).toContain('text-ds-accent');
   });
 
-  it('marks only matching foundations after selecting a hand, goal, or side card', async () => {
+  it('highlights only the server targets after selecting a hand, goal, or side card', async () => {
     mockExec.mockResolvedValue({
       ...baseState,
       foundations: [[card('HEART', 5)], [], [], []],
       foundationTops: [5, 0, 0, 0],
+      legalTargets: { 'hand-0': { foundation: [2] }, goal: { foundation: [1] }, 'side-0': { foundation: [3] } },
       players: [
         {
           ...baseState.players[0],
@@ -228,9 +231,9 @@ describe('SpiteAndMalicePage', () => {
     const [hand] = await screen.findAllByRole('button', { name: /♠ 6/ });
     fireEvent.click(hand);
     expect(foundationButtons().map((button) => button.getAttribute('data-playable'))).toEqual([
+      null,
+      null,
       'true',
-      null,
-      null,
       null,
     ]);
 
@@ -238,15 +241,15 @@ describe('SpiteAndMalicePage', () => {
     expect(foundationButtons().map((button) => button.getAttribute('data-playable'))).toEqual([
       null,
       'true',
-      'true',
-      'true',
+      null,
+      null,
     ]);
 
     fireEvent.click(screen.getByRole('button', { name: /サイド 1 一番上/ }));
     expect(foundationButtons().map((button) => button.getAttribute('data-playable'))).toEqual([
       null,
-      'true',
-      'true',
+      null,
+      null,
       'true',
     ]);
   });
@@ -255,6 +258,34 @@ describe('SpiteAndMalicePage', () => {
     renderWithProviders(<SpiteAndMalicePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     expect(foundationButtons().every((button) => button.getAttribute('data-playable') === null)).toBe(true);
+  });
+
+  it('dispatches a selected legal foundation and ignores a missing selected source key', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      legalTargets: { 'hand-0': { foundation: [0] } },
+      players: [{ ...baseState.players[0], hand: [card('SPADE', 5)] }, baseState.players[1]],
+    });
+    renderWithProviders(<SpiteAndMalicePage />);
+    const hand = await screen.findByRole('button', { name: /♠ 5/ });
+    fireEvent.click(hand);
+    fireEvent.click((await screen.findAllByRole('button', { name: /組札|Foundation/ }))[0]);
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'hand', idx: 0 }, { zone: 'foundation', idx: 0 }),
+    );
+
+    cleanup();
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({
+      ...baseState,
+      legalTargets: {},
+      players: [{ ...baseState.players[0], hand: [card('SPADE', 5)] }, baseState.players[1]],
+    });
+    renderWithProviders(<SpiteAndMalicePage />);
+    fireEvent.click(await screen.findByRole('button', { name: /♠ 5/ }));
+    fireEvent.click((await screen.findAllByRole('button', { name: /組札|Foundation/ }))[0]);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 
   it('keeps an unselected foundation focusable and explains how to enable it', async () => {
@@ -275,6 +306,7 @@ describe('SpiteAndMalicePage', () => {
   it('prioritizes the hint ring over the playable ring', async () => {
     mockExec.mockResolvedValue({
       ...baseState,
+      legalTargets: { 'hand-0': { foundation: [0, 1] } },
       players: [{ ...baseState.players[0], hand: [card('SPADE', 2)] }, baseState.players[1]],
       foundationTops: [1, 1, 0, 0],
       hint: { source: 'hand', index: 0, foundationIdx: 0, discard: false },
@@ -296,6 +328,7 @@ describe('SpiteAndMalicePage', () => {
   it('marks incomplete foundations for a selected K, including after an effective K top', async () => {
     mockExec.mockResolvedValue({
       ...baseState,
+      legalTargets: { 'hand-3': { foundation: [0, 1, 2] } },
       foundations: [[card('HEART', 13), card('SPADE', 8)], [], [], Array.from({ length: 12 }, () => card('CLOVER', 1))],
       foundationTops: [8, 0, 0, 12],
     });
@@ -312,6 +345,7 @@ describe('SpiteAndMalicePage', () => {
   it('uses the API effective top when a foundation contains a K', async () => {
     mockExec.mockResolvedValue({
       ...baseState,
+      legalTargets: { 'hand-0': { foundation: [0] } },
       foundations: [[card('HEART', 13)], [], [], []],
       foundationTops: [8, 0, 0, 0],
       players: [{ ...baseState.players[0], hand: [card('SPADE', 9)] }, baseState.players[1]],
@@ -324,6 +358,7 @@ describe('SpiteAndMalicePage', () => {
   it('does not mark foundations when a selected hand slot has no card', async () => {
     mockExec.mockResolvedValue({
       ...baseState,
+      legalTargets: { 'hand-0': { foundation: [0] } },
       foundationTops: [4, 0, 0, 0],
       players: [
         { ...baseState.players[0], hand: [card('SPADE', 5), undefined as unknown as Card] },
@@ -506,6 +541,7 @@ describe('SpiteAndMalicePage', () => {
   it('marks the human goal pile as playable when goalTop fits a foundation', async () => {
     const playableGoalState: SpiteAndMaliceResponse = {
       ...baseState,
+      legalTargets: { goal: { foundation: [0] } },
       players: [{ ...baseState.players[0], goalTop: card('SPADE', 1) }, baseState.players[1]],
     };
     mockExec.mockResolvedValue(playableGoalState);
@@ -527,6 +563,25 @@ describe('SpiteAndMalicePage', () => {
     const goalBtn = await screen.findByRole('button', { name: /ゴール|Goal/ });
     expect(goalBtn.dataset.goalPlayable).toBe('false');
     expect(goalBtn.className).not.toContain('ring-ds-warning');
+  });
+
+  it('uses the server goal key even when the card rule would disagree', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      legalTargets: { goal: { foundation: [3] } },
+      players: [{ ...baseState.players[0], goalTop: card('SPADE', 9) }, baseState.players[1]],
+    });
+    renderWithProviders(<SpiteAndMalicePage />);
+    expect((await screen.findByRole('button', { name: /ゴール|Goal/ })).dataset.goalPlayable).toBe('true');
+  });
+
+  it('does not pulse when the server omits the goal key even if the card rule would allow it', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      players: [{ ...baseState.players[0], goalTop: card('SPADE', 1) }, baseState.players[1]],
+    });
+    renderWithProviders(<SpiteAndMalicePage />);
+    expect((await screen.findByRole('button', { name: /ゴール|Goal/ })).dataset.goalPlayable).toBe('false');
   });
 
   it('does not pulse the goal pile on CPU turn even if it would be playable', async () => {
