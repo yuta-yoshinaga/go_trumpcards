@@ -181,6 +181,15 @@ func (_m *MockKlaverjasGame) GetPlayableIndices(playerIdx int) []int {
 	return nil
 }
 
+// GetPlayRejectCodes returns configured rejection codes for a player.
+func (_m *MockKlaverjasGame) GetPlayRejectCodes(playerIdx int) []string {
+	ret := _m.Called(playerIdx)
+	if v := ret.Get(0); v != nil {
+		return v.([]string)
+	}
+	return nil
+}
+
 // GetHint モック
 func (_m *MockKlaverjasGame) GetHint() *domain.KlaverjasHint {
 	ret := _m.Called()

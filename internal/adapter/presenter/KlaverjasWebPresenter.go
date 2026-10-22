@@ -49,6 +49,10 @@ func (p *KlaverjasWebPresenter) buildBase(g interfaces.KlaverjasGame) *controlle
 	resObj.IsHumanTurn = g.IsHumanTurn()
 
 	resObj.PlayableIndices = p.playableIndices(g)
+	resObj.PlayRejectCodes = make([]string, 0)
+	if g.GetPhase() == domain.KlaverjasPhasePlay && g.IsHumanTurn() {
+		resObj.PlayRejectCodes = stringSliceOrEmpty(g.GetPlayRejectCodes(g.GetCurrentPlayerIdx()))
+	}
 
 	cfg := g.GetConfig()
 	resObj.Config = controller.KlaverjasWebOutputConfig{

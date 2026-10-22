@@ -35,6 +35,7 @@ func setupKlaverjasWebMock() *interfaces.MockKlaverjasGame {
 	m.On("GetRoundPlayerRoem").Return([domain.KlaverjasPlayerCnt]int{0, 0, 0, 0})
 	m.On("GetWinnerTeam").Return(-1)
 	m.On("GetPlayableIndices", 0).Return([]int{0})
+	m.On("GetPlayRejectCodes", 0).Return([]string{}).Maybe()
 	m.On("IsHumanTurn").Return(true)
 	m.On("GetConfig").Return(domain.DefaultKlaverjasConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
@@ -277,4 +278,39 @@ func TestKlaverjasWebPresenterHintOutputMarksTheRequest(t *testing.T) {
 	none.ExpectedCalls = removeMockCall(none.ExpectedCalls, "GetHint")
 	none.On("GetHint").Return((*domain.KlaverjasHint)(nil))
 	assert.Contains(t, new(presenter.KlaverjasWebPresenter).HintOutput(none), "klaverjas.noHint")
+}
+
+func TestKlaverjasWebPresenterPlayRejectCodesAreHumanPlayTurnOnly(t *testing.T) {
+	p := new(presenter.KlaverjasWebPresenter)
+	for _, tc := range []struct {
+		name  string
+		phase domain.KlaverjasPhase
+		human bool
+	}{
+		{name: "human play turn", phase: domain.KlaverjasPhasePlay, human: true},
+		{name: "cpu play turn", phase: domain.KlaverjasPhasePlay, human: false},
+		{name: "non play phase", phase: domain.KlaverjasPhaseTrickEnd, human: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			m, _ := setupKlaverjasWebMockWithPlayers()
+			m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+			m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "IsHumanTurn")
+			m.On("GetPhase").Return(tc.phase)
+			m.On("IsHumanTurn").Return(tc.human)
+			m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPlayRejectCodes")
+			m.On("GetPlayRejectCodes", 0).Return([]string{"server.err"}).Maybe()
+			result := p.Output(m, nil)
+			var out controller.KlaverjasWebOutput
+			assert.NoError(t, json.Unmarshal([]byte(result), &out))
+			if tc.phase == domain.KlaverjasPhasePlay && tc.human {
+				assert.Equal(t, []string{"server.err"}, out.PlayRejectCodes)
+			} else {
+				assert.Equal(t, []string{}, out.PlayRejectCodes)
+			}
+		})
+	}
+	noHint, _ := setupKlaverjasWebMockWithPlayers()
+	noHint.ExpectedCalls = removeMockCall(noHint.ExpectedCalls, "GetPlayRejectCodes")
+	noHint.On("GetPlayRejectCodes", 0).Return([]string{"server.err"}).Maybe()
+	assert.Contains(t, p.HintOutput(noHint), `"playRejectCodes":["server.err"]`)
 }

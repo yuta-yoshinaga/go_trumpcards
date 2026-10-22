@@ -786,6 +786,17 @@ func (g *Klaverjas) GetPlayableIndices(playerIdx int) []int {
 	return g.getValidPlayIndices(playerIdx)
 }
 
+// GetPlayRejectCodes returns one validation message code per hand card, in hand order.
+// Playable cards have an empty code.
+func (g *Klaverjas) GetPlayRejectCodes(playerIdx int) []string {
+	player := g.players[playerIdx]
+	codes := make([]string, player.GetCardsSize())
+	for i := range codes {
+		codes[i], _ = ErrorMessageCode(g.validatePlay(playerIdx, player.GetCard(i)))
+	}
+	return codes
+}
+
 // --- JSON ---
 
 // klaverjasJSON is the JSON wire format for Klaverjas.

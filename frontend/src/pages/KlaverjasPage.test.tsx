@@ -83,6 +83,13 @@ describe('KlaverjasPage', () => {
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
   });
 
+  it('does not show server rejection reasons during a CPU turn', async () => {
+    mockExec.mockResolvedValue({ ...cpuTurnState, playRejectCodes: ['klaverjas.errMustPlayTrump'] });
+    renderWithProviders(<KlaverjasPage />);
+    const card = await screen.findByAltText('♥ Q');
+    expect(card.closest('button')).not.toHaveAttribute('title', '切り札を出してください');
+  });
+
   it('shows CPU status on desktop', async () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1280 });
@@ -189,6 +196,7 @@ describe('KlaverjasPage', () => {
         currentTrick: [{ playerIdx: 1, card: { design: 'SPADE', value: 10 } }],
         trumpSuit: 4,
         playableIndices: [2],
+        playRejectCodes: ['shared.errFollowLeadSuit', '', ''],
       }),
       card: '♥ Q',
       reason: 'リードスートに従ってください',
@@ -209,6 +217,7 @@ describe('KlaverjasPage', () => {
         currentTrick: [{ playerIdx: 1, card: { design: 'CLOVER', value: 7 } }],
         trumpSuit: 3,
         playableIndices: [0],
+        playRejectCodes: ['', 'klaverjas.errMustPlayTrump'],
       }),
       card: '♠ A',
       reason: '切り札を出してください',
@@ -230,6 +239,7 @@ describe('KlaverjasPage', () => {
         currentTrick: [{ playerIdx: 1, card: { design: 'HEART', value: 12 } }],
         trumpSuit: 3,
         playableIndices: [1],
+        playRejectCodes: ['klaverjas.errMustOvertrump', '', ''],
       }),
       card: '♥ Q',
       reason: 'より強い切り札で追い越してください',
@@ -243,20 +253,21 @@ describe('KlaverjasPage', () => {
     expect(matchingCard).toBeDefined();
   });
 
-  it('does not show a restriction reason for a playable card', async () => {
+  it('uses the server reason even when it disagrees with the client side rule', async () => {
     const state = makeKlaverjasState({
       currentTrick: [{ playerIdx: 1, card: { design: 'SPADE', value: 10 } }],
       trumpSuit: 4,
       playableIndices: [2],
+      playRejectCodes: ['klaverjas.errMustPlayTrump', '', ''],
     });
     mockExec.mockResolvedValue(state);
     renderWithProviders(<KlaverjasPage />);
-    const playableCard = await screen.findByAltText('♠ A');
-    expect(playableCard.closest('button')).not.toHaveAttribute('title', 'リードスートに従ってください');
+    const playableCard = await screen.findByAltText('♥ Q');
+    expect(playableCard.closest('button')).toHaveAttribute('title', '切り札を出してください');
   });
 
-  it('falls back to the generic tooltip when no restriction reason applies', async () => {
-    const state = makeKlaverjasState({ currentTrick: [], playableIndices: [0] });
+  it('ignores an unknown server rejection code and keeps the generic tooltip', async () => {
+    const state = makeKlaverjasState({ currentTrick: [], playableIndices: [0], playRejectCodes: ['unknown.code'] });
     mockExec.mockResolvedValue(state);
     renderWithProviders(<KlaverjasPage />);
     const restrictedCard = await screen.findByAltText('♠ A');
