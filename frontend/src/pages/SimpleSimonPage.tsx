@@ -122,6 +122,7 @@ function SimpleSimonPageContent() {
   // guard in the card's onClick.
   const autoMoveCard = useCallback(
     (currentState: SimpleSimonResponse, col: number, idx: number) => {
+      if (!isPlayingForKbd || !currentState.runStarts[col].includes(idx)) return;
       const toCol = simpleSimonAutoMoveTarget(currentState.columns, col, idx);
       if (toCol === null) {
         setSelected(null);
@@ -132,7 +133,7 @@ function SimpleSimonPageContent() {
       exec('m', { fromCol: col, cardIndex: idx, toCol });
       setSelected(null);
     },
-    [exec, t],
+    [exec, isPlayingForKbd, t],
   );
 
   // Click a card: select it as the source, or — if a source in another column

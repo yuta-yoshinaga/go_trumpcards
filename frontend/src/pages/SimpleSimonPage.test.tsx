@@ -268,6 +268,46 @@ describe('SimpleSimonPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('m', { fromCol: 1, cardIndex: 0, toCol: 0 }));
   });
 
+  it('ignores a keyboard selection that is no longer a server run start', async () => {
+    const refreshedState = makeState({
+      columns: (() => {
+        const columns: Card[][] = Array.from({ length: 10 }, () => []);
+        columns[0] = [card('SPADE', 9)];
+        columns[1] = [card('SPADE', 8)];
+        return columns;
+      })(),
+      runStarts: [[], [], ...Array.from({ length: 8 }, () => [])],
+    });
+    mockExec.mockResolvedValueOnce(makeState()).mockResolvedValue(refreshedState);
+    renderWithProviders(<SimpleSimonPage />);
+    await screen.findByTestId('card-1-0');
+
+    fireEvent.keyDown(document, { key: '2' });
+    fireEvent.keyDown(document, { key: 'h' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+    await waitFor(() => expect(screen.getByTestId('card-1-0')).toHaveAttribute('aria-pressed', 'true'));
+
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'Enter' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('confirms a keyboard selection that remains a server run start after a refresh', async () => {
+    mockExec.mockResolvedValueOnce(makeState()).mockResolvedValue(makeState());
+    renderWithProviders(<SimpleSimonPage />);
+    await screen.findByTestId('card-1-0');
+
+    fireEvent.keyDown(document, { key: '2' });
+    fireEvent.keyDown(document, { key: 'h' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+    await waitFor(() => expect(screen.getByTestId('card-1-0')).toHaveAttribute('aria-pressed', 'true'));
+
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'Enter' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('m', { fromCol: 1, cardIndex: 0, toCol: 0 }));
+  });
+
   it('does not execute a move when Enter is pressed without a keyboard selection', async () => {
     renderWithProviders(<SimpleSimonPage />);
     await screen.findByTestId('card-1-0');
