@@ -70,7 +70,28 @@ Decision の改訂 (2026-10-20) の形で、Baker's Dozen と Perseverance か�
 - Fourteen Out は、既に応答に載っていた `removablePairs` を使い、選んだ列と組める列を `legalTargets` (`tableau-<col>`) で返す。ヒントも `legalTargets` を読むようにして、写しを削除した。
 - Monte Carlo は `removablePairs: number` (Fourteen Out と同じ名前と型)、Gaps は行ごとの `lockedPrefixLengths: number[]` を返す。どちらも CUI が既に使っている domain の関数をそのまま返す。
 
-役や組み合わせの検証 (`machiavelliRearrange.ts`、`doudizhuComboValidator.ts`、`burracoMeld.ts`、`tonkMeldIndices.ts`、`tongitsMeldIndices.ts`) はこの ADR の対象外とする (ユーザ承認済み)。どれもプレイヤーが組んだ選択を検証するもので、選ぶ前にはサーバに分からない。サーバに判定させると選ぶたびに往復が要り、合法手を状態と同じ応答に載せるというこの ADR の前提に合わない。`panMeldCandidates.ts` はヒントの設定で出る表示なので、`utils/hints` と同じ扱いで対象外。これで、この ADR の対象になる合法性の写しは残っていない。
+役や組み合わせの検証 (`machiavelliRearrange.ts`、`doudizhuComboValidator.ts`、`burracoMeld.ts`、`tonkMeldIndices.ts`、`tongitsMeldIndices.ts`) はこの ADR の対象外とする (ユーザ承認済み)。どれもプレイヤーが組んだ選択を検証するもので、選ぶ前にはサーバに分からない。サーバに判定させると選ぶたびに往復が要り、合法手を状態と同じ応答に載せるというこの ADR の前提に合わない。`panMeldCandidates.ts` はヒントの設定で出る表示なので、`utils/hints` と同じ扱いで対象外。Rummy 500 の `classifyRummy500Meld` と Yaniv の `classifyYanivDiscard` も、プレイヤーが組んだ選択を検証するので同じく対象外。
+
+### 2 度目の数え直し (2026-10-23)
+
+2026-10-22 の時点で「対象の写しは残っていない」と書いたが、誤りだった。`Mirrors` / `domain_rule_quoted` などのコメントでもう一度探すと、合法性の写しが 7 本残っていた (#12006)。7 本とも次のように移した。
+
+- `legalTargets`:
+  - Wasp: 表向きの札ごとに `tableau-<col>-<cardIndex>` で返す。空き列は以前と同じく含めず、ページの置き場 UI に任せる。
+  - Osmosis: `reserve-<i>` / `waste` から置ける組札を返す。
+  - Grandfather's Clock: `tableau-<col>` から置ける文字盤を返す。
+  - Accordion: `pile-<idx>` に `{ tableau }` を返す (ユーザ承認済み)。
+  - Spite and Malice: 人間の手札・捨て札の山・ゴールの山 (`hand-<i>` / `side-<i>` / `goal`) から置ける組札を返す。ゴールの札が出せることは `goal` キーがあるかどうかで表すので、真偽値のフィールドは足していない。
+- 添字の列:
+  - Königrufen: 場札交換で埋められる札を `discardableIndices` で返す。他のタロック系ゲームと同じ名前。
+  - Sevens: 出せる手札を `validPlays` で返す。
+
+使われていなかった `flowerGardenLegalTargets.ts` (#11963 でページは移行済み) も削除した。
+
+次の 3 つはクライアントに残っている。
+
+- `osmosisAllowedRanks`: 組札の各列に置けるランクの説明文を表示するためのもので、移動の可否は `legalTargets` で決まる。
+- Sevens の `isPositionPlayable` と `listJokerPlacements`: 盤面の置ける位置の強調表示と、ジョーカーの置き場所の一覧を出している。どちらも手札の添字の列では表せず、移すには新しい応答の形の承認が要る。
 
 点数・順位・表示用の計算 (`chinesePokerFoul.ts`、`heartsLimit.ts` など) は合法手ではないので、この ADR の対象外。
 
