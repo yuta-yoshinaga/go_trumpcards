@@ -98,6 +98,22 @@ func TestGrandfathersClock_TargetRankIsTheHour(t *testing.T) {
 	assert.Equal(t, 12, GrandfathersClockTargetRank(11), "12 o'clock ends on a Queen")
 }
 
+func TestGrandfathersClock_LegalTargets(t *testing.T) {
+	gc := NewGrandfathersClock(NewTrumpCards(0))
+	foundation := starterBoard()
+	setGCBoard(gc, foundation, [][]*Card{{NewCard(CardDesignHeart, 11, true)}})
+	tableau, faces := gc.LegalTargets(0)
+	assert.Empty(t, tableau)
+	assert.Equal(t, []int{0}, faces)
+
+	tableau, faces = gc.LegalTargets(1)
+	assert.Empty(t, tableau)
+	assert.Empty(t, faces)
+	tableau, faces = gc.LegalTargets(-1)
+	assert.Empty(t, tableau)
+	assert.Empty(t, faces)
+}
+
 func TestGrandfathersClock_FoundationBuildsUpInSuit(t *testing.T) {
 	gc := newTestGrandfathersClock()
 	f := starterBoard()

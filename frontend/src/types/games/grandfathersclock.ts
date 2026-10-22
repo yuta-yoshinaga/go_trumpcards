@@ -27,6 +27,12 @@ export interface GrandfathersClockHint {
   toIdx: number;
 }
 
+/** Legal destinations for a tableau source. */
+export interface GrandfathersClockLegalTargets {
+  tableau: number[];
+  foundation: number[];
+}
+
 /** Full Grandfather's Clock game state returned from the API. */
 export interface GrandfathersClockResponse extends BaseGameResponse {
   tableau: GrandfathersClockTableauCard[][];
@@ -37,6 +43,7 @@ export interface GrandfathersClockResponse extends BaseGameResponse {
   canUndo: boolean;
   canRedo: boolean;
   isStalemate: boolean;
+  legalTargets: Record<string, GrandfathersClockLegalTargets>;
   undoToEscape?: number;
   hint?: GrandfathersClockHint;
 }
