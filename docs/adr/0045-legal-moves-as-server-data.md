@@ -70,7 +70,7 @@ Decision の改訂 (2026-10-20) の形で、Baker's Dozen と Perseverance か�
 - Fourteen Out は、既に応答に載っていた `removablePairs` を使い、選んだ列と組める列を `legalTargets` (`tableau-<col>`) で返す。ヒントも `legalTargets` を読むようにして、写しを削除した。
 - Monte Carlo は `removablePairs: number` (Fourteen Out と同じ名前と型)、Gaps は行ごとの `lockedPrefixLengths: number[]` を返す。どちらも CUI が既に使っている domain の関数をそのまま返す。
 
-役や組み合わせの検証 (`machiavelliRearrange.ts`、`doudizhuComboValidator.ts`、`burracoMeld.ts`、`tonkMeldIndices.ts`、`tongitsMeldIndices.ts`) はこの ADR の対象外とする (ユーザ承認済み)。どれもプレイヤーが組んだ選択を検証するもので、選ぶ前にはサーバに分からない。サーバに判定させると選ぶたびに往復が要り、合法手を状態と同じ応答に載せるというこの ADR の前提に合わない。`panMeldCandidates.ts` はヒントの設定で出る表示なので、`utils/hints` と同じ扱いで対象外。Rummy 500 の `classifyRummy500Meld`、Yaniv の `classifyYanivDiscard`、Chinese Poker の役の崩れの判定も、プレイヤーが組んだ選択を検証するので同じく対象外。
+役や組み合わせの検証 (`machiavelliRearrange.ts`、`doudizhuComboValidator.ts`、`burracoMeld.ts`、`tonkMeldIndices.ts`、`tongitsMeldIndices.ts`) はこの ADR の対象外とする (ユーザ承認済み)。どれもプレイヤーが組んだ選択を検証するもので、選ぶ前にはサーバに分からない。サーバに判定させると選ぶたびに往復が要り、合法手を状態と同じ応答に載せるというこの ADR の前提に合わない。`panMeldCandidates.ts` はヒントの設定で出る表示なので、`utils/hints` と同じ扱いで対象外。Rummy 500 の `classifyRummy500Meld` と Yaniv の `classifyYanivDiscard` も、プレイヤーが組んだ選択を検証するので同じく対象外。
 
 ### 2 度目の数え直し (2026-10-23)
 
