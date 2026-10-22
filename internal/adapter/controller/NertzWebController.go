@@ -69,6 +69,12 @@ type NertzWebHint struct {
 	ToCol     int    `json:"toCol"`
 }
 
+// NertzWebOutputTargets contains legal destination columns for one source.
+type NertzWebOutputTargets struct {
+	Tableau    []int `json:"tableau"`
+	Foundation []int `json:"foundation"`
+}
+
 // NertzWebOutput Nertz Web 出力
 type NertzWebOutput struct {
 	Phase         int                   `json:"phase"`
@@ -87,8 +93,9 @@ type NertzWebOutput struct {
 	// FoundationMax は組札が完成する枚数 (A..K = 13)。CUI は枚数を "n/13" で
 	// 出しているのに Web は現在枚数だけで、あと何枚かを暗算させていた (#5578)。
 	// 数字を画面に焼き込まず、ドメインの定数を渡す。
-	FoundationMax int           `json:"foundationMax"`
-	Hint          *NertzWebHint `json:"hint,omitempty"`
+	FoundationMax int                              `json:"foundationMax"`
+	Hint          *NertzWebHint                    `json:"hint,omitempty"`
+	LegalTargets  map[string]NertzWebOutputTargets `json:"legalTargets"`
 	WebOutputBase
 }
 
@@ -112,6 +119,7 @@ func newNertzDefaultOutput(msg string) *NertzWebOutput {
 		Players:       make([]*NertzWebPlayer, 0),
 		Foundations:   make([]*NertzWebFoundation, 0),
 		FoundationMax: domain.NertzFoundationMax,
+		LegalTargets:  make(map[string]NertzWebOutputTargets),
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }

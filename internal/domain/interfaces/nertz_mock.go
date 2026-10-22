@@ -117,6 +117,19 @@ func (_m *MockNertzGame) GetFoundations() []*domain.NertzFoundation {
 	return v.([]*domain.NertzFoundation)
 }
 
+func (_m *MockNertzGame) LegalTargetsFrom(col, cardIndex int) ([]int, []int) {
+	args := _m.Called(col, cardIndex)
+	return args.Get(0).([]int), args.Get(1).([]int)
+}
+func (_m *MockNertzGame) NertzPileLegalTargets() ([]int, []int) {
+	args := _m.Called()
+	return args.Get(0).([]int), args.Get(1).([]int)
+}
+func (_m *MockNertzGame) WasteLegalTargets() ([]int, []int) {
+	args := _m.Called()
+	return args.Get(0).([]int), args.Get(1).([]int)
+}
+
 func (_m *MockNertzGame) GetMoveCount() int {
 	return _m.Called().Int(0)
 }

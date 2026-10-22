@@ -35,6 +35,68 @@ func TestNewDefaultNertz(t *testing.T) {
 	assert.Equal(t, domain.NertzPhaseIdle, g.GetPhase())
 }
 
+func TestNertz_LegalTargetsFrom(t *testing.T) {
+	g := nertzGameForTest(t)
+	p := g.GetPlayers()[0]
+	clearPlayerPiles(p)
+	clearFoundations(g)
+	card := newNertzCard(domain.CardDesignHeart, 5)
+	p.PushTableau(0, &domain.NertzTableauCard{Card: card, FaceUp: true})
+	p.PushTableau(1, &domain.NertzTableauCard{Card: newNertzCard(domain.CardDesignSpade, 6), FaceUp: true})
+	tab, foundation := g.LegalTargetsFrom(0, 0)
+	assert.Contains(t, tab, 1)
+	assert.NotContains(t, tab, 0)
+	assert.Empty(t, foundation)
+	badTableau, badFoundation := g.LegalTargetsFrom(-1, 0)
+	assert.Empty(t, badTableau)
+	assert.Empty(t, badFoundation)
+}
+
+func TestNertz_LegalTargetsFromOnlyExposesFoundationsForColumnTop(t *testing.T) {
+	g := nertzGameForTest(t)
+	p := g.GetPlayers()[0]
+	clearPlayerPiles(p)
+	clearFoundations(g)
+	p.PushTableau(0, &domain.NertzTableauCard{Card: newNertzCard(domain.CardDesignDiamond, 4), FaceUp: true})
+	p.PushTableau(0, &domain.NertzTableauCard{Card: newNertzCard(domain.CardDesignHeart, 5), FaceUp: true})
+	p.PushTableau(1, &domain.NertzTableauCard{Card: newNertzCard(domain.CardDesignSpade, 6), FaceUp: true})
+	foundations := g.GetFoundations()
+	foundations[0] = domain.NewNertzFoundation()
+	foundations[1] = domain.NewNertzFoundation()
+	for _, idx := range []int{0, 1} {
+		for value := 1; value <= 4; value++ {
+			require.NoError(t, foundations[idx].Push(newNertzCard(domain.CardDesignHeart, value), idx))
+		}
+	}
+	g.SetFoundations(foundations)
+
+	_, nonTopFoundations := g.LegalTargetsFrom(0, 0)
+	assert.Empty(t, nonTopFoundations)
+	_, topFoundations := g.LegalTargetsFrom(0, 1)
+	assert.Equal(t, []int{0, 1}, topFoundations)
+}
+
+func TestNertz_PileLegalTargetsUseHumanPlayer(t *testing.T) {
+	g := nertzGameForTest(t)
+	human := g.GetPlayers()[0]
+	cpu := g.GetPlayers()[1]
+	clearPlayerPiles(human)
+	clearPlayerPiles(cpu)
+	clearFoundations(g)
+	human.PushNertz(newNertzCard(domain.CardDesignHeart, 5))
+	human.PushWaste(newNertzCard(domain.CardDesignClover, 1))
+	cpu.PushNertz(newNertzCard(domain.CardDesignSpade, 1))
+	cpu.PushWaste(newNertzCard(domain.CardDesignDiamond, 1))
+
+	nertzTableau, nertzFoundation := g.NertzPileLegalTargets()
+	wasteTableau, wasteFoundation := g.WasteLegalTargets()
+	assert.NotEmpty(t, nertzTableau)
+	assert.Empty(t, nertzFoundation)
+	assert.NotEmpty(t, wasteTableau)
+	assert.NotEmpty(t, wasteFoundation)
+	assert.Len(t, wasteFoundation, len(g.GetFoundations()))
+}
+
 func TestNertz_ResetInitialState(t *testing.T) {
 	g := nertzGameForTest(t)
 

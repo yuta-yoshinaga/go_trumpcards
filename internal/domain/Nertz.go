@@ -388,6 +388,75 @@ func (g *Nertz) MoveTableauToTableau(playerIdx, fromCol, fromIdx, toCol int) err
 	return nil
 }
 
+// LegalTargetsFrom returns legal destinations for a human player's tableau card,
+// mirroring the source and placement checks used by MoveTableauToTableau.
+func (g *Nertz) LegalTargetsFrom(col, cardIndex int) (tableau, foundation []int) {
+	var p *NertzPlayer
+	for _, candidate := range g.players {
+		if candidate != nil && !candidate.GetIsCpu() {
+			p = candidate
+			break
+		}
+	}
+	if p == nil || col < 0 || col >= NertzTableauCnt {
+		return nil, nil
+	}
+	cards := p.GetTableauColumn(col)
+	if cardIndex < 0 || cardIndex >= len(cards) || cards[cardIndex] == nil || cards[cardIndex].Card == nil {
+		return nil, nil
+	}
+	for dest := range NertzTableauCnt {
+		if dest != col && canPlaceOnNertzTableau(cards[cardIndex].Card, p.TableauTop(dest)) {
+			tableau = append(tableau, dest)
+		}
+	}
+	if cardIndex == len(cards)-1 {
+		for i, f := range g.foundations {
+			if f != nil && f.CanAccept(cards[cardIndex].Card) {
+				foundation = append(foundation, i)
+			}
+		}
+	}
+	return tableau, foundation
+}
+
+// NertzPileLegalTargets returns legal destinations for the human player's Nertz pile top.
+func (g *Nertz) NertzPileLegalTargets() (tableau, foundation []int) {
+	for _, p := range g.players {
+		if p != nil && !p.GetIsCpu() {
+			return g.targetsForCard(p, p.NertzTop())
+		}
+	}
+	return nil, nil
+}
+
+// WasteLegalTargets returns legal destinations for the human player's waste top.
+func (g *Nertz) WasteLegalTargets() (tableau, foundation []int) {
+	for _, p := range g.players {
+		if p != nil && !p.GetIsCpu() {
+			return g.targetsForCard(p, p.WasteTop())
+		}
+	}
+	return nil, nil
+}
+
+func (g *Nertz) targetsForCard(p *NertzPlayer, card *Card) (tableau, foundation []int) {
+	if card == nil {
+		return nil, nil
+	}
+	for col := range NertzTableauCnt {
+		if canPlaceOnNertzTableau(card, p.TableauTop(col)) {
+			tableau = append(tableau, col)
+		}
+	}
+	for i, f := range g.foundations {
+		if f != nil && f.CanAccept(card) {
+			foundation = append(foundation, i)
+		}
+	}
+	return tableau, foundation
+}
+
 // autoFillFromNertz fromCol が空でかつナッツパイルに残りがあれば 1 枚補充する。
 func (g *Nertz) autoFillFromNertz(p *NertzPlayer, fromCol int) {
 	if p.TableauSize(fromCol) > 0 {
