@@ -46073,10 +46073,9 @@ components:
                 - type: 'null'
         lockedPrefixLengths:
           type: array
-          description: Number of redeal-locked cards at the start of each row.
+          description: Number of redeal-locked cards at the start of each row (4 entries while a game is on the board; empty in the default error output).
           items:
             type: integer
-          minItems: 4
           maxItems: 4
         redealsUsed:
           type: integer
