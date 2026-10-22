@@ -37,15 +37,22 @@ type AgnesWebOutputHint struct {
 	ToCol     int    `json:"toCol"`
 }
 
+// AgnesWebOutputTargets lists tableau and foundation destinations for a tableau source.
+type AgnesWebOutputTargets struct {
+	Tableau    []int `json:"tableau"`
+	Foundation []int `json:"foundation"`
+}
+
 // AgnesWebOutput アグネス・ソレルWebアウトプット
 type AgnesWebOutput struct {
-	Tableau    [][]*AgnesWebOutputTableauCard `json:"tableau"`
-	StockCount int                            `json:"stockCount"`
-	Foundation [][]*WebOutputCard             `json:"foundation"`
-	BaseRank   int                            `json:"baseRank"`
-	Phase      int                            `json:"phase"`
-	MoveCount  int                            `json:"moveCount"`
-	CanUndo    bool                           `json:"canUndo"`
+	LegalTargets map[string]AgnesWebOutputTargets `json:"legalTargets"`
+	Tableau      [][]*AgnesWebOutputTableauCard   `json:"tableau"`
+	StockCount   int                              `json:"stockCount"`
+	Foundation   [][]*WebOutputCard               `json:"foundation"`
+	BaseRank     int                              `json:"baseRank"`
+	Phase        int                              `json:"phase"`
+	MoveCount    int                              `json:"moveCount"`
+	CanUndo      bool                             `json:"canUndo"`
 	// IsStalemate は合法手が 1 つも無いかどうか。判定はドメインの
 	// Agnes.IsStalemate() だけが持つ。以前はここに載せておらず、
 	// フロントが agnesHasLegalMove() で同じ規則を実装し直していた (#5601)。
@@ -66,6 +73,7 @@ var NewAgnesWebController, NewAgnesWebControllerWithProvider = webControllerPair
 func newAgnesDefaultOutput(msg string) *AgnesWebOutput {
 	return &AgnesWebOutput{
 		Tableau:       make([][]*AgnesWebOutputTableauCard, 0),
+		LegalTargets:  map[string]AgnesWebOutputTargets{},
 		Foundation:    make([][]*WebOutputCard, 0),
 		WebOutputBase: WebOutputBase{Message: msg},
 	}

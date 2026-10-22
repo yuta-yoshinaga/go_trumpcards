@@ -580,3 +580,53 @@ func TestAgnes_IsStalemate(t *testing.T) {
 	assert.False(t, movable.IsStalemate())
 	assert.NotNil(t, movable.GetHint())
 }
+
+func TestAgnes_LegalTargets(t *testing.T) {
+	t.Run("same-color descending tableau and suit foundation targets", func(t *testing.T) {
+		a := newTestAgnes()
+		a.SetBaseRank(5)
+		var tab [domain.AgnesTableauCnt][]*domain.AgnesTableauCard
+		tab[0] = []*domain.AgnesTableauCard{makeAgnesTC(domain.CardDesignSpade, 6, true)}
+		tab[1] = []*domain.AgnesTableauCard{makeAgnesTC(domain.CardDesignClover, 7, true)}
+		tab[2] = []*domain.AgnesTableauCard{makeAgnesTC(domain.CardDesignHeart, 7, true)}
+		a.SetTableau(tab)
+		var foundation [domain.AgnesFoundationCnt][]*domain.Card
+		foundation[0] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, false)}
+		a.SetFoundation(foundation)
+		tableau, f := a.LegalTargets(0)
+		assert.Equal(t, []int{1}, tableau)
+		assert.Equal(t, []int{0}, f)
+	})
+	t.Run("empty, face-down, and invalid sources have no targets", func(t *testing.T) {
+		a := newTestAgnes()
+		var tab [domain.AgnesTableauCnt][]*domain.AgnesTableauCard
+		tab[1] = []*domain.AgnesTableauCard{makeAgnesTC(domain.CardDesignSpade, 6, false)}
+		a.SetTableau(tab)
+		for _, col := range []int{-1, 0, 1, domain.AgnesTableauCnt} {
+			tableau, foundation := a.LegalTargets(col)
+			assert.Empty(t, tableau)
+			assert.Empty(t, foundation)
+		}
+	})
+	t.Run("does not expose wrong-color, wrong-rank, or empty tableau targets", func(t *testing.T) {
+		a := newTestAgnes()
+		var tab [domain.AgnesTableauCnt][]*domain.AgnesTableauCard
+		tab[0] = []*domain.AgnesTableauCard{makeAgnesTC(domain.CardDesignSpade, 6, true)}
+		tab[1] = []*domain.AgnesTableauCard{makeAgnesTC(domain.CardDesignHeart, 7, true)}
+		tab[2] = []*domain.AgnesTableauCard{makeAgnesTC(domain.CardDesignSpade, 8, true)}
+		a.SetTableau(tab)
+		tableau, _ := a.LegalTargets(0)
+		assert.Empty(t, tableau)
+	})
+	t.Run("foundation target uses same-suit progression and wraps king to ace", func(t *testing.T) {
+		a := newTestAgnes()
+		var tab [domain.AgnesTableauCnt][]*domain.AgnesTableauCard
+		tab[0] = []*domain.AgnesTableauCard{makeAgnesTC(domain.CardDesignSpade, 1, true)}
+		a.SetTableau(tab)
+		var foundation [domain.AgnesFoundationCnt][]*domain.Card
+		foundation[0] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 13, false)}
+		a.SetFoundation(foundation)
+		_, targets := a.LegalTargets(0)
+		assert.Equal(t, []int{0}, targets)
+	})
+}
