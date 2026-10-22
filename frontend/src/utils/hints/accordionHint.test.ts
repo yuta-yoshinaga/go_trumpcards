@@ -4,6 +4,7 @@ import { getAccordionHint } from './accordionHint';
 
 function makeState(overrides: Partial<AccordionResponse> = {}): AccordionResponse {
   return {
+    legalTargets: {},
     piles: [],
     pileCount: 0,
     phase: 0,

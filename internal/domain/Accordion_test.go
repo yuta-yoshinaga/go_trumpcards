@@ -42,6 +42,51 @@ func TestNewAccordion(t *testing.T) {
 	assert.Equal(t, domain.AccordionPhase(0), a.GetPhase())
 }
 
+func TestAccordion_LegalTargets(t *testing.T) {
+	t.Run("offset one same suit", func(t *testing.T) {
+		a := setupPlayingAccordion()
+		setAccordionPiles(a, [2]int{domain.CardDesignSpade, 2}, [2]int{domain.CardDesignSpade, 9})
+		assert.Equal(t, []int{0}, a.LegalTargets(1))
+	})
+	t.Run("offset three same rank", func(t *testing.T) {
+		a := setupPlayingAccordion()
+		setAccordionPiles(a, [2]int{domain.CardDesignSpade, 7}, [2]int{domain.CardDesignHeart, 2}, [2]int{domain.CardDesignClover, 3}, [2]int{domain.CardDesignDiamond, 7})
+		assert.Equal(t, []int{0}, a.LegalTargets(3))
+	})
+	t.Run("both offsets preserve nearest first", func(t *testing.T) {
+		a := setupPlayingAccordion()
+		setAccordionPiles(a, [2]int{domain.CardDesignSpade, 7}, [2]int{domain.CardDesignHeart, 7}, [2]int{domain.CardDesignClover, 7}, [2]int{domain.CardDesignDiamond, 7})
+		assert.Equal(t, []int{2, 0}, a.LegalTargets(3))
+	})
+	t.Run("out of range and no left neighbor", func(t *testing.T) {
+		a := setupPlayingAccordion()
+		setAccordionPiles(a, [2]int{domain.CardDesignSpade, 5}, [2]int{domain.CardDesignHeart, 5})
+		assert.Empty(t, a.LegalTargets(0))
+		assert.Empty(t, a.LegalTargets(-1))
+		assert.Empty(t, a.LegalTargets(2))
+		assert.Empty(t, a.LegalTargets(99))
+	})
+	t.Run("empty source and empty target", func(t *testing.T) {
+		a := setupPlayingAccordion()
+		a.SetPiles([][]*domain.Card{{domain.NewCard(domain.CardDesignSpade, 5, false)}, {}, {domain.NewCard(domain.CardDesignSpade, 9, false)}})
+		assert.Empty(t, a.LegalTargets(1))
+		assert.Empty(t, a.LegalTargets(2))
+	})
+	t.Run("neither suit nor rank matches", func(t *testing.T) {
+		a := setupPlayingAccordion()
+		setAccordionPiles(a, [2]int{domain.CardDesignSpade, 2}, [2]int{domain.CardDesignHeart, 9})
+		assert.Empty(t, a.LegalTargets(1))
+	})
+	t.Run("not playing", func(t *testing.T) {
+		a := setupPlayingAccordion()
+		setAccordionPiles(a, [2]int{domain.CardDesignSpade, 5}, [2]int{domain.CardDesignSpade, 5})
+		assert.Equal(t, domain.AccordionPhasePlaying, a.GetPhase())
+		a.SetPhase(domain.AccordionPhaseGameOver)
+		assert.Equal(t, domain.AccordionPhaseGameOver, a.GetPhase())
+		assert.Empty(t, a.LegalTargets(1))
+	})
+}
+
 func TestAccordion_Reset(t *testing.T) {
 	a := setupPlayingAccordion()
 	assert.Equal(t, domain.AccordionPhasePlaying, a.GetPhase())

@@ -15,6 +15,7 @@ import (
 
 func mustAccordionOutputJSON(msg string) string {
 	out := &controller.AccordionWebOutput{
+		LegalTargets:  map[string]controller.AccordionWebOutputTargets{},
 		Piles:         []*controller.AccordionWebOutputPile{},
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}

@@ -31,7 +31,6 @@ import { gameTheme } from '../styles/gameTheme';
 import type { AccordionResponse } from '../types/card';
 import { AccordionPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { accordionLegalOffsets, accordionLegalTargets } from '../utils/accordionUtils';
 import { cardAlt } from '../utils/cardAlt';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
@@ -311,7 +310,7 @@ function AccordionPageContent() {
   const isEnded = isGameClear || isGameOver;
   // Autocomplete is only useful while a legal merge remains; disable it (and skip
   // the pulse cue) otherwise, mirroring the sibling solitaires' gating.
-  const hasAutoMove = isPlaying && state.piles.some((_, idx) => accordionLegalTargets(state.piles, idx).length > 0);
+  const hasAutoMove = isPlaying && Object.keys(state.legalTargets).length > 0;
 
   const phaseName = isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing');
 
@@ -362,12 +361,14 @@ function AccordionPageContent() {
               data-tutorial="ac-piles"
             >
               {(() => {
+                const hoverEntry = hoveredIdx === null ? undefined : state.legalTargets[`pile-${hoveredIdx}`];
                 const hoverTargets =
-                  isPlaying && hoveredIdx !== null ? new Set(accordionLegalTargets(state.piles, hoveredIdx)) : null;
+                  isPlaying && hoveredIdx !== null ? new Set(hoverEntry ? hoverEntry.tableau : []) : null;
                 // Touch devices never fire mouseenter, so also paint the selected
                 // pile's legal -1/-3 targets persistently once it is picked (#3190).
+                const selectedEntry = selectedIdx === null ? undefined : state.legalTargets[`pile-${selectedIdx}`];
                 const selectedTargets =
-                  isPlaying && selectedIdx !== null ? new Set(accordionLegalTargets(state.piles, selectedIdx)) : null;
+                  isPlaying && selectedIdx !== null ? new Set(selectedEntry ? selectedEntry.tableau : []) : null;
                 return state.piles.map((pile, idx) => {
                   const top = pile.cards[0];
                   const isSelected = selectedIdx === idx;
@@ -386,7 +387,8 @@ function AccordionPageContent() {
                   const mergeSuffix =
                     isSelected && top
                       ? (() => {
-                          const offsets = accordionLegalOffsets(state.piles, idx);
+                          const entry = state.legalTargets[`pile-${idx}`];
+                          const offsets = entry ? entry.tableau.map((target) => idx - target) : [];
                           return offsets.length > 0
                             ? ` — ${offsets.map((o) => t('mergeOffsetAvailable', { offset: o })).join(t('listSeparator'))}`
                             : ` — ${t('noMergeAvailable')}`;
@@ -440,12 +442,14 @@ function AccordionPageContent() {
           <div className="sr-only" role="status" aria-live="polite" data-testid="ac-selection-status">
             {isPlaying && selectedIdx !== null
               ? (() => {
-                  const count = accordionLegalOffsets(state.piles, selectedIdx).length;
+                  const entry = state.legalTargets[`pile-${selectedIdx}`];
+                  const offsets = entry ? entry.tableau.map((target) => selectedIdx - target) : [];
+                  const count = offsets.length;
                   return count > 0
                     ? t('selectionMoves', {
                         idx: selectedIdx,
                         count,
-                        targets: accordionLegalOffsets(state.piles, selectedIdx)
+                        targets: offsets
                           .map((offset) => t('mergeTargetColumn', { col: selectedIdx - offset }))
                           .join(t('listSeparator')),
                       })

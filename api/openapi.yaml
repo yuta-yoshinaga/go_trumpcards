@@ -74478,6 +74478,15 @@ components:
     AccordionResponse:
       type: object
       properties:
+        legalTargets:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
         messageParams:
           type: object
           description: "Substitution values for `messageCode`. Absent when the message takes none."

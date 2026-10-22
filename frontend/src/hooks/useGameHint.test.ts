@@ -840,6 +840,7 @@ describe('useGameHint', () => {
   it('routes accordion through getAccordionHint', () => {
     localStorage.setItem('hint_enabled_accordion', 'true');
     const state: AccordionResponse = {
+      legalTargets: {},
       piles: [],
       pileCount: 0,
       phase: 0,

@@ -239,6 +239,21 @@ func (a *Accordion) SetIsStalemate(v bool) { a.isStalemate = v }
 // SetPiles パイル設定 (テスト用)
 func (a *Accordion) SetPiles(piles [][]*Card) { a.piles = piles }
 
+// LegalTargets returns legal destination indices in offset order: one pile back, then three piles back.
+func (a *Accordion) LegalTargets(fromIdx int) []int {
+	if a.phase != AccordionPhasePlaying || fromIdx < 0 || fromIdx >= len(a.piles) {
+		return []int{}
+	}
+	targets := make([]int, 0, 2)
+	for _, offset := range []int{AccordionOffsetOne, AccordionOffsetThree} {
+		toIdx := fromIdx - offset
+		if toIdx >= 0 && a.canMerge(fromIdx, toIdx) {
+			targets = append(targets, toIdx)
+		}
+	}
+	return targets
+}
+
 // --- Private helpers ---
 
 // canMerge fromIdx と toIdx の山を合流できるか (スートまたはランクが一致するか)
