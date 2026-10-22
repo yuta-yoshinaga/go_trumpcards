@@ -37,6 +37,11 @@ type SpiteAndMaliceWebHint struct {
 	Discard       bool   `json:"discard"`
 }
 
+// SpiteAndMaliceWebOutputTargets contains legal foundation destinations for one source.
+type SpiteAndMaliceWebOutputTargets struct {
+	Foundation []int `json:"foundation"`
+}
+
 // SpiteAndMaliceWebOutput Spite & Malice Web 出力
 type SpiteAndMaliceWebOutput struct {
 	Phase           int                                                     `json:"phase"`
@@ -53,6 +58,7 @@ type SpiteAndMaliceWebOutput struct {
 	CanAutoComplete bool                                                    `json:"canAutoComplete"`
 	CanUndo         bool                                                    `json:"canUndo"`
 	Hint            *SpiteAndMaliceWebHint                                  `json:"hint,omitempty"`
+	LegalTargets    map[string]SpiteAndMaliceWebOutputTargets               `json:"legalTargets"`
 	WebOutputBase
 }
 
@@ -69,6 +75,7 @@ func newSpiteAndMaliceDefaultOutput(msg string) *SpiteAndMaliceWebOutput {
 	return &SpiteAndMaliceWebOutput{
 		Winner:        -1,
 		GoalSize:      domain.SpiteAndMaliceGoalSizeDefault,
+		LegalTargets:  map[string]SpiteAndMaliceWebOutputTargets{},
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }

@@ -47,6 +47,8 @@ type SpiteAndMaliceGame interface {
 	GetFoundationTopValue(foundationIdx int) int
 	// IsGoalTopPlayable ゴール札の一番上が今どれかの基礎札に出せるかを返す
 	IsGoalTopPlayable(playerIdx int) bool
+	// LegalTargets returns foundation indices for each selectable human source on the human's turn.
+	LegalTargets() map[string][]int
 	// GetPlayer プレイヤー状態を取得する
 	GetPlayer(idx int) *domain.SpiteAndMalicePlayer
 	// GetConfig 設定を取得する

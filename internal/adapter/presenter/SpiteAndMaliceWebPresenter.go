@@ -76,6 +76,7 @@ func (p *SpiteAndMaliceWebPresenter) ActionLogOutput(g interfaces.SpiteAndMalice
 // buildBase は共通フィールドを詰めたレスポンスオブジェクトを返す
 func (p *SpiteAndMaliceWebPresenter) buildBase(g interfaces.SpiteAndMaliceGame) *controller.SpiteAndMaliceWebOutput {
 	resObj := new(controller.SpiteAndMaliceWebOutput)
+	resObj.LegalTargets = buildSpiteAndMaliceLegalTargets(g.LegalTargets())
 	resObj.Phase = int(g.GetPhase())
 	resObj.Current = g.GetCurrent()
 	resObj.MoveCount = g.GetMoveCount()
@@ -133,6 +134,14 @@ func (p *SpiteAndMaliceWebPresenter) buildBase(g interfaces.SpiteAndMaliceGame) 
 	}
 
 	return resObj
+}
+
+func buildSpiteAndMaliceLegalTargets(targets map[string][]int) map[string]controller.SpiteAndMaliceWebOutputTargets {
+	out := make(map[string]controller.SpiteAndMaliceWebOutputTargets)
+	for key, foundation := range targets {
+		out[key] = controller.SpiteAndMaliceWebOutputTargets{Foundation: intSliceOrEmpty(foundation)}
+	}
+	return out
 }
 
 // sourceToString ヒントソースを JSON 文字列へ

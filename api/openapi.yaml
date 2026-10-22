@@ -64904,6 +64904,16 @@ components:
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
           items:
             $ref: '#/components/schemas/ActionLogEntry'
+        legalTargets:
+          type: object
+          description: "Foundation destinations for the human's selectable sources on the human's turn, keyed by source (hand-<i>, side-<i>, goal); a source with no destination is omitted, and the goal key is present only when the goal top can be played."
+          additionalProperties:
+            type: object
+            required: [foundation]
+            properties:
+              foundation:
+                type: array
+                items: { type: integer }
         canAutoComplete:
           type: boolean
         canUndo:

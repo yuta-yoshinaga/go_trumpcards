@@ -10,6 +10,7 @@ const baseState: SpiteAndMaliceResponse = {
     { hand: [], goalSize: 0, sides: [[], [], [], []], isCpu: true },
   ],
   foundations: [[], [], [], []],
+  legalTargets: {},
   foundationTops: [0, 0, 0, 0],
   stockSize: 0,
   completedSize: 0,
