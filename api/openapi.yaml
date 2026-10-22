@@ -46037,6 +46037,8 @@ components:
     GapsResponse:
       type: object
       description: Current state of the Gaps / Montana game.
+      required:
+        - lockedPrefixLengths
       properties:
         entries:
           type: array
@@ -46069,6 +46071,13 @@ components:
               oneOf:
                 - $ref: '#/components/schemas/Card'
                 - type: 'null'
+        lockedPrefixLengths:
+          type: array
+          description: Number of redeal-locked cards at the start of each row.
+          items:
+            type: integer
+          minItems: 4
+          maxItems: 4
         redealsUsed:
           type: integer
           description: Number of redeals already used (0..3).
