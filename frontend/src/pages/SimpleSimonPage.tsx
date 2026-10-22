@@ -23,13 +23,12 @@ import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { Card } from '../types/card';
+import type { Card, SimpleSimonResponse } from '../types/card';
 import { SimpleSimonPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { simpleSimonAutoMoveTarget } from '../utils/simpleSimonAutoMoveTarget';
-import { isGrabbable, movableFromIndex } from '../utils/simpleSimonRun';
 
 /** Simple Simon tutorial step definitions. */
 const SS_TUTORIAL_STEPS: TutorialStep[] = [
@@ -122,9 +121,8 @@ function SimpleSimonPageContent() {
   // and show a notice. Single-click selection is preserved via the e.detail
   // guard in the card's onClick.
   const autoMoveCard = useCallback(
-    (col: number, idx: number) => {
-      if (!state || !isPlayingForKbd || !isGrabbable(state.columns[col], idx)) return;
-      const toCol = simpleSimonAutoMoveTarget(state.columns, col, idx);
+    (currentState: SimpleSimonResponse, col: number, idx: number) => {
+      const toCol = simpleSimonAutoMoveTarget(currentState.columns, col, idx);
       if (toCol === null) {
         setSelected(null);
         setAutoMoveNotice(t('noAutoMove'));
@@ -134,24 +132,25 @@ function SimpleSimonPageContent() {
       exec('m', { fromCol: col, cardIndex: idx, toCol });
       setSelected(null);
     },
-    [exec, isPlayingForKbd, state, t],
+    [exec, t],
   );
 
   // Click a card: select it as the source, or — if a source in another column
   // is already selected — move that run onto this column.
   const clickCard = useCallback(
     (col: number, idx: number) => {
-      if (!state || !isPlayingForKbd) return;
       if (selected && selected.col !== col) {
         if (!isLegalDestination(col)) return;
         exec('m', { fromCol: selected.col, cardIndex: selected.idx, toCol: col });
         setSelected(null);
         return;
       }
-      if (!isGrabbable(state.columns[col], idx)) return;
+      // The source-card handler is attached only to grabbable cards. A click
+      // on another column with a selection returns through the destination
+      // path above.
       setSelected({ col, idx });
     },
-    [exec, isLegalDestination, isPlayingForKbd, selected, state],
+    [exec, isLegalDestination, selected],
   );
 
   const clickColumn = useCallback(
@@ -170,15 +169,15 @@ function SimpleSimonPageContent() {
         clickColumn(col);
         return;
       }
-      const idx = movableFromIndex(state.columns[col]);
-      if (idx < state.columns[col].length) clickCard(col, idx);
+      const idx = state.runStarts[col][0];
+      if (idx !== undefined) clickCard(col, idx);
     },
     [clickCard, clickColumn, isPlayingForKbd, selected, state],
   );
 
   const confirmKeyboardMove = useCallback(() => {
-    if (selected) autoMoveCard(selected.col, selected.idx);
-  }, [autoMoveCard, selected]);
+    if (state && selected) autoMoveCard(state, selected.col, selected.idx);
+  }, [autoMoveCard, selected, state]);
 
   const clearKeyboardSelection = useCallback(() => {
     setSelected(null);
@@ -232,7 +231,7 @@ function SimpleSimonPageContent() {
 
   const renderColumn = (column: Card[], col: number) => {
     const isDestination = isLegalDestination(col);
-    const runStart = movableFromIndex(column);
+    const runStart = state.runStarts[col][0] ?? column.length;
     const columnLabel = selected?.col === col ? t('columnSource') : isDestination ? t('columnDestination') : '';
     return (
       <div
@@ -267,7 +266,7 @@ function SimpleSimonPageContent() {
             const inSelectedRun = Boolean(selected && selected.col === col && i >= selected.idx);
             // Grabbable = head of a valid movable run in this column. In a
             // destination column every card just forwards to the move.
-            const grabbable = i >= runStart;
+            const grabbable = state.runStarts[col].includes(i);
             const runStartLabel =
               i === runStart ? ` ${t('movableRunStartAria', { count: column.length - runStart })}` : '';
             const clickable = selected ? isDestination || (col === selected.col && grabbable) : grabbable;
@@ -292,7 +291,7 @@ function SimpleSimonPageContent() {
                       }
                     : undefined
                 }
-                onDoubleClick={canAct && grabbable ? () => autoMoveCard(col, i) : undefined}
+                onDoubleClick={canAct && grabbable ? () => autoMoveCard(state, col, i) : undefined}
                 disabled={!canAct || (!selected && !grabbable)}
                 aria-disabled={selected !== null && col !== selected.col ? !isDestination : undefined}
                 aria-describedby={

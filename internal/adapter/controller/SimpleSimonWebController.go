@@ -33,6 +33,7 @@ type SimpleSimonWebOutput struct {
 	Phase          int                       `json:"phase"`
 	MoveCount      int                       `json:"moveCount"`
 	CanUndo        bool                      `json:"canUndo"`
+	RunStarts      [][]int                   `json:"runStarts"`
 	Hint           *SimpleSimonWebOutputHint `json:"hint,omitempty"`
 	WebOutputBase
 }
@@ -49,6 +50,7 @@ var NewSimpleSimonWebController, NewSimpleSimonWebControllerWithProvider = webCo
 func newSimpleSimonDefaultOutput(msg string) *SimpleSimonWebOutput {
 	return &SimpleSimonWebOutput{
 		Columns:       make([][]*WebOutputCard, 0),
+		RunStarts:     make([][]int, 0),
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }

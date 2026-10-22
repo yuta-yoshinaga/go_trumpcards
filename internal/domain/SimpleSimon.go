@@ -105,6 +105,20 @@ func SimpleSimonMovableFrom(column []*Card) int {
 	return idx
 }
 
+// RunStarts returns the indices that can start a movable run in column col.
+func (g *SimpleSimon) RunStarts(col int) []int {
+	if col < 0 || col >= SimpleSimonColCnt {
+		return []int{}
+	}
+	column := g.columns[col]
+	start := SimpleSimonMovableFrom(column)
+	starts := make([]int, 0, len(column)-start)
+	for i := start; i < len(column); i++ {
+		starts = append(starts, i)
+	}
+	return starts
+}
+
 func simpleSimonIsRun(cards []*Card) bool {
 	for i := 1; i < len(cards); i++ {
 		if cards[i].GetDesign() != cards[i-1].GetDesign() || cards[i].GetValue() != cards[i-1].GetValue()-1 {
