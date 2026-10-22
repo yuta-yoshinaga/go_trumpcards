@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -92,6 +93,20 @@ func (p *CurdsAndWheyWebPresenter) fillBoard(resObj *controller.CurdsAndWheyWebO
 	for col := range cols {
 		resObj.RunStarts[col] = intSliceOrEmpty(g.RunStarts(col))
 	}
+	resObj.LegalTargets = buildCurdsAndWheyLegalTargets(g, resObj.RunStarts)
+}
+
+func buildCurdsAndWheyLegalTargets(g interfaces.CurdsAndWheyGame, runStarts [][]int) map[string]controller.CurdsAndWheyWebOutputTargets {
+	legalTargets := make(map[string]controller.CurdsAndWheyWebOutputTargets)
+	for col, starts := range runStarts {
+		for _, idx := range starts {
+			targets := intSliceOrEmpty(g.AutoMoveTargets(col, idx))
+			if len(targets) > 0 {
+				legalTargets["tableau-"+strconv.Itoa(col)+"-"+strconv.Itoa(idx)] = controller.CurdsAndWheyWebOutputTargets{Tableau: targets, Foundation: []int{}}
+			}
+		}
+	}
+	return legalTargets
 }
 
 func (p *CurdsAndWheyWebPresenter) buildBaseOutput(g interfaces.CurdsAndWheyGame) *controller.CurdsAndWheyWebOutput {

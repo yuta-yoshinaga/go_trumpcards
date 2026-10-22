@@ -10,6 +10,7 @@ function makeState(overrides?: Partial<CurdsAndWheyResponse>): CurdsAndWheyRespo
     moveCount: 0,
     canUndo: false,
     runStarts: [],
+    legalTargets: {},
     message: '',
     ...overrides,
   };

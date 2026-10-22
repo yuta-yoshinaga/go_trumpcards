@@ -74043,7 +74043,7 @@ components:
             $ref: '#/components/schemas/ActionLogEntry'
         columns:
           type: array
-          description: The 10 tableau columns (top card is last)
+          description: The 13 tableau columns (top card is last)
           items:
             type: array
             items:
@@ -74129,6 +74129,19 @@ components:
       type: object
       description: Current state of the Simple Simon game
       properties:
+        legalTargets:
+          type: object
+          description: "Legal tableau destinations keyed by tableau-<column>-<cardIndex>, ordered by auto-move priority."
+          additionalProperties:
+            type: object
+            required: [tableau, foundation]
+            properties:
+              tableau:
+                type: array
+                items: { type: integer }
+              foundation:
+                type: array
+                items: { type: integer }
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -74136,7 +74149,7 @@ components:
             $ref: '#/components/schemas/ActionLogEntry'
         columns:
           type: array
-          description: The 10 tableau columns (top card is last)
+          description: The 13 tableau columns (top card is last)
           items:
             type: array
             items:

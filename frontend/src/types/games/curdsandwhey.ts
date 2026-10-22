@@ -12,7 +12,8 @@ export interface CurdsAndWheyHint {
 
 /** Full Simple Simon game state returned from the API. */
 export interface CurdsAndWheyResponse extends BaseGameResponse {
-  /** The 10 tableau columns (top card is last). */
+  legalTargets: Record<string, { tableau: number[]; foundation: number[] }>;
+  /** The 13 tableau columns (top card is last). */
   columns: Card[][];
   /** Number of complete K-A suits removed (0-4). */
   completedSuits: number;
