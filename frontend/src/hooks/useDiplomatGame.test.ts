@@ -20,7 +20,8 @@ vi.mock('../api/gameApi', () => ({
 const mockExec = vi.mocked(diplomatApi.exec);
 
 const baseState: DiplomatResponse = {
-  tableauMoveTargets: Array.from({ length: 9 }, () => []),
+  legalTargets: {},
+  foundationNextRank: Array.from({ length: 8 }, () => 1),
   tableau: Array.from({ length: 8 }, () => []),
   foundation: Array.from({ length: 8 }, () => []),
   stockCount: 96,
@@ -156,5 +157,51 @@ describe('useDiplomatGame', () => {
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'tableau', col: 0 }, { zone: 'tableau', col: 3 }),
     );
     expect(result.current.selectedSource).toBeNull();
+  });
+
+  it('sends a move to the server supplied foundation target', async () => {
+    mockExec.mockResolvedValue({
+      legalTargets: { 'tableau-3': { tableau: [], foundation: [5] } },
+    } as unknown as DiplomatResponse);
+    const { result } = renderHook(() => useDiplomatGame(), { wrapper: makeWrapper() });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    await waitFor(() => expect(result.current.state?.legalTargets['tableau-3']).toBeDefined());
+    mockExec.mockClear();
+    act(() => result.current.handleFoundationShortcut({ zone: 'tableau', col: 3 }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'tableau', col: 3 }, { zone: 'foundation', col: 5 }),
+    );
+  });
+
+  it('follows server targets even when they disagree with client card rules', async () => {
+    mockExec.mockResolvedValue({
+      legalTargets: { waste: { tableau: [], foundation: [6] } },
+    } as unknown as DiplomatResponse);
+    const { result } = renderHook(() => useDiplomatGame(), { wrapper: makeWrapper() });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    await waitFor(() => expect(result.current.state?.legalTargets.waste).toBeDefined());
+    mockExec.mockClear();
+    act(() => result.current.handleFoundationShortcut({ zone: 'waste' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'waste' }, { zone: 'foundation', col: 6 }),
+    );
+  });
+
+  it('does nothing when the source key is missing', async () => {
+    const { result } = renderHook(() => useDiplomatGame(), { wrapper: makeWrapper() });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    act(() => result.current.handleFoundationShortcut({ zone: 'waste' }));
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('does nothing when a tableau source has no column index', async () => {
+    const { result } = renderHook(() => useDiplomatGame(), { wrapper: makeWrapper() });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    act(() => result.current.handleFoundationShortcut({ zone: 'tableau' }));
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
   });
 });

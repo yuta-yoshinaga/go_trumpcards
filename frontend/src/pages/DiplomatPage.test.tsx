@@ -28,7 +28,8 @@ const playingState: DiplomatResponse = {
   tableau: makeTableau([[card('SPADE', 9)], [card('HEART', 8)], [card('CLOVER', 1)]]),
   // サーバが返す判定 (domain.DiplomatIsDeadEndTop)。列2 の頭が ♣A。
   tableauDeadEnd: [false, false, true, false, false, false, false, false],
-  tableauMoveTargets: [[], [], [], [], [], [], [], [], []],
+  legalTargets: {},
+  foundationNextRank: Array.from({ length: 8 }, () => 1),
   foundation: Array.from({ length: 8 }, () => []),
   stockCount: 72,
   waste: [],
@@ -87,6 +88,7 @@ describe('DiplomatPage', () => {
     const state: DiplomatResponse = {
       ...playingState,
       foundation: [[card('SPADE', 5)], ...Array.from({ length: 7 }, () => [])],
+      foundationNextRank: [6, 1, 1, 1, 1, 1, 1, 1],
     };
     mockExec.mockResolvedValue(state);
     renderWithProviders(<DiplomatPage />);
@@ -230,7 +232,10 @@ describe('DiplomatPage', () => {
   });
 
   it('sends a pile top to a foundation', async () => {
-    mockExec.mockResolvedValue(playingState);
+    mockExec.mockResolvedValue({
+      ...playingState,
+      legalTargets: { 'tableau-2': { tableau: [], foundation: [1] } },
+    });
     renderWithProviders(<DiplomatPage />);
     // 読み上げ名には行き止まりの注記が続くので、前方一致で拾う (#5741)。
     const ace = await screen.findByRole('button', { name: /^♣ A/ });
@@ -444,7 +449,7 @@ describe('DiplomatPage dead-end columns', () => {
   it('highlights only tableau destinations supplied for the selected source', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
-      tableauMoveTargets: [[1, 3], [], [], [], [], [], [], [], []],
+      legalTargets: { 'tableau-0': { tableau: [1, 3], foundation: [] } },
     });
     renderWithProviders(<DiplomatPage />);
     const source = await screen.findByRole('button', { name: '♠ 9' });
@@ -455,16 +460,79 @@ describe('DiplomatPage dead-end columns', () => {
     expect(screen.getByRole('button', { name: /この列にはもう積めません/ })).not.toHaveAttribute('data-legal-target');
   });
 
+  it('follows server foundation legality even when the old client rule would reject the card', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      legalTargets: { 'tableau-0': { tableau: [], foundation: [2] } },
+    });
+    renderWithProviders(<DiplomatPage />);
+    fireEvent.click(await screen.findByRole('button', { name: '♠ 9' }));
+    expect(await screen.findByRole('button', { name: /空の組札2/ })).toHaveAttribute('data-legal-target', 'true');
+  });
+
+  it('double-click shortcut moves to the first foundation target', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      legalTargets: { 'tableau-0': { tableau: [], foundation: [4, 1] } },
+    });
+    renderWithProviders(<DiplomatPage />);
+    fireEvent.doubleClick(await screen.findByRole('button', { name: '♠ 9' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'tableau', col: 0 }, { zone: 'foundation', col: 4 }),
+    );
+  });
+
+  it('double-click on waste moves to the first foundation target', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      waste: [card('DIAMOND', 7)],
+      legalTargets: { waste: { tableau: [], foundation: [3] } },
+    });
+    renderWithProviders(<DiplomatPage />);
+    fireEvent.doubleClick(await screen.findByRole('button', { name: '♦ 7' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'waste' }, { zone: 'foundation', col: 3 }),
+    );
+  });
+
+  it('does not select a pile from a click event that belongs to a double click', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<DiplomatPage />);
+    const card = await screen.findByRole('button', { name: '♠ 9' });
+    fireEvent.click(card, { detail: 2 });
+    expect(card).not.toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('does not run a foundation shortcut for a non-top tableau card', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau([[card('SPADE', 7), card('SPADE', 9)], [card('HEART', 8)]]),
+    });
+    renderWithProviders(<DiplomatPage />);
+    fireEvent.click(await screen.findByRole('button', { name: '♥ 8' }));
+    fireEvent.doubleClick(screen.getByRole('button', { name: '♠ 7' }));
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('uses the server destination list for the selected waste card', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
       waste: [card('DIAMOND', 7)],
-      tableauMoveTargets: [[], [], [], [], [], [], [], [], [4]],
+      legalTargets: { waste: { tableau: [4], foundation: [] } },
     });
     renderWithProviders(<DiplomatPage />);
     fireEvent.click(await screen.findByRole('button', { name: '♦ 7' }));
     expect(await screen.findByRole('button', { name: /空の列 4/ })).toHaveAttribute('data-legal-target', 'true');
     expect(screen.getByRole('button', { name: /空の列 3/ })).not.toHaveAttribute('data-legal-target');
+  });
+
+  it('does not select waste from the click event that belongs to a double click', async () => {
+    mockExec.mockResolvedValue({ ...playingState, waste: [card('DIAMOND', 7)] });
+    renderWithProviders(<DiplomatPage />);
+    const waste = await screen.findByRole('button', { name: '♦ 7' });
+    fireEvent.click(waste, { detail: 2 });
+    expect(waste).not.toHaveAttribute('aria-pressed', 'true');
   });
 
   it('says in the accessible name that the Ace can still go to a foundation', async () => {
@@ -509,6 +577,7 @@ describe('DiplomatPage dead-end columns', () => {
         [], // fIdx 6: empty ♥ -> next is A
         [], // fIdx 7: empty ♦ -> next is A
       ],
+      foundationNextRank: [2, 3, 1, 1, 0, 1, 1, 1],
     };
     mockExec.mockResolvedValue(stateWithFoundations);
     renderWithProviders(<DiplomatPage />);
@@ -531,7 +600,7 @@ describe('DiplomatPage dead-end columns', () => {
   });
 
   it('enables and highlights only foundations that legally accept the selected card', async () => {
-    mockExec.mockResolvedValue(playingState);
+    mockExec.mockResolvedValue({ ...playingState, legalTargets: { 'tableau-2': { tableau: [], foundation: [1, 5] } } });
     renderWithProviders(<DiplomatPage />);
     const ace = await screen.findByRole('button', { name: /^♣ A/ });
     fireEvent.click(ace);
@@ -559,6 +628,7 @@ describe('DiplomatPage dead-end columns', () => {
       tableau: makeTableau([[card('HEART', 9)]]),
       tableauDeadEnd: [false, false, false, false, false, false, false, false],
       foundation: [[], [], [], [], [], [], [], []],
+      legalTargets: { waste: { tableau: [], foundation: [0, 4] } },
     });
     renderWithProviders(<DiplomatPage />);
 
@@ -576,6 +646,7 @@ describe('DiplomatPage dead-end columns', () => {
       ...playingState,
       tableau: makeTableau([[card('SPADE', 1)]]),
       tableauDeadEnd: [true, false, false, false, false, false, false, false],
+      legalTargets: { 'tableau-0': { tableau: [], foundation: [4] } },
       foundation: [
         [card('SPADE', 1)], // fIdx 0: has ♠A, needs ♠2
         [],
@@ -606,6 +677,7 @@ describe('DiplomatPage dead-end columns', () => {
       ...playingState,
       tableau: makeTableau([[card('SPADE', 2)]]),
       tableauDeadEnd: [false, false, false, false, false, false, false, false],
+      legalTargets: { 'tableau-0': { tableau: [], foundation: [0] } },
       foundation: [
         [card('SPADE', 1)], // fIdx 0: has ♠A, needs ♠2
         [],

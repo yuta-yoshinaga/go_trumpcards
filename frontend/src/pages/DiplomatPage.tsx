@@ -36,7 +36,6 @@ import { valueName } from '../utils/cardUtils';
 import { DIPLOMAT_HELP, parseDiplomatCommand } from '../utils/cli/commands/diplomatCommands';
 import { formatDiplomatState } from '../utils/cli/formatters/diplomatFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { diplomatFoundationRequirement } from '../utils/diplomatFoundation';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦', '♠', '♣', '♥', '♦'] as const;
@@ -90,7 +89,8 @@ function DiplomatPageContent() {
     cancelGiveUp,
   } = useGamePageSetup('diplomat');
   const game = useDiplomatGame();
-  const { state, loading, error, retry, hintError, selectedSource, hint, isAutoCompleting } = game;
+  const { state, loading, error, retry, hintError, selectedSource, hint, isAutoCompleting, handleFoundationShortcut } =
+    game;
   const wasAutoCompleting = useRef(isAutoCompleting);
   const [autoCompleteAnnouncement, setAutoCompleteAnnouncement] = useState('');
 
@@ -198,12 +198,18 @@ function DiplomatPageContent() {
 
   const wasteTop = state.waste.length > 0 ? state.waste[state.waste.length - 1] : null;
   const wasteZone: DiplomatMoveZone = { zone: 'waste' };
-  const selectedMoveTargets = selectedSource ? state.tableauMoveTargets[selectedSource.col ?? TABLEAU_PILES] : [];
+  const selectedTargetKey =
+    selectedSource?.zone === 'waste'
+      ? 'waste'
+      : selectedSource?.col !== undefined
+        ? `tableau-${selectedSource.col}`
+        : '';
+  const selectedTargets = selectedTargetKey ? state.legalTargets[selectedTargetKey] : undefined;
 
   const renderPile = (pileIdx: number) => {
     const cards = state.tableau[pileIdx] ?? [];
     const pileZone: DiplomatMoveZone = { zone: 'tableau', col: pileIdx };
-    const isLegalTableauTarget = selectedMoveTargets.includes(pileIdx) && isPlaying && !loading;
+    const isLegalTableauTarget = selectedTargets?.tableau.includes(pileIdx) === true && isPlaying && !loading;
     return (
       <div key={`pile-${pileIdx.toString()}`} className="flex-1 min-w-0">
         <div className="text-center text-xs text-ds-text-muted mb-0.5" aria-hidden="true">
@@ -250,12 +256,16 @@ function DiplomatPageContent() {
                   >
                     <button
                       type="button"
-                      onClick={() => {
+                      onClick={(e) => {
+                        if (e.detail >= 2) return;
                         if (selectedSource) {
                           game.handleSelectTarget(pileZone);
                         } else if (isTop) {
                           game.handleSelectSource(pileZone);
                         }
+                      }}
+                      onDoubleClick={() => {
+                        if (isTop) handleFoundationShortcut(pileZone);
                       }}
                       disabled={!isPlaying || loading || (!isTop && !selectedSource)}
                       aria-label={isDeadEnd ? t('deadEndAria', { card: cardAlt(card) }) : cardAlt(card)}
@@ -337,14 +347,14 @@ function DiplomatPageContent() {
               <div className="flex flex-wrap justify-center gap-1 sm:gap-2" data-tutorial="cg-foundation">
                 {state.foundation.map((pile, idx) => {
                   const foundationZone: DiplomatMoveZone = { zone: 'foundation', col: idx };
-                  const req = diplomatFoundationRequirement(idx, pile);
-                  const nextRankLabel = req.nextRank !== null ? valueName(req.nextRank) : null;
+                  const nextRank = state.foundationNextRank[idx];
+                  const nextRankLabel = nextRank > 0 ? valueName(nextRank) : null;
                   const isLegalTarget =
                     isPlaying &&
                     !loading &&
                     !isAutoCompleting &&
                     selectedSourceCard !== undefined &&
-                    req.canPlace(selectedSourceCard);
+                    selectedTargets?.foundation.includes(idx) === true;
                   return (
                     <div key={`f-${idx.toString()}`} className="text-center">
                       <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
@@ -439,7 +449,10 @@ function DiplomatPageContent() {
                   {wasteTop ? (
                     <button
                       type="button"
-                      onClick={() => game.handleSelectSource(wasteZone)}
+                      onClick={(e) => {
+                        if (e.detail < 2) game.handleSelectSource(wasteZone);
+                      }}
+                      onDoubleClick={() => handleFoundationShortcut(wasteZone)}
                       disabled={!isPlaying || loading}
                       aria-label={cardAlt(wasteTop)}
                       aria-describedby="diplomat-waste-count"

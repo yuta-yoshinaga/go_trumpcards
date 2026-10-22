@@ -58,6 +58,22 @@ export function useDiplomatGame() {
     [selectedSource, apiCall, setHint],
   );
 
+  /**
+   * Double-click / double-tap shortcut: send an exposed card to its server supplied foundation target.
+   */
+  const handleFoundationShortcut = useCallback(
+    (source: DiplomatMoveZone) => {
+      const key = source.zone === 'waste' ? 'waste' : source.col === undefined ? null : `tableau-${source.col}`;
+      if (key === null) return;
+      const target = state?.legalTargets[key]?.foundation[0];
+      if (target === undefined) return;
+      setHint(null);
+      apiCall('move', source, { zone: 'foundation', col: target });
+      setSelectedSource(null);
+    },
+    [state?.legalTargets, apiCall, setHint],
+  );
+
   return {
     state,
     loading,
@@ -75,6 +91,7 @@ export function useDiplomatGame() {
     handleUndoEscape,
     handleSelectSource,
     handleSelectTarget,
+    handleFoundationShortcut,
     isAutoCompleting,
     retry,
   };

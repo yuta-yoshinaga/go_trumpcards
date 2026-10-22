@@ -48,20 +48,65 @@ func TestNewDiplomat(t *testing.T) {
 	assert.NotNil(t, NewDefaultDiplomat())
 }
 
-func TestDiplomatGetTableauMoveTargets(t *testing.T) {
+func TestDiplomatFoundationRequirementsAndNextRanks(t *testing.T) {
+	c := newTestDiplomat()
+	clearDiplomatBoard(c)
+	suits := []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond, CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond}
+	for i, suit := range suits {
+		assert.Equal(t, 1, c.FoundationNextRank()[i])
+		c.tableau[i] = []*Card{NewCard(suit, 1, true)}
+		tab, foundations := c.LegalTargets(i)
+		assert.Contains(t, foundations, i)
+		assert.NotNil(t, tab)
+		assert.False(t, c.canPlaceOnFoundation(NewCard(suit, 2, true), i))
+		otherSuit := suit%4 + 1
+		assert.False(t, c.canPlaceOnFoundation(NewCard(otherSuit, 1, true), i))
+		assert.False(t, c.canPlaceOnFoundation(nil, i))
+	}
+	c.foundation[0] = []*Card{NewCard(CardDesignSpade, 1, true), NewCard(CardDesignSpade, 2, true)}
+	c.foundation[4] = []*Card{NewCard(CardDesignSpade, 1, true)}
+	c.tableau[0] = []*Card{NewCard(CardDesignSpade, 3, true)}
+	_, destinations := c.LegalTargets(0)
+	assert.Contains(t, destinations, 0)
+	assert.NotContains(t, destinations, 4)
+	assert.Equal(t, 3, c.FoundationNextRank()[0])
+	assert.Equal(t, 2, c.FoundationNextRank()[4])
+	c.foundation[0] = make([]*Card, DiplomatFoundationTarget)
+	c.foundation[0][12] = NewCard(CardDesignSpade, 13, true)
+	assert.Equal(t, 0, c.FoundationNextRank()[0])
+	c.tableau[0] = []*Card{NewCard(CardDesignSpade, 1, true)}
+	_, destinations = c.LegalTargets(0)
+	assert.NotContains(t, destinations, 0)
+	assert.False(t, c.canPlaceOnFoundation(NewCard(CardDesignSpade, 13, true), 0))
+}
+
+func TestDiplomatLegalTargetsAndFoundationRules(t *testing.T) {
 	c := newTestDiplomat()
 	clearDiplomatBoard(c)
 	c.tableau[0] = []*Card{NewCard(CardDesignSpade, 8, true)}
 	c.tableau[1] = []*Card{NewCard(CardDesignHeart, 9, true)}
 	c.tableau[2] = []*Card{NewCard(CardDesignDiamond, 1, true)}
 	c.tableau[3] = []*Card{NewCard(CardDesignClover, 4, true)}
-	c.waste = []*Card{NewCard(CardDesignSpade, 8, true)}
-	targets := c.GetTableauMoveTargets()
-	assert.Contains(t, targets[0], 1) // descending, suit ignored
-	assert.NotContains(t, targets[0], 2)
-	assert.NotContains(t, targets[0], 3)
-	assert.Contains(t, targets[0], 4) // empty column accepts any card
-	assert.Contains(t, targets[DiplomatTableauCnt], 1)
+	c.waste = []*Card{NewCard(CardDesignSpade, 1, true)}
+	tab, foundation := c.LegalTargets(0)
+	assert.Contains(t, tab, 1)
+	assert.NotContains(t, tab, 2)
+	assert.NotContains(t, tab, 3)
+	assert.Empty(t, foundation, "an 8 cannot start an empty foundation")
+	wasteTab, wasteFound := c.WasteLegalTargets()
+	assert.NotNil(t, wasteTab)
+	assert.Contains(t, wasteFound, 0)
+	assert.Contains(t, wasteFound, 4)
+	ranks := c.FoundationNextRank()
+	assert.Len(t, ranks, DiplomatFoundationCnt)
+	assert.Equal(t, 1, ranks[0])
+	c.foundation[0] = make([]*Card, DiplomatFoundationTarget)
+	ranks = c.FoundationNextRank()
+	assert.Equal(t, 0, ranks[0])
+	c.tableau[0] = nil
+	tab, foundation = c.LegalTargets(0)
+	assert.Empty(t, tab)
+	assert.Empty(t, foundation)
 }
 
 // The deal is 8 columns of FOUR with 72 left in the stock. #5276 adds a 4-card

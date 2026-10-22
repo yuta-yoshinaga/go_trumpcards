@@ -426,29 +426,72 @@ func (c *Diplomat) GetWaste() []*Card { return c.waste }
 // GetTableau タブローを取得
 func (c *Diplomat) GetTableau() [DiplomatTableauCnt][]*Card { return c.tableau }
 
-// GetTableauMoveTargets returns legal tableau destinations for each movable
-// tableau top, followed by the waste top at index DiplomatTableauCnt.
-func (c *Diplomat) GetTableauMoveTargets() [DiplomatTableauCnt + 1][]int {
-	var targets [DiplomatTableauCnt + 1][]int
-	for from := range DiplomatTableauCnt {
-		card := c.tableauTop(from)
-		if card == nil {
-			continue
+// LegalTargets returns legal tableau and foundation destinations for a tableau top.
+func (c *Diplomat) LegalTargets(from int) (tableau, foundation []int) {
+	if from < 0 || from >= DiplomatTableauCnt {
+		return []int{}, []int{}
+	}
+	card := c.tableauTop(from)
+	if card == nil {
+		return []int{}, []int{}
+	}
+	for to := range DiplomatTableauCnt {
+		if from != to && c.canPlaceOnTableau(card, to) {
+			tableau = append(tableau, to)
 		}
-		for to := range DiplomatTableauCnt {
-			if from != to && c.canPlaceOnTableau(card, to) {
-				targets[from] = append(targets[from], to)
+	}
+	for to := range DiplomatFoundationCnt {
+		if c.canPlaceOnFoundation(card, to) {
+			foundation = append(foundation, to)
+		}
+	}
+	if tableau == nil {
+		tableau = []int{}
+	}
+	if foundation == nil {
+		foundation = []int{}
+	}
+	return tableau, foundation
+}
+
+// WasteLegalTargets returns legal tableau and foundation destinations for the waste top.
+func (c *Diplomat) WasteLegalTargets() (tableau, foundation []int) {
+	card := c.wasteTop()
+	if card == nil {
+		return []int{}, []int{}
+	}
+	for to := range DiplomatTableauCnt {
+		if c.canPlaceOnTableau(card, to) {
+			tableau = append(tableau, to)
+		}
+	}
+	for to := range DiplomatFoundationCnt {
+		if c.canPlaceOnFoundation(card, to) {
+			foundation = append(foundation, to)
+		}
+	}
+	if tableau == nil {
+		tableau = []int{}
+	}
+	if foundation == nil {
+		foundation = []int{}
+	}
+	return tableau, foundation
+}
+
+// FoundationNextRank returns the next rank for each foundation, or 0 when complete.
+func (c *Diplomat) FoundationNextRank() []int {
+	ranks := make([]int, DiplomatFoundationCnt)
+	for i, pile := range c.foundation {
+		if len(pile) < DiplomatFoundationTarget {
+			if len(pile) == 0 {
+				ranks[i] = 1
+			} else {
+				ranks[i] = pile[len(pile)-1].GetValue() + 1
 			}
 		}
 	}
-	if card := c.wasteTop(); card != nil {
-		for to := range DiplomatTableauCnt {
-			if c.canPlaceOnTableau(card, to) {
-				targets[DiplomatTableauCnt] = append(targets[DiplomatTableauCnt], to)
-			}
-		}
-	}
-	return targets
+	return ranks
 }
 
 // GetFoundation 基礎札を取得

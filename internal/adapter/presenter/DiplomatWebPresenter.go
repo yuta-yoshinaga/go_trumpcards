@@ -19,14 +19,7 @@ func (p *DiplomatWebPresenter) Output(c interfaces.DiplomatGame, lastErr error) 
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, c, int(c.GetPhase()))
 
 	tableau := c.GetTableau()
-	moveTargets := c.GetTableauMoveTargets()
-	resObj.TableauMoveTargets = make([][]int, len(moveTargets))
-	for i, targets := range moveTargets {
-		if targets == nil {
-			targets = []int{}
-		}
-		resObj.TableauMoveTargets[i] = targets
-	}
+	buildDiplomatLegalTargets(resObj, c)
 	resObj.Tableau = make([][]*controller.WebOutputCard, domain.DiplomatTableauCnt)
 	resObj.TableauDeadEnd = make([]bool, domain.DiplomatTableauCnt)
 	for i := range domain.DiplomatTableauCnt {
@@ -100,6 +93,7 @@ func (p *DiplomatWebPresenter) HintOutput(c interfaces.DiplomatGame) string {
 	resObj := new(controller.DiplomatWebOutput)
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, c, int(c.GetPhase()))
 	resObj.Tableau = make([][]*controller.WebOutputCard, 0)
+	buildDiplomatLegalTargets(resObj, c)
 	resObj.Foundation = make([][]*controller.WebOutputCard, 0)
 	resObj.Waste = make([]*controller.WebOutputCard, 0)
 
@@ -121,4 +115,35 @@ func (p *DiplomatWebPresenter) HintOutput(c interfaces.DiplomatGame) string {
 // ActionLogOutput 棋譜をJSON出力
 func (p *DiplomatWebPresenter) ActionLogOutput(c interfaces.DiplomatGame) string {
 	return actionLogOutputJSON(c)
+}
+
+// buildDiplomatLegalTargets copies domain-provided legal destinations into the response.
+func buildDiplomatLegalTargets(out *controller.DiplomatWebOutput, c interfaces.DiplomatGame) {
+	out.LegalTargets = make(map[string]controller.DiplomatWebOutputTargets)
+	for col := range domain.DiplomatTableauCnt {
+		tableau, foundation := c.LegalTargets(col)
+		if len(tableau) > 0 || len(foundation) > 0 {
+			if tableau == nil {
+				tableau = []int{}
+			}
+			if foundation == nil {
+				foundation = []int{}
+			}
+			out.LegalTargets[fmt.Sprintf("tableau-%d", col)] = controller.DiplomatWebOutputTargets{Tableau: tableau, Foundation: foundation}
+		}
+	}
+	tableau, foundation := c.WasteLegalTargets()
+	if len(tableau) > 0 || len(foundation) > 0 {
+		if tableau == nil {
+			tableau = []int{}
+		}
+		if foundation == nil {
+			foundation = []int{}
+		}
+		out.LegalTargets["waste"] = controller.DiplomatWebOutputTargets{Tableau: tableau, Foundation: foundation}
+	}
+	out.FoundationNextRank = c.FoundationNextRank()
+	if out.FoundationNextRank == nil {
+		out.FoundationNextRank = []int{}
+	}
 }
