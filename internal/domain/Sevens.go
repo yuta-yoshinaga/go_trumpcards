@@ -347,23 +347,19 @@ func (s *Sevens) IsPlayable(card *Card) bool {
 	return s.isPositionPlayable(suit, value)
 }
 
-// GetPlayableCardIndices は人間プレイヤーの手札のうち、いま出せるカードの
-// インデックスを返す (#5479)。
+// GetValidPlayIndices は指定プレイヤーの手札から現在出せるカードの
+// インデックスを返す。人間の手番でない場合やゲーム終了後は空スライスを返す。
 //
 // 判定は PlayerPlay / PlayerPlayJoker が使うものをそのまま通す。トンネル・スキップ幅・
 // ジョーカーの配置可否といった盤面の状態は全部そちらが見るので、ここで規則を
 // 書き直さない。**別実装にすると「出せる」と印を付けた札が実際には弾かれる。**
 //
-// 戻り値は3状態を区別する:
-//   - nil          … 判定していない (人間の手番でない)
-//   - 空スライス    … 判定した上で1枚も出せない。7並べでは普通に起きる状態で、
-//     そこでプレイヤーはパスする。**nil と同じ扱いにはできない。**
-//   - 非空スライス  … 出せる手札のインデックス
-func (s *Sevens) GetPlayableCardIndices() []int {
-	if !s.IsHumanTurn() {
-		return nil
+// Web の validPlays に使う。手番でない状態も JSON では [] で表すので、nil は返さない。
+func (s *Sevens) GetValidPlayIndices(playerIdx int) []int {
+	if s.gameEndFlag || playerIdx < 0 || playerIdx >= len(s.players) || s.currentTurn != playerIdx || !s.players[playerIdx].GetIsHuman() {
+		return []int{}
 	}
-	player := s.players[s.currentTurn]
+	player := s.players[playerIdx]
 	// **IsPlayable だけでは足りない。** ジョーカーについては「置ける場所が
 	// あるか」しか見ないが、PlayerPlayJoker は連続禁止・上がり禁止でも弾く。
 	// hasPlayableCard / findPlayableSimple / findPlayableStrategic と同じ
@@ -380,6 +376,21 @@ func (s *Sevens) GetPlayableCardIndices() []int {
 		}
 	}
 	return idx
+}
+
+// GetPlayableCardIndices は人間プレイヤーの手札のうち、いま出せるカードの
+// インデックスを返す (#5479)。CUI 表示で使う。
+//
+// 戻り値は3状態を区別する:
+//   - nil          … 判定していない (人間の手番でない)
+//   - 空スライス    … 判定した上で1枚も出せない。7並べでは普通に起きる状態で、
+//     そこでプレイヤーはパスする。**nil と同じ扱いにはできない。**
+//   - 非空スライス  … 出せる手札のインデックス
+func (s *Sevens) GetPlayableCardIndices() []int {
+	if !s.IsHumanTurn() {
+		return nil
+	}
+	return s.GetValidPlayIndices(s.currentTurn)
 }
 
 // placeCard ボードにカードを置く (ビットマスクを更新)

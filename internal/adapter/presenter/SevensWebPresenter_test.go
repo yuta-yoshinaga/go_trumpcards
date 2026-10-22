@@ -49,6 +49,7 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		err := json.Unmarshal([]byte(result), &resObj)
 		assert.NoError(t, err)
 		assert.Equal(t, 4, len(resObj.Players))
+		assert.Equal(t, []int{0}, resObj.ValidPlays)
 		assert.False(t, resObj.GameEndFlag)
 		assert.Equal(t, 0, resObj.CurrentTurn)
 		assert.Equal(t, "", resObj.Message)
@@ -80,6 +81,7 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		assert.True(t, humanPlayer.IsHuman)
 		assert.Equal(t, 2, humanPlayer.CardCount)
 		assert.Len(t, humanPlayer.Cards, 2)
+		assert.Equal(t, []int{0, 1}, resObj.ValidPlays)
 		assert.Equal(t, "SPADE", humanPlayer.Cards[0].Design)
 		assert.Equal(t, 6, humanPlayer.Cards[0].Value)
 	})
@@ -470,6 +472,7 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 	setupSMock := func() *interfaces.MockSevensGame {
 		m := new(interfaces.MockSevensGame)
 		m.On("GetCurrentTurn").Return(0)
+		m.On("GetValidPlayIndices", 0).Return([]int(nil))
 		m.On("GetTableMinVals").Return([5]int{7, 7, 7, 7, 7})
 		m.On("GetTableMaxVals").Return([5]int{7, 7, 7, 7, 7})
 		m.On("GetTablePlaced").Return([5]uint16{128, 128, 128, 128, 128})
@@ -607,4 +610,22 @@ func TestSevensWebPresenter_ActionLogOutput(t *testing.T) {
 		assert.Contains(t, result, `"actionType":"play"`)
 		mockGame.AssertExpectations(t)
 	})
+}
+
+func TestSevensWebPresenter_OutputIncludesValidPlaysFromRealGame(t *testing.T) {
+	players := []*domain.SevensPlayer{
+		domain.NewSevensPlayer(true),
+		domain.NewSevensPlayer(false),
+		domain.NewSevensPlayer(false),
+		domain.NewSevensPlayer(false),
+	}
+	g := domain.NewSevens(domain.NewTrumpCards(0), players, domain.DefaultSevensConfig())
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+	var output controller.SevensWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(new(presenter.SevensWebPresenter).Output(g, nil)), &output))
+	assert.Equal(t, []int{0}, output.ValidPlays)
 }

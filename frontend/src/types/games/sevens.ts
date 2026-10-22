@@ -52,4 +52,5 @@ export interface SevensResponse extends BaseGameResponse {
   gameEndFlag: boolean;
   cpuActions: SevensAction[];
   humanAction: SevensAction | null;
+  validPlays: number[];
 }

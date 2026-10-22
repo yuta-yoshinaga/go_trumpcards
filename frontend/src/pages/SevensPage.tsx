@@ -40,7 +40,7 @@ import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
-import { actionDesc, isCardPlayable, listJokerPlacements } from '../utils/sevensUtils';
+import { actionDesc, listJokerPlacements } from '../utils/sevensUtils';
 
 /** Sevens tutorial step definitions. */
 const SV_TUTORIAL_STEPS: TutorialStep[] = [
@@ -115,24 +115,7 @@ function SevensPageContent() {
   );
   const canDirectPlay = useCallback(
     (idx: number) => {
-      const player = state?.players.find((p) => p.isHuman);
-      const card = player?.cards?.[idx];
-      return (
-        !!state &&
-        !!player &&
-        !!card &&
-        isCardPlayable(
-          card,
-          state.tablePlaced,
-          state.config.tunnelEnabled,
-          state.config.noJokerFinish,
-          player.cards,
-          state.config.endStopEnabled,
-          state.config.jokerConsecutiveBanned,
-          player.lastPlayedJoker,
-          state.config.tunnelSkipWidth,
-        )
-      );
+      return !!state && state.validPlays.includes(idx);
     },
     [state],
   );
@@ -549,13 +532,8 @@ function SevensPageContent() {
               <div className="mb-2" data-tutorial="sv-player-hand">
                 <SevensHumanArea
                   player={humanPlayer}
+                  validPlays={state.validPlays}
                   isCurrentTurn={isHumanTurn}
-                  tablePlaced={tablePlaced}
-                  tunnelEnabled={tunnelEnabled}
-                  tunnelSkipWidth={state.config.tunnelSkipWidth}
-                  noJokerFinish={state.config.noJokerFinish}
-                  endStopEnabled={state.config.endStopEnabled}
-                  jokerConsecutiveBanned={state.config.jokerConsecutiveBanned}
                   loading={loading}
                   jokerCardIdx={jokerCardIdx}
                   onPlay={handleCardPlay}

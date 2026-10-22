@@ -126,6 +126,15 @@ func (_m *MockSevensGame) GetTablePlaced() [5]uint16 {
 	return ret.Get(0).([5]uint16)
 }
 
+// GetValidPlayIndices モック
+func (_m *MockSevensGame) GetValidPlayIndices(playerIdx int) []int {
+	ret := _m.Called(playerIdx)
+	if val, ok := ret.Get(0).([]int); ok {
+		return val
+	}
+	return nil
+}
+
 // GetPlayableCardIndices モック
 func (_m *MockSevensGame) GetPlayableCardIndices() []int {
 	ret := _m.Called()
