@@ -53,6 +53,7 @@ function makeTableau(cols: SpiderTableauCard[][]): SpiderTableauCard[][] {
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 
 const playingState: SpiderResponse = {
+  runStarts: [[0], [1], ...Array.from({ length: 8 }, () => [])],
   tableau: makeTableau([
     [{ card: card('SPADE', 13), faceUp: true }],
     [
@@ -756,6 +757,7 @@ describe('SpiderPage', () => {
     // card (♣7 then ♥6 — suit mismatch) so ♣7 is not movable while ♥6 rings itself.
     const runState: SpiderResponse = {
       ...playingState,
+      runStarts: [[0, 1, 2], [1], ...Array.from({ length: 8 }, () => [])],
       tableau: makeTableau([
         [
           { card: card('SPADE', 13), faceUp: true },
@@ -793,6 +795,21 @@ describe('SpiderPage', () => {
 
       fireEvent.mouseLeave(top);
       await waitFor(() => expect(btnFor('♠ K')).not.toHaveAttribute('data-movable-run'));
+    });
+
+    it('follows server runStarts when they disagree with the local sequence rule', async () => {
+      mockExec.mockResolvedValue({ ...runState, runStarts: Array.from({ length: 10 }, () => []) });
+      renderWithProviders(<SpiderPage />);
+      await waitFor(() => expect(screen.getByAltText('♠ K')).toBeInTheDocument());
+
+      fireEvent.mouseEnter(btnFor('♠ K'));
+      expect(btnFor('♠ K')).not.toHaveAttribute('data-movable-run');
+      fireEvent.focus(btnFor('♠ K'));
+      expect(btnFor('♠ K')).not.toHaveAttribute('data-movable-run');
+      expect(btnFor('♠ K')).toHaveAccessibleName('♠ K（列0・上から1枚目）');
+      fireEvent.click(btnFor('♠ K'));
+      await waitFor(() => expect(btnFor('♠ K')).toHaveAttribute('aria-pressed', 'true'));
+      expect(btnFor('♠ Q')).not.toHaveAttribute('data-selected-block');
     });
 
     it('announces the movable same-suit run length in card labels and omits it for a broken tail', async () => {

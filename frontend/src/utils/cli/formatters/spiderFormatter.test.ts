@@ -4,6 +4,7 @@ import { formatSpiderState } from './spiderFormatter';
 
 function makeState(overrides?: Partial<SpiderResponse>): SpiderResponse {
   return {
+    runStarts: Array.from({ length: 10 }, () => []),
     tableau: [[{ card: { design: 'SPADE', value: 13 }, faceUp: true }], []],
     stockCount: 50,
     completedSuits: 1,

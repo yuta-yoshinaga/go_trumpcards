@@ -49535,6 +49535,7 @@ components:
         - undoToEscape
         - score
         - difficulty
+        - runStarts
         - message
       properties:
         entries:
@@ -49571,6 +49572,13 @@ components:
         difficulty:
           type: integer
           enum: [1, 2, 4]
+        runStarts:
+          type: array
+          description: Movable run start indices by tableau column.
+          items:
+            type: array
+            items:
+              type: integer
         hint:
           $ref: '#/components/schemas/SpiderHint'
         message:

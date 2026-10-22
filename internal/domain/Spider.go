@@ -471,6 +471,21 @@ func (s *Spider) isValidSpiderSequence(cards []*SpiderTableauCard) bool {
 	return true
 }
 
+// RunStarts returns every face-up tableau index whose suffix is a movable Spider sequence.
+func (s *Spider) RunStarts(col int) []int {
+	if col < 0 || col >= SpiderTableauCnt {
+		return []int{}
+	}
+	cards := s.tableau[col]
+	starts := make([]int, 0)
+	for i := range cards {
+		if cards[i].FaceUp && s.isValidSpiderSequence(cards[i:]) {
+			starts = append(starts, i)
+		}
+	}
+	return starts
+}
+
 // checkAndRemoveCompletedSuit K-Aの同スート完成シーケンスをチェックし除去する
 func (s *Spider) checkAndRemoveCompletedSuit(col int) bool {
 	cards := s.tableau[col]

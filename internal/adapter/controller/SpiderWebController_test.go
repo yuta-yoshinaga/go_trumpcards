@@ -18,6 +18,7 @@ import (
 func mustSpiderOutputJSON(msg string) string {
 	out := &controller.SpiderWebOutput{
 		Tableau:       [][]*controller.SpiderWebOutputTableauCard{},
+		RunStarts:     [][]int{},
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
@@ -28,7 +29,7 @@ func mustSpiderOutputJSON(msg string) string {
 }
 
 func TestSpiderWebController_Method(t *testing.T) {
-	mockOutput := `{"tableau":[],"stockCount":0,"completedSuits":0,"phase":0,"moveCount":0,"canUndo":false,"isStalemate":false,"score":0,"difficulty":0,"message":""}`
+	mockOutput := `{"tableau":[],"stockCount":0,"completedSuits":0,"phase":0,"moveCount":0,"canUndo":false,"isStalemate":false,"score":0,"difficulty":0,"runStarts":[],"message":""}`
 	expectedBody := mockOutput
 
 	siMock := new(usecase.MockSpiderInteractor)

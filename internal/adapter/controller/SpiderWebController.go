@@ -50,6 +50,7 @@ type SpiderWebOutput struct {
 	Score          int                             `json:"score"`
 	Difficulty     int                             `json:"difficulty"`
 	Hint           *SpiderWebOutputHint            `json:"hint,omitempty"`
+	RunStarts      [][]int                         `json:"runStarts"`
 	SolitaireWebOutputBase
 	WebOutputBase
 }
@@ -66,6 +67,7 @@ var NewSpiderWebController, NewSpiderWebControllerWithProvider = webControllerPa
 func newSpiderDefaultOutput(msg string) *SpiderWebOutput {
 	return &SpiderWebOutput{
 		Tableau:       make([][]*SpiderWebOutputTableauCard, 0),
+		RunStarts:     make([][]int, 0),
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }
