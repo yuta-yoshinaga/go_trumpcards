@@ -33,14 +33,15 @@ type MonteCarloWebOutputHint struct {
 
 // MonteCarloWebOutput はモンテカルロ・ソリティアの Web 出力。
 type MonteCarloWebOutput struct {
-	Board        [][]*MonteCarloWebOutputCard `json:"board"`
-	Phase        int                          `json:"phase"`
-	StockCount   int                          `json:"stockCount"`
-	RemovedCount int                          `json:"removedCount"`
-	DealCount    int                          `json:"dealCount"`
-	CanUndo      bool                         `json:"canUndo"`
-	IsStalemate  bool                         `json:"isStalemate"`
-	Hint         *MonteCarloWebOutputHint     `json:"hint,omitempty"`
+	Board          [][]*MonteCarloWebOutputCard `json:"board"`
+	Phase          int                          `json:"phase"`
+	StockCount     int                          `json:"stockCount"`
+	RemovedCount   int                          `json:"removedCount"`
+	DealCount      int                          `json:"dealCount"`
+	RemovablePairs int                          `json:"removablePairs"`
+	CanUndo        bool                         `json:"canUndo"`
+	IsStalemate    bool                         `json:"isStalemate"`
+	Hint           *MonteCarloWebOutputHint     `json:"hint,omitempty"`
 	WebOutputBase
 }
 
@@ -55,8 +56,9 @@ var NewMonteCarloWebController, NewMonteCarloWebControllerWithProvider = webCont
 
 func newMonteCarloDefaultOutput(msg string) *MonteCarloWebOutput {
 	return &MonteCarloWebOutput{
-		Board:         make([][]*MonteCarloWebOutputCard, 0),
-		WebOutputBase: WebOutputBase{Message: msg},
+		Board:          make([][]*MonteCarloWebOutputCard, 0),
+		RemovablePairs: 0,
+		WebOutputBase:  WebOutputBase{Message: msg},
 	}
 }
 

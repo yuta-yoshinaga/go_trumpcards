@@ -33,6 +33,8 @@ export interface MonteCarloResponse extends BaseGameResponse {
   removedCount: number;
   /** Number of times the player has pressed Deal. */
   dealCount: number;
+  /** Number of currently removable adjacent same-rank pairs, computed by the server. */
+  removablePairs: number;
   /** Whether the last action can be undone. */
   canUndo: boolean;
   /** True when no remove pairs exist and the stock cannot help. */

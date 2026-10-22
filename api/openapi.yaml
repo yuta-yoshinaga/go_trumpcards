@@ -65064,6 +65064,7 @@ components:
         - stockCount
         - removedCount
         - dealCount
+        - removablePairs
         - canUndo
         - isStalemate
         - message
@@ -65098,6 +65099,10 @@ components:
         dealCount:
           type: integer
           description: Number of times the player has called `deal`.
+          minimum: 0
+        removablePairs:
+          type: integer
+          description: Number of currently removable adjacent same-rank pairs.
           minimum: 0
         canUndo:
           type: boolean
