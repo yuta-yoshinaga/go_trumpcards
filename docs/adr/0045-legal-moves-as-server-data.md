@@ -63,13 +63,14 @@ Decision の改訂 (2026-10-20) の形で、Baker's Dozen と Perseverance か�
 - `runStarts`: Curds and Whey、Simple Simon、Spiderette、Spider、Mrs. Mop。`spiderMovableRun` は削除した。Spiderette の golden fixture は Go 側の試験 (`Spiderette_golden_test.go`) がまだ読むので残している。
 - `playRejectCodes`: Klaverjas。Batak / Call Break と同じ形で返す。
 
-移した後も、合法性や動かせる札の写しは次のとおり残っている。どれも新しい応答の形が要るので、承認を得てから移す。
+残った写しのうち 6 本は、新しい応答の形の承認を得て同じ日に移した (2026-10-22)。
 
-| ファイル | 中身 | 移し方 |
-|---|---|---|
-| `bisleyStackTargets.ts`、`curdsAndWheyAutoMoveTarget.ts`、`simpleSimonAutoMoveTarget.ts` | 移動先と、クライアント側の優先順位 | 形を決める必要がある |
-| `fourteenoutRemovablePairs.ts`、`montecarloRemovablePairs.ts`、`gapsUtils.ts` | 取り除ける組、組の数、動かせない先頭の長さ | 新しいフィールドが要る |
-| `machiavelliRearrange.ts`、`doudizhuComboValidator.ts`、`burracoMeld.ts`、`panMeldCandidates.ts`、`tonkMeldIndices.ts`、`tongitsMeldIndices.ts` | 役や組み合わせの正しさ | 形を決める必要がある |
+- 自動移動の優先順位: Simple Simon と Curds and Whey は、run の先頭ごとに `legalTargets` (`tableau-<col>-<cardIndex>`、`foundation` は常に空) を返す。`tableau` は優先順に並んでいて、ページは `tableau[0]` へ送るだけ。順番は domain の `AutoMoveTargets` が決める。同じスートで 1 つ上の札、次に Simple Simon はスートを問わず 1 つ上の札 (Curds and Whey は同じランクの札)、最後に空き列。空き列は run の上に札があるときだけ返す。
+- Bisley は `legalTargets: Record<"tableau-<col>", { tableau: number[] }>` を返す (組札の配列は持たない)。domain の移動先の判定を `canStackOn` に括り出し、移動・`LegalTargets`・ヒントが同じ判定を通る。一番上の札のツールチップは「受け付ける札」から「動かせる列」の表示に変えた (ユーザ承認済み)。
+- Fourteen Out は、既に応答に載っていた `removablePairs` を使い、選んだ列と組める列を `legalTargets` (`tableau-<col>`) で返す。ヒントも `legalTargets` を読むようにして、写しを削除した。
+- Monte Carlo は `removablePairs: number` (Fourteen Out と同じ名前と型)、Gaps は行ごとの `lockedPrefixLengths: number[]` を返す。どちらも CUI が既に使っている domain の関数をそのまま返す。
+
+役や組み合わせの検証 (`machiavelliRearrange.ts`、`doudizhuComboValidator.ts`、`burracoMeld.ts`、`tonkMeldIndices.ts`、`tongitsMeldIndices.ts`) はこの ADR の対象外とする (ユーザ承認済み)。どれもプレイヤーが組んだ選択を検証するもので、選ぶ前にはサーバに分からない。サーバに判定させると選ぶたびに往復が要り、合法手を状態と同じ応答に載せるというこの ADR の前提に合わない。`panMeldCandidates.ts` はヒントの設定で出る表示なので、`utils/hints` と同じ扱いで対象外。これで、この ADR の対象になる合法性の写しは残っていない。
 
 点数・順位・表示用の計算 (`chinesePokerFoul.ts`、`heartsLimit.ts` など) は合法手ではないので、この ADR の対象外。
 
