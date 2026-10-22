@@ -43,7 +43,7 @@ import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 // **同スート降順の並び判定は Spider と同一の規則。**共有ヘルパをそのまま使う
 // (クローンが `mrsMopMovableRun` という存在しない名前に書き換えていた)。
-import { isTableauAllFaceUp, spiderMovableRun } from '../utils/solitaireUtils';
+import { isTableauAllFaceUp } from '../utils/solitaireUtils';
 
 /** Tableau column count. Sync: `domain.MrsMopTableauCnt`. */
 const MRSMOP_COLUMN_COUNT = 13;
@@ -210,7 +210,9 @@ function MrsMopPageContent() {
     selectedSource?.zone === 'tableau' &&
     selectedSource.col !== undefined &&
     selectedSource.cardIndex !== undefined
-      ? spiderMovableRun(state.tableau[selectedSource.col], selectedSource.cardIndex).length
+      ? state.runStarts[selectedSource.col].includes(selectedSource.cardIndex)
+        ? state.tableau[selectedSource.col].length - selectedSource.cardIndex
+        : 0
       : 1;
   useEffect(() => {
     const ended = currentPhase === MrsMopPhase.GAME_CLEAR || currentPhase === MrsMopPhase.GAME_OVER;
@@ -344,11 +346,14 @@ function MrsMopPageContent() {
                   // タッチ端末では、選んだ札と一緒に動く連番がどこまでかを事前に
                   // 確かめる手段が無かった (#4780, Yukon の #3152 と同じ)。
                   // 連番は列ごとに1度だけ求める (ホバー側の setHoveredRun と同じ形)。
+                  const selectedCardIndex = selectedSource?.cardIndex;
                   const selectedRun =
                     selectedSource?.zone === 'tableau' &&
                     selectedSource.col === colIdx &&
-                    selectedSource.cardIndex !== undefined
-                      ? spiderMovableRun(col, selectedSource.cardIndex)
+                    selectedCardIndex !== undefined
+                      ? state.runStarts[colIdx].includes(selectedCardIndex)
+                        ? Array.from({ length: col.length - selectedCardIndex }, (_, i) => selectedCardIndex + i)
+                        : []
                       : null;
                   return (
                     <div
@@ -407,11 +412,21 @@ function MrsMopPageContent() {
                                     <button
                                       type="button"
                                       onMouseEnter={() =>
-                                        setHoveredRun({ col: colIdx, indices: spiderMovableRun(col, cardIdx) })
+                                        setHoveredRun({
+                                          col: colIdx,
+                                          indices: state.runStarts[colIdx].includes(cardIdx)
+                                            ? Array.from({ length: col.length - cardIdx }, (_, i) => cardIdx + i)
+                                            : [],
+                                        })
                                       }
                                       onMouseLeave={() => setHoveredRun(null)}
                                       onFocus={() =>
-                                        setHoveredRun({ col: colIdx, indices: spiderMovableRun(col, cardIdx) })
+                                        setHoveredRun({
+                                          col: colIdx,
+                                          indices: state.runStarts[colIdx].includes(cardIdx)
+                                            ? Array.from({ length: col.length - cardIdx }, (_, i) => cardIdx + i)
+                                            : [],
+                                        })
                                       }
                                       onBlur={() => setHoveredRun(null)}
                                       data-movable-run={inMovableRun ? 'true' : undefined}

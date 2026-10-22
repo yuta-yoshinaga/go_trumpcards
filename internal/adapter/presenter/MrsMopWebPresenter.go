@@ -23,6 +23,7 @@ func (p *MrsMopWebPresenter) Output(s interfaces.MrsMopGame, lastErr error) stri
 	resObj.Score = s.GetScore()
 	resObj.Difficulty = int(s.GetDifficulty())
 	resObj.LegalTargets = buildMrsMopLegalTargets(s)
+	resObj.RunStarts = buildMrsMopRunStarts(s)
 
 	// タブロー
 	tableau := s.GetTableau()
@@ -96,6 +97,7 @@ func (p *MrsMopWebPresenter) HintOutput(s interfaces.MrsMopGame) string {
 	resObj.Difficulty = int(s.GetDifficulty())
 	resObj.Tableau = make([][]*controller.MrsMopWebOutputTableauCard, 0)
 	resObj.LegalTargets = buildMrsMopLegalTargets(s)
+	resObj.RunStarts = buildMrsMopRunStarts(s)
 
 	if hint != nil {
 		resObj.Hint = &controller.MrsMopWebOutputHint{
@@ -109,6 +111,14 @@ func (p *MrsMopWebPresenter) HintOutput(s interfaces.MrsMopGame) string {
 	}
 
 	return marshalOrError(resObj)
+}
+
+func buildMrsMopRunStarts(s interfaces.MrsMopGame) [][]int {
+	out := make([][]int, domain.MrsMopTableauCnt)
+	for col := range domain.MrsMopTableauCnt {
+		out[col] = intSliceOrEmpty(s.RunStarts(col))
+	}
+	return out
 }
 
 // TargetsOutput は Web では通常の盤面をそのまま返す。

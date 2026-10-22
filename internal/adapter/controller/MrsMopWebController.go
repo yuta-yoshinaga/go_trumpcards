@@ -57,6 +57,7 @@ type MrsMopWebOutput struct {
 	Difficulty     int                               `json:"difficulty"`
 	Hint           *MrsMopWebOutputHint              `json:"hint,omitempty"`
 	LegalTargets   map[string]MrsMopWebOutputTargets `json:"legalTargets"`
+	RunStarts      [][]int                           `json:"runStarts"`
 	SolitaireWebOutputBase
 	WebOutputBase
 }
@@ -74,6 +75,7 @@ func newMrsMopDefaultOutput(msg string) *MrsMopWebOutput {
 	return &MrsMopWebOutput{
 		Tableau:       make([][]*MrsMopWebOutputTableauCard, 0),
 		LegalTargets:  make(map[string]MrsMopWebOutputTargets),
+		RunStarts:     make([][]int, 0),
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }

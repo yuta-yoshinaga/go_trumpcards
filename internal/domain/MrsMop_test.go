@@ -894,3 +894,23 @@ func TestMrsMopLegalTargets(t *testing.T) {
 	// 索引の解決は盤だけで決まるので、フェーズより先に済ませてある。
 	assert.Equal(t, 1, idx, "決着後も既定の索引は解決して返す")
 }
+
+func TestMrsMopRunStarts(t *testing.T) {
+	s := NewDefaultMrsMop()
+	var tableau [MrsMopTableauCnt][]*MrsMopTableauCard
+	tableau[0] = []*MrsMopTableauCard{
+		{Card: NewCard(CardDesignSpade, 10, false), FaceUp: false},
+		{Card: NewCard(CardDesignSpade, 6, false), FaceUp: true},
+		{Card: NewCard(CardDesignSpade, 5, false), FaceUp: true},
+	}
+	tableau[1] = []*MrsMopTableauCard{
+		{Card: NewCard(CardDesignSpade, 6, false), FaceUp: true},
+		{Card: NewCard(CardDesignSpade, 5, false), FaceUp: true},
+	}
+	s.SetTableau(tableau)
+	assert.Equal(t, []int{1, 2}, s.RunStarts(0))
+	assert.Equal(t, []int{0, 1}, s.RunStarts(1))
+	assert.Empty(t, s.RunStarts(2))
+	assert.Empty(t, s.RunStarts(-1))
+	assert.Empty(t, s.RunStarts(MrsMopTableauCnt))
+}
