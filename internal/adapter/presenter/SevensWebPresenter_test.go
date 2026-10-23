@@ -629,3 +629,24 @@ func TestSevensWebPresenter_OutputIncludesValidPlaysFromRealGame(t *testing.T) {
 	assert.NoError(t, json.Unmarshal([]byte(new(presenter.SevensWebPresenter).Output(g, nil)), &output))
 	assert.Equal(t, []int{0}, output.ValidPlays)
 }
+
+// Reset shuffles the seats, so the human is not always player 0. validPlays must be
+// read for the seat whose turn it is, or a human at seat 1-3 never gets a playable card.
+func TestSevensWebPresenter_OutputValidPlaysForHumanNotAtSeatZero(t *testing.T) {
+	m := new(interfaces.MockSevensGame)
+	m.On("GetCurrentTurn").Return(2)
+	m.On("GetValidPlayIndices", 2).Return([]int{1, 3})
+	m.On("GetGameEndFlag").Return(false)
+	m.On("GetTableMinVals").Return([5]int{7, 7, 7, 7, 7})
+	m.On("GetTableMaxVals").Return([5]int{7, 7, 7, 7, 7})
+	m.On("GetTablePlaced").Return([5]uint16{128, 128, 128, 128, 128})
+	m.On("GetConfig").Return(domain.SevensConfig{})
+	m.On("GetCpuActions").Return([]*domain.SevensCpuAction(nil))
+	m.On("GetHumanAction").Return((*domain.SevensCpuAction)(nil))
+	m.On("GetPlayerCnt").Return(0)
+
+	var output controller.SevensWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(new(presenter.SevensWebPresenter).Output(m, nil)), &output))
+	assert.Equal(t, []int{1, 3}, output.ValidPlays)
+	m.AssertExpectations(t)
+}
