@@ -91,6 +91,22 @@ describe('KillePage', () => {
     expect(document.querySelector('[data-tutorial="kille-info"]')).toHaveClass('flex', 'flex-wrap');
   });
 
+  it('allows the human player row labels to wrap', async () => {
+    renderWithProviders(<KillePage />);
+    const humanRow = (await screen.findAllByTestId('kille-player')).find((row) => row.textContent?.includes('あなた'));
+    expect(humanRow).toHaveClass('flex-wrap');
+  });
+
+  it('marks a finished human player as eliminated', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ players: [seat(0, true, { isFinished: true }), seat(1, false), seat(2, false), seat(3, false)] }),
+    );
+    renderWithProviders(<KillePage />);
+    const humanRow = (await screen.findAllByTestId('kille-player')).find((row) => row.textContent?.includes('あなた'));
+    expect(humanRow).toHaveClass('opacity-50');
+    expect(humanRow).toHaveTextContent('(退場)');
+  });
+
   it('exchanges and stands pat', async () => {
     renderWithProviders(<KillePage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /交換する/ })).toBeInTheDocument());
