@@ -283,7 +283,7 @@ function KillePageContent() {
                     data-testid="kille-player"
                     className={`text-sm py-0.5 flex flex-wrap items-center gap-2 ${
                       p.isCurrentTurn && !isGameEnd ? 'text-ds-warning' : 'text-ds-text-muted'
-                    } ${p.isHuman ? 'font-semibold' : ''} ${p.isFinished ? 'opacity-50' : ''}`}
+                    } font-semibold ${p.isFinished ? 'opacity-50' : ''}`}
                   >
                     <span>{playerLabel(p.id, p.isHuman)}</span>
                     {p.id === state.dealerIdx && <span className="text-ds-accent">[{t('dealer')}]</span>}
@@ -292,7 +292,6 @@ function KillePageContent() {
                     {p.isSatisfied && !p.isOut && <span className="text-ds-success">[{t('satisfied')}]</span>}
                     {p.isOut && <span className="text-ds-error-text">[{outReason(p)}]</span>}
                     {p.isFinished && <span>({t('eliminated')})</span>}
-                    {!p.isHuman && p.card && <CardImage card={p.card} width={cardWidth} />}
                   </div>
                 ))}
               <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
