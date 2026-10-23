@@ -40,22 +40,18 @@ for path in "${changed[@]}"; do
     frontend/playwright.config.ts) full_sweep=1 ;;
     frontend/src/components/*/*)
       component_dir="${path#frontend/src/components/}"; component_dir="${component_dir%%/*}"
-      game="$(python3 - "$component_dir" <<'PY'
-import re, sys
-print(''.join(part[:1].upper() + part[1:] for part in re.split(r'[-_ ]+', sys.argv[1])))
-PY
-)"
+      game="$(printf '%s' "$component_dir" | tr -d '_-')"
       candidate="${game}Page.tsx"
       matched_page="$(find_page "$candidate" || true)"
       if [[ -n "$matched_page" ]]; then
         references=0
-        while IFS= read -r page_file; do
-          [[ -f "$page_file" ]] || continue
-          if grep -Eq "from[[:space:]]+['\"][^'\"]*/${component_dir}/|import[[:space:]]+['\"][^'\"]*/${component_dir}/" "$page_file"; then
-            page_basename="${page_file##*/}"
-            [[ "${page_basename,,}" == "${matched_page,,}" ]] || references=1
-          fi
-        done < <(find "$wt/frontend/src/pages" -maxdepth 1 -name '*Page.tsx' -type f)
+        while IFS= read -r source_file; do
+          relative_source="${source_file#"$wt/frontend/src/"}"
+          [[ "$relative_source" == "components/$component_dir/"* ]] && continue
+          [[ "$relative_source" == "pages/$matched_page" ]] && continue
+          [[ "$relative_source" == *.test.ts || "$relative_source" == *.test.tsx ]] && continue
+          if grep -Fq "/$component_dir/" "$source_file"; then references=1; break; fi
+        done < <(find "$wt/frontend/src" -type f)
         if (( references )); then full_sweep=1
         else pages+=("$matched_page"); page_change=1; game_pages+=("$matched_page")
         fi

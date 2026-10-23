@@ -601,6 +601,7 @@ make_e2egate_case() {
     presenter_unmapped) printf '\n// edit\n' >> "$wtroot/wt-ib1/internal/adapter/presenter/UnknownWebPresenter.go" ;;
     game_component) printf '\n// edit\n' >> "$wtroot/wt-ib1/frontend/src/components/poker/PokerWidget.tsx" ;;
     game_component_other) printf "import { PokerWidget } from '../components/poker/PokerWidget';\\n" >> "$wtroot/wt-ib1/frontend/src/pages/OtherPage.tsx"; printf '\n// edit\n' >> "$wtroot/wt-ib1/frontend/src/components/poker/PokerWidget.tsx" ;;
+    game_component_shared) printf "import { PokerWidget } from './poker/PokerWidget';\\n" >> "$wtroot/wt-ib1/frontend/src/components/Shared.tsx"; printf '\n// edit\n' >> "$wtroot/wt-ib1/frontend/src/components/poker/PokerWidget.tsx" ;;
     presenter_case) printf '\n// edit\n' >> "$wtroot/wt-ib1/internal/adapter/presenter/BlackjackWebPresenter.go" ;;
     component_case) printf '\n// edit\n' >> "$wtroot/wt-ib1/frontend/src/components/blackjack/BlackjackWidget.tsx" ;;
     shared_component) printf '\n// edit\n' >> "$wtroot/wt-ib1/frontend/src/components/GameFooter.tsx"; printf "import { GameFooter } from '../components/GameFooter';\\n" >> "$wtroot/wt-ib1/frontend/src/pages/OtherPage.tsx" ;;
@@ -655,7 +656,7 @@ STUB
   elif [[ "$changed" == presenter_case || "$changed" == component_case ]]; then
     grep -q '^run 1: e2e/blackjack.spec.ts --repeat-each=3$' <<< "$output" || fail "$changed did not case-insensitively select the page: $output"
     grep -qF -- '--grep /blackjack\b --pass-with-no-tests --repeat-each=3' <<< "$output" || fail "$changed did not select the blackjack route sweep: $output"
-  elif [[ "$changed" == game_component_other ]]; then
+  elif [[ "$changed" == game_component_other || "$changed" == game_component_shared ]]; then
     for spec in desktop-board-visibility desktop-hand-visibility game-message-visibility mobile-viewport text-contrast route-sweep; do grep -q "e2e/$spec.spec.ts" <<< "$output" || fail "cross-game component edit omitted full sweep $spec: $output"; done
   elif [[ "$changed" == presenter_unmapped ]]; then
     [[ "$output" == 'NOTE e2egate: no page for internal/adapter/presenter/UnknownWebPresenter.go' ]] || fail "unmapped presenter note incorrect: $output"
@@ -717,6 +718,7 @@ make_e2egate_case presenter presenter
 make_e2egate_case presenter-unmapped presenter_unmapped
 make_e2egate_case game-component game_component
 make_e2egate_case game-component-other game_component_other
+make_e2egate_case game-component-shared game_component_shared
 make_e2egate_case presenter-case presenter_case
 make_e2egate_case component-case component_case
 make_e2egate_case shared-component shared_component
