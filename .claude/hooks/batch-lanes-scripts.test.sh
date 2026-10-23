@@ -65,8 +65,10 @@ EOF
   printf "const label = 'replacementText here';\nconst other = \"anotherText\";\nexport const x = label + other;\n" > "$ig_strings/a.ts"
   output=$(bash "$SCRIPTS/identgone.sh" "$ig_strings")
   [[ -z "$output" ]] || fail "identgone counted words inside single or double quoted strings: $output"
-  output=$(ALLOW_IDENT_GONE='isMobile obsoleteHelper countMismatch moveBar behaviour jsxAfter mobileCheck mobileCheckUse mobileState useState' bash "$SCRIPTS/identgone.sh" "$repo") || fail "identgone.sh failed with allowlist"
-  [ -z "$output" ] || fail "ALLOW_IDENT_GONE did not suppress warning: $output"
+  output=$(ALLOW_IDENT_GONE='isMobile' bash "$SCRIPTS/identgone.sh" "$repo") || fail "identgone.sh failed with valid allowlist"
+  [[ "$output" != *'ALLOW_IDENT_GONE_INVALID'* ]] || fail "valid ALLOW_IDENT_GONE path rejected: $output"
+  output=$(ALLOW_IDENT_GONE='1' bash "$SCRIPTS/identgone.sh" "$repo") || fail "identgone.sh failed with invalid allowlist"
+  grep -qx 'WARN ALLOW_IDENT_GONE_INVALID 1' <<<"$output" || fail "invalid ALLOW_IDENT_GONE entry was not reported: $output"
 ) || exit 1
 
 # Deleted paths are silent; Go raw strings are ignored while Go code is scanned.
@@ -85,6 +87,7 @@ EOF
   ! grep -q deletedName <<<"$output" || fail "deleted file produced output: $output"
   mkdir "$tmp/no-python"
   ln -s "$(command -v git)" "$tmp/no-python/git"
+  ln -s "$(command -v dirname)" "$tmp/no-python/dirname"
   bash_path=$(command -v bash)
   output=$(PATH="$tmp/no-python" "$bash_path" "$SCRIPTS/identgone.sh" "$repo") || fail "missing-python path returned nonzero"
   [ "$output" = 'NOTE IDENT_GONE python3 unavailable' ] || fail "missing-python note incorrect: $output"
@@ -635,7 +638,7 @@ make_e2egate_case() {
     ! grep -qF -- '--grep /poker\b --pass-with-no-tests --repeat-each' <<<"$output_once" || fail "sweep repeat=1 still added sweep repeat arg: $output_once"
     exec_scripts="$tmp/e2egate-exec-$name"
     mkdir -p "$exec_scripts"
-    cp "$SCRIPTS/common.sh" "$SCRIPTS/e2egate.sh" "$exec_scripts/"
+    cp "$SCRIPTS/common.sh" "$SCRIPTS/allowlist.sh" "$SCRIPTS/e2egate.sh" "$exec_scripts/"
     cat > "$exec_scripts/e2e.sh" <<'STUB'
 #!/usr/bin/env bash
     printf '%s\n' "$@" >> "$E2EGATE_ARGS"
@@ -662,7 +665,7 @@ STUB
     [[ "$output" == 'NOTE e2egate: no page for internal/adapter/presenter/UnknownWebPresenter.go' ]] || fail "unmapped presenter note incorrect: $output"
     exec_scripts="$tmp/e2egate-exec-$name"
     mkdir -p "$exec_scripts"
-    cp "$SCRIPTS/common.sh" "$SCRIPTS/e2egate.sh" "$exec_scripts/"
+    cp "$SCRIPTS/common.sh" "$SCRIPTS/allowlist.sh" "$SCRIPTS/e2egate.sh" "$exec_scripts/"
     printf '#!/usr/bin/env bash\nexit 0\n' > "$exec_scripts/e2e.sh"
     chmod +x "$exec_scripts/e2e.sh"
     BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$exec_scripts/e2egate.sh" 1 >"$tmp/e2egate-real.out" 2>"$tmp/e2egate-real.err" || fail "unmapped presenter runtime failed"
@@ -675,7 +678,7 @@ STUB
     grep -q 'NOTE e2egate skipped full sweep for frontend/src/types/index.ts (type-only diff)' <<< "$output" || fail "type-only note omitted: $output"
     exec_scripts="$tmp/e2egate-exec-$name"
     mkdir -p "$exec_scripts"
-    cp "$SCRIPTS/common.sh" "$SCRIPTS/e2egate.sh" "$exec_scripts/"
+    cp "$SCRIPTS/common.sh" "$SCRIPTS/allowlist.sh" "$SCRIPTS/e2egate.sh" "$exec_scripts/"
     printf '#!/usr/bin/env bash\nprintf "%%s\\n" "$@" > "$E2EGATE_ARGS"\n' > "$exec_scripts/e2e.sh"
     chmod +x "$exec_scripts/e2e.sh"
     E2E_SWEEP_REPEAT=1 E2EGATE_ARGS="$tmp/e2egate-args-$name" BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$exec_scripts/e2egate.sh" 1 >"$tmp/e2egate-real.out" 2>"$tmp/e2egate-real.err" || fail "real e2egate execution failed"
@@ -688,7 +691,7 @@ STUB
     grep -q 'run 1: e2e/poker.spec.ts$' <<< "$output" || fail "spec-only edit omitted its spec: $output"
     exec_scripts="$tmp/e2egate-exec-$name"
     mkdir -p "$exec_scripts"
-    cp "$SCRIPTS/common.sh" "$SCRIPTS/e2egate.sh" "$exec_scripts/"
+    cp "$SCRIPTS/common.sh" "$SCRIPTS/allowlist.sh" "$SCRIPTS/e2egate.sh" "$exec_scripts/"
     cat > "$exec_scripts/e2e.sh" <<'STUB'
 #!/usr/bin/env bash
 printf '%s\n' "$@" > "$E2EGATE_ARGS"
@@ -740,7 +743,7 @@ make_e2egate_case shared-component shared_component
   output=$(E2E_SWEEP_REPEAT=3 BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-removed-state" bash "$SCRIPTS/e2egate.sh" --dry-run 1) || fail "removed route dry-run failed"
   grep -qF -- '--grep /baloot\b --pass-with-no-tests --repeat-each=3' <<<"$output" || fail "removed route did not get repeated: $output"
   exec_scripts="$tmp/e2egate-removed-exec"; mkdir -p "$exec_scripts"
-  cp "$SCRIPTS/common.sh" "$SCRIPTS/e2egate.sh" "$exec_scripts/"
+  cp "$SCRIPTS/common.sh" "$SCRIPTS/allowlist.sh" "$SCRIPTS/e2egate.sh" "$exec_scripts/"
   cat > "$exec_scripts/e2e.sh" <<'STUB'
 #!/usr/bin/env bash
 printf '%s\n' "$@" >> "$E2EGATE_ARGS"
@@ -1041,7 +1044,7 @@ grep -q 'rcg\$slot.pid' "$SCRIPTS/rcg.sh" || fail 'rcg.sh does not track per-slo
   state="$tmp/rcg-reuse-state"; mkdir -p "$state"
   sleep 60 & unrelated_pid=$!
   printf '%s\n' "$unrelated_pid" > "$state/rcg98.pid"
-  BATCH_REPO="$ROOT" BATCH_STATE="$state" BATCH_WT_ROOT="$tmp" E2E_GATE=0 bash "$SCRIPTS/rcg.sh" 98 >/dev/null 2>&1 || true
+  BATCH_REPO="$ROOT" BATCH_STATE="$state" BATCH_WT_ROOT="$tmp" E2E_GATE=0 E2E_SKIP_REASON='PID reuse test' bash "$SCRIPTS/rcg.sh" 98 >/dev/null 2>&1 || true
   if ! kill -0 "$unrelated_pid" 2>/dev/null; then fail 'rcg.sh killed unrelated process whose PID was reused'; fi
   kill "$unrelated_pid" 2>/dev/null || true; wait "$unrelated_pid" 2>/dev/null || true
 ) || exit 1
@@ -1140,7 +1143,7 @@ SWEEP
   chmod +x "$tmp/sweep-bin/sweep.sh"
   # drain resolves its sibling sweep.sh from its script directory.
   # A private script directory allows the sweep stub and a fast gh response.
-  mkdir -p "$tmp/drain-scripts"; cp "$SCRIPTS/common.sh" "$tmp/drain-scripts/common.sh"; cp "$SCRIPTS/drain.sh" "$tmp/drain-scripts/drain.sh"; cp "$tmp/sweep-bin/sweep.sh" "$tmp/drain-scripts/sweep.sh"
+  mkdir -p "$tmp/drain-scripts"; cp "$SCRIPTS/common.sh" "$SCRIPTS/allowlist.sh" "$tmp/drain-scripts/"; cp "$SCRIPTS/drain.sh" "$tmp/drain-scripts/drain.sh"; cp "$tmp/sweep-bin/sweep.sh" "$tmp/drain-scripts/sweep.sh"
   rc=0; PATH="$tmp/sweep-bin:$PATH" BATCH_REPO="$ROOT" BATCH_STATE="$tmp/sweep-state" BATCH_BRANCH_RE='^feat/' timeout 20 bash "$tmp/drain-scripts/drain.sh" >"$tmp/drain.out" 2>&1 || rc=$?
   [[ "$rc" != 124 ]] || fail "drain timed out instead of stopping on REVIEW-READY: $(cat "$tmp/drain.out")"
   [[ "$rc" = 0 ]] || fail "drain did not exit 0 on REVIEW-READY: $(cat "$tmp/drain.out")"
@@ -1179,7 +1182,7 @@ SWEEP
   [ "$(git -C "$SY_LANE" rev-parse HEAD)" = "$oldhead" ] && [ "$(git -C "$SY_LANE" status --porcelain)" = "$oldstatus" ] || fail 'fetch failure changed lane HEAD/status'
 
   setup_sync busy; printf dirty >> "$SY_LANE/tracked"; oldhead=$(git -C "$SY_LANE" rev-parse HEAD); oldstatus=$(git -C "$SY_LANE" status --porcelain)
-  busy_scripts="$tmp/sync-busy-scripts"; mkdir -p "$busy_scripts"; cp "$SCRIPTS/common.sh" "$SCRIPTS/sync.sh" "$busy_scripts/"
+  busy_scripts="$tmp/sync-busy-scripts"; mkdir -p "$busy_scripts"; cp "$SCRIPTS/common.sh" "$SCRIPTS/allowlist.sh" "$SCRIPTS/sync.sh" "$busy_scripts/"
   printf '#!/usr/bin/env bash\nexit 0\n' > "$busy_scripts/busy.sh"; chmod +x "$busy_scripts"/*.sh
   if BATCH_REPO="$SY_REPO" BATCH_WT_ROOT="$SY_ROOT" BATCH_STATE="$SY_STATE" bash "$busy_scripts/sync.sh" 1 >"$tmp/sync-busy.out" 2>&1; then fail 'busy sync succeeded'; else rc=$?; [ "$rc" = 1 ] || fail "busy exit $rc"; fi
   grep -qx 'REFUSED: a delegation is running in wt-ib1' "$tmp/sync-busy.out" || fail 'busy refusal missing'
@@ -1190,5 +1193,54 @@ SWEEP
   if BATCH_REPO="$SY_REPO" BATCH_WT_ROOT="$SY_ROOT" BATCH_STATE="$SY_STATE" bash "$SCRIPTS/sync.sh" 1 >"$tmp/sync-commits.out" 2>&1; then fail 'committed lane accepted'; else rc=$?; [ "$rc" = 1 ] || fail "committed exit $rc"; fi
   grep -qx 'REFUSED: lane has commits; merge by hand' "$tmp/sync-commits.out" || fail 'committed refusal missing'
   [ "$(git -C "$SY_LANE" rev-parse HEAD)" = "$oldhead" ] && [ "$(git -C "$SY_LANE" status --porcelain)" = "$oldstatus" ] || fail 'commit refusal changed lane'
+) || exit 1
+# Issue #12022: gate allowlists must be test paths, setup branches must identify a game,
+# and an E2E bypass must carry its reason into the receipt and PR body.
+(
+  repo="$tmp/issue12022"; mkdir -p "$repo/frontend/src/constants" "$repo/frontend/src/pages"
+  cat > "$repo/frontend/src/constants/gameRoutes.ts" <<'ROUTES'
+{ path: '/simple-simon', page: 'SimpleSimon' },
+{ path: '/poker', page: 'Poker' },
+ROUTES
+  BATCH_REPO="$repo" BATCH_STATE="$tmp/issue12022-state"; source "$SCRIPTS/common.sh"
+  if batch_branch_has_game "$repo" 'feat/12022-kr'; then fail 'unknown game branch was accepted'; fi
+  batch_branch_has_game "$repo" 'feat/12022-simple-simon-automove' || fail 'game with suffix was rejected'
+  batch_branch_has_game "$repo" 'feat/12022-poker' || fail 'valid game was rejected'
+  # setup_wt must validate against fetched routes, before creating any lane state.
+  local_routes=$(cat "$repo/frontend/src/constants/gameRoutes.ts")
+  remote_routes="$local_routes
+{ path: '/new-remote-game', page: 'NewRemoteGame' },"
+  if batch_branch_has_game "$repo" 'feat/12022-new-remote-game' "$remote_routes"; then :; else fail 'game present only in fetched routes was rejected'; fi
+  ! batch_branch_has_game "$repo" 'feat/12022-new-remote-game' "$local_routes" || fail 'fixture unexpectedly has new game locally'
+  fetch_line=$(grep -n 'git fetch -q origin develop' "$SCRIPTS/setup_wt.sh" | cut -d: -f1)
+  show_line=$(grep -n 'git -C "$REPO" show origin/develop:frontend/src/constants/gameRoutes.ts' "$SCRIPTS/setup_wt.sh" | cut -d: -f1)
+  worktree_line=$(grep -n 'git worktree add' "$SCRIPTS/setup_wt.sh" | cut -d: -f1)
+  [[ "$fetch_line" -lt "$show_line" && "$show_line" -lt "$worktree_line" ]] || fail 'setup_wt must fetch, validate fetched routes, then create worktree'
+  source "$SCRIPTS/prbody.sh"
+  body=$(BATCH_E2E_SKIP_REASON='manual smoke test' ship_pr_body 12022 '- harden batch gates' '' '')
+  grep -qF 'E2E skipped: manual smoke test' <<<"$body" || fail "PR body omitted E2E skip reason: $body"
+  if E2E_GATE=0 E2E_SKIP_REASON='' bash -c '[[ "${E2E_GATE:-1}" != 0 || -n "${E2E_SKIP_REASON:-}" ]]'; then fail 'empty E2E skip reason accepted'; fi
+  E2E_GATE=0 E2E_SKIP_REASON='manual smoke test' bash -c '[[ -n ${E2E_SKIP_REASON:-} ]]' || fail 'valid E2E skip reason rejected'
+) || exit 1
+(
+  repo="$tmp/allowlist"; mkdir -p "$repo"; git init -q "$repo"
+  git -C "$repo" config user.email t@t; git -C "$repo" config user.name t
+  printf 'old\n' > "$repo/a.test.ts"; git -C "$repo" add .; git -C "$repo" commit -qm base
+  printf 'new\n' > "$repo/a.test.ts"
+  out=$(ALLOW_SHRINK='a.test.ts' git -C "$repo" diff --numstat HEAD -- '*.test.ts')
+  [[ "$out" == $'1\t1\ta.test.ts' ]] || fail 'valid ALLOW_SHRINK test path not recognized'
+  out=$(validate_allowlist ALLOW_SHRINK 'a.test.ts' '(\.test\.tsx?|_test\.go)$') || fail 'valid ALLOW_SHRINK path rejected'
+  [[ -z "$out" ]] || fail "valid allowlist emitted warning: $out"
+  out=$(validate_allowlist ALLOW_SHRINK 'src/page.ts' '(\.test\.tsx?|_test\.go)$' || true)
+  [[ "$out" == 'WARN ALLOW_SHRINK_INVALID src/page.ts' ]] || fail "invalid ALLOW_SHRINK path not rejected: $out"
+  touch "$tmp/allowlist/a.test.ts" "$tmp/allowlist/b.test.ts"
+  out=$(cd "$tmp/allowlist" && validate_allowlist ALLOW_SHRINK '*' '(\.test\.tsx?|_test\.go)$' || true)
+  [[ "$out" == 'WARN ALLOW_SHRINK_INVALID *' ]] || fail "glob-expanded ALLOW_SHRINK was not kept literal: $out"
+  out=$(validate_allowlist ALLOW_IDENT_GONE 'a_test' '^[A-Za-z_$][A-Za-z0-9_$]*$') || fail 'valid ALLOW_IDENT_GONE identifier rejected'
+  [[ -z "$out" ]] || fail "valid identifier allowlist emitted warning: $out"
+  out=$(validate_allowlist ALLOW_IDENT_GONE '1' '^[A-Za-z_$][A-Za-z0-9_$]*$' || true)
+  [[ "$out" == 'WARN ALLOW_IDENT_GONE_INVALID 1' ]] || fail "invalid ALLOW_IDENT_GONE entry not rejected: $out"
+  out=$(validate_allowlist ALLOW_SHRINK 'isMobile' '(\.test\.tsx?|_test\.go)$' || true)
+  [[ "$out" == 'WARN ALLOW_SHRINK_INVALID isMobile' ]] || fail "identifier incorrectly accepted by ALLOW_SHRINK: $out"
 ) || exit 1
 echo "batch-lanes script tests passed"

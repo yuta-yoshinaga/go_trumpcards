@@ -10,6 +10,38 @@ BATCH_WT_ROOT="${BATCH_WT_ROOT:-$(dirname "$REPO")}"
 WT_ROOT="$BATCH_WT_ROOT"
 mkdir -p "$BATCH_STATE"
 touch "$BATCH_STATE/reviewed.txt" "$BATCH_STATE/acked.txt"
+ALLOWLIST_SCRIPT="${B%/}/allowlist.sh"
+[[ -f "$ALLOWLIST_SCRIPT" ]] || { echo "ERROR: required allowlist helper missing: $ALLOWLIST_SCRIPT" >&2; return 1 2>/dev/null || exit 1; }
+source "$ALLOWLIST_SCRIPT"
+
+# Match consecutive branch words against a game page name, allowing a CamelCase suffix.
+batch_branch_matches_game() {
+  local branch="$1" page="$2" compact game candidate start end
+  local -a words=()
+  IFS=- read -r -a words <<<"${branch##*/}"
+  compact="$(tr '[:upper:]' '[:lower:]' <<<"$page" | tr -cd '[:alnum:]')"
+  for ((start=0; start<${#words[@]}; start++)); do
+    game=''
+    for ((end=start; end<${#words[@]}; end++)); do
+      game+="$(tr '[:upper:]' '[:lower:]' <<<"${words[end]}" | tr -cd '[:alnum:]')"
+      [[ -n "$game" && "$compact" == "$game" ]] && return 0
+      if [[ -n "$game" && "$compact" == "$game"* ]]; then
+        candidate="${page:${#game}:1}"
+        [[ -n "$candidate" && "$candidate" =~ [A-Z] ]] && return 0
+      fi
+    done
+  done
+  return 1
+}
+
+batch_branch_has_game() {
+  local repo="$1" branch="$2" routes="${3:-}" page
+  if [[ -z "$routes" ]]; then routes="$(cat "$repo/frontend/src/constants/gameRoutes.ts")"; fi
+  while IFS= read -r page; do
+    batch_branch_matches_game "$branch" "$page" && return 0
+  done < <(sed -nE "s/.*page:[[:space:]]*['\"]([^'\"]+)['\"].*/\1/p" <<<"$routes")
+  return 1
+}
 
 require_branch_re() {
   if [[ -z "${BATCH_BRANCH_RE:-}" ]]; then

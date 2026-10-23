@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 wt=${1:?usage: identgone.sh <worktree>}
+source "${BASH_SOURCE[0]%/*}/allowlist.sh"
+validate_allowlist ALLOW_IDENT_GONE "${ALLOW_IDENT_GONE:-}" '^[A-Za-z_$][A-Za-z0-9_$]*$' || true
 if ! command -v python3 >/dev/null 2>&1; then
   echo 'NOTE IDENT_GONE python3 unavailable'
   exit 0
