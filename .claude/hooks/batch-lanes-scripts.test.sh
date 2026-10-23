@@ -562,16 +562,23 @@ grep -q '^CONFLICT feat/22-conflict shared$' "$tmp/combined-conflict.out" || fai
 # e2egate selects page runs, full sweeps, imported helper specs, and no-op diffs.
 make_e2egate_case() {
   local name="$1" changed="$2" repo="$tmp/e2egate-$1" wtroot="$tmp/e2egate-wts-$1"
-  mkdir -p "$repo/frontend/src/pages" "$repo/frontend/src/constants" "$repo/frontend/e2e" "$wtroot"
+  mkdir -p "$repo/frontend/src/pages" "$repo/frontend/src/constants" "$repo/frontend/e2e" "$repo/internal/adapter/presenter" "$wtroot"
   git init -q "$repo"; git -C "$repo" config user.email test@example.com; git -C "$repo" config user.name test
   printf "export const gameRoutes = [{ path: '/wrong' }, { path: '/poker', page: 'Poker' }, { path: '/', page: 'BlackJack' }];\n" > "$repo/frontend/src/constants/gameRoutes.ts"
-  for spec in desktop-board-visibility desktop-hand-visibility game-message-visibility mobile-viewport text-contrast route-sweep poker poker-paytable-mobile pokerx; do touch "$repo/frontend/e2e/$spec.spec.ts"; done
+  for spec in desktop-board-visibility desktop-hand-visibility game-message-visibility mobile-viewport text-contrast route-sweep poker poker-paytable-mobile pokerx blackjack; do touch "$repo/frontend/e2e/$spec.spec.ts"; done
   mkdir -p "$repo/frontend/src/components" "$repo/frontend/src/i18n/locales/en" "$repo/frontend/src/types" "$repo/frontend/src/utils"
   printf "import { helper } from './helpers';\n" > "$repo/frontend/e2e/poker.spec.ts"
   touch "$repo/frontend/e2e/helpers.ts" "$repo/frontend/src/components/Other.tsx" "$repo/frontend/src/i18n/locales/en/common.json" "$repo/frontend/src/components/a.test.tsx"
   printf 'export interface Thing { name: string }\nexport const runtime = true;\n' > "$repo/frontend/src/types/index.ts"
   printf 'export const helper = true;\n' > "$repo/frontend/src/utils/obsolete.ts"
   touch "$repo/frontend/src/pages/PokerPage.tsx" "$repo/frontend/src/components/GameFooter.tsx" "$repo/frontend/base.ts"
+  touch "$repo/frontend/src/pages/BlackJackPage.tsx" "$repo/internal/adapter/presenter/BlackjackWebPresenter.go"
+  printf "import { PokerWidget } from '../components/poker/PokerWidget';\\n" > "$repo/frontend/src/pages/PokerPage.tsx"
+  touch "$repo/frontend/src/pages/OtherPage.tsx"
+  mkdir -p "$repo/frontend/src/components/poker"
+  mkdir -p "$repo/frontend/src/components/blackjack"
+  touch "$repo/frontend/src/components/blackjack/BlackjackWidget.tsx"
+  touch "$repo/frontend/src/components/poker/PokerWidget.tsx" "$repo/internal/adapter/presenter/PokerWebPresenter.go" "$repo/internal/adapter/presenter/UnknownWebPresenter.go"
   git -C "$repo" add .
   tree=$(git -C "$repo" write-tree)
   commit=$(printf "base\n" | git -C "$repo" -c user.name=test -c user.email=test@example.com commit-tree "$tree")
@@ -590,6 +597,14 @@ make_e2egate_case() {
     type_large) for ((i=0; i<2200; i++)); do printf '// %s\n' 'large type-only comment padding line with enough bytes to exceed the pipe buffer' >> "$wtroot/wt-ib1/frontend/src/types/index.ts"; done; sed -i 's/export const runtime = true;/export const runtime = false;/' "$wtroot/wt-ib1/frontend/src/types/index.ts" ;;
     restored_deleted) cp "$wtroot/wt-ib1/frontend/src/utils/obsolete.ts" "$tmp/e2egate-restored-source"; rm "$wtroot/wt-ib1/frontend/src/utils/obsolete.ts"; git -C "$wtroot/wt-ib1" add frontend/src/utils/obsolete.ts; cp "$tmp/e2egate-restored-source" "$wtroot/wt-ib1/frontend/src/utils/obsolete.ts" ;;
     deleted_component) rm "$wtroot/wt-ib1/frontend/src/utils/obsolete.ts"; printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/src/components/Other.tsx" ;;
+    presenter) printf '\n// edit\n' >> "$wtroot/wt-ib1/internal/adapter/presenter/PokerWebPresenter.go" ;;
+    presenter_unmapped) printf '\n// edit\n' >> "$wtroot/wt-ib1/internal/adapter/presenter/UnknownWebPresenter.go" ;;
+    game_component) printf '\n// edit\n' >> "$wtroot/wt-ib1/frontend/src/components/poker/PokerWidget.tsx" ;;
+    game_component_other) printf "import { PokerWidget } from '../components/poker/PokerWidget';\\n" >> "$wtroot/wt-ib1/frontend/src/pages/OtherPage.tsx"; printf '\n// edit\n' >> "$wtroot/wt-ib1/frontend/src/components/poker/PokerWidget.tsx" ;;
+    game_component_shared) printf "import { PokerWidget } from './poker/PokerWidget';\\n" >> "$wtroot/wt-ib1/frontend/src/components/Shared.tsx"; printf '\n// edit\n' >> "$wtroot/wt-ib1/frontend/src/components/poker/PokerWidget.tsx" ;;
+    presenter_case) printf '\n// edit\n' >> "$wtroot/wt-ib1/internal/adapter/presenter/BlackjackWebPresenter.go" ;;
+    component_case) printf '\n// edit\n' >> "$wtroot/wt-ib1/frontend/src/components/blackjack/BlackjackWidget.tsx" ;;
+    shared_component) printf '\n// edit\n' >> "$wtroot/wt-ib1/frontend/src/components/GameFooter.tsx"; printf "import { GameFooter } from '../components/GameFooter';\\n" >> "$wtroot/wt-ib1/frontend/src/pages/OtherPage.tsx" ;;
   esac
   if [[ "$changed" == missing ]]; then
     error="$tmp/e2egate-missing.err"
@@ -603,35 +618,59 @@ make_e2egate_case() {
     return
   fi
   output=$(E2E_SWEEP_REPEAT=3 BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$SCRIPTS/e2egate.sh" --dry-run 1) || fail "e2egate $name dry-run failed"
-  if [[ "$changed" == shared || "$changed" == component || "$changed" == type_runtime || "$changed" == type_large || "$changed" == deleted_component || "$changed" == restored_deleted ]]; then
+  if [[ "$changed" == shared || "$changed" == component || "$changed" == type_runtime || "$changed" == type_large || "$changed" == deleted_component || "$changed" == restored_deleted || "$changed" == shared_component ]]; then
     for spec in desktop-board-visibility desktop-hand-visibility game-message-visibility mobile-viewport text-contrast route-sweep; do grep -q "e2e/$spec.spec.ts" <<< "$output" || fail "sweep omitted $spec: $output"; done
   elif [[ "$changed" == page ]]; then
-    grep -q 'run 1: e2e/poker.spec.ts$' <<< "$output" || fail "page game spec has grep or was omitted: $output"
-    grep -q 'run 2: e2e/poker-paytable-mobile.spec.ts$' <<< "$output" || fail "page route extra spec was omitted: $output"
+    if E2E_PAGE_REPEAT=bad BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$SCRIPTS/e2egate.sh" --dry-run 1 >"$tmp/e2egate-page-repeat.out" 2>"$tmp/e2egate-page-repeat.err"; then
+      fail "e2egate accepted nonnumeric E2E_PAGE_REPEAT"
+    else
+      [[ $? == 2 ]] || fail "invalid E2E_PAGE_REPEAT did not exit 2"
+    fi
+    grep -qx 'E2E_PAGE_REPEAT must be numeric' "$tmp/e2egate-page-repeat.err" || fail "invalid E2E_PAGE_REPEAT diagnostic missing"
+    grep -qF 'run 1: e2e/poker-paytable-mobile.spec.ts e2e/poker.spec.ts --repeat-each=3' <<< "$output" || fail "repeated page specs missing from separate run: $output"
     ! grep -q 'pokerx.spec.ts' <<< "$output" || fail "page route selected a spec without a hyphen boundary: $output"
-    grep -qF 'run 3: e2e/desktop-board-visibility.spec.ts' <<< "$output" || fail "page sweep run omitted: $output"
+    grep -qF 'run 2: e2e/desktop-board-visibility.spec.ts' <<< "$output" || fail "page sweep run omitted: $output"
     grep -qF -- '--grep /poker\b --pass-with-no-tests --repeat-each=3' <<< "$output" || fail "page sweep omitted route grep/pass-with-no-tests/repeat: $output"
     output_once=$(E2E_SWEEP_REPEAT=1 BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$SCRIPTS/e2egate.sh" --dry-run 1) || fail "e2egate $name repeat=1 dry-run failed"
-    ! grep -q -- '--repeat-each' <<<"$output_once" || fail "repeat=1 dry-run added repeat arg: $output_once"
+    ! grep -qF -- '--grep /poker\b --pass-with-no-tests --repeat-each' <<<"$output_once" || fail "sweep repeat=1 still added sweep repeat arg: $output_once"
     exec_scripts="$tmp/e2egate-exec-$name"
     mkdir -p "$exec_scripts"
     cp "$SCRIPTS/common.sh" "$SCRIPTS/e2egate.sh" "$exec_scripts/"
     cat > "$exec_scripts/e2e.sh" <<'STUB'
 #!/usr/bin/env bash
-printf '%s\n' "$@" > "$E2EGATE_ARGS"
+    printf '%s\n' "$@" >> "$E2EGATE_ARGS"
+    printf '%s\n' '---CALL---' >> "$E2EGATE_ARGS"
 STUB
     chmod +x "$exec_scripts/e2e.sh"
     E2E_SWEEP_REPEAT=3 E2EGATE_ARGS="$tmp/e2egate-args-$name" BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$exec_scripts/e2egate.sh" 1 || fail "page e2egate execution failed"
     expected="$tmp/e2egate-expected-$name"
-    printf '%s\n' 1 e2e/poker.spec.ts e2e/poker-paytable-mobile.spec.ts --- e2e/desktop-board-visibility.spec.ts e2e/desktop-hand-visibility.spec.ts e2e/game-message-visibility.spec.ts e2e/mobile-viewport.spec.ts e2e/route-sweep.spec.ts e2e/text-contrast.spec.ts --grep '/poker\b' --pass-with-no-tests --repeat-each=3 > "$expected"
+    printf '%s\n' 1 e2e/poker-paytable-mobile.spec.ts e2e/poker.spec.ts --repeat-each=3 ---CALL--- 1 e2e/desktop-board-visibility.spec.ts e2e/desktop-hand-visibility.spec.ts e2e/game-message-visibility.spec.ts e2e/mobile-viewport.spec.ts e2e/route-sweep.spec.ts e2e/text-contrast.spec.ts --grep '/poker\b' --pass-with-no-tests --repeat-each=3 ---CALL--- > "$expected"
     diff -u "$expected" "$tmp/e2egate-args-$name" || fail "page execution passed wrong args"
     E2E_SWEEP_REPEAT=1 E2EGATE_ARGS="$tmp/e2egate-args-$name" BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$exec_scripts/e2egate.sh" 1 || fail "page e2egate repeat=1 execution failed"
-    ! grep -q -- '--repeat-each' "$tmp/e2egate-args-$name" || fail "repeat=1 added repeat arg"
+    grep -q -- '--repeat-each=3' "$tmp/e2egate-args-$name" || fail "page repeat was removed when sweep repeat=1"
     ! grep -q 'e2e/e2e/' "$tmp/e2egate-args-$name" || fail "page execution doubled e2e prefix"
+  elif [[ "$changed" == presenter || "$changed" == game_component ]]; then
+    grep -q '^run 1: e2e/poker-paytable-mobile.spec.ts e2e/poker.spec.ts --repeat-each=3$' <<< "$output" || fail "$changed did not repeat its page spec: $output"
+    grep -qF -- '--grep /poker\b --pass-with-no-tests --repeat-each=3' <<< "$output" || fail "$changed did not route-filter the sweep: $output"
+    ! grep -q 'pokerx.spec.ts' <<< "$output" || fail "$changed overmatched another game spec: $output"
+  elif [[ "$changed" == presenter_case || "$changed" == component_case ]]; then
+    grep -q '^run 1: e2e/blackjack.spec.ts --repeat-each=3$' <<< "$output" || fail "$changed did not case-insensitively select the page: $output"
+    grep -qF -- '--grep /blackjack\b --pass-with-no-tests --repeat-each=3' <<< "$output" || fail "$changed did not select the blackjack route sweep: $output"
+  elif [[ "$changed" == game_component_other || "$changed" == game_component_shared ]]; then
+    for spec in desktop-board-visibility desktop-hand-visibility game-message-visibility mobile-viewport text-contrast route-sweep; do grep -q "e2e/$spec.spec.ts" <<< "$output" || fail "cross-game component edit omitted full sweep $spec: $output"; done
+  elif [[ "$changed" == presenter_unmapped ]]; then
+    [[ "$output" == 'NOTE e2egate: no page for internal/adapter/presenter/UnknownWebPresenter.go' ]] || fail "unmapped presenter note incorrect: $output"
+    exec_scripts="$tmp/e2egate-exec-$name"
+    mkdir -p "$exec_scripts"
+    cp "$SCRIPTS/common.sh" "$SCRIPTS/e2egate.sh" "$exec_scripts/"
+    printf '#!/usr/bin/env bash\nexit 0\n' > "$exec_scripts/e2e.sh"
+    chmod +x "$exec_scripts/e2e.sh"
+    BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$exec_scripts/e2egate.sh" 1 >"$tmp/e2egate-real.out" 2>"$tmp/e2egate-real.err" || fail "unmapped presenter runtime failed"
+    grep -qx 'NOTE e2egate: no page for internal/adapter/presenter/UnknownWebPresenter.go' "$tmp/e2egate-real.err" || fail "unmapped presenter runtime note missing: $(cat "$tmp/e2egate-real.err")"
   elif [[ "$changed" == deleted_type_page ]]; then
-    grep -q '^run 1: e2e/poker.spec.ts$' <<< "$output" || fail "page game spec omitted with deleted/type-only changes: $output"
+    grep -q '^run 1: e2e/poker-paytable-mobile.spec.ts e2e/poker.spec.ts --repeat-each=3$' <<< "$output" || fail "page game spec omitted with deleted/type-only changes: $output"
     grep -qF -- '--grep /poker\b --pass-with-no-tests --repeat-each=3' <<< "$output" || fail "page route-filtered sweep omitted for deleted/type-only changes: $output"
-    [[ $(grep -c '^run ' <<< "$output") == 3 ]] || fail "deleted/type-only changes triggered an unfiltered sweep: $output"
+    [[ $(grep -c '^run ' <<< "$output") == 2 ]] || fail "deleted/type-only changes triggered an unfiltered sweep: $output"
     grep -q 'NOTE e2egate skipped full sweep for frontend/src/utils/obsolete.ts (deleted source)' <<< "$output" || fail "deleted source note omitted: $output"
     grep -q 'NOTE e2egate skipped full sweep for frontend/src/types/index.ts (type-only diff)' <<< "$output" || fail "type-only note omitted: $output"
     exec_scripts="$tmp/e2egate-exec-$name"
@@ -675,6 +714,14 @@ make_e2egate_case types-runtime type_runtime
 make_e2egate_case types-large type_large
 make_e2egate_case restored-deleted restored_deleted
 make_e2egate_case deleted-component deleted_component
+make_e2egate_case presenter presenter
+make_e2egate_case presenter-unmapped presenter_unmapped
+make_e2egate_case game-component game_component
+make_e2egate_case game-component-other game_component_other
+make_e2egate_case game-component-shared game_component_shared
+make_e2egate_case presenter-case presenter_case
+make_e2egate_case component-case component_case
+make_e2egate_case shared-component shared_component
 
 # Removed route references are repeated; moves are excluded, including during full sweeps.
 (
