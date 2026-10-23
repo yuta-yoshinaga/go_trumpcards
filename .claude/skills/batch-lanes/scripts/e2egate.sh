@@ -12,8 +12,24 @@ mapfile -t deleted < <({ git -C "$wt" diff --name-only --diff-filter=D origin/de
 declare -A deleted_paths=()
 for path in "${deleted[@]}"; do deleted_paths["$path"]=1; done
 frontend=0; full_sweep=0; page_change=0
-declare -a explicit_specs=() pages=() helper_paths=() skipped_paths=()
+declare -a explicit_specs=() pages=() helper_paths=() skipped_paths=() game_pages=() selected_page_specs=()
+declare -a unmapped_presenters=()
+find_page() {
+  local wanted="${1,,}" page_file base
+  while IFS= read -r page_file; do
+    base="${page_file##*/}"
+    [[ "${base,,}" == "$wanted" ]] && { printf '%s\n' "$base"; return 0; }
+  done < <(find "$wt/frontend/src/pages" -maxdepth 1 -type f -iname '*Page.tsx' | sort)
+  return 1
+}
 for path in "${changed[@]}"; do
+  if [[ "$path" =~ ^internal/adapter/presenter/([A-Za-z0-9]+)WebPresenter\.go$ ]]; then
+    candidate="${BASH_REMATCH[1]}Page.tsx"
+    matched_page="$(find_page "$candidate" || true)"
+    if [[ -n "$matched_page" ]]; then pages+=("$matched_page"); page_change=1
+    else unmapped_presenters+=("$path"); fi
+    continue
+  fi
   [[ "$path" == frontend/* ]] || continue
   frontend=1
   case "$path" in
@@ -22,6 +38,31 @@ for path in "${changed[@]}"; do
     frontend/src/pages/*Page.tsx) page_change=1; pages+=("${path#frontend/src/pages/}") ;;
     frontend/src/i18n/locales/*|frontend/src/**/*.test.ts|frontend/src/**/*.test.tsx|frontend/src/*.test.ts|frontend/src/*.test.tsx) ;;
     frontend/playwright.config.ts) full_sweep=1 ;;
+    frontend/src/components/*/*)
+      component_dir="${path#frontend/src/components/}"; component_dir="${component_dir%%/*}"
+      game="$(python3 - "$component_dir" <<'PY'
+import re, sys
+print(''.join(part[:1].upper() + part[1:] for part in re.split(r'[-_ ]+', sys.argv[1])))
+PY
+)"
+      candidate="${game}Page.tsx"
+      matched_page="$(find_page "$candidate" || true)"
+      if [[ -n "$matched_page" ]]; then
+        references=0
+        while IFS= read -r page_file; do
+          [[ -f "$page_file" ]] || continue
+          if grep -Eq "from[[:space:]]+['\"][^'\"]*/${component_dir}/|import[[:space:]]+['\"][^'\"]*/${component_dir}/" "$page_file"; then
+            page_basename="${page_file##*/}"
+            [[ "${page_basename,,}" == "${matched_page,,}" ]] || references=1
+          fi
+        done < <(find "$wt/frontend/src/pages" -maxdepth 1 -name '*Page.tsx' -type f)
+        if (( references )); then full_sweep=1
+        else pages+=("$matched_page"); page_change=1; game_pages+=("$matched_page")
+        fi
+      else
+        full_sweep=1
+      fi
+      ;;
     frontend/src/*)
       if [[ -n "${deleted_paths[$path]:-}" && ! -e "$wt/$path" ]]; then
         skipped_paths+=("$path (deleted source)")
@@ -49,6 +90,8 @@ done
 sweep=(desktop-board-visibility desktop-hand-visibility game-message-visibility mobile-viewport text-contrast route-sweep)
 repeat="${E2E_SWEEP_REPEAT:-10}"
 [[ "$repeat" =~ ^[0-9]+$ ]] || { echo "E2E_SWEEP_REPEAT must be numeric" >&2; exit 2; }
+page_repeat="${E2E_PAGE_REPEAT:-3}"
+[[ "$page_repeat" =~ ^[0-9]+$ ]] || { echo "E2E_PAGE_REPEAT must be numeric" >&2; exit 2; }
 repeat_arg=()
 if (( page_change && ! full_sweep && repeat > 1 )); then repeat_arg+=("--repeat-each=$repeat"); fi
 mapfile -t deleted_routes < <(python3 - "$wt" <<'PYROUTES'
@@ -89,6 +132,7 @@ removed_repeat_arg=()
 if (( ${#removed_route_args[@]} && repeat > 1 )); then removed_repeat_arg+=("--repeat-each=$repeat"); fi
 declare -a run_specs=() run_args=()
 (( ${#explicit_specs[@]} )) && mapfile -t explicit_specs < <(printf '%s\n' "${explicit_specs[@]}" | sort -u)
+if (( page_change )); then frontend=1; fi
 if (( frontend )); then
   # For page changes, the game spec runs without a grep; only the sweep is route-filtered.
   if (( page_change )); then
@@ -103,9 +147,9 @@ PY
 )"
       [[ -n "$route" ]] || continue
       route="${route#/}"; [[ -n "$route" ]] || route=blackjack
-      [[ -f "$wt/frontend/e2e/$route.spec.ts" ]] && run_specs+=("$route.spec.ts")
+      if [[ -f "$wt/frontend/e2e/$route.spec.ts" ]]; then run_specs+=("$route.spec.ts"); selected_page_specs+=("$route.spec.ts"); fi
       for spec in "$wt/frontend/e2e/$route-"*.spec.ts; do
-        [[ -f "$spec" ]] && run_specs+=("${spec##*/}")
+        if [[ -f "$spec" ]]; then run_specs+=("${spec##*/}"); selected_page_specs+=("${spec##*/}"); fi
       done
       if (( ! full_sweep )); then
         run_args+=("/$(printf '%s' "$route" | sed 's/[][(){}.^$*+?|\\]/\\&/g')\\b")
@@ -128,7 +172,7 @@ page_specs=(); sweep_specs=(); other_specs=()
 for spec in "${run_specs[@]}"; do
   name="${spec%.spec.ts}"
   if [[ " ${sweep[*]} " == *" $name "* ]]; then sweep_specs+=("e2e/$spec")
-  elif (( page_change )) && [[ -f "$wt/frontend/src/pages/${name^}Page.tsx" ]]; then page_specs+=("e2e/$spec")
+  elif [[ " ${selected_page_specs[*]} " == *" $spec "* ]] || { (( page_change )) && [[ -f "$wt/frontend/src/pages/${name^}Page.tsx" ]]; }; then page_specs+=("e2e/$spec")
   else other_specs+=("e2e/$spec")
   fi
 done
@@ -141,8 +185,11 @@ add_call() {
   call_vars+=("$var")
 }
 if (( frontend )); then
+  if (( ${#page_specs[@]} )) && (( page_repeat > 1 )); then add_call "${page_specs[@]}" "--repeat-each=$page_repeat"
+  elif (( ${#page_specs[@]} )); then add_call "${page_specs[@]}"
+  fi
   if (( ${#sweep_specs[@]} )); then
-    base_args=("${page_specs[@]}" "${other_specs[@]}")
+    base_args=("${other_specs[@]}")
     if (( full_sweep )); then
       if (( ${#base_args[@]} )); then base_args+=(---); fi
       base_args+=("${sweep_specs[@]}")
@@ -160,10 +207,11 @@ if (( frontend )); then
       add_call "${base_args[@]}"
     fi
   elif (( ${#page_specs[@]} || ${#other_specs[@]} )); then
-    add_call "${page_specs[@]}" "${other_specs[@]}"
+    ((${#other_specs[@]})) && add_call "${other_specs[@]}"
   fi
 fi
 if (( dry_run )); then
+  for path in "${unmapped_presenters[@]}"; do printf 'NOTE e2egate: no page for %s\n' "$path"; done
   for skipped in "${skipped_paths[@]}"; do printf 'NOTE e2egate skipped full sweep for %s\n' "$skipped"; done
   run=0
   display_call() {
@@ -199,6 +247,7 @@ if (( dry_run )); then
   done
   exit 0
 fi
+for path in "${unmapped_presenters[@]}"; do printf 'NOTE e2egate: no page for %s\n' "$path" >&2; done
 for skipped in "${skipped_paths[@]}"; do printf 'NOTE e2egate skipped full sweep for %s\n' "$skipped" >&2; done
 for var in "${call_vars[@]}"; do
   declare -n local_args="$var"
