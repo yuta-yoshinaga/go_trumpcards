@@ -53,6 +53,7 @@ $body
    - 要素を aria-disabled にしたら、frontend/e2e/<game>*.spec.ts でその要素をクリックしているロケータ (例 button[aria-pressed]:has(img) の first()) を grep し、:not([aria-disabled="true"]) で除く。Playwright の click は aria-disabled の要素が有効になるまで待ち続けてタイムアウトする (#9811)。
    - 成績・統計 (クリア回数・平均手数・勝敗など) を localStorage に残すときは、共有の frontend/src/hooks/createLocalStorageStats.ts とゲームごとの hooks/use<Game>Stats.ts (先例 useSomersetStats / useMrsMopStats) の形に合わせ、ページに localStorage の読み書きを直書きしない。フックに単体試験を付ける。
    - presenter が新しいゲッターを呼ぶようにしたら、internal/adapter/presenter/<Game>WebPresenter_test.go のモック設定 (m.On("…")) にも同じゲッターの期待値を足し、\`go test -tags test ./internal/adapter/presenter/\` を -run で絞らずに回す (#9427 で予期しない呼び出しにより落ちた)。
+   - 人間の席を引数に取るゲッター (合法手など) を presenter から呼ぶときは、席を 0 と決め打ちしない。domain の Reset に rand.Shuffle(len(x.players) があるゲームは席がシャッフルされるので、CurrentTurn か人間の席の index を渡し、presenter 試験では GetCurrentTurn を 0 以外にモックして非空を assert する (#12017 の SevensWebPresenter_test.go が雛形)。
    - デザイントークンのみ (\`text-ds-*\`, \`bg-ds-*\`)。生のパレットや \`text-white/N\` は不可。
    - 追加した試験が**実装を壊すと落ちる**ことを確かめる (一時的に実装を戻して失敗を見て、元に戻す。戻しは手で行い git checkout を使わない)。
    - \`waitFor(() => expect(...).not...)\` のような、描画が空でも通る否定だけの assert を書かない。
