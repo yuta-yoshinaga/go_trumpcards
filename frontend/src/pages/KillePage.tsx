@@ -281,7 +281,7 @@ function KillePageContent() {
                   <div
                     key={`player-${p.id}`}
                     data-testid="kille-player"
-                    className={`text-sm py-0.5 flex items-center gap-2 ${
+                    className={`text-sm py-0.5 flex flex-wrap items-center gap-2 ${
                       p.isCurrentTurn && !isGameEnd ? 'text-ds-warning' : 'text-ds-text-muted'
                     } ${p.isHuman ? 'font-semibold' : ''} ${p.isFinished ? 'opacity-50' : ''}`}
                   >

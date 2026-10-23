@@ -91,6 +91,12 @@ describe('KillePage', () => {
     expect(document.querySelector('[data-tutorial="kille-info"]')).toHaveClass('flex', 'flex-wrap');
   });
 
+  it('allows the human player row labels to wrap', async () => {
+    renderWithProviders(<KillePage />);
+    const humanRow = (await screen.findAllByTestId('kille-player')).find((row) => row.textContent?.includes('あなた'));
+    expect(humanRow).toHaveClass('flex-wrap');
+  });
+
   it('exchanges and stands pat', async () => {
     renderWithProviders(<KillePage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /交換する/ })).toBeInTheDocument());
