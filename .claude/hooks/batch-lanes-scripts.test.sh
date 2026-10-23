@@ -665,7 +665,7 @@ STUB
     [[ "$output" == 'NOTE e2egate: no page for internal/adapter/presenter/UnknownWebPresenter.go' ]] || fail "unmapped presenter note incorrect: $output"
     exec_scripts="$tmp/e2egate-exec-$name"
     mkdir -p "$exec_scripts"
-    cp "$SCRIPTS/common.sh" "$SCRIPTS/e2egate.sh" "$exec_scripts/"
+    cp "$SCRIPTS/common.sh" "$SCRIPTS/allowlist.sh" "$SCRIPTS/e2egate.sh" "$exec_scripts/"
     printf '#!/usr/bin/env bash\nexit 0\n' > "$exec_scripts/e2e.sh"
     chmod +x "$exec_scripts/e2e.sh"
     BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$exec_scripts/e2egate.sh" 1 >"$tmp/e2egate-real.out" 2>"$tmp/e2egate-real.err" || fail "unmapped presenter runtime failed"
