@@ -44,6 +44,8 @@ type SevensGame interface {
 	GetTablePlaced() [5]uint16
 	// GetValidPlayIndices 指定プレイヤーのいま出せる手札インデックスを取得する。
 	GetValidPlayIndices(playerIdx int) []int
+	// GetJokerPlacements returns ordered board positions where a joker can be placed.
+	GetJokerPlacements() []domain.SevensPosition
 	// GetPlayableCardIndices 人間プレイヤーのいま出せる手札インデックスを取得する (CUI)。
 	GetPlayableCardIndices() []int
 }

@@ -8,8 +8,7 @@ const tablePlacedWith7 = [0, 1 << 7, 1 << 7, 1 << 7, 1 << 7];
 const defaultProps = {
   tablePlaced: tablePlacedWith7,
   tunnelEnabled: false,
-  tunnelSkipWidth: 0,
-  endStopEnabled: false,
+  jokerPlacements: [],
   jokerSelecting: false,
 };
 
@@ -83,16 +82,39 @@ describe('SevensBoard', () => {
   });
 
   it('renders playable cells as buttons when jokerSelecting', () => {
-    render(<SevensBoard {...defaultProps} jokerSelecting={true} />);
+    render(<SevensBoard {...defaultProps} jokerSelecting={true} jokerPlacements={[{ suit: 1, value: 6 }]} />);
     const buttons = screen.getAllByRole('button');
-    expect(buttons.length).toBeGreaterThan(0);
+    expect(buttons).toHaveLength(1);
   });
 
   it('calls onJokerPlace when clicking a playable cell', () => {
     const onJokerPlace = vi.fn();
-    render(<SevensBoard {...defaultProps} jokerSelecting={true} onJokerPlace={onJokerPlace} />);
+    render(
+      <SevensBoard
+        {...defaultProps}
+        jokerSelecting={true}
+        jokerPlacements={[{ suit: 1, value: 6 }]}
+        onJokerPlace={onJokerPlace}
+      />,
+    );
     screen.getByLabelText('SPADE 6 に配置').click();
     expect(onJokerPlace).toHaveBeenCalledTimes(1);
+  });
+
+  it('follows server joker placements even when they disagree with board adjacency', () => {
+    const onJokerPlace = vi.fn();
+    render(
+      <SevensBoard
+        {...defaultProps}
+        jokerSelecting={true}
+        jokerPlacements={[{ suit: 2, value: 1 }]}
+        onJokerPlace={onJokerPlace}
+      />,
+    );
+    expect(screen.getByLabelText('CLOVER A に配置')).toHaveAttribute('data-joker-placeable', 'true');
+    expect(screen.queryByLabelText('SPADE 6 に配置')).not.toBeInTheDocument();
+    screen.getByLabelText('CLOVER A に配置').click();
+    expect(onJokerPlace).toHaveBeenCalledWith(2, 1);
   });
 
   it('shows tunnel connection icon for each suit when tunnelEnabled', () => {
@@ -114,7 +136,7 @@ describe('SevensBoard', () => {
   });
 
   it('does not throw when clicking playable cell without onJokerPlace', () => {
-    render(<SevensBoard {...defaultProps} jokerSelecting={true} />);
+    render(<SevensBoard {...defaultProps} jokerSelecting={true} jokerPlacements={[{ suit: 1, value: 6 }]} />);
     expect(() => screen.getByLabelText('SPADE 6 に配置').click()).not.toThrow();
   });
 
@@ -171,13 +193,13 @@ describe('SevensBoard', () => {
   });
 
   it('joker playable button renders with white text color', () => {
-    render(<SevensBoard {...defaultProps} jokerSelecting={true} />);
+    render(<SevensBoard {...defaultProps} jokerSelecting={true} jokerPlacements={[{ suit: 1, value: 6 }]} />);
     const button = screen.getByLabelText('SPADE 6 に配置') as HTMLElement;
     expect(button.style.color).toBe('white');
   });
 
   it('joker placeable cells pulse (motion-safe) and have ds-info ring', () => {
-    render(<SevensBoard {...defaultProps} jokerSelecting={true} />);
+    render(<SevensBoard {...defaultProps} jokerSelecting={true} jokerPlacements={[{ suit: 1, value: 6 }]} />);
     const button = screen.getByLabelText('SPADE 6 に配置') as HTMLElement;
     // Pinned to the motion-safe: variant so OS "Reduce Motion" users never see the pulse.
     expect(button.className).toContain('motion-safe:animate-pulse');
@@ -186,7 +208,7 @@ describe('SevensBoard', () => {
   });
 
   it('joker placeable cells use ds-info background (blue highlight)', () => {
-    render(<SevensBoard {...defaultProps} jokerSelecting={true} />);
+    render(<SevensBoard {...defaultProps} jokerSelecting={true} jokerPlacements={[{ suit: 1, value: 6 }]} />);
     const button = screen.getByLabelText('SPADE 6 に配置') as HTMLElement;
     expect(button.style.background).toBe('var(--color-ds-info)');
   });

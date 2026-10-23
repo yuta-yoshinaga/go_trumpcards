@@ -152,3 +152,12 @@ func (_m *MockSevensGame) GetActionLog() []*domain.ActionLogEntry {
 	}
 	return nil
 }
+
+// GetJokerPlacements モック
+func (_m *MockSevensGame) GetJokerPlacements() []domain.SevensPosition {
+	ret := _m.Called()
+	if val, ok := ret.Get(0).([]domain.SevensPosition); ok {
+		return val
+	}
+	return nil
+}
