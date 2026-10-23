@@ -19,6 +19,10 @@ func (swp *SevensWebPresenter) Output(s interfaces.SevensGame, lastErr error) st
 	resObj.TableMaxVals = s.GetTableMaxVals()
 	resObj.GameEndFlag = s.GetGameEndFlag()
 	resObj.ValidPlays = intSliceOrEmpty(s.GetValidPlayIndices(resObj.CurrentTurn))
+	resObj.JokerPlacements = make([]controller.SevensWebOutputPosition, 0)
+	for _, position := range s.GetJokerPlacements() {
+		resObj.JokerPlacements = append(resObj.JokerPlacements, controller.SevensWebOutputPosition{Suit: position.Suit, Value: position.Value})
+	}
 
 	// ボードビットマスク (uint16 → int に変換)
 	placed := s.GetTablePlaced()

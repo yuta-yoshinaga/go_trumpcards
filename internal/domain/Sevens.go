@@ -259,6 +259,27 @@ func (s *Sevens) isPositionPlayable(suit, value int) bool {
 	return false
 }
 
+// SevensPosition はジョーカーを配置できるボード上の座標を表す。
+type SevensPosition struct {
+	Suit  int
+	Value int
+}
+
+// GetJokerPlacements returns board positions where a joker can be placed.
+// Results are ordered by ascending suit, then ascending value, and are independent
+// of the current turn and joker selection rules.
+func (s *Sevens) GetJokerPlacements() []SevensPosition {
+	placements := make([]SevensPosition, 0)
+	for suit := CardDesignSpade; suit <= CardDesignDiamond; suit++ {
+		for value := 1; value <= 13; value++ {
+			if s.isPositionPlayable(suit, value) {
+				placements = append(placements, SevensPosition{Suit: suit, Value: value})
+			}
+		}
+	}
+	return placements
+}
+
 // wrapValue 値を1-13の循環範囲に収める
 func wrapValue(v int) int {
 	v = ((v - 1) % 13) + 1

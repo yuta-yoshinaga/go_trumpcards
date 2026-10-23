@@ -53,4 +53,6 @@ export interface SevensResponse extends BaseGameResponse {
   cpuActions: SevensAction[];
   humanAction: SevensAction | null;
   validPlays: number[];
+  /** Board positions where a joker can be placed, ordered by suit and value. */
+  jokerPlacements: { suit: number; value: number }[];
 }

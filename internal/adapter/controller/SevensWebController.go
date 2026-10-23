@@ -62,18 +62,25 @@ type SevensWebOutputConfig struct {
 	JokerConsecutiveBanned bool `json:"jokerConsecutiveBanned"`
 }
 
+// SevensWebOutputPosition identifies a board position available for a joker.
+type SevensWebOutputPosition struct {
+	Suit  int `json:"suit"`
+	Value int `json:"value"`
+}
+
 // SevensWebOutput 7並べWebアウトプット
 type SevensWebOutput struct {
-	Players      []*SevensWebOutputPlayer `json:"players"`
-	CurrentTurn  int                      `json:"currentTurn"`
-	TableMinVals [5]int                   `json:"tableMinVals"`
-	TableMaxVals [5]int                   `json:"tableMaxVals"`
-	TablePlaced  [5]int                   `json:"tablePlaced"`
-	Config       SevensWebOutputConfig    `json:"config"`
-	GameEndFlag  bool                     `json:"gameEndFlag"`
-	ValidPlays   []int                    `json:"validPlays"`
-	CpuActions   []*SevensWebOutputAction `json:"cpuActions"`
-	HumanAction  *SevensWebOutputAction   `json:"humanAction"`
+	Players         []*SevensWebOutputPlayer  `json:"players"`
+	CurrentTurn     int                       `json:"currentTurn"`
+	TableMinVals    [5]int                    `json:"tableMinVals"`
+	TableMaxVals    [5]int                    `json:"tableMaxVals"`
+	TablePlaced     [5]int                    `json:"tablePlaced"`
+	Config          SevensWebOutputConfig     `json:"config"`
+	GameEndFlag     bool                      `json:"gameEndFlag"`
+	ValidPlays      []int                     `json:"validPlays"`
+	JokerPlacements []SevensWebOutputPosition `json:"jokerPlacements"`
+	CpuActions      []*SevensWebOutputAction  `json:"cpuActions"`
+	HumanAction     *SevensWebOutputAction    `json:"humanAction"`
 	WebOutputBase
 }
 
@@ -110,10 +117,11 @@ var NewSevensWebController, NewSevensWebControllerWithProvider = webControllerPa
 
 func newSevensDefaultOutput(msg string) *SevensWebOutput {
 	return &SevensWebOutput{
-		Players:       make([]*SevensWebOutputPlayer, 0),
-		CpuActions:    make([]*SevensWebOutputAction, 0),
-		ValidPlays:    []int{},
-		WebOutputBase: WebOutputBase{Message: msg},
+		Players:         make([]*SevensWebOutputPlayer, 0),
+		CpuActions:      make([]*SevensWebOutputAction, 0),
+		ValidPlays:      []int{},
+		JokerPlacements: []SevensWebOutputPosition{},
+		WebOutputBase:   WebOutputBase{Message: msg},
 	}
 }
 

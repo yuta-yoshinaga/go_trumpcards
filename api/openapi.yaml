@@ -42354,6 +42354,7 @@ components:
         - cpuActions
         - humanAction
         - validPlays
+        - jokerPlacements
         - message
       properties:
         entries:
@@ -42410,6 +42411,21 @@ components:
           type: boolean
           description: Whether the game has ended
           example: false
+        jokerPlacements:
+          type: array
+          description: Board positions where a joker can be placed, ordered by suit then value.
+          items:
+            type: object
+            required: [suit, value]
+            properties:
+              suit:
+                type: integer
+                minimum: 1
+                maximum: 4
+              value:
+                type: integer
+                minimum: 1
+                maximum: 13
         cpuActions:
           type: array
           description: CPU actions that occurred after the human's last action

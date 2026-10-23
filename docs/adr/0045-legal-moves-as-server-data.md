@@ -86,12 +86,13 @@ Decision の改訂 (2026-10-20) の形で、Baker's Dozen と Perseverance か�
   - Königrufen: 場札交換で埋められる札を `discardableIndices` で返す。他のタロック系ゲームと同じ名前。
   - Sevens: 出せる手札を `validPlays` で返す。
 
+Sevens の `isPositionPlayable` と `listJokerPlacements` は、盤面でジョーカーを置ける位置を `jokerPlacements: {suit, value}[]` (suit、value の昇順) で返す形に移した (#12015、ユーザ承認済み)。盤面の強調表示と、置き場所が 1 か所のときの自動配置はこの項目を読む。
+
 使われていなかった `flowerGardenLegalTargets.ts` (#11963 でページは移行済み) も削除した。
 
-次の 3 つはクライアントに残っている。
+次の 1 つはクライアントに残っている。
 
 - `osmosisAllowedRanks`: 組札の各列に置けるランクの説明文を表示するためのもので、移動の可否は `legalTargets` で決まる。
-- Sevens の `isPositionPlayable` と `listJokerPlacements`: 盤面の置ける位置の強調表示と、ジョーカーの置き場所の一覧を出している。どちらも手札の添字の列では表せず、移すには新しい応答の形の承認が要る。
 
 点数・順位・表示用の計算 (`chinesePokerFoul.ts`、`heartsLimit.ts` など) は合法手ではないので、この ADR の対象外。
 
