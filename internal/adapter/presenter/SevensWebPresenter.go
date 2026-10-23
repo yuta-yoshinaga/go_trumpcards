@@ -18,7 +18,7 @@ func (swp *SevensWebPresenter) Output(s interfaces.SevensGame, lastErr error) st
 	resObj.TableMinVals = s.GetTableMinVals()
 	resObj.TableMaxVals = s.GetTableMaxVals()
 	resObj.GameEndFlag = s.GetGameEndFlag()
-	resObj.ValidPlays = intSliceOrEmpty(s.GetValidPlayIndices(0))
+	resObj.ValidPlays = intSliceOrEmpty(s.GetValidPlayIndices(resObj.CurrentTurn))
 
 	// ボードビットマスク (uint16 → int に変換)
 	placed := s.GetTablePlaced()
