@@ -11,9 +11,7 @@ WT_ROOT="$BATCH_WT_ROOT"
 mkdir -p "$BATCH_STATE"
 touch "$BATCH_STATE/reviewed.txt" "$BATCH_STATE/acked.txt"
 ALLOWLIST_SCRIPT="${B%/}/allowlist.sh"
-if [[ ! -f "$ALLOWLIST_SCRIPT" ]]; then
-  ALLOWLIST_SCRIPT="$PWD/.claude/skills/batch-lanes/scripts/allowlist.sh"
-fi
+[[ -f "$ALLOWLIST_SCRIPT" ]] || { echo "ERROR: required allowlist helper missing: $ALLOWLIST_SCRIPT" >&2; return 1 2>/dev/null || exit 1; }
 source "$ALLOWLIST_SCRIPT"
 
 # Match consecutive branch words against a game page name, allowing a CamelCase suffix.
@@ -37,10 +35,11 @@ batch_branch_matches_game() {
 }
 
 batch_branch_has_game() {
-  local repo="$1" branch="$2" page
+  local repo="$1" branch="$2" routes="${3:-}" page
+  if [[ -z "$routes" ]]; then routes="$(cat "$repo/frontend/src/constants/gameRoutes.ts")"; fi
   while IFS= read -r page; do
     batch_branch_matches_game "$branch" "$page" && return 0
-  done < <(sed -nE "s/.*page:[[:space:]]*['\"]([^'\"]+)['\"].*/\1/p" "$repo/frontend/src/constants/gameRoutes.ts")
+  done < <(sed -nE "s/.*page:[[:space:]]*['\"]([^'\"]+)['\"].*/\1/p" <<<"$routes")
   return 1
 }
 

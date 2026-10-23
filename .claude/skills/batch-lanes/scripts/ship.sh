@@ -72,9 +72,10 @@ tn=$(git show HEAD -U0 -- "*.test.ts" "*.test.tsx" "*_test.go" | grep -E "^\+\s*
 **Tests added/changed (from the diff):**
 $(sed "s/^/- /" <<<"$tn")"
 tp_fe=''; tp_go=''; BT='`'
+unset BATCH_E2E_SKIP_REASON
 if [[ -f "$BATCH_STATE/rc$s.txt" ]]; then
   BATCH_E2E_SKIP_REASON="$(sed -n 's/^NOTE E2E_GATE skipped: //p' "$BATCH_STATE/rc$s.txt" | tail -1)"
-  export BATCH_E2E_SKIP_REASON
+  [[ -z "$BATCH_E2E_SKIP_REASON" ]] || export BATCH_E2E_SKIP_REASON
 fi
 git show --stat HEAD --format= | grep -qE '\.(tsx?|mjs)' && tp_fe="- [x] ${BT}bunx vitest run${BT} on the changed test files and their shared-component siblings"
 git show --stat HEAD --format= | grep -qE '\.go|internal/i18n' && tp_go="- [x] ${BT}go build ./...${BT}, ${BT}go test -tags test ./...${BT}, ${BT}golangci-lint run --build-tags test ./internal/...${BT}"

@@ -618,7 +618,7 @@ make_e2egate_case() {
     ! grep -q -- '--repeat-each' <<<"$output_once" || fail "repeat=1 dry-run added repeat arg: $output_once"
     exec_scripts="$tmp/e2egate-exec-$name"
     mkdir -p "$exec_scripts"
-    cp "$SCRIPTS/common.sh" "$SCRIPTS/e2egate.sh" "$exec_scripts/"
+    cp "$SCRIPTS/common.sh" "$SCRIPTS/allowlist.sh" "$SCRIPTS/e2egate.sh" "$exec_scripts/"
     cat > "$exec_scripts/e2e.sh" <<'STUB'
 #!/usr/bin/env bash
 printf '%s\n' "$@" > "$E2EGATE_ARGS"
@@ -639,7 +639,7 @@ STUB
     grep -q 'NOTE e2egate skipped full sweep for frontend/src/types/index.ts (type-only diff)' <<< "$output" || fail "type-only note omitted: $output"
     exec_scripts="$tmp/e2egate-exec-$name"
     mkdir -p "$exec_scripts"
-    cp "$SCRIPTS/common.sh" "$SCRIPTS/e2egate.sh" "$exec_scripts/"
+    cp "$SCRIPTS/common.sh" "$SCRIPTS/allowlist.sh" "$SCRIPTS/e2egate.sh" "$exec_scripts/"
     printf '#!/usr/bin/env bash\nprintf "%%s\\n" "$@" > "$E2EGATE_ARGS"\n' > "$exec_scripts/e2e.sh"
     chmod +x "$exec_scripts/e2e.sh"
     E2E_SWEEP_REPEAT=1 E2EGATE_ARGS="$tmp/e2egate-args-$name" BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$exec_scripts/e2egate.sh" 1 >"$tmp/e2egate-real.out" 2>"$tmp/e2egate-real.err" || fail "real e2egate execution failed"
@@ -652,7 +652,7 @@ STUB
     grep -q 'run 1: e2e/poker.spec.ts$' <<< "$output" || fail "spec-only edit omitted its spec: $output"
     exec_scripts="$tmp/e2egate-exec-$name"
     mkdir -p "$exec_scripts"
-    cp "$SCRIPTS/common.sh" "$SCRIPTS/e2egate.sh" "$exec_scripts/"
+    cp "$SCRIPTS/common.sh" "$SCRIPTS/allowlist.sh" "$SCRIPTS/e2egate.sh" "$exec_scripts/"
     cat > "$exec_scripts/e2e.sh" <<'STUB'
 #!/usr/bin/env bash
 printf '%s\n' "$@" > "$E2EGATE_ARGS"
@@ -696,7 +696,7 @@ make_e2egate_case deleted-component deleted_component
   output=$(E2E_SWEEP_REPEAT=3 BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-removed-state" bash "$SCRIPTS/e2egate.sh" --dry-run 1) || fail "removed route dry-run failed"
   grep -qF -- '--grep /baloot\b --pass-with-no-tests --repeat-each=3' <<<"$output" || fail "removed route did not get repeated: $output"
   exec_scripts="$tmp/e2egate-removed-exec"; mkdir -p "$exec_scripts"
-  cp "$SCRIPTS/common.sh" "$SCRIPTS/e2egate.sh" "$exec_scripts/"
+  cp "$SCRIPTS/common.sh" "$SCRIPTS/allowlist.sh" "$SCRIPTS/e2egate.sh" "$exec_scripts/"
   cat > "$exec_scripts/e2e.sh" <<'STUB'
 #!/usr/bin/env bash
 printf '%s\n' "$@" >> "$E2EGATE_ARGS"
@@ -1096,7 +1096,7 @@ SWEEP
   chmod +x "$tmp/sweep-bin/sweep.sh"
   # drain resolves its sibling sweep.sh from its script directory.
   # A private script directory allows the sweep stub and a fast gh response.
-  mkdir -p "$tmp/drain-scripts"; cp "$SCRIPTS/common.sh" "$tmp/drain-scripts/common.sh"; cp "$SCRIPTS/drain.sh" "$tmp/drain-scripts/drain.sh"; cp "$tmp/sweep-bin/sweep.sh" "$tmp/drain-scripts/sweep.sh"
+  mkdir -p "$tmp/drain-scripts"; cp "$SCRIPTS/common.sh" "$SCRIPTS/allowlist.sh" "$tmp/drain-scripts/"; cp "$SCRIPTS/drain.sh" "$tmp/drain-scripts/drain.sh"; cp "$tmp/sweep-bin/sweep.sh" "$tmp/drain-scripts/sweep.sh"
   rc=0; PATH="$tmp/sweep-bin:$PATH" BATCH_REPO="$ROOT" BATCH_STATE="$tmp/sweep-state" BATCH_BRANCH_RE='^feat/' timeout 20 bash "$tmp/drain-scripts/drain.sh" >"$tmp/drain.out" 2>&1 || rc=$?
   [[ "$rc" != 124 ]] || fail "drain timed out instead of stopping on REVIEW-READY: $(cat "$tmp/drain.out")"
   [[ "$rc" = 0 ]] || fail "drain did not exit 0 on REVIEW-READY: $(cat "$tmp/drain.out")"
@@ -1135,7 +1135,7 @@ SWEEP
   [ "$(git -C "$SY_LANE" rev-parse HEAD)" = "$oldhead" ] && [ "$(git -C "$SY_LANE" status --porcelain)" = "$oldstatus" ] || fail 'fetch failure changed lane HEAD/status'
 
   setup_sync busy; printf dirty >> "$SY_LANE/tracked"; oldhead=$(git -C "$SY_LANE" rev-parse HEAD); oldstatus=$(git -C "$SY_LANE" status --porcelain)
-  busy_scripts="$tmp/sync-busy-scripts"; mkdir -p "$busy_scripts"; cp "$SCRIPTS/common.sh" "$SCRIPTS/sync.sh" "$busy_scripts/"
+  busy_scripts="$tmp/sync-busy-scripts"; mkdir -p "$busy_scripts"; cp "$SCRIPTS/common.sh" "$SCRIPTS/allowlist.sh" "$SCRIPTS/sync.sh" "$busy_scripts/"
   printf '#!/usr/bin/env bash\nexit 0\n' > "$busy_scripts/busy.sh"; chmod +x "$busy_scripts"/*.sh
   if BATCH_REPO="$SY_REPO" BATCH_WT_ROOT="$SY_ROOT" BATCH_STATE="$SY_STATE" bash "$busy_scripts/sync.sh" 1 >"$tmp/sync-busy.out" 2>&1; then fail 'busy sync succeeded'; else rc=$?; [ "$rc" = 1 ] || fail "busy exit $rc"; fi
   grep -qx 'REFUSED: a delegation is running in wt-ib1' "$tmp/sync-busy.out" || fail 'busy refusal missing'
@@ -1159,6 +1159,16 @@ ROUTES
   if batch_branch_has_game "$repo" 'feat/12022-kr'; then fail 'unknown game branch was accepted'; fi
   batch_branch_has_game "$repo" 'feat/12022-simple-simon-automove' || fail 'game with suffix was rejected'
   batch_branch_has_game "$repo" 'feat/12022-poker' || fail 'valid game was rejected'
+  # setup_wt must validate against fetched routes, before creating any lane state.
+  local_routes=$(cat "$repo/frontend/src/constants/gameRoutes.ts")
+  remote_routes="$local_routes
+{ path: '/new-remote-game', page: 'NewRemoteGame' },"
+  if batch_branch_has_game "$repo" 'feat/12022-new-remote-game' "$remote_routes"; then :; else fail 'game present only in fetched routes was rejected'; fi
+  ! batch_branch_has_game "$repo" 'feat/12022-new-remote-game' "$local_routes" || fail 'fixture unexpectedly has new game locally'
+  fetch_line=$(grep -n 'git fetch -q origin develop' "$SCRIPTS/setup_wt.sh" | cut -d: -f1)
+  show_line=$(grep -n 'git -C "$REPO" show origin/develop:frontend/src/constants/gameRoutes.ts' "$SCRIPTS/setup_wt.sh" | cut -d: -f1)
+  worktree_line=$(grep -n 'git worktree add' "$SCRIPTS/setup_wt.sh" | cut -d: -f1)
+  [[ "$fetch_line" -lt "$show_line" && "$show_line" -lt "$worktree_line" ]] || fail 'setup_wt must fetch, validate fetched routes, then create worktree'
   source "$SCRIPTS/prbody.sh"
   body=$(BATCH_E2E_SKIP_REASON='manual smoke test' ship_pr_body 12022 '- harden batch gates' '' '')
   grep -qF 'E2E skipped: manual smoke test' <<<"$body" || fail "PR body omitted E2E skip reason: $body"
@@ -1176,6 +1186,9 @@ ROUTES
   [[ -z "$out" ]] || fail "valid allowlist emitted warning: $out"
   out=$(validate_allowlist ALLOW_SHRINK 'src/page.ts' '(\.test\.tsx?|_test\.go)$' || true)
   [[ "$out" == 'WARN ALLOW_SHRINK_INVALID src/page.ts' ]] || fail "invalid ALLOW_SHRINK path not rejected: $out"
+  touch "$tmp/allowlist/a.test.ts" "$tmp/allowlist/b.test.ts"
+  out=$(cd "$tmp/allowlist" && validate_allowlist ALLOW_SHRINK '*' '(\.test\.tsx?|_test\.go)$' || true)
+  [[ "$out" == 'WARN ALLOW_SHRINK_INVALID *' ]] || fail "glob-expanded ALLOW_SHRINK was not kept literal: $out"
   out=$(validate_allowlist ALLOW_IDENT_GONE 'a_test' '^[A-Za-z_$][A-Za-z0-9_$]*$') || fail 'valid ALLOW_IDENT_GONE identifier rejected'
   [[ -z "$out" ]] || fail "valid identifier allowlist emitted warning: $out"
   out=$(validate_allowlist ALLOW_IDENT_GONE '1' '^[A-Za-z_$][A-Za-z0-9_$]*$' || true)

@@ -4,12 +4,18 @@ source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 set -e
 slot="$1" n="$2" g="$3"
 wt="$WT_ROOT/wt-ib$slot"
-if [[ "${ALLOW_NON_GAME_BRANCH:-0}" != 1 ]] && ! batch_branch_has_game "$REPO" "feat/$n-$g"; then
-  echo "invalid game in branch name: $g (set ALLOW_NON_GAME_BRANCH=1 to bypass)" >&2
-  exit 2
-fi
 cd "$REPO"
 for i in 1 2 3 4 5; do git fetch -q origin develop && break; sleep 3; done
+if [[ "${ALLOW_NON_GAME_BRANCH:-0}" != 1 ]]; then
+  routes="$(git -C "$REPO" show origin/develop:frontend/src/constants/gameRoutes.ts)" || {
+    echo "unable to read game routes from origin/develop" >&2
+    exit 1
+  }
+  if ! batch_branch_has_game "$REPO" "feat/$n-$g" "$routes"; then
+    echo "invalid game in branch name: $g (set ALLOW_NON_GAME_BRANCH=1 to bypass)" >&2
+    exit 2
+  fi
+fi
 if [ -d "$wt" ]; then
   [ -f "$wt/-" ] && [ ! -s "$wt/-" ] && rm -f "$wt/-"
   cd "$wt"; test -z "$(git status --porcelain)" || { echo "DIRTY $wt"; exit 1; }
