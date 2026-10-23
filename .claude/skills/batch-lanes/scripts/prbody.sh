@@ -32,6 +32,7 @@ $CLAUDE_SESSION_URL"
   fi
   if prbody_is_full "$summ"; then
     prbody_has_ref "$n" "$summ" || printf 'Closes #%s\n\n' "$n"
+    [[ -z "${BATCH_E2E_SKIP_REASON:-}" ]] || printf 'E2E skipped: %s\n\n' "$BATCH_E2E_SKIP_REASON"
     printf '%s\n' "$summ"
     if [[ -n "$footer" ]] && ! grep -qF 'Generated with [Claude Code]' <<<"$summ"; then
       printf '\n%s\n' "$footer"
@@ -43,6 +44,8 @@ $CLAUDE_SESSION_URL"
   cat <<M
 ## Summary
 $summ
+${BATCH_E2E_SKIP_REASON:+
+E2E skipped: $BATCH_E2E_SKIP_REASON}
 
 $closes
 

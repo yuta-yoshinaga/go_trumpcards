@@ -36,7 +36,8 @@ Set `BATCH_BRANCH_RE` to a regular expression matching the batch branches before
 The flows require `dele`, `gh`, `jq`, `flock`, `bun`, `go`, and `golangci-lint`, in addition to Bash and Git. `dele` is used by `go.sh` and `gofx.sh`; if it is missing, the command fails, and the script records the nonzero exit status and log instead of reporting successful delegation. Install the tools used by the flow before running it.
 
 - `common.sh`: resolve repository, worktree, and shared state paths and validate required environment.
-- `setup_wt.sh`: fetch `develop` and prepare a clean issue worktree.
+- `allowlist.sh`: define the side-effect-free `validate_allowlist` helper shared by scripts.
+- `setup_wt.sh`: validate that the branch words identify a game (optional CamelCase suffixes such as `simplesimon-automove` are allowed), then fetch `develop` and prepare a clean issue worktree. Set `ALLOW_NON_GAME_BRANCH=1` for harness or documentation lanes that do not name a game.
 - `sync.sh <slot>`: merge `origin/develop` into a lane while preserving its changes as uncommitted work; after syncing, rerun `rcg.sh <slot>` before `ship.sh`. On conflict it restores the lane and prints the original ref plus a manual stash/fast-forward rebase command.
 - `combined.sh`: merge matching open batch branches into a scratch build and repeat the supplied Playwright guard specs; this catches deal-dependent failures like the Mushi and Desmoche failures found only after combining slices.
 - `go.sh`: run `dele` for a prompt file in an issue worktree and save a fresh per-run log; only a line starting with `VERDICT: NOT_PLANNED` suppresses `WARN NO_CHANGE`, which otherwise fails the delegation.
@@ -45,8 +46,8 @@ The flows require `dele`, `gh`, `jq`, `flock`, `bun`, `go`, and `golangci-lint`,
 - `stopsrv.sh`: stop server processes listening on lane ports by numeric slot (or all slots when omitted).
 - `busy.sh`: report delegation processes writing in a worktree.
 - `treehash.sh`: hash the worktree state for the gate stamp.
-- `receipt.sh`: run relevant Vitest files plus frontend and backend checks for a worktree; route selection joins consecutive branch words and requires exact game-name matches; `WARN NO_TEST_MATCH` means branch or changed-game selection found no page test; it is not reported when no changed file is under `frontend/`, a `*Presenter.go`, or a Go locale, since no page renders such a change.
-- `rc.sh`: save a concise receipt with test shrink and dead-code warnings.
+- `receipt.sh`: run relevant Vitest files plus frontend and backend checks for a worktree; route selection uses the common branch/game matcher and accepts a CamelCase game suffix; `WARN NO_TEST_MATCH` means branch or changed-game selection found no page test; it is not reported when no changed file is under `frontend/`, a `*Presenter.go`, or a Go locale, since no page renders such a change.
+- `rc.sh`: save a concise receipt with test shrink and dead-code warnings. `ALLOW_SHRINK` accepts whitespace-separated `*.test.ts`, `*.test.tsx`, and `*_test.go` paths; `ALLOW_IDENT_GONE` accepts whitespace-separated identifier names (`^[A-Za-z_$][A-Za-z0-9_$]*$`). Invalid entries produce a gate-failing warning. `E2E_GATE=0` requires `E2E_SKIP_REASON`; the receipt records it and `ship.sh` includes it in the PR body.
 - `overlap.sh`: report files changed by this lane and another active lane; set `ALLOW_OVERLAP="file ..."` to suppress known shared files.
 - `adrcheck.sh <slot>`: warn for each changed `docs/adr/*.md`; set `ALLOW_ADR_EDIT=1` when the orchestrator writes the ADR progress line after sync and before ship.
 - `rc.sh` also records `WARN WORKER_BUILD`, `WARN UNUSED_NEW_SYMBOL`, and `WARN PATCH_BRANCH_GAP`; set `ALLOW_WORKER_BUILD=1`, `ALLOW_UNUSED="name ..."`, or `ALLOW_PATCH_GAPS=1` to allow known exceptions.

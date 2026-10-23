@@ -3,6 +3,10 @@ source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 # rcg.sh <slot> — run the receipt and exit 0 only when every gate passed.
 # On success it stamps gate<slot>.ok with the worktree hash; ship.sh/shipp.sh/fixpush.sh refuse without a matching stamp.
 slot="$1"
+if [[ "${E2E_GATE:-1}" == 0 && -z "${E2E_SKIP_REASON:-}" ]]; then
+  echo "E2E_GATE=0 requires E2E_SKIP_REASON" >&2
+  exit 2
+fi
 pidfile="$BATCH_STATE/rcg$slot.pid"
 if [[ -s "$pidfile" ]]; then
   old_pid=$(cat "$pidfile")
@@ -26,6 +30,7 @@ while IFS= read -r file; do [[ -n "$file" ]] && echo "NOTE STALE_BASE $file (run
 "$B/rc.sh" "$slot" >/dev/null
 rc=$?
 f="$BATCH_STATE/rc$slot.txt"
+if [[ "${E2E_GATE:-1}" == 0 ]]; then printf 'NOTE E2E_GATE skipped: %s\n' "$E2E_SKIP_REASON" >> "$f"; fi
 printf '%s %s\n' "$started" "$(date +%s%N)" > "$BATCH_STATE/rcg$slot.result"
 [[ $rc -eq 0 ]] || { echo "GATE: receipt failed"; exit "$rc"; }
 grep -E "==|FAIL|WARN|NOTE|CHECK|TYPE|Tests |LINT|GOIMPORTS|MUTANT|MISSING" $f

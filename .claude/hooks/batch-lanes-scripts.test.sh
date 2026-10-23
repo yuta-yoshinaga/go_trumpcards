@@ -65,8 +65,10 @@ EOF
   printf "const label = 'replacementText here';\nconst other = \"anotherText\";\nexport const x = label + other;\n" > "$ig_strings/a.ts"
   output=$(bash "$SCRIPTS/identgone.sh" "$ig_strings")
   [[ -z "$output" ]] || fail "identgone counted words inside single or double quoted strings: $output"
-  output=$(ALLOW_IDENT_GONE='isMobile obsoleteHelper countMismatch moveBar behaviour jsxAfter mobileCheck mobileCheckUse mobileState useState' bash "$SCRIPTS/identgone.sh" "$repo") || fail "identgone.sh failed with allowlist"
-  [ -z "$output" ] || fail "ALLOW_IDENT_GONE did not suppress warning: $output"
+  output=$(ALLOW_IDENT_GONE='isMobile' bash "$SCRIPTS/identgone.sh" "$repo") || fail "identgone.sh failed with valid allowlist"
+  [[ "$output" != *'ALLOW_IDENT_GONE_INVALID'* ]] || fail "valid ALLOW_IDENT_GONE path rejected: $output"
+  output=$(ALLOW_IDENT_GONE='1' bash "$SCRIPTS/identgone.sh" "$repo") || fail "identgone.sh failed with invalid allowlist"
+  grep -qx 'WARN ALLOW_IDENT_GONE_INVALID 1' <<<"$output" || fail "invalid ALLOW_IDENT_GONE entry was not reported: $output"
 ) || exit 1
 
 # Deleted paths are silent; Go raw strings are ignored while Go code is scanned.
@@ -85,6 +87,7 @@ EOF
   ! grep -q deletedName <<<"$output" || fail "deleted file produced output: $output"
   mkdir "$tmp/no-python"
   ln -s "$(command -v git)" "$tmp/no-python/git"
+  ln -s "$(command -v dirname)" "$tmp/no-python/dirname"
   bash_path=$(command -v bash)
   output=$(PATH="$tmp/no-python" "$bash_path" "$SCRIPTS/identgone.sh" "$repo") || fail "missing-python path returned nonzero"
   [ "$output" = 'NOTE IDENT_GONE python3 unavailable' ] || fail "missing-python note incorrect: $output"
@@ -994,7 +997,7 @@ grep -q 'rcg\$slot.pid' "$SCRIPTS/rcg.sh" || fail 'rcg.sh does not track per-slo
   state="$tmp/rcg-reuse-state"; mkdir -p "$state"
   sleep 60 & unrelated_pid=$!
   printf '%s\n' "$unrelated_pid" > "$state/rcg98.pid"
-  BATCH_REPO="$ROOT" BATCH_STATE="$state" BATCH_WT_ROOT="$tmp" E2E_GATE=0 bash "$SCRIPTS/rcg.sh" 98 >/dev/null 2>&1 || true
+  BATCH_REPO="$ROOT" BATCH_STATE="$state" BATCH_WT_ROOT="$tmp" E2E_GATE=0 E2E_SKIP_REASON='PID reuse test' bash "$SCRIPTS/rcg.sh" 98 >/dev/null 2>&1 || true
   if ! kill -0 "$unrelated_pid" 2>/dev/null; then fail 'rcg.sh killed unrelated process whose PID was reused'; fi
   kill "$unrelated_pid" 2>/dev/null || true; wait "$unrelated_pid" 2>/dev/null || true
 ) || exit 1
@@ -1143,5 +1146,41 @@ SWEEP
   if BATCH_REPO="$SY_REPO" BATCH_WT_ROOT="$SY_ROOT" BATCH_STATE="$SY_STATE" bash "$SCRIPTS/sync.sh" 1 >"$tmp/sync-commits.out" 2>&1; then fail 'committed lane accepted'; else rc=$?; [ "$rc" = 1 ] || fail "committed exit $rc"; fi
   grep -qx 'REFUSED: lane has commits; merge by hand' "$tmp/sync-commits.out" || fail 'committed refusal missing'
   [ "$(git -C "$SY_LANE" rev-parse HEAD)" = "$oldhead" ] && [ "$(git -C "$SY_LANE" status --porcelain)" = "$oldstatus" ] || fail 'commit refusal changed lane'
+) || exit 1
+# Issue #12022: gate allowlists must be test paths, setup branches must identify a game,
+# and an E2E bypass must carry its reason into the receipt and PR body.
+(
+  repo="$tmp/issue12022"; mkdir -p "$repo/frontend/src/constants" "$repo/frontend/src/pages"
+  cat > "$repo/frontend/src/constants/gameRoutes.ts" <<'ROUTES'
+{ path: '/simple-simon', page: 'SimpleSimon' },
+{ path: '/poker', page: 'Poker' },
+ROUTES
+  BATCH_REPO="$repo" BATCH_STATE="$tmp/issue12022-state"; source "$SCRIPTS/common.sh"
+  if batch_branch_has_game "$repo" 'feat/12022-kr'; then fail 'unknown game branch was accepted'; fi
+  batch_branch_has_game "$repo" 'feat/12022-simple-simon-automove' || fail 'game with suffix was rejected'
+  batch_branch_has_game "$repo" 'feat/12022-poker' || fail 'valid game was rejected'
+  source "$SCRIPTS/prbody.sh"
+  body=$(BATCH_E2E_SKIP_REASON='manual smoke test' ship_pr_body 12022 '- harden batch gates' '' '')
+  grep -qF 'E2E skipped: manual smoke test' <<<"$body" || fail "PR body omitted E2E skip reason: $body"
+  if E2E_GATE=0 E2E_SKIP_REASON='' bash -c '[[ "${E2E_GATE:-1}" != 0 || -n "${E2E_SKIP_REASON:-}" ]]'; then fail 'empty E2E skip reason accepted'; fi
+  E2E_GATE=0 E2E_SKIP_REASON='manual smoke test' bash -c '[[ -n ${E2E_SKIP_REASON:-} ]]' || fail 'valid E2E skip reason rejected'
+) || exit 1
+(
+  repo="$tmp/allowlist"; mkdir -p "$repo"; git init -q "$repo"
+  git -C "$repo" config user.email t@t; git -C "$repo" config user.name t
+  printf 'old\n' > "$repo/a.test.ts"; git -C "$repo" add .; git -C "$repo" commit -qm base
+  printf 'new\n' > "$repo/a.test.ts"
+  out=$(ALLOW_SHRINK='a.test.ts' git -C "$repo" diff --numstat HEAD -- '*.test.ts')
+  [[ "$out" == $'1\t1\ta.test.ts' ]] || fail 'valid ALLOW_SHRINK test path not recognized'
+  out=$(validate_allowlist ALLOW_SHRINK 'a.test.ts' '(\.test\.tsx?|_test\.go)$') || fail 'valid ALLOW_SHRINK path rejected'
+  [[ -z "$out" ]] || fail "valid allowlist emitted warning: $out"
+  out=$(validate_allowlist ALLOW_SHRINK 'src/page.ts' '(\.test\.tsx?|_test\.go)$' || true)
+  [[ "$out" == 'WARN ALLOW_SHRINK_INVALID src/page.ts' ]] || fail "invalid ALLOW_SHRINK path not rejected: $out"
+  out=$(validate_allowlist ALLOW_IDENT_GONE 'a_test' '^[A-Za-z_$][A-Za-z0-9_$]*$') || fail 'valid ALLOW_IDENT_GONE identifier rejected'
+  [[ -z "$out" ]] || fail "valid identifier allowlist emitted warning: $out"
+  out=$(validate_allowlist ALLOW_IDENT_GONE '1' '^[A-Za-z_$][A-Za-z0-9_$]*$' || true)
+  [[ "$out" == 'WARN ALLOW_IDENT_GONE_INVALID 1' ]] || fail "invalid ALLOW_IDENT_GONE entry not rejected: $out"
+  out=$(validate_allowlist ALLOW_SHRINK 'isMobile' '(\.test\.tsx?|_test\.go)$' || true)
+  [[ "$out" == 'WARN ALLOW_SHRINK_INVALID isMobile' ]] || fail "identifier incorrectly accepted by ALLOW_SHRINK: $out"
 ) || exit 1
 echo "batch-lanes script tests passed"

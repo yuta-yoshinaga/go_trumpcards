@@ -160,7 +160,10 @@ $lint_lines
 STUB
   chmod +x "$base/scripts/"*.sh
   local output rc=0
-  output="$(BATCH_REPO="$repo" BATCH_WT_ROOT="$wts" BATCH_STATE="$state" E2E_GATE=0 bash "$base/scripts/rcg.sh" 1 2>&1)" || rc=$?
+  output="$(BATCH_REPO="$repo" BATCH_WT_ROOT="$wts" BATCH_STATE="$state" E2E_GATE=0 bash "$base/scripts/rcg.sh" 1 2>&1)" && rc=0 || rc=$?
+  [[ "$rc" = 2 && "$output" == *'E2E_GATE=0 requires E2E_SKIP_REASON'* ]] || fail 'rcg did not reject an E2E bypass without a reason'
+  rc=0
+  output="$(BATCH_REPO="$repo" BATCH_WT_ROOT="$wts" BATCH_STATE="$state" E2E_GATE=0 E2E_SKIP_REASON='unit test bypass' bash "$base/scripts/rcg.sh" 1 2>&1)" || rc=$?
   if [[ "$want_pass" == yes ]]; then
     [[ $rc -eq 0 ]] || fail "$name gate should pass: $output"
     grep -q '^GATE: ok$' <<< "$output" || fail "$name omitted success: $output"
