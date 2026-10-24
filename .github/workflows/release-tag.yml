@@ -20,6 +20,9 @@ jobs:
         uses: mathieudutour/github-tag-action@af99e60ce8132224b8e6ebab5023449fe256ed46 # v7.0.0
         with:
           github_token: ${{ github.token }}
+      - name: Report that no release was made
+        if: steps.tag_version.outputs.new_tag == ''
+        run: echo "::notice::No eligible commits since the last tag, so no tag or release was created." && echo "No eligible commits since the last tag; release skipped." >> "$GITHUB_STEP_SUMMARY"
       - name: Fetch new tag
         if: steps.tag_version.outputs.new_tag != ''
         run: git fetch --tags
