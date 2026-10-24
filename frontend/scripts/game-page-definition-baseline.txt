@@ -119,7 +119,6 @@ EgyptianRatscrewPage.tsx
 EightOffPage.tsx
 EscobaPage.tsx
 EstimationPage.tsx
-EuchrePage.tsx
 FaroPage.tsx
 FiftyOnePage.tsx
 FiveCardStudPage.tsx
