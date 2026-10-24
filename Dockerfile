@@ -11,8 +11,8 @@ COPY public/ ./public/
 WORKDIR /app/frontend
 
 # Install dependencies in a separate layer so this step is only
-# re-run when package.json or bun.lock changes
-COPY frontend/package.json frontend/bun.lock ./
+# re-run when package.json, bun.lock or bunfig.toml changes
+COPY frontend/package.json frontend/bun.lock frontend/bunfig.toml ./
 RUN bun install --frozen-lockfile
 
 # Copy game manual Markdown files referenced by manualTexts.ts and cuiManualTexts.ts via ?raw imports
