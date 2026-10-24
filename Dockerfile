@@ -26,7 +26,7 @@ RUN bun run build
 
 # Stage 2: Build Go binary
 # Pinned to a specific digest for reproducible builds
-FROM golang:1.27-alpine@sha256:8a5910f31396cd4d89662f56c68b3ae31d374308270a1c3bd96672ee5ed43414 AS go-builder
+FROM golang:1.27-alpine@sha256:b8c9b82affbbb82a020bbcf998dad2ba9516944ac7e883524642a481a9505e9c AS go-builder
 
 WORKDIR /app
 COPY go.mod go.sum ./
@@ -40,7 +40,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o go_trumpcards ./cmd/se
 
 # Stage 3: Final production image
 # Pinned to a specific digest for reproducible builds
-FROM gcr.io/distroless/static-debian12:nonroot@sha256:a9329520abc449e3b14d5bc3a6ffae065bdde0f02667fa10880c49b35c109fd1
+FROM gcr.io/distroless/static-debian12:nonroot@sha256:afa5c872c891853ca7fcf1f12c3edb23f7eeef36189728842dd51042ff57f7ab
 
 WORKDIR /app
 
