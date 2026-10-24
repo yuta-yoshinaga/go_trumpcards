@@ -1292,7 +1292,7 @@ classDiagram
 
     useCanastaGame --> useGameApi : uses
 
-    note for useHeartsGame "主要ゲームに固有Hookが存在 (現在 use<Game>Game.ts が167本、hooks/ 全体で229モジュール)\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
+    note for useHeartsGame "主要ゲームに固有Hookが存在 (use*Game.ts が211本、hooks/ 全体で285モジュール・テスト除く)\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
 ```
 
 ### 1.5 コンポーネント層
@@ -1481,12 +1481,12 @@ classDiagram
     }
 
     class cuiManualTexts {
-        +Record~string,string~ CUI版マニュアルマップ
-        +isCliModeEnabled(gamePath) boolean
+        +loadCuiManualText(gamePath): Promise~string~
+        +isCliModeEnabled(gamePath): boolean
     }
 
     class manualTexts {
-        +Record~string,string~ Web版マニュアルマップ
+        +loadManualText(gamePath): Promise~string~
     }
 
     ManualButton --> ManualModal : renders
@@ -1552,10 +1552,9 @@ classDiagram
     }
 
     class MightyPage {
-        +useMightyGame() : MightyGameState
-        +useGameHint() : MightyHint
-        +useCliMode() : CliState
-        +useGameRoundGuard() : RoundGuard
+        +useMightyGame()
+        +useGameHint() : UseGameHintReturn
+        +useCliMode()
         +ビッドUI (NoTrump スイッチ + 数値)
         +切り札・副官宣言UI (trumpSuit + partnerSuit + partnerValue)
         +キティ交換UI (3枚ディスカード)
@@ -2217,29 +2216,29 @@ sequenceDiagram
     participant Hook as useGamePageSetup / useGameApi (VideoPokerGameContent)
     participant API as gameApi
 
-    Note over User,API: ベットフェーズ (phase=0)
+    Note over User,API: ベットフェーズ (phase=1)
     User->>Page: コインセレクターで数量選択
     User->>Page: ベットボタンクリック
     Page->>Hook: handleBet(amount)
     Hook->>API: gameExec("bet", {amount})
-    API-->>Hook: VideoPokerResponse (phase=1, hand=5枚)
+    API-->>Hook: VideoPokerResponse (phase=2, hand=5枚)
     Hook-->>Page: 再レンダリング → ドローフェーズUI
 
-    Note over User,API: ドローフェーズ (phase=1)
+    Note over User,API: ドローフェーズ (phase=2)
     User->>Page: カードをクリックしてホールド選択
     Page->>Page: ホールド状態をトグル表示
     User->>Page: ドローボタンクリック
     Page->>Hook: handleHold(indices)
     Hook->>API: gameExec("hold", {indices})
-    API-->>Hook: VideoPokerResponse (phase=2, handRank, payout)
+    API-->>Hook: VideoPokerResponse (phase=3, handRank, payout)
     Hook-->>Page: 再レンダリング → 結果フェーズUI
 
-    Note over User,API: 結果フェーズ (phase=2)
+    Note over User,API: 結果フェーズ (phase=3)
     Page-->>User: 役名・配当表示
     User->>Page: リセットボタンクリック
     Page->>Hook: handleReset()
     Hook->>API: gameExec("reset")
-    API-->>Hook: VideoPokerResponse (phase=0)
+    API-->>Hook: VideoPokerResponse (phase=1)
     Hook-->>Page: 再レンダリング → ベットフェーズUI
 ```
 
@@ -2372,22 +2371,22 @@ sequenceDiagram
     API-->>Hook: PineappleResponse
     Hook-->>Page: 再レンダリング → ベッティングUI
 
-    Note over User,API: ディスカードフェーズ (phase=3)
+    Note over User,API: ディスカードフェーズ (phase=8)
     User->>Page: 手札カードをクリック (捨てるカード選択)
     User->>Page: ディスカードボタンクリック
     Page->>Hook: handleDiscard(cardIdx)
     Hook->>API: gameExec("discard", {cardIdx})
-    API-->>Hook: PineappleResponse (phase=4, ターン)
+    API-->>Hook: PineappleResponse (phase=3, ターン)
     Hook-->>Page: 再レンダリング → 手札2枚 + ターンカード公開UI
 
-    Note over User,API: ターン・リバー (phase=4,5)
+    Note over User,API: ターン・リバー (phase=3,4)
     User->>Page: ベッティングアクションボタンクリック
     Page->>Hook: handleBet/handleCall/etc.
     Hook->>API: gameExec("bet", {amount})
     API-->>Hook: PineappleResponse
     Hook-->>Page: 再レンダリング → ベッティングUI
 
-    Note over User,API: ショーダウン・エンド (phase=6,7)
+    Note over User,API: ショーダウン・エンド (phase=5,6)
     Page->>Hook: 自動表示
     Hook-->>Page: 再レンダリング → ショーダウン結果UI
 ```
@@ -3073,12 +3072,12 @@ EightOff の派生。baseRank に応じた組札開始ランクの表示と、7�
 sequenceDiagram
     actor User
     participant Page as PenguinPage
-    participant Hook as useGameApi
+    participant Hook as usePenguinGame
     participant API as penguinApi
 
     Note over Page: mount then reset
-    Page->>Hook: run("reset")
-    Hook->>API: POST /penguin/run {command="reset"}
+    Page->>Hook: runAction("reset")
+    Hook->>API: POST /penguin/exec {command="reset"}
     API-->>Hook: PenguinResponse (phase=0, baseRank=N)
     Hook-->>Page: state update - Playing UI
 
@@ -3087,8 +3086,8 @@ sequenceDiagram
     User->>Page: card click (select source)
     Page->>Page: highlight selection
     User->>Page: target click
-    Page->>Hook: run("move", from, to)
-    Hook->>API: POST /penguin/run {command="move", from, to}
+    Page->>Hook: runAction("move", from, to)
+    Hook->>API: POST /penguin/exec {command="move", from, to}
     API-->>Hook: PenguinResponse (moveCount++, phase=0 or 1)
     Hook-->>Page: re-render
     end
@@ -3097,8 +3096,8 @@ sequenceDiagram
     Note over User,Page: GameClear (phase=1)
     Page->>Page: WinCelebration display
     User->>Page: reset button
-    Page->>Hook: run("reset")
-    Hook->>API: POST /penguin/run {command="reset"}
+    Page->>Hook: runAction("reset")
+    Hook->>API: POST /penguin/exec {command="reset"}
     API-->>Hook: PenguinResponse (phase=0)
     Hook-->>Page: new game start
     end
@@ -3106,8 +3105,8 @@ sequenceDiagram
     rect rgb(255,230,230)
     Note over User,Page: GameOver (phase=2)
     User->>Page: next game or reset
-    Page->>Hook: run("reset")
-    Hook->>API: POST /penguin/run {command="reset"}
+    Page->>Hook: runAction("reset")
+    Hook->>API: POST /penguin/exec {command="reset"}
     API-->>Hook: PenguinResponse (phase=0)
     Hook-->>Page: new game start
     end
