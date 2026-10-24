@@ -484,4 +484,10 @@ describe('EcartePage', () => {
     ).toBeGreaterThan(0);
     expect(screen.queryByText(/action\./)).not.toBeInTheDocument();
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<EcartePage />);
+    expect(await screen.findByText('交換', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('exchange', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });

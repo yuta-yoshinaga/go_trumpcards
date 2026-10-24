@@ -113,7 +113,6 @@ DramahaPage.tsx
 DuchessPage.tsx
 DurakPage.tsx
 EasthavenPage.tsx
-EcartePage.tsx
 EgyptianRatscrewPage.tsx
 EightOffPage.tsx
 EscobaPage.tsx
