@@ -1,5 +1,6 @@
 # SHA 固定は放置すると古くなり、action 自体のセキュリティ修正も入らなくなるので Dependabot に更新させる。
 # 7 日は frontend/bunfig.toml の minimumReleaseAge と揃えている。
+# frontend はセキュリティ更新だけを受ける (下の bun エントリ)。
 version: 2
 updates:
   - package-ecosystem: github-actions
@@ -18,3 +19,16 @@ updates:
       github-actions:
         patterns:
           - "*"
+  # bun.lock は npm_and_yarn では更新できず、エントリが無いとセキュリティ更新が失敗する。
+  # limit 0 で通常の版上げ PR は止め、セキュリティ修正だけを受ける。版上げは
+  # held-back の規則 (biome / @types/node / メジャー) があるので手で行う。
+  # cooldown はセキュリティ更新には効かないので、7 日未満の修正版でも PR は開く。マージは人が判断する。
+  - package-ecosystem: bun
+    directory: /frontend
+    target-branch: develop
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 0
+    commit-message:
+      prefix: "chore"
+      include: "scope"
