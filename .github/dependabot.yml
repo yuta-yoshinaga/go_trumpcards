@@ -4,7 +4,17 @@ version: 2
 updates:
   - package-ecosystem: github-actions
     directory: /
+    # 既定ブランチも develop だが、master に向くと版上げとリリースが走るので明示する。
+    target-branch: develop
     schedule:
       interval: weekly
     cooldown:
       default-days: 7
+    # Conventional Commits に合わせる (既定の "Bump X from A to B" は規約外)。
+    commit-message:
+      prefix: "ci"
+    # 16 action の更新を週 1 本の PR にまとめる。
+    groups:
+      github-actions:
+        patterns:
+          - "*"
