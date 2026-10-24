@@ -274,7 +274,6 @@ SakuraPage.tsx
 SalicLawPage.tsx
 SambaPage.tsx
 ScartoPage.tsx
-SchafkopfPage.tsx
 SchnapsenPage.tsx
 ScopaPage.tsx
 ScoponePage.tsx
