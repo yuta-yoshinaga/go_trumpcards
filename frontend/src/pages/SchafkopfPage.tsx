@@ -1,39 +1,22 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import type { schafkopfApi } from '../api/gameApi';
-import { ActionLogSection } from '../components/ActionLogSection';
-import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
-import { CliTerminal } from '../components/cli/CliTerminal';
-import { CliToggle } from '../components/cli/CliToggle';
-import { SettingsPanel } from '../components/common/SettingsPanel';
-import { ErrorAlert } from '../components/ErrorAlert';
-import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageShell } from '../components/GamePageShell';
-import { GameResetButton } from '../components/GameResetButton';
+import { createGamePage, type GameDefinition, type GamePageContext } from '../components/game/createGamePage';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { PlayerHandSection } from '../components/PlayerHandSection';
-import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
-import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
-import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
-import { useCliGame } from '../hooks/useCliGame';
-import { useCliMode } from '../hooks/useCliMode';
-import { useGameHint } from '../hooks/useGameHint';
-import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, TARGET_CHIPS_OPTIONS, useSchafkopfGame } from '../hooks/useSchafkopfGame';
 import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
-import { gameTheme } from '../styles/gameTheme';
 import type { SchafkopfResponse } from '../types/card';
 import { SchafkopfPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { parseSchafkopfCommand, SCHAFKOPF_HELP } from '../utils/cli/commands/schafkopfCommands';
 import { formatSchafkopfState } from '../utils/cli/formatters/schafkopfFormatter';
-import type { CliGameConfig } from '../utils/cli/types';
 import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
@@ -91,87 +74,31 @@ const CONTRACT_RUFSPIEL = 0;
 const CONTRACT_WENZ = 1;
 const CONTRACT_SOLO = 2;
 
-/** Renders the Schafkopf game page: 4-player partnership trick-taking with declare/call/play phases. */
-export const SchafkopfPage = withTutorial(SchafkopfPageContent, 'schafkopf', SH_TUTORIAL_STEPS);
+type SchafkopfGame = ReturnType<typeof useSchafkopfGame>;
+type SchafkopfContext = GamePageContext<SchafkopfResponse, SchafkopfGame, SchafkopfView>;
 
-/** Inner content of the Schafkopf page, wrapped by TutorialProvider. */
-function SchafkopfPageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('schafkopf');
-  const {
-    state,
-    loading,
-    error,
-    exec,
-    retry,
-    schafkopfConfig,
-    handleConfigChange,
-    selectedCardIndices,
-    toggleCard,
-    clearSelection,
-    reset,
-    handlePick,
-    handlePass,
-    handleDeclare,
-    handleCall,
-    handlePlay,
-    handleNextTrick,
-    handleNextRound,
-  } = useSchafkopfGame();
-
+function useSchafkopfView({ game }: { game: SchafkopfGame }) {
   // Fetch a fresh game on mount.
   // biome-ignore lint/correctness/useExhaustiveDependencies: reset is stable per render of the hook; run once on mount.
   useEffect(() => {
-    reset();
+    game.reset();
   }, []);
 
-  // CLI mode
-  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('schafkopf');
-  const schafkopfCliConfig: CliGameConfig<SchafkopfResponse, Parameters<typeof schafkopfApi.exec>> = useMemo(
-    () => ({
-      gameName: 'schafkopf',
-      parseCommand: parseSchafkopfCommand,
-      formatResponse: formatSchafkopfState,
-      helpText: SCHAFKOPF_HELP,
-    }),
-    [],
-  );
-  const { handleCommand } = useCliGame(exec, schafkopfCliConfig, state, { addInput, addOutput, addError, clearLog });
-
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('schafkopf', state);
   const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('schafkopf', SCHAFKOPF_PHASE_KEYS);
+  return { cardWidth, isMobile, phaseNames };
+}
 
-  // Keyboard hand navigation: number keys toggle a card, Enter confirms,
-  // Escape clears. Only PLAY takes a card selection, and handlePlay
-  // self-guards on the selected count.
-  const humanIdxForKbd = state?.players.findIndex((p) => p.isHuman) ?? -1;
-  const canPlayForKbd = state?.phase === SchafkopfPhase.PLAY && state.currentPlayerIdx === humanIdxForKbd;
-  const humanCardCountForKbd = state?.players.find((p) => p.isHuman)?.cards?.length ?? 0;
-  const confirmAction = useCallback(() => {
-    if (canPlayForKbd) handlePlay();
-  }, [canPlayForKbd, handlePlay]);
-  useCardKeyboardNav({
-    cardCount: humanCardCountForKbd,
-    onToggle: toggleCard,
-    onConfirm: confirmAction,
-    onClear: clearSelection,
-    enabled: canPlayForKbd && !loading,
-  });
+type SchafkopfView = ReturnType<typeof useSchafkopfView>;
 
-  if (!state)
-    return <GameSkeleton gameKey="schafkopf" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 6 }} />;
+function Board({ game, state, t, view }: SchafkopfContext) {
+  const { cardWidth, isMobile } = view;
+  const loading = game.loading;
 
-  const humanPlayer = state.players.find((p) => p.isHuman);
   const humanIdx = state.players.findIndex((p) => p.isHuman);
   const isHumanTurn = state.currentPlayerIdx === humanIdx;
 
   const isPickPhase = state.phase === SchafkopfPhase.PICK;
-  const isCallPhase = state.phase === SchafkopfPhase.CALL;
   const isPlayPhase = state.phase === SchafkopfPhase.PLAY;
   const isTrickEnd = state.phase === SchafkopfPhase.TRICK_END;
   const isRoundEnd = state.phase === SchafkopfPhase.ROUND_END;
@@ -179,8 +106,6 @@ function SchafkopfPageContent() {
 
   // Phase-specific "it's the human's actionable turn" flags.
   const canPick = isPickPhase && isHumanTurn;
-  const canCall = isCallPhase && state.pickerIdx === humanIdx && state.callableSuits.length > 0;
-  const canPlay = isPlayPhase && isHumanTurn;
 
   // Partner is only shown once revealed (or at round/game end).
   const showPartner = state.partnerRevealed || isRoundEnd || isGameEnd;
@@ -215,321 +140,352 @@ function SchafkopfPageContent() {
       ? playerName(state.partnerIdx, state.partnerIdx === humanIdx)
       : t('partnerHidden');
 
-  const handleManualReset = () => {
-    hideActionLog();
-    reset();
-  };
-
   return (
-    <GamePageShell
-      title={tc('nav.schafkopf')}
-      gameThemeBg={gameTheme.schafkopf.bg}
-      phaseName={phaseNames[state.phase]}
-      isHumanTurn={isHumanTurn}
-      gamePath="/schafkopf"
-      gameEndFlag={isGameEnd}
-      winShow={isGameEnd && state.winnerIdx === humanIdx}
-      loading={loading}
-      confirmOpen={confirmOpen}
-      confirmReset={confirmReset}
-      cancelReset={cancelReset}
-      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
-    >
-      {cliEnabled ? (
-        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
-      ) : (
-        <>
-          <SettingsPanel
-            title={t('settings.title')}
-            groups={[
-              {
-                items: [
-                  {
-                    type: 'select',
-                    id: 'cpuDifficulty',
-                    label: t('settings.cpuDifficulty'),
-                    value: schafkopfConfig.cpuDifficulty,
-                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
-                      value: o.value,
-                      label: t(`settings.${o.label.toLowerCase()}`),
-                    })),
-                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
-                  },
-                  {
-                    type: 'select',
-                    id: 'targetChips',
-                    label: t('settings.targetChips'),
-                    value: schafkopfConfig.targetChips,
-                    options: TARGET_CHIPS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
-                    onSelect: (v) => handleConfigChange('targetChips', v),
-                  },
-                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
-                ],
-              },
-            ]}
+    <>
+      <div className="text-ds-text-primary text-center mb-2">
+        <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
+        <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
+        <span>{t('contractLabel', { contract: contractLabel })}</span>
+      </div>
+
+      {canPick && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 items-center" data-tutorial="sh-action-buttons">
+          {/* Only the contracts that outrank the standing bid: a button
+            the server is bound to refuse is worse than no button. */}
+          {beatable.includes(CONTRACT_RUFSPIEL) && (
+            <button type="button" className={btnPrimary} onClick={game.handlePick} disabled={loading}>
+              {t('pickButton')}
+            </button>
+          )}
+          {beatable.includes(CONTRACT_WENZ) && (
+            <button type="button" className={btnPrimary} onClick={() => game.handleDeclare(1)} disabled={loading}>
+              {t('wenzButton')}
+            </button>
+          )}
+          {/* Solo names its own trump, so each suit is its own button
+            rather than a declare-then-choose second step. */}
+          {beatable.includes(CONTRACT_SOLO) &&
+            SOLO_SUITS.map((suit) => {
+              const suitName = t(`suit.${SUIT_KEYS[suit]}`);
+              return (
+                <button
+                  key={`solo-${suit}`}
+                  type="button"
+                  className={btnPrimary}
+                  onClick={() => game.handleDeclare(2, suit)}
+                  disabled={loading}
+                  aria-label={t('soloButtonAriaLabel', { suit: suitName })}
+                >
+                  {t('soloButton', { suit: suitName })}
+                </button>
+              );
+            })}
+        </div>
+      )}
+
+      {(isPlayPhase || isTrickEnd) && (
+        <div className="mb-2 text-center text-sm text-ds-text-muted" data-testid="schafkopf-round-points">
+          {t(state.roundPickerPointsTeamTotal ? 'roundProgress.pickerPoints' : 'roundProgress.pickerOnlyPoints', {
+            points: state.roundPickerPoints,
+            target: state.pickerTargetPoints,
+          })}
+        </div>
+      )}
+
+      <div className={lgTwoColGrid}>
+        {/* Left: play area */}
+        <div>
+          <TrickDisplay
+            currentTrick={state.currentTrick}
+            players={state.players}
+            cardWidth={cardWidth}
+            label={t('currentTrick')}
+            winnerIdx={isTrickEnd && state.winnerIdx >= 0 ? state.winnerIdx : undefined}
+            winnerLabel={
+              isTrickEnd && state.winnerIdx >= 0
+                ? t('trickWinner', { name: playerName(state.winnerIdx, state.players[state.winnerIdx].isHuman) })
+                : undefined
+            }
+            cardAriaLabelFor={(player, card) =>
+              t('trickCardByPlayer', { name: playerName(player.id, player.isHuman), card: cardAlt(card) })
+            }
+            dataTutorial="sh-trick-display"
           />
+          <div className="sr-only" aria-live="polite" aria-atomic="true">
+            {isTrickEnd && state.winnerIdx >= 0
+              ? t('trickWinner', {
+                  name: playerName(state.winnerIdx, state.players[state.winnerIdx].isHuman),
+                })
+              : isPlayPhase
+                ? t('leadSeat', {
+                    name: playerName(state.leadPlayerIdx, state.players[state.leadPlayerIdx].isHuman),
+                  })
+                : ''}
+          </div>
+        </div>
 
-          <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            <div className="text-ds-text-primary text-center mb-2">
-              <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
-              <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
-              <span>{t('contractLabel', { contract: contractLabel })}</span>
+        {/* Right: info sidebar */}
+        <div data-tutorial="sh-info">
+          {/* Picker / partner / called suit */}
+          <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
+            <div>
+              {t('picker')}: {pickerLabel}
             </div>
-
-            {canPick && (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 items-center" data-tutorial="sh-action-buttons">
-                {/* Only the contracts that outrank the standing bid: a button
-                  the server is bound to refuse is worse than no button. */}
-                {beatable.includes(CONTRACT_RUFSPIEL) && (
-                  <button type="button" className={btnPrimary} onClick={handlePick} disabled={loading}>
-                    {t('pickButton')}
-                  </button>
-                )}
-                {beatable.includes(CONTRACT_WENZ) && (
-                  <button type="button" className={btnPrimary} onClick={() => handleDeclare(1)} disabled={loading}>
-                    {t('wenzButton')}
-                  </button>
-                )}
-                {/* Solo names its own trump, so each suit is its own button
-                  rather than a declare-then-choose second step. */}
-                {beatable.includes(CONTRACT_SOLO) &&
-                  SOLO_SUITS.map((suit) => {
-                    const suitName = t(`suit.${SUIT_KEYS[suit]}`);
-                    return (
-                      <button
-                        key={`solo-${suit}`}
-                        type="button"
-                        className={btnPrimary}
-                        onClick={() => handleDeclare(2, suit)}
-                        disabled={loading}
-                        aria-label={t('soloButtonAriaLabel', { suit: suitName })}
-                      >
-                        {t('soloButton', { suit: suitName })}
-                      </button>
-                    );
-                  })}
-              </div>
-            )}
-
-            {(isPlayPhase || isTrickEnd) && (
-              <div className="mb-2 text-center text-sm text-ds-text-muted" data-testid="schafkopf-round-points">
-                {t(state.roundPickerPointsTeamTotal ? 'roundProgress.pickerPoints' : 'roundProgress.pickerOnlyPoints', {
-                  points: state.roundPickerPoints,
-                  target: state.pickerTargetPoints,
-                })}
-              </div>
-            )}
-
-            <div className={lgTwoColGrid}>
-              {/* Left: play area */}
-              <div>
-                <TrickDisplay
-                  currentTrick={state.currentTrick}
-                  players={state.players}
-                  cardWidth={cardWidth}
-                  label={t('currentTrick')}
-                  winnerIdx={isTrickEnd && state.winnerIdx >= 0 ? state.winnerIdx : undefined}
-                  winnerLabel={
-                    isTrickEnd && state.winnerIdx >= 0
-                      ? t('trickWinner', { name: playerName(state.winnerIdx, state.players[state.winnerIdx].isHuman) })
-                      : undefined
-                  }
-                  cardAriaLabelFor={(player, card) =>
-                    t('trickCardByPlayer', { name: playerName(player.id, player.isHuman), card: cardAlt(card) })
-                  }
-                  dataTutorial="sh-trick-display"
-                />
-                <div className="sr-only" aria-live="polite" aria-atomic="true">
-                  {isTrickEnd && state.winnerIdx >= 0
-                    ? t('trickWinner', {
-                        name: playerName(state.winnerIdx, state.players[state.winnerIdx].isHuman),
-                      })
-                    : isPlayPhase
-                      ? t('leadSeat', {
-                          name: playerName(state.leadPlayerIdx, state.players[state.leadPlayerIdx].isHuman),
-                        })
-                      : ''}
-                </div>
-              </div>
-
-              {/* Right: info sidebar */}
-              <div data-tutorial="sh-info">
-                {/* Picker / partner / called suit */}
-                <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-                  <div>
-                    {t('picker')}: {pickerLabel}
-                  </div>
-                  <div>
-                    {t('partner')}: {partnerLabel}
-                  </div>
-                  <div>
-                    {t('calledSuit')}:{' '}
-                    {state.calledSuit > 0 && SUIT_KEYS[state.calledSuit]
-                      ? t(`suit.${SUIT_KEYS[state.calledSuit]}`)
-                      : t('none')}
-                  </div>
-                  {isPickPhase && <div>{t('passCount', { count: state.passCount })}</div>}
-                </div>
-
-                {/* Players: chips / cards / tricks */}
-                {isMobile ? (
-                  <details className="mb-2 p-2 rounded bg-black/30">
-                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('players')}</summary>
-                    <div className="mt-1">
-                      {state.players.map((p) => (
-                        <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                          {playerName(p.id, p.isHuman)}: {t('chips', { count: p.chips })} |{' '}
-                          {t('cards', { count: p.cardCount })} | {t('tricks', { count: p.trickCount })}
-                          {dealerBadge(p.id)}
-                        </div>
-                      ))}
-                    </div>
-                  </details>
-                ) : (
-                  <div className="mb-2 p-2 rounded bg-black/30">
-                    {state.players.map((p) => (
-                      <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                        {playerName(p.id, p.isHuman)}: {t('chips', { count: p.chips })} |{' '}
-                        {t('cards', { count: p.cardCount })} | {t('tricks', { count: p.trickCount })}
-                        {dealerBadge(p.id)}
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Round result */}
-                {(isRoundEnd || isGameEnd) && (
-                  <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-                    <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
-                    <div>{t('roundResult.pickerPoints', { points: state.roundPickerPoints })}</div>
-                    <div>{t('roundResult.multiplier', { multiplier: state.roundMultiplier })}</div>
-                    <div>{state.roundPickerWon ? t('roundResult.pickerWon') : t('roundResult.pickerLost')}</div>
-                    <div className="mt-1">{t('roundResult.chipChanges')}</div>
-                    {state.players.map((p) => {
-                      const delta = p.chipDelta;
-                      const formatted = formatSignedDelta(delta);
-                      return (
-                        <div key={p.id}>
-                          {playerName(p.id, p.isHuman)}: {formatted}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
+            <div>
+              {t('partner')}: {partnerLabel}
             </div>
-
-            {/* Message */}
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
-            <ActionLogSection
-              isEndPhase={isGameEnd}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            {/*
-              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
-              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
-              られないことがある (#5955)。
-            */}
-            <div data-testid="schafkopf-hint-live" role="status" aria-live="polite">
-              {state.hint && isRequestedHint(state) && (
-                <div className="text-ds-warning text-sm mb-2">
-                  {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
-                  {state.hint.cardIndices.length > 0 && ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
-                </div>
-              )}
+            <div>
+              {t('calledSuit')}:{' '}
+              {state.calledSuit > 0 && SUIT_KEYS[state.calledSuit]
+                ? t(`suit.${SUIT_KEYS[state.calledSuit]}`)
+                : t('none')}
             </div>
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            <GameResetButton
-              isGameEnd={isGameEnd}
-              onReset={handleManualReset}
-              requestConfirm={requestConfirm}
-              loading={loading}
-              dataTutorial="sh-reset-button"
-            />
-            <CardNavShortcutsPanel data-testid="schafkopf-kbd-shortcuts" />
+            {isPickPhase && <div>{t('passCount', { count: state.passCount })}</div>}
           </div>
 
-          {/* Footer */}
-          <GameFooter
-            className={`${gameTheme.schafkopf.footer} px-4 py-2.5`}
-            actions={
-              canPick || canCall || canPlay || isTrickEnd || isRoundEnd ? (
-                <div className="flex flex-wrap gap-1 items-center">
-                  {canPick && (
-                    <button type="button" className={btnSecondary} onClick={handlePass} disabled={loading}>
-                      {t('passButton')}
-                    </button>
-                  )}
-                  {canCall &&
-                    state.callableSuits.map((suit) => {
-                      // callableSuits are the three fail suits (♠♣♦), all present in SUIT_KEYS.
-                      const suitName = t(`suit.${SUIT_KEYS[suit]}`);
-                      return (
-                        <button
-                          key={`call-${suit}`}
-                          type="button"
-                          className={btnPrimary}
-                          onClick={() => handleCall(suit)}
-                          disabled={loading}
-                          aria-label={t('callButtonAriaLabel', { suit: suitName })}
-                        >
-                          {t('callButton', { suit: suitName })}
-                        </button>
-                      );
-                    })}
-                  {canPlay && (
-                    <button
-                      type="button"
-                      className={btnPrimary}
-                      onClick={handlePlay}
-                      disabled={loading || selectedCardIndices.length !== 1}
-                    >
-                      {t('playButton')}
-                    </button>
-                  )}
-                  {isTrickEnd && (
-                    <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                      {t('nextTrick')}
-                    </button>
-                  )}
-                  {isRoundEnd && (
-                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                      {t('nextRound')}
-                    </button>
-                  )}
+          {/* Players: chips / cards / tricks */}
+          {isMobile ? (
+            <details className="mb-2 p-2 rounded bg-black/30">
+              <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('players')}</summary>
+              <div className="mt-1">
+                {state.players.map((p) => (
+                  <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
+                    {playerName(p.id, p.isHuman)}: {t('chips', { count: p.chips })} |{' '}
+                    {t('cards', { count: p.cardCount })} | {t('tricks', { count: p.trickCount })}
+                    {dealerBadge(p.id)}
+                  </div>
+                ))}
+              </div>
+            </details>
+          ) : (
+            <div className="mb-2 p-2 rounded bg-black/30">
+              {state.players.map((p) => (
+                <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
+                  {playerName(p.id, p.isHuman)}: {t('chips', { count: p.chips })} | {t('cards', { count: p.cardCount })}{' '}
+                  | {t('tricks', { count: p.trickCount })}
+                  {dealerBadge(p.id)}
                 </div>
-              ) : null
-            }
-          >
-            {humanPlayer && (
-              <PlayerHandSection
-                humanPlayer={humanPlayer}
-                selectedCardIndices={selectedCardIndices}
-                toggleCard={toggleCard}
-                cardWidth={cardWidth}
-                isMobile={isMobile}
-                dataTutorialPrefix="sh"
-                validIndices={canPlay ? state.playableIndices : undefined}
-                // 出せる札にリングを出す。validIndices は出せない札を伏せる
-                // だけで、どれが出せるかを目で見つける手がかりにならない。
-                legalIndices={canPlay ? state.playableIndices : undefined}
-                restrictedTooltip={t('playButton')}
-              />
-            )}
-          </GameFooter>
-        </>
-      )}
-    </GamePageShell>
+              ))}
+            </div>
+          )}
+
+          {/* Round result */}
+          {(isRoundEnd || isGameEnd) && (
+            <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
+              <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
+              <div>{t('roundResult.pickerPoints', { points: state.roundPickerPoints })}</div>
+              <div>{t('roundResult.multiplier', { multiplier: state.roundMultiplier })}</div>
+              <div>{state.roundPickerWon ? t('roundResult.pickerWon') : t('roundResult.pickerLost')}</div>
+              <div className="mt-1">{t('roundResult.chipChanges')}</div>
+              {state.players.map((p) => {
+                const delta = p.chipDelta;
+                const formatted = formatSignedDelta(delta);
+                return (
+                  <div key={p.id}>
+                    {playerName(p.id, p.isHuman)}: {formatted}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Message */}
+      <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+    </>
   );
 }
+
+function FooterHand({ game, state, t, view }: SchafkopfContext) {
+  const humanPlayer = state.players.find((p) => p.isHuman);
+  const humanIdx = state.players.findIndex((p) => p.isHuman);
+  const isHumanTurn = state.currentPlayerIdx === humanIdx;
+  const canPlay = state.phase === SchafkopfPhase.PLAY && isHumanTurn;
+
+  return humanPlayer ? (
+    <PlayerHandSection
+      humanPlayer={humanPlayer}
+      selectedCardIndices={game.selectedCardIndices}
+      toggleCard={game.toggleCard}
+      cardWidth={view.cardWidth}
+      isMobile={view.isMobile}
+      dataTutorialPrefix="sh"
+      validIndices={canPlay ? state.playableIndices : undefined}
+      // 出せる札にリングを出す。validIndices は出せない札を伏せる
+      // だけで、どれが出せるかを目で見つける手がかりにならない。
+      legalIndices={canPlay ? state.playableIndices : undefined}
+      restrictedTooltip={t('playButton')}
+    />
+  ) : null;
+}
+
+function FooterStatus({ state, t, frontendHint }: SchafkopfContext) {
+  return (
+    <>
+      {/*
+        ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+        領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+        られないことがある (#5955)。
+      */}
+      <div data-testid="schafkopf-hint-live" role="status" aria-live="polite">
+        {state.hint && isRequestedHint(state) && (
+          <div className="text-ds-warning text-sm mb-2">
+            {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
+            {state.hint.cardIndices.length > 0 && ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
+          </div>
+        )}
+      </div>
+      <FrontendHintTooltip hint={frontendHint.hint} enabled={frontendHint.hintEnabled} t={t} />
+    </>
+  );
+}
+
+function primaryActions({ game, state, t, busy }: SchafkopfContext) {
+  const humanIdx = state.players.findIndex((p) => p.isHuman);
+  const isHumanTurn = state.currentPlayerIdx === humanIdx;
+
+  const isPickPhase = state.phase === SchafkopfPhase.PICK;
+  const isCallPhase = state.phase === SchafkopfPhase.CALL;
+  const isPlayPhase = state.phase === SchafkopfPhase.PLAY;
+  const isTrickEnd = state.phase === SchafkopfPhase.TRICK_END;
+  const isRoundEnd = state.phase === SchafkopfPhase.ROUND_END;
+
+  // Phase-specific "it's the human's actionable turn" flags.
+  const canPick = isPickPhase && isHumanTurn;
+  const canCall = isCallPhase && state.pickerIdx === humanIdx && state.callableSuits.length > 0;
+  const canPlay = isPlayPhase && isHumanTurn;
+
+  if (!canPick && !canCall && !canPlay && !isTrickEnd && !isRoundEnd) return null;
+
+  return (
+    <div className="flex flex-wrap gap-1 items-center">
+      {canPick && (
+        <button type="button" className={btnSecondary} onClick={game.handlePass} disabled={busy}>
+          {t('passButton')}
+        </button>
+      )}
+      {canCall &&
+        state.callableSuits.map((suit) => {
+          // callableSuits are the three fail suits (♠♣♦), all present in SUIT_KEYS.
+          const suitName = t(`suit.${SUIT_KEYS[suit]}`);
+          return (
+            <button
+              key={`call-${suit}`}
+              type="button"
+              className={btnPrimary}
+              onClick={() => game.handleCall(suit)}
+              disabled={busy}
+              aria-label={t('callButtonAriaLabel', { suit: suitName })}
+            >
+              {t('callButton', { suit: suitName })}
+            </button>
+          );
+        })}
+      {canPlay && (
+        <button
+          type="button"
+          className={btnPrimary}
+          onClick={game.handlePlay}
+          disabled={busy || game.selectedCardIndices.length !== 1}
+        >
+          {t('playButton')}
+        </button>
+      )}
+      {isTrickEnd && (
+        <button type="button" className={btnSuccess} onClick={game.handleNextTrick} disabled={busy}>
+          {t('nextTrick')}
+        </button>
+      )}
+      {isRoundEnd && (
+        <button type="button" className={btnSuccess} onClick={game.handleNextRound} disabled={busy}>
+          {t('nextRound')}
+        </button>
+      )}
+    </div>
+  );
+}
+
+const schafkopfDefinition: GameDefinition<
+  SchafkopfResponse,
+  SchafkopfGame,
+  Parameters<typeof schafkopfApi.exec>,
+  SchafkopfView
+> = {
+  key: 'schafkopf',
+  useGame: useSchafkopfGame,
+  useView: useSchafkopfView,
+  tutorial: SH_TUTORIAL_STEPS,
+  skeleton: { kind: 'trick-taking', trickArea: true, footerHandSize: 6 },
+  cli: () => ({
+    parseCommand: parseSchafkopfCommand,
+    formatResponse: formatSchafkopfState,
+    helpText: SCHAFKOPF_HELP,
+  }),
+  phase: ({ state, view }) => {
+    const humanIdx = state.players.findIndex((p) => p.isHuman);
+    const isGameEnd = state.phase === SchafkopfPhase.GAME_END || state.gameEndFlag;
+    return {
+      name: view.phaseNames[state.phase],
+      ended: isGameEnd,
+      won: isGameEnd && state.winnerIdx === humanIdx,
+    };
+  },
+  shell: ({ state }) => {
+    const humanIdx = state.players.findIndex((p) => p.isHuman);
+    return {
+      isHumanTurn: state.currentPlayerIdx === humanIdx,
+    };
+  },
+  reset: ({ game }) => {
+    game.reset();
+  },
+  settings: ({ game, t, tc, frontendHint }) => [
+    {
+      items: [
+        {
+          type: 'select',
+          id: 'cpuDifficulty',
+          label: t('settings.cpuDifficulty'),
+          value: game.schafkopfConfig.cpuDifficulty,
+          options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
+            value: o.value,
+            label: t(`settings.${o.label.toLowerCase()}`),
+          })),
+          onSelect: (v) => game.handleConfigChange('cpuDifficulty', v),
+        },
+        {
+          type: 'select',
+          id: 'targetChips',
+          label: t('settings.targetChips'),
+          value: game.schafkopfConfig.targetChips,
+          options: TARGET_CHIPS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+          onSelect: (v) => game.handleConfigChange('targetChips', v),
+        },
+        hintCheckboxItem(tc, frontendHint.hintEnabled, frontendHint.setHintEnabled),
+      ],
+    },
+  ],
+  settingsPlacement: 'top',
+  contentClassName: `pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`,
+  primaryActions,
+  cardNav: ({ game, state }) => {
+    const humanIdx = state.players.findIndex((p) => p.isHuman);
+    const canPlay = state.phase === SchafkopfPhase.PLAY && state.currentPlayerIdx === humanIdx;
+    return {
+      cardCount: state.players.find((p) => p.isHuman)?.cards?.length ?? 0,
+      onToggle: game.toggleCard,
+      onConfirm: game.handlePlay,
+      onClear: game.clearSelection,
+      enabled: canPlay,
+    };
+  },
+  shortcutsTestId: 'schafkopf-kbd-shortcuts',
+  resetTutorialId: 'sh-reset-button',
+  Board,
+  FooterHand,
+  FooterStatus,
+};
+
+/** Renders the Schafkopf game page: 4-player partnership trick-taking with declare/call/play phases. */
+export const SchafkopfPage = createGamePage(schafkopfDefinition);
