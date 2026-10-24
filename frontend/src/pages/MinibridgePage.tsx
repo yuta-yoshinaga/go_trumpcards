@@ -539,13 +539,14 @@ function MinibridgePageContent() {
                   </div>
                   <div className={`flex ${isLargeDesktop ? 'flex-nowrap gap-0' : 'flex-wrap gap-2'}`}>
                     {human.cards.map((card, idx) => (
+                      // ダミーと同じく全札を relative にして DOM 順で重ねる。無いと出せない札が出せる札の端を覆う (#12037)
                       <button
                         key={`${card.design}-${card.value}-${idx}`}
                         type="button"
                         onClick={() => handlePlay(idx)}
                         disabled={loading || !isHumanTurn || isHumanDummyTurn || !legalRing.has(idx)}
                         aria-label={t('actions.playAria', { card: cardAlt(card) })}
-                        className={`disabled:opacity-50 ${
+                        className={`relative disabled:opacity-50 sm:focus-visible:z-10 ${
                           !isHumanDummyTurn && legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''
                         }`}
                         style={{

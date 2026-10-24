@@ -119,6 +119,21 @@ describe('MinibridgePage', () => {
     expect(await screen.findByTestId('mb-hand-area')).not.toHaveClass('sticky');
   });
 
+  it('keeps a legal card above the disabled card that overlaps it in the large-desktop hand (#12037)', async () => {
+    // 出せない札 (disabled:opacity-50) は独自の重なり層で描かれ、relative が無いと後ろの出せる札の端を覆う。
+    mockExec.mockResolvedValue(playing({ validPlays: [1, 3] }));
+    mobileState.isMobile = false;
+    mobileState.breakpoint = 'largeDesktop';
+    renderWithProviders(<MinibridgePage />);
+
+    const handRow = (await screen.findByTestId('mb-hand-area')).querySelector('.flex') as HTMLElement;
+    const cards = within(handRow).getAllByRole('button');
+    expect(cards[0]).toBeDisabled();
+    expect(cards[1]).toBeEnabled();
+    expect(Number.parseFloat(cards[1].style.marginLeft)).toBeLessThan(0);
+    for (const c of cards) expect(c).toHaveClass('relative');
+  });
+
   it('overlaps both card rows on compact large desktop only', async () => {
     mockExec.mockResolvedValue(playing());
     mobileState.isMobile = false;
