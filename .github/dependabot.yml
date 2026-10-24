@@ -1,0 +1,10 @@
+# SHA 固定は放置すると古くなり、action 自体のセキュリティ修正も入らなくなるので Dependabot に更新させる。
+# 7 日は frontend/bunfig.toml の minimumReleaseAge と揃えている。
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
