@@ -32,4 +32,8 @@ type SimpleSimonGame interface {
 	GetCompletedSuits() int
 	// GetColumns タブロー列を取得する。
 	GetColumns() [domain.SimpleSimonColCnt][]*domain.Card
+	// RunStarts returns the indices that can start a movable run in column col.
+	RunStarts(col int) []int
+	// AutoMoveTargets returns legal tableau destinations ordered by priority.
+	AutoMoveTargets(fromCol, cardIndex int) []int
 }

@@ -28,6 +28,7 @@ const tablePlacedWith7 = [0, 1 << 7, 1 << 7, 1 << 7, 1 << 7];
 
 const defaultProps = {
   player: makePlayer(),
+  validPlays: [0, 1],
   isCurrentTurn: true,
   tablePlaced: tablePlacedWith7,
   tunnelEnabled: false,
@@ -60,7 +61,9 @@ describe('SevensHumanArea', () => {
 
   it('shows a must-pass hint when no card is playable on the human turn', () => {
     // Only 7s are on the table; a lone 3 is not adjacent and there is no joker.
-    render(<SevensHumanArea {...defaultProps} player={makePlayer({ cards: [heart3], cardCount: 1 })} />);
+    render(
+      <SevensHumanArea {...defaultProps} player={makePlayer({ cards: [heart3], cardCount: 1 })} validPlays={[]} />,
+    );
     expect(screen.getByTestId('sv-must-pass')).toBeInTheDocument();
     expect(screen.queryByText('出せるカードをクリック')).not.toBeInTheDocument();
   });
@@ -93,7 +96,7 @@ describe('SevensHumanArea', () => {
     const player = makePlayer({ cards: [heart3] });
     // tablePlaced where heart suit has only 7 placed; 3 is not adjacent
     const onPlay = vi.fn();
-    render(<SevensHumanArea {...defaultProps} player={player} onPlay={onPlay} />);
+    render(<SevensHumanArea {...defaultProps} player={player} validPlays={[]} onPlay={onPlay} />);
     const button = screen.getByRole('button');
     const disabledReason = screen.getByText('このカードは現在出せません');
     expect(button).toHaveAttribute('aria-disabled', 'true');

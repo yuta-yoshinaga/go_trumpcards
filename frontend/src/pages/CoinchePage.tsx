@@ -26,7 +26,6 @@ import { gameTheme } from '../styles/gameTheme';
 import { COINCHE_CAPOT_POINTS, CoinchePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
-import { coincheLegalPlayIndices } from '../utils/coincheLegal';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -201,13 +200,8 @@ function CoinchePageContent() {
   const canCoinche = isHumanDoubleTurn && !onMakerTeam && state.double === 0;
   const canSurcoinche = isHumanDoubleTurn && onMakerTeam && state.double === 1;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
-  // Legal-play highlight: compute the follow-suit / trump-obligation legal set
-  // on the human's play turn only (mirrors internal/domain/Coinche.go validatePlay).
-  // Ring-only, additive — illegal cards stay clickable and the backend still validates.
-  const legalPlayIndices =
-    isHumanTurn && humanPlayer
-      ? coincheLegalPlayIndices(humanPlayer.cards, state.currentTrick, state.trumpSuit, humanIdx)
-      : undefined;
+  // The server computes legality from internal/domain/Coinche.go (ADR-0045).
+  const legalPlayIndices = isHumanTurn ? state.validPlays : undefined;
   // Coinche の切り札はどのスートでも宣言できる (ベロートのような表向き札の
   // 除外は無い)。
   const allSuits = [1, 2, 3, 4];

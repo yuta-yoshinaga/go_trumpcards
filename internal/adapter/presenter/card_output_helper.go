@@ -25,6 +25,12 @@ type CardFace struct {
 	Label string // 隅のランク／名称ラベル（例 "Wizard", "XXI"）
 	Color string // 色調トークン（例 "red", "black", "purple", "green"）
 	Deck  string // デッキ系統ID（例 "wizard"）。非空なら手続き描画へ切り替える
+	// Month は花札の月 (1..12) を表す。
+	Month int
+	// Kind は花札の種別コード、またはウンスンカルタの絵札ランクコード。
+	Kind string
+	// UnsunSuit はウンスンカルタのスートコード。
+	UnsunSuit string
 }
 
 // faceProvider はドメインの Card を CardFace 記述子に対応付ける。標準52枚
@@ -32,7 +38,7 @@ type CardFace struct {
 type faceProvider func(card *domain.Card) *CardFace
 
 // cardToOutputWithFace はカードを WebOutputCard に変換し、faceProvider が
-// 記述子を返した札には手続き描画用フィールド（Glyph/Label/Color/Deck）を
+// 記述子を返した札には手続き描画用フィールド（Glyph/Label/Color/Deck/Month/Kind/UnsunSuit）を
 // 付与する (nil → nil)。fp が nil を返す標準札は cardToOutput と同一出力。
 func cardToOutputWithFace(card *domain.Card, fp faceProvider) *controller.WebOutputCard {
 	out := cardToOutput(card)
@@ -44,6 +50,9 @@ func cardToOutputWithFace(card *domain.Card, fp faceProvider) *controller.WebOut
 		out.Label = face.Label
 		out.Color = face.Color
 		out.Deck = face.Deck
+		out.Month = face.Month
+		out.Kind = face.Kind
+		out.UnsunSuit = face.UnsunSuit
 	}
 	return out
 }
@@ -93,6 +102,18 @@ func cardsToOutput(cards []*domain.Card) []*controller.WebOutputCard {
 	return result
 }
 
+// cardsToOutputWithFace converts cards to WebOutputCards with optional face metadata.
+func cardsToOutputWithFace(cards []*domain.Card, fp faceProvider) []*controller.WebOutputCard {
+	if cards == nil {
+		return nil
+	}
+	out := make([]*controller.WebOutputCard, len(cards))
+	for i, c := range cards {
+		out[i] = cardToOutputWithFace(c, fp)
+	}
+	return out
+}
+
 // buildTrickCards はトリックカードスライスをマッパー関数で変換する汎用ヘルパー
 func buildTrickCards[TC any, OUT any](trick []TC, mapper func(TC) OUT) []OUT {
 	out := make([]OUT, 0, len(trick))
@@ -127,7 +148,7 @@ func trickCardsToOutput(trick []*domain.TrickCard) []*controller.WebOutputTrickC
 // trickCardsToOutputWithFace は trickCardsToOutput の手続き描画版。
 //
 // 非52枚デッキの6ゲーム（Cego / FrenchTarot / Koenigrufen / Rook / Scarto /
-// Wizard）は、トリック中の札にも Glyph/Label/Color/Deck を載せる必要がある
+// Wizard）は、トリック中の札にも Glyph/Label/Color/Deck/Month/Kind を載せる必要がある
 // (ADR-0033)。face 引数のない trickCardsToOutput にこれらを寄せると、トリック
 // 表示だけ手続き描画のメタデータが落ちて標準札として描かれる — 型にもテストにも
 // 現れない、静かな表示バグになる。

@@ -17,6 +17,11 @@ func (_m *MockBisleyGame) Reset() {
 	_m.Called()
 }
 
+func (_m *MockBisleyGame) LegalTargets(fromCol int) []int {
+	ret := _m.Called(fromCol)
+	return ret.Get(0).([]int)
+}
+
 func (_m *MockBisleyGame) MoveTableauToTableau(fromCol, toCol int) error {
 	ret := _m.Called(fromCol, toCol)
 	return ret.Error(0)

@@ -18,6 +18,7 @@ func mustSpiteAndMaliceOutputJSON(msg string) string {
 	out := &controller.SpiteAndMaliceWebOutput{
 		Winner:        -1,
 		GoalSize:      domain.SpiteAndMaliceGoalSizeDefault,
+		LegalTargets:  map[string]controller.SpiteAndMaliceWebOutputTargets{},
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
@@ -28,7 +29,7 @@ func mustSpiteAndMaliceOutputJSON(msg string) string {
 }
 
 func TestSpiteAndMaliceWebController_Method(t *testing.T) {
-	mockOut := `{"phase":0,"current":0,"players":[{"hand":null,"goalSize":0,"sides":[null,null,null,null],"isCpu":false},{"hand":null,"goalSize":0,"sides":[null,null,null,null],"isCpu":false}],"foundations":[null,null,null,null],"foundationTops":[0,0,0,0],"stockSize":0,"completedSize":0,"moveCount":0,"winner":-1,"goalSize":20,"cpuDifficulty":0,"message":""}`
+	mockOut := `{"phase":0,"current":0,"players":[{"hand":null,"goalSize":0,"sides":[null,null,null,null],"isCpu":false},{"hand":null,"goalSize":0,"sides":[null,null,null,null],"isCpu":false}],"foundations":[null,null,null,null],"foundationTops":[0,0,0,0],"stockSize":0,"completedSize":0,"moveCount":0,"winner":-1,"goalSize":20,"cpuDifficulty":0,"legalTargets":{},"message":""}`
 	expected := mockOut
 
 	m := new(usecase.MockSpiteAndMaliceInteractor)

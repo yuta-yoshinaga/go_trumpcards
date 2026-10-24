@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -21,6 +22,7 @@ func setupCoincheWebMock() *interfaces.MockCoincheGame {
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.CoinchePhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
+	m.On("GetValidPlayIndices", mock.Anything).Return([]int{}).Maybe()
 	m.On("GetBidPlayerIdx").Return(0)
 	m.On("GetDealerIdx").Return(0)
 	m.On("GetTrumpSuit").Return(1)
@@ -55,6 +57,37 @@ func setupCoincheWebMockWithPlayers() (*interfaces.MockCoincheGame, []*domain.Co
 	m.On("GetPlayer", 2).Return(players[2])
 	m.On("GetPlayer", 3).Return(players[3])
 	return m, players
+}
+
+func TestCoincheWebPresenterValidPlays(t *testing.T) {
+	p := new(presenter.CoincheWebPresenter)
+	t.Run("human play turn", func(t *testing.T) {
+		m, _ := setupCoincheWebMockWithPlayers()
+		want := []int{0, 1}
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+		m.On("GetValidPlayIndices", 0).Return(want)
+		result := p.Output(m, nil)
+		var out controller.CoincheWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &out))
+		assert.Equal(t, want, out.ValidPlays)
+		assert.Contains(t, result, `"validPlays":[0,1]`)
+	})
+	t.Run("CPU turn", func(t *testing.T) {
+		m, _ := setupCoincheWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+		m.On("GetValidPlayIndices", mock.Anything).Return([]int{0, 1}).Maybe()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentPlayerIdx")
+		m.On("GetCurrentPlayerIdx").Return(1)
+		assert.Contains(t, p.Output(m, nil), `"validPlays":[]`)
+	})
+	t.Run("outside play phase", func(t *testing.T) {
+		m, _ := setupCoincheWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+		m.On("GetValidPlayIndices", mock.Anything).Return([]int{0, 1}).Maybe()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.CoinchePhaseBid)
+		assert.Contains(t, p.Output(m, nil), `"validPlays":[]`)
+	})
 }
 
 func TestCoincheWebPresenter_Output(t *testing.T) {

@@ -88,9 +88,9 @@ type CrazyFourPokerPayoutRow struct {
 // Odds は "30" / "1.5" のような文字列。1/10 単位の内部表現をそのまま出すと
 // 300:1 に見えてしまうので、サーバ側で整形して渡す。
 type CrazyFourPokerSuperBonusRow struct {
-	Hand int    `json:"hand"`
-	Name string `json:"name"`
-	Odds string `json:"odds"`
+	Hand     int    `json:"hand"`
+	FourAces bool   `json:"fourAces,omitempty"`
+	Odds     string `json:"odds"`
 }
 
 // CrazyFourPokerWebController クレイジー 4 ポーカーWebコントローラークラス

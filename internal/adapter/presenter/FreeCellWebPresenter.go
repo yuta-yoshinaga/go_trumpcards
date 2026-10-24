@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -28,6 +29,7 @@ func (p *FreeCellWebPresenter) Output(f interfaces.FreeCellGame, lastErr error) 
 			resObj.Tableau[i][j] = cardToOutput(c)
 		}
 	}
+	resObj.LegalTargets = buildFreeCellLegalTargets(f)
 
 	// フリーセル
 	freeCells := f.GetFreeCells()
@@ -102,6 +104,7 @@ func (p *FreeCellWebPresenter) HintOutput(f interfaces.FreeCellGame) string {
 	resObj.FreeCells = make([]*controller.WebOutputCard, 0)
 	resObj.Tableau = make([][]*controller.WebOutputCard, 0)
 	resObj.Foundation = make([][]*controller.WebOutputCard, 0)
+	resObj.LegalTargets = buildFreeCellLegalTargets(f)
 
 	if hint != nil {
 		resObj.Hint = &controller.FreeCellWebOutputHint{
@@ -117,6 +120,43 @@ func (p *FreeCellWebPresenter) HintOutput(f interfaces.FreeCellGame) string {
 	}
 
 	return marshalOrError(resObj)
+}
+
+func buildFreeCellLegalTargets(f interfaces.FreeCellGame) map[string]controller.FreeCellWebOutputTargets {
+	result := make(map[string]controller.FreeCellWebOutputTargets)
+	tableauState := f.GetTableau()
+	for col, cards := range tableauState {
+		for index := range cards {
+			tab, foundation := f.LegalTargetsFrom(col, index)
+			if len(tab)+len(foundation) == 0 {
+				continue
+			}
+			if tab == nil {
+				tab = []int{}
+			}
+			if foundation == nil {
+				foundation = []int{}
+			}
+			result["tableau-"+strconv.Itoa(col)+"-"+strconv.Itoa(index)] = controller.FreeCellWebOutputTargets{Tableau: tab, Foundation: foundation}
+		}
+	}
+	for cell, card := range f.GetFreeCells() {
+		if card == nil {
+			continue
+		}
+		tab, foundation := f.FreeCellLegalTargets(cell)
+		if len(tab)+len(foundation) == 0 {
+			continue
+		}
+		if tab == nil {
+			tab = []int{}
+		}
+		if foundation == nil {
+			foundation = []int{}
+		}
+		result["freecell-"+strconv.Itoa(cell)] = controller.FreeCellWebOutputTargets{Tableau: tab, Foundation: foundation}
+	}
+	return result
 }
 
 // ActionLogOutput 棋譜をJSON出力

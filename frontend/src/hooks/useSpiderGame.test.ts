@@ -21,6 +21,7 @@ function createWrapper() {
 }
 
 const defaultState: SpiderResponse = {
+  runStarts: Array.from({ length: 10 }, () => []),
   tableau: [
     [{ card: { design: 'SPADE', value: 1 }, faceUp: true }],
     [

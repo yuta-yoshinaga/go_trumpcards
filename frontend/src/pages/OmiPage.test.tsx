@@ -56,6 +56,7 @@ const playPhaseState: OmiResponse = {
   roundNumber: 1,
   trickNumber: 1,
   currentPlayerIdx: 0,
+  validPlays: [0, 1],
   trumpCallerIdx: 1,
   bidPlayerIdx: 1,
   dealerIdx: 3,
@@ -194,17 +195,20 @@ describe('OmiPage', () => {
     });
   });
 
-  it('announces legal cards and explains cards blocked by the follow-suit rule', async () => {
+  it('uses server legal indices even when they disagree with follow-suit', async () => {
     mockExec.mockResolvedValue({
       ...playPhaseState,
-      currentTrick: [{ playerIdx: 3, card: { design: 'HEART', value: 2 } }],
+      validPlays: [1],
+      currentTrick: [{ playerIdx: 3, card: { design: 'SPADE', value: 2 } }],
     });
     renderWithProviders(<OmiPage />);
 
+    // Follow-suit would allow only ♠ A on a SPADE lead; the server's [1] (♥ J) is what decides.
     const blockedCard = await screen.findByRole('button', { name: '♠ A: 出せないカード' });
     const legalCard = screen.getByRole('button', { name: '♥ J: 出せるカード' });
+    expect(blockedCard).not.toHaveAttribute('data-legal');
+    expect(legalCard).toHaveAttribute('data-legal', 'true');
     expect(blockedCard).toHaveAttribute('aria-disabled', 'true');
-    expect(blockedCard).toHaveAttribute('aria-describedby');
     expect(document.getElementById(blockedCard.getAttribute('aria-describedby') ?? '')).toHaveTextContent(
       'リードスートに従う必要があります',
     );
@@ -212,18 +216,6 @@ describe('OmiPage', () => {
     expect(blockedCard).toHaveAttribute('aria-pressed', 'false');
     expect(legalCard).not.toHaveAttribute('aria-disabled');
     expect(legalCard).not.toHaveAttribute('aria-describedby');
-  });
-
-  it('does not select an illegal card with the number-key shortcut', async () => {
-    mockExec.mockResolvedValue({
-      ...playPhaseState,
-      currentTrick: [{ playerIdx: 3, card: { design: 'HEART', value: 2 } }],
-    });
-    renderWithProviders(<OmiPage />);
-
-    const blockedCard = await screen.findByRole('button', { name: '♠ A: 出せないカード' });
-    fireEvent.keyDown(document, { key: '1' });
-    expect(blockedCard).toHaveAttribute('aria-pressed', 'false');
   });
 
   it('uses only the card name in aria-label when it is not the human turn', async () => {
@@ -812,42 +804,46 @@ describe('OmiPage', () => {
 
   // ─── Legal play highlighting ───────────────────────────────────────────────
 
-  it('rings every card as legal when leading the trick', async () => {
+  it('rings exactly the server-specified indices', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, validPlays: [1] });
     renderWithProviders(<OmiPage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
 
     const spadeBtn = screen.getByAltText('♠ A').closest('button') as HTMLButtonElement;
     const heartBtn = screen.getByAltText('♥ J').closest('button') as HTMLButtonElement;
-    expect(spadeBtn).toHaveAttribute('data-legal', 'true');
+    expect(spadeBtn).not.toHaveAttribute('data-legal');
     expect(heartBtn).toHaveAttribute('data-legal', 'true');
   });
 
-  it('rings only the legal follow-suit card', async () => {
-    const followState: OmiResponse = {
-      ...playPhaseState,
-      currentTrick: [{ playerIdx: 3, card: { design: 'SPADE', value: 12 } }],
-    };
-    mockExec.mockResolvedValue(followState);
-    renderWithProviders(<OmiPage />);
-    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
-
-    const spadeBtn = screen.getByAltText('♠ A').closest('button') as HTMLButtonElement;
-    const heartBtn = screen.getByAltText('♥ J').closest('button') as HTMLButtonElement;
-    expect(spadeBtn).toHaveAttribute('data-legal', 'true');
-    expect(heartBtn).not.toHaveAttribute('data-legal');
-
-    // Illegal cards remain focusable but cannot be selected.
-    fireEvent.click(heartBtn);
-    expect(heartBtn).toHaveAttribute('aria-pressed', 'false');
-  });
-
   it('does not ring cards when it is not the human play turn', async () => {
-    mockExec.mockResolvedValue(trickEndState);
+    mockExec.mockResolvedValue({ ...playPhaseState, currentPlayerIdx: 1, validPlays: [0, 1] });
     renderWithProviders(<OmiPage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
 
     const spadeBtn = screen.getByAltText('♠ A').closest('button') as HTMLButtonElement;
     expect(spadeBtn).not.toHaveAttribute('data-legal');
+    expect(screen.getByAltText('♥ J').closest('button')).not.toHaveAttribute('data-legal');
+  });
+
+  it('keyboard toggles only indices listed by the server', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, validPlays: [1] });
+    renderWithProviders(<OmiPage />);
+    const spade = (await screen.findByAltText('♠ A')).closest('button') as HTMLButtonElement;
+    const heart = screen.getByAltText('♥ J').closest('button') as HTMLButtonElement;
+    fireEvent.keyDown(document, { key: '1' });
+    expect(spade).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.keyDown(document, { key: '2' });
+    expect(heart).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('clears selection when the next response excludes the selected index', async () => {
+    mockExec.mockResolvedValueOnce(playPhaseState).mockResolvedValueOnce({ ...playPhaseState, validPlays: [1] });
+    renderWithProviders(<OmiPage />);
+    const spade = (await screen.findByAltText('♠ A')).closest('button') as HTMLButtonElement;
+    fireEvent.click(spade);
+    expect(spade).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+    await waitFor(() => expect(spade).toHaveAttribute('aria-pressed', 'false'));
   });
 
   // ─── Reset ────────────────────────────────────────────────────────────────

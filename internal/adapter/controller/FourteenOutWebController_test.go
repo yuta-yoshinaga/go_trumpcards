@@ -16,6 +16,7 @@ import (
 func mustFourteenOutOutputJSON(msg string) string {
 	out := &controller.FourteenOutWebOutput{
 		Columns:       [][]*controller.FourteenOutWebOutputCard{},
+		LegalTargets:  map[string]controller.FourteenOutWebOutputTargets{},
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
@@ -29,7 +30,7 @@ func fourteenOutIntPtr(v int) *int { return &v }
 
 func setupFourteenOutWebTest(t *testing.T) (*usecase.MockFourteenOutInteractor, *controller.FourteenOutWebController, string) {
 	t.Helper()
-	mockOutput := `{"columns":[],"phase":0,"removedCount":0,"removablePairs":0,"canUndo":false,"isStalemate":false,"message":""}`
+	mockOutput := `{"columns":[],"phase":0,"removedCount":0,"removablePairs":0,"canUndo":false,"isStalemate":false,"legalTargets":{},"message":""}`
 	miMock := new(usecase.MockFourteenOutInteractor)
 	factory := func() uc.FourteenOutInteractorIF { return miMock }
 	ctrl := controller.NewFourteenOutWebController(factory)

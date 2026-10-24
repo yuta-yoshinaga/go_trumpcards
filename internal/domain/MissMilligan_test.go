@@ -59,6 +59,40 @@ func TestMissMilligan_Reset_DealsEightAndKeepsTheRestAsStock(t *testing.T) {
 	assert.False(t, mm.GetGameEndFlag())
 }
 
+func TestMissMilligan_RunStartsAndLegalTargetsFrom(t *testing.T) {
+	mm := newTestMissMilligan()
+	var foundations [MissMilliganFoundationCnt][]*Card
+	setMMBoard(mm, foundations, [][]*Card{
+		{NewCard(CardDesignSpade, 9, true), NewCard(CardDesignHeart, 8, true)},
+		{NewCard(CardDesignHeart, 10, true)},
+		{NewCard(CardDesignClover, 9, true)},
+		{NewCard(CardDesignDiamond, 13, true)},
+		{NewCard(CardDesignSpade, 1, true)},
+	}, nil, nil)
+	assert.Equal(t, []int{0, 1}, mm.RunStarts(0))
+	targetTableau, targetFoundation := mm.LegalTargetsFrom(0, 0)
+	assert.Equal(t, []int{1}, targetTableau)
+	assert.Empty(t, targetFoundation, "a multi-card run cannot move to foundation")
+	targetTableau, _ = mm.LegalTargetsFrom(0, 1)
+	assert.Equal(t, []int{2}, targetTableau)
+	_, targetFoundation = mm.LegalTargetsFrom(4, 0)
+	assert.Equal(t, []int{0, 4}, targetFoundation, "both empty spade foundations accept an ace")
+	assert.Empty(t, mm.RunStarts(-1))
+}
+
+func TestMissMilligan_WaivedLegalTargets(t *testing.T) {
+	mm := newTestMissMilligan()
+	var foundations [MissMilliganFoundationCnt][]*Card
+	setMMBoard(mm, foundations, [][]*Card{{NewCard(CardDesignHeart, 9, true)}, {NewCard(CardDesignClover, 10, true)}}, nil,
+		[]*Card{NewCard(CardDesignSpade, 8, true), NewCard(CardDesignHeart, 7, true)})
+	targetTableau, targetFoundation := mm.WaivedLegalTargets()
+	assert.Equal(t, []int{0}, targetTableau)
+	assert.Empty(t, targetFoundation, "a waived run cannot move to foundation")
+	setMMBoard(mm, foundations, [][]*Card{{NewCard(CardDesignSpade, 2, true)}}, nil, []*Card{NewCard(CardDesignSpade, 1, true)})
+	_, targetFoundation = mm.WaivedLegalTargets()
+	assert.Equal(t, []int{0, 4}, targetFoundation)
+}
+
 // The stock is dealt eight at a time, one per column. #4407's rule 5 describes
 // a one-card-at-a-time deal into a waste; Miss Milligan has no waste at all.
 func TestMissMilligan_DealPutsOneCardOnEveryColumn(t *testing.T) {

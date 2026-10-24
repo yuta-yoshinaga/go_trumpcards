@@ -30,6 +30,7 @@ const playingState: FourteenOutResponse = {
   phase: 0,
   removedCount: 0,
   removablePairs: 1,
+  legalTargets: { 'tableau-0': { tableau: [1], foundation: [] }, 'tableau-1': { tableau: [0], foundation: [] } },
   canUndo: false,
   isStalemate: false,
   message: '',
@@ -132,6 +133,28 @@ describe('FourteenOutPage', () => {
     expect(other).not.toContain('{{');
   });
 
+  it('treats a missing source target key as having no partners', async () => {
+    mockExec.mockResolvedValue({ ...playingState, legalTargets: {} });
+    renderWithProviders(<FourteenOutPage />);
+    fireEvent.click(await screen.findByTestId('mc-col-0'));
+    await waitFor(() => expect(screen.getByTestId('mc-col-1')).toHaveAttribute('data-dimmed', 'true'));
+    expect(screen.getByTestId('mc-col-1')).not.toHaveAttribute('data-pair-match');
+  });
+
+  it('follows server partner targets when they disagree with the exposed card values', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      removablePairs: 7,
+      legalTargets: { 'tableau-0': { tableau: [2], foundation: [] } },
+    });
+    renderWithProviders(<FourteenOutPage />);
+    const col0 = await screen.findByTestId('mc-col-0');
+    fireEvent.click(col0);
+    await waitFor(() => expect(screen.getByTestId('mc-col-2')).toHaveAttribute('data-pair-match', 'true'));
+    expect(screen.getByTestId('mc-col-1')).toHaveAttribute('data-dimmed', 'true');
+    expect(screen.getByTestId('mc-removable-count').textContent).toContain('7');
+  });
+
   // **サーバに渡すのは列番号 2 つ。**クローン元は (行,列) x2 を渡す。
   it('sends the two column numbers on the second click', async () => {
     renderWithProviders(<FourteenOutPage />);
@@ -161,7 +184,12 @@ describe('FourteenOutPage', () => {
 
   // **0 は敗北の合図。**クローン元では補充を促す合図だった。
   it('warns when no pair remains', async () => {
-    mockExec.mockResolvedValue({ ...playingState, columns: columns([['SPADE', 2]], [['HEART', 3]]) });
+    mockExec.mockResolvedValue({
+      ...playingState,
+      columns: columns([['SPADE', 2]], [['HEART', 3]]),
+      removablePairs: 0,
+      legalTargets: {},
+    });
     renderWithProviders(<FourteenOutPage />);
     await waitFor(() =>
       expect(screen.getByTestId('mc-removable-count')).toHaveAttribute('data-removable-zero', 'true'),

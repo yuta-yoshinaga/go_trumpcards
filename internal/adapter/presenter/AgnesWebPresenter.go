@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -17,6 +18,7 @@ type AgnesWebPresenter struct{}
 func (p *AgnesWebPresenter) Output(c interfaces.AgnesGame, lastErr error) string {
 	resObj := p.buildBaseOutput(c)
 	p.fillBoard(resObj, c)
+	resObj.LegalTargets = p.buildLegalTargets(c)
 
 	// メッセージ
 	// **受動ヒントは Output() でも埋める。**盤面のリングなど `state.hint` を読む
@@ -62,6 +64,7 @@ func (p *AgnesWebPresenter) Output(c interfaces.AgnesGame, lastErr error) string
 func (p *AgnesWebPresenter) HintOutput(c interfaces.AgnesGame) string {
 	resObj := p.buildBaseOutput(c)
 	p.fillBoard(resObj, c)
+	resObj.LegalTargets = p.buildLegalTargets(c)
 
 	hint := c.GetHint()
 	if hint != nil {
@@ -77,6 +80,18 @@ func (p *AgnesWebPresenter) HintOutput(c interfaces.AgnesGame) string {
 		resObj.MessageCode = "agnes.noHint"
 	}
 	return marshalOrError(resObj)
+}
+
+func (p *AgnesWebPresenter) buildLegalTargets(c interfaces.AgnesGame) map[string]controller.AgnesWebOutputTargets {
+	result := make(map[string]controller.AgnesWebOutputTargets)
+	for col := 0; col < domain.AgnesTableauCnt; col++ {
+		tableau, foundation := c.LegalTargets(col)
+		if len(tableau)+len(foundation) == 0 {
+			continue
+		}
+		result["tableau-"+strconv.Itoa(col)] = controller.AgnesWebOutputTargets{Tableau: intSliceOrEmpty(tableau), Foundation: intSliceOrEmpty(foundation)}
+	}
+	return result
 }
 
 // ActionLogOutput 棋譜をJSON出力

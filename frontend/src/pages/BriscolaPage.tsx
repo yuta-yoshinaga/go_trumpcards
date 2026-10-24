@@ -4,6 +4,7 @@ import { ActionLogSection } from '../components/ActionLogSection';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
@@ -64,7 +65,7 @@ function BriscolaPageContent() {
     exec: dispatch,
     retry,
   } = useGameApi<BriscolaResponse, Parameters<typeof briscolaApi.exec>>(briscolaApi.exec);
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
 
   // Initial reset on mount.
   useMountReset(dispatch);
@@ -243,12 +244,57 @@ function BriscolaPageContent() {
           </div>
         )}
 
-        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+        {isMobile && (
+          <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+        )}
         <ErrorAlert message={error} onRetry={retry} />
 
-        {/* Human hand */}
+        {/* Server hint text (populated by the hint command). */}
+        {serverHint && (
+          <p className="mt-3 text-sm text-ds-accent" data-testid="briscola-hint">
+            {t('hint.available')}: {t(`hint.${serverHint.reason}`)}
+            {serverHint.cardIndex !== undefined &&
+              suggestedCard &&
+              ` ${t('hint.card', { index: serverHint.cardIndex, name: cardAlt(suggestedCard) })}`}
+          </p>
+        )}
+      </div>
+
+      <GameFooter
+        message={
+          isMobile ? undefined : (
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
+          )
+        }
+        className={`${gameTheme.briscola.footer} px-4 py-2.5`}
+        actions={
+          <div className="flex flex-wrap gap-2">
+            {isTrickEnd && (
+              <button type="button" className={btnSuccess} onClick={handleNext} disabled={loading}>
+                {t('actions.next')}
+              </button>
+            )}
+            {isHumanTurn && (
+              <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading}>
+                {t('actions.hint')}
+              </button>
+            )}
+            {/* 決着後は失うものが無いので確認を挟まない ── 共通ボタンに任せる (#5608)。 */}
+            <GameResetButton
+              isGameEnd={isGameEnd}
+              onReset={handleReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+            />
+          </div>
+        }
+      >
         {human && human.cards.length > 0 && (
-          <div className="mt-4" data-tutorial="briscola-hand">
+          <div data-tutorial="briscola-hand">
             <div className="text-ds-text-muted text-sm mb-1">
               {t('header.you')}: {human.cardCount} / {t('header.tricks')}: {human.trickCount}
             </div>
@@ -274,38 +320,7 @@ function BriscolaPageContent() {
             </div>
           </div>
         )}
-
-        {/* Server hint text (populated by the hint command). */}
-        {serverHint && (
-          <p className="mt-3 text-sm text-ds-accent" data-testid="briscola-hint">
-            {t('hint.available')}: {t(`hint.${serverHint.reason}`)}
-            {serverHint.cardIndex !== undefined &&
-              suggestedCard &&
-              ` ${t('hint.card', { index: serverHint.cardIndex, name: cardAlt(suggestedCard) })}`}
-          </p>
-        )}
-
-        {/* Phase-specific controls */}
-        <div className="mt-4 flex flex-wrap gap-2">
-          {isTrickEnd && (
-            <button type="button" className={btnSuccess} onClick={handleNext} disabled={loading}>
-              {t('actions.next')}
-            </button>
-          )}
-          {isHumanTurn && (
-            <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading}>
-              {t('actions.hint')}
-            </button>
-          )}
-          {/* 決着後は失うものが無いので確認を挟まない ── 共通ボタンに任せる (#5608)。 */}
-          <GameResetButton
-            isGameEnd={isGameEnd}
-            onReset={handleReset}
-            requestConfirm={requestConfirm}
-            loading={loading}
-          />
-        </div>
-      </div>
+      </GameFooter>
 
       {/*
        * Single hint surface: the server hint (requested with the `hint` command and
@@ -328,8 +343,7 @@ function BriscolaPageContent() {
         showActionLog={showActionLog}
         hideActionLog={hideActionLog}
       />
-      {/* This page has no GameFooter, where the other 37 card-nav pages put the
-          panel, so it sits after the action log instead — still last on the page. */}
+      {/* Keep the keyboard help after the action log so it remains last on the page. */}
       <CardNavShortcutsPanel data-testid="briscola-kbd-shortcuts" />
     </GamePageShell>
   );

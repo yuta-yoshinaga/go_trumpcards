@@ -189,7 +189,7 @@ describe('BigBenPage', () => {
       const spacer = document.querySelector('[data-testid="gc-tableau-column-spacer"]') as HTMLElement;
       const dims = tableauDimensions(1008, 8, 8, 0.34);
       expect(spacer).toHaveStyle({
-        height: `${(playingState.tableau[0]!.length - 1) * dims.cardOverlap + dims.cardHeight}px`,
+        height: `${(playingState.tableau[0].length - 1) * dims.cardOverlap + dims.cardHeight}px`,
       });
       expect(spacer).toHaveStyle({ height: '219px' });
     } finally {
@@ -206,8 +206,8 @@ describe('BigBenPage', () => {
     const dealtState = {
       ...playingState,
       tableau: makeTableau([
-        [...playingState.tableau[0]!, { card: card('CLOVER', 2), faceUp: true }],
-        [...playingState.tableau[1]!, { card: card('DIAMOND', 7), faceUp: true }],
+        [...playingState.tableau[0], { card: card('CLOVER', 2), faceUp: true }],
+        [...playingState.tableau[1], { card: card('DIAMOND', 7), faceUp: true }],
       ]),
       stockCount: 49,
     };

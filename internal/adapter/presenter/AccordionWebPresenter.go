@@ -16,6 +16,7 @@ type AccordionWebPresenter struct{}
 // Output ゲーム状態をJSON出力
 func (p *AccordionWebPresenter) Output(a interfaces.AccordionGame, lastErr error) string {
 	resObj := p.buildBase(a)
+	p.buildLegalTargets(resObj, a)
 
 	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
 	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
@@ -55,6 +56,7 @@ func (p *AccordionWebPresenter) Output(a interfaces.AccordionGame, lastErr error
 // HintOutput ヒントをJSON出力
 func (p *AccordionWebPresenter) HintOutput(a interfaces.AccordionGame) string {
 	resObj := p.buildBase(a)
+	p.buildLegalTargets(resObj, a)
 	hint := a.GetHint()
 	if hint != nil {
 		resObj.Hint = &controller.AccordionWebOutputHint{
@@ -66,6 +68,19 @@ func (p *AccordionWebPresenter) HintOutput(a interfaces.AccordionGame) string {
 		resObj.MessageCode = "accordion.noHint"
 	}
 	return marshalOrError(resObj)
+}
+
+func (p *AccordionWebPresenter) buildLegalTargets(out *controller.AccordionWebOutput, a interfaces.AccordionGame) {
+	out.LegalTargets = map[string]controller.AccordionWebOutputTargets{}
+	if a.GetPhase() != domain.AccordionPhasePlaying {
+		return
+	}
+	for fromIdx := range a.GetPiles() {
+		targets := intSliceOrEmpty(a.LegalTargets(fromIdx))
+		if len(targets) > 0 {
+			out.LegalTargets[fmt.Sprintf("pile-%d", fromIdx)] = controller.AccordionWebOutputTargets{Tableau: targets}
+		}
+	}
 }
 
 // ActionLogOutput 棋譜をJSON出力

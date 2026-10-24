@@ -25,6 +25,7 @@ function makeTableau(cols: BisleyTableauCard[][]): BisleyTableauCard[][] {
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 
 const playingState: BisleyResponse = {
+  legalTargets: {},
   tableau: makeTableau([
     [
       { card: card('SPADE', 9), faceUp: true },
@@ -61,6 +62,41 @@ describe('BisleyPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
+  });
+
+  it('places settings details inside scrollable play area on mobile and outside on desktop', async () => {
+    const original = window.innerWidth;
+    mockExec.mockResolvedValue(playingState);
+    try {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+      window.dispatchEvent(new Event('resize'));
+      const { container: mobileContainer, unmount } = renderWithProviders(<BisleyPage />);
+      const mobileSettingsDetails = (await screen.findByText('設定')).closest('details');
+      const mobileTableau = mobileContainer.querySelector('[data-tutorial="bisley-tableau"]');
+      const mobilePlayArea = mobileTableau?.closest('.overflow-y-auto');
+      expect(mobilePlayArea).not.toBeNull();
+      expect(mobileSettingsDetails).not.toBeNull();
+      expect(mobilePlayArea?.contains(mobileSettingsDetails)).toBe(true);
+      expect(
+        mobileTableau &&
+          mobileSettingsDetails &&
+          mobileTableau.compareDocumentPosition(mobileSettingsDetails) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+      unmount();
+
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 });
+      window.dispatchEvent(new Event('resize'));
+      const { container: desktopContainer } = renderWithProviders(<BisleyPage />);
+      const desktopSettingsDetails = (await screen.findByText('設定')).closest('details');
+      const desktopTableau = desktopContainer.querySelector('[data-tutorial="bisley-tableau"]');
+      const desktopPlayArea = desktopTableau?.closest('.overflow-y-auto');
+      expect(desktopPlayArea).not.toBeNull();
+      expect(desktopSettingsDetails).not.toBeNull();
+      expect(desktopPlayArea?.contains(desktopSettingsDetails)).toBe(false);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: original });
+      window.dispatchEvent(new Event('resize'));
+    }
   });
 
   it('calls reset on initial render', async () => {
@@ -460,46 +496,61 @@ describe('BisleyPage hover targets', () => {
     vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
   });
 
+  it('hides server targets when the game is no longer playing', async () => {
+    mockExec.mockResolvedValue({ ...gameOverState, legalTargets: { 'tableau-0': { tableau: [2] } } });
+    renderWithProviders(<BisleyPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByText(/列目へ動かせます/)).not.toBeInTheDocument();
+  });
+
+  it('hides server targets outside play, on non-top cards, and when a source has no targets', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau([
+        [
+          { card: card('SPADE', 9), faceUp: true },
+          { card: card('SPADE', 5), faceUp: true },
+        ],
+        [{ card: card('HEART', 6), faceUp: true }],
+      ]),
+      legalTargets: { 'tableau-0': { tableau: [2] }, 'tableau-1': { tableau: [] } },
+    });
+    renderWithProviders(<BisleyPage />);
+    expect(await screen.findAllByText('3 列目へ動かせます')).toHaveLength(2);
+    expect(screen.getAllByText(/列目へ動かせます/)).toHaveLength(2);
+    const topCard = screen.getByRole('button', { name: /♠ 5/ });
+    expect(topCard).toHaveAttribute('aria-describedby');
+  });
+
   it('renders hover targets on the top card of a tableau column', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
       tableau: makeTableau([
-        // Normal card (5) -> [4, 6] -> 4, 6
         [{ card: card('SPADE', 5), faceUp: true }],
-        // Ace (1) -> [2] -> 2
         [{ card: card('HEART', 1), faceUp: true }],
-        // King (13) -> [12] -> Q
         [{ card: card('CLOVER', 13), faceUp: true }],
-        // Empty column
         [],
       ]),
+      // Server response intentionally disagrees with the old rank-based mirror.
+      legalTargets: { 'tableau-0': { tableau: [1, 2] }, 'tableau-1': { tableau: [4] }, 'tableau-2': { tableau: [8] } },
     });
     renderWithProviders(<BisleyPage />);
 
-    // **同スート限定なのでスートまで出す。** ランクだけだと「どの 5 でも置ける」
-    // と読めてしまう (規則は同スートで1つ違い)。
-    //
-    // 文言は2箇所に出る: 目で見るツールチップ (aria-hidden) と、読み上げ用の
-    // 常設 sr-only。視覚のツールチップは display:none なので a11y ツリーに
-    // 載らず、aria-describedby が届くのは sr-only の方 (#6349)。
-    expect(await screen.findAllByText('♠ 4 / ♠ 6 が置けます')).toHaveLength(2);
-    expect(await screen.findAllByText('♥ 2 が置けます')).toHaveLength(2);
-    expect(await screen.findAllByText('♣ Q が置けます')).toHaveLength(2);
+    // The tooltip follows the server's destinations, even when they contradict local rank rules.
+    expect(await screen.findAllByText('2 / 3 列目へ動かせます')).toHaveLength(2);
+    expect(await screen.findAllByText('5 列目へ動かせます')).toHaveLength(2);
+    expect(await screen.findAllByText('9 列目へ動かせます')).toHaveLength(2);
 
     // 読み上げに届く形で紐づいていること。説明が在っても紐づいていなければ読まれない。
     const spadeFive = screen.getByRole('button', { name: /♠ 5/ });
     const describedBy = spadeFive.getAttribute('aria-describedby');
     expect(describedBy).toBeTruthy();
-    expect(document.getElementById(describedBy ?? '')?.textContent).toBe('♠ 4 / ♠ 6 が置けます');
+    expect(document.getElementById(describedBy ?? '')?.textContent).toBe('2 / 3 列目へ動かせます');
 
     // 否定コントロール: Ace や King の逆方向がないこと
-    expect(screen.queryByText(/0.*が置けます/)).not.toBeInTheDocument();
-    expect(screen.queryByText(/14.*が置けます/)).not.toBeInTheDocument();
-    expect(screen.queryByText(/A が置けます/)).not.toBeInTheDocument();
-    expect(screen.queryByText(/K が置けます/)).not.toBeInTheDocument();
 
     // 空列には出ないこと。3列 x（sr-only + 目で見るツールチップ）= 6 で、
     // 4列目（空）は何も出さない。
-    expect(screen.getAllByText(/が置けます/)).toHaveLength(6);
+    expect(screen.getAllByText(/列目へ動かせます/)).toHaveLength(6);
   });
 });

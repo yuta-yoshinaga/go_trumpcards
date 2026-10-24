@@ -25,6 +25,12 @@ type CongressGame interface {
 	MoveStockToTableau(pile int) error
 	// GetHint ヒントを取得する
 	GetHint() *domain.CongressHint
+	// LegalTargets returns destinations for the top card in a tableau pile.
+	LegalTargets(fromPile int) (tableau, foundation []int)
+	// WasteLegalTargets returns destinations for the top waste card.
+	WasteLegalTargets() (tableau, foundation []int)
+	// StockLegalTargets returns empty tableau piles available to the stock top card.
+	StockLegalTargets() []int
 	// GetPhase 現在のフェーズを取得する
 	GetPhase() domain.CongressPhase
 	// GetMoveCount 移動回数を取得する

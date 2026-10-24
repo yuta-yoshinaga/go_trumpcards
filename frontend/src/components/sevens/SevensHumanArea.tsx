@@ -6,7 +6,7 @@ import { playableCardStyle, selectedCardStyle } from '../../styles/cardStyles';
 import type { Card, SevensPlayerData } from '../../types/card';
 import { valueName } from '../../utils/cardUtils';
 import { playerName } from '../../utils/playerUtils';
-import { isCardPlayable, playerAreaClass } from '../../utils/sevensUtils';
+import { playerAreaClass } from '../../utils/sevensUtils';
 import { CardFan } from '../CardFan';
 import { CardImage } from '../CardImage';
 import { StatusBadge } from '../StatusBadge';
@@ -14,51 +14,19 @@ import { StatusBadge } from '../StatusBadge';
 /** Props for {@link SevensHumanArea}. */
 export interface HumanAreaProps {
   player: SevensPlayerData;
+  validPlays: number[];
   isCurrentTurn: boolean;
-  tablePlaced: number[];
-  tunnelEnabled: boolean;
-  tunnelSkipWidth: number;
-  noJokerFinish: boolean;
-  endStopEnabled: boolean;
-  jokerConsecutiveBanned: boolean;
   loading: boolean;
   jokerCardIdx: number | null;
   onPlay: (idx: number) => void;
 }
 
-function HumanArea({
-  player,
-  isCurrentTurn,
-  tablePlaced,
-  tunnelEnabled,
-  tunnelSkipWidth,
-  noJokerFinish,
-  endStopEnabled,
-  jokerConsecutiveBanned,
-  loading,
-  jokerCardIdx,
-  onPlay,
-}: HumanAreaProps) {
+function HumanArea({ player, validPlays, isCurrentTurn, loading, jokerCardIdx, onPlay }: HumanAreaProps) {
   const { t } = useTranslation('sevens');
   const disabledReasonId = useId();
   const { cardWidth } = useCardDimensions();
   // Whether the human has at least one legal move this turn (cards or a joker placement).
-  const anyPlayable =
-    isCurrentTurn &&
-    !loading &&
-    (player.cards ?? []).some((card) =>
-      isCardPlayable(
-        card,
-        tablePlaced,
-        tunnelEnabled,
-        noJokerFinish,
-        player.cards,
-        endStopEnabled,
-        jokerConsecutiveBanned,
-        player.lastPlayedJoker,
-        tunnelSkipWidth,
-      ),
-    );
+  const anyPlayable = isCurrentTurn && !loading && validPlays.length > 0;
   const conditionalClass = player.isFinished
     ? 'opacity-50'
     : isCurrentTurn
@@ -91,20 +59,7 @@ function HumanArea({
       )}
       <CardFan itemWidth={cardWidth + 6} data-testid="sv-hand-card-fan">
         {player.cards?.map((card: Card, i: number) => {
-          const playable =
-            isCurrentTurn &&
-            !loading &&
-            isCardPlayable(
-              card,
-              tablePlaced,
-              tunnelEnabled,
-              noJokerFinish,
-              player.cards,
-              endStopEnabled,
-              jokerConsecutiveBanned,
-              player.lastPlayedJoker,
-              tunnelSkipWidth,
-            );
+          const playable = isCurrentTurn && !loading && validPlays.includes(i);
           return (
             <button
               key={`${card.design}-${card.value}`}

@@ -67,6 +67,7 @@ const playingState: BakersDozenResponse = {
     [],
   ]),
   foundation: [[], [], [], []],
+  legalTargets: { 'tableau-0': { tableau: [1], foundation: [] } },
   phase: 0,
   moveCount: 3,
   canUndo: false,
@@ -419,10 +420,37 @@ describe('BakersDozenPage legal targets', () => {
     );
   });
 
+  it('follows server targets when they contradict the local rule mirror', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau([
+        [
+          { card: card('SPADE', 13), faceUp: true },
+          { card: card('SPADE', 5), faceUp: true },
+        ],
+        [{ card: card('HEART', 6), faceUp: true }],
+        [],
+        [],
+        [],
+        [{ card: card('CLOVER', 2), faceUp: true }],
+      ]),
+      // Server accepts col 5 and omits col 1, though the former is locally illegal
+      // and the latter would pass the old frontend rule.
+      legalTargets: { 'tableau-0': { tableau: [5], foundation: [] } },
+    });
+    renderWithProviders(<BakersDozenPage />);
+    fireEvent.click(await screen.findByRole('button', { name: '♠ 5、列0' }));
+
+    expect(screen.getByRole('button', { name: '♣ 2、列5' }).closest('[data-legal-target="true"]')).not.toBeNull();
+    expect(screen.getByRole('button', { name: '♥ 6、列1' }).closest('[data-legal-target="true"]')).toBeNull();
+    expect(screen.getByRole('status', { name: '移動先' })).toHaveTextContent('移動可能なタブロー列: 5');
+  });
+
   it('announces legal foundation destinations', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
       tableau: makeTableau([[{ card: card('SPADE', 1), faceUp: true }]]),
+      legalTargets: { 'tableau-0': { tableau: [], foundation: [0, 1, 2, 3] } },
     });
     renderWithProviders(<BakersDozenPage />);
     fireEvent.click(await screen.findByRole('button', { name: '♠ A、列0' }));
@@ -436,6 +464,7 @@ describe('BakersDozenPage legal targets', () => {
     mockExec.mockResolvedValue({
       ...playingState,
       tableau: makeTableau([[{ card: card('SPADE', 13), faceUp: true }]]),
+      legalTargets: {},
     });
     renderWithProviders(<BakersDozenPage />);
     fireEvent.click(await screen.findByRole('button', { name: '♠ K、列0' }));
@@ -455,6 +484,7 @@ describe('BakersDozenPage legal targets', () => {
         [{ card: card('HEART', 6), faceUp: true }],
         [{ card: card('CLOVER', 6), faceUp: true }],
       ]),
+      legalTargets: { 'tableau-0': { tableau: [1, 2], foundation: [] } },
     });
     renderWithProviders(<BakersDozenPage />);
     fireEvent.click(await screen.findByRole('button', { name: '♠ 5、列0' }));
@@ -484,6 +514,7 @@ describe('BakersDozenPage legal targets', () => {
     mockExec.mockResolvedValue({
       ...playingState,
       tableau: makeTableau([[{ card: card('SPADE', 1), faceUp: true }]]),
+      legalTargets: { 'tableau-0': { tableau: [], foundation: [0, 1, 2, 3] } },
     });
     renderWithProviders(<BakersDozenPage />);
     fireEvent.click(await screen.findByRole('button', { name: '♠ A、列0' }));

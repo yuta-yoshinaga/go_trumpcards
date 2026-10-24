@@ -17,6 +17,8 @@ type NapoleonsSquareWebPresenter struct{}
 func (p *NapoleonsSquareWebPresenter) Output(ns interfaces.NapoleonsSquareGame, lastErr error) string {
 	resObj := new(controller.NapoleonsSquareWebOutput)
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, ns, int(ns.GetPhase()))
+	resObj.LegalTargets = p.buildLegalTargets(ns)
+	resObj.RunStarts = p.buildRunStarts(ns)
 
 	// タブロー — 規則上すべて表向きだが、将来の伏せ札バリアントで状態が漏れないよう、
 	// ハードコードせずドメインの FaceUp をそのまま流す。
@@ -101,6 +103,8 @@ func (p *NapoleonsSquareWebPresenter) HintOutput(ns interfaces.NapoleonsSquareGa
 	hint := ns.GetHint()
 	resObj := new(controller.NapoleonsSquareWebOutput)
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, ns, int(ns.GetPhase()))
+	resObj.LegalTargets = p.buildLegalTargets(ns)
+	resObj.RunStarts = p.buildRunStarts(ns)
 	resObj.Tableau = make([][]*controller.NapoleonsSquareWebOutputTableauCard, 0)
 	resObj.Foundation = make([][]*controller.WebOutputCard, 0)
 	resObj.Waste = make([]*controller.WebOutputCard, 0)
@@ -119,6 +123,57 @@ func (p *NapoleonsSquareWebPresenter) HintOutput(ns interfaces.NapoleonsSquareGa
 	}
 
 	return marshalOrError(resObj)
+}
+
+func (p *NapoleonsSquareWebPresenter) buildLegalTargets(ns interfaces.NapoleonsSquareGame) map[string]controller.NapoleonsSquareWebOutputTargets {
+	out := make(map[string]controller.NapoleonsSquareWebOutputTargets)
+	if ns.GetPhase() != domain.NapoleonsSquarePhasePlaying {
+		return out
+	}
+	for col := range domain.NapoleonsSquareTableauCnt {
+		for _, idx := range ns.RunStarts(col) {
+			tab, found := ns.LegalTargetsFrom(col, idx)
+			if tab == nil && found == nil {
+				continue
+			}
+			if tab == nil {
+				tab = make([]int, 0)
+			}
+			if found == nil {
+				found = make([]int, 0)
+			}
+			out[fmt.Sprintf("tableau-%d-%d", col, idx)] = controller.NapoleonsSquareWebOutputTargets{Tableau: tab, Foundation: found}
+		}
+	}
+	tab, found := ns.WasteLegalTargets()
+	if tab != nil || found != nil {
+		if tab == nil {
+			tab = make([]int, 0)
+		}
+		if found == nil {
+			found = make([]int, 0)
+		}
+		out["waste"] = controller.NapoleonsSquareWebOutputTargets{Tableau: tab, Foundation: found}
+	}
+	return out
+}
+
+func (p *NapoleonsSquareWebPresenter) buildRunStarts(ns interfaces.NapoleonsSquareGame) [][]int {
+	out := make([][]int, domain.NapoleonsSquareTableauCnt)
+	for col := range out {
+		out[col] = make([]int, 0)
+	}
+	if ns.GetPhase() != domain.NapoleonsSquarePhasePlaying {
+		return out
+	}
+	for col := range domain.NapoleonsSquareTableauCnt {
+		starts := ns.RunStarts(col)
+		if starts == nil {
+			starts = make([]int, 0)
+		}
+		out[col] = starts
+	}
+	return out
 }
 
 // ActionLogOutput 棋譜をJSON出力

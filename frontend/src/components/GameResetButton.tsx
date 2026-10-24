@@ -45,6 +45,7 @@ export function GameResetButton({
   };
   return (
     <button
+      data-app-chrome
       type="button"
       className={className ? `${variant} ${className}` : variant}
       onClick={handleClick}

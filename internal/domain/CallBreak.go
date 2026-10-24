@@ -829,6 +829,18 @@ func (cb *CallBreak) GetValidPlayIndices(playerIdx int) []int {
 	return cb.getValidPlayIndices(playerIdx)
 }
 
+// GetPlayRejectCodes returns one rejection message code per card in the player's hand, in hand order.
+// It returns an empty string when validatePlay accepts the card.
+func (cb *CallBreak) GetPlayRejectCodes(playerIdx int) []string {
+	hand := cb.players[playerIdx]
+	codes := make([]string, hand.GetCardsSize())
+	for i := range codes {
+		code, _ := ErrorMessageCode(cb.validatePlay(playerIdx, hand.GetCard(i)))
+		codes[i] = code
+	}
+	return codes
+}
+
 // callBreakJSON is the JSON wire format for CallBreak.
 type callBreakJSON struct {
 	TrumpCards       *TrumpCards        `json:"tc"`

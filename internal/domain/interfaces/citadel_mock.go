@@ -80,6 +80,14 @@ func (_m *MockCitadelGame) GetTableau() [domain.CitadelTableauCnt][]*domain.Cita
 	return ret.Get(0).([domain.CitadelTableauCnt][]*domain.CitadelTableauCard)
 }
 
+// LegalTargets returns the destinations for the top card in tableau column fromCol.
+func (_m *MockCitadelGame) LegalTargets(fromCol int) ([]int, []int) {
+	ret := _m.Called(fromCol)
+	tab, _ := ret.Get(0).([]int)
+	foundation, _ := ret.Get(1).([]int)
+	return tab, foundation
+}
+
 func (_m *MockCitadelGame) GetFoundation() [domain.CitadelFoundationCnt][]*domain.Card {
 	ret := _m.Called()
 	return ret.Get(0).([domain.CitadelFoundationCnt][]*domain.Card)

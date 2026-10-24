@@ -20,6 +20,7 @@ vi.mock('../api/gameApi', () => ({
 const mockExec = vi.mocked(salicLawApi.exec);
 
 const baseState: SalicLawResponse = {
+  legalTargets: {},
   tableau: Array.from({ length: 8 }, () => []),
   foundation: Array.from({ length: 8 }, () => []),
   stockCount: 95,

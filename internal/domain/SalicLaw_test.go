@@ -172,6 +172,48 @@ func TestSalicLaw_MoveTableauToFoundation(t *testing.T) {
 	})
 }
 
+func TestSalicLaw_LegalTargets(t *testing.T) {
+	t.Run("returns every accepting pile and all bare king columns", func(t *testing.T) {
+		c := newTestSalicLaw()
+		clearSalicLawBoard(c)
+		openAllSalicLawPiles(c)
+		salicLawPush(c, 1, CardDesignHeart, 1)
+		c.foundation[0] = []*Card{NewCard(CardDesignSpade, 2, true)}
+		tab, foundation := c.LegalTargets(1)
+		assert.Equal(t, []int{0, 2, 3, 4, 5, 6, 7}, tab)
+		assert.Equal(t, []int{1, 2, 3, 4, 5, 6, 7}, foundation)
+	})
+
+	t.Run("omits a base king and rejects invalid source indices", func(t *testing.T) {
+		c := newTestSalicLaw()
+		clearSalicLawBoard(c)
+		openAllSalicLawPiles(c)
+		for _, source := range []int{-1, 0, SalicLawTableauCnt} {
+			tab, foundation := c.LegalTargets(source)
+			assert.Empty(t, tab)
+			assert.Empty(t, foundation)
+		}
+	})
+
+	t.Run("enumerates all eligible foundation piles and stops at jack", func(t *testing.T) {
+		c := newTestSalicLaw()
+		clearSalicLawBoard(c)
+		openAllSalicLawPiles(c)
+		for i := range SalicLawFoundationCnt {
+			c.foundation[i] = []*Card{NewCard(CardDesignSpade, 1, true)}
+		}
+		salicLawPush(c, 1, CardDesignHeart, 2)
+		_, foundation := c.LegalTargets(1)
+		assert.Equal(t, []int{0, 1, 2, 3, 4, 5, 6, 7}, foundation)
+		c.foundation[0] = make([]*Card, SalicLawFoundationTarget)
+		for i := range c.foundation[0] {
+			c.foundation[0][i] = NewCard(CardDesignSpade, i+1, true)
+		}
+		_, foundation = c.LegalTargets(1)
+		assert.Equal(t, []int{1, 2, 3, 4, 5, 6, 7}, foundation)
+	})
+}
+
 func TestSalicLaw_GetHint(t *testing.T) {
 	t.Run("prefers a foundation move", func(t *testing.T) {
 		c := newTestSalicLaw()

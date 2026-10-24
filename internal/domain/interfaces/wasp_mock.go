@@ -85,6 +85,14 @@ func (_m *MockWaspGame) GetTableau() [domain.WaspTableauCnt][]*domain.KlondikeTa
 	return ret.Get(0).([domain.WaspTableauCnt][]*domain.KlondikeTableauCard)
 }
 
+func (_m *MockWaspGame) LegalTargetsFrom(fromCol, cardIndex int) []int {
+	ret := _m.Called(fromCol, cardIndex)
+	if ret.Get(0) == nil {
+		return nil
+	}
+	return ret.Get(0).([]int)
+}
+
 func (_m *MockWaspGame) GetCompletedSuits() int {
 	ret := _m.Called()
 	return ret.Int(0)

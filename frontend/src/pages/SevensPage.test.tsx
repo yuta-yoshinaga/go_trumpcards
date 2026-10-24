@@ -39,6 +39,13 @@ const defaultConfig = {
 const allSevensPlaced = [0, 128, 128, 128, 128]; // bit 7 set = 128
 
 const humanTurnState: SevensResponse = {
+  jokerPlacements: [
+    { suit: 1, value: 6 },
+    { suit: 1, value: 8 },
+    { suit: 2, value: 6 },
+    { suit: 2, value: 8 },
+  ],
+  validPlays: [0, 2],
   players: [
     {
       id: 0,
@@ -173,6 +180,14 @@ afterEach(() => {
 });
 
 describe('SevensPage', () => {
+  it('uses server validPlays when they disagree with the client rule', async () => {
+    mockExec.mockResolvedValue({ ...humanTurnState, validPlays: [1] });
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => expect(screen.getByText('ボード')).toBeInTheDocument());
+    const highlighted = screen.getAllByTestId('playable-card');
+    expect(highlighted).toHaveLength(1);
+  });
+
   it('allows the taller mobile footer', async () => {
     renderWithProviders(<SevensPage />);
     expect((await screen.findByTestId('game-footer-content')).closest('footer')?.className).toContain('max-h-[60vh]');
@@ -843,6 +858,7 @@ describe('SevensPage', () => {
     const allPlaced = 0x3ffe; // bits 1-13 set = 16382
     const fullBoardState: SevensResponse = {
       ...humanTurnState,
+      validPlays: [],
       config: { ...defaultConfig, jokerCount: 1 },
       tablePlaced: [0, allPlaced, allPlaced, allPlaced, allPlaced],
       players: [
@@ -905,6 +921,45 @@ describe('SevensPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
     expect(screen.queryByRole('button', { name: 'キャンセル' })).not.toBeInTheDocument();
+  });
+
+  it('auto-places joker at the single server-provided slot and follows its coordinates', async () => {
+    const jokerState: SevensResponse = {
+      ...humanTurnState,
+      jokerPlacements: [{ suit: 3, value: 11 }],
+      config: { ...defaultConfig, jokerCount: 1 },
+      players: [
+        { ...humanTurnState.players[0], cardCount: 1, cards: [{ design: 'JOKER', value: 0 }] },
+        ...humanTurnState.players.slice(1),
+      ],
+    };
+    mockExec.mockResolvedValue(jokerState);
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => expect(screen.getByAltText('ジョーカー')).toBeInTheDocument());
+    fireEvent.click(screen.getByAltText('ジョーカー'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('joker', 0, 3, 11));
+  });
+
+  it('does not auto-place joker when the server provides two slots', async () => {
+    const jokerState: SevensResponse = {
+      ...humanTurnState,
+      jokerPlacements: [
+        { suit: 3, value: 11 },
+        { suit: 4, value: 2 },
+      ],
+      config: { ...defaultConfig, jokerCount: 1 },
+      players: [
+        { ...humanTurnState.players[0], cardCount: 1, cards: [{ design: 'JOKER', value: 0 }] },
+        ...humanTurnState.players.slice(1),
+      ],
+    };
+    mockExec.mockResolvedValue(jokerState);
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => expect(screen.getByAltText('ジョーカー')).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.click(screen.getByAltText('ジョーカー'));
+    await flushPendingDispatch();
+    expect(mockExec.mock.calls.some(([command]) => command === 'joker')).toBe(false);
   });
 
   it('calls joker exec when clicking a valid board position in joker selection mode', async () => {
@@ -1211,6 +1266,7 @@ describe('SevensPage', () => {
   it('joker card is not playable when noJokerFinish is true and player has only jokers', async () => {
     const noJokerFinishOnlyJokers: SevensResponse = {
       ...humanTurnState,
+      validPlays: [],
       config: { ...defaultConfig, jokerCount: 1, noJokerFinish: true },
       players: [
         {
@@ -1676,6 +1732,7 @@ describe('SevensPage', () => {
   it('joker card is not playable when jokerConsecutiveBanned is true and lastPlayedJoker is true', async () => {
     const jcbState: SevensResponse = {
       ...humanTurnState,
+      validPlays: [1],
       config: { ...defaultConfig, jokerCount: 1, jokerConsecutiveBanned: true },
       players: [
         {
@@ -1701,6 +1758,7 @@ describe('SevensPage', () => {
   it('joker card is playable when jokerConsecutiveBanned is true but lastPlayedJoker is false', async () => {
     const jcbState: SevensResponse = {
       ...humanTurnState,
+      validPlays: [0, 1],
       config: { ...defaultConfig, jokerCount: 1, jokerConsecutiveBanned: true },
       players: [
         {
@@ -1726,6 +1784,7 @@ describe('SevensPage', () => {
   it('joker card is playable when jokerConsecutiveBanned is false even if lastPlayedJoker is true', async () => {
     const jcbState: SevensResponse = {
       ...humanTurnState,
+      validPlays: [0, 1],
       config: { ...defaultConfig, jokerCount: 1, jokerConsecutiveBanned: false },
       players: [
         {

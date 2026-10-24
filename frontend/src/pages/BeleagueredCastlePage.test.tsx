@@ -44,6 +44,7 @@ const playingState: BeleagueredCastleResponse = {
     [],
   ]),
   foundation: [[card('SPADE', 1)], [card('CLOVER', 1)], [card('HEART', 1)], [card('DIAMOND', 1)]],
+  legalTargets: { 'tableau-0': { tableau: [1, 2, 3, 4, 5, 6, 7], foundation: [] } },
   phase: 0,
   moveCount: 3,
   canUndo: false,
@@ -328,6 +329,13 @@ describe('BeleagueredCastlePage', () => {
         .map((el) => el.querySelector('[aria-hidden="true"]')?.textContent ?? '')
         .filter((label) => label.startsWith('#'));
 
+    it('follows server targets when they contradict the local rule mirror', async () => {
+      mockExec.mockResolvedValue({ ...playingState, legalTargets: { 'tableau-0': { tableau: [5], foundation: [] } } });
+      renderWithProviders(<BeleagueredCastlePage />);
+      fireEvent.click(await screen.findByRole('button', { name: /^♠ 5/ }));
+      expect(markedColumns()).toEqual(['#5']);
+    });
+
     it('marks nothing until a card is selected', async () => {
       mockExec.mockResolvedValue(playingState);
       renderWithProviders(<BeleagueredCastlePage />);
@@ -352,6 +360,7 @@ describe('BeleagueredCastlePage', () => {
         ...playingState,
         tableau: makeTableau([[{ card: card('SPADE', 1), faceUp: true }]]),
         foundation: [[], [], [], []],
+        legalTargets: { 'tableau-0': { tableau: [1, 2, 3, 4, 5, 6, 7], foundation: [0, 1, 2, 3] } },
       });
       renderWithProviders(<BeleagueredCastlePage />);
       fireEvent.click(await screen.findByRole('button', { name: /^♠ A/ }));
@@ -377,6 +386,7 @@ describe('BeleagueredCastlePage', () => {
       mockExec.mockResolvedValue({
         ...playingState,
         tableau: makeTableau([[{ card: card('SPADE', 2), faceUp: true }]]),
+        legalTargets: { 'tableau-0': { tableau: [1, 2, 3, 4, 5, 6, 7], foundation: [0] } },
       });
       renderWithProviders(<BeleagueredCastlePage />);
       fireEvent.click(await screen.findByRole('button', { name: /^♠ 2/ }));
@@ -528,6 +538,7 @@ describe('BeleagueredCastlePage selection status announcement', () => {
       [{ card: card('CLOVER', 13), faceUp: true }],
     ]),
     foundation: [[card('SPADE', 1)], [card('CLOVER', 1)], [card('HEART', 1)], [card('DIAMOND', 1)]],
+    legalTargets: { 'tableau-0': { tableau: [1, 2], foundation: [0] } },
   };
 
   it('keeps the selection status live region mounted and empty before selection', async () => {
@@ -631,5 +642,16 @@ describe('BeleagueredCastlePage move count announcement', () => {
     } finally {
       await i18n.changeLanguage('ja');
     }
+  });
+});
+
+describe('BeleagueredCastlePage foundation layout', () => {
+  it('keeps foundations in a mobile column and enables two desktop columns', async () => {
+    mockExec.mockResolvedValue(playingState);
+    const { container } = renderWithProviders(<BeleagueredCastlePage />);
+    await waitFor(() => {
+      const foundation = container.querySelector('[data-tutorial="bc-foundation"]');
+      expect(foundation).toHaveClass('flex-col', 'lg:grid', 'lg:grid-cols-2');
+    });
   });
 });

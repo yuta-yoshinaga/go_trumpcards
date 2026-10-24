@@ -32,6 +32,35 @@ describe('cardAlt', () => {
     expect(cardAlt({ design: 'JOKER', value: 1, label: 'Wizard', glyph: '✦', deck: 'wizard' })).toBe('Wizard ✦');
   });
 
+  it('uses the localized hanafuda label instead of the server label', async () => {
+    await i18n.changeLanguage('ja');
+    expect(
+      cardAlt({ design: 'SPADE', value: 0, deck: 'hanafuda', month: 1, kind: 'bright', label: '松·光', glyph: '🌕' }),
+    ).toBe('松·光 🌕');
+    await i18n.changeLanguage('en');
+    expect(
+      cardAlt({ design: 'SPADE', value: 0, deck: 'hanafuda', month: 1, kind: 'bright', label: '松·光', glyph: '🌕' }),
+    ).toBe('Pine·Bright 🌕');
+    await i18n.changeLanguage('ja');
+  });
+
+  it('uses the localized Unsun Karuta name without the server glyph', async () => {
+    const sota = {
+      design: 'SPADE',
+      value: 10,
+      deck: 'unsun',
+      kind: 'sota',
+      unsunSuit: 'pao',
+      label: 'ソウタ',
+      glyph: '棒',
+    } as const;
+    await i18n.changeLanguage('ja');
+    expect(cardAlt(sota)).toBe('ソウタ・ぱお');
+    await i18n.changeLanguage('en');
+    expect(cardAlt(sota)).toBe('Sota of Pao');
+    await i18n.changeLanguage('ja');
+  });
+
   it('uses the descriptor label alone when no glyph is present', () => {
     expect(cardAlt({ design: 'JOKER', value: 1, label: 'Jester', deck: 'wizard' })).toBe('Jester');
   });

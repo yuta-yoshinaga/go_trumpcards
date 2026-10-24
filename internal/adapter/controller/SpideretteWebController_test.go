@@ -17,6 +17,7 @@ import (
 func mustSpideretteOutputJSON(msg string) string {
 	out := &controller.SpideretteWebOutput{
 		Tableau:       [][]*controller.SpideretteWebOutputTableauCard{},
+		RunStarts:     [][]int{},
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
@@ -27,7 +28,7 @@ func mustSpideretteOutputJSON(msg string) string {
 }
 
 func TestSpideretteWebController_Method(t *testing.T) {
-	mockOutput := `{"tableau":[],"stockCount":0,"completedSuits":0,"score":0,"phase":0,"moveCount":0,"canUndo":false,"isStalemate":false,"message":""}`
+	mockOutput := `{"tableau":[],"runStarts":[],"stockCount":0,"completedSuits":0,"score":0,"phase":0,"moveCount":0,"canUndo":false,"isStalemate":false,"message":""}`
 
 	siMock := new(usecase.MockSpideretteInteractor)
 	siMock.On("Reset").Return(mockOutput)

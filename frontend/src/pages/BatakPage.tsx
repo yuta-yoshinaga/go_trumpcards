@@ -33,13 +33,19 @@ import { scoreTableClass } from '../styles/scoreTableStyles';
 import type { BatakResponse } from '../types/card';
 import { BatakPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { type BatakIllegalReason, batakIllegalReason } from '../utils/batakIllegalReason';
 import { cardAlt, isSuitDesign } from '../utils/cardAlt';
 import { BATAK_HELP, parseBatakCommand } from '../utils/cli/commands/batakCommands';
 import { formatBatakState } from '../utils/cli/formatters/batakFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
+
+// The server computes each reason from Batak.go validatePlay (ADR-0045).
+const playRejectReasonKeys: Record<string, string> = {
+  'batak.errSpadesNotBroken': 'spadesNotBrokenTooltip',
+  'shared.errFollowLeadSuit': 'followSuitTooltip',
+  'batak.errMustTrumpWhenVoid': 'mustTrumpSpadeTooltip',
+};
 
 /** Batak tutorial step definitions. */
 const BATAK_TUTORIAL_STEPS: TutorialStep[] = [
@@ -236,19 +242,9 @@ function BatakPageContent() {
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
   const isHumanBidTurn = isBidPhase && state.players[state.bidPlayerIdx]?.isHuman === true;
   const cardTitleFor = (idx: number): string | undefined => {
-    const reason = batakIllegalReason(
-      idx,
-      humanPlayer?.cards ?? [],
-      state.currentTrick,
-      state.spadesBroken,
-      state.validPlayIndices,
-    );
-    const reasonKeys: Record<BatakIllegalReason, string> = {
-      spadesNotBroken: 'spadesNotBrokenTooltip',
-      followSuit: 'followSuitTooltip',
-      mustTrumpSpade: 'mustTrumpSpadeTooltip',
-    };
-    return reason ? t(reasonKeys[reason]) : undefined;
+    const code = state.playRejectCodes[idx];
+    const key = code ? playRejectReasonKeys[code] : undefined;
+    return key ? t(key) : undefined;
   };
 
   const messageBox = (

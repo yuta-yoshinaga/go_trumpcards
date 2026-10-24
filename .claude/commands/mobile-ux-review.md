@@ -88,7 +88,7 @@ agent-browser screenshot "/tmp/mobile-screenshots/nav-open.png" --full
 
 ### 4'. 数値計測
 
-スクリーンショット確認の前に、プレイエリアのはみ出しを数値で絞り込む。サーバー起動後に `.claude/commands/scripts/play-area-overflow.sh` を実行する（例: `bash .claude/commands/scripts/play-area-overflow.sh -p 8080 -n 5 -j 4`、ゲーム指定も可能）。配り依存が大きいため、モバイルは複数回リロードした最悪値を使う。目安は mobile ≤300px / desktop ≤600px。`frontend/e2e/play-area-budget.spec.ts` も同じ指標で上限を固定している。`mobile_footer` はフッター内スクロールで隠れる量を示し、目安は ≤40px（手札は見えている必要がある）。 `hidden_cards` は上端 52px（数字の隅と 44px のタップ領域）が `game-footer-content` の表示域に入らない札の数で目安は 0（`frontend/e2e/hand-visibility.spec.ts` と同じ判定）、`footer_cards` は検出できた札数で、0 の場合は hidden_cards の検査結果に意味がない。計測前に、ポートを listen しているサーバーの cwd がこのチェックアウトと異なれば停止する（別ツリーの `public/` を測ってしまうため。意図して測るときは `-x`）。`public/index.html` より新しいファイルが `frontend/src` にあれば、ビルドが古いという警告を出す。
+スクリーンショット確認の前に、プレイエリアのはみ出しを数値で絞り込む。サーバー起動後に `.claude/commands/scripts/play-area-overflow.sh` を実行する（例: `bash .claude/commands/scripts/play-area-overflow.sh -p 8080 -n 5 -j 4`、ゲーム指定も可能）。配り依存が大きいため、モバイルは複数回リロードした最悪値を使う。目安は mobile ≤300px / desktop ≤600px。`frontend/e2e/play-area-budget.spec.ts` も同じ指標で上限を固定している。`mobile_footer` はフッター内スクロールで隠れる量を示し、目安は ≤40px（手札は見えている必要がある）。 `hidden_cards` は上端 52px（数字の隅と 44px のタップ領域）が `game-footer-content` の表示域に入らない札の数で目安は 0（`frontend/e2e/route-sweep.spec.ts`（`frontend/e2e/sweeps/hand.ts`）と同じ判定）、`footer_cards` は検出できた札数で、0 の場合は hidden_cards の検査結果に意味がない。計測前に、ポートを listen しているサーバーの cwd がこのチェックアウトと異なれば停止する（別ツリーの `public/` を測ってしまうため。意図して測るときは `-x`）。`public/index.html` より新しいファイルが `frontend/src` にあれば、ビルドが古いという警告を出す。
 
 ### 4. スクリーンショット確認
 

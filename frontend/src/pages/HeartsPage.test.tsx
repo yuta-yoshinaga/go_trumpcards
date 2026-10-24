@@ -1296,159 +1296,64 @@ describe('HeartsPage', () => {
   });
 
   describe('legal-move highlight', () => {
-    const followSuitState = makeHeartsState({
-      trickNumber: 3,
-      heartsBroken: true,
-      currentPlayerIdx: 0,
-      currentTrick: [{ playerIdx: 1, card: { design: 'DIAMOND', value: 3 } }],
-      players: [
-        {
-          id: 0,
-          isHuman: true,
-          cardCount: 2,
-          cards: [
-            { design: 'DIAMOND', value: 8 },
-            { design: 'SPADE', value: 9 },
-          ],
-          roundScore: 0,
-          cumulativeScore: 0,
-          trickCount: 0,
-          penaltyCards: [],
-          tookOmnibusJD: false,
-        },
-        {
-          id: 1,
-          isHuman: false,
-          cardCount: 2,
-          cards: [],
-          roundScore: 0,
-          cumulativeScore: 0,
-          trickCount: 0,
-          penaltyCards: [],
-          tookOmnibusJD: false,
-        },
-        {
-          id: 2,
-          isHuman: false,
-          cardCount: 2,
-          cards: [],
-          roundScore: 0,
-          cumulativeScore: 0,
-          trickCount: 0,
-          penaltyCards: [],
-          tookOmnibusJD: false,
-        },
-        {
-          id: 3,
-          isHuman: false,
-          cardCount: 2,
-          cards: [],
-          roundScore: 0,
-          cumulativeScore: 0,
-          trickCount: 0,
-          penaltyCards: [],
-          tookOmnibusJD: false,
-        },
-      ],
-    });
+    const fixture = (overrides: Partial<HeartsResponse> = {}) =>
+      makeHeartsState({
+        currentPlayerIdx: 0,
+        validPlays: [1],
+        currentTrick: [{ playerIdx: 1, card: { design: 'DIAMOND', value: 3 } }],
+        players: makeHeartsState().players.map((player, index) =>
+          index === 0
+            ? {
+                ...player,
+                cardCount: 3,
+                cards: [
+                  { design: 'DIAMOND' as const, value: 8 },
+                  { design: 'SPADE' as const, value: 9 },
+                  { design: 'HEART' as const, value: 5 },
+                ],
+              }
+            : { ...player, cards: [] },
+        ),
+        ...overrides,
+      });
 
-    it('rings only follow-suit cards and leaves the off-suit card clickable (no hard block)', async () => {
-      mockExec.mockResolvedValue(followSuitState);
+    it('rings exactly the indices supplied by the server, even when client rules would disagree', async () => {
+      // The trick is led with a diamond, but the server deliberately marks the spade.
+      mockExec.mockResolvedValue(fixture({ validPlays: [1] }));
       renderWithProviders(<HeartsPage />);
       await waitFor(() => expect(screen.getByAltText('♦ 8')).toBeInTheDocument());
 
       const diamond = screen.getByAltText('♦ 8').closest('button') as HTMLButtonElement;
       const spade = screen.getByAltText('♠ 9').closest('button') as HTMLButtonElement;
-
-      // Legal follow-suit card is ringed (data-legal).
-      expect(diamond).toHaveAttribute('data-legal', 'true');
-      expect(diamond.className).toContain('ring-ds-success');
-
-      // Illegal off-suit card gets no ring, but stays clickable — the server remains
-      // authoritative (the highlight is a visual aid, not a hard block).
-      expect(spade).not.toHaveAttribute('data-legal');
-      expect(spade.className).not.toContain('ring-ds-success');
-      expect(spade).not.toHaveAttribute('aria-disabled');
-      expect(spade.className).not.toContain('cursor-not-allowed');
-    });
-
-    it('rings only non-heart leads before hearts are broken (heart lead left un-ringed)', async () => {
-      const leadState = makeHeartsState({
-        trickNumber: 3,
-        heartsBroken: false,
-        currentPlayerIdx: 0,
-        currentTrick: [],
-        players: [
-          {
-            id: 0,
-            isHuman: true,
-            cardCount: 2,
-            cards: [
-              { design: 'HEART', value: 5 },
-              { design: 'SPADE', value: 9 },
-            ],
-            roundScore: 0,
-            cumulativeScore: 0,
-            trickCount: 0,
-            penaltyCards: [],
-            tookOmnibusJD: false,
-          },
-          {
-            id: 1,
-            isHuman: false,
-            cardCount: 2,
-            cards: [],
-            roundScore: 0,
-            cumulativeScore: 0,
-            trickCount: 0,
-            penaltyCards: [],
-            tookOmnibusJD: false,
-          },
-          {
-            id: 2,
-            isHuman: false,
-            cardCount: 2,
-            cards: [],
-            roundScore: 0,
-            cumulativeScore: 0,
-            trickCount: 0,
-            penaltyCards: [],
-            tookOmnibusJD: false,
-          },
-          {
-            id: 3,
-            isHuman: false,
-            cardCount: 2,
-            cards: [],
-            roundScore: 0,
-            cumulativeScore: 0,
-            trickCount: 0,
-            penaltyCards: [],
-            tookOmnibusJD: false,
-          },
-        ],
-      });
-      mockExec.mockResolvedValue(leadState);
-      renderWithProviders(<HeartsPage />);
-      await waitFor(() => expect(screen.getByAltText('♥ 5')).toBeInTheDocument());
-
       const heart = screen.getByAltText('♥ 5').closest('button') as HTMLButtonElement;
-      const spade = screen.getByAltText('♠ 9').closest('button') as HTMLButtonElement;
-
+      expect(diamond).not.toHaveAttribute('data-legal');
       expect(spade).toHaveAttribute('data-legal', 'true');
       expect(spade.className).toContain('ring-ds-success');
       expect(heart).not.toHaveAttribute('data-legal');
-      expect(heart.className).not.toContain('ring-ds-success');
+      // Legality is only a visual aid; every card stays clickable.
+      expect(diamond).not.toHaveAttribute('aria-disabled');
+      expect(diamond.className).not.toContain('cursor-not-allowed');
     });
 
-    it('does not ring or dim cards when it is not the human turn', async () => {
-      mockExec.mockResolvedValue(cpuTurnState);
+    it('rings exactly the server-specified index set', async () => {
+      mockExec.mockResolvedValue(fixture({ validPlays: [0, 2] }));
       renderWithProviders(<HeartsPage />);
-      await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+      await waitFor(() => expect(screen.getByAltText('♦ 8')).toBeInTheDocument());
 
-      const spadeA = screen.getByAltText('♠ A').closest('button') as HTMLButtonElement;
-      expect(spadeA).not.toHaveAttribute('data-legal');
-      expect(spadeA.className).not.toContain('opacity-50');
+      expect(screen.getByAltText('♦ 8').closest('button')).toHaveAttribute('data-legal', 'true');
+      expect(screen.getByAltText('♠ 9').closest('button')).not.toHaveAttribute('data-legal');
+      expect(screen.getByAltText('♥ 5').closest('button')).toHaveAttribute('data-legal', 'true');
+    });
+
+    it('does not ring cards when it is not the human turn, even with non-empty validPlays', async () => {
+      mockExec.mockResolvedValue(fixture({ currentPlayerIdx: 1, validPlays: [0, 1, 2] }));
+      renderWithProviders(<HeartsPage />);
+      await waitFor(() => expect(screen.getByAltText('♦ 8')).toBeInTheDocument());
+      for (const alt of ['♦ 8', '♠ 9', '♥ 5']) {
+        const button = screen.getByAltText(alt).closest('button') as HTMLButtonElement;
+        expect(button).not.toHaveAttribute('data-legal');
+        expect(button.className).not.toContain('opacity-50');
+      }
     });
   });
 

@@ -18,6 +18,7 @@ func mustSalicLawOutputJSON(msg string) string {
 		Tableau:       [][]*controller.WebOutputCard{},
 		Foundation:    [][]*controller.WebOutputCard{},
 		Queens:        []*controller.WebOutputCard{},
+		LegalTargets:  map[string]controller.SalicLawWebOutputTargets{},
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
@@ -28,7 +29,7 @@ func mustSalicLawOutputJSON(msg string) string {
 }
 
 func TestSalicLawWebController_Method(t *testing.T) {
-	mockOutput := `{"tableau":[],"foundation":[],"stockCount":0,"queens":[],"openPiles":0,"phase":0,"moveCount":0,"message":""}`
+	mockOutput := `{"legalTargets":{},"tableau":[],"foundation":[],"stockCount":0,"queens":[],"openPiles":0,"phase":0,"moveCount":0,"message":""}`
 
 	ciMock := new(usecase.MockSalicLawInteractor)
 	ciMock.On("Reset").Return(mockOutput)

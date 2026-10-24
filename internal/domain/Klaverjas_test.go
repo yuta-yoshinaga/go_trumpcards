@@ -409,6 +409,37 @@ func TestKlaverjas_HintAndPlayable(t *testing.T) {
 	}
 }
 
+func TestKlaverjas_GetPlayRejectCodes(t *testing.T) {
+	t.Run("follow lead suit", func(t *testing.T) {
+		g := newKlavGame(true)
+		g.SetTrumpSuit(CardDesignDiamond)
+		klavSetHand(g.players[0], klavCard(CardDesignHeart, 12), klavCard(CardDesignSpade, 1))
+		g.currentTrick = []*TrickCard{{PlayerIdx: 1, Card: klavCard(CardDesignSpade, 10)}}
+		assert.Equal(t, []string{"shared.errFollowLeadSuit", ""}, g.GetPlayRejectCodes(0))
+	})
+	t.Run("must play trump", func(t *testing.T) {
+		g := newKlavGame(true)
+		g.SetTrumpSuit(CardDesignHeart)
+		klavSetHand(g.players[0], klavCard(CardDesignSpade, 1), klavCard(CardDesignHeart, 1))
+		g.currentTrick = []*TrickCard{{PlayerIdx: 1, Card: klavCard(CardDesignClover, 7)}}
+		assert.Equal(t, []string{"klaverjas.errMustPlayTrump", ""}, g.GetPlayRejectCodes(0))
+	})
+	t.Run("must overtrump", func(t *testing.T) {
+		g := newKlavGame(true)
+		g.SetTrumpSuit(CardDesignHeart)
+		klavSetHand(g.players[0], klavCard(CardDesignHeart, 12), klavCard(CardDesignHeart, 13))
+		g.currentTrick = []*TrickCard{{PlayerIdx: 1, Card: klavCard(CardDesignHeart, 12)}}
+		assert.Equal(t, []string{"klaverjas.errMustOvertrump", ""}, g.GetPlayRejectCodes(0))
+	})
+	t.Run("legal cards have empty codes and result matches hand size", func(t *testing.T) {
+		g := newKlavGame(true)
+		klavSetHand(g.players[0], klavCard(CardDesignSpade, 1), klavCard(CardDesignHeart, 12))
+		codes := g.GetPlayRejectCodes(0)
+		assert.Equal(t, 2, len(codes))
+		assert.Equal(t, []string{"", ""}, codes)
+	})
+}
+
 func TestKlaverjas_PlayerPlayErrors(t *testing.T) {
 	g := newKlavGame(true)
 	g.Reset()

@@ -22,6 +22,80 @@ func setupPlayingFreeCell() *FreeCell {
 	return f
 }
 
+func TestFreeCellLegalTargets(t *testing.T) {
+	f := setupPlayingFreeCell()
+	clearTableauFC(f)
+	f.tableau[0] = []*Card{makeCard(CardDesignSpade, 7), makeCard(CardDesignHeart, 6)}
+	f.tableau[1] = []*Card{makeCard(CardDesignClover, 7)}
+	tab, foundation := f.LegalTargetsFrom(0, 1)
+	assert.Contains(t, tab, 1)
+	assert.Empty(t, foundation)
+	invalidTableau, invalidFoundation := f.LegalTargetsFrom(0, -1)
+	assert.Nil(t, invalidTableau)
+	assert.Nil(t, invalidFoundation)
+	f.tableau[0] = []*Card{makeCard(CardDesignSpade, 1)}
+	_, foundation = f.LegalTargetsFrom(0, 0)
+	assert.Equal(t, []int{0}, foundation)
+	f.freeCells[0] = makeCard(CardDesignHeart, 1)
+	_, foundation = f.FreeCellLegalTargets(0)
+	assert.Equal(t, []int{2}, foundation)
+	emptyTableau, emptyFoundation := f.FreeCellLegalTargets(1)
+	assert.Nil(t, emptyTableau)
+	assert.Nil(t, emptyFoundation)
+}
+
+func TestFreeCellLegalTargetsFromSequence(t *testing.T) {
+	t.Run("valid multi-card sequence can move to fitting column", func(t *testing.T) {
+		f := setupPlayingFreeCell()
+		clearTableauFC(f)
+		f.tableau[0] = []*Card{makeCard(CardDesignSpade, 9), makeCard(CardDesignHeart, 8), makeCard(CardDesignSpade, 7)}
+		f.tableau[1] = []*Card{makeCard(CardDesignClover, 9)}
+
+		tableau, foundation := f.LegalTargetsFrom(0, 1)
+
+		assert.Contains(t, tableau, 1)
+		assert.Empty(t, foundation)
+	})
+
+	t.Run("destination limit changes when a free cell is emptied", func(t *testing.T) {
+		f := setupPlayingFreeCell()
+		clearTableauFC(f)
+		f.tableau[0] = []*Card{makeCard(CardDesignSpade, 9), makeCard(CardDesignHeart, 8), makeCard(CardDesignSpade, 7)}
+		f.tableau[1] = []*Card{makeCard(CardDesignHeart, 10)}
+		for col := 2; col < FreeCellTableauCnt; col++ {
+			f.tableau[col] = []*Card{makeCard(CardDesignSpade, 13)}
+		}
+		for i := range f.freeCells {
+			f.freeCells[i] = makeCard(CardDesignHeart, i+1)
+		}
+		f.freeCells[0] = nil // cap is 2: the three-card suffix is too long.
+
+		tableau, _ := f.LegalTargetsFrom(0, 0)
+		assert.NotContains(t, tableau, 1)
+
+		f.freeCells[1] = nil // cap becomes 3 for this occupied destination.
+		tableau, _ = f.LegalTargetsFrom(0, 0)
+		assert.Contains(t, tableau, 1)
+	})
+
+	t.Run("empty destination is not counted as a free intermediate column", func(t *testing.T) {
+		f := setupPlayingFreeCell()
+		clearTableauFC(f)
+		f.tableau[0] = []*Card{makeCard(CardDesignSpade, 9), makeCard(CardDesignHeart, 8)}
+		for col := 1; col < FreeCellTableauCnt; col++ {
+			f.tableau[col] = []*Card{makeCard(CardDesignSpade, 13)}
+		}
+		f.tableau[1] = nil // the destination itself is empty
+		for i := range f.freeCells {
+			f.freeCells[i] = makeCard(CardDesignHeart, i+1)
+		}
+
+		tableau, _ := f.LegalTargetsFrom(0, 0)
+
+		assert.NotContains(t, tableau, 1, "empty destination has cap 1; its own column cannot increase the cap")
+	})
+}
+
 func clearTableauFC(f *FreeCell) {
 	for i := 0; i < FreeCellTableauCnt; i++ {
 		f.tableau[i] = nil

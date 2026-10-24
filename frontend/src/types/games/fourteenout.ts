@@ -33,6 +33,8 @@ export interface FourteenOutResponse extends BaseGameResponse {
   removedCount: number;
   /** How many pairs summing to 14 are currently available. */
   removablePairs: number;
+  /** Legal destinations keyed by source (for example `tableau-0`). */
+  legalTargets: Record<string, { tableau: number[]; foundation: number[] }>;
   /** Whether the last action can be undone. */
   canUndo: boolean;
   /** True when no two exposed cards sum to 14. With no stock, this is a loss. */

@@ -42,6 +42,18 @@ func (_m *MockFortyThievesGame) MoveTableauToFoundation(col int) error {
 	return ret.Error(0)
 }
 
+// LegalTargets mocks tableau top-card destinations.
+func (_m *MockFortyThievesGame) LegalTargets(col int) ([]int, []int) {
+	args := _m.Called(col)
+	return args.Get(0).([]int), args.Get(1).([]int)
+}
+
+// WasteLegalTargets mocks waste top-card destinations.
+func (_m *MockFortyThievesGame) WasteLegalTargets() ([]int, []int) {
+	args := _m.Called()
+	return args.Get(0).([]int), args.Get(1).([]int)
+}
+
 func (_m *MockFortyThievesGame) GiveUp() {
 	_m.Called()
 }

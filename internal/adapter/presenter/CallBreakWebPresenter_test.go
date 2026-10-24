@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -43,7 +44,39 @@ func setupCallBreakWebMockWithPlayers() (*interfaces.MockCallBreakGame, []*domai
 	m.On("GetPlayer", 2).Return(players[2])
 	m.On("GetPlayer", 3).Return(players[3])
 	m.On("GetValidPlayIndices", 0).Return([]int{})
+	m.On("GetPlayRejectCodes", 0).Return([]string(nil)).Maybe()
 	return m, players
+}
+
+func TestCallBreakWebPresenterPlayRejectCodes(t *testing.T) {
+	t.Run("human play turn", func(t *testing.T) {
+		m, _ := setupCallBreakWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPlayRejectCodes")
+		m.On("GetPlayRejectCodes", 0).Return([]string{"", "shared.errFollowLeadSuit"})
+		var out controller.CallBreakWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(new(presenter.CallBreakWebPresenter).Output(m, nil)), &out))
+		assert.Equal(t, []string{"", "shared.errFollowLeadSuit"}, out.PlayRejectCodes)
+	})
+	t.Run("CPU turn", func(t *testing.T) {
+		m, _ := setupCallBreakWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentPlayerIdx")
+		m.On("GetCurrentPlayerIdx").Return(1)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPlayRejectCodes")
+		m.On("GetPlayRejectCodes", mock.Anything).Return([]string{"x"}).Maybe()
+		var out controller.CallBreakWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(new(presenter.CallBreakWebPresenter).Output(m, nil)), &out))
+		assert.Equal(t, []string{}, out.PlayRejectCodes)
+	})
+	t.Run("non-play phase", func(t *testing.T) {
+		m, _ := setupCallBreakWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.CallBreakPhaseBid)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPlayRejectCodes")
+		m.On("GetPlayRejectCodes", mock.Anything).Return([]string{"x"}).Maybe()
+		var out controller.CallBreakWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(new(presenter.CallBreakWebPresenter).Output(m, nil)), &out))
+		assert.Equal(t, []string{}, out.PlayRejectCodes)
+	})
 }
 
 func TestCallBreakWebPresenter_Output(t *testing.T) {

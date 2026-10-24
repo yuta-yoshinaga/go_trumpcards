@@ -12,6 +12,7 @@ export interface SultanHint {
 
 /** Full Sultan of Turkey game state returned from the API. */
 export interface SultanResponse extends BaseGameResponse {
+  legalTargets: Record<string, { foundation: number[] }>;
   foundation: Card[][];
   divan: (Card | null)[];
   stockCount: number;

@@ -44,6 +44,7 @@ import type {
   GoStopResponse,
   GutsResponse,
   HachiHachiResponse,
+  HanafudaKind,
   HeartsResponse,
   HorseResponse,
   KingResponse,
@@ -487,6 +488,7 @@ const baseHeartsState: HeartsResponse = {
   roundNumber: 1,
   trickNumber: 1,
   currentPlayerIdx: 0,
+  validPlays: [],
   currentTrick: [],
   trickPoints: 0,
   heartsBroken: false,
@@ -673,6 +675,7 @@ export function makeSomersetState(overrides?: Partial<SomersetResponse>): Somers
   return {
     tableau: Array.from({ length: 10 }, () => []),
     foundation: [[], [], [], []],
+    legalTargets: {},
     totalCardCount: 52,
     phase: 0,
     moveCount: 0,
@@ -752,6 +755,7 @@ const baseCallBreakState: CallBreakResponse = {
   message: '',
   config: { cpuDifficulty: 1, maxRounds: 5 },
   validPlayIndices: [],
+  playRejectCodes: [],
 };
 
 /**
@@ -832,6 +836,7 @@ const baseBatakState: BatakResponse = {
   message: '',
   config: { cpuDifficulty: 1, maxRounds: 5 },
   validPlayIndices: [],
+  playRejectCodes: [],
 };
 
 /**
@@ -1082,6 +1087,7 @@ const baseCoincheState: CoincheResponse = {
   roundNumber: 1,
   trickNumber: 0,
   currentPlayerIdx: 0,
+  validPlays: [],
   bidPlayerIdx: 0,
   dealerIdx: 3,
   trumpSuit: 0,
@@ -1490,6 +1496,7 @@ const baseKlaverjasState: KlaverjasResponse = {
   roundRoem: [0, 0],
   roundPlayerRoem: [0, 0, 0, 0],
   playableIndices: [0, 1, 2],
+  playRejectCodes: [],
   gameEndFlag: false,
   winnerTeam: -1,
   isHumanTurn: true,
@@ -2576,6 +2583,7 @@ const baseKoenigrufenState: KoenigrufenResponse = {
   outcome: 0,
   teamPoints: 0,
   result: 0,
+  discardableIndices: [0, 1, 2, 3, 4, 5],
   playableIndices: [0, 1, 2, 3, 4],
   gameEndFlag: false,
   winnerPlayer: -1,
@@ -2893,14 +2901,33 @@ export function makeBasraState(overrides?: Partial<BasraResponse>): BasraRespons
  * The `deck` flag — not `design` — drives the procedural render path, so `design`
  * is a placeholder valid CardDesign.
  */
-const hanafudaCard = (glyph: string, label: string, color: string) => ({
-  design: 'SPADE' as const,
-  value: 0,
-  glyph,
-  label,
-  color,
-  deck: 'hanafuda',
-});
+const hanafudaCard = (glyph: string, label: string, color: string, kindOverride?: HanafudaKind) => {
+  const monthNames = ['松', '梅', '桜', '藤', '菖', '牡', '萩', '芒', '菊', '紅', '柳', '桐'];
+  const namedMonth = monthNames.findIndex((name) => label.includes(name)) + 1;
+  const numericMonth = Number(label.match(/(\d+)月/)?.[1]);
+  const month = namedMonth || (numericMonth >= 1 && numericMonth <= 12 ? numericMonth : undefined);
+  const kind: HanafudaKind =
+    kindOverride ??
+    (label.includes('光')
+      ? label.includes('열')
+        ? 'yeol'
+        : 'bright'
+      : label.includes('タネ')
+        ? 'animal'
+        : label.includes('短')
+          ? 'ribbon'
+          : 'chaff');
+  return {
+    design: 'SPADE' as const,
+    value: 0,
+    glyph,
+    label,
+    color,
+    deck: 'hanafuda',
+    ...(month ? { month } : {}),
+    kind,
+  };
+};
 
 /** Base Koi-Koi state used as the default for {@link makeKoiKoiState}. Defaults to a human Play turn. */
 const baseKoiKoiState: KoiKoiResponse = {
@@ -3022,6 +3049,7 @@ const baseHachiHachiState: HachiHachiResponse = {
   isHumanTurn: true,
   lastRoundResult: null,
   hint: null,
+  messageCards: [],
   message: '',
   config: { cpuDifficulty: 1, targetRounds: 3 },
 };
@@ -3062,9 +3090,9 @@ const baseGoStopState: GoStopResponse = {
       isHuman: true,
       cardCount: 10,
       cards: [
-        hanafudaCard('🌸', '3月 タネ', 'purple'),
-        hanafudaCard('🎋', '7月 カス', 'black'),
-        hanafudaCard('🐦', '2月 タネ', 'purple'),
+        hanafudaCard('🌸', '3月 カス', 'purple', 'pi'),
+        hanafudaCard('🎋', '7月 カス', 'black', 'pi'),
+        hanafudaCard('🐦', '2月 カス', 'purple', 'pi'),
       ],
       captured: [],
       capturedCount: 0,
@@ -3089,7 +3117,7 @@ const baseGoStopState: GoStopResponse = {
   phase: 0,
   roundNumber: 1,
   currentTurn: 0,
-  fieldCards: [hanafudaCard('🌸', '3月 カス', 'black'), hanafudaCard('🌕', '8月 光', 'gold')],
+  fieldCards: [hanafudaCard('🌸', '3月 カス', 'black', 'pi'), hanafudaCard('🌕', '8月 光', 'gold', 'gwang')],
   remainingDeck: 20,
   playableIndices: [0, 1, 2],
   captureOptions: { 0: [0] },
@@ -3610,6 +3638,7 @@ const baseBeziqueState: BeziqueResponse = {
   roundNumber: 1,
   trickNumber: 1,
   currentPlayerIdx: 0,
+  validPlays: [],
   leadPlayerIdx: 0,
   dealerIdx: 1,
   trumpSuit: 3,
@@ -5350,6 +5379,18 @@ const unsunCard = (
   // 丸物 (コツ・オウル・クル) は赤、長物 (パオ・イス) は黒。
   color: design === 'SPADE' || design === 'CLOVER' ? 'black' : 'red',
   deck: 'unsun',
+  unsunSuit: ({ SPADE: 'pao', CLOVER: 'isu', HEART: 'kotsu', DIAMOND: 'oru', JOKER: 'kuru' } as const)[design],
+  ...(['sota', 'uma', 'kiri', 'un', 'sun', 'robai'][value - 10]
+    ? {
+        kind: ['sota', 'uma', 'kiri', 'un', 'sun', 'robai'][value - 10] as
+          | 'sota'
+          | 'uma'
+          | 'kiri'
+          | 'un'
+          | 'sun'
+          | 'robai',
+      }
+    : {}),
 });
 
 /** A CPU seat at the eight-handed table; cards are hidden. */

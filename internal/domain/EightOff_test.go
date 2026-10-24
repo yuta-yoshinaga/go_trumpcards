@@ -30,6 +30,94 @@ func clearFreeCellsEO(e *EightOff) {
 	}
 }
 
+func TestEightOffLegalTargetsFrom(t *testing.T) {
+	e := newTestEightOff()
+	e.tableau[0] = []*Card{NewCard(CardDesignSpade, 13, false), NewCard(CardDesignSpade, 12, false)}
+	e.tableau[1] = []*Card{NewCard(CardDesignSpade, 14, false)}
+	tab, foundation := e.LegalTargetsFrom(0, 0)
+	assert.Equal(t, []int{1, 2, 3, 4, 5, 6, 7}, tab)
+	assert.Empty(t, foundation)
+	tab, foundation = e.LegalTargetsFrom(0, 1)
+	assert.Empty(t, tab)
+	assert.Empty(t, foundation)
+	badTab, badFoundation := e.LegalTargetsFrom(-1, 0)
+	assert.Empty(t, badTab)
+	assert.Empty(t, badFoundation)
+}
+
+func TestEightOffFreeCellLegalTargets(t *testing.T) {
+	e := newTestEightOff()
+	e.freeCells[0] = NewCard(CardDesignSpade, 12, false)
+	e.tableau[1] = []*Card{NewCard(CardDesignSpade, 13, false)}
+	tab, foundation := e.FreeCellLegalTargets(0)
+	assert.Equal(t, []int{1}, tab)
+	assert.Empty(t, foundation)
+	badTab, badFoundation := e.FreeCellLegalTargets(1)
+	assert.Empty(t, badTab)
+	assert.Empty(t, badFoundation)
+}
+
+func TestEightOffLegalTargetRules(t *testing.T) {
+	t.Run("tableau placement and supermove capacity", func(t *testing.T) {
+		e := newTestEightOff()
+		clearTableauEO(e)
+		clearFreeCellsEO(e)
+		e.tableau[0] = []*Card{NewCard(CardDesignHeart, 12, false), NewCard(CardDesignHeart, 11, false)}
+		e.tableau[1] = []*Card{NewCard(CardDesignHeart, 13, false)}
+		for col := 2; col < EightOffTableauCnt; col++ {
+			e.tableau[col] = []*Card{NewCard(CardDesignSpade, col, false)}
+		}
+		for cell := range EightOffCellCnt {
+			e.freeCells[cell] = NewCard(CardDesignSpade, cell+1, false)
+		}
+		targets, _ := e.LegalTargetsFrom(0, 0)
+		assert.Empty(t, targets, "a two-card stack exceeds capacity with full cells and no empty columns")
+		e.freeCells[0] = nil
+		targets, _ = e.LegalTargetsFrom(0, 0)
+		assert.Equal(t, []int{1}, targets, "matching suit and descending rank are legal at capacity")
+		clearTableauEO(e)
+		clearFreeCellsEO(e)
+		e.tableau[2] = []*Card{NewCard(CardDesignSpade, 13, false)}
+		targets, _ = e.LegalTargetsFrom(2, 0)
+		assert.Equal(t, []int{0, 1, 3, 4, 5, 6, 7}, targets, "only Kings can move to empty columns")
+	})
+
+	t.Run("foundation eligibility is top card only and suit-specific", func(t *testing.T) {
+		e := newTestEightOff()
+		clearTableauEO(e)
+		clearFreeCellsEO(e)
+		e.tableau[0] = []*Card{NewCard(CardDesignHeart, 2, false), NewCard(CardDesignHeart, 1, false)}
+		_, foundation := e.LegalTargetsFrom(0, 0)
+		assert.Empty(t, foundation, "a buried Ace cannot be swept")
+		_, foundation = e.LegalTargetsFrom(0, 1)
+		assert.Equal(t, []int{2}, foundation, "an Ace can start its empty suit pile")
+		e.foundation[2] = []*Card{NewCard(CardDesignHeart, 1, false)}
+		e.tableau[0][1] = NewCard(CardDesignHeart, 3, false)
+		_, foundation = e.LegalTargetsFrom(0, 1)
+		assert.Empty(t, foundation, "foundation cannot skip a rank")
+		e.tableau[0][1] = NewCard(CardDesignSpade, 2, false)
+		_, foundation = e.LegalTargetsFrom(0, 1)
+		assert.Empty(t, foundation, "foundation suit must match")
+	})
+
+	t.Run("free cell placement and foundation", func(t *testing.T) {
+		e := newTestEightOff()
+		clearTableauEO(e)
+		clearFreeCellsEO(e)
+		e.tableau[0] = []*Card{NewCard(CardDesignHeart, 12, false)}
+		e.freeCells[0] = NewCard(CardDesignHeart, 11, false)
+		targets, foundation := e.FreeCellLegalTargets(0)
+		assert.Equal(t, []int{0}, targets)
+		assert.Empty(t, foundation)
+		e.freeCells[0] = NewCard(CardDesignSpade, 13, false)
+		targets, _ = e.FreeCellLegalTargets(0)
+		assert.Equal(t, []int{1, 2, 3, 4, 5, 6, 7}, targets)
+		e.freeCells[0] = NewCard(CardDesignClover, 1, false)
+		_, foundation = e.FreeCellLegalTargets(0)
+		assert.Equal(t, []int{1}, foundation)
+	})
+}
+
 // --- Reset tests ---
 
 func TestEightOffReset(t *testing.T) {

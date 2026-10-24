@@ -122,6 +122,7 @@ func (p *KoenigrufenWebPresenter) buildBase(g interfaces.KoenigrufenGame) *contr
 	resObj.IsHumanDiscard = g.IsHumanDiscardTurn()
 
 	resObj.PlayableIndices = p.playableIndices(g)
+	resObj.DiscardableIndices = p.discardableIndices(g)
 
 	cfg := g.GetConfig()
 	resObj.Config = controller.KoenigrufenWebOutputConfig{
@@ -154,6 +155,24 @@ func (p *KoenigrufenWebPresenter) playableIndices(g interfaces.KoenigrufenGame) 
 		return make([]int, 0)
 	}
 	return idx
+}
+
+// discardableIndices returns discardable indices only for the human talon-exchange turn.
+func (p *KoenigrufenWebPresenter) discardableIndices(g interfaces.KoenigrufenGame) []int {
+	if g.GetPhase() != domain.KoenigrufenPhaseTalon || !g.IsHumanDiscardTurn() {
+		return make([]int, 0)
+	}
+	humanIdx := -1
+	for i := 0; i < g.GetPlayerCnt(); i++ {
+		if player := g.GetPlayer(i); player != nil && player.GetIsHuman() {
+			humanIdx = i
+			break
+		}
+	}
+	if humanIdx < 0 {
+		return make([]int, 0)
+	}
+	return intSliceOrEmpty(g.DiscardableIndices(humanIdx))
 }
 
 // buildTalonOutput 場札を構築。人間デクレアラーの場札交換フェーズでのみ内容を公開する。

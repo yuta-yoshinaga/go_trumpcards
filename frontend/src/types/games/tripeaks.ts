@@ -22,6 +22,8 @@ export interface TriPeaksResponse extends BaseGameResponse {
   layout: TriPeaksCard[][];
   stockCount: number;
   waste: Card[];
+  /** Tableau cell keys ("row-col") playable onto the waste top. */
+  playableCells: string[];
   phase: number;
   moveCount: number;
   /**

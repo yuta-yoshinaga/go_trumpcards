@@ -15,8 +15,9 @@ import (
 
 func mustMonteCarloOutputJSON(msg string) string {
 	out := &controller.MonteCarloWebOutput{
-		Board:         [][]*controller.MonteCarloWebOutputCard{},
-		WebOutputBase: controller.WebOutputBase{Message: msg},
+		Board:          [][]*controller.MonteCarloWebOutputCard{},
+		RemovablePairs: 0,
+		WebOutputBase:  controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {
@@ -29,7 +30,7 @@ func monteCarloIntPtr(v int) *int { return &v }
 
 func setupMonteCarloWebTest(t *testing.T) (*usecase.MockMonteCarloInteractor, *controller.MonteCarloWebController, string) {
 	t.Helper()
-	mockOutput := `{"board":[],"phase":0,"stockCount":0,"removedCount":0,"dealCount":0,"canUndo":false,"isStalemate":false,"message":""}`
+	mockOutput := `{"board":[],"phase":0,"stockCount":0,"removedCount":0,"dealCount":0,"removablePairs":0,"canUndo":false,"isStalemate":false,"message":""}`
 	miMock := new(usecase.MockMonteCarloInteractor)
 	factory := func() uc.MonteCarloInteractorIF { return miMock }
 	ctrl := controller.NewMonteCarloWebController(factory)

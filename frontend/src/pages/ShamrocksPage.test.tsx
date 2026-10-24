@@ -22,6 +22,11 @@ function makeState(overrides: Partial<ShamrocksResponse> = {}): ShamrocksRespons
     phase: 0,
     moveCount: 0,
     canUndo: false,
+    legalTargets: {
+      'fan-0': { fan: [1], foundation: [] },
+      'fan-1': { fan: [0], foundation: [] },
+      'fan-2': { fan: [], foundation: [0] },
+    },
     message: '',
     ...overrides,
   };
@@ -163,6 +168,7 @@ describe('ShamrocksPage', () => {
       makeState({
         fans: [[card('SPADE', 5)], [card('HEART', 9)], [card('CLOVER', 2)]],
         foundation: [[], [], [], []],
+        legalTargets: {},
       }),
     );
     renderWithProviders(<ShamrocksPage />);
@@ -238,6 +244,7 @@ describe('ShamrocksPage', () => {
       makeState({
         fans: [[card('SPADE', 2)]],
         foundation: [[card('SPADE', 1)], [card('HEART', 5)], [], []],
+        legalTargets: { 'fan-0': { fan: [], foundation: [0] } },
       }),
     );
     renderWithProviders(<ShamrocksPage />);
@@ -251,14 +258,22 @@ describe('ShamrocksPage', () => {
     expect(invalid).toBeDisabled();
   });
 
+  it('uses server legal targets even when they disagree with the previous client rule', async () => {
+    mockExec.mockResolvedValue(makeState({ legalTargets: { 'fan-0': { fan: [], foundation: [2] } } }));
+    renderWithProviders(<ShamrocksPage />);
+    fireEvent.click(await screen.findByTestId('fan-0'));
+    expect(screen.getByTestId('foundation-2')).toHaveClass('ring-ds-success');
+    expect(screen.getByTestId('foundation-0')).not.toHaveClass('ring-ds-success');
+  });
+
   it('auto-completes, undoes, hints', async () => {
     mockExec.mockResolvedValue(makeState({ canUndo: true }));
     renderWithProviders(<ShamrocksPage />);
     await screen.findByTestId('autocomplete-button');
     expect(
-      [...document.querySelector('[data-tutorial="ll-action-buttons"]')!.querySelectorAll('button')].map((button) =>
-        button.getAttribute('data-testid'),
-      ),
+      [
+        ...(document.querySelector('[data-tutorial="ll-action-buttons"]') as HTMLElement).querySelectorAll('button'),
+      ].map((button) => button.getAttribute('data-testid')),
     ).toEqual(['autocomplete-button', 'undo-button', 'hint-button']);
     for (const [testid, cmd] of [
       ['autocomplete-button', 'ac'],
@@ -303,7 +318,9 @@ describe('ShamrocksPage', () => {
   // 負のコントロール: 動かせない扇には印が付かないこと。5 / 9 / 2 はどれも
   // 互いにランクが 2 以上離れていて、A も無い。
   it('marks no fan when nothing can move', async () => {
-    mockExec.mockResolvedValue(makeState({ fans: [[card('SPADE', 5)], [card('HEART', 9)], [card('CLOVER', 2)]] }));
+    mockExec.mockResolvedValue(
+      makeState({ fans: [[card('SPADE', 5)], [card('HEART', 9)], [card('CLOVER', 2)]], legalTargets: {} }),
+    );
     renderWithProviders(<ShamrocksPage />);
 
     await waitFor(() => expect(screen.getByTestId('fan-0')).toBeInTheDocument());
@@ -314,7 +331,11 @@ describe('ShamrocksPage', () => {
 
   it('marks nothing when the board is stuck', async () => {
     mockExec.mockResolvedValue(
-      makeState({ fans: [[card('SPADE', 5)], [card('HEART', 9)]], foundation: [[card('CLOVER', 1)], [], [], []] }),
+      makeState({
+        fans: [[card('SPADE', 5)], [card('HEART', 9)]],
+        foundation: [[card('CLOVER', 1)], [], [], []],
+        legalTargets: {},
+      }),
     );
     renderWithProviders(<ShamrocksPage />);
 

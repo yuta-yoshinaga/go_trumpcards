@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -16,6 +17,7 @@ type AmericanToadWebPresenter struct{}
 // Output ゲーム状態をJSON出力
 func (p *AmericanToadWebPresenter) Output(at interfaces.AmericanToadGame, lastErr error) string {
 	resObj := new(controller.AmericanToadWebOutput)
+	resObj.LegalTargets = p.buildLegalTargets(at)
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, at, int(at.GetPhase()))
 
 	reserve := at.GetReserve()
@@ -106,6 +108,7 @@ func (p *AmericanToadWebPresenter) Output(at interfaces.AmericanToadGame, lastEr
 func (p *AmericanToadWebPresenter) HintOutput(at interfaces.AmericanToadGame) string {
 	hint := at.GetHint()
 	resObj := new(controller.AmericanToadWebOutput)
+	resObj.LegalTargets = p.buildLegalTargets(at)
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, at, int(at.GetPhase()))
 	resObj.Reserve = make([]*controller.WebOutputCard, 0)
 	resObj.Tableau = make([][]*controller.AmericanToadWebOutputTableauCard, 0)
@@ -126,6 +129,45 @@ func (p *AmericanToadWebPresenter) HintOutput(at interfaces.AmericanToadGame) st
 	}
 
 	return marshalOrError(resObj)
+}
+
+func (p *AmericanToadWebPresenter) buildLegalTargets(at interfaces.AmericanToadGame) map[string]controller.AmericanToadWebOutputTargets {
+	result := make(map[string]controller.AmericanToadWebOutputTargets)
+	for col := range domain.AmericanToadTableauCnt {
+		pile := at.GetTableau()[col]
+		for index := range len(pile) {
+			tab, foundation := at.LegalTargetsFrom(col, index)
+			if len(tab)+len(foundation) == 0 {
+				continue
+			}
+			if tab == nil {
+				tab = []int{}
+			}
+			if foundation == nil {
+				foundation = []int{}
+			}
+			result["tableau-"+strconv.Itoa(col)+"-"+strconv.Itoa(index)] = controller.AmericanToadWebOutputTargets{Tableau: tab, Foundation: foundation}
+		}
+	}
+	for _, source := range []struct {
+		key     string
+		targets func() ([]int, []int)
+	}{
+		{"reserve", at.ReserveLegalTargets}, {"waste", at.WasteLegalTargets},
+	} {
+		tab, foundation := source.targets()
+		if len(tab)+len(foundation) == 0 {
+			continue
+		}
+		if tab == nil {
+			tab = []int{}
+		}
+		if foundation == nil {
+			foundation = []int{}
+		}
+		result[source.key] = controller.AmericanToadWebOutputTargets{Tableau: tab, Foundation: foundation}
+	}
+	return result
 }
 
 // ActionLogOutput 棋譜をJSON出力

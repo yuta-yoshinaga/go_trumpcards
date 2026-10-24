@@ -69,6 +69,8 @@ export interface BeziqueResponse extends BaseGameResponse {
   roundNumber: number;
   trickNumber: number;
   currentPlayerIdx: number;
+  /** Hand indices the human may legally play; empty outside the human's play turn. */
+  validPlays: number[];
   leadPlayerIdx: number;
   dealerIdx: number;
   /** Trump suit (0=♠ 1=♣ 2=♥ 3=♦ — the deck's suit ordinal). */

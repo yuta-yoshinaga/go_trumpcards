@@ -117,7 +117,7 @@ describe('Auld Lang Syne waste accessible names', () => {
   it('announces the top card, and keeps empty wastes identified as empty', async () => {
     const stateWithEmptyWaste = {
       ...playingState,
-      wastes: [playingState.wastes[0]!, [], ...playingState.wastes.slice(2)],
+      wastes: [playingState.wastes[0], [], ...playingState.wastes.slice(2)],
     };
     mockExec.mockResolvedValue(stateWithEmptyWaste);
     renderWithProviders(<AuldLangSynePage />);
@@ -188,10 +188,10 @@ describe('Auld Lang Syne foundation accessible names', () => {
     const stateWithFoundationVariants: AuldLangSyneResponse = {
       ...playingState,
       foundations: [
-        playingState.foundations[0]!,
+        playingState.foundations[0],
         [],
         Array.from({ length: 13 }, (_, index) => card('DIAMOND', index + 1)),
-        playingState.foundations[3]!,
+        playingState.foundations[3],
       ],
     };
     mockExec.mockResolvedValue(stateWithFoundationVariants);
@@ -209,10 +209,10 @@ describe('Auld Lang Syne foundation accessible names', () => {
       const stateWithFoundationVariants: AuldLangSyneResponse = {
         ...playingState,
         foundations: [
-          playingState.foundations[0]!,
+          playingState.foundations[0],
           [],
           Array.from({ length: 13 }, (_, index) => card('DIAMOND', index + 1)),
-          playingState.foundations[3]!,
+          playingState.foundations[3],
         ],
       };
       mockExec.mockResolvedValue(stateWithFoundationVariants);

@@ -279,6 +279,8 @@ describe('MarriagePage', () => {
     const cpuMaal = await screen.findAllByTestId('marriage-maal');
     expect(cpuMaal.length).toBeGreaterThan(0);
     expect(cpuMaal[0]).toHaveTextContent('20');
+    // Each badge is one unit: マール 5 / 純シーケンス有 wrapped inside the word at 1280px (route-sweep.spec.ts / sweeps/label.ts).
+    for (const maal of cpuMaal) expect(maal).toHaveClass('whitespace-nowrap');
   });
 
   it('collapses CPU details and rules on mobile while keeping their content in the DOM', async () => {
@@ -1043,6 +1045,25 @@ describe('MarriagePage', () => {
     expect(status).toHaveTextContent('デッドウッド');
     // カードを 1 枚も選んでいない状態で出ている。
     expect(screen.queryByTestId('marriage-declare-preview')).not.toBeInTheDocument();
+  });
+
+  it('shows the pure-sequence status as one unit in either state', async () => {
+    mockExec.mockResolvedValue({
+      ...discardPhaseState,
+      players: discardPhaseState.players.map((p) => (p.isHuman ? { ...p, hasPureSequence: true } : p)),
+    });
+    const { unmount } = renderWithProviders(<MarriagePage />);
+    const has = await within(await screen.findByTestId('marriage-hand-status')).findByText('純シーケンス有');
+    expect(has).toHaveClass('whitespace-nowrap', 'text-ds-success');
+    unmount();
+
+    mockExec.mockResolvedValue({
+      ...discardPhaseState,
+      players: discardPhaseState.players.map((p) => (p.isHuman ? { ...p, hasPureSequence: false } : p)),
+    });
+    renderWithProviders(<MarriagePage />);
+    const missing = await within(await screen.findByTestId('marriage-hand-status')).findByText('純シーケンス無し');
+    expect(missing).toHaveClass('whitespace-nowrap', 'text-ds-warning');
   });
 
   it('does not show the hand status outside the discard phase', async () => {

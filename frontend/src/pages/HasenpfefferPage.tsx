@@ -7,6 +7,7 @@ import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { HintTooltip } from '../components/hint/HintTooltip';
@@ -380,65 +381,6 @@ function HasenpfefferPageContent() {
               </div>
             )}
 
-            <div className="mt-4 flex flex-wrap gap-2" data-tutorial="hpf-actions">
-              {bidChoices.map((n) => (
-                <button
-                  key={n}
-                  type="button"
-                  className={btnWarning}
-                  onClick={() => handleBid(n)}
-                  disabled={loading}
-                  data-testid={`hpf-bid-${n.toString()}-btn`}
-                >
-                  {t('actions.bid', { n: String(n) })}
-                </button>
-              ))}
-              {/* **親が降りられない場面では降りるボタンを出さない。** */}
-              {isHumanBidTurn && !state.mustBid && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={() => handleBid(0)}
-                  disabled={loading}
-                  data-testid="hpf-pass-btn"
-                >
-                  {t('actions.pass')}
-                </button>
-              )}
-              {isHumanDiscardTurn &&
-                SUITS.map((suit) => (
-                  <button
-                    key={suit}
-                    type="button"
-                    className={btnWarning}
-                    onClick={() => handleDiscard(suit)}
-                    disabled={loading || picked === null}
-                    aria-disabled={picked === null}
-                    data-testid={`hpf-discard-${suit.toString()}-btn`}
-                  >
-                    {t('actions.discard', { suit: suitSymbolAt(suit, '?') })}
-                  </button>
-                ))}
-              {isHandEnd && !isGameEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextHand} disabled={loading}>
-                  {t('actions.nextHand')}
-                </button>
-              )}
-              <button
-                type="button"
-                className={btnPrimary}
-                onClick={() => requestConfirm(handleReset)}
-                disabled={loading}
-              >
-                {t('actions.reset')}
-              </button>
-              {!isGameEnd && (
-                <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
-                  {t('actions.giveUp')}
-                </button>
-              )}
-            </div>
-
             <SettingsPanel
               title={tc('settings.title')}
               groups={[{ items: [hintCheckboxItem(tc, hintEnabled, setHintEnabled)] }]}
@@ -450,6 +392,69 @@ function HasenpfefferPageContent() {
             actionLog={actionLog}
             showActionLog={showActionLog}
             hideActionLog={hideActionLog}
+          />
+          <GameFooter
+            className={`${gameTheme.hasenpfeffer.footer} px-4 py-2.5`}
+            actions={
+              <div className="flex flex-wrap gap-2" data-tutorial="hpf-actions">
+                {bidChoices.map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    className={btnWarning}
+                    onClick={() => handleBid(n)}
+                    disabled={loading}
+                    data-testid={`hpf-bid-${n.toString()}-btn`}
+                  >
+                    {t('actions.bid', { n: String(n) })}
+                  </button>
+                ))}
+                {/* **親が降りられない場面では降りるボタンを出さない。** */}
+                {isHumanBidTurn && !state.mustBid && (
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={() => handleBid(0)}
+                    disabled={loading}
+                    data-testid="hpf-pass-btn"
+                  >
+                    {t('actions.pass')}
+                  </button>
+                )}
+                {isHumanDiscardTurn &&
+                  SUITS.map((suit) => (
+                    <button
+                      key={suit}
+                      type="button"
+                      className={btnWarning}
+                      onClick={() => handleDiscard(suit)}
+                      disabled={loading || picked === null}
+                      aria-disabled={picked === null}
+                      data-testid={`hpf-discard-${suit.toString()}-btn`}
+                    >
+                      {t('actions.discard', { suit: suitSymbolAt(suit, '?') })}
+                    </button>
+                  ))}
+                {isHandEnd && !isGameEnd && (
+                  <button type="button" className={btnSuccess} onClick={handleNextHand} disabled={loading}>
+                    {t('actions.nextHand')}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={() => requestConfirm(handleReset)}
+                  disabled={loading}
+                >
+                  {t('actions.reset')}
+                </button>
+                {!isGameEnd && (
+                  <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
+                    {t('actions.giveUp')}
+                  </button>
+                )}
+              </div>
+            }
           />
         </>
       )}

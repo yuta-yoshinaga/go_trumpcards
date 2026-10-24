@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { pageoneApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { PageOneResponse } from '../types/card';
 import { PageOnePage } from './PageOnePage';
@@ -77,6 +78,21 @@ beforeEach(() => {
 });
 
 describe('PageOnePage', () => {
+  it.each([
+    ['ja', 'CPU 1、CPU 2がページワン宣言を忘れたためペナルティ！ (+2枚)'],
+    ['en', 'CPU 1, CPU 2 forgot to declare Page One! (+2 cards)'],
+  ])('localizes penalty seats and message in %s', async (language, expected) => {
+    await i18n.changeLanguage(language);
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      messageCode: 'pageone.penaltyApplied',
+      messageParams: { count: '2' },
+      penaltySeats: [1, 2],
+    });
+    renderWithProviders(<PageOnePage />);
+    expect(await screen.findByText(expected)).toBeInTheDocument();
+    await i18n.changeLanguage('ja');
+  });
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<PageOnePage />);

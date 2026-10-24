@@ -4,6 +4,7 @@ import { formatEightoffState } from './eightoffFormatter';
 
 function makeState(overrides?: Partial<EightOffResponse>): EightOffResponse {
   return {
+    legalTargets: {},
     tableau: [[{ design: 'SPADE', value: 13 }], [], [], [], [], [], [], []],
     freeCells: [null, null, null, null, null, null, null, null],
     foundation: [[], [], [], []],

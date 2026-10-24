@@ -14,6 +14,7 @@ function card(design: Card['design'], value: number) {
 
 function makeState(overrides: Partial<StalactitesResponse> = {}): StalactitesResponse {
   return {
+    legalTargets: {},
     tableau: [[card(S, 7), card(H, 6)], [card(D, 10), card(C, 9)], [card(S, 3)], [card(H, 5)], [], [], [], []],
     baseRank: 1,
     cells: [null, null, null, null],

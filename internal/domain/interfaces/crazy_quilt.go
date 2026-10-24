@@ -19,6 +19,10 @@ type CrazyQuiltGame interface {
 	MoveQuiltToWaste(idx int) error
 	// MoveWasteToFoundation 捨て札から基礎札へ移動する
 	MoveWasteToFoundation() error
+	// LegalTargets returns the foundation and waste destinations for a quilt cell (row*8+col).
+	LegalTargets(idx int) ([]int, bool)
+	// WasteLegalTargets returns the foundation destination for the waste top.
+	WasteLegalTargets() []int
 	// IsAvailable そのマスの札が取れるか（短辺が露出しているか）
 	IsAvailable(idx int) bool
 	// GetRedealsLeft 残りの組み直し回数を取得する

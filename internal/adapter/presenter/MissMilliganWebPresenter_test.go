@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -15,6 +16,9 @@ import (
 )
 
 func setupMissMilliganWebMockDefaults(g *interfaces.MockMissMilliganGame) {
+	g.On("RunStarts", mock.Anything).Return([]int(nil)).Maybe()
+	g.On("LegalTargetsFrom", mock.Anything, mock.Anything).Return([]int(nil), []int(nil)).Maybe()
+	g.On("WaivedLegalTargets").Return([]int(nil), []int(nil)).Maybe()
 	g.On("GetPhase").Return(domain.MissMilliganPhasePlaying).Maybe()
 	g.On("GetMoveCount").Return(0).Maybe()
 	g.On("CanUndo").Return(false).Maybe()
@@ -151,6 +155,30 @@ func TestMissMilliganWebPresenter_Output(t *testing.T) {
 			result := parseMissMilliganOutput(t, new(MissMilliganWebPresenter).Output(g, nil))
 			assert.Equal(t, tc.code, result.MessageCode)
 		})
+	}
+}
+
+func TestMissMilliganWebPresenter_LegalTargetsAndRunStarts(t *testing.T) {
+	for _, hintOutput := range []bool{false, true} {
+		g := new(interfaces.MockMissMilliganGame)
+		setupMissMilliganOutputMock(g)
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "RunStarts")
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "LegalTargetsFrom")
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "WaivedLegalTargets")
+		g.On("RunStarts", 2).Return([]int{1}).Maybe()
+		g.On("RunStarts", mock.Anything).Return([]int(nil)).Maybe()
+		g.On("LegalTargetsFrom", 2, 1).Return([]int{5}, []int{0}).Maybe()
+		g.On("WaivedLegalTargets").Return([]int{3}, []int(nil)).Maybe()
+		var encoded string
+		if hintOutput {
+			encoded = new(MissMilliganWebPresenter).HintOutput(g)
+		} else {
+			encoded = new(MissMilliganWebPresenter).Output(g, nil)
+		}
+		result := parseMissMilliganOutput(t, encoded)
+		assert.Equal(t, []int{1}, result.RunStarts[2])
+		assert.Equal(t, controller.MissMilliganWebOutputTargets{Tableau: []int{5}, Foundation: []int{0}}, result.LegalTargets["tableau-2-1"])
+		assert.Equal(t, controller.MissMilliganWebOutputTargets{Tableau: []int{3}, Foundation: nil}, result.LegalTargets["waived"])
 	}
 }
 

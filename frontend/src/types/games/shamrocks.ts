@@ -20,6 +20,7 @@ export interface ShamrocksResponse extends BaseGameResponse {
   phase: number;
   moveCount: number;
   canUndo: boolean;
+  legalTargets: Record<string, { fan: number[]; foundation: number[] }>;
   hint?: ShamrocksHint;
 }
 

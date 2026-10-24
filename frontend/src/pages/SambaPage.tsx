@@ -443,7 +443,7 @@ function SambaPageContent() {
               <span>
                 {t('drawPile', { count: state.drawPileCount })} / {t('discardPile', { count: state.discardPileCount })}
               </span>
-              {state.isFrozen && <span className="ml-2 text-ds-info font-bold">[{t('frozen')}]</span>}
+              {state.isFrozen && <span className="ml-2 whitespace-nowrap text-ds-info font-bold">[{t('frozen')}]</span>}
               {/* Self-contained live region announcing freeze/thaw transitions. */}
               <span className="sr-only" role="status" aria-live="polite" data-testid="sa-frozen-announce">
                 {frozenMsg}

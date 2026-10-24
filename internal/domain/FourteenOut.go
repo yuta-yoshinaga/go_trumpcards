@@ -274,6 +274,21 @@ func (m *FourteenOut) forEachRemovablePair(fn func(c1, c2 int) bool) {
 	}
 }
 
+// LegalTargets returns the ascending column indices that can be removed together with col.
+// It uses the same exposed-tail pair scan as hints, stalemate checks, and pair counts.
+func (m *FourteenOut) LegalTargets(col int) []int {
+	var targets []int
+	m.forEachRemovablePair(func(c1, c2 int) bool {
+		if c1 == col {
+			targets = append(targets, c2)
+		} else if c2 == col {
+			targets = append(targets, c1)
+		}
+		return true
+	})
+	return targets
+}
+
 // CountRemovablePairs は盤面に残っている取り除ける組の数を返す。
 //
 // **これがこのゲームの判断材料そのもの。**Web は常時カウンタとして出している

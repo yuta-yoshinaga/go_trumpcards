@@ -20,7 +20,9 @@ func koikoiCuiCardStr(c *domain.Card) string {
 	if c == nil {
 		return "??"
 	}
-	label := domain.KoiKoiCardLabel(c)
+	category := koiKoiCategoryCode(domain.KoiKoiCardCategory(c))
+	category = hanafudaCategoryName(category)
+	label := i18n.Tf("hanafudaCardLabel", "month", hanafudaMonthName(c.GetDesign()), "category", category)
 	switch domain.KoiKoiCardCategory(c) {
 	case domain.KoiKoiBright:
 		return color.Yellow(label)
@@ -209,7 +211,5 @@ var koikoiHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *KoiKoiCuiPresenter) ActionLogOutput(g interfaces.KoiKoiGame) string {
-	return actionLogToTextWithNames(g.GetActionLog(), func(idx int) string {
-		return cuiPlayerName(g.GetPlayer(idx), idx)
-	})
+	return actionLogToTextWithNames(actionLogWithCardLabels(g.GetActionLog(), koikoiCuiCardStr), func(idx int) string { return cuiPlayerName(g.GetPlayer(idx), idx) })
 }

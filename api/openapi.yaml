@@ -34733,6 +34733,16 @@ components:
         foundationSize:
           type: integer
           description: Number of cards in one suit (the combined ascending and descending foundations).
+        legalTargets:
+          type: object
+          description: Legal tableau destinations keyed by source column (tableau-<col>).
+          additionalProperties:
+            type: object
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
         phase:
           type: integer
           description: "0=Playing, 1=GameClear, 2=GameOver"
@@ -34973,6 +34983,25 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/Card'
+        legalTargets:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
+        runStarts:
+          type: array
+          items:
+            type: array
+            items:
+              type: integer
         phase:
           type: integer
           description: "0=Playing, 1=GameClear, 2=GameOver"
@@ -35100,6 +35129,19 @@ components:
           type: boolean
         isStalemate:
           type: boolean
+        legalTargets:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         undoToEscape:
           type: integer
           description: Number of undos needed to escape stalemate (0 = not stalemate, -1 = unreachable)
@@ -39068,6 +39110,20 @@ components:
       type: object
       description: Response payload for /congress/exec
       properties:
+        legalTargets:
+          type: object
+          description: Legal destinations keyed by source (`tableau-<col>`, `waste`, or `stock`).
+          additionalProperties:
+            type: object
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -39223,6 +39279,20 @@ components:
             Whether `draw` would recycle the waste into the stock: the stock is
             empty, the waste is not, and the single redeal is unspent. Sent so the
             client does not recompute the condition.
+        legalTargets:
+          type: object
+          description: Legal destinations keyed by source (`tableau-<col>-<cardIndex>`, `reserve`, or `waste`). Sources without destinations are omitted.
+          additionalProperties:
+            type: object
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         phase:
           type: integer
           description: "0=Playing, 1=GameClear, 2=GameOver"
@@ -39408,6 +39478,20 @@ components:
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
           items:
             $ref: '#/components/schemas/ActionLogEntry'
+        legalTargets:
+          type: object
+          description: Legal destinations by source key; sources without a destination are omitted.
+          additionalProperties:
+            type: object
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         reserve:
           type: array
           description: Four fans of three cards. Only the last element of each is available.
@@ -39530,6 +39614,27 @@ components:
       type: object
       description: Response payload for /missmilligan/exec
       properties:
+        runStarts:
+          type: array
+          description: Card indices that begin movable runs, one array per tableau column.
+          items:
+            type: array
+            items:
+              type: integer
+        legalTargets:
+          type: object
+          description: 'Legal destinations keyed by movable source ("tableau-<col>-<cardIndex>" or "waived").'
+          additionalProperties:
+            type: object
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -39618,6 +39723,19 @@ components:
         - design
         - value
       properties:
+        month:
+          type: integer
+          description: Hanafuda month (1–12).
+          minimum: 1
+          maximum: 12
+        kind:
+          type: string
+          description: Hanafuda category or Unsun Karuta face rank code.
+          enum: [bright, animal, ribbon, chaff, gwang, yeol, tti, pi, sota, uma, kiri, un, sun, robai]
+        unsunSuit:
+          type: string
+          description: Unsun Karuta suit code.
+          enum: [pao, isu, kotsu, oru, kuru]
         glyph:
           type: string
           description: "Symbol drawn in the centre of the card. Set only for cards from non-52-card decks."
@@ -41946,6 +42064,11 @@ components:
           $ref: '#/components/schemas/TienLenAction'
         config:
           $ref: '#/components/schemas/TienLenConfig'
+        rankings:
+          type: array
+          description: Present when the game ends; seat and rank are localized by the client.
+          items:
+            $ref: '#/components/schemas/WebOutputRanking'
         message:
           type: string
         messageCode:
@@ -42230,6 +42353,8 @@ components:
         - gameEndFlag
         - cpuActions
         - humanAction
+        - validPlays
+        - jokerPlacements
         - message
       properties:
         entries:
@@ -42286,6 +42411,21 @@ components:
           type: boolean
           description: Whether the game has ended
           example: false
+        jokerPlacements:
+          type: array
+          description: Board positions where a joker can be placed, ordered by suit then value.
+          items:
+            type: object
+            required: [suit, value]
+            properties:
+              suit:
+                type: integer
+                minimum: 1
+                maximum: 4
+              value:
+                type: integer
+                minimum: 1
+                maximum: 13
         cpuActions:
           type: array
           description: CPU actions that occurred after the human's last action
@@ -42295,7 +42435,11 @@ components:
           allOf:
             - $ref: '#/components/schemas/SevensAction'
           nullable: true
-          description: The human player's most recent action (null before first play)
+        validPlays:
+          type: array
+          items:
+            type: integer
+          description: Hand indices the human player may play now; empty when it is not the human's turn or the game is over.
         message:
           type: string
           description: |
@@ -43530,6 +43674,7 @@ components:
         - roundNumber
         - trickNumber
         - currentPlayerIdx
+        - validPlays
         - currentTrick
         - heartsBroken
         - passDirection
@@ -43566,6 +43711,11 @@ components:
           type: integer
           description: Index of the player whose turn it is
           example: 0
+        validPlays:
+          type: array
+          description: Hand indices the human player may legally play now; empty when it is not the human's play turn
+          items:
+            type: integer
         currentTrick:
           type: array
           description: Cards played in the current trick so far
@@ -43893,6 +44043,7 @@ components:
         - stockCount
         - waste
         - foundation
+        - legalTargets
         - phase
         - moveCount
         - drawCount
@@ -44252,9 +44403,11 @@ components:
       type: object
       description: Current state of the FreeCell game
       required:
+        - legalTargets
         - tableau
         - freeCells
         - foundation
+        - legalTargets
         - maxMovableCards
         - maxMovableCardsToEmptyColumn
         - phase
@@ -44289,6 +44442,21 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/Card'
+        legalTargets:
+          type: object
+          description: Legal destinations keyed by tableau suffix or free cell source.
+          additionalProperties:
+            type: object
+            required: [tableau, foundation]
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         maxMovableCards:
           type: integer
           description: >-
@@ -44426,6 +44594,19 @@ components:
         - undoToEscape
         - message
       properties:
+        legalTargets:
+          type: object
+          description: Legal destinations keyed by tableau column or free-cell index.
+          additionalProperties:
+            type: object
+            required: [tableau, foundation]
+            properties:
+              tableau:
+                type: array
+                items: { type: integer }
+              foundation:
+                type: array
+                items: { type: integer }
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -44594,6 +44775,19 @@ components:
         - undoToEscape
         - message
       properties:
+        legalTargets:
+          type: object
+          description: "Legal destinations keyed by tableau-<column>-<cardIndex> or freecell-<cell>."
+          additionalProperties:
+            type: object
+            required: [tableau, foundation]
+            properties:
+              tableau:
+                type: array
+                items: { type: integer }
+              foundation:
+                type: array
+                items: { type: integer }
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -45255,6 +45449,11 @@ components:
           description: Indices in the human player's hand legal to play this turn (empty when not the human's play turn).
           items:
             type: integer
+        playRejectCodes:
+          type: array
+          description: "Per hand card, the message code of the rule that forbids playing it now; empty string when playable. Empty array when it is not the human's play turn."
+          items:
+            type: string
         config:
           $ref: '#/components/schemas/CallBreakConfig'
         message:
@@ -45321,6 +45520,8 @@ components:
     OmiResponse:
       type: object
       description: Current state of the Omi game
+      required:
+        - validPlays
       properties:
         players:
           type: array
@@ -45352,6 +45553,11 @@ components:
           type: integer
         currentPlayerIdx:
           type: integer
+        validPlays:
+          type: array
+          description: Hand indices the human player may legally play now; empty when it is not the human's play turn
+          items:
+            type: integer
         trumpCallerIdx:
           type: integer
         bidPlayerIdx:
@@ -45875,6 +46081,8 @@ components:
     GapsResponse:
       type: object
       description: Current state of the Gaps / Montana game.
+      required:
+        - lockedPrefixLengths
       properties:
         entries:
           type: array
@@ -45907,6 +46115,12 @@ components:
               oneOf:
                 - $ref: '#/components/schemas/Card'
                 - type: 'null'
+        lockedPrefixLengths:
+          type: array
+          description: Number of redeal-locked cards at the start of each row (4 entries while a game is on the board; empty in the default error output).
+          items:
+            type: integer
+          maxItems: 4
         redealsUsed:
           type: integer
           description: Number of redeals already used (0..3).
@@ -46218,6 +46432,11 @@ components:
           additionalProperties:
             type: string
           description: Interpolation parameters for the message template keyed by placeholder name.
+        validPlays:
+          type: array
+          description: Hand indices the human player may legally play now; empty when it is not the human's play turn
+          items:
+            type: integer
 
     # -------------------------------------------------------------------------
     # Macau
@@ -46543,6 +46762,10 @@ components:
       type: object
       description: Current state of the Page One game
       properties:
+        penaltySeats:
+          type: array
+          items:
+            type: integer
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -49364,6 +49587,7 @@ components:
         - undoToEscape
         - score
         - difficulty
+        - runStarts
         - message
       properties:
         entries:
@@ -49400,6 +49624,13 @@ components:
         difficulty:
           type: integer
           enum: [1, 2, 4]
+        runStarts:
+          type: array
+          description: Movable run start indices by tableau column.
+          items:
+            type: array
+            items:
+              type: integer
         hint:
           $ref: '#/components/schemas/SpiderHint'
         message:
@@ -49427,6 +49658,8 @@ components:
         - undoToEscape
         - score
         - difficulty
+        - legalTargets
+        - runStarts
         - message
       properties:
         entries:
@@ -49463,6 +49696,27 @@ components:
         difficulty:
           type: integer
           enum: [1, 2, 4]
+        legalTargets:
+          type: object
+          description: 'Legal destinations for each source card, keyed by source id ("tableau-<col>-<cardIndex>").'
+          additionalProperties:
+            type: object
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
+        runStarts:
+          type: array
+          description: Movable run start indices by tableau column.
+          items:
+            type: array
+            items:
+              type: integer
         hint:
           $ref: '#/components/schemas/MrsMopHint'
         message:
@@ -49542,6 +49796,7 @@ components:
         - moveCount
         - canUndo
         - isStalemate
+        - legalTargets
         - message
       properties:
         entries:
@@ -49555,6 +49810,13 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/SpideretteTableauCard'
+        runStarts:
+          type: array
+          description: Movable run start indices, one array per tableau column.
+          items:
+            type: array
+            items:
+              type: integer
         stockCount:
           type: integer
         completedSuits:
@@ -50197,6 +50459,8 @@ components:
     EuchreResponse:
       type: object
       description: Current state of the Euchre game
+      required:
+        - validPlays
       properties:
         entries:
           type: array
@@ -50280,6 +50544,11 @@ components:
         currentPlayerIdx:
           type: integer
           description: Index of the player whose turn it is
+        validPlays:
+          type: array
+          description: Hand indices the human player may legally play now; empty when it is not the human's play turn
+          items:
+            type: integer
         dealerIdx:
           type: integer
           description: Index of the dealer
@@ -50595,6 +50864,12 @@ components:
           description: Cards in the waste pile (top card is the last element)
           items:
             $ref: '#/components/schemas/Card'
+        playableCells:
+          type: array
+          description: Tableau coordinates playable onto the waste top, formatted as "row-col".
+          items:
+            type: string
+            pattern: '^[0-3]-(0|[1-9])$'
         phase:
           type: integer
           description: "Game phase: 0 = Playing, 1 = GameClear, 2 = GameOver"
@@ -55557,6 +55832,11 @@ components:
           example: 0
         currentPlayerIdx:
           type: integer
+        validPlays:
+          type: array
+          description: Hand indices the human may legally play; empty outside the human's play turn.
+          items:
+            type: integer
         discardTop:
           nullable: true
           allOf:
@@ -57882,6 +58162,22 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Card'
+        legalTargets:
+          type: object
+          description: >-
+            Server-computed destinations keyed by source. Quilt keys are quilt-<idx>,
+            where idx is the row-major cell index row*8+col (0..63); waste is the
+            waste-top source. Sources without a destination are omitted.
+          additionalProperties:
+            type: object
+            required: [foundation, waste]
+            properties:
+              foundation:
+                type: array
+                items:
+                  type: integer
+              waste:
+                type: boolean
         phase:
           type: integer
           description: "0=Playing, 1=GameClear, 2=GameOver"
@@ -62236,8 +62532,8 @@ components:
             properties:
               hand:
                 type: integer
-              name:
-                type: string
+              fourAces:
+                type: boolean
               odds:
                 type: string
         config:
@@ -64200,13 +64496,23 @@ components:
             stacked on it any more (the Ace itself can still go to a foundation).
           items:
             type: boolean
-        tableauMoveTargets:
+        legalTargets:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
+        foundationNextRank:
           type: array
-          description: Legal tableau destination columns for each tableau top, followed by the waste top at index 8.
           items:
-            type: array
-            items:
-              type: integer
+            type: integer
         foundation:
           type: array
           description: The eight foundations, each building up in suit from the Ace.
@@ -64614,6 +64920,16 @@ components:
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
           items:
             $ref: '#/components/schemas/ActionLogEntry'
+        legalTargets:
+          type: object
+          description: "Foundation destinations for the human's selectable sources on the human's turn, keyed by source (hand-<i>, side-<i>, goal); a source with no destination is omitted, and the goal key is present only when the goal top can be played."
+          additionalProperties:
+            type: object
+            required: [foundation]
+            properties:
+              foundation:
+                type: array
+                items: { type: integer }
         canAutoComplete:
           type: boolean
         canUndo:
@@ -64800,6 +65116,7 @@ components:
         - stockCount
         - removedCount
         - dealCount
+        - removablePairs
         - canUndo
         - isStalemate
         - message
@@ -64834,6 +65151,10 @@ components:
         dealCount:
           type: integer
           description: Number of times the player has called `deal`.
+          minimum: 0
+        removablePairs:
+          type: integer
+          description: Number of currently removable adjacent same-rank pairs.
           minimum: 0
         canUndo:
           type: boolean
@@ -64896,6 +65217,19 @@ components:
         isStalemate:
           type: boolean
           description: True when no two exposed cards sum to 14. With no stock, this is a loss.
+        legalTargets:
+          type: object
+          description: Legal destinations keyed by source column; columns without partners are omitted.
+          additionalProperties:
+            type: object
+            required: [tableau, foundation]
+            properties:
+              tableau:
+                type: array
+                items: { type: integer }
+              foundation:
+                type: array
+                items: { type: integer }
         hint:
           $ref: '#/components/schemas/FourteenOutHint'
         message:
@@ -66264,6 +66598,7 @@ components:
         - roundNumber
         - trickNumber
         - currentPlayerIdx
+        - validPlays
         - bidPlayerIdx
         - dealerIdx
         - trumpSuit
@@ -66302,6 +66637,11 @@ components:
           type: integer
         currentPlayerIdx:
           type: integer
+        validPlays:
+          type: array
+          description: Hand indices the human player may legally play now; empty when it is not the human's play turn
+          items:
+            type: integer
         bidPlayerIdx:
           type: integer
         dealerIdx:
@@ -66449,6 +66789,7 @@ components:
         - roundNumber
         - trickNumber
         - currentPlayerIdx
+        - validPlays
         - bidPlayerIdx
         - dealerIdx
         - trumpSuit
@@ -66483,6 +66824,11 @@ components:
           type: integer
         currentPlayerIdx:
           type: integer
+        validPlays:
+          type: array
+          description: Hand indices the human player may legally play now; empty when it is not the human's play turn
+          items:
+            type: integer
         bidPlayerIdx:
           type: integer
         dealerIdx:
@@ -67480,6 +67826,20 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/Card'
+        legalTargets:
+          type: object
+          description: Legal destinations keyed by source (tableau-<col>-<cardIndex> or freecell-<cell>); sources without destinations are omitted.
+          additionalProperties:
+            type: object
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         baseRank:
           type: integer
           description: The base rank for foundations (1-13, determined by the first dealt card)
@@ -68930,6 +69290,11 @@ components:
           items:
             type: integer
           description: Hand indices the human may legally play (Klaverjas obligation filtered)
+        playRejectCodes:
+          type: array
+          items:
+            type: string
+          description: One validation message code per hand card for a human play turn; empty for playable cards
         gameEndFlag:
           type: boolean
         winnerTeam:
@@ -70899,6 +71264,8 @@ components:
     BeziqueResponse:
       type: object
       description: Current state of the Bezique game
+      required:
+        - validPlays
       properties:
         messageParams:
           type: object
@@ -70973,6 +71340,11 @@ components:
         currentPlayerIdx:
           type: integer
           description: Index of the player whose turn it is
+        validPlays:
+          type: array
+          description: Hand indices the human player may legally play now; empty when it is not the human's play turn
+          items:
+            type: integer
         leadPlayerIdx:
           type: integer
           description: Index of the player who led the current trick
@@ -73669,6 +74041,20 @@ components:
           type: integer
         canUndo:
           type: boolean
+        legalTargets:
+          type: object
+          description: Legal destinations keyed by source fan (fan-<index>); sources without moves are omitted.
+          additionalProperties:
+            type: object
+            properties:
+              fan:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         hint:
           type: object
           nullable: true
@@ -73738,7 +74124,7 @@ components:
             $ref: '#/components/schemas/ActionLogEntry'
         columns:
           type: array
-          description: The 10 tableau columns (top card is last)
+          description: The 13 tableau columns (top card is last)
           items:
             type: array
             items:
@@ -73755,6 +74141,27 @@ components:
           type: integer
         canUndo:
           type: boolean
+        runStarts:
+          type: array
+          description: Movable run start indices for each tableau column.
+          items:
+            type: array
+            items:
+              type: integer
+        legalTargets:
+          type: object
+          description: "Auto-move destinations keyed by tableau-<column>-<cardIndex> (one key per run start); tableau is ordered by auto-move priority and foundation is always empty."
+          additionalProperties:
+            type: object
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         hint:
           type: object
           nullable: true
@@ -73817,6 +74224,19 @@ components:
       type: object
       description: Current state of the Simple Simon game
       properties:
+        legalTargets:
+          type: object
+          description: "Legal tableau destinations keyed by tableau-<column>-<cardIndex>, ordered by auto-move priority."
+          additionalProperties:
+            type: object
+            required: [tableau, foundation]
+            properties:
+              tableau:
+                type: array
+                items: { type: integer }
+              foundation:
+                type: array
+                items: { type: integer }
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -73824,7 +74244,7 @@ components:
             $ref: '#/components/schemas/ActionLogEntry'
         columns:
           type: array
-          description: The 10 tableau columns (top card is last)
+          description: The 13 tableau columns (top card is last)
           items:
             type: array
             items:
@@ -73841,6 +74261,13 @@ components:
           type: integer
         canUndo:
           type: boolean
+        runStarts:
+          type: array
+          description: Movable run start indices for each tableau column.
+          items:
+            type: array
+            items:
+              type: integer
         hint:
           type: object
           nullable: true
@@ -73951,6 +74378,20 @@ components:
           type: boolean
         isStalemate:
           type: boolean
+        legalTargets:
+          type: object
+          description: Legal tableau and foundation destinations keyed by source card.
+          additionalProperties:
+            type: object
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         hint:
           type: object
           nullable: true
@@ -74068,6 +74509,15 @@ components:
     AccordionResponse:
       type: object
       properties:
+        legalTargets:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
         messageParams:
           type: object
           description: "Substitution values for `messageCode`. Absent when the message takes none."
@@ -74175,6 +74625,19 @@ components:
       properties:
         messageCode:
           type: string
+        legalTargets:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         tableau:
           type: array
           items:
@@ -74783,6 +75246,23 @@ components:
               type: string
             toCol:
               type: integer
+        legalTargets:
+          type: object
+          description: 'Legal destinations for each source column, keyed by source id ("tableau-0").'
+          additionalProperties:
+            type: object
+            description: "Where that source may move, by destination kind."
+            properties:
+              tableau:
+                type: array
+                description: "Tableau column indices the card may move to."
+                items:
+                  type: integer
+              foundation:
+                type: array
+                description: "Foundation pile indices the card may move to."
+                items:
+                  type: integer
         message:
           type: string
         messageCode:
@@ -74974,6 +75454,21 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/Card'
+        legalTargets:
+          type: object
+          description: 'Legal destinations for each source column, keyed by source id ("tableau-0").'
+          additionalProperties:
+            type: object
+            description: "Where that source may move, by destination kind."
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         moveCount:
           type: integer
         canUndo:
@@ -75058,6 +75553,23 @@ components:
               type: string
             toCol:
               type: integer
+        legalTargets:
+          type: object
+          description: 'Legal destinations for each source column, keyed by source id ("tableau-0").'
+          additionalProperties:
+            type: object
+            description: "Where that source may move, by destination kind."
+            properties:
+              tableau:
+                type: array
+                description: "Tableau column indices the card may move to."
+                items:
+                  type: integer
+              foundation:
+                type: array
+                description: "Foundation pile indices the card may move to."
+                items:
+                  type: integer
         message:
           type: string
         messageCode:
@@ -76573,6 +77085,20 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/Card'
+        legalTargets:
+          type: object
+          description: Legal destinations keyed by tableau source column (for example tableau-0).
+          additionalProperties:
+            type: object
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         redealsRemaining:
           type: integer
           description: Redeals left for this game (0..3)
@@ -77239,6 +77765,21 @@ components:
     EasthavenResponse:
       type: object
       properties:
+        legalTargets:
+          type: object
+          description: "Legal destinations keyed by tableau-<column>-<cardIndex>."
+          additionalProperties:
+            type: object
+            required: [tableau, foundation]
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         messageParams:
           type: object
           description: "Substitution values for `messageCode`. Absent when the message takes none."
@@ -77646,6 +78187,20 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/Card'
+        legalTargets:
+          type: object
+          additionalProperties:
+            type: object
+            required: [tableau, foundation]
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         hint:
           type: object
           properties:
@@ -77716,6 +78271,23 @@ components:
               type: string
             toCol:
               type: integer
+        legalTargets:
+          type: object
+          description: 'Legal destinations for each source column, keyed by source id ("tableau-0").'
+          additionalProperties:
+            type: object
+            description: "Where that source may move, by destination kind."
+            properties:
+              tableau:
+                type: array
+                description: "Tableau column indices the card may move to."
+                items:
+                  type: integer
+              foundation:
+                type: array
+                description: "Foundation pile indices the card may move to."
+                items:
+                  type: integer
         message:
           type: string
         messageCode:
@@ -77784,12 +78356,38 @@ components:
         redealUsed:
           type: boolean
           description: "True once the single permitted redeal has been taken."
+        legalTargets:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         message:
           type: string
 
     FortyThievesResponse:
       type: object
       properties:
+        legalTargets:
+          type: object
+          description: "Legal destinations keyed by waste or tableau-<column>."
+          additionalProperties:
+            type: object
+            required: [tableau, foundation]
+            properties:
+              tableau:
+                type: array
+                items: { type: integer }
+              foundation:
+                type: array
+                items: { type: integer }
         messageParams:
           type: object
           description: "Substitution values for `messageCode`. Absent when the message takes none."
@@ -78582,6 +79180,10 @@ components:
               score:
                 type: integer
                 description: "This seat's running match score."
+        messageCards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
         message:
           type: string
 
@@ -78921,6 +79523,20 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/Card'
+        legalTargets:
+          type: object
+          additionalProperties:
+            type: object
+            required: [tableau, foundation]
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         hint:
           type: object
           properties:
@@ -79049,6 +79665,11 @@ components:
         result:
           type: integer
           description: "Whether the human seat's side won the deal."
+        discardableIndices:
+          type: array
+          description: "Human hand indices that may be buried during the talon exchange; empty outside the human discard turn."
+          items:
+            type: integer
         playableIndices:
           type: array
           description: "Indices in the human hand that may legally be played now."
@@ -79624,6 +80245,19 @@ components:
     NertzResponse:
       type: object
       properties:
+        legalTargets:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -79893,6 +80527,19 @@ components:
     OsmosisResponse:
       type: object
       properties:
+        legalTargets:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         messageParams:
           type: object
           description: "Substitution values for `messageCode`. Absent when the message takes none."
@@ -80023,6 +80670,28 @@ components:
     PerseveranceResponse:
       type: object
       properties:
+        runStarts:
+          type: array
+          description: Card indices that start a movable run, one array per tableau column.
+          items:
+            type: array
+            items:
+              type: integer
+        legalTargets:
+          type: object
+          description: 'Legal destinations keyed by movable source id ("tableau-<col>-<cardIndex>").'
+          additionalProperties:
+            type: object
+            description: Where that run may move, by destination kind.
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -80714,6 +81383,19 @@ components:
     RankAndFileResponse:
       type: object
       properties:
+        legalTargets:
+          type: object
+          description: "Legal destinations keyed by waste or tableau-<column>-<cardIndex>."
+          additionalProperties:
+            type: object
+            required: [tableau, foundation]
+            properties:
+              tableau:
+                type: array
+                items: { type: integer }
+              foundation:
+                type: array
+                items: { type: integer }
         messageParams:
           type: object
           description: "Substitution values for `messageCode`. Absent when the message takes none."
@@ -80941,6 +81623,20 @@ components:
           type: array
         foundation:
           type: array
+        legalTargets:
+          type: object
+          additionalProperties:
+            type: object
+            required: [tableau, foundation]
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         phase:
           type: integer
         moveCount:
@@ -80970,6 +81666,20 @@ components:
     SalicLawResponse:
       type: object
       properties:
+        legalTargets:
+          type: object
+          description: Legal tableau and foundation destinations keyed by source (for example tableau-0); sources without destinations are omitted.
+          additionalProperties:
+            type: object
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -81250,6 +81960,19 @@ components:
     ScorpionResponse:
       type: object
       properties:
+        legalTargets:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         messageParams:
           type: object
           description: "Substitution values for `messageCode`. Absent when the message takes none."
@@ -81399,6 +82122,11 @@ components:
               type: boolean
             skipped:
               type: boolean
+        rankings:
+          type: array
+          description: Present when the game ends; seat and rank are localized by the client.
+          items:
+            $ref: '#/components/schemas/WebOutputRanking'
         message:
           type: string
         messageCode:
@@ -81407,6 +82135,17 @@ components:
           type: object
           additionalProperties:
             type: string
+
+    WebOutputRanking:
+      type: object
+      description: Untranslated player rank for frontend localization.
+      properties:
+        seat:
+          type: integer
+        rank:
+          type: integer
+        shithead:
+          type: boolean
 
     SixCardGolfResponse:
       type: object
@@ -81824,6 +82563,20 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/Card'
+        legalTargets:
+          type: object
+          description: Legal destinations keyed by source column, e.g. tableau-0. Sources with no destinations are omitted.
+          additionalProperties:
+            type: object
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         totalCardCount:
           type: integer
           description: Total number of cards in the game's deck.
@@ -81894,6 +82647,20 @@ components:
         restrictionsActive:
           type: boolean
           description: Whether the first-deal reachability restriction is still in force
+        legalTargets:
+          type: object
+          description: Legal destinations keyed by tableau source column (tableau-<col>).
+          additionalProperties:
+            type: object
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         phase:
           type: integer
           description: Current game phase (0=Playing, 1=GameClear, 2=GameOver)
@@ -81959,6 +82726,21 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/Card'
+        legalTargets:
+          type: object
+          description: 'Legal destinations for each source column, keyed by source id ("tableau-0").'
+          additionalProperties:
+            type: object
+            description: "Where that source may move, by destination kind."
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         hint:
           type: object
           properties:
@@ -81978,6 +82760,16 @@ components:
       additionalProperties: true
       description: Game state after the command was processed.
       properties:
+        legalTargets:
+          type: object
+          description: Legal foundation destinations keyed by divan-<index> or waste.
+          additionalProperties:
+            type: object
+            required: [foundation]
+            properties:
+              foundation:
+                type: array
+                items: { type: integer }
         phase:
           type: integer
         moveCount:
@@ -82796,6 +83588,19 @@ components:
     WaspResponse:
       type: object
       properties:
+        legalTargets:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              tableau:
+                type: array
+                items:
+                  type: integer
+              foundation:
+                type: array
+                items:
+                  type: integer
         messageParams:
           type: object
           description: "Substitution values for `messageCode`. Absent when the message takes none."
@@ -83069,6 +83874,8 @@ components:
       type: object
       additionalProperties: true
       description: Game state after the command was processed.
+      required:
+        - validPlays
       properties:
         messageCode:
           type: string
@@ -83107,6 +83914,11 @@ components:
           type: integer
         currentPlayerIdx:
           type: integer
+        validPlays:
+          type: array
+          description: Hand indices the human player may legally play now; empty when it is not the human's play turn
+          items:
+            type: integer
         bidPlayerIdx:
           type: integer
         dealerIdx:
@@ -83228,6 +84040,11 @@ components:
           type: integer
         gameEndFlag:
           type: boolean
+        rankings:
+          type: array
+          description: Present when the game ends; seat and rank are localized by the client.
+          items:
+            $ref: '#/components/schemas/WebOutputRanking'
         cpuActions:
           type: array
           items:
@@ -83364,6 +84181,11 @@ components:
           description: Indices in the human player's hand legal to play this turn
           items:
             type: integer
+        playRejectCodes:
+          type: array
+          description: "Per hand card, the message code of the rule that forbids playing it now; empty string when playable. Empty array when it is not the human's play turn."
+          items:
+            type: string
         config:
           type: object
           properties:

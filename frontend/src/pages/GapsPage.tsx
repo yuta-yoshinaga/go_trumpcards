@@ -30,7 +30,6 @@ import { GapsPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt, isSuitDesign, suitSymbol } from '../utils/cardAlt';
 import { valueName } from '../utils/cardUtils';
-import { gapsLockedPrefixLengths } from '../utils/gapsUtils';
 import { isRequestedHint } from '../utils/hintRequest';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -222,7 +221,7 @@ function GapsPageContent() {
   const isGameClear = state.phase === GapsPhase.GAME_CLEAR;
   const isGameOver = state.phase === GapsPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
-  const lockedPrefixLengths = gapsLockedPrefixLengths(state.grid);
+  const lockedPrefixLengths = state.lockedPrefixLengths;
   // Derive the total from the already-computed per-row lengths to avoid a second board pass.
   const lockedTotal = lockedPrefixLengths.reduce((sum, n) => sum + n, 0);
 
@@ -242,11 +241,9 @@ function GapsPageContent() {
       confirmGiveUp={confirmGiveUp}
       cancelGiveUp={cancelGiveUp}
       headerExtra={
-        <>
-          <span>
-            {t('moveCount')}: {state.moveCount}
-          </span>
-        </>
+        <span>
+          {t('moveCount')}: {state.moveCount}
+        </span>
       }
     >
       <ConfirmDialog
@@ -269,7 +266,7 @@ function GapsPageContent() {
           className="mx-auto mb-3 flex w-fit max-w-full flex-col items-start gap-1 overflow-x-auto p-1"
         >
           {state.grid.map((row, rIdx) => {
-            const lockedCount = lockedPrefixLengths[rIdx] ?? 0;
+            const lockedCount = lockedPrefixLengths[rIdx];
             return (
               <div key={`row-${rIdx.toString()}`} className="flex gap-1">
                 {row.map((cell, cIdx) => {

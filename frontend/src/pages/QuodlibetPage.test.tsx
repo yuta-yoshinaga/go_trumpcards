@@ -69,7 +69,18 @@ beforeEach(() => {
 });
 
 describe('QuodlibetPage', () => {
-  it('keeps desktop contract choices in the play area and the message in the footer', async () => {
+  it('keeps only the hand in footer content and places mobile contract choices in footer actions', async () => {
+    mockExec.mockResolvedValue(contractState);
+    renderWithProviders(<QuodlibetPage />);
+    const content = await screen.findByTestId('game-footer-content');
+    expect(content.querySelector('[data-tutorial="quodlibet-player-hand"]')).toBeInTheDocument();
+    expect(content.querySelector('button')).toBeInTheDocument();
+    expect(content.querySelector('[data-testid="quodlibet-hint-live"]')).toBeNull();
+    expect(
+      screen.getByTestId('game-footer-actions').querySelector('[data-testid="quodlibet-contract-choices"]'),
+    ).toBeInTheDocument();
+  });
+  it('keeps desktop contract choices in footer actions and the message in the footer', async () => {
     mockUseCardDimensions.mockReturnValue({
       cardWidth: 40,
       cardHeight: 60,
@@ -87,9 +98,7 @@ describe('QuodlibetPage', () => {
     expect(screen.getByTestId('game-footer-message')).toContainElement(message.closest('[role="status"]'));
     expect(screen.getAllByText('Footer message')).toHaveLength(1);
     expect(choices.querySelectorAll('button').length).toBeGreaterThan(0);
-    expect(
-      choices.compareDocumentPosition(screen.getByTestId('quodlibet-scores')) & Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
+    expect(screen.getByTestId('game-footer-actions')).toContainElement(choices);
   });
 
   it('renders the game message in the play area on mobile', async () => {

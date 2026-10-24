@@ -18,6 +18,8 @@ import (
 func mustMrsMopOutputJSON(msg string) string {
 	out := &controller.MrsMopWebOutput{
 		Tableau:       [][]*controller.MrsMopWebOutputTableauCard{},
+		LegalTargets:  map[string]controller.MrsMopWebOutputTargets{},
+		RunStarts:     [][]int{},
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
@@ -28,7 +30,7 @@ func mustMrsMopOutputJSON(msg string) string {
 }
 
 func TestMrsMopWebController_Method(t *testing.T) {
-	mockOutput := `{"tableau":[],"stockCount":0,"completedSuits":0,"phase":0,"moveCount":0,"canUndo":false,"isStalemate":false,"score":0,"difficulty":0,"message":""}`
+	mockOutput := `{"tableau":[],"stockCount":0,"completedSuits":0,"phase":0,"moveCount":0,"canUndo":false,"isStalemate":false,"score":0,"difficulty":0,"legalTargets":{},"runStarts":[],"message":""}`
 	expectedBody := mockOutput
 
 	siMock := new(usecase.MockMrsMopInteractor)

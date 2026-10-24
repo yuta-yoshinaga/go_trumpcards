@@ -733,3 +733,28 @@ func TestKoenigrufenHoldsCalledKing(t *testing.T) {
 	g.SetCalledKing(-1)
 	assert.False(t, g.KoenigrufenHoldsCalledKing(1))
 }
+
+func TestKoenigrufenDiscardableIndicesMatchesDiscardRules(t *testing.T) {
+	g := domain.NewDefaultKoenigrufen()
+	p := g.GetPlayer(0)
+	p.Reset()
+	cards := []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 1, false),
+		domain.NewCard(domain.CardDesignHeart, domain.KoenigrufenKingValue, false),
+		domain.NewCard(domain.KoenigrufenSkusDesign, domain.KoenigrufenSkusValue, false),
+		domain.NewCard(domain.KoenigrufenTrumpDesign, 1, false),
+		domain.NewCard(domain.KoenigrufenTrumpDesign, 5, false),
+	}
+	for _, c := range cards {
+		p.AddCard(c)
+	}
+	assert.Equal(t, []int{0, 4}, g.DiscardableIndices(0))
+	p.Reset()
+	for i := 0; i < 6; i++ {
+		p.AddCard(domain.NewCard(domain.CardDesignSpade, i+1, false))
+	}
+	for i := 0; i < 2; i++ {
+		p.AddCard(domain.NewCard(domain.KoenigrufenTrumpDesign, i+2, false))
+	}
+	assert.Equal(t, []int{0, 1, 2, 3, 4, 5}, g.DiscardableIndices(0))
+}

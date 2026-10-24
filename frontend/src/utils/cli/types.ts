@@ -26,8 +26,7 @@ export interface CliGameConfig<TState, TArgs extends unknown[]> {
    * through to {@link parseCommand}.
    *
    * Some commands only report on state the page already holds — Wasp's `legal`
-   * lists the columns a card may move onto, which `waspLegalTargets` derives
-   * client-side (#4792). Routing those through the server would add an API
+   * lists the columns a card may move onto from response state (#4792). Routing those through the server would add an API
    * action that computes nothing new.
    */
   localCommand?: (input: string) => string | null;

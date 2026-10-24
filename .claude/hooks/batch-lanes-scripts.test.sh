@@ -65,8 +65,10 @@ EOF
   printf "const label = 'replacementText here';\nconst other = \"anotherText\";\nexport const x = label + other;\n" > "$ig_strings/a.ts"
   output=$(bash "$SCRIPTS/identgone.sh" "$ig_strings")
   [[ -z "$output" ]] || fail "identgone counted words inside single or double quoted strings: $output"
-  output=$(ALLOW_IDENT_GONE='isMobile obsoleteHelper countMismatch moveBar behaviour jsxAfter mobileCheck mobileCheckUse mobileState useState' bash "$SCRIPTS/identgone.sh" "$repo") || fail "identgone.sh failed with allowlist"
-  [ -z "$output" ] || fail "ALLOW_IDENT_GONE did not suppress warning: $output"
+  output=$(ALLOW_IDENT_GONE='isMobile' bash "$SCRIPTS/identgone.sh" "$repo") || fail "identgone.sh failed with valid allowlist"
+  [[ "$output" != *'ALLOW_IDENT_GONE_INVALID'* ]] || fail "valid ALLOW_IDENT_GONE path rejected: $output"
+  output=$(ALLOW_IDENT_GONE='1' bash "$SCRIPTS/identgone.sh" "$repo") || fail "identgone.sh failed with invalid allowlist"
+  grep -qx 'WARN ALLOW_IDENT_GONE_INVALID 1' <<<"$output" || fail "invalid ALLOW_IDENT_GONE entry was not reported: $output"
 ) || exit 1
 
 # Deleted paths are silent; Go raw strings are ignored while Go code is scanned.
@@ -85,6 +87,7 @@ EOF
   ! grep -q deletedName <<<"$output" || fail "deleted file produced output: $output"
   mkdir "$tmp/no-python"
   ln -s "$(command -v git)" "$tmp/no-python/git"
+  ln -s "$(command -v dirname)" "$tmp/no-python/dirname"
   bash_path=$(command -v bash)
   output=$(PATH="$tmp/no-python" "$bash_path" "$SCRIPTS/identgone.sh" "$repo") || fail "missing-python path returned nonzero"
   [ "$output" = 'NOTE IDENT_GONE python3 unavailable' ] || fail "missing-python note incorrect: $output"
@@ -143,6 +146,27 @@ GH
   grep -qx 'WARN LANE_OVERLAP shared slots=1,2' <<<"$out" || fail "overlap.sh skipped a dirty detached lane: $out"
 ) || exit 1
 grep -q 'overlap.sh" "\$1" >> "\$BATCH_STATE/rc\$1.txt"' "$SCRIPTS/rc.sh" || fail "rc.sh no longer records overlap.sh in the receipt"
+grep -q 'adrcheck.sh" "\$1" >> "\$BATCH_STATE/rc\$1.txt"' "$SCRIPTS/rc.sh" || fail "rc.sh no longer records adrcheck.sh in the receipt"
+
+# adrcheck.sh uses the lane's changed paths and allows orchestrator-written ADR progress lines.
+(
+  repo="$tmp/adrcheck"; root="$tmp/adrcheck-lanes"; state="$tmp/adrcheck-state"
+  mkdir -p "$root"; git init -q --bare "$tmp/adrcheck-origin.git"; git init -q "$repo"
+  git -C "$repo" config user.email test@example.com; git -C "$repo" config user.name test
+  mkdir -p "$repo/docs/adr"; printf 'base\n' > "$repo/tracked"; printf 'decision\n' > "$repo/docs/adr/0001-test.md"
+  git -C "$repo" add tracked docs/adr/0001-test.md; git -C "$repo" commit -qm base
+  git -C "$repo" branch -M develop; git -C "$repo" remote add origin "$tmp/adrcheck-origin.git"
+  git -C "$repo" push -q -u origin develop; git -C "$repo" fetch -q origin
+  git -C "$repo" worktree add -qb lane "$root/wt-ib1" origin/develop
+  printf 'progress\n' >> "$root/wt-ib1/docs/adr/0001-test.md"
+  out=$(BATCH_REPO="$repo" BATCH_WT_ROOT="$root" BATCH_STATE="$state" bash "$SCRIPTS/adrcheck.sh" 1)
+  grep -qx 'WARN ADR_EDIT docs/adr/0001-test.md' <<<"$out" || fail "adrcheck.sh missed ADR edit: $out"
+  out=$(ALLOW_ADR_EDIT=1 BATCH_REPO="$repo" BATCH_WT_ROOT="$root" BATCH_STATE="$state" bash "$SCRIPTS/adrcheck.sh" 1)
+  [[ -z "$out" ]] || fail "adrcheck.sh ignored ALLOW_ADR_EDIT: $out"
+  printf 'decision\n' > "$root/wt-ib1/docs/adr/0001-test.md"
+  out=$(BATCH_REPO="$repo" BATCH_WT_ROOT="$root" BATCH_STATE="$state" bash "$SCRIPTS/adrcheck.sh" 1)
+  [[ -z "$out" ]] || fail "adrcheck.sh warned on unchanged ADR: $out"
+)
 ! grep -R -nE 'git status --porcelain \| awk' "$SCRIPTS" || fail "status paths are parsed as whitespace fields"
 if grep -R -n '/tmp/' "$SCRIPTS" >"$tmp/tmp-paths.out" 2>&1; then
   fail "batch scripts contain hardcoded /tmp paths: $(cat "$tmp/tmp-paths.out")"
@@ -151,11 +175,12 @@ fi
 ! grep -q 'gh pr view .*codecov' "$SCRIPTS/land.sh" || fail "land.sh retains result-free codecov pipeline"
 grep -q 'CLAUDE_CO_AUTHOR' "$SCRIPTS/ship.sh" || fail "ship.sh does not support CLAUDE_CO_AUTHOR"
 grep -q 'BATCH_DELEGATED_TO' "$SCRIPTS/ship.sh" || fail "ship.sh does not support BATCH_DELEGATED_TO"
-grep -q 'Delegated-To:.*BATCH_DELEGATED_TO:-codex (dele -k edit)' "$SCRIPTS/fixpush.sh" || fail "fixpush.sh does not retain the default delegated-to metadata"
+grep -q 'Delegated-To:.*delegated_to' "$SCRIPTS/fixpush.sh" || fail "fixpush.sh does not write inferred delegated-to metadata"
 grep -q 'gh pr merge .*>/dev/null' "$SCRIPTS/land.sh" || fail "land.sh does not suppress merge stdout"
 grep -q 'Failed to merge PR' "$SCRIPTS/land.sh" || fail "land.sh does not report merge failures"
 grep -q 'go_trumpcards 固有の規約' "$SCRIPTS/receipt.sh" || fail "receipt.sh does not explain project-specific conventions"
 grep -qF '[ -f "$t.test.ts" ] || [ -f "$t.test.tsx" ]' "$SCRIPTS/receipt.sh" || fail "receipt.sh MISSING_TEST must accept a .test.tsx file for a .ts source (hooks are often tested with providers in .tsx)"
+grep -qF '! "$file" =~ \.test\. && -f "$file" ]] && new_sources+=' "$SCRIPTS/receipt.sh" || fail "receipt.sh MISSING_TEST must skip a deleted source (deleting a rule mirror and its test is not a missing test)"
 grep -qP '(?<!\\)`' "$SCRIPTS/mkprompt.sh" && fail "mkprompt.sh has an unescaped backtick: its heredoc is unquoted, so bash runs the quoted text as a command and drops it from every lane prompt"
 sed -n '/^cat <<P$/,/^P$/p' "$SCRIPTS/mkprompt.sh" | grep -qP '(?<!\\)\$(?!n\b|body\b)' && fail "mkprompt.sh has a bare dollar in its unquoted heredoc; bash expands it to empty and removes a word from the instructions"
 grep -q 'dele' "$ROOT/.claude/skills/batch-lanes/SKILL.md" || fail "SKILL.md does not document dele"
@@ -236,6 +261,7 @@ export BATCH_STATE="$tmp/state"
 cat >"$tmp/dele" <<'STUB'
 #!/usr/bin/env bash
 touch "$DELE_CALLED"
+printf 'delegated\n' > "$DELE_WORKTREE/result"
 STUB
 chmod +x "$tmp/dele"
 if PATH="$tmp:$PATH" DELE_CALLED="$tmp/called" \
@@ -244,10 +270,57 @@ if PATH="$tmp:$PATH" DELE_CALLED="$tmp/called" \
 fi
 [ ! -e "$tmp/called" ] || fail "go.sh invoked dele without a prompt"
 mkdir -p "$tmp/wt-ib1"
+git -C "$tmp/wt-ib1" init -q
+git -C "$tmp/wt-ib1" config user.email test@example.com
+git -C "$tmp/wt-ib1" config user.name test
+printf 'base\n' > "$tmp/wt-ib1/base"
+git -C "$tmp/wt-ib1" add base && git -C "$tmp/wt-ib1" commit -qm base
 printf 'delegate this issue\n' > "$tmp/prompt.md"
-PATH="$tmp:$PATH" DELE_CALLED="$tmp/called" BATCH_WT_ROOT="$tmp" \
+PATH="$tmp:$PATH" DELE_CALLED="$tmp/called" DELE_WORKTREE="$tmp/wt-ib1" BATCH_WT_ROOT="$tmp" \
   bash "$SCRIPTS/go.sh" 1 123 "$tmp/prompt.md" >/dev/null 2>&1 || fail "go.sh rejected a non-empty prompt"
 [ -e "$tmp/called" ] || fail "go.sh did not invoke dele for a valid prompt"
+cat >"$tmp/dele" <<'STUB'
+#!/usr/bin/env bash
+exit 0
+STUB
+chmod +x "$tmp/dele"
+mkdir -p "$tmp/empty-state"
+if PATH="$tmp:$PATH" BATCH_STATE="$tmp/empty-state" BATCH_WT_ROOT="$tmp" \
+  bash "$SCRIPTS/go.sh" 1 124 "$tmp/prompt.md" >"$tmp/no-change.out" 2>&1; then
+  fail "go.sh accepted a successful delegation with no work"
+fi
+grep -q '^WARN NO_CHANGE' "$tmp/no-change.out" || fail "go.sh omitted NO_CHANGE warning: $(cat "$tmp/no-change.out")"
+
+# The prompt template may be echoed into the delegate log; only a report whose
+# first line is NOT_PLANNED can suppress NO_CHANGE.
+cat >"$tmp/dele" <<'STUB'
+#!/usr/bin/env bash
+printf '%s\n' 'The instructions say: write VERDICT: NOT_PLANNED only when the premise is wrong.'
+printf '%s\n' 'VERDICT: IMPLEMENTED'
+exit 0
+STUB
+chmod +x "$tmp/dele"
+if PATH="$tmp:$PATH" BATCH_STATE="$tmp/empty-state" BATCH_WT_ROOT="$tmp" \
+  bash "$SCRIPTS/go.sh" 1 126 "$tmp/prompt.md" >"$tmp/template-no-change.out" 2>&1; then
+  fail "go.sh accepted an unchanged delegation whose prompt quoted NOT_PLANNED"
+fi
+grep -q '^WARN NO_CHANGE' "$tmp/template-no-change.out" || fail "go.sh suppressed NO_CHANGE because prompt text contained NOT_PLANNED: $(cat "$tmp/template-no-change.out")"
+
+# A pre-existing modified file must still count as work when the delegate edits it again.
+printf 'initial edit\n' >> "$tmp/wt-ib1/base"
+cat >"$tmp/dele" <<'STUB'
+#!/usr/bin/env bash
+printf 'delegated edit\n' >> "$DELE_WORKTREE/base"
+exit 0
+STUB
+chmod +x "$tmp/dele"
+if PATH="$tmp:$PATH" BATCH_STATE="$tmp/empty-state" BATCH_WT_ROOT="$tmp" \
+  DELE_WORKTREE="$tmp/wt-ib1" bash "$SCRIPTS/go.sh" 1 125 "$tmp/prompt.md" >"$tmp/changed-existing.out" 2>&1; then
+  :
+else
+  fail "go.sh rejected a successful edit to an already modified file: $(cat "$tmp/changed-existing.out")"
+fi
+! grep -q '^WARN NO_CHANGE' "$tmp/changed-existing.out" || fail "go.sh warned NO_CHANGE after editing an already modified file"
 
 if BATCH_REPO="$ROOT" bash "$SCRIPTS/sweep.sh" >"$tmp/sweep.out" 2>&1; then
   fail "sweep.sh accepted an unset BATCH_BRANCH_RE"
@@ -380,6 +453,35 @@ BATCH_STATE="$tmp/testing-state" BATCH_TESTING=1 bash "$SCRIPTS/receipt.sh" 1 ||
 [ "$(page_test_for frontend/src/pages/ExamplePage.tsx)" = "frontend/src/pages/ExamplePage.test.tsx" ] || fail "page test mapping"
 [ "$(page_test_for frontend/src/utils/cards/cardValue.ts)" = "frontend/src/utils/cards/cardValue.test.ts" ] || fail "utility test mapping"
 [ -z "$(page_test_for frontend/src/pages/ExamplePage.test.tsx)" ] || fail "test file mapped as source"
+(
+  game_repo="$tmp/receipt-games"
+  mkdir -p "$game_repo/frontend/src/constants" "$game_repo/frontend/src/pages"
+  printf "export const gameRoutes = [\n  { path: '/unsunkaruta', page: 'UnsunKaruta' },\n  { path: '/five-card-stud', page: 'FiveCardStud' },\n  { path: '/warlords', page: 'WarlordsWebPresenter' },\n  { path: '/war', page: 'War' },\n];\n" > "$game_repo/frontend/src/constants/gameRoutes.ts"
+  touch "$game_repo/frontend/src/pages/UnsunKarutaPage.test.tsx"
+  touch "$game_repo/frontend/src/pages/FiveCardStudPage.test.tsx"
+  touch "$game_repo/frontend/src/pages/WarPage.test.tsx"
+  touch "$game_repo/frontend/src/pages/WarlordsWebPresenterPage.test.tsx"
+  selected=$(receipt_game_tests "$game_repo" feat/1-unsunkaruta-labels)
+  grep -qx 'frontend/src/pages/UnsunKarutaPage.test.tsx' <<<"$selected" || fail "receipt missed route test from game branch: $selected"
+  selected=$(receipt_game_tests "$game_repo" feat/1-five-card-stud-fix)
+  grep -qx 'frontend/src/pages/FiveCardStudPage.test.tsx' <<<"$selected" || fail "receipt missed multiword game route test: $selected"
+  RECEIPT_CHANGED=(internal/domain/warlords/WarlordsWebPresenter.go)
+  selected=$(receipt_game_tests "$game_repo" feat/1-warlords-change)
+  grep -qx 'frontend/src/pages/WarlordsWebPresenterPage.test.tsx' <<<"$selected" || fail "receipt did not match exact Warlords branch name: $selected"
+  if [[ "$selected" == *WarPage.test.tsx* ]]; then fail "Warlords branch selected WarPage.test.tsx: $selected"; fi
+  path=outer-path
+  RECEIPT_CHANGED=(internal/i18n/locales/ja/Other.json)
+  receipt_game_tests "$game_repo" feat/1-no-such-game >/dev/null
+  [[ "$path" == outer-path ]] || fail "receipt_game_tests leaked its path variable into caller scope"
+  selected=$(receipt_game_tests "$game_repo" feat/1-no-such-game)
+  grep -qx 'WARN NO_TEST_MATCH' <<<"$selected" || fail "receipt did not warn on empty test selection: $selected"
+  RECEIPT_CHANGED=(internal/adapter/presenter/web_presenter_i18n_guard_test.go)
+  selected=$(receipt_game_tests "$game_repo" feat/1-no-such-game)
+  [[ -z "$selected" ]] || fail "receipt warned on a change no page renders: $selected"
+  RECEIPT_CHANGED=(internal/adapter/presenter/web_presenter_i18n_guard_test.go frontend/src/utils/x.ts)
+  selected=$(receipt_game_tests "$game_repo" feat/1-no-such-game)
+  grep -qx 'WARN NO_TEST_MATCH' <<<"$selected" || fail "receipt did not warn when a frontend file changed: $selected"
+) || exit 1
 BATCH_TESTING=1 source "$SCRIPTS/waitdone.sh"
 printf '100\n' > "$tmp/start"
 printf '99 101\n' > "$tmp/result"
@@ -463,14 +565,23 @@ grep -q '^CONFLICT feat/22-conflict shared$' "$tmp/combined-conflict.out" || fai
 # e2egate selects page runs, full sweeps, imported helper specs, and no-op diffs.
 make_e2egate_case() {
   local name="$1" changed="$2" repo="$tmp/e2egate-$1" wtroot="$tmp/e2egate-wts-$1"
-  mkdir -p "$repo/frontend/src/pages" "$repo/frontend/src/constants" "$repo/frontend/e2e" "$wtroot"
+  mkdir -p "$repo/frontend/src/pages" "$repo/frontend/src/constants" "$repo/frontend/e2e" "$repo/internal/adapter/presenter" "$wtroot"
   git init -q "$repo"; git -C "$repo" config user.email test@example.com; git -C "$repo" config user.name test
   printf "export const gameRoutes = [{ path: '/wrong' }, { path: '/poker', page: 'Poker' }, { path: '/', page: 'BlackJack' }];\n" > "$repo/frontend/src/constants/gameRoutes.ts"
-  for spec in desktop-board-visibility desktop-hand-visibility game-message-visibility hand-visibility mobile-viewport text-contrast duplicate-text poker poker-paytable-mobile pokerx; do touch "$repo/frontend/e2e/$spec.spec.ts"; done
-  mkdir -p "$repo/frontend/src/components" "$repo/frontend/src/i18n/locales/en"
+  for spec in desktop-board-visibility desktop-hand-visibility game-message-visibility mobile-viewport text-contrast route-sweep poker poker-paytable-mobile pokerx blackjack; do touch "$repo/frontend/e2e/$spec.spec.ts"; done
+  mkdir -p "$repo/frontend/src/components" "$repo/frontend/src/i18n/locales/en" "$repo/frontend/src/types" "$repo/frontend/src/utils"
   printf "import { helper } from './helpers';\n" > "$repo/frontend/e2e/poker.spec.ts"
   touch "$repo/frontend/e2e/helpers.ts" "$repo/frontend/src/components/Other.tsx" "$repo/frontend/src/i18n/locales/en/common.json" "$repo/frontend/src/components/a.test.tsx"
+  printf 'export interface Thing { name: string }\nexport const runtime = true;\n' > "$repo/frontend/src/types/index.ts"
+  printf 'export const helper = true;\n' > "$repo/frontend/src/utils/obsolete.ts"
   touch "$repo/frontend/src/pages/PokerPage.tsx" "$repo/frontend/src/components/GameFooter.tsx" "$repo/frontend/base.ts"
+  touch "$repo/frontend/src/pages/BlackJackPage.tsx" "$repo/internal/adapter/presenter/BlackjackWebPresenter.go"
+  printf "import { PokerWidget } from '../components/poker/PokerWidget';\\n" > "$repo/frontend/src/pages/PokerPage.tsx"
+  touch "$repo/frontend/src/pages/OtherPage.tsx"
+  mkdir -p "$repo/frontend/src/components/poker"
+  mkdir -p "$repo/frontend/src/components/blackjack"
+  touch "$repo/frontend/src/components/blackjack/BlackjackWidget.tsx"
+  touch "$repo/frontend/src/components/poker/PokerWidget.tsx" "$repo/internal/adapter/presenter/PokerWebPresenter.go" "$repo/internal/adapter/presenter/UnknownWebPresenter.go"
   git -C "$repo" add .
   tree=$(git -C "$repo" write-tree)
   commit=$(printf "base\n" | git -C "$repo" -c user.name=test -c user.email=test@example.com commit-tree "$tree")
@@ -483,33 +594,96 @@ make_e2egate_case() {
     helper) printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/e2e/helpers.ts" ;;
     spec) printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/e2e/poker.spec.ts" ;;
     ignored) printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/src/i18n/locales/en/common.json"; printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/src/components/a.test.tsx" ;;
+    missing) rm "$wtroot/wt-ib1/frontend/e2e/route-sweep.spec.ts"; printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/src/components/Other.tsx" ;;
+    deleted_type_page) rm "$wtroot/wt-ib1/frontend/src/utils/obsolete.ts"; printf '\nexport type Other = string;\n' >> "$wtroot/wt-ib1/frontend/src/types/index.ts"; printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/src/pages/PokerPage.tsx" ;;
+    type_runtime) sed -i 's/export const runtime = true;/export const runtime = false;/' "$wtroot/wt-ib1/frontend/src/types/index.ts" ;;
+    type_large) for ((i=0; i<2200; i++)); do printf '// %s\n' 'large type-only comment padding line with enough bytes to exceed the pipe buffer' >> "$wtroot/wt-ib1/frontend/src/types/index.ts"; done; sed -i 's/export const runtime = true;/export const runtime = false;/' "$wtroot/wt-ib1/frontend/src/types/index.ts" ;;
+    restored_deleted) cp "$wtroot/wt-ib1/frontend/src/utils/obsolete.ts" "$tmp/e2egate-restored-source"; rm "$wtroot/wt-ib1/frontend/src/utils/obsolete.ts"; git -C "$wtroot/wt-ib1" add frontend/src/utils/obsolete.ts; cp "$tmp/e2egate-restored-source" "$wtroot/wt-ib1/frontend/src/utils/obsolete.ts" ;;
+    deleted_component) rm "$wtroot/wt-ib1/frontend/src/utils/obsolete.ts"; printf "\n// edit\n" >> "$wtroot/wt-ib1/frontend/src/components/Other.tsx" ;;
+    presenter) printf '\n// edit\n' >> "$wtroot/wt-ib1/internal/adapter/presenter/PokerWebPresenter.go" ;;
+    presenter_unmapped) printf '\n// edit\n' >> "$wtroot/wt-ib1/internal/adapter/presenter/UnknownWebPresenter.go" ;;
+    game_component) printf '\n// edit\n' >> "$wtroot/wt-ib1/frontend/src/components/poker/PokerWidget.tsx" ;;
+    game_component_other) printf "import { PokerWidget } from '../components/poker/PokerWidget';\\n" >> "$wtroot/wt-ib1/frontend/src/pages/OtherPage.tsx"; printf '\n// edit\n' >> "$wtroot/wt-ib1/frontend/src/components/poker/PokerWidget.tsx" ;;
+    game_component_shared) printf "import { PokerWidget } from './poker/PokerWidget';\\n" >> "$wtroot/wt-ib1/frontend/src/components/Shared.tsx"; printf '\n// edit\n' >> "$wtroot/wt-ib1/frontend/src/components/poker/PokerWidget.tsx" ;;
+    presenter_case) printf '\n// edit\n' >> "$wtroot/wt-ib1/internal/adapter/presenter/BlackjackWebPresenter.go" ;;
+    component_case) printf '\n// edit\n' >> "$wtroot/wt-ib1/frontend/src/components/blackjack/BlackjackWidget.tsx" ;;
+    shared_component) printf '\n// edit\n' >> "$wtroot/wt-ib1/frontend/src/components/GameFooter.tsx"; printf "import { GameFooter } from '../components/GameFooter';\\n" >> "$wtroot/wt-ib1/frontend/src/pages/OtherPage.tsx" ;;
   esac
+  if [[ "$changed" == missing ]]; then
+    error="$tmp/e2egate-missing.err"
+    if E2E_SWEEP_REPEAT=3 BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$SCRIPTS/e2egate.sh" --dry-run 1 >"$tmp/e2egate-missing.out" 2>"$error"; then
+      fail "e2egate accepted missing route-sweep spec"
+    else
+      status=$?
+      [[ $status == 2 ]] || fail "missing sweep spec exited $status instead of 2"
+    fi
+    grep -qx 'e2egate: sweep spec route-sweep.spec.ts does not exist' "$error" || fail "missing sweep diagnostic incorrect: $(cat "$error")"
+    return
+  fi
   output=$(E2E_SWEEP_REPEAT=3 BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$SCRIPTS/e2egate.sh" --dry-run 1) || fail "e2egate $name dry-run failed"
-  if [[ "$changed" == shared || "$changed" == component ]]; then
-    for spec in desktop-board-visibility desktop-hand-visibility game-message-visibility hand-visibility mobile-viewport text-contrast duplicate-text; do grep -q "e2e/$spec.spec.ts" <<< "$output" || fail "sweep omitted $spec: $output"; done
+  if [[ "$changed" == shared || "$changed" == component || "$changed" == type_runtime || "$changed" == type_large || "$changed" == deleted_component || "$changed" == restored_deleted || "$changed" == shared_component ]]; then
+    for spec in desktop-board-visibility desktop-hand-visibility game-message-visibility mobile-viewport text-contrast route-sweep; do grep -q "e2e/$spec.spec.ts" <<< "$output" || fail "sweep omitted $spec: $output"; done
   elif [[ "$changed" == page ]]; then
-    grep -q 'run 1: e2e/poker.spec.ts$' <<< "$output" || fail "page game spec has grep or was omitted: $output"
-    grep -q 'run 2: e2e/poker-paytable-mobile.spec.ts$' <<< "$output" || fail "page route extra spec was omitted: $output"
+    if E2E_PAGE_REPEAT=bad BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$SCRIPTS/e2egate.sh" --dry-run 1 >"$tmp/e2egate-page-repeat.out" 2>"$tmp/e2egate-page-repeat.err"; then
+      fail "e2egate accepted nonnumeric E2E_PAGE_REPEAT"
+    else
+      [[ $? == 2 ]] || fail "invalid E2E_PAGE_REPEAT did not exit 2"
+    fi
+    grep -qx 'E2E_PAGE_REPEAT must be numeric' "$tmp/e2egate-page-repeat.err" || fail "invalid E2E_PAGE_REPEAT diagnostic missing"
+    grep -qF 'run 1: e2e/poker-paytable-mobile.spec.ts e2e/poker.spec.ts --repeat-each=3' <<< "$output" || fail "repeated page specs missing from separate run: $output"
     ! grep -q 'pokerx.spec.ts' <<< "$output" || fail "page route selected a spec without a hyphen boundary: $output"
-    grep -qF 'run 3: e2e/desktop-board-visibility.spec.ts' <<< "$output" || fail "page sweep run omitted: $output"
+    grep -qF 'run 2: e2e/desktop-board-visibility.spec.ts' <<< "$output" || fail "page sweep run omitted: $output"
     grep -qF -- '--grep /poker\b --pass-with-no-tests --repeat-each=3' <<< "$output" || fail "page sweep omitted route grep/pass-with-no-tests/repeat: $output"
     output_once=$(E2E_SWEEP_REPEAT=1 BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$SCRIPTS/e2egate.sh" --dry-run 1) || fail "e2egate $name repeat=1 dry-run failed"
-    ! grep -q -- '--repeat-each' <<<"$output_once" || fail "repeat=1 dry-run added repeat arg: $output_once"
+    ! grep -qF -- '--grep /poker\b --pass-with-no-tests --repeat-each' <<<"$output_once" || fail "sweep repeat=1 still added sweep repeat arg: $output_once"
     exec_scripts="$tmp/e2egate-exec-$name"
     mkdir -p "$exec_scripts"
-    cp "$SCRIPTS/common.sh" "$SCRIPTS/e2egate.sh" "$exec_scripts/"
+    cp "$SCRIPTS/common.sh" "$SCRIPTS/allowlist.sh" "$SCRIPTS/e2egate.sh" "$exec_scripts/"
     cat > "$exec_scripts/e2e.sh" <<'STUB'
 #!/usr/bin/env bash
-printf '%s\n' "$@" > "$E2EGATE_ARGS"
+    printf '%s\n' "$@" >> "$E2EGATE_ARGS"
+    printf '%s\n' '---CALL---' >> "$E2EGATE_ARGS"
 STUB
     chmod +x "$exec_scripts/e2e.sh"
     E2E_SWEEP_REPEAT=3 E2EGATE_ARGS="$tmp/e2egate-args-$name" BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$exec_scripts/e2egate.sh" 1 || fail "page e2egate execution failed"
     expected="$tmp/e2egate-expected-$name"
-    printf '%s\n' 1 e2e/poker.spec.ts e2e/poker-paytable-mobile.spec.ts --- e2e/desktop-board-visibility.spec.ts e2e/desktop-hand-visibility.spec.ts e2e/duplicate-text.spec.ts e2e/game-message-visibility.spec.ts e2e/hand-visibility.spec.ts e2e/mobile-viewport.spec.ts e2e/text-contrast.spec.ts --grep '/poker\b' --pass-with-no-tests --repeat-each=3 > "$expected"
+    printf '%s\n' 1 e2e/poker-paytable-mobile.spec.ts e2e/poker.spec.ts --repeat-each=3 ---CALL--- 1 e2e/desktop-board-visibility.spec.ts e2e/desktop-hand-visibility.spec.ts e2e/game-message-visibility.spec.ts e2e/mobile-viewport.spec.ts e2e/route-sweep.spec.ts e2e/text-contrast.spec.ts --grep '/poker\b' --pass-with-no-tests --repeat-each=3 ---CALL--- > "$expected"
     diff -u "$expected" "$tmp/e2egate-args-$name" || fail "page execution passed wrong args"
     E2E_SWEEP_REPEAT=1 E2EGATE_ARGS="$tmp/e2egate-args-$name" BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$exec_scripts/e2egate.sh" 1 || fail "page e2egate repeat=1 execution failed"
-    ! grep -q -- '--repeat-each' "$tmp/e2egate-args-$name" || fail "repeat=1 added repeat arg"
+    grep -q -- '--repeat-each=3' "$tmp/e2egate-args-$name" || fail "page repeat was removed when sweep repeat=1"
     ! grep -q 'e2e/e2e/' "$tmp/e2egate-args-$name" || fail "page execution doubled e2e prefix"
+  elif [[ "$changed" == presenter || "$changed" == game_component ]]; then
+    grep -q '^run 1: e2e/poker-paytable-mobile.spec.ts e2e/poker.spec.ts --repeat-each=3$' <<< "$output" || fail "$changed did not repeat its page spec: $output"
+    grep -qF -- '--grep /poker\b --pass-with-no-tests --repeat-each=3' <<< "$output" || fail "$changed did not route-filter the sweep: $output"
+    ! grep -q 'pokerx.spec.ts' <<< "$output" || fail "$changed overmatched another game spec: $output"
+  elif [[ "$changed" == presenter_case || "$changed" == component_case ]]; then
+    grep -q '^run 1: e2e/blackjack.spec.ts --repeat-each=3$' <<< "$output" || fail "$changed did not case-insensitively select the page: $output"
+    grep -qF -- '--grep /blackjack\b --pass-with-no-tests --repeat-each=3' <<< "$output" || fail "$changed did not select the blackjack route sweep: $output"
+  elif [[ "$changed" == game_component_other || "$changed" == game_component_shared ]]; then
+    for spec in desktop-board-visibility desktop-hand-visibility game-message-visibility mobile-viewport text-contrast route-sweep; do grep -q "e2e/$spec.spec.ts" <<< "$output" || fail "cross-game component edit omitted full sweep $spec: $output"; done
+  elif [[ "$changed" == presenter_unmapped ]]; then
+    [[ "$output" == 'NOTE e2egate: no page for internal/adapter/presenter/UnknownWebPresenter.go' ]] || fail "unmapped presenter note incorrect: $output"
+    exec_scripts="$tmp/e2egate-exec-$name"
+    mkdir -p "$exec_scripts"
+    cp "$SCRIPTS/common.sh" "$SCRIPTS/allowlist.sh" "$SCRIPTS/e2egate.sh" "$exec_scripts/"
+    printf '#!/usr/bin/env bash\nexit 0\n' > "$exec_scripts/e2e.sh"
+    chmod +x "$exec_scripts/e2e.sh"
+    BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$exec_scripts/e2egate.sh" 1 >"$tmp/e2egate-real.out" 2>"$tmp/e2egate-real.err" || fail "unmapped presenter runtime failed"
+    grep -qx 'NOTE e2egate: no page for internal/adapter/presenter/UnknownWebPresenter.go' "$tmp/e2egate-real.err" || fail "unmapped presenter runtime note missing: $(cat "$tmp/e2egate-real.err")"
+  elif [[ "$changed" == deleted_type_page ]]; then
+    grep -q '^run 1: e2e/poker-paytable-mobile.spec.ts e2e/poker.spec.ts --repeat-each=3$' <<< "$output" || fail "page game spec omitted with deleted/type-only changes: $output"
+    grep -qF -- '--grep /poker\b --pass-with-no-tests --repeat-each=3' <<< "$output" || fail "page route-filtered sweep omitted for deleted/type-only changes: $output"
+    [[ $(grep -c '^run ' <<< "$output") == 2 ]] || fail "deleted/type-only changes triggered an unfiltered sweep: $output"
+    grep -q 'NOTE e2egate skipped full sweep for frontend/src/utils/obsolete.ts (deleted source)' <<< "$output" || fail "deleted source note omitted: $output"
+    grep -q 'NOTE e2egate skipped full sweep for frontend/src/types/index.ts (type-only diff)' <<< "$output" || fail "type-only note omitted: $output"
+    exec_scripts="$tmp/e2egate-exec-$name"
+    mkdir -p "$exec_scripts"
+    cp "$SCRIPTS/common.sh" "$SCRIPTS/allowlist.sh" "$SCRIPTS/e2egate.sh" "$exec_scripts/"
+    printf '#!/usr/bin/env bash\nprintf "%%s\\n" "$@" > "$E2EGATE_ARGS"\n' > "$exec_scripts/e2e.sh"
+    chmod +x "$exec_scripts/e2e.sh"
+    E2E_SWEEP_REPEAT=1 E2EGATE_ARGS="$tmp/e2egate-args-$name" BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-state-$name" bash "$exec_scripts/e2egate.sh" 1 >"$tmp/e2egate-real.out" 2>"$tmp/e2egate-real.err" || fail "real e2egate execution failed"
+    grep -q '^NOTE e2egate skipped full sweep for frontend/src/utils/obsolete.ts (deleted source)$' "$tmp/e2egate-real.err" || fail "real run omitted deleted source note: $(cat "$tmp/e2egate-real.err")"
+    grep -q '^NOTE e2egate skipped full sweep for frontend/src/types/index.ts (type-only diff)$' "$tmp/e2egate-real.err" || fail "real run omitted type-only note: $(cat "$tmp/e2egate-real.err")"
   elif [[ "$changed" == helper ]]; then
     grep -q 'run 1: e2e/poker.spec.ts' <<< "$output" || fail "helper edit omitted importing spec: $output"
     [[ $(grep -c '^run ' <<< "$output") == 1 ]] || fail "helper edit selected non-importing specs: $output"
@@ -517,7 +691,7 @@ STUB
     grep -q 'run 1: e2e/poker.spec.ts$' <<< "$output" || fail "spec-only edit omitted its spec: $output"
     exec_scripts="$tmp/e2egate-exec-$name"
     mkdir -p "$exec_scripts"
-    cp "$SCRIPTS/common.sh" "$SCRIPTS/e2egate.sh" "$exec_scripts/"
+    cp "$SCRIPTS/common.sh" "$SCRIPTS/allowlist.sh" "$SCRIPTS/e2egate.sh" "$exec_scripts/"
     cat > "$exec_scripts/e2e.sh" <<'STUB'
 #!/usr/bin/env bash
 printf '%s\n' "$@" > "$E2EGATE_ARGS"
@@ -537,13 +711,27 @@ make_e2egate_case component component
 make_e2egate_case helper helper
 make_e2egate_case ignored ignored
 make_e2egate_case empty none
+make_e2egate_case missing missing
+make_e2egate_case deleted-type-page deleted_type_page
+make_e2egate_case types-runtime type_runtime
+make_e2egate_case types-large type_large
+make_e2egate_case restored-deleted restored_deleted
+make_e2egate_case deleted-component deleted_component
+make_e2egate_case presenter presenter
+make_e2egate_case presenter-unmapped presenter_unmapped
+make_e2egate_case game-component game_component
+make_e2egate_case game-component-other game_component_other
+make_e2egate_case game-component-shared game_component_shared
+make_e2egate_case presenter-case presenter_case
+make_e2egate_case component-case component_case
+make_e2egate_case shared-component shared_component
 
 # Removed route references are repeated; moves are excluded, including during full sweeps.
 (
   repo="$tmp/e2egate-removed"; wtroot="$tmp/e2egate-removed-wts"
   mkdir -p "$repo/frontend/e2e" "$repo/frontend/src/components" "$wtroot"
   git -C "$repo" init -q; git -C "$repo" config user.email test@example.com; git -C "$repo" config user.name test
-  for spec in desktop-board-visibility desktop-hand-visibility game-message-visibility hand-visibility mobile-viewport text-contrast duplicate-text; do touch "$repo/frontend/e2e/$spec.spec.ts"; done
+  for spec in desktop-board-visibility desktop-hand-visibility game-message-visibility mobile-viewport text-contrast route-sweep; do touch "$repo/frontend/e2e/$spec.spec.ts"; done
   printf "const route = '/baloot';\n" > "$repo/frontend/e2e/helpers.ts"
   printf 'base\n' > "$repo/frontend/src/components/shared.tsx"
   git -C "$repo" add .
@@ -555,7 +743,7 @@ make_e2egate_case empty none
   output=$(E2E_SWEEP_REPEAT=3 BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-removed-state" bash "$SCRIPTS/e2egate.sh" --dry-run 1) || fail "removed route dry-run failed"
   grep -qF -- '--grep /baloot\b --pass-with-no-tests --repeat-each=3' <<<"$output" || fail "removed route did not get repeated: $output"
   exec_scripts="$tmp/e2egate-removed-exec"; mkdir -p "$exec_scripts"
-  cp "$SCRIPTS/common.sh" "$SCRIPTS/e2egate.sh" "$exec_scripts/"
+  cp "$SCRIPTS/common.sh" "$SCRIPTS/allowlist.sh" "$SCRIPTS/e2egate.sh" "$exec_scripts/"
   cat > "$exec_scripts/e2e.sh" <<'STUB'
 #!/usr/bin/env bash
 printf '%s\n' "$@" >> "$E2EGATE_ARGS"
@@ -564,7 +752,7 @@ STUB
   chmod +x "$exec_scripts/e2e.sh"
   E2E_SWEEP_REPEAT=3 E2EGATE_ARGS="$tmp/e2egate-removed-args" BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-removed-state" bash "$exec_scripts/e2egate.sh" 1 || fail "removed route execution failed"
   expected="$tmp/e2egate-removed-expected"
-  printf '%s\n' 1 e2e/desktop-board-visibility.spec.ts e2e/desktop-hand-visibility.spec.ts e2e/duplicate-text.spec.ts e2e/game-message-visibility.spec.ts e2e/hand-visibility.spec.ts e2e/mobile-viewport.spec.ts e2e/text-contrast.spec.ts --grep '/baloot\b' --pass-with-no-tests --repeat-each=3 ---CALL--- > "$expected"
+  printf '%s\n' 1 e2e/desktop-board-visibility.spec.ts e2e/desktop-hand-visibility.spec.ts e2e/game-message-visibility.spec.ts e2e/mobile-viewport.spec.ts e2e/route-sweep.spec.ts e2e/text-contrast.spec.ts --grep '/baloot\b' --pass-with-no-tests --repeat-each=3 ---CALL--- > "$expected"
   diff -u "$expected" "$tmp/e2egate-removed-args" || fail "removed route execution passed wrong args"
   printf 'common\n' >> "$wtroot/wt-ib1/frontend/src/components/shared.tsx"
   full=$(E2E_SWEEP_REPEAT=3 BATCH_REPO="$repo" BATCH_WT_ROOT="$wtroot" BATCH_STATE="$tmp/e2egate-removed-state" bash "$SCRIPTS/e2egate.sh" --dry-run 1) || fail "full sweep with removed route dry-run failed"
@@ -770,4 +958,289 @@ GH
   [ "$(cat "$tmp/ship-47.rc")" = 0 ] || fail 'ship rejected ALLOW_BRANCH_ISSUE_MISMATCH'
 ) || exit 1
 
+# Regressions from the batch-lanes handoff.
+(
+  idrepo="$tmp/ident-retained"; mkdir -p "$idrepo"; git init -q "$idrepo"
+  git -C "$idrepo" config user.email test@example.com; git -C "$idrepo" config user.name test
+  printf 'const cardToOutputWithFace = true;\n' > "$idrepo/a.ts"
+  git -C "$idrepo" add . && git -C "$idrepo" commit -qm base
+  printf 'const cardsToOutputWithFace = true;\nconst retained = cardToOutputWithFace;\n' > "$idrepo/a.ts"
+  out=$(bash "$SCRIPTS/identgone.sh" "$idrepo")
+  [[ "$out" != *'WARN IDENT_GONE a.ts cardToOutputWithFace'* ]] || fail "retained old identifier was warned: $out"
+) || exit 1
+(
+  mkdir -p "$tmp/e2e-wts/wt-ib88/frontend" "$tmp/e2e-bin" "$tmp/e2e-state"
+  cat > "$tmp/e2e-bin/bunx" <<'BIN'
+#!/usr/bin/env bash
+printf '<%s>\n' "$@" > "$E2E_ARGS_FILE"
+BIN
+  chmod +x "$tmp/e2e-bin/bunx"
+  E2E_SKIP_BUILD=1 E2E_ARGS_FILE="$tmp/e2e-args" BATCH_REPO="$ROOT" BATCH_WT_ROOT="$tmp/e2e-wts" BATCH_STATE="$tmp/e2e-state" PATH="$tmp/e2e-bin:$PATH" bash "$SCRIPTS/e2e.sh" 88 '--grep=two words'
+  grep -qx '<--grep=two words>' "$tmp/e2e-args" || fail "e2e.sh split a spaced Playwright argument: $(cat "$tmp/e2e-args")"
+) || exit 1
+(
+  [[ -x "$SCRIPTS/mutate.sh" ]] || fail 'mutate.sh is missing'
+) || exit 1
+(
+  repo="$tmp/delegation-repo"; state="$tmp/delegation-state"; root="$tmp/delegation-wts"
+  mkdir -p "$repo" "$state" "$root/wt-ib9"; git init -q "$repo"
+  git -C "$repo" config user.email test@example.com; git -C "$repo" config user.name test
+  printf 'base\n' > "$repo/file"; git -C "$repo" add file; git -C "$repo" commit -qm base
+  git -C "$repo" checkout -qb feat/current
+  git -C "$repo" switch -q -c feat/main
+  git -C "$root/wt-ib9" init -q
+  git -C "$root/wt-ib9" config user.email test@example.com; git -C "$root/wt-ib9" config user.name test
+  printf 'lane\n' > "$root/wt-ib9/file"; git -C "$root/wt-ib9" add file; git -C "$root/wt-ib9" commit -qm lane
+  git -C "$root/wt-ib9" switch -q -c feat/current
+  printf 'feat/current\n' > "$state/slot9.branch"
+  touch -t 202001010000 "$state/slot9.branch"
+  printf 'dele: old-backend ok\n' > "$state/go-9-old.log"; touch -t 201901010000 "$state/go-9-old.log"
+  printf 'dele: new-backend ok\n' > "$state/go-9-new.log"
+  out=$(BATCH_REPO="$repo" BATCH_WT_ROOT="$root" BATCH_STATE="$state" bash -c 'source "$1"; delegated_to 9' _ "$SCRIPTS/common.sh")
+  [ "$out" = new-backend ] || fail "delegated_to included old log or missed new log: $out"
+  printf 'feat/other\n' > "$state/slot9.branch"
+  out=$(BATCH_REPO="$repo" BATCH_WT_ROOT="$root" BATCH_STATE="$state" bash -c 'source "$1"; delegated_to 9' _ "$SCRIPTS/common.sh")
+  [ "$out" = unknown ] || fail "delegated_to did not report unknown for mismatched branch: $out"
+  printf 'feat/current\n' > "$state/slot9.branch"
+  touch -t 202001010000 "$state/slot9.branch"
+  out=$(BATCH_REPO="$repo" BATCH_WT_ROOT="$root" BATCH_STATE="$state" bash -c 'source "$1"; delegated_to 9' _ "$SCRIPTS/common.sh")
+  [ "$out" = new-backend ] || fail "delegated_to did not use lane branch when repo branch differs: $out"
+) || exit 1
+(
+  repo="$tmp/mutate-repo"; state="$tmp/mutate-state"; root="$tmp/mutate-wts"
+  mkdir -p "$repo" "$state" "$root/wt-ib9"; git init -q "$root/wt-ib9"
+  git -C "$root/wt-ib9" config user.email test@example.com; git -C "$root/wt-ib9" config user.name test
+  printf 'original\n' > "$root/wt-ib9/target"
+  git -C "$root/wt-ib9" add target; git -C "$root/wt-ib9" commit -qm original
+  printf 'mutated\n' > "$root/wt-ib9/target"
+  git -C "$root/wt-ib9" add target; git -C "$root/wt-ib9" commit -qm mutation
+  mutation_ref=$(git -C "$root/wt-ib9" rev-parse HEAD)
+  git -C "$root/wt-ib9" switch -q --detach HEAD~1
+  cat > "$tmp/fake-e2e.sh" <<'E2E'
+#!/usr/bin/env bash
+[[ "${E2E_ALWAYS_FAIL:-0}" == 1 ]] && exit 1
+if [[ "$(cat "$BATCH_WT_ROOT/wt-ib$1/target")" == mutated && "${E2E_MUTATION_FAIL:-0}" == 1 ]]; then exit 1; fi
+exit 0
+E2E
+  chmod +x "$tmp/fake-e2e.sh"
+  run_mutate() {
+    BATCH_REPO="$root/wt-ib9" BATCH_WT_ROOT="$root" BATCH_STATE="$state" BATCH_E2E_SCRIPT="$tmp/fake-e2e.sh" \
+      E2E_ALWAYS_FAIL="${E2E_ALWAYS_FAIL:-0}" E2E_MUTATION_FAIL="${E2E_MUTATION_FAIL:-0}" \
+      bash "$SCRIPTS/mutate.sh" 9 "$mutation_ref:target"
+  }
+  if E2E_ALWAYS_FAIL=1 run_mutate >"$tmp/mutate-baseline.out" 2>&1; then fail 'mutate.sh accepted a failing baseline'; fi
+  grep -qx 'ERROR baseline failed' "$tmp/mutate-baseline.out" || fail "baseline failure was not reported: $(cat "$tmp/mutate-baseline.out")"
+  [ "$(cat "$root/wt-ib9/target")" = original ] || fail 'mutate.sh changed target after baseline failure'
+  out=$(E2E_MUTATION_FAIL=1 run_mutate) || fail "mutate.sh failed mutation-detection case: $out"
+  grep -q "^backup: $state/mutate\." <<<"$out" || fail "mutate.sh did not print backup path: $out"
+  grep -qx DETECTED <<<"$out" || fail "mutate.sh did not report DETECTED: $out"
+  [ "$(cat "$root/wt-ib9/target")" = original ] || fail 'mutate.sh did not restore target after detection'
+  out=$(run_mutate) || fail "mutate.sh failed non-detection case: $out"
+  grep -qx 'NOT DETECTED' <<<"$out" || fail "mutate.sh did not report NOT DETECTED: $out"
+  [ "$(cat "$root/wt-ib9/target")" = original ] || fail 'mutate.sh did not restore target after non-detection'
+) || exit 1
+grep -q 'rcg\$slot.pid' "$SCRIPTS/rcg.sh" || fail 'rcg.sh does not track per-slot gate pid'
+(
+  state="$tmp/rcg-reuse-state"; mkdir -p "$state"
+  sleep 60 & unrelated_pid=$!
+  printf '%s\n' "$unrelated_pid" > "$state/rcg98.pid"
+  BATCH_REPO="$ROOT" BATCH_STATE="$state" BATCH_WT_ROOT="$tmp" E2E_GATE=0 E2E_SKIP_REASON='PID reuse test' bash "$SCRIPTS/rcg.sh" 98 >/dev/null 2>&1 || true
+  if ! kill -0 "$unrelated_pid" 2>/dev/null; then fail 'rcg.sh killed unrelated process whose PID was reused'; fi
+  kill "$unrelated_pid" 2>/dev/null || true; wait "$unrelated_pid" 2>/dev/null || true
+) || exit 1
+grep -q 'delegated_to "\$s"' "$SCRIPTS/ship.sh" || fail 'ship.sh does not infer Delegated-To from lane logs'
+! grep -q '\[\[ -n "\$delegation" \]\]' "$SCRIPTS/ship.sh" || fail 'ship.sh retains dead empty-delegation check'
+grep -q 'delegated_to "\$1"' "$SCRIPTS/fixpush.sh" || fail 'fixpush.sh does not infer Delegated-To from lane logs'
+
+
+# Shared file collection, stale-base overlap, and lane gating behavior.
+(
+  repo="$tmp/gating-repo"; root="$tmp/gating-wts"; state="$tmp/gating-state"; bin="$tmp/gating-bin"
+  mkdir -p "$root/wt-ib7" "$state" "$bin"
+  git init -q "$repo"; git -C "$repo" config user.email t@t; git -C "$repo" config user.name t
+  printf 'base\n' > "$repo/shared"; printf 'base\n' > "$repo/elsewhere"
+  git -C "$repo" add .; git -C "$repo" commit -qm base; git -C "$repo" branch -M develop
+  git init -q --bare "$tmp/gating-origin.git"; git -C "$tmp/gating-origin.git" symbolic-ref HEAD refs/heads/develop
+  git -C "$repo" remote add origin "$tmp/gating-origin.git"; git -C "$repo" push -q -u origin develop; git -C "$repo" fetch -q origin
+  git -C "$repo" worktree add -qb lane "$root/wt-ib7" origin/develop
+  printf 'dirty\n' > "$root/wt-ib7/shared"
+  cat > "$bin/gh" <<'GH'
+#!/usr/bin/env bash
+if [[ "$*" == *'--json files'* ]]; then printf '%s\n' "${PR_FILES:-shared}"; elif [[ "$*" == *headRefName* ]]; then echo lane; else exit 0; fi
+GH
+  chmod +x "$bin/gh"
+  cat > "$root/wt-ib7/rcg.sh" <<'RG'
+#!/usr/bin/env bash
+sleep 60
+RG
+  chmod +x "$root/wt-ib7/rcg.sh"
+  "$root/wt-ib7/rcg.sh" 7 & gatepid=$!
+  trap 'kill "$gatepid" 2>/dev/null || true; wait "$gatepid" 2>/dev/null || true' EXIT
+  printf '%s\n' "$gatepid" > "$state/rcg7.pid"; printf '123\n' > "$state/reviewed.txt"
+  # Use an isolated merge gate; overlap returns before any merge gate work.
+  out=''; rc=0
+  PATH="$bin:$PATH" BATCH_REPO="$repo" BATCH_WT_ROOT="$root" BATCH_STATE="$state" BATCH_SKIP_CODECOV=1 bash "$SCRIPTS/land.sh" 123 >"$tmp/land.out" 2>&1 || rc=$?
+  out=$(cat "$tmp/land.out")
+  [[ "$rc" = 4 ]] || fail "land.sh did not return 4 for live overlap (rc=$rc): $out"
+  grep -qx 'LANE-GATING slot=7 shared' <<<"$out" || fail "land.sh omitted LANE-GATING line: $out"
+  rc=0
+  out=$(PATH="$bin:$PATH" PR_FILES=elsewhere BATCH_REPO="$repo" BATCH_WT_ROOT="$root" BATCH_STATE="$state" BATCH_SKIP_CODECOV=1 bash "$SCRIPTS/land.sh" 123 2>&1) || rc=$?
+  [[ "$rc" != 4 ]] || fail "land.sh returned 4 for a disjoint file: $out"
+  [[ "$out" != *LANE-GATING* ]] || fail "land.sh reported a disjoint file: $out"
+  out=$(PATH="$bin:$PATH" BATCH_REPO="$repo" BATCH_WT_ROOT="$root" BATCH_STATE="$state" BATCH_SKIP_CODECOV=1 ALLOW_LANE_GATING=1 bash "$SCRIPTS/land.sh" 123 2>&1) || true
+  [[ "$out" != *LANE-GATING* ]] || fail "ALLOW_LANE_GATING did not bypass check: $out"
+  kill "$gatepid" 2>/dev/null || true; wait "$gatepid" 2>/dev/null || true
+  printf '%s\n' 99999999 > "$state/rcg7.pid"
+  out=$(PATH="$bin:$PATH" BATCH_REPO="$repo" BATCH_WT_ROOT="$root" BATCH_STATE="$state" BATCH_SKIP_CODECOV=1 bash "$SCRIPTS/land.sh" 123 2>&1) || true
+  [[ "$out" != *LANE-GATING* ]] || fail "land.sh treated dead gate as live: $out"
+  # Develop changed shared after branch point; only lane overlap is returned.
+  printf 'develop\n' >> "$repo/shared"; printf 'develop\n' >> "$repo/elsewhere"
+  git -C "$repo" add .; git -C "$repo" commit -qm develop-change; git -C "$repo" push -q origin develop; git -C "$root/wt-ib7" fetch -q origin
+  printf 'lane\n' > "$root/wt-ib7/shared"; printf 'lane\n' > "$root/wt-ib7/local-only"
+  stale=$(BATCH_REPO="$repo" BATCH_WT_ROOT="$root" BATCH_STATE="$state" bash -c 'source "$1"; stale_base_files "$2"' _ "$SCRIPTS/common.sh" "$root/wt-ib7")
+  grep -qx shared <<<"$stale" || fail "stale-base overlap missing: $stale"
+  [[ "$stale" != *elsewhere* && "$stale" != *local-only* ]] || fail "stale-base included non-overlap: $stale"
+) || exit 1
+
+# sweep preserves the retry signal, and drain stops when review is ready.
+(
+  mkdir -p "$tmp/sweep-bin" "$tmp/sweep-state"
+  cat > "$tmp/sweep-bin/gh" <<'GH'
+#!/usr/bin/env bash
+case "$*" in
+  *'pr list'*) echo '[{"number":1,"headRefName":"feat/1-x"}]' ;;
+  *mergeable*) echo MERGEABLE ;;
+  *'pr checks'*) echo '[]' ;;
+  *comments*) echo 1 ;;
+  *) exit 0 ;;
+esac
+GH
+  chmod +x "$tmp/sweep-bin/gh"
+  printf '1\n' > "$tmp/sweep-state/reviewed.txt"
+  # Stub the invoked land helper through a temporary copy of the script directory.
+  cp -R "$SCRIPTS" "$tmp/sweep-scripts"
+  cat > "$tmp/sweep-scripts/land.sh" <<'LAND'
+#!/usr/bin/env bash
+echo 'LANE-GATING slot=2 shared'
+exit 4
+LAND
+  chmod +x "$tmp/sweep-scripts/land.sh"
+  out=$(PATH="$tmp/sweep-bin:$PATH" BATCH_REPO="$ROOT" BATCH_STATE="$tmp/sweep-state" BATCH_BRANCH_RE='^feat/' bash "$tmp/sweep-scripts/sweep.sh") || fail "sweep failed: $out"
+  grep -q '^LANE-GATING slot=2 shared$' <<<"$out" && ! grep -q '^FAIL' <<<"$out" || fail "sweep mishandled lane gating: $out"
+  cat > "$tmp/sweep-scripts/land.sh" <<'LAND'
+#!/usr/bin/env bash
+echo 'WAIT: codecov/patch is still pending'
+exit 3
+LAND
+  chmod +x "$tmp/sweep-scripts/land.sh"
+  out=$(PATH="$tmp/sweep-bin:$PATH" BATCH_REPO="$ROOT" BATCH_STATE="$tmp/sweep-state" BATCH_BRANCH_RE='^feat/' bash "$tmp/sweep-scripts/sweep.sh") || fail "sweep failed on pending codecov: $out"
+  grep -qx 'WAIT: codecov/patch is still pending' <<<"$out" || fail "sweep dropped codecov wait output: $out"
+  ! grep -q '^FAIL' <<<"$out" || fail "sweep added FAIL for pending codecov: $out"
+  cat > "$tmp/sweep-bin/sweep.sh" <<'SWEEP'
+#!/usr/bin/env bash
+echo 'REVIEW-READY 1'
+SWEEP
+  chmod +x "$tmp/sweep-bin/sweep.sh"
+  # drain resolves its sibling sweep.sh from its script directory.
+  # A private script directory allows the sweep stub and a fast gh response.
+  mkdir -p "$tmp/drain-scripts"; cp "$SCRIPTS/common.sh" "$SCRIPTS/allowlist.sh" "$tmp/drain-scripts/"; cp "$SCRIPTS/drain.sh" "$tmp/drain-scripts/drain.sh"; cp "$tmp/sweep-bin/sweep.sh" "$tmp/drain-scripts/sweep.sh"
+  rc=0; PATH="$tmp/sweep-bin:$PATH" BATCH_REPO="$ROOT" BATCH_STATE="$tmp/sweep-state" BATCH_BRANCH_RE='^feat/' timeout 20 bash "$tmp/drain-scripts/drain.sh" >"$tmp/drain.out" 2>&1 || rc=$?
+  [[ "$rc" != 124 ]] || fail "drain timed out instead of stopping on REVIEW-READY: $(cat "$tmp/drain.out")"
+  [[ "$rc" = 0 ]] || fail "drain did not exit 0 on REVIEW-READY: $(cat "$tmp/drain.out")"
+) || exit 1
+
+(
+  setup_sync() {
+    tag="$1"; SY_REPO="$tmp/sync-$tag-main"; SY_ROOT="$tmp/sync-$tag-lanes"; SY_STATE="$tmp/sync-$tag-state"
+    mkdir -p "$SY_ROOT" "$SY_STATE"; git init -q --bare "$tmp/sync-$tag-origin.git"; git init -q "$SY_REPO"
+    git -C "$SY_REPO" config user.email test@example.com; git -C "$SY_REPO" config user.name test
+    printf 'base\n' > "$SY_REPO/tracked"; printf 'base\n' > "$SY_REPO/delete-me"; printf 'base\n' > "$SY_REPO/upstream"
+    git -C "$SY_REPO" add tracked delete-me upstream; git -C "$SY_REPO" -c user.name=test -c user.email=test@example.com commit -qm base
+    git -C "$SY_REPO" branch -M develop; git -C "$SY_REPO" remote add origin "$tmp/sync-$tag-origin.git"
+    git -C "$SY_REPO" push -q -u origin develop; git -C "$SY_REPO" fetch -q origin
+    git -C "$SY_REPO" worktree add -qb lane "$SY_ROOT/wt-ib1" origin/develop; SY_LANE="$SY_ROOT/wt-ib1"
+  }
+  setup_sync clean
+  printf 'lane edit\n' > "$SY_LANE/tracked"; rm "$SY_LANE/delete-me"; printf new > "$SY_LANE/new-file"
+  printf 'develop\n' >> "$SY_REPO/upstream"; git -C "$SY_REPO" add upstream; git -C "$SY_REPO" commit -qm upstream; git -C "$SY_REPO" push -q origin develop
+  out=$(BATCH_REPO="$SY_REPO" BATCH_WT_ROOT="$SY_ROOT" BATCH_STATE="$SY_STATE" bash "$SCRIPTS/sync.sh" 1) || fail "sync clean failed: $out"
+  grep -qx "backup: $SY_STATE/sync1.patch" <<<"$out" || fail 'sync backup missing'
+  [ "$(git -C "$SY_LANE" rev-parse HEAD)" = "$(git -C "$SY_LANE" rev-parse origin/develop)" ] || fail 'sync HEAD incorrect'
+  [ "$(cat "$SY_LANE/tracked")" = 'lane edit' ] && [ -f "$SY_LANE/new-file" ] && [ ! -e "$SY_LANE/delete-me" ] && grep -q develop "$SY_LANE/upstream" || fail 'sync did not preserve files'
+  [ -f "$SY_STATE/sync1.patch" ] && [[ "$(git -C "$SY_LANE" status --porcelain)" == *'?? new-file'* ]] && [[ "$(git -C "$SY_LANE" status --porcelain)" == *' D delete-me'* ]] || fail 'sync backup/status incorrect'
+
+  setup_sync conflict; printf 'lane\n' > "$SY_LANE/tracked"; printf 'keep me\n' > "$SY_LANE/conflict-untracked"; oldhead=$(git -C "$SY_LANE" rev-parse HEAD); oldstatus=$(git -C "$SY_LANE" status --porcelain)
+  printf 'develop\n' > "$SY_REPO/tracked"; git -C "$SY_REPO" add tracked; git -C "$SY_REPO" commit -qm upstream; git -C "$SY_REPO" push -q origin develop
+  if BATCH_REPO="$SY_REPO" BATCH_WT_ROOT="$SY_ROOT" BATCH_STATE="$SY_STATE" bash "$SCRIPTS/sync.sh" 1 >"$tmp/sync-conflict.out" 2>&1; then fail 'sync conflict succeeded'; else rc=$?; [ "$rc" = 2 ] || fail "conflict exit $rc"; fi
+  grep -qx 'CONFLICT tracked' "$tmp/sync-conflict.out" || fail 'conflict filename missing'
+  grep -qx 'lane kept on lane; to rebase by hand: git stash -u && git merge --ff-only origin/develop && git stash pop' "$tmp/sync-conflict.out" || fail 'conflict recovery instructions missing'
+  [ "$(git -C "$SY_LANE" rev-parse HEAD)" = "$oldhead" ] && [ "$(git -C "$SY_LANE" status --porcelain)" = "$oldstatus" ] && [ "$(cat "$SY_LANE/tracked")" = lane ] && [ "$(cat "$SY_LANE/conflict-untracked")" = 'keep me' ] && [[ "$(git -C "$SY_LANE" status --porcelain)" == *'?? conflict-untracked'* ]] && ! git -C "$SY_LANE" rev-parse -q --verify MERGE_HEAD >/dev/null || fail 'conflict restore incorrect'
+
+  setup_sync fetch-failure; printf 'local edit\n' > "$SY_LANE/tracked"; printf 'keep me\n' > "$SY_LANE/untracked"; oldhead=$(git -C "$SY_LANE" rev-parse HEAD); oldstatus=$(git -C "$SY_LANE" status --porcelain)
+  git -C "$SY_LANE" remote set-url origin "$tmp/sync-fetch-failure-missing.git"
+  if BATCH_REPO="$SY_REPO" BATCH_WT_ROOT="$SY_ROOT" BATCH_STATE="$SY_STATE" bash "$SCRIPTS/sync.sh" 1 >"$tmp/sync-fetch-failure.out" 2>&1; then fail 'sync with failed fetch succeeded'; else rc=$?; [ "$rc" = 1 ] || fail "fetch failure exit $rc"; fi
+  [ "$(git -C "$SY_LANE" rev-parse HEAD)" = "$oldhead" ] && [ "$(git -C "$SY_LANE" status --porcelain)" = "$oldstatus" ] || fail 'fetch failure changed lane HEAD/status'
+
+  setup_sync busy; printf dirty >> "$SY_LANE/tracked"; oldhead=$(git -C "$SY_LANE" rev-parse HEAD); oldstatus=$(git -C "$SY_LANE" status --porcelain)
+  busy_scripts="$tmp/sync-busy-scripts"; mkdir -p "$busy_scripts"; cp "$SCRIPTS/common.sh" "$SCRIPTS/allowlist.sh" "$SCRIPTS/sync.sh" "$busy_scripts/"
+  printf '#!/usr/bin/env bash\nexit 0\n' > "$busy_scripts/busy.sh"; chmod +x "$busy_scripts"/*.sh
+  if BATCH_REPO="$SY_REPO" BATCH_WT_ROOT="$SY_ROOT" BATCH_STATE="$SY_STATE" bash "$busy_scripts/sync.sh" 1 >"$tmp/sync-busy.out" 2>&1; then fail 'busy sync succeeded'; else rc=$?; [ "$rc" = 1 ] || fail "busy exit $rc"; fi
+  grep -qx 'REFUSED: a delegation is running in wt-ib1' "$tmp/sync-busy.out" || fail 'busy refusal missing'
+  [ "$(git -C "$SY_LANE" rev-parse HEAD)" = "$oldhead" ] && [ "$(git -C "$SY_LANE" status --porcelain)" = "$oldstatus" ] || fail 'busy check changed lane'
+
+  setup_sync commits; printf own >> "$SY_LANE/tracked"; git -C "$SY_LANE" add tracked; git -C "$SY_LANE" -c user.name=test -c user.email=test@example.com commit -qm own
+  oldhead=$(git -C "$SY_LANE" rev-parse HEAD); oldstatus=$(git -C "$SY_LANE" status --porcelain)
+  if BATCH_REPO="$SY_REPO" BATCH_WT_ROOT="$SY_ROOT" BATCH_STATE="$SY_STATE" bash "$SCRIPTS/sync.sh" 1 >"$tmp/sync-commits.out" 2>&1; then fail 'committed lane accepted'; else rc=$?; [ "$rc" = 1 ] || fail "committed exit $rc"; fi
+  grep -qx 'REFUSED: lane has commits; merge by hand' "$tmp/sync-commits.out" || fail 'committed refusal missing'
+  [ "$(git -C "$SY_LANE" rev-parse HEAD)" = "$oldhead" ] && [ "$(git -C "$SY_LANE" status --porcelain)" = "$oldstatus" ] || fail 'commit refusal changed lane'
+) || exit 1
+# Issue #12022: gate allowlists must be test paths, setup branches must identify a game,
+# and an E2E bypass must carry its reason into the receipt and PR body.
+(
+  repo="$tmp/issue12022"; mkdir -p "$repo/frontend/src/constants" "$repo/frontend/src/pages"
+  cat > "$repo/frontend/src/constants/gameRoutes.ts" <<'ROUTES'
+{ path: '/simple-simon', page: 'SimpleSimon' },
+{ path: '/poker', page: 'Poker' },
+ROUTES
+  BATCH_REPO="$repo" BATCH_STATE="$tmp/issue12022-state"; source "$SCRIPTS/common.sh"
+  if batch_branch_has_game "$repo" 'feat/12022-kr'; then fail 'unknown game branch was accepted'; fi
+  batch_branch_has_game "$repo" 'feat/12022-simple-simon-automove' || fail 'game with suffix was rejected'
+  batch_branch_has_game "$repo" 'feat/12022-poker' || fail 'valid game was rejected'
+  # setup_wt must validate against fetched routes, before creating any lane state.
+  local_routes=$(cat "$repo/frontend/src/constants/gameRoutes.ts")
+  remote_routes="$local_routes
+{ path: '/new-remote-game', page: 'NewRemoteGame' },"
+  if batch_branch_has_game "$repo" 'feat/12022-new-remote-game' "$remote_routes"; then :; else fail 'game present only in fetched routes was rejected'; fi
+  ! batch_branch_has_game "$repo" 'feat/12022-new-remote-game' "$local_routes" || fail 'fixture unexpectedly has new game locally'
+  fetch_line=$(grep -n 'git fetch -q origin develop' "$SCRIPTS/setup_wt.sh" | cut -d: -f1)
+  show_line=$(grep -n 'git -C "$REPO" show origin/develop:frontend/src/constants/gameRoutes.ts' "$SCRIPTS/setup_wt.sh" | cut -d: -f1)
+  worktree_line=$(grep -n 'git worktree add' "$SCRIPTS/setup_wt.sh" | cut -d: -f1)
+  [[ "$fetch_line" -lt "$show_line" && "$show_line" -lt "$worktree_line" ]] || fail 'setup_wt must fetch, validate fetched routes, then create worktree'
+  source "$SCRIPTS/prbody.sh"
+  body=$(BATCH_E2E_SKIP_REASON='manual smoke test' ship_pr_body 12022 '- harden batch gates' '' '')
+  grep -qF 'E2E skipped: manual smoke test' <<<"$body" || fail "PR body omitted E2E skip reason: $body"
+  if E2E_GATE=0 E2E_SKIP_REASON='' bash -c '[[ "${E2E_GATE:-1}" != 0 || -n "${E2E_SKIP_REASON:-}" ]]'; then fail 'empty E2E skip reason accepted'; fi
+  E2E_GATE=0 E2E_SKIP_REASON='manual smoke test' bash -c '[[ -n ${E2E_SKIP_REASON:-} ]]' || fail 'valid E2E skip reason rejected'
+) || exit 1
+(
+  repo="$tmp/allowlist"; mkdir -p "$repo"; git init -q "$repo"
+  git -C "$repo" config user.email t@t; git -C "$repo" config user.name t
+  printf 'old\n' > "$repo/a.test.ts"; git -C "$repo" add .; git -C "$repo" commit -qm base
+  printf 'new\n' > "$repo/a.test.ts"
+  out=$(ALLOW_SHRINK='a.test.ts' git -C "$repo" diff --numstat HEAD -- '*.test.ts')
+  [[ "$out" == $'1\t1\ta.test.ts' ]] || fail 'valid ALLOW_SHRINK test path not recognized'
+  out=$(validate_allowlist ALLOW_SHRINK 'a.test.ts' '(\.test\.tsx?|_test\.go)$') || fail 'valid ALLOW_SHRINK path rejected'
+  [[ -z "$out" ]] || fail "valid allowlist emitted warning: $out"
+  out=$(validate_allowlist ALLOW_SHRINK 'src/page.ts' '(\.test\.tsx?|_test\.go)$' || true)
+  [[ "$out" == 'WARN ALLOW_SHRINK_INVALID src/page.ts' ]] || fail "invalid ALLOW_SHRINK path not rejected: $out"
+  touch "$tmp/allowlist/a.test.ts" "$tmp/allowlist/b.test.ts"
+  out=$(cd "$tmp/allowlist" && validate_allowlist ALLOW_SHRINK '*' '(\.test\.tsx?|_test\.go)$' || true)
+  [[ "$out" == 'WARN ALLOW_SHRINK_INVALID *' ]] || fail "glob-expanded ALLOW_SHRINK was not kept literal: $out"
+  out=$(validate_allowlist ALLOW_IDENT_GONE 'a_test' '^[A-Za-z_$][A-Za-z0-9_$]*$') || fail 'valid ALLOW_IDENT_GONE identifier rejected'
+  [[ -z "$out" ]] || fail "valid identifier allowlist emitted warning: $out"
+  out=$(validate_allowlist ALLOW_IDENT_GONE '1' '^[A-Za-z_$][A-Za-z0-9_$]*$' || true)
+  [[ "$out" == 'WARN ALLOW_IDENT_GONE_INVALID 1' ]] || fail "invalid ALLOW_IDENT_GONE entry not rejected: $out"
+  out=$(validate_allowlist ALLOW_SHRINK 'isMobile' '(\.test\.tsx?|_test\.go)$' || true)
+  [[ "$out" == 'WARN ALLOW_SHRINK_INVALID isMobile' ]] || fail "identifier incorrectly accepted by ALLOW_SHRINK: $out"
+) || exit 1
 echo "batch-lanes script tests passed"

@@ -38,11 +38,6 @@ import { parseStHelenaCommand, STHELENA_HELP } from '../utils/cli/commands/sthel
 import { formatStHelenaState } from '../utils/cli/formatters/sthelenaFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
-import {
-  stHelenaCanPlaceOnFoundation,
-  stHelenaCanPlaceOnTableau,
-  stHelenaColumnCanReach,
-} from '../utils/sthelenaTargets';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
 
@@ -191,7 +186,7 @@ function StHelenaPageContent() {
         target.col !== undefined &&
         source.zone === 'tableau' &&
         source.col !== undefined &&
-        !stHelenaColumnCanReach(source.col, target.col, state?.restrictionsActive ?? false)
+        !state?.legalTargets[`tableau-${source.col}`]?.foundation.includes(target.col)
       ) {
         return;
       }
@@ -270,21 +265,13 @@ function StHelenaPageContent() {
   // **届くかどうかは、置けるかどうかとは別。**ランクが合っていても、初回の
   // 配りの間はその列から届かない組札がある。片方だけ見ると、押せるのに必ず
   // 拒まれる組札が光る。
-  const isFoundationTarget = (idx: number) =>
-    selectedCard !== null &&
-    selectedSource?.zone === 'tableau' &&
-    selectedSource.col !== undefined &&
-    stHelenaColumnCanReach(selectedSource.col, idx, state.restrictionsActive) &&
-    stHelenaCanPlaceOnFoundation(selectedCard, state.foundation, idx);
+  const sourceTargets =
+    selectedSource?.zone === 'tableau' && selectedSource.col !== undefined
+      ? state.legalTargets[`tableau-${selectedSource.col}`]
+      : undefined;
+  const isFoundationTarget = (idx: number) => selectedCard !== null && sourceTargets?.foundation.includes(idx) === true;
   const isTableauTarget = (colIdx: number) =>
-    selectedCard !== null &&
-    !isSourceSelected('tableau', colIdx) &&
-    stHelenaCanPlaceOnTableau(selectedCard, state.tableau, colIdx);
-  // 送り先として選べるか（ランクは問わない）。制限の説明を出すのにも使う。
-  const canReach = (idx: number) =>
-    selectedSource?.zone === 'tableau' &&
-    selectedSource.col !== undefined &&
-    stHelenaColumnCanReach(selectedSource.col, idx, state.restrictionsActive);
+    selectedCard !== null && !isSourceSelected('tableau', colIdx) && sourceTargets?.tableau.includes(colIdx) === true;
   const targetRingClass = (valid: boolean, active: boolean) =>
     valid && !active ? 'ring-2 ring-ds-success rounded' : '';
   const isHintFoundationTarget = (idx: number) => hint?.toZone === 'foundation' && hint.toCol === idx;
@@ -415,7 +402,7 @@ function StHelenaPageContent() {
                                   !isPlaying ||
                                   loading ||
                                   isAutoCompleting ||
-                                  (selectedSource !== null && !canReach(idx))
+                                  (selectedSource !== null && !isFoundationTarget(idx))
                                 }
                                 aria-disabled={!selectedSource || undefined}
                                 aria-describedby={!selectedSource ? selectSourceHintId : undefined}
@@ -440,7 +427,9 @@ function StHelenaPageContent() {
                                   if (!selectedSource) return;
                                   handleSelectTarget(foundationZone);
                                 }}
-                                disabled={!isPlaying || loading || (selectedSource !== null && !canReach(idx))}
+                                disabled={
+                                  !isPlaying || loading || (selectedSource !== null && !isFoundationTarget(idx))
+                                }
                                 aria-disabled={!selectedSource || undefined}
                                 aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                                 aria-label={t('emptyFoundationAriaLabel', {

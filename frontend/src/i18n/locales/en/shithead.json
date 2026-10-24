@@ -75,5 +75,9 @@
     "play": "{{name}} played {{cards}}",
     "burned": "pile burned!",
     "skipped": "next player skipped"
-  }
+  },
+  "resultRank": "Rank {{rank}}",
+  "resultShithead": " (Shithead)",
+  "rankingEntry": "{{seat}}: {{rank}}",
+  "listSeparator": ", "
 }

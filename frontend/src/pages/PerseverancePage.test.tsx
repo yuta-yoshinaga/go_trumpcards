@@ -75,6 +75,8 @@ const playingState: PerseveranceResponse = {
   canUndo: false,
   isStalemate: false,
   redealsLeft: 2,
+  runStarts: [[1], [], [], [], [], [], [], [], [], [], [], []],
+  legalTargets: { 'tableau-0-1': { tableau: [1], foundation: [] }, 'tableau-0-0': { tableau: [], foundation: [] } },
   message: '',
 };
 
@@ -119,7 +121,7 @@ describe('PerseverancePage', () => {
     expect(screen.queryByTestId('bd-last-card-0')).not.toBeInTheDocument();
   });
 
-  it('marks every card that starts a run, but not a card that cannot be grabbed', async () => {
+  it('uses the server run starts to mark cards that can be grabbed', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<PerseverancePage />);
 
@@ -128,6 +130,23 @@ describe('PerseverancePage', () => {
     expect(movable.className).toContain('ring-1');
     expect(movable.className).toContain('ring-ds-success/60');
     expect(blocked.className).not.toContain('ring-ds-success');
+  });
+
+  it('follows server run starts when they disagree with the old client rule', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      runStarts: [[0], [], [], [], [], [], [], [], [], [], [], []],
+    });
+    renderWithProviders(<PerseverancePage />);
+
+    // ♠K is not a run start under the old client rule, while ♠5 is; the server says the reverse.
+    const serverGrab = await screen.findByRole('button', { name: '♠ K' });
+    const oldRuleOnly = screen.getByRole('button', { name: '♠ 5' });
+    expect(serverGrab.className).toContain('ring-ds-success');
+    expect(oldRuleOnly.className).not.toContain('ring-ds-success');
+    expect(oldRuleOnly.className).toContain('cursor-default');
+    fireEvent.click(serverGrab);
+    expect(serverGrab).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('gives selection and warning rings priority over the subtle grab ring', async () => {
@@ -489,6 +508,8 @@ describe('PerseverancePage legal targets', () => {
     mockExec.mockResolvedValue({
       ...playingState,
       tableau: makeTableau([[{ card: card('SPADE', 1), faceUp: true }]]),
+      runStarts: [[0], [], [], [], [], [], [], [], [], [], [], []],
+      legalTargets: { 'tableau-0-0': { tableau: [], foundation: [0, 1, 2, 3] } },
     });
     renderWithProviders(<PerseverancePage />);
     fireEvent.click(await screen.findByRole('button', { name: '♠ A' }));
@@ -509,6 +530,38 @@ describe('PerseverancePage legal targets', () => {
 
   // **押せなくはしない。**押せなくすると E2E の「最初の列をクリック」が
   // 別の列を掴む。
+  it('follows server destinations even when they contradict client rules', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      legalTargets: { 'tableau-0-1': { tableau: [2], foundation: [0] } },
+    });
+    renderWithProviders(<PerseverancePage />);
+    fireEvent.click(await screen.findByRole('button', { name: '♠ 5' }));
+    await waitFor(() => expect(document.querySelectorAll('[data-legal-target="true"]').length).toBe(2));
+    const columns = document.querySelector('[data-tutorial="bd-tableau"]')?.children;
+    expect(columns?.[2]).toHaveAttribute('data-legal-target', 'true');
+    expect(columns?.[1]).not.toHaveAttribute('data-legal-target');
+  });
+
+  it('uses the three-part source key for a buried run preview', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau([
+        [
+          { card: card('SPADE', 13), faceUp: true },
+          { card: card('SPADE', 12), faceUp: true },
+          { card: card('SPADE', 11), faceUp: true },
+        ],
+      ]),
+      runStarts: [[0, 1, 2], [], [], [], [], [], [], [], [], [], [], []],
+      legalTargets: { 'tableau-0-0': { tableau: [3], foundation: [] } },
+    });
+    renderWithProviders(<PerseverancePage />);
+    const buried = await screen.findByRole('button', { name: '♠ K' });
+    fireEvent.mouseEnter(buried);
+    await waitFor(() => expect(document.querySelectorAll('[data-preview-target="true"]')).toHaveLength(1));
+  });
+
   it('leaves the illegal targets clickable', async () => {
     await selectSpadeFive();
     // **合法な移動先を選んではいけない。**♠6 は ♠5 の合法な置き先なので、

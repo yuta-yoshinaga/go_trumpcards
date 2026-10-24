@@ -36,11 +36,18 @@ type CitadelWebOutputHint struct {
 	ToCol     int    `json:"toCol"`
 }
 
+// CitadelWebOutputTargets は 1 つの移動元から置ける先。
+type CitadelWebOutputTargets struct {
+	Tableau    []int `json:"tableau"`
+	Foundation []int `json:"foundation"`
+}
+
 // CitadelWebOutput Citadel Web アウトプット
 type CitadelWebOutput struct {
-	Tableau    [][]*CitadelWebOutputTableauCard `json:"tableau"`
-	Foundation [][]*WebOutputCard               `json:"foundation"`
-	Hint       *CitadelWebOutputHint            `json:"hint,omitempty"`
+	Tableau      [][]*CitadelWebOutputTableauCard   `json:"tableau"`
+	Foundation   [][]*WebOutputCard                 `json:"foundation"`
+	LegalTargets map[string]CitadelWebOutputTargets `json:"legalTargets"`
+	Hint         *CitadelWebOutputHint              `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase
 }
@@ -58,6 +65,7 @@ func newCitadelDefaultOutput(msg string) *CitadelWebOutput {
 	return &CitadelWebOutput{
 		Tableau:       make([][]*CitadelWebOutputTableauCard, 0),
 		Foundation:    make([][]*WebOutputCard, 0),
+		LegalTargets:  make(map[string]CitadelWebOutputTargets),
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }

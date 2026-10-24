@@ -14,6 +14,7 @@ const baseState: StHelenaResponse = {
   foundation: [[{ design: 'SPADE', value: 1 }], [], [], [], [{ design: 'CLOVER', value: 13 }], [], [], []],
   redealsRemaining: 2,
   restrictionsActive: true,
+  legalTargets: {},
   phase: 0,
   moveCount: 3,
   canUndo: true,

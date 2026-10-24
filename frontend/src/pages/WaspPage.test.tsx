@@ -29,6 +29,7 @@ const mockExec = vi.mocked(waspApi.exec);
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 
 const playingState: WaspResponse = {
+  legalTargets: { 'tableau-5-0': { tableau: [1], foundation: [] } },
   tableau: [
     [
       { card: null, faceUp: false },
@@ -169,7 +170,11 @@ describe('WaspPage', () => {
   });
 
   it('deal button disabled when stock is empty', async () => {
-    mockExec.mockResolvedValue({ ...playingState, stockCount: 0 });
+    mockExec.mockResolvedValue({
+      ...playingState,
+      stockCount: 0,
+      tableau: [playingState.tableau[0], [], ...playingState.tableau.slice(2)],
+    });
     renderWithProviders(<WaspPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     expect(screen.getByRole('button', { name: '配る' })).toBeDisabled();
@@ -460,6 +465,24 @@ describe('WaspPage', () => {
     cardBtn.click();
     // API should still only have been called with reset (no move dispatched)
     await waitFor(() => expect(mockExec).toHaveBeenCalledTimes(1));
+  });
+
+  it('selects another movable card when a source is already selected', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: [
+        [
+          { card: card('SPADE', 5), faceUp: true },
+          { card: card('SPADE', 6), faceUp: true },
+        ],
+        ...playingState.tableau.slice(1),
+      ],
+    });
+    renderWithProviders(<WaspPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    fireEvent.click(screen.getByRole('button', { name: /♥ 7/ }));
+    fireEvent.click(screen.getByRole('button', { name: /♠ 5/ }));
+    expect(screen.getByRole('button', { name: /♠ 5/ })).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('shows StalemateEscapeButton when isStalemate is true', async () => {
@@ -775,6 +798,19 @@ describe('WaspPage CLI legal command', () => {
 describe('WaspPage destination preview', () => {
   /** The ♥7 in column 5; ♥8 tops column 1, so it has exactly one legal target. */
   const heartSeven = () => screen.getByRole('button', { name: /♥ 7/ });
+
+  it('uses server targets even when they disagree with the old client rule', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      legalTargets: { 'tableau-5-0': { tableau: [3], foundation: [] } },
+    });
+    renderWithProviders(<WaspPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    fireEvent.mouseEnter(heartSeven());
+    expect(await screen.findByRole('button', { name: /♦ 10/ })).toHaveAttribute('data-testid', 'wasp-legal-target');
+    expect(screen.getByRole('button', { name: /♥ 8/ })).not.toHaveAttribute('data-testid', 'wasp-legal-target');
+    expect(screen.getAllByTestId('wasp-legal-target')).toHaveLength(1);
+  });
 
   it('announces selected legal destinations, including empty columns, and clears them on deselect', async () => {
     const stateWithEmptyColumn = {

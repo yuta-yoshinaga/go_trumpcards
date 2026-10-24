@@ -1,41 +1,23 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { heartsApi } from '../api/gameApi';
-import { ActionLogSection } from '../components/ActionLogSection';
-import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
-import { CliTerminal } from '../components/cli/CliTerminal';
-import { CliToggle } from '../components/cli/CliToggle';
-import { SettingsPanel } from '../components/common/SettingsPanel';
-import { ErrorAlert } from '../components/ErrorAlert';
-import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageShell } from '../components/GamePageShell';
-import { GameResetButton } from '../components/GameResetButton';
+import { createGamePage, type GameDefinition, type GamePageContext } from '../components/game/createGamePage';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { PlayerHandSection } from '../components/PlayerHandSection';
 import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
-import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
-import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
-import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
-import { useCliGame } from '../hooks/useCliGame';
-import { useCliMode } from '../hooks/useCliMode';
-import { useGameHint } from '../hooks/useGameHint';
-import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useHeartsGame } from '../hooks/useHeartsGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { badgeErrorColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
-import { gameTheme } from '../styles/gameTheme';
 import type { Card, HeartsResponse } from '../types/card';
 import { HeartsPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { suitSymbolAt } from '../utils/cardAlt';
 import { HEARTS_HELP, parseHeartsCommand } from '../utils/cli/commands/heartsCommands';
 import { formatHeartsState } from '../utils/cli/formatters/heartsFormatter';
-import type { CliGameConfig } from '../utils/cli/types';
-import { heartsLegalPlayIndices } from '../utils/heartsLegal';
 import { heartsNearPointLimit } from '../utils/heartsLimit';
 import { heartsPassTarget } from '../utils/heartsPass';
 import { shootTheMoonAlertIdx } from '../utils/heartsShootMoonAlert';
@@ -101,33 +83,11 @@ const passDirectionKeys = ['left', 'right', 'across', 'none'] as const;
 /** Decorative arrow glyph per pass direction (0=left, 1=right, 2=across, 3=none). */
 const PASS_ARROWS = ['←', '→', '↑', ''] as const;
 
-/** Renders the Hearts game page with card passing, trick play, and scoring. */
-export const HeartsPage = withTutorial(HeartsPageContent, 'hearts', HT_TUTORIAL_STEPS);
-/** Inner content of the Hearts page, wrapped by TutorialProvider. */
-function HeartsPageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('hearts');
-  const {
-    state,
-    loading,
-    error,
-    exec,
-    retry,
-    heartsConfig,
-    selectedCardIndices,
-    toggleCard,
-    clearSelection,
-    handleConfigChange,
-    handleToggle,
-    handlePass,
-    handlePlay,
-    handleNextTrick,
-    handleNextRound,
-    hint,
-    hintError,
-    hintLoading,
-    handleHint,
-  } = useHeartsGame();
+type HeartsGame = ReturnType<typeof useHeartsGame>;
+type HeartsContext = GamePageContext<HeartsResponse, HeartsGame, HeartsView>;
+
+function useHeartsView({ game, t }: { game: HeartsGame; t: HeartsContext['t'] }) {
+  const { state } = game;
   const previousHeartsBroken = useRef<boolean | null>(null);
   const [announceHeartsBroken, setAnnounceHeartsBroken] = useState(false);
   const previousMoonAlertIdx = useRef<number | null | undefined>(undefined);
@@ -156,491 +116,457 @@ function HeartsPageContent() {
     }
   }, [moonAlertIdx, t]);
 
-  // CLI mode
-  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('hearts');
-  const heartsCliConfig: CliGameConfig<HeartsResponse, Parameters<typeof heartsApi.exec>> = useMemo(
-    () => ({
-      gameName: 'hearts',
-      parseCommand: parseHeartsCommand,
-      formatResponse: formatHeartsState,
-      helpText: HEARTS_HELP,
-    }),
-    [],
-  );
-  const { handleCommand } = useCliGame(exec, heartsCliConfig, state, { addInput, addOutput, addError, clearLog });
-
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('hearts', state);
   const { cardWidth, isMobile } = useCardDimensions();
-
-  const isPassPhaseForKbd = state?.phase === HeartsPhase.PASS;
-  const isPlayPhaseForKbd = state?.phase === HeartsPhase.PLAY;
-  const isHumanTurnForKbd = isPlayPhaseForKbd && state?.players[state.currentPlayerIdx]?.isHuman === true;
-  const humanCardCountForKbd = state?.players.find((p) => p.isHuman)?.cards?.length ?? 0;
-
-  const confirmAction = useCallback(() => {
-    if (isPassPhaseForKbd) {
-      handlePass();
-    } else {
-      handlePlay();
-    }
-  }, [isPassPhaseForKbd, handlePass, handlePlay]);
-
-  useCardKeyboardNav({
-    cardCount: humanCardCountForKbd,
-    onToggle: toggleCard,
-    onConfirm: confirmAction,
-    onClear: clearSelection,
-    enabled: (isPassPhaseForKbd || !!isHumanTurnForKbd) && !loading,
-  });
-
   const phaseNames = usePhaseNames('hearts', HEARTS_PHASE_KEYS);
+  return { announceHeartsBroken, moonAlertAnnouncement, phaseNames, cardWidth, isMobile };
+}
 
-  const handleManualReset = useCallback(() => {
-    hideActionLog();
-    void exec('reset', undefined, undefined, {
-      cpuDifficulty: heartsConfig.cpuDifficulty,
-      pointLimit: heartsConfig.pointLimit,
-      omnibusJD: heartsConfig.omnibusJD,
-    });
-  }, [exec, hideActionLog, heartsConfig.cpuDifficulty, heartsConfig.pointLimit, heartsConfig.omnibusJD]);
+type HeartsView = ReturnType<typeof useHeartsView>;
 
-  if (!state)
-    return <GameSkeleton gameKey="hearts" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 5 }} />;
+function LiveRegion({ view }: HeartsContext) {
+  return (
+    <div className="sr-only" data-testid="hearts-shoot-the-moon-live" role="status" aria-live="polite">
+      {view.moonAlertAnnouncement}
+    </div>
+  );
+}
 
-  const humanPlayer = state.players.find((p) => p.isHuman);
+function Board({ game, state, t, tc, view }: HeartsContext) {
+  const { cardWidth, isMobile } = view;
+  const moonAlertIdx = shootTheMoonAlertIdx(state.players);
+
   const isPassPhase = state.phase === HeartsPhase.PASS;
-  const isPlayPhase = state.phase === HeartsPhase.PLAY;
   const isTrickEnd = state.phase === HeartsPhase.TRICK_END;
   const isRoundEnd = state.phase === HeartsPhase.ROUND_END;
   const isGameEnd = state.phase === HeartsPhase.GAME_END || state.gameEndFlag;
-  const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
-
-  // On the human's play turn, mirror the server's legal-move rules
-  // (internal/domain/Hearts.go validatePlay) so legal cards are ringed and
-  // illegal ones are dimmed with a reason tooltip.
-  const heartsPlayCtx = {
-    currentTrick: state.currentTrick,
-    heartsBroken: state.heartsBroken,
-    trickNumber: state.trickNumber,
-    omnibusJD: state.config.omnibusJD,
-  };
-  const legalPlayIndices =
-    isHumanTurn && humanPlayer ? heartsLegalPlayIndices(humanPlayer.cards, heartsPlayCtx) : undefined;
 
   return (
-    <GamePageShell
-      title={tc('nav.hearts')}
-      gameThemeBg={gameTheme.hearts.bg}
-      phaseName={phaseNames[state.phase]}
-      isHumanTurn={isPassPhase || isHumanTurn}
-      gamePath="/hearts"
-      gameEndFlag={!!state?.gameEndFlag}
-      loading={loading}
-      confirmOpen={confirmOpen}
-      confirmReset={confirmReset}
-      cancelReset={cancelReset}
-      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
-    >
-      <div className="sr-only" data-testid="hearts-shoot-the-moon-live" role="status" aria-live="polite">
-        {moonAlertAnnouncement}
+    <>
+      {/* Round/Trick info */}
+      <div className="text-ds-text-primary flex flex-wrap justify-center gap-x-4 gap-y-1 text-center mb-2">
+        <span className="whitespace-nowrap">{t('round', { n: state.roundNumber })}</span>
+        <span className="whitespace-nowrap">{t('trick', { n: state.trickNumber })}</span>
+        <span className="whitespace-nowrap">{state.heartsBroken ? t('heartsBroken') : t('heartsNotBroken')}</span>
       </div>
-      {cliEnabled ? (
-        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
-      ) : (
-        <>
-          {/* Settings */}
-          <SettingsPanel
-            title={t('settings.title')}
-            groups={[
-              {
-                items: [
-                  {
-                    type: 'select',
-                    id: 'cpuDifficulty',
-                    label: t('settings.cpuDifficulty'),
-                    value: heartsConfig.cpuDifficulty,
-                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
-                      value: o.value,
-                      label: t(`settings.${o.label.toLowerCase()}`),
-                    })),
-                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
-                  },
-                  {
-                    type: 'select',
-                    id: 'pointLimit',
-                    label: t('settings.pointLimit'),
-                    value: heartsConfig.pointLimit,
-                    options: POINT_LIMIT_OPTIONS.map((v) => ({ value: v, label: String(v) })),
-                    onSelect: (v) => handleConfigChange('pointLimit', v),
-                  },
-                  {
-                    type: 'checkbox',
-                    id: 'omnibusJD',
-                    label: t('settings.omnibusJD'),
-                    checked: heartsConfig.omnibusJD,
-                    onToggle: (v) => handleToggle('omnibusJD', v),
-                  },
-                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
-                ],
-              },
-            ]}
-          />
 
-          {/* Scrollable area */}
-          <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            {/* Round/Trick info */}
-            <div className="text-ds-text-primary flex flex-wrap justify-center gap-x-4 gap-y-1 text-center mb-2">
-              <span className="whitespace-nowrap">{t('round', { n: state.roundNumber })}</span>
-              <span className="whitespace-nowrap">{t('trick', { n: state.trickNumber })}</span>
-              <span className="whitespace-nowrap">{state.heartsBroken ? t('heartsBroken') : t('heartsNotBroken')}</span>
-            </div>
-
-            <div className={lgTwoColGrid}>
-              {/* Left: game play area */}
-              <div>
-                {/* Pass direction (pass phase) */}
-                {isPassPhase && (
-                  <div
-                    className="text-ds-warning text-center mb-2 flex items-center justify-center gap-1.5"
-                    data-tutorial="ht-pass-area"
-                  >
-                    {PASS_ARROWS[state.passDirection] && (
-                      <span aria-hidden="true" className="text-lg leading-none" data-testid="hearts-pass-arrow">
-                        {PASS_ARROWS[state.passDirection]}
-                      </span>
-                    )}
-                    <span>
-                      {(() => {
-                        const direction = t(`passDirection.${passDirectionKeys[state.passDirection]}`);
-                        if (state.passDirection === 3) return direction;
-                        const humanIdx = state.players.findIndex((p) => p.isHuman);
-                        const recipient = state.players[heartsPassTarget(humanIdx, state.passDirection)];
-                        return recipient
-                          ? t('passTo', { direction, name: playerName(recipient.id, recipient.isHuman) })
-                          : direction;
-                      })()}
-                    </span>
-                  </div>
-                )}
-
-                {/* Current trick */}
-                <TrickDisplay
-                  currentTrick={state.currentTrick}
-                  players={state.players}
-                  cardWidth={cardWidth}
-                  label={t('currentTrick')}
-                  dataTutorial="ht-trick-display"
-                />
-              </div>
-
-              {/* Right: info sidebar */}
-              <div>
-                {/* CPU players */}
-                {isMobile ? (
-                  <details className="mb-2 p-2 rounded bg-black/30">
-                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
-                      {tc('label.cpuOpponents', { count: state.players.filter((p) => !p.isHuman).length })}
-                    </summary>
-                    <div className="mt-1">
-                      {state.players
-                        .filter((p) => !p.isHuman)
-                        .map((p) => {
-                          // 表と同じく1行につき一度だけ判定する。
-                          const isNear = heartsNearPointLimit(p.cumulativeScore, state.config.pointLimit);
-                          return (
-                            <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                              {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                              <span
-                                className={isNear ? 'text-ds-warning font-semibold' : undefined}
-                                title={isNear ? t('limitNear', { limit: state.config.pointLimit }) : undefined}
-                                data-near-limit={isNear || undefined}
-                              >
-                                {t('cumulativeScore', { score: p.cumulativeScore })}
-                              </span>{' '}
-                              | {t('roundScore', { score: p.roundScore })} |{' '}
-                              <HeartsPenaltyBreakdown cards={p.penaltyCards} tookOmnibusJD={p.tookOmnibusJD} t={t} />
-                              <HeartsVoidSuits suits={p.voidSuits ?? []} t={t} />
-                              {moonAlertIdx === p.id && <ShootTheMoonBadge label={t('shootTheMoonAlert')} />}
-                            </div>
-                          );
-                        })}
-                    </div>
-                  </details>
-                ) : (
-                  state.players
-                    .filter((p) => !p.isHuman)
-                    .map((p) => (
-                      <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                        <div className="text-ds-text-muted text-sm">
-                          {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                          {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
-                          {t('roundScore', { score: p.roundScore })} |{' '}
-                          <HeartsPenaltyBreakdown cards={p.penaltyCards} tookOmnibusJD={p.tookOmnibusJD} t={t} />
-                          <HeartsVoidSuits suits={p.voidSuits ?? []} t={t} />
-                          {moonAlertIdx === p.id && <ShootTheMoonBadge label={t('shootTheMoonAlert')} />}
-                        </div>
-                      </div>
-                    ))
-                )}
-
-                {/* Score table */}
-                {isMobile ? (
-                  <details
-                    className="my-3 p-2 rounded bg-black/30"
-                    data-tutorial="ht-score-table"
-                    open={isRoundEnd || isGameEnd || undefined}
-                  >
-                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('scores')}</summary>
-                    <table className="w-full text-sm text-ds-text-muted mt-1">
-                      <thead>
-                        <tr>
-                          <th scope="col" className="text-left whitespace-nowrap text-[10px]">
-                            {t('scoresPlayer')}
-                          </th>
-                          <th scope="col" className="whitespace-nowrap text-[10px]">
-                            {t('scoresRound')}
-                          </th>
-                          <th scope="col" className="whitespace-nowrap text-[10px]">
-                            {t('scoresTotal')}
-                          </th>
-                          <th scope="col" className="whitespace-nowrap text-[10px]">
-                            {t('scoresTricks')}
-                          </th>
-                          <th scope="col" className="whitespace-nowrap text-[10px]">
-                            {t('penaltyTaken')}
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {state.players.map((p) => {
-                          // 1行につき一度だけ判定する。className / title /
-                          // data-near-limit で別々に呼ぶと、条件を変えたときに
-                          // 片方だけ直してずれる。
-                          const isNear = heartsNearPointLimit(p.cumulativeScore, state.config.pointLimit);
-                          return (
-                            <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
-                              <td>{playerName(p.id, p.isHuman)}</td>
-                              <td className="text-center">{p.roundScore}</td>
-                              <td
-                                className={`text-center${isNear ? ' text-ds-warning font-semibold' : ''}`}
-                                title={isNear ? t('limitNear', { limit: state.config.pointLimit }) : undefined}
-                                data-near-limit={isNear || undefined}
-                              >
-                                {p.cumulativeScore}
-                              </td>
-                              <td className="text-center">{p.trickCount}</td>
-                              <td className="text-center">
-                                <HeartsPenaltyBreakdown cards={p.penaltyCards} tookOmnibusJD={p.tookOmnibusJD} t={t} />
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </details>
-                ) : (
-                  <div className="my-3 p-2 rounded bg-black/30" data-tutorial="ht-score-table">
-                    <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
-                    <table className="w-full text-sm text-ds-text-muted">
-                      <thead>
-                        <tr>
-                          <th scope="col" className="text-left">
-                            {t('scoresPlayer')}
-                          </th>
-                          <th scope="col" className="whitespace-nowrap text-[10px]">
-                            {t('scoresRound')}
-                          </th>
-                          <th scope="col" className="whitespace-nowrap text-[10px]">
-                            {t('scoresTotal')}
-                          </th>
-                          <th scope="col" className="whitespace-nowrap text-[10px]">
-                            {t('scoresTricks')}
-                          </th>
-                          <th scope="col" className="whitespace-nowrap text-[10px]">
-                            {t('penaltyTaken')}
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {state.players.map((p) => {
-                          // 1行につき一度だけ判定する。className / title /
-                          // data-near-limit で別々に呼ぶと、条件を変えたときに
-                          // 片方だけ直してずれる。
-                          const isNear = heartsNearPointLimit(p.cumulativeScore, state.config.pointLimit);
-                          return (
-                            <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
-                              <td>{playerName(p.id, p.isHuman)}</td>
-                              <td className="text-center">{p.roundScore}</td>
-                              <td
-                                className={`text-center${isNear ? ' text-ds-warning font-semibold' : ''}`}
-                                title={isNear ? t('limitNear', { limit: state.config.pointLimit }) : undefined}
-                                data-near-limit={isNear || undefined}
-                              >
-                                {p.cumulativeScore}
-                              </td>
-                              <td className="text-center">{p.trickCount}</td>
-                              <td className="text-center">
-                                <HeartsPenaltyBreakdown cards={p.penaltyCards} tookOmnibusJD={p.tookOmnibusJD} t={t} />
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-                <RoundScoreAnnouncement
-                  active={isRoundEnd || isGameEnd}
-                  entries={state.players.map((p) => ({
-                    name: playerName(p.id, p.isHuman),
-                    roundScore: p.roundScore,
-                    cumulativeScore: p.cumulativeScore,
-                  }))}
-                />
-              </div>
-            </div>
-
-            {/* Message */}
-            <div data-testid="hearts-trick-result-live" role="status" aria-live="polite">
-              {isTrickEnd && (
-                <div className="text-ds-text-primary text-center font-bold mb-2">
-                  {t('trickResult', {
-                    count: state.trickPoints,
-                    name: state.players[state.leadPlayerIdx]
-                      ? playerName(state.players[state.leadPlayerIdx].id, state.players[state.leadPlayerIdx].isHuman)
-                      : '',
-                    points: state.trickPoints,
-                  })}
-                </div>
-              )}
-            </div>
-            <div data-tutorial="ht-penalty-info">
-              <GameMessageBox
-                message={isTrickEnd && state.messageCode === 'hearts.trickEnd' ? undefined : state.message}
-                messageCode={isTrickEnd && state.messageCode === 'hearts.trickEnd' ? undefined : state.messageCode}
-                messageParams={isTrickEnd && state.messageCode === 'hearts.trickEnd' ? undefined : state.messageParams}
-              />
-            </div>
-            <div data-testid="hearts-pass-progress-live" className="sr-only" role="status" aria-live="polite">
-              {isPassPhase &&
-                t('passProgressAnnouncement', {
-                  selected: selectedCardIndices.length,
-                  remaining: 3 - selectedCardIndices.length,
-                })}
-            </div>
-            <div data-testid="hearts-broken-live" className="sr-only" role="status" aria-live="polite">
-              {announceHeartsBroken && t('heartsBrokenAnnouncement')}
-            </div>
-
-            {/* Action log */}
-            <ActionLogSection
-              isEndPhase={isGameEnd}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
-          </div>
-
-          {/* Footer */}
-          <GameFooter className={`${gameTheme.hearts.footer} px-4 py-2.5`}>
-            {/* Human cards */}
-            {humanPlayer && (
-              <PlayerHandSection
-                humanPlayer={humanPlayer}
-                selectedCardIndices={selectedCardIndices}
-                toggleCard={toggleCard}
-                cardWidth={cardWidth}
-                isMobile={isMobile}
-                dataTutorialPrefix="ht"
-                legalIndices={legalPlayIndices}
-              />
-            )}
-
-            <ErrorAlert message={error ?? hintError} onRetry={retry} />
-
-            {/*
-              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
-              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
-              られないことがある (#5955)。
-            */}
-            <div data-testid="hearts-hint-live" role="status" aria-live="polite">
-              {hint && (
-                <div className="text-ds-warning text-sm mb-2">
-                  {t('hintAvailable')}: {hint.cardIndices.map((i) => `[${i}]`).join(', ')} (
-                  {t(`hintReason.${hint.reason}`)})
-                </div>
-              )}
-            </div>
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            <div className="flex gap-2 items-center" data-tutorial="ht-play-button">
-              {(isPassPhase || isHumanTurn) && (
-                <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
-                  {tc('button.hint')}
-                </button>
-              )}
-              {isPassPhase && (
-                <span
-                  data-testid="hearts-pass-progress"
-                  className="self-center rounded-full bg-ds-surface border border-ds-accent px-2.5 py-0.5 text-ds-text-primary text-xs"
-                >
-                  {t('passProgress', { count: selectedCardIndices.length })}
-                  {selectedCardIndices.length < 3 && (
-                    <span className="ml-1 text-ds-warning">
-                      {`· ${t('passRemaining', { count: 3 - selectedCardIndices.length })}`}
-                    </span>
-                  )}
+      <div className={lgTwoColGrid}>
+        {/* Left: game play area */}
+        <div>
+          {/* Pass direction (pass phase) */}
+          {isPassPhase && (
+            <div
+              className="text-ds-warning text-center mb-2 flex items-center justify-center gap-1.5"
+              data-tutorial="ht-pass-area"
+            >
+              {PASS_ARROWS[state.passDirection] && (
+                <span aria-hidden="true" className="text-lg leading-none" data-testid="hearts-pass-arrow">
+                  {PASS_ARROWS[state.passDirection]}
                 </span>
               )}
-              {isPassPhase && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePass}
-                  disabled={loading || selectedCardIndices.length !== 3}
-                >
-                  {t('passButton')}
-                </button>
-              )}
-              {isHumanTurn && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-              {isTrickEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                  {t('nextTrick')}
-                </button>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={!!isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="ht-reset-button"
-              />
+              <span>
+                {(() => {
+                  const direction = t(`passDirection.${passDirectionKeys[state.passDirection]}`);
+                  if (state.passDirection === 3) return direction;
+                  const humanIdx = state.players.findIndex((p) => p.isHuman);
+                  const recipient = state.players[heartsPassTarget(humanIdx, state.passDirection)];
+                  return recipient
+                    ? t('passTo', { direction, name: playerName(recipient.id, recipient.isHuman) })
+                    : direction;
+                })()}
+              </span>
             </div>
-            <CardNavShortcutsPanel data-testid="hearts-kbd-shortcuts" />
-          </GameFooter>
-        </>
-      )}
-    </GamePageShell>
+          )}
+
+          {/* Current trick */}
+          <TrickDisplay
+            currentTrick={state.currentTrick}
+            players={state.players}
+            cardWidth={cardWidth}
+            label={t('currentTrick')}
+            dataTutorial="ht-trick-display"
+          />
+        </div>
+
+        {/* Right: info sidebar */}
+        <div>
+          {/* CPU players */}
+          {isMobile ? (
+            <details className="mb-2 p-2 rounded bg-black/30">
+              <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
+                {tc('label.cpuOpponents', { count: state.players.filter((p) => !p.isHuman).length })}
+              </summary>
+              <div className="mt-1">
+                {state.players
+                  .filter((p) => !p.isHuman)
+                  .map((p) => {
+                    // 表と同じく1行につき一度だけ判定する。
+                    const isNear = heartsNearPointLimit(p.cumulativeScore, state.config.pointLimit);
+                    return (
+                      <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
+                        {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                        <span
+                          className={isNear ? 'text-ds-warning font-semibold' : undefined}
+                          title={isNear ? t('limitNear', { limit: state.config.pointLimit }) : undefined}
+                          data-near-limit={isNear || undefined}
+                        >
+                          {t('cumulativeScore', { score: p.cumulativeScore })}
+                        </span>{' '}
+                        | {t('roundScore', { score: p.roundScore })} |{' '}
+                        <HeartsPenaltyBreakdown cards={p.penaltyCards} tookOmnibusJD={p.tookOmnibusJD} t={t} />
+                        <HeartsVoidSuits suits={p.voidSuits ?? []} t={t} />
+                        {moonAlertIdx === p.id && <ShootTheMoonBadge label={t('shootTheMoonAlert')} />}
+                      </div>
+                    );
+                  })}
+              </div>
+            </details>
+          ) : (
+            state.players
+              .filter((p) => !p.isHuman)
+              .map((p) => (
+                <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
+                  <div className="text-ds-text-muted text-sm">
+                    {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                    {t('cumulativeScore', { score: p.cumulativeScore })} | {t('roundScore', { score: p.roundScore })} |{' '}
+                    <HeartsPenaltyBreakdown cards={p.penaltyCards} tookOmnibusJD={p.tookOmnibusJD} t={t} />
+                    <HeartsVoidSuits suits={p.voidSuits ?? []} t={t} />
+                    {moonAlertIdx === p.id && <ShootTheMoonBadge label={t('shootTheMoonAlert')} />}
+                  </div>
+                </div>
+              ))
+          )}
+
+          {/* Score table */}
+          {isMobile ? (
+            <details
+              className="my-3 p-2 rounded bg-black/30"
+              data-tutorial="ht-score-table"
+              open={isRoundEnd || isGameEnd || undefined}
+            >
+              <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('scores')}</summary>
+              <table className="w-full text-sm text-ds-text-muted mt-1">
+                <thead>
+                  <tr>
+                    <th scope="col" className="text-left whitespace-nowrap text-[10px]">
+                      {t('scoresPlayer')}
+                    </th>
+                    <th scope="col" className="whitespace-nowrap text-[10px]">
+                      {t('scoresRound')}
+                    </th>
+                    <th scope="col" className="whitespace-nowrap text-[10px]">
+                      {t('scoresTotal')}
+                    </th>
+                    <th scope="col" className="whitespace-nowrap text-[10px]">
+                      {t('scoresTricks')}
+                    </th>
+                    <th scope="col" className="whitespace-nowrap text-[10px]">
+                      {t('penaltyTaken')}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {state.players.map((p) => {
+                    // 1行につき一度だけ判定する。className / title /
+                    // data-near-limit で別々に呼ぶと、条件を変えたときに
+                    // 片方だけ直してずれる。
+                    const isNear = heartsNearPointLimit(p.cumulativeScore, state.config.pointLimit);
+                    return (
+                      <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
+                        <td>{playerName(p.id, p.isHuman)}</td>
+                        <td className="text-center">{p.roundScore}</td>
+                        <td
+                          className={`text-center${isNear ? ' text-ds-warning font-semibold' : ''}`}
+                          title={isNear ? t('limitNear', { limit: state.config.pointLimit }) : undefined}
+                          data-near-limit={isNear || undefined}
+                        >
+                          {p.cumulativeScore}
+                        </td>
+                        <td className="text-center">{p.trickCount}</td>
+                        <td className="text-center">
+                          <HeartsPenaltyBreakdown cards={p.penaltyCards} tookOmnibusJD={p.tookOmnibusJD} t={t} />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </details>
+          ) : (
+            <div className="my-3 p-2 rounded bg-black/30" data-tutorial="ht-score-table">
+              <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
+              <table className="w-full text-sm text-ds-text-muted">
+                <thead>
+                  <tr>
+                    <th scope="col" className="text-left">
+                      {t('scoresPlayer')}
+                    </th>
+                    <th scope="col" className="whitespace-nowrap text-[10px]">
+                      {t('scoresRound')}
+                    </th>
+                    <th scope="col" className="whitespace-nowrap text-[10px]">
+                      {t('scoresTotal')}
+                    </th>
+                    <th scope="col" className="whitespace-nowrap text-[10px]">
+                      {t('scoresTricks')}
+                    </th>
+                    <th scope="col" className="whitespace-nowrap text-[10px]">
+                      {t('penaltyTaken')}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {state.players.map((p) => {
+                    // 1行につき一度だけ判定する。className / title /
+                    // data-near-limit で別々に呼ぶと、条件を変えたときに
+                    // 片方だけ直してずれる。
+                    const isNear = heartsNearPointLimit(p.cumulativeScore, state.config.pointLimit);
+                    return (
+                      <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
+                        <td>{playerName(p.id, p.isHuman)}</td>
+                        <td className="text-center">{p.roundScore}</td>
+                        <td
+                          className={`text-center${isNear ? ' text-ds-warning font-semibold' : ''}`}
+                          title={isNear ? t('limitNear', { limit: state.config.pointLimit }) : undefined}
+                          data-near-limit={isNear || undefined}
+                        >
+                          {p.cumulativeScore}
+                        </td>
+                        <td className="text-center">{p.trickCount}</td>
+                        <td className="text-center">
+                          <HeartsPenaltyBreakdown cards={p.penaltyCards} tookOmnibusJD={p.tookOmnibusJD} t={t} />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+          <RoundScoreAnnouncement
+            active={isRoundEnd || isGameEnd}
+            entries={state.players.map((p) => ({
+              name: playerName(p.id, p.isHuman),
+              roundScore: p.roundScore,
+              cumulativeScore: p.cumulativeScore,
+            }))}
+          />
+        </div>
+      </div>
+
+      {/* Message */}
+      <div data-testid="hearts-trick-result-live" role="status" aria-live="polite">
+        {isTrickEnd && (
+          <div className="text-ds-text-primary text-center font-bold mb-2">
+            {t('trickResult', {
+              count: state.trickPoints,
+              name: state.players[state.leadPlayerIdx]
+                ? playerName(state.players[state.leadPlayerIdx].id, state.players[state.leadPlayerIdx].isHuman)
+                : '',
+              points: state.trickPoints,
+            })}
+          </div>
+        )}
+      </div>
+      <div data-tutorial="ht-penalty-info">
+        <GameMessageBox
+          message={isTrickEnd && state.messageCode === 'hearts.trickEnd' ? undefined : state.message}
+          messageCode={isTrickEnd && state.messageCode === 'hearts.trickEnd' ? undefined : state.messageCode}
+          messageParams={isTrickEnd && state.messageCode === 'hearts.trickEnd' ? undefined : state.messageParams}
+        />
+      </div>
+      <div data-testid="hearts-pass-progress-live" className="sr-only" role="status" aria-live="polite">
+        {isPassPhase &&
+          t('passProgressAnnouncement', {
+            selected: game.selectedCardIndices.length,
+            remaining: 3 - game.selectedCardIndices.length,
+          })}
+      </div>
+      <div data-testid="hearts-broken-live" className="sr-only" role="status" aria-live="polite">
+        {view.announceHeartsBroken && t('heartsBrokenAnnouncement')}
+      </div>
+    </>
   );
 }
+
+function FooterHand({ game, state, view }: HeartsContext) {
+  const humanPlayer = state.players.find((player) => player.isHuman);
+  const isHumanTurn = state.phase === HeartsPhase.PLAY && state.players[state.currentPlayerIdx]?.isHuman === true;
+  // The server computes legality from internal/domain/Hearts.go validatePlay (ADR-0045).
+  const legalPlayIndices = isHumanTurn ? state.validPlays : undefined;
+  return humanPlayer ? (
+    <PlayerHandSection
+      humanPlayer={humanPlayer}
+      selectedCardIndices={game.selectedCardIndices}
+      toggleCard={game.toggleCard}
+      cardWidth={view.cardWidth}
+      isMobile={view.isMobile}
+      dataTutorialPrefix="ht"
+      legalIndices={legalPlayIndices}
+    />
+  ) : null;
+}
+
+function FooterStatus({ game, t, frontendHint }: HeartsContext) {
+  return (
+    <>
+      {/*
+        ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+        領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+        られないことがある (#5955)。
+      */}
+      <div data-testid="hearts-hint-live" role="status" aria-live="polite">
+        {game.hint && (
+          <div className="text-ds-warning text-sm mb-2">
+            {t('hintAvailable')}: {game.hint.cardIndices.map((i) => `[${i}]`).join(', ')} (
+            {t(`hintReason.${game.hint.reason}`)})
+          </div>
+        )}
+      </div>
+      <FrontendHintTooltip hint={frontendHint.hint} enabled={frontendHint.hintEnabled} t={t} />
+    </>
+  );
+}
+
+function FooterActions({ game, state, t, tc, busy }: HeartsContext) {
+  const isPassPhase = state.phase === HeartsPhase.PASS;
+  const isHumanTurn = state.phase === HeartsPhase.PLAY && state.players[state.currentPlayerIdx]?.isHuman === true;
+  return (
+    <>
+      {(isPassPhase || isHumanTurn) && (
+        <button type="button" className={btnSuccess} onClick={game.handleHint} disabled={busy || game.hintLoading}>
+          {tc('button.hint')}
+        </button>
+      )}
+      {isPassPhase && (
+        <span
+          data-testid="hearts-pass-progress"
+          className="self-center rounded-full bg-ds-surface border border-ds-accent px-2.5 py-0.5 text-ds-text-primary text-xs"
+        >
+          {t('passProgress', { count: game.selectedCardIndices.length })}
+          {game.selectedCardIndices.length < 3 && (
+            <span className="ml-1 text-ds-warning">{`· ${t('passRemaining', { count: 3 - game.selectedCardIndices.length })}`}</span>
+          )}
+        </span>
+      )}
+      {isPassPhase && (
+        <button
+          type="button"
+          className={btnPrimary}
+          onClick={game.handlePass}
+          disabled={busy || game.selectedCardIndices.length !== 3}
+        >
+          {t('passButton')}
+        </button>
+      )}
+      {isHumanTurn && (
+        <button
+          type="button"
+          className={btnPrimary}
+          onClick={game.handlePlay}
+          disabled={busy || game.selectedCardIndices.length !== 1}
+        >
+          {t('playButton')}
+        </button>
+      )}
+      {state.phase === HeartsPhase.TRICK_END && (
+        <button type="button" className={btnSuccess} onClick={game.handleNextTrick} disabled={busy}>
+          {t('nextTrick')}
+        </button>
+      )}
+      {state.phase === HeartsPhase.ROUND_END && (
+        <button type="button" className={btnSuccess} onClick={game.handleNextRound} disabled={busy}>
+          {t('nextRound')}
+        </button>
+      )}
+    </>
+  );
+}
+
+const heartsDefinition: GameDefinition<HeartsResponse, HeartsGame, Parameters<typeof heartsApi.exec>, HeartsView> = {
+  key: 'hearts',
+  useGame: useHeartsGame,
+  useView: useHeartsView,
+  tutorial: HT_TUTORIAL_STEPS,
+  skeleton: { kind: 'trick-taking', trickArea: true, footerHandSize: 5 },
+  cli: () => ({
+    parseCommand: parseHeartsCommand,
+    formatResponse: formatHeartsState,
+    helpText: HEARTS_HELP,
+  }),
+  phase: ({ state, view }) => ({
+    name: view.phaseNames[state.phase],
+    ended: state.phase === HeartsPhase.GAME_END || state.gameEndFlag,
+  }),
+  shell: ({ state }) => ({
+    isHumanTurn:
+      state.phase === HeartsPhase.PASS ||
+      (state.phase === HeartsPhase.PLAY && state.players[state.currentPlayerIdx]?.isHuman === true),
+  }),
+  reset: ({ game }) => {
+    void game.exec('reset', undefined, undefined, {
+      cpuDifficulty: game.heartsConfig.cpuDifficulty,
+      pointLimit: game.heartsConfig.pointLimit,
+      omnibusJD: game.heartsConfig.omnibusJD,
+    });
+  },
+  settings: ({ game, t, tc, frontendHint }) => [
+    {
+      items: [
+        {
+          type: 'select',
+          id: 'cpuDifficulty',
+          label: t('settings.cpuDifficulty'),
+          value: game.heartsConfig.cpuDifficulty,
+          options: CPU_DIFFICULTY_OPTIONS.map((option) => ({
+            value: option.value,
+            label: t(`settings.${option.label.toLowerCase()}`),
+          })),
+          onSelect: (value) => game.handleConfigChange('cpuDifficulty', value),
+        },
+        {
+          type: 'select',
+          id: 'pointLimit',
+          label: t('settings.pointLimit'),
+          value: game.heartsConfig.pointLimit,
+          options: POINT_LIMIT_OPTIONS.map((value) => ({ value, label: String(value) })),
+          onSelect: (value) => game.handleConfigChange('pointLimit', value),
+        },
+        {
+          type: 'checkbox',
+          id: 'omnibusJD',
+          label: t('settings.omnibusJD'),
+          checked: game.heartsConfig.omnibusJD,
+          onToggle: (value) => game.handleToggle('omnibusJD', value),
+        },
+        hintCheckboxItem(tc, frontendHint.hintEnabled, frontendHint.setHintEnabled),
+      ],
+    },
+  ],
+  settingsPlacement: 'top',
+  contentClassName: `pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`,
+  cardNav: ({ game, state }) => {
+    const isPassPhase = state.phase === HeartsPhase.PASS;
+    const isHumanTurn = state.phase === HeartsPhase.PLAY && state.players[state.currentPlayerIdx]?.isHuman === true;
+    return {
+      cardCount: state.players.find((player) => player.isHuman)?.cards?.length ?? 0,
+      onToggle: game.toggleCard,
+      onConfirm: isPassPhase ? game.handlePass : game.handlePlay,
+      onClear: game.clearSelection,
+      enabled: isPassPhase || isHumanTurn,
+    };
+  },
+  shortcutsTestId: 'hearts-kbd-shortcuts',
+  resetTutorialId: 'ht-reset-button',
+  actionsTutorialId: 'ht-play-button',
+  LiveRegion,
+  Board,
+  FooterHand,
+  FooterStatus,
+  FooterActions,
+};
+
+/** Renders the Hearts game page with card passing, trick play, and scoring. */
+export const HeartsPage = createGamePage(heartsDefinition);
 
 function HeartsVoidSuits({
   suits,

@@ -4,6 +4,7 @@ import { formatAgnesState } from './agnesFormatter';
 
 function makeState(overrides?: Partial<AgnesResponse>): AgnesResponse {
   return {
+    legalTargets: {},
     tableau: [[], [], [], [], [], [], []],
     stockCount: 0,
     foundation: [[], [], [], []],

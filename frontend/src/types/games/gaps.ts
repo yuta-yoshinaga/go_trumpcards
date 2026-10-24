@@ -21,6 +21,8 @@ export interface GapsHint {
 export interface GapsResponse extends BaseGameResponse {
   /** 4-row x 13-col grid. `null` cells are gaps. */
   grid: (Card | null)[][];
+  /** Number of redeal-locked cards at the start of each row. */
+  lockedPrefixLengths: number[];
   /** 4-row x 13-col grid of what each gap accepts. `null` for occupied or undecided cells. */
   gapNeeds?: (GapsGhostHint | null)[][];
   redealsUsed: number;

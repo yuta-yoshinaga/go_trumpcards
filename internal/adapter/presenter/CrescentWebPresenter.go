@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -19,6 +20,7 @@ func (p *CrescentWebPresenter) Output(cr interfaces.CrescentGame, lastErr error)
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, cr, int(cr.GetPhase()))
 	resObj.RedealsRemaining = cr.GetRedealsRemaining()
 	resObj.NoLegalMoves = cr.HasNoLegalMoves()
+	resObj.LegalTargets = p.buildLegalTargets(cr)
 
 	tableau := cr.GetTableau()
 	resObj.Tableau = make([][]*controller.CrescentWebOutputTableauCard, domain.CrescentTableauCnt)
@@ -88,6 +90,7 @@ func (p *CrescentWebPresenter) HintOutput(cr interfaces.CrescentGame) string {
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, cr, int(cr.GetPhase()))
 	resObj.RedealsRemaining = cr.GetRedealsRemaining()
 	resObj.NoLegalMoves = cr.HasNoLegalMoves()
+	resObj.LegalTargets = p.buildLegalTargets(cr)
 	resObj.Tableau = make([][]*controller.CrescentWebOutputTableauCard, 0)
 	resObj.Foundation = make([][]*controller.WebOutputCard, 0)
 
@@ -104,6 +107,22 @@ func (p *CrescentWebPresenter) HintOutput(cr interfaces.CrescentGame) string {
 	}
 
 	return marshalOrError(resObj)
+}
+
+func (p *CrescentWebPresenter) buildLegalTargets(g interfaces.CrescentGame) map[string]controller.CrescentWebOutputTargets {
+	out := make(map[string]controller.CrescentWebOutputTargets)
+	tableauState := g.GetTableau()
+	for col := range domain.CrescentTableauCnt {
+		if len(tableauState[col]) == 0 {
+			continue
+		}
+		tableau, foundation := g.LegalTargets(col)
+		if len(tableau) == 0 && len(foundation) == 0 {
+			continue
+		}
+		out["tableau-"+strconv.Itoa(col)] = controller.CrescentWebOutputTargets{Tableau: intSliceOrEmpty(tableau), Foundation: intSliceOrEmpty(foundation)}
+	}
+	return out
 }
 
 // ActionLogOutput 棋譜を JSON 出力する。

@@ -277,6 +277,27 @@ func (bc *Fortress) canPlaceOnTableau(card *Card, col int) bool {
 	return diff == 1 || diff == -1
 }
 
+// LegalTargets は列 fromCol の一番上の札を置ける先を返す。
+// 自分の列を明示的に除外する分岐は置かない。最上段の札は自分自身なので
+// canPlaceOnTableau が必ず false を返す。
+func (bc *Fortress) LegalTargets(fromCol int) (tableau []int, foundation []int) {
+	if fromCol < 0 || fromCol >= FortressTableauCnt || len(bc.tableau[fromCol]) == 0 {
+		return nil, nil
+	}
+	card := bc.tableau[fromCol][len(bc.tableau[fromCol])-1].Card
+	for col := range FortressTableauCnt {
+		if bc.canPlaceOnTableau(card, col) {
+			tableau = append(tableau, col)
+		}
+	}
+	for i := range FortressFoundationCnt {
+		if canPlaceOnFoundationPile(bc.foundation[i], card) {
+			foundation = append(foundation, i)
+		}
+	}
+	return tableau, foundation
+}
+
 // findFoundation カードを置けるファンデーションのインデックスを探す（見つからない場合-1）
 func (bc *Fortress) findFoundation(card *Card) int {
 	return columnFindFoundation(bc.foundation[:], card)

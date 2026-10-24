@@ -24,14 +24,21 @@ type ShamrocksWebOutputHint struct {
 	ToFoundation bool `json:"toFoundation"`
 }
 
+// ShamrocksWebOutputTargets contains legal destination indices for one fan.
+type ShamrocksWebOutputTargets struct {
+	Fan        []int `json:"fan"`
+	Foundation []int `json:"foundation"`
+}
+
 // ShamrocksWebOutput シャムロックスのWebアウトプット。
 type ShamrocksWebOutput struct {
-	Fans       [][]*WebOutputCard      `json:"fans"`
-	Foundation [][]*WebOutputCard      `json:"foundation"`
-	Phase      int                     `json:"phase"`
-	MoveCount  int                     `json:"moveCount"`
-	CanUndo    bool                    `json:"canUndo"`
-	Hint       *ShamrocksWebOutputHint `json:"hint,omitempty"`
+	Fans         [][]*WebOutputCard                   `json:"fans"`
+	Foundation   [][]*WebOutputCard                   `json:"foundation"`
+	Phase        int                                  `json:"phase"`
+	MoveCount    int                                  `json:"moveCount"`
+	CanUndo      bool                                 `json:"canUndo"`
+	LegalTargets map[string]ShamrocksWebOutputTargets `json:"legalTargets"`
+	Hint         *ShamrocksWebOutputHint              `json:"hint,omitempty"`
 	WebOutputBase
 }
 
@@ -48,6 +55,7 @@ func newShamrocksDefaultOutput(msg string) *ShamrocksWebOutput {
 	return &ShamrocksWebOutput{
 		Fans:          make([][]*WebOutputCard, 0),
 		Foundation:    make([][]*WebOutputCard, 0),
+		LegalTargets:  make(map[string]ShamrocksWebOutputTargets),
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }

@@ -40,4 +40,6 @@ type ShamrocksGame interface {
 	GetFoundation() [domain.ShamrocksFoundationCnt][]*domain.Card
 	// GetMovableFans いま動かせる扇のインデックスを取得する。
 	GetMovableFans() []int
+	// LegalTargets returns fan and foundation destinations for a source fan.
+	LegalTargets(fan int) (fans, foundation []int)
 }

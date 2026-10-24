@@ -8,6 +8,8 @@ function makeState(overrides?: Partial<NapoleonsSquareResponse>): NapoleonsSquar
     stockCount: 48,
     waste: [],
     foundation: Array.from({ length: 8 }, () => []),
+    legalTargets: {},
+    runStarts: Array.from({ length: 12 }, () => []),
     phase: 0,
     moveCount: 0,
     canUndo: false,

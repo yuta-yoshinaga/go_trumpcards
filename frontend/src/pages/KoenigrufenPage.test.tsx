@@ -33,6 +33,7 @@ const bidPhaseState = makeKoenigrufenState({
   highestBidder: -1,
   calledKing: -1,
   playableIndices: [],
+  discardableIndices: [],
 });
 
 // Call phase: human declarer holds the King of Hearts, so Hearts must be disabled.
@@ -44,6 +45,7 @@ const callPhaseState = makeKoenigrufenState({
   contract: 1,
   calledKing: -1,
   playableIndices: [],
+  discardableIndices: [],
   players: [
     {
       id: 0,
@@ -97,6 +99,7 @@ const talonPhaseState = makeKoenigrufenState({
   isHumanTurn: true,
   isHumanBidTurn: false,
   isHumanDiscard: true,
+  discardableIndices: Array.from({ length: 18 }, (_, i) => i),
   contract: 1,
   calledKing: 4,
   playableIndices: [],
@@ -406,6 +409,13 @@ describe('KoenigrufenPage', () => {
     mockExec.mockResolvedValue(callPhaseState);
     fireEvent.click(spadeBtn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('callking', { callSuit: 1 }));
+  });
+
+  it('follows server discard indices when they allow a King the old client rule forbade', async () => {
+    mockExec.mockResolvedValue({ ...talonPhaseState, discardableIndices: [6] });
+    renderWithProviders(<KoenigrufenPage />);
+    expect(await screen.findByRole('button', { name: 'K ♠' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: '2 ♥' })).toHaveAttribute('aria-disabled', 'true');
   });
 
   it('renders the talon phase and dispatches discard for exactly 6 selected cards', async () => {

@@ -40,7 +40,7 @@ import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
-import { actionDesc, isCardPlayable, listJokerPlacements } from '../utils/sevensUtils';
+import { actionDesc } from '../utils/sevensUtils';
 
 /** Sevens tutorial step definitions. */
 const SV_TUTORIAL_STEPS: TutorialStep[] = [
@@ -115,24 +115,7 @@ function SevensPageContent() {
   );
   const canDirectPlay = useCallback(
     (idx: number) => {
-      const player = state?.players.find((p) => p.isHuman);
-      const card = player?.cards?.[idx];
-      return (
-        !!state &&
-        !!player &&
-        !!card &&
-        isCardPlayable(
-          card,
-          state.tablePlaced,
-          state.config.tunnelEnabled,
-          state.config.noJokerFinish,
-          player.cards,
-          state.config.endStopEnabled,
-          state.config.jokerConsecutiveBanned,
-          player.lastPlayedJoker,
-          state.config.tunnelSkipWidth,
-        )
-      );
+      return !!state && state.validPlays.includes(idx);
     },
     [state],
   );
@@ -163,10 +146,7 @@ function SevensPageContent() {
   // would cause the effect to re-fire and dispatch the same failing placement
   // forever. We guard with a ref that tracks "we already tried auto-placing
   // for this jokerCardIdx", and only reset it once the index changes.
-  const tablePlacedForAuto = state?.tablePlaced;
-  const tunnelEnabledForAuto = state?.config.tunnelEnabled;
-  const endStopEnabledForAuto = state?.config.endStopEnabled;
-  const tunnelSkipWidthForAuto = state?.config.tunnelSkipWidth;
+  const jokerPlacementsForAuto = state?.jokerPlacements;
   const lastAutoAttemptedRef = useRef<number | null>(null);
   useEffect(() => {
     // Reset the guard whenever the joker selection clears or changes.
@@ -175,26 +155,13 @@ function SevensPageContent() {
       return;
     }
     if (lastAutoAttemptedRef.current === jokerCardIdx) return;
-    if (loading || tablePlacedForAuto === undefined) return;
-    const slots = listJokerPlacements(
-      tablePlacedForAuto,
-      tunnelEnabledForAuto ?? false,
-      endStopEnabledForAuto ?? false,
-      tunnelSkipWidthForAuto ?? 0,
-    );
+    if (loading || jokerPlacementsForAuto === undefined) return;
+    const slots = jokerPlacementsForAuto;
     if (slots.length === 1) {
       lastAutoAttemptedRef.current = jokerCardIdx;
       handleJokerPlace(slots[0].suit, slots[0].value);
     }
-  }, [
-    jokerCardIdx,
-    loading,
-    tablePlacedForAuto,
-    tunnelEnabledForAuto,
-    endStopEnabledForAuto,
-    tunnelSkipWidthForAuto,
-    handleJokerPlace,
-  ]);
+  }, [jokerCardIdx, loading, jokerPlacementsForAuto, handleJokerPlace]);
 
   if (!state)
     return (
@@ -407,8 +374,7 @@ function SevensPageContent() {
               <SevensBoard
                 tablePlaced={tablePlaced}
                 tunnelEnabled={tunnelEnabled}
-                tunnelSkipWidth={state.config.tunnelSkipWidth}
-                endStopEnabled={state.config.endStopEnabled}
+                jokerPlacements={state.jokerPlacements}
                 jokerSelecting={jokerCardIdx !== null}
                 onJokerPlace={handleJokerPlace}
               />
@@ -549,13 +515,8 @@ function SevensPageContent() {
               <div className="mb-2" data-tutorial="sv-player-hand">
                 <SevensHumanArea
                   player={humanPlayer}
+                  validPlays={state.validPlays}
                   isCurrentTurn={isHumanTurn}
-                  tablePlaced={tablePlaced}
-                  tunnelEnabled={tunnelEnabled}
-                  tunnelSkipWidth={state.config.tunnelSkipWidth}
-                  noJokerFinish={state.config.noJokerFinish}
-                  endStopEnabled={state.config.endStopEnabled}
-                  jokerConsecutiveBanned={state.config.jokerConsecutiveBanned}
                   loading={loading}
                   jokerCardIdx={jokerCardIdx}
                   onPlay={handleCardPlay}

@@ -1,0 +1,4 @@
+{
+  "max": 2354,
+  "reason": "Lowered manually for #11922 (sweeps consolidated to one load per route/viewport); added eight #11923 castle-foundation viewport checks and one deterministic #12018 Kille wrap regression check. Lowering the limit must be done manually."
+}

@@ -14,6 +14,7 @@ export interface EightOffHint {
 
 /** Full Eight Off game state returned from the API. */
 export interface EightOffResponse extends BaseGameResponse {
+  legalTargets: Record<string, { tableau: number[]; foundation: number[] }>;
   tableau: (Card | null)[][];
   freeCells: (Card | null)[];
   foundation: Card[][];

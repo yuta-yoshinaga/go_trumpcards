@@ -218,6 +218,30 @@ func (s *Scorpion) MoveTableauToTableau(fromCol, cardIndex, toCol int) error {
 	return nil
 }
 
+// LegalTargetsFrom returns legal tableau destinations for a face-up card and its carried stack.
+// Scorpion allows any face-up card to start a move; the selected card alone determines placement.
+func (s *Scorpion) LegalTargetsFrom(col, cardIndex int) (tableau, foundation []int) {
+	tableau = make([]int, 0)
+	foundation = make([]int, 0)
+	if s.phase != ScorpionPhasePlaying || col < 0 || col >= ScorpionTableauCnt {
+		return tableau, foundation
+	}
+	cards := s.tableau[col]
+	if cardIndex == -1 {
+		cardIndex = len(cards) - 1
+	}
+	if cardIndex < 0 || cardIndex >= len(cards) || !cards[cardIndex].FaceUp {
+		return tableau, foundation
+	}
+	card := cards[cardIndex].Card
+	for toCol := range ScorpionTableauCnt {
+		if toCol != col && s.canPlaceOnTableau(card, toCol) {
+			tableau = append(tableau, toCol)
+		}
+	}
+	return tableau, foundation
+}
+
 // GiveUp ギブアップ
 func (s *Scorpion) GiveUp() {
 	if s.phase == ScorpionPhasePlaying {

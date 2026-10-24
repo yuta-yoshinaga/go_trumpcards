@@ -6,6 +6,7 @@ function makeState(overrides?: Partial<BakersDozenResponse>): BakersDozenRespons
   return {
     tableau: Array.from({ length: 13 }, () => []),
     foundation: [[], [], [], []],
+    legalTargets: {},
     phase: 0,
     moveCount: 0,
     canUndo: false,

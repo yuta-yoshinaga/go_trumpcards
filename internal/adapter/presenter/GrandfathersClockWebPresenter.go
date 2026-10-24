@@ -18,6 +18,7 @@ func (p *GrandfathersClockWebPresenter) Output(gc interfaces.GrandfathersClockGa
 	resObj := new(controller.GrandfathersClockWebOutput)
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, gc, int(gc.GetPhase()))
 	resObj.CanRedo = gc.CanRedo()
+	resObj.LegalTargets = buildGrandfathersClockLegalTargets(gc)
 
 	// タブロー — 規則上すべて表向きだが、将来の伏せ札バリアントで状態が漏れない
 	// よう、ハードコードせずドメインの FaceUp をそのまま流す。
@@ -95,6 +96,7 @@ func (p *GrandfathersClockWebPresenter) HintOutput(gc interfaces.GrandfathersClo
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, gc, int(gc.GetPhase()))
 	resObj.Tableau = make([][]*controller.GrandfathersClockWebOutputTableauCard, 0)
 	resObj.Foundation = make([]*controller.GrandfathersClockWebOutputFoundation, 0)
+	resObj.LegalTargets = buildGrandfathersClockLegalTargets(gc)
 
 	if hint != nil {
 		resObj.Hint = &controller.GrandfathersClockWebOutputHint{
@@ -108,6 +110,21 @@ func (p *GrandfathersClockWebPresenter) HintOutput(gc interfaces.GrandfathersClo
 	}
 
 	return marshalOrError(resObj)
+}
+
+func buildGrandfathersClockLegalTargets(gc interfaces.GrandfathersClockGame) map[string]controller.GrandfathersClockWebOutputTargets {
+	result := make(map[string]controller.GrandfathersClockWebOutputTargets)
+	for col, pile := range gc.GetTableau() {
+		if len(pile) == 0 {
+			continue
+		}
+		tableau, foundation := gc.LegalTargets(col)
+		tableau, foundation = intSliceOrEmpty(tableau), intSliceOrEmpty(foundation)
+		if len(tableau) > 0 || len(foundation) > 0 {
+			result[fmt.Sprintf("tableau-%d", col)] = controller.GrandfathersClockWebOutputTargets{Tableau: tableau, Foundation: foundation}
+		}
+	}
+	return result
 }
 
 // ActionLogOutput 棋譜をJSON出力

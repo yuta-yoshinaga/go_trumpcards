@@ -303,7 +303,7 @@ describe('CallBreakPage', () => {
   });
 
   it('marks cards outside validPlayIndices as aria-disabled with tooltip on human play turn', async () => {
-    const must = makeCallBreakState({ validPlayIndices: [1] });
+    const must = makeCallBreakState({ validPlayIndices: [1], playRejectCodes: ['callbreak.errSpadesNotBroken', ''] });
     mockExec.mockResolvedValue(must);
     renderWithProviders(<CallBreakPage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
@@ -325,7 +325,7 @@ describe('CallBreakPage', () => {
   it.each([
     {
       name: 'unbroken spade lead',
-      state: makeCallBreakState({ validPlayIndices: [1] }),
+      state: makeCallBreakState({ validPlayIndices: [1], playRejectCodes: ['callbreak.errSpadesNotBroken', ''] }),
       card: '♠ A',
       title: 'このカードは出せません (スペードはまだブレイクされていません)',
     },
@@ -345,6 +345,7 @@ describe('CallBreakPage', () => {
         ),
         currentTrick: [{ playerIdx: 1, card: { design: 'DIAMOND', value: 5 } }],
         validPlayIndices: [0],
+        playRejectCodes: ['', 'shared.errFollowLeadSuit'],
       }),
       card: '♥ J',
       title: 'このカードは出せません (リードスートに従ってください)',
@@ -365,6 +366,7 @@ describe('CallBreakPage', () => {
         ),
         currentTrick: [{ playerIdx: 1, card: { design: 'DIAMOND', value: 5 } }],
         validPlayIndices: [1],
+        playRejectCodes: ['callbreak.errMustTrump', ''],
       }),
       card: '♥ J',
       title: 'このカードは出せません (リードスートが無い場合はスペードで切らなければなりません)',
@@ -377,14 +379,14 @@ describe('CallBreakPage', () => {
   });
 
   it('does not show a restriction reason on a playable card', async () => {
-    const state = makeCallBreakState({ validPlayIndices: [0] });
+    const state = makeCallBreakState({ validPlayIndices: [0], playRejectCodes: ['', ''] });
     mockExec.mockResolvedValue(state);
     renderWithProviders(<CallBreakPage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
     expect(screen.getByAltText('♠ A').closest('button')).not.toHaveAttribute('title');
   });
 
-  it('falls back to the generic tooltip when the illegal reason is unknown', async () => {
+  it('does not show a title for an unknown server rejection code', async () => {
     const state = makeCallBreakState({
       players: makeCallBreakState().players.map((p, i) =>
         i === 0
@@ -398,22 +400,43 @@ describe('CallBreakPage', () => {
           : p,
       ),
       currentTrick: [{ playerIdx: 1, card: { design: 'DIAMOND', value: 5 } }],
-      validPlayIndices: [],
+      validPlayIndices: [0, 1],
+      playRejectCodes: ['unknown.reason', ''],
     });
     mockExec.mockResolvedValue(state);
     renderWithProviders(<CallBreakPage />);
     await waitFor(() => expect(screen.getByAltText('♦ 3')).toBeInTheDocument());
-    expect(screen.getByAltText('♦ 3').closest('button')).toHaveAttribute(
+    expect(screen.getByAltText('♦ 3').closest('button')).not.toHaveAttribute('title');
+  });
+
+  it('falls back to the generic tooltip for an unknown code on a restricted card', async () => {
+    const state = makeCallBreakState({ validPlayIndices: [1], playRejectCodes: ['unknown.reason', ''] });
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<CallBreakPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    expect(screen.getByAltText('♠ A').closest('button')).toHaveAttribute(
       'title',
       'このカードは出せません (リードスートが無い場合はスペードで切らなければなりません)',
     );
   });
 
+  it('uses the server rejection code even when it contradicts the old rule mirror', async () => {
+    const state = makeCallBreakState({ validPlayIndices: [0, 1], playRejectCodes: ['shared.errFollowLeadSuit', ''] });
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<CallBreakPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    expect(screen.getByAltText('♠ A').closest('button')).toHaveAttribute(
+      'title',
+      'このカードは出せません (リードスートに従ってください)',
+    );
+  });
+
   it('does not show play button when not human turn', async () => {
-    mockExec.mockResolvedValue(cpuTurnState);
+    mockExec.mockResolvedValue({ ...cpuTurnState, playRejectCodes: ['callbreak.errSpadesNotBroken'] });
     renderWithProviders(<CallBreakPage />);
     await waitFor(() => expect(screen.getAllByText(/CPU 1/).length).toBeGreaterThan(0));
     expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
+    expect(screen.getByAltText('♠ A').closest('button')).not.toHaveAttribute('title');
   });
 
   it('shows next trick button on trick end', async () => {

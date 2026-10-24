@@ -71,6 +71,7 @@ func (p *BeziqueWebPresenter) buildBase(b interfaces.BeziqueGame) *controller.Be
 
 	resObj.CurrentTrick = trickCardsToOutput(b.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(b)
+	resObj.ValidPlays = humanTurnValidPlays[*domain.BeziquePlayer](b, b.GetPhase() == domain.BeziquePhasePlay)
 	resObj.AvailableMelds = p.buildMeldsOutput(b)
 	return resObj
 }

@@ -19,6 +19,8 @@ type HeartsGame interface {
 	ExecutePass()
 	// PlayerPlay プレイヤーがカードを出す
 	PlayerPlay(cardIndex int) error
+	// GetValidPlayIndices 現在プレイ可能な手札のインデックスを取得する
+	GetValidPlayIndices(playerIdx int) []int
 	// CpuPlay CPUプレイヤーが1ターン実行する
 	CpuPlay()
 	// ResolveTrick トリックを解決する

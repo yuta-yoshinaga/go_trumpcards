@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -24,6 +25,8 @@ func setupFortyAndEightWebMockDefaults(fg *interfaces.MockFortyAndEightGame) {
 	fg.On("UndoToEscape").Return(0).Maybe()
 	fg.On("GetRedealUsed").Return(false).Maybe()
 	fg.On("CanRedeal").Return(false).Maybe()
+	fg.On("WasteLegalTargets").Return([]int(nil), []int(nil)).Maybe()
+	fg.On("LegalTargets", mock.Anything).Return([]int(nil), []int(nil)).Maybe()
 
 	var tableau [domain.FortyAndEightTableauCnt][]*domain.FortyAndEightTableauCard
 	for i := range domain.FortyAndEightTableauCnt {
@@ -165,6 +168,35 @@ func TestFortyAndEightWebPresenter_Output(t *testing.T) {
 		result := parseFortyAndEightOutput(t, p.Output(fg, nil))
 		assert.Equal(t, "fortyandeight.stalemate", result.MessageCode)
 	})
+}
+
+func TestFortyAndEightWebPresenter_LegalTargets(t *testing.T) {
+	for _, hintOutput := range []bool{false, true} {
+		g := new(interfaces.MockFortyAndEightGame)
+		setupFortyAndEightOutputMock(g)
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "WasteLegalTargets")
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "LegalTargets")
+		g.On("WasteLegalTargets").Return([]int(nil), []int{2})
+		g.On("LegalTargets", 0).Return([]int{3}, []int(nil))
+		g.On("LegalTargets", mock.Anything).Return([]int(nil), []int(nil)).Maybe()
+		p := new(FortyAndEightWebPresenter)
+		var raw string
+		if hintOutput {
+			raw = p.HintOutput(g)
+		} else {
+			raw = p.Output(g, nil)
+		}
+		out := parseFortyAndEightOutput(t, raw)
+		assert.Equal(t, []int{3}, out.LegalTargets["tableau-0"].Tableau)
+		assert.NotNil(t, out.LegalTargets["tableau-0"].Foundation)
+		assert.Equal(t, []int{2}, out.LegalTargets["waste"].Foundation)
+		assert.NotNil(t, out.LegalTargets["waste"].Tableau)
+	}
+
+	g := new(interfaces.MockFortyAndEightGame)
+	setupFortyAndEightOutputMock(g)
+	out := parseFortyAndEightOutput(t, new(FortyAndEightWebPresenter).HintOutput(g))
+	assert.Empty(t, out.LegalTargets)
 }
 
 // **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の

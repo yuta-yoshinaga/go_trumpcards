@@ -39,6 +39,7 @@ const playingState: FlowerGardenResponse = {
   ]),
   reserve: [card('DIAMOND', 7), ...Array.from({ length: 15 }, () => null)],
   foundation: [[card('SPADE', 1)], [card('CLOVER', 1)], [card('HEART', 1)], [card('DIAMOND', 1)]],
+  legalTargets: { 'tableau-0': { tableau: [1, 2, 3, 4, 5], foundation: [] } },
   phase: 0,
   moveCount: 3,
   canUndo: false,
@@ -170,6 +171,7 @@ describe('FlowerGardenPage', () => {
       ...playingState,
       tableau: makeTableau([[{ card: card('SPADE', 1), faceUp: true }]]),
       foundation: [[], ...playingState.foundation.slice(1)],
+      legalTargets: { 'tableau-0': { tableau: [], foundation: [0] } },
     });
     renderWithProviders(<FlowerGardenPage />);
     const target = await screen.findByRole('button', { name: '空の組札 (スペード)' });
@@ -457,6 +459,10 @@ describe('FlowerGardenPage', () => {
       ...playingState,
       tableau: makeTableau([[{ card: card('SPADE', 8), faceUp: true }], [{ card: card('SPADE', 7), faceUp: true }]]),
       reserve: [card('DIAMOND', 2), card('SPADE', 7), ...Array.from({ length: 14 }, () => null)],
+      legalTargets: {
+        'reserve-0': { tableau: [2, 3, 4, 5], foundation: [3] },
+        'reserve-1': { tableau: [0, 2, 3, 4, 5], foundation: [] },
+      },
     };
     mockExec.mockResolvedValue(customState);
     renderWithProviders(<FlowerGardenPage />);
@@ -481,6 +487,15 @@ describe('FlowerGardenPage', () => {
     });
     // 列1 (♠7) は同ランクなので置けない
     expect(screen.getByRole('button', { name: '♠ 7、列1・位置0' })).not.toHaveAttribute('data-target-candidate');
+  });
+
+  it('follows server destinations when they contradict client rules', async () => {
+    mockExec.mockResolvedValue({ ...playingState, legalTargets: { 'tableau-0': { tableau: [2], foundation: [] } } });
+    renderWithProviders(<FlowerGardenPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: '♥ 5、列0・位置1' }));
+    expect(screen.getByRole('button', { name: '♣ 6、列1・位置0' })).not.toHaveAttribute('data-target-candidate');
+    expect(screen.getAllByRole('button', { name: '空' })[0]).toHaveAttribute('data-target-candidate');
   });
 });
 

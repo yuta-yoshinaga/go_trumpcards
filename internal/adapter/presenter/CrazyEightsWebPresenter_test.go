@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -32,12 +34,50 @@ func setupCrazyEightsWebMock() *interfaces.MockCrazyEightsGame {
 func setupCrazyEightsWebMockWithPlayers() (*interfaces.MockCrazyEightsGame, []*domain.CrazyEightsPlayer) {
 	m := setupCrazyEightsWebMock()
 	players := makeCrazyEightsPlayers()
+	m.On("GetValidPlayIndices", mock.Anything).Return([]int{})
 	m.On("GetPlayerCnt").Return(4)
 	m.On("GetPlayer", 0).Return(players[0])
 	m.On("GetPlayer", 1).Return(players[1])
 	m.On("GetPlayer", 2).Return(players[2])
 	m.On("GetPlayer", 3).Return(players[3])
 	return m, players
+}
+
+func TestCrazyEightsWebPresenterValidPlays(t *testing.T) {
+	p := new(presenter.CrazyEightsWebPresenter)
+	t.Run("human play turn", func(t *testing.T) {
+		m, _ := setupCrazyEightsWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+		m.On("GetValidPlayIndices", 0).Return([]int{0, 2})
+		result := p.Output(m, nil)
+		var out controller.CrazyEightsWebOutput
+		require.NoError(t, json.Unmarshal([]byte(result), &out))
+		assert.Equal(t, []int{0, 2}, out.ValidPlays)
+		assert.Contains(t, result, `"validPlays":[0,2]`)
+	})
+	for _, tc := range []struct {
+		name    string
+		phase   domain.CrazyEightsPhase
+		current int
+	}{
+		{name: "cpu turn", phase: domain.CrazyEightsPhasePlay, current: 1},
+		{name: "outside play phase", phase: domain.CrazyEightsPhaseChooseSuit, current: 0},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			m, _ := setupCrazyEightsWebMockWithPlayers()
+			m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+			m.On("GetValidPlayIndices", mock.Anything).Return([]int{0, 1}).Maybe()
+			m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+			m.On("GetPhase").Return(tc.phase)
+			m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentPlayerIdx")
+			m.On("GetCurrentPlayerIdx").Return(tc.current)
+			result := p.Output(m, nil)
+			var out controller.CrazyEightsWebOutput
+			require.NoError(t, json.Unmarshal([]byte(result), &out))
+			assert.Empty(t, out.ValidPlays)
+			assert.Contains(t, result, `"validPlays":[]`)
+		})
+	}
 }
 
 func TestCrazyEightsWebPresenter_Output(t *testing.T) {
@@ -63,6 +103,8 @@ func TestCrazyEightsWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 1, resObj.DiscardPileCount)
 		assert.Equal(t, -1, resObj.ChosenSuit)
 		assert.Equal(t, -1, resObj.WinnerIdx)
+		assert.Empty(t, resObj.ValidPlays)
+		assert.Contains(t, result, `"validPlays":[]`)
 		assert.Nil(t, resObj.DiscardTop)
 		assert.Equal(t, "", resObj.Message)
 	})

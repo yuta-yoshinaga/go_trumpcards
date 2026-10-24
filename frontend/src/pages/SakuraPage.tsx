@@ -106,7 +106,6 @@ function SakuraPageContent() {
   } = useGameHint('sakura', state);
 
   // Fetch a fresh game on mount.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
   useMountReset(callApi);
 
   /** Restarts with the settings currently chosen in the panel. */

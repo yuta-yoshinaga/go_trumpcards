@@ -21,6 +21,10 @@ const mockExec = vi.mocked(eightoffApi.exec);
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 
 const playingState: EightOffResponse = {
+  legalTargets: {
+    'tableau-0-0': { tableau: [2], foundation: [] },
+    'tableau-1-0': { tableau: [], foundation: [] },
+  },
   tableau: [[card('SPADE', 13)], [card('HEART', 12)], [], [], [], [], [], []],
   freeCells: [null, null, null, null, null, null, null, null],
   foundation: [[], [], [], []],
@@ -55,6 +59,7 @@ const withFoundationState: EightOffResponse = {
 // 掃き出しが実際に1枚動かせる盤: 組札の ♥2 の上に、タブロー末尾の ♥3 が乗る。
 const sweepableState: EightOffResponse = {
   ...playingState,
+  legalTargets: { 'tableau-1-0': { tableau: [], foundation: [2] } },
   tableau: [[card('SPADE', 13)], [card('HEART', 3)], [], [], [], [], [], []],
   foundation: [[], [], [card('HEART', 1), card('HEART', 2)], []],
 };
@@ -63,6 +68,7 @@ const sweepableState: EightOffResponse = {
 // どちらもここで「準備できていない」と読むが、掃き出しはその A を動かせる。
 const aceInFreeCellState: EightOffResponse = {
   ...playingState,
+  legalTargets: { 'freecell-0': { tableau: [], foundation: [1] } },
   freeCells: [card('CLOVER', 1), null, null, null, null, null, null, null],
   foundation: [[], [], [], []],
 };
@@ -169,9 +175,47 @@ describe('EightOffPage', () => {
     expect(status).toBeEmptyDOMElement();
   });
 
+  it('uses server legal destinations instead of the client tableau rule', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      legalTargets: { 'tableau-0-0': { tableau: [2], foundation: [] } },
+      tableau: [[card('SPADE', 13)], [card('HEART', 12)], [], [], [], [], [], []],
+    });
+    renderWithProviders(<EightOffPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+
+    const status = screen.getByTestId('eo-move-guide');
+    fireEvent.click(screen.getByTestId('eo-tableau-0-0'));
+    expect(status).toHaveTextContent('列1から移動できます');
+    expect(status).toHaveTextContent('列3');
+    expect(status).not.toHaveTextContent('列2');
+  });
+
+  it('shows no tableau destinations when the selected source has no legal-target entry', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      legalTargets: { 'tableau-1-0': { tableau: [], foundation: [] } },
+    });
+    renderWithProviders(<EightOffPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByTestId('eo-tableau-0-0'));
+    expect(screen.getByTestId('eo-move-guide')).toHaveTextContent('移動できる先はありません');
+  });
+
+  it('includes foundation in the tableau move guide when the server allows it', async () => {
+    mockExec.mockResolvedValue(sweepableState);
+    renderWithProviders(<EightOffPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByTestId('eo-tableau-1-0'));
+    expect(screen.getByTestId('eo-move-guide')).toHaveTextContent('組札');
+  });
+
   it('announces legal destinations for a selected free-cell card and when none exist', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
+      legalTargets: { 'freecell-0': { tableau: [1], foundation: [2] } },
       tableau: [[card('SPADE', 13)], [card('HEART', 12)], ...Array.from({ length: 6 }, () => [])],
       freeCells: [card('HEART', 11), null, null, null, null, null, null, null],
       foundation: [
@@ -1133,12 +1177,14 @@ describe('EightOffPage', () => {
   describe('double-click foundation shortcut', () => {
     const tableauAceTop: EightOffResponse = {
       ...playingState,
+      legalTargets: { 'tableau-0-0': { tableau: [], foundation: [0] } },
       tableau: [[card('SPADE', 1)], [card('HEART', 12)], [], [], [], [], [], []],
       foundation: [[], [], [], []],
     };
 
     const freeCellPlayable: EightOffResponse = {
       ...playingState,
+      legalTargets: { 'freecell-0': { tableau: [], foundation: [3] } },
       freeCells: [card('DIAMOND', 7), null, null, null, null, null, null, null],
       foundation: [[], [], [], [card('DIAMOND', 6)]],
     };

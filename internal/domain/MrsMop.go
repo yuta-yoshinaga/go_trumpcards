@@ -414,6 +414,23 @@ func (s *MrsMop) movableRunStart(col int) int {
 	return start
 }
 
+// RunStarts returns the tableau indices that can start a movable run in col.
+// It returns an empty slice when the column has no movable run.
+func (s *MrsMop) RunStarts(col int) []int {
+	if col < 0 || col >= MrsMopTableauCnt {
+		return []int{}
+	}
+	start := s.movableRunStart(col)
+	if start < 0 {
+		return []int{}
+	}
+	starts := make([]int, len(s.tableau[col])-start)
+	for i := range starts {
+		starts[i] = start + i
+	}
+	return starts
+}
+
 // LegalTargets は列 fromCol の札 cardIndex から始まる並びを置ける列を、
 // 実際に見た索引と一緒に返す。
 //

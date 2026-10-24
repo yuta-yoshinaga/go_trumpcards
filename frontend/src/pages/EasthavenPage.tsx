@@ -32,14 +32,13 @@ import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import i18n from '../i18n';
 import { btnDanger, btnOutline, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { Card, EasthavenResponse } from '../types/card';
+import type { EasthavenResponse } from '../types/card';
 import { EasthavenPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { easthavenHelp, parseEasthavenCommand } from '../utils/cli/commands/easthavenCommands';
 import { formatEasthavenState } from '../utils/cli/formatters/easthavenFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { easthavenFoundationTarget } from '../utils/easthavenFoundationTarget';
 import { isRequestedHint } from '../utils/hintRequest';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { isTableauAllFaceUp } from '../utils/solitaireUtils';
@@ -271,11 +270,13 @@ function EasthavenPageContent() {
   // to its foundation when a legal target exists; otherwise do nothing (no
   // error, selection untouched). Mirrors the FreeCell foundation shortcut.
   const handleFoundationShortcut = useCallback(
-    (col: number, card: Card) => {
+    (col: number) => {
       if (!state) return;
-      const target = easthavenFoundationTarget(card, state.foundation);
-      if (!target) return;
-      void apiExec('move', { zone: 'tableau', col }, target);
+      const source = state.tableau[col];
+      const cardIndex = source.length - 1;
+      const target = state.legalTargets[`tableau-${col}-${cardIndex}`]?.foundation[0];
+      if (target === undefined) return;
+      void apiExec('move', { zone: 'tableau', col }, { zone: 'foundation', col: target });
       setSelectedSource(null);
     },
     [state, apiExec],
@@ -550,9 +551,7 @@ function EasthavenPageContent() {
                                       onDoubleClick={
                                         // Only a column's exposed top card can move
                                         // straight to a foundation.
-                                        isLast && tcard.card
-                                          ? () => handleFoundationShortcut(colIdx, tcard.card as Card)
-                                          : undefined
+                                        isLast && tcard.card ? () => handleFoundationShortcut(colIdx) : undefined
                                       }
                                       disabled={!isPlaying}
                                       aria-label={tcard.card ? cardAlt(tcard.card) : ''}

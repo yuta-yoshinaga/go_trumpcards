@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { montecarloApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -26,7 +26,6 @@ import type { MonteCarloResponse } from '../types/card';
 import { MonteCarloPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
-import { countRemovablePairs } from '../utils/montecarloRemovablePairs';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const SIZE = 5;
@@ -204,9 +203,8 @@ function MonteCarloPageContent() {
 
   const dealHintActive = frontendHintEnabled && frontendHint?.targetAction === 'deal';
 
-  // How many removable (adjacent, same-rank) pairs currently sit on the board.
-  // Derived client-side from the board grid — 0 means it's time to Deal.
-  const removablePairs = useMemo(() => (state ? countRemovablePairs(state.board) : 0), [state]);
+  // Server count of removable (adjacent, same-rank) pairs; 0 means it's time to Deal.
+  const removablePairs = state ? state.removablePairs : 0;
   // **山札が尽きたら「配る」は押せない (#4796)。**姉妹の Wasp / Spiderette は
   // stockCount === 0 を明示的にガードしている。ドメインも「隣接ペアなし かつ
   // 山札0 かつ 圧縮の余地なし」で手詰まりと判定するので、この状態は実際に起きる。

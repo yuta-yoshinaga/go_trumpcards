@@ -131,6 +131,16 @@ describe('TienLenPage', () => {
     expect(card0).toHaveAttribute('aria-pressed', 'true');
   });
 
+  it('places the hand in footer content and play controls in footer actions on mobile', async () => {
+    renderWithProviders(<TienLenPage />);
+    const content = await screen.findByTestId('game-footer-content');
+    const actions = screen.getByTestId('game-footer-actions');
+    expect(screen.getByRole('contentinfo')).toHaveClass('max-h-[60vh]');
+    expect(content).toContainElement(document.querySelector('[data-tutorial="tl-player-hand"]'));
+    expect(within(actions).getByTestId('play-button')).toBeInTheDocument();
+    expect(within(actions).getByTestId('pass-button')).toBeInTheDocument();
+  });
+
   it('disables hand card selection outside the human turn', async () => {
     mockExec.mockResolvedValue(makeState({ currentTurn: 1 }));
     renderWithProviders(<TienLenPage />);
@@ -362,6 +372,34 @@ describe('TienLenPage', () => {
     renderWithProviders(<TienLenPage />);
     await screen.findByTestId('pass-button');
     expect(screen.getByText('— 7')).toBeInTheDocument();
+  });
+
+  it('localizes result rankings in Japanese and English', async () => {
+    for (const [language, expected] of [
+      ['ja', 'あなた: 1位、CPU 1: 2位'],
+      ['en', 'You: Rank 1, CPU 1: Rank 2'],
+    ] as const) {
+      await i18n.changeLanguage(language);
+      mockExec.mockResolvedValue(
+        makeState({
+          gameEndFlag: true,
+          rankings: [
+            { seat: 0, rank: 1 },
+            { seat: 1, rank: 2 },
+          ],
+          message: 'fallback',
+          messageCode: 'tienlen.result.rankings',
+          messageParams: {},
+        }),
+      );
+      const { unmount } = renderWithProviders(<TienLenPage />);
+      await screen.findByTestId('tl-rules');
+      await waitFor(() =>
+        expect(screen.getAllByRole('status').some((node) => node.textContent?.includes(expected))).toBe(true),
+      );
+      unmount();
+    }
+    await i18n.changeLanguage('ja');
   });
 
   it('renders CPU hands in compact card back fans', async () => {

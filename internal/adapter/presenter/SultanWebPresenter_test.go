@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -15,6 +16,8 @@ import (
 )
 
 func setupSultanWebMockDefaults(sg *interfaces.MockSultanGame) {
+	sg.On("DivanLegalFoundations", mock.Anything).Return([]int{}).Maybe()
+	sg.On("WasteLegalFoundations").Return([]int{}).Maybe()
 	sg.On("GetPhase").Return(domain.SultanPhasePlaying).Maybe()
 	sg.On("GetMoveCount").Return(0).Maybe()
 	sg.On("GetStockCount").Return(88).Maybe()
@@ -198,6 +201,46 @@ func TestSultanWebPresenter_HintOutput(t *testing.T) {
 		result := parseSultanOutput(t, p.HintOutput(sg))
 		assert.Nil(t, result.Hint)
 		assert.Equal(t, "sultan.noHint", result.MessageCode)
+	})
+}
+
+func TestSultanWebPresenter_LegalTargets(t *testing.T) {
+	for _, hintOutput := range []bool{false, true} {
+		t.Run(map[bool]string{false: "output", true: "hint output"}[hintOutput], func(t *testing.T) {
+			sg := new(interfaces.MockSultanGame)
+			setupSultanWebMockDefaults(sg)
+			sg.ExpectedCalls = filterCalls(sg.ExpectedCalls, "DivanLegalFoundations")
+			sg.ExpectedCalls = filterCalls(sg.ExpectedCalls, "WasteLegalFoundations")
+			sg.On("DivanLegalFoundations", 0).Return([]int{3})
+			for i := 1; i < domain.SultanDivanCnt; i++ {
+				sg.On("DivanLegalFoundations", i).Return([]int{})
+			}
+			sg.On("WasteLegalFoundations").Return([]int{5})
+			if !hintOutput {
+				sg.On("GetHint").Return((*domain.SultanHint)(nil)).Maybe()
+			}
+			if hintOutput {
+				sg.On("GetHint").Return((*domain.SultanHint)(nil))
+			}
+			p := new(SultanWebPresenter)
+			var result string
+			if hintOutput {
+				result = p.HintOutput(sg)
+			} else {
+				result = p.Output(sg, nil)
+			}
+			out := parseSultanOutput(t, result)
+			assert.Equal(t, map[string]controller.SultanWebOutputTargets{
+				"divan-0": {Foundation: []int{3}}, "waste": {Foundation: []int{5}},
+			}, out.LegalTargets)
+		})
+	}
+	t.Run("empty targets encode as object", func(t *testing.T) {
+		sg := new(interfaces.MockSultanGame)
+		setupSultanOutputMock(sg)
+		out := parseSultanOutput(t, new(SultanWebPresenter).Output(sg, nil))
+		assert.NotNil(t, out.LegalTargets)
+		assert.Empty(t, out.LegalTargets)
 	})
 }
 

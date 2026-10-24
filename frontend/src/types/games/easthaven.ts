@@ -14,6 +14,7 @@ export interface EasthavenHint {
 
 /** API response shape for an Easthaven game. */
 export interface EasthavenResponse extends BaseGameResponse {
+  legalTargets: Record<string, { tableau: number[]; foundation: number[] }>;
   tableau: KlondikeTableauCard[][];
   foundation: Card[][];
   stockCount: number;

@@ -20,7 +20,7 @@ function createWrapper() {
 }
 
 /** Minimal response — only the fields these tests read. */
-const baseState = { players: [], phase: 0, message: '' } as unknown as WizardResponse;
+const baseState = { players: [], phase: 0, message: '', validPlays: [] } as unknown as WizardResponse;
 
 describe('useWizardGame', () => {
   beforeEach(() => {

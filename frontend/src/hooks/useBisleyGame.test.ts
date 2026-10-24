@@ -21,6 +21,7 @@ const mockExec = vi.mocked(bisleyApi.exec);
 
 const baseState: BisleyResponse = {
   tableau: Array.from({ length: 13 }, () => []),
+  legalTargets: {},
   aceFoundations: [[], [], [], []],
   kingFoundations: [[], [], [], []],
   foundationSize: 13,

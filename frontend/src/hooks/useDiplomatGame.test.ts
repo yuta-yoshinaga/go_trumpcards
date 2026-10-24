@@ -20,7 +20,8 @@ vi.mock('../api/gameApi', () => ({
 const mockExec = vi.mocked(diplomatApi.exec);
 
 const baseState: DiplomatResponse = {
-  tableauMoveTargets: Array.from({ length: 9 }, () => []),
+  legalTargets: {},
+  foundationNextRank: Array.from({ length: 8 }, () => 1),
   tableau: Array.from({ length: 8 }, () => []),
   foundation: Array.from({ length: 8 }, () => []),
   stockCount: 96,

@@ -23,6 +23,7 @@ const baseState: FlowerGardenResponse = {
   tableau: Array.from({ length: 6 }, () => []),
   reserve: Array.from({ length: 16 }, () => null),
   foundation: [[], [], [], []],
+  legalTargets: {},
   phase: 0,
   moveCount: 0,
   canUndo: false,

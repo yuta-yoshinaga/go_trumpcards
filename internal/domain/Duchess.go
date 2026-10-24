@@ -373,6 +373,64 @@ func (d *Duchess) MoveTableauToTableau(fromCol, cardIndex, toCol int) error {
 	return nil
 }
 
+// LegalTargetsFrom returns tableau and foundation destinations for a selected tableau run.
+func (d *Duchess) LegalTargetsFrom(col, cardIndex int) (tableau, foundation []int) {
+	if d.baseRank == 0 || col < 0 || col >= DuchessTableauCnt || cardIndex < 0 || cardIndex >= len(d.tableau[col]) || !duchessIsRun(d.tableau[col][cardIndex:]) {
+		return nil, nil
+	}
+	card := d.tableau[col][cardIndex].Card
+	for target := range DuchessTableauCnt {
+		if target != col && d.canPlaceOnTableau(card, target) && !d.emptyColumnIsReservedForReserve(target) {
+			tableau = append(tableau, target)
+		}
+	}
+	if cardIndex == len(d.tableau[col])-1 {
+		if target := d.findFoundation(card); target >= 0 {
+			foundation = append(foundation, target)
+		}
+	}
+	return
+}
+
+// ReserveLegalTargets returns tableau and foundation destinations for a reserve fan top card.
+// Unlike LegalTargetsFrom and WasteLegalTargets it does not apply emptyColumnIsReservedForReserve:
+// MoveReserveToTableau allows a reserve card onto an empty column, so this must too.
+func (d *Duchess) ReserveLegalTargets(fanIdx int) (tableau, foundation []int) {
+	if d.baseRank == 0 || fanIdx < 0 || fanIdx >= DuchessReserveCnt {
+		return nil, nil
+	}
+	card := d.reserveTopCard(fanIdx)
+	if card == nil {
+		return nil, nil
+	}
+	for col := range DuchessTableauCnt {
+		if d.canPlaceOnTableau(card, col) {
+			tableau = append(tableau, col)
+		}
+	}
+	if target := d.findFoundation(card); target >= 0 {
+		foundation = append(foundation, target)
+	}
+	return
+}
+
+// WasteLegalTargets returns tableau and foundation destinations for the waste top card.
+func (d *Duchess) WasteLegalTargets() (tableau, foundation []int) {
+	if d.baseRank == 0 || len(d.waste) == 0 {
+		return nil, nil
+	}
+	card := d.waste[len(d.waste)-1]
+	for col := range DuchessTableauCnt {
+		if d.canPlaceOnTableau(card, col) && !d.emptyColumnIsReservedForReserve(col) {
+			tableau = append(tableau, col)
+		}
+	}
+	if target := d.findFoundation(card); target >= 0 {
+		foundation = append(foundation, target)
+	}
+	return
+}
+
 // GiveUp ギブアップ
 func (d *Duchess) GiveUp() {
 	if d.phase == DuchessPhasePlaying {

@@ -37,7 +37,6 @@ import { cardAlt } from '../utils/cardAlt';
 import { PERSEVERANCE_HELP, parsePerseveranceCommand } from '../utils/cli/commands/perseveranceCommands';
 import { formatPerseveranceState } from '../utils/cli/formatters/perseveranceFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { perseveranceLegalTargets, perseveranceStartsRun } from '../utils/perseveranceLegalTargets';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
@@ -248,11 +247,14 @@ function PerseverancePageContent() {
   // **選ぶ前に行き先が見える (#4454)。** hover / フォーカス中の札にも、選択後と
   // まったく同じ計算を当てる ── 判定を二重に持たないので食い違わない。
   const previewSource = preview.source;
-  const previewedCard =
+  const serverTargets =
     previewSource?.zone === 'tableau' && previewSource.col !== undefined && previewSource.cardIndex !== undefined
-      ? state.tableau[previewSource.col]?.[previewSource.cardIndex]?.card
+      ? state.legalTargets[`tableau-${previewSource.col}-${previewSource.cardIndex}`]
       : undefined;
-  const legalTargets = perseveranceLegalTargets(state.tableau, state.foundation, previewedCard);
+  const legalTargets = {
+    tableau: new Set(serverTargets?.tableau ?? []),
+    foundation: new Set(serverTargets?.foundation ?? []),
+  };
   /** Ring for a legal destination: softer while it is only a hover preview. */
   const targetRing = preview.isPreview ? ' rounded ring-2 ring-ds-success/70' : ' rounded ring-2 ring-ds-success';
 
@@ -404,12 +406,10 @@ function PerseverancePageContent() {
                               cardIndex: cardIdx,
                             };
                             const isTop = cardIdx === col.length - 1;
-                            // **掴めるのは上札だけではない。**同スート降順の並びは
-                            // 一括で動かせるので、その開始位置ならどれでも掴める。
-                            // クローン元 (Baker's Dozen) は 1 枚ずつなので isTop だけで
-                            // 足りたが、それを残すとこの game の看板ルールが UI から
-                            // 一切使えなくなる。
-                            const canGrab = perseveranceStartsRun(col, cardIdx);
+                            // **掴めるのは上札だけではない。**同スート降順の並びは一括で
+                            // 動かせるので、その開始位置ならどれでも掴める。判定はサーバが
+                            // Perseverance.go の runStarts から返す (ADR-0045)。
+                            const canGrab = state.runStarts[colIdx].includes(cardIdx);
                             const isLastInCol = isTop && col.length === 1;
                             const isSelected = isSourceSelected('tableau', colIdx, cardIdx);
                             const showEmptyColumnWarning = isLastInCol && isSelected;

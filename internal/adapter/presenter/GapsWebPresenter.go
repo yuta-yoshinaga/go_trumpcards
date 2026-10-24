@@ -102,6 +102,8 @@ func (pr *GapsWebPresenter) populate(resObj *controller.GapsWebOutput, g interfa
 	}
 	resObj.Grid = out
 	resObj.GapNeeds = gapNeeds
+	lockedPrefixLengths := g.GetLockedPrefixLengths()
+	resObj.LockedPrefixLengths = intSliceOrEmpty(lockedPrefixLengths[:])
 }
 
 func gapNeedToOutput(need *domain.GapsGapNeed) *controller.GapsWebOutputGapNeed {

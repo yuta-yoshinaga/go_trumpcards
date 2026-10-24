@@ -25,6 +25,8 @@ type WaspGame interface {
 	GetStockCount() int
 	// GetTableau タブローを取得する
 	GetTableau() [domain.WaspTableauCnt][]*domain.KlondikeTableauCard
+	// LegalTargetsFrom returns legal non-empty tableau destinations for a face-up card suffix.
+	LegalTargetsFrom(fromCol, cardIndex int) []int
 	// GetCompletedSuits 完成スート数を取得する
 	GetCompletedSuits() int
 	// GetCompletedSuitMask 完成したスートのビットマスクを取得する

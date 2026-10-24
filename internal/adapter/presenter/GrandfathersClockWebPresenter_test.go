@@ -40,6 +40,7 @@ func setupGrandfathersClockWebMockDefaults(g *interfaces.MockGrandfathersClockGa
 		foundation[i] = []*domain.Card{domain.NewCard(domain.CardDesignHeart, i+1, false)}
 	}
 	g.On("GetFoundation").Return(foundation).Maybe()
+	g.On("LegalTargets", mock.AnythingOfType("int")).Return([]int(nil), []int(nil)).Maybe()
 }
 
 func parseGrandfathersClockOutput(t *testing.T, jsonStr string) *controller.GrandfathersClockWebOutput {
@@ -170,6 +171,78 @@ func TestGrandfathersClockWebPresenter_OutputCarriesTheHint(t *testing.T) {
 		t.Fatal("Output must carry the hint -- the frontend reads state.hint")
 	}
 	assert.Equal(t, 2, result.Hint.FromCol)
+}
+
+func TestGrandfathersClockWebPresenter_LegalTargetsOnAllOutputs(t *testing.T) {
+	for _, output := range []struct {
+		name string
+		call func(*GrandfathersClockWebPresenter, interfaces.GrandfathersClockGame) string
+	}{
+		{"output", func(p *GrandfathersClockWebPresenter, g interfaces.GrandfathersClockGame) string {
+			return p.Output(g, nil)
+		}},
+		{"hint with hint", func(p *GrandfathersClockWebPresenter, g interfaces.GrandfathersClockGame) string {
+			return p.HintOutput(g)
+		}},
+		{"hint without hint", func(p *GrandfathersClockWebPresenter, g interfaces.GrandfathersClockGame) string {
+			return p.HintOutput(g)
+		}},
+	} {
+		t.Run(output.name, func(t *testing.T) {
+			g := new(interfaces.MockGrandfathersClockGame)
+			setupGrandfathersClockWebMockDefaults(g)
+			g.ExpectedCalls = filterCalls(g.ExpectedCalls, "LegalTargets")
+			var tableau [domain.GrandfathersClockTableauCnt][]*domain.GrandfathersClockTableauCard
+			for col := range 3 {
+				tableau[col] = []*domain.GrandfathersClockTableauCard{{Card: domain.NewCard(domain.CardDesignSpade, 2, false), FaceUp: true}}
+			}
+			g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetTableau")
+			g.On("GetTableau").Return(tableau).Maybe()
+			g.On("CanRedo").Return(false).Maybe()
+			hint := (*domain.GrandfathersClockHint)(nil)
+			if output.name == "hint with hint" {
+				hint = &domain.GrandfathersClockHint{FromCol: 0, ToZone: "foundation", ToIdx: 2}
+			}
+			g.On("GetHint").Return(hint).Maybe()
+			g.On("LegalTargets", 0).Return([]int(nil), []int{2}).Maybe()
+			g.On("LegalTargets", 1).Return([]int{3}, []int(nil)).Maybe()
+			g.On("LegalTargets", 2).Return([]int(nil), []int(nil)).Maybe()
+			for col := 3; col < domain.GrandfathersClockTableauCnt; col++ {
+				g.On("LegalTargets", col).Return([]int(nil), []int(nil)).Maybe()
+			}
+			result := parseGrandfathersClockOutput(t, output.call(new(GrandfathersClockWebPresenter), g))
+			assert.Equal(t, map[string]controller.GrandfathersClockWebOutputTargets{
+				"tableau-0": {Tableau: []int{}, Foundation: []int{2}},
+				"tableau-1": {Tableau: []int{3}, Foundation: []int{}},
+			}, result.LegalTargets)
+		})
+	}
+}
+
+func TestGrandfathersClockWebPresenter_LegalTargetsEmptyOutputPaths(t *testing.T) {
+	for _, output := range []struct {
+		name string
+		call func(*GrandfathersClockWebPresenter, interfaces.GrandfathersClockGame) string
+	}{
+		{"output", func(p *GrandfathersClockWebPresenter, g interfaces.GrandfathersClockGame) string {
+			return p.Output(g, nil)
+		}},
+		{"hint without hint", func(p *GrandfathersClockWebPresenter, g interfaces.GrandfathersClockGame) string {
+			return p.HintOutput(g)
+		}},
+	} {
+		t.Run(output.name, func(t *testing.T) {
+			g := new(interfaces.MockGrandfathersClockGame)
+			setupGrandfathersClockWebMockDefaults(g)
+			g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetTableau")
+			g.On("GetTableau").Return([domain.GrandfathersClockTableauCnt][]*domain.GrandfathersClockTableauCard{}).Maybe()
+			g.On("CanRedo").Return(false).Maybe()
+			g.On("GetHint").Return((*domain.GrandfathersClockHint)(nil)).Maybe()
+			result := parseGrandfathersClockOutput(t, output.call(new(GrandfathersClockWebPresenter), g))
+			assert.NotNil(t, result.LegalTargets)
+			assert.Empty(t, result.LegalTargets)
+		})
+	}
 }
 
 func TestGrandfathersClockWebPresenter_HintOutput(t *testing.T) {

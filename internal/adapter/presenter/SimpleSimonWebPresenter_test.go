@@ -22,6 +22,8 @@ func TestSimpleSimonWebPresenter_Output(t *testing.T) {
 		for _, frag := range []string{`"columns"`, `"completedSuits"`, `"canUndo"`, `"messageCode":"simplesimon.playing"`} {
 			assert.Contains(t, out, frag)
 		}
+		assert.Contains(t, out, `"runStarts":[`)
+		assert.Contains(t, out, `"legalTargets":{`)
 	})
 
 	t.Run("error surfaced", func(t *testing.T) {
@@ -49,6 +51,15 @@ func TestSimpleSimonWebPresenter_Output(t *testing.T) {
 		js := `{"co":[[{"d":1,"v":9,"w":true}],[{"d":1,"v":8,"w":true}]],"ph":0}`
 		assert.Contains(t, p.HintOutput(ssState(t, js)), "simplesimon.hintAvailable")
 		assert.Contains(t, p.HintOutput(ssState(t, `{"ph":2}`)), "simplesimon.noHint")
+		assert.Contains(t, p.HintOutput(ssState(t, `{"ph":2}`)), `"runStarts":[[],[],[],[],[],[],[],[],[],[]]`)
+		assert.Contains(t, p.HintOutput(ssState(t, `{"ph":2}`)), `"legalTargets":{}`)
+	})
+
+	t.Run("targets include ordered tableau and empty foundation arrays", func(t *testing.T) {
+		g := ssState(t, `{"co":[[{"d":1,"v":9,"w":true},{"d":1,"v":7,"w":true}],[{"d":1,"v":8,"w":true}],[{"d":2,"v":2,"w":true}],[{"d":2,"v":2,"w":true}],[{"d":2,"v":2,"w":true}],[{"d":2,"v":2,"w":true}],[{"d":2,"v":2,"w":true}],[{"d":2,"v":2,"w":true}],[{"d":2,"v":2,"w":true}],[{"d":2,"v":2,"w":true}]],"ph":0}`)
+		var output map[string]any
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(g, nil)), &output))
+		assert.Equal(t, map[string]any{"tableau": []any{1.0}, "foundation": []any{}}, output["legalTargets"].(map[string]any)["tableau-0-1"])
 	})
 
 	t.Run("action log is valid JSON", func(t *testing.T) {

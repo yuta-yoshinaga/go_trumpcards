@@ -770,6 +770,37 @@ func TestSpiderIsValidSequence(t *testing.T) {
 	})
 }
 
+func TestSpiderRunStarts(t *testing.T) {
+	s := NewDefaultSpider()
+	var tableau [SpiderTableauCnt][]*SpiderTableauCard
+	tableau[0] = []*SpiderTableauCard{
+		{Card: NewCard(CardDesignSpade, 10, false), FaceUp: true},
+		{Card: NewCard(CardDesignSpade, 9, false), FaceUp: true},
+		{Card: NewCard(CardDesignSpade, 8, false), FaceUp: true},
+	}
+	tableau[1] = []*SpiderTableauCard{
+		{Card: NewCard(CardDesignSpade, 10, false), FaceUp: true},
+		{Card: NewCard(CardDesignHeart, 9, false), FaceUp: true},
+		{Card: NewCard(CardDesignHeart, 8, false), FaceUp: true},
+	}
+	tableau[2] = []*SpiderTableauCard{
+		{Card: NewCard(CardDesignSpade, 10, false), FaceUp: false},
+		{Card: NewCard(CardDesignSpade, 9, false), FaceUp: true},
+	}
+	tableau[3] = []*SpiderTableauCard{
+		{Card: NewCard(CardDesignSpade, 10, false), FaceUp: true},
+		{Card: NewCard(CardDesignSpade, 8, false), FaceUp: true},
+	}
+	s.SetTableau(tableau)
+	assert.Equal(t, []int{0, 1, 2}, s.RunStarts(0))
+	assert.Equal(t, []int{1, 2}, s.RunStarts(1))
+	assert.Equal(t, []int{1}, s.RunStarts(2))
+	assert.Equal(t, []int{1}, s.RunStarts(3))
+	assert.Empty(t, s.RunStarts(4))
+	assert.Empty(t, s.RunStarts(-1))
+	assert.Empty(t, s.RunStarts(SpiderTableauCnt))
+}
+
 func TestSpiderStalemateWithEmptyColAndStock(t *testing.T) {
 	tc := NewTrumpCardsWithSuits(SpiderTotalCards, []int{CardDesignSpade})
 	s := NewSpider(tc)

@@ -62,6 +62,7 @@ type BatakWebOutput struct {
 	LeadPlayerIdx    int                     `json:"leadPlayerIdx"`
 	Hint             *BatakWebOutputHint     `json:"hint,omitempty"`
 	ValidPlayIndices []int                   `json:"validPlayIndices"`
+	PlayRejectCodes  []string                `json:"playRejectCodes"`
 	WebOutputBase
 	Config BatakWebOutputConfig `json:"config"`
 }
@@ -99,6 +100,7 @@ func newBatakDefaultOutput(msg string) *BatakWebOutput {
 		Players:          make([]*BatakWebOutputPlayer, 0),
 		CurrentTrick:     make([]*WebOutputTrickCard, 0),
 		ValidPlayIndices: make([]int, 0),
+		PlayRejectCodes:  make([]string, 0),
 		WinnerIdx:        -1,
 		DeclarerIdx:      -1,
 		HighBid:          0,

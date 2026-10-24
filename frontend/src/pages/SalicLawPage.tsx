@@ -35,7 +35,6 @@ import { cardAlt } from '../utils/cardAlt';
 import { parseSalicLawCommand, SALICLAW_HELP } from '../utils/cli/commands/saliclawCommands';
 import { formatSalicLawState } from '../utils/cli/formatters/saliclawFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { isSalicLawTarget, listSalicLawTargets } from '../utils/saliclawTargets';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 // **組札はスートで決まらない。**A から J まで、どのスートでも積める。列と
@@ -181,11 +180,18 @@ function SalicLawPageContent() {
   );
   const foundationCount = isGameOver ? state.foundation.reduce((sum, pile) => sum + pile.length, 0) : 0;
   const autoCompleteReady = state.canAutoComplete;
+  const selectedLegalTargets =
+    selectedSource?.zone === 'tableau' && selectedSource.col !== undefined
+      ? state.legalTargets[`tableau-${selectedSource.col}`]
+      : undefined;
   const selectedTargets =
     selectedSource?.zone === 'tableau' && selectedSource.col !== undefined
-      ? listSalicLawTargets(state, selectedSource.col).map(({ zone, idx }) =>
-          zone === 'foundation' ? t('destination.foundation', { idx }) : t('destination.tableau', { idx }),
-        )
+      ? selectedLegalTargets
+        ? [
+            ...selectedLegalTargets.foundation.map((idx) => t('destination.foundation', { idx })),
+            ...selectedLegalTargets.tableau.map((idx) => t('destination.tableau', { idx })),
+          ]
+        : []
       : null;
 
   const isSourceSelected = (zone: string, col?: number) =>
@@ -255,7 +261,10 @@ function SalicLawPageContent() {
                         // **置き先は K だけの列に限る。**`dispatchMove` の再検査は
                         // ドラッグしか通らず、ここはフックへ直行する。絞らないと、
                         // どの列を押しても必ず拒まれる move が飛ぶ（レビュー指摘）。
-                        if (isBareKing) {
+                        if (
+                          isBareKing &&
+                          state.legalTargets[`tableau-${selectedSource.col}`]?.tableau.includes(pileIdx)
+                        ) {
                           game.handleSelectTarget(pileZone);
                           return;
                         }
@@ -267,7 +276,7 @@ function SalicLawPageContent() {
                       aria-label={isBareKing ? t('bareKingPileAriaLabel', { pile: pileIdx }) : cardAlt(card)}
                       aria-describedby={
                         selectedSource?.zone === 'tableau' && selectedSource.col !== undefined
-                          ? isSalicLawTarget(state, selectedSource.col, 'tableau', pileIdx)
+                          ? state.legalTargets[`tableau-${selectedSource.col}`]?.tableau.includes(pileIdx)
                             ? legalTargetHintId
                             : illegalTargetHintId
                           : undefined
@@ -363,14 +372,22 @@ function SalicLawPageContent() {
                         {pile.length > 0 ? (
                           <button
                             type="button"
-                            onClick={() => game.handleSelectTarget(foundationZone)}
+                            onClick={() => {
+                              if (
+                                selectedSource?.zone === 'tableau' &&
+                                selectedSource.col !== undefined &&
+                                state.legalTargets[`tableau-${selectedSource.col}`]?.foundation.includes(idx)
+                              ) {
+                                game.handleSelectTarget(foundationZone);
+                              }
+                            }}
                             disabled={!isPlaying || loading || isAutoCompleting}
                             aria-disabled={!selectedSource || undefined}
                             aria-describedby={
                               !selectedSource
                                 ? selectSourceHintId
                                 : selectedSource.zone === 'tableau' && selectedSource.col !== undefined
-                                  ? isSalicLawTarget(state, selectedSource.col, 'foundation', idx)
+                                  ? state.legalTargets[`tableau-${selectedSource.col}`]?.foundation.includes(idx)
                                     ? legalTargetHintId
                                     : illegalTargetHintId
                                   : undefined
@@ -388,14 +405,22 @@ function SalicLawPageContent() {
                         ) : (
                           <button
                             type="button"
-                            onClick={() => game.handleSelectTarget(foundationZone)}
+                            onClick={() => {
+                              if (
+                                selectedSource?.zone === 'tableau' &&
+                                selectedSource.col !== undefined &&
+                                state.legalTargets[`tableau-${selectedSource.col}`]?.foundation.includes(idx)
+                              ) {
+                                game.handleSelectTarget(foundationZone);
+                              }
+                            }}
                             disabled={!isPlaying || loading}
                             aria-disabled={!selectedSource || undefined}
                             aria-describedby={
                               !selectedSource
                                 ? selectSourceHintId
                                 : selectedSource.zone === 'tableau' && selectedSource.col !== undefined
-                                  ? isSalicLawTarget(state, selectedSource.col, 'foundation', idx)
+                                  ? state.legalTargets[`tableau-${selectedSource.col}`]?.foundation.includes(idx)
                                     ? legalTargetHintId
                                     : illegalTargetHintId
                                   : undefined

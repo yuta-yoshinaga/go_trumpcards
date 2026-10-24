@@ -326,6 +326,34 @@ func (c *CrazyQuilt) MoveWasteToFoundation() error {
 	return nil
 }
 
+// LegalTargets returns the accepting foundation indices and waste availability
+// for a quilt cell. The cell index is row*8+col, matching GetQuilt's row-major order.
+func (c *CrazyQuilt) LegalTargets(idx int) ([]int, bool) {
+	if c.phase != CrazyQuiltPhasePlaying || idx < 0 || idx >= CrazyQuiltCells || c.quilt[idx] == nil || !c.IsAvailable(idx) {
+		return []int{}, false
+	}
+	card := c.quilt[idx]
+	foundation := make([]int, 0, 1)
+	if fIdx := c.findFoundation(card); fIdx >= 0 {
+		foundation = append(foundation, fIdx)
+	}
+	top := c.wasteTop()
+	waste := top != nil && crazyQuiltAdjacentRank(card.GetValue(), top.GetValue())
+	return foundation, waste
+}
+
+// WasteLegalTargets returns the accepting foundation index for the waste top,
+// or an empty slice when the waste is empty or no foundation accepts it.
+func (c *CrazyQuilt) WasteLegalTargets() []int {
+	if c.phase != CrazyQuiltPhasePlaying {
+		return []int{}
+	}
+	if fIdx := c.findFoundation(c.wasteTop()); fIdx >= 0 {
+		return []int{fIdx}
+	}
+	return []int{}
+}
+
 // GiveUp ギブアップ
 func (c *CrazyQuilt) GiveUp() {
 	if c.phase == CrazyQuiltPhasePlaying {

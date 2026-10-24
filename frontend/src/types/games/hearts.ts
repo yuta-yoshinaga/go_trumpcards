@@ -51,6 +51,8 @@ export interface HeartsResponse extends BaseGameResponse {
   roundNumber: number;
   trickNumber: number;
   currentPlayerIdx: number;
+  /** Hand indices the human may legally play; empty outside the human's play turn. */
+  validPlays: number[];
   currentTrick: HeartsTrickCard[];
   trickPoints: number;
   heartsBroken: boolean;

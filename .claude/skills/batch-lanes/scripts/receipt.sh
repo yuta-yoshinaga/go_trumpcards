@@ -8,10 +8,46 @@ page_test_for() {
     *) return 1 ;;
   esac
 }
+receipt_game_tests() {
+  local repo="$1" branch="$2" routes page test matched=0 path game compact
+  routes="$repo/frontend/src/constants/gameRoutes.ts"
+  local -a names=()
+  [[ -f "$routes" ]] && while IFS= read -r page; do
+    if ! batch_branch_matches_game "$branch" "$page"; then
+      for path in "${RECEIPT_CHANGED[@]:-}"; do
+        case "$path" in
+          *WebPresenter.go|*CuiPresenter.go|internal/i18n/locales/*/*.json|frontend/src/i18n/locales/*/*.json)
+            game="${path##*/}"; game="${game%.go}"; game="${game%.json}"
+            game="$(tr '[:upper:]' '[:lower:]' <<<"$game" | tr -cd '[:alnum:]')"
+            compact="$(tr '[:upper:]' '[:lower:]' <<<"$page" | tr -cd '[:alnum:]')"
+            [[ "$game" == "$compact" ]] && { names+=("$page"); break; } ;;
+        esac
+      done
+      continue
+    fi
+    names+=("$page")
+  done < <(sed -nE "s/.*page:[[:space:]]*['\"]([^'\"]+)['\"].*/\1/p" "$routes")
+  for page in "${names[@]}"; do
+    test="$repo/frontend/src/pages/${page}Page.test.tsx"
+    [[ -f "$test" ]] || continue
+    printf '%s\n' "${test#"$repo/"}"
+    matched=1
+  done
+  (( matched )) && return 0
+  # A change no page renders (e.g. a Go-only test) has no page test to miss.
+  if ((${#RECEIPT_CHANGED[@]})); then
+    for path in "${RECEIPT_CHANGED[@]}"; do
+      case "$path" in frontend/*|*Presenter.go|internal/i18n/locales/*) printf '%s\n' 'WARN NO_TEST_MATCH'; return 0 ;; esac
+    done
+    return 0
+  fi
+  printf '%s\n' 'WARN NO_TEST_MATCH'
+}
 if [[ "${BATCH_TESTING:-}" = 1 ]]; then return 0 2>/dev/null || exit 0; fi
 slot="$1"; wt="$WT_ROOT/wt-ib$slot"; cd "$wt" || exit 1
 echo "== $(git branch --show-current)"; git status --porcelain; git diff --stat
 mapfile -d '' -t changed < <({ git diff --name-only -z HEAD; git ls-files -o --exclude-standard -z; } | sort -zu)
+RECEIPT_CHANGED=("${changed[@]}")
 tests=() go_files=() siblings=() components=() new_sources=() fmt=() mut_files=()
 for file in "${changed[@]}"; do
   [[ "$file" =~ \.test\.tsx?$ ]] && tests+=("${file#frontend/}")
@@ -26,17 +62,29 @@ for file in "${changed[@]}"; do
     [[ -f "frontend/$candidate" ]] && siblings+=("$candidate")
   fi
   [[ "$file" =~ ^frontend/src/components/[A-Za-z]+\.tsx$ ]] && components+=("${file##*/}")
-  [[ "$file" =~ ^frontend/src/(utils|hooks)/[^/]+\.tsx?$ && ! "$file" =~ \.test\. ]] && new_sources+=("$file")
+  # a deleted source needs no test; only a source still on disk can be MISSING_TEST
+  [[ "$file" =~ ^frontend/src/(utils|hooks)/[^/]+\.tsx?$ && ! "$file" =~ \.test\. && -f "$file" ]] && new_sources+=("$file")
   [[ "$file" =~ ^frontend/.*\.(tsx?|json)$ ]] && fmt+=("${file#frontend/}")
   [[ "$file" =~ \.(tsx?|go)$ ]] && mut_files+=("$file")
 done
 go="${go_files[*]}"
 cd frontend || exit 1
 ((${#tests[@]})) && { bunx vitest run "${tests[@]}" 2>&1 | grep -E 'Test Files|Tests |FAIL' | head; }
-game=$(git -C .. branch --show-current | sed -E 's#^feat/[0-9]+-##'); [ -n "$game" ] && { echo "== vitest *$game*"; bunx vitest run "$game" 2>&1 | grep -E 'Test Files|Tests |FAIL' | head -5; }
+branch=$(git -C .. branch --show-current)
+game_tests=$(receipt_game_tests "$(git rev-parse --show-toplevel)" "$branch")
+if [[ "$game_tests" == *'WARN NO_TEST_MATCH'* ]]; then echo 'WARN NO_TEST_MATCH'; else
+  while IFS= read -r test; do [[ -n "$test" ]] || continue; echo "== vitest $test"; bunx vitest run "$test" 2>&1 | grep -E 'Test Files|Tests |FAIL' | head -5; done <<<"$game_tests"
+fi
 ((${#siblings[@]})) && { echo "== vitest shared siblings"; bunx vitest run "${siblings[@]}" 2>&1 | grep -E 'Test Files|Tests |FAIL' | head -20; }
 for file in "${changed[@]}"; do [[ "$file" =~ pages/(BlackJackPage|PineapplePage|SevenCardStudPage|HorsePage|FiveCardStudPage)\.tsx|components/VideoPokerGameContent\.tsx ]] && { echo "NOTE SHARED-VARIANT PAGE: new t() keys must exist in every variant namespace"; break; }; done
-for compfile in "${components[@]}"; do comp="${compfile%.tsx}"; users=(); while IFS= read -r f; do [[ -f "$f" ]] && users+=("$f"); done < <(grep -lE "from '\.\./components/${comp}'" src/pages/*.tsx 2>/dev/null | sed 's/\.tsx$/.test.tsx/')
+for compfile in "${components[@]}"; do
+  comp="${compfile%.tsx}"; users=(); intermediates=()
+  while IFS= read -r f; do intermediates+=("${f##*/}"); done < <(grep -lE "from ['\"](\./|\.\./)?${comp}['\"]" src/components/*.tsx 2>/dev/null)
+  while IFS= read -r f; do [[ -f "$f" ]] && users+=("$f"); done < <(
+    { grep -lE "from ['\"]\.\./components/${comp}['\"]" src/pages/*.tsx 2>/dev/null
+      for intermediary in "${intermediates[@]}"; do name="${intermediary%.tsx}"; grep -lE "from ['\"]\.\./components/${name}['\"]" src/pages/*.tsx 2>/dev/null; done
+    } | sort -u | sed 's/\.tsx$/.test.tsx/'
+  )
   n=${#users[@]}; if ((n > 0 && n <= 40)); then echo "== vitest importers of $comp ($n)"; bunx vitest run "${users[@]}" 2>&1 | grep -E 'Test Files|Tests |FAIL' | head -10; elif ((n > 40)); then echo "NOTE $comp has $n importers (not run locally; CI covers)"; fi
 done
 # a .ts hook is often tested from a .test.tsx file (it renders providers), so accept either extension
@@ -48,7 +96,18 @@ flock "$BATCH_STATE/tsc.lock" bun run typecheck >"$BATCH_STATE/tc$slot.log" 2>&1
 cd ..
 if [ -n "$go" ] || printf '%s\n' "${changed[@]}" | grep -q internal/i18n/locales/; then go build ./... && echo BUILD=ok; flock "$BATCH_STATE/gotest.lock" go test -tags test ./... 2>&1 | grep -vE '^(ok|\?)' | tail -15; echo GOTEST_DONE
 elif printf '%s\n' "${changed[@]}" | grep -q frontend/src/i18n/locales/; then echo "GOTEST(frontend-locale guards)"; flock "$BATCH_STATE/gotest.lock" go test -tags test ./internal/infrastructure/games/ ./internal/adapter/presenter/ ./internal/i18n/... 2>&1 | grep -vE '^(ok|\?)' | tail -15; echo GOTEST_DONE; fi
+if [[ -z "$go" ]] && printf '%s\n' "${changed[@]}" | grep -qx 'api/openapi.yaml'; then
+  echo 'GOTEST(OpenAPI)'
+  flock "$BATCH_STATE/gotest.lock" go test -tags test ./internal/infrastructure/games/ -run 'TestOpenAPI' 2>&1 | grep -vE '^(ok|\?)' | tail -15
+  echo GOTEST_DONE
+fi
 if ((${#mut_files[@]})); then grep -nE '\{false &&|if \(true\)' -- "${mut_files[@]}" </dev/null 2>/dev/null && echo MUTANT_LEFT; fi
-if [ -n "$go" ]; then export PATH=$PATH:"$(go env GOPATH)/bin"; gi=$(goimports -l "${go_files[@]}"); [ -n "$gi" ] && echo "GOIMPORTS: $gi"; flock "$BATCH_STATE/lint.lock" golangci-lint run --build-tags test ./internal/... 2>&1 | tail -3 | sed 's/^/LINT: /'; fi
+if [ -n "$go" ]; then
+  export PATH=$PATH:"$(go env GOPATH)/bin"
+  gi=$(goimports -l "${go_files[@]}"); [ -n "$gi" ] && echo "GOIMPORTS: $gi"
+  lint_out=$(flock "$BATCH_STATE/lint.lock" golangci-lint run --allow-parallel-runners --build-tags test ./internal/... 2>&1); lint_rc=$?
+  tail -3 <<< "$lint_out" | sed 's/^/LINT: /'
+  if [[ $lint_rc -eq 0 ]]; then echo LINT=ok; else echo LINT=FAIL; fi
+fi
 "$B/fieldcheck.sh" "$wt"
 python3 "$B/e2echeck.py" "$wt"

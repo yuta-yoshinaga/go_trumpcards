@@ -31,6 +31,12 @@ func (_m *MockSpiderGame) MoveTableauToTableau(fromCol, cardIndex, toCol int) er
 	return ret.Error(0)
 }
 
+func (_m *MockSpiderGame) RunStarts(col int) []int {
+	ret := _m.Called(col)
+	v, _ := ret.Get(0).([]int)
+	return v
+}
+
 func (_m *MockSpiderGame) GiveUp() {
 	_m.Called()
 }

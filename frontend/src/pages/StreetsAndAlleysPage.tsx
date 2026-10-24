@@ -36,7 +36,6 @@ import { parseStreetsAndAlleysCommand, STREETSANDALLEYS_HELP } from '../utils/cl
 import { formatStreetsAndAlleysState } from '../utils/cli/formatters/streetsandalleysFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
-import { streetsAndAlleysLegalTargets } from '../utils/streetsAndAlleysLegalTargets';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
 
@@ -207,14 +206,15 @@ function StreetsAndAlleysPageContent() {
 
   // 選択中、またはホバー/フォーカス中の札そのもの。列の末尾しか動かせない。
   const previewSource = preview.source;
-  const previewedCard =
+  const legalForSource =
     previewSource?.zone === 'tableau' && previewSource.col !== undefined
-      ? previewSource.cardIndex !== undefined
-        ? state.tableau[previewSource.col]?.[previewSource.cardIndex]?.card
-        : state.tableau[previewSource.col]?.at(-1)?.card
+      ? state.legalTargets[`tableau-${previewSource.col}`]
       : undefined;
-  // 以前は選択中なら全列の一番上を無条件で光らせていた。ドメインは値差 -1 を要求する。
-  const legalTargets = streetsAndAlleysLegalTargets(state.tableau, state.foundation, previewedCard);
+  // 判定は StreetsAndAlleys.go の canPlaceOn* を通してサーバーが計算する (ADR-0045)。
+  const legalTargets = {
+    tableau: new Set(legalForSource?.tableau ?? []),
+    foundation: new Set(legalForSource?.foundation ?? []),
+  };
   const selectedTargetCount = selectedSource ? legalTargets.tableau.size + legalTargets.foundation.size : null;
   const hasSelectedSource = selectedSource !== null;
   const destinationStatus = (isLegal: boolean) => t(isLegal ? 'legalDestinationStatus' : 'illegalDestinationStatus');
@@ -373,7 +373,10 @@ function StreetsAndAlleysPageContent() {
                 {[0, 1, 2, 3].map(renderTableauColumn)}
               </div>
 
-              <div className="flex flex-col items-center gap-1 sm:gap-2 mb-3" data-tutorial="sa-foundation">
+              <div
+                className="flex flex-col items-center gap-1 sm:gap-2 mb-3 lg:grid lg:grid-cols-2 lg:self-start"
+                data-tutorial="sa-foundation"
+              >
                 {state.foundation.map((pile, idx) => {
                   const foundationZone: StreetsAndAlleysMoveZone = { zone: 'foundation', col: idx };
                   return (

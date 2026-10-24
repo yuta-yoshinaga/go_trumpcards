@@ -13,8 +13,15 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockExec = vi.mocked(escobaApi.exec);
+const mobileState = vi.hoisted(() => ({ isMobile: true }));
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: () => mobileState.isMobile,
+}));
 
 beforeEach(() => {
+  mobileState.isMobile = true;
   mockExec.mockReset();
   mockExec.mockResolvedValue(makeEscobaState());
 });
@@ -34,6 +41,23 @@ describe('EscobaPage', () => {
     await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
     expect(screen.getByTestId('hand-card-1')).toBeInTheDocument();
     expect(screen.getByTestId('hand-card-2')).toBeInTheDocument();
+    expect(screen.getByTestId('game-footer-content')).toContainElement(screen.getByTestId('hand-card-0'));
+    expect(screen.getByTestId('game-footer-actions')).toContainElement(screen.getByTestId('take-button'));
+    expect(screen.getByTestId('game-footer-actions')).toContainElement(screen.getByTestId('lay-button'));
+    expect(screen.getByTestId('game-footer-content')).not.toContainElement(screen.getByTestId('take-button'));
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+  });
+
+  it('keeps the same footer slots on desktop and places the message in the footer', async () => {
+    mobileState.isMobile = false;
+    mockExec.mockResolvedValue(makeEscobaState({ message: 'Your turn' }));
+    renderWithProviders(<EscobaPage />);
+    await waitFor(() =>
+      expect(screen.getByTestId('game-footer-actions')).toContainElement(screen.getByTestId('take-button')),
+    );
+    expect(screen.getByTestId('game-footer-content')).toContainElement(screen.getByTestId('hand-card-0'));
+    expect(screen.getByTestId('game-footer-message')).toHaveTextContent('Your turn');
+    mobileState.isMobile = true;
   });
 
   it('renders table cards', async () => {

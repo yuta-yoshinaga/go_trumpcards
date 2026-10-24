@@ -10,7 +10,7 @@
 set -euo pipefail
 
 cd "$(dirname "$0")/../../../.."
-export PATH="$HOME/sdk/go1.27.1/bin:$HOME/.local/opt/tinygo/bin:$PATH"
+export PATH="$HOME/sdk/go1.27.3/bin:$HOME/.local/opt/tinygo/bin:$PATH"
 export GOTOOLCHAIN=local          # pin the Go toolchain CI uses (1.27) so sizes match CI
 LIMIT=1048576
 

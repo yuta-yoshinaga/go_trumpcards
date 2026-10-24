@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { popejoanApi } from '../api/gameApi';
 import { ApiError } from '../api/gameExec';
@@ -83,6 +83,17 @@ describe('PopeJoanPage', () => {
     mockExec.mockResolvedValue(makeState());
   });
 
+  it('renders the hand and play action inside the game footer', async () => {
+    renderWithProviders(<PopeJoanPage />);
+    const footer = await screen.findByTestId('game-footer-content');
+    const footerQueries = within(footer);
+    expect(footerQueries.getAllByRole('button').filter((button) => button.dataset.hintAction === 'play')).toHaveLength(
+      3,
+    );
+    const actions = within(await screen.findByTestId('game-footer-actions'));
+    expect(actions.getByRole('button', { name: '出す' })).toBeInTheDocument();
+  });
+
   it('keeps rules and CPU details collapsed while their content stays in the DOM', async () => {
     renderWithProviders(<PopeJoanPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
@@ -92,7 +103,7 @@ describe('PopeJoanPage', () => {
     expect(ruleText).toBeInTheDocument();
     expect(ruleText?.parentElement?.tagName).not.toBe('SUMMARY');
     expect(ruleText).not.toBeVisible();
-    fireEvent.click(ruleDetails.querySelector('summary')!);
+    fireEvent.click(ruleDetails.querySelector('summary') as HTMLElement);
     expect(ruleDetails).toHaveAttribute('open');
     expect(ruleText).toBeVisible();
     const cpuDetails = screen.getByTestId('cpu-accordion');
@@ -123,6 +134,16 @@ describe('PopeJoanPage', () => {
     expect(turnUpAndBoard).toHaveClass('flex', 'items-start');
     expect(turnUpAndBoard?.children).toHaveLength(2);
     expect(turnUpAndBoard?.lastElementChild).toBe(board);
+  });
+
+  it('places the played cards before the CPU reference area', async () => {
+    mobileState.breakpoint = 'largeDesktop';
+    mockExec.mockResolvedValue(makeState({ playedPile: [card('SPADE', 5)] }));
+    renderWithProviders(<PopeJoanPage />);
+
+    const pile = await screen.findByTestId('popejoan-played-pile');
+    const cpuArea = screen.getByTestId('cpu-accordion');
+    expect(pile.compareDocumentPosition(cpuArea) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it.each(['mobile', 'largeDesktop'] as const)('handles an empty hand on %s', async (breakpoint) => {
@@ -224,7 +245,7 @@ describe('PopeJoanPage', () => {
   it('shows both rules permanently', async () => {
     renderWithProviders(<PopeJoanPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
-    fireEvent.click(screen.getByTestId('pj-rule-details').querySelector('summary')!);
+    fireEvent.click(screen.getByTestId('pj-rule-details').querySelector('summary') as HTMLElement);
     expect(screen.getByText(/トランプの札でしか取れません/)).toBeInTheDocument();
     expect(screen.getByText(/♦8 が抜いてあるので/)).toBeInTheDocument();
     expect(screen.getByText(/めくり札がポープ.*ディーラーが対応する区画を即時に獲得/)).toBeInTheDocument();
@@ -419,9 +440,9 @@ describe('PopeJoanPage', () => {
         expect(buttons[0]).not.toHaveAttribute('data-unplayable');
         expect(buttons[1]).toBeDisabled();
         expect(buttons[1]).toHaveAttribute('data-unplayable', 'true');
-        fireEvent.click(buttons[0]!);
+        fireEvent.click(buttons[0] as HTMLElement);
         expect(buttons[0]).toHaveAttribute('aria-pressed', 'true');
-        fireEvent.click(buttons[0]!);
+        fireEvent.click(buttons[0] as HTMLElement);
         expect(buttons[0]).toHaveAttribute('aria-pressed', 'false');
       },
     );

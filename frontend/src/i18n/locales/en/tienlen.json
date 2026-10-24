@@ -53,7 +53,8 @@
     "playLow": "Play your weaker cards first"
   },
   "result": {
-    "rankings": "Game Over! {{rankings}}"
+    "rankings": "Game Over! {{rankings}}",
+    "rankN": "Rank {{rank}}"
   },
   "playType": {
     "single": "Single",
@@ -67,5 +68,7 @@
     "tienlenLead": "The table is clear — lead your weakest card",
     "tienlenFollow": "Play the weakest card that still beats the table",
     "tienlenPass": "Nothing in hand beats the table — pass"
-  }
+  },
+  "listSeparator": ", ",
+  "rankingEntry": "{{seat}}: {{rank}}"
 }

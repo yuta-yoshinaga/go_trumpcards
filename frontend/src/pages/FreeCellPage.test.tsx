@@ -25,6 +25,7 @@ const playingState: FreeCellResponse = {
   tableau: [[card('SPADE', 13)], [card('HEART', 12)], [], [], [], [], [], []],
   freeCells: [null, null, null, null],
   foundation: [[], [], [], []],
+  legalTargets: {},
   // 空きセル4 + 空き列6 → (1+4) * 2^6 = 320。空き列宛てはその列を経由地に使えず 160。
   maxMovableCards: 320,
   maxMovableCardsToEmptyColumn: 160,
@@ -83,6 +84,49 @@ afterEach(async () => {
 });
 
 describe('FreeCellPage', () => {
+  it('compacts progress on mobile and places settings details inside scrollable play area', async () => {
+    const original = window.innerWidth;
+    try {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+      window.dispatchEvent(new Event('resize'));
+      const { container: mobileContainer, unmount } = renderWithProviders(<FreeCellPage />);
+      const mobileProgress = await screen.findByTestId('freecell-progress');
+      expect(mobileProgress.tagName).toBe('DETAILS');
+      expect(mobileProgress.querySelector('summary')).toHaveTextContent('手数: 5');
+      expect(mobileProgress).not.toHaveAttribute('open');
+      fireEvent.click(mobileProgress.querySelector('summary') as HTMLElement);
+      expect(screen.getByTestId('freecell-timer')).toHaveTextContent('経過時間: 00:00');
+      expect(mobileProgress.textContent).toBe('手数: 5経過時間: 00:00');
+      const mobileSettingsDetails = (await screen.findByText('設定')).closest('details');
+      const mobileTableau = mobileContainer.querySelector('[data-tutorial="fc-tableau"]');
+      const mobilePlayArea = mobileTableau?.closest('.overflow-y-auto');
+      expect(mobilePlayArea).not.toBeNull();
+      expect(mobileSettingsDetails).not.toBeNull();
+      expect(mobilePlayArea?.contains(mobileSettingsDetails)).toBe(true);
+      expect(
+        mobileTableau &&
+          mobileSettingsDetails &&
+          mobileTableau.compareDocumentPosition(mobileSettingsDetails) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+      unmount();
+
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 });
+      window.dispatchEvent(new Event('resize'));
+      const { container: desktopContainer } = renderWithProviders(<FreeCellPage />);
+      expect((await screen.findByTestId('freecell-progress')).tagName).toBe('SPAN');
+      expect(screen.getByTestId('freecell-timer')).toBeInTheDocument();
+      const desktopSettingsDetails = (await screen.findByText('設定')).closest('details');
+      const desktopTableau = desktopContainer.querySelector('[data-tutorial="fc-tableau"]');
+      const desktopPlayArea = desktopTableau?.closest('.overflow-y-auto');
+      expect(desktopPlayArea).not.toBeNull();
+      expect(desktopSettingsDetails).not.toBeNull();
+      expect(desktopPlayArea?.contains(desktopSettingsDetails)).toBe(false);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: original });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
   it('shows the persistent double-click foundation hint', async () => {
     renderWithProviders(<FreeCellPage />);
     expect(await screen.findByTestId('fc-doubleclick-hint')).toHaveTextContent('ダブルクリック');
@@ -429,6 +473,7 @@ describe('FreeCellPage', () => {
       ...playingState,
       tableau: [[card('SPADE', 2)], [], [], [], [], [], [], []],
       foundation: [[card('SPADE', 1)], [], [], []],
+      legalTargets: { 'tableau-0-0': { tableau: [], foundation: [3] } },
     });
     renderWithProviders(<FreeCellPage />);
     const cardImg = await screen.findByAltText('♠ 2');
@@ -440,7 +485,7 @@ describe('FreeCellPage', () => {
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', expect.objectContaining({ zone: 'tableau', col: 0 }), {
         zone: 'foundation',
-        col: 0,
+        col: 3,
       }),
     );
   });
@@ -450,6 +495,7 @@ describe('FreeCellPage', () => {
       ...playingState,
       tableau: [[card('SPADE', 13)], [], [], [], [], [], [], []],
       foundation: [[], [], [], []],
+      legalTargets: {},
     });
     renderWithProviders(<FreeCellPage />);
     const cardImg = await screen.findByAltText('♠ K');
@@ -457,7 +503,7 @@ describe('FreeCellPage', () => {
 
     mockExec.mockClear();
     fireEvent.doubleClick(cardButton);
-    await Promise.resolve();
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 
@@ -466,6 +512,7 @@ describe('FreeCellPage', () => {
       ...playingState,
       freeCells: [card('SPADE', 1), null, null, null],
       foundation: [[], [], [], []],
+      legalTargets: { 'freecell-0': { tableau: [], foundation: [2] } },
     });
     renderWithProviders(<FreeCellPage />);
     const cardImg = await screen.findByAltText('♠ A');
@@ -475,7 +522,7 @@ describe('FreeCellPage', () => {
     mockExec.mockResolvedValue(playingState);
     fireEvent.doubleClick(cardButton);
     await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'freecell', cell: 0 }, { zone: 'foundation', col: 0 }),
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'freecell', cell: 0 }, { zone: 'foundation', col: 2 }),
     );
   });
 
@@ -492,6 +539,7 @@ describe('FreeCellPage', () => {
     mockExec.mockClear();
     fireEvent.click(cardButton);
     await waitFor(() => expect(cardButton.className).toContain('ring-2'));
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 

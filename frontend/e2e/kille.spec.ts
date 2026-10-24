@@ -1,7 +1,30 @@
 import { expect, test } from '@playwright/test';
+import { PHONE_VIEWPORT } from './desktopViewports';
 import { isVisibleWithin, navigateTo, TIMEOUT_GAME_LOOP, waitForLoaded } from './helpers';
+import { checkLabel } from './sweeps/label';
 
 test.describe('Kille E2E', () => {
+  test('wraps the human player labels when the human is out as the lowest dealer', async ({ page }) => {
+    await page.setViewportSize(PHONE_VIEWPORT);
+    await page.route('**/kille/exec', async (route) => {
+      const response = await route.fetch();
+      const json = await response.json();
+      const human = json.players.find((player: { isHuman: boolean }) => player.isHuman);
+      json.dealerIdx = human.id;
+      Object.assign(human, { isOut: true, knockedBy: '', reentries: 0 });
+      await route.fulfill({ response, json });
+    });
+
+    await navigateTo(page, '/kille');
+    const humanRow = page.getByTestId('kille-player').filter({ hasText: 'あなた' });
+    await expect(humanRow).toContainText('あなた');
+    await expect(humanRow).toContainText('[親]');
+    await expect(humanRow).toContainText('収支');
+    await expect(humanRow).toContainText('買い戻し残り 3回');
+    await expect(humanRow).toContainText('[最弱で脱落]');
+    await checkLabel(page, '/kille', PHONE_VIEWPORT);
+  });
+
   test('shows the pack, keeps other hands hidden and takes a turn', async ({ page }) => {
     await navigateTo(page, '/kille');
 

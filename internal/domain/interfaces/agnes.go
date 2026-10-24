@@ -40,6 +40,8 @@ type AgnesGame interface {
 	GetTableau() [domain.AgnesTableauCnt][]*domain.AgnesTableauCard
 	// GetFoundation ファンデーション取得
 	GetFoundation() [domain.AgnesFoundationCnt][]*domain.Card
+	// LegalTargets returns legal tableau and foundation destinations for a face-up tableau end card.
+	LegalTargets(fromCol int) (tableau, foundation []int)
 	// GetBaseRank ベースランク取得
 	GetBaseRank() int
 }

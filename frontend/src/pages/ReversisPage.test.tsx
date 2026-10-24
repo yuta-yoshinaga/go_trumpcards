@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { reversisApi } from '../api/gameApi';
 import { useIsMobile } from '../hooks/useCardDimensions';
@@ -68,11 +68,13 @@ beforeEach(() => {
 
 describe('ReversisPage', () => {
   it('renders every human hand card through the hand fan', async () => {
-    const { container } = renderWithProviders(<ReversisPage />);
-    await screen.findAllByRole('button', { name: /を出す/ });
-    const hand = container.querySelector('[data-tutorial="reversis-hand"]');
-    expect(hand).not.toBeNull();
-    expect(hand?.querySelectorAll('button')).toHaveLength(3);
+    renderWithProviders(<ReversisPage />);
+    const content = within(await screen.findByTestId('game-footer-content'));
+    expect(await content.findAllByRole('button', { name: /を出す/ })).toHaveLength(3);
+    expect(content.queryByRole('button', { name: /リセット/ })).not.toBeInTheDocument();
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: /リセット/ }),
+    ).toBeInTheDocument();
   });
 
   it('keeps the original points label off turn', async () => {

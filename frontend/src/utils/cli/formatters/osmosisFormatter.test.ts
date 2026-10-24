@@ -5,6 +5,7 @@ import { formatOsmosisState } from './osmosisFormatter';
 function makeState(overrides?: Partial<OsmosisResponse>): OsmosisResponse {
   return {
     isStalemate: false,
+    legalTargets: {},
     reserve: [[], [], [], []],
     stockCount: 0,
     waste: [],
@@ -36,6 +37,7 @@ describe('formatOsmosisState', () => {
   it('renders reserve and foundation top cards with counts', () => {
     const result = formatOsmosisState(
       makeState({
+        legalTargets: {},
         reserve: [[{ design: 'SPADE', value: 9 }], [], [], []],
         foundation: [[{ design: 'HEART', value: 1 }], [], [], []],
       }),

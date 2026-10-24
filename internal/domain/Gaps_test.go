@@ -700,3 +700,32 @@ func TestGaps_GetGapNeed(t *testing.T) {
 		assert.False(t, g.isLegalMove(1, 1, 0, 1), "♥7 は置けない")
 	})
 }
+
+func TestGaps_GetLockedPrefixLengths(t *testing.T) {
+	g := NewDefaultGaps()
+	var grid [GapsRowCnt][GapsColCnt]GapsCell
+	grid[0][0], grid[0][1], grid[0][2] = NewCard(CardDesignSpade, 2, true), NewCard(CardDesignSpade, 3, true), NewCard(CardDesignSpade, 4, true)
+	grid[0][3] = NewCard(CardDesignHeart, 5, true)                                                  // Different suit ends the prefix.
+	grid[1][0], grid[1][1] = NewCard(CardDesignClover, 3, true), NewCard(CardDesignClover, 4, true) // No anchor 2.
+	grid[2][0], grid[2][1] = NewCard(CardDesignHeart, 2, true), NewCard(CardDesignHeart, 4, true)   // Rank gap.
+	grid[3][0], grid[3][1] = NewCard(CardDesignDiamond, 2, true), NewCard(CardDesignDiamond, 3, true)
+	g.SetGrid(grid)
+
+	assert.Equal(t, [GapsRowCnt]int{3, 0, 1, 2}, g.GetLockedPrefixLengths())
+
+	t.Run("counts a full locked row", func(t *testing.T) {
+		var fullRow [GapsRowCnt][GapsColCnt]GapsCell
+		for col := 0; col < GapsColCnt; col++ {
+			fullRow[0][col] = NewCard(CardDesignSpade, col+GapsAnchorRank, true)
+		}
+		g.SetGrid(fullRow)
+		assert.Equal(t, GapsColCnt, g.GetLockedPrefixLengths()[0])
+	})
+
+	t.Run("a gap at the start locks no later cards", func(t *testing.T) {
+		var gapRow [GapsRowCnt][GapsColCnt]GapsCell
+		gapRow[0][1] = NewCard(CardDesignSpade, GapsAnchorRank, true)
+		g.SetGrid(gapRow)
+		assert.Zero(t, g.GetLockedPrefixLengths()[0])
+	})
+}

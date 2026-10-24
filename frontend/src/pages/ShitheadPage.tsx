@@ -30,6 +30,7 @@ import { parseShitheadCommand, SHITHEAD_HELP } from '../utils/cli/commands/shith
 import { formatShitheadState } from '../utils/cli/formatters/shitheadFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatGameRankings } from '../utils/formatGameRankings';
 
 /** Shithead tutorial step definitions. */
 const SHITHEAD_TUTORIAL_STEPS: TutorialStep[] = [
@@ -128,6 +129,17 @@ function ShitheadPageContent() {
   const isGameEnd = state.gameEndFlag;
   const humanPlayer = state.players.find((p) => p.isHuman);
   const seatName = (idx: number) => (state.players[idx]?.isHuman === true ? t('labels.you') : `CPU${idx.toString()}`);
+  const resultParams = state.rankings
+    ? {
+        rankings: formatGameRankings(
+          state.rankings,
+          seatName,
+          (rank, shithead) => `${t('resultRank', { rank })}${shithead ? t('resultShithead') : ''}`,
+          (seat, rank) => t('rankingEntry', { seat, rank }),
+          t('listSeparator'),
+        ),
+      }
+    : state.messageParams;
   // humanAction を先に置く。プレイヤーの手が引き金で CPU が続くので、その順が実際の並び。
   const recentActions = [...(state.humanAction ? [state.humanAction] : []), ...state.cpuActions];
   const isHumanTurn = state.players[state.currentTurn]?.isHuman === true && !isGameEnd;
@@ -184,11 +196,7 @@ function ShitheadPageContent() {
               </div>
             )}
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
+            <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={resultParams} />
 
             {/* Discard pile and stock */}
             <div data-tutorial="sh-discard" className="bg-black/30 text-ds-text-primary p-3 rounded">

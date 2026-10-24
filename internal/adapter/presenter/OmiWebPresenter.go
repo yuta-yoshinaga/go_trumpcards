@@ -73,6 +73,7 @@ func (p *OmiWebPresenter) buildBase(e interfaces.OmiGame) *controller.OmiWebOutp
 
 	resObj.CurrentTrick = trickCardsToOutput(e.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(e)
+	resObj.ValidPlays = humanTurnValidPlays[*domain.OmiPlayer](e, e.GetPhase() == domain.OmiPhasePlay)
 	return resObj
 }
 

@@ -27,6 +27,12 @@ type DuchessGame interface {
 	MoveTableauToFoundation(col int) error
 	// MoveTableauToTableau タブロー間で移動する（cardIndex 以降の連番をまとめて）
 	MoveTableauToTableau(fromCol, cardIndex, toCol int) error
+	// LegalTargetsFrom returns destinations for a selected tableau run.
+	LegalTargetsFrom(col, cardIndex int) (tableau, foundation []int)
+	// ReserveLegalTargets returns destinations for a reserve fan top card.
+	ReserveLegalTargets(fanIdx int) (tableau, foundation []int)
+	// WasteLegalTargets returns destinations for the waste top card.
+	WasteLegalTargets() (tableau, foundation []int)
 	// GetHint ヒントを取得する
 	GetHint() *domain.DuchessHint
 	// GetPhase 現在のフェーズを取得する

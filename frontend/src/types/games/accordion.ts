@@ -17,6 +17,7 @@ export interface AccordionHint {
 
 /** API response shape for an Accordion game. */
 export interface AccordionResponse extends BaseGameResponse {
+  legalTargets: Record<`pile-${number}`, { tableau: number[] }>;
   piles: AccordionPile[];
   pileCount: number;
   phase: number;

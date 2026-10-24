@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -21,6 +22,8 @@ func (p *MrsMopWebPresenter) Output(s interfaces.MrsMopGame, lastErr error) stri
 	resObj.CompletedSuits = s.GetCompletedSuits()
 	resObj.Score = s.GetScore()
 	resObj.Difficulty = int(s.GetDifficulty())
+	resObj.LegalTargets = buildMrsMopLegalTargets(s)
+	resObj.RunStarts = buildMrsMopRunStarts(s)
 
 	// タブロー
 	tableau := s.GetTableau()
@@ -93,6 +96,8 @@ func (p *MrsMopWebPresenter) HintOutput(s interfaces.MrsMopGame) string {
 	resObj.Score = s.GetScore()
 	resObj.Difficulty = int(s.GetDifficulty())
 	resObj.Tableau = make([][]*controller.MrsMopWebOutputTableauCard, 0)
+	resObj.LegalTargets = buildMrsMopLegalTargets(s)
+	resObj.RunStarts = buildMrsMopRunStarts(s)
 
 	if hint != nil {
 		resObj.Hint = &controller.MrsMopWebOutputHint{
@@ -108,13 +113,36 @@ func (p *MrsMopWebPresenter) HintOutput(s interfaces.MrsMopGame) string {
 	return marshalOrError(resObj)
 }
 
+func buildMrsMopRunStarts(s interfaces.MrsMopGame) [][]int {
+	out := make([][]int, domain.MrsMopTableauCnt)
+	for col := range domain.MrsMopTableauCnt {
+		out[col] = intSliceOrEmpty(s.RunStarts(col))
+	}
+	return out
+}
+
 // TargetsOutput は Web では通常の盤面をそのまま返す。
 //
-// 置ける先の強調は Web が `spiderMovableRun` でこの盤面から作っている ──
-// Web に `targets` に当たる操作は無く、選んだ瞬間に見えている。ここで別の形を
-// 返すと、CUI 専用の応答が Web の経路に紛れ込む (Perseverance と同じ扱い)。
+// 置ける先は legalTargets として盤面とともに返す。Web は選択時にこの値を使う。
 func (p *MrsMopWebPresenter) TargetsOutput(s interfaces.MrsMopGame, _, _ int) string {
 	return p.Output(s, nil)
+}
+
+func buildMrsMopLegalTargets(s interfaces.MrsMopGame) map[string]controller.MrsMopWebOutputTargets {
+	out := make(map[string]controller.MrsMopWebOutputTargets)
+	for col := 0; col < domain.MrsMopTableauCnt; col++ {
+		start, _ := s.LegalTargets(col, -1)
+		if start < 0 {
+			continue
+		}
+		for i := start; i < len(s.GetTableau()[col]); i++ {
+			_, cols := s.LegalTargets(col, i)
+			if len(cols) > 0 {
+				out["tableau-"+strconv.Itoa(col)+"-"+strconv.Itoa(i)] = controller.MrsMopWebOutputTargets{Tableau: cols, Foundation: []int{}}
+			}
+		}
+	}
+	return out
 }
 
 // ActionLogOutput 棋譜をJSON出力

@@ -24,6 +24,7 @@ export interface FortyThievesResponse extends BaseGameResponse {
   stockCount: number;
   waste: Card[];
   foundation: Card[][];
+  legalTargets: Record<string, { tableau: number[]; foundation: number[] }>;
   phase: number;
   moveCount: number;
   canUndo: boolean;

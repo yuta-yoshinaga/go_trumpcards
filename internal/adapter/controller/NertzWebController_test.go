@@ -26,6 +26,7 @@ func mustNertzOutputJSON(msg string) string {
 		Foundations:   make([]*controller.NertzWebFoundation, 0),
 		// 上限は盤面が無くても規則なので、既定の応答にも乗る (#5578)。
 		FoundationMax: domain.NertzFoundationMax,
+		LegalTargets:  make(map[string]controller.NertzWebOutputTargets),
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)

@@ -27,8 +27,6 @@ import type { Card } from '../types/card';
 import { CurdsAndWheyPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
-import { curdsAndWheyAutoMoveTarget } from '../utils/curdsAndWheyAutoMoveTarget';
-import { isGrabbable, movableFromIndex } from '../utils/curdsAndWheyRun';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Curds and Whey tutorial step definitions. */
@@ -182,8 +180,9 @@ function CurdsAndWheyPageContent() {
   // and show a notice. Single-click selection is preserved via the e.detail
   // guard in the card's onClick.
   const autoMoveCard = (col: number, idx: number) => {
-    if (!canAct || !isGrabbable(state.columns[col], idx)) return;
-    const toCol = curdsAndWheyAutoMoveTarget(state.columns, col, idx);
+    if (!state.runStarts[col].includes(idx)) return;
+    const targets = state.legalTargets[`tableau-${col}-${idx}`];
+    const toCol = targets ? targets.tableau[0] : null;
     if (toCol === null) {
       setSelected(null);
       setAutoMoveNotice(t('noAutoMove'));
@@ -197,7 +196,6 @@ function CurdsAndWheyPageContent() {
   // Click a card: select it as the source, or — if a source in another column is
   // already selected — move that run onto this column.
   const clickCard = (col: number, idx: number) => {
-    if (!canAct) return;
     if (selected && selected.col !== col) {
       exec('m', { fromCol: selected.col, cardIndex: selected.idx, toCol: col });
       setSelected(null);
@@ -205,7 +203,7 @@ function CurdsAndWheyPageContent() {
     }
     // Only a valid movable run (same-suit descending to the tail) can be grabbed
     // as a source; ignore clicks on cards above the run boundary.
-    if (!isGrabbable(state.columns[col], idx)) return;
+    if (!state.runStarts[col].includes(idx)) return;
     setSelected({ col, idx });
   };
 
@@ -218,7 +216,7 @@ function CurdsAndWheyPageContent() {
 
   const renderColumn = (column: Card[], col: number) => {
     const isDestination = Boolean(selected && selected.col !== col);
-    const runStart = movableFromIndex(column);
+    const runStart = state.runStarts[col][0] ?? column.length;
     return (
       <div
         key={`col-${col}`}
@@ -239,10 +237,10 @@ function CurdsAndWheyPageContent() {
           />
         ) : (
           column.map((c, i) => {
-            const inSelectedRun = Boolean(selected && selected.col === col && i >= selected.idx);
+            const inSelectedRun = Boolean(selected && selected.col === col && i >= Math.max(selected.idx, runStart));
             // Grabbable = head of a valid movable run in this column. In a
             // destination column every card just forwards to the move.
-            const grabbable = i >= runStart;
+            const grabbable = state.runStarts[col].includes(i);
             const clickable = isDestination || grabbable;
             // Highlight the movable-run boundary only while this column can be a
             // source (no selection, or the selection is here).
@@ -265,7 +263,7 @@ function CurdsAndWheyPageContent() {
                       }
                     : undefined
                 }
-                onDoubleClick={canAct && grabbable ? () => autoMoveCard(col, i) : undefined}
+                onDoubleClick={canAct ? () => autoMoveCard(col, i) : undefined}
                 disabled={!canAct || !clickable}
                 data-testid={`card-${col}-${i}`}
                 data-grabbable={grabbable}

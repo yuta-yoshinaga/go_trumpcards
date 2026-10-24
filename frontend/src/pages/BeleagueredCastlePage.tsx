@@ -32,7 +32,6 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BeleagueredCastleResponse } from '../types/card';
 import { BeleagueredCastlePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { beleagueredCastleLegalTargets } from '../utils/beleagueredCastleLegalTargets';
 import { cardAlt } from '../utils/cardAlt';
 import { BELEAGUEREDCASTLE_HELP, parseBeleagueredCastleCommand } from '../utils/cli/commands/beleagueredcastleCommands';
 import { formatBeleagueredCastleState } from '../utils/cli/formatters/beleagueredcastleFormatter';
@@ -214,20 +213,27 @@ function BeleagueredCastlePageContent() {
   // **選ぶ前に行き先が見える (#4454)。** hover / フォーカス中の札にも、選択後と
   // まったく同じ計算を当てる ── 判定を二重に持たないので食い違わない。
   const previewSource = preview.source;
-  const previewedCard =
-    previewSource?.zone === 'tableau' && previewSource.col !== undefined && previewSource.cardIndex !== undefined
-      ? state.tableau[previewSource.col]?.[previewSource.cardIndex]?.card
+  // The server computes targets with BeleagueredCastle.go canPlaceOn* (ADR-0045).
+  const previewTargetData =
+    previewSource?.zone === 'tableau' && previewSource.col !== undefined
+      ? state.legalTargets[`tableau-${previewSource.col}`]
       : undefined;
-  const legalTargets = beleagueredCastleLegalTargets(state.tableau, state.foundation, previewedCard);
+  const legalTargets = {
+    tableau: new Set(previewTargetData?.tableau ?? []),
+    foundation: new Set(previewTargetData?.foundation ?? []),
+  };
   // **読み上げは選択中の札について数える。** legalTargets は preview.source
   // (ホバーまたは**フォーカス**で動く) の札のもので、キーボードで札を辿ると
   // 選択とずれる。「選択中のカードを置ける場所」と言いながら別の札の数を
   // 読み上げることになるので、ここだけ選択元から数え直す。
-  const selectedCard =
-    selectedSource?.zone === 'tableau' && selectedSource.col !== undefined && selectedSource.cardIndex !== undefined
-      ? state.tableau[selectedSource.col]?.[selectedSource.cardIndex]?.card
+  const selectedTargetData =
+    selectedSource?.zone === 'tableau' && selectedSource.col !== undefined
+      ? state.legalTargets[`tableau-${selectedSource.col}`]
       : undefined;
-  const selectedTargets = beleagueredCastleLegalTargets(state.tableau, state.foundation, selectedCard);
+  const selectedTargets = {
+    tableau: new Set(selectedTargetData?.tableau ?? []),
+    foundation: new Set(selectedTargetData?.foundation ?? []),
+  };
   const legalTargetCount = selectedTargets.tableau.size + selectedTargets.foundation.size;
   const selectedDestinations = [
     ...[...selectedTargets.foundation].map((idx) => t('destinationFoundation', { suit: tc(SUIT_I18N_KEYS[idx]) })),
@@ -382,8 +388,11 @@ function BeleagueredCastlePageContent() {
                 {[0, 1, 2, 3].map(renderTableauColumn)}
               </div>
 
-              {/* 4 foundations × (120px card + 20px label) = 560px, fitting the 800px viewport. */}
-              <div className="flex flex-col items-center gap-1 sm:gap-2 mb-3" data-tutorial="bc-foundation">
+              {/* Foundations stay in one column below lg; at lg+ they use a 2x2 grid to fit the 800px desktop play area (#11923). */}
+              <div
+                className="flex flex-col items-center gap-1 sm:gap-2 mb-3 lg:grid lg:grid-cols-2 lg:self-start"
+                data-tutorial="bc-foundation"
+              >
                 {state.foundation.map((pile, idx) => {
                   const foundationZone: BeleagueredCastleMoveZone = { zone: 'foundation', col: idx };
                   return (

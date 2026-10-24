@@ -20,7 +20,9 @@ func gostopCuiCardStr(c *domain.Card) string {
 	if c == nil {
 		return "??"
 	}
-	label := domain.GoStopCardLabel(c)
+	category := goStopCategoryCode(domain.GoStopCardCategory(c))
+	category = i18n.T("gostop.cat." + category)
+	label := i18n.Tf("hanafudaCardLabel", "month", hanafudaMonthName(c.GetDesign()), "category", category)
 	switch domain.GoStopCardCategory(c) {
 	case domain.GoStopGwang:
 		return color.Yellow(label)
@@ -242,5 +244,5 @@ var gostopHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *GoStopCuiPresenter) ActionLogOutput(g interfaces.GoStopGame) string {
-	return actionLogOutputTextForSeats[*domain.GoStopPlayer](g)
+	return actionLogOutputTextLabeled(g, func(idx int) string { return cuiPlayerName(g.GetPlayer(idx), idx) }, gostopCuiCardStr)
 }

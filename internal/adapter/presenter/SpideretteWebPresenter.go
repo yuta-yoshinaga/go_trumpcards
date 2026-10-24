@@ -25,6 +25,7 @@ func (p *SpideretteWebPresenter) Output(s interfaces.SpideretteGame, lastErr err
 		MovePenalty: domain.SpideretteMovePenalty,
 		SuitBonus:   domain.SpideretteSuitBonus,
 	}
+	resObj.RunStarts = spideretteRunStarts(s)
 
 	tableau := s.GetTableau()
 	resObj.Tableau = make([][]*controller.SpideretteWebOutputTableauCard, domain.SpideretteTableauCnt)
@@ -98,6 +99,7 @@ func (p *SpideretteWebPresenter) HintOutput(s interfaces.SpideretteGame) string 
 		MovePenalty: domain.SpideretteMovePenalty,
 		SuitBonus:   domain.SpideretteSuitBonus,
 	}
+	resObj.RunStarts = spideretteRunStarts(s)
 	resObj.Tableau = make([][]*controller.SpideretteWebOutputTableauCard, 0)
 
 	if hint != nil {
@@ -112,6 +114,14 @@ func (p *SpideretteWebPresenter) HintOutput(s interfaces.SpideretteGame) string 
 	}
 
 	return marshalOrError(resObj)
+}
+
+func spideretteRunStarts(s interfaces.SpideretteGame) [][]int {
+	result := make([][]int, domain.SpideretteTableauCnt)
+	for col := range domain.SpideretteTableauCnt {
+		result[col] = intSliceOrEmpty(s.RunStarts(col))
+	}
+	return result
 }
 
 // ActionLogOutput 棋譜をJSON出力

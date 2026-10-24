@@ -628,6 +628,35 @@ func (ft *RankAndFile) LegalTargets(fromCol, cardIndex int) []int {
 	return targets
 }
 
+// LegalTargetsFrom returns tableau and first-foundation destinations for a movable sequence.
+func (ft *RankAndFile) LegalTargetsFrom(fromCol, cardIndex int) (tableau, foundation []int) {
+	tableau = ft.LegalTargets(fromCol, cardIndex)
+	if fromCol < 0 || fromCol >= RankAndFileTableauCnt || cardIndex < 0 || cardIndex >= len(ft.tableau[fromCol]) || cardIndex != len(ft.tableau[fromCol])-1 || !ft.tableau[fromCol][cardIndex].FaceUp {
+		return tableau, nil
+	}
+	if target := ft.findFoundation(ft.tableau[fromCol][cardIndex].Card); target >= 0 {
+		foundation = []int{target}
+	}
+	return tableau, foundation
+}
+
+// WasteLegalTargets returns destinations for the face-up waste top card.
+func (ft *RankAndFile) WasteLegalTargets() (tableau, foundation []int) {
+	if len(ft.waste) == 0 {
+		return nil, nil
+	}
+	card := ft.waste[len(ft.waste)-1]
+	for col := range RankAndFileTableauCnt {
+		if ft.canPlaceOnTableau(card, col) {
+			tableau = append(tableau, col)
+		}
+	}
+	if target := ft.findFoundation(card); target >= 0 {
+		foundation = []int{target}
+	}
+	return tableau, foundation
+}
+
 // isRankAndFileSequence は列 col の cardIndex 以降が異色降順に並んでいるかを返す。
 //
 // 一括で動かせるのはこの並びだけで、途中で色かランクが切れたら1枚も動かない。

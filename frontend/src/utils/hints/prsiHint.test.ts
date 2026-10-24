@@ -15,6 +15,7 @@ function makeState(overrides: Partial<PrsiResponse> = {}): PrsiResponse {
     ],
     phase: PrsiPhase.PLAY,
     currentPlayerIdx: 0,
+    validPlays: [0, 1, 2],
     discardTop: card('HEART', 9),
     drawPileCount: 20,
     discardPileCount: 3,

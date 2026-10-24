@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -83,6 +84,8 @@ func TestStalactitesWebPresenterOutputStalemate(t *testing.T) {
 func TestStalactitesWebPresenterOutputStalemateWithEscape(t *testing.T) {
 	p := new(StalactitesWebPresenter)
 	fg := new(interfaces.MockStalactitesGame)
+	fg.On("LegalTargetsFrom", mock.Anything).Return([]int{}, []int{}).Maybe()
+	fg.On("CellLegalTargets", mock.Anything).Return([]int{}, []int{}).Maybe()
 	fg.On("GetPhase").Return(domain.StalactitesPhasePlaying).Maybe()
 	fg.On("GetMoveCount").Return(7).Maybe()
 	fg.On("CanUndo").Return(true).Maybe()
@@ -184,6 +187,28 @@ func TestStalactitesWebPresenterHintOutputNoHint(t *testing.T) {
 	err := json.Unmarshal([]byte(result), &out)
 	assert.NoError(t, err)
 	assert.Equal(t, "stalactites.noHint", out.MessageCode)
+}
+
+func TestStalactitesWebPresenterBuildLegalTargetsNormalizesAndOmitsEmpty(t *testing.T) {
+	f := new(interfaces.MockStalactitesGame)
+	for col := 0; col < domain.StalactitesTableauCnt; col++ {
+		if col == 0 {
+			f.On("LegalTargetsFrom", col).Return([]int(nil), []int{2})
+		} else {
+			f.On("LegalTargetsFrom", col).Return([]int{}, []int{})
+		}
+	}
+	for cell := 0; cell < domain.StalactitesCellCnt; cell++ {
+		if cell == 0 {
+			f.On("CellLegalTargets", cell).Return([]int{3}, []int(nil))
+		} else {
+			f.On("CellLegalTargets", cell).Return([]int{}, []int{})
+		}
+	}
+	targets := new(StalactitesWebPresenter).buildLegalTargets(f)
+	assert.Equal(t, controller.StalactitesWebOutputTargets{Tableau: []int{}, Foundation: []int{2}}, targets["tableau-0"])
+	assert.Equal(t, controller.StalactitesWebOutputTargets{Tableau: []int{3}, Foundation: []int{}}, targets["stalactites-0"])
+	assert.Len(t, targets, 2)
 }
 
 func TestStalactitesWebPresenterActionLogPlaying(t *testing.T) {

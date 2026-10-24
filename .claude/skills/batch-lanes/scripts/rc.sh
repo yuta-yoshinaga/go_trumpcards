@@ -2,6 +2,7 @@
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 # rc.sh <slot> — receipt into rc<slot>.txt (trimmed), then "RC_DONE"
 "$B/receipt.sh" "$1" 2>&1 | grep -vE '^ (M|A|\?\?) |\|' > "$BATCH_STATE/rc$1.txt"
+validate_allowlist ALLOW_SHRINK "${ALLOW_SHRINK:-}" '(\.test\.tsx?|_test\.go)$' >> "$BATCH_STATE/rc$1.txt" || true
 # A delegation once rewrote a test file and dropped 21 of 22 tests (#8924). Flag any test file
 # that loses more than 20 lines and more than it gains.
 git -C "$WT_ROOT/wt-ib$1" diff --numstat HEAD -- '*.test.ts' '*.test.tsx' '*_test.go' \
@@ -38,4 +39,5 @@ if [[ "${ALLOW_PATCH_GAPS:-}" != 1 ]] && git -C "$wt" diff --name-only HEAD -- f
   fi
 fi
 bash "$B/overlap.sh" "$1" >> "$BATCH_STATE/rc$1.txt"
+bash "$B/adrcheck.sh" "$1" >> "$BATCH_STATE/rc$1.txt"
 echo RC_DONE >> "$BATCH_STATE/rc$1.txt"; cat "$BATCH_STATE/rc$1.txt"

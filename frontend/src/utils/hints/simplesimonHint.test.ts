@@ -9,6 +9,8 @@ function makeState(overrides?: Partial<SimpleSimonResponse>): SimpleSimonRespons
     phase: 0,
     moveCount: 0,
     canUndo: false,
+    runStarts: [],
+    legalTargets: {},
     message: '',
     ...overrides,
   };

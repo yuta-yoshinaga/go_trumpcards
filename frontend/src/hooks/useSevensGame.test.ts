@@ -21,6 +21,8 @@ function createWrapper() {
 }
 
 const baseState: SevensResponse = {
+  validPlays: [],
+  jokerPlacements: [],
   players: [
     {
       id: 0,

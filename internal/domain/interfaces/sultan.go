@@ -19,6 +19,10 @@ type SultanGame interface {
 	MoveDivanToFoundation(divanIdx int) error
 	// MoveWasteToFoundation ウェイストからファンデーションにカードを移動する
 	MoveWasteToFoundation() error
+	// DivanLegalFoundations returns foundations accepting the indexed divan card.
+	DivanLegalFoundations(divanIdx int) []int
+	// WasteLegalFoundations returns foundations accepting the waste top card.
+	WasteLegalFoundations() []int
 	// GetHint ヒントを取得する
 	GetHint() *domain.SultanHint
 	// GetPhase 現在のフェーズを取得する

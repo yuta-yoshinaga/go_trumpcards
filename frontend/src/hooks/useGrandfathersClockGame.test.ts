@@ -27,6 +27,7 @@ const baseState: GrandfathersClockResponse = {
   canUndo: false,
   canRedo: false,
   isStalemate: false,
+  legalTargets: {},
   message: '',
 };
 

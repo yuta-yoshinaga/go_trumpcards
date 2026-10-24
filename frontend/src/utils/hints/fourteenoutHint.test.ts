@@ -10,11 +10,21 @@ function makeState(cols: number[][], overrides: Partial<FourteenOutResponse> = {
   const columns: FourteenOutBoardCell[][] = Array.from({ length: 12 }, (_, i) =>
     (cols[i] ?? []).map((v) => ({ card: card('SPADE', v) })),
   );
+  const legalTargets: FourteenOutResponse['legalTargets'] = {};
+  for (let c1 = 0; c1 < columns.length; c1++) {
+    const partners = columns.flatMap((col, c2) => {
+      const first = columns[c1].at(-1)?.card?.value;
+      const second = col.at(-1)?.card?.value;
+      return c2 > c1 && first !== undefined && second !== undefined && first + second === 14 ? [c2] : [];
+    });
+    if (partners.length) legalTargets[`tableau-${c1}`] = { tableau: partners, foundation: [] };
+  }
   return {
     columns,
     phase: FourteenOutPhase.PLAYING,
     removedCount: 0,
     removablePairs: 0,
+    legalTargets,
     canUndo: false,
     isStalemate: false,
     message: '',

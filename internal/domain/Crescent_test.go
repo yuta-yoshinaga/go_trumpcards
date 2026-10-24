@@ -224,6 +224,31 @@ func TestCrescent_MoveTableauToTableau(t *testing.T) {
 	})
 }
 
+func TestCrescent_LegalTargets(t *testing.T) {
+	cr := setupPlayingCrescent()
+	clearCrescentTableau(cr)
+	clearCrescentFoundation(cr)
+	var tableau [domain.CrescentTableauCnt][]*domain.CrescentTableauCard
+	tableau[0] = []*domain.CrescentTableauCard{makeCrescentTableauCard(domain.CardDesignSpade, 1)}
+	tableau[1] = []*domain.CrescentTableauCard{makeCrescentTableauCard(domain.CardDesignSpade, 13)}
+	tableau[2] = []*domain.CrescentTableauCard{makeCrescentTableauCard(domain.CardDesignHeart, 2)}
+	cr.SetTableau(tableau)
+	var foundation [domain.CrescentFoundationCnt][]*domain.Card
+	cr.SetFoundation(foundation)
+	tableauTargets, foundationTargets := cr.LegalTargets(0)
+	assert.Equal(t, []int{1}, tableauTargets)
+	assert.Equal(t, []int{0}, foundationTargets)
+	_, kingFoundationTargets := cr.LegalTargets(1)
+	assert.Equal(t, []int{4}, kingFoundationTargets)
+	noTableau, _ := cr.LegalTargets(2)
+	assert.Empty(t, noTableau)
+	assert.Empty(t, func() []int { a, _ := cr.LegalTargets(-1); return a }())
+	assert.Empty(t, func() []int { a, _ := cr.LegalTargets(domain.CrescentTableauCnt); return a }())
+	assert.Empty(t, func() []int { a, _ := cr.LegalTargets(3); return a }())
+	cr.GiveUp()
+	assert.Empty(t, func() []int { a, _ := cr.LegalTargets(0); return a }())
+}
+
 func TestCrescent_MoveTableauToFoundation(t *testing.T) {
 	t.Run("ascending next value", func(t *testing.T) {
 		cr := setupPlayingCrescent()

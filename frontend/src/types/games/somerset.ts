@@ -21,6 +21,8 @@ export interface SomersetHint {
 export interface SomersetResponse extends BaseGameResponse {
   tableau: SomersetTableauCard[][];
   foundation: Card[][];
+  /** Legal destinations for each source column, keyed as `"tableau-0"`. The server derives these from the game's placement rules. */
+  legalTargets: Record<string, { tableau: number[]; foundation: number[] }>;
   totalCardCount: number;
   phase: number;
   moveCount: number;

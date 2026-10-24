@@ -36,11 +36,19 @@ type PerseveranceWebOutputHint struct {
 	ToCol     int    `json:"toCol"`
 }
 
+// PerseveranceWebOutputTargets lists legal destination indices for a source.
+type PerseveranceWebOutputTargets struct {
+	Tableau    []int `json:"tableau"`
+	Foundation []int `json:"foundation"`
+}
+
 // PerseveranceWebOutput パーシビアランスWebアウトプット
 type PerseveranceWebOutput struct {
-	Tableau    [][]*PerseveranceWebOutputTableauCard `json:"tableau"`
-	Foundation [][]*WebOutputCard                    `json:"foundation"`
-	Hint       *PerseveranceWebOutputHint            `json:"hint,omitempty"`
+	Tableau      [][]*PerseveranceWebOutputTableauCard   `json:"tableau"`
+	RunStarts    [][]int                                 `json:"runStarts"`
+	Foundation   [][]*WebOutputCard                      `json:"foundation"`
+	Hint         *PerseveranceWebOutputHint              `json:"hint,omitempty"`
+	LegalTargets map[string]PerseveranceWebOutputTargets `json:"legalTargets"`
 	// RedealsLeft 残りの再配り回数 (0-2)。0 になると再配りボタンは押せない。
 	RedealsLeft int `json:"redealsLeft"`
 	SolitaireWebOutputBase
@@ -59,7 +67,9 @@ var NewPerseveranceWebController, NewPerseveranceWebControllerWithProvider = web
 func newPerseveranceDefaultOutput(msg string) *PerseveranceWebOutput {
 	return &PerseveranceWebOutput{
 		Tableau:       make([][]*PerseveranceWebOutputTableauCard, 0),
+		RunStarts:     make([][]int, 0),
 		Foundation:    make([][]*WebOutputCard, 0),
+		LegalTargets:  make(map[string]PerseveranceWebOutputTargets),
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }

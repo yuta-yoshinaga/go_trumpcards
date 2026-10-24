@@ -23,7 +23,9 @@ func sakuraCuiCardStr(c *domain.Card) string {
 	if c == nil {
 		return "??"
 	}
-	label := domain.KoiKoiCardLabel(c) + "(" + strconv.Itoa(domain.SakuraCardPoints(c)) + ")"
+	category := koiKoiCategoryCode(domain.KoiKoiCardCategory(c))
+	category = hanafudaCategoryName(category)
+	label := i18n.Tf("hanafudaCardLabel", "month", hanafudaMonthName(c.GetDesign()), "category", category) + "(" + strconv.Itoa(domain.SakuraCardPoints(c)) + ")"
 	switch domain.KoiKoiCardCategory(c) {
 	case domain.KoiKoiBright:
 		return color.Yellow(label)
@@ -168,5 +170,5 @@ var sakuraHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *SakuraCuiPresenter) ActionLogOutput(g interfaces.SakuraGame) string {
-	return actionLogOutputTextForSeats[*domain.SakuraPlayer](g)
+	return actionLogOutputTextLabeled(g, func(idx int) string { return cuiPlayerName(g.GetPlayer(idx), idx) }, sakuraCuiCardStr)
 }

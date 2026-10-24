@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 wt=${1:?usage: identgone.sh <worktree>}
+source "${BASH_SOURCE[0]%/*}/allowlist.sh"
+validate_allowlist ALLOW_IDENT_GONE "${ALLOW_IDENT_GONE:-}" '^[A-Za-z_$][A-Za-z0-9_$]*$' || true
 if ! command -v python3 >/dev/null 2>&1; then
   echo 'NOTE IDENT_GONE python3 unavailable'
   exit 0
@@ -113,7 +115,10 @@ for path in paths:
         ) and old_names[name] == new_names[candidate]]
         if candidates:
             best=min(candidates, key=lambda candidate:(edit_distance(name,candidate),candidate))
-            print(f'WARN IDENT_GONE {path} {name} -> {best}')
+            if old_names[name] > 0 and new_names[name] > 0:
+                print(f'NOTE IDENT_GONE {path} {name}')
+            else:
+                print(f'WARN IDENT_GONE {path} {name} -> {best}')
         else:
             print(f'NOTE IDENT_GONE {path} {name}')
 PY

@@ -25,6 +25,8 @@ export interface MissMilliganHint {
 
 /** Full Miss Milligan game state returned from the API. */
 export interface MissMilliganResponse extends BaseGameResponse {
+  runStarts: number[][];
+  legalTargets: Record<string, { tableau: number[]; foundation: number[] }>;
   tableau: MissMilliganTableauCard[][];
   stockCount: number;
   /** Eight foundations, two per suit, opened by Aces. */

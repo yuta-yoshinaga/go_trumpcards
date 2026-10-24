@@ -71,4 +71,6 @@ type BatakGame interface {
 	GetHint() *domain.BatakHint
 	// GetValidPlayIndices プレイ可能なカードのインデックスを返す
 	GetValidPlayIndices(playerIdx int) []int
+	// GetPlayRejectCodes returns a rejection message code per hand card, in hand order; playable cards have an empty code.
+	GetPlayRejectCodes(playerIdx int) []string
 }

@@ -6,6 +6,7 @@ import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { HintTooltip } from '../components/hint/HintTooltip';
@@ -85,7 +86,7 @@ function PolignacPageContent() {
     exec: dispatch,
     retry,
   } = useGameApi<PolignacResponse, Parameters<typeof polignacApi.exec>>(polignacApi.exec);
-  const { cardWidth } = useCardDimensions();
+  const { cardWidth, isMobile } = useCardDimensions();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('polignac', state);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('polignac');
@@ -294,15 +295,87 @@ function PolignacPageContent() {
               </div>
             )}
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
+            {isMobile && (
+              <GameMessageBox
+                message={state.message}
+                messageCode={state.messageCode}
+                messageParams={state.messageParams}
+              />
+            )}
             <ErrorAlert message={error} onRetry={retry} />
 
+            {hintEnabled && hint && (
+              <div className="mt-3 flex justify-center">
+                <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />
+              </div>
+            )}
+
+            <SettingsPanel
+              title={tc('settings.title')}
+              groups={[{ items: [hintCheckboxItem(tc, hintEnabled, setHintEnabled)] }]}
+            />
+          </div>
+
+          <GameFooter
+            tall
+            message={
+              isMobile ? undefined : (
+                <GameMessageBox
+                  message={state.message}
+                  messageCode={state.messageCode}
+                  messageParams={state.messageParams}
+                />
+              )
+            }
+            className={`${gameTheme.polignac.footer} px-4 py-2.5`}
+            actions={
+              <div className="flex flex-wrap gap-2">
+                {/* 宣言は配り直後の一度きり。ここを逃すと capot は打てない。 */}
+                {isDeclare && !isGameEnd && (
+                  <>
+                    <button
+                      type="button"
+                      className={btnWarning}
+                      onClick={handleCapot}
+                      disabled={loading}
+                      data-testid="pg-capot-btn"
+                    >
+                      {t('actions.declareCapot', { stake: CAPOT_STAKE })}
+                    </button>
+                    <button
+                      type="button"
+                      className={btnSuccess}
+                      onClick={handlePass}
+                      disabled={loading}
+                      data-testid="pg-pass-btn"
+                    >
+                      {t('actions.pass')}
+                    </button>
+                  </>
+                )}
+                {isRoundEnd && !isGameEnd && (
+                  <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+                    {t('actions.nextRound')}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={() => requestConfirm(handleReset)}
+                  disabled={loading}
+                >
+                  {t('actions.reset')}
+                </button>
+                {!isGameEnd && (
+                  <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
+                    {t('actions.giveUp')}
+                  </button>
+                )}
+              </div>
+            }
+          >
             {human && human.cards.length > 0 && (
-              <div className="mt-4" data-tutorial="polignac-hand">
+              <div data-tutorial="polignac-hand">
                 <div className="text-ds-text-muted text-sm mb-1">
                   {t('header.you')}: {human.cardCount}
                 </div>
@@ -324,62 +397,7 @@ function PolignacPageContent() {
                 </div>
               </div>
             )}
-
-            {hintEnabled && hint && (
-              <div className="mt-3 flex justify-center">
-                <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />
-              </div>
-            )}
-
-            <div className="mt-4 flex flex-wrap gap-2">
-              {/* 宣言は配り直後の一度きり。ここを逃すと capot は打てない。 */}
-              {isDeclare && !isGameEnd && (
-                <>
-                  <button
-                    type="button"
-                    className={btnWarning}
-                    onClick={handleCapot}
-                    disabled={loading}
-                    data-testid="pg-capot-btn"
-                  >
-                    {t('actions.declareCapot', { stake: CAPOT_STAKE })}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnSuccess}
-                    onClick={handlePass}
-                    disabled={loading}
-                    data-testid="pg-pass-btn"
-                  >
-                    {t('actions.pass')}
-                  </button>
-                </>
-              )}
-              {isRoundEnd && !isGameEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('actions.nextRound')}
-                </button>
-              )}
-              <button
-                type="button"
-                className={btnPrimary}
-                onClick={() => requestConfirm(handleReset)}
-                disabled={loading}
-              >
-                {t('actions.reset')}
-              </button>
-              {!isGameEnd && (
-                <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
-                  {t('actions.giveUp')}
-                </button>
-              )}
-            </div>
-
-            <SettingsPanel
-              title={tc('settings.title')}
-              groups={[{ items: [hintCheckboxItem(tc, hintEnabled, setHintEnabled)] }]}
-            />
-          </div>
+          </GameFooter>
 
           <ActionLogSection
             isEndPhase={isGameEnd}

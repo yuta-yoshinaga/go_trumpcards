@@ -35,7 +35,6 @@ import { EUCHRE_HELP, parseEuchreCommand } from '../utils/cli/commands/euchreCom
 import { formatEuchreState } from '../utils/cli/formatters/euchreFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { bowerRole } from '../utils/euchreBower';
-import { euchreLegalPlayIndices } from '../utils/euchreLegalPlay';
 import { euchreSittingOutIdx } from '../utils/euchreSittingOut';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -207,15 +206,8 @@ function EuchrePageContent() {
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
   const isHumanBidTurn = (isPickUpPhase || isCallTrumpPhase) && state.players[state.bidPlayerIdx]?.isHuman === true;
 
-  // On the human's play turn, mirror the server's follow-suit rule
-  // (internal/domain/Euchre.go validatePlay) so legal cards get an additive
-  // success ring. Highlight only — clicks are never blocked; the backend still
-  // validates the actual play. The effective-suit check counts the left bower
-  // as trump, matching the domain so the ring is intuitive.
-  const legalPlayIndices =
-    isHumanTurn && humanPlayer
-      ? euchreLegalPlayIndices(humanPlayer.cards, state.currentTrick[0]?.card, state.trumpSuit)
-      : undefined;
+  // The server computes legality from internal/domain/Euchre.go validatePlay (ADR-0045).
+  const legalPlayIndices = isHumanTurn ? state.validPlays : undefined;
   const isHumanDiscard = isDiscardPhase && state.players[state.dealerIdx]?.isHuman === true;
 
   const suitName = (suit: number) => (SUIT_NAMES[suit] ? t(SUIT_NAMES[suit]) : '');

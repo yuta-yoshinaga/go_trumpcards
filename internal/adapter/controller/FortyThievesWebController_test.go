@@ -18,6 +18,7 @@ func mustFortyThievesOutputJSON(msg string) string {
 		Tableau:       [][]*controller.FortyThievesWebOutputTableauCard{},
 		Waste:         []*controller.WebOutputCard{},
 		Foundation:    [][]*controller.WebOutputCard{},
+		LegalTargets:  map[string]controller.FortyThievesWebOutputTargets{},
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)

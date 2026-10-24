@@ -4,6 +4,7 @@ import { formatDuchessState } from './duchessFormatter';
 
 function makeState(overrides?: Partial<DuchessResponse>): DuchessResponse {
   return {
+    legalTargets: {},
     reserve: Array.from({ length: 4 }, () => []),
     tableau: Array.from({ length: 4 }, () => []),
     foundation: Array.from({ length: 4 }, () => []),

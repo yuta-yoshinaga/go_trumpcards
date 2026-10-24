@@ -32,13 +32,20 @@ type CongressWebOutputHint struct {
 
 // CongressWebOutput コングレス Web アウトプット
 type CongressWebOutput struct {
-	Tableau    [][]*WebOutputCard     `json:"tableau"`
-	Foundation [][]*WebOutputCard     `json:"foundation"`
-	StockCount int                    `json:"stockCount"`
-	Waste      []*WebOutputCard       `json:"waste"`
-	Hint       *CongressWebOutputHint `json:"hint,omitempty"`
+	LegalTargets map[string]CongressWebOutputTargets `json:"legalTargets"`
+	Tableau      [][]*WebOutputCard                  `json:"tableau"`
+	Foundation   [][]*WebOutputCard                  `json:"foundation"`
+	StockCount   int                                 `json:"stockCount"`
+	Waste        []*WebOutputCard                    `json:"waste"`
+	Hint         *CongressWebOutputHint              `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase
+}
+
+// CongressWebOutputTargets lists tableau and foundation destinations.
+type CongressWebOutputTargets struct {
+	Tableau    []int `json:"tableau"`
+	Foundation []int `json:"foundation"`
 }
 
 // CongressWebController コングレス Web コントローラークラス
@@ -55,6 +62,7 @@ func newCongressDefaultOutput(msg string) *CongressWebOutput {
 		Tableau:       make([][]*WebOutputCard, 0),
 		Foundation:    make([][]*WebOutputCard, 0),
 		Waste:         make([]*WebOutputCard, 0),
+		LegalTargets:  map[string]CongressWebOutputTargets{},
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }

@@ -33,6 +33,8 @@ type AccordionGame interface {
 	GetMoveCount() int
 	// GetPiles パイル一覧を取得する
 	GetPiles() [][]*domain.Card
+	// LegalTargets returns legal destination indices in offset order: one pile back, then three piles back.
+	LegalTargets(fromIdx int) []int
 	// GetPileCount 残りパイル数を取得する
 	GetPileCount() int
 	// IsStalemate 手詰まり状態を取得する

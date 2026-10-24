@@ -285,6 +285,61 @@ func (c *Congress) MoveStockToTableau(pile int) error {
 	return nil
 }
 
+// LegalTargets returns tableau and foundation destinations for the top card in a tableau pile.
+func (c *Congress) LegalTargets(fromPile int) (tableau, foundation []int) {
+	if fromPile < 0 || fromPile >= CongressTableauCnt {
+		return nil, nil
+	}
+	card := c.tableauTop(fromPile)
+	if card == nil {
+		return nil, nil
+	}
+	for pile := range CongressTableauCnt {
+		if pile != fromPile && len(c.tableau[pile]) > 0 && c.canPlaceOnTableau(card, pile) {
+			tableau = append(tableau, pile)
+		}
+	}
+	for pile := range CongressFoundationCnt {
+		if c.canPlaceOnFoundation(card, pile) {
+			foundation = append(foundation, pile)
+		}
+	}
+	return tableau, foundation
+}
+
+// WasteLegalTargets returns destinations for the top waste card.
+func (c *Congress) WasteLegalTargets() (tableau, foundation []int) {
+	card := c.wasteTop()
+	if card == nil {
+		return nil, nil
+	}
+	for pile := range CongressTableauCnt {
+		if c.canPlaceOnTableau(card, pile) {
+			tableau = append(tableau, pile)
+		}
+	}
+	for pile := range CongressFoundationCnt {
+		if c.canPlaceOnFoundation(card, pile) {
+			foundation = append(foundation, pile)
+		}
+	}
+	return tableau, foundation
+}
+
+// StockLegalTargets returns empty tableau piles when the stock has a card to move.
+func (c *Congress) StockLegalTargets() []int {
+	if len(c.stock) == 0 {
+		return nil
+	}
+	var tableau []int
+	for pile := range CongressTableauCnt {
+		if len(c.tableau[pile]) == 0 {
+			tableau = append(tableau, pile)
+		}
+	}
+	return tableau
+}
+
 // GiveUp ギブアップ
 func (c *Congress) GiveUp() {
 	if c.phase == CongressPhasePlaying {

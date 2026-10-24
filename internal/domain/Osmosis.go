@@ -420,6 +420,34 @@ func (o *Osmosis) CanPlaceOnFoundation(card *Card, fIdx int) bool {
 	return o.rankInPile(o.foundation[fIdx-1], r)
 }
 
+// LegalTargets returns the foundation rows that accept the top card of the source zone.
+// Supported source keys are "waste" (col is ignored) and "reserve" (col selects the reserve).
+func (o *Osmosis) LegalTargets(zone string, col int) []int {
+	var card *Card
+	switch zone {
+	case "waste":
+		if len(o.waste) > 0 {
+			card = o.waste[len(o.waste)-1]
+		}
+	case "reserve":
+		if col >= 0 && col < len(o.reserve) && len(o.reserve[col]) > 0 {
+			card = o.reserve[col][len(o.reserve[col])-1]
+		}
+	default:
+		return []int{}
+	}
+	if card == nil {
+		return []int{}
+	}
+	result := make([]int, 0, OsmosisFoundationCnt)
+	for i := 0; i < OsmosisFoundationCnt; i++ {
+		if o.CanPlaceOnFoundation(card, i) {
+			result = append(result, i)
+		}
+	}
+	return result
+}
+
 // findFoundationFor はカードを置けるファンデーション段を返す（無ければ -1）。
 func (o *Osmosis) findFoundationFor(card *Card) int {
 	for fIdx := 0; fIdx < OsmosisFoundationCnt; fIdx++ {

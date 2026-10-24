@@ -107,6 +107,8 @@ type KoenigrufenGame interface {
 	GetPlayerCnt() int
 	// GetPlayer 指定インデックスのプレイヤーを取得する
 	GetPlayer(i int) *domain.KoenigrufenPlayer
+	// DiscardableIndices 場札交換で捨てられるカードのインデックスを取得する
+	DiscardableIndices(playerIdx int) []int
 	// GetPlayableIndices プレイ可能なカードのインデックスを取得する
 	GetPlayableIndices(playerIdx int) []int
 	// GetHint ヒントを取得する

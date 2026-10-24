@@ -117,7 +117,7 @@ describe('LobaPage', () => {
     expect(ruleText).toBeInTheDocument();
     expect(ruleText?.parentElement?.tagName).not.toBe('SUMMARY');
     expect(ruleText).not.toBeVisible();
-    fireEvent.click(ruleDetails.querySelector('summary')!);
+    fireEvent.click(ruleDetails.querySelector('summary') as HTMLElement);
     expect(ruleDetails).toHaveAttribute('open');
     expect(ruleText).toBeVisible();
     const cpuDetails = screen.getByTestId('cpu-accordion');
@@ -171,7 +171,7 @@ describe('LobaPage', () => {
   it('shows both rules permanently and the knock-out threshold', async () => {
     renderWithProviders(<LobaPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
-    fireEvent.click(screen.getByTestId('lb-rule-details').querySelector('summary')!);
+    fireEvent.click(screen.getByTestId('lb-rule-details').querySelector('summary') as HTMLElement);
     expect(screen.getByText(/異なる3スート/)).toBeInTheDocument();
     expect(screen.getByText(/ジョーカーは1枚まで、ピエルナ不可/)).toBeInTheDocument();
     expect(screen.getByText(/101点で脱落/)).toBeInTheDocument();

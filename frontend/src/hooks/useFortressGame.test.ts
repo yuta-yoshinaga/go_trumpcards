@@ -22,6 +22,7 @@ const mockExec = vi.mocked(fortressApi.exec);
 const baseState: FortressResponse = {
   tableau: Array.from({ length: 8 }, () => []),
   foundation: [[], [], [], []],
+  legalTargets: {},
   phase: 0,
   moveCount: 0,
   canUndo: false,

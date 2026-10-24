@@ -61,6 +61,7 @@ function makeState(overrides: Partial<BeloteResponse> = {}): BeloteResponse {
     roundNumber: 1,
     trickNumber: 0,
     currentPlayerIdx: 0,
+    validPlays: [],
     bidPlayerIdx: 0,
     dealerIdx: 3,
     trumpSuit: 0,
@@ -101,6 +102,13 @@ beforeEach(() => {
 });
 
 describe('BelotePage', () => {
+  it('keeps the trump label on one line', async () => {
+    mockExec.mockResolvedValue(makeState({ trumpSuit: 4 }));
+    renderWithProviders(<BelotePage />);
+
+    expect(await screen.findByText('切り札: ♦ ダイヤ')).toHaveClass('whitespace-nowrap');
+  });
+
   it('renders the game message in the footer message slot', async () => {
     mockExec.mockResolvedValue(makeState({ message: 'Footer message location' }));
     renderWithProviders(<BelotePage />);
@@ -525,45 +533,59 @@ describe('BelotePage', () => {
     await waitFor(() => expect(screen.getByText(/を宣言/)).toBeInTheDocument());
   });
 
-  it('rings only the legal follow-suit card during the human play turn', async () => {
-    // Trump ♠(1). Opponent leads ♥; the human holds ♥10 so must follow ♥.
-    // Only ♥10 is legal; ♠J and ♣9 are illegal.
+  it('rings exactly server indices even when they disagree with client rules', async () => {
     mockExec.mockResolvedValue(
       makeState({
         phase: BelotePhase.PLAY,
         trumpSuit: 1,
         currentPlayerIdx: 0,
+        validPlays: [0],
         makerTeam: 0,
         currentTrick: [{ playerIdx: 1, card: card('HEART', 13) }],
       }),
     );
     renderWithProviders(<BelotePage />);
-    const legalCard = await screen.findByRole('button', { name: '♥ 10' });
-    const illegalCard = screen.getByRole('button', { name: '♠ J' });
-    expect(legalCard).toHaveAttribute('data-legal', 'true');
-    expect(illegalCard).not.toHaveAttribute('data-legal');
+    const serverLegalCard = await screen.findByRole('button', { name: '♠ J' });
+    const followSuitCard = screen.getByRole('button', { name: '♥ 10' });
+    expect(serverLegalCard).toHaveAttribute('data-legal', 'true');
+    expect(followSuitCard).not.toHaveAttribute('data-legal');
   });
 
-  it('keeps an illegal card clickable so the backend still validates the play', async () => {
-    // Same setup: ♠J is illegal (must follow ♥) but must remain selectable —
-    // the highlight is additive only and never blocks clicks (see hearts #3977).
+  it('rings exactly the server-specified index set', async () => {
     mockExec.mockResolvedValue(
       makeState({
         phase: BelotePhase.PLAY,
         trumpSuit: 1,
         currentPlayerIdx: 0,
+        validPlays: [1],
         makerTeam: 0,
         currentTrick: [{ playerIdx: 1, card: card('HEART', 13) }],
       }),
     );
     renderWithProviders(<BelotePage />);
-    const illegalCard = await screen.findByRole('button', { name: '♠ J' });
-    expect(illegalCard).not.toHaveAttribute('aria-disabled');
-    // The Play button is disabled until a card is selected.
+    const serverLegalCard = await screen.findByRole('button', { name: '♥ 10' });
+    expect(serverLegalCard).toHaveAttribute('data-legal', 'true');
+    expect(screen.getByRole('button', { name: '♠ J' })).not.toHaveAttribute('data-legal');
+  });
+
+  it('keeps a card outside validPlays clickable so the backend still validates the play', async () => {
+    // The ring is additive only and never blocks clicks (see hearts #3977).
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: BelotePhase.PLAY,
+        trumpSuit: 1,
+        currentPlayerIdx: 0,
+        validPlays: [1],
+        makerTeam: 0,
+        currentTrick: [{ playerIdx: 1, card: card('HEART', 13) }],
+      }),
+    );
+    renderWithProviders(<BelotePage />);
+    const unringedCard = await screen.findByRole('button', { name: '♠ J' });
+    expect(unringedCard).not.toHaveAttribute('aria-disabled');
     expect(screen.getByRole('button', { name: '出す' })).toBeDisabled();
-    fireEvent.click(illegalCard);
-    // Clicking the illegal card selects it and enables Play — no client-side block.
-    expect(illegalCard).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(unringedCard);
+    expect(unringedCard).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByRole('button', { name: '出す' })).not.toBeDisabled();
   });
 
@@ -573,6 +595,7 @@ describe('BelotePage', () => {
         phase: BelotePhase.PLAY,
         trumpSuit: 1,
         currentPlayerIdx: 1,
+        validPlays: [0, 1],
         makerTeam: 0,
         currentTrick: [{ playerIdx: 1, card: card('HEART', 13) }],
       }),

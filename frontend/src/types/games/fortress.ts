@@ -21,6 +21,8 @@ export interface FortressHint {
 export interface FortressResponse extends BaseGameResponse {
   tableau: FortressTableauCard[][];
   foundation: Card[][];
+  /** Legal destinations for each source column, keyed as `"tableau-0"`; computed by the server. */
+  legalTargets: Record<string, { tableau: number[]; foundation: number[] }>;
   phase: number;
   moveCount: number;
   canUndo: boolean;

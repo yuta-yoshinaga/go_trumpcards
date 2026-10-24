@@ -29,6 +29,7 @@
   "rank.6": "Three of a Kind",
   "rank.7": "Straight Flush",
   "rank.8": "Four of a Kind",
+  "fourAces": "Four Aces",
   "result.none": "undecided",
   "result.fold": "You folded",
   "result.win": "You win",

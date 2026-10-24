@@ -37,7 +37,6 @@ import { FREECELL_HELP, parseFreecellCommand } from '../utils/cli/commands/freec
 import { formatFreecellState } from '../utils/cli/formatters/freecellFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { freeCellAutoCompleteReady } from '../utils/freeCellAutoComplete';
-import { freeCellFoundationTarget } from '../utils/freeCellFoundationTarget';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
@@ -139,7 +138,7 @@ function FreeCellPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('freecell', state);
-  const { cardHeight, cardOverlap, cardWidth } = useCardDimensions();
+  const { cardHeight, cardOverlap, cardWidth, isMobile } = useCardDimensions();
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [timerVersion, setTimerVersion] = useState(0);
   // CLI mode
@@ -174,15 +173,14 @@ function FreeCellPageContent() {
     [exec],
   );
 
-  // Double-click / double-tap shortcut: auto-send an exposed card (a tableau
-  // top card or a free-cell card) to its foundation when a legal target
-  // exists; otherwise do nothing (no error, selection untouched).
+  // Double-click / double-tap follows the server's legal target map.
   const handleFoundationShortcut = useCallback(
-    (source: FreeCellMoveZone, card: Card) => {
+    (source: FreeCellMoveZone) => {
       if (!state) return;
-      const target = freeCellFoundationTarget(card, state.foundation);
-      if (!target) return;
-      handleAutoFoundation(source, target);
+      const key = source.zone === 'tableau' ? `tableau-${source.col}-${source.cardIndex}` : `freecell-${source.cell}`;
+      const target = state.legalTargets[key]?.foundation[0];
+      if (target === undefined) return;
+      handleAutoFoundation(source, { zone: 'foundation', col: target });
     },
     [state, handleAutoFoundation],
   );
@@ -281,6 +279,17 @@ function FreeCellPageContent() {
     selectedSource.cell === cell &&
     selectedSource.cardIndex === cardIndex;
 
+  const settingsPanel = (
+    <SettingsPanel
+      title={tc('settings.title')}
+      groups={[
+        {
+          items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)],
+        },
+      ]}
+    />
+  );
+
   return (
     <GamePageShell
       title={tc('nav.freecell')}
@@ -298,12 +307,25 @@ function FreeCellPageContent() {
       cancelGiveUp={cancelGiveUp}
       headerExtra={
         <>
-          <span>
-            {t('moveCount')}: {state.moveCount}
-          </span>
-          <span data-testid="freecell-timer">
-            {t('timer')}: {formatElapsedTime(elapsedSeconds)}
-          </span>
+          {isMobile ? (
+            <details className="text-sm text-ds-text-muted" data-testid="freecell-progress">
+              <summary className="cursor-pointer">
+                {t('moveCount')}: {state.moveCount}
+              </summary>
+              <span data-testid="freecell-timer">
+                {t('timer')}: {formatElapsedTime(elapsedSeconds)}
+              </span>
+            </details>
+          ) : (
+            <>
+              <span data-testid="freecell-progress">
+                {t('moveCount')}: {state.moveCount}
+              </span>
+              <span data-testid="freecell-timer">
+                {t('timer')}: {formatElapsedTime(elapsedSeconds)}
+              </span>
+            </>
+          )}
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
       }
@@ -351,7 +373,7 @@ function FreeCellPageContent() {
                               if (e.detail >= 2) return;
                               handleSelectSource(freeCellZone);
                             }}
-                            onDoubleClick={() => handleFoundationShortcut(freeCellZone, card)}
+                            onDoubleClick={() => handleFoundationShortcut(freeCellZone)}
                             disabled={!isPlaying || loading}
                             aria-label={cardAlt(card)}
                             aria-pressed={isSourceSelected('freecell', undefined, idx)}
@@ -531,7 +553,7 @@ function FreeCellPageContent() {
                                         // Only the exposed top card of a column can
                                         // move to a foundation.
                                         cardIdx === col.length - 1
-                                          ? () => handleFoundationShortcut(cardZone, card)
+                                          ? () => handleFoundationShortcut(cardZone)
                                           : undefined
                                       }
                                       disabled={!isPlaying || loading}
@@ -632,17 +654,10 @@ function FreeCellPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+            {isMobile && settingsPanel}
           </div>
 
-          {/* Settings */}
-          <SettingsPanel
-            title={tc('settings.title')}
-            groups={[
-              {
-                items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)],
-              },
-            ]}
-          />
+          {!isMobile && settingsPanel}
 
           <GameFooter className={`${gameTheme.freecell.footer} px-4 py-2.5`}>
             <ErrorAlert message={error ?? hintError} onRetry={retry} />

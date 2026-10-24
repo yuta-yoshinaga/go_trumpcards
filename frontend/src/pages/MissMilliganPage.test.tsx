@@ -25,6 +25,8 @@ function makeTableau(cols: MissMilliganTableauCard[][]): MissMilliganTableauCard
 }
 
 const playingState: MissMilliganResponse = {
+  runStarts: [[0], [0], [], [], [], [], [], []],
+  legalTargets: { 'tableau-0-1': { tableau: [1], foundation: [] }, 'tableau-1-0': { tableau: [], foundation: [] } },
   tableau: makeTableau([
     [
       { card: card('SPADE', 9), faceUp: true },
@@ -167,7 +169,7 @@ describe('MissMilliganPage', () => {
     expect(target).toHaveAttribute('aria-disabled', 'true');
     const descriptionId = target.getAttribute('aria-describedby');
     expect(descriptionId).toBeTruthy();
-    expect(document.getElementById(descriptionId!)).toHaveTextContent('先に移動する札を選んでください');
+    expect(document.getElementById(descriptionId as string)).toHaveTextContent('先に移動する札を選んでください');
 
     fireEvent.click(target);
     await flushPendingDispatch();
@@ -187,6 +189,8 @@ describe('MissMilliganPage', () => {
   it('marks tableau destinations after selecting a card', async () => {
     const state = {
       ...playingState,
+      runStarts: [[0], [0], [], [], [], [], [], []],
+      legalTargets: { 'tableau-0-0': { tableau: [1], foundation: [] } },
       tableau: makeTableau([[{ card: card('SPADE', 9), faceUp: true }], [{ card: card('HEART', 10), faceUp: true }]]),
     };
     mockExec.mockResolvedValue(state);
@@ -199,6 +203,11 @@ describe('MissMilliganPage', () => {
   it('does not mark foundations when a buried card is selected', async () => {
     const state = {
       ...playingState,
+      runStarts: [[0, 1], [0], [], [], [], [], [], []],
+      legalTargets: {
+        'tableau-0-0': { tableau: [1], foundation: [] },
+        'tableau-0-1': { tableau: [1], foundation: [] },
+      },
       tableau: makeTableau([
         [
           { card: card('SPADE', 9), faceUp: true },
@@ -218,6 +227,8 @@ describe('MissMilliganPage', () => {
   it('marks an invalid selected run as an error and shows no destinations', async () => {
     const state = {
       ...playingState,
+      runStarts: [[], [], [], [], [], [], [], []],
+      legalTargets: { 'tableau-0-0': { tableau: [1], foundation: [0] } },
       tableau: makeTableau([
         [
           { card: card('SPADE', 9), faceUp: true },
@@ -237,6 +248,19 @@ describe('MissMilliganPage', () => {
     expect(screen.getByTestId('mm-foundation-0')).not.toHaveClass('ring-ds-success');
   });
 
+  it('follows server destinations even when they contradict client rules', async () => {
+    const state = {
+      ...playingState,
+      tableau: makeTableau([[{ card: card('SPADE', 9), faceUp: true }], [{ card: card('CLOVER', 3), faceUp: true }]]),
+      runStarts: [[0], [0], [], [], [], [], [], []],
+      legalTargets: { 'tableau-0-0': { tableau: [1], foundation: [] } },
+    };
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<MissMilliganPage />);
+    fireEvent.click(await screen.findByRole('button', { name: /^♠ 9（/ }));
+    await waitFor(() => expect(screen.getByTestId('mm-tableau-col-1')).toHaveClass('ring-ds-success'));
+  });
+
   // The waive control only exists once the stock is gone, and only on columns
   // that actually hold something.
   it('offers waiving per column only when it is available', async () => {
@@ -246,7 +270,12 @@ describe('MissMilliganPage', () => {
     expect(screen.queryByRole('button', { name: /の連番を保持する/ })).not.toBeInTheDocument();
     unmount();
 
-    mockExec.mockResolvedValue({ ...playingState, stockCount: 0, canWaive: true });
+    mockExec.mockResolvedValue({
+      ...playingState,
+      runStarts: [[0, 1], [0], [], [], [], [], [], []],
+      stockCount: 0,
+      canWaive: true,
+    });
     renderWithProviders(<MissMilliganPage />);
     await waitFor(() => expect(screen.getAllByRole('button', { name: /の連番を保持する/ }).length).toBe(2));
 
@@ -476,14 +505,19 @@ describe('MissMilliganPage waiving', () => {
   });
 
   it('waives from selected cardIndex when a middle card in the same column is selected', async () => {
-    mockExec.mockResolvedValue(waivableState);
+    mockExec.mockResolvedValue({ ...waivableState, runStarts: [[0, 1, 2, 3], [0, 1, 2], [], [], [], [], [], []] });
     renderWithProviders(<MissMilliganPage />);
     const middleCard = await screen.findByRole('button', { name: /^♥ 9/ });
     fireEvent.click(middleCard);
     await waitFor(() => expect(middleCard).toHaveAttribute('aria-pressed', 'true'));
 
     mockExec.mockClear();
-    mockExec.mockResolvedValue({ ...waivableState, canWaive: false, waived: [card('HEART', 9)] });
+    mockExec.mockResolvedValue({
+      ...waivableState,
+      runStarts: [[0, 1, 2, 3], [0, 1, 2], [], [], [], [], [], []],
+      canWaive: false,
+      waived: [card('HEART', 9)],
+    });
     fireEvent.click(screen.getByRole('button', { name: 'タブロー列 0 の連番を保持する' }));
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('waive', { zone: 'tableau', col: 0, cardIndex: 1 }));

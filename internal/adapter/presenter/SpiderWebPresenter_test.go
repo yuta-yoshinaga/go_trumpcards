@@ -35,6 +35,13 @@ func setupSpiderWebMockDefaults(sg *interfaces.MockSpiderGame) {
 		}
 	}
 	sg.On("GetTableau").Return(tableau).Maybe()
+	for col := range domain.SpiderTableauCnt {
+		setupSpiderRunStartsMock(sg, col)
+	}
+}
+
+func setupSpiderRunStartsMock(sg *interfaces.MockSpiderGame, col int) {
+	sg.On("RunStarts", col).Return([]int{}).Maybe()
 }
 
 func parseSpiderOutput(t *testing.T, jsonStr string) *controller.SpiderWebOutput {
@@ -117,6 +124,29 @@ func TestSpiderWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "spider.gameOver", result.MessageCode)
 		assert.Contains(t, result.Message, "ゲームオーバー")
 	})
+}
+
+func TestSpiderWebPresenter_RunStarts(t *testing.T) {
+	for _, hintOutput := range []bool{false, true} {
+		g := new(interfaces.MockSpiderGame)
+		setupSpiderOutputMock(g)
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "RunStarts")
+		g.On("RunStarts", 0).Return([]int{1, 2})
+		g.On("RunStarts", 1).Return([]int(nil))
+		for col := 2; col < domain.SpiderTableauCnt; col++ {
+			g.On("RunStarts", col).Return([]int{})
+		}
+		p := new(SpiderWebPresenter)
+		raw := p.Output(g, nil)
+		if hintOutput {
+			raw = p.HintOutput(g) // GetHint defaults to nil, covering the no-hint response path.
+		}
+		got := parseSpiderOutput(t, raw)
+		assert.Equal(t, []int{1, 2}, got.RunStarts[0])
+		assert.NotNil(t, got.RunStarts[1])
+		assert.Empty(t, got.RunStarts[1])
+		assert.Len(t, got.RunStarts, domain.SpiderTableauCnt)
+	}
 }
 
 func TestSpiderWebPresenter_Output_Stalemate(t *testing.T) {
@@ -215,6 +245,9 @@ func TestSpiderWebPresenter_HintOutput(t *testing.T) {
 		sg.On("GetDifficulty").Return(domain.SpiderDifficulty1Suit)
 		sg.On("IsStalemate").Return(false)
 		sg.On("UndoToEscape").Return(0)
+		for col := range domain.SpiderTableauCnt {
+			setupSpiderRunStartsMock(sg, col)
+		}
 
 		p := new(SpiderWebPresenter)
 		result := parseSpiderOutput(t, p.HintOutput(sg))
@@ -223,6 +256,8 @@ func TestSpiderWebPresenter_HintOutput(t *testing.T) {
 		assert.Equal(t, 2, result.Hint.CardIndex)
 		assert.Equal(t, 3, result.Hint.ToCol)
 		assert.Equal(t, "spider.hintAvailable", result.MessageCode)
+		assert.NotNil(t, result.RunStarts)
+		assert.Len(t, result.RunStarts, domain.SpiderTableauCnt)
 	})
 
 	t.Run("no hint", func(t *testing.T) {
@@ -237,11 +272,16 @@ func TestSpiderWebPresenter_HintOutput(t *testing.T) {
 		sg.On("GetDifficulty").Return(domain.SpiderDifficulty1Suit)
 		sg.On("IsStalemate").Return(false)
 		sg.On("UndoToEscape").Return(0)
+		for col := range domain.SpiderTableauCnt {
+			setupSpiderRunStartsMock(sg, col)
+		}
 
 		p := new(SpiderWebPresenter)
 		result := parseSpiderOutput(t, p.HintOutput(sg))
 		assert.Nil(t, result.Hint)
 		assert.Equal(t, "spider.noHint", result.MessageCode)
+		assert.NotNil(t, result.RunStarts)
+		assert.Len(t, result.RunStarts, domain.SpiderTableauCnt)
 	})
 }
 
@@ -257,6 +297,9 @@ func TestSpiderWebPresenter_HintOutput_CanUndo(t *testing.T) {
 	sg.On("GetDifficulty").Return(domain.SpiderDifficulty1Suit)
 	sg.On("IsStalemate").Return(false)
 	sg.On("UndoToEscape").Return(0)
+	for col := range domain.SpiderTableauCnt {
+		setupSpiderRunStartsMock(sg, col)
+	}
 
 	p := new(SpiderWebPresenter)
 	result := parseSpiderOutput(t, p.HintOutput(sg))
@@ -275,6 +318,9 @@ func TestSpiderWebPresenter_HintOutput_Score(t *testing.T) {
 	sg.On("GetDifficulty").Return(domain.SpiderDifficulty1Suit)
 	sg.On("IsStalemate").Return(false)
 	sg.On("UndoToEscape").Return(0)
+	for col := range domain.SpiderTableauCnt {
+		setupSpiderRunStartsMock(sg, col)
+	}
 
 	p := new(SpiderWebPresenter)
 	result := parseSpiderOutput(t, p.HintOutput(sg))
@@ -293,6 +339,9 @@ func TestSpiderWebPresenter_HintOutput_Difficulty(t *testing.T) {
 	sg.On("GetDifficulty").Return(domain.SpiderDifficulty4Suit)
 	sg.On("IsStalemate").Return(false)
 	sg.On("UndoToEscape").Return(0)
+	for col := range domain.SpiderTableauCnt {
+		setupSpiderRunStartsMock(sg, col)
+	}
 
 	p := new(SpiderWebPresenter)
 	result := parseSpiderOutput(t, p.HintOutput(sg))

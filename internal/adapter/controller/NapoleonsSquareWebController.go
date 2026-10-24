@@ -38,13 +38,21 @@ type NapoleonsSquareWebOutputHint struct {
 	ToCol     int    `json:"toCol"`
 }
 
+// NapoleonsSquareWebOutputTargets lists legal destination indices for a move source.
+type NapoleonsSquareWebOutputTargets struct {
+	Tableau    []int `json:"tableau"`
+	Foundation []int `json:"foundation"`
+}
+
 // NapoleonsSquareWebOutput ナポレオンズ・スクエア Web アウトプット
 type NapoleonsSquareWebOutput struct {
-	Tableau    [][]*NapoleonsSquareWebOutputTableauCard `json:"tableau"`
-	StockCount int                                      `json:"stockCount"`
-	Waste      []*WebOutputCard                         `json:"waste"`
-	Foundation [][]*WebOutputCard                       `json:"foundation"`
-	Hint       *NapoleonsSquareWebOutputHint            `json:"hint,omitempty"`
+	Tableau      [][]*NapoleonsSquareWebOutputTableauCard   `json:"tableau"`
+	StockCount   int                                        `json:"stockCount"`
+	Waste        []*WebOutputCard                           `json:"waste"`
+	Foundation   [][]*WebOutputCard                         `json:"foundation"`
+	Hint         *NapoleonsSquareWebOutputHint              `json:"hint,omitempty"`
+	LegalTargets map[string]NapoleonsSquareWebOutputTargets `json:"legalTargets"`
+	RunStarts    [][]int                                    `json:"runStarts"`
 	SolitaireWebOutputBase
 	WebOutputBase
 }
@@ -63,6 +71,8 @@ func newNapoleonsSquareDefaultOutput(msg string) *NapoleonsSquareWebOutput {
 		Tableau:       make([][]*NapoleonsSquareWebOutputTableauCard, 0),
 		Waste:         make([]*WebOutputCard, 0),
 		Foundation:    make([][]*WebOutputCard, 0),
+		LegalTargets:  make(map[string]NapoleonsSquareWebOutputTargets),
+		RunStarts:     make([][]int, 0),
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }

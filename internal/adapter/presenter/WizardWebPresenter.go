@@ -98,6 +98,7 @@ func (p *WizardWebPresenter) buildBase(o interfaces.WizardGame) *controller.Wiza
 
 	resObj.CurrentTrick = trickCardsToOutputWithFace(o.GetCurrentTrick(), wizardFace)
 	resObj.Players = p.buildPlayersOutput(o)
+	resObj.ValidPlays = humanTurnValidPlays[*domain.WizardPlayer](o, o.GetPhase() == domain.WizardPhasePlay)
 	return resObj
 }
 

@@ -449,6 +449,42 @@ func TestCallBreak_GetValidPlayIndices_NotEmpty(t *testing.T) {
 	assert.NotEmpty(t, indices)
 }
 
+func TestCallBreak_GetPlayRejectCodes(t *testing.T) {
+	tests := []struct {
+		name  string
+		setup func(*domain.CallBreak)
+		want  string
+	}{
+		{"spades not broken", func(cb *domain.CallBreak) {
+			cb.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+			cb.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		}, "callbreak.errSpadesNotBroken"},
+		{"follow lead suit", func(cb *domain.CallBreak) {
+			cb.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+			cb.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+			cb.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 3, false)}})
+		}, "shared.errFollowLeadSuit"},
+		{"must trump", func(cb *domain.CallBreak) {
+			cb.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+			cb.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+			cb.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 3, false)}})
+		}, "callbreak.errMustTrump"},
+		{"legal card", func(cb *domain.CallBreak) {
+			cb.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+			cb.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		}, ""},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			cb := newTestCallBreak()
+			tc.setup(cb)
+			codes := cb.GetPlayRejectCodes(0)
+			assert.Len(t, codes, cb.GetPlayer(0).GetCardsSize())
+			assert.Equal(t, tc.want, codes[0])
+		})
+	}
+}
+
 func TestCallBreak_GetActionLog(t *testing.T) {
 	cb := newTestCallBreak()
 	cb.Reset()

@@ -38,6 +38,38 @@ func clearSATableau(sa *domain.StreetsAndAlleys) {
 	sa.SetTableau(empty)
 }
 
+func TestStreetsAndAlleys_LegalTargets(t *testing.T) {
+	sa := setupPlayingStreetsAndAlleys()
+	clearSATableau(sa)
+	var tableau [domain.StreetsAndAlleysTableauCnt][]*domain.StreetsAndAlleysTableauCard
+	tableau[0] = []*domain.StreetsAndAlleysTableauCard{makeSATableauCard(domain.CardDesignHeart, 4)}
+	tableau[1] = []*domain.StreetsAndAlleysTableauCard{makeSATableauCard(domain.CardDesignSpade, 5)}
+	for col := 2; col < domain.StreetsAndAlleysTableauCnt; col++ {
+		tableau[col] = []*domain.StreetsAndAlleysTableauCard{makeSATableauCard(domain.CardDesignClover, 9)}
+	}
+	sa.SetTableau(tableau)
+	tab, found := sa.LegalTargets(0)
+	assert.Equal(t, []int{1}, tab)
+	assert.Empty(t, found)
+	assert.NotContains(t, tab, 0, "own column is excluded by the placement rule")
+
+	// An ace can enter several empty foundations, but findFoundation intentionally selects the first.
+	clearSATableau(sa)
+	tableau[0] = []*domain.StreetsAndAlleysTableauCard{makeSATableauCard(domain.CardDesignHeart, 1)}
+	sa.SetTableau(tableau)
+	var foundations [domain.StreetsAndAlleysFoundationCnt][]*domain.Card
+	sa.SetFoundation(foundations)
+	_, found = sa.LegalTargets(0)
+	assert.Equal(t, []int{0}, found)
+
+	clearSATableau(sa)
+	tableau = [domain.StreetsAndAlleysTableauCnt][]*domain.StreetsAndAlleysTableauCard{}
+	sa.SetTableau(tableau)
+	tab, found = sa.LegalTargets(1)
+	assert.Nil(t, tab)
+	assert.Nil(t, found)
+}
+
 func TestNewStreetsAndAlleys(t *testing.T) {
 	sa := newTestStreetsAndAlleys()
 	assert.NotNil(t, sa)

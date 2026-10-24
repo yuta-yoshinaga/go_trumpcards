@@ -18,6 +18,7 @@ func mustCongressOutputJSON(msg string) string {
 		Tableau:       [][]*controller.WebOutputCard{},
 		Foundation:    [][]*controller.WebOutputCard{},
 		Waste:         []*controller.WebOutputCard{},
+		LegalTargets:  map[string]controller.CongressWebOutputTargets{},
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
@@ -28,7 +29,7 @@ func mustCongressOutputJSON(msg string) string {
 }
 
 func TestCongressWebController_Method(t *testing.T) {
-	mockOutput := `{"tableau":[],"foundation":[],"stockCount":0,"waste":[],"phase":0,"moveCount":0,"message":""}`
+	mockOutput := `{"legalTargets":{},"tableau":[],"foundation":[],"stockCount":0,"waste":[],"phase":0,"moveCount":0,"message":""}`
 
 	ciMock := new(usecase.MockCongressInteractor)
 	ciMock.On("Reset").Return(mockOutput)

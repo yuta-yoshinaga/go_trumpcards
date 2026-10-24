@@ -60,6 +60,8 @@ function makeTableau(cols: MrsMopTableauCard[][]): MrsMopTableauCard[][] {
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 
 const playingState: MrsMopResponse = {
+  runStarts: [[0], [1], ...Array.from({ length: 11 }, () => [])],
+  legalTargets: {},
   tableau: makeTableau([
     [{ card: card('SPADE', 13), faceUp: true }],
     [
@@ -410,6 +412,11 @@ describe('MrsMopPage', () => {
         ],
         [{ card: card('DIAMOND', 13), faceUp: true }],
       ]),
+      runStarts: [[0, 1, 2], [0], ...Array.from({ length: 11 }, () => [])],
+      legalTargets: {
+        'tableau-0-1': { tableau: [1], foundation: [] },
+        'tableau-0-0': { tableau: [1], foundation: [] },
+      },
     });
     renderWithProviders(<MrsMopPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
@@ -453,11 +460,15 @@ describe('MrsMopPage', () => {
         ],
         [{ card: card('DIAMOND', 13), faceUp: true }],
       ]),
+      legalTargets: {
+        'tableau-0-0': { tableau: [2], foundation: [] },
+        'tableau-0-1': { tableau: [1], foundation: [] },
+      },
     });
     renderWithProviders(<MrsMopPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
-    fireEvent.click(screen.getByAltText('♠ K').closest('button')!);
+    fireEvent.click(screen.getByAltText('♠ K').closest('button') as HTMLButtonElement);
     await waitFor(() => {
       expect(screen.getByTestId('spd-empty-col-2').closest('.flex-1')).toHaveAttribute('data-legal-target', 'true');
       expect(screen.getByTestId('spd-empty-col-2').closest('.flex-1')).toHaveClass('ring-ds-info');
@@ -467,13 +478,13 @@ describe('MrsMopPage', () => {
     expect(occupiedColumn).not.toHaveClass('ring-ds-info');
 
     // Choosing another card in the selected column replaces the source selection.
-    fireEvent.click(screen.getByAltText('♠ Q').closest('button')!);
+    fireEvent.click(screen.getByAltText('♠ Q').closest('button') as HTMLButtonElement);
     await waitFor(() => expect(screen.getByAltText('♠ Q').closest('button')).toHaveAttribute('aria-pressed', 'true'));
     expect(occupiedColumn).toHaveAttribute('data-legal-target', 'true');
     expect(occupiedColumn).toHaveClass('ring-ds-info');
 
     // Selecting the same source again clears both the selection and its legal destinations.
-    fireEvent.click(screen.getByAltText('♠ Q').closest('button')!);
+    fireEvent.click(screen.getByAltText('♠ Q').closest('button') as HTMLButtonElement);
     await waitFor(() => {
       expect(screen.getByTestId('spd-empty-col-2').closest('.flex-1')).not.toHaveAttribute('data-legal-target');
       expect(screen.getByTestId('spd-empty-col-2').closest('.flex-1')).not.toHaveClass('ring-ds-info');
@@ -486,13 +497,22 @@ describe('MrsMopPage', () => {
         { card: card('SPADE', col === 0 ? 13 : 5), faceUp: true },
       ]),
     );
-    mockExec.mockResolvedValue({ ...playingState, tableau: blockedTableau });
+    mockExec.mockResolvedValue({ ...playingState, tableau: blockedTableau, legalTargets: {} });
     renderWithProviders(<MrsMopPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
-    fireEvent.click(screen.getByAltText('♠ K').closest('button')!);
+    fireEvent.click(screen.getByAltText('♠ K').closest('button') as HTMLButtonElement);
     expect(screen.getByTestId('mrsMop-selection-status')).toHaveTextContent('移動先はありません');
     expect(document.querySelectorAll('[data-legal-target="true"]')).toHaveLength(0);
+  });
+
+  it('follows server targets when they contradict the local rule', async () => {
+    mockExec.mockResolvedValue({ ...playingState, legalTargets: { 'tableau-0-0': { tableau: [1], foundation: [] } } });
+    renderWithProviders(<MrsMopPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ K')).toBeInTheDocument());
+    fireEvent.click(screen.getByAltText('♠ K').closest('button') as HTMLButtonElement);
+    expect(screen.getByAltText('♥ 5').closest('.flex-1')).toHaveAttribute('data-legal-target', 'true');
+    expect(screen.getByTestId('spd-empty-col-2').closest('.flex-1')).not.toHaveAttribute('data-legal-target');
   });
 
   it('includes zero-based tableau column and card index in card and empty-column names', async () => {
@@ -513,7 +533,7 @@ describe('MrsMopPage', () => {
     expect(btn).toHaveAttribute('aria-disabled', 'true');
     const descriptionId = btn.getAttribute('aria-describedby');
     expect(descriptionId).toBeTruthy();
-    expect(document.getElementById(descriptionId!)).toHaveTextContent('先に移動する札を選んでください');
+    expect(document.getElementById(descriptionId as string)).toHaveTextContent('先に移動する札を選んでください');
 
     fireEvent.click(btn);
     await flushPendingDispatch();
@@ -752,6 +772,7 @@ describe('MrsMopPage', () => {
     // card (♣7 then ♥6 — suit mismatch) so ♣7 is not movable while ♥6 rings itself.
     const runState: MrsMopResponse = {
       ...playingState,
+      runStarts: [[0, 1, 2], [1], ...Array.from({ length: 11 }, () => [])],
       tableau: makeTableau([
         [
           { card: card('SPADE', 13), faceUp: true },
@@ -817,6 +838,21 @@ describe('MrsMopPage', () => {
       // The lone bottom card still rings itself.
       fireEvent.mouseEnter(btnFor('♥ 6'));
       await waitFor(() => expect(btnFor('♥ 6')).toHaveAttribute('data-movable-run', 'true'));
+      fireEvent.mouseLeave(btnFor('♥ 6'));
+      fireEvent.focus(btnFor('♣ 7'));
+      expect(btnFor('♣ 7')).not.toHaveAttribute('data-movable-run');
+    });
+
+    it('follows server runStarts when they disagree with the local sequence rule', async () => {
+      mockExec.mockResolvedValue({ ...runState, runStarts: Array.from({ length: 13 }, () => []) });
+      renderWithProviders(<MrsMopPage />);
+      await waitFor(() => expect(screen.getByAltText('♠ K')).toBeInTheDocument());
+
+      fireEvent.mouseEnter(btnFor('♠ K'));
+      expect(btnFor('♠ K')).not.toHaveAttribute('data-movable-run');
+      fireEvent.click(btnFor('♠ K'));
+      await waitFor(() => expect(btnFor('♠ K')).toHaveAttribute('aria-pressed', 'true'));
+      expect(btnFor('♠ Q')).not.toHaveAttribute('data-selected-block');
     });
 
     // **タップにはホバーもフォーカスも無い (#4780)。**クリックで選んだだけの

@@ -20,6 +20,7 @@ vi.mock('../api/gameApi', () => ({
 const mockExec = vi.mocked(duchessApi.exec);
 
 const baseState: DuchessResponse = {
+  legalTargets: {},
   reserve: Array.from({ length: 4 }, () => []),
   tableau: Array.from({ length: 4 }, () => []),
   foundation: Array.from({ length: 4 }, () => []),

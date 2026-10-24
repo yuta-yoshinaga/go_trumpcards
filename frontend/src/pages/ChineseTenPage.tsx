@@ -301,10 +301,40 @@ function ChineseTenPageContent() {
               ))}
             </div>
 
-            <div
-              className="text-center lg:sticky lg:bottom-0 lg:z-10 lg:bg-game-bg-green lg:pt-2 lg:shadow-[0_-8px_16px_rgba(0,0,0,0.35)]"
-              data-tutorial="ct-hand"
-            >
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
+
+            <ActionLogSection
+              isEndPhase={ended}
+              availableDuringPlay
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
+          </div>
+
+          <GameFooter
+            className={`${gameTheme.chineseten.footer} px-4 py-2.5`}
+            actions={
+              <>
+                <div className="flex gap-2 items-center flex-wrap">
+                  <GameResetButton
+                    isGameEnd={ended}
+                    onReset={game.handleReset}
+                    requestConfirm={requestConfirm}
+                    loading={loading}
+                    dataTutorial="ct-reset-button"
+                  />
+                </div>
+                <ActionShortcutsPanel bindings={actionBindings} data-testid="chineseten-kbd-shortcuts" />
+              </>
+            }
+          >
+            <ErrorAlert message={error} onRetry={retry} />
+            <div className="text-center" data-tutorial="ct-hand">
               <div className="text-game-text-muted text-xs mb-1">{t('yourHand')}</div>
               <div
                 className={`flex justify-center ${viewportWidth >= LG_BREAKPOINT ? 'flex-nowrap' : 'flex-wrap gap-1'}`}
@@ -331,34 +361,6 @@ function ChineseTenPageContent() {
               </div>
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
             </div>
-
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
-            <ActionLogSection
-              isEndPhase={ended}
-              availableDuringPlay
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
-          </div>
-
-          <GameFooter className={`${gameTheme.chineseten.footer} px-4 py-2.5`}>
-            <ErrorAlert message={error} onRetry={retry} />
-            <div className="flex gap-2 items-center flex-wrap">
-              <GameResetButton
-                isGameEnd={ended}
-                onReset={game.handleReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="ct-reset-button"
-              />
-            </div>
-            <ActionShortcutsPanel bindings={actionBindings} data-testid="chineseten-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

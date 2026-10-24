@@ -102,6 +102,15 @@ func (_m *MockSpiteAndMaliceGame) IsGoalTopPlayable(playerIdx int) bool {
 	return _m.Called(playerIdx).Bool(0)
 }
 
+func (_m *MockSpiteAndMaliceGame) LegalTargets() map[string][]int {
+	ret := _m.Called()
+	v := ret.Get(0)
+	if v == nil {
+		return nil
+	}
+	return v.(map[string][]int)
+}
+
 func (_m *MockSpiteAndMaliceGame) GetPlayer(idx int) *domain.SpiteAndMalicePlayer {
 	ret := _m.Called(idx)
 	v := ret.Get(0)

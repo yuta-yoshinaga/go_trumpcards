@@ -7,6 +7,7 @@ function makeState(overrides?: Partial<PenguinResponse>): PenguinResponse {
     tableau: Array.from({ length: 7 }, () => []),
     freeCells: [null, null, null, null, null, null, null],
     foundation: [[], [], [], []],
+    legalTargets: {},
     baseRank: 5,
     maxMovableCards: 8,
     maxMovableCardsToEmptyColumn: 4,

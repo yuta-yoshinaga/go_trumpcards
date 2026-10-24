@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
@@ -16,6 +17,9 @@ import (
 )
 
 func setupDuchessWebMockDefaults(g *interfaces.MockDuchessGame) {
+	g.On("LegalTargetsFrom", mock.Anything, mock.Anything).Return([]int{}, []int{}).Maybe()
+	g.On("ReserveLegalTargets", mock.Anything).Return([]int{}, []int{}).Maybe()
+	g.On("WasteLegalTargets").Return([]int{}, []int{}).Maybe()
 	g.On("GetPhase").Return(domain.DuchessPhasePlaying).Maybe()
 	g.On("GetMoveCount").Return(0).Maybe()
 	g.On("CanUndo").Return(false).Maybe()
@@ -156,6 +160,66 @@ func TestDuchessWebPresenter_Output(t *testing.T) {
 			assert.Equal(t, tc.code, result.MessageCode)
 		})
 	}
+}
+
+func TestDuchessWebPresenter_BuildLegalTargetsNormalizesAndOmitsEmptySources(t *testing.T) {
+	g := new(interfaces.MockDuchessGame)
+	var tableau [domain.DuchessTableauCnt][]*domain.DuchessTableauCard
+	tableau[0] = []*domain.DuchessTableauCard{{Card: domain.NewCard(domain.CardDesignSpade, 9, true), FaceUp: true}}
+	g.On("GetTableau").Return(tableau)
+	var reserve [domain.DuchessReserveCnt][]*domain.Card
+	reserve[0] = []*domain.Card{domain.NewCard(domain.CardDesignHeart, 4, true)}
+	reserve[1] = []*domain.Card{domain.NewCard(domain.CardDesignHeart, 3, true)}
+	g.On("GetReserve").Return(reserve)
+	g.On("LegalTargetsFrom", 0, 0).Return([]int{2}, []int(nil))
+	g.On("ReserveLegalTargets", 0).Return([]int(nil), []int{1})
+	g.On("ReserveLegalTargets", 1).Return([]int(nil), []int(nil))
+	g.On("WasteLegalTargets").Return([]int{3}, []int(nil))
+	got := new(DuchessWebPresenter).buildLegalTargets(g)
+	assert.Equal(t, map[string]controller.DuchessWebOutputTargets{
+		"tableau-0-0": {Tableau: []int{2}, Foundation: []int{}},
+		"reserve-0":   {Tableau: []int{}, Foundation: []int{1}},
+		"waste":       {Tableau: []int{3}, Foundation: []int{}},
+	}, got)
+}
+
+func TestDuchessWebPresenter_BuildLegalTargetsNormalizesEverySource(t *testing.T) {
+	t.Run("tableau destination arrays", func(t *testing.T) {
+		g := new(interfaces.MockDuchessGame)
+		var tableau [domain.DuchessTableauCnt][]*domain.DuchessTableauCard
+		tableau[0] = []*domain.DuchessTableauCard{
+			{Card: domain.NewCard(domain.CardDesignSpade, 9, true), FaceUp: true},
+			{Card: domain.NewCard(domain.CardDesignHeart, 8, true), FaceUp: true},
+		}
+		g.On("GetTableau").Return(tableau)
+		g.On("LegalTargetsFrom", 0, 0).Return([]int(nil), []int{1})
+		g.On("LegalTargetsFrom", 0, 1).Return([]int{2}, []int(nil))
+		var reserve [domain.DuchessReserveCnt][]*domain.Card
+		g.On("GetReserve").Return(reserve)
+		g.On("WasteLegalTargets").Return([]int(nil), []int(nil))
+
+		got := new(DuchessWebPresenter).buildLegalTargets(g)
+		assert.Equal(t, controller.DuchessWebOutputTargets{Tableau: []int{}, Foundation: []int{1}}, got["tableau-0-0"])
+		assert.Equal(t, controller.DuchessWebOutputTargets{Tableau: []int{2}, Foundation: []int{}}, got["tableau-0-1"])
+	})
+
+	t.Run("reserve and waste destination arrays", func(t *testing.T) {
+		g := new(interfaces.MockDuchessGame)
+		var tableau [domain.DuchessTableauCnt][]*domain.DuchessTableauCard
+		g.On("GetTableau").Return(tableau)
+		var reserve [domain.DuchessReserveCnt][]*domain.Card
+		reserve[0] = []*domain.Card{domain.NewCard(domain.CardDesignHeart, 4, true)}
+		reserve[1] = []*domain.Card{domain.NewCard(domain.CardDesignHeart, 3, true)}
+		g.On("GetReserve").Return(reserve)
+		g.On("ReserveLegalTargets", 0).Return([]int{3}, []int(nil))
+		g.On("ReserveLegalTargets", 1).Return([]int(nil), []int{2})
+		g.On("WasteLegalTargets").Return([]int(nil), []int{0})
+
+		got := new(DuchessWebPresenter).buildLegalTargets(g)
+		assert.Equal(t, controller.DuchessWebOutputTargets{Tableau: []int{3}, Foundation: []int{}}, got["reserve-0"])
+		assert.Equal(t, controller.DuchessWebOutputTargets{Tableau: []int{}, Foundation: []int{2}}, got["reserve-1"])
+		assert.Equal(t, controller.DuchessWebOutputTargets{Tableau: []int{}, Foundation: []int{0}}, got["waste"])
+	})
 }
 
 // **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の

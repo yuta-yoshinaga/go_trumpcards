@@ -22,6 +22,7 @@ const mockExec = vi.mocked(bakersDozenApi.exec);
 const baseState: BakersDozenResponse = {
   tableau: Array.from({ length: 13 }, () => []),
   foundation: [[], [], [], []],
+  legalTargets: {},
   phase: 0,
   moveCount: 0,
   canUndo: false,

@@ -1,15 +1,14 @@
 import { useTranslation } from 'react-i18next';
 import { useIsMobile } from '../../hooks/useCardDimensions';
 import { suitName, valueName } from '../../utils/cardUtils';
-import { isPositionPlaced, isPositionPlayable, SUITS } from '../../utils/sevensUtils';
+import { isPositionPlaced, SUITS } from '../../utils/sevensUtils';
 import { ScrollFadeHint } from '../ScrollFadeHint';
 
 /** Props for {@link SevensBoard}. */
 export interface BoardProps {
   tablePlaced: number[];
   tunnelEnabled: boolean;
-  tunnelSkipWidth: number;
-  endStopEnabled: boolean;
+  jokerPlacements: { suit: number; value: number }[];
   jokerSelecting: boolean;
   onJokerPlace?: (suit: number, value: number) => void;
 }
@@ -24,14 +23,7 @@ function cellColors(placed: boolean, isCenter: boolean, canPlace: boolean): Reac
   return { background: 'rgba(255,255,255,0.1)', color: 'var(--color-board-cell-empty-text)' };
 }
 
-function Board({
-  tablePlaced,
-  tunnelEnabled,
-  tunnelSkipWidth,
-  endStopEnabled,
-  jokerSelecting,
-  onJokerPlace,
-}: BoardProps) {
+function Board({ tablePlaced, tunnelEnabled, jokerPlacements, jokerSelecting, onJokerPlace }: BoardProps) {
   const { t } = useTranslation('sevens');
   const isMobile = useIsMobile();
   const gridTemplateColumns = tunnelEnabled ? 'auto 16px repeat(13, 1fr) 16px' : 'auto repeat(13, 1fr)';
@@ -79,8 +71,7 @@ function Board({
                   const placed = isPositionPlaced(tablePlaced, idx, v);
                   const isCenter = v === 7;
                   const canPlace =
-                    jokerSelecting &&
-                    isPositionPlayable(tablePlaced, idx, v, tunnelEnabled, endStopEnabled, tunnelSkipWidth);
+                    jokerSelecting && jokerPlacements.some((position) => position.suit === idx && position.value === v);
                   const tunnelHighlight =
                     tunnelEnabled &&
                     !placed &&

@@ -28,6 +28,7 @@ const up = (design: CardDesign, value: number) => ({ card: card(design, value), 
 const down = () => ({ card: null, faceUp: false });
 
 const playingState: AgnesResponse = {
+  legalTargets: { 'tableau-5': { tableau: [], foundation: [2] }, 'tableau-6': { tableau: [0], foundation: [] } },
   tableau: [
     [up('SPADE', 7)],
     [down(), up('HEART', 8)],
@@ -276,7 +277,7 @@ describe('AgnesPage', () => {
     // Column 5 has ♥ 5, which legally moves to foundation (baseRank 5).
     fireEvent.click(screen.getAllByRole('button', { name: /列\d+から組札へ移動/ })[5]);
     await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'tableau', col: 5 }, { zone: 'foundation' }),
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'tableau', col: 5 }, { zone: 'foundation', col: 2 }),
     );
   });
 
@@ -306,13 +307,9 @@ describe('AgnesPage', () => {
     expect(foundationButtons[5]).toBeEnabled();
   });
 
-  it('enables moveToCol for legal tableau targets and disables it for illegal targets', async () => {
+  it('uses server-provided targets for tableau buttons', async () => {
     renderWithProviders(<AgnesPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    // Column 6 has ♣ 6:
-    // - Moving to Column 0 (♠ 7): same color (black), value 6 = 7 - 1 -> ENABLED
-    // - Moving to Column 1 (♥ 8): different color (black vs red) -> DISABLED
-    // - Moving to Column 2 (♣ 9): same color (black), but value 6 != 9 - 1 -> DISABLED
     const toCol0Buttons = screen.getAllByRole('button', { name: /列\d+から列0へ移動/ });
     const toCol1Buttons = screen.getAllByRole('button', { name: /列\d+から列1へ移動/ });
     const toCol2Buttons = screen.getAllByRole('button', { name: /列\d+から列2へ移動/ });
@@ -322,6 +319,19 @@ describe('AgnesPage', () => {
     expect(col6ToCol0).toBeEnabled();
     expect(col6ToCol1).toBeDisabled();
     expect(col6ToCol2).toBeDisabled();
+  });
+
+  it('follows server tableau targets that contradict the former client rule', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      legalTargets: { 'tableau-6': { tableau: [1], foundation: [] } },
+    });
+    renderWithProviders(<AgnesPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const col1 = screen.getAllByRole('button', { name: /列\d+から列1へ移動/ })[5];
+    const col0 = screen.getAllByRole('button', { name: /列\d+から列0へ移動/ })[5];
+    expect(col1).toBeEnabled();
+    expect(col0).toBeDisabled();
   });
 
   it('only the face-up end card of a column is draggable', async () => {
@@ -435,6 +445,11 @@ describe('AgnesPage', () => {
     mockExec.mockResolvedValue({
       ...playingState,
       tableau: playingState.tableau.map((column, index) => (index === 4 ? [up('HEART', 4)] : column)),
+      legalTargets: {
+        'tableau-4': { tableau: [5], foundation: [] },
+        'tableau-5': { tableau: [], foundation: [2] },
+        'tableau-6': { tableau: [0], foundation: [] },
+      },
     });
     renderWithProviders(<AgnesPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
@@ -494,12 +509,14 @@ describe('AgnesPage', () => {
       ...playingState,
       stockCount: 0,
       tableau: [[up('SPADE', 6)], [up('HEART', 9)]],
+      legalTargets: { 'tableau-0': { tableau: [], foundation: [0] } },
       foundation: [[card('SPADE', 5)], [], [], []],
     };
     // After the sweep move, column 0 is empty and no foundation move remains.
     const swept: AgnesResponse = {
       ...ready,
       tableau: [[], [up('HEART', 9)]],
+      legalTargets: {},
       foundation: [[card('SPADE', 5), card('SPADE', 6)], [], [], []],
       canUndo: true,
     };
@@ -510,10 +527,66 @@ describe('AgnesPage', () => {
     mockExec.mockResolvedValueOnce(swept);
     fireEvent.click(screen.getByTestId('ag-autocomplete-button'));
     await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'tableau', col: 0 }, { zone: 'foundation' }),
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'tableau', col: 0 }, { zone: 'foundation', col: 0 }),
     );
     // Loop stops after the swept state (no further foundation move): exactly one move.
     await waitFor(() => expect(mockExec).toHaveBeenCalledTimes(1));
+  });
+
+  it('retries a failed auto-complete move through the shared API', async () => {
+    const ready: AgnesResponse = {
+      ...playingState,
+      stockCount: 0,
+      tableau: [[up('SPADE', 6)]],
+      legalTargets: { 'tableau-0': { tableau: [], foundation: [0] } },
+    };
+    mockExec.mockResolvedValue(ready);
+    renderWithProviders(<AgnesPage />);
+    await waitFor(() => expect(screen.getByTestId('ag-autocomplete-button')).toBeEnabled());
+    mockExec.mockClear();
+    mockExec.mockRejectedValueOnce(new Error('network error')).mockResolvedValueOnce(ready);
+    fireEvent.click(screen.getByTestId('ag-autocomplete-button'));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'tableau', col: 0 }, { zone: 'foundation', col: 0 }),
+    );
+    expect(mockExec).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not auto-complete when legal target key or foundation index is missing', async () => {
+    const noKey: AgnesResponse = { ...playingState, stockCount: 0, tableau: [[up('SPADE', 6)]], legalTargets: {} };
+    mockExec.mockResolvedValue(noKey);
+    renderWithProviders(<AgnesPage />);
+    await waitFor(() => expect(screen.getByTestId('ag-autocomplete-button')).toBeEnabled());
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('ag-autocomplete-button'));
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+
+    cleanup();
+    const noIndex: AgnesResponse = {
+      ...noKey,
+      legalTargets: { 'tableau-0': { tableau: [], foundation: [] } },
+    };
+    mockExec.mockResolvedValue(noIndex);
+    renderWithProviders(<AgnesPage />);
+    await waitFor(() => expect(screen.getByTestId('ag-autocomplete-button')).toBeEnabled());
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('ag-autocomplete-button'));
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+
+    cleanup();
+    mockExec.mockResolvedValue({
+      ...noIndex,
+      legalTargets: { 'tableau-0': { tableau: [], foundation: [0] } },
+    });
+    renderWithProviders(<AgnesPage />);
+    await waitFor(() => expect(screen.getByTestId('ag-autocomplete-button')).toBeEnabled());
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('ag-autocomplete-button'));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'tableau', col: 0 }, { zone: 'foundation', col: 0 }),
+    );
   });
 
   it('announces auto-complete start, move progress, and completion in its own live region', async () => {
@@ -521,6 +594,7 @@ describe('AgnesPage', () => {
       ...playingState,
       stockCount: 0,
       tableau: [[up('SPADE', 6)]],
+      legalTargets: { 'tableau-0': { tableau: [], foundation: [0] } },
       foundation: [[card('SPADE', 5)], [], [], []],
     };
     let resolveFirstMove!: (value: AgnesResponse) => void;
@@ -555,6 +629,7 @@ describe('AgnesPage', () => {
     resolveSecondMove({
       ...ready,
       tableau: [[]],
+      legalTargets: {},
       foundation: [[card('SPADE', 5), card('SPADE', 6), card('SPADE', 7)], [], [], []],
       moveCount: 2,
     });
@@ -569,6 +644,7 @@ describe('AgnesPage', () => {
       ...playingState,
       stockCount: 0,
       tableau: [[up('SPADE', 6)]],
+      legalTargets: { 'tableau-0': { tableau: [], foundation: [0] } },
       foundation: [[card('SPADE', 5)], [], [], []],
     };
     mockExec.mockResolvedValue(ready);
@@ -578,11 +654,12 @@ describe('AgnesPage', () => {
     mockExec.mockResolvedValueOnce({
       ...ready,
       tableau: [[]],
+      legalTargets: {},
       foundation: [[card('SPADE', 5), card('SPADE', 6)], [], [], []],
     });
     fireEvent.keyDown(document.body, { key: 'a' });
     await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'tableau', col: 0 }, { zone: 'foundation' }),
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'tableau', col: 0 }, { zone: 'foundation', col: 0 }),
     );
   });
 

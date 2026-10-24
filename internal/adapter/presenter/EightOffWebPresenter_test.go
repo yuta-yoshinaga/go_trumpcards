@@ -182,6 +182,52 @@ func TestEightOffWebPresenterHintOutputNoHint(t *testing.T) {
 	assert.Equal(t, "eightoff.noHint", out.MessageCode)
 }
 
+func TestEightOffWebPresenterLegalTargets(t *testing.T) {
+	t.Run("both outputs and nil slices", func(t *testing.T) {
+		g := new(interfaces.MockEightOffGame)
+		var tableau [domain.EightOffTableauCnt][]*domain.Card
+		tableau[0] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false), domain.NewCard(domain.CardDesignHeart, 2, false)}
+		tableau[1] = []*domain.Card{domain.NewCard(domain.CardDesignDiamond, 4, false)}
+		g.On("GetTableau").Return(tableau).Maybe()
+		var cells [domain.EightOffCellCnt]*domain.Card
+		cells[0] = domain.NewCard(domain.CardDesignClover, 3, false)
+		cells[1] = domain.NewCard(domain.CardDesignSpade, 5, false)
+		g.On("GetFreeCells").Return(cells).Maybe()
+		g.On("LegalTargetsFrom", 0, 0).Return([]int{2}, nil).Maybe()
+		g.On("LegalTargetsFrom", 0, 1).Return(nil, []int{1}).Maybe()
+		g.On("LegalTargetsFrom", 1, 0).Return([]int{}, []int{}).Maybe()
+		g.On("FreeCellLegalTargets", 0).Return(nil, []int{2}).Maybe()
+		g.On("FreeCellLegalTargets", 1).Return([]int{}, []int{}).Maybe()
+		g.On("GetFoundation").Return([domain.EightOffFoundationCnt][]*domain.Card{}).Maybe()
+		g.On("GetPhase").Return(domain.EightOffPhaseGameOver).Maybe()
+		g.On("GetMoveCount").Return(0).Maybe()
+		g.On("CanUndo").Return(false).Maybe()
+		g.On("IsStalemate").Return(false).Maybe()
+		g.On("UndoToEscape").Return(0).Maybe()
+		g.On("GetHint").Return(nil).Maybe()
+		p := new(EightOffWebPresenter)
+		for name, encoded := range map[string]string{"output": p.Output(g, nil), "hint no-hint": p.HintOutput(g)} {
+			t.Run(name, func(t *testing.T) {
+				var out controller.EightOffWebOutput
+				assert.NoError(t, json.Unmarshal([]byte(encoded), &out))
+				assert.Equal(t, map[string]controller.EightOffWebOutputTargets{
+					"tableau-0-0": {Tableau: []int{2}, Foundation: []int{}},
+					"tableau-0-1": {Tableau: []int{}, Foundation: []int{1}},
+					"freecell-0":  {Tableau: []int{}, Foundation: []int{2}},
+				}, out.LegalTargets)
+			})
+		}
+	})
+	t.Run("empty targets", func(t *testing.T) {
+		var tableau [domain.EightOffTableauCnt][]*domain.Card
+		var cells [domain.EightOffCellCnt]*domain.Card
+		g := new(interfaces.MockEightOffGame)
+		g.On("GetTableau").Return(tableau)
+		g.On("GetFreeCells").Return(cells)
+		assert.Empty(t, new(EightOffWebPresenter).buildLegalTargets(g))
+	})
+}
+
 func TestEightOffWebPresenterActionLogPlaying(t *testing.T) {
 	p := new(EightOffWebPresenter)
 	e := domain.NewEightOff(domain.NewTrumpCards(0))

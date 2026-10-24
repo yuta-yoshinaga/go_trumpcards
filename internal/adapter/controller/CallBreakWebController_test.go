@@ -20,6 +20,7 @@ func mustCallBreakOutputJSON(msg string) string {
 		Players:          []*controller.CallBreakWebOutputPlayer{},
 		CurrentTrick:     []*controller.WebOutputTrickCard{},
 		ValidPlayIndices: []int{},
+		PlayRejectCodes:  []string{},
 		WinnerIdx:        -1,
 		WebOutputBase:    controller.WebOutputBase{Message: msg},
 	}

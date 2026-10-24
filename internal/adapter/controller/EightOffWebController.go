@@ -34,12 +34,19 @@ type EightOffWebOutputHint struct {
 
 // EightOffWebOutput エイトオフWebアウトプット
 type EightOffWebOutput struct {
-	Tableau    [][]*WebOutputCard     `json:"tableau"`
-	FreeCells  []*WebOutputCard       `json:"freeCells"`
-	Foundation [][]*WebOutputCard     `json:"foundation"`
-	Hint       *EightOffWebOutputHint `json:"hint,omitempty"`
+	LegalTargets map[string]EightOffWebOutputTargets `json:"legalTargets"`
+	Tableau      [][]*WebOutputCard                  `json:"tableau"`
+	FreeCells    []*WebOutputCard                    `json:"freeCells"`
+	Foundation   [][]*WebOutputCard                  `json:"foundation"`
+	Hint         *EightOffWebOutputHint              `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase
+}
+
+// EightOffWebOutputTargets lists tableau and foundation destinations.
+type EightOffWebOutputTargets struct {
+	Tableau    []int `json:"tableau"`
+	Foundation []int `json:"foundation"`
 }
 
 // EightOffWebController エイトオフWebコントローラークラス
@@ -56,6 +63,7 @@ func newEightOffDefaultOutput(msg string) *EightOffWebOutput {
 		Tableau:       make([][]*WebOutputCard, 0),
 		FreeCells:     make([]*WebOutputCard, 0),
 		Foundation:    make([][]*WebOutputCard, 0),
+		LegalTargets:  map[string]EightOffWebOutputTargets{},
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }

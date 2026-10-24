@@ -80,6 +80,7 @@ func (p *EuchreWebPresenter) buildBase(e interfaces.EuchreGame) *controller.Euch
 
 	resObj.CurrentTrick = trickCardsToOutput(e.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(e)
+	resObj.ValidPlays = humanTurnValidPlays[*domain.EuchrePlayer](e, e.GetPhase() == domain.EuchrePhasePlay)
 	return resObj
 }
 

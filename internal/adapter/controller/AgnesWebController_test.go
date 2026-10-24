@@ -16,6 +16,7 @@ import (
 func mustAgnesOutputJSON(msg string) string {
 	out := &controller.AgnesWebOutput{
 		Tableau:       [][]*controller.AgnesWebOutputTableauCard{},
+		LegalTargets:  map[string]controller.AgnesWebOutputTargets{},
 		Foundation:    [][]*controller.WebOutputCard{},
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
@@ -29,7 +30,7 @@ func mustAgnesOutputJSON(msg string) string {
 func agnesIntPtr(v int) *int { return &v }
 
 func TestAgnesWebController_Method(t *testing.T) {
-	mockOutput := `{"tableau":[],"stockCount":0,"foundation":[],"baseRank":0,"phase":0,"moveCount":0,"canUndo":false,"message":""}`
+	mockOutput := `{"legalTargets":{},"tableau":[],"stockCount":0,"foundation":[],"baseRank":0,"phase":0,"moveCount":0,"canUndo":false,"message":""}`
 	expectedBody := mockOutput
 
 	ciMock := new(usecase.MockAgnesInteractor)
@@ -169,7 +170,7 @@ func TestAgnesWebController_MoveErrors(t *testing.T) {
 }
 
 func TestAgnesWebController_Undo(t *testing.T) {
-	mockOutput := `{"tableau":[],"stockCount":0,"foundation":[],"baseRank":0,"phase":0,"moveCount":0,"canUndo":false,"message":""}`
+	mockOutput := `{"legalTargets":{},"tableau":[],"stockCount":0,"foundation":[],"baseRank":0,"phase":0,"moveCount":0,"canUndo":false,"message":""}`
 
 	ciMock := new(usecase.MockAgnesInteractor)
 	ciMock.On("Undo").Return(mockOutput)
@@ -186,7 +187,7 @@ func TestAgnesWebController_Undo(t *testing.T) {
 }
 
 func TestAgnesWebController_UndoN(t *testing.T) {
-	mockOutput := `{"tableau":[],"stockCount":0,"foundation":[],"baseRank":0,"phase":0,"moveCount":0,"canUndo":false,"message":""}`
+	mockOutput := `{"legalTargets":{},"tableau":[],"stockCount":0,"foundation":[],"baseRank":0,"phase":0,"moveCount":0,"canUndo":false,"message":""}`
 
 	ciMock := new(usecase.MockAgnesInteractor)
 	ciMock.On("UndoN", 3).Return(mockOutput)

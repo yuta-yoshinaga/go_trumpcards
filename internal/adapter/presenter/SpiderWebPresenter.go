@@ -21,6 +21,7 @@ func (p *SpiderWebPresenter) Output(s interfaces.SpiderGame, lastErr error) stri
 	resObj.CompletedSuits = s.GetCompletedSuits()
 	resObj.Score = s.GetScore()
 	resObj.Difficulty = int(s.GetDifficulty())
+	resObj.RunStarts = buildSpiderRunStarts(s)
 
 	// タブロー
 	tableau := s.GetTableau()
@@ -93,6 +94,7 @@ func (p *SpiderWebPresenter) HintOutput(s interfaces.SpiderGame) string {
 	resObj.Score = s.GetScore()
 	resObj.Difficulty = int(s.GetDifficulty())
 	resObj.Tableau = make([][]*controller.SpiderWebOutputTableauCard, 0)
+	resObj.RunStarts = buildSpiderRunStarts(s)
 
 	if hint != nil {
 		resObj.Hint = &controller.SpiderWebOutputHint{
@@ -106,6 +108,14 @@ func (p *SpiderWebPresenter) HintOutput(s interfaces.SpiderGame) string {
 	}
 
 	return marshalOrError(resObj)
+}
+
+func buildSpiderRunStarts(s interfaces.SpiderGame) [][]int {
+	out := make([][]int, domain.SpiderTableauCnt)
+	for col := range domain.SpiderTableauCnt {
+		out[col] = intSliceOrEmpty(s.RunStarts(col))
+	}
+	return out
 }
 
 // ActionLogOutput 棋譜をJSON出力

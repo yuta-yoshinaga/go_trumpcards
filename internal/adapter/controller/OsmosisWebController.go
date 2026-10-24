@@ -28,16 +28,24 @@ type OsmosisWebOutputHint struct {
 	ToCol    int    `json:"toCol"`
 }
 
+// OsmosisWebOutputTargets lists foundation destinations for a selectable source.
+// Tableau is always empty in Osmosis.
+type OsmosisWebOutputTargets struct {
+	Tableau    []int `json:"tableau"`
+	Foundation []int `json:"foundation"`
+}
+
 // OsmosisWebOutput オズモシスWebアウトプット
 type OsmosisWebOutput struct {
-	Reserve    [][]*WebOutputCard `json:"reserve"`
-	StockCount int                `json:"stockCount"`
-	Waste      []*WebOutputCard   `json:"waste"`
-	Foundation [][]*WebOutputCard `json:"foundation"`
-	BaseRank   int                `json:"baseRank"`
-	Phase      int                `json:"phase"`
-	MoveCount  int                `json:"moveCount"`
-	CanUndo    bool               `json:"canUndo"`
+	LegalTargets map[string]OsmosisWebOutputTargets `json:"legalTargets"`
+	Reserve      [][]*WebOutputCard                 `json:"reserve"`
+	StockCount   int                                `json:"stockCount"`
+	Waste        []*WebOutputCard                   `json:"waste"`
+	Foundation   [][]*WebOutputCard                 `json:"foundation"`
+	BaseRank     int                                `json:"baseRank"`
+	Phase        int                                `json:"phase"`
+	MoveCount    int                                `json:"moveCount"`
+	CanUndo      bool                               `json:"canUndo"`
 	// IsStalemate はどのカードもファンデーションへ送れなくなった状態 (#4808)。
 	IsStalemate bool                  `json:"isStalemate"`
 	Hint        *OsmosisWebOutputHint `json:"hint,omitempty"`
@@ -55,6 +63,7 @@ var NewOsmosisWebController, NewOsmosisWebControllerWithProvider = webController
 
 func newOsmosisDefaultOutput(msg string) *OsmosisWebOutput {
 	return &OsmosisWebOutput{
+		LegalTargets:  make(map[string]OsmosisWebOutputTargets),
 		Reserve:       make([][]*WebOutputCard, 0),
 		Waste:         make([]*WebOutputCard, 0),
 		Foundation:    make([][]*WebOutputCard, 0),

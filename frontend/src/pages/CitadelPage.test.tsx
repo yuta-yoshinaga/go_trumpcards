@@ -44,6 +44,7 @@ const playingState: CitadelResponse = {
     [],
   ]),
   foundation: [[card('SPADE', 1)], [card('CLOVER', 1)], [card('HEART', 1)], [card('DIAMOND', 1)]],
+  legalTargets: { 'tableau-0': { tableau: [1, 2, 3, 4, 5, 6, 7], foundation: [] } },
   phase: 0,
   moveCount: 3,
   canUndo: false,
@@ -338,6 +339,7 @@ describe('CitadelPage', () => {
         ...playingState,
         tableau: makeTableau([[{ card: card('SPADE', 1), faceUp: true }]]),
         foundation: [[], [], [], []],
+        legalTargets: { 'tableau-0': { tableau: [1, 2, 3, 4, 5, 6, 7], foundation: [0, 1, 2, 3] } },
       });
       renderWithProviders(<CitadelPage />);
       fireEvent.click(await screen.findByRole('button', { name: '♠ A' }));
@@ -349,6 +351,28 @@ describe('CitadelPage', () => {
       );
       // 組札 4 つ + 空き列 7 つ。組札側が 0 なら 7 で止まる。
       expect(document.querySelectorAll('[data-legal-target="true"]')).toHaveLength(11);
+    });
+
+    it('follows server targets when they contradict the local rule mirror', async () => {
+      mockExec.mockResolvedValue({
+        ...playingState,
+        tableau: makeTableau([
+          [{ card: card('SPADE', 5), faceUp: true }],
+          [{ card: card('HEART', 6), faceUp: true }],
+          [],
+          [],
+          [{ card: card('CLOVER', 12), faceUp: true }],
+          [],
+          [],
+          [],
+        ]),
+        // The server allows col 4 and omits locally legal col 1.
+        legalTargets: { 'tableau-0': { tableau: [4], foundation: [] } },
+      });
+      renderWithProviders(<CitadelPage />);
+      fireEvent.click(await screen.findByRole('button', { name: '♠ 5' }));
+      expect(screen.getByRole('button', { name: '♣ Q' }).closest('[data-legal-target="true"]')).not.toBeNull();
+      expect(screen.getByRole('button', { name: '♥ 6' }).closest('[data-legal-target="true"]')).toBeNull();
     });
 
     // 組札は A の上に同スートの 2 だけ。♠5 では光らない。
@@ -363,6 +387,7 @@ describe('CitadelPage', () => {
       mockExec.mockResolvedValue({
         ...playingState,
         tableau: makeTableau([[{ card: card('SPADE', 2), faceUp: true }]]),
+        legalTargets: { 'tableau-0': { tableau: [1, 2, 3, 4, 5, 6, 7], foundation: [0] } },
       });
       renderWithProviders(<CitadelPage />);
       fireEvent.click(await screen.findByRole('button', { name: '♠ 2' }));
@@ -448,6 +473,7 @@ describe('CitadelPage destination preview', () => {
           { card: card('SPADE', 2), faceUp: true },
         ],
       ]),
+      legalTargets: { 'tableau-0': { tableau: [1, 2, 3, 4, 5, 6, 7], foundation: [0] } },
     });
     renderWithProviders(<CitadelPage />);
     const spadeTwo = await screen.findByRole('button', { name: '♠ 2' });
@@ -556,6 +582,11 @@ describe('CitadelPage selection status announcement', () => {
       [{ card: card('CLOVER', 13), faceUp: true }],
     ]),
     foundation: [[card('SPADE', 1)], [card('CLOVER', 1)], [card('HEART', 1)], [card('DIAMOND', 1)]],
+    legalTargets: {
+      'tableau-0': { tableau: [1, 2], foundation: [0] },
+      'tableau-1': { tableau: [0], foundation: [] },
+      'tableau-2': { tableau: [0], foundation: [] },
+    },
   };
 
   it('keeps the selection status live region mounted and empty before selection', async () => {
@@ -617,5 +648,16 @@ describe('CitadelPage selection status announcement', () => {
     } finally {
       await i18n.changeLanguage('ja');
     }
+  });
+});
+
+describe('CitadelPage foundation layout', () => {
+  it('keeps foundations in a mobile column and enables two desktop columns', async () => {
+    mockExec.mockResolvedValue(playingState);
+    const { container } = renderWithProviders(<CitadelPage />);
+    await waitFor(() => {
+      const foundation = container.querySelector('[data-tutorial="bc-foundation"]');
+      expect(foundation).toHaveClass('flex-col', 'lg:grid', 'lg:grid-cols-2');
+    });
   });
 });

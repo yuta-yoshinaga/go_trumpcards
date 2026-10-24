@@ -3,6 +3,7 @@ import type { CrescentResponse } from '../../../types/card';
 import { formatCrescentState } from './crescentFormatter';
 
 const baseState: CrescentResponse = {
+  legalTargets: {},
   tableau: [
     [{ card: { design: 'SPADE', value: 13 }, faceUp: true }],
     [],

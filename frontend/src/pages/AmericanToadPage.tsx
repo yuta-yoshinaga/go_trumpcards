@@ -33,7 +33,7 @@ import type { AmericanToadMoveZone, AmericanToadResponse } from '../types/card';
 import { AMERICANTOAD_MAX_PASSES } from '../types/games/americantoad';
 import { AmericanToadPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { americanToadLegalTargets, americanToadSourceCard } from '../utils/americanToadLegalTargets';
+import { americanToadLegalTargetKey } from '../utils/americanToadLegalTargetKey';
 import { cardAlt } from '../utils/cardAlt';
 import { AMERICANTOAD_HELP, parseAmericanToadCommand } from '../utils/cli/commands/americantoadCommands';
 import { formatAmericanToadState } from '../utils/cli/formatters/americantoadFormatter';
@@ -196,15 +196,8 @@ function AmericanToadPageContent() {
   // hover / フォーカス中の札にも**まったく同じ計算**を当てる ── 判定を二重に
   // 持たないので、プレビューと選択後の表示が食い違わない。
   const previewSource = preview.source;
-  const previewedCard = americanToadSourceCard(state.tableau, state.reserve, state.waste, previewSource);
-  const legalTargets = americanToadLegalTargets(
-    state.tableau,
-    state.foundation,
-    state.reserve,
-    state.baseRank,
-    previewedCard,
-    previewSource?.zone,
-  );
+  const previewKey = americanToadLegalTargetKey(previewSource);
+  const legalTargets = previewKey ? state.legalTargets[previewKey] : undefined;
   /** Ring for a legal destination: softer while it is only a hover preview. */
   const targetRing = preview.isPreview ? ' rounded ring-2 ring-ds-success/70' : ' rounded ring-2 ring-ds-success';
 
@@ -220,9 +213,9 @@ function AmericanToadPageContent() {
     return (
       <div
         key={`col-${colIdx.toString()}`}
-        className={`flex-1 min-w-0${legalTargets.tableau.has(colIdx) ? targetRing : ''}`}
-        data-legal-target={legalTargets.tableau.has(colIdx) ? 'true' : undefined}
-        data-preview-target={legalTargets.tableau.has(colIdx) && preview.isPreview ? 'true' : undefined}
+        className={`flex-1 min-w-0${legalTargets?.tableau.includes(colIdx) ? targetRing : ''}`}
+        data-legal-target={legalTargets?.tableau.includes(colIdx) ? 'true' : undefined}
+        data-preview-target={legalTargets?.tableau.includes(colIdx) && preview.isPreview ? 'true' : undefined}
       >
         <div className="text-center text-xs text-ds-text-muted mb-0.5" aria-hidden="true">
           #{colIdx}
@@ -420,9 +413,11 @@ function AmericanToadPageContent() {
                   return (
                     <div
                       key={`f-${idx.toString()}`}
-                      className={`text-center${legalTargets.foundation.has(idx) ? targetRing : ''}`}
-                      data-legal-target={legalTargets.foundation.has(idx) ? 'true' : undefined}
-                      data-preview-target={legalTargets.foundation.has(idx) && preview.isPreview ? 'true' : undefined}
+                      className={`text-center${legalTargets?.foundation.includes(idx) ? targetRing : ''}`}
+                      data-legal-target={legalTargets?.foundation.includes(idx) ? 'true' : undefined}
+                      data-preview-target={
+                        legalTargets?.foundation.includes(idx) && preview.isPreview ? 'true' : undefined
+                      }
                     >
                       <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
                       <DropZone

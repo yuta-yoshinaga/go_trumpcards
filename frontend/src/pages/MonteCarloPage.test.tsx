@@ -39,6 +39,7 @@ const playingState: MonteCarloResponse = {
   stockCount: 27,
   removedCount: 0,
   dealCount: 0,
+  removablePairs: 1,
   canUndo: false,
   isStalemate: false,
   message: '',
@@ -361,6 +362,18 @@ describe('MonteCarloPage', () => {
     expect(neighbor.className).not.toContain('animate-pulse');
   });
 
+  it('follows the server removable-pair count when it disagrees with the board', async () => {
+    mockExec.mockResolvedValue({ ...playingState, removablePairs: 0 });
+    renderWithProviders(<MonteCarloPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const counter = screen.getByTestId('mc-removable-count');
+    expect(counter.textContent).toContain('0');
+    expect(counter).toHaveAttribute('data-removable-zero', 'true');
+    expect(counter.className).toContain('text-ds-warning');
+    expect(screen.getByTestId('mc-deal-button').className).toContain('ring-ds-warning');
+  });
+
   it('dims non-adjacent filled cells once a first card is selected, leaving the selection lit', async () => {
     // boardWithPair has ♠7 at (0,0), ♥7 at (0,1) (a match) and ♣5 at (2,2) (far away).
     renderWithProviders(<MonteCarloPage />);
@@ -429,7 +442,7 @@ describe('MonteCarloPage', () => {
     const board = emptyBoard();
     board[0][0] = { card: card('SPADE', 7) };
     board[0][1] = { card: card('HEART', 9) };
-    mockExec.mockResolvedValue({ ...playingState, board });
+    mockExec.mockResolvedValue({ ...playingState, board, removablePairs: 0 });
     renderWithProviders(<MonteCarloPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
 

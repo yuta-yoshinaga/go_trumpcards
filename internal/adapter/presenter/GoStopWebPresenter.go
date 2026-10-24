@@ -34,9 +34,12 @@ func gostopFace(card *domain.Card) *CardFace {
 	default:
 		color = "black"
 	}
+	kind := goStopCategoryCode(domain.GoStopCardCategory(card))
 	return &CardFace{
 		Glyph: domain.GoStopCardGlyph(card),
 		Label: domain.GoStopCardLabel(card),
+		Month: card.GetDesign(),
+		Kind:  kind,
 		Color: color,
 		Deck:  "hanafuda",
 	}
@@ -212,5 +215,5 @@ func (p *GoStopWebPresenter) HintOutput(g interfaces.GoStopGame) string {
 
 // ActionLogOutput は棋譜を JSON 出力する。
 func (p *GoStopWebPresenter) ActionLogOutput(g interfaces.GoStopGame) string {
-	return actionLogOutputJSON(g)
+	return actionLogOutputJSONWithFace(g, gostopFace)
 }

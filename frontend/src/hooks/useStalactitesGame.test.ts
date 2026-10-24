@@ -21,6 +21,7 @@ function createWrapper() {
 }
 
 const defaultState: StalactitesResponse = {
+  legalTargets: {},
   tableau: [[], [], [], [], [], [], [], []],
   baseRank: 1,
   cells: [null, null, null, null],

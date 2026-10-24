@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, polignacApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
@@ -60,6 +60,27 @@ beforeEach(() => {
 });
 
 describe('PolignacPage', () => {
+  it('keeps the hand in the footer content and declaration actions in its action row', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 0 }));
+    renderWithProviders(<PolignacPage />);
+    const content = await screen.findByTestId('game-footer-content');
+    expect(within(content).getAllByRole('button', { name: /を出す/ })).toHaveLength(3);
+    const actions = within(screen.getByTestId('game-footer-actions'));
+    expect(actions.getByTestId('pg-capot-btn')).toBeInTheDocument();
+    expect(actions.getByTestId('pg-pass-btn')).toBeInTheDocument();
+  });
+
+  it('keeps the game message out of the footer at mobile width', async () => {
+    const previousWidth = window.innerWidth;
+    window.innerWidth = 375;
+    const view = renderWithProviders(<PolignacPage />);
+    expect(await screen.findByTestId('game-footer-content')).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+    view.unmount();
+    window.innerWidth = previousWidth;
+    window.dispatchEvent(new Event('resize'));
+  });
+
   it('opens the action log during an unfinished game', async () => {
     mockActionLog.mockResolvedValue({
       entries: [

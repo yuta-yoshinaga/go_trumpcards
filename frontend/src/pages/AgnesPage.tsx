@@ -31,18 +31,17 @@ import { gameTheme } from '../styles/gameTheme';
 import type { AgnesResponse } from '../types/card';
 import { AgnesPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import {
-  agnesCanPlaceOnFoundation,
-  agnesCanPlaceOnTableau,
-  agnesFoundationIndex,
-  agnesNextFoundationMove,
-  endFaceUpCard,
-} from '../utils/agnesMoves';
 import { AGNES_HELP, parseAgnesCommand } from '../utils/cli/commands/agnesCommands';
 import { formatAgnesState } from '../utils/cli/formatters/agnesFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { isTableauAllFaceUp } from '../utils/solitaireUtils';
+
+const endFaceUpCard = (col: AgnesResponse['tableau'][number]) => {
+  if (col.length === 0) return null;
+  const top = col[col.length - 1];
+  return top.faceUp ? top.card : null;
+};
 
 /** Upper bound on auto-complete sweep iterations (one per card) to guard against loops. */
 const AGNES_AUTO_MAX_STEPS = 52;
@@ -157,19 +156,24 @@ function AgnesPageContent() {
     autoCompletingRef.current = true;
     setIsAutoCompleting(true);
     let col = -1;
+    let foundationCol = -1;
+    let retryFailedMove: () => Promise<unknown> = async () => undefined;
     try {
       let cur = stateRef.current;
       for (let step = 0; step < AGNES_AUTO_MAX_STEPS && cur; step++) {
-        col = agnesNextFoundationMove(cur.tableau, cur.foundation, cur.baseRank);
+        const current = cur;
+        col = current.tableau.findIndex((_, idx) => current.legalTargets[`tableau-${idx}`]?.foundation.length > 0);
         if (col < 0) break;
-        const res = await agnesApi.exec('move', { zone: 'tableau', col }, { zone: 'foundation' });
+        foundationCol = current.legalTargets[`tableau-${col}`].foundation[0];
+        retryFailedMove = () => execApi('move', { zone: 'tableau', col }, { zone: 'foundation', col: foundationCol });
+        const res = await agnesApi.exec('move', { zone: 'tableau', col }, { zone: 'foundation', col: foundationCol });
         setState(res);
         cur = res;
       }
     } catch {
       // Re-issue the failing move through the shared exec so the network failure
       // surfaces via the standard error/retry channel.
-      if (col >= 0) await execApi('move', { zone: 'tableau', col }, { zone: 'foundation' });
+      await retryFailedMove();
     } finally {
       autoCompletingRef.current = false;
       setIsAutoCompleting(false);
@@ -177,7 +181,8 @@ function AgnesPageContent() {
   }, [execApi, setState]);
 
   const handleMoveTableauToFoundation = useCallback(
-    (col: number) => execApi('move', { zone: 'tableau', col }, { zone: 'foundation' }),
+    (col: number, foundationCol: number) =>
+      execApi('move', { zone: 'tableau', col }, { zone: 'foundation', col: foundationCol }),
     [execApi],
   );
   const handleMoveTableauToTableau = useCallback(
@@ -283,8 +288,9 @@ function AgnesPageContent() {
           <span className="sr-only" role="status" aria-live="polite" data-testid="agnes-drag-target-status">
             {dnd.isDragging && draggedCard !== null
               ? state.tableau
-                  .flatMap((col, idx) =>
-                    idx !== dnd.dragSource?.col && agnesCanPlaceOnTableau(draggedCard, col)
+                  .flatMap((_, idx) =>
+                    idx !== dnd.dragSource?.col &&
+                    state.legalTargets[`tableau-${dnd.dragSource?.col}`]?.tableau.includes(idx)
                       ? [t('dragTargetColumn', { col: idx })]
                       : [],
                   )
@@ -321,8 +327,7 @@ function AgnesPageContent() {
                 const isEligible =
                   dnd.isDragging &&
                   draggedCard !== null &&
-                  agnesFoundationIndex(draggedCard) === i &&
-                  agnesCanPlaceOnFoundation(draggedCard, state.foundation, state.baseRank);
+                  state.legalTargets[`tableau-${dnd.dragSource?.col}`]?.foundation.includes(i);
                 return (
                   <DropZone
                     key={`f-${i}`}
@@ -390,22 +395,23 @@ function AgnesPageContent() {
                     const sourceCard = endFaceUpCard(col);
                     if (!sourceCard) return [];
                     const moves = [];
-                    if (agnesCanPlaceOnFoundation(sourceCard, state.foundation, state.baseRank)) {
+                    const sourceTargets = state.legalTargets[`tableau-${fromCol}`];
+                    if (sourceTargets && sourceTargets.foundation.length > 0) {
                       moves.push(
                         <button
                           key={`f-${fromCol}`}
                           type="button"
                           aria-label={t('moveToFoundationAriaLabel', { col: fromCol })}
                           className={`${btnOutline} ${focusRingWhite} text-xs min-h-[44px]`}
-                          onClick={() => handleMoveTableauToFoundation(fromCol)}
+                          onClick={() => handleMoveTableauToFoundation(fromCol, sourceTargets.foundation[0])}
                           disabled={loading}
                         >
                           #{fromCol} {t('moveToFoundation')}
                         </button>,
                       );
                     }
-                    state.tableau.forEach((targetCol, toCol) => {
-                      if (toCol !== fromCol && agnesCanPlaceOnTableau(sourceCard, targetCol)) {
+                    state.tableau.forEach((_, toCol) => {
+                      if (toCol !== fromCol && state.legalTargets[`tableau-${fromCol}`]?.tableau.includes(toCol)) {
                         moves.push(
                           <button
                             key={`t-${fromCol}-${toCol}`}
@@ -437,7 +443,7 @@ function AgnesPageContent() {
                   dnd.isDragging &&
                   !isDragSourceColumn &&
                   draggedCard !== null &&
-                  agnesCanPlaceOnTableau(draggedCard, col);
+                  state.legalTargets[`tableau-${dnd.dragSource?.col}`]?.tableau.includes(i);
                 return (
                   <div key={`t-${i}`} className="relative flex flex-col gap-1">
                     <span className="text-xs text-ds-text-muted">#{i}</span>
@@ -493,22 +499,24 @@ function AgnesPageContent() {
                       (() => {
                         const sourceCard = endFaceUpCard(col);
                         const canMoveToFoundation =
-                          sourceCard !== null &&
-                          agnesCanPlaceOnFoundation(sourceCard, state.foundation, state.baseRank);
+                          sourceCard !== null && state.legalTargets[`tableau-${i}`]?.foundation.length > 0;
                         const actionButtons = (
                           <div className="flex flex-col gap-1">
                             <button
                               type="button"
                               aria-label={t('moveToFoundationAriaLabel', { col: i })}
                               className={`${btnOutline} ${focusRingWhite} text-xs min-h-[44px]`}
-                              onClick={() => handleMoveTableauToFoundation(i)}
+                              onClick={() =>
+                                handleMoveTableauToFoundation(i, state.legalTargets[`tableau-${i}`].foundation[0])
+                              }
                               disabled={loading || !canMoveToFoundation}
                             >
                               {t('moveToFoundation')}
                             </button>
-                            {state.tableau.map((targetCol, j) => {
+                            {state.tableau.map((_, j) => {
                               if (j === i) return null;
-                              const canMoveToCol = sourceCard !== null && agnesCanPlaceOnTableau(sourceCard, targetCol);
+                              const canMoveToCol =
+                                sourceCard !== null && state.legalTargets[`tableau-${i}`]?.tableau.includes(j);
                               return (
                                 <button
                                   key={`t-${i}-to-${j}`}

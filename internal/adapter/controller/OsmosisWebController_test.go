@@ -16,6 +16,7 @@ import (
 
 func mustOsmosisOutputJSON(msg string) string {
 	out := &controller.OsmosisWebOutput{
+		LegalTargets:  map[string]controller.OsmosisWebOutputTargets{},
 		Reserve:       [][]*controller.WebOutputCard{},
 		Waste:         []*controller.WebOutputCard{},
 		Foundation:    [][]*controller.WebOutputCard{},
@@ -31,7 +32,7 @@ func mustOsmosisOutputJSON(msg string) string {
 func osmosisIntPtr(v int) *int { return &v }
 
 func TestOsmosisWebController_Method(t *testing.T) {
-	mockOutput := `{"reserve":[],"stockCount":0,"waste":[],"foundation":[],"baseRank":0,"phase":0,"moveCount":0,"canUndo":false,"message":""}`
+	mockOutput := mustOsmosisOutputJSON("")
 	expectedBody := mockOutput
 
 	oiMock := new(usecase.MockOsmosisInteractor)
@@ -197,7 +198,7 @@ func TestOsmosisWebController_MoveErrors(t *testing.T) {
 }
 
 func TestOsmosisWebController_Undo(t *testing.T) {
-	mockOutput := `{"reserve":[],"stockCount":0,"waste":[],"foundation":[],"baseRank":0,"phase":0,"moveCount":0,"canUndo":false,"message":""}`
+	mockOutput := mustOsmosisOutputJSON("")
 
 	oiMock := new(usecase.MockOsmosisInteractor)
 	oiMock.On("Undo").Return(mockOutput)
@@ -214,7 +215,7 @@ func TestOsmosisWebController_Undo(t *testing.T) {
 }
 
 func TestOsmosisWebController_UndoN(t *testing.T) {
-	mockOutput := `{"reserve":[],"stockCount":0,"waste":[],"foundation":[],"baseRank":0,"phase":0,"moveCount":0,"canUndo":false,"message":""}`
+	mockOutput := mustOsmosisOutputJSON("")
 
 	oiMock := new(usecase.MockOsmosisInteractor)
 	oiMock.On("UndoN", 3).Return(mockOutput)

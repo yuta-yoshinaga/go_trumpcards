@@ -33,6 +33,7 @@ func (p *CrazyEightsWebPresenter) Output(g interfaces.CrazyEightsGame, lastErr e
 	}
 
 	resObj.Players = p.buildPlayersOutput(g)
+	resObj.ValidPlays = humanTurnValidPlays[*domain.CrazyEightsPlayer](g, g.GetPhase() == domain.CrazyEightsPhasePlay)
 	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(g, lastErr)
 
 	return marshalOrError(resObj)

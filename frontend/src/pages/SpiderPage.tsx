@@ -40,7 +40,7 @@ import { parseSpiderCommand, SPIDER_HELP } from '../utils/cli/commands/spiderCom
 import { formatSpiderState } from '../utils/cli/formatters/spiderFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
-import { isTableauAllFaceUp, spiderMovableRun } from '../utils/solitaireUtils';
+import { isTableauAllFaceUp } from '../utils/solitaireUtils';
 
 /** Spider Solitaire tutorial step definitions. */
 const SPD_TUTORIAL_STEPS: TutorialStep[] = [
@@ -377,11 +377,14 @@ function SpiderPageContent() {
                   // タッチ端末では、選んだ札と一緒に動く連番がどこまでかを事前に
                   // 確かめる手段が無かった (#4780, Yukon の #3152 と同じ)。
                   // 連番は列ごとに1度だけ求める (ホバー側の setHoveredRun と同じ形)。
+                  const selectedCardIndex = selectedSource?.cardIndex;
                   const selectedRun =
                     selectedSource?.zone === 'tableau' &&
                     selectedSource.col === colIdx &&
-                    selectedSource.cardIndex !== undefined
-                      ? spiderMovableRun(col, selectedSource.cardIndex)
+                    selectedCardIndex !== undefined
+                      ? state.runStarts[colIdx].includes(selectedCardIndex)
+                        ? Array.from({ length: col.length - selectedCardIndex }, (_, i) => selectedCardIndex + i)
+                        : []
                       : null;
                   return (
                     <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
@@ -433,11 +436,21 @@ function SpiderPageContent() {
                                     <button
                                       type="button"
                                       onMouseEnter={() =>
-                                        setHoveredRun({ col: colIdx, indices: spiderMovableRun(col, cardIdx) })
+                                        setHoveredRun({
+                                          col: colIdx,
+                                          indices: state.runStarts[colIdx].includes(cardIdx)
+                                            ? Array.from({ length: col.length - cardIdx }, (_, i) => cardIdx + i)
+                                            : [],
+                                        })
                                       }
                                       onMouseLeave={() => setHoveredRun(null)}
                                       onFocus={() =>
-                                        setHoveredRun({ col: colIdx, indices: spiderMovableRun(col, cardIdx) })
+                                        setHoveredRun({
+                                          col: colIdx,
+                                          indices: state.runStarts[colIdx].includes(cardIdx)
+                                            ? Array.from({ length: col.length - cardIdx }, (_, i) => cardIdx + i)
+                                            : [],
+                                        })
                                       }
                                       onBlur={() => setHoveredRun(null)}
                                       data-movable-run={inMovableRun ? 'true' : undefined}
@@ -457,7 +470,9 @@ function SpiderPageContent() {
                                       }}
                                       disabled={!isPlaying || loading}
                                       aria-label={(() => {
-                                        const movableCount = spiderMovableRun(col, cardIdx).length;
+                                        const movableCount = state.runStarts[colIdx].includes(cardIdx)
+                                          ? col.length - cardIdx
+                                          : 0;
                                         const values = {
                                           card: cardAlt(tc.card),
                                           col: colIdx,

@@ -20,6 +20,7 @@ func setupGapsWebMockDefaults(g *interfaces.MockGapsGame) {
 	g.On("GetMoveCount").Return(0).Maybe()
 	g.On("GetRedealsUsed").Return(0).Maybe()
 	g.On("GetRedealsRemaining").Return(3).Maybe()
+	g.On("GetLockedPrefixLengths").Return([domain.GapsRowCnt]int{}).Maybe()
 	g.On("CanUndo").Return(false).Maybe()
 	g.On("IsStalemate").Return(false).Maybe()
 	g.On("UndoToEscape").Return(0).Maybe()
@@ -56,12 +57,23 @@ func TestGapsWebPresenter_Output_Playing(t *testing.T) {
 	assert.Equal(t, "gaps.playing", out.MessageCode)
 	assert.Equal(t, 3, out.RedealsRemaining)
 	assert.Len(t, out.Grid, domain.GapsRowCnt)
+	assert.Len(t, out.LockedPrefixLengths, domain.GapsRowCnt)
+}
+
+func TestGapsWebPresenter_OutputCarriesLockedPrefixLengths(t *testing.T) {
+	g := new(interfaces.MockGapsGame)
+	g.On("GetLockedPrefixLengths").Return([domain.GapsRowCnt]int{3, 0, 1, 2})
+	setupGapsOutputMock(g)
+
+	out := parseGapsOutput(t, new(GapsWebPresenter).Output(g, nil))
+	assert.Equal(t, []int{3, 0, 1, 2}, out.LockedPrefixLengths)
 }
 
 func TestGapsWebPresenter_Output_Stalemate(t *testing.T) {
 	g := new(interfaces.MockGapsGame)
 	setupGapsOutputMock(g)
 	g.ExpectedCalls = nil
+	g.On("GetLockedPrefixLengths").Return([domain.GapsRowCnt]int{}).Maybe()
 	g.On("GetPhase").Return(domain.GapsPhasePlaying).Maybe()
 	g.On("GetMoveCount").Return(0).Maybe()
 	g.On("GetRedealsUsed").Return(3).Maybe()
@@ -82,6 +94,7 @@ func TestGapsWebPresenter_Output_GameClear(t *testing.T) {
 	g := new(interfaces.MockGapsGame)
 	setupGapsOutputMock(g)
 	g.ExpectedCalls = nil
+	g.On("GetLockedPrefixLengths").Return([domain.GapsRowCnt]int{}).Maybe()
 	g.On("GetPhase").Return(domain.GapsPhaseGameClear).Maybe()
 	g.On("GetMoveCount").Return(42).Maybe()
 	g.On("GetRedealsUsed").Return(1).Maybe()
@@ -103,6 +116,7 @@ func TestGapsWebPresenter_Output_GameOver(t *testing.T) {
 	g := new(interfaces.MockGapsGame)
 	setupGapsOutputMock(g)
 	g.ExpectedCalls = nil
+	g.On("GetLockedPrefixLengths").Return([domain.GapsRowCnt]int{}).Maybe()
 	g.On("GetPhase").Return(domain.GapsPhaseGameOver).Maybe()
 	g.On("GetMoveCount").Return(0).Maybe()
 	g.On("GetRedealsUsed").Return(3).Maybe()
@@ -148,6 +162,7 @@ func TestGapsWebPresenter_HintOutput_None(t *testing.T) {
 	out := parseGapsOutput(t, p.HintOutput(g))
 	assert.Nil(t, out.Hint)
 	assert.Equal(t, "gaps.noHint", out.MessageCode)
+	assert.Len(t, out.LockedPrefixLengths, domain.GapsRowCnt)
 }
 
 func TestGapsWebPresenter_HintOutput_WithHint(t *testing.T) {
@@ -162,6 +177,7 @@ func TestGapsWebPresenter_HintOutput_WithHint(t *testing.T) {
 
 func TestGapsWebPresenter_Output_GapNeeds(t *testing.T) {
 	g := new(interfaces.MockGapsGame)
+	g.On("GetLockedPrefixLengths").Return([domain.GapsRowCnt]int{}).Maybe()
 	g.On("GetPhase").Return(domain.GapsPhasePlaying).Maybe()
 	g.On("GetMoveCount").Return(0).Maybe()
 	g.On("GetRedealsUsed").Return(0).Maybe()

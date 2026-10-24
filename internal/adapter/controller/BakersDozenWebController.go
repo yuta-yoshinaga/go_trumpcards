@@ -40,9 +40,17 @@ type BakersDozenWebOutputHint struct {
 type BakersDozenWebOutput struct {
 	Tableau    [][]*BakersDozenWebOutputTableauCard `json:"tableau"`
 	Foundation [][]*WebOutputCard                   `json:"foundation"`
-	Hint       *BakersDozenWebOutputHint            `json:"hint,omitempty"`
+	// LegalTargets は移動元の列ごとの合法な移動先。
+	LegalTargets map[string]BakersDozenWebOutputTargets `json:"legalTargets"`
+	Hint         *BakersDozenWebOutputHint              `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase
+}
+
+// BakersDozenWebOutputTargets は 1 つの移動元から置ける先。
+type BakersDozenWebOutputTargets struct {
+	Tableau    []int `json:"tableau"`
+	Foundation []int `json:"foundation"`
 }
 
 // BakersDozenWebController ベーカーズダズンWebコントローラークラス
@@ -58,6 +66,7 @@ func newBakersDozenDefaultOutput(msg string) *BakersDozenWebOutput {
 	return &BakersDozenWebOutput{
 		Tableau:       make([][]*BakersDozenWebOutputTableauCard, 0),
 		Foundation:    make([][]*WebOutputCard, 0),
+		LegalTargets:  make(map[string]BakersDozenWebOutputTargets),
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }

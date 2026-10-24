@@ -45,8 +45,30 @@ describe('UnsunKarutaPage', () => {
     mockExec.mockResolvedValue(
       makeUnsunKarutaState({
         currentTrick: [
-          { playerIdx: 0, card: { design: 'JOKER', value: 1, deck: 'unsun', glyph: '杯', label: '1', color: 'red' } },
-          { playerIdx: 2, card: { design: 'JOKER', value: 3, deck: 'unsun', glyph: '刀', label: '3', color: 'black' } },
+          {
+            playerIdx: 0,
+            card: {
+              design: 'HEART',
+              value: 1,
+              deck: 'unsun',
+              unsunSuit: 'kotsu',
+              glyph: '杯',
+              label: '1',
+              color: 'red',
+            },
+          },
+          {
+            playerIdx: 2,
+            card: {
+              design: 'SPADE',
+              value: 3,
+              deck: 'unsun',
+              unsunSuit: 'pao',
+              glyph: '刀',
+              label: '3',
+              color: 'black',
+            },
+          },
         ],
       }),
     );
@@ -54,7 +76,7 @@ describe('UnsunKarutaPage', () => {
 
     const announcement = await screen.findByTestId('unsunkaruta-trick-announcement');
     expect(announcement).toHaveAttribute('aria-live', 'polite');
-    expect(announcement).toHaveTextContent('あなた: 1 杯、CPU 2: 3 刀');
+    expect(announcement).toHaveTextContent('あなた: 1・こつ、CPU 2: 3・ぱお');
   });
 
   it('keeps the current trick on one row at large desktop width', async () => {
@@ -134,7 +156,7 @@ describe('UnsunKarutaPage', () => {
       await waitFor(() => {
         const wrappers = Array.from(cards.querySelectorAll<HTMLElement>('[data-player-idx]'));
         expect(wrappers).toHaveLength(8);
-        const advancePx = Number.parseFloat(wrappers[1]!.style.marginLeft) + 100 + 8;
+        const advancePx = Number.parseFloat(wrappers[1].style.marginLeft) + 100 + 8;
         expect(100 + 7 * advancePx).toBeLessThanOrEqual(rowWidth - 24);
         for (const wrapper of wrappers.slice(1)) {
           expect(Number.parseFloat(wrapper.style.marginLeft) + 100 + 8).toBe(advancePx);
@@ -199,7 +221,10 @@ describe('UnsunKarutaPage', () => {
       playableIndices: [],
       lastTrickWinner: 3,
       currentTrick: [
-        { playerIdx: 3, card: { design: 'JOKER', value: 1, deck: 'unsun', glyph: '杯', label: '1', color: 'red' } },
+        {
+          playerIdx: 3,
+          card: { design: 'HEART', value: 1, deck: 'unsun', unsunSuit: 'kotsu', glyph: '杯', label: '1', color: 'red' },
+        },
       ],
     });
     const nextTrick = makeUnsunKarutaState({ trickNumber: 2 });
@@ -227,8 +252,16 @@ describe('UnsunKarutaPage', () => {
           {
             ...makeUnsunKarutaState().players[0],
             cards: [
-              { design: 'JOKER', value: 1, deck: 'unsun', glyph: '任意の字形', label: '1', color: 'red' },
-              { design: 'JOKER', value: 2, deck: 'unsun', glyph: '杯', label: '2', color: 'black' },
+              {
+                design: 'JOKER',
+                value: 1,
+                deck: 'unsun',
+                unsunSuit: 'kuru',
+                glyph: '任意の字形',
+                label: '1',
+                color: 'red',
+              },
+              { design: 'HEART', value: 2, deck: 'unsun', unsunSuit: 'kotsu', glyph: '杯', label: '2', color: 'black' },
             ],
           },
           ...makeUnsunKarutaState().players.slice(1),
@@ -236,7 +269,15 @@ describe('UnsunKarutaPage', () => {
         currentTrick: [
           {
             playerIdx: 1,
-            card: { design: 'JOKER', value: 1, deck: 'unsun', glyph: '任意の字形', label: '1', color: 'red' },
+            card: {
+              design: 'JOKER',
+              value: 1,
+              deck: 'unsun',
+              unsunSuit: 'kuru',
+              glyph: '任意の字形',
+              label: '1',
+              color: 'red',
+            },
           },
         ],
       }),
@@ -280,7 +321,7 @@ describe('UnsunKarutaPage', () => {
 
   it('plays the selected card without declaring', async () => {
     renderWithProviders(<UnsunKarutaPage />);
-    fireEvent.click(await screen.findByRole('button', { name: '9 棒' }));
+    fireEvent.click(await screen.findByRole('button', { name: '9・ぱお' }));
     fireEvent.click(screen.getByTestId('unsunkaruta-play'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0, declare: false }));
   });
@@ -289,7 +330,7 @@ describe('UnsunKarutaPage', () => {
   // 生まれてしまう。
   it('sends the declaration together with the card', async () => {
     renderWithProviders(<UnsunKarutaPage />);
-    fireEvent.click(await screen.findByRole('button', { name: /ウン 杯/ }));
+    fireEvent.click(await screen.findByRole('button', { name: /ウン・こつ/ }));
     fireEvent.click(screen.getByTestId('unsunkaruta-declare'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 2, declare: true }));
   });
@@ -320,7 +361,7 @@ describe('UnsunKarutaPage', () => {
     renderWithProviders(<UnsunKarutaPage />);
     await screen.findByTestId('unsunkaruta-must-follow');
     expect(document.querySelectorAll('[data-legal]')).toHaveLength(2);
-    expect(screen.getByRole('button', { name: '9 棒' })).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByRole('button', { name: '9・ぱお' })).toHaveAttribute('aria-disabled', 'true');
   });
 
   it('advances the trick', async () => {
@@ -341,7 +382,15 @@ describe('UnsunKarutaPage', () => {
   });
 
   it('shows each team’s captured cards with one ko per captured trick at deal end', async () => {
-    const card = { design: 'JOKER', value: 1, deck: 'unsun', glyph: '杯', label: '1', color: 'red' } as const;
+    const card = {
+      design: 'HEART',
+      value: 1,
+      deck: 'unsun',
+      unsunSuit: 'kotsu',
+      glyph: '杯',
+      label: '1',
+      color: 'red',
+    } as const;
     mockExec.mockResolvedValue(
       makeUnsunKarutaState({
         phase: 2,

@@ -6,6 +6,7 @@ function makeState(overrides?: Partial<CitadelResponse>): CitadelResponse {
   return {
     tableau: Array.from({ length: 8 }, () => []),
     foundation: [[], [], [], []],
+    legalTargets: {},
     phase: 0,
     moveCount: 0,
     canUndo: false,

@@ -341,6 +341,29 @@ func (a *Agnes) UndoN(n int) error {
 	return undoN(a, n)
 }
 
+// LegalTargets returns legal tableau and foundation destination indices for the face-up end card in fromCol.
+// Invalid, empty, or face-down source columns return no destinations. Empty tableau columns are never legal targets.
+func (a *Agnes) LegalTargets(fromCol int) (tableau, foundation []int) {
+	if fromCol < 0 || fromCol >= AgnesTableauCnt {
+		return nil, nil
+	}
+	from := a.tableau[fromCol]
+	if len(from) == 0 || !from[len(from)-1].FaceUp {
+		return nil, nil
+	}
+	card := from[len(from)-1].Card
+	for col := 0; col < AgnesTableauCnt; col++ {
+		if col != fromCol && a.canPlaceOnTableau(card, col) {
+			tableau = append(tableau, col)
+		}
+	}
+	fIdx := card.GetDesign() - 1
+	if fIdx >= 0 && fIdx < AgnesFoundationCnt && a.canPlaceOnFoundation(card, fIdx) {
+		foundation = []int{fIdx}
+	}
+	return tableau, foundation
+}
+
 // --- Private helpers ---
 
 // canPlaceOnTableau 同色降順(ラップなし)、空列は手動配置不可

@@ -32,6 +32,7 @@ function makeState(overrides: Partial<DoubleKlondikeResponse> = {}): DoubleKlond
     moveCount: 0,
     canUndo: false,
     isStalemate: false,
+    legalTargets: { waste: { tableau: [], foundation: [0, 1, 2, 3, 4, 5, 6, 7] } },
     message: '',
     ...overrides,
   };
@@ -389,7 +390,9 @@ describe('DoubleKlondikePage', () => {
     localStorage.clear();
     mockExec.mockReset();
     // ♥8 sits on column 1; a black 7 in the waste belongs there and nowhere else.
-    mockExec.mockResolvedValue(makeState({ waste: [{ design: 'SPADE', value: 7 }] }));
+    mockExec.mockResolvedValue(
+      makeState({ waste: [{ design: 'SPADE', value: 7 }], legalTargets: { waste: { tableau: [1], foundation: [] } } }),
+    );
     renderWithProviders(<DoubleKlondikePage />);
     await waitFor(() => expect(screen.getByTestId('waste')).toBeInTheDocument());
     fireEvent.click(screen.getByTestId('waste'));
@@ -398,7 +401,15 @@ describe('DoubleKlondikePage', () => {
     expect(document.querySelectorAll('[data-move-target]')).toHaveLength(1);
   });
 
-  it('judges the foundation ring on the card the server would actually move', async () => {
+  it('shows no move targets when the selected source has no server entry', async () => {
+    mockExec.mockResolvedValue(makeState({ legalTargets: {} }));
+    renderWithProviders(<DoubleKlondikePage />);
+    await screen.findByTestId('waste');
+    fireEvent.click(screen.getByTestId('waste'));
+    expect(document.querySelectorAll('[data-move-target]')).toHaveLength(0);
+  });
+
+  it('follows the server foundation targets even when they disagree with the client rule', async () => {
     localStorage.clear();
     mockExec.mockReset();
     // A run of ♠2 under ♥A on column 0. Selecting the buried ♠2 sends
@@ -420,13 +431,14 @@ describe('DoubleKlondikePage', () => {
           f[0] = [{ design: 'SPADE', value: 1 }];
           return f;
         })(),
+        legalTargets: { 'tableau-0-0': { tableau: [], foundation: [6] } },
       }),
     );
     renderWithProviders(<DoubleKlondikePage />);
     await waitFor(() => expect(screen.getByTestId('card-0-0')).toBeInTheDocument());
     fireEvent.click(screen.getByTestId('card-0-0'));
-    // ♠2 would fit foundation 0 (which holds ♠A) but ♠2 is not what gets sent.
-    await waitFor(() => expect(screen.getByTestId('foundation-1')).toHaveAttribute('data-move-target'));
+    // The server says foundation 6. A local rule mirror would choose a different pile.
+    await waitFor(() => expect(screen.getByTestId('foundation-6')).toHaveAttribute('data-move-target'));
     expect(screen.getByTestId('foundation-0')).not.toHaveAttribute('data-move-target');
   });
 

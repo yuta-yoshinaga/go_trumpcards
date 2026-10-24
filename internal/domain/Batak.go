@@ -1007,6 +1007,18 @@ func (cb *Batak) GetValidPlayIndices(playerIdx int) []int {
 	return cb.getValidPlayIndices(playerIdx)
 }
 
+// GetPlayRejectCodes returns one message code per card in the player's hand, in hand order.
+// It returns an empty string when a card is playable.
+func (cb *Batak) GetPlayRejectCodes(playerIdx int) []string {
+	player := cb.players[playerIdx]
+	codes := make([]string, player.GetCardsSize())
+	for i := range codes {
+		code, _ := ErrorMessageCode(cb.validatePlay(playerIdx, player.GetCard(i)))
+		codes[i] = code
+	}
+	return codes
+}
+
 // batakJSON is the JSON wire format for Batak.
 type batakJSON struct {
 	TrumpCards       *TrumpCards       `json:"tc"`

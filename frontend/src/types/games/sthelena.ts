@@ -30,6 +30,8 @@ export interface StHelenaResponse extends BaseGameResponse {
    * the four side columns either. The first redeal lifts it.
    */
   restrictionsActive: boolean;
+  /** Server-computed destinations keyed by tableau source column. */
+  legalTargets: Record<string, { tableau: number[]; foundation: number[] }>;
   phase: number;
   moveCount: number;
   canUndo: boolean;

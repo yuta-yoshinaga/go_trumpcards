@@ -670,6 +670,68 @@ func (at *AmericanToad) isRun(pile []*AmericanToadTableauCard, idx int) bool {
 	return true
 }
 
+// LegalTargetsFrom returns destinations for a movable tableau run.
+func (at *AmericanToad) LegalTargetsFrom(col, cardIndex int) (tableau, foundation []int) {
+	if col < 0 || col >= AmericanToadTableauCnt {
+		return nil, nil
+	}
+	pile := at.tableau[col]
+	if !at.isRun(pile, cardIndex) {
+		return nil, nil
+	}
+	for to := range AmericanToadTableauCnt {
+		if to != col && len(at.tableau[to]) > 0 && at.canPlaceOnTableau(pile[cardIndex].Card, to) {
+			tableau = append(tableau, to)
+		}
+	}
+	if cardIndex == len(pile)-1 {
+		for i := range AmericanToadFoundationCnt {
+			if at.canPlaceOnFoundation(pile[cardIndex].Card, i) {
+				foundation = append(foundation, i)
+			}
+		}
+	}
+	return tableau, foundation
+}
+
+// ReserveLegalTargets returns destinations for the reserve top card.
+func (at *AmericanToad) ReserveLegalTargets() (tableau, foundation []int) {
+	card := at.reserveTop()
+	if card == nil {
+		return nil, nil
+	}
+	for col := range AmericanToadTableauCnt {
+		if at.canPlaceOnTableau(card, col) {
+			tableau = append(tableau, col)
+		}
+	}
+	for i := range AmericanToadFoundationCnt {
+		if at.canPlaceOnFoundation(card, i) {
+			foundation = append(foundation, i)
+		}
+	}
+	return tableau, foundation
+}
+
+// WasteLegalTargets returns destinations for the waste top card.
+func (at *AmericanToad) WasteLegalTargets() (tableau, foundation []int) {
+	card := at.wasteTop()
+	if card == nil {
+		return nil, nil
+	}
+	for col := range AmericanToadTableauCnt {
+		if at.canPlaceOnTableau(card, col) {
+			tableau = append(tableau, col)
+		}
+	}
+	for i := range AmericanToadFoundationCnt {
+		if at.canPlaceOnFoundation(card, i) {
+			foundation = append(foundation, i)
+		}
+	}
+	return tableau, foundation
+}
+
 // canPlaceOnTableau タブローに置けるか（同スートの降順、A の下には K）。
 // 空き列に置けるかは呼び出し側が判断する — 出所によって可否が変わるため。
 func (at *AmericanToad) canPlaceOnTableau(card *Card, col int) bool {

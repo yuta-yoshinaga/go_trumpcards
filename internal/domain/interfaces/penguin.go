@@ -23,6 +23,10 @@ type PenguinGame interface {
 	MoveFreeCellToFoundation(cell int) error
 	// GetHint ヒントを取得する
 	GetHint() *domain.PenguinHint
+	// LegalTargetsFrom returns legal destinations for a tableau suffix.
+	LegalTargetsFrom(col, cardIndex int) ([]int, []int)
+	// FreeCellLegalTargets returns legal destinations for a free cell.
+	FreeCellLegalTargets(cell int) ([]int, []int)
 	// GetPhase 現在のフェーズを取得する
 	GetPhase() domain.PenguinPhase
 	// GetMoveCount 移動回数を取得する

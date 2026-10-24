@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { schnapsenApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
@@ -61,6 +61,26 @@ beforeEach(() => {
 });
 
 describe('SchnapsenPage', () => {
+  it('keeps the hand in the footer content and reset in its action row', async () => {
+    renderWithProviders(<SchnapsenPage />);
+    const content = await screen.findByTestId('game-footer-content');
+    expect(within(content).getAllByRole('button', { name: /を出す/ })).toHaveLength(5);
+    expect(
+      within(screen.getByTestId('game-footer-actions')).getByRole('button', { name: 'リセット' }),
+    ).toBeInTheDocument();
+  });
+
+  it('keeps the game message out of the footer at mobile width', async () => {
+    const previousWidth = window.innerWidth;
+    window.innerWidth = 375;
+    const view = renderWithProviders(<SchnapsenPage />);
+    expect(await screen.findByTestId('game-footer-content')).toBeInTheDocument();
+    expect(screen.queryByTestId('game-footer-message')).not.toBeInTheDocument();
+    view.unmount();
+    window.innerWidth = previousWidth;
+    window.dispatchEvent(new Event('resize'));
+  });
+
   it('shows the action log button during play', async () => {
     renderWithProviders(<SchnapsenPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '棋譜を見る' })).toBeInTheDocument());
@@ -83,6 +103,8 @@ describe('SchnapsenPage', () => {
     expect(screen.getByTestId('schnapsen-phase')).toHaveTextContent(/第1フェーズ/);
     expect(pointsLabel?.className).toContain('whitespace-nowrap');
     expect(pointsLabel?.querySelector('span.whitespace-nowrap')).toBeNull();
+    const handSummary = screen.getByText(/あなた: 5/).closest('div');
+    expect(handSummary?.querySelectorAll('span.whitespace-nowrap')).toHaveLength(2);
   });
 
   it('labels trick cards with the card and the player who played them', async () => {
@@ -133,6 +155,7 @@ describe('SchnapsenPage', () => {
     renderWithProviders(<SchnapsenPage />);
     const m3 = await screen.findByTestId('schnapsen-marriage-3');
     expect(m3).toHaveTextContent('マリアージュ宣言 (20点)');
+    expect(m3).toHaveTextContent('♣');
     expect(m3.getAttribute('aria-label')).toContain('♣');
     expect(m3.getAttribute('aria-label')).toContain('20');
     expect(m3).not.toHaveAttribute('data-royal');
@@ -309,7 +332,7 @@ describe('SchnapsenPage', () => {
   it('shows the Japanese card guide when opened', async () => {
     renderWithProviders(<SchnapsenPage />);
     const guide = await screen.findByTestId('schnapsen-card-guide');
-    fireEvent.click(guide.querySelector('summary')!);
+    fireEvent.click(guide.querySelector('summary') as HTMLElement);
 
     expect(guide).toHaveTextContent('カード点: A=11点、10=10点、K=4点、Q=3点、J=2点。');
     expect(guide).toHaveTextContent('同じスートの強さ: A > 10 > K > Q > J。');

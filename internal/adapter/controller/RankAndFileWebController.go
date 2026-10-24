@@ -39,7 +39,8 @@ type RankAndFileWebOutputHint struct {
 
 // RankAndFileWebOutput ランク・アンド・ファイルWebアウトプット
 type RankAndFileWebOutput struct {
-	Tableau [][]*RankAndFileWebOutputTableauCard `json:"tableau"`
+	LegalTargets map[string]RankAndFileWebOutputTargets `json:"legalTargets"`
+	Tableau      [][]*RankAndFileWebOutputTableauCard   `json:"tableau"`
 	// SequenceStarts は列ごとの「掴める札の位置」。ドメインの `SequenceStarts`
 	// がそのまま答える ── 画面が並びの規則を持ち直すと、掴めると描いた札が
 	// サーバに拒まれる形になる。
@@ -50,6 +51,12 @@ type RankAndFileWebOutput struct {
 	Hint           *RankAndFileWebOutputHint `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase
+}
+
+// RankAndFileWebOutputTargets lists tableau and foundation destinations.
+type RankAndFileWebOutputTargets struct {
+	Tableau    []int `json:"tableau"`
+	Foundation []int `json:"foundation"`
 }
 
 // RankAndFileWebController ランク・アンド・ファイルWebコントローラークラス
@@ -66,6 +73,7 @@ func newRankAndFileDefaultOutput(msg string) *RankAndFileWebOutput {
 		Tableau:       make([][]*RankAndFileWebOutputTableauCard, 0),
 		Waste:         make([]*WebOutputCard, 0),
 		Foundation:    make([][]*WebOutputCard, 0),
+		LegalTargets:  map[string]RankAndFileWebOutputTargets{},
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }

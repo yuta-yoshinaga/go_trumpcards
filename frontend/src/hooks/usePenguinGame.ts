@@ -67,6 +67,26 @@ export function usePenguinGame() {
     [selectedSource, apiCall, setHint],
   );
 
+  const handleFoundationShortcut = useCallback(
+    (source: PenguinMoveZone) => {
+      const gameState = rest.state;
+      if (!gameState) return;
+      const key =
+        source.zone === 'freecell'
+          ? source.cell === undefined
+            ? ''
+            : `freecell-${source.cell}`
+          : source.col === undefined || source.cardIndex === undefined
+            ? ''
+            : `tableau-${source.col}-${source.cardIndex}`;
+      const targetCol = key ? gameState.legalTargets[key]?.foundation[0] : undefined;
+      if (targetCol === undefined) return;
+      setHint(null);
+      void apiCall('move', source, { zone: 'foundation', col: targetCol });
+    },
+    [rest.state, apiCall, setHint],
+  );
+
   return {
     ...rest,
     runAction,
@@ -78,5 +98,6 @@ export function usePenguinGame() {
     handleUndoEscape,
     handleSelectSource,
     handleSelectTarget,
+    handleFoundationShortcut,
   };
 }

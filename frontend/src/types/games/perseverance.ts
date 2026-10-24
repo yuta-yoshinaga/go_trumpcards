@@ -20,6 +20,8 @@ export interface PerseveranceHint {
 /** Full Perseverance game state returned from the API. */
 export interface PerseveranceResponse extends BaseGameResponse {
   tableau: PerseveranceTableauCard[][];
+  /** Card indices that start a movable descending same-suit run in each tableau column. */
+  runStarts: number[][];
   foundation: Card[][];
   phase: number;
   moveCount: number;
@@ -27,6 +29,8 @@ export interface PerseveranceResponse extends BaseGameResponse {
   isStalemate: boolean;
   /** Remaining gather-and-redeal chances (0–2). */
   redealsLeft: number;
+  /** Legal destinations keyed by `tableau-<column>-<cardIndex>` source. */
+  legalTargets: Record<string, { tableau: number[]; foundation: number[] }>;
   undoToEscape?: number;
   hint?: PerseveranceHint;
 }

@@ -16,18 +16,36 @@ const mockExec = vi.mocked(simplesimonApi.exec);
 const card = (design: Card['design'], value: number): Card => ({ design, value });
 
 function makeState(overrides: Partial<SimpleSimonResponse> = {}): SimpleSimonResponse {
+  const { runStarts, ...stateOverrides } = overrides;
   const columns: Card[][] = Array.from({ length: 10 }, () => []);
   columns[0] = [card('SPADE', 9)];
   columns[1] = [card('SPADE', 8)];
-  return {
+  const state: SimpleSimonResponse = {
     columns,
     completedSuits: 0,
     phase: 0,
     moveCount: 0,
     canUndo: false,
+    runStarts: [],
+    legalTargets: { 'tableau-1-0': { tableau: [0], foundation: [] } },
     message: '',
-    ...overrides,
+    ...stateOverrides,
   };
+  state.runStarts =
+    runStarts ??
+    state.columns.map((column) => {
+      if (column.length === 0) return [];
+      let start = column.length - 1;
+      while (
+        start > 0 &&
+        column[start - 1].design === column[start].design &&
+        column[start - 1].value === column[start].value + 1
+      ) {
+        start--;
+      }
+      return Array.from({ length: column.length - start }, (_, offset) => start + offset);
+    });
+  return state;
 }
 
 beforeEach(() => {
@@ -36,6 +54,81 @@ beforeEach(() => {
 });
 
 describe('SimpleSimonPage', () => {
+  it('uses the server destination order when it disagrees with the former client priority', async () => {
+    const columns: Card[][] = Array.from({ length: 10 }, () => []);
+    columns[0] = [card('CLOVER', 9), card('SPADE', 7)];
+    columns[1] = [card('SPADE', 8)];
+    columns[2] = [card('HEART', 8)];
+    const runStarts = Array.from({ length: 10 }, () => [] as number[]);
+    runStarts[0] = [1];
+    mockExec.mockResolvedValue(
+      makeState({ columns, runStarts, legalTargets: { 'tableau-0-1': { tableau: [2, 1], foundation: [] } } }),
+    );
+    renderWithProviders(<SimpleSimonPage />);
+    fireEvent.doubleClick(await screen.findByTestId('card-0-1'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('m', { fromCol: 0, cardIndex: 1, toCol: 2 }));
+  });
+  it('follows server run starts when they disagree with the former client rule', async () => {
+    const columns: Card[][] = Array.from({ length: 10 }, () => []);
+    columns[0] = [card('SPADE', 9)];
+    columns[1] = [card('SPADE', 8)];
+    mockExec.mockResolvedValue(makeState({ columns, runStarts: [[], [0], ...Array.from({ length: 8 }, () => [])] }));
+    renderWithProviders(<SimpleSimonPage />);
+    const staleByFormerRule = await screen.findByTestId('card-0-0');
+    expect(staleByFormerRule).toHaveAttribute('data-grabbable', 'false');
+    expect(staleByFormerRule).toBeDisabled();
+    const serverApproved = screen.getByTestId('card-1-0');
+    fireEvent.doubleClick(serverApproved);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('m', { fromCol: 1, cardIndex: 0, toCol: 0 }));
+  });
+
+  it('ignores click and double-click on a card that does not start a run', async () => {
+    const columns: Card[][] = Array.from({ length: 10 }, () => []);
+    columns[3] = [card('SPADE', 9)];
+    const runStarts: number[][] = Array.from({ length: 10 }, () => []);
+    mockExec.mockResolvedValue(makeState({ columns, runStarts }));
+    renderWithProviders(<SimpleSimonPage />);
+    const nonRunCard = await screen.findByTestId('card-3-0');
+    expect(nonRunCard).toBeDisabled();
+
+    mockExec.mockClear();
+    fireEvent.click(nonRunCard);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+    fireEvent.doubleClick(nonRunCard);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+    expect(nonRunCard).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('ignores a keyboard grab when the column has no run start', async () => {
+    const columns: Card[][] = Array.from({ length: 10 }, () => []);
+    columns[0] = [card('SPADE', 9)];
+    const runStarts: number[][] = Array.from({ length: 10 }, () => []);
+    mockExec.mockResolvedValue(makeState({ columns, runStarts }));
+    renderWithProviders(<SimpleSimonPage />);
+    const nonRunCard = await screen.findByTestId('card-0-0');
+
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: '1' });
+    await flushPendingDispatch();
+
+    expect(mockExec).not.toHaveBeenCalled();
+    expect(nonRunCard).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('ignores a keyboard grab when the selected column is empty', async () => {
+    renderWithProviders(<SimpleSimonPage />);
+    await screen.findByTestId('card-1-0');
+
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: '6' });
+    await flushPendingDispatch();
+
+    expect(mockExec).not.toHaveBeenCalled();
+    expect(screen.getByTestId('card-1-0')).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<SimpleSimonPage />);
@@ -190,6 +283,46 @@ describe('SimpleSimonPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('m', { fromCol: 1, cardIndex: 0, toCol: 0 }));
   });
 
+  it('ignores a keyboard selection that is no longer a server run start', async () => {
+    const refreshedState = makeState({
+      columns: (() => {
+        const columns: Card[][] = Array.from({ length: 10 }, () => []);
+        columns[0] = [card('SPADE', 9)];
+        columns[1] = [card('SPADE', 8)];
+        return columns;
+      })(),
+      runStarts: [[], [], ...Array.from({ length: 8 }, () => [])],
+    });
+    mockExec.mockResolvedValueOnce(makeState()).mockResolvedValue(refreshedState);
+    renderWithProviders(<SimpleSimonPage />);
+    await screen.findByTestId('card-1-0');
+
+    fireEvent.keyDown(document, { key: '2' });
+    fireEvent.keyDown(document, { key: 'h' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+    await waitFor(() => expect(screen.getByTestId('card-1-0')).toHaveAttribute('aria-pressed', 'true'));
+
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'Enter' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('confirms a keyboard selection that remains a server run start after a refresh', async () => {
+    mockExec.mockResolvedValueOnce(makeState()).mockResolvedValue(makeState());
+    renderWithProviders(<SimpleSimonPage />);
+    await screen.findByTestId('card-1-0');
+
+    fireEvent.keyDown(document, { key: '2' });
+    fireEvent.keyDown(document, { key: 'h' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+    await waitFor(() => expect(screen.getByTestId('card-1-0')).toHaveAttribute('aria-pressed', 'true'));
+
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'Enter' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('m', { fromCol: 1, cardIndex: 0, toCol: 0 }));
+  });
+
   it('does not execute a move when Enter is pressed without a keyboard selection', async () => {
     renderWithProviders(<SimpleSimonPage />);
     await screen.findByTestId('card-1-0');
@@ -209,6 +342,7 @@ describe('SimpleSimonPage', () => {
           columns[0] = [card('SPADE', 2)];
           return columns;
         })(),
+        legalTargets: {},
       }),
     );
     renderWithProviders(<SimpleSimonPage />);
@@ -465,6 +599,7 @@ describe('SimpleSimonPage', () => {
     mockExec.mockClear();
     fireEvent.doubleClick(srcCard);
     await waitFor(() => expect(screen.getByTestId('ss-automove-notice')).toBeInTheDocument());
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('m', expect.anything());
   });
 

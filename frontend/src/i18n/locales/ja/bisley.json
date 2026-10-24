@@ -52,5 +52,5 @@
     "controls": "ヒント・元に戻す・オートコンプリートなどの操作ボタンです。"
   },
   "undo": "元に戻す",
-  "stackTarget": "{{cards}} が置けます"
+  "moveTarget": "{{cols}} 列目へ動かせます"
 }

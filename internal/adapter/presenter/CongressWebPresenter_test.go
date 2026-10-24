@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
@@ -32,6 +33,9 @@ func setupCongressWebMockDefaults(g *interfaces.MockCongressGame) {
 
 	var foundation [domain.CongressFoundationCnt][]*domain.Card
 	g.On("GetFoundation").Return(foundation).Maybe()
+	g.On("LegalTargets", mock.Anything).Return([]int{}, []int{}).Maybe()
+	g.On("WasteLegalTargets").Return([]int{}, []int{}).Maybe()
+	g.On("StockLegalTargets").Return([]int{}).Maybe()
 }
 
 func parseCongressOutput(t *testing.T, jsonStr string) *controller.CongressWebOutput {
@@ -121,6 +125,43 @@ func TestCongressWebPresenter_OutputCarriesTheHint(t *testing.T) {
 		assert.Equal(t, "tableau", result.Hint.FromZone)
 		assert.Equal(t, 2, result.Hint.FromIdx)
 	})
+}
+
+func TestCongressWebPresenter_LegalTargetsInBothOutputs(t *testing.T) {
+	g := new(interfaces.MockCongressGame)
+	setupCongressWebMockDefaults(g)
+	g.ExpectedCalls = filterCalls(g.ExpectedCalls, "LegalTargets")
+	g.ExpectedCalls = filterCalls(g.ExpectedCalls, "WasteLegalTargets")
+	g.ExpectedCalls = filterCalls(g.ExpectedCalls, "StockLegalTargets")
+	for pile := range domain.CongressTableauCnt {
+		switch pile {
+		case 0:
+			g.On("LegalTargets", pile).Return([]int(nil), []int{0}).Maybe()
+		case 1:
+			g.On("LegalTargets", pile).Return([]int{2}, []int(nil)).Maybe()
+		default:
+			g.On("LegalTargets", pile).Return([]int{}, []int{}).Maybe()
+		}
+	}
+	g.On("WasteLegalTargets").Return([]int(nil), []int{6}).Once()
+	g.On("WasteLegalTargets").Return([]int{3}, []int(nil)).Maybe()
+	g.On("StockLegalTargets").Return([]int{4}).Maybe()
+	g.On("GetHint").Return((*domain.CongressHint)(nil)).Maybe()
+
+	presenter := new(CongressWebPresenter)
+	for _, output := range []string{presenter.Output(g, nil), presenter.HintOutput(g)} {
+		result := parseCongressOutput(t, output)
+		require.Len(t, result.LegalTargets, 4)
+		assert.NotNil(t, result.LegalTargets["tableau-0"].Tableau)
+		assert.Equal(t, []int{}, result.LegalTargets["tableau-0"].Tableau)
+		assert.Equal(t, []int{0}, result.LegalTargets["tableau-0"].Foundation)
+		assert.Equal(t, []int{2}, result.LegalTargets["tableau-1"].Tableau)
+		assert.NotNil(t, result.LegalTargets["tableau-1"].Foundation)
+		assert.Equal(t, []int{}, result.LegalTargets["tableau-1"].Foundation)
+		assert.NotNil(t, result.LegalTargets["waste"].Tableau)
+		assert.NotNil(t, result.LegalTargets["waste"].Foundation)
+		assert.Empty(t, result.LegalTargets["stock"].Foundation)
+	}
 }
 
 func TestCongressWebPresenter_HintOutput(t *testing.T) {

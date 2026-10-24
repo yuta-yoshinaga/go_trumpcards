@@ -6,7 +6,7 @@ import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, CongressResponse } from '../types/card';
 import { tableauDimensions } from '../utils/tableauDimensions';
-import { CongressPage } from './CongressPage';
+import { CongressPage, congressSourceKey } from './CongressPage';
 
 vi.mock('../api/gameApi', () => ({
   congressApi: { exec: vi.fn() },
@@ -26,6 +26,17 @@ function makeTableau(piles: Card[][]): Card[][] {
 }
 
 const playingState: CongressResponse = {
+  legalTargets: {
+    'tableau-0': { tableau: [], foundation: [] },
+    'tableau-1': { tableau: [], foundation: [] },
+    'tableau-2': { tableau: [], foundation: [] },
+    'tableau-3': { tableau: [], foundation: [] },
+    'tableau-4': { tableau: [], foundation: [] },
+    'tableau-5': { tableau: [], foundation: [] },
+    'tableau-6': { tableau: [], foundation: [] },
+    'tableau-7': { tableau: [], foundation: [] },
+    stock: { tableau: [3, 4, 5, 6, 7], foundation: [] },
+  },
   tableau: makeTableau([[card('SPADE', 9)], [card('HEART', 8)], [card('CLOVER', 1)]]),
   foundation: Array.from({ length: 8 }, () => []),
   stockCount: 96,
@@ -53,6 +64,14 @@ const gameOverState: CongressResponse = {
 };
 
 describe('CongressPage', () => {
+  it('builds source keys for tableau, waste, and stock zones', () => {
+    expect(congressSourceKey({ zone: 'tableau', col: 3 })).toBe('tableau-3');
+    expect(congressSourceKey({ zone: 'waste' })).toBe('waste');
+    expect(congressSourceKey({ zone: 'stock' })).toBe('stock');
+    expect(congressSourceKey({ zone: 'tableau' })).toBe('');
+    expect(congressSourceKey({ zone: 'foundation' })).toBe('');
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
@@ -280,7 +299,11 @@ describe('CongressPage', () => {
       };
     };
 
-    mockExec.mockResolvedValue({ ...playingState, waste: [card('DIAMOND', 4)] });
+    mockExec.mockResolvedValue({
+      ...playingState,
+      waste: [card('DIAMOND', 4)],
+      legalTargets: { ...playingState.legalTargets, waste: { tableau: [3], foundation: [] } },
+    });
     renderWithProviders(<CongressPage />);
     const wasteCard = await screen.findByRole('button', { name: '捨て札、♦ 4' });
     mockExec.mockClear();
@@ -330,6 +353,9 @@ describe('CongressPage', () => {
       ...playingState,
       tableau: makeTableau([[card('SPADE', 5)], [card('HEART', 6)], [card('CLOVER', 1)]]),
       foundation: [[card('SPADE', 4)], [], [], [], [], [], [], []],
+      // Deliberately allow an empty tableau destination: server data wins over
+      // the former client mirror's source-specific rule.
+      legalTargets: { ...playingState.legalTargets, 'tableau-0': { tableau: [1, 3], foundation: [0, 4] } },
     };
     mockExec.mockResolvedValue(previewState);
     renderWithProviders(<CongressPage />);
@@ -338,8 +364,9 @@ describe('CongressPage', () => {
 
     await waitFor(() => expect(source).toHaveAttribute('aria-pressed', 'true'));
     const targets = document.querySelectorAll('[data-legal-target="true"]');
-    expect(targets).toHaveLength(2);
+    expect(targets).toHaveLength(4);
     expect(screen.getByText('#1').parentElement).toHaveAttribute('data-legal-target', 'true');
+    expect(screen.getByText('#3').parentElement).toHaveAttribute('data-legal-target', 'true');
     expect(screen.getAllByText('♠')[0]?.parentElement).toHaveAttribute('data-legal-target', 'true');
     expect(screen.getByText('#2').parentElement).not.toHaveAttribute('data-legal-target');
   });
@@ -363,17 +390,31 @@ describe('CongressPage', () => {
       ...playingState,
       tableau: makeTableau([[card('SPADE', 5)], [card('HEART', 6)], [card('CLOVER', 1)]]),
       foundation: [[card('SPADE', 4)], [], [], [], [], [], [], []],
+      legalTargets: { ...playingState.legalTargets, 'tableau-0': { tableau: [1, 3], foundation: [0, 4] } },
     };
     mockExec.mockResolvedValue(previewState);
     renderWithProviders(<CongressPage />);
     const source = await screen.findByRole('button', { name: /^♠ 5/ });
-    const dataTransfer = { setData: vi.fn(), getData: vi.fn(() => ''), effectAllowed: '', dropEffect: '' };
+    const dragData = new Map<string, string>();
+    const dataTransfer = {
+      setData: vi.fn((type: string, value: string) => dragData.set(type, value)),
+      getData: vi.fn((type: string) => dragData.get(type) ?? ''),
+      effectAllowed: '',
+      dropEffect: '',
+    };
 
     fireEvent.dragStart(source, { dataTransfer });
 
-    await waitFor(() => expect(document.querySelectorAll('[data-legal-target="true"]')).toHaveLength(2));
+    await waitFor(() => expect(document.querySelectorAll('[data-legal-target="true"]')).toHaveLength(4));
     expect(screen.getByText('#1').parentElement).toHaveAttribute('data-legal-target', 'true');
+    expect(screen.getByText('#3').parentElement).toHaveAttribute('data-legal-target', 'true');
     expect(screen.getAllByText('♠')[0]?.parentElement).toHaveAttribute('data-legal-target', 'true');
+
+    const serverOnlyEmptyTarget = screen.getByRole('button', { name: /空の山 3/ });
+    fireEvent.dragOver(serverOnlyEmptyTarget, { dataTransfer });
+    fireEvent.drop(serverOnlyEmptyTarget, { dataTransfer });
+    await flushPendingDispatch();
+    expect(mockExec).toHaveBeenCalledWith('move', { zone: 'tableau', col: 0 }, { zone: 'tableau', col: 3 });
 
     fireEvent.dragEnd(source);
     await waitFor(() => expect(document.querySelectorAll('[data-legal-target="true"]')).toHaveLength(0));

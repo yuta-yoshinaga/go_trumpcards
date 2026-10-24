@@ -63,6 +63,8 @@ export interface TrickDisplayProps {
   playerLabelFor?: (player: TrickDisplayPlayer) => string;
   /** Optional localized per-card detail, such as points and trump status. */
   cardDetailFor?: (card: Card, trickCard: TrickDisplayCard) => string;
+  /** Optional classes for the visible detail, scoped to callers that need custom wrapping. */
+  cardDetailClassName?: string;
   /** Optional stable key override for games where a player can contribute multiple cards. */
   cardKeyFor?: (trickCard: TrickDisplayCard, index: number) => string;
 }
@@ -96,6 +98,7 @@ export function TrickDisplay({
   cardAriaLabelFor,
   playerLabelFor,
   cardDetailFor,
+  cardDetailClassName,
   cardKeyFor,
 }: TrickDisplayProps) {
   const displayedTrick = currentTrick.length > 0 ? currentTrick : (lastTrick ?? []);
@@ -175,7 +178,14 @@ export function TrickDisplay({
                 {playerLabelFor?.(displayPlayer) ??
                   playerName(player?.id ?? trickCard.playerIdx, player?.isHuman ?? false)}
               </div>
-              {cardDetail && <div className="text-ds-text-primary text-xs">{cardDetail}</div>}
+              {cardDetail && (
+                <div
+                  className={`text-ds-text-primary text-xs ${cardDetailClassName ?? ''}`}
+                  style={cardDetailClassName ? { maxWidth: cardWidth } : undefined}
+                >
+                  {cardDetail}
+                </div>
+              )}
             </div>
           );
         })}

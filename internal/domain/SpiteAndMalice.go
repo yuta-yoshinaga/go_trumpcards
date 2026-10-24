@@ -469,6 +469,43 @@ func (s *SpiteAndMalice) canPlaceOnFoundation(card *Card, foundationIdx int) boo
 	return card.GetValue() == topValue+1
 }
 
+// LegalTargets returns playable foundation indices keyed by selectable human source.
+// It is empty outside the human player's turn.
+func (s *SpiteAndMalice) LegalTargets() map[string][]int {
+	targets := make(map[string][]int)
+	if s.phase != SpiteAndMalicePhasePlaying || s.current != SpiteAndMaliceHumanIdx {
+		return targets
+	}
+	human := s.players[SpiteAndMaliceHumanIdx]
+	if human == nil {
+		return targets
+	}
+	add := func(key string, card *Card) {
+		if card == nil {
+			return
+		}
+		for i := range SpiteAndMaliceFoundationCnt {
+			if s.canPlaceOnFoundation(card, i) {
+				targets[key] = append(targets[key], i)
+			}
+		}
+		if len(targets[key]) == 0 {
+			delete(targets, key)
+		}
+	}
+	for i, card := range human.GetHand() {
+		add(fmt.Sprintf("hand-%d", i), card)
+	}
+	for i := range SpiteAndMaliceSideCnt {
+		side := human.GetSide(i)
+		if len(side) > 0 {
+			add(fmt.Sprintf("side-%d", i), side[len(side)-1])
+		}
+	}
+	add("goal", human.GoalTop())
+	return targets
+}
+
 // effectiveValue は foundation の i 番目のカードの実効値を返す。K (ワイルド) の場合は
 // その直前のカードの実効値 +1 (空の場合は 1)。
 func (s *SpiteAndMalice) effectiveValue(pile []*Card, i int) int {

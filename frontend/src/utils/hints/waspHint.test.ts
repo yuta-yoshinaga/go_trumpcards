@@ -4,6 +4,7 @@ import { getWaspHint } from './waspHint';
 
 function makeState(overrides: Partial<WaspResponse> = {}): WaspResponse {
   return {
+    legalTargets: {},
     tableau: [],
     stockCount: 0,
     completedSuits: 0,

@@ -34,6 +34,7 @@ type PageOneWebOutputPlayer struct {
 
 // PageOneWebOutput ページワンWebアウトプット
 type PageOneWebOutput struct {
+	PenaltySeats     []int                      `json:"penaltySeats,omitempty"`
 	RoundHistory     []domain.PageOneRoundScore `json:"roundHistory"`
 	Players          []*PageOneWebOutputPlayer  `json:"players"`
 	Phase            int                        `json:"phase"`

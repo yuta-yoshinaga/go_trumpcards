@@ -19,6 +19,8 @@ export interface SpiderTableauCard {
 /** Full Spider Solitaire game state returned from the API. */
 export interface SpiderResponse extends BaseGameResponse {
   tableau: SpiderTableauCard[][];
+  /** Tableau indices that can start a movable run, grouped by column. */
+  runStarts: number[][];
   stockCount: number;
   completedSuits: number;
   phase: number;

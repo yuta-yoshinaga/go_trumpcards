@@ -88,6 +88,19 @@ func (_m *MockPerseveranceGame) LegalTargets(fromCol int) ([]int, []int) {
 	return tab, found
 }
 
+func (_m *MockPerseveranceGame) LegalTargetsFrom(fromCol, cardIndex int) ([]int, []int) {
+	ret := _m.Called(fromCol, cardIndex)
+	tab, _ := ret.Get(0).([]int)
+	found, _ := ret.Get(1).([]int)
+	return tab, found
+}
+
+func (_m *MockPerseveranceGame) RunStarts(col int) []int {
+	ret := _m.Called(col)
+	v, _ := ret.Get(0).([]int)
+	return v
+}
+
 func (_m *MockPerseveranceGame) GetFoundation() [domain.PerseveranceFoundationCnt][]*domain.Card {
 	ret := _m.Called()
 	return ret.Get(0).([domain.PerseveranceFoundationCnt][]*domain.Card)

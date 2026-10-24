@@ -48,6 +48,7 @@ const playingState: FortyThievesResponse = {
   stockCount: 60,
   waste: [card('CLOVER', 3)],
   foundation: [[], [], [], [], [], [], [], []],
+  legalTargets: {},
   phase: 0,
   moveCount: 5,
   canUndo: false,
@@ -482,6 +483,7 @@ describe('FortyThievesPage', () => {
       tableau: makeTableau([[{ card: card('SPADE', 1), faceUp: true }]]),
       waste: [],
       foundation: [[], [], [], [], [], [], [], []],
+      legalTargets: { 'tableau-0': { tableau: [], foundation: [0] } },
     };
     mockExec.mockResolvedValue(aceState);
     renderWithProviders(<FortyThievesPage />);
@@ -506,6 +508,7 @@ describe('FortyThievesPage', () => {
       tableau: makeTableau([]),
       waste: [card('SPADE', 1)],
       foundation: [[], [], [], [], [], [], [], []],
+      legalTargets: { waste: { tableau: [], foundation: [0] } },
     };
     mockExec.mockResolvedValue(aceWasteState);
     renderWithProviders(<FortyThievesPage />);

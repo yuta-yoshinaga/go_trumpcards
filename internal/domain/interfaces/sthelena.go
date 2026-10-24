@@ -13,6 +13,8 @@ type StHelenaGame interface {
 	Reset()
 	// MoveTableauToTableau タブロー間でカードを移動する (最上段 1 枚のみ)。
 	MoveTableauToTableau(fromCol, toCol int) error
+	// LegalTargets returns legal destinations for the top card in fromCol.
+	LegalTargets(fromCol int) (tableau, foundation []int)
 	// MoveTableauToFoundation タブローからファンデーションへカードを移動する。
 	MoveTableauToFoundation(fromCol, foundationIdx int) error
 	// Redeal 再配り (シャッフル) を実行する。

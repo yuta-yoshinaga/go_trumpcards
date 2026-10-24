@@ -64,11 +64,17 @@ func (p *BatakWebPresenter) buildBase(cb interfaces.BatakGame) *controller.Batak
 	for i := 0; i < cb.GetPlayerCnt(); i++ {
 		if pl := cb.GetPlayer(i); pl != nil && pl.GetIsHuman() {
 			resObj.ValidPlayIndices = cb.GetValidPlayIndices(i)
+			if cb.GetPhase() == domain.BatakPhasePlay && cb.IsHumanTurn() {
+				resObj.PlayRejectCodes = stringSliceOrEmpty(cb.GetPlayRejectCodes(i))
+			}
 			break
 		}
 	}
 	if resObj.ValidPlayIndices == nil {
 		resObj.ValidPlayIndices = make([]int, 0)
+	}
+	if resObj.PlayRejectCodes == nil {
+		resObj.PlayRejectCodes = make([]string, 0)
 	}
 	return resObj
 }

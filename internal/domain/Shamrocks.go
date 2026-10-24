@@ -231,7 +231,7 @@ func (g *Shamrocks) GiveUp() {
 // GetMovableFans はいま動かせる扇のインデックスを返す。
 //
 // **盤全体に手があるかは、この集合が空かどうかと同じ問い。** 規則は 1 つ、
-// 呼ぶ側が 2 つ (Web の `shamrocksMovableFans` も同じ形をしている)。
+// 呼ぶ側が 2 つ (`hasAnyLegalMove` と、Web の presenter で `legalTargets` を作る `buildLegalTargets`。ADR-0045)。
 func (g *Shamrocks) GetMovableFans() []int {
 	idxs := make([]int, 0, len(g.fans))
 	for i := range g.fans {
@@ -251,6 +251,26 @@ func (g *Shamrocks) GetMovableFans() []int {
 		}
 	}
 	return idxs
+}
+
+// LegalTargets returns fan and foundation destinations for the top card of a fan.
+// Invalid or empty source fans have no destinations.
+func (g *Shamrocks) LegalTargets(fan int) (fans, foundation []int) {
+	fans = make([]int, 0)
+	foundation = make([]int, 0)
+	card := g.fanTop(fan)
+	if card == nil {
+		return fans, foundation
+	}
+	for to := range g.fans {
+		if g.canMoveFanToFan(fan, to) {
+			fans = append(fans, to)
+		}
+	}
+	if idx := g.findFoundation(card); idx >= 0 {
+		foundation = append(foundation, idx)
+	}
+	return fans, foundation
 }
 
 // hasAnyLegalMove ファウンデーション手・扇間移動のいずれかが存在するか。

@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, estimationApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, EstimationResponse } from '../types/card';
 import { EstimationPage } from './EstimationPage';
@@ -17,6 +18,11 @@ vi.mock('../hooks/useGameHint', () => ({
 
 const mockExec = vi.mocked(estimationApi.exec);
 const mockActionLog = vi.mocked(actionLogApi.estimation);
+const viewport = vi.hoisted(() => ({ useIsMobile: vi.fn(() => true) }));
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useIsMobile: viewport.useIsMobile,
+}));
 
 const card = (design: string, value: number): Card => ({ design, value }) as unknown as Card;
 
@@ -61,6 +67,7 @@ const playing = (over: Partial<EstimationResponse> = {}) =>
   makeState({ phase: 2, trumpSuit: 3, ...over } as Partial<EstimationResponse>);
 
 beforeEach(() => {
+  viewport.useIsMobile.mockReturnValue(true);
   vi.clearAllMocks();
   mockExec.mockResolvedValue(makeState());
   mockActionLog.mockResolvedValue({
@@ -71,6 +78,29 @@ beforeEach(() => {
 });
 
 describe('EstimationPage', () => {
+  it('places the mobile hand in the footer content and trump controls in footer actions', async () => {
+    viewport.useIsMobile.mockReturnValue(true);
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<EstimationPage />);
+    const hand = await screen.findByTestId('game-footer-content');
+    expect(hand.querySelector('[data-tutorial="est-hand"] button')).toBeInTheDocument();
+    expect(
+      screen.getByTestId('game-footer-actions').querySelector('[data-testid="est-trump-1-btn"]'),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId('game-footer-content').querySelector('button:not([aria-label])')).toBeNull();
+  });
+
+  it('keeps the hand and trump controls in the play area on desktop', async () => {
+    viewport.useIsMobile.mockReturnValue(false);
+    mockExec.mockResolvedValue(makeState({ phase: 1 }));
+    try {
+      renderWithProviders(<EstimationPage />);
+      await screen.findByTestId('est-round');
+      expect(screen.queryByTestId('game-footer-content')).toBeNull();
+    } finally {
+      viewport.useIsMobile.mockReturnValue(true);
+    }
+  });
   it('opens the action log during play and shows its entry', async () => {
     mockExec.mockResolvedValue(playing());
     renderWithProviders(<EstimationPage />);
@@ -189,6 +219,54 @@ describe('EstimationPage', () => {
     );
     expect(screen.getByTestId('est-bid-0-btn')).toBeDisabled();
     expect(screen.getByTestId('est-bid-1-btn')).toBeEnabled();
+  });
+
+  it('disables the barred bid button on desktop and does not call exec when clicked', async () => {
+    viewport.useIsMobile.mockReturnValue(false);
+    mockExec.mockResolvedValue(makeState({ phase: 1, trumpSuit: 3, restrictedBid: 4 }));
+    try {
+      renderWithProviders(<EstimationPage />);
+      const barredBtn = await screen.findByTestId('est-bid-4-btn');
+      const normalBtn = screen.getByTestId('est-bid-3-btn');
+
+      expect(barredBtn).toBeInTheDocument();
+      expect(barredBtn).toBeDisabled();
+      expect(barredBtn).toHaveAttribute('aria-disabled', 'true');
+      expect(barredBtn).toHaveAccessibleName('4トリック宣言は選べません（全員の宣言の合計が13になるため）');
+
+      mockExec.mockClear();
+      fireEvent.click(barredBtn);
+      await flushPendingDispatch();
+      expect(mockExec).not.toHaveBeenCalled();
+
+      fireEvent.click(normalBtn);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', undefined, undefined, undefined, 3));
+    } finally {
+      viewport.useIsMobile.mockReturnValue(true);
+    }
+  });
+
+  it('disables the barred Dash Call on desktop and does not call exec when clicked', async () => {
+    viewport.useIsMobile.mockReturnValue(false);
+    mockExec.mockResolvedValue(makeState({ phase: 1, trumpSuit: 3, restrictedBid: 0 }));
+    try {
+      renderWithProviders(<EstimationPage />);
+      const barredDashBtn = await screen.findByTestId('est-bid-0-btn');
+
+      expect(barredDashBtn).toBeInTheDocument();
+      expect(barredDashBtn).toBeDisabled();
+      expect(barredDashBtn).toHaveAttribute('aria-disabled', 'true');
+      expect(barredDashBtn).toHaveAccessibleName(
+        'Dash Call（0トリック宣言）は選べません（全員の宣言の合計が13になるため）',
+      );
+
+      mockExec.mockClear();
+      fireEvent.click(barredDashBtn);
+      await flushPendingDispatch();
+      expect(mockExec).not.toHaveBeenCalled();
+    } finally {
+      viewport.useIsMobile.mockReturnValue(true);
+    }
   });
 
   it('enables every call when nothing is barred', async () => {

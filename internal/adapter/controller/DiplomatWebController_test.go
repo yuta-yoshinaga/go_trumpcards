@@ -17,7 +17,8 @@ func mustDiplomatOutputJSON(msg string) string {
 	out := &controller.DiplomatWebOutput{
 		Tableau:            [][]*controller.WebOutputCard{},
 		TableauDeadEnd:     []bool{},
-		TableauMoveTargets: [][]int{},
+		LegalTargets:       map[string]controller.DiplomatWebOutputTargets{},
+		FoundationNextRank: []int{},
 		Foundation:         [][]*controller.WebOutputCard{},
 		Waste:              []*controller.WebOutputCard{},
 		WebOutputBase:      controller.WebOutputBase{Message: msg},

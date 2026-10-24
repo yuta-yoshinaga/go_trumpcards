@@ -49,6 +49,8 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		err := json.Unmarshal([]byte(result), &resObj)
 		assert.NoError(t, err)
 		assert.Equal(t, 4, len(resObj.Players))
+		assert.Equal(t, []int{0}, resObj.ValidPlays)
+		assert.Equal(t, []controller.SevensWebOutputPosition{{Suit: 1, Value: 6}, {Suit: 1, Value: 8}, {Suit: 2, Value: 6}, {Suit: 2, Value: 8}, {Suit: 3, Value: 6}, {Suit: 3, Value: 8}, {Suit: 4, Value: 6}, {Suit: 4, Value: 8}}, resObj.JokerPlacements)
 		assert.False(t, resObj.GameEndFlag)
 		assert.Equal(t, 0, resObj.CurrentTurn)
 		assert.Equal(t, "", resObj.Message)
@@ -80,6 +82,7 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		assert.True(t, humanPlayer.IsHuman)
 		assert.Equal(t, 2, humanPlayer.CardCount)
 		assert.Len(t, humanPlayer.Cards, 2)
+		assert.Equal(t, []int{0, 1}, resObj.ValidPlays)
 		assert.Equal(t, "SPADE", humanPlayer.Cards[0].Design)
 		assert.Equal(t, 6, humanPlayer.Cards[0].Value)
 	})
@@ -470,6 +473,8 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 	setupSMock := func() *interfaces.MockSevensGame {
 		m := new(interfaces.MockSevensGame)
 		m.On("GetCurrentTurn").Return(0)
+		m.On("GetValidPlayIndices", 0).Return([]int(nil))
+		m.On("GetJokerPlacements").Return([]domain.SevensPosition{}).Maybe()
 		m.On("GetTableMinVals").Return([5]int{7, 7, 7, 7, 7})
 		m.On("GetTableMaxVals").Return([5]int{7, 7, 7, 7, 7})
 		m.On("GetTablePlaced").Return([5]uint16{128, 128, 128, 128, 128})
@@ -607,4 +612,66 @@ func TestSevensWebPresenter_ActionLogOutput(t *testing.T) {
 		assert.Contains(t, result, `"actionType":"play"`)
 		mockGame.AssertExpectations(t)
 	})
+}
+
+func TestSevensWebPresenter_OutputIncludesValidPlaysFromRealGame(t *testing.T) {
+	players := []*domain.SevensPlayer{
+		domain.NewSevensPlayer(true),
+		domain.NewSevensPlayer(false),
+		domain.NewSevensPlayer(false),
+		domain.NewSevensPlayer(false),
+	}
+	g := domain.NewSevens(domain.NewTrumpCards(0), players, domain.DefaultSevensConfig())
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+	var output controller.SevensWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(new(presenter.SevensWebPresenter).Output(g, nil)), &output))
+	assert.Equal(t, []int{0}, output.ValidPlays)
+}
+
+// Reset shuffles the seats, so the human is not always player 0. validPlays must be
+// read for the seat whose turn it is, or a human at seat 1-3 never gets a playable card.
+func TestSevensWebPresenter_OutputValidPlaysForHumanNotAtSeatZero(t *testing.T) {
+	m := new(interfaces.MockSevensGame)
+	m.On("GetCurrentTurn").Return(2)
+	m.On("GetValidPlayIndices", 2).Return([]int{1, 3})
+	m.On("GetJokerPlacements").Return([]domain.SevensPosition{})
+	m.On("GetGameEndFlag").Return(false)
+	m.On("GetTableMinVals").Return([5]int{7, 7, 7, 7, 7})
+	m.On("GetTableMaxVals").Return([5]int{7, 7, 7, 7, 7})
+	m.On("GetTablePlaced").Return([5]uint16{128, 128, 128, 128, 128})
+	m.On("GetConfig").Return(domain.SevensConfig{})
+	m.On("GetCpuActions").Return([]*domain.SevensCpuAction(nil))
+	m.On("GetHumanAction").Return((*domain.SevensCpuAction)(nil))
+	m.On("GetPlayerCnt").Return(0)
+
+	var output controller.SevensWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(new(presenter.SevensWebPresenter).Output(m, nil)), &output))
+	assert.Equal(t, []int{1, 3}, output.ValidPlays)
+	m.AssertExpectations(t)
+}
+
+func TestSevensWebPresenterJokerPlacementsEmptyIsArray(t *testing.T) {
+	game := new(interfaces.MockSevensGame)
+	game.On("GetCurrentTurn").Return(0)
+	game.On("GetGameEndFlag").Return(false)
+	game.On("GetValidPlayIndices", 0).Return([]int{})
+	game.On("GetJokerPlacements").Return([]domain.SevensPosition{})
+	game.On("GetTableMinVals").Return([5]int{})
+	game.On("GetTableMaxVals").Return([5]int{})
+	game.On("GetTablePlaced").Return([5]uint16{})
+	game.On("GetConfig").Return(domain.SevensConfig{})
+	game.On("GetCpuActions").Return([]*domain.SevensCpuAction{})
+	game.On("GetHumanAction").Return((*domain.SevensCpuAction)(nil))
+	game.On("GetPlayerCnt").Return(0)
+	result := (&presenter.SevensWebPresenter{}).Output(game, nil)
+	var output controller.SevensWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(result), &output))
+	assert.NotNil(t, output.JokerPlacements)
+	assert.Empty(t, output.JokerPlacements)
+	assert.Contains(t, result, `"jokerPlacements":[]`)
+	game.AssertExpectations(t)
 }

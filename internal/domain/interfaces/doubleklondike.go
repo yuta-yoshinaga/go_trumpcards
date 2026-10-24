@@ -33,6 +33,10 @@ type DoubleKlondikeGame interface {
 	UndoN(n int) error
 	// GetHint ヒントを取得する。
 	GetHint() *domain.DoubleKlondikeHint
+	// LegalTargetsFrom returns destinations for a selected tableau card.
+	LegalTargetsFrom(col, cardIndex int) (tableau, foundation []int)
+	// WasteLegalTargets returns destinations for the waste top card.
+	WasteLegalTargets() (tableau, foundation []int)
 
 	// GetPhase 現在のフェーズを取得する。
 	GetPhase() domain.DoubleKlondikePhase

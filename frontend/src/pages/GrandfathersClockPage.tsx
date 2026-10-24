@@ -188,20 +188,9 @@ function GrandfathersClockPageContent() {
   const isSourceSelected = (zone: string, col?: number) =>
     selectedSource !== null && selectedSource.zone === zone && selectedSource.col === col;
 
-  /**
-   * Mirrors the domain's conditional clock-face placement rule for the selected tableau top.
-   *
-   * domain_rule_quoted: `canPlaceOnFoundation` requires a non-nil card, a non-empty and
-   * incomplete face, the same suit as its top card, and the next rank (K wraps to A).
-   */
   const canPlaceSelectedOnFace = (fIdx: number): boolean => {
     if (selectedSource?.zone !== 'tableau' || selectedSource.col === undefined) return false;
-    const card = state.tableau[selectedSource.col]?.at(-1)?.card;
-    const face = state.foundation[fIdx];
-    const top = face?.cards.at(-1);
-    if (!card || !face || !top || face.complete) return false;
-    const nextRank = top.value >= 13 ? 1 : top.value + 1;
-    return card.design === top.design && card.value === nextRank;
+    return state.legalTargets[`tableau-${selectedSource.col}`]?.foundation.includes(fIdx) ?? false;
   };
 
   const renderTableauColumn = (colIdx: number) => {
@@ -283,6 +272,25 @@ function GrandfathersClockPageContent() {
     );
   };
 
+  const settingsPanel = (
+    <SettingsPanel
+      title={tc('settings.title')}
+      groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
+    />
+  );
+
+  const redoUnavailableDescription = (
+    <span id="gc-redo-unavailable" className="sr-only">
+      {t('redoUnavailable')}
+    </span>
+  );
+
+  const autoCompleteReasonDescription = !autoCompleteReady && (
+    <p id="gc-autocomplete-reason" className="text-ds-text-muted text-xs self-center">
+      {t('autoCompleteNotReady')}
+    </p>
+  );
+
   return (
     <GamePageShell
       title={tc('nav.grandfathersclock')}
@@ -324,9 +332,9 @@ function GrandfathersClockPageContent() {
       ) : (
         <>
           {/* 12 x 80 + 11 x 4 = 1004px; keep enough content width for the clock row. */}
-          <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4">
+          <div className={`flex-1 overflow-y-auto ${isMobile ? 'pt-1' : 'pt-3'} px-2 sm:px-4`}>
             <div
-              className={`flex flex-wrap justify-center gap-1 mb-3 ${isLargeDesktop ? '' : 'sm:gap-2'}`}
+              className={`flex flex-wrap justify-center ${isMobile ? 'gap-0.5 mb-1' : 'gap-1 mb-3'} ${isLargeDesktop ? '' : 'sm:gap-2'}`}
               data-tutorial="gc-clock"
             >
               {state.foundation.map((face, idx) => {
@@ -335,7 +343,7 @@ function GrandfathersClockPageContent() {
                 const canPlace = canPlaceSelectedOnFace(idx);
                 return (
                   <div key={`f-${idx.toString()}`} className="text-center">
-                    <div className="text-game-text-muted text-xs mb-1">
+                    <div className={`text-game-text-muted text-xs ${isMobile ? 'mb-0' : 'mb-1'}`}>
                       {t('hourLabel', { hour: CLOCK_HOURS[idx] })}
                     </div>
                     <DropZone
@@ -447,12 +455,16 @@ function GrandfathersClockPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+            {isMobile && isPlaying && (
+              <>
+                {redoUnavailableDescription}
+                {autoCompleteReasonDescription}
+              </>
+            )}
+            {isMobile && settingsPanel}
           </div>
 
-          <SettingsPanel
-            title={tc('settings.title')}
-            groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
-          />
+          {!isMobile && settingsPanel}
 
           <GameFooter className={`${gameTheme.grandfathersclock.footer} px-4 py-2.5`}>
             <ErrorAlert message={error ?? hintError} onRetry={retry} />
@@ -478,9 +490,7 @@ function GrandfathersClockPageContent() {
                   >
                     {t('redo')}
                   </button>
-                  <span id="gc-redo-unavailable" className="sr-only">
-                    {t('redoUnavailable')}
-                  </span>
+                  {!isMobile && redoUnavailableDescription}
                   {state.isStalemate && (
                     <StalemateEscapeButton
                       undoToEscape={state.undoToEscape ?? 0}
@@ -509,11 +519,7 @@ function GrandfathersClockPageContent() {
                   >
                     {t('autoComplete')}
                   </button>
-                  {!autoCompleteReady && (
-                    <p id="gc-autocomplete-reason" className="text-ds-text-muted text-xs self-center">
-                      {t('autoCompleteNotReady')}
-                    </p>
-                  )}
+                  {!isMobile && autoCompleteReasonDescription}
                   <button
                     type="button"
                     className={btnDanger}

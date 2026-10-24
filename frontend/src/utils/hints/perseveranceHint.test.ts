@@ -11,8 +11,10 @@ function makeState(overrides?: Partial<PerseveranceResponse>): PerseveranceRespo
     canUndo: false,
     isStalemate: false,
     redealsLeft: 2,
+    legalTargets: {},
     message: '',
     ...overrides,
+    runStarts: overrides?.runStarts ?? [],
   };
 }
 

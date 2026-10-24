@@ -391,12 +391,12 @@ function MarriagePageContent() {
                               {' '}
                               | {t('deadwoodShort', { score: p.deadwood })}
                               {p.maal > 0 && (
-                                <span className="ml-1" data-testid="marriage-maal">
+                                <span className="ml-1 whitespace-nowrap" data-testid="marriage-maal">
                                   {t('maalShort', { score: p.maal })}
                                 </span>
                               )}
                               {p.hasPureSequence && (
-                                <span className="ml-1 text-ds-success">{t('pureSequenceBadge')}</span>
+                                <span className="ml-1 whitespace-nowrap text-ds-success">{t('pureSequenceBadge')}</span>
                               )}
                             </>
                           )}
@@ -465,7 +465,7 @@ function MarriagePageContent() {
                             <td className="text-center">
                               {p.cumulativeScore}
                               {p.maal > 0 && (
-                                <span className="ml-1" data-testid="marriage-maal">
+                                <span className="ml-1 whitespace-nowrap" data-testid="marriage-maal">
                                   {t('maalShort', { score: p.maal })}
                                 </span>
                               )}
@@ -500,11 +500,13 @@ function MarriagePageContent() {
               <div className="mt-2 text-sm text-ds-text-muted" data-testid="marriage-hand-status">
                 {t('deadwoodShort', { score: humanPlayer.deadwood })}
                 {humanPlayer.maal > 0 && (
-                  <span className="ml-2" data-testid="marriage-maal">
+                  <span className="ml-2 whitespace-nowrap" data-testid="marriage-maal">
                     {t('maalShort', { score: humanPlayer.maal })}
                   </span>
                 )}
-                <span className={`ml-2 ${humanPlayer.hasPureSequence ? 'text-ds-success' : 'text-ds-warning'}`}>
+                <span
+                  className={`ml-2 whitespace-nowrap ${humanPlayer.hasPureSequence ? 'text-ds-success' : 'text-ds-warning'}`}
+                >
                   {humanPlayer.hasPureSequence ? t('pureSequenceBadge') : t('pureSequenceMissing')}
                 </span>
                 {/* **A も 10 点。** ジンラミー系に慣れたプレイヤーほど A=1 を

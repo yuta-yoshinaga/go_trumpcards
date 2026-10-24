@@ -34,9 +34,12 @@ func hachihachiFace(card *domain.Card) *CardFace {
 	default:
 		color = "black"
 	}
+	kind := hachiHachiCategoryCode(domain.HachiHachiCardCategory(card))
 	return &CardFace{
 		Glyph: domain.HachiHachiCardGlyph(card),
 		Label: domain.HachiHachiCardLabel(card),
+		Month: card.GetDesign(),
+		Kind:  kind,
 		Color: color,
 		Deck:  "hanafuda",
 	}
@@ -52,6 +55,7 @@ func (p *HachiHachiWebPresenter) Output(g interfaces.HachiHachiGame, lastErr err
 		resObj.Message = lastErr.Error()
 	} else if entry := latestAction(g.GetActionLog(), "draw"); entry != nil && len(entry.Cards) > 1 {
 		resObj.MessageCode = "hachihachi.drawCapture"
+		resObj.MessageCards = cardsToOutputWithFace(entry.Cards, hachihachiFace)
 		resObj.MessageParams = map[string]string{"card": domain.HachiHachiCardLabel(entry.Cards[0]), "captured": hachiHachiCapturedLabels(entry.Cards[1:])}
 	} else if g.GetGameEndFlag() || g.GetPhase() == domain.HachiHachiPhaseGameEnd {
 		resObj.Message = p.buildResultMessage(g)
@@ -209,5 +213,5 @@ func (p *HachiHachiWebPresenter) HintOutput(g interfaces.HachiHachiGame) string 
 
 // ActionLogOutput は棋譜を JSON 出力する。
 func (p *HachiHachiWebPresenter) ActionLogOutput(g interfaces.HachiHachiGame) string {
-	return actionLogOutputJSON(g)
+	return actionLogOutputJSONWithFace(g, hachihachiFace)
 }

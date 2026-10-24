@@ -46,6 +46,8 @@ const playingState: NapoleonsSquareResponse = {
   stockCount: 48,
   waste: [],
   foundation: aces,
+  legalTargets: { 'tableau-0-1': { tableau: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11], foundation: [] } },
+  runStarts: [[0, 1], [0], ...Array.from({ length: 10 }, () => [])],
   phase: 0,
   moveCount: 3,
   canUndo: false,
@@ -198,7 +200,7 @@ describe('NapoleonsSquarePage', () => {
     for (const button of cardButtons) {
       expect(button.className).toContain('min-h-11');
     }
-    fireEvent.dragStart(cardButtons[0]!, { dataTransfer: { setData: vi.fn(), effectAllowed: 'none' } });
+    fireEvent.dragStart(cardButtons[0], { dataTransfer: { setData: vi.fn(), effectAllowed: 'none' } });
     expect(cardButtons[0]).toHaveClass('opacity-50');
     expect(screen.getByRole('button', { name: '空のタブロー列 2' }).className).toContain('min-h-11');
   });
@@ -256,7 +258,7 @@ describe('NapoleonsSquarePage', () => {
     await waitFor(() => expect(buried).toHaveAttribute('aria-pressed', 'true'));
   });
 
-  it('marks only legal run heads and announces the actual movable count', async () => {
+  it('follows server run starts even when the old client rule rejects the column', async () => {
     const state = {
       ...playingState,
       tableau: makeTableau(
@@ -269,14 +271,15 @@ describe('NapoleonsSquarePage', () => {
             : column,
         ),
       ),
+      runStarts: [[], [], [0], ...Array.from({ length: 9 }, () => [])],
     };
     mockExec.mockResolvedValue(state);
     renderWithProviders(<NapoleonsSquarePage />);
     const head = (await screen.findAllByRole('button', { name: /^♠ 7（/ }))[0];
     const brokenHead = screen.getAllByRole('button', { name: /^♠ 7（/ })[1];
-    expect(head).toHaveClass('ring-ds-success');
-    expect(brokenHead).not.toHaveClass('ring-ds-success');
-    expect(head).toHaveAttribute('aria-describedby');
+    expect(head).not.toHaveClass('ring-ds-success');
+    expect(brokenHead).toHaveClass('ring-ds-success');
+    expect(brokenHead).toHaveAttribute('aria-describedby');
     expect(screen.getAllByTestId('ns-run-hint')[0]).toHaveTextContent('2枚まとめて動かせます');
   });
 
@@ -384,7 +387,14 @@ describe('NapoleonsSquarePage waste, hints and CLI mode', () => {
     vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
   });
 
-  const withWaste: NapoleonsSquareResponse = { ...playingState, waste: [card('DIAMOND', 4)] };
+  const withWaste: NapoleonsSquareResponse = {
+    ...playingState,
+    waste: [card('DIAMOND', 4)],
+    legalTargets: {
+      ...playingState.legalTargets,
+      waste: { tableau: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11], foundation: [] },
+    },
+  };
 
   it('labels the waste as empty when there is nothing on it', async () => {
     mockExec.mockResolvedValue(playingState);

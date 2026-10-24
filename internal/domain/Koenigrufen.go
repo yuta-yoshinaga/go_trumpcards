@@ -653,13 +653,7 @@ func (g *Koenigrufen) doDiscard(cardIndices []int) error {
 // validateDiscards 場札交換の合法性を検証する。キング・トゥルル (Pagat/XXI/Sküs) は不可。切り札は
 // 捨てられる非切り札・非キング札が 6 枚に満たない場合のみ許可。
 func (g *Koenigrufen) validateDiscards(player *KoenigrufenPlayer, cardIndices []int) error {
-	discardable := 0
-	for i := 0; i < player.GetCardsSize(); i++ {
-		if koenigrufenDiscardable(player.GetCard(i)) {
-			discardable++
-		}
-	}
-	allowTrump := discardable < KoenigrufenTalonSize
+	allowTrump := koenigrufenAllowTrumpDiscard(player)
 	for _, idx := range cardIndices {
 		c := player.GetCard(idx)
 		if koenigrufenIsKing(c) {
@@ -673,6 +667,17 @@ func (g *Koenigrufen) validateDiscards(player *KoenigrufenPlayer, cardIndices []
 		}
 	}
 	return nil
+}
+
+// koenigrufenAllowTrumpDiscard reports whether a trump may be discarded in this hand.
+func koenigrufenAllowTrumpDiscard(player *KoenigrufenPlayer) bool {
+	discardable := 0
+	for i := 0; i < player.GetCardsSize(); i++ {
+		if koenigrufenDiscardable(player.GetCard(i)) {
+			discardable++
+		}
+	}
+	return discardable < KoenigrufenTalonSize
 }
 
 // koenigrufenDiscardable 通常の場札交換に出せる札か (非切り札・非スキュース・非キング)。
@@ -1681,6 +1686,21 @@ func (g *Koenigrufen) GetPlayerCnt() int { return len(g.players) }
 // GetPlayer プレイヤー取得
 func (g *Koenigrufen) GetPlayer(i int) *KoenigrufenPlayer {
 	return getPlayer(g.players, i)
+}
+
+// DiscardableIndices returns hand indices accepted by talon-exchange discard validation for playerIdx.
+func (g *Koenigrufen) DiscardableIndices(playerIdx int) []int {
+	player := g.GetPlayer(playerIdx)
+	if player == nil {
+		return []int{}
+	}
+	indices := make([]int, 0, player.GetCardsSize())
+	for i := 0; i < player.GetCardsSize(); i++ {
+		if g.validateDiscards(player, []int{i}) == nil {
+			indices = append(indices, i)
+		}
+	}
+	return indices
 }
 
 // IsHumanTurn 現在の手番 (Play) が人間か。

@@ -32,6 +32,12 @@ type PenguinWebOutputHint struct {
 	ToCol     int    `json:"toCol"`
 }
 
+// PenguinWebOutputTargets contains tableau and foundation columns legal for one source.
+type PenguinWebOutputTargets struct {
+	Tableau    []int `json:"tableau"`
+	Foundation []int `json:"foundation"`
+}
+
 // PenguinWebOutput ペンギンWebアウトプット
 type PenguinWebOutput struct {
 	Tableau    [][]*WebOutputCard `json:"tableau"`
@@ -42,9 +48,10 @@ type PenguinWebOutput struct {
 	// そのまま運ぶ。フロントで数え直すと、空き列を経由地に使えない分の差
 	// (ドメインの maxMovableCards(toCol)) が抜け、動かせない束を「動かせる」と
 	// 表示してしまう (#5614)。
-	MaxMovableCards              int                   `json:"maxMovableCards"`
-	MaxMovableCardsToEmptyColumn int                   `json:"maxMovableCardsToEmptyColumn"`
-	Hint                         *PenguinWebOutputHint `json:"hint,omitempty"`
+	MaxMovableCards              int                                `json:"maxMovableCards"`
+	MaxMovableCardsToEmptyColumn int                                `json:"maxMovableCardsToEmptyColumn"`
+	LegalTargets                 map[string]PenguinWebOutputTargets `json:"legalTargets"`
+	Hint                         *PenguinWebOutputHint              `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase
 }
@@ -63,6 +70,7 @@ func newPenguinDefaultOutput(msg string) *PenguinWebOutput {
 		Tableau:       make([][]*WebOutputCard, 0),
 		FreeCells:     make([]*WebOutputCard, 0),
 		Foundation:    make([][]*WebOutputCard, 0),
+		LegalTargets:  make(map[string]PenguinWebOutputTargets),
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }

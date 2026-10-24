@@ -64,6 +64,7 @@ func (p *BeloteWebPresenter) buildBase(b interfaces.BeloteGame) *controller.Belo
 
 	resObj.CurrentTrick = trickCardsToOutput(b.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(b)
+	resObj.ValidPlays = humanTurnValidPlays[*domain.BelotePlayer](b, b.GetPhase() == domain.BelotePhasePlay)
 	return resObj
 }
 

@@ -2,6 +2,7 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -14,6 +15,7 @@ type NertzWebPresenter struct{}
 // Output ゲーム状態を JSON 出力
 func (p *NertzWebPresenter) Output(g interfaces.NertzGame, lastErr error) string {
 	resObj := p.buildBase(g)
+	resObj.LegalTargets = p.buildLegalTargets(g)
 	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
 	// 専用のレスポンスで、ページの state にはマージされない。ここで埋めないと
 	// フロントの `state.hint` は常に undefined で、それを読む分岐は全部死ぬ (#4483)。
@@ -57,6 +59,7 @@ func (p *NertzWebPresenter) Output(g interfaces.NertzGame, lastErr error) string
 // HintOutput ヒントを JSON 出力
 func (p *NertzWebPresenter) HintOutput(g interfaces.NertzGame) string {
 	resObj := p.buildBase(g)
+	resObj.LegalTargets = p.buildLegalTargets(g)
 	if hint := g.GetHint(); hint != nil {
 		resObj.Hint = &controller.NertzWebHint{
 			FromZone:  hint.FromZone,
@@ -70,6 +73,38 @@ func (p *NertzWebPresenter) HintOutput(g interfaces.NertzGame) string {
 		resObj.MessageCode = "nertz.noHint"
 	}
 	return marshalOrError(resObj)
+}
+
+func (p *NertzWebPresenter) buildLegalTargets(g interfaces.NertzGame) map[string]controller.NertzWebOutputTargets {
+	result := make(map[string]controller.NertzWebOutputTargets)
+	human := humanNertz(g)
+	if human == nil {
+		return result
+	}
+	for col := range domain.NertzTableauCnt {
+		for i := range human.GetTableauColumn(col) {
+			tab, found := g.LegalTargetsFrom(col, i)
+			if len(tab)+len(found) > 0 {
+				result["tableau-"+strconv.Itoa(col)+"-"+strconv.Itoa(i)] = controller.NertzWebOutputTargets{Tableau: intSliceOrEmpty(tab), Foundation: intSliceOrEmpty(found)}
+			}
+		}
+	}
+	if tab, found := g.NertzPileLegalTargets(); len(tab)+len(found) > 0 {
+		result["nertz"] = controller.NertzWebOutputTargets{Tableau: intSliceOrEmpty(tab), Foundation: intSliceOrEmpty(found)}
+	}
+	if tab, found := g.WasteLegalTargets(); len(tab)+len(found) > 0 {
+		result["waste"] = controller.NertzWebOutputTargets{Tableau: intSliceOrEmpty(tab), Foundation: intSliceOrEmpty(found)}
+	}
+	return result
+}
+
+func humanNertz(g interfaces.NertzGame) *domain.NertzPlayer {
+	for _, p := range g.GetPlayers() {
+		if p != nil && !p.GetIsCpu() {
+			return p
+		}
+	}
+	return nil
 }
 
 // ActionLogOutput 棋譜を JSON 出力。

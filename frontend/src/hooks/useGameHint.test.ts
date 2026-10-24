@@ -128,6 +128,7 @@ describe('useGameHint', () => {
       tableau: [[{ design: 'SPADE', value: 1 }], [], [], [], [], [], [], []],
       freeCells: [null, null, null, null],
       foundation: [[], [], [], []],
+      legalTargets: {},
       maxMovableCards: 1280,
       maxMovableCardsToEmptyColumn: 640,
       phase: 0,
@@ -761,6 +762,7 @@ describe('useGameHint', () => {
   it('routes scorpion through getScorpionHint (tableau move)', () => {
     localStorage.setItem('hint_enabled_scorpion', 'true');
     const state: ScorpionResponse = {
+      legalTargets: {},
       tableau: [],
       stockCount: 0,
       completedSuits: 0,
@@ -780,6 +782,7 @@ describe('useGameHint', () => {
   it('routes scorpion through getScorpionHint (deal stock)', () => {
     localStorage.setItem('hint_enabled_scorpion', 'true');
     const state: ScorpionResponse = {
+      legalTargets: {},
       tableau: [],
       stockCount: 3,
       completedSuits: 0,
@@ -798,6 +801,7 @@ describe('useGameHint', () => {
   it('routes wasp through getWaspHint (tableau move)', () => {
     localStorage.setItem('hint_enabled_wasp', 'true');
     const state: WaspResponse = {
+      legalTargets: {},
       tableau: [],
       stockCount: 0,
       completedSuits: 0,
@@ -817,6 +821,7 @@ describe('useGameHint', () => {
   it('routes wasp through getWaspHint (deal stock)', () => {
     localStorage.setItem('hint_enabled_wasp', 'true');
     const state: WaspResponse = {
+      legalTargets: {},
       tableau: [],
       stockCount: 3,
       completedSuits: 0,
@@ -835,6 +840,7 @@ describe('useGameHint', () => {
   it('routes accordion through getAccordionHint', () => {
     localStorage.setItem('hint_enabled_accordion', 'true');
     const state: AccordionResponse = {
+      legalTargets: {},
       piles: [],
       pileCount: 0,
       phase: 0,

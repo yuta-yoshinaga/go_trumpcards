@@ -383,6 +383,21 @@ func (s *Spiderette) GetStockCount() int { return len(s.stock) }
 // GetTableau タブロー取得
 func (s *Spiderette) GetTableau() [SpideretteTableauCnt][]*SpideretteTableauCard { return s.tableau }
 
+// RunStarts returns the card indices whose face-up suffixes are valid movable sequences.
+func (s *Spiderette) RunStarts(col int) []int {
+	if col < 0 || col >= SpideretteTableauCnt {
+		return []int{}
+	}
+	cards := s.tableau[col]
+	starts := make([]int, 0, len(cards))
+	for i, card := range cards {
+		if card.FaceUp && s.isValidSequence(cards[i:]) {
+			starts = append(starts, i)
+		}
+	}
+	return starts
+}
+
 // GetCompletedSuits 完成スート数取得
 func (s *Spiderette) GetCompletedSuits() int { return s.completedSuits }
 

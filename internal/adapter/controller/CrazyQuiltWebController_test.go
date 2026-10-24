@@ -20,6 +20,7 @@ func mustCrazyQuiltOutputJSON(msg string) string {
 		FoundationAscending: []bool{},
 		Foundation:          [][]*controller.WebOutputCard{},
 		Waste:               []*controller.WebOutputCard{},
+		LegalTargets:        map[string]controller.CrazyQuiltWebOutputTargets{},
 		WebOutputBase:       controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)

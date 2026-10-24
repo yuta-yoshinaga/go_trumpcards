@@ -50,21 +50,6 @@ func TestWebRankingPlayerNamesAreLocalized(t *testing.T) {
 			},
 		},
 		{
-			name: "Shithead",
-			ja: func() string {
-				players := []*domain.ShitheadPlayer{domain.NewShitheadPlayer(true), domain.NewShitheadPlayer(false)}
-				players[0].SetRank(1)
-				players[1].SetRank(2)
-				return (&ShitheadWebPresenter{}).buildResultMessage(domain.NewShithead(domain.NewTrumpCards(0), players, domain.DefaultShitheadConfig()))
-			},
-			en: func() string {
-				players := []*domain.ShitheadPlayer{domain.NewShitheadPlayer(true), domain.NewShitheadPlayer(false)}
-				players[0].SetRank(1)
-				players[1].SetRank(2)
-				return (&ShitheadWebPresenter{}).buildResultMessage(domain.NewShithead(domain.NewTrumpCards(0), players, domain.DefaultShitheadConfig()))
-			},
-		},
-		{
 			name: "KoiKoi",
 			ja: func() string {
 				players := []*domain.KoiKoiPlayer{domain.NewKoiKoiPlayer(true), domain.NewKoiKoiPlayer(false)}

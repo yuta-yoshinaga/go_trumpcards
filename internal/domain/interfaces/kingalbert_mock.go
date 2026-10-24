@@ -50,6 +50,16 @@ func (_m *MockKingAlbertGame) GetHint() *domain.KingAlbertHint {
 	return v.(*domain.KingAlbertHint)
 }
 
+func (_m *MockKingAlbertGame) LegalTargets(fromCol int) ([]int, []int) {
+	ret := _m.Called(fromCol)
+	return ret.Get(0).([]int), ret.Get(1).([]int)
+}
+
+func (_m *MockKingAlbertGame) ReserveLegalTargets(reserveIdx int) ([]int, []int) {
+	ret := _m.Called(reserveIdx)
+	return ret.Get(0).([]int), ret.Get(1).([]int)
+}
+
 func (_m *MockKingAlbertGame) AutoComplete() error {
 	ret := _m.Called()
 	return ret.Error(0)

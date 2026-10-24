@@ -39,13 +39,15 @@ if [[ "${ALLOW_STALE_BASE:-}" != 1 ]]; then
   overlap=$(comm -12 <(printf '%s\n' "${files[@]}" | LC_ALL=C sort -u) <(printf '%s\n' "$upstream" | LC_ALL=C sort -u))
   if [[ -n "$overlap" ]]; then
     printf '%s\n' "$overlap" >&2
-    echo "REFUSED: develop changed these files after this lane branched; merge origin/develop into the lane first" >&2
+    echo "REFUSED: develop changed these files after this lane branched; run sync.sh $s, then rcg.sh $s" >&2
     exit 1
   fi
 fi
 if ((${#files[@]})); then git add -- "${files[@]}"; fi
 metadata=()
-[[ -n "${BATCH_DELEGATED_TO:-codex (dele -k edit)}" ]] && metadata+=("Delegated-To: ${BATCH_DELEGATED_TO:-codex (dele -k edit)}")
+# BATCH_DELEGATED_TO remains the explicit override for inferred lane authors.
+delegation=$(delegated_to "$s")
+metadata+=("Delegated-To: $delegation")
 [[ -n "${CLAUDE_CO_AUTHOR:-}" ]] && metadata+=("Co-Authored-By: $CLAUDE_CO_AUTHOR")
 closes_line="Closes #$n"
 prbody_has_ref "$n" "$summ" && closes_line=''
@@ -70,6 +72,11 @@ tn=$(git show HEAD -U0 -- "*.test.ts" "*.test.tsx" "*_test.go" | grep -E "^\+\s*
 **Tests added/changed (from the diff):**
 $(sed "s/^/- /" <<<"$tn")"
 tp_fe=''; tp_go=''; BT='`'
+unset BATCH_E2E_SKIP_REASON
+if [[ -f "$BATCH_STATE/rc$s.txt" ]]; then
+  BATCH_E2E_SKIP_REASON="$(sed -n 's/^NOTE E2E_GATE skipped: //p' "$BATCH_STATE/rc$s.txt" | tail -1)"
+  [[ -z "$BATCH_E2E_SKIP_REASON" ]] || export BATCH_E2E_SKIP_REASON
+fi
 git show --stat HEAD --format= | grep -qE '\.(tsx?|mjs)' && tp_fe="- [x] ${BT}bunx vitest run${BT} on the changed test files and their shared-component siblings"
 git show --stat HEAD --format= | grep -qE '\.go|internal/i18n' && tp_go="- [x] ${BT}go build ./...${BT}, ${BT}go test -tags test ./...${BT}, ${BT}golangci-lint run --build-tags test ./internal/...${BT}"
 body=$(ship_pr_body "$n" "$summ" "$tp_fe" "$tp_go")

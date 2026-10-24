@@ -67,6 +67,7 @@ func (p *CoincheWebPresenter) buildBase(b interfaces.CoincheGame) *controller.Co
 
 	resObj.CurrentTrick = trickCardsToOutput(b.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(b)
+	resObj.ValidPlays = humanTurnValidPlays[*domain.CoinchePlayer](b, b.GetPhase() == domain.CoinchePhasePlay)
 	return resObj
 }
 

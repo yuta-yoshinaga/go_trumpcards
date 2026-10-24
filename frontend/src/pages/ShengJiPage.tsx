@@ -96,7 +96,6 @@ function ShengJiPageContent() {
   const { selected, toggle, clear } = useCardSelection();
 
   // Fetch a fresh game on mount.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
   useMountReset(exec);
 
   // CLI mode
@@ -467,16 +466,14 @@ function ShengJiPageContent() {
                       </>
                     )}
                     {isKitty && (
-                      <>
-                        <button
-                          type="button"
-                          className={btnSuccess}
-                          onClick={handleBury}
-                          disabled={loading || selected.length !== state.kittySizeMax}
-                        >
-                          {t('buryButton', { selected: selected.length, count: state.kittySizeMax })}
-                        </button>
-                      </>
+                      <button
+                        type="button"
+                        className={btnSuccess}
+                        onClick={handleBury}
+                        disabled={loading || selected.length !== state.kittySizeMax}
+                      >
+                        {t('buryButton', { selected: selected.length, count: state.kittySizeMax })}
+                      </button>
                     )}
                     {isPlay && (
                       <>

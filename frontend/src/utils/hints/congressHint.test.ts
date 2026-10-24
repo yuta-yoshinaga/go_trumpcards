@@ -4,6 +4,7 @@ import { getCongressHint } from './congressHint';
 
 function makeState(overrides?: Partial<CongressResponse>): CongressResponse {
   return {
+    legalTargets: {},
     tableau: Array.from({ length: 8 }, () => []),
     foundation: Array.from({ length: 8 }, () => []),
     stockCount: 96,

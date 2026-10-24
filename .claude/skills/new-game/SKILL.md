@@ -28,6 +28,8 @@ If `<name>` or `<category>` is missing, ask before scaffolding.
 
 ## Workflow
 
+The frontend Page step is defined in [`docs/new-game-checklist.md`](../../../docs/new-game-checklist.md#frontend-react): export the page as `createGamePage(<game>Definition)` (ADR-0044). The definition supplies `tutorial`; the factory wires `withTutorial`, `GamePageShell`, CLI, hint, settings, and reset. Because `clone-game.py` copies the source page as-is, if the chosen source is not on `createGamePage`, migrate the source page in its own PR first, then clone. Use AcesUp for action shortcuts and Hearts for card selection / `cardNav`. `check-game-page-definition` rejects new hand-wired pages.
+
 1. **Research & reuse first.** Before writing a domain, check whether an existing game is a
    near-clone. The repo has many derived games (Wasp = Scorpion + empty-column rule;
    Big O = Omaha with `holeCards=5`; Tien Len = Big Two variant). Cloning an existing

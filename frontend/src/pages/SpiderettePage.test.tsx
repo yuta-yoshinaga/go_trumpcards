@@ -61,6 +61,7 @@ const playingState: SpideretteResponse = {
     [],
     [],
   ]),
+  runStarts: [[0], [1], [], [], [], [], []],
   stockCount: 24,
   completedSuits: 0,
   score: 500,
@@ -247,6 +248,7 @@ describe('SpiderettePage', () => {
         ],
         [{ card: card('CLOVER', 9), faceUp: true }],
       ]),
+      runStarts: [[1], [0], [], [], [], [], []],
     });
     renderWithProviders(<SpiderettePage />);
 
@@ -269,6 +271,7 @@ describe('SpiderettePage', () => {
         ],
         [{ card: card('CLOVER', 9), faceUp: true }],
       ]),
+      runStarts: [[1], [0], [], [], [], [], []],
     });
     renderWithProviders(<SpiderettePage />);
 
@@ -292,6 +295,7 @@ describe('SpiderettePage', () => {
           { card: card('SPADE', 12), faceUp: true },
         ],
       ]),
+      runStarts: [[0, 1], [], [], [], [], [], []],
     });
     renderWithProviders(<SpiderettePage />);
 
@@ -314,6 +318,7 @@ describe('SpiderettePage', () => {
           { card: card('CLOVER', 4), faceUp: true },
         ],
       ]),
+      runStarts: [[0], [0], [], [], [], [], []],
     });
     renderWithProviders(<SpiderettePage />);
 
@@ -328,6 +333,24 @@ describe('SpiderettePage', () => {
         { zone: 'tableau', col: 1 },
       ),
     );
+  });
+
+  it('follows the server runStarts when they disagree with the former client rule', async () => {
+    mockSend.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau([
+        [
+          { card: card('SPADE', 13), faceUp: true },
+          { card: card('HEART', 12), faceUp: true },
+        ],
+      ]),
+      runStarts: [[0], [], [], [], [], [], []],
+    });
+    renderWithProviders(<SpiderettePage />);
+
+    const cardButton = await screen.findByTestId('spdt-card-0-0');
+    expect(cardButton).not.toBeDisabled();
+    expect(cardButton.className).not.toContain('opacity-40');
   });
 
   it('renders move count', async () => {

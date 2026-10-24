@@ -22,6 +22,8 @@ func TestCurdsAndWheyWebPresenter_Output(t *testing.T) {
 		for _, frag := range []string{`"columns"`, `"completedSuits"`, `"canUndo"`, `"messageCode":"curdsandwhey.playing"`} {
 			assert.Contains(t, out, frag)
 		}
+		assert.Contains(t, out, `"runStarts":[`)
+		assert.Contains(t, out, `"legalTargets":{`)
 	})
 
 	t.Run("error surfaced", func(t *testing.T) {
@@ -60,6 +62,8 @@ func TestCurdsAndWheyWebPresenter_Output(t *testing.T) {
 		js := `{"co":[[{"d":1,"v":9,"w":true}],[{"d":1,"v":8,"w":true}]],"ph":0}`
 		assert.Contains(t, p.HintOutput(ssStateCW(t, js)), "curdsandwhey.hintAvailable")
 		assert.Contains(t, p.HintOutput(ssStateCW(t, `{"ph":2}`)), "curdsandwhey.noHint")
+		assert.Contains(t, p.HintOutput(ssStateCW(t, `{"ph":2}`)), `"runStarts":[[],[],[],[],[],[],[],[],[],[],[],[],[]]`)
+		assert.Contains(t, p.HintOutput(ssStateCW(t, `{"ph":2}`)), `"legalTargets":{}`)
 	})
 
 	t.Run("action log is valid JSON", func(t *testing.T) {

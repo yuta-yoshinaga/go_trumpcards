@@ -25,6 +25,7 @@ function makeState(overrides: Partial<PenguinResponse> = {}): PenguinResponse {
     ],
     freeCells: [card(S, 5), card(H, 5), card(D, 5), null, null, null, null],
     foundation: [[], [card(C, 5)], [], []],
+    legalTargets: {},
     baseRank: 5,
     maxMovableCards: 8,
     maxMovableCardsToEmptyColumn: 4,

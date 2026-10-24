@@ -35,11 +35,17 @@ type AccordionWebOutputHint struct {
 	ToIdx   int `json:"toIdx"`
 }
 
+// AccordionWebOutputTargets lists legal Accordion destinations.
+type AccordionWebOutputTargets struct {
+	Tableau []int `json:"tableau"`
+}
+
 // AccordionWebOutput アコーディオンWebアウトプット
 type AccordionWebOutput struct {
-	Piles     []*AccordionWebOutputPile `json:"piles"`
-	PileCount int                       `json:"pileCount"`
-	Hint      *AccordionWebOutputHint   `json:"hint,omitempty"`
+	LegalTargets map[string]AccordionWebOutputTargets `json:"legalTargets"`
+	Piles        []*AccordionWebOutputPile            `json:"piles"`
+	PileCount    int                                  `json:"pileCount"`
+	Hint         *AccordionWebOutputHint              `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase
 }
@@ -56,6 +62,7 @@ var NewAccordionWebController, NewAccordionWebControllerWithProvider = webContro
 func newAccordionDefaultOutput(msg string) *AccordionWebOutput {
 	return &AccordionWebOutput{
 		Piles:         make([]*AccordionWebOutputPile, 0),
+		LegalTargets:  map[string]AccordionWebOutputTargets{},
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }

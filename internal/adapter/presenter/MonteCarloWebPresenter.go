@@ -89,6 +89,7 @@ func (pr *MonteCarloWebPresenter) buildBase(g interfaces.MonteCarloGame) *contro
 	resObj.StockCount = g.GetStockCount()
 	resObj.RemovedCount = g.GetRemovedCount()
 	resObj.DealCount = g.GetDealCount()
+	resObj.RemovablePairs = g.CountRemovablePairs()
 	resObj.CanUndo = g.CanUndo()
 	resObj.IsStalemate = g.IsStalemate()
 

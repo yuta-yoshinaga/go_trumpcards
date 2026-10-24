@@ -66,6 +66,7 @@ export interface KlaverjasResponse extends BaseGameResponse {
   roundPlayerRoem: number[];
   /** Indices in the human's hand that are legal to play (non-empty on human Play turn). */
   playableIndices: number[];
+  playRejectCodes: string[];
   gameEndFlag: boolean;
   /** Winning team index, or -1 until the game ends. */
   winnerTeam: number;

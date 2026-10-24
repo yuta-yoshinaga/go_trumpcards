@@ -1,5 +1,6 @@
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { cleanup, render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it } from 'vitest';
+import i18n from '../i18n';
 import type { Card } from '../types/card';
 import { CardFace } from './CardFace';
 
@@ -13,6 +14,22 @@ const wizardCard: Card = {
 };
 
 describe('CardFace', () => {
+  afterEach(async () => {
+    await i18n.changeLanguage('ja');
+  });
+
+  it('renders the localized hanafuda label instead of the server label', async () => {
+    await i18n.changeLanguage('en');
+    render(<CardFace card={{ ...wizardCard, deck: 'hanafuda', month: 9, kind: 'chaff', label: '菊·カス' }} />);
+    expect(screen.getAllByText('Sep')).toHaveLength(2);
+    expect(screen.getByRole('img')).toHaveAttribute('aria-label', 'Chrysanthemum·Chaff ✦');
+    cleanup();
+    await i18n.changeLanguage('ja');
+    render(<CardFace card={{ ...wizardCard, deck: 'hanafuda', month: 9, kind: 'chaff', label: '菊·カス' }} />);
+    expect(screen.getAllByText('菊·カス')).toHaveLength(2);
+    expect(screen.getByRole('img')).toHaveAttribute('aria-label', '菊·カス ✦');
+  });
+
   it('renders as a div with role img and no image src', () => {
     render(<CardFace card={wizardCard} />);
     const el = screen.getByRole('img');
@@ -24,6 +41,25 @@ describe('CardFace', () => {
     render(<CardFace card={wizardCard} />);
     expect(screen.getAllByText('Wizard')).toHaveLength(2);
     expect(screen.getByText('✦')).toBeInTheDocument();
+  });
+
+  it('renders Unsun Karuta with a compact corner and a full accessible name', async () => {
+    const card: Card = {
+      design: 'SPADE',
+      value: 10,
+      deck: 'unsun',
+      kind: 'sota',
+      unsunSuit: 'pao',
+      glyph: '棒',
+      label: 'ソウタ',
+    };
+    await i18n.changeLanguage('en');
+    render(<CardFace card={card} />);
+    expect(screen.getAllByText('Sot')).toHaveLength(2);
+    expect(screen.getByRole('img')).toHaveAttribute('aria-label', 'Sota of Pao');
+    // The centre keeps the language-neutral suit pictograph; a word would not fit a 24px card.
+    expect(screen.getByText('棒')).toBeInTheDocument();
+    await i18n.changeLanguage('ja');
   });
 
   it('builds an accessible aria-label from label and glyph', () => {

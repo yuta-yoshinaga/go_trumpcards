@@ -15,8 +15,9 @@ import (
 
 func mustGapsOutputJSON(msg string) string {
 	out := &controller.GapsWebOutput{
-		Grid:          [][]*controller.WebOutputCard{},
-		WebOutputBase: controller.WebOutputBase{Message: msg},
+		Grid:                [][]*controller.WebOutputCard{},
+		LockedPrefixLengths: []int{},
+		WebOutputBase:       controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {
@@ -29,7 +30,7 @@ func gapsIntPtr(v int) *int { return &v }
 
 func setupGapsWebTest(t *testing.T) (*usecase.MockGapsInteractor, *controller.GapsWebController, string) {
 	t.Helper()
-	mockOutput := `{"grid":[],"redealsUsed":0,"redealsRemaining":3,"phase":0,"moveCount":0,"canUndo":false,"isStalemate":false,"undoToEscape":0,"message":""}`
+	mockOutput := `{"grid":[],"lockedPrefixLengths":[],"redealsUsed":0,"redealsRemaining":3,"phase":0,"moveCount":0,"canUndo":false,"isStalemate":false,"undoToEscape":0,"message":""}`
 	giMock := new(usecase.MockGapsInteractor)
 	factory := func() uc.GapsInteractorIF { return giMock }
 	ctrl := controller.NewGapsWebController(factory)
@@ -85,6 +86,15 @@ func TestGapsWebController_Move_MissingFromTo(t *testing.T) {
 		BaseWebInput: controller.BaseWebInput{Command: "move", SessionID: "s1"},
 	})
 	rec.CodeIs(http.StatusBadRequest)
+	var output struct {
+		LockedPrefixLengths []int `json:"lockedPrefixLengths"`
+	}
+	if err := json.Unmarshal(rec.Body.Bytes(), &output); err != nil {
+		t.Fatal(err)
+	}
+	if output.LockedPrefixLengths == nil {
+		t.Fatal("lockedPrefixLengths must be an empty array in default error output")
+	}
 }
 
 func TestGapsWebController_Move_MissingRowCol(t *testing.T) {

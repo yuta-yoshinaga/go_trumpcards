@@ -477,15 +477,15 @@ describe('RazzPage', () => {
       }
       return result;
     };
-    const holeAncestors = new Set(ancestors(holeHeading!));
-    const commonWrapper = ancestors(doorHeading!).find(
+    const holeAncestors = new Set(ancestors(holeHeading as HTMLElement));
+    const commonWrapper = ancestors(doorHeading as HTMLElement).find(
       (ancestor) => holeAncestors.has(ancestor) && ancestor.className.includes('flex-wrap'),
     );
 
     expect(commonWrapper).toBeDefined();
-    expect(doorHeading!.parentElement).not.toBe(holeHeading!.parentElement);
-    expect(commonWrapper).toContainElement(doorHeading!);
-    expect(commonWrapper).toContainElement(holeHeading!);
+    expect((doorHeading as HTMLElement).parentElement).not.toBe((holeHeading as HTMLElement).parentElement);
+    expect(commonWrapper).toContainElement(doorHeading as HTMLElement);
+    expect(commonWrapper).toContainElement(holeHeading as HTMLElement);
   });
 
   // ---- message ----

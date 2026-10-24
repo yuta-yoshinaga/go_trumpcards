@@ -136,3 +136,12 @@ func (m *MockCallBreakGame) GetValidPlayIndices(playerIdx int) []int {
 	}
 	return nil
 }
+
+// GetPlayRejectCodes mocks the per-card rejection codes.
+func (m *MockCallBreakGame) GetPlayRejectCodes(playerIdx int) []string {
+	args := m.Called(playerIdx)
+	if v := args.Get(0); v != nil {
+		return v.([]string)
+	}
+	return nil
+}

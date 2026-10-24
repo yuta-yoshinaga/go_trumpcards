@@ -72,6 +72,39 @@ func TestNapoleonsSquare_Reset_SeedsEightAcesAndDealsTwelveByFour(t *testing.T) 
 	assert.False(t, ns.GetGameEndFlag())
 }
 
+func TestNapoleonsSquare_LegalTargetsAndRunStarts(t *testing.T) {
+	ns := newTestNapoleonsSquare()
+	var foundations [NapoleonsSquareFoundationCnt][]*Card
+	foundations[0] = []*Card{NewCard(CardDesignSpade, 5, true)}
+	setNSBoard(ns, foundations, [][]*Card{{NewCard(CardDesignSpade, 9, true), NewCard(CardDesignHeart, 4, true), NewCard(CardDesignSpade, 7, true), NewCard(CardDesignSpade, 6, true)}, {NewCard(CardDesignSpade, 8, true)}}, nil, []*Card{NewCard(CardDesignSpade, 6, true)})
+	badTab, badFoundation := ns.LegalTargetsFrom(0, 1)
+	assert.Nil(t, badTab)
+	assert.Nil(t, badFoundation)
+	tab, f := ns.LegalTargetsFrom(0, 2)
+	assert.Contains(t, tab, 1)
+	assert.Contains(t, tab, 2)
+	assert.Empty(t, f)
+	tab, f = ns.LegalTargetsFrom(0, 3)
+	assert.Equal(t, []int{2, 3, 4, 5, 6, 7, 8, 9, 10, 11}, tab)
+	assert.Equal(t, []int{0}, f)
+	assert.Equal(t, []int{2, 3}, ns.RunStarts(0))
+	wt, wf := ns.WasteLegalTargets()
+	assert.NotNil(t, wt)
+	assert.Equal(t, []int{0}, wf)
+}
+
+func TestNapoleonsSquare_LegalTargetsSkipCompletedFoundation(t *testing.T) {
+	ns := newTestNapoleonsSquare()
+	var foundations [NapoleonsSquareFoundationCnt][]*Card
+	for value := 1; value <= CardValueMax; value++ {
+		foundations[0] = append(foundations[0], NewCard(CardDesignSpade, value, true))
+	}
+	foundations[4] = []*Card{NewCard(CardDesignSpade, 1, true)}
+	setNSBoard(ns, foundations, [][]*Card{{NewCard(CardDesignSpade, 1, true)}}, nil, nil)
+	_, targets := ns.LegalTargetsFrom(0, 0)
+	assert.Empty(t, targets)
+}
+
 func TestNapoleonsSquare_DrawMovesStockToWaste(t *testing.T) {
 	ns := newTestNapoleonsSquare()
 	before := ns.GetStockCount()

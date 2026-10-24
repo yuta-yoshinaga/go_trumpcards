@@ -25,7 +25,6 @@ import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import { BelotePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { beloteLegalPlayIndices } from '../utils/beloteLegal';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -167,13 +166,8 @@ function BelotePageContent() {
   const humanIdx = state.players.findIndex((p) => p.isHuman);
   const isHumanBidTurn = (isBidPickUp || isBidCallTrump) && state.bidPlayerIdx === humanIdx;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
-  // Legal-play highlight: compute the follow-suit / trump-obligation legal set
-  // on the human's play turn only (mirrors internal/domain/Belote.go validatePlay).
-  // Ring-only, additive — illegal cards stay clickable and the backend still validates.
-  const legalPlayIndices =
-    isHumanTurn && humanPlayer
-      ? beloteLegalPlayIndices(humanPlayer.cards, state.currentTrick, state.trumpSuit, humanIdx)
-      : undefined;
+  // The server computes legality from internal/domain/Belote.go validatePlay (ADR-0045).
+  const legalPlayIndices = isHumanTurn ? state.validPlays : undefined;
   const faceUpSuit = state.faceUpCard?.design;
   const allSuits = [1, 2, 3, 4];
   const faceUpSuitNum =
@@ -245,10 +239,12 @@ function BelotePageContent() {
       <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
         {/* Round/Trick/Trump info */}
         <div className="text-ds-text-primary text-center mb-2">
-          <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
-          <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
-          {state.trumpSuit > 0 && <span className="mr-4">{t('maker', { team: state.makerTeam })}</span>}
-          <span>
+          <span className="mr-4 whitespace-nowrap">{t('round', { n: state.roundNumber })}</span>
+          <span className="mr-4 whitespace-nowrap">{t('trick', { n: state.trickNumber })}</span>
+          {state.trumpSuit > 0 && (
+            <span className="mr-4 whitespace-nowrap">{t('maker', { team: state.makerTeam })}</span>
+          )}
+          <span className="whitespace-nowrap">
             {state.trumpSuit > 0 ? t('trumpSuit', { suit: t(SUIT_LABEL_KEYS[state.trumpSuit]) }) : t('noTrump')}
           </span>
         </div>

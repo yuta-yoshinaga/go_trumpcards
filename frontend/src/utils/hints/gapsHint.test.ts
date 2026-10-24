@@ -6,6 +6,7 @@ import { getGapsHint } from './gapsHint';
 function baseState(overrides: Partial<GapsResponse> = {}): GapsResponse {
   return {
     grid: [[], [], [], []],
+    lockedPrefixLengths: [0, 0, 0, 0],
     redealsUsed: 0,
     redealsRemaining: 3,
     phase: GapsPhase.PLAYING,

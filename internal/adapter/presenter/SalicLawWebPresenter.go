@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -16,6 +17,7 @@ type SalicLawWebPresenter struct{}
 // Output ゲーム状態をJSON出力
 func (p *SalicLawWebPresenter) Output(c interfaces.SalicLawGame, lastErr error) string {
 	resObj := new(controller.SalicLawWebOutput)
+	resObj.LegalTargets = p.buildLegalTargets(c)
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, c, int(c.GetPhase()))
 
 	tableau := c.GetTableau()
@@ -96,6 +98,7 @@ func (p *SalicLawWebPresenter) Output(c interfaces.SalicLawGame, lastErr error) 
 func (p *SalicLawWebPresenter) HintOutput(c interfaces.SalicLawGame) string {
 	hint := c.GetHint()
 	resObj := new(controller.SalicLawWebOutput)
+	resObj.LegalTargets = p.buildLegalTargets(c)
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, c, int(c.GetPhase()))
 	resObj.Tableau = make([][]*controller.WebOutputCard, 0)
 	resObj.Foundation = make([][]*controller.WebOutputCard, 0)
@@ -114,6 +117,18 @@ func (p *SalicLawWebPresenter) HintOutput(c interfaces.SalicLawGame) string {
 	}
 
 	return marshalOrError(resObj)
+}
+
+func (p *SalicLawWebPresenter) buildLegalTargets(c interfaces.SalicLawGame) map[string]controller.SalicLawWebOutputTargets {
+	result := make(map[string]controller.SalicLawWebOutputTargets)
+	for pile := 0; pile < domain.SalicLawTableauCnt; pile++ {
+		tableau, foundation := c.LegalTargets(pile)
+		if len(tableau)+len(foundation) == 0 {
+			continue
+		}
+		result["tableau-"+strconv.Itoa(pile)] = controller.SalicLawWebOutputTargets{Tableau: intSliceOrEmpty(tableau), Foundation: intSliceOrEmpty(foundation)}
+	}
+	return result
 }
 
 // ActionLogOutput 棋譜をJSON出力

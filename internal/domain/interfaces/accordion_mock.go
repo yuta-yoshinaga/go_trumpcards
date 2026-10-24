@@ -78,6 +78,14 @@ func (_m *MockAccordionGame) GetPiles() [][]*domain.Card {
 	return v.([][]*domain.Card)
 }
 
+func (_m *MockAccordionGame) LegalTargets(fromIdx int) []int {
+	ret := _m.Called(fromIdx)
+	if ret.Get(0) == nil {
+		return nil
+	}
+	return ret.Get(0).([]int)
+}
+
 func (_m *MockAccordionGame) GetPileCount() int {
 	ret := _m.Called()
 	return ret.Int(0)

@@ -550,16 +550,14 @@ function WattenPageContent() {
               canDeclare || canPlay || canRespond || isRoundEnd ? (
                 <div className="flex flex-wrap gap-2 items-center" data-tutorial="watten-action-buttons">
                   {canDeclare && (
-                    <>
-                      <button
-                        type="button"
-                        className={btnPrimary}
-                        onClick={declare}
-                        disabled={loading || selectedRank === null || selectedSuit === null}
-                      >
-                        {t('declareButton')}
-                      </button>
-                    </>
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={declare}
+                      disabled={loading || selectedRank === null || selectedSuit === null}
+                    >
+                      {t('declareButton')}
+                    </button>
                   )}
                   {canPlay && (
                     <>

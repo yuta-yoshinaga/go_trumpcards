@@ -122,6 +122,55 @@ func TestSultan_canPlaceFoundation_AceOnKing(t *testing.T) {
 	assert.True(t, placed, "Ace should be placed on a King foundation")
 }
 
+func TestSultan_LegalFoundations(t *testing.T) {
+	su := setupPlayingSultan()
+	foundations := kingFoundations()
+	foundations[1] = []*domain.Card{makeSuCard(domain.CardDesignSpade, 13), makeSuCard(domain.CardDesignSpade, 1)}
+	su.SetFoundation(foundations)
+	su.SetDivan([]*domain.Card{makeSuCard(domain.CardDesignSpade, 2), nil})
+	su.SetWaste([]*domain.Card{makeSuCard(domain.CardDesignHeart, 1), makeSuCard(domain.CardDesignSpade, 2)})
+	assert.Equal(t, []int{1}, su.DivanLegalFoundations(0))
+	assert.Empty(t, su.DivanLegalFoundations(1))
+	assert.Empty(t, su.DivanLegalFoundations(-1))
+	assert.Equal(t, []int{1}, su.WasteLegalFoundations())
+	su.SetPhase(domain.SultanPhaseGameOver)
+	assert.Empty(t, su.DivanLegalFoundations(0))
+	assert.Empty(t, su.WasteLegalFoundations())
+}
+
+func TestSultan_LegalFoundationsRuleCases(t *testing.T) {
+	tests := []struct {
+		name        string
+		foundations [domain.SultanFoundationCnt][]*domain.Card
+		card        *domain.Card
+		want        []int
+	}{
+		{"ace on king", kingFoundations(), makeSuCard(domain.CardDesignHeart, 1), []int{4, 5}},
+		{"next same suit", func() [domain.SultanFoundationCnt][]*domain.Card {
+			f := kingFoundations()
+			f[0] = append(f[0], makeSuCard(domain.CardDesignSpade, 1))
+			return f
+		}(), makeSuCard(domain.CardDesignSpade, 2), []int{0}},
+		{"two cannot go on king", kingFoundations(), makeSuCard(domain.CardDesignHeart, 2), []int{}},
+		{"completed pile rejects cards", func() [domain.SultanFoundationCnt][]*domain.Card {
+			f := kingFoundations()
+			for _, idx := range []int{4, 5} {
+				f[idx] = append(f[idx], makeSuCard(domain.CardDesignHeart, 1), makeSuCard(domain.CardDesignHeart, 2), makeSuCard(domain.CardDesignHeart, 3), makeSuCard(domain.CardDesignHeart, 4), makeSuCard(domain.CardDesignHeart, 5), makeSuCard(domain.CardDesignHeart, 6), makeSuCard(domain.CardDesignHeart, 7), makeSuCard(domain.CardDesignHeart, 8), makeSuCard(domain.CardDesignHeart, 9), makeSuCard(domain.CardDesignHeart, 10), makeSuCard(domain.CardDesignHeart, 11), makeSuCard(domain.CardDesignHeart, 12))
+			}
+			return f
+		}(), makeSuCard(domain.CardDesignHeart, 1), []int{}},
+		{"different suit", kingFoundations(), makeSuCard(domain.CardDesignDiamond, 2), []int{}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			su := setupPlayingSultan()
+			su.SetFoundation(tt.foundations)
+			su.SetDivan([]*domain.Card{tt.card})
+			assert.Equal(t, tt.want, su.DivanLegalFoundations(0))
+		})
+	}
+}
+
 func TestSultan_canPlaceFoundation_WrongSuitRejected(t *testing.T) {
 	su := setupPlayingSultan()
 	su.SetFoundation(kingFoundations())

@@ -32,6 +32,7 @@ import {
 } from '../utils/cli/commands/zhengCommands';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatGameRankings } from '../utils/formatGameRankings';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { isValidZhengCombo, zhengInvalidReason } from '../utils/zhengComboValidator';
 
@@ -194,6 +195,17 @@ function ZhengPageContent() {
       ? zhengInvalidReason(selectedCards, state.tableCards, state.tablePlayType)
       : null;
   const phaseName = isGameEnd ? t('phase.end') : t('phase.play');
+  const resultParams = state.rankings
+    ? {
+        rankings: formatGameRankings(
+          state.rankings,
+          (seat) => (seat === 0 ? tc('player.you') : tc('player.cpu', { id: seat })),
+          (rank) => t('result.rankN', { rank }),
+          (seat, rank) => t('rankingEntry', { seat, rank }),
+          t('listSeparator'),
+        ),
+      }
+    : state.messageParams;
 
   // Standings: finished players first (by confirmed rank), then still-playing
   // players ordered by fewest cards left. Shown once anyone has gone out so the
@@ -345,11 +357,7 @@ function ZhengPageContent() {
               </CardFan>
             </div>
 
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
+            <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={resultParams} />
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
           </div>
 

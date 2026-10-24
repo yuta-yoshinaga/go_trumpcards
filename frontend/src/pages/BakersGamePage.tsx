@@ -31,7 +31,6 @@ import { gameTheme } from '../styles/gameTheme';
 import type { Card, FreeCellResponse } from '../types/card';
 import { FreeCellPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { bakersGameAutoMoveTarget } from '../utils/bakersGameAutoMoveTarget';
 import { cardAlt } from '../utils/cardAlt';
 import { FREECELL_HELP, parseFreecellCommand } from '../utils/cli/commands/freecellCommands';
 import { formatFreecellState } from '../utils/cli/formatters/freecellFormatter';
@@ -162,9 +161,20 @@ function BakersGamePageContent() {
   // free cell, when a legal target exists; otherwise do nothing (no error,
   // selection untouched). Disabled while auto-completing.
   const handleAutoMoveShortcut = useCallback(
-    (source: FreeCellMoveZone, card: Card) => {
+    (source: FreeCellMoveZone) => {
       if (!state || isAutoCompleting) return;
-      const target = bakersGameAutoMoveTarget(card, state.foundation, state.freeCells);
+      const sourceKey =
+        source.zone === 'tableau' && source.col !== undefined
+          ? `tableau-${source.col}-${state.tableau[source.col].length - 1}`
+          : `freecell-${source.cell}`;
+      const foundationTarget = state.legalTargets[sourceKey]?.foundation[0];
+      const target: FreeCellMoveZone | null =
+        foundationTarget !== undefined
+          ? { zone: 'foundation', col: foundationTarget }
+          : (() => {
+              const emptyCell = state.freeCells.indexOf(null);
+              return emptyCell === -1 ? null : { zone: 'freecell', cell: emptyCell };
+            })();
       if (!target) return;
       handleAutoMove(source, target);
     },
@@ -362,7 +372,7 @@ function BakersGamePageContent() {
                               if (e.detail >= 2) return;
                               handleSelectSource(freeCellZone);
                             }}
-                            onDoubleClick={() => handleAutoMoveShortcut(freeCellZone, card)}
+                            onDoubleClick={() => handleAutoMoveShortcut(freeCellZone)}
                             disabled={!isPlaying || loading}
                             aria-label={cardAlt(card)}
                             aria-pressed={isSourceSelected('freecell', undefined, idx)}
@@ -562,9 +572,7 @@ function BakersGamePageContent() {
                                       }}
                                       onDoubleClick={
                                         // Only the exposed top card of a column can auto-move.
-                                        cardIdx === col.length - 1
-                                          ? () => handleAutoMoveShortcut(cardZone, card)
-                                          : undefined
+                                        cardIdx === col.length - 1 ? () => handleAutoMoveShortcut(cardZone) : undefined
                                       }
                                       disabled={!isPlaying || loading}
                                       // 上限超過は title とリングだけで示していたので、

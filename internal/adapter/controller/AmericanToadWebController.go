@@ -39,6 +39,12 @@ type AmericanToadWebOutputHint struct {
 	ToIdx     int    `json:"toIdx"`
 }
 
+// AmericanToadWebOutputTargets contains legal destinations for one source.
+type AmericanToadWebOutputTargets struct {
+	Tableau    []int `json:"tableau"`
+	Foundation []int `json:"foundation"`
+}
+
 // AmericanToadWebOutput アメリカン・トード Web アウトプット
 type AmericanToadWebOutput struct {
 	Reserve    []*WebOutputCard                      `json:"reserve"`
@@ -51,8 +57,9 @@ type AmericanToadWebOutput struct {
 	// PassesUsed は山札を通した回数。CanRedeal と併せて残りのめくり直しが分かる。
 	PassesUsed int `json:"passesUsed"`
 	// CanRedeal が真なら、山札が空でも捨て札を戻してもう一巡できる。
-	CanRedeal bool                       `json:"canRedeal"`
-	Hint      *AmericanToadWebOutputHint `json:"hint,omitempty"`
+	CanRedeal    bool                                    `json:"canRedeal"`
+	LegalTargets map[string]AmericanToadWebOutputTargets `json:"legalTargets"`
+	Hint         *AmericanToadWebOutputHint              `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase
 }
@@ -72,6 +79,7 @@ func newAmericanToadDefaultOutput(msg string) *AmericanToadWebOutput {
 		Tableau:       make([][]*AmericanToadWebOutputTableauCard, 0),
 		Foundation:    make([][]*WebOutputCard, 0),
 		Waste:         make([]*WebOutputCard, 0),
+		LegalTargets:  make(map[string]AmericanToadWebOutputTargets),
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }

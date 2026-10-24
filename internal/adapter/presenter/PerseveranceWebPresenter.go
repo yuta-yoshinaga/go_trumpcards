@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -22,6 +23,7 @@ func (p *PerseveranceWebPresenter) Output(bd interfaces.PerseveranceGame, lastEr
 	// serialise tc.Card and the FaceUp field is effectively a constant true.
 	tableau := bd.GetTableau()
 	resObj.Tableau = make([][]*controller.PerseveranceWebOutputTableauCard, domain.PerseveranceTableauCnt)
+	resObj.RunStarts = p.buildRunStarts(bd)
 	for i := range domain.PerseveranceTableauCnt {
 		colCards := tableau[i]
 		resObj.Tableau[i] = make([]*controller.PerseveranceWebOutputTableauCard, len(colCards))
@@ -45,6 +47,7 @@ func (p *PerseveranceWebPresenter) Output(bd interfaces.PerseveranceGame, lastEr
 	}
 
 	resObj.RedealsLeft = bd.GetRedealsLeft()
+	resObj.LegalTargets = p.buildLegalTargets(bd)
 
 	// メッセージ
 	// **受動ヒントは Output() でも埋める。**HintOutput() は `command: "hint"`
@@ -91,7 +94,9 @@ func (p *PerseveranceWebPresenter) HintOutput(bd interfaces.PerseveranceGame) st
 	resObj := new(controller.PerseveranceWebOutput)
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, bd, int(bd.GetPhase()))
 	resObj.Tableau = make([][]*controller.PerseveranceWebOutputTableauCard, 0)
+	resObj.RunStarts = p.buildRunStarts(bd)
 	resObj.Foundation = make([][]*controller.WebOutputCard, 0)
+	resObj.LegalTargets = p.buildLegalTargets(bd)
 
 	if hint != nil {
 		resObj.Hint = &controller.PerseveranceWebOutputHint{
@@ -108,13 +113,44 @@ func (p *PerseveranceWebPresenter) HintOutput(bd interfaces.PerseveranceGame) st
 	return marshalOrError(resObj)
 }
 
+func (p *PerseveranceWebPresenter) buildRunStarts(g interfaces.PerseveranceGame) [][]int {
+	out := make([][]int, domain.PerseveranceTableauCnt)
+	for col := range domain.PerseveranceTableauCnt {
+		out[col] = g.RunStarts(col)
+		if out[col] == nil {
+			out[col] = []int{}
+		}
+	}
+	return out
+}
+
 // TargetsOutput は Web では通常の盤面をそのまま返す。
 //
-// 置ける先の強調は `perseveranceLegalTargets` がこの盤面から作っている ──
-// Web には `targets` に当たる操作が無く、選択した瞬間に見えている (#5581)。
-// ここで別の形を返すと、CUI 専用の応答が Web の経路に紛れ込む。
+// 置ける先は `legalTargets` として盤面とともに返す。Web には `targets` に
+// 当たる操作が無く、選択やプレビューの瞬間に使われる (#5581)。
 func (p *PerseveranceWebPresenter) TargetsOutput(bd interfaces.PerseveranceGame, _ int) string {
 	return p.Output(bd, nil)
+}
+
+func (p *PerseveranceWebPresenter) buildLegalTargets(g interfaces.PerseveranceGame) map[string]controller.PerseveranceWebOutputTargets {
+	out := make(map[string]controller.PerseveranceWebOutputTargets)
+	for col := 0; col < domain.PerseveranceTableauCnt; col++ {
+		for _, cardIndex := range g.RunStarts(col) {
+			tab, found := g.LegalTargetsFrom(col, cardIndex)
+			if len(tab) == 0 && len(found) == 0 {
+				continue
+			}
+			if tab == nil {
+				tab = []int{}
+			}
+			if found == nil {
+				found = []int{}
+			}
+			key := "tableau-" + strconv.Itoa(col) + "-" + strconv.Itoa(cardIndex)
+			out[key] = controller.PerseveranceWebOutputTargets{Tableau: tab, Foundation: found}
+		}
+	}
+	return out
 }
 
 // ActionLogOutput 棋譜をJSON出力

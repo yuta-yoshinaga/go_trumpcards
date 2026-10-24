@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -16,6 +17,7 @@ type DuchessWebPresenter struct{}
 // Output ゲーム状態をJSON出力
 func (p *DuchessWebPresenter) Output(d interfaces.DuchessGame, lastErr error) string {
 	resObj := new(controller.DuchessWebOutput)
+	resObj.LegalTargets = p.buildLegalTargets(d)
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, d, int(d.GetPhase()))
 
 	// リザーブ扇
@@ -122,6 +124,7 @@ func (p *DuchessWebPresenter) Output(d interfaces.DuchessGame, lastErr error) st
 func (p *DuchessWebPresenter) HintOutput(d interfaces.DuchessGame) string {
 	hint := d.GetHint()
 	resObj := new(controller.DuchessWebOutput)
+	resObj.LegalTargets = p.buildLegalTargets(d)
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, d, int(d.GetPhase()))
 	resObj.Reserve = make([][]*controller.WebOutputCard, 0)
 	resObj.Tableau = make([][]*controller.DuchessWebOutputTableauCard, 0)
@@ -142,6 +145,51 @@ func (p *DuchessWebPresenter) HintOutput(d interfaces.DuchessGame) string {
 	}
 
 	return marshalOrError(resObj)
+}
+
+func (p *DuchessWebPresenter) buildLegalTargets(d interfaces.DuchessGame) map[string]controller.DuchessWebOutputTargets {
+	result := make(map[string]controller.DuchessWebOutputTargets)
+	tableau := d.GetTableau()
+	for col, pile := range tableau {
+		for index := range pile {
+			tab, foundation := d.LegalTargetsFrom(col, index)
+			if len(tab)+len(foundation) > 0 {
+				if tab == nil {
+					tab = []int{}
+				}
+				if foundation == nil {
+					foundation = []int{}
+				}
+				result["tableau-"+strconv.Itoa(col)+"-"+strconv.Itoa(index)] = controller.DuchessWebOutputTargets{Tableau: tab, Foundation: foundation}
+			}
+		}
+	}
+	for fan, cards := range d.GetReserve() {
+		if len(cards) == 0 {
+			continue
+		}
+		tab, foundation := d.ReserveLegalTargets(fan)
+		if len(tab)+len(foundation) > 0 {
+			if tab == nil {
+				tab = []int{}
+			}
+			if foundation == nil {
+				foundation = []int{}
+			}
+			result["reserve-"+strconv.Itoa(fan)] = controller.DuchessWebOutputTargets{Tableau: tab, Foundation: foundation}
+		}
+	}
+	tab, foundation := d.WasteLegalTargets()
+	if len(tab)+len(foundation) > 0 {
+		if tab == nil {
+			tab = []int{}
+		}
+		if foundation == nil {
+			foundation = []int{}
+		}
+		result["waste"] = controller.DuchessWebOutputTargets{Tableau: tab, Foundation: foundation}
+	}
+	return result
 }
 
 // ActionLogOutput 棋譜をJSON出力

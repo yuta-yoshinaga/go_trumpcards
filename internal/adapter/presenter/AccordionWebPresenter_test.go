@@ -8,13 +8,14 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
-func setupAccordionWebMockDefaults(ag *interfaces.MockAccordionGame) {
+func setupAccordionWebMockDefaults(ag *interfaces.MockAccordionGame, targets []int) {
 	ag.On("GetPhase").Return(domain.AccordionPhasePlaying).Maybe()
 	ag.On("GetMoveCount").Return(0).Maybe()
 	ag.On("CanUndo").Return(false).Maybe()
@@ -23,6 +24,7 @@ func setupAccordionWebMockDefaults(ag *interfaces.MockAccordionGame) {
 	ag.On("GetPileCount").Return(52).Maybe()
 	piles := [][]*domain.Card{{domain.NewCard(domain.CardDesignSpade, 1, false)}}
 	ag.On("GetPiles").Return(piles).Maybe()
+	ag.On("LegalTargets", mock.Anything).Return(targets).Maybe()
 }
 
 func parseAccordionOutput(t *testing.T, jsonStr string) *controller.AccordionWebOutput {
@@ -36,20 +38,21 @@ func parseAccordionOutput(t *testing.T, jsonStr string) *controller.AccordionWeb
 // setupAccordionOutputMock は Output 用の既定を組む。**Output() も受動ヒントを
 // 埋めるようになった** (#4483) ので GetHint を呼べるようにする。共有ヘルパーに
 // 置くと、先に登録されたこの期待が HintOutput テストの「ヒントあり」を食う。
-func setupAccordionOutputMock(g *interfaces.MockAccordionGame) {
-	setupAccordionWebMockDefaults(g)
+func setupAccordionOutputMock(g *interfaces.MockAccordionGame, targets []int) {
+	setupAccordionWebMockDefaults(g, targets)
 	g.On("GetHint").Return(nil).Maybe()
 }
 
 func TestAccordionWebPresenter_Output(t *testing.T) {
 	t.Run("initial state", func(t *testing.T) {
 		ag := new(interfaces.MockAccordionGame)
-		setupAccordionOutputMock(ag)
+		setupAccordionOutputMock(ag, []int{0})
 		p := new(AccordionWebPresenter)
 
 		result := parseAccordionOutput(t, p.Output(ag, nil))
 		assert.Equal(t, 0, result.Phase)
 		assert.Equal(t, "accordion.playing", result.MessageCode)
+		assert.Equal(t, map[string]controller.AccordionWebOutputTargets{"pile-0": {Tableau: []int{0}}}, result.LegalTargets)
 	})
 
 	t.Run("stalemate", func(t *testing.T) {
@@ -61,11 +64,13 @@ func TestAccordionWebPresenter_Output(t *testing.T) {
 		ag.On("UndoToEscape").Return(3).Maybe()
 		ag.On("GetPileCount").Return(40).Maybe()
 		ag.On("GetPiles").Return([][]*domain.Card{}).Maybe()
+		ag.On("LegalTargets", mock.Anything).Return([]int{}).Maybe()
 
 		p := new(AccordionWebPresenter)
 		result := parseAccordionOutput(t, p.Output(ag, nil))
 		assert.Equal(t, "accordion.stalemate", result.MessageCode)
 		assert.True(t, result.IsStalemate)
+		assert.Equal(t, map[string]controller.AccordionWebOutputTargets{}, result.LegalTargets)
 	})
 
 	t.Run("game clear", func(t *testing.T) {
@@ -81,6 +86,7 @@ func TestAccordionWebPresenter_Output(t *testing.T) {
 		p := new(AccordionWebPresenter)
 		result := parseAccordionOutput(t, p.Output(ag, nil))
 		assert.Equal(t, "accordion.gameClear", result.MessageCode)
+		assert.Equal(t, map[string]controller.AccordionWebOutputTargets{}, result.LegalTargets)
 	})
 
 	t.Run("game over", func(t *testing.T) {
@@ -96,15 +102,17 @@ func TestAccordionWebPresenter_Output(t *testing.T) {
 		p := new(AccordionWebPresenter)
 		result := parseAccordionOutput(t, p.Output(ag, nil))
 		assert.Equal(t, "accordion.gameOver", result.MessageCode)
+		assert.Equal(t, map[string]controller.AccordionWebOutputTargets{}, result.LegalTargets)
 	})
 
 	t.Run("with error", func(t *testing.T) {
 		ag := new(interfaces.MockAccordionGame)
-		setupAccordionOutputMock(ag)
+		setupAccordionOutputMock(ag, []int{0})
 		p := new(AccordionWebPresenter)
 
 		result := parseAccordionOutput(t, p.Output(ag, errors.New("test error")))
 		assert.Equal(t, "test error", result.Message)
+		assert.Equal(t, map[string]controller.AccordionWebOutputTargets{"pile-0": {Tableau: []int{0}}}, result.LegalTargets)
 	})
 }
 
@@ -115,21 +123,31 @@ func TestAccordionWebPresenter_OutputCarriesTheHint(t *testing.T) {
 	hint := &domain.AccordionHint{FromIdx: 3, ToIdx: 1}
 
 	ag := new(interfaces.MockAccordionGame)
-	setupAccordionWebMockDefaults(ag)
+	setupAccordionWebMockDefaults(ag, []int{0})
 	ag.On("GetHint").Return(hint).Maybe()
+	ag.On("LegalTargets", mock.Anything).Return([]int{0}).Maybe()
 
 	result := parseAccordionOutput(t, new(AccordionWebPresenter).Output(ag, nil))
 	if result.Hint == nil {
 		t.Fatal("Output must carry the hint -- the frontend reads state.hint")
 	}
 	assert.Equal(t, 3, result.Hint.FromIdx)
+	assert.Equal(t, map[string]controller.AccordionWebOutputTargets{"pile-0": {Tableau: []int{0}}}, result.LegalTargets)
+}
+
+func TestAccordionWebPresenter_OutputWithNoLegalTargets(t *testing.T) {
+	ag := new(interfaces.MockAccordionGame)
+	setupAccordionOutputMock(ag, []int{})
+	result := parseAccordionOutput(t, new(AccordionWebPresenter).Output(ag, nil))
+	assert.Equal(t, map[string]controller.AccordionWebOutputTargets{}, result.LegalTargets)
 }
 
 func TestAccordionWebPresenter_HintOutput(t *testing.T) {
 	t.Run("with hint", func(t *testing.T) {
 		ag := new(interfaces.MockAccordionGame)
-		setupAccordionWebMockDefaults(ag)
+		setupAccordionWebMockDefaults(ag, []int{0})
 		ag.On("GetHint").Return(&domain.AccordionHint{FromIdx: 3, ToIdx: 0})
+		ag.On("LegalTargets", mock.Anything).Return([]int{0}).Maybe()
 
 		p := new(AccordionWebPresenter)
 		result := parseAccordionOutput(t, p.HintOutput(ag))
@@ -137,17 +155,19 @@ func TestAccordionWebPresenter_HintOutput(t *testing.T) {
 		assert.Equal(t, 3, result.Hint.FromIdx)
 		assert.Equal(t, 0, result.Hint.ToIdx)
 		assert.Equal(t, "accordion.hintAvailable", result.MessageCode)
+		assert.Equal(t, map[string]controller.AccordionWebOutputTargets{"pile-0": {Tableau: []int{0}}}, result.LegalTargets)
 	})
 
 	t.Run("no hint", func(t *testing.T) {
 		ag := new(interfaces.MockAccordionGame)
-		setupAccordionWebMockDefaults(ag)
+		setupAccordionWebMockDefaults(ag, []int{})
 		ag.On("GetHint").Return((*domain.AccordionHint)(nil))
 
 		p := new(AccordionWebPresenter)
 		result := parseAccordionOutput(t, p.HintOutput(ag))
 		assert.Nil(t, result.Hint)
 		assert.Equal(t, "accordion.noHint", result.MessageCode)
+		assert.Equal(t, map[string]controller.AccordionWebOutputTargets{}, result.LegalTargets)
 	})
 }
 

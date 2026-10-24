@@ -55,6 +55,18 @@ func (_m *MockPenguinGame) GetHint() *domain.PenguinHint {
 	return v.(*domain.PenguinHint)
 }
 
+// LegalTargetsFrom mocks tableau suffix destinations.
+func (_m *MockPenguinGame) LegalTargetsFrom(col, cardIndex int) ([]int, []int) {
+	ret := _m.Called(col, cardIndex)
+	return ret.Get(0).([]int), ret.Get(1).([]int)
+}
+
+// FreeCellLegalTargets mocks free cell destinations.
+func (_m *MockPenguinGame) FreeCellLegalTargets(cell int) ([]int, []int) {
+	ret := _m.Called(cell)
+	return ret.Get(0).([]int), ret.Get(1).([]int)
+}
+
 func (_m *MockPenguinGame) AutoComplete() error {
 	ret := _m.Called()
 	return ret.Error(0)

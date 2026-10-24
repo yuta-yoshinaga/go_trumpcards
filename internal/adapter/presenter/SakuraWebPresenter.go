@@ -195,5 +195,5 @@ func (p *SakuraWebPresenter) HintOutput(g interfaces.SakuraGame) string {
 
 // ActionLogOutput は棋譜を JSON 出力する。
 func (p *SakuraWebPresenter) ActionLogOutput(g interfaces.SakuraGame) string {
-	return actionLogOutputJSON(g)
+	return actionLogOutputJSONWithFace(g, koikoiFace)
 }

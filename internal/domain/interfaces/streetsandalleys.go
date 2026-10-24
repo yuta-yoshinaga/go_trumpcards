@@ -25,6 +25,8 @@ type StreetsAndAlleysGame interface {
 	GetTableau() [domain.StreetsAndAlleysTableauCnt][]*domain.StreetsAndAlleysTableauCard
 	// GetFoundation ファンデーションを取得する
 	GetFoundation() [domain.StreetsAndAlleysFoundationCnt][]*domain.Card
+	// LegalTargets 列 fromCol の一番下の札を置ける先を返す
+	LegalTargets(fromCol int) ([]int, []int)
 	// AllFaceUp 全カードが表向きかを返す
 	AllFaceUp() bool
 	// IsStalemate 手詰まり状態を取得する

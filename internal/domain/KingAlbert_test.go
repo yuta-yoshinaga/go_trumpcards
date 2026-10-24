@@ -44,6 +44,45 @@ func TestNewKingAlbert(t *testing.T) {
 	assert.Equal(t, domain.KingAlbertPhase(0), ka.GetPhase())
 }
 
+func TestKingAlbert_LegalTargets(t *testing.T) {
+	ka := setupPlayingKingAlbert()
+	clearKATableau(ka)
+	ka.SetTableau([domain.KingAlbertTableauCnt][]*domain.KingAlbertTableauCard{
+		0: {makeKATableauCard(domain.CardDesignHeart, 7)},
+		1: {makeKATableauCard(domain.CardDesignSpade, 8)},
+		2: {makeKATableauCard(domain.CardDesignHeart, 8)},
+		3: {makeKATableauCard(domain.CardDesignHeart, 8)},
+		4: {makeKATableauCard(domain.CardDesignHeart, 8)},
+		5: {makeKATableauCard(domain.CardDesignHeart, 8)},
+		6: {makeKATableauCard(domain.CardDesignHeart, 8)},
+		7: {makeKATableauCard(domain.CardDesignHeart, 8)},
+		8: {makeKATableauCard(domain.CardDesignHeart, 8)},
+	})
+	tableau, foundation := ka.LegalTargets(0)
+	assert.Equal(t, []int{1}, tableau)
+	assert.Empty(t, foundation)
+	tableau, foundation = ka.LegalTargets(1)
+	assert.NotContains(t, tableau, 1)
+	assert.Empty(t, foundation)
+	ka.SetTableau([domain.KingAlbertTableauCnt][]*domain.KingAlbertTableauCard{})
+	tableau, foundation = ka.LegalTargets(0)
+	assert.Nil(t, tableau)
+	assert.Nil(t, foundation)
+}
+
+func TestKingAlbert_ReserveLegalTargets(t *testing.T) {
+	ka := setupPlayingKingAlbert()
+	clearKATableau(ka)
+	ka.SetReserve([]*domain.Card{nil, makeKACard(domain.CardDesignSpade, 1)})
+	tableau, foundation := ka.ReserveLegalTargets(0)
+	assert.Nil(t, tableau)
+	assert.Nil(t, foundation)
+	ka.SetFoundation([domain.KingAlbertFoundationCnt][]*domain.Card{})
+	tableau, foundation = ka.ReserveLegalTargets(1)
+	assert.Len(t, tableau, domain.KingAlbertTableauCnt)
+	assert.Equal(t, []int{0}, foundation)
+}
+
 func TestKingAlbert_Reset(t *testing.T) {
 	ka := setupPlayingKingAlbert()
 

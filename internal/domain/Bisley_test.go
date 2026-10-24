@@ -437,3 +437,39 @@ func TestBisley_ErrorsNameI18nKeys(t *testing.T) {
 	code, _ = ErrorMessageCode(fresh.MoveTableauToAceFoundation(0))
 	assert.Equal(t, "bisley.errNotPlaying", code)
 }
+
+func TestBisley_LegalTargets(t *testing.T) {
+	t.Run("returns ascending destinations and excludes source", func(t *testing.T) {
+		b := newTestBisley()
+		cols := make([][]*Card, BisleyTableauCnt)
+		cols[0] = []*Card{NewCard(CardDesignSpade, 5, true)}
+		cols[2] = []*Card{NewCard(CardDesignSpade, 4, true)}
+		cols[4] = []*Card{NewCard(CardDesignSpade, 6, true)}
+		cols[5] = []*Card{NewCard(CardDesignHeart, 4, true)}
+		cols[6] = []*Card{NewCard(CardDesignSpade, 5, true)}
+		setBoard(b, b.GetAceFoundations(), b.GetKingFoundations(), cols)
+		assert.Equal(t, []int{2, 4}, b.LegalTargets(0))
+	})
+	t.Run("rejects empty columns and invalid sources", func(t *testing.T) {
+		b := newTestBisley()
+		cols := make([][]*Card, BisleyTableauCnt)
+		cols[0] = []*Card{NewCard(CardDesignSpade, 5, true)}
+		setBoard(b, b.GetAceFoundations(), b.GetKingFoundations(), cols)
+		assert.Empty(t, b.LegalTargets(0))
+		assert.Empty(t, b.LegalTargets(-1))
+		assert.Empty(t, b.LegalTargets(BisleyTableauCnt))
+	})
+	t.Run("supports both directions at ace and king edges", func(t *testing.T) {
+		b := newTestBisley()
+		cols := make([][]*Card, BisleyTableauCnt)
+		cols[0] = []*Card{NewCard(CardDesignSpade, 2, true)}
+		cols[1] = []*Card{NewCard(CardDesignSpade, 1, true)}
+		cols[2] = []*Card{NewCard(CardDesignHeart, 12, true)}
+		cols[3] = []*Card{NewCard(CardDesignHeart, 13, true)}
+		setBoard(b, b.GetAceFoundations(), b.GetKingFoundations(), cols)
+		assert.Equal(t, []int{1}, b.LegalTargets(0))
+		assert.Equal(t, []int{0}, b.LegalTargets(1))
+		assert.Equal(t, []int{3}, b.LegalTargets(2))
+		assert.Equal(t, []int{2}, b.LegalTargets(3))
+	})
+}

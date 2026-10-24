@@ -6,7 +6,7 @@ import { navigateTo, TIMEOUT_ACTION, TIMEOUT_TRANSITION } from './helpers';
 const legalCard = (page: Page) => page.locator('button.ring-ds-success');
 
 // 親のときだけ出る切り札ボタン。
-const trumpBtn = (page: Page) => page.locator('[data-testid^="sm-trump-"]:not([disabled])');
+const trumpBtn = (page: Page) => page.locator('[data-testid^="sm-trump-"][data-testid$="-btn"]:not([disabled])');
 
 test.describe('Sergeant Major E2E', () => {
   test('navigates to sergeantmajor and renders initial game state', async ({ page }) => {

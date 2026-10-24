@@ -5,7 +5,7 @@
   "type": "module",
   "engines": {
     "node": "24.x",
-    "bun": "1.3.10"
+    "bun": "1.4.4"
   },
   "scripts": {
     "dev": "vite",
@@ -13,7 +13,7 @@
     "lint": "biome lint .",
     "lint:tokens": "bun scripts/check-design-tokens.mjs",
     "format": "biome format --write .",
-    "check": "bun scripts/check-unused-export-consts.mjs && bun scripts/check-landscape-banner.mjs && biome check . && bun scripts/check-guard-floors.mjs && bun scripts/check-common-translation-keys.mjs && bun scripts/check-go-literal-labels.mjs && bun scripts/check-literal-accessible-names.mjs && bun scripts/check-domain-error-locale.mjs && bun scripts/check-action-log-detail.mjs && bun scripts/check-action-log-params.mjs && bun scripts/check-error-code-presenters.mjs && bun scripts/check-design-tokens.mjs && bun scripts/check-modal-focus-trap.mjs && bun scripts/check-discover-blurbs.mjs && bun scripts/check-discover-axes.mjs && bun scripts/check-message-codes.mjs && bun scripts/check-locale-parity.mjs && bun scripts/check-japanese-locale-translated.mjs && bun scripts/check-locale-text-agreement.mjs && bun scripts/check-move-zone-fields.mjs && bun scripts/check-hint-coverage.mjs && bun scripts/check-hint-reasons.mjs && bun scripts/check-hint-live-region.mjs && bun scripts/check-prompt-live-region.mjs && bun scripts/check-markdown-tables.mjs && bun scripts/check-hint-gate.mjs && bun scripts/check-near-win-threshold.mjs && bun scripts/check-samba-canasta-size.mjs && bun scripts/check-minchiate-last-trick.mjs && bun scripts/check-cli-hint-reachable.mjs && bun scripts/check-dependency-licenses.mjs && bun scripts/check-trademark-terms.mjs && bun scripts/check-asset-provenance.mjs && bun scripts/check-codecov-uploads.mjs && bun scripts/check-job-timeouts.mjs && bun scripts/check-mermaid.mjs && bun scripts/check-design-doc-identifiers.mjs && bun scripts/check-conditional-testid-coverage.mjs && bun scripts/check-suit-symbols.mjs && bun scripts/check-move-target-focusable.mjs && bun scripts/check-vacuous-text-content.mjs && bun scripts/check-overlap-stacking.mjs",
+    "check": "bun scripts/check-unused-export-consts.mjs && bun scripts/check-landscape-banner.mjs && biome check --error-on-warnings . && bun scripts/check-guard-floors.mjs && bun scripts/check-common-translation-keys.mjs && bun scripts/check-go-literal-labels.mjs && bun scripts/check-literal-accessible-names.mjs && bun scripts/check-domain-error-locale.mjs && bun scripts/check-action-log-detail.mjs && bun scripts/check-action-log-params.mjs && bun scripts/check-error-code-presenters.mjs && bun scripts/check-design-tokens.mjs && bun scripts/check-modal-focus-trap.mjs && bun scripts/check-discover-blurbs.mjs && bun scripts/check-discover-axes.mjs && bun scripts/check-message-codes.mjs && bun scripts/check-locale-parity.mjs && bun scripts/check-japanese-locale-translated.mjs && bun scripts/check-locale-text-agreement.mjs && bun scripts/check-move-zone-fields.mjs && bun scripts/check-hint-coverage.mjs && bun scripts/check-hint-reasons.mjs && bun scripts/check-hint-live-region.mjs && bun scripts/check-prompt-live-region.mjs && bun scripts/check-markdown-tables.mjs && bun scripts/check-hint-gate.mjs && bun scripts/check-near-win-threshold.mjs && bun scripts/check-samba-canasta-size.mjs && bun scripts/check-minchiate-last-trick.mjs && bun scripts/check-cli-hint-reachable.mjs && bun scripts/check-dependency-licenses.mjs && bun scripts/check-trademark-terms.mjs && bun scripts/check-asset-provenance.mjs && bun scripts/check-codecov-uploads.mjs && bun scripts/check-job-timeouts.mjs && bun scripts/check-e2e-test-count.mjs && bun scripts/check-game-page-definition.mjs && bun scripts/check-mermaid.mjs && bun scripts/check-design-doc-identifiers.mjs && bun scripts/check-conditional-testid-coverage.mjs && bun scripts/check-suit-symbols.mjs && bun scripts/check-move-target-focusable.mjs && bun scripts/check-vacuous-text-content.mjs && bun scripts/check-overlap-stacking.mjs",
     "check:write": "biome check --write .",
     "preview": "vite preview",
     "test": "vitest run",
@@ -27,39 +27,39 @@
     "deadcode": "knip"
   },
   "dependencies": {
-    "@tanstack/react-query": "^5.101.4",
-    "framer-motion": "^12.42.2",
+    "@tanstack/react-query": "^5.104.3",
+    "framer-motion": "^12.43.0",
     "howler": "^2.2.4",
-    "i18next": "^26.3.6",
+    "i18next": "^26.4.7",
     "i18next-browser-languagedetector": "^8.2.1",
-    "mermaid": "^11.16.0",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8",
-    "react-i18next": "^17.0.11",
+    "mermaid": "^11.17.2",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-i18next": "^17.0.20",
     "react-markdown": "^10.1.0",
-    "react-router-dom": "^7.18.1",
+    "react-router-dom": "^7.18.4",
     "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.5",
-    "@playwright/test": "^1.62.0",
+    "@playwright/test": "^1.64.1",
     "@tailwindcss/vite": "^4.3.3",
-    "@testing-library/jest-dom": "^7.0.0",
-    "@testing-library/react": "^16.3.2",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
     "@types/howler": "^2.2.13",
-    "@types/node": "^24.13.3",
-    "@types/react": "^19.2.17",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^6.0.4",
-    "@vitest/coverage-v8": "^4.1.10",
-    "happy-dom": "^20.11.1",
+    "@types/node": "^24.19.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "@vitest/coverage-v8": "^4.1.12",
+    "happy-dom": "^20.14.6",
     "jsdom": "^28.1.0",
-    "knip": "^6.32.2",
+    "knip": "^6.41.0",
     "tailwindcss": "^4.3.3",
     "typedoc": "^0.28.20",
     "typescript": "~5.9.3",
     "typescript7": "npm:typescript@~7.0.2",
-    "vite": "^8.1.5",
-    "vitest": "^4.1.10"
+    "vite": "^8.3.4",
+    "vitest": "^4.1.12"
   }
 }

@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
@@ -19,6 +20,7 @@ func setupOsmosisWebMockDefaults(og *interfaces.MockOsmosisGame) {
 	og.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	og.On("GetBaseRank").Return(7).Maybe()
 	og.On("CanUndo").Return(false).Maybe()
+	og.On("LegalTargets", mock.AnythingOfType("string"), mock.AnythingOfType("int")).Return([]int{}).Maybe()
 
 	var reserve [domain.OsmosisReserveCnt][]*domain.Card
 	for i := 0; i < domain.OsmosisReserveCnt; i++ {
@@ -49,6 +51,7 @@ func TestOsmosisWebPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, `"stockCount":34`)
 		assert.Contains(t, result, `"messageCode":"osmosis.playing"`)
 		assert.Contains(t, result, `"reserve"`)
+		assert.Contains(t, result, `"legalTargets"`)
 		assert.Contains(t, result, `"foundation"`)
 	})
 
@@ -157,6 +160,8 @@ func TestOsmosisWebPresenter_HintOutput(t *testing.T) {
 		p := new(OsmosisWebPresenter)
 		result := p.HintOutput(og)
 		assert.Contains(t, result, `"osmosis.noHint"`)
+		assert.Contains(t, result, `"legalTargets":{}`)
+		assert.NotContains(t, result, `"legalTargets":null`)
 	})
 }
 

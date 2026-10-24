@@ -16,6 +16,7 @@ import (
 func mustWaspOutputJSON(msg string) string {
 	out := &controller.WaspWebOutput{
 		Tableau:       [][]*controller.KlondikeWebOutputTableauCard{},
+		LegalTargets:  map[string]controller.WaspWebOutputTargets{},
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
@@ -26,7 +27,7 @@ func mustWaspOutputJSON(msg string) string {
 }
 
 func TestWaspWebController_Method(t *testing.T) {
-	mockOutput := `{"tableau":[],"stockCount":0,"completedSuits":0,"phase":0,"moveCount":0,"message":""}`
+	mockOutput := `{"legalTargets":{},"tableau":[],"stockCount":0,"completedSuits":0,"phase":0,"moveCount":0,"message":""}`
 	expectedBody := mockOutput
 
 	siMock := new(usecase.MockWaspInteractor)

@@ -61,3 +61,5 @@ ADR番号は連番ではない — 欠番はリトマステスト導入時に非
 | [ADR-0041](0041-tinygo-042-ninth-tenth-worker.md) | TinyGo 0.42.0 への更新と 9・10 個目の Worker（容量バケット）の追加 | Accepted | 2026-09-23 |
 | [ADR-0042](0042-workers-go-127-nojsonv2.md) | Worker の Go 1.27 更新と encoding/json v1 の維持 | Superseded by [ADR-0043](0043-json-v2-fourteen-workers.md) | 2026-09-24 |
 | [ADR-0043](0043-json-v2-fourteen-workers.md) | Worker を 14 個に増やし encoding/json v2 に戻す | Accepted (revised 2026-09-25: json v2 移行は撤回、Worker 14 個化のみ有効) | 2026-09-25 |
+| [ADR-0044](0044-game-page-definition.md) | ゲームページを GameDefinition から組み立てる (createGamePage) | Accepted | 2026-10-19 |
+| [ADR-0045](0045-legal-moves-as-server-data.md) | 合法手をサーバデータとして返す | Accepted | 2026-10-19 |

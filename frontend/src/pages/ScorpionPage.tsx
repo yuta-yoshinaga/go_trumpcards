@@ -38,7 +38,6 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
-import { scorpionLegalTargets } from '../utils/scorpionUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { isTableauAllFaceUp } from '../utils/solitaireUtils';
 
@@ -250,11 +249,13 @@ function ScorpionPageContent() {
   // まったく同じ計算で移動先を出す (#4454)。判定を二重に持たないので、
   // プレビューと選択後の表示が食い違うことはない。
   const preview = useDestinationPreview<ScorpionMoveZone>(selectedSource);
-  // Columns the previewed card may legally move onto (same suit, one rank higher).
-  const legalTargets = useMemo(
-    () => (preview.source && state ? scorpionLegalTargets(state.tableau, preview.source) : new Set<number>()),
-    [preview.source, state],
-  );
+  // Columns the server reports as legal for the previewed source.
+  const legalTargets = useMemo(() => {
+    if (!preview.source) return new Set<number>();
+    const { col, cardIndex } = preview.source;
+    const targets = state?.legalTargets[`tableau-${col}-${cardIndex}`];
+    return new Set(targets ? targets.tableau : []);
+  }, [preview.source, state]);
   const dealBlockedByEmpty = hasEmptyColumn && (state?.stockCount ?? 0) > 0;
   const autoCompleteReady = (state?.stockCount ?? 0) === 0 && isTableauAllFaceUp(state?.tableau ?? []);
   const handleDealGuarded = useCallback(() => {

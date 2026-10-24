@@ -25,6 +25,7 @@ const playingState: FreeCellResponse = {
   tableau: [[card('SPADE', 13)], [card('HEART', 12)], [], [], [], [], [], []],
   freeCells: [null, null, null, null],
   foundation: [[], [], [], []],
+  legalTargets: {},
   // 空きセル4 + 空き列6 → (1+4) * 2^6 = 320。空き列宛てはその列を経由地に使えず 160。
   maxMovableCards: 320,
   maxMovableCardsToEmptyColumn: 160,
@@ -788,7 +789,7 @@ describe('BakersGamePage', () => {
     expect(target).toHaveAttribute('aria-disabled', 'true');
     const hintId = target.getAttribute('aria-describedby');
     expect(hintId).toBeTruthy();
-    expect(document.getElementById(hintId!)).toHaveTextContent('先に移動する札を選んでください');
+    expect(document.getElementById(hintId as string)).toHaveTextContent('先に移動する札を選んでください');
     fireEvent.click(target);
     await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
@@ -1058,7 +1059,8 @@ describe('BakersGamePage', () => {
       mockExec.mockResolvedValue({
         ...playingState,
         tableau: [[card('SPADE', 2)], [], [], [], [], [], [], []],
-        foundation: [[card('SPADE', 1)], [], [], []],
+        foundation: [[], [], [], []],
+        legalTargets: { 'tableau-0-0': { tableau: [], foundation: [2] } },
       });
       renderWithProviders(<BakersGamePage />);
       const cardButton = (await screen.findByAltText('♠ 2')).closest('button') as HTMLButtonElement;
@@ -1069,7 +1071,7 @@ describe('BakersGamePage', () => {
       await waitFor(() =>
         expect(mockExec).toHaveBeenCalledWith('move', expect.objectContaining({ zone: 'tableau', col: 0 }), {
           zone: 'foundation',
-          col: 0,
+          col: 2,
         }),
       );
     });
@@ -1079,6 +1081,7 @@ describe('BakersGamePage', () => {
         ...playingState,
         freeCells: [card('SPADE', 1), null, null, null],
         foundation: [[], [], [], []],
+        legalTargets: { 'freecell-0': { tableau: [], foundation: [0] } },
       });
       renderWithProviders(<BakersGamePage />);
       const cardButton = (await screen.findByAltText('♠ A')).closest('button') as HTMLButtonElement;
@@ -1097,6 +1100,7 @@ describe('BakersGamePage', () => {
         tableau: [[card('SPADE', 13)], [], [], [], [], [], [], []],
         freeCells: [null, null, null, null],
         foundation: [[], [], [], []],
+        legalTargets: {},
       });
       renderWithProviders(<BakersGamePage />);
       const cardButton = (await screen.findByAltText('♠ K')).closest('button') as HTMLButtonElement;
@@ -1118,13 +1122,14 @@ describe('BakersGamePage', () => {
         tableau: [[card('SPADE', 13)], [], [], [], [], [], [], []],
         freeCells: [card('HEART', 5), card('CLOVER', 6), card('DIAMOND', 7), card('SPADE', 8)],
         foundation: [[], [], [], []],
+        legalTargets: {},
       });
       renderWithProviders(<BakersGamePage />);
       const cardButton = (await screen.findByAltText('♠ K')).closest('button') as HTMLButtonElement;
 
       mockExec.mockClear();
       fireEvent.doubleClick(cardButton);
-      await Promise.resolve();
+      await flushPendingDispatch();
       expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
     });
 
@@ -1139,7 +1144,7 @@ describe('BakersGamePage', () => {
 
       mockExec.mockClear();
       fireEvent.click(cardButton);
-      await Promise.resolve();
+      await flushPendingDispatch();
       expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
       expect(cardButton).toHaveAttribute('aria-pressed', 'true');
     });

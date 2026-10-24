@@ -39,11 +39,12 @@ type GapsWebOutputGapNeed struct {
 
 // GapsWebOutput はGapsゲームのWebレスポンス出力。
 type GapsWebOutput struct {
-	Grid             [][]*WebOutputCard        `json:"grid"`
-	GapNeeds         [][]*GapsWebOutputGapNeed `json:"gapNeeds"`
-	RedealsUsed      int                       `json:"redealsUsed"`
-	RedealsRemaining int                       `json:"redealsRemaining"`
-	Hint             *GapsWebOutputHint        `json:"hint,omitempty"`
+	Grid                [][]*WebOutputCard        `json:"grid"`
+	GapNeeds            [][]*GapsWebOutputGapNeed `json:"gapNeeds"`
+	LockedPrefixLengths []int                     `json:"lockedPrefixLengths"`
+	RedealsUsed         int                       `json:"redealsUsed"`
+	RedealsRemaining    int                       `json:"redealsRemaining"`
+	Hint                *GapsWebOutputHint        `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase
 }
@@ -59,8 +60,9 @@ var NewGapsWebController, NewGapsWebControllerWithProvider = webControllerPair[u
 
 func newGapsDefaultOutput(msg string) *GapsWebOutput {
 	return &GapsWebOutput{
-		Grid:          make([][]*WebOutputCard, 0),
-		WebOutputBase: WebOutputBase{Message: msg},
+		Grid:                make([][]*WebOutputCard, 0),
+		LockedPrefixLengths: make([]int, 0),
+		WebOutputBase:       WebOutputBase{Message: msg},
 	}
 }
 

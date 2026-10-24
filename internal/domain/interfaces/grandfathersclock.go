@@ -25,6 +25,8 @@ type GrandfathersClockGame interface {
 	GetFoundation() [domain.GrandfathersClockFoundationCnt][]*domain.Card
 	// GetTableau タブローを取得する
 	GetTableau() [domain.GrandfathersClockTableauCnt][]*domain.GrandfathersClockTableauCard
+	// LegalTargets returns legal destinations for a tableau column's top card.
+	LegalTargets(col int) (tableau, foundation []int)
 	// IsFoundationComplete 文字盤が目標ランクに達しているか
 	IsFoundationComplete(fIdx int) bool
 	// AllFaceUp 全カードが表向きかを返す

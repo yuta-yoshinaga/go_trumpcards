@@ -4,7 +4,7 @@ import { navigateTo } from './helpers';
 
 /**
  * #11700 keeps each human card visible in the 1280×800 desktop play area. This mirrors
- * hand-visibility.spec.ts (#11655), measuring the desktop play area and its scroll ancestors.
+ * route-sweep.spec.ts / sweeps/hand.ts (#11655), measuring the desktop play area and its scroll ancestors.
  */
 const PAGES = [
   { path: '/bigtwo', hand: '[data-tutorial="bt-player-hand"]' },

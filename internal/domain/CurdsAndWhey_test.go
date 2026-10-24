@@ -333,3 +333,49 @@ func TestCurdsAndWheyMovableFrom(t *testing.T) {
 		assert.Equal(t, 0, CurdsAndWheyMovableFrom(col))
 	})
 }
+
+func TestCurdsAndWheyRunStarts(t *testing.T) {
+	g := NewDefaultCurdsAndWhey()
+	g.columns[0] = []*Card{NewCard(CardDesignSpade, 9, false), NewCard(CardDesignSpade, 8, false), NewCard(CardDesignHeart, 7, false), NewCard(CardDesignHeart, 6, false)}
+	g.columns[1] = nil
+	assert.Equal(t, []int{2, 3}, g.RunStarts(0))
+	assert.Equal(t, []int{}, g.RunStarts(1))
+	assert.Equal(t, []int{}, g.RunStarts(-1))
+	assert.Equal(t, []int{}, g.RunStarts(CurdsAndWheyColCnt))
+}
+
+func TestCurdsAndWhey_AutoMoveTargets(t *testing.T) {
+	t.Run("rejects invalid indices and non-run starts", func(t *testing.T) {
+		g := newSsGameCW()
+		ssClearCW(g)
+		g.columns[0] = []*Card{simonCardCW(CardDesignSpade, 5)}
+		assert.Empty(t, g.AutoMoveTargets(0, 2))
+		assert.Empty(t, g.AutoMoveTargets(-1, 0))
+		assert.Empty(t, g.AutoMoveTargets(0, -1))
+		assert.Empty(t, g.AutoMoveTargets(13, 0))
+	})
+	t.Run("orders same suit before rank and empty columns", func(t *testing.T) {
+		g := newSsGameCW()
+		ssClearCW(g)
+		g.columns[0] = []*Card{simonCardCW(CardDesignClover, 9), simonCardCW(CardDesignSpade, 7)}
+		g.columns[1] = []*Card{simonCardCW(CardDesignHeart, 7)}
+		g.columns[2] = []*Card{simonCardCW(CardDesignSpade, 8)}
+		assert.Equal(t, []int{2, 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}, g.AutoMoveTargets(0, 1))
+	})
+	t.Run("omits empty destinations for a whole pile", func(t *testing.T) {
+		g := newSsGameCW()
+		ssClearCW(g)
+		g.columns[0] = []*Card{simonCardCW(CardDesignSpade, 7)}
+		assert.Empty(t, g.AutoMoveTargets(0, 0))
+	})
+	t.Run("returns rank links and excludes source", func(t *testing.T) {
+		g := newSsGameCW()
+		ssClearCW(g)
+		g.columns[0] = []*Card{simonCardCW(CardDesignSpade, 8), simonCardCW(CardDesignSpade, 7)}
+		for col := 1; col < CurdsAndWheyColCnt; col++ {
+			g.columns[col] = []*Card{simonCardCW(CardDesignHeart, 2)}
+		}
+		g.columns[2] = []*Card{simonCardCW(CardDesignDiamond, 7)}
+		assert.Equal(t, []int{2}, g.AutoMoveTargets(0, 1))
+	})
+}

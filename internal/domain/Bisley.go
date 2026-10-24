@@ -185,26 +185,52 @@ func (b *Bisley) MoveTableauToTableau(fromCol, toCol int) error {
 	if err != nil {
 		return err
 	}
-	if toCol < 0 || toCol >= BisleyTableauCnt {
-		return NewDomainErrorCode(ErrInvalidPlay, "bisley.errBadToColumn", nil)
-	}
-	if fromCol == toCol {
+	if toCol >= 0 && toCol < BisleyTableauCnt && fromCol == toCol {
 		return NewDomainErrorCode(ErrInvalidPlay, "bisley.errSameColumn", nil)
 	}
-	dst := b.tableau[toCol]
-	if len(dst) == 0 {
-		// 空き列は自由置き場ではない。ここを許すと事実上どの札でも掘り出せる。
-		return NewDomainErrorCode(ErrInvalidPlay, "bisley.errEmptyColumn", nil)
-	}
-	top := dst[len(dst)-1].Card
-	if top.GetDesign() != card.GetDesign() || abs(top.GetValue()-card.GetValue()) != 1 {
-		return NewDomainErrorCode(ErrInvalidPlay, "bisley.errNotAdjacentSameSuit", nil)
+	if err := b.canStackOn(card, toCol); err != nil {
+		return err
 	}
 	b.takeSnapshot()
 	b.popTop(fromCol)
 	b.tableau[toCol] = append(b.tableau[toCol], &BisleyTableauCard{Card: card, FaceUp: true})
 	b.afterMove("move", "bisley.log.move", map[string]string{"value1": fmt.Sprint(fromCol), "value2": fmt.Sprint(toCol)}, card)
 	return nil
+}
+
+// canStackOn reports whether card can be placed on the top of toCol.
+func (b *Bisley) canStackOn(card *Card, toCol int) error {
+	if toCol < 0 || toCol >= BisleyTableauCnt {
+		return NewDomainErrorCode(ErrInvalidPlay, "bisley.errBadToColumn", nil)
+	}
+	dst := b.tableau[toCol]
+	if len(dst) == 0 {
+		return NewDomainErrorCode(ErrInvalidPlay, "bisley.errEmptyColumn", nil)
+	}
+	top := dst[len(dst)-1].Card
+	if top.GetDesign() != card.GetDesign() || abs(top.GetValue()-card.GetValue()) != 1 {
+		return NewDomainErrorCode(ErrInvalidPlay, "bisley.errNotAdjacentSameSuit", nil)
+	}
+	return nil
+}
+
+// LegalTargets returns the ascending destination columns for the top card in fromCol.
+// It returns an empty slice when the source is empty or out of range.
+func (b *Bisley) LegalTargets(fromCol int) []int {
+	if fromCol < 0 || fromCol >= BisleyTableauCnt {
+		return []int{}
+	}
+	card := b.topCard(fromCol)
+	if card == nil {
+		return []int{}
+	}
+	targets := make([]int, 0)
+	for toCol := range BisleyTableauCnt {
+		if toCol != fromCol && b.canStackOn(card, toCol) == nil {
+			targets = append(targets, toCol)
+		}
+	}
+	return targets
 }
 
 // GiveUp ギブアップ
@@ -260,17 +286,8 @@ func (b *Bisley) tableauHint() *BisleyHint {
 		if card == nil {
 			continue
 		}
-		for to := range BisleyTableauCnt {
-			if to == from {
-				continue
-			}
-			top := b.topCard(to)
-			if top == nil {
-				continue
-			}
-			if top.GetDesign() == card.GetDesign() && abs(top.GetValue()-card.GetValue()) == 1 {
-				return &BisleyHint{FromCol: from, ToZone: "tableau", ToIdx: to}
-			}
+		if targets := b.LegalTargets(from); len(targets) > 0 {
+			return &BisleyHint{FromCol: from, ToZone: "tableau", ToIdx: targets[0]}
 		}
 	}
 	return nil

@@ -20,7 +20,9 @@ func hachihachiCuiCardStr(c *domain.Card) string {
 	if c == nil {
 		return "??"
 	}
-	label := domain.HachiHachiCardLabel(c)
+	category := hachiHachiCategoryCode(domain.HachiHachiCardCategory(c))
+	category = hanafudaCategoryName(category)
+	label := i18n.Tf("hanafudaCardLabel", "month", hanafudaMonthName(c.GetDesign()), "category", category)
 	switch domain.HachiHachiCardCategory(c) {
 	case domain.HachiHachiBright:
 		return color.Yellow(label)
@@ -178,5 +180,5 @@ var hachihachiHintReasonKeys = map[string]string{
 
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *HachiHachiCuiPresenter) ActionLogOutput(g interfaces.HachiHachiGame) string {
-	return actionLogOutputTextForSeats[*domain.HachiHachiPlayer](g)
+	return actionLogOutputTextLabeled(g, func(idx int) string { return cuiPlayerName(g.GetPlayer(idx), idx) }, hachihachiCuiCardStr)
 }

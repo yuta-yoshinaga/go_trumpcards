@@ -689,12 +689,11 @@ input:not([type]):focus-visible {
  * `ring-*` or `outline-*` is erased in exactly the states a player is most
  * likely to be navigating by keyboard. See issue #5359.
  *
- * biome-ignore lint/complexity/noImportantStyles: same reasoning as the
- * reduced-motion reset below — `!important` is the mechanism, not an accident.
  * A focus indicator that decorative inline styles can suppress is not a focus
  * indicator. `scripts/check-design-tokens.mjs` asserts this block is present.
  */
 .card-focus-ring:focus-visible {
+  /* biome-ignore lint/complexity/noImportantStyles: inline outline on card buttons must not hide the focus ring (#5363) */
   outline: 2px solid var(--color-ds-accent) !important;
   outline-offset: 2px;
 }

@@ -426,7 +426,10 @@ function BinokelPageContent() {
                         </div>
                       );
                     })}
-                  <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+                  <CpuAccordion
+                    playerCount={state.players.filter((p) => !p.isHuman).length}
+                    className="mb-0 sm:col-span-2"
+                  >
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {state.players
                         ?.filter((p) => !p.isHuman)
@@ -487,7 +490,7 @@ function BinokelPageContent() {
               {/* Dabb Cards Display */}
               {state.dabb && state.dabb.length > 0 && (
                 <div
-                  className={`${isLargeDesktop ? 'mb-1 py-1' : 'mb-3 p-2'} ${isLargeDesktop ? 'flex-1 min-w-fit' : ''} rounded bg-black/40 text-center`}
+                  className={`${isLargeDesktop ? 'mb-1 py-1' : 'mb-3 p-2'} ${isLargeDesktop ? 'flex-none' : ''} rounded bg-black/40 text-center`}
                   data-testid="bn-dabb-display"
                 >
                   <div className="text-ds-text-muted text-sm mb-1">{t('dabbCardsLabel')}:</div>

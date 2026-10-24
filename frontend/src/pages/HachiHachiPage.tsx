@@ -32,6 +32,7 @@ import { formatHachiHachiState } from '../utils/cli/formatters/hachihachiFormatt
 import type { CliGameConfig } from '../utils/cli/types';
 import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { hachiHachiAction, hachiHachiPendingCandidates } from '../utils/hachihachiKeyboard';
+import { hanafudaLabel } from '../utils/hanafudaLabel';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Hachi-Hachi (八八) tutorial step definitions. */
@@ -415,7 +416,7 @@ function HachiHachiPageContent() {
             <GameMessageBox
               message={state.message}
               messageCode={state.messageCode}
-              messageParams={state.messageParams}
+              messageParams={localizedMessageParams(state.messageParams, state.messageCards, t)}
             />
 
             <ErrorAlert message={error} onRetry={retry} />
@@ -493,4 +494,22 @@ function HachiHachiPageContent() {
       )}
     </GamePageShell>
   );
+}
+
+/** Replaces Hanafuda card placeholders in message params with labels in the active language. */
+function localizedMessageParams(
+  params: Record<string, string> | undefined,
+  cards: HachiHachiResponse['messageCards'],
+  t: (key: string) => string,
+): Record<string, string> | undefined {
+  if (!params || !cards?.length) return params;
+  const localized = { ...params };
+  const first = hanafudaLabel(cards[0]);
+  const captured = cards
+    .slice(1)
+    .map(hanafudaLabel)
+    .filter((label): label is string => Boolean(label));
+  if (first) localized.card = first;
+  if (captured.length) localized.captured = captured.join(t('listSeparator'));
+  return localized;
 }

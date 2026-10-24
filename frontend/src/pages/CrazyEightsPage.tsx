@@ -35,7 +35,6 @@ import { cardAlt, suitSymbolAt } from '../utils/cardAlt';
 import { CRAZYEIGHTS_HELP, parseCrazyeightsCommand } from '../utils/cli/commands/crazyeightsCommands';
 import { formatCrazyeightsState } from '../utils/cli/formatters/crazyeightsFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
-import { isCrazyEightsLegalPlay } from '../utils/crazyEightsLegal';
 import {
   type CrazyEightsSortMode,
   loadCrazyEightsSortMode,
@@ -485,9 +484,8 @@ function CrazyEightsPageContent() {
                   {t('cardSelectionUnavailable')}
                 </span>
                 {sortedCrazyEightsHand(humanPlayer.cards, sortMode).map(({ card, index: idx }) => {
-                  // On the human's turn, highlight playable cards (matching suit/rank or an 8)
-                  // and dim the rest with a reason tooltip, so the rule is visible at a glance.
-                  const legal = !isHumanTurn || isCrazyEightsLegalPlay(card, state.discardTop, state.chosenSuit);
+                  // The server computes legality from internal/domain/CrazyEights.go (ADR-0045).
+                  const legal = !isHumanTurn || state.validPlays.includes(idx);
                   const canSelectCard = isHumanTurn && !loading;
                   return (
                     <button

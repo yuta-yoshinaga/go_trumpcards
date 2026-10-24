@@ -11,6 +11,7 @@ function makeState(overrides?: Partial<GrandfathersClockResponse>): Grandfathers
     canUndo: false,
     canRedo: false,
     isStalemate: false,
+    legalTargets: {},
     message: '',
     ...overrides,
   };

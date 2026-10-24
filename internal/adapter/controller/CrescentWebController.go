@@ -40,13 +40,20 @@ type CrescentWebOutputHint struct {
 
 // CrescentWebOutput クレセント・ソリティアの Web アウトプット。
 type CrescentWebOutput struct {
-	Tableau          [][]*CrescentWebOutputTableauCard `json:"tableau"`
-	Foundation       [][]*WebOutputCard                `json:"foundation"`
-	RedealsRemaining int                               `json:"redealsRemaining"`
-	NoLegalMoves     bool                              `json:"noLegalMoves"`
-	Hint             *CrescentWebOutputHint            `json:"hint,omitempty"`
+	Tableau          [][]*CrescentWebOutputTableauCard   `json:"tableau"`
+	Foundation       [][]*WebOutputCard                  `json:"foundation"`
+	LegalTargets     map[string]CrescentWebOutputTargets `json:"legalTargets"`
+	RedealsRemaining int                                 `json:"redealsRemaining"`
+	NoLegalMoves     bool                                `json:"noLegalMoves"`
+	Hint             *CrescentWebOutputHint              `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase
+}
+
+// CrescentWebOutputTargets contains the destinations accepted from one tableau column.
+type CrescentWebOutputTargets struct {
+	Tableau    []int `json:"tableau"`
+	Foundation []int `json:"foundation"`
 }
 
 // CrescentWebController クレセント・ソリティアの Web コントローラー。
@@ -61,6 +68,7 @@ func newCrescentDefaultOutput(msg string) *CrescentWebOutput {
 	return &CrescentWebOutput{
 		Tableau:       make([][]*CrescentWebOutputTableauCard, 0),
 		Foundation:    make([][]*WebOutputCard, 0),
+		LegalTargets:  make(map[string]CrescentWebOutputTargets),
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }

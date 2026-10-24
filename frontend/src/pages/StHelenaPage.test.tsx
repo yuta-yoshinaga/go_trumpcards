@@ -81,6 +81,10 @@ const playingState: StHelenaResponse = {
   ],
   redealsRemaining: 3,
   restrictionsActive: true,
+  // These common interactions pin the destinations their fixtures exercise.
+  legalTargets: Object.fromEntries(
+    Array.from({ length: 12 }, (_, col) => [`tableau-${col}`, { tableau: [5], foundation: [0] }]),
+  ),
   phase: 0,
   moveCount: 5,
   canUndo: false,
@@ -511,6 +515,7 @@ describe('StHelenaPage', () => {
       ...playingState,
       tableau: makeTableau({ 0: [{ card: card('SPADE', 2), faceUp: true }] }),
       restrictionsActive: true,
+      legalTargets: { 'tableau-0': { tableau: [], foundation: [] } },
     });
     renderWithProviders(<StHelenaPage />);
     const cardButton = (await screen.findByAltText('♠ 2')).closest('button') as HTMLButtonElement;
@@ -535,6 +540,7 @@ describe('StHelenaPage', () => {
       ...playingState,
       tableau: makeTableau({ 0: [{ card: card('SPADE', 2), faceUp: true }] }),
       restrictionsActive: true,
+      legalTargets: { 'tableau-0': { tableau: [], foundation: [] } },
     });
     renderWithProviders(<StHelenaPage />);
     const cardButton = (await screen.findByAltText('♠ 2')).closest('button') as HTMLButtonElement;
@@ -677,6 +683,7 @@ describe('StHelenaPage', () => {
         [card('HEART', 13)],
         [card('DIAMOND', 13)],
       ],
+      legalTargets: { 'tableau-4': { tableau: [5], foundation: [0] } },
     };
     mockExec.mockResolvedValue(highlightState);
 
@@ -698,6 +705,19 @@ describe('StHelenaPage', () => {
     expect(tableau.querySelectorAll('.ring-ds-success')).toHaveLength(1);
     const invalidTop = screen.getByAltText('♥ 6').closest('button') as HTMLButtonElement;
     expect(invalidTop.className).toContain('opacity-40');
+  });
+
+  it('disables a reachable but wrong-rank foundation from server legalTargets', async () => {
+    const state = {
+      ...playingState,
+      legalTargets: { 'tableau-0': { tableau: [], foundation: [] } },
+    };
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<StHelenaPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    fireEvent.click(screen.getByAltText('♠ 4').closest('button') as HTMLButtonElement);
+    const foundation = screen.getByRole('button', { name: /昇順組札 ♠/ });
+    expect(foundation).toBeDisabled();
   });
 
   it('clicking reset dispatches reset (after confirm)', async () => {
@@ -786,7 +806,7 @@ describe('StHelenaPage', () => {
   it('announces how many legal destinations the selected card has', async () => {
     localStorage.clear();
     mockExec.mockReset();
-    mockExec.mockResolvedValue(playingState);
+    mockExec.mockResolvedValue({ ...playingState, legalTargets: { 'tableau-4': { tableau: [], foundation: [] } } });
     renderWithProviders(<StHelenaPage />);
     const status = await screen.findByTestId('cr-selection-status');
     // Nothing selected yet, so the region stays empty rather than announcing noise.
@@ -805,6 +825,7 @@ describe('StHelenaPage', () => {
     mockExec.mockResolvedValue({
       ...playingState,
       tableau: sideTableau([{ card: card('SPADE', 2), faceUp: true }]),
+      legalTargets: { 'tableau-4': { tableau: [], foundation: [0] } },
     });
     renderWithProviders(<StHelenaPage />);
     const status = await screen.findByTestId('cr-selection-status');
@@ -818,6 +839,7 @@ describe('StHelenaPage', () => {
     mockExec.mockResolvedValue({
       ...playingState,
       tableau: sideTableau([{ card: card('SPADE', 2), faceUp: true }], [{ card: card('HEART', 3), faceUp: true }]),
+      legalTargets: { 'tableau-4': { tableau: [5], foundation: [0] } },
     });
     renderWithProviders(<StHelenaPage />);
     const status = await screen.findByTestId('cr-selection-status');
@@ -836,6 +858,7 @@ describe('StHelenaPage', () => {
     mockExec.mockResolvedValue({
       ...playingState,
       tableau: sideTableau([{ card: card('SPADE', 2), faceUp: true }]),
+      legalTargets: { 'tableau-4': { tableau: [5], foundation: [0] } },
     });
     renderWithProviders(<StHelenaPage />);
     const status = await screen.findByTestId('cr-selection-status');

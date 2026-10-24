@@ -19,6 +19,7 @@ export interface CrescentHint {
 
 /** Full Crescent game state returned from the API. */
 export interface CrescentResponse extends BaseGameResponse {
+  legalTargets: Record<string, { tableau: number[]; foundation: number[] }>;
   tableau: CrescentTableauCard[][];
   foundation: Card[][];
   redealsRemaining: number;

@@ -32,12 +32,62 @@ func setupStreetsAndAlleysWebMockDefaults(bg *interfaces.MockStreetsAndAlleysGam
 		}
 	}
 	bg.On("GetTableau").Return(tableau).Maybe()
+	for col := 0; col < domain.StreetsAndAlleysTableauCnt; col++ {
+		bg.On("LegalTargets", col).Return(nil, nil).Maybe()
+	}
 
 	var foundation [domain.StreetsAndAlleysFoundationCnt][]*domain.Card
 	for i := range domain.StreetsAndAlleysFoundationCnt {
 		foundation[i] = []*domain.Card{domain.NewCard(domain.CardDesignSpade+i, 1, false)}
 	}
 	bg.On("GetFoundation").Return(foundation).Maybe()
+}
+
+func TestStreetsAndAlleysWebPresenter_LegalTargets(t *testing.T) {
+	t.Run("Output includes destinations", func(t *testing.T) {
+		bg := new(interfaces.MockStreetsAndAlleysGame)
+		setupStreetsAndAlleysOutputMock(bg)
+		bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "LegalTargets")
+		bg.On("LegalTargets", 0).Return([]int{3}, []int{1})
+		for col := 1; col < domain.StreetsAndAlleysTableauCnt; col++ {
+			bg.On("LegalTargets", col).Return(nil, nil).Maybe()
+		}
+		var raw map[string]json.RawMessage
+		assert.NoError(t, json.Unmarshal([]byte(new(StreetsAndAlleysWebPresenter).Output(bg, nil)), &raw))
+		assert.JSONEq(t, `{"tableau-0":{"tableau":[3],"foundation":[1]}}`, string(raw["legalTargets"]))
+	})
+	t.Run("Output emits an empty map when all sources are empty", func(t *testing.T) {
+		bg := new(interfaces.MockStreetsAndAlleysGame)
+		setupStreetsAndAlleysOutputMock(bg)
+		var raw map[string]json.RawMessage
+		assert.NoError(t, json.Unmarshal([]byte(new(StreetsAndAlleysWebPresenter).Output(bg, nil)), &raw))
+		assert.JSONEq(t, `{}`, string(raw["legalTargets"]))
+	})
+	for _, tc := range []struct {
+		name    string
+		targets string
+	}{
+		{name: "destinations", targets: `{"tableau-0":{"tableau":[3],"foundation":[1]}}`},
+		{name: "empty map", targets: `{}`},
+	} {
+		t.Run("HintOutput includes "+tc.name, func(t *testing.T) {
+			bg := new(interfaces.MockStreetsAndAlleysGame)
+			setupStreetsAndAlleysWebMockDefaults(bg)
+			bg.On("GetHint").Return(nil)
+			bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "LegalTargets")
+			if tc.name == "destinations" {
+				bg.On("LegalTargets", 0).Return([]int{3}, []int{1})
+			} else {
+				bg.On("LegalTargets", 0).Return(nil, nil).Maybe()
+			}
+			for col := 1; col < domain.StreetsAndAlleysTableauCnt; col++ {
+				bg.On("LegalTargets", col).Return(nil, nil).Maybe()
+			}
+			var raw map[string]json.RawMessage
+			assert.NoError(t, json.Unmarshal([]byte(new(StreetsAndAlleysWebPresenter).HintOutput(bg)), &raw))
+			assert.JSONEq(t, tc.targets, string(raw["legalTargets"]))
+		})
+	}
 }
 
 func parseStreetsAndAlleysOutput(t *testing.T, jsonStr string) *controller.StreetsAndAlleysWebOutput {

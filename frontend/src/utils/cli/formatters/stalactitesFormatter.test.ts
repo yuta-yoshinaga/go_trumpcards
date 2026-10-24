@@ -4,6 +4,7 @@ import { formatStalactitesState } from './stalactitesFormatter';
 
 function makeState(overrides?: Partial<StalactitesResponse>): StalactitesResponse {
   return {
+    legalTargets: {},
     tableau: [[{ design: 'SPADE', value: 13 }], [], [], [], [], [], [], []],
     baseRank: 1,
     cells: [null, null, null, null],

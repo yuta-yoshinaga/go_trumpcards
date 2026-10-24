@@ -7,6 +7,9 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 // MissMilliganGame ミス・ミリガン ゲームインタフェース
 type MissMilliganGame interface {
 	SolitaireGame
+	RunStarts(col int) []int
+	LegalTargetsFrom(col, cardIndex int) (tableau, foundation []int)
+	WaivedLegalTargets() (tableau, foundation []int)
 	// GetGameEndFlag reports whether the game has left the playing phase.
 	GetGameEndFlag() bool
 	// Reset ゲームを初期化する

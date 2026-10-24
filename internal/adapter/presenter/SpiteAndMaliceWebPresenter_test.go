@@ -24,6 +24,7 @@ func setupSpiteAndMaliceWebMockDefaults(g *interfaces.MockSpiteAndMaliceGame) {
 	g.On("GetConfig").Return(domain.DefaultSpiteAndMaliceConfig()).Maybe()
 	g.On("CanAutoComplete").Return(false).Maybe()
 	g.On("CanUndo").Return(false).Maybe()
+	g.On("LegalTargets").Return(map[string][]int{}).Maybe()
 	var foundations [domain.SpiteAndMaliceFoundationCnt][]*domain.Card
 	foundations[0] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}
 	g.On("GetFoundations").Return(foundations).Maybe()
@@ -78,6 +79,7 @@ func TestSpiteAndMaliceWebPresenter_Output(t *testing.T) {
 
 	t.Run("human win", func(t *testing.T) {
 		g := new(interfaces.MockSpiteAndMaliceGame)
+		g.On("LegalTargets").Return(map[string][]int{}).Maybe()
 		g.On("GetPhase").Return(domain.SpiteAndMalicePhaseGameOver).Maybe()
 		g.On("GetCurrent").Return(0).Maybe()
 		g.On("GetMoveCount").Return(42).Maybe()
@@ -103,6 +105,7 @@ func TestSpiteAndMaliceWebPresenter_Output(t *testing.T) {
 
 	t.Run("cpu win", func(t *testing.T) {
 		g := new(interfaces.MockSpiteAndMaliceGame)
+		g.On("LegalTargets").Return(map[string][]int{}).Maybe()
 		g.On("GetPhase").Return(domain.SpiteAndMalicePhaseGameOver).Maybe()
 		g.On("GetCurrent").Return(1).Maybe()
 		g.On("GetMoveCount").Return(42).Maybe()
@@ -131,6 +134,7 @@ func TestSpiteAndMaliceWebPresenter_Output(t *testing.T) {
 	t.Run("cpu hand stays hidden on both turns", func(t *testing.T) {
 		for _, current := range []int{domain.SpiteAndMaliceHumanIdx, domain.SpiteAndMaliceCpuIdx} {
 			g := new(interfaces.MockSpiteAndMaliceGame)
+			g.On("LegalTargets").Return(map[string][]int{}).Maybe()
 			g.On("GetPhase").Return(domain.SpiteAndMalicePhasePlaying).Maybe()
 			g.On("GetCurrent").Return(current).Maybe()
 			g.On("GetMoveCount").Return(0).Maybe()
@@ -169,6 +173,7 @@ func TestSpiteAndMaliceWebPresenter_Output(t *testing.T) {
 
 	t.Run("nil player", func(t *testing.T) {
 		g := new(interfaces.MockSpiteAndMaliceGame)
+		g.On("LegalTargets").Return(map[string][]int{}).Maybe()
 		g.On("GetPhase").Return(domain.SpiteAndMalicePhasePlaying).Maybe()
 		g.On("GetCurrent").Return(0).Maybe()
 		g.On("GetMoveCount").Return(0).Maybe()
@@ -189,6 +194,41 @@ func TestSpiteAndMaliceWebPresenter_Output(t *testing.T) {
 		raw := new(SpiteAndMaliceWebPresenter).Output(g, nil)
 		out := decodeSpiteAndMaliceWebOutput(t, raw)
 		assert.Nil(t, out.Players[0].Hand)
+	})
+}
+
+func TestSpiteAndMaliceWebPresenter_LegalTargetsAllOutputPaths(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		make func(*SpiteAndMaliceWebPresenter, interfaces.SpiteAndMaliceGame) string
+	}{
+		{"state", func(p *SpiteAndMaliceWebPresenter, g interfaces.SpiteAndMaliceGame) string { return p.Output(g, nil) }},
+		{"error state", func(p *SpiteAndMaliceWebPresenter, g interfaces.SpiteAndMaliceGame) string {
+			return p.Output(g, assert.AnError)
+		}},
+		{"hint", func(p *SpiteAndMaliceWebPresenter, g interfaces.SpiteAndMaliceGame) string { return p.HintOutput(g) }},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			g := new(interfaces.MockSpiteAndMaliceGame)
+			setupSpiteAndMaliceWebMockDefaults(g)
+			g.ExpectedCalls = filterCalls(g.ExpectedCalls, "LegalTargets")
+			g.On("LegalTargets").Return(map[string][]int{"hand-0": {0, 2}, "goal": {1}})
+			g.On("GetHint").Return(nil).Maybe()
+			out := decodeSpiteAndMaliceWebOutput(t, tc.make(new(SpiteAndMaliceWebPresenter), g))
+			assert.Equal(t, map[string]controller.SpiteAndMaliceWebOutputTargets{
+				"hand-0": {Foundation: []int{0, 2}}, "goal": {Foundation: []int{1}},
+			}, out.LegalTargets)
+			assert.NotNil(t, out.LegalTargets)
+		})
+	}
+
+	t.Run("empty map serializes as object", func(t *testing.T) {
+		g := new(interfaces.MockSpiteAndMaliceGame)
+		setupSpiteAndMaliceWebMockDefaults(g)
+		g.On("GetHint").Return(nil).Maybe()
+		out := decodeSpiteAndMaliceWebOutput(t, new(SpiteAndMaliceWebPresenter).Output(g, nil))
+		assert.NotNil(t, out.LegalTargets)
+		assert.Empty(t, out.LegalTargets)
 	})
 }
 

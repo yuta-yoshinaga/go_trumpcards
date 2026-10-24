@@ -24,6 +24,7 @@ export interface FlowerGardenResponse extends BaseGameResponse {
   tableau: FlowerGardenTableauCard[][];
   reserve: (Card | null)[];
   foundation: Card[][];
+  legalTargets: Record<string, { tableau: number[]; foundation: number[] }>;
   phase: number;
   moveCount: number;
   canUndo: boolean;

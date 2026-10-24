@@ -5,6 +5,7 @@ import { formatBisleyState } from './bisleyFormatter';
 function makeState(overrides?: Partial<BisleyResponse>): BisleyResponse {
   return {
     tableau: Array.from({ length: 13 }, () => []),
+    legalTargets: {},
     aceFoundations: [[], [], [], []],
     kingFoundations: [[], [], [], []],
     foundationSize: 13,

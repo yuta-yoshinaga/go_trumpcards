@@ -467,6 +467,34 @@ func TestMonteCarlo_CountRemovablePairsAgreesWithTheHint(t *testing.T) {
 	}
 }
 
+func TestMonteCarlo_CountRemovablePairsCases(t *testing.T) {
+	tests := []struct {
+		name  string
+		cards [][3]int // row, column, rank
+		want  int
+	}{
+		{name: "empty board", want: 0},
+		{name: "horizontal pair counted once", cards: [][3]int{{2, 1, 7}, {2, 2, 7}}, want: 1},
+		{name: "diagonal pair in each of eight directions", cards: [][3]int{{2, 2, 8}, {1, 1, 8}, {1, 2, 8}, {1, 3, 8}, {2, 1, 8}, {2, 3, 8}, {3, 1, 8}, {3, 2, 8}, {3, 3, 8}}, want: 20},
+		{name: "non adjacent same rank", cards: [][3]int{{0, 0, 4}, {2, 2, 4}}, want: 0},
+		{name: "adjacent different ranks", cards: [][3]int{{1, 1, 4}, {1, 2, 5}}, want: 0},
+		{name: "shared cell pairs are not double counted", cards: [][3]int{{2, 1, 6}, {2, 2, 6}, {2, 3, 6}}, want: 2},
+		{name: "down left diagonal", cards: [][3]int{{1, 2, 9}, {2, 1, 9}}, want: 1},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m := NewDefaultMonteCarlo()
+			var board [MonteCarloGridSize][MonteCarloGridSize]*Card
+			for _, card := range tt.cards {
+				board[card[0]][card[1]] = NewCard(CardDesignSpade, card[2], true)
+			}
+			m.SetBoard(board)
+			assert.Equal(t, tt.want, m.CountRemovablePairs())
+		})
+	}
+}
+
 // ヒントは走査順で**最初の**組を返す。共有の走査に早期終了が無いと最後の組に
 // 変わり、盤面が同じでも案内が動く。
 func TestMonteCarlo_HintReturnsTheFirstPairInScanOrder(t *testing.T) {

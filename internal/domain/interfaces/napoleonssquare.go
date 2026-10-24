@@ -35,6 +35,12 @@ type NapoleonsSquareGame interface {
 	GetTableau() [domain.NapoleonsSquareTableauCnt][]*domain.NapoleonsSquareTableauCard
 	// GetFoundation 基礎札を取得する
 	GetFoundation() [domain.NapoleonsSquareFoundationCnt][]*domain.Card
+	// LegalTargetsFrom returns destinations for a movable tableau run.
+	LegalTargetsFrom(col, cardIndex int) (tableau, foundation []int)
+	// WasteLegalTargets returns destinations for the waste top.
+	WasteLegalTargets() (tableau, foundation []int)
+	// RunStarts returns movable run start indices for a tableau column.
+	RunStarts(col int) []int
 	// AllFaceUp 全カードが表向きかを返す
 	AllFaceUp() bool
 	// IsStalemate 手詰まり状態を取得する

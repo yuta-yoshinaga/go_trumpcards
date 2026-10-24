@@ -847,22 +847,20 @@ function MightyPageContent() {
 
                   {/* Trump & Friend declaration controls */}
                   {isHumanDeclarer && (
-                    <>
-                      <button
-                        type="button"
-                        className={btnPrimary}
-                        onClick={() =>
-                          handleTrumpAndFriend(
-                            trumpSuitValue,
-                            partnerSuitValue,
-                            partnerSuitValue === 0 ? 0 : partnerValueValue,
-                          )
-                        }
-                        disabled={loading}
-                      >
-                        {t('declareButton')}
-                      </button>
-                    </>
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={() =>
+                        handleTrumpAndFriend(
+                          trumpSuitValue,
+                          partnerSuitValue,
+                          partnerSuitValue === 0 ? 0 : partnerValueValue,
+                        )
+                      }
+                      disabled={loading}
+                    >
+                      {t('declareButton')}
+                    </button>
                   )}
 
                   {/* Kitty exchange controls */}

@@ -25,6 +25,10 @@ type PerseveranceGame interface {
 	GetTableau() [domain.PerseveranceTableauCnt][]*domain.PerseveranceTableauCard
 	// LegalTargets 列 fromCol の一番下の札を置ける先 (タブロー列 / 組札)
 	LegalTargets(fromCol int) ([]int, []int)
+	// LegalTargetsFrom returns destinations for the movable run starting at cardIndex.
+	LegalTargetsFrom(fromCol, cardIndex int) ([]int, []int)
+	// RunStarts returns movable run start indices in top-to-bottom order.
+	RunStarts(col int) []int
 	// GetFoundation ファンデーションを取得する
 	GetFoundation() [domain.PerseveranceFoundationCnt][]*domain.Card
 	// AllFaceUp 全カードが表向きかを返す

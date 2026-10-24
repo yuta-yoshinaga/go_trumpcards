@@ -42,14 +42,22 @@ type MrsMopWebOutputHint struct {
 	ToCol     int `json:"toCol"`
 }
 
+// MrsMopWebOutputTargets lists legal destination indices for a source card.
+type MrsMopWebOutputTargets struct {
+	Tableau    []int `json:"tableau"`
+	Foundation []int `json:"foundation"`
+}
+
 // MrsMopWebOutput ミセス・モップソリティアWebアウトプット
 type MrsMopWebOutput struct {
-	Tableau        [][]*MrsMopWebOutputTableauCard `json:"tableau"`
-	StockCount     int                             `json:"stockCount"`
-	CompletedSuits int                             `json:"completedSuits"`
-	Score          int                             `json:"score"`
-	Difficulty     int                             `json:"difficulty"`
-	Hint           *MrsMopWebOutputHint            `json:"hint,omitempty"`
+	Tableau        [][]*MrsMopWebOutputTableauCard   `json:"tableau"`
+	StockCount     int                               `json:"stockCount"`
+	CompletedSuits int                               `json:"completedSuits"`
+	Score          int                               `json:"score"`
+	Difficulty     int                               `json:"difficulty"`
+	Hint           *MrsMopWebOutputHint              `json:"hint,omitempty"`
+	LegalTargets   map[string]MrsMopWebOutputTargets `json:"legalTargets"`
+	RunStarts      [][]int                           `json:"runStarts"`
 	SolitaireWebOutputBase
 	WebOutputBase
 }
@@ -66,6 +74,8 @@ var NewMrsMopWebController, NewMrsMopWebControllerWithProvider = webControllerPa
 func newMrsMopDefaultOutput(msg string) *MrsMopWebOutput {
 	return &MrsMopWebOutput{
 		Tableau:       make([][]*MrsMopWebOutputTableauCard, 0),
+		LegalTargets:  make(map[string]MrsMopWebOutputTargets),
+		RunStarts:     make([][]int, 0),
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }

@@ -387,55 +387,53 @@ function DoubleAttackPageContent() {
                   )}
 
                   {isPlayPhase && (
-                    <>
-                      <div className="flex gap-2 flex-wrap justify-center">
+                    <div className="flex gap-2 flex-wrap justify-center">
+                      <button
+                        type="button"
+                        className={btnSuccess}
+                        data-hint-action="hit"
+                        aria-keyshortcuts="h"
+                        onClick={() => execApi('hit')}
+                        disabled={loading}
+                      >
+                        {t('button.hit')}
+                      </button>
+                      <button
+                        type="button"
+                        className={btnSecondary}
+                        data-hint-action="stand"
+                        aria-keyshortcuts="s"
+                        onClick={() => execApi('stand')}
+                        disabled={loading}
+                      >
+                        {t('button.stand')}
+                      </button>
+                      {/* **押せるかどうかはサーバが決める。** 手札から計算し直さない。 */}
+                      {state.canDouble && (
                         <button
                           type="button"
-                          className={btnSuccess}
-                          data-hint-action="hit"
-                          aria-keyshortcuts="h"
-                          onClick={() => execApi('hit')}
+                          className={btnWarning}
+                          data-testid="da-double"
+                          aria-keyshortcuts="d"
+                          onClick={() => execApi('double')}
                           disabled={loading}
                         >
-                          {t('button.hit')}
+                          {t('button.double')}
                         </button>
+                      )}
+                      {state.canSplit && (
                         <button
                           type="button"
-                          className={btnSecondary}
-                          data-hint-action="stand"
-                          aria-keyshortcuts="s"
-                          onClick={() => execApi('stand')}
+                          className={btnWarning}
+                          data-testid="da-split"
+                          aria-keyshortcuts="p"
+                          onClick={() => execApi('split')}
                           disabled={loading}
                         >
-                          {t('button.stand')}
+                          {t('button.split')}
                         </button>
-                        {/* **押せるかどうかはサーバが決める。** 手札から計算し直さない。 */}
-                        {state.canDouble && (
-                          <button
-                            type="button"
-                            className={btnWarning}
-                            data-testid="da-double"
-                            aria-keyshortcuts="d"
-                            onClick={() => execApi('double')}
-                            disabled={loading}
-                          >
-                            {t('button.double')}
-                          </button>
-                        )}
-                        {state.canSplit && (
-                          <button
-                            type="button"
-                            className={btnWarning}
-                            data-testid="da-split"
-                            aria-keyshortcuts="p"
-                            onClick={() => execApi('split')}
-                            disabled={loading}
-                          >
-                            {t('button.split')}
-                          </button>
-                        )}
-                      </div>
-                    </>
+                      )}
+                    </div>
                   )}
 
                   {isResultPhase && !gameOver && (

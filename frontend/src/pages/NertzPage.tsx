@@ -26,7 +26,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
 import { btnOutline, btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { Card, NertzFoundationData, NertzPlayerData, NertzResponse, NertzTableauCard } from '../types/card';
+import type { Card, NertzPlayerData, NertzResponse, NertzTableauCard } from '../types/card';
 import { NertzPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
@@ -80,34 +80,6 @@ const NERTZ_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 type Selection = { kind: 'nertz' } | { kind: 'waste' } | { kind: 'tableau'; col: number; cardIndex: number } | null;
-
-/** Whether a card belongs to a red suit (hearts / diamonds). */
-function isRedNertzCard(card: Card): boolean {
-  return card.design === 'HEART' || card.design === 'DIAMOND';
-}
-
-/**
- * Client-side mirror of the backend `NertzFoundation.CanAccept`: a foundation
- * cell accepts an Ace when empty, otherwise the same-suit next-higher rank.
- */
-function nertzFoundationAccepts(card: Card | null, foundation: NertzFoundationData): boolean {
-  if (!card || card.design === 'JOKER') return false;
-  if (foundation.top) {
-    return card.design === foundation.top.design && card.value === foundation.top.value + 1;
-  }
-  return card.value === 1;
-}
-
-/**
- * Client-side mirror of the backend `canPlaceOnNertzTableau`: an empty column
- * accepts any card, otherwise the card must be one rank lower and the opposite
- * colour of the column's bottom card.
- */
-function nertzTableauAccepts(card: Card | null, destTop: Card | null): boolean {
-  if (!card) return false;
-  if (!destTop) return true;
-  return isRedNertzCard(card) !== isRedNertzCard(destTop) && card.value === destTop.value - 1;
-}
 
 /** Renders the Nertz / Pounce game page. */
 export const NertzPage = withTutorial(NertzPageContent, 'nertz', NERTZ_TUTORIAL_STEPS);
@@ -420,44 +392,10 @@ function NertzPageContent() {
     enabled: state?.phase === NertzPhase.PLAYING && !loading,
   });
 
-  // The concrete card the current selection would move, used to derive which
-  // destinations can legally accept it.
-  const selectedCard: Card | null = useMemo(() => {
-    if (!selection || !human) return null;
-    if (selection.kind === 'nertz') return human.nertzTop ?? null;
-    if (selection.kind === 'waste') return human.wasteTop ?? null;
-    return human.tableau[selection.col]?.[selection.cardIndex]?.card ?? null;
-  }, [selection, human]);
-
-  // A foundation only ever takes the bottom (top-of-column) card, so a tableau
-  // selection is foundation-eligible only when it is that bottom card. Nertz and
-  // waste sources are always foundation-eligible.
-  const foundationEligible = useMemo(() => {
-    if (!selection || !human) return false;
-    if (selection.kind !== 'tableau') return true;
-    return selection.cardIndex === human.tableau[selection.col].length - 1;
-  }, [selection, human]);
-
-  const validFoundations = useMemo(() => {
-    const set = new Set<number>();
-    if (!state || !selectedCard || !foundationEligible) return set;
-    state.foundations.forEach((f, idx) => {
-      if (nertzFoundationAccepts(selectedCard, f)) set.add(idx);
-    });
-    return set;
-  }, [state, selectedCard, foundationEligible]);
-
-  const validTableauCols = useMemo(() => {
-    const set = new Set<number>();
-    if (!human || !selectedCard) return set;
-    human.tableau.forEach((col, colIdx) => {
-      // A tableau card cannot be dropped back onto its own column.
-      if (selection?.kind === 'tableau' && selection.col === colIdx) return;
-      const destTop = col.length > 0 ? (col[col.length - 1].card ?? null) : null;
-      if (nertzTableauAccepts(selectedCard, destTop)) set.add(colIdx);
-    });
-    return set;
-  }, [human, selectedCard, selection]);
+  const sourceKey = selection?.kind === 'tableau' ? `tableau-${selection.col}-${selection.cardIndex}` : selection?.kind;
+  const sourceTargets = sourceKey ? state?.legalTargets[sourceKey] : undefined;
+  const validFoundations = useMemo(() => new Set(sourceTargets ? sourceTargets.foundation : []), [sourceTargets]);
+  const validTableauCols = useMemo(() => new Set(sourceTargets ? sourceTargets.tableau : []), [sourceTargets]);
 
   const phaseName = useMemo(() => {
     if (isGameEnd) return t('phase.gameEnd');
