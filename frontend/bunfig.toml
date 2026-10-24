@@ -1,0 +1,3 @@
+[install]
+# Wait seven days before accepting newly published versions to reduce supply-chain risk.
+minimumReleaseAge = 604800
