@@ -350,7 +350,6 @@ TriPeaksPage.tsx
 TrogguPage.tsx
 TrucoPage.tsx
 TuSacPage.tsx
-TutePage.tsx
 TwentyNinePage.tsx
 TwoTenJackPage.tsx
 TysiacPage.tsx
