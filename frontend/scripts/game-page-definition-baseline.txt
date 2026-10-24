@@ -104,7 +104,6 @@ DeuceToSevenPage.tsx
 DeucesWildPage.tsx
 DilotiPage.tsx
 DiplomatPage.tsx
-DoppelkopfPage.tsx
 DoubleAttackPage.tsx
 DoubleKlondikePage.tsx
 DoubtPage.tsx

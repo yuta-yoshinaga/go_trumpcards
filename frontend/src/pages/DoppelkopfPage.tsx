@@ -1,41 +1,52 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import type { doppelkopfApi } from '../api/gameApi';
-import { ActionLogSection } from '../components/ActionLogSection';
 import { CpuAccordion } from '../components/CpuAccordion';
-import { CliTerminal } from '../components/cli/CliTerminal';
-import { CliToggle } from '../components/cli/CliToggle';
-import { SettingsPanel } from '../components/common/SettingsPanel';
-import { ErrorAlert } from '../components/ErrorAlert';
-import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageShell } from '../components/GamePageShell';
-import { GameResetButton } from '../components/GameResetButton';
+import { createGamePage, type GameDefinition, type GamePageContext } from '../components/game/createGamePage';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { PlayerHandSection } from '../components/PlayerHandSection';
-import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
-import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
-import { useCliGame } from '../hooks/useCliGame';
-import { useCliMode } from '../hooks/useCliMode';
 import { CPU_DIFFICULTY_OPTIONS, TARGET_CHIPS_OPTIONS, useDoppelkopfGame } from '../hooks/useDoppelkopfGame';
-import { useGameHint } from '../hooks/useGameHint';
-import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
-import { gameTheme } from '../styles/gameTheme';
 import type { DoppelkopfResponse } from '../types/card';
 import { DoppelkopfPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { DOPPELKOPF_HELP, parseDoppelkopfCommand } from '../utils/cli/commands/doppelkopfCommands';
 import { formatDoppelkopfState } from '../utils/cli/formatters/doppelkopfFormatter';
-import type { CliGameConfig } from '../utils/cli/types';
 import { DOPPELKOPF_TRUMP_ORDER, isDoppelkopfTrump } from '../utils/doppelkopfTrump';
 import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
+
+/** Re が勝つのに必要なカード得点。`domain.DoppelkopfReWinPoints` の写し。 */
+const DOPPELKOPF_RE_WIN_POINTS = 121;
+/** 1 ラウンドのカード得点合計。`domain.DoppelkopfTotalPoints` の写し。 */
+const DOPPELKOPF_TOTAL_POINTS = 240;
+type DoppelkopfGame = ReturnType<typeof useDoppelkopfGame>;
+type DoppelkopfView = ReturnType<typeof useDoppelkopfView>;
+type DoppelkopfContext = GamePageContext<DoppelkopfResponse, DoppelkopfGame, DoppelkopfView>;
+
+const DOPPELKOPF_PHASE_KEYS: Readonly<Record<number, string>> = {
+  [DoppelkopfPhase.PLAY]: 'play',
+  [DoppelkopfPhase.TRICK_END]: 'trickEnd',
+  [DoppelkopfPhase.ROUND_END]: 'roundEnd',
+  [DoppelkopfPhase.GAME_END]: 'gameEnd',
+};
+
+function useDoppelkopfView({ game }: { game: DoppelkopfGame }) {
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Match the legacy mount-time reset.
+  useEffect(() => {
+    game.reset();
+  }, []);
+  const { cardWidth, isMobile } = useCardDimensions();
+  const isMobileViewport = useIsMobile();
+  const phaseNames = usePhaseNames('doppelkopf', DOPPELKOPF_PHASE_KEYS);
+  return { cardWidth, isMobile, isMobileViewport, phaseNames };
+}
 
 /** Doppelkopf tutorial step definitions. */
 const DK_TUTORIAL_STEPS: TutorialStep[] = [
@@ -66,431 +77,343 @@ const DK_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-const DOPPELKOPF_PHASE_KEYS: Readonly<Record<number, string>> = {
-  [DoppelkopfPhase.PLAY]: 'play',
-  [DoppelkopfPhase.TRICK_END]: 'trickEnd',
-  [DoppelkopfPhase.ROUND_END]: 'roundEnd',
-  [DoppelkopfPhase.GAME_END]: 'gameEnd',
-};
-
-/** Renders the Doppelkopf game page: 4-player partnership trick-taking with hidden Re/Kontra teams. */
-export const DoppelkopfPage = withTutorial(DoppelkopfPageContent, 'doppelkopf', DK_TUTORIAL_STEPS);
-
-/** Inner content of the Doppelkopf page, wrapped by TutorialProvider. */
-/**
- * Re が勝つのに必要なカード得点。`domain.DoppelkopfReWinPoints` の写し。
- * Kontra は 120 点で勝つ (引き分けが無いよう Re 側だけ 1 点多く必要)。
- */
-const DOPPELKOPF_RE_WIN_POINTS = 121;
-
-/** 1 ラウンドのカード得点合計。`domain.DoppelkopfTotalPoints` の写し。 */
-const DOPPELKOPF_TOTAL_POINTS = 240;
-
-function DoppelkopfPageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('doppelkopf');
-  const {
-    state,
-    loading,
-    error,
-    exec,
-    retry,
-    doppelkopfConfig,
-    handleConfigChange,
-    selectedCardIndices,
-    toggleCard,
-    reset,
-    handlePlay,
-    handleAnnounce,
-    handleNextTrick,
-    handleNextRound,
-    handleHint,
-    hintLoading,
-  } = useDoppelkopfGame();
-
-  // Fetch a fresh game on mount.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: reset is stable per render of the hook; run once on mount.
-  useEffect(() => {
-    reset();
-  }, []);
-
-  // CLI mode
-  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('doppelkopf');
-  const doppelkopfCliConfig: CliGameConfig<DoppelkopfResponse, Parameters<typeof doppelkopfApi.exec>> = useMemo(
-    () => ({
-      gameName: 'doppelkopf',
-      parseCommand: parseDoppelkopfCommand,
-      formatResponse: formatDoppelkopfState,
-      helpText: DOPPELKOPF_HELP,
-    }),
-    [],
-  );
-  const { handleCommand } = useCliGame(exec, doppelkopfCliConfig, state, { addInput, addOutput, addError, clearLog });
-
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('doppelkopf', state);
-  const { cardWidth, isMobile } = useCardDimensions();
-  const isMobileViewport = useIsMobile();
-  const phaseNames = usePhaseNames('doppelkopf', DOPPELKOPF_PHASE_KEYS);
-
-  if (!state)
-    return <GameSkeleton gameKey="doppelkopf" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 6 }} />;
-
-  const messageBox = (
-    <GameMessageBox message={state?.message} messageCode={state?.messageCode} messageParams={state?.messageParams} />
-  );
-
-  const humanPlayer = state.players.find((p) => p.isHuman);
-  const humanIdx = state.players.findIndex((p) => p.isHuman);
-  const isHumanTurn = state.currentPlayerIdx === humanIdx;
-
-  // Indices of the human's trump cards (♦ any, all Q/J, ♥10) for hand highlighting.
-  const trumpIndices = humanPlayer
-    ? humanPlayer.cards.reduce<number[]>((acc, card, idx) => {
-        if (isDoppelkopfTrump(card)) acc.push(idx);
-        return acc;
-      }, [])
-    : [];
-
-  const isPlayPhase = state.phase === DoppelkopfPhase.PLAY;
-  const isTrickEnd = state.phase === DoppelkopfPhase.TRICK_END;
+function Board({ state, t, view }: DoppelkopfContext) {
   const isRoundEnd = state.phase === DoppelkopfPhase.ROUND_END;
   const isGameEnd = state.phase === DoppelkopfPhase.GAME_END || state.gameEndFlag;
-
-  const canPlay = isPlayPhase && isHumanTurn;
   const teamLabel = state.youAreRe ? t('team.re') : t('team.kontra');
-  // The human announces Re if on the Re team, otherwise Kontra.
-  const announceLabel = state.youAreRe ? t('announceRe') : t('announceKontra');
-
-  const handleManualReset = () => {
-    hideActionLog();
-    reset();
-  };
-
+  const { cardWidth, isMobile, isMobileViewport } = view;
   return (
-    <GamePageShell
-      title={tc('nav.doppelkopf')}
-      gameThemeBg={gameTheme.doppelkopf.bg}
-      phaseName={phaseNames[state.phase]}
-      isHumanTurn={isHumanTurn}
-      gamePath="/doppelkopf"
-      gameEndFlag={isGameEnd}
-      winShow={isGameEnd && state.winnerIdx === humanIdx}
-      loading={loading}
-      confirmOpen={confirmOpen}
-      confirmReset={confirmReset}
-      cancelReset={cancelReset}
-      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
-    >
-      {cliEnabled ? (
-        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
-      ) : (
-        <>
-          <SettingsPanel
-            title={t('settings.title')}
-            groups={[
-              {
-                items: [
-                  {
-                    type: 'select',
-                    id: 'cpuDifficulty',
-                    label: t('settings.cpuDifficulty'),
-                    value: doppelkopfConfig.cpuDifficulty,
-                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
-                      value: o.value,
-                      label: t(`settings.${o.label.toLowerCase()}`),
-                    })),
-                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
-                  },
-                  {
-                    type: 'select',
-                    id: 'targetChips',
-                    label: t('settings.targetChips'),
-                    value: doppelkopfConfig.targetChips,
-                    options: TARGET_CHIPS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
-                    onSelect: (v) => handleConfigChange('targetChips', v),
-                  },
-                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
-                ],
-              },
-            ]}
+    <>
+      <div className="text-ds-text-primary text-center mb-2">
+        <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
+        <span>{t('trick', { n: state.trickNumber })}</span>
+      </div>
+
+      <div className={lgTwoColGrid}>
+        {/* Left: play area */}
+        <div>
+          <TrickDisplay
+            currentTrick={state.currentTrick}
+            players={state.players}
+            cardWidth={cardWidth}
+            label={t('currentTrick')}
+            dataTutorial="dk-trick-display"
           />
+        </div>
 
-          <div className={`flex-1 overflow-y-auto pt-2 sm:pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            <div className="text-ds-text-primary text-center mb-2">
-              <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
-              <span>{t('trick', { n: state.trickNumber })}</span>
-            </div>
-
-            <div className={lgTwoColGrid}>
-              {/* Left: play area */}
-              <div>
-                <TrickDisplay
-                  currentTrick={state.currentTrick}
-                  players={state.players}
-                  cardWidth={cardWidth}
-                  label={t('currentTrick')}
-                  dataTutorial="dk-trick-display"
-                />
-              </div>
-
-              {/* Right: info sidebar */}
-              <div data-tutorial="dk-info">
-                {/* Trump ordering legend (collapsible) */}
-                <details className="mb-1 sm:mb-2 p-1 sm:p-2 rounded bg-black/30" data-testid="dk-trump-legend">
-                  <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('rules')}</summary>
-                  <div className="mt-1 text-ds-text-muted text-xs">
-                    <div className="mb-1 text-ds-text-primary">{t('trumpLegend.title')}</div>
-                    <div className="mb-1">{t('trumpLegend.caption')}</div>
-                    <div className="flex flex-wrap items-center gap-x-1 gap-y-0.5">
-                      {DOPPELKOPF_TRUMP_ORDER.map((symbol, i) => (
-                        <span key={symbol} className="inline-flex items-center gap-1">
-                          <span className="font-mono text-ds-text-primary">{symbol}</span>
-                          {i < DOPPELKOPF_TRUMP_ORDER.length - 1 && <span aria-hidden="true">&gt;</span>}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </details>
-
-                {/* Your team / announcements */}
-                <div className="mb-1 sm:mb-2 p-1 sm:p-2 rounded bg-black/30 text-ds-text-muted text-sm flex flex-wrap items-center gap-x-2 sm:block">
-                  <span className="sm:block">
-                    {t('yourTeam')}: {teamLabel}
-                    {state.soloRe && ` (${t('soloRe')})`}
+        {/* Right: info sidebar */}
+        <div data-tutorial="dk-info">
+          {/* Trump ordering legend (collapsible) */}
+          <details className="mb-1 sm:mb-2 p-1 sm:p-2 rounded bg-black/30" data-testid="dk-trump-legend">
+            <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('rules')}</summary>
+            <div className="mt-1 text-ds-text-muted text-xs">
+              <div className="mb-1 text-ds-text-primary">{t('trumpLegend.title')}</div>
+              <div className="mb-1">{t('trumpLegend.caption')}</div>
+              <div className="flex flex-wrap items-center gap-x-1 gap-y-0.5">
+                {DOPPELKOPF_TRUMP_ORDER.map((symbol, i) => (
+                  <span key={symbol} className="inline-flex items-center gap-1">
+                    <span className="font-mono text-ds-text-primary">{symbol}</span>
+                    {i < DOPPELKOPF_TRUMP_ORDER.length - 1 && <span aria-hidden="true">&gt;</span>}
                   </span>
-                  {(state.reAnnounced || state.kontraAnnounced) && (
-                    <span className="sm:block">
-                      {t('announced')}:{' '}
-                      {[state.reAnnounced && t('team.re'), state.kontraAnnounced && t('team.kontra')]
-                        .filter(Boolean)
-                        .join(', ')}
-                    </span>
-                  )}
-                </div>
+                ))}
+              </div>
+            </div>
+          </details>
 
-                {/* Players: chips / cards / tricks (team shown once revealed) */}
-                <div className="mb-1 p-1 sm:p-2 rounded bg-black/30">
-                  {state.players
-                    .filter((p) => p.isHuman)
-                    .map((p) => (
-                      <div
-                        key={p.id}
-                        className="flex flex-wrap items-center gap-x-1 text-ds-text-muted text-sm sm:py-0.5"
-                        data-testid="dk-human-player-info"
-                      >
-                        {playerName(p.id, true)}
-                        {(state.teamsRevealed || p.teamKnown) && ` [${p.isRe ? t('team.re') : t('team.kontra')}]`}:{' '}
-                        {t('chips', { count: p.chips })} | {t('cards', { count: p.cardCount })} |{' '}
-                        <span className="whitespace-nowrap">{t('tricks', { count: p.trickCount })}</span>
-                      </div>
-                    ))}
+          {/* Your team / announcements */}
+          <div className="mb-1 sm:mb-2 p-1 sm:p-2 rounded bg-black/30 text-ds-text-muted text-sm flex flex-wrap items-center gap-x-2 sm:block">
+            <span className="sm:block">
+              {t('yourTeam')}: {teamLabel}
+              {state.soloRe && ` (${t('soloRe')})`}
+            </span>
+            {(state.reAnnounced || state.kontraAnnounced) && (
+              <span className="sm:block">
+                {t('announced')}:{' '}
+                {[state.reAnnounced && t('team.re'), state.kontraAnnounced && t('team.kontra')]
+                  .filter(Boolean)
+                  .join(', ')}
+              </span>
+            )}
+          </div>
+
+          {/* Players: chips / cards / tricks (team shown once revealed) */}
+          <div className="mb-1 p-1 sm:p-2 rounded bg-black/30">
+            {state.players
+              .filter((p) => p.isHuman)
+              .map((p) => (
+                <div
+                  key={p.id}
+                  className="flex flex-wrap items-center gap-x-1 text-ds-text-muted text-sm sm:py-0.5"
+                  data-testid="dk-human-player-info"
+                >
+                  {playerName(p.id, true)}
+                  {(state.teamsRevealed || p.teamKnown) && ` [${p.isRe ? t('team.re') : t('team.kontra')}]`}:{' '}
+                  {t('chips', { count: p.chips })} | {t('cards', { count: p.cardCount })} |{' '}
+                  <span className="whitespace-nowrap">{t('tricks', { count: p.trickCount })}</span>
                 </div>
-                <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
-                  <div className="mb-2 p-2 rounded bg-black/30">
-                    {state.players
-                      .filter((p) => !p.isHuman)
-                      .map((p) => (
-                        <div
-                          key={p.id}
-                          className="flex flex-wrap items-center gap-x-1 text-ds-text-muted text-sm py-0.5"
-                          data-testid="dk-cpu-player-info"
-                        >
-                          {playerName(p.id, p.isHuman)}
-                          {(state.teamsRevealed || p.teamKnown) && ` [${p.isRe ? t('team.re') : t('team.kontra')}]`}:{' '}
-                          {t('chips', { count: p.chips })} | {t('cards', { count: p.cardCount })} |{' '}
-                          <span className="whitespace-nowrap">{t('tricks', { count: p.trickCount })}</span>
-                        </div>
-                      ))}
+              ))}
+          </div>
+          <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+            <div className="mb-2 p-2 rounded bg-black/30">
+              {state.players
+                .filter((p) => !p.isHuman)
+                .map((p) => (
+                  <div
+                    key={p.id}
+                    className="flex flex-wrap items-center gap-x-1 text-ds-text-muted text-sm py-0.5"
+                    data-testid="dk-cpu-player-info"
+                  >
+                    {playerName(p.id, p.isHuman)}
+                    {(state.teamsRevealed || p.teamKnown) && ` [${p.isRe ? t('team.re') : t('team.kontra')}]`}:{' '}
+                    {t('chips', { count: p.chips })} | {t('cards', { count: p.cardCount })} |{' '}
+                    <span className="whitespace-nowrap">{t('tricks', { count: p.trickCount })}</span>
                   </div>
-                </CpuAccordion>
+                ))}
+            </div>
+          </CpuAccordion>
 
-                {/* ラウンド中の獲得点。**同じ値がレスポンスに毎回乗っているのに、
+          {/* ラウンド中の獲得点。**同じ値がレスポンスに毎回乗っているのに、
                     ラウンド終了まで画面に出していなかった。**最初のトリックで
                     Re/Kontra をアナウンスできるので、いま何点取れているかは
                     実戦上の判断材料になる。終了後は下の内訳が引き継ぐ。 */}
-                {!(isRoundEnd || isGameEnd) && (
-                  <div
-                    className="my-1 sm:my-3 p-1 sm:p-2 rounded bg-black/30 text-ds-text-muted text-sm"
-                    role="status"
-                    aria-live="polite"
-                    data-testid="dk-live-points"
-                  >
-                    <div className="mb-0.5 sm:mb-1 text-ds-text-primary">{t('livePoints.title')}</div>
-                    <div>
-                      {t('livePoints.re', {
-                        points: state.liveRePoints,
-                        target: DOPPELKOPF_RE_WIN_POINTS,
-                      })}
-                    </div>
-                    <div>
-                      {t('livePoints.kontra', {
-                        points: state.liveKontraPoints,
-                        target: DOPPELKOPF_TOTAL_POINTS - DOPPELKOPF_RE_WIN_POINTS + 1,
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* Round result */}
-                {(isRoundEnd || isGameEnd) && (
-                  <div className="my-1 sm:my-3 p-1 sm:p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-                    <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
-                    <div>{t('roundResult.rePoints', { points: state.roundRePoints })}</div>
-                    <div>{state.roundReWon ? t('roundResult.reWon') : t('roundResult.reLost')}</div>
-                    <div>{t('roundResult.gamePoints', { points: state.roundGamePoints })}</div>
-                  </div>
-                )}
-                {state.roundScoreHistory.length > 0 && (
-                  <details
-                    open={!isMobileViewport || undefined}
-                    className="my-1 sm:my-3"
-                    data-testid="dk-round-history-details"
-                  >
-                    <summary className="cursor-pointer select-none text-ds-text-primary text-sm">
-                      {t('roundHistory.title')}
-                    </summary>
-                    <div className="mt-1 overflow-x-auto" data-testid="dk-round-history">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr>
-                            <th scope="col">{t('roundHistory.round')}</th>
-                            {state.players.map((p) => (
-                              <th scope="col" key={p.id}>
-                                {playerName(p.id, p.isHuman)}
-                              </th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {state.roundScoreHistory.map((scores, index) => (
-                            <tr key={index}>
-                              <th scope="row">{index + 1}</th>
-                              {scores.map((score, playerIdx) => (
-                                <td key={playerIdx} className="text-center">
-                                  {formatSignedDelta(score)}
-                                </td>
-                              ))}
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </details>
-                )}
+          {!(isRoundEnd || isGameEnd) && (
+            <div
+              className="my-1 sm:my-3 p-1 sm:p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+              role="status"
+              aria-live="polite"
+              data-testid="dk-live-points"
+            >
+              <div className="mb-0.5 sm:mb-1 text-ds-text-primary">{t('livePoints.title')}</div>
+              <div>
+                {t('livePoints.re', {
+                  points: state.liveRePoints,
+                  target: DOPPELKOPF_RE_WIN_POINTS,
+                })}
+              </div>
+              <div>
+                {t('livePoints.kontra', {
+                  points: state.liveKontraPoints,
+                  target: DOPPELKOPF_TOTAL_POINTS - DOPPELKOPF_RE_WIN_POINTS + 1,
+                })}
               </div>
             </div>
+          )}
 
-            {/* Message */}
-            {isMobile && messageBox}
-
-            <ActionLogSection
-              isEndPhase={isGameEnd}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
-          </div>
-
-          {/* Footer */}
-          <GameFooter
-            message={isMobile ? undefined : messageBox}
-            className={`${gameTheme.doppelkopf.footer} px-4 py-2.5`}
-          >
-            {humanPlayer && (
-              <PlayerHandSection
-                humanPlayer={humanPlayer}
-                selectedCardIndices={selectedCardIndices}
-                toggleCard={toggleCard}
-                cardWidth={cardWidth}
-                isMobile={isMobile}
-                dataTutorialPrefix="dk"
-                validIndices={canPlay ? state.playableIndices : undefined}
-                restrictedTooltip={t('playButton')}
-                trumpIndices={trumpIndices}
-                trumpTitle={t('trumpLegend.badgeTitle')}
-                trumpAccessibleLabel={t('trumpLegend.badgeTitle')}
-              />
-            )}
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            {/*
-              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
-              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
-              られないことがある (#5955)。
-            */}
-            <div data-testid="doppelkopf-hint-live" role="status" aria-live="polite">
-              {state.hint && isRequestedHint(state) && (
-                <div className="text-ds-warning text-sm mb-2">
-                  {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
-                  {state.hint.cardIndices.length > 0 && ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
-                </div>
-              )}
+          {/* Round result */}
+          {(isRoundEnd || isGameEnd) && (
+            <div className="my-1 sm:my-3 p-1 sm:p-2 rounded bg-black/30 text-ds-text-muted text-sm">
+              <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
+              <div>{t('roundResult.rePoints', { points: state.roundRePoints })}</div>
+              <div>{state.roundReWon ? t('roundResult.reWon') : t('roundResult.reLost')}</div>
+              <div>{t('roundResult.gamePoints', { points: state.roundGamePoints })}</div>
             </div>
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+          )}
+          {state.roundScoreHistory.length > 0 && (
+            <details
+              open={!isMobileViewport || undefined}
+              className="my-1 sm:my-3"
+              data-testid="dk-round-history-details"
+            >
+              <summary className="cursor-pointer select-none text-ds-text-primary text-sm">
+                {t('roundHistory.title')}
+              </summary>
+              <div className="mt-1 overflow-x-auto" data-testid="dk-round-history">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr>
+                      <th scope="col">{t('roundHistory.round')}</th>
+                      {state.players.map((p) => (
+                        <th scope="col" key={p.id}>
+                          {playerName(p.id, p.isHuman)}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {state.roundScoreHistory.map((scores, index) => (
+                      <tr key={index}>
+                        <th scope="row">{index + 1}</th>
+                        {scores.map((score, playerIdx) => (
+                          <td key={playerIdx} className="text-center">
+                            {formatSignedDelta(score)}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </details>
+          )}
+        </div>
+      </div>
 
-            <div className="flex flex-wrap gap-2 items-center" data-tutorial="dk-action-buttons">
-              {canPlay && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-              {canPlay && (
-                <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
-                  {tc('button.hint')}
-                </button>
-              )}
-              {state.canAnnounce && (
-                <>
-                  <span data-testid="dk-announce-stage" className="text-ds-text-muted text-sm">
-                    {t('announceStage', {
-                      trick: state.trickNumber,
-                      team: teamLabel,
-                      cards: humanPlayer?.cardCount ?? 0,
-                    })}
-                  </span>
-                  <button
-                    type="button"
-                    className={btnSecondary}
-                    onClick={handleAnnounce}
-                    disabled={loading}
-                    aria-label={`${announceLabel} — ${t('announceDescription')}`}
-                    title={t('announceDescription')}
-                  >
-                    {announceLabel}
-                  </button>
-                </>
-              )}
-              {isTrickEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                  {t('nextTrick')}
-                </button>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="dk-reset-button"
-              />
-            </div>
-          </GameFooter>
-        </>
+      {isMobile && (
+        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
       )}
-    </GamePageShell>
+    </>
   );
 }
+
+function FooterHand({ game, state, view, t }: DoppelkopfContext) {
+  const humanPlayer = state.players.find((p) => p.isHuman);
+  const canPlay = state.phase === DoppelkopfPhase.PLAY && state.players[state.currentPlayerIdx]?.isHuman === true;
+  const trumpIndices =
+    humanPlayer?.cards.reduce<number[]>((acc, card, idx) => {
+      if (isDoppelkopfTrump(card)) acc.push(idx);
+      return acc;
+    }, []) ?? [];
+  return humanPlayer ? (
+    <PlayerHandSection
+      humanPlayer={humanPlayer}
+      selectedCardIndices={game.selectedCardIndices}
+      toggleCard={game.toggleCard}
+      cardWidth={view.cardWidth}
+      isMobile={view.isMobile}
+      dataTutorialPrefix="dk"
+      validIndices={canPlay ? state.playableIndices : undefined}
+      restrictedTooltip={t('playButton')}
+      trumpIndices={trumpIndices}
+      trumpTitle={t('trumpLegend.badgeTitle')}
+      trumpAccessibleLabel={t('trumpLegend.badgeTitle')}
+    />
+  ) : null;
+}
+function FooterStatus({ state, t, frontendHint }: DoppelkopfContext) {
+  return (
+    <>
+      <div data-testid="doppelkopf-hint-live" role="status" aria-live="polite">
+        {state.hint && isRequestedHint(state) && (
+          <div className="text-ds-warning text-sm mb-2">
+            {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
+            {state.hint.cardIndices.length > 0 && ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
+          </div>
+        )}
+      </div>
+      <FrontendHintTooltip hint={frontendHint.hint} enabled={frontendHint.hintEnabled} t={t} />
+    </>
+  );
+}
+function FooterActions({ game, state, t, tc, busy }: DoppelkopfContext) {
+  const humanPlayer = state.players.find((p) => p.isHuman);
+  const humanTurn = state.currentPlayerIdx === state.players.findIndex((p) => p.isHuman);
+  const canPlay = state.phase === DoppelkopfPhase.PLAY && humanTurn;
+  const isTrickEnd = state.phase === DoppelkopfPhase.TRICK_END;
+  const isRoundEnd = state.phase === DoppelkopfPhase.ROUND_END;
+  const teamLabel = state.youAreRe ? t('team.re') : t('team.kontra');
+  const announceLabel = state.youAreRe ? t('announceRe') : t('announceKontra');
+  return (
+    <>
+      {canPlay && (
+        <button
+          type="button"
+          className={btnPrimary}
+          onClick={game.handlePlay}
+          disabled={busy || game.selectedCardIndices.length !== 1}
+        >
+          {t('playButton')}
+        </button>
+      )}
+      {canPlay && (
+        <button type="button" className={btnSuccess} onClick={game.handleHint} disabled={busy || game.hintLoading}>
+          {tc('button.hint')}
+        </button>
+      )}
+      {state.canAnnounce && (
+        <>
+          <span data-testid="dk-announce-stage" className="text-ds-text-muted text-sm">
+            {t('announceStage', { trick: state.trickNumber, team: teamLabel, cards: humanPlayer?.cardCount ?? 0 })}
+          </span>
+          <button
+            type="button"
+            className={btnSecondary}
+            onClick={game.handleAnnounce}
+            disabled={busy}
+            aria-label={`${announceLabel} — ${t('announceDescription')}`}
+            title={t('announceDescription')}
+          >
+            {announceLabel}
+          </button>
+        </>
+      )}
+      {isTrickEnd && (
+        <button type="button" className={btnSuccess} onClick={game.handleNextTrick} disabled={busy}>
+          {t('nextTrick')}
+        </button>
+      )}
+      {isRoundEnd && (
+        <button type="button" className={btnSuccess} onClick={game.handleNextRound} disabled={busy}>
+          {t('nextRound')}
+        </button>
+      )}
+    </>
+  );
+}
+const doppelkopfDefinition: GameDefinition<
+  DoppelkopfResponse,
+  DoppelkopfGame,
+  Parameters<typeof doppelkopfApi.exec>,
+  DoppelkopfView
+> = {
+  key: 'doppelkopf',
+  useGame: useDoppelkopfGame,
+  useView: useDoppelkopfView,
+  tutorial: DK_TUTORIAL_STEPS,
+  skeleton: { kind: 'trick-taking', trickArea: true, footerHandSize: 6 },
+  cli: () => ({
+    parseCommand: parseDoppelkopfCommand,
+    formatResponse: formatDoppelkopfState,
+    helpText: DOPPELKOPF_HELP,
+  }),
+  phase: ({ state, view }) => ({
+    name: view.phaseNames[state.phase],
+    ended: state.phase === DoppelkopfPhase.GAME_END || state.gameEndFlag,
+    won:
+      (state.phase === DoppelkopfPhase.GAME_END || state.gameEndFlag) &&
+      state.winnerIdx === state.players.findIndex((p) => p.isHuman),
+  }),
+  shell: ({ state }) => ({ isHumanTurn: state.currentPlayerIdx === state.players.findIndex((p) => p.isHuman) }),
+  reset: ({ game }) => {
+    game.reset();
+  },
+  settings: ({ game, t, tc, frontendHint }) => [
+    {
+      items: [
+        {
+          type: 'select',
+          id: 'cpuDifficulty',
+          label: t('settings.cpuDifficulty'),
+          value: game.doppelkopfConfig.cpuDifficulty,
+          options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
+            value: o.value,
+            label: t(`settings.${o.label.toLowerCase()}`),
+          })),
+          onSelect: (v) => game.handleConfigChange('cpuDifficulty', v),
+        },
+        {
+          type: 'select',
+          id: 'targetChips',
+          label: t('settings.targetChips'),
+          value: game.doppelkopfConfig.targetChips,
+          options: TARGET_CHIPS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+          onSelect: (v) => game.handleConfigChange('targetChips', v),
+        },
+        hintCheckboxItem(tc, frontendHint.hintEnabled, frontendHint.setHintEnabled),
+      ],
+    },
+  ],
+  settingsPlacement: 'top',
+  contentClassName: `pt-2 sm:pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`,
+  message: ({ state, view }) =>
+    !view.isMobile && (
+      <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+    ),
+  resetTutorialId: 'dk-reset-button',
+  actionsTutorialId: 'dk-action-buttons',
+  Board,
+  FooterHand,
+  FooterStatus,
+  FooterActions,
+};
+/** Renders the Doppelkopf game page: 4-player partnership trick-taking with hidden Re/Kontra teams. */
+export const DoppelkopfPage = createGamePage(doppelkopfDefinition);
