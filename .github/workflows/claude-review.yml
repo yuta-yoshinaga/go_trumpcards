@@ -13,7 +13,11 @@ jobs:
   # claude-code-action only reviews autonomously when given a `prompt`; without
   # one it stays in mention mode and does nothing on a pull_request event.
   auto-review:
-    if: github.event_name == 'pull_request'
+    # Dependabot の PR では secrets が Dependabot 用に切り替わり OAuth トークンが空、
+    # かつ action が bot の actor を拒むので、レビューは走らず assert で落ちるだけ。
+    # 必要なら人が `@claude` とコメントして依頼する (issue_comment 経由なら通常の secrets)。
+    # 判定は PR の作者で行う。github.actor は人が再実行すると変わる。
+    if: github.event_name == 'pull_request' && github.event.pull_request.user.login != 'dependabot[bot]'
     runs-on: ubuntu-latest
     # ハングしたジョブを止める上限。既定は 6 時間で、その間 PR は pending の
     # まま誰かが手でキャンセルするまで進まない。値は PR #7111 の実測 max 5 分 36 秒
