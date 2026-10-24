@@ -226,6 +226,12 @@ describe('DoppelkopfPage', () => {
     });
   });
 
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<DoppelkopfPage />);
+    expect(await screen.findByText('プレイ', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('play', { selector: 'strong' })).not.toBeInTheDocument();
+  });
+
   it('selecting a card then playing dispatches play', async () => {
     renderWithProviders(<DoppelkopfPage />);
     const card = await screen.findByAltText('♥ 10');
