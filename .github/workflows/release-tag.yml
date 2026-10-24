@@ -12,17 +12,26 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+      # v7 は対象コミットがない場合にタグを作らず、new_tag が空になる。
+      # 空のまま GoReleaser を実行しないよう、タグを使う後続手順を if で止める。
+      # v6 と v7 の dry run で次のタグ (v3.80.0) が一致することを確認済み (#12034)。
       - name: Bump version and push tag
         id: tag_version
-        uses: mathieudutour/github-tag-action@a22cf08638b34d5badda920f9daf6e72c477b07b # v6.2
+        uses: mathieudutour/github-tag-action@af99e60ce8132224b8e6ebab5023449fe256ed46 # v7.0.0
         with:
           github_token: ${{ github.token }}
+      - name: Report that no release was made
+        if: steps.tag_version.outputs.new_tag == ''
+        run: echo "::notice::No eligible commits since the last tag, so no tag or release was created." && echo "No eligible commits since the last tag; release skipped." >> "$GITHUB_STEP_SUMMARY"
       - name: Fetch new tag
+        if: steps.tag_version.outputs.new_tag != ''
         run: git fetch --tags
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        if: steps.tag_version.outputs.new_tag != ''
         with:
           go-version-file: go.mod
       - name: Release with GoReleaser
+        if: steps.tag_version.outputs.new_tag != ''
         uses: goreleaser/goreleaser-action@a4f02ab5355a589de60d917a659ce617ed19b3de # v7.3.0
         with:
           version: "~> v2"

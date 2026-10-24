@@ -15,12 +15,6 @@ updates:
     # Conventional Commits に合わせる (既定の "Bump X from A to B" は規約外)。
     commit-message:
       prefix: "ci"
-    # github-tag-action v7 は既定値が変わり、新しいタグを作らないと new_tag が空のまま
-    # GoReleaser に渡る。master への push でしか動かず PR で試せないので、#12034 で
-    # 対応するまでメジャーだけ止める (パッチ・マイナーは通す)。
-    ignore:
-      - dependency-name: mathieudutour/github-tag-action
-        update-types: ["version-update:semver-major"]
     # 16 action の更新を週 1 本の PR にまとめる。
     groups:
       github-actions:
