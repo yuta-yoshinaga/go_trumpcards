@@ -26,18 +26,32 @@ describe('formatMonteCarloState', () => {
     expect(output).toContain('phase: Playing');
     expect(output).toContain('[0]♠7 [1]♥7');
     expect(output).toContain('[24][empty]');
-    expect(output).toContain('p <idx1> <idx2>');
-    expect(output).toContain('Next: remove a matching adjacent pair.');
+    expect(output).toContain('p <a> <b>');
+    expect(output).toContain('Available commands: p 0 1, d (deal), u (undo)');
   });
 
   it('suggests dealing when no pair remains and stock is available', () => {
-    const output = formatMonteCarloState({ ...base, removablePairs: 0, canUndo: false });
-    expect(output).toContain('Next: deal cards with d.');
+    const output = formatMonteCarloState({
+      ...base,
+      board: base.board.map((row) => row.map(() => ({ card: null }))),
+      removablePairs: 0,
+      canUndo: false,
+    });
+    expect(output).toContain('Available commands: d (deal)');
     expect(output).toContain('undo available: no');
   });
 
-  it('suggests undo or give up when no pair or stock remains', () => {
-    expect(formatMonteCarloState({ ...base, removablePairs: 0, stockCount: 0 })).toContain('Next: undo or give up.');
+  it('shows only currently available commands and reset after game end', () => {
+    const unavailable = formatMonteCarloState({
+      ...base,
+      board: base.board.map((row) => row.map(() => ({ card: null }))),
+      removablePairs: 0,
+      stockCount: 0,
+      canUndo: false,
+    });
+    expect(unavailable).not.toContain('Available commands:');
+    expect(formatMonteCarloState({ ...base, phase: 1 })).toContain('Available command: r (reset)');
+    expect(formatMonteCarloState({ ...base, phase: 2 })).toContain('Available command: r (reset)');
   });
 
   it('formats requested remove and deal hints from server hintAvailable responses', () => {
@@ -55,10 +69,11 @@ describe('formatMonteCarloState', () => {
     expect(dealHint).toContain('HINT: Deal cards from the stock.');
     const partialHint = formatMonteCarloState({
       ...base,
-      hint: { action: 'remove' },
+      board: base.board.map((row, rowIndex) => (rowIndex === 0 ? row.map(() => ({ card: null })) : row)),
+      hint: { action: 'remove', fromR: 1, fromC: 0, toR: 1, toC: 1 },
       messageCode: 'montecarlo.hintAvailable',
     });
-    expect(partialHint).toContain('HINT: Remove [0] and [0].');
+    expect(partialHint).toContain('HINT: Remove [5] and [6].');
   });
 
   it('does not show passive or unmarked hints', () => {
@@ -70,6 +85,15 @@ describe('formatMonteCarloState', () => {
       messageCode: 'montecarlo.playing',
     });
     expect(unmarked).not.toContain('HINT:');
+    expect(
+      formatMonteCarloState({
+        ...base,
+        hint: { action: 'deal' },
+        stockCount: 0,
+        messageCode: 'montecarlo.hintAvailable',
+      }),
+    ).not.toContain('HINT:');
+    expect(formatMonteCarloState({ ...base, messageCode: 'montecarlo.noHint' })).toContain('No hint available.');
   });
 
   it('formats clear and game over phases', () => {

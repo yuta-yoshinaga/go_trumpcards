@@ -82,6 +82,16 @@ describe('MonteCarloPage', () => {
     expect(screen.queryByTestId('mc-board')).not.toBeInTheDocument();
   });
 
+  it('dispatches p coordinates through the same remove arguments as the board buttons', async () => {
+    renderWithProviders(<MonteCarloPage />);
+    await screen.findByTestId('mc-cell-0-0');
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    const input = await screen.findByRole('textbox', { name: 'コマンドを入力...' });
+    fireEvent.change(input, { target: { value: 'p 0 1' } });
+    fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' });
+    await waitFor(() => expect(mockExec).toHaveBeenLastCalledWith('remove', 0, 0, 0, 1));
+  });
+
   it('matches the large desktop placeholder height to the rendered cards', async () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });

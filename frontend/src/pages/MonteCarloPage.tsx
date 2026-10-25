@@ -33,6 +33,8 @@ import { cardAlt } from '../utils/cardAlt';
 import { MONTECARLO_HELP, parseMonteCarloCommand } from '../utils/cli/commands/montecarloCommands';
 import { formatMonteCarloState } from '../utils/cli/formatters/montecarloFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import type { MonteCarloCellPos } from '../utils/monteCarloRules';
+import { canMonteCarloDeal, canMonteCarloUndo, isMonteCarloAdjacent } from '../utils/monteCarloRules';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const SIZE = 5;
@@ -60,15 +62,6 @@ const MC_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="mc-deal"]', messageKey: 'tutorial.deal', placement: 'top', advanceOn: 'next' },
   { target: '[data-tutorial="mc-controls"]', messageKey: 'tutorial.controls', placement: 'top', advanceOn: 'next' },
 ];
-
-interface CellPos {
-  row: number;
-  col: number;
-}
-
-function isAdjacent(a: CellPos, b: CellPos): boolean {
-  return Math.abs(a.row - b.row) <= 1 && Math.abs(a.col - b.col) <= 1 && !(a.row === b.row && a.col === b.col);
-}
 
 /** Renders the Monte Carlo Solitaire game page. */
 export const MonteCarloPage = withTutorial(MonteCarloPageContent, 'montecarlo', MC_TUTORIAL_STEPS);
@@ -120,18 +113,18 @@ function MonteCarloPageContent() {
   const cliConfig: CliGameConfig<MonteCarloResponse, Parameters<typeof montecarloApi.exec>> = useMemo(
     () => ({
       gameName: 'montecarlo',
-      parseCommand: parseMonteCarloCommand,
+      parseCommand: (input: string) => parseMonteCarloCommand(input, state),
       formatResponse: formatMonteCarloState,
       helpText: MONTECARLO_HELP,
     }),
-    [],
+    [state],
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   useMountReset(execApi);
   const phaseNames = usePhaseNames('montecarlo', MC_PHASE_KEYS);
 
-  const [selected, setSelected] = useState<CellPos | null>(null);
+  const [selected, setSelected] = useState<MonteCarloCellPos | null>(null);
   const [pairRemoved, setPairRemoved] = useState(false);
   const [pairAnnouncement, setPairAnnouncement] = useState('');
   const pairToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -185,7 +178,7 @@ function MonteCarloPageContent() {
       // Two cells chosen. Send the remove request (server validates adjacency + rank).
       const firstCard = state.board[selected.row]?.[selected.col]?.card;
       const isValidPair =
-        firstCard != null && firstCard.value === cell.card.value && isAdjacent(selected, { row, col });
+        firstCard != null && firstCard.value === cell.card.value && isMonteCarloAdjacent(selected, { row, col });
       pendingPairToast.current = isValidPair;
       void execApi('remove', selected.row, selected.col, row, col).then(() => setTimeout(focusNextAction, 0));
       setSelected(null);
@@ -226,7 +219,8 @@ function MonteCarloPageContent() {
   // **山札が尽きたら「配る」は押せない (#4796)。**姉妹の Wasp / Spiderette は
   // stockCount === 0 を明示的にガードしている。ドメインも「隣接ペアなし かつ
   // 山札0 かつ 圧縮の余地なし」で手詰まりと判定するので、この状態は実際に起きる。
-  const canDeal = isPlaying && (state?.stockCount ?? 0) > 0;
+  const canDeal = canMonteCarloDeal(state);
+  const canUndo = canMonteCarloUndo(state);
   // **山札が0なら警告リングも点けない。**無効な操作を「押せ」と誘導することに
   // なるため。
   const noRemovablePairs = isPlaying && removablePairs === 0 && canDeal;
@@ -305,7 +299,7 @@ function MonteCarloPageContent() {
                       const filled = !!cell.card;
                       const isSelected = selected?.row === rowIdx && selected?.col === colIdx;
                       const isAdjOfSelected =
-                        filled && selected !== null && isAdjacent(selected, { row: rowIdx, col: colIdx });
+                        filled && selected !== null && isMonteCarloAdjacent(selected, { row: rowIdx, col: colIdx });
                       // `isAdjOfSelected` already requires `filled`, so `cell.card` is non-null here.
                       const isMatchingPair =
                         isAdjOfSelected && selectedValue !== undefined && cell.card?.value === selectedValue;
@@ -431,7 +425,7 @@ function MonteCarloPageContent() {
                     data-testid="mc-undo-button"
                     className={btnOutline}
                     onClick={handleUndo}
-                    disabled={loading || !state.canUndo}
+                    disabled={loading || !canUndo}
                   >
                     {t('button.undo')}
                   </button>
