@@ -538,6 +538,7 @@ const ultiDefinition: GameDefinition<UltiResponse, UltiGame, Parameters<typeof u
   settingsPlacement: 'top',
   contentClassName: `pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`,
   primaryActions,
+  // Hand plus actions outgrow the 45vh cap on phones (#11655).
   footerTall: true,
   resetTutorialId: 'ulti-reset-button',
   actionsClassName: '',

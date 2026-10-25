@@ -378,6 +378,8 @@ function primaryActions({ game, state, t, view, busy }: MichiganContext) {
   if (!showBetControls) return null;
 
   const humanPlayer = state.players.find((p) => p.isHuman);
+  // Per-boodle betting guidance: which boodles the human can recover (holds the
+  // matching card) and which are already claimed, so bets can be biased sensibly.
   const boodleGuides = michiganBoodleGuides(state.boodles, humanPlayer?.cards ?? []);
 
   return (

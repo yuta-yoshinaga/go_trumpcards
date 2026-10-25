@@ -415,6 +415,7 @@ const minchiateDefinition: GameDefinition<
   ],
   contentClassName: `pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`,
   primaryActions,
+  // Tarot-size hands outgrow the 45vh cap on phones (#11655).
   footerTall: true,
   message: (ctx) =>
     !ctx.view.isMobile && (

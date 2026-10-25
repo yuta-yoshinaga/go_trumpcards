@@ -366,7 +366,9 @@ function primaryActions({ game, state, t, busy }: FortyFivesContext) {
     return null;
   }
 
+  // The current highest (non-pass) bid; a new non-pass bid must beat it.
   const highestBid = Math.max(0, ...state.bids);
+  // Look up the holder via the players array (playerName expects a player id, not an index).
   const highestBidder = highestBid > 0 ? state.players[state.bids.indexOf(highestBid)] : undefined;
   const highestBidderName = highestBidder ? playerName(highestBidder.id, highestBidder.isHuman) : '';
 

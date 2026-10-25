@@ -99,6 +99,8 @@ function Board({ state, t, game, view, busy }: KingContext) {
   const contractName = state.currentContract >= 0 ? t(`contracts.${state.currentContract}`) : '-';
   const trumpSymbol = state.trumpSuit >= 1 ? suitSymbolAt(state.trumpSuit, '-') : '-';
 
+  // Dispatch a contract choice. For "King (Trump)" we first surface a trump
+  // picker; every other contract is sent immediately with trumpSuit = -1.
   const handleContractClick = (contract: number) => {
     if (contract === KING_TRUMP_CONTRACT) {
       view.setPendingTrumpContract(contract);
