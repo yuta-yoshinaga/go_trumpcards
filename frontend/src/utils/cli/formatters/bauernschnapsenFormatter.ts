@@ -35,8 +35,9 @@ export function formatBauernschnapsenState(state: BauernschnapsenResponse): stri
   for (const p of state.players) {
     lines.push(`${formatPlayerName(p.id, p.isHuman)}: team=${p.team} tricks=${p.trickCount}`);
     if (p.isHuman && p.cards.length) {
-      const markCards = humanTurn && state.validPlayIndices.length > 0;
-      const markMarriages = humanTurn && state.marriageIndices.length > 0;
+      const playTurn = humanTurn && state.phase === BauernschnapsenPhase.PLAY;
+      const markCards = playTurn && state.validPlayIndices.length > 0;
+      const markMarriages = playTurn && state.marriageIndices.length > 0;
       const hand = p.cards
         .map((card, i) => {
           const mark = `${markMarriages && state.marriageIndices.includes(i) ? '*' : ''}${markCards && !state.validPlayIndices.includes(i) ? 'x' : ''}`;
@@ -47,12 +48,12 @@ export function formatBauernschnapsenState(state: BauernschnapsenResponse): stri
       if (humanTurn) {
         if (state.phase === BauernschnapsenPhase.PLAY) {
           lines.push(`  use p <idx>${state.marriageIndices.length ? ' or m <idx>' : ''}`);
-        } else if (state.phase === BauernschnapsenPhase.CONTRACT) lines.push('  use c <0-3> [suit]');
+        } else if (state.phase === BauernschnapsenPhase.CONTRACT) lines.push('  use c 0 | c 3 | c <1-2> <suit>');
       }
     }
   }
-  if (humanTurn && state.phase === BauernschnapsenPhase.TRICK_END) lines.push('use n');
-  if (humanTurn && state.phase === BauernschnapsenPhase.ROUND_END) lines.push('use nr');
+  if (state.phase === BauernschnapsenPhase.TRICK_END) lines.push('use n');
+  if (state.phase === BauernschnapsenPhase.ROUND_END) lines.push('use nr');
   lines.push('----------');
   if (state.currentTrick.length)
     lines.push(

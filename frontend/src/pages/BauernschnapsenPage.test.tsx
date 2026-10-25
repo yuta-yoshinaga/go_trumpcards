@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, bauernschnapsenApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BauernschnapsenResponse, Card } from '../types/card';
@@ -68,6 +68,10 @@ const gameEndState = makeState({
   gameEndFlag: true,
   winnerTeam: 0,
   teamScores: [101, 60],
+});
+
+afterEach(() => {
+  localStorage.removeItem('cli-mode-bauernschnapsen');
 });
 
 beforeEach(() => {

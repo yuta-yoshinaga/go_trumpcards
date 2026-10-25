@@ -99,20 +99,55 @@ describe('formatBauernschnapsenState', () => {
   });
 
   it('marks legal plays and marriage cards only on the human turn', () => {
-    const marked = formatBauernschnapsenState(state({ validPlayIndices: [1], marriageIndices: [0] }));
+    const marked = formatBauernschnapsenState(
+      state({ phase: BauernschnapsenPhase.PLAY, validPlayIndices: [1], marriageIndices: [0] }),
+    );
     expect(marked).toContain('[0]♠K*x');
-    expect(marked).toContain('[1]♥Q');
+    expect(marked).toMatch(/\[1\]♥Q(?![*x])/);
     const cpuTurn = formatBauernschnapsenState(state({ currentPlayerIdx: 1, marriageIndices: [0] }));
     expect(cpuTurn).toContain('[0]♠K');
     expect(cpuTurn).not.toContain('[0]♠K*');
+    const contract = formatBauernschnapsenState(
+      state({ phase: BauernschnapsenPhase.CONTRACT, validPlayIndices: [1], marriageIndices: [0] }),
+    );
+    expect(contract).toMatch(/\[0\]♠K(?![*x])/);
+    expect(contract).toMatch(/\[1\]♥Q(?![*x])/);
   });
 
   it('shows phase-specific commands for the human turn', () => {
-    expect(formatBauernschnapsenState(state({ phase: BauernschnapsenPhase.CONTRACT }))).toContain('c <0-3> [suit]');
+    expect(formatBauernschnapsenState(state({ phase: BauernschnapsenPhase.CONTRACT }))).toContain(
+      'use c 0 | c 3 | c <1-2> <suit>',
+    );
     expect(formatBauernschnapsenState(state({ marriageIndices: [0] }))).toContain('m <idx>');
-    expect(formatBauernschnapsenState(state({ phase: BauernschnapsenPhase.TRICK_END }))).toContain('n');
-    expect(formatBauernschnapsenState(state({ phase: BauernschnapsenPhase.ROUND_END }))).toContain('nr');
+    expect(formatBauernschnapsenState(state({ phase: BauernschnapsenPhase.TRICK_END }))).toContain('use n');
+    expect(formatBauernschnapsenState(state({ phase: BauernschnapsenPhase.ROUND_END }))).toContain('use nr');
     expect(formatBauernschnapsenState(state({ currentPlayerIdx: 1 }))).not.toContain('p <idx>');
+    expect(
+      formatBauernschnapsenState(state({ phase: BauernschnapsenPhase.CONTRACT, currentPlayerIdx: 1 })),
+    ).not.toContain('use c');
+  });
+
+  it('shows continuation commands at trick and round end regardless of whose turn it is', () => {
+    expect(formatBauernschnapsenState(state({ phase: BauernschnapsenPhase.TRICK_END, currentPlayerIdx: 1 }))).toContain(
+      'use n',
+    );
+    expect(formatBauernschnapsenState(state({ phase: BauernschnapsenPhase.ROUND_END, currentPlayerIdx: 1 }))).toContain(
+      'use nr',
+    );
+  });
+
+  it('prints each phase name and omits an unset declarer', () => {
+    const phases = [
+      [BauernschnapsenPhase.CONTRACT, 'Contract'],
+      [BauernschnapsenPhase.PLAY, 'Play'],
+      [BauernschnapsenPhase.TRICK_END, 'TrickEnd'],
+      [BauernschnapsenPhase.ROUND_END, 'RoundEnd'],
+      [BauernschnapsenPhase.GAME_END, 'GameEnd'],
+    ] as const;
+    for (const [phase, name] of phases) {
+      expect(formatBauernschnapsenState(state({ phase }))).toContain(`phase: ${name}`);
+    }
+    expect(formatBauernschnapsenState(state({ declarerIdx: -1 }))).not.toContain('declarer:');
   });
 
   it('prints a single friendly line for an unavailable hint', () => {

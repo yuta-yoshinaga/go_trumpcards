@@ -75,7 +75,7 @@ export function parseBauernschnapsenCommand(input: string): CliParseResult<Bauer
 /** Help text shown in the Bauernschnapsen CLI terminal. */
 export const BAUERNSCHNAPSEN_HELP = [
   'p <idx>            - Play a card from your hand (0-4)',
-  'c <0-3> [suit]     - Declare a contract (0=Pass, 1=Rufer, 2=Farbenzwang, 3=Bettel; suit 1-4)',
+  'c 0 | c 3 | c <1-2> <suit> - Declare a contract (suit 1-4 for contracts 1-2)',
   'm <idx>            - Declare a marriage with a card (0-4)',
   'n / next           - Continue after a trick',
   'nr / nextround     - Start the next round',
