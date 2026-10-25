@@ -7,7 +7,6 @@
     "gameEnd": "ゲーム終了"
   },
   "settings": {
-    "title": "設定",
     "cpuDifficulty": "CPU難易度",
     "maxRounds": "総ラウンド数",
     "easy": "Easy",

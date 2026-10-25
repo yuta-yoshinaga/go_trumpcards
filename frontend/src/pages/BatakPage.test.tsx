@@ -136,6 +136,12 @@ describe('BatakPage', () => {
     });
   });
 
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<BatakPage />);
+    expect(await screen.findByText('プレイ', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('play', { selector: 'strong' })).not.toBeInTheDocument();
+  });
+
   it('shows the translated lead suit only when the trick contains cards', async () => {
     mockExec.mockResolvedValue(
       makeBatakState({
