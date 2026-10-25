@@ -7,6 +7,10 @@ import { createGamePage, type GameDefinition, type GameHookBase, type GamePageCo
 
 vi.mock('../../api/gameApi', () => ({ actionLogApi: { acesup: vi.fn() } }));
 
+vi.mock('../motion/WinCelebration', () => ({
+  WinCelebration: ({ show }: { show: boolean }) => (show ? <div data-testid="win-celebration" /> : null),
+}));
+
 const mockPlaySound = vi.fn();
 const mockSoundValue = {
   playSound: mockPlaySound,
@@ -755,6 +759,50 @@ describe('createGamePage', () => {
       const actionLog = screen.getByRole('button', { name: '棋譜を見る' });
       const actionLogSection = actionLog.parentElement;
       expect(actionLogSection?.nextElementSibling).toBe(screen.getByRole('alert'));
+    });
+
+    it('shows the action log during play only when actionLogDuringPlay is enabled', () => {
+      currentGame = { ...defaultBaseGame, state: { ended: false } };
+      const Enabled = makePage({ actionLogDuringPlay: true });
+      const first = renderWithProviders(<Enabled />);
+      expect(screen.getByRole('button', { name: '棋譜を見る' })).toBeInTheDocument();
+      first.unmount();
+
+      const Default = makePage({});
+      renderWithProviders(<Default />);
+      expect(screen.queryByRole('button', { name: '棋譜を見る' })).not.toBeInTheDocument();
+    });
+
+    it('uses actionLogEndPhase for action log visibility without changing game-end behavior', () => {
+      currentGame = { ...defaultBaseGame, state: { ended: false } };
+      const Page = makePage({ actionLogEndPhase: () => true });
+      renderWithProviders(<Page />);
+
+      expect(screen.getByRole('button', { name: '棋譜を見る' })).toBeInTheDocument();
+      expect(screen.queryByTestId('win-celebration')).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument();
+    });
+
+    it('shows the celebration when the game ends even when actionLogEndPhase is false', () => {
+      const Page = makePage({ actionLogEndPhase: () => false });
+      currentGame = { ...defaultBaseGame, state: { ended: true } };
+      renderWithProviders(<Page />);
+
+      expect(screen.getByTestId('win-celebration')).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: '棋譜を見る' })).not.toBeInTheDocument();
+    });
+
+    it('defaults action log availability to phase.ended', () => {
+      const Ended = makePage({});
+      currentGame = { ...defaultBaseGame, state: { ended: true } };
+      const first = renderWithProviders(<Ended />);
+      expect(screen.getByRole('button', { name: '棋譜を見る' })).toBeInTheDocument();
+      first.unmount();
+
+      const Playing = makePage({});
+      currentGame = { ...defaultBaseGame, state: { ended: false } };
+      renderWithProviders(<Playing />);
+      expect(screen.queryByRole('button', { name: '棋譜を見る' })).not.toBeInTheDocument();
     });
 
     it('renders AboveContent after top settings and outside the scrolling content', () => {

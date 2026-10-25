@@ -104,6 +104,16 @@ export interface GameDefinition<S, G extends GameHookBase<S, A>, A extends unkno
   busy?: (game: G) => boolean;
   /** Plain function computing the current phase display. Must not call hooks. */
   phase: (ctx: GamePageContext<S, G, V>) => { name: string; ended: boolean; won?: boolean };
+  /** Whether the action log can be opened during play, matching `ActionLogSection`'s `availableDuringPlay` prop. Defaults to false. */
+  actionLogDuringPlay?: boolean;
+  /**
+   * Overrides `phase.ended` when deciding whether to show the action log button.
+   * This replaces the default condition; include game-end phases here too if they
+   * should show the button. It only controls button visibility and never opens
+   * the action log automatically. Like `phase` and `shortcuts`, this is a plain
+   * function and must not call hooks.
+   */
+  actionLogEndPhase?: (ctx: GamePageContext<S, G, V>) => boolean;
   /** Plain function returning action shortcuts. Must not call hooks. */
   shortcuts?: (ctx: GamePageContext<S, G, V>) => ActionBinding[];
   /** Plain function returning pinned primary footer actions. Must not call hooks. Its presence selects the pinned footer layout. Return null (not undefined) on turns with no actions. */
@@ -323,7 +333,8 @@ export function createGamePage<S, G extends GameHookBase<S, A>, A extends unknow
             <div className={`flex-1 overflow-y-auto ${def.contentClassName ?? 'pt-3 px-4 lg:px-8'}`}>
               <Board {...context} />
               <ActionLogSection
-                isEndPhase={phase.ended}
+                isEndPhase={def.actionLogEndPhase?.(context) ?? phase.ended}
+                availableDuringPlay={def.actionLogDuringPlay}
                 actionLog={setup.actionLog}
                 showActionLog={setup.showActionLog}
                 hideActionLog={setup.hideActionLog}
