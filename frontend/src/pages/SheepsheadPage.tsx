@@ -1,28 +1,13 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { sheepsheadApi } from '../api/gameApi';
-import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
-import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
-import { CliTerminal } from '../components/cli/CliTerminal';
-import { CliToggle } from '../components/cli/CliToggle';
-import { SettingsPanel } from '../components/common/SettingsPanel';
-import { ErrorAlert } from '../components/ErrorAlert';
-import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageShell } from '../components/GamePageShell';
-import { GameResetButton } from '../components/GameResetButton';
+import { createGamePage, type GameDefinition, type GamePageContext } from '../components/game/createGamePage';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { PlayerHandSection } from '../components/PlayerHandSection';
-import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
-import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
-import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
-import { useCliGame } from '../hooks/useCliGame';
-import { useCliMode } from '../hooks/useCliMode';
-import { useGameHint } from '../hooks/useGameHint';
-import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import {
   BASE_CHIPS_OPTIONS,
@@ -33,13 +18,11 @@ import {
 } from '../hooks/useSheepsheadGame';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
-import { gameTheme } from '../styles/gameTheme';
 import type { SheepsheadResponse } from '../types/card';
 import { SheepsheadPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { parseSheepsheadCommand, SHEEPSHEAD_HELP } from '../utils/cli/commands/sheepsheadCommands';
 import { formatSheepsheadState } from '../utils/cli/formatters/sheepsheadFormatter';
-import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -86,64 +69,29 @@ const SHEEPSHEAD_PHASE_KEYS: Readonly<Record<number, string>> = {
 /** Maps a called-suit id (1=♠ 2=♣ 3=♥) to its i18n suit key. */
 const SUIT_KEYS: Readonly<Record<number, string>> = { 1: 'spade', 2: 'club', 3: 'heart' };
 
-/** Renders the Sheepshead game page: 5-player partnership trick-taking with pick/bury/call/play phases. */
-export const SheepsheadPage = withTutorial(SheepsheadPageContent, 'sheepshead', SH_TUTORIAL_STEPS);
+type SheepsheadGame = ReturnType<typeof useSheepsheadGame>;
+type SheepsheadView = ReturnType<typeof useSheepsheadView>;
+type SheepsheadContext = GamePageContext<SheepsheadResponse, SheepsheadGame, SheepsheadView>;
 
-/** Inner content of the Sheepshead page, wrapped by TutorialProvider. */
-function SheepsheadPageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('sheepshead');
-  const {
-    state,
-    loading,
-    error,
-    exec,
-    retry,
-    sheepsheadConfig,
-    handleConfigChange,
-    selectedCardIndices,
-    toggleCard,
-    clearSelection,
-    reset,
-    handlePick,
-    handlePass,
-    handleBury,
-    handleCall,
-    handlePlay,
-    handleNextTrick,
-    handleNextRound,
-  } = useSheepsheadGame();
-
-  // Fetch a fresh game on mount.
+function useSheepsheadView({
+  game,
+  t,
+}: {
+  game: SheepsheadGame;
+  t: (key: string, opts?: Record<string, unknown>) => string;
+}) {
   // biome-ignore lint/correctness/useExhaustiveDependencies: reset is stable per render of the hook; run once on mount.
   useEffect(() => {
-    reset();
+    game.reset();
   }, []);
 
-  // CLI mode
-  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('sheepshead');
-  const sheepsheadCliConfig: CliGameConfig<SheepsheadResponse, Parameters<typeof sheepsheadApi.exec>> = useMemo(
-    () => ({
-      gameName: 'sheepshead',
-      parseCommand: parseSheepsheadCommand,
-      formatResponse: formatSheepsheadState,
-      helpText: SHEEPSHEAD_HELP,
-    }),
-    [],
-  );
-  const { handleCommand } = useCliGame(exec, sheepsheadCliConfig, state, { addInput, addOutput, addError, clearLog });
-
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('sheepshead', state);
   const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('sheepshead', SHEEPSHEAD_PHASE_KEYS);
   const [trickAnnouncement, setTrickAnnouncement] = useState('');
   const previousCompletedTrickCount = useRef<number | null>(null);
 
   useEffect(() => {
+    const state = game.state;
     if (!state) return;
     if (previousCompletedTrickCount.current === null) {
       previousCompletedTrickCount.current = state.completedTrickCount;
@@ -157,48 +105,27 @@ function SheepsheadPageContent() {
       );
     }
     previousCompletedTrickCount.current = state.completedTrickCount;
-  }, [state, t]);
+  }, [game.state, t]);
 
-  // Keyboard hand navigation: number keys toggle a card, Enter confirms,
-  // Escape clears. BURY needs two cards and PLAY needs one; both handlers
-  // self-guard on the selected count, so confirmAction just routes to the
-  // active phase's handler.
-  const humanIdxForKbd = state?.players.findIndex((p) => p.isHuman) ?? -1;
-  const canBuryForKbd = state?.phase === SheepsheadPhase.BURY && state.pickerIdx === humanIdxForKbd;
-  const canPlayForKbd = state?.phase === SheepsheadPhase.PLAY && state.currentPlayerIdx === humanIdxForKbd;
-  const humanCardCountForKbd = state?.players.find((p) => p.isHuman)?.cards?.length ?? 0;
-  const confirmAction = useCallback(() => {
-    if (canBuryForKbd) handleBury();
-    else if (canPlayForKbd) handlePlay();
-  }, [canBuryForKbd, canPlayForKbd, handleBury, handlePlay]);
-  useCardKeyboardNav({
-    cardCount: humanCardCountForKbd,
-    onToggle: toggleCard,
-    onConfirm: confirmAction,
-    onClear: clearSelection,
-    enabled: (canBuryForKbd || canPlayForKbd) && !loading,
-  });
+  return { cardWidth, isMobile, phaseNames, trickAnnouncement };
+}
 
-  if (!state)
-    return <GameSkeleton gameKey="sheepshead" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 6 }} />;
+function LiveRegion({ view }: SheepsheadContext) {
+  return (
+    <div className="sr-only" role="status" aria-live="polite" data-testid="sheepshead-trick-live">
+      {view.trickAnnouncement}
+    </div>
+  );
+}
 
-  const humanPlayer = state.players.find((p) => p.isHuman);
+function Board({ state, t, view }: SheepsheadContext) {
+  const { cardWidth, isMobile } = view;
   const humanIdx = state.players.findIndex((p) => p.isHuman);
-  const isHumanTurn = state.currentPlayerIdx === humanIdx;
-
   const isPickPhase = state.phase === SheepsheadPhase.PICK;
-  const isBuryPhase = state.phase === SheepsheadPhase.BURY;
-  const isCallPhase = state.phase === SheepsheadPhase.CALL;
-  const isPlayPhase = state.phase === SheepsheadPhase.PLAY;
   const isTrickEnd = state.phase === SheepsheadPhase.TRICK_END;
   const isRoundEnd = state.phase === SheepsheadPhase.ROUND_END;
   const isGameEnd = state.phase === SheepsheadPhase.GAME_END || state.gameEndFlag;
-
-  // Phase-specific "it's the human's actionable turn" flags.
-  const canPick = isPickPhase && isHumanTurn;
-  const canBury = isBuryPhase && state.pickerIdx === humanIdx;
-  const canCall = isCallPhase && state.pickerIdx === humanIdx && state.callableSuits.length > 0;
-  const canPlay = isPlayPhase && isHumanTurn;
+  const isPlayPhase = state.phase === SheepsheadPhase.PLAY;
 
   // Partner is only shown once revealed (or at round/game end).
   const showPartner = state.partnerRevealed || isRoundEnd || isGameEnd;
@@ -208,339 +135,374 @@ function SheepsheadPageContent() {
       ? playerName(state.partnerIdx, state.partnerIdx === humanIdx)
       : t('partnerHidden');
 
-  const handleManualReset = () => {
-    hideActionLog();
-    reset();
-  };
-
   return (
-    <GamePageShell
-      title={tc('nav.sheepshead')}
-      gameThemeBg={gameTheme.sheepshead.bg}
-      phaseName={phaseNames[state.phase]}
-      isHumanTurn={isHumanTurn}
-      gamePath="/sheepshead"
-      gameEndFlag={isGameEnd}
-      winShow={isGameEnd && state.winnerIdx === humanIdx}
-      loading={loading}
-      confirmOpen={confirmOpen}
-      confirmReset={confirmReset}
-      cancelReset={cancelReset}
-      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
-    >
-      <div className="sr-only" role="status" aria-live="polite" data-testid="sheepshead-trick-live">
-        {trickAnnouncement}
+    <>
+      <div className="text-ds-text-primary text-center mb-2">
+        <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
+        <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
+        <span>{t('blindCount', { count: state.blindCount })}</span>
       </div>
-      {cliEnabled ? (
-        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
-      ) : (
-        <>
-          <SettingsPanel
-            title={t('settings.title')}
-            groups={[
-              {
-                items: [
-                  {
-                    type: 'select',
-                    id: 'cpuDifficulty',
-                    label: t('settings.cpuDifficulty'),
-                    value: sheepsheadConfig.cpuDifficulty,
-                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
-                      value: o.value,
-                      label: t(`settings.${o.label.toLowerCase()}`),
-                    })),
-                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
-                  },
-                  {
-                    type: 'select',
-                    id: 'targetChips',
-                    label: t('settings.targetChips'),
-                    value: sheepsheadConfig.targetChips,
-                    options: TARGET_CHIPS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
-                    onSelect: (v) => handleConfigChange('targetChips', v),
-                  },
-                  {
-                    type: 'select',
-                    id: 'baseChips',
-                    label: t('settings.baseChips'),
-                    value: sheepsheadConfig.baseChips,
-                    options: BASE_CHIPS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
-                    onSelect: (v) => handleConfigChange('baseChips', v),
-                  },
-                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
-                ],
-              },
-            ]}
+
+      <div className={lgTwoColGrid}>
+        {/* Left: play area */}
+        <div>
+          {/* Blind: face-down cards, shown only during the Pick phase before a picker takes them. */}
+          {isPickPhase && state.blindCount > 0 && (
+            <div className="mb-3" data-testid="sh-blind-display">
+              <div className="text-ds-text-muted text-sm mb-1 text-center">
+                {t('blind')} ({state.blindCount})
+              </div>
+              <div className="flex justify-center gap-2">
+                {Array.from({ length: state.blindCount }).map((_, i) => (
+                  <AnimatedCardBack key={i} width={cardWidth} dealDelay={i * 0.08} />
+                ))}
+              </div>
+            </div>
+          )}
+          <TrickDisplay
+            currentTrick={state.currentTrick}
+            players={state.players}
+            cardWidth={cardWidth}
+            label={t('currentTrick')}
+            dataTutorial="sh-trick-display"
+            cardDetailFor={(_card, trickCard) => {
+              return t('trickCardDetail', {
+                points: trickCard.points,
+                trump: t(trickCard.isTrump ? 'trump' : 'notTrump'),
+              });
+            }}
+            cardDetailClassName="break-keep [overflow-wrap:anywhere]"
           />
-
-          <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            <div className="text-ds-text-primary text-center mb-2">
-              <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
-              <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
-              <span>{t('blindCount', { count: state.blindCount })}</span>
-            </div>
-
-            <div className={lgTwoColGrid}>
-              {/* Left: play area */}
+          {isTrickEnd && state.leadPlayerIdx >= 0 && (
+            <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm" data-testid="sh-trick-result">
               <div>
-                {/* Blind: face-down cards, shown only during the Pick phase before a picker takes them. */}
-                {isPickPhase && state.blindCount > 0 && (
-                  <div className="mb-3" data-testid="sh-blind-display">
-                    <div className="text-ds-text-muted text-sm mb-1 text-center">
-                      {t('blind')} ({state.blindCount})
-                    </div>
-                    <div className="flex justify-center gap-2">
-                      {Array.from({ length: state.blindCount }).map((_, i) => (
-                        <AnimatedCardBack key={i} width={cardWidth} dealDelay={i * 0.08} />
-                      ))}
-                    </div>
-                  </div>
-                )}
-                <TrickDisplay
-                  currentTrick={state.currentTrick}
-                  players={state.players}
-                  cardWidth={cardWidth}
-                  label={t('currentTrick')}
-                  dataTutorial="sh-trick-display"
-                  cardDetailFor={(_card, trickCard) => {
-                    return t('trickCardDetail', {
-                      points: trickCard.points,
-                      trump: t(trickCard.isTrump ? 'trump' : 'notTrump'),
-                    });
-                  }}
-                  cardDetailClassName="break-keep [overflow-wrap:anywhere]"
-                />
-                {isTrickEnd && state.leadPlayerIdx >= 0 && (
-                  <div
-                    className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
-                    data-testid="sh-trick-result"
-                  >
-                    <div>
-                      {t('trickResult.winner', {
-                        player: playerName(state.leadPlayerIdx, state.leadPlayerIdx === humanIdx),
-                      })}
-                    </div>
-                    <div>
-                      {t('trickResult.nextLead', {
-                        player: playerName(state.leadPlayerIdx, state.leadPlayerIdx === humanIdx),
-                      })}
-                    </div>
-                  </div>
-                )}
+                {t('trickResult.winner', {
+                  player: playerName(state.leadPlayerIdx, state.leadPlayerIdx === humanIdx),
+                })}
               </div>
-
-              {/* Right: info sidebar */}
-              <div data-tutorial="sh-info">
-                {/* Picker / partner / called suit */}
-                <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-                  <div>
-                    {t('picker')}: {pickerLabel}
-                  </div>
-                  <div>
-                    {t('partner')}: {partnerLabel}
-                  </div>
-                  <div>
-                    {t('calledSuit')}:{' '}
-                    {state.calledSuit > 0 && SUIT_KEYS[state.calledSuit]
-                      ? t(`suit.${SUIT_KEYS[state.calledSuit]}`)
-                      : t('none')}
-                  </div>
-                  {isPickPhase && <div>{t('passCount', { count: state.passCount })}</div>}
-                </div>
-
-                {/* Players: chips / cards / tricks */}
-                {isMobile ? (
-                  <details className="mb-2 p-2 rounded bg-black/30">
-                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('players')}</summary>
-                    <div className="mt-1">
-                      {state.players.map((p) => (
-                        <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                          {playerName(p.id, p.isHuman)}: {t('chips', { count: p.chips })} |{' '}
-                          {t('tricks', { count: p.trickCount })}
-                          {showPartner && (
-                            <span>
-                              {' '}
-                              |{' '}
-                              {p.id === state.pickerIdx || p.id === state.partnerIdx
-                                ? t('pickerTeam')
-                                : t('defenderTeam')}
-                            </span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </details>
-                ) : (
-                  <div className="mb-2 p-2 rounded bg-black/30">
-                    {state.players.map((p) => (
-                      <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                        {playerName(p.id, p.isHuman)}: {t('chips', { count: p.chips })} |{' '}
-                        {t('tricks', { count: p.trickCount })}
-                        {showPartner && (
-                          <span>
-                            {' '}
-                            |{' '}
-                            {p.id === state.pickerIdx || p.id === state.partnerIdx
-                              ? t('pickerTeam')
-                              : t('defenderTeam')}
-                          </span>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {(isPlayPhase || isTrickEnd) && (
-                  <div
-                    className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
-                    role="status"
-                    aria-live="polite"
-                    data-testid="sh-live-points"
-                  >
-                    <div className="mb-1 text-ds-text-primary">{t('livePoints.title')}</div>
-                    <div>{t('livePoints.picker', { points: state.livePickerPoints, target: 61 })}</div>
-                    <div>{t('livePoints.defenders', { points: state.liveDefenderPoints })}</div>
-                  </div>
-                )}
-
-                {/* Round result */}
-                {(isRoundEnd || isGameEnd) && (
-                  <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-                    <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
-                    <div>{t('roundResult.pickerPoints', { points: state.roundPickerPoints })}</div>
-                    <div>{t('roundResult.multiplier', { multiplier: state.roundMultiplier })}</div>
-                    <div>{state.roundPickerWon ? t('roundResult.pickerWon') : t('roundResult.pickerLost')}</div>
-                    {/* 埋め札はラウンド終了で公開される。得点の内訳そのものなので出す (#5638)。 */}
-                    {state.buried.length > 0 && (
-                      <div className="mt-1 flex items-center gap-2">
-                        <span>{t('roundResult.buried')}</span>
-                        {state.buried.map((c) => (
-                          <CardImage key={`buried-${c.design}-${c.value}`} card={c} width={cardWidth * 0.6} />
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
+              <div>
+                {t('trickResult.nextLead', {
+                  player: playerName(state.leadPlayerIdx, state.leadPlayerIdx === humanIdx),
+                })}
               </div>
             </div>
+          )}
+        </div>
 
-            {/* Message */}
-            <GameMessageBox
-              message={state.message}
-              messageCode={state.messageCode}
-              messageParams={state.messageParams}
-            />
-
-            <ActionLogSection
-              isEndPhase={isGameEnd}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
+        {/* Right: info sidebar */}
+        <div data-tutorial="sh-info">
+          {/* Picker / partner / called suit */}
+          <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
+            <div>
+              {t('picker')}: {pickerLabel}
+            </div>
+            <div>
+              {t('partner')}: {partnerLabel}
+            </div>
+            <div>
+              {t('calledSuit')}:{' '}
+              {state.calledSuit > 0 && SUIT_KEYS[state.calledSuit]
+                ? t(`suit.${SUIT_KEYS[state.calledSuit]}`)
+                : t('none')}
+            </div>
+            {isPickPhase && <div>{t('passCount', { count: state.passCount })}</div>}
           </div>
 
-          {/* Footer */}
-          <GameFooter className={`${gameTheme.sheepshead.footer} px-4 py-2.5`}>
-            {humanPlayer && (
-              <PlayerHandSection
-                humanPlayer={humanPlayer}
-                selectedCardIndices={selectedCardIndices}
-                toggleCard={toggleCard}
-                cardWidth={cardWidth}
-                isMobile={isMobile}
-                dataTutorialPrefix="sh"
-                validIndices={canPlay ? state.playableIndices : undefined}
-                restrictedTooltip={t('playButton')}
-              />
-            )}
+          {/* Players: chips / cards / tricks */}
+          {isMobile ? (
+            <details className="mb-2 p-2 rounded bg-black/30">
+              <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('players')}</summary>
+              <div className="mt-1">
+                {state.players.map((p) => (
+                  <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
+                    {playerName(p.id, p.isHuman)}: {t('chips', { count: p.chips })} |{' '}
+                    {t('tricks', { count: p.trickCount })}
+                    {showPartner && (
+                      <span>
+                        {' '}
+                        | {p.id === state.pickerIdx || p.id === state.partnerIdx ? t('pickerTeam') : t('defenderTeam')}
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </details>
+          ) : (
+            <div className="mb-2 p-2 rounded bg-black/30">
+              {state.players.map((p) => (
+                <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
+                  {playerName(p.id, p.isHuman)}: {t('chips', { count: p.chips })} |{' '}
+                  {t('tricks', { count: p.trickCount })}
+                  {showPartner && (
+                    <span>
+                      {' '}
+                      | {p.id === state.pickerIdx || p.id === state.partnerIdx ? t('pickerTeam') : t('defenderTeam')}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
 
-            <ErrorAlert message={error} onRetry={retry} />
+          {(isPlayPhase || isTrickEnd) && (
+            <div
+              className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+              role="status"
+              aria-live="polite"
+              data-testid="sh-live-points"
+            >
+              <div className="mb-1 text-ds-text-primary">{t('livePoints.title')}</div>
+              <div>{t('livePoints.picker', { points: state.livePickerPoints, target: 61 })}</div>
+              <div>{t('livePoints.defenders', { points: state.liveDefenderPoints })}</div>
+            </div>
+          )}
 
-            {/*
-              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
-              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
-              られないことがある (#5955)。
-            */}
-            <div data-testid="sheepshead-hint-live" role="status" aria-live="polite">
-              {state.hint && isRequestedHint(state) && (
-                <div className="text-ds-warning text-sm mb-2">
-                  {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
-                  {state.hint.cardIndices.length > 0 && ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
+          {/* Round result */}
+          {(isRoundEnd || isGameEnd) && (
+            <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
+              <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
+              <div>{t('roundResult.pickerPoints', { points: state.roundPickerPoints })}</div>
+              <div>{t('roundResult.multiplier', { multiplier: state.roundMultiplier })}</div>
+              <div>{state.roundPickerWon ? t('roundResult.pickerWon') : t('roundResult.pickerLost')}</div>
+              {/* 埋め札はラウンド終了で公開される。得点の内訳そのものなので出す (#5638)。 */}
+              {state.buried.length > 0 && (
+                <div className="mt-1 flex items-center gap-2">
+                  <span>{t('roundResult.buried')}</span>
+                  {state.buried.map((c) => (
+                    <CardImage key={`buried-${c.design}-${c.value}`} card={c} width={cardWidth * 0.6} />
+                  ))}
                 </div>
               )}
             </div>
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+          )}
+        </div>
+      </div>
 
-            <div className="flex flex-wrap gap-2 items-center" data-tutorial="sh-action-buttons">
-              {canPick && (
-                <>
-                  <button type="button" className={btnPrimary} onClick={handlePick} disabled={loading}>
-                    {t('pickButton')}
-                  </button>
-                  <button type="button" className={btnSecondary} onClick={handlePass} disabled={loading}>
-                    {t('passButton')}
-                  </button>
-                </>
-              )}
-              {canBury && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handleBury}
-                  disabled={loading || selectedCardIndices.length !== SHEEPSHEAD_BURY_COUNT}
-                >
-                  {t('buryButton')} ({t('burySelected', { count: selectedCardIndices.length })})
-                </button>
-              )}
-              {canCall &&
-                state.callableSuits.map((suit) => {
-                  // callableSuits are always 1-3 (♠♣♥), all present in SUIT_KEYS.
-                  const suitName = t(`suit.${SUIT_KEYS[suit]}`);
-                  return (
-                    <button
-                      key={`call-${suit}`}
-                      type="button"
-                      className={btnPrimary}
-                      onClick={() => handleCall(suit)}
-                      disabled={loading}
-                      aria-label={t('callButtonAriaLabel', { suit: suitName })}
-                    >
-                      {t('callButton', { suit: suitName })}
-                    </button>
-                  );
-                })}
-              {canPlay && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-              {isTrickEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                  {t('nextTrick')}
-                </button>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="sh-reset-button"
-              />
-            </div>
-            <CardNavShortcutsPanel data-testid="sheepshead-kbd-shortcuts" />
-          </GameFooter>
-        </>
-      )}
-    </GamePageShell>
+      {/* Message */}
+      <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+    </>
   );
 }
+
+function FooterHand({ game, state, t, view }: SheepsheadContext) {
+  const humanPlayer = state.players.find((p) => p.isHuman);
+  const humanIdx = state.players.findIndex((p) => p.isHuman);
+  const isHumanTurn = state.currentPlayerIdx === humanIdx;
+  const isPlayPhase = state.phase === SheepsheadPhase.PLAY;
+  const canPlay = isPlayPhase && isHumanTurn;
+
+  if (!humanPlayer) return null;
+
+  return (
+    <PlayerHandSection
+      humanPlayer={humanPlayer}
+      selectedCardIndices={game.selectedCardIndices}
+      toggleCard={game.toggleCard}
+      cardWidth={view.cardWidth}
+      isMobile={view.isMobile}
+      dataTutorialPrefix="sh"
+      validIndices={canPlay ? state.playableIndices : undefined}
+      restrictedTooltip={t('playButton')}
+    />
+  );
+}
+
+function FooterStatus({ state, t, frontendHint }: SheepsheadContext) {
+  return (
+    <>
+      {/*
+        ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+        領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+        られないことがある (#5955)。
+      */}
+      <div data-testid="sheepshead-hint-live" role="status" aria-live="polite">
+        {state.hint && isRequestedHint(state) && (
+          <div className="text-ds-warning text-sm mb-2">
+            {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
+            {state.hint.cardIndices.length > 0 && ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
+          </div>
+        )}
+      </div>
+      <FrontendHintTooltip hint={frontendHint.hint} enabled={frontendHint.hintEnabled} t={t} />
+    </>
+  );
+}
+
+function FooterActions({ game, state, t, busy }: SheepsheadContext) {
+  const loading = busy;
+  const humanIdx = state.players.findIndex((p) => p.isHuman);
+  const isHumanTurn = state.currentPlayerIdx === humanIdx;
+  const isPickPhase = state.phase === SheepsheadPhase.PICK;
+  const isBuryPhase = state.phase === SheepsheadPhase.BURY;
+  const isCallPhase = state.phase === SheepsheadPhase.CALL;
+  const isPlayPhase = state.phase === SheepsheadPhase.PLAY;
+  const isTrickEnd = state.phase === SheepsheadPhase.TRICK_END;
+  const isRoundEnd = state.phase === SheepsheadPhase.ROUND_END;
+
+  // Phase-specific "it's the human's actionable turn" flags.
+  const canPick = isPickPhase && isHumanTurn;
+  const canBury = isBuryPhase && state.pickerIdx === humanIdx;
+  const canCall = isCallPhase && state.pickerIdx === humanIdx && state.callableSuits.length > 0;
+  const canPlay = isPlayPhase && isHumanTurn;
+
+  return (
+    <>
+      {canPick && (
+        <>
+          <button type="button" className={btnPrimary} onClick={game.handlePick} disabled={loading}>
+            {t('pickButton')}
+          </button>
+          <button type="button" className={btnSecondary} onClick={game.handlePass} disabled={loading}>
+            {t('passButton')}
+          </button>
+        </>
+      )}
+      {canBury && (
+        <button
+          type="button"
+          className={btnPrimary}
+          onClick={game.handleBury}
+          disabled={loading || game.selectedCardIndices.length !== SHEEPSHEAD_BURY_COUNT}
+        >
+          {t('buryButton')} ({t('burySelected', { count: game.selectedCardIndices.length })})
+        </button>
+      )}
+      {canCall &&
+        state.callableSuits.map((suit) => {
+          // callableSuits are always 1-3 (♠♣♥), all present in SUIT_KEYS.
+          const suitName = t(`suit.${SUIT_KEYS[suit]}`);
+          return (
+            <button
+              key={`call-${suit}`}
+              type="button"
+              className={btnPrimary}
+              onClick={() => game.handleCall(suit)}
+              disabled={loading}
+              aria-label={t('callButtonAriaLabel', { suit: suitName })}
+            >
+              {t('callButton', { suit: suitName })}
+            </button>
+          );
+        })}
+      {canPlay && (
+        <button
+          type="button"
+          className={btnPrimary}
+          onClick={game.handlePlay}
+          disabled={loading || game.selectedCardIndices.length !== 1}
+        >
+          {t('playButton')}
+        </button>
+      )}
+      {isTrickEnd && (
+        <button type="button" className={btnSuccess} onClick={game.handleNextTrick} disabled={loading}>
+          {t('nextTrick')}
+        </button>
+      )}
+      {isRoundEnd && (
+        <button type="button" className={btnSuccess} onClick={game.handleNextRound} disabled={loading}>
+          {t('nextRound')}
+        </button>
+      )}
+    </>
+  );
+}
+
+const sheepsheadDefinition: GameDefinition<
+  SheepsheadResponse,
+  SheepsheadGame,
+  Parameters<typeof sheepsheadApi.exec>,
+  SheepsheadView
+> = {
+  key: 'sheepshead',
+  useGame: useSheepsheadGame,
+  useView: useSheepsheadView,
+  tutorial: SH_TUTORIAL_STEPS,
+  skeleton: { kind: 'trick-taking', trickArea: true, footerHandSize: 6 },
+  cli: () => ({
+    parseCommand: parseSheepsheadCommand,
+    formatResponse: formatSheepsheadState,
+    helpText: SHEEPSHEAD_HELP,
+  }),
+  phase: ({ state, view }) => {
+    const isGameEnd = state.phase === SheepsheadPhase.GAME_END || state.gameEndFlag;
+    const humanIdx = state.players.findIndex((p) => p.isHuman);
+    return {
+      name: view.phaseNames[state.phase],
+      ended: isGameEnd,
+      won: isGameEnd && state.winnerIdx === humanIdx,
+    };
+  },
+  shell: ({ state }) => {
+    const humanIdx = state.players.findIndex((p) => p.isHuman);
+    return {
+      isHumanTurn: state.currentPlayerIdx === humanIdx,
+    };
+  },
+  reset: ({ game }) => {
+    game.reset();
+  },
+  settings: ({ game, t, tc, frontendHint }) => [
+    {
+      items: [
+        {
+          type: 'select',
+          id: 'cpuDifficulty',
+          label: t('settings.cpuDifficulty'),
+          value: game.sheepsheadConfig.cpuDifficulty,
+          options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
+            value: o.value,
+            label: t(`settings.${o.label.toLowerCase()}`),
+          })),
+          onSelect: (v) => game.handleConfigChange('cpuDifficulty', v),
+        },
+        {
+          type: 'select',
+          id: 'targetChips',
+          label: t('settings.targetChips'),
+          value: game.sheepsheadConfig.targetChips,
+          options: TARGET_CHIPS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+          onSelect: (v) => game.handleConfigChange('targetChips', v),
+        },
+        {
+          type: 'select',
+          id: 'baseChips',
+          label: t('settings.baseChips'),
+          value: game.sheepsheadConfig.baseChips,
+          options: BASE_CHIPS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+          onSelect: (v) => game.handleConfigChange('baseChips', v),
+        },
+        hintCheckboxItem(tc, frontendHint.hintEnabled, frontendHint.setHintEnabled),
+      ],
+    },
+  ],
+  settingsPlacement: 'top',
+  contentClassName: `pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`,
+  cardNav: ({ game, state }) => {
+    const humanIdx = state.players.findIndex((p) => p.isHuman);
+    const canBury = state.phase === SheepsheadPhase.BURY && state.pickerIdx === humanIdx;
+    const canPlay = state.phase === SheepsheadPhase.PLAY && state.currentPlayerIdx === humanIdx;
+    return {
+      cardCount: state.players.find((p) => p.isHuman)?.cards?.length ?? 0,
+      onToggle: game.toggleCard,
+      onConfirm: () => {
+        if (canBury) game.handleBury();
+        else if (canPlay) game.handlePlay();
+      },
+      onClear: game.clearSelection,
+      enabled: canBury || canPlay,
+    };
+  },
+  shortcutsTestId: 'sheepshead-kbd-shortcuts',
+  resetTutorialId: 'sh-reset-button',
+  actionsTutorialId: 'sh-action-buttons',
+  actionsClassName: 'flex flex-wrap gap-2 items-center',
+  LiveRegion,
+  Board,
+  FooterHand,
+  FooterStatus,
+  FooterActions,
+};
+
+/** Renders the Sheepshead game page: 5-player partnership trick-taking with pick/bury/call/play phases. */
+export const SheepsheadPage = createGamePage(sheepsheadDefinition);

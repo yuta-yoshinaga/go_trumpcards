@@ -9,7 +9,6 @@
     "gameEnd": "ゲーム終了"
   },
   "settings": {
-    "title": "設定",
     "cpuDifficulty": "CPU難易度",
     "targetChips": "目標チップ",
     "baseChips": "基本チップ単位",

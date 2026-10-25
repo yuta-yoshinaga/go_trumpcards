@@ -284,7 +284,6 @@ SevenCardStudPage.tsx
 SevenTwentySevenPage.tsx
 SevensPage.tsx
 ShamrocksPage.tsx
-SheepsheadPage.tsx
 ShelemPage.tsx
 ShengJiPage.tsx
 ShitheadPage.tsx
