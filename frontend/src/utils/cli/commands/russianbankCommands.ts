@@ -12,7 +12,7 @@ import type { CliParseResult } from '../types';
 /** Args accepted by russianbankApi.exec. */
 export type RussianBankCliArgs = Parameters<typeof russianbankApi.exec>;
 
-const VALID_COMMANDS = ['pf', 'mt', 'd', 's', 'u', 'h', 'r', 'help', '?'];
+const VALID_COMMANDS = ['pf', 'mt', 'd', 's', 'u', 'h', 'hint', 'r', 'reset', 'help', '?'];
 
 /** Parse Russian Bank terminal commands into the web API's exact exec arguments. */
 export function parseRussianBankCommand(
