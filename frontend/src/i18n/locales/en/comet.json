@@ -6,7 +6,6 @@
     "gameEnd": "Game over"
   },
   "settings": {
-    "title": "Settings",
     "cpuDifficulty": "CPU difficulty",
     "players": "Seats",
     "targetScore": "Target score",

@@ -337,4 +337,10 @@ describe('CometPage', () => {
       expect(lives[lives.length - 1]).not.toBeEmptyDOMElement();
     });
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<CometPage />);
+    expect(await screen.findByText('プレイ', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('play', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });

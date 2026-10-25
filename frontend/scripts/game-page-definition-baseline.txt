@@ -64,7 +64,6 @@ CitadelPage.tsx
 ClockSolitairePage.tsx
 ColoradoPage.tsx
 ColourWhistPage.tsx
-CometPage.tsx
 CongressPage.tsx
 ContinentalRummyPage.tsx
 ContractRummyPage.tsx
