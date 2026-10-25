@@ -77,7 +77,6 @@
   },
   "rulesNote": "A Harlequin received in an exchange is the LOWEST card, not the highest.",
   "settings": {
-    "title": "Settings",
     "stake": "Stake per round"
   },
   "phase": {

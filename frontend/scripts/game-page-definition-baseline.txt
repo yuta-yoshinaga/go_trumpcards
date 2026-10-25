@@ -139,7 +139,6 @@ KaiserPage.tsx
 KalookiPage.tsx
 KarnoffelPage.tsx
 KempsPage.tsx
-KillePage.tsx
 KingAlbertPage.tsx
 KingoPage.tsx
 KlaberjassPage.tsx
