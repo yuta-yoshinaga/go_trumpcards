@@ -72,4 +72,4 @@ CLI モードの無いページは、移行の前に CLI を正式な機能と�
 
 委譲の前に各候補をこの 4 つの観点で grep し、今のファクトリで表せるページだけを渡す。
 
-CallBreak のチュートリアル対象は固定フッター自体なので、`primaryActions` と組み合わせて固定フッターの操作行に `data-tutorial` を付ける `footerTutorialId` を追加する。
+CallBreak のチュートリアル対象は固定フッター自体なので、`primaryActions` と組み合わせて固定フッター (`<footer>` 要素そのもの、操作が無い手番でも存在する) に `data-tutorial` を付ける `footerTutorialId` を追加する。

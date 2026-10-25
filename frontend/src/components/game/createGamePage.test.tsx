@@ -698,17 +698,23 @@ describe('createGamePage', () => {
       expect(ctx?.frontendHint?.hintEnabled).toBe(false);
     });
 
-    it('applies footerTutorialId only when primary actions are present', () => {
+    it('puts footerTutorialId on the fixed footer element, only with primary actions', () => {
       const WithTutorial = makePage({
         primaryActions: () => <button type="button">Play</button>,
         footerTutorialId: 'cb-play-button',
       });
-      const WithoutTutorial = makePage({ primaryActions: () => <button type="button">Play</button> });
-      const { unmount } = renderWithProviders(<WithTutorial />);
-      expect(screen.getByRole('button', { name: 'Play' }).closest('[data-tutorial="cb-play-button"]')).not.toBeNull();
-      unmount();
-      const { container } = renderWithProviders(<WithoutTutorial />);
-      expect(container.querySelector('[data-tutorial]')).toBeNull();
+      const first = renderWithProviders(<WithTutorial />);
+      expect(screen.getByRole('contentinfo')).toHaveAttribute('data-tutorial', 'cb-play-button');
+      first.unmount();
+
+      const Omitted = makePage({ primaryActions: () => <button type="button">Play</button> });
+      const second = renderWithProviders(<Omitted />);
+      expect(second.container.querySelector('[data-tutorial]')).toBeNull();
+      second.unmount();
+
+      const NoPrimaryActions = makePage({ footerTutorialId: 'cb-play-button' });
+      const third = renderWithProviders(<NoPrimaryActions />);
+      expect(third.container.querySelector('[data-tutorial="cb-play-button"]')).toBeNull();
     });
 
     it('renders AboveContent after top settings and outside the scrolling content', () => {

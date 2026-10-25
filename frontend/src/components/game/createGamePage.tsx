@@ -126,7 +126,10 @@ export interface GameDefinition<S, G extends GameHookBase<S, A>, A extends unkno
   /** Whether to render the landscape recommendation banner. Defaults to false. */
   landscapeBanner?: boolean;
   resetTutorialId?: string;
-  /** Tutorial identifier on the fixed footer action row. Use with `primaryActions`; when omitted, no attribute is rendered. */
+  /**
+   * Tutorial identifier on the fixed `<footer>` element itself (present even on turns with no actions).
+   * Only applied with `primaryActions`; ignored otherwise. When omitted, no attribute is rendered.
+   */
   footerTutorialId?: string;
   /** Tutorial identifier applied to the footer actions row. */
   actionsTutorialId?: string;
