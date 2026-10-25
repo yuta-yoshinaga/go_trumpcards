@@ -130,7 +130,6 @@ FreeBetPage.tsx
 FreeCellPage.tsx
 FrenchTarotPage.tsx
 GaigelPage.tsx
-GanjifaPage.tsx
 GapsPage.tsx
 GermanSoloPage.tsx
 GermanWhistPage.tsx

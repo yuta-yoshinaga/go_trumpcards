@@ -396,4 +396,17 @@ describe('GanjifaPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument();
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<GanjifaPage />);
+    expect(await screen.findByText('プレイ', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('play', { selector: 'strong' })).not.toBeInTheDocument();
+  });
+
+  it('keeps the footer action row and its tutorial anchor on a CPU turn', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<GanjifaPage />);
+    const row = await screen.findByTestId('game-footer-actions');
+    expect(row.querySelector('[data-tutorial="ganjifa-action-buttons"]')).not.toBeNull();
+  });
 });
