@@ -734,10 +734,12 @@ describe('createGamePage', () => {
     });
 
     it('does not render FooterLead when it is omitted', () => {
-      const Page = makePage({ FooterStatus: () => <div data-testid="footer-status" /> });
-      currentGame = { ...currentGame, error: 'failure' };
-      const { container } = renderWithProviders(<Page />);
-      expect(container.querySelector('[data-testid="footer-lead"]')).toBeNull();
+      const PageWithActions = makePage({ primaryActions: () => <button type="button">Play</button> });
+      currentGame = { ...currentGame, state: { ended: true }, error: 'failure' };
+      renderWithProviders(<PageWithActions />);
+      const actionLog = screen.getByRole('button', { name: '棋譜を見る' });
+      const actionLogSection = actionLog.parentElement;
+      expect(actionLogSection?.nextElementSibling).toBe(screen.getByRole('alert'));
     });
 
     it('renders AboveContent after top settings and outside the scrolling content', () => {

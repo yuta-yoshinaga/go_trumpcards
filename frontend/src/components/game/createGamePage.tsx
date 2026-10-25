@@ -147,7 +147,10 @@ export interface GameDefinition<S, G extends GameHookBase<S, A>, A extends unkno
   Board: ComponentType<GamePageContext<S, G, V>>;
   /** Optional hand content rendered first in the game footer. */
   FooterHand?: ComponentType<GamePageContext<S, G, V>>;
-  /** Optional content rendered before ErrorAlert. FooterStatus is rendered after ErrorAlert. */
+  /**
+   * Optional content rendered first in the footer controls, before the error alert and FooterStatus.
+   * In the standard layout it follows FooterHand; with primaryActions it follows ActionLogSection in the scroll area.
+   */
   FooterLead?: ComponentType<GamePageContext<S, G, V>>;
   /** Optional status content rendered after errors and before footer actions. */
   FooterStatus?: ComponentType<GamePageContext<S, G, V>>;
