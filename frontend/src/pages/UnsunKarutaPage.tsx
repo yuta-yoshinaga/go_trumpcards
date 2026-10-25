@@ -1,26 +1,13 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import type { unsunKarutaApi } from '../api/gameApi';
-import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
-import { CliTerminal } from '../components/cli/CliTerminal';
-import { CliToggle } from '../components/cli/CliToggle';
-import { SettingsPanel } from '../components/common/SettingsPanel';
-import { ErrorAlert } from '../components/ErrorAlert';
-import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageShell } from '../components/GamePageShell';
-import { GameResetButton } from '../components/GameResetButton';
+import { createGamePage, type GameDefinition, type GamePageContext } from '../components/game/createGamePage';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { PlayerHandSection } from '../components/PlayerHandSection';
-import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
-import { withTutorial } from '../components/tutorial/withTutorial';
 import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
-import { useCliGame } from '../hooks/useCliGame';
-import { useCliMode } from '../hooks/useCliMode';
 import { useElementWidth } from '../hooks/useElementWidth';
-import { useGameHint } from '../hooks/useGameHint';
-import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import {
   UNSUN_CPU_DIFFICULTY_OPTIONS,
@@ -30,14 +17,12 @@ import {
 import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
-import { gameTheme } from '../styles/gameTheme';
 import type { UnsunKarutaResponse } from '../types/card';
 import { UnsunKarutaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { parseUnsunKarutaCommand, UNSUN_KARUTA_HELP } from '../utils/cli/commands/unsunKarutaCommands';
 import { formatUnsunKarutaState } from '../utils/cli/formatters/unsunKarutaFormatter';
-import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -87,13 +72,6 @@ const UNSUN_PHASE_KEYS: Readonly<Record<number, string>> = {
 const isRoundSuit = (card: { deck?: string; color?: string }) => card.deck === 'unsun' && card.color === 'red';
 
 /**
- * Renders the Unsun Karuta (八人メリ) page: the 75-card five-suit Japanese
- * trick-taker for eight players in two teams.
- */
-export const UnsunKarutaPage = withTutorial(UnsunKarutaPageContent, 'unsunkaruta', UNSUN_TUTORIAL_STEPS);
-
-/** Inner content of the page, wrapped by TutorialProvider. */
-/**
  * 宣言の種別に対応する文言キー。
  *
  * **メリ／モンチの区別がこのゲームの通称「八人メリ」の由来**なのに、これまで
@@ -107,378 +85,373 @@ function declarationMessageKey(kind: number): string {
   return 'mustFollow';
 }
 
-function UnsunKarutaPageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('unsunkaruta');
-  const {
-    state,
-    loading,
-    error,
-    exec,
-    retry,
-    unsunConfig,
-    handleConfigChange,
-    selectedCardIndices,
-    toggleCard,
-    reset,
-    handlePlay,
-    handleNextTrick,
-    handleNextRound,
-  } = useUnsunKarutaGame();
+type UnsunKarutaGame = ReturnType<typeof useUnsunKarutaGame>;
+type UnsunKarutaView = ReturnType<typeof useUnsunKarutaView>;
+type UnsunKarutaContext = GamePageContext<UnsunKarutaResponse, UnsunKarutaGame, UnsunKarutaView>;
 
+function useUnsunKarutaView({ game }: { game: UnsunKarutaGame }) {
   // Fetch a fresh game on mount.
   // biome-ignore lint/correctness/useExhaustiveDependencies: reset is stable per render of the hook; run once on mount.
   useEffect(() => {
-    reset();
+    game.reset();
   }, []);
 
-  // CLI mode
-  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('unsunkaruta');
-  const cliConfig: CliGameConfig<UnsunKarutaResponse, Parameters<typeof unsunKarutaApi.exec>> = useMemo(
-    () => ({
-      gameName: 'unsunkaruta',
-      parseCommand: parseUnsunKarutaCommand,
-      formatResponse: formatUnsunKarutaState,
-      helpText: UNSUN_KARUTA_HELP,
-    }),
-    [],
-  );
-  const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
-
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('unsunkaruta', state);
   const { cardWidth, isMobile } = useCardDimensions();
   const isLargeDesktop = useBreakpoint() === 'largeDesktop';
   const [trickColumnRef, trickColumnWidth] = useElementWidth<HTMLDivElement>();
   const phaseNames = usePhaseNames('unsunkaruta', UNSUN_PHASE_KEYS);
 
-  if (!state)
-    return <GameSkeleton gameKey="unsunkaruta" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 9 }} />;
+  return {
+    cardWidth,
+    isMobile,
+    isLargeDesktop,
+    trickColumnRef,
+    trickColumnWidth,
+    phaseNames,
+  };
+}
 
-  const messageBox = (
-    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+function LiveRegion({ state, t }: UnsunKarutaContext) {
+  return (
+    <span aria-live="polite" aria-atomic="true" className="sr-only" data-testid="unsunkaruta-trick-announcement">
+      {state.currentTrick
+        .map((trickCard) => {
+          const player = state.players[trickCard.playerIdx];
+          return t('trickPlay', { player: playerName(player.id, player.isHuman), card: cardAlt(trickCard.card) });
+        })
+        .join(t('listSeparator'))}
+    </span>
   );
+}
 
+function Board({ state, t, view }: UnsunKarutaContext) {
+  const { cardWidth, isMobile, isLargeDesktop, trickColumnRef, trickColumnWidth } = view;
+  const isTrickEnd = state.phase === UnsunKarutaPhase.TRICK_END;
+  const isRoundEnd = state.phase === UnsunKarutaPhase.ROUND_END;
+  const isGameEnd = state.phase === UnsunKarutaPhase.GAME_END || state.gameEndFlag;
+  const teamTricks = state.teamTricks ?? [];
+  const teamScores = state.teamScores ?? [];
+
+  return (
+    <>
+      <div className="text-ds-text-primary text-center mb-2">
+        <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
+        <span className="mr-4">{t('trick', { n: state.trickNumber, total: state.trickCount })}</span>
+        {/* **切り札は返した 1 枚で決まる。** 出さないとどのスートが強いのか
+            画面のどこにも無い。 */}
+        <span className="inline-flex items-center gap-1" data-testid="unsunkaruta-trump">
+          {t('trump', { suit: t(`suit.${state.trumpSuitName}`) })}
+          {state.trumpCard && <CardImage card={state.trumpCard} width={Math.round(cardWidth * 0.6)} />}
+        </span>
+      </div>
+
+      <div className={lgTwoColGrid}>
+        <div ref={trickColumnRef}>
+          <TrickDisplay
+            currentTrick={state.currentTrick}
+            players={state.players}
+            cardWidth={cardWidth}
+            label={t('currentTrick')}
+            wrap={!isLargeDesktop}
+            cardAdvancePx={
+              isLargeDesktop
+                ? trickColumnWidth > 0
+                  ? Math.max(
+                      24,
+                      Math.min(cardWidth * 0.8, (trickColumnWidth - 24 - cardWidth) / (state.players.length - 1)),
+                    )
+                  : cardWidth * 0.8
+                : undefined
+            }
+            dataTutorial="unsunkaruta-trick-display"
+            winnerIdx={isTrickEnd && state.lastTrickWinner >= 0 ? state.lastTrickWinner : undefined}
+            winnerLabel={t('trickWinnerBadge')}
+            cardBadgeFor={(card) => (isRoundSuit(card) ? { glyph: '↺', title: t('roundSuitMark') } : null)}
+          />
+        </div>
+
+        <div data-tutorial="unsunkaruta-info">
+          {/* チーム別の「コ」。**席番号では味方が分からない** ので、
+              組ごとにまとめて出す。 */}
+          <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm" data-testid="unsunkaruta-teams">
+            <div>
+              {t('teamTricks', { a: teamTricks[state.humanTeam] ?? 0, b: teamTricks[1 - state.humanTeam] ?? 0 })}
+            </div>
+            <div>
+              {t('teamScores', { a: teamScores[state.humanTeam] ?? 0, b: teamScores[1 - state.humanTeam] ?? 0 })}
+            </div>
+          </div>
+
+          {isMobile ? (
+            <details className="mb-2 p-2 rounded bg-black/30">
+              <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('players')}</summary>
+              <div className="mt-1">
+                {state.players.map((p) => (
+                  <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
+                    {playerName(p.id, p.isHuman)} ({t('team', { n: p.team })}): {t('cards', { count: p.cardCount })} |{' '}
+                    {t('tricks', { count: p.trickCount })}
+                    {p.isDealer && (
+                      <span className={`ml-2 px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>
+                        {t('dealerBadge')}
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </details>
+          ) : (
+            <div className="mb-2 p-2 rounded bg-black/30">
+              {state.players.map((p) => (
+                <div key={p.id} className="text-ds-text-muted text-sm py-0.5 flex items-center gap-2">
+                  <span className={p.team === state.humanTeam ? 'text-ds-success' : ''}>
+                    {playerName(p.id, p.isHuman)} ({t('team', { n: p.team })}): {t('cards', { count: p.cardCount })} |{' '}
+                    {t('tricks', { count: p.trickCount })}
+                  </span>
+                  {p.isDealer && (
+                    <span className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>{t('dealerBadge')}</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {(isRoundEnd || isGameEnd) && (
+            <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm" data-testid="unsunkaruta-result">
+              <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
+              <div>
+                {t('roundResult.tricks', {
+                  a: teamTricks[state.humanTeam] ?? 0,
+                  b: teamTricks[1 - state.humanTeam] ?? 0,
+                })}
+              </div>
+              <div className="mt-2" data-testid="unsunkaruta-captured-cards">
+                {[state.humanTeam, 1 - state.humanTeam].map((team) => (
+                  <section key={team} className="mt-2">
+                    <h3 className="text-ds-text-primary">{t('roundResult.capturedTeam', { team })}</h3>
+                    {state.teamCapturedTricks[team].map((trick, index) => (
+                      <div key={`${team}-${index}`} className="mt-1 flex flex-wrap items-center gap-1">
+                        <span>{t('roundResult.trickPoint', { n: index + 1 })}</span>
+                        {trick.map((card, cardIndex) => (
+                          <CardImage
+                            key={`${team}-${index}-${cardIndex}`}
+                            card={card}
+                            width={Math.round(cardWidth * 0.45)}
+                          />
+                        ))}
+                      </div>
+                    ))}
+                  </section>
+                ))}
+              </div>
+              {isGameEnd && (
+                <div className="text-ds-text-primary" data-testid="unsunkaruta-winner">
+                  {state.winnerTeam < 0 ? t('roundResult.draw') : t('roundResult.winner', { team: state.winnerTeam })}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+      {isMobile && (
+        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+      )}
+    </>
+  );
+}
+
+function FooterHand({ state, game, t, view }: UnsunKarutaContext) {
+  const { cardWidth, isMobile } = view;
   const humanPlayer = state.players.find((p) => p.isHuman);
+  const isHumanTurn = state.isHumanTurn;
+  const isPlayPhase = state.phase === UnsunKarutaPhase.PLAY;
+  const canPlay = isPlayPhase && isHumanTurn;
+  const handValidIndices = canPlay ? state.playableIndices : undefined;
+
+  return (
+    <>
+      {/* **フォロー義務は宣言で生まれる。** 出ているかどうかを書かないと、
+          なぜこの札しか押せないのかが読めない。 */}
+      {canPlay && state.mustFollow && (
+        <div className="mb-1 text-center text-sm text-ds-accent" data-testid="unsunkaruta-must-follow">
+          {t(declarationMessageKey(state.declarationKind))}
+        </div>
+      )}
+      {canPlay && state.canDeclare && (
+        <div className="mb-1 text-center text-sm text-ds-text-muted" data-testid="unsunkaruta-can-declare">
+          {t('canDeclare')}
+        </div>
+      )}
+      {humanPlayer && (
+        <PlayerHandSection
+          humanPlayer={humanPlayer}
+          selectedCardIndices={game.selectedCardIndices}
+          toggleCard={game.toggleCard}
+          cardWidth={cardWidth}
+          isMobile={isMobile}
+          dataTutorialPrefix="unsunkaruta"
+          validIndices={handValidIndices}
+          legalIndices={handValidIndices}
+          restrictedTooltip={t('mustFollow')}
+          cardBadgeFor={(idx) =>
+            isRoundSuit(humanPlayer.cards[idx]) ? { glyph: '↺', title: t('roundSuitMark') } : null
+          }
+        />
+      )}
+    </>
+  );
+}
+
+function FooterStatus({ state, t, frontendHint }: UnsunKarutaContext) {
+  return (
+    <>
+      {/* ライブ領域は常設 (#5955)。 */}
+      <div data-testid="unsunkaruta-hint-live" role="status" aria-live="polite">
+        {state.hint && isRequestedHint(state) && (
+          <div className="text-ds-warning text-sm mb-2">
+            {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
+            {state.hint.cardIndices &&
+              state.hint.cardIndices.length > 0 &&
+              ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
+          </div>
+        )}
+      </div>
+      <FrontendHintTooltip hint={frontendHint.hint} enabled={frontendHint.hintEnabled} t={t} />
+    </>
+  );
+}
+
+function FooterActions({ state, game, t, busy }: UnsunKarutaContext) {
   const isHumanTurn = state.isHumanTurn;
   const isPlayPhase = state.phase === UnsunKarutaPhase.PLAY;
   const isTrickEnd = state.phase === UnsunKarutaPhase.TRICK_END;
   const isRoundEnd = state.phase === UnsunKarutaPhase.ROUND_END;
-  const isGameEnd = state.phase === UnsunKarutaPhase.GAME_END || state.gameEndFlag;
   const canPlay = isPlayPhase && isHumanTurn;
 
-  const handValidIndices = canPlay ? state.playableIndices : undefined;
-  const teamTricks = state.teamTricks ?? [];
-  const teamScores = state.teamScores ?? [];
-
-  const handleManualReset = () => {
-    hideActionLog();
-    reset();
-  };
-
   return (
-    <GamePageShell
-      title={tc('nav.unsunkaruta')}
-      gameThemeBg={gameTheme.unsunkaruta.bg}
-      phaseName={phaseNames[state.phase]}
-      isHumanTurn={isHumanTurn}
-      gamePath="/unsunkaruta"
-      gameEndFlag={isGameEnd}
-      winShow={isGameEnd && state.winnerTeam === state.humanTeam}
-      loading={loading}
-      confirmOpen={confirmOpen}
-      confirmReset={confirmReset}
-      cancelReset={cancelReset}
-      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
-    >
-      <span aria-live="polite" aria-atomic="true" className="sr-only" data-testid="unsunkaruta-trick-announcement">
-        {state.currentTrick
-          .map((trickCard) => {
-            const player = state.players[trickCard.playerIdx];
-            return t('trickPlay', { player: playerName(player.id, player.isHuman), card: cardAlt(trickCard.card) });
-          })
-          .join(t('listSeparator'))}
-      </span>
-      {cliEnabled ? (
-        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
-      ) : (
-        <>
-          <SettingsPanel
-            title={t('settings.title')}
-            groups={[
-              {
-                items: [
-                  {
-                    type: 'select',
-                    id: 'cpuDifficulty',
-                    label: t('settings.cpuDifficulty'),
-                    value: unsunConfig.cpuDifficulty,
-                    options: UNSUN_CPU_DIFFICULTY_OPTIONS.map((o) => ({
-                      value: o.value,
-                      label: t(`settings.${o.label.toLowerCase()}`),
-                    })),
-                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
-                  },
-                  {
-                    type: 'select',
-                    id: 'targetDeals',
-                    label: t('settings.targetDeals'),
-                    value: unsunConfig.targetDeals,
-                    options: UNSUN_TARGET_DEALS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
-                    onSelect: (v) => handleConfigChange('targetDeals', v),
-                  },
-                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
-                ],
-              },
-            ]}
-          />
-
-          <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            <div className="text-ds-text-primary text-center mb-2">
-              <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
-              <span className="mr-4">{t('trick', { n: state.trickNumber, total: state.trickCount })}</span>
-              {/* **切り札は返した 1 枚で決まる。** 出さないとどのスートが強いのか
-                  画面のどこにも無い。 */}
-              <span className="inline-flex items-center gap-1" data-testid="unsunkaruta-trump">
-                {t('trump', { suit: t(`suit.${state.trumpSuitName}`) })}
-                {state.trumpCard && <CardImage card={state.trumpCard} width={Math.round(cardWidth * 0.6)} />}
-              </span>
-            </div>
-
-            <div className={lgTwoColGrid}>
-              <div ref={trickColumnRef}>
-                <TrickDisplay
-                  currentTrick={state.currentTrick}
-                  players={state.players}
-                  cardWidth={cardWidth}
-                  label={t('currentTrick')}
-                  wrap={!isLargeDesktop}
-                  cardAdvancePx={
-                    isLargeDesktop
-                      ? trickColumnWidth > 0
-                        ? Math.max(
-                            24,
-                            Math.min(cardWidth * 0.8, (trickColumnWidth - 24 - cardWidth) / (state.players.length - 1)),
-                          )
-                        : cardWidth * 0.8
-                      : undefined
-                  }
-                  dataTutorial="unsunkaruta-trick-display"
-                  winnerIdx={isTrickEnd && state.lastTrickWinner >= 0 ? state.lastTrickWinner : undefined}
-                  winnerLabel={t('trickWinnerBadge')}
-                  cardBadgeFor={(card) => (isRoundSuit(card) ? { glyph: '↺', title: t('roundSuitMark') } : null)}
-                />
-              </div>
-
-              <div data-tutorial="unsunkaruta-info">
-                {/* チーム別の「コ」。**席番号では味方が分からない** ので、
-                    組ごとにまとめて出す。 */}
-                <div
-                  className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
-                  data-testid="unsunkaruta-teams"
-                >
-                  <div>
-                    {t('teamTricks', { a: teamTricks[state.humanTeam] ?? 0, b: teamTricks[1 - state.humanTeam] ?? 0 })}
-                  </div>
-                  <div>
-                    {t('teamScores', { a: teamScores[state.humanTeam] ?? 0, b: teamScores[1 - state.humanTeam] ?? 0 })}
-                  </div>
-                </div>
-
-                {isMobile ? (
-                  <details className="mb-2 p-2 rounded bg-black/30">
-                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('players')}</summary>
-                    <div className="mt-1">
-                      {state.players.map((p) => (
-                        <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                          {playerName(p.id, p.isHuman)} ({t('team', { n: p.team })}):{' '}
-                          {t('cards', { count: p.cardCount })} | {t('tricks', { count: p.trickCount })}
-                          {p.isDealer && (
-                            <span className={`ml-2 px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>
-                              {t('dealerBadge')}
-                            </span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </details>
-                ) : (
-                  <div className="mb-2 p-2 rounded bg-black/30">
-                    {state.players.map((p) => (
-                      <div key={p.id} className="text-ds-text-muted text-sm py-0.5 flex items-center gap-2">
-                        <span className={p.team === state.humanTeam ? 'text-ds-success' : ''}>
-                          {playerName(p.id, p.isHuman)} ({t('team', { n: p.team })}):{' '}
-                          {t('cards', { count: p.cardCount })} | {t('tricks', { count: p.trickCount })}
-                        </span>
-                        {p.isDealer && (
-                          <span className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>
-                            {t('dealerBadge')}
-                          </span>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {(isRoundEnd || isGameEnd) && (
-                  <div
-                    className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
-                    data-testid="unsunkaruta-result"
-                  >
-                    <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
-                    <div>
-                      {t('roundResult.tricks', {
-                        a: teamTricks[state.humanTeam] ?? 0,
-                        b: teamTricks[1 - state.humanTeam] ?? 0,
-                      })}
-                    </div>
-                    <div className="mt-2" data-testid="unsunkaruta-captured-cards">
-                      {[state.humanTeam, 1 - state.humanTeam].map((team) => (
-                        <section key={team} className="mt-2">
-                          <h3 className="text-ds-text-primary">{t('roundResult.capturedTeam', { team })}</h3>
-                          {state.teamCapturedTricks[team].map((trick, index) => (
-                            <div key={`${team}-${index}`} className="mt-1 flex flex-wrap items-center gap-1">
-                              <span>{t('roundResult.trickPoint', { n: index + 1 })}</span>
-                              {trick.map((card, cardIndex) => (
-                                <CardImage
-                                  key={`${team}-${index}-${cardIndex}`}
-                                  card={card}
-                                  width={Math.round(cardWidth * 0.45)}
-                                />
-                              ))}
-                            </div>
-                          ))}
-                        </section>
-                      ))}
-                    </div>
-                    {isGameEnd && (
-                      <div className="text-ds-text-primary" data-testid="unsunkaruta-winner">
-                        {state.winnerTeam < 0
-                          ? t('roundResult.draw')
-                          : t('roundResult.winner', { team: state.winnerTeam })}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-            {isMobile && messageBox}
-            <ActionLogSection
-              isEndPhase={isGameEnd}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
-          </div>
-
-          <GameFooter
-            message={isMobile ? undefined : messageBox}
-            className={`${gameTheme.unsunkaruta.footer} px-4 py-2.5`}
-          >
-            {/* **フォロー義務は宣言で生まれる。** 出ているかどうかを書かないと、
-                なぜこの札しか押せないのかが読めない。 */}
-            {canPlay && state.mustFollow && (
-              <div className="mb-1 text-center text-sm text-ds-accent" data-testid="unsunkaruta-must-follow">
-                {t(declarationMessageKey(state.declarationKind))}
-              </div>
-            )}
-            {canPlay && state.canDeclare && (
-              <div className="mb-1 text-center text-sm text-ds-text-muted" data-testid="unsunkaruta-can-declare">
-                {t('canDeclare')}
-              </div>
-            )}
-            {humanPlayer && (
-              <PlayerHandSection
-                humanPlayer={humanPlayer}
-                selectedCardIndices={selectedCardIndices}
-                toggleCard={toggleCard}
-                cardWidth={cardWidth}
-                isMobile={isMobile}
-                dataTutorialPrefix="unsunkaruta"
-                validIndices={handValidIndices}
-                legalIndices={handValidIndices}
-                restrictedTooltip={t('mustFollow')}
-                cardBadgeFor={(idx) =>
-                  isRoundSuit(humanPlayer.cards[idx]) ? { glyph: '↺', title: t('roundSuitMark') } : null
-                }
-              />
-            )}
-
-            <ErrorAlert message={error} onRetry={retry} />
-
-            {/* ライブ領域は常設 (#5955)。 */}
-            <div data-testid="unsunkaruta-hint-live" role="status" aria-live="polite">
-              {state.hint && isRequestedHint(state) && (
-                <div className="text-ds-warning text-sm mb-2">
-                  {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
-                  {state.hint.cardIndices &&
-                    state.hint.cardIndices.length > 0 &&
-                    ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
-                </div>
-              )}
-            </div>
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            <div className="flex flex-wrap gap-2 items-center" data-tutorial="unsunkaruta-action-buttons">
-              {canPlay && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={() => handlePlay(false)}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                  data-testid="unsunkaruta-play"
-                >
-                  {t('playButton')}
-                </button>
-              )}
-              {/* 宣言できるのはリードのときだけ。 */}
-              {canPlay && state.canDeclare && (
-                <button
-                  type="button"
-                  className={btnSuccess}
-                  onClick={() => handlePlay(true)}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                  data-testid="unsunkaruta-declare"
-                >
-                  {t('declareButton')}
-                </button>
-              )}
-              {isTrickEnd && (
-                <button
-                  type="button"
-                  className={btnSuccess}
-                  onClick={handleNextTrick}
-                  disabled={loading}
-                  data-testid="unsunkaruta-next-trick"
-                >
-                  {t('nextTrick')}
-                </button>
-              )}
-              {isRoundEnd && (
-                <button
-                  type="button"
-                  className={btnSuccess}
-                  onClick={handleNextRound}
-                  disabled={loading}
-                  data-testid="unsunkaruta-next-round"
-                >
-                  {t('nextRound')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="unsunkaruta-reset-button"
-              />
-            </div>
-          </GameFooter>
-        </>
+    <>
+      {canPlay && (
+        <button
+          type="button"
+          className={btnPrimary}
+          onClick={() => game.handlePlay(false)}
+          disabled={busy || game.selectedCardIndices.length !== 1}
+          data-testid="unsunkaruta-play"
+        >
+          {t('playButton')}
+        </button>
       )}
-    </GamePageShell>
+      {/* 宣言できるのはリードのときだけ。 */}
+      {canPlay && state.canDeclare && (
+        <button
+          type="button"
+          className={btnSuccess}
+          onClick={() => game.handlePlay(true)}
+          disabled={busy || game.selectedCardIndices.length !== 1}
+          data-testid="unsunkaruta-declare"
+        >
+          {t('declareButton')}
+        </button>
+      )}
+      {isTrickEnd && (
+        <button
+          type="button"
+          className={btnSuccess}
+          onClick={game.handleNextTrick}
+          disabled={busy}
+          data-testid="unsunkaruta-next-trick"
+        >
+          {t('nextTrick')}
+        </button>
+      )}
+      {isRoundEnd && (
+        <button
+          type="button"
+          className={btnSuccess}
+          onClick={game.handleNextRound}
+          disabled={busy}
+          data-testid="unsunkaruta-next-round"
+        >
+          {t('nextRound')}
+        </button>
+      )}
+    </>
   );
 }
+
+const unsunKarutaDefinition: GameDefinition<
+  UnsunKarutaResponse,
+  UnsunKarutaGame,
+  Parameters<typeof unsunKarutaApi.exec>,
+  UnsunKarutaView
+> = {
+  key: 'unsunkaruta',
+  useGame: useUnsunKarutaGame,
+  useView: useUnsunKarutaView,
+  tutorial: UNSUN_TUTORIAL_STEPS,
+  skeleton: { kind: 'trick-taking', trickArea: true, footerHandSize: 9 },
+  cli: () => ({
+    parseCommand: parseUnsunKarutaCommand,
+    formatResponse: formatUnsunKarutaState,
+    helpText: UNSUN_KARUTA_HELP,
+  }),
+  phase: ({ state, view }) => {
+    const isGameEnd = state.phase === UnsunKarutaPhase.GAME_END || state.gameEndFlag;
+    return {
+      name: view.phaseNames[state.phase],
+      ended: isGameEnd,
+      won: isGameEnd && state.winnerTeam === state.humanTeam,
+    };
+  },
+  shell: ({ state }) => ({
+    isHumanTurn: state.isHumanTurn,
+  }),
+  reset: ({ game }) => {
+    game.reset();
+  },
+  settings: ({ game, t, tc, frontendHint }) => [
+    {
+      items: [
+        {
+          type: 'select',
+          id: 'cpuDifficulty',
+          label: t('settings.cpuDifficulty'),
+          value: game.unsunConfig.cpuDifficulty,
+          options: UNSUN_CPU_DIFFICULTY_OPTIONS.map((o) => ({
+            value: o.value,
+            label: t(`settings.${o.label.toLowerCase()}`),
+          })),
+          onSelect: (v) => game.handleConfigChange('cpuDifficulty', v),
+        },
+        {
+          type: 'select',
+          id: 'targetDeals',
+          label: t('settings.targetDeals'),
+          value: game.unsunConfig.targetDeals,
+          options: UNSUN_TARGET_DEALS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+          onSelect: (v) => game.handleConfigChange('targetDeals', v),
+        },
+        hintCheckboxItem(tc, frontendHint.hintEnabled, frontendHint.setHintEnabled),
+      ],
+    },
+  ],
+  settingsPlacement: 'top',
+  contentClassName: `pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`,
+  message: ({ state, view }) =>
+    !view.isMobile && (
+      <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+    ),
+  actionsClassName: 'flex flex-wrap gap-2 items-center',
+  actionsTutorialId: 'unsunkaruta-action-buttons',
+  resetTutorialId: 'unsunkaruta-reset-button',
+  LiveRegion,
+  Board,
+  FooterHand,
+  FooterStatus,
+  FooterActions,
+};
+
+/**
+ * Renders the Unsun Karuta (八人メリ) page: the 75-card five-suit Japanese
+ * trick-taker for eight players in two teams.
+ */
+export const UnsunKarutaPage = createGamePage(unsunKarutaDefinition);
