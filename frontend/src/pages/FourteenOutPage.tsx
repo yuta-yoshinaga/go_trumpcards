@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { fourteenoutApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -12,6 +14,8 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
@@ -24,6 +28,10 @@ import type { FourteenOutResponse } from '../types/card';
 import { FourteenOutPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { FOURTEENOUT_HELP, parseFourteenOutCommand } from '../utils/cli/commands/fourteenoutCommands';
+import { formatFourteenOutState } from '../utils/cli/formatters/fourteenoutFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
+import { fourteenOutCanUndo, fourteenOutPartners, fourteenOutTail } from '../utils/fourteenOutRules';
 
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -43,11 +51,6 @@ const MC_TUTORIAL_STEPS: TutorialStep[] = [
   },
   { target: '[data-tutorial="mc-controls"]', messageKey: 'tutorial.controls', placement: 'top', advanceOn: 'next' },
 ];
-
-/** Returns the exposed card or null for an empty column. */
-function fourteenOutTail(col: FourteenOutResponse['columns'][number] | undefined) {
-  return col?.at(-1)?.card ?? null;
-}
 
 /** Renders the Fourteen Out game page. */
 export const FourteenOutPage = withTutorial(FourteenOutPageContent, 'fourteenout', MC_TUTORIAL_STEPS);
@@ -83,6 +86,17 @@ function FourteenOutPageContent() {
       }
     },
   });
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('fourteenout');
+  const cliConfig: CliGameConfig<FourteenOutResponse, Parameters<typeof fourteenoutApi.exec>> = useMemo(
+    () => ({
+      gameName: 'fourteenout',
+      parseCommand: (input) => parseFourteenOutCommand(input, state),
+      formatResponse: formatFourteenOutState,
+      helpText: FOURTEENOUT_HELP,
+    }),
+    [state],
+  );
+  const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -143,9 +157,7 @@ function FourteenOutPageContent() {
 
   const partners = useMemo(() => {
     if (!state || selected === null) return new Set<number>();
-    const key = `tableau-${selected}`;
-    const targets = state.legalTargets[key];
-    return new Set<number>(targets ? targets.tableau : []);
+    return new Set<number>(fourteenOutPartners(state, selected));
   }, [selected, state]);
   // **0 は補充の合図ではなく敗北の合図。**クローン元の Monte Carlo は山札から
   // 補充できたが、Fourteen Out に山札は無い。
@@ -213,14 +225,19 @@ function FourteenOutPageContent() {
       confirmGiveUp={confirmGiveUp}
       cancelGiveUp={cancelGiveUp}
       headerExtra={
-        state && (
-          <span className="font-mono text-xs">
-            {t('label.removedCount')}: {state.removedCount}/52
-          </span>
-        )
+        <>
+          {state && (
+            <span className="font-mono text-xs">
+              {t('label.removedCount')}: {state.removedCount}/52
+            </span>
+          )}
+          <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
+        </>
       }
     >
-      {!state ? (
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : !state ? (
         <>
           <GameSkeleton
             gameKey="fourteenout"
@@ -394,7 +411,7 @@ function FourteenOutPageContent() {
                     type="button"
                     className={btnOutline}
                     onClick={handleUndo}
-                    disabled={loading || !state.canUndo}
+                    disabled={loading || !fourteenOutCanUndo(state)}
                   >
                     {t('button.undo')}
                   </button>
