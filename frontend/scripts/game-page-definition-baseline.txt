@@ -200,7 +200,6 @@ MississippiStudPage.tsx
 MonteBankPage.tsx
 MonteCarloPage.tsx
 MrsMopPage.tsx
-MusPage.tsx
 MushiPage.tsx
 NainJaunePage.tsx
 NapPage.tsx

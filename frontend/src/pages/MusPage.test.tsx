@@ -360,4 +360,10 @@ describe('MusPage', () => {
     expect(grande.className).toContain('text-ds-warning');
     expect(screen.getByTestId('mus-summary-pares').className).not.toContain('text-ds-warning');
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<MusPage />);
+    expect(await screen.findByText('グランデ', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('grande', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });
