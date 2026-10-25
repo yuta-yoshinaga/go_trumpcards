@@ -8,7 +8,6 @@
     "gameEnd": "Game over"
   },
   "settings": {
-    "title": "Settings",
     "cpuDifficulty": "CPU difficulty",
     "targetDeals": "Deals per match",
     "easy": "Easy",
