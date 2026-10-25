@@ -8,7 +8,6 @@
     "trumpSelect": "Trump Select"
   },
   "settings": {
-    "title": "Settings",
     "cpuDifficulty": "CPU Difficulty",
     "easy": "Easy",
     "normal": "Normal",

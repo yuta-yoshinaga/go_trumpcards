@@ -8,7 +8,6 @@
     "trumpSelect": "切り札選択"
   },
   "settings": {
-    "title": "設定",
     "cpuDifficulty": "CPU難易度",
     "easy": "Easy",
     "normal": "Normal",

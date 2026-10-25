@@ -330,6 +330,12 @@ describe('KnockoutWhistPage', () => {
     renderWithProviders(<KnockoutWhistPage />);
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<KnockoutWhistPage />);
+    expect(await screen.findByText('プレイ', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('play', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });
 
 // **そのラウンドで何が起きたかが一目で分からなかった。**`roundResult.survived` /

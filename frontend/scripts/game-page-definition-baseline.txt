@@ -149,7 +149,6 @@ KingoPage.tsx
 KlaberjassPage.tsx
 KlaverjasPage.tsx
 KlondikePage.tsx
-KnockoutWhistPage.tsx
 KoenigrufenPage.tsx
 KoiKoiPage.tsx
 LaBelleLuciePage.tsx
