@@ -70,6 +70,23 @@ describe('BriscolaPage', () => {
     fireEvent.keyDown(input, { key: 'Enter' });
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 1));
   });
+  it('rejects an index beyond the human hand size in CLI mode', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          { ...makeState().players[0], cards: [card('SPADE', 1), card('HEART', 5)], cardCount: 2 },
+          makeState().players[1],
+        ],
+      }),
+    );
+    renderWithProviders(<BriscolaPage />);
+    fireEvent.click(await screen.findByRole('button', { name: 'CLIモードに切り替え' }));
+    const input = await screen.findByRole('textbox', { name: 'コマンドを入力...' });
+    fireEvent.change(input, { target: { value: 'p 2' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await waitFor(() => expect(screen.getAllByText('Usage: p <idx> (0-1)').length).toBeGreaterThan(0));
+    expect(mockExec).not.toHaveBeenCalledWith('play', 2);
+  });
   it('keeps the hand in the footer content and turn actions in its action row', async () => {
     renderWithProviders(<BriscolaPage />);
     const content = await screen.findByTestId('game-footer-content');

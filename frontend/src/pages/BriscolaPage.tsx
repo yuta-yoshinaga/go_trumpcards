@@ -77,11 +77,11 @@ function BriscolaPageContent() {
   const cliConfig: CliGameConfig<BriscolaResponse, Parameters<typeof briscolaApi.exec>> = useMemo(
     () => ({
       gameName: 'briscola',
-      parseCommand: parseBriscolaCommand,
+      parseCommand: (input: string) => parseBriscolaCommand(input, state),
       formatResponse: formatBriscolaState,
       helpText: BRISCOLA_HELP,
     }),
-    [],
+    [state],
   );
   const { handleCommand } = useCliGame(dispatch, cliConfig, state, { addInput, addOutput, addError, clearLog });
 

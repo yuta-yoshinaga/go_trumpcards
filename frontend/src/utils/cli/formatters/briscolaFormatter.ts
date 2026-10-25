@@ -26,7 +26,13 @@ export function formatBriscolaState(state: BriscolaResponse): string {
     lines.push(
       `${formatPlayerName(player.id, player.isHuman)}: ${player.cardCount} cards, ${player.points} points, ${player.trickCount} tricks`,
     );
-    if (player.isHuman && player.cards.length > 0)
+    if (
+      player.isHuman &&
+      player.cards.length > 0 &&
+      state.phase === BriscolaPhase.PLAY &&
+      state.players[state.currentPlayerIdx]?.isHuman === true &&
+      !state.gameEndFlag
+    )
       lines.push(`  ${formatIndexedCards(player.cards)}  (play with p <idx>)`);
   }
   if (state.currentTrick.length > 0) {
@@ -34,13 +40,14 @@ export function formatBriscolaState(state: BriscolaResponse): string {
       `trick cards: ${state.currentTrick.map(({ playerIdx, card }) => `${formatPlayerName(playerIdx, state.players[playerIdx]?.isHuman ?? false)}=${formatCard(card)}`).join(', ')}`,
     );
   }
-  if (state.phase === BriscolaPhase.PLAY) lines.push('Available: p <idx>, h / hint, r / reset');
-  if (state.phase === BriscolaPhase.TRICK_END) lines.push('Available: n / next, h / hint, r / reset');
-  if (state.hint && isRequestedHint(state)) {
+  if (state.phase === BriscolaPhase.PLAY && !state.gameEndFlag) lines.push('Available: p <idx>, h / hint, r / reset');
+  if (state.phase === BriscolaPhase.TRICK_END) lines.push('Available: n / next, r / reset');
+  if (state.phase === BriscolaPhase.GAME_END || state.gameEndFlag) lines.push('Available: r / reset');
+  if (state.phase === BriscolaPhase.PLAY && state.hint && isRequestedHint(state)) {
     lines.push(
       `HINT: ${state.hint.cardIndex === undefined ? state.hint.reason : `play card [${state.hint.cardIndex}] (${state.hint.reason})`}`,
     );
-  } else if (state.messageCode === 'briscola.noHint') {
+  } else if (state.phase === BriscolaPhase.PLAY && state.messageCode === 'briscola.noHint') {
     lines.push('No hint available.');
   }
   if (state.gameEndFlag)

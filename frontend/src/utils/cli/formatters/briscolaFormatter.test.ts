@@ -48,6 +48,16 @@ describe('formatBriscolaState', () => {
     expect(text).toContain('phase: TrickEnd');
     expect(text).toContain('trick cards: CPU 1=♦5');
     expect(text).toContain('n / next');
+    expect(text).not.toContain('h / hint');
+    expect(text).not.toContain('(play with p <idx>)');
+  });
+  it('shows play guidance only on the human turn and reset after game end', () => {
+    const cpuTurn = formatBriscolaState(state({ currentPlayerIdx: 1 }));
+    expect(cpuTurn).not.toContain('(play with p <idx>)');
+    const ended = formatBriscolaState(state({ phase: 2, gameEndFlag: true, messageCode: 'briscola.noHint' }));
+    expect(ended).toContain('Available: r / reset');
+    expect(ended).not.toContain('h / hint');
+    expect(ended).not.toContain('No hint available.');
   });
   it('shows an explicit server hint only for the actual requested response', () => {
     expect(formatBriscolaState(state({ hint: { cardIndex: 1, reason: 'play_low' } }))).not.toContain('HINT:');
