@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { bouillotteApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -446,5 +446,83 @@ describe('BouillottePage', () => {
       Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: originalWidth });
       window.dispatchEvent(new Event('resize'));
     }
+  });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<BouillottePage />);
+    expect(await screen.findByText('ベッティング', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('betting', { selector: 'strong' })).not.toBeInTheDocument();
+  });
+
+  it('applies changed settings when reset is triggered', async () => {
+    renderWithProviders(<BouillottePage />);
+    expect(await screen.findByText('ベッティング', { selector: 'strong' })).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText('プレイヤー人数'), { target: { value: '3' } });
+    fireEvent.change(screen.getByLabelText('アンティ'), { target: { value: '20' } });
+    fireEvent.change(screen.getByLabelText('初期チップ'), { target: { value: '500' } });
+    fireEvent.change(screen.getByLabelText('ラウンド数'), { target: { value: '20' } });
+
+    mockExec.mockClear();
+    const resetBtn = screen.getByRole('button', { name: /リセット|ゲームをリセット/ });
+    fireEvent.click(resetBtn);
+
+    const confirmBtn = await screen.findByRole('button', { name: '確認' });
+    fireEvent.click(confirmBtn);
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
+        playerCount: 3,
+        ante: 20,
+        startingChips: 500,
+        targetRounds: 20,
+      }),
+    );
+  });
+
+  it('renders handLabel placeholder when human player has no cards', async () => {
+    mockExec.mockResolvedValue(
+      makeBouillotteState({
+        players: makeBouillotteState().players.map((p) => (p.isHuman ? { ...p, cards: [] } : p)),
+      }),
+    );
+    renderWithProviders(<BouillottePage />);
+    expect(await screen.findByText('ベッティング', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.getByText('あなたの手札')).toBeInTheDocument();
+    expect(screen.queryByTestId('hand-card-0')).not.toBeInTheDocument();
+  });
+
+  it('renders human cards without a hand name when handName is empty', async () => {
+    mockExec.mockResolvedValue(
+      makeBouillotteState({
+        players: makeBouillotteState().players.map((p) => (p.isHuman ? { ...p, handName: '' } : p)),
+      }),
+    );
+    renderWithProviders(<BouillottePage />);
+    expect(await screen.findByText('ベッティング', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.getByTestId('hand-card-0')).toBeInTheDocument();
+    // The label stands alone: no " — <hand name>" suffix when the server sends no hand name.
+    expect(
+      screen.getAllByText((_, el) => el?.textContent === 'あなたの手札' && el.tagName === 'DIV').length,
+    ).toBeGreaterThan(0);
+  });
+
+  it('handles cpu match victory at game end', async () => {
+    mockExec.mockResolvedValue(
+      makeBouillotteState({
+        phase: 1,
+        gameEndFlag: true,
+        matchWinnerIdx: 1,
+        winnerIdx: 1,
+        result: -1,
+        message: 'CPU 1 がマッチに勝利しました！',
+      }),
+    );
+    renderWithProviders(<BouillottePage />);
+    expect(await screen.findByText('結果', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.getByText('CPU 1 がマッチに勝利しました！')).toBeInTheDocument();
+    // A CPU win is not celebrated: wait past the celebration's 400ms delay before checking.
+    await act(() => new Promise((resolve) => setTimeout(resolve, 600)));
+    expect(screen.queryByTestId('win-celebration')).not.toBeInTheDocument();
   });
 });
