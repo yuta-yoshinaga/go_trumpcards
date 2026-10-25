@@ -125,7 +125,6 @@ GaigelPage.tsx
 GapsPage.tsx
 GermanSoloPage.tsx
 GermanWhistPage.tsx
-GinRummyPage.tsx
 GleekPage.tsx
 GoFishPage.tsx
 GoStopPage.tsx
