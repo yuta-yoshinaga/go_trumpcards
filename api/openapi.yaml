@@ -75371,6 +75371,9 @@ components:
             type: integer
         message:
           type: string
+        messageCode:
+          type: string
+          description: i18n code for the message
 
     BeggarMyNeighbourResponse:
       type: object

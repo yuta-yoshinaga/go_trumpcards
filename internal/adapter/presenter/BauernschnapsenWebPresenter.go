@@ -127,6 +127,11 @@ func (p *BauernschnapsenWebPresenter) HintOutput(g interfaces.BauernschnapsenGam
 			IsMarriage: hint.IsMarriage,
 		}
 	}
+	if hint != nil {
+		resObj.MessageCode = "bauernschnapsen.hintRequested"
+	} else {
+		resObj.MessageCode = "bauernschnapsen.noHint"
+	}
 	return marshalOrError(resObj)
 }
 

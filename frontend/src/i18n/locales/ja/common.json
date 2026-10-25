@@ -1254,6 +1254,8 @@
     "bauernschnapsen.playPhase.lead": "あなたの番です — リードするカードを選んでください。",
     "bauernschnapsen.result.team0Win": "ゲーム終了 — チーム0の勝ちです。",
     "bauernschnapsen.result.team1Win": "ゲーム終了 — チーム1の勝ちです。",
+    "bauernschnapsen.hintRequested": "ヒントがあります",
+    "bauernschnapsen.noHint": "ヒントはありません",
     "bauernschnapsen.roundEnd": "ラウンド終了 — 次のラウンドへ進んでください。",
     "bauernschnapsen.trickEnd": "トリック終了 — 次へ進んでください。",
     "bauernschnapsen.errTeamOutOfRange": "チーム番号が範囲外です",

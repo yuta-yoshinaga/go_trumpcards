@@ -157,6 +157,7 @@ func TestBauernschnapsenWebPresenter_HintOutput(t *testing.T) {
 	assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
 	assert.NotNil(t, resObj.Hint)
 	assert.Equal(t, "follow_win", resObj.Hint.Reason)
+	assert.Equal(t, "bauernschnapsen.hintRequested", resObj.MessageCode)
 }
 
 func TestBauernschnapsenWebPresenter_HintOutput_Nil(t *testing.T) {
@@ -168,6 +169,10 @@ func TestBauernschnapsenWebPresenter_HintOutput_Nil(t *testing.T) {
 	var resObj controller.BauernschnapsenWebOutput
 	assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
 	assert.Nil(t, resObj.Hint)
+	assert.Equal(t, "bauernschnapsen.noHint", resObj.MessageCode)
+	assert.NotNil(t, resObj.Players)
+	assert.NotNil(t, resObj.ValidPlayIndices)
+	assert.NotNil(t, resObj.MarriageIndices)
 }
 
 func TestBauernschnapsenWebPresenter_ActionLogOutput(t *testing.T) {
