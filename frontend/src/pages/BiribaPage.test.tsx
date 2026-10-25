@@ -706,4 +706,71 @@ describe('BiribaPage', () => {
     renderWithProviders(<BiribaPage />);
     await waitFor(() => expect(screen.queryByTestId('ca-discard-pile')).not.toBeInTheDocument());
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    mockExec.mockResolvedValue(drawPhaseState);
+    renderWithProviders(<BiribaPage />);
+    expect(await screen.findByText('ドロー', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('draw', { selector: 'strong' })).not.toBeInTheDocument();
+  });
+
+  it('changes config when cpuDifficulty or pointLimit is selected', async () => {
+    mockExec.mockResolvedValue(drawPhaseState);
+    renderWithProviders(<BiribaPage />);
+    const diffSelect = await screen.findByLabelText('CPU難易度');
+    fireEvent.change(diffSelect, { target: { value: '2' } });
+    expect(diffSelect).toHaveValue('2');
+    const limitSelect = await screen.findByLabelText('目標スコア');
+    fireEvent.change(limitSelect, { target: { value: '7500' } });
+    expect(limitSelect).toHaveValue('7500');
+  });
+
+  it('calls reset with current config when reset button is clicked and confirmed', async () => {
+    mockExec.mockResolvedValue(drawPhaseState);
+    renderWithProviders(<BiribaPage />);
+    fireEvent.change(await screen.findByLabelText('目標スコア'), { target: { value: '7500' } });
+    mockExec.mockClear();
+    fireEvent.click(await screen.findByRole('button', { name: 'リセット' }));
+    fireEvent.click(await screen.findByRole('button', { name: '確認' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
+        cpuDifficulty: 1,
+        pointLimit: 7500,
+      }),
+    );
+  });
+
+  it('dispatches discard via keyboard Enter key in discard phase', async () => {
+    mockExec.mockResolvedValue(discardPhaseState);
+    renderWithProviders(<BiribaPage />);
+    const card = await screen.findByTestId('bu-hand-card-0');
+    fireEvent.click(card);
+    await waitFor(() => expect(card).toHaveAttribute('aria-pressed', 'true'));
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'Enter' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', 0));
+  });
+
+  it('dispatches meld via keyboard Enter key in meld phase', async () => {
+    mockExec.mockResolvedValue(meldPhaseState);
+    renderWithProviders(<BiribaPage />);
+    const cards = await screen.findAllByTestId(/^bu-hand-card-/);
+    fireEvent.click(cards[0]);
+    fireEvent.click(cards[1]);
+    fireEvent.click(cards[2]);
+    await waitFor(() => expect(cards[2]).toHaveAttribute('aria-pressed', 'true'));
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'Enter' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('meld', undefined, undefined, undefined, [[0, 1, 2]]));
+  });
+
+  it('handles empty hand without crashing', async () => {
+    mockExec.mockResolvedValue({
+      ...drawPhaseState,
+      players: [{ ...basePlayers[0], cards: [] }, basePlayers[1]],
+    });
+    renderWithProviders(<BiribaPage />);
+    expect(await screen.findByText('ドロー', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByTestId('bu-sort-original')).not.toBeInTheDocument();
+  });
 });
