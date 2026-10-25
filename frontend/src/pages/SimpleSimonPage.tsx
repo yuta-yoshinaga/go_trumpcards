@@ -35,7 +35,7 @@ import { parseSimpleSimonCommand, SIMPLESIMON_HELP } from '../utils/cli/commands
 import { formatSimpleSimonState } from '../utils/cli/formatters/simplesimonFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
-import { canSimpleSimonPickUp, isSimpleSimonLegalDestination } from '../utils/simpleSimonRules';
+import { canSimpleSimonPickUp, isSimpleSimonLegalDestination, isSimpleSimonRunStart } from '../utils/simpleSimonRules';
 
 /** Simple Simon tutorial step definitions. */
 const SS_TUTORIAL_STEPS: TutorialStep[] = [
@@ -279,7 +279,7 @@ function SimpleSimonPageContent() {
             const inSelectedRun = Boolean(selected && selected.col === col && i >= selected.idx);
             // Grabbable = head of a valid movable run in this column. In a
             // destination column every card just forwards to the move.
-            const grabbable = canSimpleSimonPickUp(state, col, i);
+            const grabbable = isSimpleSimonRunStart(state, col, i);
             const runStartLabel =
               i === runStart ? ` ${t('movableRunStartAria', { count: column.length - runStart })}` : '';
             const clickable = selected ? isDestination || (col === selected.col && grabbable) : grabbable;
