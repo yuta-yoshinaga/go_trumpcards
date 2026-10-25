@@ -243,6 +243,12 @@ describe('ManillePage', () => {
     renderWithProviders(<ManillePage />);
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<ManillePage />);
+    expect(await screen.findByText('プレイ', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('play', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });
 
 // **目標点を確認するのに設定パネルを開き直す必要があった (#4758)。**姉妹ゲームの

@@ -165,7 +165,6 @@ LiteraturePage.tsx
 LobaPage.tsx
 MacauPage.tsx
 MadrassoPage.tsx
-ManillePage.tsx
 MaoPage.tsx
 MariasPage.tsx
 MarjapussiPage.tsx
