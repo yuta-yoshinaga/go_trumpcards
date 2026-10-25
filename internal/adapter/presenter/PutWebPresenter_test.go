@@ -117,6 +117,7 @@ func TestPutWebPresenter_HintOutput(t *testing.T) {
 
 	out := unmarshalPutOut(t, p.HintOutput(g))
 	assert.NotNil(t, out.Hint)
+	assert.Equal(t, "put.hintRequested", out.MessageCode)
 }
 
 func TestPutWebPresenter_HintOutput_None(t *testing.T) {
@@ -125,6 +126,7 @@ func TestPutWebPresenter_HintOutput_None(t *testing.T) {
 	g.SetPhase(domain.PutPhaseTrickEnd)
 	out := unmarshalPutOut(t, p.HintOutput(g))
 	assert.Nil(t, out.Hint)
+	assert.Equal(t, "put.noHint", out.MessageCode)
 }
 
 func TestPutWebPresenter_ActionLogOutput(t *testing.T) {

@@ -137,6 +137,9 @@ func (p *PutWebPresenter) HintOutput(g interfaces.PutGame) string {
 			CardIndex: hint.CardIndex,
 			Reason:    hint.Reason,
 		}
+		resObj.MessageCode = "put.hintRequested"
+	} else {
+		resObj.MessageCode = "put.noHint"
 	}
 	return marshalOrError(resObj)
 }

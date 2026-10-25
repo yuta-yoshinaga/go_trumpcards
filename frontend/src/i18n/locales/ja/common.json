@@ -1111,6 +1111,8 @@
     "prsi.errCardNotPlayable": "そのカードは出せません",
     "put.errCardIndexOutOfRange": "カードインデックスが範囲外です",
     "put.errCannotRaiseNow": "これ以上引き上げできません",
+    "put.hintRequested": "ヒントがあります",
+    "put.noHint": "ヒントはありません",
     "truco.errCardIndexOutOfRange": "カードインデックスが範囲外です",
     "truco.errCannotRaiseNow": "これ以上引き上げできません",
     "truco.hintRequested": "ヒントがあります",

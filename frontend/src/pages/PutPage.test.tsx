@@ -408,4 +408,12 @@ describe('PutPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { matchTarget: 24 }));
   });
+
+  it('switches to the CLI terminal when CLI mode is enabled', async () => {
+    renderWithProviders(<PutPage />);
+    expect(await screen.findByTestId('put-header')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    expect(await screen.findByRole('textbox', { name: 'コマンドを入力...' })).toBeInTheDocument();
+    expect(screen.queryByTestId('put-header')).not.toBeInTheDocument();
+  });
 });
