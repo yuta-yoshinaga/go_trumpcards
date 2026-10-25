@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { curdsandwheyApi } from '../api/gameApi';
 import { CURDS_AND_WHEY_STATS_KEY } from '../hooks/useCurdsAndWheyStats';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -52,7 +52,37 @@ beforeEach(() => {
   mockExec.mockResolvedValue(makeState());
 });
 
+afterEach(() => localStorage.removeItem('cli-mode-curdsandwhey'));
+
 describe('CurdsAndWheyPage', () => {
+  it('toggles between the GUI board and CLI terminal', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<CurdsAndWheyPage />);
+    expect(await screen.findByTestId('column-0')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    expect(await screen.findByRole('textbox', { name: 'コマンドを入力...' })).toBeInTheDocument();
+    expect(screen.queryByTestId('column-0')).not.toBeInTheDocument();
+  });
+
+  it('dispatches a CLI move with the same arguments as the board controls', async () => {
+    mockExec.mockResolvedValue(makeState());
+    const { unmount } = renderWithProviders(<CurdsAndWheyPage />);
+    await screen.findByTestId('column-0');
+    fireEvent.click(screen.getByTestId('card-0-0'));
+    fireEvent.click(screen.getByTestId('card-1-0'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('m', { fromCol: 0, cardIndex: 0, toCol: 1 }));
+    unmount();
+
+    mockExec.mockClear();
+    renderWithProviders(<CurdsAndWheyPage />);
+    await screen.findByTestId('column-0');
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    const input = await screen.findByRole('textbox', { name: 'コマンドを入力...' });
+    fireEvent.change(input, { target: { value: 'p 0 0 1' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('m', { fromCol: 0, cardIndex: 0, toCol: 1 }));
+  });
+
   it.each([
     ['clear', 1, true, '勝率 100%・最少 12手'],
     ['game over', 2, false, '勝率 0%・最少手数 —'],

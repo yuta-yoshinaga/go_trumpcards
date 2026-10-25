@@ -3,6 +3,8 @@ import { curdsandwheyApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CardImage } from '../components/CardImage';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -14,6 +16,8 @@ import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { curdsAndWheyWinRate, useCurdsAndWheyStats } from '../hooks/useCurdsAndWheyStats';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
@@ -23,10 +27,13 @@ import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { Card } from '../types/card';
+import type { Card, CurdsAndWheyResponse } from '../types/card';
 import { CurdsAndWheyPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { CURDSANDWHEY_HELP, parseCurdsAndWheyCommand } from '../utils/cli/commands/curdsandwheyCommands';
+import { formatCurdsAndWheyState } from '../utils/cli/formatters/curdsandwheyFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Curds and Whey tutorial step definitions. */
@@ -86,6 +93,17 @@ function CurdsAndWheyPageContent() {
     cancelGiveUp,
   } = useGamePageSetup('curdsandwhey');
   const { state, loading, error, exec, retry } = useGameApi(curdsandwheyApi.exec);
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('curdsandwhey');
+  const cliConfig: CliGameConfig<CurdsAndWheyResponse, Parameters<typeof curdsandwheyApi.exec>> = useMemo(
+    () => ({
+      gameName: 'curdsandwhey',
+      parseCommand: (input) => parseCurdsAndWheyCommand(input, state),
+      formatResponse: formatCurdsAndWheyState,
+      helpText: CURDSANDWHEY_HELP,
+    }),
+    [state],
+  );
+  const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   const { stats, recordResult } = useCurdsAndWheyStats();
   const recordedEnd = useRef(false);
 
@@ -286,6 +304,7 @@ function CurdsAndWheyPageContent() {
       phaseName={phaseName}
       gamePath="/curdsandwhey"
       gameEndFlag={isEnd}
+      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
       winShow={isClear}
       loading={loading}
       confirmOpen={confirmOpen}
@@ -295,94 +314,104 @@ function CurdsAndWheyPageContent() {
       confirmGiveUp={confirmGiveUp}
       cancelGiveUp={cancelGiveUp}
     >
-      <div className="flex-1 overflow-y-auto pt-3 px-2 lg:px-6">
-        <div className="text-ds-text-muted text-xs mb-1">
-          {t('completedSuits', { count: state.completedSuits })} · {t('moveCount', { count: state.moveCount })}
-        </div>
-        <div className="text-ds-text-muted text-xs mb-1" data-testid="cw-stats">
-          {t('statsSummary', {
-            winRate: t('winRate', { rate: curdsAndWheyWinRate(stats) }),
-            fewestMoves:
-              stats.fewestMoves === null ? t('fewestMovesNone') : t('fewestMoves', { moves: stats.fewestMoves }),
-          })}
-        </div>
-        <div className="grid grid-cols-5 sm:grid-cols-10 gap-1 items-start" data-tutorial="cw-columns">
-          {state.columns.map((column, i) => renderColumn(column, i))}
-        </div>
-        {canAct && (
-          <div className="mt-2 text-ds-text-primary text-xs" role="status" data-testid="cw-guidance">
-            {selected === null ? t('selectSource') : t('selectDestination')}
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <div className="flex-1 overflow-y-auto pt-3 px-2 lg:px-6">
+            <div className="text-ds-text-muted text-xs mb-1">
+              {t('completedSuits', { count: state.completedSuits })} · {t('moveCount', { count: state.moveCount })}
+            </div>
+            <div className="text-ds-text-muted text-xs mb-1" data-testid="cw-stats">
+              {t('statsSummary', {
+                winRate: t('winRate', { rate: curdsAndWheyWinRate(stats) }),
+                fewestMoves:
+                  stats.fewestMoves === null ? t('fewestMovesNone') : t('fewestMoves', { moves: stats.fewestMoves }),
+              })}
+            </div>
+            <div className="grid grid-cols-5 sm:grid-cols-10 gap-1 items-start" data-tutorial="cw-columns">
+              {state.columns.map((column, i) => renderColumn(column, i))}
+            </div>
+            {canAct && (
+              <div className="mt-2 text-ds-text-primary text-xs" role="status" data-testid="cw-guidance">
+                {selected === null ? t('selectSource') : t('selectDestination')}
+              </div>
+            )}
+            {canAct && autoMoveNotice && (
+              <div className="mt-1 text-ds-text-muted text-xs" role="status" data-testid="cw-automove-notice">
+                {autoMoveNotice}
+              </div>
+            )}
+
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            <SettingsPanel
+              title={tc('settings.title')}
+              groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
+            />
+
+            <ActionLogSection
+              isEndPhase={isEnd}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
           </div>
-        )}
-        {canAct && autoMoveNotice && (
-          <div className="mt-1 text-ds-text-muted text-xs" role="status" data-testid="cw-automove-notice">
-            {autoMoveNotice}
-          </div>
-        )}
 
-        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
-        <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-        <SettingsPanel
-          title={tc('settings.title')}
-          groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
-        />
-
-        <ActionLogSection
-          isEndPhase={isEnd}
-          actionLog={actionLog}
-          showActionLog={showActionLog}
-          hideActionLog={hideActionLog}
-        />
-      </div>
-
-      <GameFooter className={`${gameTheme.curdsandwhey.footer} px-3 py-2.5`}>
-        <ErrorAlert message={error} onRetry={retry} />
-        <div className="flex flex-wrap gap-2 items-center" data-tutorial="cw-controls">
-          {state.canUndo && (
-            <button
-              type="button"
-              className={btnSecondary}
-              onClick={handleUndo}
-              disabled={loading}
-              aria-keyshortcuts="z"
-              data-testid="undo-button"
-            >
-              {t('undo')}
-            </button>
-          )}
-          {canAct && (
-            <button
-              type="button"
-              className={btnPrimary}
-              onClick={handleHint}
-              disabled={loading}
-              data-testid="hint-button"
-            >
-              {t('hint')}
-            </button>
-          )}
-          {canAct && (
-            <button
-              type="button"
-              className={btnSecondary}
-              onClick={confirmGiveUpAction}
-              disabled={loading}
-              data-testid="giveup-button"
-            >
-              {t('giveup')}
-            </button>
-          )}
-          <GameResetButton
-            isGameEnd={isEnd}
-            onReset={handleReset}
-            requestConfirm={requestConfirm}
-            loading={loading}
-            dataTutorial="cw-reset-button"
-          />
-        </div>
-        <ActionShortcutsPanel bindings={actionBindings} data-testid="cw-kbd-shortcuts" />
-      </GameFooter>
+          <GameFooter className={`${gameTheme.curdsandwhey.footer} px-3 py-2.5`}>
+            <ErrorAlert message={error} onRetry={retry} />
+            <div className="flex flex-wrap gap-2 items-center" data-tutorial="cw-controls">
+              {state.canUndo && (
+                <button
+                  type="button"
+                  className={btnSecondary}
+                  onClick={handleUndo}
+                  disabled={loading}
+                  aria-keyshortcuts="z"
+                  data-testid="undo-button"
+                >
+                  {t('undo')}
+                </button>
+              )}
+              {canAct && (
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={handleHint}
+                  disabled={loading}
+                  data-testid="hint-button"
+                >
+                  {t('hint')}
+                </button>
+              )}
+              {canAct && (
+                <button
+                  type="button"
+                  className={btnSecondary}
+                  onClick={confirmGiveUpAction}
+                  disabled={loading}
+                  data-testid="giveup-button"
+                >
+                  {t('giveup')}
+                </button>
+              )}
+              <GameResetButton
+                isGameEnd={isEnd}
+                onReset={handleReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="cw-reset-button"
+              />
+            </div>
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="cw-kbd-shortcuts" />
+          </GameFooter>
+        </>
+      )}
     </GamePageShell>
   );
 }
