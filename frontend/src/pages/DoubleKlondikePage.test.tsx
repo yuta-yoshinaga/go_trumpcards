@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { doubleklondikeApi } from '../api/gameApi';
 import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -43,7 +43,58 @@ beforeEach(() => {
   mockExec.mockResolvedValue(makeState());
 });
 
+afterEach(() => localStorage.removeItem('cli-mode-doubleklondike'));
+
 describe('DoubleKlondikePage', () => {
+  it('switches to the terminal and dispatches a CLI draw like the page button', async () => {
+    renderWithProviders(<DoubleKlondikePage />);
+    await screen.findByTestId('column-0');
+    fireEvent.click(screen.getByRole('button', { name: /CLI/i }));
+    const input = await screen.findByRole('textbox');
+    expect(screen.queryByTestId('column-0')).not.toBeInTheDocument();
+    fireEvent.change(input, { target: { value: 'd' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await waitFor(() => expect(mockExec).toHaveBeenLastCalledWith('d'));
+  });
+  it('dispatches a CLI tableau move with the same arguments as a page move', async () => {
+    mockExec.mockResolvedValue(makeState({ legalTargets: { 'tableau-0-0': { tableau: [2], foundation: [] } } }));
+    renderWithProviders(<DoubleKlondikePage />);
+    await screen.findByTestId('column-0');
+    fireEvent.click(screen.getByRole('button', { name: /CLI/i }));
+    const input = await screen.findByRole('textbox');
+    mockExec.mockClear();
+    fireEvent.change(input, { target: { value: 'p 0 0 2' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('mtt', { fromCol: 0, cardIndex: 0, toCol: 2 }));
+  });
+  it('does not dispatch CLI moves or undo when the state disallows them', async () => {
+    const tableau = makeState().tableau.map((column) => [...column]);
+    tableau[1][0] = { card: card('CLOVER', 7), faceUp: false };
+    mockExec.mockResolvedValue(
+      makeState({
+        tableau,
+        canUndo: false,
+        legalTargets: {
+          'tableau-0-0': { tableau: [], foundation: [] },
+          'tableau-1-0': { tableau: [2], foundation: [] },
+        },
+      }),
+    );
+    renderWithProviders(<DoubleKlondikePage />);
+    await screen.findByTestId('column-0');
+    fireEvent.click(screen.getByRole('button', { name: /CLI/i }));
+    const input = await screen.findByRole('textbox');
+    mockExec.mockClear();
+
+    for (const command of ['p 1 0 2', 'p 0 0 1', 'p 0 0 99', 'u']) {
+      fireEvent.change(input, { target: { value: command } });
+      fireEvent.keyDown(input, { key: 'Enter' });
+      // Wait until the terminal has echoed the command, so the parser has run,
+      // before asserting nothing was dispatched.
+      await screen.findByText(`> ${command}`);
+      expect(mockExec).not.toHaveBeenCalled();
+    }
+  });
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<DoubleKlondikePage />);
