@@ -59,9 +59,28 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.useRealTimers();
+  localStorage.removeItem('cli-mode-fourteenout');
 });
 
 describe('FourteenOutPage', () => {
+  it('switches to the CLI terminal', async () => {
+    renderWithProviders(<FourteenOutPage />);
+    await screen.findByTestId('mc-col-0');
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    expect(await screen.findByRole('textbox', { name: 'コマンドを入力...' })).toBeInTheDocument();
+    expect(screen.queryByTestId('mc-board')).not.toBeInTheDocument();
+  });
+
+  it('executes a CLI pair with the same column arguments as the board buttons', async () => {
+    renderWithProviders(<FourteenOutPage />);
+    await screen.findByTestId('mc-col-0');
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    const input = await screen.findByRole('textbox', { name: 'コマンドを入力...' });
+    fireEvent.change(input, { target: { value: 'p 0 1' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('remove', 0, 1));
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<FourteenOutPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

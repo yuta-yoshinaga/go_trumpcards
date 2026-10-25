@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { fourteenoutApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -12,6 +14,8 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
@@ -24,6 +28,9 @@ import type { FourteenOutResponse } from '../types/card';
 import { FourteenOutPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { FOURTEENOUT_HELP, parseFourteenOutCommand } from '../utils/cli/commands/fourteenoutCommands';
+import { formatFourteenOutState } from '../utils/cli/formatters/fourteenoutFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -83,6 +90,17 @@ function FourteenOutPageContent() {
       }
     },
   });
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('fourteenout');
+  const cliConfig: CliGameConfig<FourteenOutResponse, Parameters<typeof fourteenoutApi.exec>> = useMemo(
+    () => ({
+      gameName: 'fourteenout',
+      parseCommand: (input) => parseFourteenOutCommand(input, state),
+      formatResponse: formatFourteenOutState,
+      helpText: FOURTEENOUT_HELP,
+    }),
+    [state],
+  );
+  const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -213,14 +231,19 @@ function FourteenOutPageContent() {
       confirmGiveUp={confirmGiveUp}
       cancelGiveUp={cancelGiveUp}
       headerExtra={
-        state && (
-          <span className="font-mono text-xs">
-            {t('label.removedCount')}: {state.removedCount}/52
-          </span>
-        )
+        <>
+          {state && (
+            <span className="font-mono text-xs">
+              {t('label.removedCount')}: {state.removedCount}/52
+            </span>
+          )}
+          <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
+        </>
       }
     >
-      {!state ? (
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : !state ? (
         <>
           <GameSkeleton
             gameKey="fourteenout"
