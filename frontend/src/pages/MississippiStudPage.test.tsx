@@ -468,12 +468,11 @@ describe('MississippiStudPage', () => {
     expect(screen.getByText('棋譜を見る')).toBeInTheDocument();
   });
 
-  it('does not render CLI toggle (CLI not yet implemented)', async () => {
+  it('renders the CLI toggle', async () => {
     mockApi.mockResolvedValue(antePhaseState);
     renderWithProviders(<MississippiStudPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'アンティ' })).toBeInTheDocument());
-    // CLI toggle is intentionally hidden until CLI command parsing is implemented
-    expect(screen.queryByRole('button', { name: /CLI/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /CLI/i })).toBeInTheDocument();
   });
 });
 
