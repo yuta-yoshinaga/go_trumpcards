@@ -107,9 +107,11 @@ export interface GameDefinition<S, G extends GameHookBase<S, A>, A extends unkno
   /** Whether the action log can be opened during play, matching `ActionLogSection`'s `availableDuringPlay` prop. Defaults to false. */
   actionLogDuringPlay?: boolean;
   /**
-   * Phase in which the action log can be opened. Defaults to `phase.ended`.
-   * Use this on pages that open the log at round end without changing `phase.ended`.
-   * Like `phase` and `shortcuts`, this is a plain function and must not call hooks.
+   * Overrides `phase.ended` when deciding whether to show the action log button.
+   * This replaces the default condition; include game-end phases here too if they
+   * should show the button. It only controls button visibility and never opens
+   * the action log automatically. Like `phase` and `shortcuts`, this is a plain
+   * function and must not call hooks.
    */
   actionLogEndPhase?: (ctx: GamePageContext<S, G, V>) => boolean;
   /** Plain function returning action shortcuts. Must not call hooks. */

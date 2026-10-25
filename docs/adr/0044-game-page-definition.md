@@ -79,4 +79,4 @@ CallBreak 用に、`ErrorAlert` より前に描く `FooterLead` を追加する�
 大きい手札で `<GameFooter tall>` を使うページ (タロット等、#11655) 用に `footerTall` を追加。
 プレイ中も棋譜を出すページ (`ActionLogSection availableDuringPlay`) 用に `actionLogDuringPlay` を追加。
 
-ラウンド終了で棋譜を開くページ (Loo など) 用に `actionLogEndPhase` を追加。
+ラウンド終了で棋譜ボタンを出すページ (Loo など) 用に `actionLogEndPhase` を追加。
