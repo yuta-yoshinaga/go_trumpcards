@@ -32,6 +32,8 @@ describe('formatUltimateTexasHoldemState', () => {
     expect(text).toContain('phase: Bet');
     expect(text).toContain('action: bet <ante> [trips]');
     expect(text).toContain('chips: 500');
+    expect(text).toContain('ante 10–250 (step 10)');
+    expect(text).toContain('trips 0–480 (step 10');
   });
   it('numbers the player hand from zero and guides the current street', () => {
     const text = format({
@@ -62,8 +64,20 @@ describe('formatUltimateTexasHoldemState', () => {
   });
   it('prints end result and message and handles an unknown phase', () => {
     const text = format({ ...base, phase: 5, result: 1, netChange: 200, message: 'Won' });
-    expect(text).toContain('result: 1 net=200');
+    expect(text).toContain('result: win net=200');
+    expect(text).toContain('payout: ante=0 blind=0 play=0 trips=0 total=0');
+    expect(text).toContain('hand: player=0 dealer=0');
     expect(text).toContain('Won');
     expect(format({ ...base, phase: 9 })).toContain('phase: 9');
+  });
+  it('uses phase-specific actions and omits an empty notification message', () => {
+    expect(format({ ...base, phase: 2 })).toContain('action: 4 / 3 / check');
+    expect(format({ ...base, phase: 4 })).toContain('action: 1 / fold');
+    expect(format({ ...base, phase: 5, message: '', messageCode: 'chips.refilled' })).not.toContain('chips.refilled');
+  });
+  it('omits multipliers that the page disables for the current chip balance', () => {
+    expect(format({ ...base, phase: 2, anteBet: 100, chips: 250 })).toContain('action: check');
+    expect(format({ ...base, phase: 3, anteBet: 100, chips: 150 })).toContain('action: check');
+    expect(format({ ...base, phase: 4, anteBet: 100, chips: 50 })).toContain('action: fold');
   });
 });

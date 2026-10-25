@@ -26,6 +26,7 @@ import { useMountReset } from '../hooks/useMountReset';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
+import type { UltimateTexasHoldemResponse } from '../types/card';
 import { isMaskedCard } from '../types/card';
 import { UltimateTexasHoldemPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
@@ -107,6 +108,16 @@ function UltimateTexasHoldemPageContent() {
 
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec: execApi, retry } = useGameApi(ultimatetexasholdemApi.exec);
+  const isBetPhase = state?.phase === UltimateTexasHoldemPhase.BET;
+  const isPreFlopPhase = state?.phase === UltimateTexasHoldemPhase.PRE_FLOP;
+  const isFlopPhase = state?.phase === UltimateTexasHoldemPhase.FLOP;
+  const isRiverPhase = state?.phase === UltimateTexasHoldemPhase.RIVER;
+  const isEndPhase = state?.phase === UltimateTexasHoldemPhase.END;
+  const canPlay4x = !!state && state.chips >= state.anteBet * 4;
+  const canPlay3x = !!state && state.chips >= state.anteBet * 3;
+  const canPlay2x = !!state && state.chips >= state.anteBet * 2;
+  const canPlay1x = !!state && state.chips >= state.anteBet;
+  const betBounds = utHoldemBetBounds(anteAmount, tripsAmount, state?.chips ?? 0);
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } =
     useCliMode('ultimatetexasholdem');
   const {
@@ -117,12 +128,22 @@ function UltimateTexasHoldemPageContent() {
   const cliConfig = useMemo(
     () => ({
       gameName: 'ultimatetexasholdem',
-      parseCommand: parseUltimateTexasHoldemCommand,
-      formatResponse: formatUltimateTexasHoldemState,
+      parseCommand: (input: string) =>
+        parseUltimateTexasHoldemCommand(input, {
+          maxAnte: Math.floor((state?.chips ?? 0) / 2),
+          maxTrips: utHoldemBetBounds(anteAmount, 0, state?.chips ?? 0).maxTrips,
+          boundsForAnte: (ante, trips) => utHoldemBetBounds(ante, trips, state?.chips ?? 0),
+          phase: state?.phase,
+          canPlay4x,
+          canPlay3x,
+          canPlay2x,
+          canPlay1x,
+        }),
+      formatResponse: (response: UltimateTexasHoldemResponse) => formatUltimateTexasHoldemState(response, anteAmount),
       helpText: ULTIMATE_TEXAS_HOLDEM_HELP,
       localCommand: hintLocalCommand(frontendHint),
     }),
-    [frontendHint],
+    [frontendHint, state, anteAmount, canPlay4x, canPlay3x, canPlay2x, canPlay1x],
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
@@ -144,19 +165,8 @@ function UltimateTexasHoldemPageContent() {
     setTripsAmount((tr) => (tr > maxTrips ? maxTrips : tr));
   }, [state, anteAmount]);
 
-  const isBetPhase = state?.phase === UltimateTexasHoldemPhase.BET;
-  const isPreFlopPhase = state?.phase === UltimateTexasHoldemPhase.PRE_FLOP;
-  const isFlopPhase = state?.phase === UltimateTexasHoldemPhase.FLOP;
-  const isRiverPhase = state?.phase === UltimateTexasHoldemPhase.RIVER;
-  const isEndPhase = state?.phase === UltimateTexasHoldemPhase.END;
-  const canPlay4x = !!state && state.chips >= state.anteBet * 4;
-  const canPlay3x = !!state && state.chips >= state.anteBet * 3;
-  const canPlay2x = !!state && state.chips >= state.anteBet * 2;
-  const canPlay1x = !!state && state.chips >= state.anteBet;
-
   // Ante (×2 for the matched Blind) + Trips must fit within chips. Drives the
   // trips cap, the combined-total readout, the over-balance alert, and submit gating.
-  const betBounds = utHoldemBetBounds(anteAmount, tripsAmount, state?.chips ?? 0);
 
   const actionBindings = useMemo(
     () => [
