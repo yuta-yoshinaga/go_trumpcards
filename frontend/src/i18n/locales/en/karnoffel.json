@@ -28,9 +28,6 @@
   "resultTitle": "Hand result",
   "handWonLine": "Team {{team}} took the hand ({{t0}}-{{t1}})",
   "handDrawnLine": "Neither side reached three tricks ({{t0}}-{{t1}})",
-  "settings": {
-    "title": "Settings"
-  },
   "phase": {
     "play": "Playing",
     "handEnd": "Hand over",

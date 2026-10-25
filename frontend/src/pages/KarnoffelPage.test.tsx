@@ -480,4 +480,10 @@ describe('KarnoffelPage', () => {
     expect(screen.getByRole('img', { name: '席1: CPU 1、♥ 7、悪魔（追随・最弱）' })).toBeInTheDocument();
     expect(screen.getByRole('img', { name: '席2: CPU 2、♣ 4' })).toBeInTheDocument();
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<KarnoffelPage />);
+    expect(await screen.findByText('プレイ', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('play', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });
