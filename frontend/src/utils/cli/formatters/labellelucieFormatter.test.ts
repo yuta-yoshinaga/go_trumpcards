@@ -14,11 +14,12 @@ const base: LaBelleLucieResponse = {
 };
 
 describe('formatLaBelleLucieState', () => {
-  it('formats a playing state with indexed cards and available actions', () => {
+  it('formats a playing state with fan cards and available actions', () => {
     const output = formatLaBelleLucieState(base);
-    expect(output).toContain('phase: Playing | moves: 4 | redeals: 2');
-    expect(output).toContain('0: [0]♠9 *');
-    expect(output).toContain('1: [0]♥A');
+    expect(output).toContain('phase: Playing | moves: 4 | redeals: 1/3');
+    expect(output).toContain('0: ♠9*');
+    expect(output).not.toContain('[0]♠9');
+    expect(output).toContain('1: ♥A');
     expect(output).toContain('p <from> <to>');
   });
 
@@ -67,5 +68,27 @@ describe('formatLaBelleLucieState', () => {
 
   it('omits redeal guidance when no redeals remain', () => {
     expect(formatLaBelleLucieState({ ...base, redealsLeft: 0 })).toContain('Other actions: ac, u, h, g');
+  });
+
+  it('marks the top (last) card of a movable fan, not the bottom one', () => {
+    const output = formatLaBelleLucieState({
+      ...base,
+      fans: [
+        [
+          { design: 'SPADE', value: 9 },
+          { design: 'CLOVER', value: 4 },
+        ],
+        [{ design: 'HEART', value: 1 }],
+      ],
+      movableFans: [true, false],
+    });
+    expect(output).toContain('0: ♠9  ♣4*');
+    expect(output).not.toContain('♠9*');
+  });
+
+  it('omits undo when unavailable and reports an unavailable hint', () => {
+    const unavailableUndo = formatLaBelleLucieState({ ...base, canUndo: false });
+    expect(unavailableUndo).toContain('Other actions: rd, ac, h, g');
+    expect(formatLaBelleLucieState({ ...base, messageCode: 'labellelucie.noHint' })).toContain('No hint available.');
   });
 });

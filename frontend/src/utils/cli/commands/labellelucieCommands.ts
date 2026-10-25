@@ -3,6 +3,10 @@ import { parseIntArg, splitCommand, unknownCommand } from '../commandParserBase'
 import type { CliParseResult } from '../types';
 
 type LaBelleLucieArgs = Parameters<typeof labellelucieApi.exec>;
+export interface LaBelleLucieCommandState {
+  /** Current fan count, which changes after a redeal. */
+  fanCount: number;
+}
 const VALID_COMMANDS = [
   'p',
   'play',
@@ -26,7 +30,10 @@ const VALID_COMMANDS = [
 ];
 
 /** Parse a La Belle Lucie CLI command into API exec arguments. */
-export function parseLaBelleLucieCommand(input: string): CliParseResult<LaBelleLucieArgs> {
+export function parseLaBelleLucieCommand(
+  input: string,
+  state: LaBelleLucieCommandState = { fanCount: 18 },
+): CliParseResult<LaBelleLucieArgs> {
   const { cmd, args } = splitCommand(input);
   switch (cmd) {
     case 'p':
@@ -34,15 +41,23 @@ export function parseLaBelleLucieCommand(input: string): CliParseResult<LaBelleL
       if (args.length < 2) return { error: 'Usage: p <from> <to>' };
       const from = parseIntArg(args, 0);
       const to = parseIntArg(args, 1);
-      if ('error' in from || 'error' in to || from.value < 0 || from.value > 8 || to.value < 0 || to.value > 8) {
-        return { error: 'Usage: p <from> <to> (fan indices 0-8)' };
+      if (
+        'error' in from ||
+        'error' in to ||
+        from.value < 0 ||
+        from.value >= state.fanCount ||
+        to.value < 0 ||
+        to.value >= state.fanCount
+      ) {
+        return { error: 'Usage: p <from> <to> (fan index out of range)' };
       }
       return { args: ['mf', from.value, to.value] };
     }
     case 'f':
     case 'foundation': {
       const from = parseIntArg(args, 0);
-      if ('error' in from || from.value < 0 || from.value > 8) return { error: 'Usage: f <idx> (fan index 0-8)' };
+      if ('error' in from || from.value < 0 || from.value >= state.fanCount)
+        return { error: 'Usage: f <idx> (fan index out of range)' };
       return { args: ['ff', from.value] };
     }
     case 'rd':
@@ -75,8 +90,8 @@ export function parseLaBelleLucieCommand(input: string): CliParseResult<LaBelleL
 
 /** Help text shown in La Belle Lucie's CLI terminal. */
 export const LABELLELUCIE_HELP = [
-  'p <from> <to> - Move a card between fan indices (0-8)',
-  'f <idx>       - Move a fan top to foundation (0-8)',
+  'p <from> <to> - Move a card between fan indices',
+  'f <idx>       - Move a fan top to foundation',
   'rd / redeal   - Gather and redeal cards',
   'ac / autocomplete - Move all available cards to foundation',
   'u / undo      - Undo the last move',

@@ -1,13 +1,19 @@
 import type { LaBelleLucieResponse } from '../../../types/card';
-import { formatCard, formatHeader, formatIndexedCards, formatSeparator, isRequestedHint } from '../formatterBase';
+import { LABELLELUCIE_MAX_REDEALS } from '../../../types/labellelucie';
+import { LaBelleLuciePhase } from '../../../types/phases';
+import { formatCard, formatHeader, formatSeparator, isRequestedHint } from '../formatterBase';
 
-const PHASES: Record<number, string> = { 0: 'Playing', 1: 'Game Clear', 2: 'Game Over' };
+const PHASE_NAMES: Record<number, string> = {
+  [LaBelleLuciePhase.PLAYING]: 'Playing',
+  [LaBelleLuciePhase.GAME_CLEAR]: 'Game Clear',
+  [LaBelleLuciePhase.GAME_OVER]: 'Game Over',
+};
 
 /** Format a La Belle Lucie game state as terminal text. */
 export function formatLaBelleLucieState(state: LaBelleLucieResponse): string {
   const lines = [
     formatHeader('La Belle Lucie'),
-    `phase: ${PHASES[state.phase] ?? state.phase} | moves: ${state.moveCount} | redeals: ${state.redealsLeft}`,
+    `phase: ${PHASE_NAMES[state.phase] ?? state.phase} | moves: ${state.moveCount} | redeals: ${LABELLELUCIE_MAX_REDEALS - state.redealsLeft}/${LABELLELUCIE_MAX_REDEALS}`,
     'Foundation:',
   ];
   lines.push(
@@ -15,11 +21,15 @@ export function formatLaBelleLucieState(state: LaBelleLucieResponse): string {
   );
   lines.push('Fans:');
   state.fans.forEach((fan, i) => {
-    lines.push(`  ${i}: ${formatIndexedCards(fan) || '[empty]'}${state.movableFans[i] ? ' *' : ''}`);
+    const cards = fan
+      .map((card, cardIndex) => `${formatCard(card)}${cardIndex === fan.length - 1 && state.movableFans[i] ? '*' : ''}`)
+      .join('  ');
+    lines.push(`  ${i}: ${cards || '[empty]'}`);
   });
-  if (state.phase === 0) {
+  if (state.phase === LaBelleLuciePhase.PLAYING) {
     lines.push('Moves: use p <from> <to> or f <idx> for a fan marked *');
-    lines.push(state.redealsLeft > 0 ? 'Other actions: rd, ac, u, h, g' : 'Other actions: ac, u, h, g');
+    const actions = [state.redealsLeft > 0 && 'rd', 'ac', state.canUndo && 'u', 'h', 'g'].filter(Boolean);
+    lines.push(`Other actions: ${actions.join(', ')}`);
   } else {
     lines.push('Game finished. Use r to start a new game.');
   }
@@ -30,9 +40,10 @@ export function formatLaBelleLucieState(state: LaBelleLucieResponse): string {
         : `HINT: move fan ${state.hint.fromFan} to fan ${state.hint.toFan}`,
     );
   }
+  if (state.messageCode === 'labellelucie.noHint') lines.push('No hint available.');
   if (state.message) lines.push(state.message);
-  if (state.phase === 1) lines.push('Congratulations! You win!');
-  if (state.phase === 2) lines.push('Game over.');
+  if (state.phase === LaBelleLuciePhase.GAME_CLEAR) lines.push('Congratulations! You win!');
+  if (state.phase === LaBelleLuciePhase.GAME_OVER) lines.push('Game over.');
   lines.push(formatSeparator());
   return lines.join('\n');
 }
