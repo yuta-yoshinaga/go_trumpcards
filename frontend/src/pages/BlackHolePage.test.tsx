@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { blackholeApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -45,6 +45,8 @@ beforeEach(() => {
   mockExec.mockReset();
   mockExec.mockResolvedValue(makeState());
 });
+
+afterEach(() => localStorage.removeItem('cli-mode-blackhole'));
 
 describe('BlackHolePage', () => {
   it('renders skeleton when no state', () => {
@@ -340,7 +342,6 @@ describe('BlackHolePage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'GUIモードに切り替え' }));
     expect(await screen.findByTestId('bh-hole-top')).toBeInTheDocument();
     expect(screen.queryByRole('textbox', { name: 'コマンドを入力...' })).not.toBeInTheDocument();
-    localStorage.removeItem('cli-mode-blackhole');
   });
 
   it('dispatches moves in CLI mode with the same arguments as page button', async () => {
@@ -361,6 +362,5 @@ describe('BlackHolePage', () => {
       expect(mockExec).toHaveBeenCalledWith('mb', { fan: 0 });
     });
     fireEvent.click(screen.getByRole('button', { name: 'GUIモードに切り替え' }));
-    localStorage.removeItem('cli-mode-blackhole');
   });
 });

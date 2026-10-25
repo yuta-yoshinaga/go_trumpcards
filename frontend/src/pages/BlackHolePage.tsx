@@ -29,7 +29,12 @@ import { BlackHolePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { valueName } from '../utils/cardUtils';
-import { BLACKHOLE_HELP, getLegalFans, parseBlackHoleCommand } from '../utils/cli/commands/blackholeCommands';
+import {
+  BLACKHOLE_HELP,
+  getAcceptableRanks,
+  getLegalFans,
+  parseBlackHoleCommand,
+} from '../utils/cli/commands/blackholeCommands';
 import { formatBlackHoleState } from '../utils/cli/formatters/blackholeFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -166,7 +171,7 @@ function BlackHolePageContent() {
   // Ranks currently accepted by the hole: the hole top's rank ±1, clamped to
   // [1, 13] with no A↔K wrap (matching the Go domain's blackHoleAdjacent). At the
   // A/K ends only one neighbour survives the clamp, so a single rank is shown.
-  const acceptableRanks = holeTop ? [holeTop.value - 1, holeTop.value + 1].filter((v) => v >= 1 && v <= 13) : [];
+  const acceptableRanks = getAcceptableRanks(holeTop);
 
   // The backend's strategic recommendation (single "best" fan to dig, e.g. one
   // that avoids getting stuck). `state.hint` is only populated by a `hint`

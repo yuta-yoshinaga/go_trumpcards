@@ -97,13 +97,13 @@ describe('formatBlackHoleState', () => {
       blackHole,
       phase: BlackHolePhase.GAME_CLEAR,
       moveCount: 51,
-      message: 'Clear!',
+      message: 'ゲームクリア！ 手数: 51',
     });
     const text = formatBlackHoleState(state);
 
     expect(text).toContain('phase: Game Clear');
     expect(text).toContain('Game Clear! Total moves: 51');
-    expect(text).toContain('Clear!');
+    expect(text).not.toContain('ゲームクリア！ 手数: 51');
     expect(text).toContain('Available commands: r (reset)');
     expect(text).not.toContain('p <fan>');
   });
@@ -111,11 +111,12 @@ describe('formatBlackHoleState', () => {
   it('formats game over and stalemate states', () => {
     const overState = makeMockState({
       phase: BlackHolePhase.GAME_OVER,
-      message: 'Game Over',
+      message: 'ゲームオーバー',
     });
     const overText = formatBlackHoleState(overState);
     expect(overText).toContain('phase: Game Over');
     expect(overText).toContain('Game Over!');
+    expect(overText).not.toContain('ゲームオーバー');
 
     const staleState = makeMockState({
       phase: BlackHolePhase.PLAYING,

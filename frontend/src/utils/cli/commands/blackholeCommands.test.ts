@@ -3,7 +3,13 @@ import type { Card } from '../../../types/card';
 import type { BlackHoleResponse } from '../../../types/games/blackhole';
 import { BlackHolePhase } from '../../../types/phases';
 import type { CliParseResult } from '../types';
-import { BLACKHOLE_HELP, type BlackHoleCliArgs, getLegalFans, parseBlackHoleCommand } from './blackholeCommands';
+import {
+  BLACKHOLE_HELP,
+  type BlackHoleCliArgs,
+  getAcceptableRanks,
+  getLegalFans,
+  parseBlackHoleCommand,
+} from './blackholeCommands';
 
 /** The error text of a parse result, or undefined when it parsed successfully. */
 function errorOf(res: CliParseResult<BlackHoleCliArgs>): string | undefined {
@@ -31,6 +37,19 @@ function makeMockState(overrides: Partial<BlackHoleResponse> = {}): BlackHoleRes
     ...overrides,
   };
 }
+
+describe('getAcceptableRanks', () => {
+  it('returns adjacent ranks clamped to 1-13 with no A-K wrap', () => {
+    expect(getAcceptableRanks(card('SPADE', 1))).toEqual([2]);
+    expect(getAcceptableRanks(card('HEART', 13))).toEqual([12]);
+    expect(getAcceptableRanks(card('DIAMOND', 7))).toEqual([6, 8]);
+  });
+
+  it('returns empty array when holeTop is null or undefined', () => {
+    expect(getAcceptableRanks(null)).toEqual([]);
+    expect(getAcceptableRanks(undefined)).toEqual([]);
+  });
+});
 
 describe('getLegalFans', () => {
   it('identifies fans whose top card rank is ±1 from the black hole top', () => {

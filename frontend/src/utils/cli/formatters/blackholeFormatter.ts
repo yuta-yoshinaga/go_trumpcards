@@ -1,7 +1,7 @@
 import type { BlackHoleResponse } from '../../../types/games/blackhole';
 import { BlackHolePhase } from '../../../types/phases';
 import { valueName } from '../../cardUtils';
-import { getLegalFans } from '../commands/blackholeCommands';
+import { getAcceptableRanks, getLegalFans } from '../commands/blackholeCommands';
 import { formatCard, formatHeader, formatSeparator, isRequestedHint } from '../formatterBase';
 
 const TOTAL_CARDS = 52;
@@ -23,7 +23,7 @@ export function formatBlackHoleState(state: BlackHoleResponse): string {
   lines.push(`moves: ${state.moveCount}  progress: ${state.blackHole.length}/${TOTAL_CARDS}  phase: ${phaseName}`);
 
   const holeTop = state.blackHole.length > 0 ? state.blackHole[state.blackHole.length - 1] : null;
-  const acceptableRanks = holeTop ? [holeTop.value - 1, holeTop.value + 1].filter((v) => v >= 1 && v <= 13) : [];
+  const acceptableRanks = getAcceptableRanks(holeTop);
   const acceptsStr = acceptableRanks.length > 0 ? acceptableRanks.map(valueName).join(' / ') : 'none';
   const holeCardStr = holeTop ? formatCard(holeTop) : '[empty]';
   lines.push(`black hole: ${holeCardStr} (accepts: ${acceptsStr})`);
@@ -61,7 +61,7 @@ export function formatBlackHoleState(state: BlackHoleResponse): string {
     lines.push(`HINT: Fan ${recFan}${cardStr} [${clearStr}]`);
   }
 
-  if (state.message) {
+  if (state.message && state.phase !== BlackHolePhase.GAME_CLEAR && state.phase !== BlackHolePhase.GAME_OVER) {
     lines.push(state.message);
   }
 

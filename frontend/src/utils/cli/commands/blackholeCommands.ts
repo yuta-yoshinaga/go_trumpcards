@@ -1,4 +1,5 @@
 import type { blackholeApi } from '../../../api/gameApi';
+import type { Card } from '../../../types/card';
 import type { BlackHoleResponse } from '../../../types/games/blackhole';
 import { BlackHolePhase } from '../../../types/phases';
 import { parseIntArg, splitCommand, unknownCommand } from '../commandParserBase';
@@ -24,6 +25,14 @@ export const VALID_COMMANDS = [
   'help',
   '?',
 ];
+
+/**
+ * Returns the ranks (1-13) that the black hole accepts next (adjacent ±1, no A-K wrap).
+ */
+export function getAcceptableRanks(holeTop: Card | null | undefined): number[] {
+  if (!holeTop) return [];
+  return [holeTop.value - 1, holeTop.value + 1].filter((v) => v >= 1 && v <= 13);
+}
 
 /**
  * Returns the set of fan indices whose top card can be legally moved to the black hole.
