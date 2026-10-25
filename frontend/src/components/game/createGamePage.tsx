@@ -272,8 +272,9 @@ export function createGamePage<S, G extends GameHookBase<S, A>, A extends unknow
     const primaryActions = def.primaryActions?.(context);
     const message = def.message?.(context);
     const shellProps = def.shell?.(context);
-    // The error alert, status, action row and shortcuts sit inside the footer in the legacy layout and
-    // at the end of the scrolling content when `primaryActions` pins the footer's action row.
+    // The error alert, status, action row and shortcuts sit inside the footer in the legacy layout. When
+    // `primaryActions` pins the footer's action row they go at the end of the scrolling content, unless
+    // `controlsInFooter` keeps them in the pinned footer after FooterHand.
     const footerControls = (
       <>
         {FooterLead && <FooterLead {...context} />}

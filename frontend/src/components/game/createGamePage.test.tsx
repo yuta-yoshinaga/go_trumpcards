@@ -364,6 +364,23 @@ describe('createGamePage', () => {
     if (actions) expect(actions.compareDocumentPosition(shortcuts) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
+  it('ignores controlsInFooter without primaryActions', () => {
+    currentGame = { ...currentGame, error: 'failure' };
+    const Legacy = createGamePage({
+      key: 'acesup',
+      useGame: useFakeGame,
+      tutorial: [],
+      skeleton: { kind: 'centered', rows: [1] },
+      cli: () => ({ parseCommand: () => ({ args: [] }), formatResponse: () => 'state', helpText: ['help'] }),
+      phase: ({ state }) => ({ name: 'playing', ended: state.ended }),
+      controlsInFooter: true,
+      Board,
+    });
+    renderWithProviders(<Legacy />);
+    expect(screen.getAllByRole('alert')).toHaveLength(1);
+    expect(screen.getByRole('contentinfo')).toContainElement(screen.getByRole('alert'));
+  });
+
   it('places controls in the fixed footer only when controlsInFooter is enabled', () => {
     const makePinnedPage = (controlsInFooter?: boolean) =>
       createGamePage({
@@ -376,6 +393,7 @@ describe('createGamePage', () => {
         primaryActions: () => <button type="button">Primary</button>,
         ...(controlsInFooter ? { controlsInFooter } : {}),
         Board,
+        FooterHand: () => <div data-testid="pinned-hand" />,
       });
 
     currentGame = { ...currentGame, error: 'failure' };
@@ -389,6 +407,10 @@ describe('createGamePage', () => {
     expect(footer).toContainElement(resetButton);
     expect(footerCaseScrollArea).not.toContainElement(error);
     expect(footerCaseScrollArea).not.toContainElement(resetButton);
+    // After the hand, as in the legacy layout.
+    expect(
+      screen.getByTestId('pinned-hand').compareDocumentPosition(error) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
     footerRender.unmount();
 
     const InScrollArea = makePinnedPage();
