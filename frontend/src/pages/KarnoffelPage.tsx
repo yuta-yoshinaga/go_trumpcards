@@ -66,11 +66,11 @@ type KarnoffelGame = ReturnType<typeof useKarnoffelGame>;
 type KarnoffelView = ReturnType<typeof useKarnoffelView>;
 type KarnoffelContext = GamePageContext<KarnoffelResponse, KarnoffelGame, KarnoffelView>;
 
-// 人間は席 0 = チーム 0。勝敗はチームで判定する。
 function isGameEnded(state: KarnoffelResponse): boolean {
   return state.phase === KarnoffelPhase.GAME_END || state.gameEndFlag;
 }
 
+// 人間は席 0 = チーム 0。勝敗はチームで判定する。
 function humanWon(state: KarnoffelResponse): boolean {
   return isGameEnded(state) && state.winnerTeam === 0;
 }
