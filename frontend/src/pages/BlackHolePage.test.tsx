@@ -327,4 +327,40 @@ describe('BlackHolePage', () => {
     await waitFor(() => expect(screen.getByTestId('card-1-0')).toHaveAttribute('data-hinted-legal', 'true'));
     expect(screen.getByTestId('card-0-0')).not.toHaveAttribute('data-hinted-legal');
   });
+
+  it('toggles between GUI board and CLI terminal', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<BlackHolePage />);
+
+    expect(await screen.findByTestId('bh-hole-top')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    expect(await screen.findByRole('textbox', { name: 'コマンドを入力...' })).toBeInTheDocument();
+    expect(screen.queryByTestId('bh-hole-top')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'GUIモードに切り替え' }));
+    expect(await screen.findByTestId('bh-hole-top')).toBeInTheDocument();
+    expect(screen.queryByRole('textbox', { name: 'コマンドを入力...' })).not.toBeInTheDocument();
+    localStorage.removeItem('cli-mode-blackhole');
+  });
+
+  it('dispatches moves in CLI mode with the same arguments as page button', async () => {
+    const stateWithMove = makeState();
+    stateWithMove.fans[0] = [card('CLOVER', 2)];
+    mockExec.mockResolvedValue(stateWithMove);
+    renderWithProviders(<BlackHolePage />);
+    await screen.findByTestId('bh-hole-top');
+
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    const input = await screen.findByRole('textbox', { name: 'コマンドを入力...' });
+
+    mockExec.mockClear();
+    fireEvent.change(input, { target: { value: 'p 0' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+
+    await waitFor(() => {
+      expect(mockExec).toHaveBeenCalledWith('mb', { fan: 0 });
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'GUIモードに切り替え' }));
+    localStorage.removeItem('cli-mode-blackhole');
+  });
 });
