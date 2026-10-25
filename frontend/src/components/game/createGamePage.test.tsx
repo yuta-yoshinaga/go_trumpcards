@@ -364,6 +364,43 @@ describe('createGamePage', () => {
     if (actions) expect(actions.compareDocumentPosition(shortcuts) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
+  it('places controls in the fixed footer only when controlsInFooter is enabled', () => {
+    const makePinnedPage = (controlsInFooter?: boolean) =>
+      createGamePage({
+        key: 'acesup',
+        useGame: useFakeGame,
+        tutorial: [],
+        skeleton: { kind: 'centered', rows: [1] },
+        cli: () => ({ parseCommand: () => ({ args: [] }), formatResponse: () => 'state', helpText: ['help'] }),
+        phase: ({ state }) => ({ name: 'playing', ended: state.ended }),
+        primaryActions: () => <button type="button">Primary</button>,
+        ...(controlsInFooter ? { controlsInFooter } : {}),
+        Board,
+      });
+
+    currentGame = { ...currentGame, error: 'failure' };
+    const InFooter = makePinnedPage(true);
+    const footerRender = renderWithProviders(<InFooter />);
+    const footer = screen.getByRole('contentinfo');
+    const error = screen.getByRole('alert');
+    const resetButton = screen.getByRole('button', { name: 'リセット' });
+    const footerCaseScrollArea = screen.getByTestId('board').closest('[class*="overflow-y-auto"]');
+    expect(footer).toContainElement(error);
+    expect(footer).toContainElement(resetButton);
+    expect(footerCaseScrollArea).not.toContainElement(error);
+    expect(footerCaseScrollArea).not.toContainElement(resetButton);
+    footerRender.unmount();
+
+    const InScrollArea = makePinnedPage();
+    const scrollRender = renderWithProviders(<InScrollArea />);
+    const scrollArea = screen.getByTestId('board').closest('[class*="overflow-y-auto"]');
+    expect(scrollArea).toContainElement(screen.getByRole('alert'));
+    expect(scrollArea).toContainElement(screen.getByRole('button', { name: 'リセット' }));
+    expect(screen.getByRole('alert').closest('footer')).toBeNull();
+    expect(screen.getByRole('button', { name: 'リセット' }).closest('footer')).toBeNull();
+    scrollRender.unmount();
+  });
+
   it('keeps the pinned footer layout when primaryActions returns null without an actions element', () => {
     const Page = createGamePage({
       key: 'acesup',
