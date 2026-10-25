@@ -453,4 +453,10 @@ describe('KingPage', () => {
     const content = screen.getByTestId('game-footer-content');
     expect(within(content).getByAltText('♥ Q')).toBeInTheDocument();
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<KingPage />);
+    expect(await screen.findByText('プレイ', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('play', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });
