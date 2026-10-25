@@ -505,6 +505,8 @@ const cinchDefinition: GameDefinition<CinchResponse, CinchGame, Parameters<typeo
   contentClassName: `pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`,
   primaryActions,
   resetTutorialId: 'cinch-reset-button',
+  // The hand-wired page rendered a bare reset button; a class-less div lays out the same, unlike the default flex row.
+  actionsClassName: '',
   Board,
   FooterHand,
   FooterLead,

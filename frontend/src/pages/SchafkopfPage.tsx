@@ -482,6 +482,8 @@ const schafkopfDefinition: GameDefinition<
   },
   shortcutsTestId: 'schafkopf-kbd-shortcuts',
   resetTutorialId: 'sh-reset-button',
+  // The hand-wired page rendered a bare reset button; a class-less div lays out the same, unlike the default flex row.
+  actionsClassName: '',
   Board,
   FooterHand,
   FooterStatus,
