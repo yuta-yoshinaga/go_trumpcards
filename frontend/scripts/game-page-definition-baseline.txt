@@ -67,7 +67,6 @@ ContinentalRummyPage.tsx
 ContractRummyPage.tsx
 CourchevelHiLoPage.tsx
 CourchevelPage.tsx
-CourtPiecePage.tsx
 CrazyEightsPage.tsx
 CrazyFourPokerPage.tsx
 CrazyQuiltPage.tsx

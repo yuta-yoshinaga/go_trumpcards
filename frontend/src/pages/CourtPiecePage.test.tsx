@@ -92,6 +92,12 @@ beforeEach(() => {
 });
 
 describe('CourtPiecePage', () => {
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<CourtPiecePage />);
+    expect(await screen.findByText('トランプ宣言', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('trumpDeclaration', { selector: 'strong' })).not.toBeInTheDocument();
+  });
+
   it('shows the lead suit for the first card in the current trick', async () => {
     mockExec.mockResolvedValue(followSuitState);
     renderWithProviders(<CourtPiecePage />);
