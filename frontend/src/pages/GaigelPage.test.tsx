@@ -432,4 +432,12 @@ describe('GaigelPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.queryByTestId('ga-endgame-notice')).not.toBeInTheDocument();
   });
+
+  it('shows the CLI terminal when the CLI toggle is enabled', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<GaigelPage />);
+    expect((await screen.findAllByAltText(/♠/)).length).toBeGreaterThan(0);
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    expect(await screen.findByRole('textbox', { name: 'コマンドを入力...' })).toBeInTheDocument();
+  });
 });

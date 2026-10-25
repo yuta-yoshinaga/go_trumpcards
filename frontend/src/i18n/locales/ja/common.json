@@ -2396,6 +2396,8 @@
     "frenchtarot.roundEnd.win": "ディール終了 — 契約成功（デクレアラーの勝ち）。",
     "frenchtarot.trickEnd": "トリック終了 — 次へ進んでください。",
     "gaigel.playPhase.follow": "あなたの番です — リードスートに従ってカードを選んでください。",
+    "gaigel.hintRequested": "ヒントがあります",
+    "gaigel.noHint": "ヒントはありません",
     "gaigel.playPhase.lead": "あなたの番です — リードするカードを選んでください。",
     "gaigel.roundEnd": "ラウンド終了 — 次のラウンドへ進んでください。",
     "gaigel.trickEnd": "トリック終了 — 次へ進んでください。",
