@@ -1199,4 +1199,81 @@ describe('SambaPage', () => {
     await waitFor(() => expect(screen.getByTestId('sa-team-scores')).toBeInTheDocument());
     expect(screen.queryByTestId('sa-discard-pile')).not.toBeInTheDocument();
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<SambaPage />);
+    expect(await screen.findByText('ドロー', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('draw', { selector: 'strong' })).not.toBeInTheDocument();
+  });
+
+  it('sends the changed CPU difficulty and point limit when the game is reset from the settings', async () => {
+    renderWithProviders(<SambaPage />);
+    await screen.findByRole('button', { name: '山札から引く' });
+    fireEvent.change(screen.getByLabelText('CPU難易度'), { target: { value: '2' } });
+    fireEvent.change(screen.getByLabelText('目標スコア'), { target: { value: '5000' } });
+    expect(screen.getByLabelText('CPU難易度')).toHaveValue('2');
+    expect(screen.getByLabelText('目標スコア')).toHaveValue('5000');
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(await screen.findByRole('button', { name: '確認' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 2, pointLimit: 5000 }),
+    );
+  });
+
+  it('shows the CPU hands at round end', async () => {
+    const base = makeSambaState();
+    const cpuCards = [
+      { design: 'HEART' as const, value: 5 },
+      { design: 'CLOVER' as const, value: 9 },
+    ];
+    mockExec.mockResolvedValue(
+      makeSambaState({
+        phase: 3,
+        players: base.players.map((p) => (p.isHuman ? p : { ...p, cards: cpuCards, cardCount: cpuCards.length })),
+      }),
+    );
+    renderWithProviders(<SambaPage />);
+    const accordion = await screen.findByTestId('cpu-accordion');
+    expect(within(accordion).getAllByTestId('animated-card')).toHaveLength(cpuCards.length * 3);
+  });
+
+  it('discards the selected card when Enter is pressed in the discard phase', async () => {
+    mobileState.isMobile = false;
+    mobileState.largeDesktop = true;
+    mockExec.mockResolvedValue(discardPhaseState);
+    renderWithProviders(<SambaPage />);
+    const hand = await screen.findByTestId('sa-player-hand');
+    fireEvent.click(within(hand).getAllByRole('button')[0]);
+    expect(within(hand).getAllByRole('button')[0]).toHaveAttribute('aria-pressed', 'true');
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 'Enter' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', 0));
+  });
+
+  it('melds the selected cards when Enter is pressed in the meld phase', async () => {
+    mobileState.isMobile = false;
+    mobileState.largeDesktop = true;
+    mockExec.mockResolvedValue(meldPhaseState);
+    renderWithProviders(<SambaPage />);
+    const hand = await screen.findByTestId('sa-player-hand');
+    for (const idx of [0, 1, 2]) fireEvent.click(within(hand).getAllByRole('button')[idx]);
+    expect(within(hand).getAllByRole('button')[2]).toHaveAttribute('aria-pressed', 'true');
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 'Enter' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('meld', undefined, undefined, undefined, [[0, 1, 2]]));
+  });
+
+  it('does not act on Enter in the draw phase', async () => {
+    mobileState.isMobile = false;
+    mobileState.largeDesktop = true;
+    renderWithProviders(<SambaPage />);
+    const hand = await screen.findByTestId('sa-player-hand');
+    fireEvent.click(within(hand).getAllByRole('button')[0]);
+    expect(within(hand).getAllByRole('button')[0]).toHaveAttribute('aria-pressed', 'true');
+    mockExec.mockClear();
+    fireEvent.keyDown(document.body, { key: 'Enter' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
 });

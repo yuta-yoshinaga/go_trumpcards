@@ -86,7 +86,6 @@
   "selectPair": "Select a pair (2 natural cards matching the top discard)",
   "sequence": "Sequence",
   "settings": {
-    "title": "Settings",
     "cpuDifficulty": "CPU Difficulty",
     "pointLimit": "Point Limit",
     "easy": "Easy",

@@ -85,7 +85,6 @@
   "selectPair": "ペアを選択してください（トップカードと同ランクの2枚）",
   "sequence": "シーケンス",
   "settings": {
-    "title": "設定",
     "cpuDifficulty": "CPU難易度",
     "pointLimit": "目標スコア",
     "easy": "簡単",
