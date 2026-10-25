@@ -1,31 +1,18 @@
-import { useCallback, useMemo } from 'react';
-import { ActionLogSection } from '../components/ActionLogSection';
+import type { jassApi } from '../api/gameApi';
 import { CpuAccordion } from '../components/CpuAccordion';
-import { CliTerminal } from '../components/cli/CliTerminal';
-import { CliToggle } from '../components/cli/CliToggle';
-import { SettingsPanel } from '../components/common/SettingsPanel';
-import { ErrorAlert } from '../components/ErrorAlert';
-import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageShell } from '../components/GamePageShell';
-import { GameResetButton } from '../components/GameResetButton';
+import { createGamePage, type GameDefinition, type GamePageContext } from '../components/game/createGamePage';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { PlayerHandSection } from '../components/PlayerHandSection';
 import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
-import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
-import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
-import { useCliGame } from '../hooks/useCliGame';
-import { useCliMode } from '../hooks/useCliMode';
-import { useGameHint } from '../hooks/useGameHint';
-import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, TARGET_SCORE_OPTIONS, useJassGame } from '../hooks/useJassGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
-import { gameTheme } from '../styles/gameTheme';
+import type { JassResponse } from '../types/card';
 import { JassPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { suitName } from '../utils/cardUtils';
@@ -92,69 +79,25 @@ const SUIT_LABEL_KEYS: Readonly<Record<number, string>> = {
 
 const ALL_SUITS = [1, 2, 3, 4];
 
-/** Renders the Jass (Schieber) game page (4-player partnership trick-taking, 36-card deck). */
-export const JassPage = withTutorial(JassPageContent, 'jass', JASS_TUTORIAL_STEPS);
+type JassGame = ReturnType<typeof useJassGame>;
+type JassView = ReturnType<typeof useJassView>;
+type JassContext = GamePageContext<JassResponse, JassGame, JassView>;
 
-function JassPageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('jass');
-  const {
-    state,
-    loading,
-    error,
-    exec: dispatch,
-    retry,
-    jassConfig,
-    selectedCardIndices,
-    toggleCard,
-    handleConfigChange,
-    handleToggle,
-    handlePlay,
-    handleNextTrick,
-    handleNextRound,
-    handleCallTrump,
-    handleSchieben,
-    hint,
-    hintError,
-    hintLoading,
-    handleHint,
-  } = useJassGame();
-
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('jass', state);
+function useJassView() {
   const { cardWidth, isMobile } = useCardDimensions();
-
   const phaseNames = usePhaseNames('jass', JASS_PHASE_KEYS);
+  return { cardWidth, isMobile, phaseNames };
+}
 
-  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('jass');
-  const cliConfig = useMemo(
-    () => ({ gameName: 'jass', parseCommand: parseJassCommand, formatResponse: formatJassState, helpText: JASS_HELP }),
-    [],
-  );
-  const { handleCommand } = useCliGame(dispatch, cliConfig, state, { addInput, addOutput, addError, clearLog });
+function JassMessageBox({ state }: Pick<JassContext, 'state'>) {
+  return <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />;
+}
 
-  const handleManualReset = useCallback(() => {
-    hideActionLog();
-    void (dispatch as unknown as (command: string, s?: number, ci?: number, cfg?: typeof jassConfig) => Promise<void>)(
-      'reset',
-      undefined,
-      undefined,
-      jassConfig,
-    );
-  }, [dispatch, hideActionLog, jassConfig]);
-
-  if (!state)
-    return <GameSkeleton gameKey="jass" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 9 }} />;
-
+function Board({ state, t, view, frontendHint }: JassContext) {
+  const { cardWidth, isMobile } = view;
   const humanPlayer = state.players.find((p) => p.isHuman);
-  const isBidTrump = state.phase === JassPhase.BID_TRUMP;
-  const isBidPartner = state.phase === JassPhase.BID_PARTNER;
-  const isPlayPhase = state.phase === JassPhase.PLAY;
-  const isTrickEnd = state.phase === JassPhase.TRICK_END;
   const isRoundEnd = state.phase === JassPhase.ROUND_END;
+  const isGameEnd = state.phase === JassPhase.GAME_END || state.gameEndFlag;
   // **ボーナスが確定したチーム** (-1 = まだ加点されていない)。ラウンド最後の
   // トリックを取ったチームに `config.lastTrickBonus` が入る ── `lastTrickWinner`
   // は毎トリック更新されるので、確定したかどうかはフェーズで判断する (#6481)。
@@ -162,396 +105,412 @@ function JassPageContent() {
     (state.phase === JassPhase.ROUND_END || state.phase === JassPhase.GAME_END) && state.lastTrickWinner >= 0
       ? (state.players[state.lastTrickWinner]?.team ?? -1)
       : -1;
-  const isGameEnd = state.phase === JassPhase.GAME_END || state.gameEndFlag;
-  const humanIdx = state.players.findIndex((p) => p.isHuman);
-  const isHumanBidTurn = (isBidTrump || isBidPartner) && state.bidPlayerIdx === humanIdx;
+
+  const messageBox = <JassMessageBox state={state} />;
+
+  return (
+    <>
+      {/* Round/Trick/Trump info */}
+      <div className="text-ds-text-primary text-center mb-2">
+        <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
+        <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
+        <span>
+          {state.trumpSuit > 0 ? t('trumpSuit', { suit: t(SUIT_LABEL_KEYS[state.trumpSuit]) }) : t('noTrump')}
+        </span>
+      </div>
+
+      {/* CPU players */}
+      <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+        <div className="flex flex-wrap">
+          {state.players
+            .filter((p) => !p.isHuman)
+            .map((p) => (
+              <div key={p.id} className="mb-1 w-full p-2 rounded bg-black/30 text-ds-text-muted text-sm">
+                {playerName(p.id, p.isHuman)}:{' '}
+                {p.id === state.dealerIdx && (
+                  <span className="mr-2 text-ds-warning" data-testid={`jass-dealer-${p.id.toString()}`}>
+                    <span aria-hidden="true">♛ </span>
+                    {t('dealerBadge')}
+                  </span>
+                )}
+                {t('team', { n: p.team })} | {t('cards', { count: p.cardCount })} |{' '}
+                {t('trickCount', { count: p.trickCount })}
+              </div>
+            ))}
+        </div>
+      </CpuAccordion>
+
+      {/* Current trick */}
+      <TrickDisplay
+        currentTrick={state.currentTrick}
+        players={state.players}
+        cardWidth={cardWidth}
+        label={t('currentTrick')}
+        dataTutorial="ja-trick-display"
+      />
+
+      {/* Previous trick reviewer: lets the player recount the just-completed trick + winner */}
+      <details className="mb-2 p-2 rounded bg-black/30" data-testid="ja-previous-trick">
+        <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('previousTrick')}</summary>
+        <div className="mt-1">
+          {state.lastTrick.length > 0 ? (
+            <TrickDisplay
+              currentTrick={state.lastTrick}
+              players={state.players}
+              cardWidth={Math.round(cardWidth * 0.7)}
+              label={
+                state.lastTrickWinner >= 0
+                  ? t('previousTrickWinner', {
+                      name: playerName(state.lastTrickWinner, state.players[state.lastTrickWinner]?.isHuman === true),
+                    })
+                  : t('previousTrick')
+              }
+              winnerIdx={state.lastTrickWinner >= 0 ? state.lastTrickWinner : undefined}
+            />
+          ) : (
+            <div className="text-ds-text-muted text-sm">{t('previousTrickEmpty')}</div>
+          )}
+        </div>
+      </details>
+
+      {/* Team scores */}
+      <details
+        className="my-3 p-2 rounded bg-black/30"
+        data-testid="ja-score-table"
+        data-tutorial="ja-score-table"
+        open={!isMobile || undefined}
+      >
+        <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('teamScores')}</summary>
+        <table className="w-full text-sm text-ds-text-muted">
+          <thead>
+            <tr>
+              <th scope="col" className="sr-only" />
+              <th scope="col" className="text-left">
+                {t(humanPlayer?.team === 0 ? 'teamYou' : 'team', { n: 0 })}
+              </th>
+              <th scope="col" className="text-center">
+                {t(humanPlayer?.team === 1 ? 'teamYou' : 'team', { n: 1 })}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row" className="sr-only">
+                {t('scoreRows.cumulative')}
+              </th>
+              <td className="text-ds-accent">{state.teamScores[0]}</td>
+              <td className="text-center">{state.teamScores[1]}</td>
+            </tr>
+            <tr>
+              <th scope="row" className="sr-only">
+                {t('scoreRows.round')}
+              </th>
+              <td className="text-xs">{t('roundPoints', { points: state.roundPoints[0] })}</td>
+              <td className="text-center text-xs">{t('roundPoints', { points: state.roundPoints[1] })}</td>
+            </tr>
+            {state.config.enableWeis && (state.roundWeisPoints[0] > 0 || state.roundWeisPoints[1] > 0) && (
+              <tr>
+                <th scope="row" className="sr-only">
+                  {t('scoreRows.weis')}
+                </th>
+                <td className="text-xs text-ds-warning">{t('weisPoints', { points: state.roundWeisPoints[0] })}</td>
+                <td className="text-center text-xs text-ds-warning">
+                  {t('weisPoints', { points: state.roundWeisPoints[1] })}
+                </td>
+              </tr>
+            )}
+            {(state.roundStockPoints[0] > 0 || state.roundStockPoints[1] > 0) && (
+              <tr>
+                <th scope="row" className="sr-only">
+                  {t('scoreRows.stock')}
+                </th>
+                <td className="text-xs">{t('stockPoints', { points: state.roundStockPoints[0] })}</td>
+                <td className="text-center text-xs">{t('stockPoints', { points: state.roundStockPoints[1] })}</td>
+              </tr>
+            )}
+            {/* **ラストトリックボーナスは roundPoints に無言で足されていた。**
+                Weis と Stock はそれぞれ行を持つのに、これだけ内訳が無く、
+                設定値 (`config.lastTrickBonus`) も画面のどこにも出ていなかった
+                (#6481)。ラウンドが終わって加点が確定したときだけ出す ──
+                途中で出すと、まだ誰も取っていないボーナスを名指しすることになる。 */}
+            {lastTrickBonusTeam >= 0 && (
+              <tr data-testid="ja-last-trick-bonus">
+                <th scope="row" className="sr-only">
+                  {t('scoreRows.lastTrick')}
+                </th>
+                <td className="text-xs">
+                  {lastTrickBonusTeam === 0 ? t('lastTrickBonus', { points: state.config.lastTrickBonus }) : ''}
+                </td>
+                <td className="text-center text-xs">
+                  {lastTrickBonusTeam === 1 ? t('lastTrickBonus', { points: state.config.lastTrickBonus }) : ''}
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </details>
+
+      {/* Weis (meld) declaration panel — surfaces where the Weis bonus came from.
+          Only per-team totals are exposed by the API, so we visualize those faithfully:
+          each team's declared Weis total, a "counted" marker for the scoring team, and a
+          note explaining the meld mechanic. */}
+      {state.config.enableWeis && (state.roundWeisPoints[0] > 0 || state.roundWeisPoints[1] > 0) && (
+        <details
+          className="my-3 p-2 rounded bg-black/30 border border-ds-warning/40"
+          aria-label={t('weisPanel.title')}
+          data-testid="jass-weis-panel"
+          open={!isMobile || undefined}
+        >
+          <summary className="cursor-pointer select-none text-ds-warning text-sm font-semibold">
+            {t('weisPanel.title')}
+          </summary>
+          <section className="pt-2" aria-label={t('weisPanel.title')}>
+            <ul className="flex flex-col gap-1">
+              {[0, 1].map((team) => (
+                <li key={team} className="flex items-center gap-2 text-sm text-ds-text-muted">
+                  <span>
+                    {t('team', { n: team })}
+                    {humanPlayer?.team === team ? t('weisPanel.you') : ''}
+                  </span>
+                  <span className="text-ds-warning font-medium">
+                    {t('weisPanel.teamPoints', { points: state.roundWeisPoints[team] })}
+                  </span>
+                  {state.roundWeisPoints[team] > 0 && (
+                    <span className={`text-xs px-1.5 py-0.5 rounded ${badgeWarningColors}`}>
+                      {t('weisPanel.scored')}
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+            <p className="mt-2 text-xs text-ds-text-muted">{t('weisPanel.note')}</p>
+          </section>
+        </details>
+      )}
+
+      <RoundScoreAnnouncement
+        active={isRoundEnd || isGameEnd}
+        entries={[
+          {
+            name: t('team', { n: 0 }),
+            roundScore: state.roundPoints[0] + state.roundWeisPoints[0] + state.roundStockPoints[0],
+            cumulativeScore: state.teamScores[0],
+          },
+          {
+            name: t('team', { n: 1 }),
+            roundScore: state.roundPoints[1] + state.roundWeisPoints[1] + state.roundStockPoints[1],
+            cumulativeScore: state.teamScores[1],
+          },
+        ]}
+      />
+
+      <FrontendHintTooltip hint={frontendHint.hint} enabled={frontendHint.hintEnabled} t={t} />
+
+      {isMobile && messageBox}
+    </>
+  );
+}
+
+function FooterHand({ state, game, t, view }: JassContext) {
+  const humanPlayer = state.players.find((p) => p.isHuman);
+  if (!humanPlayer) return null;
+  const { cardWidth, isMobile } = view;
+  const isPlayPhase = state.phase === JassPhase.PLAY;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
   const trumpDesign = suitName(state.trumpSuit);
   const trumpIndices =
-    isPlayPhase && humanPlayer && trumpDesign
+    isPlayPhase && trumpDesign
       ? humanPlayer.cards.reduce<number[]>((indices, card, index) => {
           if (card.design === trumpDesign) indices.push(index);
           return indices;
         }, [])
       : [];
 
-  const messageBox = (
-    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
-  );
-
   return (
-    <GamePageShell
-      title={tc('nav.jass')}
-      gameThemeBg={gameTheme.jass.bg}
-      phaseName={phaseNames[state.phase]}
-      isHumanTurn={isHumanTurn || isHumanBidTurn}
-      gamePath="/jass"
-      gameEndFlag={!!state?.gameEndFlag}
-      loading={loading}
-      confirmOpen={confirmOpen}
-      confirmReset={confirmReset}
-      cancelReset={cancelReset}
-      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
-    >
-      {cliEnabled ? (
-        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
-      ) : (
-        <>
-          <SettingsPanel
-            title={t('settings.title')}
-            groups={[
-              {
-                items: [
-                  {
-                    type: 'select',
-                    id: 'cpuDifficulty',
-                    label: t('settings.cpuDifficulty'),
-                    value: jassConfig.cpuDifficulty,
-                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
-                      value: o.value,
-                      label: t(`settings.${o.label.toLowerCase()}`),
-                    })),
-                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
-                  },
-                  {
-                    type: 'select',
-                    id: 'targetScore',
-                    label: t('settings.targetScore'),
-                    value: jassConfig.targetScore,
-                    options: TARGET_SCORE_OPTIONS.map((v) => ({ value: v, label: String(v) })),
-                    onSelect: (v) => handleConfigChange('targetScore', v),
-                  },
-                  {
-                    type: 'checkbox',
-                    id: 'enableWeis',
-                    label: t('settings.enableWeis'),
-                    checked: jassConfig.enableWeis,
-                    onToggle: (v) => handleToggle('enableWeis', v),
-                  },
-                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
-                ],
-              },
-            ]}
-          />
-
-          <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            {/* Round/Trick/Trump info */}
-            <div className="text-ds-text-primary text-center mb-2">
-              <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
-              <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
-              <span>
-                {state.trumpSuit > 0 ? t('trumpSuit', { suit: t(SUIT_LABEL_KEYS[state.trumpSuit]) }) : t('noTrump')}
-              </span>
-            </div>
-
-            {/* CPU players */}
-            <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
-              <div className="flex flex-wrap">
-                {state.players
-                  .filter((p) => !p.isHuman)
-                  .map((p) => (
-                    <div key={p.id} className="mb-1 w-full p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-                      {playerName(p.id, p.isHuman)}:{' '}
-                      {p.id === state.dealerIdx && (
-                        <span className="mr-2 text-ds-warning" data-testid={`jass-dealer-${p.id.toString()}`}>
-                          <span aria-hidden="true">♛ </span>
-                          {t('dealerBadge')}
-                        </span>
-                      )}
-                      {t('team', { n: p.team })} | {t('cards', { count: p.cardCount })} |{' '}
-                      {t('trickCount', { count: p.trickCount })}
-                    </div>
-                  ))}
-              </div>
-            </CpuAccordion>
-
-            {/* Current trick */}
-            <TrickDisplay
-              currentTrick={state.currentTrick}
-              players={state.players}
-              cardWidth={cardWidth}
-              label={t('currentTrick')}
-              dataTutorial="ja-trick-display"
-            />
-
-            {/* Previous trick reviewer: lets the player recount the just-completed trick + winner */}
-            <details className="mb-2 p-2 rounded bg-black/30" data-testid="ja-previous-trick">
-              <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('previousTrick')}</summary>
-              <div className="mt-1">
-                {state.lastTrick.length > 0 ? (
-                  <TrickDisplay
-                    currentTrick={state.lastTrick}
-                    players={state.players}
-                    cardWidth={Math.round(cardWidth * 0.7)}
-                    label={
-                      state.lastTrickWinner >= 0
-                        ? t('previousTrickWinner', {
-                            name: playerName(
-                              state.lastTrickWinner,
-                              state.players[state.lastTrickWinner]?.isHuman === true,
-                            ),
-                          })
-                        : t('previousTrick')
-                    }
-                    winnerIdx={state.lastTrickWinner >= 0 ? state.lastTrickWinner : undefined}
-                  />
-                ) : (
-                  <div className="text-ds-text-muted text-sm">{t('previousTrickEmpty')}</div>
-                )}
-              </div>
-            </details>
-
-            {/* Team scores */}
-            <details
-              className="my-3 p-2 rounded bg-black/30"
-              data-testid="ja-score-table"
-              data-tutorial="ja-score-table"
-              open={!isMobile || undefined}
-            >
-              <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('teamScores')}</summary>
-              <table className="w-full text-sm text-ds-text-muted">
-                <thead>
-                  <tr>
-                    <th scope="col" className="sr-only" />
-                    <th scope="col" className="text-left">
-                      {t(humanPlayer?.team === 0 ? 'teamYou' : 'team', { n: 0 })}
-                    </th>
-                    <th scope="col" className="text-center">
-                      {t(humanPlayer?.team === 1 ? 'teamYou' : 'team', { n: 1 })}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <th scope="row" className="sr-only">
-                      {t('scoreRows.cumulative')}
-                    </th>
-                    <td className="text-ds-accent">{state.teamScores[0]}</td>
-                    <td className="text-center">{state.teamScores[1]}</td>
-                  </tr>
-                  <tr>
-                    <th scope="row" className="sr-only">
-                      {t('scoreRows.round')}
-                    </th>
-                    <td className="text-xs">{t('roundPoints', { points: state.roundPoints[0] })}</td>
-                    <td className="text-center text-xs">{t('roundPoints', { points: state.roundPoints[1] })}</td>
-                  </tr>
-                  {state.config.enableWeis && (state.roundWeisPoints[0] > 0 || state.roundWeisPoints[1] > 0) && (
-                    <tr>
-                      <th scope="row" className="sr-only">
-                        {t('scoreRows.weis')}
-                      </th>
-                      <td className="text-xs text-ds-warning">
-                        {t('weisPoints', { points: state.roundWeisPoints[0] })}
-                      </td>
-                      <td className="text-center text-xs text-ds-warning">
-                        {t('weisPoints', { points: state.roundWeisPoints[1] })}
-                      </td>
-                    </tr>
-                  )}
-                  {(state.roundStockPoints[0] > 0 || state.roundStockPoints[1] > 0) && (
-                    <tr>
-                      <th scope="row" className="sr-only">
-                        {t('scoreRows.stock')}
-                      </th>
-                      <td className="text-xs">{t('stockPoints', { points: state.roundStockPoints[0] })}</td>
-                      <td className="text-center text-xs">{t('stockPoints', { points: state.roundStockPoints[1] })}</td>
-                    </tr>
-                  )}
-                  {/* **ラストトリックボーナスは roundPoints に無言で足されていた。**
-                  Weis と Stock はそれぞれ行を持つのに、これだけ内訳が無く、
-                  設定値 (`config.lastTrickBonus`) も画面のどこにも出ていなかった
-                  (#6481)。ラウンドが終わって加点が確定したときだけ出す ──
-                  途中で出すと、まだ誰も取っていないボーナスを名指しすることになる。 */}
-                  {lastTrickBonusTeam >= 0 && (
-                    <tr data-testid="ja-last-trick-bonus">
-                      <th scope="row" className="sr-only">
-                        {t('scoreRows.lastTrick')}
-                      </th>
-                      <td className="text-xs">
-                        {lastTrickBonusTeam === 0 ? t('lastTrickBonus', { points: state.config.lastTrickBonus }) : ''}
-                      </td>
-                      <td className="text-center text-xs">
-                        {lastTrickBonusTeam === 1 ? t('lastTrickBonus', { points: state.config.lastTrickBonus }) : ''}
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </details>
-
-            {/* Weis (meld) declaration panel — surfaces where the Weis bonus came from.
-            Only per-team totals are exposed by the API, so we visualize those faithfully:
-            each team's declared Weis total, a "counted" marker for the scoring team, and a
-            note explaining the meld mechanic. */}
-            {state.config.enableWeis && (state.roundWeisPoints[0] > 0 || state.roundWeisPoints[1] > 0) && (
-              <details
-                className="my-3 p-2 rounded bg-black/30 border border-ds-warning/40"
-                aria-label={t('weisPanel.title')}
-                data-testid="jass-weis-panel"
-                open={!isMobile || undefined}
-              >
-                <summary className="cursor-pointer select-none text-ds-warning text-sm font-semibold">
-                  {t('weisPanel.title')}
-                </summary>
-                <section className="pt-2" aria-label={t('weisPanel.title')}>
-                  <ul className="flex flex-col gap-1">
-                    {[0, 1].map((team) => (
-                      <li key={team} className="flex items-center gap-2 text-sm text-ds-text-muted">
-                        <span>
-                          {t('team', { n: team })}
-                          {humanPlayer?.team === team ? t('weisPanel.you') : ''}
-                        </span>
-                        <span className="text-ds-warning font-medium">
-                          {t('weisPanel.teamPoints', { points: state.roundWeisPoints[team] })}
-                        </span>
-                        {state.roundWeisPoints[team] > 0 && (
-                          <span className={`text-xs px-1.5 py-0.5 rounded ${badgeWarningColors}`}>
-                            {t('weisPanel.scored')}
-                          </span>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                  <p className="mt-2 text-xs text-ds-text-muted">{t('weisPanel.note')}</p>
-                </section>
-              </details>
-            )}
-
-            <RoundScoreAnnouncement
-              active={isRoundEnd || isGameEnd}
-              entries={[
-                {
-                  name: t('team', { n: 0 }),
-                  roundScore: state.roundPoints[0] + state.roundWeisPoints[0] + state.roundStockPoints[0],
-                  cumulativeScore: state.teamScores[0],
-                },
-                {
-                  name: t('team', { n: 1 }),
-                  roundScore: state.roundPoints[1] + state.roundWeisPoints[1] + state.roundStockPoints[1],
-                  cumulativeScore: state.teamScores[1],
-                },
-              ]}
-            />
-
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            {isMobile && messageBox}
-            <ActionLogSection
-              isEndPhase={isGameEnd}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
-          </div>
-
-          <GameFooter className={`${gameTheme.jass.footer} px-4 py-2.5`} message={!isMobile && messageBox}>
-            {humanPlayer && (
-              <>
-                {humanPlayer.id === state.dealerIdx && (
-                  <div
-                    className="mb-1 text-ds-warning text-sm"
-                    data-testid={`jass-dealer-${humanPlayer.id.toString()}`}
-                  >
-                    <span aria-hidden="true">♛ </span>
-                    {t('dealerBadge')}
-                  </div>
-                )}
-                <PlayerHandSection
-                  humanPlayer={humanPlayer}
-                  selectedCardIndices={selectedCardIndices}
-                  toggleCard={toggleCard}
-                  cardWidth={cardWidth}
-                  isMobile={isMobile}
-                  dataTutorialPrefix="ja"
-                  trumpIndices={trumpIndices}
-                  trumpTitle={t('trumpCard')}
-                  trumpAccessibleLabel={t('trumpCard')}
-                  validIndices={isHumanTurn ? state.validPlayIndices : undefined}
-                  cardStatusFor={
-                    isHumanTurn
-                      ? (idx) => t(state.validPlayIndices.includes(idx) ? 'cardPlayable' : 'cardNotPlayable')
-                      : undefined
-                  }
-                />
-              </>
-            )}
-
-            <ErrorAlert message={error ?? hintError} onRetry={retry} />
-
-            {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
-            付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
-            読み上げられないことがある (#5955, #6663)。 */}
-            <div data-testid="jass-hint-live" role="status" aria-live="polite">
-              {hint && (
-                <div className="text-ds-warning text-sm mb-2">
-                  {/* hint.reason is a raw backend identifier; translate via hintReason.*,
-                  falling back to a generic label for any unknown reason. */}
-                  {`${t('hintPlay')}: [${hint.cardIndex ?? '-'}] (${t(`hintReason.${hint.reason}`, {
-                    defaultValue: t('hintReason.fallback'),
-                  })})`}
-                </div>
-              )}
-            </div>
-
-            <div className="flex gap-2 items-center flex-wrap" data-tutorial="ja-play-button">
-              {isHumanBidTurn && (
-                <span data-tutorial="ja-bid-controls" className="flex gap-2 flex-wrap">
-                  {ALL_SUITS.map((s) => (
-                    <button
-                      key={s}
-                      type="button"
-                      className={btnPrimary}
-                      onClick={() => handleCallTrump(s)}
-                      disabled={loading}
-                    >
-                      {t(SUIT_LABEL_KEYS[s])}
-                    </button>
-                  ))}
-                  {isBidTrump && (
-                    <button type="button" className={btnSuccess} onClick={handleSchieben} disabled={loading}>
-                      {t('schiebenButton')}
-                    </button>
-                  )}
-                </span>
-              )}
-
-              {isHumanTurn && (
-                <>
-                  <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
-                    {tc('button.hint')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handlePlay}
-                    disabled={loading || selectedCardIndices.length !== 1}
-                  >
-                    {t('playButton')}
-                  </button>
-                </>
-              )}
-              {isTrickEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                  {t('nextTrick')}
-                </button>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={!!isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="ja-reset-button"
-              />
-            </div>
-          </GameFooter>
-        </>
+    <>
+      {humanPlayer.id === state.dealerIdx && (
+        <div className="mb-1 text-ds-warning text-sm" data-testid={`jass-dealer-${humanPlayer.id.toString()}`}>
+          <span aria-hidden="true">♛ </span>
+          {t('dealerBadge')}
+        </div>
       )}
-    </GamePageShell>
+      <PlayerHandSection
+        humanPlayer={humanPlayer}
+        selectedCardIndices={game.selectedCardIndices}
+        toggleCard={game.toggleCard}
+        cardWidth={cardWidth}
+        isMobile={isMobile}
+        dataTutorialPrefix="ja"
+        trumpIndices={trumpIndices}
+        trumpTitle={t('trumpCard')}
+        trumpAccessibleLabel={t('trumpCard')}
+        validIndices={isHumanTurn ? state.validPlayIndices : undefined}
+        cardStatusFor={
+          isHumanTurn
+            ? (idx) => t(state.validPlayIndices.includes(idx) ? 'cardPlayable' : 'cardNotPlayable')
+            : undefined
+        }
+      />
+    </>
   );
 }
+
+function FooterStatus({ game, t }: JassContext) {
+  const { hint } = game;
+  return (
+    /* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
+       付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
+       読み上げられないことがある (#5955, #6663)。 */
+    <div data-testid="jass-hint-live" role="status" aria-live="polite">
+      {hint && (
+        <div className="text-ds-warning text-sm mb-2">
+          {/* hint.reason is a raw backend identifier; translate via hintReason.*,
+              falling back to a generic label for any unknown reason. */}
+          {`${t('hintPlay')}: [${hint.cardIndex ?? '-'}] (${t(`hintReason.${hint.reason}`, {
+            defaultValue: t('hintReason.fallback'),
+          })})`}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function FooterActions({ state, game, t, tc, busy }: JassContext) {
+  const isBidTrump = state.phase === JassPhase.BID_TRUMP;
+  const isBidPartner = state.phase === JassPhase.BID_PARTNER;
+  const isPlayPhase = state.phase === JassPhase.PLAY;
+  const isTrickEnd = state.phase === JassPhase.TRICK_END;
+  const isRoundEnd = state.phase === JassPhase.ROUND_END;
+  const humanIdx = state.players.findIndex((p) => p.isHuman);
+  const isHumanBidTurn = (isBidTrump || isBidPartner) && state.bidPlayerIdx === humanIdx;
+  const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
+
+  return (
+    <>
+      {isHumanBidTurn && (
+        <span data-tutorial="ja-bid-controls" className="flex gap-2 flex-wrap">
+          {ALL_SUITS.map((s) => (
+            <button
+              key={s}
+              type="button"
+              className={btnPrimary}
+              onClick={() => game.handleCallTrump(s)}
+              disabled={busy}
+            >
+              {t(SUIT_LABEL_KEYS[s])}
+            </button>
+          ))}
+          {isBidTrump && (
+            <button type="button" className={btnSuccess} onClick={game.handleSchieben} disabled={busy}>
+              {t('schiebenButton')}
+            </button>
+          )}
+        </span>
+      )}
+
+      {isHumanTurn && (
+        <>
+          <button type="button" className={btnSuccess} onClick={game.handleHint} disabled={busy || game.hintLoading}>
+            {tc('button.hint')}
+          </button>
+          <button
+            type="button"
+            className={btnPrimary}
+            onClick={game.handlePlay}
+            disabled={busy || game.selectedCardIndices.length !== 1}
+          >
+            {t('playButton')}
+          </button>
+        </>
+      )}
+      {isTrickEnd && (
+        <button type="button" className={btnSuccess} onClick={game.handleNextTrick} disabled={busy}>
+          {t('nextTrick')}
+        </button>
+      )}
+      {isRoundEnd && (
+        <button type="button" className={btnSuccess} onClick={game.handleNextRound} disabled={busy}>
+          {t('nextRound')}
+        </button>
+      )}
+    </>
+  );
+}
+
+const jassDefinition: GameDefinition<JassResponse, JassGame, Parameters<typeof jassApi.exec>, JassView> = {
+  key: 'jass',
+  useGame: useJassGame,
+  useView: useJassView,
+  tutorial: JASS_TUTORIAL_STEPS,
+  skeleton: { kind: 'trick-taking', trickArea: true, footerHandSize: 9 },
+  cli: () => ({
+    parseCommand: parseJassCommand,
+    formatResponse: formatJassState,
+    helpText: JASS_HELP,
+  }),
+  phase: ({ state, view }) => ({
+    name: view.phaseNames[state.phase],
+    ended: state.phase === JassPhase.GAME_END || state.gameEndFlag,
+  }),
+  shell: ({ state }) => {
+    const isBidTrump = state.phase === JassPhase.BID_TRUMP;
+    const isBidPartner = state.phase === JassPhase.BID_PARTNER;
+    const isPlayPhase = state.phase === JassPhase.PLAY;
+    const humanIdx = state.players.findIndex((p) => p.isHuman);
+    const isHumanBidTurn = (isBidTrump || isBidPartner) && state.bidPlayerIdx === humanIdx;
+    const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
+    return {
+      isHumanTurn: isHumanTurn || isHumanBidTurn,
+    };
+  },
+  reset: ({ game }) => {
+    void (
+      game.exec as unknown as (command: string, s?: number, ci?: number, cfg?: typeof game.jassConfig) => Promise<void>
+    )('reset', undefined, undefined, game.jassConfig);
+  },
+  settings: ({ game, t, tc, frontendHint }) => [
+    {
+      items: [
+        {
+          type: 'select',
+          id: 'cpuDifficulty',
+          label: t('settings.cpuDifficulty'),
+          value: game.jassConfig.cpuDifficulty,
+          options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
+            value: o.value,
+            label: t(`settings.${o.label.toLowerCase()}`),
+          })),
+          onSelect: (v) => game.handleConfigChange('cpuDifficulty', v),
+        },
+        {
+          type: 'select',
+          id: 'targetScore',
+          label: t('settings.targetScore'),
+          value: game.jassConfig.targetScore,
+          options: TARGET_SCORE_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+          onSelect: (v) => game.handleConfigChange('targetScore', v),
+        },
+        {
+          type: 'checkbox',
+          id: 'enableWeis',
+          label: t('settings.enableWeis'),
+          checked: game.jassConfig.enableWeis,
+          onToggle: (v) => game.handleToggle('enableWeis', v),
+        },
+        hintCheckboxItem(tc, frontendHint.hintEnabled, frontendHint.setHintEnabled),
+      ],
+    },
+  ],
+  settingsPlacement: 'top',
+  contentClassName: `pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`,
+  message: ({ state, view }) => (!view.isMobile ? <JassMessageBox state={state} /> : null),
+  actionsTutorialId: 'ja-play-button',
+  resetTutorialId: 'ja-reset-button',
+  Board,
+  FooterHand,
+  FooterStatus,
+  FooterActions,
+};
+
+/** Renders the Jass (Schieber) game page (4-player partnership trick-taking, 36-card deck). */
+export const JassPage = createGamePage(jassDefinition);

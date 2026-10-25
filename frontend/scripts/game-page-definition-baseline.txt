@@ -160,7 +160,6 @@ IndianPokerPage.tsx
 IndianRummyPage.tsx
 IronCrossPage.tsx
 IsraeliWhistPage.tsx
-JassPage.tsx
 JokerPokerPage.tsx
 JulepePage.tsx
 KaiserPage.tsx
