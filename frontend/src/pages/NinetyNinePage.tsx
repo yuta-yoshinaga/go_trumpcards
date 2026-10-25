@@ -1,34 +1,20 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ninetyNineApi } from '../api/gameApi';
-import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
-import { CliTerminal } from '../components/cli/CliTerminal';
-import { CliToggle } from '../components/cli/CliToggle';
-import { SettingsPanel } from '../components/common/SettingsPanel';
-import { ErrorAlert } from '../components/ErrorAlert';
-import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageShell } from '../components/GamePageShell';
-import { GameResetButton } from '../components/GameResetButton';
+import { createGamePage, type GameDefinition, type GamePageContext } from '../components/game/createGamePage';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { MobileHandGrid } from '../components/MobileHandGrid';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
-import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
-import { withTutorial } from '../components/tutorial/withTutorial';
 import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardSelection } from '../hooks/useCardSelection';
-import { useCliGame } from '../hooks/useCliGame';
-import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
-import { useGameHint } from '../hooks/useGameHint';
-import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
-import { gameTheme } from '../styles/gameTheme';
 import { scoreTableClass } from '../styles/scoreTableStyles';
 import type { NinetyNineHint, NinetyNineResponse } from '../types/card';
 import { NinetyNinePhase } from '../types/phases';
@@ -36,7 +22,6 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { NINETYNINE_HELP, parseNinetynineCommand } from '../utils/cli/commands/ninetynineCommands';
 import { formatNinetynineState } from '../utils/cli/formatters/ninetynineFormatter';
-import type { CliGameConfig } from '../utils/cli/types';
 import { describeApiFailure } from '../utils/describeApiFailure';
 import { ninetynineDeclaredTricks } from '../utils/hints/ninetynineHint';
 import { playerName } from '../utils/playerUtils';
@@ -106,19 +91,16 @@ const NN_PHASE_KEYS: Readonly<Record<number, string>> = {
   [NinetyNinePhase.GAME_END]: 'gameEnd',
 };
 
-/** Renders the Ninety-Nine game page with bury-3 bidding, trick play, and scoring. */
-export const NinetyNinePage = withTutorial(NinetyNinePageContent, 'ninetynine', NN_TUTORIAL_STEPS);
+type NinetyNineGame = ReturnType<typeof useNinetyNineGame>;
+type NinetyNineView = ReturnType<typeof useNinetyNineView>;
+type NinetyNineContext = GamePageContext<NinetyNineResponse, NinetyNineGame, NinetyNineView>;
 
-/** Inner content of the Ninety-Nine page, wrapped by TutorialProvider. */
-function NinetyNinePageContent() {
-  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('ninetynine');
-  const { selected: selectedCardIndices, toggle: toggleCard, clear: clearSelection, setSelected } = useCardSelection();
+function useNinetyNineGame() {
   const [config, setConfig] = useState<{ cpuDifficulty: number; targetScore: number }>({ ...DEFAULT_CONFIG });
+  const { selected: selectedCardIndices, toggle: toggleCard, clear: clearSelection, setSelected } = useCardSelection();
 
   // Server-computed hint (fetched via the `hint` command). Separate from the
-  // frontend `useGameHint` toggle below. Any successful game action clears it.
+  // frontend hint toggle (`frontendHint`, which the factory provides). Any successful game action clears it.
   const [serverHint, setServerHint] = useState<NinetyNineHint | null>(null);
   const [hintError, setHintError] = useState<string | null>(null);
   const [hintLoading, setHintLoading] = useState(false);
@@ -134,26 +116,6 @@ function NinetyNinePageContent() {
   useEffect(() => {
     void exec('reset', undefined, undefined, configRef.current);
   }, [exec]);
-
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('ninetynine', state);
-  const { cardWidth, isMobile } = useCardDimensions();
-
-  // CLI mode
-  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('ninetynine');
-  const cliConfig: CliGameConfig<NinetyNineResponse, Parameters<typeof ninetyNineApi.exec>> = useMemo(
-    () => ({
-      gameName: 'ninetynine',
-      parseCommand: parseNinetynineCommand,
-      formatResponse: formatNinetynineState,
-      helpText: NINETYNINE_HELP,
-    }),
-    [],
-  );
-  const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   const handleConfigChange = useCallback((key: 'cpuDifficulty' | 'targetScore', value: number) => {
     setConfig((prev) => ({ ...prev, [key]: value }));
@@ -200,40 +162,69 @@ function NinetyNinePageContent() {
 
   const handleNextTrick = useCallback(() => void exec('next'), [exec]);
   const handleNextRound = useCallback(() => void exec('nextround'), [exec]);
-  const handleManualReset = useCallback(() => {
-    hideActionLog();
-    void exec('reset', undefined, undefined, configRef.current);
-  }, [exec, hideActionLog]);
 
+  return {
+    state,
+    loading,
+    error,
+    hintError,
+    retry,
+    exec,
+    config,
+    configRef,
+    handleConfigChange,
+    selectedCardIndices,
+    toggleCard,
+    clearSelection,
+    setSelected,
+    serverHint,
+    hintLoading,
+    handleHint,
+    handleApplyBury,
+    handleApplyPlay,
+    handleBury,
+    handlePlay,
+    handleNextTrick,
+    handleNextRound,
+  };
+}
+
+function useNinetyNineView() {
+  const isLargeDesktop = useBreakpoint() === 'largeDesktop';
+  const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('ninetynine', NN_PHASE_KEYS);
 
-  if (!state)
-    return <GameSkeleton gameKey="ninetynine" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 9 }} />;
+  return {
+    isLargeDesktop,
+    cardWidth,
+    isMobile,
+    phaseNames,
+  };
+}
 
+function Board({ state, game, view, t, tc }: NinetyNineContext) {
+  const { isLargeDesktop, cardWidth, isMobile } = view;
   const humanPlayer = state.players.find((p) => p.isHuman);
   const isBidPhase = state.phase === NinetyNinePhase.BID;
-  const isPlayPhase = state.phase === NinetyNinePhase.PLAY;
   const isTrickEnd = state.phase === NinetyNinePhase.TRICK_END;
   const isRoundEnd = state.phase === NinetyNinePhase.ROUND_END;
   const isGameEnd = state.phase === NinetyNinePhase.GAME_END || state.gameEndFlag;
-  const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
-  const legalPlayIndices = state.validPlayIndices;
-  const legalPlaySet = new Set(legalPlayIndices);
-  const playCardStatus = (idx: number) => t(legalPlaySet.has(idx) ? 'legalPlay' : 'followSuitRequired');
   const isHumanBidTurn = isBidPhase && state.players[state.bidPlayerIdx]?.isHuman === true;
+
   // Bury-selection progress. Selection is not capped, so the player can pick
   // more than BURY_COUNT; clamp both directions so neither the remaining nor
   // the over-selected count ever goes negative. `buryReady` is an exact match
   // (over-selection is not ready). Drives the aria-live announcement and the
   // focusable aria-disabled bury button.
-  const burySelectedCount = selectedCardIndices.length;
+  const burySelectedCount = game.selectedCardIndices.length;
   const buryRemaining = Math.max(0, BURY_COUNT - burySelectedCount);
   const buryOverBy = Math.max(0, burySelectedCount - BURY_COUNT);
   const buryReady = burySelectedCount === BURY_COUNT;
+
   // Live declared-trick preview: sum of the currently-selected cards' suit
   // bid values (♦=0 ♠=1 ♥=2 ♣=3). Equals the bid the backend registers once
   // exactly 3 cards are selected, and updates immediately on every change.
-  const burySelectedCards = selectedCardIndices
+  const burySelectedCards = game.selectedCardIndices
     .map((i) => humanPlayer?.cards[i])
     .filter((c): c is NonNullable<typeof c> => c != null);
   const buryPreviewTricks = ninetynineDeclaredTricks(burySelectedCards);
@@ -248,373 +239,407 @@ function NinetyNinePageContent() {
   );
 
   return (
-    <GamePageShell
-      title={tc('nav.ninetynine')}
-      gameThemeBg={gameTheme.ninetynine.bg}
-      phaseName={phaseNames[state.phase]}
-      isHumanTurn={isHumanBidTurn || isHumanTurn}
-      gamePath="/ninetynine"
-      gameEndFlag={isGameEnd}
-      winShow={isGameEnd && state.winnerIdx === 0}
-      loading={loading}
-      confirmOpen={confirmOpen}
-      confirmReset={confirmReset}
-      cancelReset={cancelReset}
-      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
-    >
-      {cliEnabled ? (
-        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
-      ) : (
-        <>
-          <SettingsPanel
-            title={t('settings.title')}
-            groups={[
-              {
-                items: [
-                  {
-                    type: 'select',
-                    id: 'cpuDifficulty',
-                    label: t('settings.cpuDifficulty'),
-                    value: config.cpuDifficulty,
-                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({ value: o.value, label: t(`settings.${o.label}`) })),
-                    onSelect: (v) => handleConfigChange('cpuDifficulty', Number(v)),
-                  },
-                  {
-                    type: 'select',
-                    id: 'targetScore',
-                    label: t('settings.targetScore'),
-                    value: config.targetScore,
-                    options: TARGET_SCORE_OPTIONS.map((v) => ({ value: v, label: String(v) })),
-                    onSelect: (v) => handleConfigChange('targetScore', Number(v)),
-                  },
-                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
-                ],
-              },
-            ]}
+    <>
+      <div
+        className="text-ds-text-primary text-center mb-2 flex flex-wrap justify-center gap-x-4 gap-y-1"
+        data-testid="nn-status-row"
+      >
+        <span className="whitespace-nowrap">{t('deal', { n: state.dealNumber })}</span>
+        <span className="whitespace-nowrap">{t('trick', { n: state.trickNumber })}</span>
+        <span className="whitespace-nowrap">{t('handSize', { n: state.handSize })}</span>
+      </div>
+      <div className="text-ds-text-primary text-center mb-2 flex flex-wrap justify-center gap-x-4 gap-y-1">
+        <span className="whitespace-nowrap">{t('trump', { suit: t(`suitName.${state.trumpSuit}`) })}</span>
+        <span className="whitespace-nowrap">{t('targetScore', { n: state.targetScore })}</span>
+        <span className="whitespace-nowrap">{t('dealer', { name: dealerName })}</span>
+      </div>
+
+      <div className={lgTwoColGrid}>
+        <div>
+          {isHumanBidTurn && (
+            <div className="text-ds-warning text-center mb-2" data-tutorial="nn-bid-controls">
+              <div>{t('buryPhase')}</div>
+              {/* Announce the remaining-count as it changes so a screen-reader user
+                  knows how many more cards to select before Bury becomes actionable. */}
+              <div className="text-sm" role="status" aria-live="polite" data-testid="nn-bury-progress">
+                {buryReady
+                  ? t('buryReady')
+                  : buryOverBy > 0
+                    ? t('buryTooMany', { count: buryOverBy })
+                    : t('buryRemaining', { count: buryRemaining })}
+              </div>
+              {/* Live declared-trick preview + suit→value legend so the player can
+                  see what bid their current 3-card selection will produce without
+                  memorising the suit mapping. Announced politely as it updates. */}
+              <div
+                className="text-sm text-ds-text-primary mt-1"
+                role="status"
+                aria-live="polite"
+                data-testid="nn-bid-preview"
+              >
+                {t('bidPreview', { count: buryPreviewTricks })}
+              </div>
+              <div className="text-xs text-ds-text-muted" data-testid="nn-bid-legend">
+                {t('bidLegend')}
+              </div>
+            </div>
+          )}
+
+          <TrickDisplay
+            currentTrick={state.currentTrick}
+            players={state.players}
+            cardWidth={cardWidth}
+            label={t('currentTrick')}
+            dataTutorial="nn-trick-display"
+            // **サーバは勝者を送っていた。** leadPlayerIdx は常に返っていて型にも
+            // 入っており、TrickDisplay もバッジを出せるのに、このページだけ渡して
+            // いなかった (#5515)。次のトリックのリードが直前の勝者なので、Oh Hell と
+            // 同じ形で使える。決着前は付けない -- リードした人が勝ったように読める。
+            winnerIdx={isTrickEnd ? state.leadPlayerIdx : undefined}
+            winnerLabel={t('trickWinnerBadge')}
           />
+        </div>
 
-          <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            <div
-              className="text-ds-text-primary text-center mb-2 flex flex-wrap justify-center gap-x-4 gap-y-1"
-              data-testid="nn-status-row"
-            >
-              <span className="whitespace-nowrap">{t('deal', { n: state.dealNumber })}</span>
-              <span className="whitespace-nowrap">{t('trick', { n: state.trickNumber })}</span>
-              <span className="whitespace-nowrap">{t('handSize', { n: state.handSize })}</span>
-            </div>
-            <div className="text-ds-text-primary text-center mb-2 flex flex-wrap justify-center gap-x-4 gap-y-1">
-              <span className="whitespace-nowrap">{t('trump', { suit: t(`suitName.${state.trumpSuit}`) })}</span>
-              <span className="whitespace-nowrap">{t('targetScore', { n: state.targetScore })}</span>
-              <span className="whitespace-nowrap">{t('dealer', { name: dealerName })}</span>
-            </div>
-
-            <div className={lgTwoColGrid}>
-              <div>
-                {isHumanBidTurn && (
-                  <div className="text-ds-warning text-center mb-2" data-tutorial="nn-bid-controls">
-                    <div>{t('buryPhase')}</div>
-                    {/* Announce the remaining-count as it changes so a screen-reader user
-                        knows how many more cards to select before Bury becomes actionable. */}
-                    <div className="text-sm" role="status" aria-live="polite" data-testid="nn-bury-progress">
-                      {buryReady
-                        ? t('buryReady')
-                        : buryOverBy > 0
-                          ? t('buryTooMany', { count: buryOverBy })
-                          : t('buryRemaining', { count: buryRemaining })}
+        <div>
+          {isMobile ? (
+            <details className="mb-2 p-2 rounded bg-black/30">
+              <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
+                {tc('label.cpuOpponents', { count: state.players.filter((p) => !p.isHuman).length })}
+              </summary>
+              <div className="mt-1">
+                {state.players
+                  .filter((p) => !p.isHuman)
+                  .map((p) => (
+                    <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
+                      {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                      {t('cumulativeScore', { score: p.cumulativeScore })} | {t('roundScore', { score: p.roundScore })}{' '}
+                      | {p.bid >= 0 ? t('bid', { n: p.bid }) : t('bidNone')}
                     </div>
-                    {/* Live declared-trick preview + suit→value legend so the player can
-                        see what bid their current 3-card selection will produce without
-                        memorising the suit mapping. Announced politely as it updates. */}
-                    <div
-                      className="text-sm text-ds-text-primary mt-1"
-                      role="status"
-                      aria-live="polite"
-                      data-testid="nn-bid-preview"
-                    >
-                      {t('bidPreview', { count: buryPreviewTricks })}
-                    </div>
-                    <div className="text-xs text-ds-text-muted" data-testid="nn-bid-legend">
-                      {t('bidLegend')}
-                    </div>
-                  </div>
-                )}
-
-                <TrickDisplay
-                  currentTrick={state.currentTrick}
-                  players={state.players}
-                  cardWidth={cardWidth}
-                  label={t('currentTrick')}
-                  dataTutorial="nn-trick-display"
-                  // **サーバは勝者を送っていた。** leadPlayerIdx は常に返っていて型にも
-                  // 入っており、TrickDisplay もバッジを出せるのに、このページだけ渡して
-                  // いなかった (#5515)。次のトリックのリードが直前の勝者なので、Oh Hell と
-                  // 同じ形で使える。決着前は付けない -- リードした人が勝ったように読める。
-                  winnerIdx={isTrickEnd ? state.leadPlayerIdx : undefined}
-                  winnerLabel={t('trickWinnerBadge')}
-                />
-              </div>
-
-              <div>
-                {isMobile ? (
-                  <details className="mb-2 p-2 rounded bg-black/30">
-                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
-                      {tc('label.cpuOpponents', { count: state.players.filter((p) => !p.isHuman).length })}
-                    </summary>
-                    <div className="mt-1">
-                      {state.players
-                        .filter((p) => !p.isHuman)
-                        .map((p) => (
-                          <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                            {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                            {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
-                            {t('roundScore', { score: p.roundScore })} |{' '}
-                            {p.bid >= 0 ? t('bid', { n: p.bid }) : t('bidNone')}
-                          </div>
-                        ))}
-                    </div>
-                  </details>
-                ) : (
-                  state.players
-                    .filter((p) => !p.isHuman)
-                    .map((p) => (
-                      <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                        <div className="text-ds-text-muted text-sm">
-                          {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                          {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
-                          {t('roundScore', { score: p.roundScore })} |{' '}
-                          {p.bid >= 0 ? t('bid', { n: p.bid }) : t('bidNone')}
-                        </div>
-                      </div>
-                    ))
-                )}
-
-                {humanPlayer?.buriedCards && humanPlayer.buriedCards.length > 0 && (
-                  <section aria-label={t('buriedCardsTitle')} className="mb-2 p-2 rounded bg-ds-surface">
-                    <div className="text-ds-text-muted text-sm mb-1">{t('buriedCardsTitle')}</div>
-                    <div className="flex flex-wrap gap-1">
-                      {humanPlayer.buriedCards.map((card, index) => (
-                        <CardImage key={`${card.design}-${card.value}-${index}`} card={card} width={cardWidth} />
-                      ))}
-                    </div>
-                  </section>
-                )}
-
-                <div className="my-3 p-2 rounded bg-black/30 relative" data-tutorial="nn-score-table">
-                  <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
-                  <div className="overflow-x-auto -mx-2 px-2">
-                    <table
-                      className={scoreTableClass(isLargeDesktop, 'w-full text-sm text-ds-text-muted min-w-[360px]')}
-                    >
-                      <thead>
-                        <tr>
-                          <th scope="col" className="text-left">
-                            {t('scoresPlayer')}
-                          </th>
-                          <th scope="col">{t('scoresBid')}</th>
-                          <th scope="col" className="text-[10px] whitespace-nowrap">
-                            {t('scoresTricks')}
-                          </th>
-                          <th scope="col" className="text-[10px] whitespace-nowrap">
-                            {t('scoresRound')}
-                          </th>
-                          <th scope="col">{t('scoresTotal')}</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {state.players.map((p) => (
-                          <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
-                            <th scope="row" className="text-left">
-                              {playerName(p.id, p.isHuman)}
-                            </th>
-                            <td className="text-center">{p.bid >= 0 ? p.bid : '-'}</td>
-                            <td className="text-center">{p.trickCount}</td>
-                            <td className="text-center">{p.roundScore}</td>
-                            <td className="text-center">{p.cumulativeScore}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-                <RoundScoreAnnouncement
-                  active={isRoundEnd || isGameEnd}
-                  separator={t('listSeparator')}
-                  entries={state.players.map((p) => ({
-                    name: t('roundScoreAnnouncementName', {
-                      name: playerName(p.id, p.isHuman),
-                      result:
-                        p.bid >= 0
-                          ? t('roundScoreAnnouncementResult', { bid: p.bid, tricks: p.trickCount })
-                          : t('roundScoreAnnouncementResultNoBid', { tricks: p.trickCount }),
-                    }),
-                    roundScore: p.roundScore,
-                    cumulativeScore: p.cumulativeScore,
-                  }))}
-                />
-              </div>
-            </div>
-
-            <div>{isMobile && messageBox}</div>
-
-            <ActionLogSection
-              isEndPhase={isGameEnd}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
-          </div>
-
-          <GameFooter
-            message={isMobile ? undefined : messageBox}
-            className={`${gameTheme.ninetynine.footer} px-4 py-2.5`}
-            actions={
-              (isHumanBidTurn || isHumanTurn || isTrickEnd || isRoundEnd) && (
-                <div className="flex gap-2 items-center" data-tutorial="nn-play-button">
-                  {(isHumanBidTurn || isHumanTurn) && (
-                    <button
-                      type="button"
-                      className={btnSuccess}
-                      onClick={handleHint}
-                      disabled={loading || hintLoading}
-                      data-testid="nn-hint-button"
-                    >
-                      {tc('button.hint')}
-                    </button>
-                  )}
-                  {isHumanBidTurn && (
-                    // Use aria-disabled (not the HTML `disabled` attribute) for the
-                    // not-enough-cards state so the button stays focusable and a screen
-                    // reader can read why it can't be pressed yet; handleBury guards the
-                    // count so activating it while not-ready is a no-op. `disabled` is
-                    // still applied while loading. Mirrors the Cribbage pegRestricted pattern.
-                    <button
-                      type="button"
-                      className={`${btnPrimary}${buryReady ? '' : ' opacity-50 cursor-not-allowed'}`}
-                      onClick={handleBury}
-                      disabled={loading}
-                      aria-disabled={!buryReady || undefined}
-                      aria-label={
-                        buryReady
-                          ? undefined
-                          : buryOverBy > 0
-                            ? t('buryButtonTooManyAria', { count: buryOverBy })
-                            : t('buryButtonDisabledAria', { count: buryRemaining })
-                      }
-                    >
-                      {t('buryButton')}
-                    </button>
-                  )}
-                  {isHumanTurn && (
-                    <button
-                      type="button"
-                      className={btnPrimary}
-                      onClick={handlePlay}
-                      disabled={loading || selectedCardIndices.length !== 1}
-                    >
-                      {t('playButton')}
-                    </button>
-                  )}
-                  {isTrickEnd && (
-                    <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                      {t('nextTrick')}
-                    </button>
-                  )}
-                  {isRoundEnd && (
-                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                      {t('nextRound')}
-                    </button>
-                  )}
-                </div>
-              )
-            }
-          >
-            {humanPlayer &&
-              (isMobile ? (
-                <MobileHandGrid
-                  cards={humanPlayer.cards}
-                  selectedIndices={selectedCardIndices}
-                  onToggle={toggleCard}
-                  cardWidth={cardWidth}
-                  dataTutorial="nn-player-hand"
-                  legalIndices={isHumanTurn ? legalPlayIndices : undefined}
-                  cardStatusFor={isHumanTurn ? playCardStatus : undefined}
-                />
-              ) : (
-                <div className="flex flex-wrap gap-1 mb-2" data-tutorial="nn-player-hand">
-                  {humanPlayer.cards.map((card, idx) => (
-                    <button
-                      type="button"
-                      key={`${card.design}-${card.value}-${idx}`}
-                      onClick={() => toggleCard(idx)}
-                      aria-label={`${cardAlt(card)}${isHumanTurn ? ` (${playCardStatus(idx)})` : ''}`}
-                      aria-pressed={selectedCardIndices.includes(idx)}
-                      data-legal={isHumanTurn && legalPlaySet.has(idx) ? 'true' : undefined}
-                      className={`transition-transform ${focusRingCard} ${isHumanTurn && legalPlaySet.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
-                      style={{
-                        background: 'none',
-                        padding: 0,
-                        borderRadius: 8,
-                        ...selectedCardStyle(selectedCardIndices.includes(idx)),
-                        boxSizing: 'border-box',
-                      }}
-                    >
-                      <AnimatedCard card={card} width={cardWidth} />
-                    </button>
                   ))}
-                </div>
-              ))}
-
-            <ErrorAlert message={error ?? hintError} onRetry={retry} />
-
-            {serverHint && (
-              <div className="text-ds-warning text-sm mb-2" data-testid="nn-server-hint">
-                {serverHint.buryIndices && serverHint.buryIndices.length > 0 ? (
-                  <div className="flex flex-wrap gap-2 items-center">
-                    <span>
-                      {t('hintBury')}:{' '}
-                      {serverHint.buryIndices
-                        .map((i) => {
-                          const c = humanPlayer?.cards[i];
-                          return c ? cardAlt(c) : `[${i}]`;
-                        })
-                        .join(' ')}{' '}
-                      ({t(`hintReason.${serverHint.reason}`)})
-                    </span>
-                    <button type="button" className={btnSuccess} onClick={handleApplyBury} data-testid="nn-hint-apply">
-                      {t('hintApply')}
-                    </button>
-                  </div>
-                ) : serverHint.cardIndex != null ? (
-                  <div className="flex items-center gap-2">
-                    <span>
-                      {t('hintPlay')}: [{serverHint.cardIndex}] ({t(`hintReason.${serverHint.reason}`)})
-                    </span>
-                    <button
-                      type="button"
-                      className={btnSuccess}
-                      onClick={handleApplyPlay}
-                      data-testid="nn-hint-apply-play"
-                    >
-                      {t('hintApply')}
-                    </button>
-                  </div>
-                ) : null}
               </div>
-            )}
+            </details>
+          ) : (
+            state.players
+              .filter((p) => !p.isHuman)
+              .map((p) => (
+                <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
+                  <div className="text-ds-text-muted text-sm">
+                    {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                    {t('cumulativeScore', { score: p.cumulativeScore })} | {t('roundScore', { score: p.roundScore })} |{' '}
+                    {p.bid >= 0 ? t('bid', { n: p.bid }) : t('bidNone')}
+                  </div>
+                </div>
+              ))
+          )}
 
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-            <div className="flex items-center">
-              <GameResetButton
-                isGameEnd={isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="nn-reset-button"
-              />
+          {humanPlayer?.buriedCards && humanPlayer.buriedCards.length > 0 && (
+            <section aria-label={t('buriedCardsTitle')} className="mb-2 p-2 rounded bg-ds-surface">
+              <div className="text-ds-text-muted text-sm mb-1">{t('buriedCardsTitle')}</div>
+              <div className="flex flex-wrap gap-1">
+                {humanPlayer.buriedCards.map((card, index) => (
+                  <CardImage key={`${card.design}-${card.value}-${index}`} card={card} width={cardWidth} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          <div className="my-3 p-2 rounded bg-black/30 relative" data-tutorial="nn-score-table">
+            <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
+            <div className="overflow-x-auto -mx-2 px-2">
+              <table className={scoreTableClass(isLargeDesktop, 'w-full text-sm text-ds-text-muted min-w-[360px]')}>
+                <thead>
+                  <tr>
+                    <th scope="col" className="text-left">
+                      {t('scoresPlayer')}
+                    </th>
+                    <th scope="col">{t('scoresBid')}</th>
+                    <th scope="col" className="text-[10px] whitespace-nowrap">
+                      {t('scoresTricks')}
+                    </th>
+                    <th scope="col" className="text-[10px] whitespace-nowrap">
+                      {t('scoresRound')}
+                    </th>
+                    <th scope="col">{t('scoresTotal')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {state.players.map((p) => (
+                    <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
+                      <th scope="row" className="text-left">
+                        {playerName(p.id, p.isHuman)}
+                      </th>
+                      <td className="text-center">{p.bid >= 0 ? p.bid : '-'}</td>
+                      <td className="text-center">{p.trickCount}</td>
+                      <td className="text-center">{p.roundScore}</td>
+                      <td className="text-center">{p.cumulativeScore}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          </GameFooter>
-        </>
-      )}
-    </GamePageShell>
+          </div>
+          <RoundScoreAnnouncement
+            active={isRoundEnd || isGameEnd}
+            separator={t('listSeparator')}
+            entries={state.players.map((p) => ({
+              name: t('roundScoreAnnouncementName', {
+                name: playerName(p.id, p.isHuman),
+                result:
+                  p.bid >= 0
+                    ? t('roundScoreAnnouncementResult', { bid: p.bid, tricks: p.trickCount })
+                    : t('roundScoreAnnouncementResultNoBid', { tricks: p.trickCount }),
+              }),
+              roundScore: p.roundScore,
+              cumulativeScore: p.cumulativeScore,
+            }))}
+          />
+        </div>
+      </div>
+
+      <div>{isMobile && messageBox}</div>
+    </>
   );
 }
+
+function FooterHand({ state, game, view, t }: NinetyNineContext) {
+  const { cardWidth, isMobile } = view;
+  const humanPlayer = state.players.find((p) => p.isHuman);
+  const isPlayPhase = state.phase === NinetyNinePhase.PLAY;
+  const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
+  const legalPlayIndices = state.validPlayIndices;
+  const legalPlaySet = new Set(legalPlayIndices);
+  const playCardStatus = (idx: number) => t(legalPlaySet.has(idx) ? 'legalPlay' : 'followSuitRequired');
+
+  if (!humanPlayer) return null;
+
+  return isMobile ? (
+    <MobileHandGrid
+      cards={humanPlayer.cards}
+      selectedIndices={game.selectedCardIndices}
+      onToggle={game.toggleCard}
+      cardWidth={cardWidth}
+      dataTutorial="nn-player-hand"
+      legalIndices={isHumanTurn ? legalPlayIndices : undefined}
+      cardStatusFor={isHumanTurn ? playCardStatus : undefined}
+    />
+  ) : (
+    <div className="flex flex-wrap gap-1 mb-2" data-tutorial="nn-player-hand">
+      {humanPlayer.cards.map((card, idx) => (
+        <button
+          type="button"
+          key={`${card.design}-${card.value}-${idx}`}
+          onClick={() => game.toggleCard(idx)}
+          aria-label={`${cardAlt(card)}${isHumanTurn ? ` (${playCardStatus(idx)})` : ''}`}
+          aria-pressed={game.selectedCardIndices.includes(idx)}
+          data-legal={isHumanTurn && legalPlaySet.has(idx) ? 'true' : undefined}
+          className={`transition-transform ${focusRingCard} ${isHumanTurn && legalPlaySet.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
+          style={{
+            background: 'none',
+            padding: 0,
+            borderRadius: 8,
+            ...selectedCardStyle(game.selectedCardIndices.includes(idx)),
+            boxSizing: 'border-box',
+          }}
+        >
+          <AnimatedCard card={card} width={cardWidth} />
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function FooterStatus({ state, game, frontendHint, t }: NinetyNineContext) {
+  const humanPlayer = state.players.find((p) => p.isHuman);
+  const { serverHint } = game;
+
+  return (
+    <>
+      {serverHint && (
+        <div className="text-ds-warning text-sm mb-2" data-testid="nn-server-hint">
+          {serverHint.buryIndices && serverHint.buryIndices.length > 0 ? (
+            <div className="flex flex-wrap gap-2 items-center">
+              <span>
+                {t('hintBury')}:{' '}
+                {serverHint.buryIndices
+                  .map((i) => {
+                    const c = humanPlayer?.cards[i];
+                    return c ? cardAlt(c) : `[${i}]`;
+                  })
+                  .join(' ')}{' '}
+                ({t(`hintReason.${serverHint.reason}`)})
+              </span>
+              <button type="button" className={btnSuccess} onClick={game.handleApplyBury} data-testid="nn-hint-apply">
+                {t('hintApply')}
+              </button>
+            </div>
+          ) : serverHint.cardIndex != null ? (
+            <div className="flex items-center gap-2">
+              <span>
+                {t('hintPlay')}: [{serverHint.cardIndex}] ({t(`hintReason.${serverHint.reason}`)})
+              </span>
+              <button
+                type="button"
+                className={btnSuccess}
+                onClick={game.handleApplyPlay}
+                data-testid="nn-hint-apply-play"
+              >
+                {t('hintApply')}
+              </button>
+            </div>
+          ) : null}
+        </div>
+      )}
+
+      <FrontendHintTooltip hint={frontendHint.hint} enabled={frontendHint.hintEnabled} t={t} />
+    </>
+  );
+}
+
+function primaryActions({ game, state, t, tc, busy }: NinetyNineContext) {
+  const isBidPhase = state.phase === NinetyNinePhase.BID;
+  const isPlayPhase = state.phase === NinetyNinePhase.PLAY;
+  const isTrickEnd = state.phase === NinetyNinePhase.TRICK_END;
+  const isRoundEnd = state.phase === NinetyNinePhase.ROUND_END;
+  const isHumanBidTurn = isBidPhase && state.players[state.bidPlayerIdx]?.isHuman === true;
+  const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
+
+  if (!isHumanBidTurn && !isHumanTurn && !isTrickEnd && !isRoundEnd) {
+    return null;
+  }
+
+  const burySelectedCount = game.selectedCardIndices.length;
+  const buryRemaining = Math.max(0, BURY_COUNT - burySelectedCount);
+  const buryOverBy = Math.max(0, burySelectedCount - BURY_COUNT);
+  const buryReady = burySelectedCount === BURY_COUNT;
+
+  return (
+    <div className="flex gap-2 items-center" data-tutorial="nn-play-button">
+      {(isHumanBidTurn || isHumanTurn) && (
+        <button
+          type="button"
+          className={btnSuccess}
+          onClick={game.handleHint}
+          disabled={busy || game.hintLoading}
+          data-testid="nn-hint-button"
+        >
+          {tc('button.hint')}
+        </button>
+      )}
+      {isHumanBidTurn && (
+        // Use aria-disabled (not the HTML `disabled` attribute) for the
+        // not-enough-cards state so the button stays focusable and a screen
+        // reader can read why it can't be pressed yet; handleBury guards the
+        // count so activating it while not-ready is a no-op. `disabled` is
+        // still applied while loading. Mirrors the Cribbage pegRestricted pattern.
+        <button
+          type="button"
+          className={`${btnPrimary}${buryReady ? '' : ' opacity-50 cursor-not-allowed'}`}
+          onClick={game.handleBury}
+          disabled={busy}
+          aria-disabled={!buryReady || undefined}
+          aria-label={
+            buryReady
+              ? undefined
+              : buryOverBy > 0
+                ? t('buryButtonTooManyAria', { count: buryOverBy })
+                : t('buryButtonDisabledAria', { count: buryRemaining })
+          }
+        >
+          {t('buryButton')}
+        </button>
+      )}
+      {isHumanTurn && (
+        <button
+          type="button"
+          className={btnPrimary}
+          onClick={game.handlePlay}
+          disabled={busy || game.selectedCardIndices.length !== 1}
+        >
+          {t('playButton')}
+        </button>
+      )}
+      {isTrickEnd && (
+        <button type="button" className={btnSuccess} onClick={game.handleNextTrick} disabled={busy}>
+          {t('nextTrick')}
+        </button>
+      )}
+      {isRoundEnd && (
+        <button type="button" className={btnSuccess} onClick={game.handleNextRound} disabled={busy}>
+          {t('nextRound')}
+        </button>
+      )}
+    </div>
+  );
+}
+
+const message = ({ state, view }: NinetyNineContext) =>
+  view.isMobile ? undefined : (
+    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+  );
+
+const ninetyNineDefinition: GameDefinition<
+  NinetyNineResponse,
+  NinetyNineGame,
+  Parameters<typeof ninetyNineApi.exec>,
+  NinetyNineView
+> = {
+  key: 'ninetynine',
+  useGame: useNinetyNineGame,
+  useView: useNinetyNineView,
+  tutorial: NN_TUTORIAL_STEPS,
+  skeleton: { kind: 'trick-taking', trickArea: true, footerHandSize: 9 },
+  cli: () => ({
+    parseCommand: parseNinetynineCommand,
+    formatResponse: formatNinetynineState,
+    helpText: NINETYNINE_HELP,
+  }),
+  phase: ({ state, view }) => ({
+    name: view.phaseNames[state.phase],
+    ended: state.phase === NinetyNinePhase.GAME_END || state.gameEndFlag,
+    won: (state.phase === NinetyNinePhase.GAME_END || state.gameEndFlag) && state.winnerIdx === 0,
+  }),
+  shell: ({ state }) => ({
+    isHumanTurn:
+      (state.phase === NinetyNinePhase.BID && state.players[state.bidPlayerIdx]?.isHuman === true) ||
+      (state.phase === NinetyNinePhase.PLAY && state.players[state.currentPlayerIdx]?.isHuman === true),
+  }),
+  reset: ({ game }) => {
+    void game.exec('reset', undefined, undefined, game.configRef.current);
+  },
+  settings: ({ game, t, tc, frontendHint }) => [
+    {
+      items: [
+        {
+          type: 'select',
+          id: 'cpuDifficulty',
+          label: t('settings.cpuDifficulty'),
+          value: game.config.cpuDifficulty,
+          options: CPU_DIFFICULTY_OPTIONS.map((o) => ({ value: o.value, label: t(`settings.${o.label}`) })),
+          onSelect: (v) => game.handleConfigChange('cpuDifficulty', Number(v)),
+        },
+        {
+          type: 'select',
+          id: 'targetScore',
+          label: t('settings.targetScore'),
+          value: game.config.targetScore,
+          options: TARGET_SCORE_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+          onSelect: (v) => game.handleConfigChange('targetScore', Number(v)),
+        },
+        hintCheckboxItem(tc, frontendHint.hintEnabled, frontendHint.setHintEnabled),
+      ],
+    },
+  ],
+  settingsPlacement: 'top',
+  contentClassName: `pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`,
+  primaryActions,
+  message,
+  controlsInFooter: true,
+  resetTutorialId: 'nn-reset-button',
+  actionsClassName: 'flex items-center',
+  Board,
+  FooterHand,
+  FooterStatus,
+};
+
+/** Renders the Ninety-Nine game page with bury-3 bidding, trick play, and scoring. */
+export const NinetyNinePage = createGamePage(ninetyNineDefinition);

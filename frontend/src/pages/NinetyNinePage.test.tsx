@@ -599,4 +599,16 @@ describe('NinetyNinePage trick winner badge', () => {
       innerWidthSpy.mockRestore();
     }
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<NinetyNinePage />);
+    expect(await screen.findByText('プレイ', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('play', { selector: 'strong' })).not.toBeInTheDocument();
+  });
+
+  it('keeps the reset button in the pinned footer, as the hand-wired page did', async () => {
+    renderWithProviders(<NinetyNinePage />);
+    const footer = await screen.findByTestId('game-footer-content');
+    expect(footer).toContainElement(screen.getByRole('button', { name: 'リセット' }));
+  });
 });
