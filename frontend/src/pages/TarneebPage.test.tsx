@@ -441,4 +441,10 @@ describe('TarneebPage', () => {
       innerWidthSpy.mockRestore();
     }
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<TarneebPage />);
+    expect(await screen.findByText('ビッド', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('bid', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });

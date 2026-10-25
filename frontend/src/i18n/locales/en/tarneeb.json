@@ -8,7 +8,6 @@
     "gameEnd": "Game End"
   },
   "settings": {
-    "title": "Settings",
     "cpuDifficulty": "CPU Difficulty",
     "pointLimit": "Target Score",
     "minBid": "Minimum Bid",
