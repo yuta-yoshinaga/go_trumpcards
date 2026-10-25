@@ -1166,6 +1166,13 @@ describe('GinRummyPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(document.querySelectorAll('[data-layoff]')).toHaveLength(0);
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    mockExec.mockResolvedValue(drawPhaseState);
+    renderWithProviders(<GinRummyPage />);
+    expect(await screen.findByText('ドロー', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('draw', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });
 
 // #5500: 難易度で変わるのは CPU のノック判断と捨て札の拾い方なのに、選択肢には
@@ -1205,5 +1212,12 @@ describe('GinRummyPage difficulty label punctuation', () => {
     expect(label).toContain('(');
     await i18n.changeLanguage(prev);
     expect(i18n.t('ginrummy:settings.difficultyWithPolicy', { level: 'Easy', policy: 'x' })).toMatch(/（/);
+  });
+
+  it('keeps the reset button and card shortcuts in the pinned footer, as the hand-wired page did', async () => {
+    renderWithProviders(<GinRummyPage />);
+    const footer = await screen.findByTestId('game-footer-content');
+    expect(footer).toContainElement(screen.getByRole('button', { name: 'リセット' }));
+    expect(footer).toContainElement(screen.getByTestId('gin-rummy-kbd-shortcuts'));
   });
 });
