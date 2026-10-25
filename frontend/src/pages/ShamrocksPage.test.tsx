@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { shamrocksApi } from '../api/gameApi';
 import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -436,8 +436,12 @@ describe('ShamrocksPage', () => {
     expect(mockExec).not.toHaveBeenCalled();
   });
 
-  it('toggles between the GUI board and CLI terminal', async () => {
-    try {
+  describe('CLI mode', () => {
+    afterEach(() => {
+      localStorage.removeItem('cli-mode-shamrocks');
+    });
+
+    it('toggles between the GUI board and CLI terminal', async () => {
       mockExec.mockResolvedValue(makeState());
       renderWithProviders(<ShamrocksPage />);
 
@@ -449,13 +453,9 @@ describe('ShamrocksPage', () => {
       fireEvent.click(screen.getByRole('button', { name: 'GUIモードに切り替え' }));
       expect(await screen.findByTestId('ll-fans')).toBeInTheDocument();
       expect(screen.queryByRole('textbox', { name: 'コマンドを入力...' })).not.toBeInTheDocument();
-    } finally {
-      localStorage.removeItem('cli-mode-shamrocks');
-    }
-  });
+    });
 
-  it('dispatches a move command from the CLI terminal matching page exec args', async () => {
-    try {
+    it('dispatches a move command from the CLI terminal matching page exec args', async () => {
       mockExec.mockResolvedValue(makeState());
       renderWithProviders(<ShamrocksPage />);
 
@@ -468,8 +468,21 @@ describe('ShamrocksPage', () => {
       fireEvent.keyDown(input, { key: 'Enter' });
 
       await waitFor(() => expect(mockExec).toHaveBeenCalledWith('mf', 0, 1));
-    } finally {
-      localStorage.removeItem('cli-mode-shamrocks');
-    }
+    });
+
+    it('dispatches a foundation move command with f <idx> from the CLI terminal', async () => {
+      mockExec.mockResolvedValue(makeState());
+      renderWithProviders(<ShamrocksPage />);
+
+      fireEvent.click(await screen.findByRole('button', { name: 'CLIモードに切り替え' }));
+      const input = await screen.findByRole('textbox', { name: 'コマンドを入力...' });
+
+      mockExec.mockClear();
+      mockExec.mockResolvedValue(makeState({ moveCount: 1 }));
+      fireEvent.change(input, { target: { value: 'f 2' } });
+      fireEvent.keyDown(input, { key: 'Enter' });
+
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('ff', 2));
+    });
   });
 });

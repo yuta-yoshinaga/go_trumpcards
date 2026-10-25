@@ -1,10 +1,11 @@
 import type { ShamrocksResponse } from '../../../types/card';
+import { ShamrocksPhase } from '../../../types/phases';
 import { formatCard, formatHeader, formatSeparator, isRequestedHint } from '../formatterBase';
 
 const PHASE_NAMES: Record<number, string> = {
-  0: 'Playing',
-  1: 'GameClear',
-  2: 'GameOver',
+  [ShamrocksPhase.PLAYING]: 'Playing',
+  [ShamrocksPhase.GAME_CLEAR]: 'GameClear',
+  [ShamrocksPhase.GAME_OVER]: 'GameOver',
 };
 
 /** Format a Shamrocks game state as terminal text. */
@@ -28,12 +29,11 @@ export function formatShamrocksState(state: ShamrocksResponse): string {
   for (let i = 0; i < state.fans.length; i++) {
     const fan = state.fans[i];
     const isMovable = movableFans.has(i);
-    const marker = isMovable ? '*' : ' ';
-    const prefix = `fan ${String(i).padStart(2, ' ')}${marker}:`;
+    const prefix = `fan ${String(i).padStart(2, ' ')}:`;
     if (fan.length === 0) {
       lines.push(`${prefix} [empty]`);
     } else {
-      const cardStrs = fan.map((c, idx) => `[${idx}]${formatCard(c)}`);
+      const cardStrs = fan.map((c, idx) => `${formatCard(c)}${idx === fan.length - 1 && isMovable ? '*' : ''}`);
       lines.push(`${prefix} ${cardStrs.join(' ')}`);
     }
   }
@@ -49,18 +49,36 @@ export function formatShamrocksState(state: ShamrocksResponse): string {
     lines.push('No hint available.');
   }
 
-  if (state.phase === 0 && Object.keys(state.legalTargets).length === 0) {
+  if (state.phase === ShamrocksPhase.PLAYING && Object.keys(state.legalTargets).length === 0) {
     lines.push('Deadlocked - no legal moves remain');
   }
 
-  if (state.message) {
+  if (state.message && state.phase !== ShamrocksPhase.GAME_CLEAR && state.phase !== ShamrocksPhase.GAME_OVER) {
     lines.push(state.message);
   }
 
-  if (state.phase === 1) {
+  if (state.phase === ShamrocksPhase.GAME_CLEAR) {
     lines.push('Congratulations! You win!');
-  } else if (state.phase === 2) {
+  } else if (state.phase === ShamrocksPhase.GAME_OVER) {
     lines.push('Game Over!');
+  }
+
+  // Available commands guide
+  if (state.phase === ShamrocksPhase.PLAYING) {
+    const hasFanMoves = Object.values(state.legalTargets).some((t) => (t.fan?.length ?? 0) > 0);
+    const hasFoundationMoves = Object.values(state.legalTargets).some((t) => (t.foundation?.length ?? 0) > 0);
+    if (hasFanMoves && hasFoundationMoves) {
+      lines.push('Moves: use p <from> <to> or f <idx> for a fan marked *');
+    } else if (hasFanMoves) {
+      lines.push('Moves: use p <from> <to> for a fan marked *');
+    } else if (hasFoundationMoves) {
+      lines.push('Moves: use f <idx> for a fan marked *');
+    }
+
+    const actions = [hasFoundationMoves && 'ac', state.canUndo && 'u', 'h', 'g', 'r'].filter(Boolean);
+    lines.push(`Other actions: ${actions.join(', ')}`);
+  } else {
+    lines.push('Game finished. Use r to start a new game.');
   }
 
   lines.push(formatSeparator());

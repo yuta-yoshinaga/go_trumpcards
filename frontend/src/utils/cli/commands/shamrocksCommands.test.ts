@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import type { ShamrocksResponse } from '../../../types/card';
+import { ShamrocksPhase } from '../../../types/phases';
 import { parseShamrocksCommand, SHAMROCKS_HELP, VALID_COMMANDS } from './shamrocksCommands';
 
 function makeState(overrides: Partial<ShamrocksResponse> = {}): ShamrocksResponse {
   return {
     fans: [[{ design: 'SPADE', value: 9 }], [{ design: 'SPADE', value: 8 }], [{ design: 'DIAMOND', value: 1 }], []],
     foundation: [[], [], [], []],
-    phase: 0,
+    phase: ShamrocksPhase.PLAYING,
     moveCount: 0,
     canUndo: true,
     legalTargets: {
@@ -20,21 +21,29 @@ function makeState(overrides: Partial<ShamrocksResponse> = {}): ShamrocksRespons
 }
 
 describe('parseShamrocksCommand (stateless)', () => {
-  it('parses fan-to-fan moves with m, move, and mf', () => {
+  it('parses fan-to-fan moves with m, move, mf, p, and play', () => {
     // Matches the args page passes to shamrocksApi.exec('mf', selected, idx)
     expect(parseShamrocksCommand('m 0 1')).toEqual({ args: ['mf', 0, 1] });
     expect(parseShamrocksCommand('move 0 1')).toEqual({ args: ['mf', 0, 1] });
     expect(parseShamrocksCommand('mf 0 1')).toEqual({ args: ['mf', 0, 1] });
+    expect(parseShamrocksCommand('p 0 1')).toEqual({ args: ['mf', 0, 1] });
+    expect(parseShamrocksCommand('play 0 1')).toEqual({ args: ['mf', 0, 1] });
     expect(parseShamrocksCommand('m fan-0 fan-1')).toEqual({ args: ['mf', 0, 1] });
     expect(parseShamrocksCommand('m fan0 fan1')).toEqual({ args: ['mf', 0, 1] });
+    expect(parseShamrocksCommand('p fan-0 fan-1')).toEqual({ args: ['mf', 0, 1] });
   });
 
-  it('parses fan-to-foundation moves with m, move, and ff', () => {
+  it('parses fan-to-foundation moves with m, move, ff, f, and foundation', () => {
     // Matches the args page passes to shamrocksApi.exec('ff', selected)
     expect(parseShamrocksCommand('m 2 f')).toEqual({ args: ['ff', 2] });
     expect(parseShamrocksCommand('move 2 foundation')).toEqual({ args: ['ff', 2] });
+    expect(parseShamrocksCommand('p 2 f')).toEqual({ args: ['ff', 2] });
+    expect(parseShamrocksCommand('play 2 foundation')).toEqual({ args: ['ff', 2] });
     expect(parseShamrocksCommand('ff 2')).toEqual({ args: ['ff', 2] });
     expect(parseShamrocksCommand('ff fan-2')).toEqual({ args: ['ff', 2] });
+    expect(parseShamrocksCommand('f 2')).toEqual({ args: ['ff', 2] });
+    expect(parseShamrocksCommand('foundation 2')).toEqual({ args: ['ff', 2] });
+    expect(parseShamrocksCommand('f fan-2')).toEqual({ args: ['ff', 2] });
   });
 
   it('parses action commands matching page exec calls', () => {
@@ -66,6 +75,15 @@ describe('parseShamrocksCommand (stateless)', () => {
       error: 'Invalid target: use <fan> or f (foundation)',
     });
 
+    expect(parseShamrocksCommand('p')).toEqual({ error: 'Usage: p <from> <to>' });
+    expect(parseShamrocksCommand('p 0')).toEqual({ error: 'Usage: p <from> <to>' });
+    expect(parseShamrocksCommand('p invalid 1')).toEqual({
+      error: 'Invalid source fan: use <index> (e.g., 0, fan-0)',
+    });
+    expect(parseShamrocksCommand('p 0 invalid')).toEqual({
+      error: 'Invalid target: use <fan> or f (foundation)',
+    });
+
     expect(parseShamrocksCommand('mf')).toEqual({ error: 'Usage: mf <from> <to>' });
     expect(parseShamrocksCommand('mf 0')).toEqual({ error: 'Usage: mf <from> <to>' });
     expect(parseShamrocksCommand('mf invalid 1')).toEqual({ error: 'Usage: mf <from> <to>' });
@@ -73,6 +91,30 @@ describe('parseShamrocksCommand (stateless)', () => {
 
     expect(parseShamrocksCommand('ff')).toEqual({ error: 'Usage: ff <from>' });
     expect(parseShamrocksCommand('ff invalid')).toEqual({ error: 'Usage: ff <from>' });
+    expect(parseShamrocksCommand('f')).toEqual({ error: 'Usage: f <idx>' });
+    expect(parseShamrocksCommand('f invalid')).toEqual({ error: 'Usage: f <idx>' });
+  });
+
+  it('rejects negative numbers without state', () => {
+    expect(parseShamrocksCommand('m -1 1')).toEqual({
+      error: 'Invalid source fan: use <index> (e.g., 0, fan-0)',
+    });
+    expect(parseShamrocksCommand('m 0 -1')).toEqual({
+      error: 'Invalid target: use <fan> or f (foundation)',
+    });
+    expect(parseShamrocksCommand('p -1 1')).toEqual({
+      error: 'Invalid source fan: use <index> (e.g., 0, fan-0)',
+    });
+    expect(parseShamrocksCommand('p 0 -1')).toEqual({
+      error: 'Invalid target: use <fan> or f (foundation)',
+    });
+    expect(parseShamrocksCommand('m fan--1 1')).toEqual({
+      error: 'Invalid source fan: use <index> (e.g., 0, fan-0)',
+    });
+    expect(parseShamrocksCommand('f -1')).toEqual({ error: 'Usage: f <idx>' });
+    expect(parseShamrocksCommand('ff -1')).toEqual({ error: 'Usage: ff <from>' });
+    expect(parseShamrocksCommand('mf -1 1')).toEqual({ error: 'Usage: mf <from> <to>' });
+    expect(parseShamrocksCommand('mf 0 -1')).toEqual({ error: 'Usage: mf <from> <to>' });
   });
 
   it('rejects unknown commands', () => {
@@ -93,8 +135,11 @@ describe('parseShamrocksCommand (state-aware)', () => {
 
   it('allows legal moves when state is provided', () => {
     expect(parseShamrocksCommand('m 0 1', state)).toEqual({ args: ['mf', 0, 1] });
+    expect(parseShamrocksCommand('p 0 1', state)).toEqual({ args: ['mf', 0, 1] });
     expect(parseShamrocksCommand('ff 2', state)).toEqual({ args: ['ff', 2] });
+    expect(parseShamrocksCommand('f 2', state)).toEqual({ args: ['ff', 2] });
     expect(parseShamrocksCommand('m 2 f', state)).toEqual({ args: ['ff', 2] });
+    expect(parseShamrocksCommand('p 2 f', state)).toEqual({ args: ['ff', 2] });
     expect(parseShamrocksCommand('u', state)).toEqual({ args: ['u'] });
     expect(parseShamrocksCommand('ac', state)).toEqual({ args: ['ac'] });
     expect(parseShamrocksCommand('h', state)).toEqual({ args: ['hint'] });
@@ -102,13 +147,44 @@ describe('parseShamrocksCommand (state-aware)', () => {
     expect(parseShamrocksCommand('r', state)).toEqual({ args: ['reset'] });
   });
 
+  it('allows moving from a fan with multiple cards and rejects moving to a fan full with 3 cards', () => {
+    const multiCardState = makeState({
+      fans: [
+        [
+          { design: 'SPADE', value: 9 },
+          { design: 'CLOVER', value: 7 },
+        ],
+        [{ design: 'SPADE', value: 8 }],
+        [
+          { design: 'HEART', value: 1 },
+          { design: 'HEART', value: 2 },
+          { design: 'HEART', value: 3 },
+        ],
+        [],
+      ],
+      legalTargets: {
+        'fan-0': { fan: [1], foundation: [] },
+      },
+    });
+
+    // Moving from fan 0 (2 cards) to fan 1 (1 card) succeeds
+    expect(parseShamrocksCommand('p 0 1', multiCardState)).toEqual({ args: ['mf', 0, 1] });
+    expect(parseShamrocksCommand('m 0 1', multiCardState)).toEqual({ args: ['mf', 0, 1] });
+
+    // Moving to fan 2 (3 cards = full) is rejected
+    expect(parseShamrocksCommand('p 0 2', multiCardState)).toEqual({ error: 'Fan 2 is full' });
+    expect(parseShamrocksCommand('m 0 2', multiCardState)).toEqual({ error: 'Fan 2 is full' });
+  });
+
   it('rejects moves when game is already ended', () => {
-    const clearState = makeState({ phase: 1 });
-    const overState = makeState({ phase: 2 });
+    const clearState = makeState({ phase: ShamrocksPhase.GAME_CLEAR });
+    const overState = makeState({ phase: ShamrocksPhase.GAME_OVER });
 
     for (const s of [clearState, overState]) {
       expect(parseShamrocksCommand('m 0 1', s)).toEqual({ error: 'Game is already over' });
+      expect(parseShamrocksCommand('p 0 1', s)).toEqual({ error: 'Game is already over' });
       expect(parseShamrocksCommand('ff 2', s)).toEqual({ error: 'Game is already over' });
+      expect(parseShamrocksCommand('f 2', s)).toEqual({ error: 'Game is already over' });
       expect(parseShamrocksCommand('ac', s)).toEqual({ error: 'Game is already over' });
       expect(parseShamrocksCommand('u', s)).toEqual({ error: 'Game is already over' });
       expect(parseShamrocksCommand('h', s)).toEqual({ error: 'Game is already over' });
@@ -120,7 +196,7 @@ describe('parseShamrocksCommand (state-aware)', () => {
 
   it('rejects out of range or empty source fans', () => {
     expect(parseShamrocksCommand('m -1 1', state)).toEqual({
-      error: 'Invalid source fan index: -1 (valid: 0-3)',
+      error: 'Invalid source fan: use <index> (e.g., 0, fan-0)',
     });
     expect(parseShamrocksCommand('m 4 1', state)).toEqual({
       error: 'Invalid source fan index: 4 (valid: 0-3)',
@@ -140,7 +216,7 @@ describe('parseShamrocksCommand (state-aware)', () => {
   it('rejects self moves and out of range destination fans', () => {
     expect(parseShamrocksCommand('m 0 0', state)).toEqual({ error: 'Cannot move a fan onto itself' });
     expect(parseShamrocksCommand('m 0 -1', state)).toEqual({
-      error: 'Invalid destination fan index: -1 (valid: 0-3)',
+      error: 'Invalid target: use <fan> or f (foundation)',
     });
     expect(parseShamrocksCommand('m 0 4', state)).toEqual({
       error: 'Invalid destination fan index: 4 (valid: 0-3)',
