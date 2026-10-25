@@ -34,6 +34,13 @@ describe('parseLaBelleLucieCommand', () => {
       expect(parseLaBelleLucieCommand(input)).toHaveProperty('error');
   });
 
+  it('checks fan indices against the current fan count, which shrinks after a redeal', () => {
+    expect(parseLaBelleLucieCommand('p 0 5', { fanCount: 6 })).toEqual({ args: ['mf', 0, 5] });
+    expect(parseLaBelleLucieCommand('p 0 6', { fanCount: 6 })).toHaveProperty('error');
+    expect(parseLaBelleLucieCommand('f 6', { fanCount: 6 })).toHaveProperty('error');
+    expect(parseLaBelleLucieCommand('f 0', { fanCount: 0 })).toHaveProperty('error');
+  });
+
   it('rejects unknown commands without accepting log', () => {
     expect(parseLaBelleLucieCommand('bogus')).toEqual({ error: 'Unknown command: bogus' });
     expect(parseLaBelleLucieCommand('log')).toHaveProperty('error');
