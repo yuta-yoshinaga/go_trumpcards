@@ -434,4 +434,10 @@ describe('BeziquePage', () => {
     const row = await screen.findByTestId('bezique-match-progress-0');
     expect(row.textContent).toMatch(/\d+ \/ \d+/);
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<BeziquePage />);
+    expect(await screen.findByText('プレイ', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('play', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });

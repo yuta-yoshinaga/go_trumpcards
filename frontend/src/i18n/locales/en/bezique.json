@@ -6,7 +6,6 @@
     "gameEnd": "Game End"
   },
   "settings": {
-    "title": "Settings",
     "targetScore": "Target Score",
     "easy": "Easy",
     "normal": "Normal",

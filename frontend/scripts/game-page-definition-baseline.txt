@@ -22,7 +22,6 @@ BasraPage.tsx
 BassetPage.tsx
 BeggarMyNeighbourPage.tsx
 BeleagueredCastlePage.tsx
-BeziquePage.tsx
 BhabhiPage.tsx
 BidEuchrePage.tsx
 BidWhistPage.tsx
