@@ -698,6 +698,25 @@ describe('createGamePage', () => {
       expect(ctx?.frontendHint?.hintEnabled).toBe(false);
     });
 
+    it('puts footerTutorialId on the fixed footer element, only with primary actions', () => {
+      const WithTutorial = makePage({
+        primaryActions: () => <button type="button">Play</button>,
+        footerTutorialId: 'cb-play-button',
+      });
+      const first = renderWithProviders(<WithTutorial />);
+      expect(screen.getByRole('contentinfo')).toHaveAttribute('data-tutorial', 'cb-play-button');
+      first.unmount();
+
+      const Omitted = makePage({ primaryActions: () => <button type="button">Play</button> });
+      const second = renderWithProviders(<Omitted />);
+      expect(second.container.querySelector('[data-tutorial]')).toBeNull();
+      second.unmount();
+
+      const NoPrimaryActions = makePage({ footerTutorialId: 'cb-play-button' });
+      const third = renderWithProviders(<NoPrimaryActions />);
+      expect(third.container.querySelector('[data-tutorial="cb-play-button"]')).toBeNull();
+    });
+
     it('renders AboveContent after top settings and outside the scrolling content', () => {
       const AboveContent = () => <div data-testid="above">above</div>;
       const Page = makePage({ AboveContent, settingsPlacement: 'top' });
