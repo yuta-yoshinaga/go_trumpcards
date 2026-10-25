@@ -15,8 +15,6 @@ describe('parseTrucoCommand', () => {
     ['next', ['next']],
     ['h', ['hint']],
     ['hint', ['hint']],
-    ['l', ['log']],
-    ['log', ['log']],
     ['r', ['reset']],
     ['reset', ['reset']],
   ])('maps %s to the page action arguments', (input, args) => {
@@ -27,5 +25,8 @@ describe('parseTrucoCommand', () => {
   });
   it('rejects unknown commands', () => {
     expect(parseTrucoCommand('bid 1')).toMatchObject({ error: expect.stringContaining('Unknown command: bid') });
+  });
+  it.each(['l', 'log'])('treats %s as an unknown command', (input) => {
+    expect(parseTrucoCommand(input)).toMatchObject({ error: expect.stringContaining(`Unknown command: ${input}`) });
   });
 });

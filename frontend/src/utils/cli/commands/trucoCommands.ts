@@ -18,8 +18,6 @@ const VALID_COMMANDS = [
   'next',
   'h',
   'hint',
-  'l',
-  'log',
   'r',
   'reset',
 ];
@@ -49,9 +47,6 @@ export function parseTrucoCommand(input: string): CliParseResult<TrucoCliArgs> {
     case 'h':
     case 'hint':
       return { args: ['hint'] };
-    case 'l':
-    case 'log':
-      return { args: ['log'] };
     case 'r':
     case 'reset':
       return { args: ['reset'] };
@@ -68,6 +63,5 @@ export const TRUCO_HELP: string[] = [
   'd / decline   - Decline a Truco call',
   'n / next      - Advance after a trick or hand',
   'h / hint      - Show a hint',
-  'l / log       - Show the action log',
   'r / reset     - Reset the game',
 ];
