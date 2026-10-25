@@ -252,4 +252,10 @@ describe('TrappolaPage', () => {
       expect(card).not.toHaveAttribute('aria-disabled', 'true');
     }
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<TrappolaPage />);
+    expect(await screen.findByText('プレイ', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('play', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });

@@ -1,37 +1,19 @@
-import { useCallback, useMemo } from 'react';
 import type { trappolaApi } from '../api/gameApi';
-import { ActionLogSection } from '../components/ActionLogSection';
-import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
-import { CliTerminal } from '../components/cli/CliTerminal';
-import { CliToggle } from '../components/cli/CliToggle';
-import { SettingsPanel } from '../components/common/SettingsPanel';
-import { ErrorAlert } from '../components/ErrorAlert';
-import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageShell } from '../components/GamePageShell';
-import { GameResetButton } from '../components/GameResetButton';
+import { createGamePage, type GameDefinition, type GamePageContext } from '../components/game/createGamePage';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { PlayerHandSection } from '../components/PlayerHandSection';
-import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
-import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
-import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
-import { useCliGame } from '../hooks/useCliGame';
-import { useCliMode } from '../hooks/useCliMode';
-import { useGameHint } from '../hooks/useGameHint';
-import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, TARGET_POINTS_OPTIONS, useTrappolaGame } from '../hooks/useTrappolaGame';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
-import { gameTheme } from '../styles/gameTheme';
 import type { TrappolaResponse } from '../types/card';
 import { TrappolaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { parseTrappolaCommand, TRAPPOLA_HELP } from '../utils/cli/commands/trappolaCommands';
 import { formatTrappolaState } from '../utils/cli/formatters/trappolaFormatter';
-import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -82,6 +64,8 @@ const TRAPPOLA_PHASE_KEYS: Readonly<Record<number, string>> = {
   [TrappolaPhase.GAME_END]: 'gameEnd',
 };
 
+const TEAM_LABELS = ['A', 'B'] as const;
+
 /**
  * Clamps a team's round-thirds count to the [0, 3] range used by the 3-dot
  * indicator. Thirds reset to 0 once they reach 3 (converted to a point), but
@@ -91,403 +75,362 @@ function thirdsFilled(thirds: number): number {
   return Math.min(Math.max(thirds, 0), 3);
 }
 
-/** Renders the Trappola game page: no-trump must-follow trick play with team scoring. */
-export const TrappolaPage = withTutorial(TrappolaPageContent, 'trappola', TR_TUTORIAL_STEPS);
+type TrappolaGame = ReturnType<typeof useTrappolaGame>;
+type TrappolaView = ReturnType<typeof useTrappolaView>;
+type TrappolaContext = GamePageContext<TrappolaResponse, TrappolaGame, TrappolaView>;
 
-/** Inner content of the Trappola page, wrapped by TutorialProvider. */
-function TrappolaPageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('trappola');
-  const {
-    state,
-    loading,
-    error,
-    exec,
-    retry,
-    trappolaConfig,
-    selectedCardIndices,
-    toggleCard,
-    clearSelection,
-    handleConfigChange,
-    handlePlay,
-    handleNextTrick,
-    handleNextRound,
-    hint,
-    hintError,
-    hintLoading,
-    handleHint,
-  } = useTrappolaGame();
-
-  // CLI mode
-  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('trappola');
-  const trappolaCliConfig: CliGameConfig<TrappolaResponse, Parameters<typeof trappolaApi.exec>> = useMemo(
-    () => ({
-      gameName: 'trappola',
-      parseCommand: parseTrappolaCommand,
-      formatResponse: formatTrappolaState,
-      helpText: TRAPPOLA_HELP,
-    }),
-    [],
-  );
-  const { handleCommand } = useCliGame(exec, trappolaCliConfig, state, { addInput, addOutput, addError, clearLog });
-
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('trappola', state);
+function useTrappolaView() {
   const { cardWidth, isMobile } = useCardDimensions();
-
-  const isPlayPhaseForKbd = state?.phase === TrappolaPhase.PLAY;
-  const isHumanTurnForKbd = isPlayPhaseForKbd && state?.players[state.currentPlayerIdx]?.isHuman === true;
-  const humanCardCountForKbd = state?.players.find((p) => p.isHuman)?.cards?.length ?? 0;
-
-  useCardKeyboardNav({
-    cardCount: humanCardCountForKbd,
-    onToggle: toggleCard,
-    onConfirm: handlePlay,
-    onClear: clearSelection,
-    enabled: !!isHumanTurnForKbd && !loading,
-  });
-
   const phaseNames = usePhaseNames('trappola', TRAPPOLA_PHASE_KEYS);
+  return { cardWidth, isMobile, phaseNames };
+}
 
-  const handleManualReset = useCallback(() => {
-    hideActionLog();
-    void exec('reset', undefined, undefined, {
-      cpuDifficulty: trappolaConfig.cpuDifficulty,
-      targetPoints: trappolaConfig.targetPoints,
-    });
-  }, [exec, hideActionLog, trappolaConfig.cpuDifficulty, trappolaConfig.targetPoints]);
-
-  if (!state)
-    return <GameSkeleton gameKey="trappola" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 5 }} />;
-
+function Board({ state, t, tc, view }: TrappolaContext) {
+  const { cardWidth, isMobile } = view;
   const humanPlayer = state.players.find((p) => p.isHuman);
-  const isPlayPhase = state.phase === TrappolaPhase.PLAY;
   const isTrickEnd = state.phase === TrappolaPhase.TRICK_END;
   const isRoundEnd = state.phase === TrappolaPhase.ROUND_END;
   const isGameEnd = state.phase === TrappolaPhase.GAME_END || state.gameEndFlag;
-  const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
-
-  const teamLabels = ['A', 'B'];
 
   return (
-    <GamePageShell
-      title={tc('nav.trappola')}
-      gameThemeBg={gameTheme.trappola.bg}
-      phaseName={phaseNames[state.phase]}
-      isHumanTurn={isHumanTurn}
-      gamePath="/trappola"
-      gameEndFlag={!!state?.gameEndFlag}
-      loading={loading}
-      confirmOpen={confirmOpen}
-      confirmReset={confirmReset}
-      cancelReset={cancelReset}
-      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
-    >
-      {cliEnabled ? (
-        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
-      ) : (
-        <>
-          <SettingsPanel
-            title={t('settings.title')}
-            groups={[
-              {
-                items: [
-                  {
-                    type: 'select',
-                    id: 'cpuDifficulty',
-                    label: t('settings.cpuDifficulty'),
-                    value: trappolaConfig.cpuDifficulty,
-                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
-                      value: o.value,
-                      label: t(`settings.${o.label.toLowerCase()}`),
-                    })),
-                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
-                  },
-                  {
-                    type: 'select',
-                    id: 'targetPoints',
-                    label: t('settings.targetPoints'),
-                    value: trappolaConfig.targetPoints,
-                    options: TARGET_POINTS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
-                    onSelect: (v) => handleConfigChange('targetPoints', v),
-                  },
-                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
-                ],
-              },
-            ]}
+    <>
+      <div className="text-ds-text-primary text-center mb-2">
+        <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
+        <span>{t('trick', { n: state.trickNumber })}</span>
+      </div>
+
+      <div className={lgTwoColGrid}>
+        {/* Left: play area */}
+        <div>
+          <TrickDisplay
+            currentTrick={state.currentTrick}
+            players={state.players}
+            cardWidth={cardWidth}
+            label={t('currentTrick')}
+            dataTutorial="tr-trick-display"
           />
-
-          <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            <div className="text-ds-text-primary text-center mb-2">
-              <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
-              <span>{t('trick', { n: state.trickNumber })}</span>
-            </div>
-
-            <div className={lgTwoColGrid}>
-              {/* Left: play area */}
-              <div>
-                <TrickDisplay
-                  currentTrick={state.currentTrick}
-                  players={state.players}
-                  cardWidth={cardWidth}
-                  label={t('currentTrick')}
-                  dataTutorial="tr-trick-display"
-                />
-                <div className="mt-2 text-center text-sm text-ds-text-primary">
-                  {(isTrickEnd || isRoundEnd || isGameEnd) && state.lastTrick.length > 0 && state.lastTrickWinner >= 0
-                    ? t('resolvedTrickPoints', {
-                        team: teamLabels[state.lastTrickWinner % 2],
-                        thirds: state.lastTrickThirds,
-                      })
-                    : t('currentTrickPoints', { thirds: state.currentTrickThirds })}
-                </div>
-
-                {/* Previous trick reviewer: lets the player recount the just-completed trick */}
-                <details className="mb-2 p-2 rounded bg-black/30" data-testid="tr-previous-trick">
-                  <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
-                    {t('previousTrick')}
-                  </summary>
-                  <div className="mt-1">
-                    {state.lastTrick.length > 0 ? (
-                      <TrickDisplay
-                        currentTrick={state.lastTrick}
-                        players={state.players}
-                        cardWidth={Math.round(cardWidth * 0.7)}
-                        label={
-                          state.lastTrickWinner >= 0
-                            ? t('previousTrickWinner', {
-                                name: playerName(
-                                  state.lastTrickWinner,
-                                  state.players[state.lastTrickWinner]?.isHuman === true,
-                                ),
-                              })
-                            : t('previousTrick')
-                        }
-                        winnerIdx={state.lastTrickWinner >= 0 ? state.lastTrickWinner : undefined}
-                      />
-                    ) : (
-                      <div className="text-ds-text-muted text-sm">{t('previousTrickEmpty')}</div>
-                    )}
-                  </div>
-                </details>
-              </div>
-
-              {/* Right: info sidebar */}
-              <div>
-                {/* CPU players */}
-                {isMobile ? (
-                  <details className="mb-2 p-2 rounded bg-black/30">
-                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
-                      {tc('label.cpuOpponents', { count: state.players.filter((p) => !p.isHuman).length })}
-                    </summary>
-                    <div className="mt-1">
-                      {state.players
-                        .filter((p) => !p.isHuman)
-                        .map((p) => (
-                          <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                            {playerName(p.id, p.isHuman)} [{t('teamLabel', { team: teamLabels[p.teamId] })}]:{' '}
-                            {t('cards', { count: p.cardCount })} | {t('tricks', { count: p.trickCount })}
-                          </div>
-                        ))}
-                    </div>
-                  </details>
-                ) : (
-                  state.players
-                    .filter((p) => !p.isHuman)
-                    .map((p) => (
-                      <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                        <div className="text-ds-text-muted text-sm">
-                          {playerName(p.id, p.isHuman)} [{t('teamLabel', { team: teamLabels[p.teamId] })}]:{' '}
-                          {t('cards', { count: p.cardCount })} | {t('tricks', { count: p.trickCount })}
-                        </div>
-                      </div>
-                    ))
-                )}
-
-                {/* Team score table */}
-                <div className="my-3 p-2 rounded bg-black/30" data-tutorial="tr-score-table">
-                  <div className="flex justify-between text-ds-text-muted text-sm mb-1">
-                    <span>{t('scores')}</span>
-                    <span>{t('targetPointsLabel', { points: state.config.targetPoints })}</span>
-                  </div>
-                  <table className="w-full text-sm text-ds-text-muted">
-                    <thead>
-                      <tr>
-                        <th scope="col" className="text-left">
-                          {t('scoresTeam')}
-                        </th>
-                        <th scope="col">{t('scoresPoints')}</th>
-                        <th scope="col">{t('scoresThirds')}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {teamLabels.map((label, idx) => (
-                        <tr key={label} className={humanPlayer && humanPlayer.teamId === idx ? 'text-ds-accent' : ''}>
-                          <th scope="row" className="text-left font-normal">
-                            {t('teamLabel', { team: label })}
-                          </th>
-                          <td className="text-center">{state.teamScores[idx] ?? 0}</td>
-                          <td className="text-center">
-                            <span
-                              className="inline-flex gap-0.5 align-middle"
-                              title={t('thirdsTooltip', { n: 3 - thirdsFilled(state.teamRoundThirds[idx]) })}
-                              data-testid={`tr-thirds-${idx.toString()}`}
-                            >
-                              {[0, 1, 2].map((d) => (
-                                <span
-                                  key={`tr-dot-${idx.toString()}-${d.toString()}`}
-                                  aria-hidden="true"
-                                  className={`inline-block w-2 h-2 rounded-full ${
-                                    d < thirdsFilled(state.teamRoundThirds[idx])
-                                      ? 'bg-ds-accent'
-                                      : 'border border-ds-border-subtle'
-                                  }`}
-                                />
-                              ))}
-                              <span className="sr-only">
-                                {t('thirdsAria', { filled: thirdsFilled(state.teamRoundThirds[idx]) })}
-                              </span>
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Card-point legend (static reference) */}
-                <details className="my-3 p-2 rounded bg-black/30" data-testid="tr-point-legend">
-                  <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
-                    {t('pointLegend.title')}
-                  </summary>
-                  <div className="mt-1 text-ds-text-muted text-xs">
-                    <table className="w-full">
-                      <thead>
-                        <tr>
-                          <th scope="col" className="text-left font-normal">
-                            {t('pointLegend.cardCol')}
-                          </th>
-                          <th scope="col" className="text-right font-normal">
-                            {t('pointLegend.pointCol')}
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td>{t('pointLegend.ace')}</td>
-                          <td className="text-right">{t('pointLegend.aceValue')}</td>
-                        </tr>
-                        <tr>
-                          <td>{t('pointLegend.figures')}</td>
-                          <td className="text-right">{t('pointLegend.figuresValue')}</td>
-                        </tr>
-                        <tr>
-                          <td>{t('pointLegend.others')}</td>
-                          <td className="text-right">{t('pointLegend.othersValue')}</td>
-                        </tr>
-                        <tr>
-                          <td>{t('pointLegend.lastTrick')}</td>
-                          <td className="text-right">{t('pointLegend.lastTrickValue')}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                    <div className="mt-1">{t('pointLegend.note')}</div>
-                  </div>
-                </details>
-              </div>
-            </div>
-
-            {/* Message */}
-            <div data-tutorial="tr-point-info">
-              <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
-              />
-            </div>
-
-            <ActionLogSection
-              isEndPhase={isGameEnd}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
+          <div className="mt-2 text-center text-sm text-ds-text-primary">
+            {(isTrickEnd || isRoundEnd || isGameEnd) && state.lastTrick.length > 0 && state.lastTrickWinner >= 0
+              ? t('resolvedTrickPoints', {
+                  team: TEAM_LABELS[state.lastTrickWinner % 2],
+                  thirds: state.lastTrickThirds,
+                })
+              : t('currentTrickPoints', { thirds: state.currentTrickThirds })}
           </div>
 
-          {/* Footer */}
-          <GameFooter className={`${gameTheme.trappola.footer} px-4 py-2.5`}>
-            {humanPlayer && (
-              <PlayerHandSection
-                humanPlayer={humanPlayer}
-                selectedCardIndices={selectedCardIndices}
-                toggleCard={toggleCard}
-                cardWidth={cardWidth}
-                isMobile={isMobile}
-                dataTutorialPrefix="tr"
-                highlightIndices={hint?.cardIndices}
-                validIndices={isHumanTurn ? state.playableIndices : undefined}
-                restrictedTooltip={t('playButton')}
-              />
-            )}
+          {/* Previous trick reviewer: lets the player recount the just-completed trick */}
+          <details className="mb-2 p-2 rounded bg-black/30" data-testid="tr-previous-trick">
+            <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('previousTrick')}</summary>
+            <div className="mt-1">
+              {state.lastTrick.length > 0 ? (
+                <TrickDisplay
+                  currentTrick={state.lastTrick}
+                  players={state.players}
+                  cardWidth={Math.round(cardWidth * 0.7)}
+                  label={
+                    state.lastTrickWinner >= 0
+                      ? t('previousTrickWinner', {
+                          name: playerName(
+                            state.lastTrickWinner,
+                            state.players[state.lastTrickWinner]?.isHuman === true,
+                          ),
+                        })
+                      : t('previousTrick')
+                  }
+                  winnerIdx={state.lastTrickWinner >= 0 ? state.lastTrickWinner : undefined}
+                />
+              ) : (
+                <div className="text-ds-text-muted text-sm">{t('previousTrickEmpty')}</div>
+              )}
+            </div>
+          </details>
+        </div>
 
-            <ErrorAlert message={error ?? hintError} onRetry={retry} />
-
-            {/*
-              ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
-              領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
-              られないことがある (#5955)。
-            */}
-            <div data-testid="trappola-hint-live" role="status" aria-live="polite">
-              {hint && (
-                <div className="text-ds-warning text-sm mb-2">
-                  {t('hintAvailable')}: {hint.cardIndices.map((i) => `[${i}]`).join(', ')} (
-                  {t(`hintReason.${hint.reason}`)})
+        {/* Right: info sidebar */}
+        <div>
+          {/* CPU players */}
+          {isMobile ? (
+            <details className="mb-2 p-2 rounded bg-black/30">
+              <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
+                {tc('label.cpuOpponents', { count: state.players.filter((p) => !p.isHuman).length })}
+              </summary>
+              <div className="mt-1">
+                {state.players
+                  .filter((p) => !p.isHuman)
+                  .map((p) => (
+                    <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
+                      {playerName(p.id, p.isHuman)} [{t('teamLabel', { team: TEAM_LABELS[p.teamId] })}]:{' '}
+                      {t('cards', { count: p.cardCount })} | {t('tricks', { count: p.trickCount })}
+                    </div>
+                  ))}
+              </div>
+            </details>
+          ) : (
+            state.players
+              .filter((p) => !p.isHuman)
+              .map((p) => (
+                <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
+                  <div className="text-ds-text-muted text-sm">
+                    {playerName(p.id, p.isHuman)} [{t('teamLabel', { team: TEAM_LABELS[p.teamId] })}]:{' '}
+                    {t('cards', { count: p.cardCount })} | {t('tricks', { count: p.trickCount })}
+                  </div>
                 </div>
-              )}
-            </div>
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+              ))
+          )}
 
-            <div className="flex gap-2 items-center" data-tutorial="tr-play-button">
-              {isHumanTurn && (
-                <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
-                  {tc('button.hint')}
-                </button>
-              )}
-              {isHumanTurn && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
-              )}
-              {isTrickEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                  {t('nextTrick')}
-                </button>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={!!isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="tr-reset-button"
-              />
+          {/* Team score table */}
+          <div className="my-3 p-2 rounded bg-black/30" data-tutorial="tr-score-table">
+            <div className="flex justify-between text-ds-text-muted text-sm mb-1">
+              <span>{t('scores')}</span>
+              <span>{t('targetPointsLabel', { points: state.config.targetPoints })}</span>
             </div>
-            <CardNavShortcutsPanel data-testid="trappola-kbd-shortcuts" />
-          </GameFooter>
-        </>
-      )}
-    </GamePageShell>
+            <table className="w-full text-sm text-ds-text-muted">
+              <thead>
+                <tr>
+                  <th scope="col" className="text-left">
+                    {t('scoresTeam')}
+                  </th>
+                  <th scope="col">{t('scoresPoints')}</th>
+                  <th scope="col">{t('scoresThirds')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {TEAM_LABELS.map((label, idx) => (
+                  <tr key={label} className={humanPlayer && humanPlayer.teamId === idx ? 'text-ds-accent' : ''}>
+                    <th scope="row" className="text-left font-normal">
+                      {t('teamLabel', { team: label })}
+                    </th>
+                    <td className="text-center">{state.teamScores[idx] ?? 0}</td>
+                    <td className="text-center">
+                      <span
+                        className="inline-flex gap-0.5 align-middle"
+                        title={t('thirdsTooltip', { n: 3 - thirdsFilled(state.teamRoundThirds[idx]) })}
+                        data-testid={`tr-thirds-${idx.toString()}`}
+                      >
+                        {[0, 1, 2].map((d) => (
+                          <span
+                            key={`tr-dot-${idx.toString()}-${d.toString()}`}
+                            aria-hidden="true"
+                            className={`inline-block w-2 h-2 rounded-full ${
+                              d < thirdsFilled(state.teamRoundThirds[idx])
+                                ? 'bg-ds-accent'
+                                : 'border border-ds-border-subtle'
+                            }`}
+                          />
+                        ))}
+                        <span className="sr-only">
+                          {t('thirdsAria', { filled: thirdsFilled(state.teamRoundThirds[idx]) })}
+                        </span>
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Card-point legend (static reference) */}
+          <details className="my-3 p-2 rounded bg-black/30" data-testid="tr-point-legend">
+            <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
+              {t('pointLegend.title')}
+            </summary>
+            <div className="mt-1 text-ds-text-muted text-xs">
+              <table className="w-full">
+                <thead>
+                  <tr>
+                    <th scope="col" className="text-left font-normal">
+                      {t('pointLegend.cardCol')}
+                    </th>
+                    <th scope="col" className="text-right font-normal">
+                      {t('pointLegend.pointCol')}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>{t('pointLegend.ace')}</td>
+                    <td className="text-right">{t('pointLegend.aceValue')}</td>
+                  </tr>
+                  <tr>
+                    <td>{t('pointLegend.figures')}</td>
+                    <td className="text-right">{t('pointLegend.figuresValue')}</td>
+                  </tr>
+                  <tr>
+                    <td>{t('pointLegend.others')}</td>
+                    <td className="text-right">{t('pointLegend.othersValue')}</td>
+                  </tr>
+                  <tr>
+                    <td>{t('pointLegend.lastTrick')}</td>
+                    <td className="text-right">{t('pointLegend.lastTrickValue')}</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div className="mt-1">{t('pointLegend.note')}</div>
+            </div>
+          </details>
+        </div>
+      </div>
+
+      {/* Message */}
+      <div data-tutorial="tr-point-info">
+        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+      </div>
+    </>
   );
 }
+
+function FooterHand({ game, state, t, view }: TrappolaContext) {
+  const humanPlayer = state.players.find((p) => p.isHuman);
+  const isHumanTurn = state.phase === TrappolaPhase.PLAY && state.players[state.currentPlayerIdx]?.isHuman === true;
+
+  return humanPlayer ? (
+    <PlayerHandSection
+      humanPlayer={humanPlayer}
+      selectedCardIndices={game.selectedCardIndices}
+      toggleCard={game.toggleCard}
+      cardWidth={view.cardWidth}
+      isMobile={view.isMobile}
+      dataTutorialPrefix="tr"
+      highlightIndices={game.hint?.cardIndices}
+      validIndices={isHumanTurn ? state.playableIndices : undefined}
+      restrictedTooltip={t('playButton')}
+    />
+  ) : null;
+}
+
+function FooterStatus({ game, t, frontendHint }: TrappolaContext) {
+  return (
+    <>
+      {/*
+        ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+        領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
+        られないことがある (#5955)。
+      */}
+      <div data-testid="trappola-hint-live" role="status" aria-live="polite">
+        {game.hint && (
+          <div className="text-ds-warning text-sm mb-2">
+            {t('hintAvailable')}: {game.hint.cardIndices.map((i) => `[${i}]`).join(', ')} (
+            {t(`hintReason.${game.hint.reason}`)})
+          </div>
+        )}
+      </div>
+      <FrontendHintTooltip hint={frontendHint.hint} enabled={frontendHint.hintEnabled} t={t} />
+    </>
+  );
+}
+
+function FooterActions({ game, state, t, tc, busy }: TrappolaContext) {
+  const isHumanTurn = state.phase === TrappolaPhase.PLAY && state.players[state.currentPlayerIdx]?.isHuman === true;
+  const isTrickEnd = state.phase === TrappolaPhase.TRICK_END;
+  const isRoundEnd = state.phase === TrappolaPhase.ROUND_END;
+
+  return (
+    <>
+      {isHumanTurn && (
+        <button type="button" className={btnSuccess} onClick={game.handleHint} disabled={busy || game.hintLoading}>
+          {tc('button.hint')}
+        </button>
+      )}
+      {isHumanTurn && (
+        <button
+          type="button"
+          className={btnPrimary}
+          onClick={game.handlePlay}
+          disabled={busy || game.selectedCardIndices.length !== 1}
+        >
+          {t('playButton')}
+        </button>
+      )}
+      {isTrickEnd && (
+        <button type="button" className={btnSuccess} onClick={game.handleNextTrick} disabled={busy}>
+          {t('nextTrick')}
+        </button>
+      )}
+      {isRoundEnd && (
+        <button type="button" className={btnSuccess} onClick={game.handleNextRound} disabled={busy}>
+          {t('nextRound')}
+        </button>
+      )}
+    </>
+  );
+}
+
+const trappolaDefinition: GameDefinition<
+  TrappolaResponse,
+  TrappolaGame,
+  Parameters<typeof trappolaApi.exec>,
+  TrappolaView
+> = {
+  key: 'trappola',
+  useGame: useTrappolaGame,
+  useView: useTrappolaView,
+  tutorial: TR_TUTORIAL_STEPS,
+  skeleton: { kind: 'trick-taking', trickArea: true, footerHandSize: 5 },
+  cli: () => ({
+    parseCommand: parseTrappolaCommand,
+    formatResponse: formatTrappolaState,
+    helpText: TRAPPOLA_HELP,
+  }),
+  phase: ({ state, view }) => ({
+    name: view.phaseNames[state.phase],
+    ended: state.phase === TrappolaPhase.GAME_END || state.gameEndFlag,
+  }),
+  shell: ({ state }) => ({
+    isHumanTurn: state.phase === TrappolaPhase.PLAY && state.players[state.currentPlayerIdx]?.isHuman === true,
+  }),
+  reset: ({ game }) => {
+    void game.exec('reset', undefined, undefined, {
+      cpuDifficulty: game.trappolaConfig.cpuDifficulty,
+      targetPoints: game.trappolaConfig.targetPoints,
+    });
+  },
+  settings: ({ game, t, tc, frontendHint }) => [
+    {
+      items: [
+        {
+          type: 'select',
+          id: 'cpuDifficulty',
+          label: t('settings.cpuDifficulty'),
+          value: game.trappolaConfig.cpuDifficulty,
+          options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
+            value: o.value,
+            label: t(`settings.${o.label.toLowerCase()}`),
+          })),
+          onSelect: (v) => game.handleConfigChange('cpuDifficulty', v),
+        },
+        {
+          type: 'select',
+          id: 'targetPoints',
+          label: t('settings.targetPoints'),
+          value: game.trappolaConfig.targetPoints,
+          options: TARGET_POINTS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+          onSelect: (v) => game.handleConfigChange('targetPoints', v),
+        },
+        hintCheckboxItem(tc, frontendHint.hintEnabled, frontendHint.setHintEnabled),
+      ],
+    },
+  ],
+  settingsPlacement: 'top',
+  contentClassName: `pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`,
+  cardNav: ({ game, state }) => {
+    const isHumanTurn = state.phase === TrappolaPhase.PLAY && state.players[state.currentPlayerIdx]?.isHuman === true;
+    return {
+      cardCount: state.players.find((p) => p.isHuman)?.cards?.length ?? 0,
+      onToggle: game.toggleCard,
+      onConfirm: game.handlePlay,
+      onClear: game.clearSelection,
+      enabled: isHumanTurn,
+    };
+  },
+  shortcutsTestId: 'trappola-kbd-shortcuts',
+  actionsClassName: 'flex gap-2 items-center',
+  actionsTutorialId: 'tr-play-button',
+  resetTutorialId: 'tr-reset-button',
+  Board,
+  FooterHand,
+  FooterStatus,
+  FooterActions,
+};
+
+/** Renders the Trappola game page: no-trump must-follow trick play with team scoring. */
+export const TrappolaPage = createGamePage(trappolaDefinition);
