@@ -416,6 +416,9 @@ const looDefinition: GameDefinition<LooResponse, LooGame, Parameters<typeof looA
     name: view.phaseNames[state.phase],
     ended: false,
   }),
+  // The hand-wired page offered the action log at the end of each deal. Loo has no
+  // game end (ended stays false), so the log follows the round end instead.
+  actionLogEndPhase: ({ state }) => state.phase === LooPhase.ROUND_END,
   shell: ({ state }) => ({
     isHumanTurn: state.isHumanTurn,
   }),

@@ -435,4 +435,16 @@ describe('LooPage', () => {
     expect(await screen.findByText('プレイ', { selector: 'strong' })).toBeInTheDocument();
     expect(screen.queryByText('play', { selector: 'strong' })).not.toBeInTheDocument();
   });
+
+  it('offers the action log at round end, as the hand-wired page did', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<LooPage />);
+    expect(await screen.findByRole('button', { name: '棋譜を見る' })).toBeInTheDocument();
+  });
+
+  it('does not offer the action log during play', async () => {
+    renderWithProviders(<LooPage />);
+    await screen.findByText('プレイ', { selector: 'strong' });
+    expect(screen.queryByRole('button', { name: '棋譜を見る' })).not.toBeInTheDocument();
+  });
 });
