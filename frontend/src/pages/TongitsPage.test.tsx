@@ -393,4 +393,16 @@ describe('TongitsPage', () => {
     expect(liveRegion).toHaveTextContent('+2');
     expect(announcement.querySelector('[aria-live="polite"]')).toBe(liveRegion);
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<TongitsPage />);
+    expect(await screen.findByText('ディスカード', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('discard', { selector: 'strong' })).not.toBeInTheDocument();
+  });
+
+  it('keeps the footer action row on a CPU turn, as the hand-wired page did', async () => {
+    mockExec.mockResolvedValue(state({ phase: TongitsPhase.DRAW, currentPlayerIdx: 1 }));
+    renderWithProviders(<TongitsPage />);
+    expect(await screen.findByTestId('game-footer-actions')).toBeInTheDocument();
+  });
 });

@@ -320,7 +320,6 @@ ThreeThirteenPage.tsx
 TichuPage.tsx
 TienLenPage.tsx
 ToepenPage.tsx
-TongitsPage.tsx
 TonkPage.tsx
 TrappolaPage.tsx
 TrashPage.tsx
