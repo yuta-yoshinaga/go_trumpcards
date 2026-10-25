@@ -15,7 +15,6 @@
   "discardPhase": "カードを1枚捨てるか、上がってください。",
   "roundEnd": "ラウンド終了。次のラウンドに進んでください。",
   "settings": {
-    "title": "設定",
     "cpuDifficulty": "CPU難易度",
     "pointLimit": "目標スコア",
     "easy": "簡単",
