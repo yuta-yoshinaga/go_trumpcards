@@ -509,4 +509,10 @@ describe('WattenPage', () => {
     const actions = await screen.findByTestId('game-footer-actions');
     expect(within(actions).getByRole('button', { name: '出す' })).toBeInTheDocument();
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<WattenPage />);
+    expect(await screen.findByText('プレイ', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('play', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });
