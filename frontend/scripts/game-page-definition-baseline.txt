@@ -25,7 +25,6 @@ BatakPage.tsx
 BauernschnapsenPage.tsx
 BeggarMyNeighbourPage.tsx
 BeleagueredCastlePage.tsx
-BelotePage.tsx
 BeziquePage.tsx
 BhabhiPage.tsx
 BidEuchrePage.tsx
