@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, machiavelliApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import i18n from '../i18n';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { MachiavelliMeld, MachiavelliPlayer, MachiavelliResponse } from '../types/card';
 import { MachiavelliPage } from './MachiavelliPage';
@@ -660,6 +661,7 @@ describe('MachiavelliPage', () => {
     fireEvent.keyDown(document, { key: '2' });
     mockExec.mockClear();
     fireEvent.keyDown(document, { key: 'Enter' });
+    await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
     fireEvent.keyDown(document, { key: '3' });
     fireEvent.keyDown(document, { key: 'Enter' });
