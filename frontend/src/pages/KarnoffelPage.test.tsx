@@ -369,6 +369,16 @@ describe('KarnoffelPage', () => {
     expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
   });
 
+  it('renders one hint checkbox and puts reset last in the actions row', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<KarnoffelPage />);
+
+    await screen.findByText('プレイ', { exact: true });
+    expect(screen.getAllByRole('checkbox', { name: 'ヒント表示' })).toHaveLength(1);
+    const actions = document.querySelector('[data-tutorial="karnoffel-actions"]');
+    expect(actions?.lastElementChild).toHaveAttribute('data-tutorial', 'karnoffel-reset-button');
+  });
+
   it('renders the hand area with no human seat', async () => {
     localStorage.clear();
     mockExec.mockReset();
@@ -479,5 +489,11 @@ describe('KarnoffelPage', () => {
     expect(screen.getByRole('img', { name: '席0: あなた、♥ 7、悪魔（リード）' })).toBeInTheDocument();
     expect(screen.getByRole('img', { name: '席1: CPU 1、♥ 7、悪魔（追随・最弱）' })).toBeInTheDocument();
     expect(screen.getByRole('img', { name: '席2: CPU 2、♣ 4' })).toBeInTheDocument();
+  });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<KarnoffelPage />);
+    expect(await screen.findByText('プレイ', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('play', { selector: 'strong' })).not.toBeInTheDocument();
   });
 });

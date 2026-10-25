@@ -137,7 +137,6 @@ JokerPokerPage.tsx
 JulepePage.tsx
 KaiserPage.tsx
 KalookiPage.tsx
-KarnoffelPage.tsx
 KempsPage.tsx
 KillePage.tsx
 KingAlbertPage.tsx

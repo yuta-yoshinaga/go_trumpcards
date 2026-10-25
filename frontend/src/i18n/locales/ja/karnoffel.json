@@ -28,9 +28,6 @@
   "resultTitle": "局の結果",
   "handWonLine": "チーム{{team}}が局を取りました（{{t0}}-{{t1}}）",
   "handDrawnLine": "どちらも3トリックに届きませんでした（{{t0}}-{{t1}}）",
-  "settings": {
-    "title": "設定"
-  },
   "phase": {
     "play": "プレイ",
     "handEnd": "局終了",
