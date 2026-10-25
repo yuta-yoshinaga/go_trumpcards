@@ -854,4 +854,17 @@ describe('PanPage meld candidates', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     expect(screen.queryByTestId('pan-meld-button')).not.toBeInTheDocument();
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<PanPage />);
+    expect(await screen.findByText('ドロー', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('draw', { selector: 'strong' })).not.toBeInTheDocument();
+  });
+
+  it('keeps the reset button and card shortcuts in the pinned footer, as the hand-wired page did', async () => {
+    renderWithProviders(<PanPage />);
+    const footer = await screen.findByTestId('game-footer-content');
+    expect(footer).toContainElement(screen.getByRole('button', { name: 'リセット' }));
+    expect(footer).toContainElement(screen.getByTestId('pan-kbd-shortcuts'));
+  });
 });

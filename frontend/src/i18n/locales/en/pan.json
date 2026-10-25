@@ -6,7 +6,6 @@
     "gameEnd": "Game End"
   },
   "settings": {
-    "title": "Settings",
     "playerCount": "Players",
     "cpuDifficulty": "CPU Difficulty",
     "targetRounds": "Rounds",

@@ -1,33 +1,17 @@
-import { useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
 import type { panApi } from '../api/gameApi';
-import { ActionLogSection } from '../components/ActionLogSection';
-import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
 import { CpuAccordion } from '../components/CpuAccordion';
-import { CliTerminal } from '../components/cli/CliTerminal';
-import { CliToggle } from '../components/cli/CliToggle';
-import { SettingsPanel } from '../components/common/SettingsPanel';
-import { ErrorAlert } from '../components/ErrorAlert';
-import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageShell } from '../components/GamePageShell';
-import { GameResetButton } from '../components/GameResetButton';
+import { createGamePage, type GameDefinition, type GamePageContext } from '../components/game/createGamePage';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
-import { GameSkeleton } from '../components/skeleton/GameSkeleton';
-import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
-import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
-import { useCliGame } from '../hooks/useCliGame';
-import { useCliMode } from '../hooks/useCliMode';
-import { useGameHint } from '../hooks/useGameHint';
-import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, PLAYER_COUNT_OPTIONS, TARGET_ROUNDS_OPTIONS, usePanGame } from '../hooks/usePanGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
-import { gameTheme } from '../styles/gameTheme';
 import type { PanPlayer, PanResponse } from '../types/card';
 import { PanPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
@@ -35,7 +19,6 @@ import { cardAlt } from '../utils/cardAlt';
 import { PAN_HELP, parsePanCommand } from '../utils/cli/commands/panCommands';
 import { formatPanState } from '../utils/cli/formatters/panFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
-import type { CliGameConfig } from '../utils/cli/types';
 import { panLayoffIndices, panMeldCandidates } from '../utils/panMeldCandidates';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -77,130 +60,38 @@ const PAN_TUTORIAL_STEPS: TutorialStep[] = [
   },
 ];
 
-/** Renders the Panguingue (Pan) game page with draw, play, and layoff phases. */
-export const PanPage = withTutorial(PanPageContent, 'pan', PAN_TUTORIAL_STEPS);
-/** Inner content of the Panguingue page, wrapped by TutorialProvider. */
-function PanPageContent() {
+type PanGame = ReturnType<typeof usePanGame>;
+type PanView = ReturnType<typeof usePanView>;
+type PanContext = GamePageContext<PanResponse, PanGame, PanView>;
+
+function usePanView() {
   const isMobile = useIsMobile();
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('pan');
-  const {
-    state,
-    loading,
-    error,
-    exec: gameExec,
-    retry,
-    panConfig,
-    selectedCardIndices,
-    toggleCard,
-    clearSelection,
-    selectCards,
-    handleConfigChange,
-    handleDrawStock,
-    handleDrawDiscard,
-    handleMeld,
-    handleLayoff,
-    handleDiscard,
-    handleNextRound,
-  } = usePanGame();
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('pan', state);
   const { cardWidth } = useCardDimensions();
-  // CLI mode
-  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('pan');
-  const cliConfig: CliGameConfig<PanResponse, Parameters<typeof panApi.exec>> = useMemo(
-    () => ({
-      gameName: 'pan',
-      parseCommand: parsePanCommand,
-      formatResponse: formatPanState,
-      helpText: PAN_HELP,
-      localCommand: hintLocalCommand(frontendHint),
-    }),
-    [frontendHint],
-  );
-  const { handleCommand } = useCliGame(gameExec, cliConfig, state, { addInput, addOutput, addError, clearLog });
-
-  const isPlayPhaseForKbd = state?.phase === PanPhase.PLAY;
-  const isHumanTurnForKbd = isPlayPhaseForKbd && state?.players[state.currentPlayerIdx]?.isHuman === true;
-  const humanCardCountForKbd = state?.players.find((p) => p.isHuman)?.cards?.length ?? 0;
-
-  const confirmAction = useCallback(() => {
-    if (isPlayPhaseForKbd) handleDiscard();
-  }, [isPlayPhaseForKbd, handleDiscard]);
-
-  useCardKeyboardNav({
-    cardCount: humanCardCountForKbd,
-    onToggle: toggleCard,
-    onConfirm: confirmAction,
-    onClear: clearSelection,
-    enabled: !!isHumanTurnForKbd && !loading,
-  });
-
   const phaseNames = usePhaseNames('pan', PAN_PHASE_KEYS);
+  return { isMobile, cardWidth, phaseNames };
+}
 
-  // Pre-computed meld-candidate hints for the human's hand (only on their play
-  // turn). `candidates` are minimal legal melds to tap-and-select; the two index
-  // sets drive the additive ring marks on individual hand cards. Mirrors the
-  // domain's meld/layoff rules exactly (see panMeldCandidates.ts).
-  const {
-    candidates: meldCandidates,
-    candidateIndices,
-    layoffIndices,
-  } = useMemo(() => {
-    const empty = {
-      candidates: [] as ReturnType<typeof panMeldCandidates>,
-      candidateIndices: new Set<number>(),
-      layoffIndices: new Set<number>(),
-    };
-    if (!state || !frontendHintEnabled) return empty;
-    const human = state.players.find((p) => p.isHuman);
-    const isPlay = state.phase === PanPhase.PLAY;
-    const isHuman = state.players[state.currentPlayerIdx]?.isHuman === true;
-    if (!human || !isPlay || !isHuman) return empty;
-    const candidates = panMeldCandidates(human.cards);
-    const candidateIndices = new Set<number>();
-    for (const cand of candidates) for (const i of cand.indices) candidateIndices.add(i);
-    const tableMelds = state.players.flatMap((p) => p.laidMelds.map((m) => m.cards));
-    const layoffIndices = panLayoffIndices(human.cards, tableMelds);
-    return { candidates, candidateIndices, layoffIndices };
-  }, [state, frontendHintEnabled]);
-
-  const handleManualReset = useCallback(() => {
-    hideActionLog();
-    void gameExec('reset', undefined, {
-      playerCount: panConfig.playerCount,
-      cpuDifficulty: panConfig.cpuDifficulty,
-      targetRounds: panConfig.targetRounds,
-    });
-  }, [gameExec, hideActionLog, panConfig.playerCount, panConfig.cpuDifficulty, panConfig.targetRounds]);
-
-  if (!state)
-    return (
-      <GameSkeleton
-        gameKey="pan"
-        layout={{ kind: 'trick-taking', opponents: 1, centerCard: true, trickArea: true, footerHandSize: 10 }}
-      />
-    );
-
+function PanMessageBox({ state, t }: Pick<PanContext, 'state' | 't'>) {
   const roundEndMessage =
-    state?.phase === PanPhase.ROUND_END
+    state.phase === PanPhase.ROUND_END
       ? state.panDeclarerIdx >= 0
         ? t('roundEndByPan', {
             name: playerName(state.panDeclarerIdx, state.players[state.panDeclarerIdx].isHuman),
           })
         : t('roundEndByStockOut')
       : undefined;
-  const messageBox = (
+  return (
     <GameMessageBox
-      message={roundEndMessage ?? state?.message}
-      messageCode={roundEndMessage ? undefined : state?.messageCode}
-      messageParams={roundEndMessage ? undefined : state?.messageParams}
+      message={roundEndMessage ?? state.message}
+      messageCode={roundEndMessage ? undefined : state.messageCode}
+      messageParams={roundEndMessage ? undefined : state.messageParams}
     />
   );
+}
 
+function Board({ game, state, t, busy, view }: PanContext) {
+  const { isMobile, cardWidth } = view;
+  const loading = busy;
   const humanPlayer = state.players.find((p) => p.isHuman);
   const isDrawPhase = state.phase === PanPhase.DRAW;
   const isPlayPhase = state.phase === PanPhase.PLAY;
@@ -208,7 +99,7 @@ function PanPageContent() {
   const isGameEnd = state.phase === PanPhase.GAME_END || state.gameEndFlag;
   const revealCpu = isRoundEnd || isGameEnd;
   const isHumanTurn = (isDrawPhase || isPlayPhase) && state.players[state.currentPlayerIdx]?.isHuman === true;
-  const canLayoff = isPlayPhase && isHumanTurn && selectedCardIndices.length === 1 && !loading;
+  const canLayoff = isPlayPhase && isHumanTurn && game.selectedCardIndices.length === 1 && !loading;
 
   const renderPlayerMelds = (p: PanPlayer) =>
     p.laidMelds.map((meld, meldIdx) => (
@@ -243,7 +134,7 @@ function PanPageContent() {
           <button
             type="button"
             className={btnPrimary}
-            onClick={() => handleLayoff(p.id, meldIdx)}
+            onClick={() => game.handleLayoff(p.id, meldIdx)}
             data-testid={`pan-layoff-${p.id}-${meldIdx}`}
             // Owner and cards distinguish this target from other layoff buttons (#6502).
             aria-label={t('a11y.layoffTo', {
@@ -290,356 +181,405 @@ function PanPageContent() {
   };
 
   return (
-    <GamePageShell
-      title={tc('nav.pan')}
-      gameThemeBg={gameTheme.pan.bg}
-      phaseName={phaseNames[state.phase]}
-      isHumanTurn={isHumanTurn}
-      gamePath="/pan"
-      gameEndFlag={isGameEnd}
-      loading={loading}
-      confirmOpen={confirmOpen}
-      confirmReset={confirmReset}
-      cancelReset={cancelReset}
-      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
-    >
-      {cliEnabled ? (
-        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
-      ) : (
-        <>
-          <SettingsPanel
-            title={t('settings.title')}
-            groups={[
-              {
-                items: [
-                  {
-                    type: 'select',
-                    id: 'playerCount',
-                    label: t('settings.playerCount'),
-                    value: panConfig.playerCount,
-                    options: PLAYER_COUNT_OPTIONS.map((v) => ({ value: v, label: String(v) })),
-                    onSelect: (v) => handleConfigChange('playerCount', v),
-                  },
-                  {
-                    type: 'select',
-                    id: 'cpuDifficulty',
-                    label: t('settings.cpuDifficulty'),
-                    value: panConfig.cpuDifficulty,
-                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
-                      value: o.value,
-                      label: t(`settings.${o.label.toLowerCase()}`),
-                    })),
-                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
-                  },
-                  {
-                    type: 'select',
-                    id: 'targetRounds',
-                    label: t('settings.targetRounds'),
-                    value: panConfig.targetRounds,
-                    options: TARGET_ROUNDS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
-                    onSelect: (v) => handleConfigChange('targetRounds', v),
-                  },
-                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
-                ],
-              },
-            ]}
-          />
+    <>
+      <div className="text-ds-text-primary text-center mb-2">
+        <span className="mr-4">{t('round', { n: state.roundNumber, total: state.targetRounds })}</span>
+        {!(isDrawPhase && isHumanTurn) && <span className="mr-4">{t('drawPile', { count: state.drawPileCount })}</span>}
+        <span>{t('winMeld', { count: state.winMeldCount })}</span>
+      </div>
 
-          <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            <div className="text-ds-text-primary text-center mb-2">
-              <span className="mr-4">{t('round', { n: state.roundNumber, total: state.targetRounds })}</span>
-              {!(isDrawPhase && isHumanTurn) && (
-                <span className="mr-4">{t('drawPile', { count: state.drawPileCount })}</span>
-              )}
-              <span>{t('winMeld', { count: state.winMeldCount })}</span>
+      {humanPlayer && renderMeldProgress(humanPlayer)}
+
+      <div className={lgTwoColGrid}>
+        {/* Left: game play area */}
+        <div>
+          {/* Discard pile top */}
+          {state.discardTop && (
+            <div className="my-3 p-3 rounded bg-black/40 flex items-center gap-3">
+              <AnimatedCard card={state.discardTop} width={cardWidth} />
+              <div className="text-ds-text-muted text-sm">
+                <div>{t('discardTop')}</div>
+              </div>
             </div>
+          )}
 
-            {humanPlayer && renderMeldProgress(humanPlayer)}
-
-            <div className={lgTwoColGrid}>
-              {/* Left: game play area */}
-              <div>
-                {/* Discard pile top */}
-                {state.discardTop && (
-                  <div className="my-3 p-3 rounded bg-black/40 flex items-center gap-3">
-                    <AnimatedCard card={state.discardTop} width={cardWidth} />
-                    <div className="text-ds-text-muted text-sm">
-                      <div>{t('discardTop')}</div>
+          {/* Table melds (all players) with layoff targets */}
+          <div className={`${isMobile ? 'my-1 p-1' : 'my-3 p-2'} rounded bg-black/30`} data-tutorial="pan-meld-area">
+            <div className="text-ds-text-muted text-sm mb-1">{t('meldsTitle')}</div>
+            {!humanPlayer?.laidMelds.length ? (
+              <div className="text-ds-text-muted text-sm">{t('noMelds')}</div>
+            ) : (
+              state.players
+                .filter((p) => p.isHuman && p.laidMelds.length > 0)
+                .map((p) => (
+                  <div key={`melds-${p.id}`} className={isMobile ? 'mb-1' : 'mb-2'}>
+                    <div className="text-ds-text-muted text-xs mb-1">
+                      {t('meldOwner', { name: playerName(p.id, p.isHuman) })}
                     </div>
+                    {renderPlayerMelds(p)}
                   </div>
-                )}
-
-                {/* Table melds (all players) with layoff targets */}
-                <div
-                  className={`${isMobile ? 'my-1 p-1' : 'my-3 p-2'} rounded bg-black/30`}
-                  data-tutorial="pan-meld-area"
-                >
-                  <div className="text-ds-text-muted text-sm mb-1">{t('meldsTitle')}</div>
-                  {!humanPlayer?.laidMelds.length ? (
-                    <div className="text-ds-text-muted text-sm">{t('noMelds')}</div>
-                  ) : (
-                    state.players
-                      .filter((p) => p.isHuman && p.laidMelds.length > 0)
-                      .map((p) => (
-                        <div key={`melds-${p.id}`} className={isMobile ? 'mb-1' : 'mb-2'}>
-                          <div className="text-ds-text-muted text-xs mb-1">
-                            {t('meldOwner', { name: playerName(p.id, p.isHuman) })}
-                          </div>
-                          {renderPlayerMelds(p)}
-                        </div>
-                      ))
-                  )}
-                </div>
-              </div>
-
-              {/* Right: info sidebar */}
-              <div>
-                {/* CPU players */}
-                <CpuAccordion
-                  playerCount={state.players.filter((p) => !p.isHuman).length}
-                  openOnDesktop={false}
-                  forceOpen={canLayoff && state.players.some((p) => !p.isHuman && p.laidMelds.length > 0)}
-                >
-                  {state.players
-                    .filter((p) => !p.isHuman)
-                    .map((p) => (
-                      <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                        <div className="text-ds-text-muted text-sm">
-                          {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                          {t('chips', { count: p.chips })} | {t('melded', { count: p.meldedCount })}
-                        </div>
-                        {p.laidMelds.length > 0 && (
-                          <div className="mt-1">
-                            <div className="text-ds-text-muted text-xs mb-1">
-                              {t('meldOwner', { name: playerName(p.id, p.isHuman) })}
-                            </div>
-                            {renderPlayerMelds(p)}
-                          </div>
-                        )}
-                        {revealCpu && p.cards.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {p.cards.map((card, idx) => (
-                              <AnimatedCard
-                                key={`cpu-${p.id}-${card.design}-${card.value}-${idx}`}
-                                card={card}
-                                width={cardWidth * 0.8}
-                              />
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                </CpuAccordion>
-
-                {/* Score table */}
-                <details
-                  className="my-3 p-2 rounded bg-black/30"
-                  data-tutorial="pan-score-table"
-                  data-testid="pan-score-table"
-                  open={!isMobile || undefined}
-                >
-                  <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('scores')}</summary>
-                  <table className="w-full text-sm text-ds-text-muted">
-                    <thead>
-                      <tr>
-                        <th scope="col" className="text-left whitespace-nowrap">
-                          {t('scoresPlayer')}
-                        </th>
-                        <th scope="col" className="whitespace-nowrap">
-                          {t('scoresChips')}
-                        </th>
-                        {isRoundEnd && (
-                          <th scope="col" className="whitespace-nowrap">
-                            {t('scoresHandPoints')}
-                          </th>
-                        )}
-                        <th scope="col" className="whitespace-nowrap">
-                          {t('scoresRound')}
-                        </th>
-                        <th scope="col" className="whitespace-nowrap">
-                          {t('scoresTotal')}
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {state.players.map((p, playerIdx) => (
-                        <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
-                          <td>
-                            {playerName(p.id, p.isHuman)}
-                            {playerIdx === state.dealerIdx && (
-                              <span className="ml-1 rounded-sm bg-ds-surface px-1 text-ds-accent whitespace-nowrap">
-                                {t('dealerBadge')}
-                              </span>
-                            )}
-                          </td>
-                          <td className="text-center">{p.chips}</td>
-                          {isRoundEnd && <td className="text-center">{p.handPoints}</td>}
-                          <td className="text-center">{p.roundScore}</td>
-                          <td className="text-center">{p.cumulativeScore}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </details>
-              </div>
-            </div>
-
-            {isMobile && messageBox}
-
-            <ActionLogSection
-              isEndPhase={isGameEnd}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
+                ))
+            )}
           </div>
+        </div>
 
-          <GameFooter
-            message={isMobile ? undefined : messageBox}
-            className={`${gameTheme.pan.footer} px-4 py-2.5`}
-            actions={
-              (isDrawPhase && isHumanTurn) || (isPlayPhase && isHumanTurn) || isRoundEnd ? (
-                <div className="flex gap-2 items-center justify-center flex-wrap">
-                  {isDrawPhase && isHumanTurn && (
-                    <div className="flex gap-2 items-center" data-tutorial="pan-draw-area">
-                      <span className="text-ds-text-muted text-sm" data-testid="pan-draw-pile-count">
-                        {t('drawPile', { count: state.drawPileCount })}
-                      </span>
-                      {state.drawPileCount === 0 && (
-                        <span className="text-ds-warning text-sm">{t('drawStockEmpty')}</span>
-                      )}
-                      <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
-                        {t('drawStockButton')}
-                      </button>
-                      <button
-                        type="button"
-                        className={btnPrimary}
-                        onClick={handleDrawDiscard}
-                        disabled={loading || !state.discardTop}
-                      >
-                        {t('drawDiscardButton')}
-                      </button>
+        {/* Right: info sidebar */}
+        <div>
+          {/* CPU players */}
+          <CpuAccordion
+            playerCount={state.players.filter((p) => !p.isHuman).length}
+            openOnDesktop={false}
+            forceOpen={canLayoff && state.players.some((p) => !p.isHuman && p.laidMelds.length > 0)}
+          >
+            {state.players
+              .filter((p) => !p.isHuman)
+              .map((p) => (
+                <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
+                  <div className="text-ds-text-muted text-sm">
+                    {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                    {t('chips', { count: p.chips })} | {t('melded', { count: p.meldedCount })}
+                  </div>
+                  {p.laidMelds.length > 0 && (
+                    <div className="mt-1">
+                      <div className="text-ds-text-muted text-xs mb-1">
+                        {t('meldOwner', { name: playerName(p.id, p.isHuman) })}
+                      </div>
+                      {renderPlayerMelds(p)}
                     </div>
                   )}
-                  {isPlayPhase && isHumanTurn && (
-                    <>
-                      <button
-                        type="button"
-                        className={btnPrimary}
-                        onClick={handleMeld}
-                        disabled={loading || selectedCardIndices.length < 3}
-                        data-testid="pan-meld-button"
-                      >
-                        {t('meldButton')}
-                      </button>
-                      <button
-                        type="button"
-                        className={btnPrimary}
-                        onClick={handleDiscard}
-                        disabled={loading || selectedCardIndices.length !== 1}
-                        data-tutorial="pan-discard-button"
-                        data-testid="pan-discard-button"
-                      >
-                        {t('discardButton')}
-                      </button>
-                    </>
-                  )}
-                  {isRoundEnd && (
-                    <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                      {t('nextRound')}
-                    </button>
+                  {revealCpu && p.cards.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {p.cards.map((card, idx) => (
+                        <AnimatedCard
+                          key={`cpu-${p.id}-${card.design}-${card.value}-${idx}`}
+                          card={card}
+                          width={cardWidth * 0.8}
+                        />
+                      ))}
+                    </div>
                   )}
                 </div>
-              ) : null
-            }
+              ))}
+          </CpuAccordion>
+
+          {/* Score table */}
+          <details
+            className="my-3 p-2 rounded bg-black/30"
+            data-tutorial="pan-score-table"
+            data-testid="pan-score-table"
+            open={!isMobile || undefined}
           >
-            {humanPlayer && meldCandidates.length > 0 && (
-              <div className="mb-2 p-2 rounded bg-black/30" data-testid="pan-meld-candidates">
-                <div className="text-ds-text-muted text-xs mb-1">{t('candidates.title')}</div>
-                <div className="flex flex-wrap gap-2">
-                  {meldCandidates.map((cand) => {
-                    const cards = cand.indices.map((i) => humanPlayer.cards[i]);
-                    const kindLabel = t(cand.kind === 'set' ? 'candidates.set' : 'candidates.run');
-                    return (
-                      <button
-                        type="button"
-                        key={`cand-${cand.kind}-${cand.indices.join('-')}`}
-                        onClick={() => selectCards(cand.indices)}
-                        className={`${btnPrimary} flex items-center gap-1`}
-                        aria-label={`${kindLabel}: ${cards.map(cardAlt).join(' ')}`}
-                        data-testid={`pan-candidate-${cand.indices.join('-')}`}
-                      >
-                        <span className="text-xs font-bold">{kindLabel}</span>
-                        {cards.map((card, ci) => (
-                          <AnimatedCard
-                            key={`cand-card-${card.design}-${card.value}-${ci}`}
-                            card={card}
-                            width={cardWidth * 0.55}
-                          />
-                        ))}
-                      </button>
-                    );
-                  })}
-                </div>
-                <div className="text-ds-text-muted text-xs mt-1">{t('candidates.hint')}</div>
-              </div>
-            )}
-            {humanPlayer && (
-              <div className="flex flex-wrap gap-1 mb-2" data-tutorial="pan-player-hand">
-                {humanPlayer.cards.map((card, idx) => {
-                  const isLayoff = layoffIndices.has(idx);
-                  const isCandidate = candidateIndices.has(idx);
-                  // Additive outline ring (stacks on the selection border without
-                  // clobbering it): warning = can lay off a single card onto a
-                  // table meld; success = part of a legal meld candidate.
-                  const hintRing = isLayoff
-                    ? { outline: '2px solid var(--color-ds-warning)', outlineOffset: '1px' }
-                    : isCandidate
-                      ? { outline: '2px solid var(--color-ds-success)', outlineOffset: '1px' }
-                      : {};
-                  return (
-                    <button
-                      type="button"
-                      key={`${card.design}-${card.value}-${idx}`}
-                      onClick={() => toggleCard(idx)}
-                      aria-label={cardAlt(card)}
-                      aria-pressed={selectedCardIndices.includes(idx)}
-                      data-meld-candidate={isCandidate ? 'true' : undefined}
-                      data-layoff-target={isLayoff ? 'true' : undefined}
-                      className={`transition-transform ${focusRingCard}`}
-                      style={{
-                        background: 'none',
-                        padding: 0,
-                        borderRadius: 8,
-                        ...selectedCardStyle(selectedCardIndices.includes(idx)),
-                        ...hintRing,
-                        boxSizing: 'border-box',
-                      }}
-                    >
-                      <AnimatedCard card={card} width={cardWidth} />
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+            <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('scores')}</summary>
+            <table className="w-full text-sm text-ds-text-muted">
+              <thead>
+                <tr>
+                  <th scope="col" className="text-left whitespace-nowrap">
+                    {t('scoresPlayer')}
+                  </th>
+                  <th scope="col" className="whitespace-nowrap">
+                    {t('scoresChips')}
+                  </th>
+                  {isRoundEnd && (
+                    <th scope="col" className="whitespace-nowrap">
+                      {t('scoresHandPoints')}
+                    </th>
+                  )}
+                  <th scope="col" className="whitespace-nowrap">
+                    {t('scoresRound')}
+                  </th>
+                  <th scope="col" className="whitespace-nowrap">
+                    {t('scoresTotal')}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {state.players.map((p, playerIdx) => (
+                  <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
+                    <td>
+                      {playerName(p.id, p.isHuman)}
+                      {playerIdx === state.dealerIdx && (
+                        <span className="ml-1 rounded-sm bg-ds-surface px-1 text-ds-accent whitespace-nowrap">
+                          {t('dealerBadge')}
+                        </span>
+                      )}
+                    </td>
+                    <td className="text-center">{p.chips}</td>
+                    {isRoundEnd && <td className="text-center">{p.handPoints}</td>}
+                    <td className="text-center">{p.roundScore}</td>
+                    <td className="text-center">{p.cumulativeScore}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </details>
+        </div>
+      </div>
 
-            <ErrorAlert message={error} onRetry={retry} />
-
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-            <div className="flex gap-2 items-center flex-wrap">
-              <GameResetButton
-                isGameEnd={!!isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="pan-reset-button"
-              />
-            </div>
-            <CardNavShortcutsPanel data-testid="pan-kbd-shortcuts" />
-          </GameFooter>
-        </>
-      )}
-    </GamePageShell>
+      {isMobile && <PanMessageBox state={state} t={t} />}
+    </>
   );
 }
+
+function FooterHand({ game, state, t, frontendHint, view }: PanContext) {
+  const { cardWidth } = view;
+  const humanPlayer = state.players.find((p) => p.isHuman);
+
+  // Pre-computed meld-candidate hints for the human's hand (only on their play
+  // turn). `candidates` are minimal legal melds to tap-and-select; the two index
+  // sets drive the additive ring marks on individual hand cards. Mirrors the
+  // domain's meld/layoff rules exactly (see panMeldCandidates.ts).
+  const {
+    candidates: meldCandidates,
+    candidateIndices,
+    layoffIndices,
+  } = useMemo(() => {
+    const empty = {
+      candidates: [] as ReturnType<typeof panMeldCandidates>,
+      candidateIndices: new Set<number>(),
+      layoffIndices: new Set<number>(),
+    };
+    if (!frontendHint.hintEnabled) return empty;
+    const isPlay = state.phase === PanPhase.PLAY;
+    const isHuman = state.players[state.currentPlayerIdx]?.isHuman === true;
+    if (!humanPlayer || !isPlay || !isHuman) return empty;
+    const candidates = panMeldCandidates(humanPlayer.cards);
+    const candidateIndices = new Set<number>();
+    for (const cand of candidates) for (const i of cand.indices) candidateIndices.add(i);
+    const tableMelds = state.players.flatMap((p) => p.laidMelds.map((m) => m.cards));
+    const layoffIndices = panLayoffIndices(humanPlayer.cards, tableMelds);
+    return { candidates, candidateIndices, layoffIndices };
+  }, [state, frontendHint.hintEnabled, humanPlayer]);
+
+  return (
+    <>
+      {humanPlayer && meldCandidates.length > 0 && (
+        <div className="mb-2 p-2 rounded bg-black/30" data-testid="pan-meld-candidates">
+          <div className="text-ds-text-muted text-xs mb-1">{t('candidates.title')}</div>
+          <div className="flex flex-wrap gap-2">
+            {meldCandidates.map((cand) => {
+              const cards = cand.indices.map((i) => humanPlayer.cards[i]);
+              const kindLabel = t(cand.kind === 'set' ? 'candidates.set' : 'candidates.run');
+              return (
+                <button
+                  type="button"
+                  key={`cand-${cand.kind}-${cand.indices.join('-')}`}
+                  onClick={() => game.selectCards(cand.indices)}
+                  className={`${btnPrimary} flex items-center gap-1`}
+                  aria-label={`${kindLabel}: ${cards.map(cardAlt).join(' ')}`}
+                  data-testid={`pan-candidate-${cand.indices.join('-')}`}
+                >
+                  <span className="text-xs font-bold">{kindLabel}</span>
+                  {cards.map((card, ci) => (
+                    <AnimatedCard
+                      key={`cand-card-${card.design}-${card.value}-${ci}`}
+                      card={card}
+                      width={cardWidth * 0.55}
+                    />
+                  ))}
+                </button>
+              );
+            })}
+          </div>
+          <div className="text-ds-text-muted text-xs mt-1">{t('candidates.hint')}</div>
+        </div>
+      )}
+      {humanPlayer && (
+        <div className="flex flex-wrap gap-1 mb-2" data-tutorial="pan-player-hand">
+          {humanPlayer.cards.map((card, idx) => {
+            const isLayoff = layoffIndices.has(idx);
+            const isCandidate = candidateIndices.has(idx);
+            // Additive outline ring (stacks on the selection border without
+            // clobbering it): warning = can lay off a single card onto a
+            // table meld; success = part of a legal meld candidate.
+            const hintRing = isLayoff
+              ? { outline: '2px solid var(--color-ds-warning)', outlineOffset: '1px' }
+              : isCandidate
+                ? { outline: '2px solid var(--color-ds-success)', outlineOffset: '1px' }
+                : {};
+            return (
+              <button
+                type="button"
+                key={`${card.design}-${card.value}-${idx}`}
+                onClick={() => game.toggleCard(idx)}
+                aria-label={cardAlt(card)}
+                aria-pressed={game.selectedCardIndices.includes(idx)}
+                data-meld-candidate={isCandidate ? 'true' : undefined}
+                data-layoff-target={isLayoff ? 'true' : undefined}
+                className={`transition-transform ${focusRingCard}`}
+                style={{
+                  background: 'none',
+                  padding: 0,
+                  borderRadius: 8,
+                  ...selectedCardStyle(game.selectedCardIndices.includes(idx)),
+                  ...hintRing,
+                  boxSizing: 'border-box',
+                }}
+              >
+                <AnimatedCard card={card} width={cardWidth} />
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </>
+  );
+}
+
+function FooterStatus({ frontendHint, t }: PanContext) {
+  return <FrontendHintTooltip hint={frontendHint.hint} enabled={frontendHint.hintEnabled} t={t} />;
+}
+
+function primaryActions({ game, state, t, busy }: PanContext) {
+  const isDrawPhase = state.phase === PanPhase.DRAW;
+  const isPlayPhase = state.phase === PanPhase.PLAY;
+  const isRoundEnd = state.phase === PanPhase.ROUND_END;
+  const isHumanTurn = (isDrawPhase || isPlayPhase) && state.players[state.currentPlayerIdx]?.isHuman === true;
+  const loading = busy;
+
+  if (!((isDrawPhase && isHumanTurn) || (isPlayPhase && isHumanTurn) || isRoundEnd)) {
+    return null;
+  }
+
+  return (
+    <div className="flex gap-2 items-center justify-center flex-wrap">
+      {isDrawPhase && isHumanTurn && (
+        <div className="flex gap-2 items-center" data-tutorial="pan-draw-area">
+          <span className="text-ds-text-muted text-sm" data-testid="pan-draw-pile-count">
+            {t('drawPile', { count: state.drawPileCount })}
+          </span>
+          {state.drawPileCount === 0 && <span className="text-ds-warning text-sm">{t('drawStockEmpty')}</span>}
+          <button type="button" className={btnPrimary} onClick={game.handleDrawStock} disabled={loading}>
+            {t('drawStockButton')}
+          </button>
+          <button
+            type="button"
+            className={btnPrimary}
+            onClick={game.handleDrawDiscard}
+            disabled={loading || !state.discardTop}
+          >
+            {t('drawDiscardButton')}
+          </button>
+        </div>
+      )}
+      {isPlayPhase && isHumanTurn && (
+        <>
+          <button
+            type="button"
+            className={btnPrimary}
+            onClick={game.handleMeld}
+            disabled={loading || game.selectedCardIndices.length < 3}
+            data-testid="pan-meld-button"
+          >
+            {t('meldButton')}
+          </button>
+          <button
+            type="button"
+            className={btnPrimary}
+            onClick={game.handleDiscard}
+            disabled={loading || game.selectedCardIndices.length !== 1}
+            data-tutorial="pan-discard-button"
+            data-testid="pan-discard-button"
+          >
+            {t('discardButton')}
+          </button>
+        </>
+      )}
+      {isRoundEnd && (
+        <button type="button" className={btnSuccess} onClick={game.handleNextRound} disabled={loading}>
+          {t('nextRound')}
+        </button>
+      )}
+    </div>
+  );
+}
+
+const panDefinition: GameDefinition<PanResponse, PanGame, Parameters<typeof panApi.exec>, PanView> = {
+  key: 'pan',
+  useGame: usePanGame,
+  useView: usePanView,
+  tutorial: PAN_TUTORIAL_STEPS,
+  skeleton: { kind: 'trick-taking', opponents: 1, centerCard: true, trickArea: true, footerHandSize: 10 },
+  cli: ({ frontendHint }) => ({
+    parseCommand: parsePanCommand,
+    formatResponse: formatPanState,
+    helpText: PAN_HELP,
+    localCommand: hintLocalCommand(frontendHint.hint),
+  }),
+  phase: ({ state, view }) => ({
+    name: view.phaseNames[state.phase],
+    ended: state.phase === PanPhase.GAME_END || state.gameEndFlag,
+  }),
+  shell: ({ state }) => ({
+    isHumanTurn:
+      (state.phase === PanPhase.DRAW || state.phase === PanPhase.PLAY) &&
+      state.players[state.currentPlayerIdx]?.isHuman === true,
+  }),
+  reset: ({ game }) => {
+    void game.exec('reset', undefined, {
+      playerCount: game.panConfig.playerCount,
+      cpuDifficulty: game.panConfig.cpuDifficulty,
+      targetRounds: game.panConfig.targetRounds,
+    });
+  },
+  settings: ({ game, t, tc, frontendHint }) => [
+    {
+      items: [
+        {
+          type: 'select',
+          id: 'playerCount',
+          label: t('settings.playerCount'),
+          value: game.panConfig.playerCount,
+          options: PLAYER_COUNT_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+          onSelect: (v) => game.handleConfigChange('playerCount', v),
+        },
+        {
+          type: 'select',
+          id: 'cpuDifficulty',
+          label: t('settings.cpuDifficulty'),
+          value: game.panConfig.cpuDifficulty,
+          options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
+            value: o.value,
+            label: t(`settings.${o.label.toLowerCase()}`),
+          })),
+          onSelect: (v) => game.handleConfigChange('cpuDifficulty', v),
+        },
+        {
+          type: 'select',
+          id: 'targetRounds',
+          label: t('settings.targetRounds'),
+          value: game.panConfig.targetRounds,
+          options: TARGET_ROUNDS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+          onSelect: (v) => game.handleConfigChange('targetRounds', v),
+        },
+        hintCheckboxItem(tc, frontendHint.hintEnabled, frontendHint.setHintEnabled),
+      ],
+    },
+  ],
+  settingsPlacement: 'top',
+  contentClassName: `pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`,
+  primaryActions,
+  message: (ctx) => (!ctx.view.isMobile ? <PanMessageBox state={ctx.state} t={ctx.t} /> : null),
+  cardNav: ({ game, state }) => {
+    const isPlayPhase = state.phase === PanPhase.PLAY;
+    const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
+    return {
+      cardCount: state.players.find((p) => p.isHuman)?.cards?.length ?? 0,
+      onToggle: game.toggleCard,
+      onConfirm: () => {
+        if (isPlayPhase) game.handleDiscard();
+      },
+      onClear: game.clearSelection,
+      enabled: isHumanTurn,
+    };
+  },
+  shortcutsTestId: 'pan-kbd-shortcuts',
+  resetTutorialId: 'pan-reset-button',
+  actionsClassName: 'flex gap-2 items-center flex-wrap',
+  controlsInFooter: true,
+  Board,
+  FooterHand,
+  FooterStatus,
+};
+
+/** Renders the Panguingue (Pan) game page with draw, play, and layoff phases. */
+export const PanPage = createGamePage(panDefinition);

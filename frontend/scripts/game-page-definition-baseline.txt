@@ -199,7 +199,6 @@ OpenFaceChinesePage.tsx
 OsmosisPage.tsx
 PageOnePage.tsx
 PaiGowPage.tsx
-PanPage.tsx
 PasurPage.tsx
 PenguinPage.tsx
 PerseverancePage.tsx
