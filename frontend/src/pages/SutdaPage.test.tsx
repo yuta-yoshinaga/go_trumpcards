@@ -427,4 +427,10 @@ describe('SutdaPage', () => {
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
     window.dispatchEvent(new Event('resize'));
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<SutdaPage />);
+    expect(await screen.findByText('ベッティング', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('bet', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });

@@ -267,7 +267,6 @@ StealingBundlesPage.tsx
 StreetsAndAlleysPage.tsx
 SuecaPage.tsx
 SultanPage.tsx
-SutdaPage.tsx
 TablanetPage.tsx
 TappTarockPage.tsx
 TarabishPage.tsx

@@ -6,7 +6,6 @@
     "gameEnd": "ゲーム終了"
   },
   "settings": {
-    "title": "設定",
     "pendingReset": "設定の変更は次のリセットから適用されます。",
     "cpuDifficulty": "CPU難易度",
     "seats": "席数",
