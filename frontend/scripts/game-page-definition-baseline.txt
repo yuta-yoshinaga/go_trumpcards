@@ -331,7 +331,6 @@ TrucoPage.tsx
 TuSacPage.tsx
 TwoTenJackPage.tsx
 TysiacPage.tsx
-UltiPage.tsx
 UltimateTexasHoldemPage.tsx
 UnsunKarutaPage.tsx
 VideoPokerPage.tsx
