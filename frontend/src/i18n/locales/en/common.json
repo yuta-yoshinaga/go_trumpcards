@@ -2273,6 +2273,8 @@
     "estimation.roundEnd": "Round {{round}} is over (you scored {{score}}).",
     "estimation.trump.choose": "You are the dealer — choose the trump suit.",
     "estimation.trump.wait": "CPU{{idx}} is the dealer, choosing the trump suit.",
+    "coinche.hintRequested": "Hint available",
+    "coinche.noHint": "No hint available",
     "euchre.callTrumpPhase": "Call the trump suit.",
     "euchre.discardPhase": "Discard a card or go out.",
     "euchre.hintRequested": "A hint is available",

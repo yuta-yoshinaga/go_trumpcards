@@ -99,5 +99,7 @@
   "bidPhase": "Bid a target and a trump suit, or pass",
   "doublePhase": "Double the opponents' contract?",
   "bidControlsGroup": "Target and trump declaration",
-  "doubleControlsGroup": "Response to coinche"
+  "doubleControlsGroup": "Response to coinche",
+  "hintRequested": "Hint available",
+  "noHint": "No hint available"
 }
