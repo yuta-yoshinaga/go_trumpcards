@@ -471,6 +471,13 @@ describe('FortyFivesPage', () => {
 
     const targetSelect = screen.getByLabelText('目標ポイント');
     fireEvent.change(targetSelect, { target: { value: '60' } });
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', { config: { cpuDifficulty: 2, targetPoints: 60 } }),
+    );
   });
 
   it('triggers reset handler when confirming reset', async () => {
@@ -495,7 +502,8 @@ describe('FortyFivesPage', () => {
         ],
       }),
     );
-    renderWithProviders(<FortyFivesPage />);
+    const { container } = renderWithProviders(<FortyFivesPage />);
     expect(await screen.findByTestId('fortyfives-hint-live')).toBeInTheDocument();
+    expect(container.querySelector('[data-tutorial="fortyfives-player-hand"]')).toBeNull();
   });
 });
