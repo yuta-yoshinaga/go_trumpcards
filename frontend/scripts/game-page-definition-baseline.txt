@@ -327,7 +327,6 @@ VideoPokerPage.tsx
 VintPage.tsx
 WarPage.tsx
 WaspPage.tsx
-WattenPage.tsx
 WhistPage.tsx
 WhiteheadPage.tsx
 WillOTheWispPage.tsx
