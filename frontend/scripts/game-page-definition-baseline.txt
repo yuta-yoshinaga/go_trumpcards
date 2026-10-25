@@ -262,7 +262,6 @@ StalactitesPage.tsx
 StealingBundlesPage.tsx
 StreetsAndAlleysPage.tsx
 SuecaPage.tsx
-SultanPage.tsx
 TablanetPage.tsx
 TappTarockPage.tsx
 TarabishPage.tsx

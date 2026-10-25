@@ -186,6 +186,14 @@ describe('SultanPage', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent(/手数: 5/));
   });
 
+  it('shows the translated phase name, not the raw phase key', async () => {
+    mockExec.mockResolvedValue(gameClearState);
+    renderWithProviders(<SultanPage />);
+
+    expect(await screen.findByText('ゲームクリア', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.getByTestId('phase-indicator')).not.toHaveTextContent('gameClear');
+  });
+
   it('renders waste card', async () => {
     renderWithProviders(<SultanPage />);
     await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
