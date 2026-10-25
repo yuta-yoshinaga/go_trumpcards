@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { shamrocksApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -12,6 +14,8 @@ import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
@@ -21,10 +25,13 @@ import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useShamrocksStats } from '../hooks/useShamrocksStats';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { Card } from '../types/card';
+import type { Card, ShamrocksResponse } from '../types/card';
 import { ShamrocksPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { parseShamrocksCommand, SHAMROCKS_HELP, type ShamrocksCliArgs } from '../utils/cli/commands/shamrocksCommands';
+import { formatShamrocksState } from '../utils/cli/formatters/shamrocksFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Shamrocks tutorial step definitions. */
@@ -123,6 +130,19 @@ function ShamrocksPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('shamrocks', state);
+
+  // CLI mode
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('shamrocks');
+  const cliConfig: CliGameConfig<ShamrocksResponse, ShamrocksCliArgs> = useMemo(
+    () => ({
+      gameName: 'shamrocks',
+      parseCommand: (input: string) => parseShamrocksCommand(input, state ?? undefined),
+      formatResponse: formatShamrocksState,
+      helpText: SHAMROCKS_HELP,
+    }),
+    [state],
+  );
+  const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   if (!state) return <GameSkeleton gameKey="shamrocks" layout={{ kind: 'tableau', topRow: 4, tableau: 9 }} />;
 
@@ -256,158 +276,169 @@ function ShamrocksPageContent() {
       giveUpConfirmOpen={giveUpConfirmOpen}
       confirmGiveUp={confirmGiveUp}
       cancelGiveUp={cancelGiveUp}
+      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
-      <div className="flex-1 overflow-y-auto pt-3 px-3 lg:px-8">
-        {/* Foundations */}
-        <div className="mb-3" data-tutorial="ll-foundation">
-          <span className="text-ds-text-muted text-[11px]">{t('foundation')}</span>
-          <div
-            className={`flex gap-1 mt-0.5 rounded${hintFoundation ? ' ring-2 ring-ds-success motion-safe:animate-pulse p-1' : ''}`}
-            data-testid="ll-foundation-row"
-            data-hint-foundation={hintFoundation ? 'true' : undefined}
-          >
-            {state.foundation.map((pile, i) => {
-              const topCard = pile.at(-1);
-              return (
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <div className="flex-1 overflow-y-auto pt-3 px-3 lg:px-8">
+            {/* Foundations */}
+            <div className="mb-3" data-tutorial="ll-foundation">
+              <span className="text-ds-text-muted text-[11px]">{t('foundation')}</span>
+              <div
+                className={`flex gap-1 mt-0.5 rounded${hintFoundation ? ' ring-2 ring-ds-success motion-safe:animate-pulse p-1' : ''}`}
+                data-testid="ll-foundation-row"
+                data-hint-foundation={hintFoundation ? 'true' : undefined}
+              >
+                {state.foundation.map((pile, i) => {
+                  const topCard = pile.at(-1);
+                  return (
+                    <button
+                      type="button"
+                      key={`fnd-${i}`}
+                      className={`flex min-h-[44px] min-w-[44px] items-center justify-center rounded ${foundationAcceptsSelected(i) ? 'ring-1 ring-ds-success cursor-pointer' : ''}`}
+                      onClick={foundationAcceptsSelected(i) ? sendToFoundation : undefined}
+                      disabled={!canAct || !foundationAcceptsSelected(i)}
+                      aria-label={
+                        topCard
+                          ? t('foundationAriaLabel', { card: cardAlt(topCard) })
+                          : t('emptyFoundationAriaLabel', { index: i })
+                      }
+                      data-testid={`foundation-${i}`}
+                    >
+                      {topCard ? (
+                        <CardImage card={topCard} width={w} />
+                      ) : (
+                        <div
+                          className="rounded border border-dashed border-white/25 bg-black/20"
+                          style={{ width: w, height: Math.round(w * 1.4) }}
+                        />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Fans */}
+            <div className="overflow-x-auto">
+              <div
+                className="grid w-max grid-cols-[repeat(9,max-content)] gap-1"
+                data-tutorial="ll-fans"
+                data-testid="ll-fans"
+              >
+                {state.fans.map((fan, i) => renderFan(fan, i))}
+              </div>
+            </div>
+
+            <div className="mt-2 text-ds-text-muted text-xs">{t('moveCount', { count: state.moveCount })}</div>
+            <section
+              aria-label={t('stats.title')}
+              className="my-3 rounded-lg bg-ds-surface p-3 text-sm text-ds-text-primary"
+            >
+              <h2 className="font-semibold">{t('stats.title')}</h2>
+              <p>{t('stats.games', { count: stats.games })}</p>
+              <p>{t('stats.averageMoves', { count: stats.games ? Math.round(stats.moves / stats.games) : 0 })}</p>
+              <button type="button" className={btnSecondary} onClick={resetStats}>
+                {t('stats.clear')}
+              </button>
+            </section>
+            {deadlocked && (
+              <div
+                className="mt-1 flex items-center gap-2 text-ds-error-text text-sm font-medium"
+                role="status"
+                data-testid="ll-deadlock-banner"
+              >
+                <span>{t('stuckDeadlock')}</span>
+              </div>
+            )}
+            {canAct && (
+              <div className="mt-1 text-ds-text-primary text-xs">
+                {selected === null ? t('selectSource') : t('selectDestination')}
+              </div>
+            )}
+
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            <SettingsPanel
+              title={tc('settings.title')}
+              groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
+            />
+
+            <ActionLogSection
+              isEndPhase={isEnd}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
+          </div>
+
+          <GameFooter className={`${gameTheme.shamrocks.footer} px-3 py-2.5`}>
+            <ErrorAlert message={error} onRetry={retry} />
+            <div className="flex flex-wrap gap-2 items-center">
+              <div className="flex flex-wrap gap-2 items-center" data-tutorial="ll-action-buttons">
+                {canAct && (
+                  <button
+                    type="button"
+                    className={btnSuccess}
+                    onClick={() => exec('ac')}
+                    disabled={loading}
+                    data-testid="autocomplete-button"
+                  >
+                    {t('autoComplete')}
+                  </button>
+                )}
+                {canAct && state.canUndo && (
+                  <button
+                    type="button"
+                    className={btnSecondary}
+                    onClick={() => exec('u')}
+                    disabled={loading}
+                    data-testid="undo-button"
+                  >
+                    {t('undo')}
+                  </button>
+                )}
+                {canAct && (
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handleHint}
+                    disabled={loading}
+                    data-testid="hint-button"
+                  >
+                    {t('hint')}
+                  </button>
+                )}
+              </div>
+              {canAct && (
                 <button
                   type="button"
-                  key={`fnd-${i}`}
-                  className={`flex min-h-[44px] min-w-[44px] items-center justify-center rounded ${foundationAcceptsSelected(i) ? 'ring-1 ring-ds-success cursor-pointer' : ''}`}
-                  onClick={foundationAcceptsSelected(i) ? sendToFoundation : undefined}
-                  disabled={!canAct || !foundationAcceptsSelected(i)}
-                  aria-label={
-                    topCard
-                      ? t('foundationAriaLabel', { card: cardAlt(topCard) })
-                      : t('emptyFoundationAriaLabel', { index: i })
-                  }
-                  data-testid={`foundation-${i}`}
+                  className={`${btnSecondary}${deadlocked ? ' motion-safe:animate-pulse' : ''}`}
+                  onClick={confirmGiveUpAction}
+                  disabled={loading}
+                  data-testid="giveup-button"
                 >
-                  {topCard ? (
-                    <CardImage card={topCard} width={w} />
-                  ) : (
-                    <div
-                      className="rounded border border-dashed border-white/25 bg-black/20"
-                      style={{ width: w, height: Math.round(w * 1.4) }}
-                    />
-                  )}
+                  {t('giveup')}
                 </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Fans */}
-        <div className="overflow-x-auto">
-          <div
-            className="grid w-max grid-cols-[repeat(9,max-content)] gap-1"
-            data-tutorial="ll-fans"
-            data-testid="ll-fans"
-          >
-            {state.fans.map((fan, i) => renderFan(fan, i))}
-          </div>
-        </div>
-
-        <div className="mt-2 text-ds-text-muted text-xs">{t('moveCount', { count: state.moveCount })}</div>
-        <section
-          aria-label={t('stats.title')}
-          className="my-3 rounded-lg bg-ds-surface p-3 text-sm text-ds-text-primary"
-        >
-          <h2 className="font-semibold">{t('stats.title')}</h2>
-          <p>{t('stats.games', { count: stats.games })}</p>
-          <p>{t('stats.averageMoves', { count: stats.games ? Math.round(stats.moves / stats.games) : 0 })}</p>
-          <button type="button" className={btnSecondary} onClick={resetStats}>
-            {t('stats.clear')}
-          </button>
-        </section>
-        {deadlocked && (
-          <div
-            className="mt-1 flex items-center gap-2 text-ds-error-text text-sm font-medium"
-            role="status"
-            data-testid="ll-deadlock-banner"
-          >
-            <span>{t('stuckDeadlock')}</span>
-          </div>
-        )}
-        {canAct && (
-          <div className="mt-1 text-ds-text-primary text-xs">
-            {selected === null ? t('selectSource') : t('selectDestination')}
-          </div>
-        )}
-
-        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
-        <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-        <SettingsPanel
-          title={tc('settings.title')}
-          groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
-        />
-
-        <ActionLogSection
-          isEndPhase={isEnd}
-          actionLog={actionLog}
-          showActionLog={showActionLog}
-          hideActionLog={hideActionLog}
-        />
-      </div>
-
-      <GameFooter className={`${gameTheme.shamrocks.footer} px-3 py-2.5`}>
-        <ErrorAlert message={error} onRetry={retry} />
-        <div className="flex flex-wrap gap-2 items-center">
-          <div className="flex flex-wrap gap-2 items-center" data-tutorial="ll-action-buttons">
-            {canAct && (
-              <button
-                type="button"
-                className={btnSuccess}
-                onClick={() => exec('ac')}
-                disabled={loading}
-                data-testid="autocomplete-button"
-              >
-                {t('autoComplete')}
-              </button>
-            )}
-            {canAct && state.canUndo && (
-              <button
-                type="button"
-                className={btnSecondary}
-                onClick={() => exec('u')}
-                disabled={loading}
-                data-testid="undo-button"
-              >
-                {t('undo')}
-              </button>
-            )}
-            {canAct && (
-              <button
-                type="button"
-                className={btnPrimary}
-                onClick={handleHint}
-                disabled={loading}
-                data-testid="hint-button"
-              >
-                {t('hint')}
-              </button>
-            )}
-          </div>
-          {canAct && (
-            <button
-              type="button"
-              className={`${btnSecondary}${deadlocked ? ' motion-safe:animate-pulse' : ''}`}
-              onClick={confirmGiveUpAction}
-              disabled={loading}
-              data-testid="giveup-button"
-            >
-              {t('giveup')}
-            </button>
-          )}
-          <GameResetButton
-            isGameEnd={isEnd}
-            onReset={handleReset}
-            requestConfirm={requestConfirm}
-            loading={loading}
-            dataTutorial="ll-reset-button"
-          />
-        </div>
-      </GameFooter>
+              )}
+              <GameResetButton
+                isGameEnd={isEnd}
+                onReset={handleReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="ll-reset-button"
+              />
+            </div>
+          </GameFooter>
+        </>
+      )}
     </GamePageShell>
   );
 }
