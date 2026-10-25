@@ -446,6 +446,12 @@ describe('SjavsPage', () => {
       expect(screen.queryByTestId('sjavs-trump-0')).not.toBeInTheDocument();
     });
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<SjavsPage />);
+    expect(await screen.findByText('ビッド', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('bid', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });
 
 describe('SjavsPage opponent card backs by viewport', () => {
