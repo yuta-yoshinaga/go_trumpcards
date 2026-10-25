@@ -3933,6 +3933,8 @@
     "terrace.noHint": "No hint available",
     "terrace.playing": "Playing",
     "terrace.stalemate": "No moves can lead to a win. Please undo or give up.",
+    "tehonbiki.hintRequested": "A hint is available",
+    "tehonbiki.noHint": "No hint available",
     "texasholdembonus.result.dealerWins": "Dealer wins!",
     "texasholdembonus.result.fold": "Folded",
     "texasholdembonus.result.playerWins": "You win!",

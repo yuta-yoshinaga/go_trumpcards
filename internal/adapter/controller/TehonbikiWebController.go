@@ -21,6 +21,11 @@ type TehonbikiWebOutCfg struct {
 	DefaultBet   int `json:"defaultBet"`
 }
 
+// TehonbikiWebOutputHint represents a hint returned by the Tehonbiki Web controller.
+type TehonbikiWebOutputHint struct {
+	Reason string `json:"reason"`
+}
+
 // TehonbikiWebOutput is the public game state.
 type TehonbikiWebOutput struct {
 	Phase          int                     `json:"phase"`
@@ -39,6 +44,7 @@ type TehonbikiWebOutput struct {
 	MinBet         int                     `json:"minBet"`
 	MaxBet         int                     `json:"maxBet"`
 	Config         *TehonbikiWebOutCfg     `json:"config,omitempty"`
+	Hint           *TehonbikiWebOutputHint `json:"hint,omitempty"`
 	WebOutputBase
 }
 type TehonbikiWebController = GameWebController[usecase.TehonbikiInteractorIF, TehonbikiWebInput, *TehonbikiWebOutput]

@@ -59,6 +59,27 @@ func TestTehonbikiWebPresenterCodedErrorUsesMessageCode(t *testing.T) {
 	}
 }
 
+func TestTehonbikiWebPresenterHintOutputSetsRequestedMessageCode(t *testing.T) {
+	var output map[string]any
+	require.NoError(t, json.Unmarshal([]byte((*TehonbikiWebPresenter)(nil).HintOutput(newTehonbikiPresenterGame(t))), &output))
+	require.Equal(t, "tehonbiki.hintRequested", output["messageCode"])
+	require.NotEmpty(t, output["hint"].(map[string]any)["reason"])
+	require.Equal(t, float64(domain.TehonbikiPhaseBet), output["phase"])
+	require.Equal(t, float64(domain.TehonbikiDefaultChips), output["chips"])
+	require.Equal(t, []any{}, output["numbers"])
+	g := newTehonbikiPresenterGame(t)
+	require.NoError(t, g.PlaceBet([]int{4}, domain.TehonbikiBetSingle, 50))
+	require.NoError(t, json.Unmarshal([]byte((*TehonbikiWebPresenter)(nil).HintOutput(g)), &output))
+	require.Equal(t, "tehonbiki.noHint", output["messageCode"])
+	require.Equal(t, float64(domain.TehonbikiPhaseResult), output["phase"])
+}
+
+func TestTehonbikiWebPresenterOutputUsesEmptyNumbersDuringBet(t *testing.T) {
+	var output map[string]any
+	require.NoError(t, json.Unmarshal([]byte((*TehonbikiWebPresenter)(nil).Output(newTehonbikiPresenterGame(t), nil)), &output))
+	require.Equal(t, []any{}, output["numbers"])
+}
+
 func TestTehonbikiCuiPresenterShowsResultAndErrors(t *testing.T) {
 	p := new(TehonbikiCuiPresenter)
 	g := newTehonbikiPresenterGame(t)
