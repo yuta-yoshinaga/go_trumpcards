@@ -635,6 +635,19 @@ describe('SimpleSimonPage', () => {
 });
 
 describe('SimpleSimon CLI mode', () => {
+  it('does not execute a CLI move for an index outside runStarts', async () => {
+    const columns: Card[][] = Array.from({ length: 10 }, () => []);
+    columns[0] = [card('SPADE', 9), card('HEART', 8)];
+    mockExec.mockResolvedValue(makeState({ columns, runStarts: [[1], ...Array.from({ length: 9 }, () => [])] }));
+    renderWithProviders(<SimpleSimonPage />);
+    fireEvent.click(await screen.findByRole('button', { name: /cli/i }));
+    const input = await screen.findByRole('textbox');
+    fireEvent.change(input, { target: { value: 'm 0 0 1' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('m', expect.anything());
+  });
+
   it('switches to the terminal and executes a page-equivalent move', async () => {
     renderWithProviders(<SimpleSimonPage />);
     const toggle = await screen.findByRole('button', { name: /cli/i });

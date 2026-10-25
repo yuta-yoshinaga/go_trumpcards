@@ -1,6 +1,7 @@
 import type { simplesimonApi } from '../../../api/gameApi';
 import type { SimpleSimonResponse } from '../../../types/card';
 import { SimpleSimonPhase } from '../../../types/phases';
+import { canSimpleSimonPickUp, canSimpleSimonUndo, isSimpleSimonLegalDestination } from '../../simpleSimonRules';
 import { splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
@@ -21,38 +22,36 @@ export function parseSimpleSimonCommand(
       const toCol = Number(args[2]);
       if (args.length < 3 || ![fromCol, cardIndex, toCol].every(Number.isInteger))
         return { error: 'Usage: m <fromCol> <cardIndex> <toCol>' };
+      if (!state) return { error: 'Game state not loaded' };
       if (
-        state &&
-        (fromCol < 0 ||
-          fromCol >= state.columns.length ||
-          cardIndex < 0 ||
-          cardIndex >= state.columns[fromCol].length ||
-          toCol < 0 ||
-          toCol >= state.columns.length)
+        fromCol < 0 ||
+        fromCol >= state.columns.length ||
+        cardIndex < 0 ||
+        cardIndex >= state.columns[fromCol].length ||
+        toCol < 0 ||
+        toCol >= state.columns.length
       )
         return { error: 'Move index out of range' };
       if (
-        state &&
-        (state.phase !== SimpleSimonPhase.PLAYING ||
-          !state.runStarts[fromCol]?.includes(cardIndex) ||
-          !(state.legalTargets[`tableau-${fromCol}-${cardIndex}`]?.tableau ?? []).includes(toCol))
+        !canSimpleSimonPickUp(state, fromCol, cardIndex) ||
+        !isSimpleSimonLegalDestination(state, fromCol, cardIndex, toCol)
       )
         return { error: 'Illegal move' };
       return { args: ['m', { fromCol, cardIndex, toCol }] };
     }
     case 'g':
-      return { args: ['g'] };
+      return state?.phase === SimpleSimonPhase.PLAYING ? { args: ['g'] } : { error: 'Command unavailable' };
     case 'u':
-      return { args: ['u'] };
+      return canSimpleSimonUndo(state) ? { args: ['u'] } : { error: 'Undo unavailable' };
     case 'undo_n': {
       const n = Number(args[0]);
-      if (!args.length || !Number.isInteger(n) || n < 1 || (state && n > state.moveCount))
+      if (!args.length || !Number.isInteger(n) || n < 1 || !canSimpleSimonUndo(state) || (state && n > state.moveCount))
         return { error: 'Usage: undo_n <n>' };
       return { args: ['undo_n', { n }] };
     }
     case 'h':
     case 'hint':
-      return { args: ['hint'] };
+      return state?.phase === SimpleSimonPhase.PLAYING ? { args: ['hint'] } : { error: 'Command unavailable' };
     case 'r':
     case 'reset':
       return { args: ['reset'] };

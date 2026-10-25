@@ -35,6 +35,7 @@ import { parseSimpleSimonCommand, SIMPLESIMON_HELP } from '../utils/cli/commands
 import { formatSimpleSimonState } from '../utils/cli/formatters/simplesimonFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
+import { canSimpleSimonPickUp, isSimpleSimonLegalDestination } from '../utils/simpleSimonRules';
 
 /** Simple Simon tutorial step definitions. */
 const SS_TUTORIAL_STEPS: TutorialStep[] = [
@@ -110,14 +111,7 @@ function SimpleSimonPageContent() {
   const [autoMoveNotice, setAutoMoveNotice] = useState<string | null>(null);
 
   const isLegalDestination = useCallback(
-    (col: number) => {
-      if (!state || !selected || selected.col === col) return false;
-      const destination = state.columns[col];
-      if (destination.length === 0) return true;
-      const movingHead = state.columns[selected.col][selected.idx];
-      const destinationTop = destination[destination.length - 1];
-      return destinationTop.value === movingHead.value + 1;
-    },
+    (col: number) => Boolean(selected && isSimpleSimonLegalDestination(state, selected.col, selected.idx, col)),
     [selected, state],
   );
 
@@ -139,7 +133,7 @@ function SimpleSimonPageContent() {
   // guard in the card's onClick.
   const autoMoveCard = useCallback(
     (currentState: SimpleSimonResponse, col: number, idx: number) => {
-      if (!isPlayingForKbd || !currentState.runStarts[col].includes(idx)) return;
+      if (!isPlayingForKbd || !canSimpleSimonPickUp(currentState, col, idx)) return;
       const targets = currentState.legalTargets[`tableau-${col}-${idx}`];
       const toCol = targets ? targets.tableau[0] : null;
       if (toCol === null) {
@@ -285,7 +279,7 @@ function SimpleSimonPageContent() {
             const inSelectedRun = Boolean(selected && selected.col === col && i >= selected.idx);
             // Grabbable = head of a valid movable run in this column. In a
             // destination column every card just forwards to the move.
-            const grabbable = state.runStarts[col].includes(i);
+            const grabbable = canSimpleSimonPickUp(state, col, i);
             const runStartLabel =
               i === runStart ? ` ${t('movableRunStartAria', { count: column.length - runStart })}` : '';
             const clickable = selected ? isDestination || (col === selected.col && grabbable) : grabbable;

@@ -1,5 +1,6 @@
 import type { SimpleSimonResponse } from '../../../types/card';
 import { SimpleSimonPhase } from '../../../types/phases';
+import { canSimpleSimonPickUp, canSimpleSimonUndo } from '../../simpleSimonRules';
 import { formatCard, formatHeader, formatSeparator, isRequestedHint } from '../formatterBase';
 
 /** Formats Simple Simon state as terminal text. */
@@ -16,13 +17,14 @@ export function formatSimpleSimonState(state: SimpleSimonResponse): string {
   ];
   state.columns.forEach((column, col) => {
     const cards = column.map((card, idx) => {
-      const movable = state.phase === SimpleSimonPhase.PLAYING && state.runStarts[col]?.includes(idx);
+      const movable = canSimpleSimonPickUp(state, col, idx);
       return `${movable ? '*' : ' '}${formatCard(card)}[${idx}]`;
     });
-    lines.push(`C${col}: ${cards.join(' ') || '(empty)'}`);
+    lines.push(`C${col} (bottom → top): ${cards.join(' ') || '(empty)'}`);
   });
-  if (state.phase === SimpleSimonPhase.PLAYING) lines.push('Commands: m <fromCol> <cardIndex> <toCol>, h, g, u, r');
-  else lines.push('Commands: r');
+  if (state.phase === SimpleSimonPhase.PLAYING)
+    lines.push(`Commands: m <fromCol> <cardIndex> <toCol>, h, g${canSimpleSimonUndo(state) ? ', u' : ''}, r`);
+  else lines.push(`Commands: r${canSimpleSimonUndo(state) ? ', u' : ''}`);
   if (state.hint && isRequestedHint(state)) {
     lines.push(`HINT: move [${state.hint.fromCol}] [${state.hint.cardIndex}] to column ${state.hint.toCol}.`);
   } else if (state.messageCode === 'simplesimon.noHint') lines.push('No hint available.');
