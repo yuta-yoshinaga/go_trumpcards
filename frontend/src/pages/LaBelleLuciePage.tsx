@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { labellelucieApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -12,6 +14,8 @@ import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
@@ -20,10 +24,13 @@ import { useMountReset } from '../hooks/useMountReset';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { Card } from '../types/card';
+import type { Card, LaBelleLucieResponse } from '../types/card';
 import { LaBelleLuciePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { LABELLELUCIE_HELP, parseLaBelleLucieCommand } from '../utils/cli/commands/labellelucieCommands';
+import { formatLaBelleLucieState } from '../utils/cli/formatters/labellelucieFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** La Belle Lucie tutorial step definitions. */
@@ -73,6 +80,17 @@ function LaBelleLuciePageContent() {
     cancelGiveUp,
   } = useGamePageSetup('labellelucie');
   const { state, loading, error, exec, retry } = useGameApi(labellelucieApi.exec);
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('labellelucie');
+  const cliConfig: CliGameConfig<LaBelleLucieResponse, Parameters<typeof labellelucieApi.exec>> = useMemo(
+    () => ({
+      gameName: 'labellelucie',
+      parseCommand: (input: string) => parseLaBelleLucieCommand(input, { fanCount: state?.fans.length ?? 0 }),
+      formatResponse: formatLaBelleLucieState,
+      helpText: LABELLELUCIE_HELP,
+    }),
+    [state?.fans.length],
+  );
+  const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   // **ギブアップは取り消せない。**リセットには確認が挟まるのに、同じフッターの
   // ギブアップは即座に対局を打ち切っていた ── 誤タップへの保護がリセットより
   // 薄かった (#6475)。47 ページが既に使っている `useGiveUpConfirm` に揃える。
@@ -264,175 +282,186 @@ function LaBelleLuciePageContent() {
       giveUpConfirmOpen={giveUpConfirmOpen}
       confirmGiveUp={confirmGiveUp}
       cancelGiveUp={cancelGiveUp}
+      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
-      <div className="flex-1 overflow-y-auto pt-3 px-3 lg:px-8">
-        <span id={selectSourceHintId} className="sr-only">
-          {tc('label.selectSourceFirst')}
-        </span>
-        {/* Foundations */}
-        <div className="mb-3" data-tutorial="ll-foundation">
-          <span className="text-ds-text-muted text-[11px]">{t('foundation')}</span>
-          <div
-            className={`flex gap-1 mt-0.5 rounded${hintFoundation ? ' ring-2 ring-ds-success motion-safe:animate-pulse p-1' : ''}`}
-            data-testid="ll-foundation-row"
-            data-hint-foundation={hintFoundation ? 'true' : undefined}
-          >
-            {state.foundation.map((pile, i) => (
-              <button
-                type="button"
-                key={`fnd-${i}`}
-                aria-label={
-                  pile.length > 0
-                    ? t('foundationAriaLabel', {
-                        suit: t(`suitNames.${pile[pile.length - 1].design.toLowerCase()}`),
-                        count: pile.length,
-                      })
-                    : t('emptyFoundationAriaLabel', { index: i + 1 })
-                }
-                className={`rounded ${selected !== null ? 'ring-1 ring-ds-success' : ''} ${canOperateBoard ? 'cursor-pointer' : ''}`}
-                onClick={sendToFoundation}
-                aria-disabled={selected === null || !canOperateBoard || undefined}
-                aria-describedby={selected === null ? selectSourceHintId : undefined}
-                data-testid={`foundation-${i}`}
-              >
-                {pile.length > 0 ? (
-                  <span aria-hidden="true">
-                    <CardImage card={pile[pile.length - 1]} width={w} />
-                  </span>
-                ) : (
-                  <div
-                    aria-hidden="true"
-                    className="rounded border border-dashed border-white/25 bg-black/20"
-                    style={{ width: w, height: Math.round(w * 1.4) }}
-                  />
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Fans */}
-        <div className="grid grid-cols-6 sm:grid-cols-9 gap-1" data-tutorial="ll-fans">
-          {state.fans.map((fan, i) => renderFan(fan, i))}
-        </div>
-
-        <div className="mt-2 text-ds-text-muted text-xs">
-          <span data-testid="ll-progress">
-            {t('foundationProgress', { count: foundationCardCount })} ·{' '}
-            {t('remainingCards', { count: remainingCardCount })}
-          </span>
-          {' · '}
-          {t('redealsLeft', { count: state.redealsLeft })} · {t('moveCount', { count: state.moveCount })}
-        </div>
-        {stuck && (
-          <div
-            className="mt-1 flex items-center gap-2 text-ds-warning text-sm font-medium"
-            role="status"
-            data-testid="ll-stuck-banner"
-          >
-            <span>{t('stuckRedeal')}</span>
-            <span className="rounded-full border border-ds-warning bg-ds-surface px-2 py-0.5 text-ds-warning text-xs font-bold tabular-nums">
-              {t('redealsLeftBadge', { count: state.redealsLeft })}
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <div className="flex-1 overflow-y-auto pt-3 px-3 lg:px-8">
+            <span id={selectSourceHintId} className="sr-only">
+              {tc('label.selectSourceFirst')}
             </span>
+            {/* Foundations */}
+            <div className="mb-3" data-tutorial="ll-foundation">
+              <span className="text-ds-text-muted text-[11px]">{t('foundation')}</span>
+              <div
+                className={`flex gap-1 mt-0.5 rounded${hintFoundation ? ' ring-2 ring-ds-success motion-safe:animate-pulse p-1' : ''}`}
+                data-testid="ll-foundation-row"
+                data-hint-foundation={hintFoundation ? 'true' : undefined}
+              >
+                {state.foundation.map((pile, i) => (
+                  <button
+                    type="button"
+                    key={`fnd-${i}`}
+                    aria-label={
+                      pile.length > 0
+                        ? t('foundationAriaLabel', {
+                            suit: t(`suitNames.${pile[pile.length - 1].design.toLowerCase()}`),
+                            count: pile.length,
+                          })
+                        : t('emptyFoundationAriaLabel', { index: i + 1 })
+                    }
+                    className={`rounded ${selected !== null ? 'ring-1 ring-ds-success' : ''} ${canOperateBoard ? 'cursor-pointer' : ''}`}
+                    onClick={sendToFoundation}
+                    aria-disabled={selected === null || !canOperateBoard || undefined}
+                    aria-describedby={selected === null ? selectSourceHintId : undefined}
+                    data-testid={`foundation-${i}`}
+                  >
+                    {pile.length > 0 ? (
+                      <span aria-hidden="true">
+                        <CardImage card={pile[pile.length - 1]} width={w} />
+                      </span>
+                    ) : (
+                      <div
+                        aria-hidden="true"
+                        className="rounded border border-dashed border-white/25 bg-black/20"
+                        style={{ width: w, height: Math.round(w * 1.4) }}
+                      />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Fans */}
+            <div className="grid grid-cols-6 sm:grid-cols-9 gap-1" data-tutorial="ll-fans">
+              {state.fans.map((fan, i) => renderFan(fan, i))}
+            </div>
+
+            <div className="mt-2 text-ds-text-muted text-xs">
+              <span data-testid="ll-progress">
+                {t('foundationProgress', { count: foundationCardCount })} ·{' '}
+                {t('remainingCards', { count: remainingCardCount })}
+              </span>
+              {' · '}
+              {t('redealsLeft', { count: state.redealsLeft })} · {t('moveCount', { count: state.moveCount })}
+            </div>
+            {stuck && (
+              <div
+                className="mt-1 flex items-center gap-2 text-ds-warning text-sm font-medium"
+                role="status"
+                data-testid="ll-stuck-banner"
+              >
+                <span>{t('stuckRedeal')}</span>
+                <span className="rounded-full border border-ds-warning bg-ds-surface px-2 py-0.5 text-ds-warning text-xs font-bold tabular-nums">
+                  {t('redealsLeftBadge', { count: state.redealsLeft })}
+                </span>
+              </div>
+            )}
+            {deadlocked && (
+              <div
+                className="mt-1 flex items-center gap-2 text-ds-error-text text-sm font-medium"
+                role="status"
+                data-testid="ll-deadlock-banner"
+              >
+                <span>{t('stuckDeadlock')}</span>
+              </div>
+            )}
+            <div role="status" aria-live="polite" className="mt-1 text-ds-text-primary text-xs">
+              {canAct && (selected === null ? t('selectSource') : t('selectDestination'))}
+            </div>
+
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            <SettingsPanel
+              title={tc('settings.title')}
+              groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
+            />
+
+            <ActionLogSection
+              isEndPhase={isEnd}
+              actionLog={actionLog}
+              showActionLog={showActionLog}
+              hideActionLog={hideActionLog}
+            />
           </div>
-        )}
-        {deadlocked && (
-          <div
-            className="mt-1 flex items-center gap-2 text-ds-error-text text-sm font-medium"
-            role="status"
-            data-testid="ll-deadlock-banner"
-          >
-            <span>{t('stuckDeadlock')}</span>
-          </div>
-        )}
-        <div role="status" aria-live="polite" className="mt-1 text-ds-text-primary text-xs">
-          {canAct && (selected === null ? t('selectSource') : t('selectDestination'))}
-        </div>
 
-        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
-        <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-        <SettingsPanel
-          title={tc('settings.title')}
-          groups={[{ items: [hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled)] }]}
-        />
-
-        <ActionLogSection
-          isEndPhase={isEnd}
-          actionLog={actionLog}
-          showActionLog={showActionLog}
-          hideActionLog={hideActionLog}
-        />
-      </div>
-
-      <GameFooter className={`${gameTheme.labellelucie.footer} px-3 py-2.5`}>
-        <ErrorAlert message={error} onRetry={retry} />
-        <div className="flex flex-wrap gap-2 items-center">
-          {canAct && (
-            <button
-              type="button"
-              className={`${btnWarning}${stuck ? ' motion-safe:animate-pulse' : ''}`}
-              onClick={() => exec('rd')}
-              disabled={loading || state.redealsLeft <= 0}
-              data-tutorial="ll-redeal"
-              data-testid="redeal-button"
-            >
-              {t('redeal')}
-            </button>
-          )}
-          {canAct && (
-            <button
-              type="button"
-              className={btnSuccess}
-              onClick={() => exec('ac')}
-              disabled={loading}
-              data-testid="autocomplete-button"
-            >
-              {t('autoComplete')}
-            </button>
-          )}
-          {canAct && state.canUndo && (
-            <button
-              type="button"
-              className={btnSecondary}
-              onClick={() => exec('u')}
-              disabled={loading}
-              data-testid="undo-button"
-            >
-              {t('undo')}
-            </button>
-          )}
-          {canAct && (
-            <button
-              type="button"
-              className={btnPrimary}
-              onClick={handleHint}
-              disabled={loading}
-              data-testid="hint-button"
-            >
-              {t('hint')}
-            </button>
-          )}
-          {canAct && (
-            <button
-              type="button"
-              className={`${btnSecondary}${deadlocked ? ' motion-safe:animate-pulse' : ''}`}
-              onClick={confirmGiveUpAction}
-              disabled={loading}
-              data-testid="giveup-button"
-            >
-              {t('giveup')}
-            </button>
-          )}
-          <GameResetButton
-            isGameEnd={isEnd}
-            onReset={handleReset}
-            requestConfirm={requestConfirm}
-            loading={loading}
-            dataTutorial="ll-reset-button"
-          />
-        </div>
-      </GameFooter>
+          <GameFooter className={`${gameTheme.labellelucie.footer} px-3 py-2.5`}>
+            <ErrorAlert message={error} onRetry={retry} />
+            <div className="flex flex-wrap gap-2 items-center">
+              {canAct && (
+                <button
+                  type="button"
+                  className={`${btnWarning}${stuck ? ' motion-safe:animate-pulse' : ''}`}
+                  onClick={() => exec('rd')}
+                  disabled={loading || state.redealsLeft <= 0}
+                  data-tutorial="ll-redeal"
+                  data-testid="redeal-button"
+                >
+                  {t('redeal')}
+                </button>
+              )}
+              {canAct && (
+                <button
+                  type="button"
+                  className={btnSuccess}
+                  onClick={() => exec('ac')}
+                  disabled={loading}
+                  data-testid="autocomplete-button"
+                >
+                  {t('autoComplete')}
+                </button>
+              )}
+              {canAct && state.canUndo && (
+                <button
+                  type="button"
+                  className={btnSecondary}
+                  onClick={() => exec('u')}
+                  disabled={loading}
+                  data-testid="undo-button"
+                >
+                  {t('undo')}
+                </button>
+              )}
+              {canAct && (
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={handleHint}
+                  disabled={loading}
+                  data-testid="hint-button"
+                >
+                  {t('hint')}
+                </button>
+              )}
+              {canAct && (
+                <button
+                  type="button"
+                  className={`${btnSecondary}${deadlocked ? ' motion-safe:animate-pulse' : ''}`}
+                  onClick={confirmGiveUpAction}
+                  disabled={loading}
+                  data-testid="giveup-button"
+                >
+                  {t('giveup')}
+                </button>
+              )}
+              <GameResetButton
+                isGameEnd={isEnd}
+                onReset={handleReset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="ll-reset-button"
+              />
+            </div>
+          </GameFooter>
+        </>
+      )}
     </GamePageShell>
   );
 }
