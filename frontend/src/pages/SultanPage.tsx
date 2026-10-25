@@ -224,10 +224,10 @@ function Board({ game, state, t, frontendHint, view }: SultanContext) {
 
       {/* Hint display */}
       {/*
-            ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
-            領域と中身が同じコミットで現れるので変化として扱われず、読み上げられない
-            ことがある (#5602)。
-          */}
+        ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
+        領域と中身が同じコミットで現れるので変化として扱われず、読み上げられない
+        ことがある (#5602)。
+      */}
       <div data-tutorial="sultan-hint-display" data-testid="sultan-hint-live" role="status" aria-live="polite">
         {hint && (
           <div className="text-ds-warning text-sm mb-2">
@@ -245,8 +245,6 @@ function Board({ game, state, t, frontendHint, view }: SultanContext) {
 
       {/* Message */}
       <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
-
-      {/* Action log */}
     </>
   );
 }
@@ -346,8 +344,6 @@ const sultanDefinition: GameDefinition<
   }),
   landscapeBanner: true,
   contentClassName: 'pt-3 px-2 sm:px-4 lg:px-8',
-  actionsTutorialId: 'sultan-controls',
-  actionsClassName: 'flex gap-2 items-center flex-wrap',
   resetTutorialId: 'sultan-reset-button',
   // Give-up is irreversible, so route both the button and the `g` key through
   // the confirm dialog — matching reset's guard (issue #2099).
