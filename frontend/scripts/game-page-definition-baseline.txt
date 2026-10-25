@@ -216,7 +216,6 @@ PanPage.tsx
 PasurPage.tsx
 PenguinPage.tsx
 PerseverancePage.tsx
-PiedmonteseTarotPage.tsx
 PigPage.tsx
 PigsTailPage.tsx
 PineapplePage.tsx
