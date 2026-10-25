@@ -1,7 +1,14 @@
 import type { MississippiStudResponse } from '../../../types/card';
 import { isMaskedCard } from '../../../types/card';
-import { MississippiStudPhase } from '../../../types/phases';
-import { getMississippiStudAnteMax } from '../commands/mississippistudCommands';
+import { MississippiStudPhase, MississippiStudResult } from '../../../types/phases';
+import {
+  anteMax,
+  canPlay,
+  isBettingStreet,
+  MISSISSIPPI_STUD_ANTE_MIN,
+  MISSISSIPPI_STUD_ANTE_STEP,
+  MISSISSIPPI_STUD_PLAY_MULTIPLIERS,
+} from '../../mississippiStudBet';
 import { formatCard, formatHeader, formatIndexedCards, formatSeparator } from '../formatterBase';
 
 const PHASE_NAMES: Record<number, string> = {
@@ -25,18 +32,26 @@ export function formatMississippiStudState(state: MississippiStudResponse): stri
     );
   }
   if (state.phase === MississippiStudPhase.ANTE) {
-    lines.push(`Ante range: min 10, step 10, max ${getMississippiStudAnteMax(state.chips)}`);
+    const max = anteMax(state.chips);
+    if (max < MISSISSIPPI_STUD_ANTE_MIN) lines.push('Ante cannot be placed with the current chips');
+    else lines.push(`Ante range: min ${MISSISSIPPI_STUD_ANTE_MIN}, step ${MISSISSIPPI_STUD_ANTE_STEP}, max ${max}`);
     lines.push('Action: bet <amount>');
-  } else if (
-    state.phase === MississippiStudPhase.THIRD_STREET ||
-    state.phase === MississippiStudPhase.FOURTH_STREET ||
-    state.phase === MississippiStudPhase.FIFTH_STREET
-  ) {
-    lines.push('Action: play <1-3> or fold');
+  } else if (isBettingStreet(state.phase)) {
+    const multipliers = MISSISSIPPI_STUD_PLAY_MULTIPLIERS.filter((multiplier) =>
+      canPlay(multiplier, state.chips, state.anteAmount),
+    );
+    lines.push(
+      multipliers.length ? `Action: play ${multipliers.join(', ')}x or fold` : 'Action: fold (no affordable play)',
+    );
   } else if (state.phase === MississippiStudPhase.END) lines.push('Action: reset');
   if (state.folded) lines.push('Status: folded');
   if (state.phase === MississippiStudPhase.END) {
-    const result = state.result > 0 ? 'win' : state.result < 0 ? 'push' : 'lose';
+    const result =
+      state.result === MississippiStudResult.WIN
+        ? 'win'
+        : state.result === MississippiStudResult.DRAW
+          ? 'push'
+          : 'lose';
     lines.push(`result: ${result}  payout: ${state.totalPayout}  net: ${state.netChange}`);
     lines.push(`hand rank: ${state.handRank}  payout multiplier: ${state.payoutMultiplier}`);
   }

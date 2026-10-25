@@ -32,15 +32,20 @@ import type { Card, MississippiStudResponse } from '../types/card';
 import { isMaskedCard } from '../types/card';
 import { MississippiStudPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import {
-  getMississippiStudAnteMax,
-  MISSISSIPPISTUD_HELP,
-  parseMississippiStudCommand,
-} from '../utils/cli/commands/mississippistudCommands';
+import { MISSISSIPPISTUD_HELP, parseMississippiStudCommand } from '../utils/cli/commands/mississippistudCommands';
 import { formatMississippiStudState } from '../utils/cli/formatters/mississippistudFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { formatSignedDelta } from '../utils/formatSignedDelta';
+import {
+  anteMax,
+  canPlay,
+  isBettingStreet,
+  MISSISSIPPI_STUD_ANTE_MIN,
+  MISSISSIPPI_STUD_ANTE_STEP,
+  MISSISSIPPI_STUD_PLAY_MULTIPLIERS,
+  playAmount,
+} from '../utils/mississippiStudBet';
 import { evaluateMississippiStudMadeHand } from '../utils/mississippiStudMadeHand';
 
 const TUTORIAL_STEPS: TutorialStep[] = [
@@ -127,10 +132,7 @@ function MississippiStudPageContent() {
   }, [state, t]);
 
   const isAntePhase = state?.phase === MississippiStudPhase.ANTE;
-  const isStreetPhase =
-    state?.phase === MississippiStudPhase.THIRD_STREET ||
-    state?.phase === MississippiStudPhase.FOURTH_STREET ||
-    state?.phase === MississippiStudPhase.FIFTH_STREET;
+  const isStreetPhase = !!state && isBettingStreet(state.phase);
   const isEndPhase = state?.phase === MississippiStudPhase.END;
 
   const actionBindings = useMemo(
@@ -139,19 +141,19 @@ function MississippiStudPageContent() {
       {
         key: '1',
         action: () => execApi('play', undefined, 1),
-        enabled: isStreetPhase && !!state && state.anteAmount <= state.chips,
+        enabled: isStreetPhase && !!state && canPlay(1, state.chips, state.anteAmount),
         label: 'play',
       },
       {
         key: '2',
         action: () => execApi('play', undefined, 2),
-        enabled: isStreetPhase && !!state && state.anteAmount * 2 <= state.chips,
+        enabled: isStreetPhase && !!state && canPlay(2, state.chips, state.anteAmount),
         label: 'play',
       },
       {
         key: '3',
         action: () => execApi('play', undefined, 3),
-        enabled: isStreetPhase && !!state && state.anteAmount * 3 <= state.chips,
+        enabled: isStreetPhase && !!state && canPlay(3, state.chips, state.anteAmount),
         label: 'play',
       },
       { key: 'f', action: () => execApi('fold'), enabled: isStreetPhase, label: 'fold' },
@@ -172,7 +174,7 @@ function MississippiStudPageContent() {
 
   const handleBet = () => execApi('bet', anteAmount);
   const handlePlay = (multiplier: 1 | 2 | 3) => {
-    if (!state || loading || state.anteAmount * multiplier > state.chips) return;
+    if (!state || loading || !canPlay(multiplier, state.chips, state.anteAmount)) return;
     return execApi('play', undefined, multiplier);
   };
   const handleFold = () => execApi('fold');
@@ -394,7 +396,9 @@ function MississippiStudPageContent() {
                   label={t('label.ante')}
                   value={anteAmount}
                   onChange={setAnteAmount}
-                  max={getMississippiStudAnteMax(state.chips)}
+                  min={MISSISSIPPI_STUD_ANTE_MIN}
+                  step={MISSISSIPPI_STUD_ANTE_STEP}
+                  max={anteMax(state.chips)}
                 />
                 <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
                   {t('button.bet')}
@@ -410,14 +414,9 @@ function MississippiStudPageContent() {
                   </span>
                 </div>
                 <div className="flex justify-center gap-2 flex-wrap">
-                  {(
-                    [
-                      { m: 1, cls: btnSecondary },
-                      { m: 2, cls: btnPrimary },
-                      { m: 3, cls: btnSuccess },
-                    ] as const
-                  ).map(({ m, cls }) => {
-                    const insufficient = state.anteAmount * m > state.chips;
+                  {MISSISSIPPI_STUD_PLAY_MULTIPLIERS.map((m) => {
+                    const cls = [btnSecondary, btnPrimary, btnSuccess][m - 1];
+                    const insufficient = !canPlay(m, state.chips, state.anteAmount);
                     const disabled = loading || insufficient;
                     const reasonId = `ms-play-disabled-reason-${m}`;
                     return (
@@ -430,9 +429,9 @@ function MississippiStudPageContent() {
                         aria-describedby={disabled ? reasonId : undefined}
                         data-testid={`ms-play-${m}x`}
                       >
-                        {t('button.playMult', { mult: m, amount: state.anteAmount * m })}
+                        {t('button.playMult', { mult: m, amount: playAmount(m, state.anteAmount) })}
                         <span className="block text-xs font-normal">
-                          {t('label.totalAfterBet')}: {state.totalBet + state.anteAmount * m}
+                          {t('label.totalAfterBet')}: {state.totalBet + playAmount(m, state.anteAmount)}
                         </span>
                         {disabled && (
                           <span id={reasonId} className={insufficient ? 'block text-xs font-normal' : 'sr-only'}>

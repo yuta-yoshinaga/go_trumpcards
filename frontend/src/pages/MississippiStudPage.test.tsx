@@ -135,6 +135,19 @@ describe('MississippiStudPage', () => {
     expect(await screen.findByTestId('card-area')).toBeInTheDocument();
   });
 
+  it('answers h with a local CLI hint without calling the API', async () => {
+    mockApi.mockResolvedValue(antePhaseState);
+    renderWithProviders(<MississippiStudPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'CLIモードに切り替え' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    const input = await screen.findByRole('textbox', { name: 'コマンドを入力...' });
+    mockApi.mockClear();
+    fireEvent.change(input, { target: { value: 'h' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect((await screen.findAllByText('ヒントはありません')).length).toBeGreaterThan(0);
+    expect(mockApi).not.toHaveBeenCalled();
+  });
+
   it('rejects an ante above the page maximum without calling exec', async () => {
     mockApi.mockResolvedValue(antePhaseState);
     renderWithProviders(<MississippiStudPage />);

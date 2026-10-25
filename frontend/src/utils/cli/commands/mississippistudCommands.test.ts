@@ -16,6 +16,10 @@ describe('parseMississippiStudCommand', () => {
   });
   it('enforces the ante minimum, step, and chip based maximum boundaries', () => {
     const state = makeMississippiStudState({ chips: 1000, phase: MississippiStudPhase.ANTE });
+    for (let ante = 1; ante < 10; ante++)
+      expect(parseMississippiStudCommand(`bet ${ante}`, state)).toMatchObject({
+        error: expect.stringContaining('Ante must'),
+      });
     expect(parseMississippiStudCommand('bet 0', state)).toHaveProperty('error');
     expect(parseMississippiStudCommand('bet 15', state)).toHaveProperty('error');
     expect(parseMississippiStudCommand('bet 250', state)).toEqual({ args: ['bet', 250] });
@@ -27,8 +31,32 @@ describe('parseMississippiStudCommand', () => {
     expect(parseMississippiStudCommand('play 1', ante)).toHaveProperty('error');
     expect(parseMississippiStudCommand('fold', ante)).toHaveProperty('error');
     expect(parseMississippiStudCommand('reset', ante)).toHaveProperty('error');
-    expect(parseMississippiStudCommand('play 2', street)).toHaveProperty('error');
-    expect(parseMississippiStudCommand('bet 100', street)).toHaveProperty('error');
+    expect(parseMississippiStudCommand('play 2', street)).toMatchObject({
+      error: 'That play is unaffordable with the current chips',
+    });
+    expect(
+      parseMississippiStudCommand(
+        'play 1',
+        makeMississippiStudState({ phase: MississippiStudPhase.THIRD_STREET, chips: 100, anteAmount: 50 }),
+      ),
+    ).toEqual({ args: ['play', undefined, 1] });
+    expect(parseMississippiStudCommand('reset', makeMississippiStudState({ phase: MississippiStudPhase.END }))).toEqual(
+      { args: ['reset'] },
+    );
+    expect(parseMississippiStudCommand('bet 100', street)).toEqual({
+      error: 'Bet is only available during the ante phase',
+    });
+    expect(
+      parseMississippiStudCommand('fold', makeMississippiStudState({ phase: MississippiStudPhase.END })),
+    ).toHaveProperty('error');
+    expect(
+      parseMississippiStudCommand('play 1', makeMississippiStudState({ phase: MississippiStudPhase.END })),
+    ).toMatchObject({ error: 'Play is only available during a betting street' });
+    expect(parseMississippiStudCommand('reset', street)).toHaveProperty('error');
+  });
+  it('does not print an unbounded maximum when state is absent', () => {
+    const parsed = parseMississippiStudCommand('bet 1');
+    expect('error' in parsed ? parsed.error : '').not.toContain('Infinity');
   });
   it('maps street bets to the page button API call', () => {
     for (const multiplier of [1, 2, 3]) {
