@@ -7,7 +7,6 @@
     "roundEnd": "Deal End"
   },
   "settings": {
-    "title": "Settings",
     "cpuDifficulty": "CPU Difficulty",
     "ante": "Ante",
     "easy": "Easy",

@@ -429,4 +429,10 @@ describe('LooPage', () => {
     // 隣に置いただけの実装は属性の検査を通る。**中にあること**を見る。
     expect(live).toContainElement(await screen.findByTestId('loo-decide-prompt'));
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<LooPage />);
+    expect(await screen.findByText('プレイ', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('play', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });

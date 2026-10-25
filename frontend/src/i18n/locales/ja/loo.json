@@ -7,7 +7,6 @@
     "roundEnd": "ディール終了"
   },
   "settings": {
-    "title": "設定",
     "cpuDifficulty": "CPU難易度",
     "ante": "アンティ",
     "easy": "Easy",
