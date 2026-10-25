@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { gapsApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -71,7 +71,19 @@ beforeEach(() => {
   vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
 });
 
+afterEach(() => {
+  localStorage.removeItem('cli-mode-gaps');
+});
+
 describe('GapsPage', () => {
+  it('shows the terminal when CLI mode is enabled', async () => {
+    mockedRun.mockResolvedValue(playingState);
+    renderWithProviders(<GapsPage />);
+    fireEvent.click(await screen.findByRole('button', { name: 'CLIモードに切り替え' }));
+    expect(await screen.findByRole('textbox', { name: 'コマンドを入力...' })).toBeInTheDocument();
+    expect(screen.queryByTestId('gaps-cell-0-0')).not.toBeInTheDocument();
+  });
+
   it('keeps all 13 columns aligned in one horizontally scrollable board while the page remains vertically scrollable', async () => {
     mockedRun.mockResolvedValue({ ...playingState, lockedPrefixLengths: [12, 12, 12, 12] });
     renderWithProviders(<GapsPage />);
