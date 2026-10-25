@@ -332,7 +332,6 @@ UltimateTexasHoldemPage.tsx
 UnsunKarutaPage.tsx
 VideoPokerPage.tsx
 VintPage.tsx
-ViraPage.tsx
 WarPage.tsx
 WaspPage.tsx
 WattenPage.tsx
