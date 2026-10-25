@@ -67,6 +67,12 @@ describe('SchafkopfPage', () => {
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
   });
 
+  it('keeps the reset button out of a flex row, as on the hand-wired page', async () => {
+    renderWithProviders(<SchafkopfPage />);
+    const reset = await screen.findByRole('button', { name: 'リセット' });
+    expect(reset.parentElement?.className ?? '').not.toMatch(/\bflex\b/);
+  });
+
   it('calls reset on mount with the default config', async () => {
     renderWithProviders(<SchafkopfPage />);
     await waitFor(() =>
