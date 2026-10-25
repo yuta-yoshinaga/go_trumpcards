@@ -395,4 +395,10 @@ describe('GutsPage', () => {
       expect(liveRegion).toHaveTextContent('敗北時の最大支払額: 40');
     });
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<GutsPage />);
+    expect(await screen.findByText('コール', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('declare', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });

@@ -5,7 +5,6 @@
     "result": "Result"
   },
   "settings": {
-    "title": "Settings",
     "playerCount": "Players",
     "ante": "Ante",
     "startingChips": "Starting chips",
