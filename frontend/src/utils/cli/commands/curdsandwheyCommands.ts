@@ -39,6 +39,7 @@ export function parseCurdsAndWheyCommand(
     case 'undo_n': {
       const count = parseIntArg(args, 0);
       if ('error' in count || count.value < 1) return { error: 'Usage: undo_n <count>' };
+      if (!state?.canUndo) return { error: 'There is no move to undo' };
       return { args: ['undo_n', { n: count.value }] };
     }
     case 'g':

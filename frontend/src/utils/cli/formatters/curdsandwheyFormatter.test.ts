@@ -18,7 +18,7 @@ function state(overrides: Partial<CurdsAndWheyResponse> = {}): CurdsAndWheyRespo
     moveCount: 4,
     canUndo: true,
     legalTargets: { 'tableau-0-1': { tableau: [1], foundation: [] } },
-    runStarts: [[1], ...Array.from({ length: 12 }, () => [])],
+    runStarts: [[0, 1], ...Array.from({ length: 12 }, () => [])],
     message: '',
     ...overrides,
   };
@@ -28,16 +28,20 @@ describe('formatCurdsAndWheyState', () => {
   it('formats columns, zero-based card indices, and legal move guidance', () => {
     const text = formatCurdsAndWheyState(state());
     expect(text).toContain('phase: Playing');
-    expect(text).toContain('Column 0: [0]♠9  [1]*♠8');
+    expect(text).toContain('Columns are listed left to right from bottom to top; the last index is the top card.');
+    expect(text).toContain('Column 0: [0]*♠9  [1]*♠8');
     expect(text).toContain('p 0 1 1');
     expect(text).toContain('h (hint)');
   });
-  it('formats clear and game over states with reset only and suppresses server messages', () => {
+  it('formats ended states with reset and available undo and suppresses server messages', () => {
     const clear = formatCurdsAndWheyState(state({ phase: CurdsAndWheyPhase.GAME_CLEAR, message: 'サーバ文言' }));
     expect(clear).toContain('Game clear!');
-    expect(clear).toContain('Available command: r (reset)');
+    expect(clear).toContain('Available commands: r (reset), u (undo)');
     expect(clear).not.toContain('サーバ文言');
-    expect(formatCurdsAndWheyState(state({ phase: CurdsAndWheyPhase.GAME_OVER }))).toContain('No moves remain.');
+    const gameOver = formatCurdsAndWheyState(state({ phase: CurdsAndWheyPhase.GAME_OVER, canUndo: false }));
+    expect(gameOver).toContain('No moves remain.');
+    expect(gameOver).toContain('Available commands: r (reset)');
+    expect(gameOver).not.toContain('u (undo)');
   });
   it('prints a hint only for a requested hintAvailable response', () => {
     const hint = { fromCol: 0, cardIndex: 1, toCol: 1 };

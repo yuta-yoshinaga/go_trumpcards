@@ -12,6 +12,7 @@ const PHASE_NAMES: Readonly<Record<number, string>> = {
 export function formatCurdsAndWheyState(state: CurdsAndWheyResponse): string {
   const lines = [formatHeader('Curds and Whey'), `phase: ${PHASE_NAMES[state.phase] ?? state.phase}`];
   lines.push(`completed suits: ${state.completedSuits}/4 | moves: ${state.moveCount}`);
+  lines.push('Columns are listed left to right from bottom to top; the last index is the top card.');
   for (const [col, cards] of state.columns.entries()) {
     const starts = state.runStarts[col] ?? [];
     lines.push(
@@ -31,7 +32,7 @@ export function formatCurdsAndWheyState(state: CurdsAndWheyResponse): string {
   } else {
     if (state.phase === CurdsAndWheyPhase.GAME_CLEAR) lines.push('All suits completed. Game clear!');
     if (state.phase === CurdsAndWheyPhase.GAME_OVER) lines.push('No moves remain. Game over.');
-    lines.push('Available command: r (reset)');
+    lines.push(`Available commands: ${['r (reset)', ...(state.canUndo ? ['u (undo)'] : [])].join(', ')}`);
   }
   if (state.messageCode === 'curdsandwhey.noHint') lines.push('No hint available.');
   if (state.hint && isRequestedHint(state)) {

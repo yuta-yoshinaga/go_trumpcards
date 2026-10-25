@@ -83,6 +83,19 @@ describe('CurdsAndWheyPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('m', { fromCol: 0, cardIndex: 0, toCol: 1 }));
   });
 
+  it('does not dispatch a CLI move for a card index outside the column', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<CurdsAndWheyPage />);
+    await screen.findByTestId('column-0');
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    const input = await screen.findByRole('textbox', { name: 'コマンドを入力...' });
+    fireEvent.change(input, { target: { value: 'p 0 99 1' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+
+    await waitFor(() => expect(screen.getByRole('log')).toHaveTextContent('Card index is out of range'));
+    expect(mockExec).not.toHaveBeenCalledWith('m', expect.anything());
+  });
+
   it.each([
     ['clear', 1, true, '勝率 100%・最少 12手'],
     ['game over', 2, false, '勝率 0%・最少手数 —'],

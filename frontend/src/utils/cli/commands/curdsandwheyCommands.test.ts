@@ -18,7 +18,8 @@ function state(overrides: Partial<CurdsAndWheyResponse> = {}): CurdsAndWheyRespo
     moveCount: 0,
     canUndo: true,
     legalTargets: {},
-    runStarts: [[1], ...Array.from({ length: 12 }, () => [])],
+    // Array order is bottom to top; the descending same-suit run starts at 0.
+    runStarts: [[0, 1], ...Array.from({ length: 12 }, () => [])],
     message: '',
     ...overrides,
   };
@@ -46,7 +47,7 @@ describe('parseCurdsAndWheyCommand', () => {
   it.each(['p', 'p 0 1', 'p x 1 2'])('rejects missing or invalid move arguments: %s', (input) => {
     expect(parseCurdsAndWheyCommand(input, s)).toHaveProperty('error');
   });
-  it.each(['p -1 1 2', 'p 13 1 2', 'p 0 2 2', 'p 0 1 13', 'p 0 1 0', 'p 0 0 2'])(
+  it.each(['p -1 1 2', 'p 13 1 2', 'p 0 2 2', 'p 0 1 13', 'p 0 1 0'])(
     'rejects out of range or illegal move: %s',
     (input) => {
       expect(parseCurdsAndWheyCommand(input, s)).toHaveProperty('error');
@@ -54,6 +55,29 @@ describe('parseCurdsAndWheyCommand', () => {
   );
   it.each(['un', 'un 0', 'un x'])('rejects invalid undo counts: %s', (input) => {
     expect(parseCurdsAndWheyCommand(input, s)).toHaveProperty('error');
+  });
+  it('rejects undo_n when undo is unavailable', () => {
+    expect(parseCurdsAndWheyCommand('un 1', state({ canUndo: false }))).toHaveProperty('error');
+  });
+  it('allows moving a partial run, rejects a buried card, and treats the last index as the top', () => {
+    const columns = Array.from({ length: 13 }, () => [] as { design: 'SPADE' | 'HEART'; value: number }[]);
+    columns[3] = [
+      { design: 'SPADE', value: 9 },
+      { design: 'HEART', value: 6 },
+      { design: 'HEART', value: 5 },
+      { design: 'HEART', value: 4 },
+    ];
+    const stacked = state({
+      columns,
+      // The immovable bottom card is buried; each later index begins a movable suffix.
+      runStarts: Array.from({ length: 13 }, (_, col) => (col === 3 ? [1, 2, 3] : [])),
+    });
+    expect(parseCurdsAndWheyCommand('p 3 2 4', stacked)).toEqual({
+      args: ['m', { fromCol: 3, cardIndex: 2, toCol: 4 }],
+    });
+    expect(parseCurdsAndWheyCommand('p 3 0 4', stacked)).toHaveProperty('error');
+    expect(stacked.columns[3]?.at(-1)).toEqual({ design: 'HEART', value: 4 });
+    expect(stacked.runStarts[3]).toContain(3);
   });
   it('rejects unavailable undo and actions outside play', () => {
     expect(parseCurdsAndWheyCommand('u', state({ canUndo: false }))).toHaveProperty('error');
