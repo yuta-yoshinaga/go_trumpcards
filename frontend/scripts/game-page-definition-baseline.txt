@@ -238,7 +238,6 @@ PrimeroPage.tsx
 PrsiPage.tsx
 PutPage.tsx
 PyramidPage.tsx
-QuadrillePage.tsx
 QuinzePage.tsx
 QuodlibetPage.tsx
 RamsPage.tsx

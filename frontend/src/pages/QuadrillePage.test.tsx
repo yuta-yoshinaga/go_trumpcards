@@ -491,4 +491,54 @@ describe('QuadrillePage king call', () => {
       window.dispatchEvent(new Event('resize'));
     }
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<QuadrillePage />);
+    expect(await screen.findByText('プレイ', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('play', { selector: 'strong' })).not.toBeInTheDocument();
+  });
+
+  it('executes manual reset after confirming the reset prompt', async () => {
+    renderWithProviders(<QuadrillePage />);
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', {
+        config: { cpuDifficulty: 1, targetRounds: 5 },
+      }),
+    );
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', {
+        config: { cpuDifficulty: 1, targetRounds: 5 },
+      }),
+    );
+  });
+
+  it.each([
+    ['cpuDifficulty', '2', { cpuDifficulty: 2, targetRounds: 5 }],
+    ['targetRounds', '7', { cpuDifficulty: 1, targetRounds: 7 }],
+  ])('applies the selected %s when the game resets', async (id, value, expected) => {
+    renderWithProviders(<QuadrillePage />);
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', {
+        config: { cpuDifficulty: 1, targetRounds: 5 },
+      }),
+    );
+    mockExec.mockClear();
+    fireEvent.change(document.getElementById(id) as HTMLSelectElement, { target: { value } });
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', {
+        config: expected,
+      }),
+    );
+  });
+
+  it('shows win celebration on game end when human wins', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<QuadrillePage />);
+    expect(await screen.findByTestId('win-celebration')).toBeInTheDocument();
+  });
 });
