@@ -50,10 +50,15 @@ export function formatGapsState(state: GapsResponse): string {
     if (state.canUndo) lines.push('Use u to undo.');
     if (state.redealsRemaining > 0) lines.push('Use d to redeal.');
     lines.push('Use h for a hint, or g to give up.');
-    if (state.isStalemate)
-      lines.push(
-        `Stalemate. Undo ${state.undoToEscape ?? 0} moves to escape with un ${state.undoToEscape ?? 0}, or g to give up.`,
-      );
+    if (state.isStalemate) {
+      if (state.undoToEscape && state.undoToEscape > 0) {
+        lines.push(
+          `Stalemate. Undo ${state.undoToEscape} moves to escape with un ${state.undoToEscape}, or g to give up.`,
+        );
+      } else {
+        lines.push(`Stalemate. Use ${state.canUndo ? 'u to undo' : 'r to reset'}, or g to give up.`);
+      }
+    }
   } else {
     lines.push('', 'Use r to reset.');
   }

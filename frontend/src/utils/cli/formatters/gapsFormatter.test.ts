@@ -73,6 +73,17 @@ describe('formatGapsState', () => {
     expect(text).not.toContain('Use d to redeal');
   });
 
+  it('does not suggest undo_n when there is no concrete escape count', () => {
+    for (const undoToEscape of [undefined, 0]) {
+      const text = formatGapsState(makeState({ isStalemate: true, undoToEscape }));
+      expect(text).not.toContain('un 0');
+      expect(text).toContain('Use u to undo');
+    }
+    const unavailable = formatGapsState(makeState({ canUndo: false, isStalemate: true, undoToEscape: 0 }));
+    expect(unavailable).not.toContain('un ');
+    expect(unavailable).toContain('r to reset');
+  });
+
   it('prints no hint once and renders a requested hint as an executable indexed command', () => {
     expect(formatGapsState(makeState({ messageCode: 'gaps.noHint' }))).toContain('No hint available.');
     const hint = { fromRow: 1, fromCol: 2, toRow: 0, toCol: 12 };

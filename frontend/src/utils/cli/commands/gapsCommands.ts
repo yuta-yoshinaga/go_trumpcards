@@ -45,6 +45,9 @@ export function parseGapsCommand(input: string, state?: GapsResponse | null): Cl
         return { error: 'Usage: p <idx> <row> <col> (idx 0-51, row 0-3, col 0-12)' };
       }
       const source: GapsMoveZone = { zone: 'grid', row: Math.floor(idx / 13), col: idx % 13 };
+      if (state?.grid && !state.grid[source.row]?.[source.col]) {
+        return { error: `No card at idx ${idx}` };
+      }
       if (state && source.col < (state.lockedPrefixLengths[source.row] ?? 0)) {
         return { error: 'Cannot move a locked card.' };
       }

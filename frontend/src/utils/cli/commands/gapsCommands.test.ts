@@ -39,8 +39,23 @@ describe('parseGapsCommand', () => {
     for (const input of ['un', 'un 0', 'un x']) expect(errorOf(parseGapsCommand(input))).toBe('Usage: undo_n <count>');
   });
 
+  it('rejects an indexed source cell that is empty when state is available', () => {
+    const grid = Array.from({ length: 4 }, () => Array(13).fill(null));
+    const firstRow = grid[0];
+    if (firstRow) firstRow[0] = { design: 'SPADE', value: 2 };
+    const state = { grid, lockedPrefixLengths: [1, 0, 0, 0] } as GapsResponse;
+    expect(errorOf(parseGapsCommand('p 1 0 4', state))).toBe('No card at idx 1');
+    expect(parseGapsCommand('p 0 0 4', state)).toHaveProperty('error');
+  });
+
   it('rejects moving a card within the locked prefix', () => {
-    const state = { lockedPrefixLengths: [2, 1, 0, 0] } as GapsResponse;
+    const grid = Array.from({ length: 4 }, () => Array(13).fill(null));
+    const firstRow = grid[0];
+    if (firstRow) {
+      firstRow[1] = { design: 'HEART', value: 3 };
+      firstRow[2] = { design: 'SPADE', value: 2 };
+    }
+    const state = { grid, lockedPrefixLengths: [2, 1, 0, 0] } as GapsResponse;
     expect(errorOf(parseGapsCommand('p 1 0 4', state))).toBe('Cannot move a locked card.');
     expect(parseGapsCommand('p 2 0 4', state)).toEqual({
       args: ['move', { zone: 'grid', row: 0, col: 2 }, { zone: 'grid', row: 0, col: 4 }],
