@@ -355,9 +355,9 @@ function FooterStatus({ state, game, t, frontendHint }: SuecaContext) {
   const humanPlayer = state.players.find((p) => p.isHuman);
   // Sueca states always contain one human player, and selection indices come
   // from that player's hand. Treat violations as invalid game state.
-  const selectedCardNames = humanPlayer
-    ? game.selectedCardIndices.map((idx) => cardAlt(humanPlayer.cards[idx] as Card))
-    : [];
+  const selectedCardNames = game.selectedCardIndices.map((idx) =>
+    cardAlt((humanPlayer as SuecaPlayer).cards[idx] as Card),
+  );
 
   return (
     <>
