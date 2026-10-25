@@ -186,7 +186,6 @@ NapoleonPage.tsx
 NapoleonsSquarePage.tsx
 NarcoticPage.tsx
 NertzPage.tsx
-NinetyNinePage.tsx
 NiuNiuPage.tsx
 OasisPokerPage.tsx
 OichoKabuPage.tsx
