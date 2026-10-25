@@ -799,4 +799,16 @@ describe('PinochlePage meld reference', () => {
     expect(hintBox).not.toHaveTextContent('推奨ビッド');
     expect(hintBox).not.toHaveTextContent('{{');
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<PinochlePage />);
+    expect(await screen.findByText('ビッド', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('bid', { selector: 'strong' })).not.toBeInTheDocument();
+  });
+
+  it('keeps the reset button in the pinned footer, as the hand-wired page did', async () => {
+    renderWithProviders(<PinochlePage />);
+    const footer = await screen.findByTestId('game-footer-content');
+    expect(footer).toContainElement(screen.getByRole('button', { name: 'リセット' }));
+  });
 });
