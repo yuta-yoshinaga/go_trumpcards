@@ -167,7 +167,6 @@ MacauPage.tsx
 MadrassoPage.tsx
 ManillePage.tsx
 MaoPage.tsx
-MariasPage.tsx
 MarjapussiPage.tsx
 MarriagePage.tsx
 MatrimonyPage.tsx
