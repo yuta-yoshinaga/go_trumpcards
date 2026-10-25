@@ -84,11 +84,16 @@ function LaBelleLuciePageContent() {
   const cliConfig: CliGameConfig<LaBelleLucieResponse, Parameters<typeof labellelucieApi.exec>> = useMemo(
     () => ({
       gameName: 'labellelucie',
-      parseCommand: (input: string) => parseLaBelleLucieCommand(input, { fanCount: state?.fans.length ?? 0 }),
+      parseCommand: (input: string) =>
+        parseLaBelleLucieCommand(input, {
+          fanCount: state?.fans.length ?? 0,
+          phase: state?.phase ?? LaBelleLuciePhase.GAME_OVER,
+          canUndo: state?.canUndo ?? false,
+        }),
       formatResponse: formatLaBelleLucieState,
       helpText: LABELLELUCIE_HELP,
     }),
-    [state?.fans.length],
+    [state?.fans.length, state?.phase, state?.canUndo],
   );
   const { handleCommand } = useCliGame(exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
   // **ギブアップは取り消せない。**リセットには確認が挟まるのに、同じフッターの

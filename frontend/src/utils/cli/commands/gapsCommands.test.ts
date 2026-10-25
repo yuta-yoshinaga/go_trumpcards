@@ -18,25 +18,40 @@ describe('parseGapsCommand', () => {
   });
 
   it('maps every page action and alias to gapsApi.exec arguments', () => {
-    expect(parseGapsCommand('u')).toEqual({ args: ['undo'] });
-    expect(parseGapsCommand('undo')).toEqual({ args: ['undo'] });
+    expect(parseGapsCommand('u', { canUndo: true } as GapsResponse)).toEqual({ args: ['undo'] });
+    expect(parseGapsCommand('undo', { canUndo: true } as GapsResponse)).toEqual({ args: ['undo'] });
     expect(parseGapsCommand('d')).toEqual({ args: ['redeal'] });
     expect(parseGapsCommand('redeal')).toEqual({ args: ['redeal'] });
     expect(parseGapsCommand('g')).toEqual({ args: ['giveup'] });
     expect(parseGapsCommand('giveup')).toEqual({ args: ['giveup'] });
     expect(parseGapsCommand('h')).toEqual({ args: ['hint'] });
     expect(parseGapsCommand('hint')).toEqual({ args: ['hint'] });
-    expect(parseGapsCommand('un 3')).toEqual({ args: ['undo_n', undefined, undefined, 3] });
-    expect(parseGapsCommand('undo_n 3')).toEqual({ args: ['undo_n', undefined, undefined, 3] });
+    expect(parseGapsCommand('un 3', { canUndo: true } as GapsResponse)).toEqual({
+      args: ['undo_n', undefined, undefined, 3],
+    });
+    expect(parseGapsCommand('undo_n 3', { canUndo: true } as GapsResponse)).toEqual({
+      args: ['undo_n', undefined, undefined, 3],
+    });
     expect(parseGapsCommand('r')).toEqual({ args: ['reset'] });
     expect(parseGapsCommand('reset')).toEqual({ args: ['reset'] });
+  });
+
+  it('gates undo commands on canUndo while preserving API arguments', () => {
+    const state = { canUndo: true } as GapsResponse;
+    for (const input of ['u', 'undo', 'un 2', 'undo_n 2']) {
+      expect(errorOf(parseGapsCommand(input))).toBe('Undo is not available.');
+      expect(errorOf(parseGapsCommand(input, { canUndo: false } as GapsResponse))).toBe('Undo is not available.');
+    }
+    expect(parseGapsCommand('u', state)).toEqual({ args: ['undo'] });
+    expect(parseGapsCommand('undo_n 2', state)).toEqual({ args: ['undo_n', undefined, undefined, 2] });
   });
 
   it('rejects missing and out-of-range movement and undo arguments', () => {
     for (const input of ['p', 'p 1', 'p 1 4 0', 'p 52 0 0', 'p 1 0 13', 'play x 0 0']) {
       expect(errorOf(parseGapsCommand(input))).toMatch(/^Usage: p/);
     }
-    for (const input of ['un', 'un 0', 'un x']) expect(errorOf(parseGapsCommand(input))).toBe('Usage: undo_n <count>');
+    for (const input of ['un', 'un 0', 'un x'])
+      expect(errorOf(parseGapsCommand(input, { canUndo: true } as GapsResponse))).toBe('Usage: undo_n <count>');
   });
 
   it('rejects an indexed source cell that is empty when state is available', () => {

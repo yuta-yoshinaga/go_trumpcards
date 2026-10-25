@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import { LaBelleLuciePhase } from '../../../types/phases';
 import { parseLaBelleLucieCommand } from './labellelucieCommands';
+
+const playingState = { fanCount: 18, phase: LaBelleLuciePhase.PLAYING, canUndo: true };
 
 describe('parseLaBelleLucieCommand', () => {
   it('maps every supported command and alias to the page API operations', () => {
@@ -23,7 +26,7 @@ describe('parseLaBelleLucieCommand', () => {
       ['r', ['reset']],
       ['reset', ['reset']],
     ];
-    for (const [input, args] of cases) expect(parseLaBelleLucieCommand(input)).toEqual({ args });
+    for (const [input, args] of cases) expect(parseLaBelleLucieCommand(input, playingState)).toEqual({ args });
   });
 
   it('rejects missing arguments, invalid fan indices, and invalid undo counts', () => {
@@ -35,10 +38,22 @@ describe('parseLaBelleLucieCommand', () => {
   });
 
   it('checks fan indices against the current fan count, which shrinks after a redeal', () => {
-    expect(parseLaBelleLucieCommand('p 0 5', { fanCount: 6 })).toEqual({ args: ['mf', 0, 5] });
-    expect(parseLaBelleLucieCommand('p 0 6', { fanCount: 6 })).toHaveProperty('error');
-    expect(parseLaBelleLucieCommand('f 6', { fanCount: 6 })).toHaveProperty('error');
-    expect(parseLaBelleLucieCommand('f 0', { fanCount: 0 })).toHaveProperty('error');
+    expect(parseLaBelleLucieCommand('p 0 5', { ...playingState, fanCount: 6 })).toEqual({ args: ['mf', 0, 5] });
+    expect(parseLaBelleLucieCommand('p 0 6', { ...playingState, fanCount: 6 })).toHaveProperty('error');
+    expect(parseLaBelleLucieCommand('f 6', { ...playingState, fanCount: 6 })).toHaveProperty('error');
+    expect(parseLaBelleLucieCommand('f 0', { ...playingState, fanCount: 0 })).toHaveProperty('error');
+  });
+
+  it('gates undo commands on an available undo in the playing phase', () => {
+    for (const input of ['u', 'undo_n 2']) {
+      expect(parseLaBelleLucieCommand(input, { ...playingState, canUndo: false })).toHaveProperty('error');
+      expect(parseLaBelleLucieCommand(input, { ...playingState, phase: LaBelleLuciePhase.GAME_CLEAR })).toHaveProperty(
+        'error',
+      );
+      expect(parseLaBelleLucieCommand(input)).toHaveProperty('error');
+    }
+    expect(parseLaBelleLucieCommand('u', playingState)).toEqual({ args: ['u'] });
+    expect(parseLaBelleLucieCommand('undo_n 2', playingState)).toEqual({ args: ['undo_n', undefined, undefined, 2] });
   });
 
   it('rejects unknown commands without accepting log', () => {

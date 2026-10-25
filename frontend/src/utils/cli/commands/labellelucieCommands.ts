@@ -1,4 +1,5 @@
 import type { labellelucieApi } from '../../../api/gameApi';
+import { LaBelleLuciePhase } from '../../../types/phases';
 import { parseIntArg, splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
@@ -6,6 +7,10 @@ type LaBelleLucieArgs = Parameters<typeof labellelucieApi.exec>;
 export interface LaBelleLucieCommandState {
   /** Current fan count, which changes after a redeal. */
   fanCount: number;
+  /** Current game phase. */
+  phase: number;
+  /** Whether the page currently permits undo. */
+  canUndo: boolean;
 }
 const VALID_COMMANDS = [
   'p',
@@ -32,7 +37,7 @@ const VALID_COMMANDS = [
 /** Parse a La Belle Lucie CLI command into API exec arguments. */
 export function parseLaBelleLucieCommand(
   input: string,
-  state: LaBelleLucieCommandState = { fanCount: 18 },
+  state?: LaBelleLucieCommandState,
 ): CliParseResult<LaBelleLucieArgs> {
   const { cmd, args } = splitCommand(input);
   switch (cmd) {
@@ -45,9 +50,9 @@ export function parseLaBelleLucieCommand(
         'error' in from ||
         'error' in to ||
         from.value < 0 ||
-        from.value >= state.fanCount ||
+        from.value >= (state?.fanCount ?? 18) ||
         to.value < 0 ||
-        to.value >= state.fanCount
+        to.value >= (state?.fanCount ?? 18)
       ) {
         return { error: 'Usage: p <from> <to> (fan index out of range)' };
       }
@@ -56,7 +61,7 @@ export function parseLaBelleLucieCommand(
     case 'f':
     case 'foundation': {
       const from = parseIntArg(args, 0);
-      if ('error' in from || from.value < 0 || from.value >= state.fanCount)
+      if ('error' in from || from.value < 0 || from.value >= (state?.fanCount ?? 18))
         return { error: 'Usage: f <idx> (fan index out of range)' };
       return { args: ['ff', from.value] };
     }
@@ -68,8 +73,14 @@ export function parseLaBelleLucieCommand(
       return { args: ['ac'] };
     case 'u':
     case 'undo':
+      if (!state || state.phase !== LaBelleLuciePhase.PLAYING || !state.canUndo) {
+        return { error: 'Undo is not available.' };
+      }
       return { args: ['u'] };
     case 'undo_n': {
+      if (!state || state.phase !== LaBelleLuciePhase.PLAYING || !state.canUndo) {
+        return { error: 'Undo is not available.' };
+      }
       const n = parseIntArg(args, 0);
       if ('error' in n || n.value < 1) return { error: 'Usage: undo_n <count>' };
       return { args: ['undo_n', undefined, undefined, n.value] };
