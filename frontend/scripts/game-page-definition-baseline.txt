@@ -244,7 +244,6 @@ RussianPokerPage.tsx
 RussianSolitairePage.tsx
 SakuraPage.tsx
 SalicLawPage.tsx
-SambaPage.tsx
 SchnapsenPage.tsx
 ScopaPage.tsx
 ScoponePage.tsx
