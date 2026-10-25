@@ -457,4 +457,10 @@ describe('GaigelPage', () => {
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', undefined, 0));
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<GaigelPage />);
+    expect(await screen.findByText('プレイ', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('play', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });

@@ -1,38 +1,22 @@
-import { useCallback, useMemo } from 'react';
 import type { gaigelApi } from '../api/games/gaigel';
-import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
 import { CpuAccordion } from '../components/CpuAccordion';
-import { CliTerminal } from '../components/cli/CliTerminal';
-import { CliToggle } from '../components/cli/CliToggle';
-import { SettingsPanel } from '../components/common/SettingsPanel';
-import { ErrorAlert } from '../components/ErrorAlert';
-import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { GamePageShell } from '../components/GamePageShell';
-import { GameResetButton } from '../components/GameResetButton';
+import { createGamePage, type GameDefinition, type GamePageContext } from '../components/game/createGamePage';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { PlayerHandSection } from '../components/PlayerHandSection';
 import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
-import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
-import { withTutorial } from '../components/tutorial/withTutorial';
 import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
-import { useCliGame } from '../hooks/useCliGame';
-import { useCliMode } from '../hooks/useCliMode';
 import { CPU_DIFFICULTY_OPTIONS, TARGET_SCORE_OPTIONS, useGaigelGame } from '../hooks/useGaigelGame';
-import { useGameHint } from '../hooks/useGameHint';
-import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
-import { gameTheme } from '../styles/gameTheme';
 import type { GaigelResponse } from '../types/card';
 import { GaigelPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { GAIGEL_HELP, parseGaigelCommand } from '../utils/cli/commands/gaigelCommands';
 import { formatGaigelState } from '../utils/cli/formatters/gaigelFormatter';
-import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -84,9 +68,6 @@ const SUIT_LABEL_KEYS: Readonly<Record<number, string>> = {
   4: 'suitDiamond',
 };
 
-/** Renders the Gaigel game page (4-player / 2-team Schnapsen-family point-trick game, 48-card deck). */
-export const GaigelPage = withTutorial(GaigelPageContent, 'gaigel', GAIGEL_TUTORIAL_STEPS);
-
 /** Card design → the numeric suit the Go domain uses. Sync: `internal/domain/Card.go`. */
 const DESIGN_TO_SUIT: Readonly<Record<string, number>> = { SPADE: 1, CLOVER: 2, HEART: 3, DIAMOND: 4 };
 
@@ -96,74 +77,206 @@ const GAIGEL_ROYAL_MARRIAGE_BONUS = 40;
 /** Sync: `domain.GaigelMarriageBonus` — a marriage in any other suit. */
 const GAIGEL_MARRIAGE_BONUS = 20;
 
-function GaigelPageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
-    useGamePageSetup('gaigel');
-  const {
-    state,
-    loading,
-    error,
-    exec: dispatch,
-    retry,
-    gaigelConfig,
-    selectedCardIndices,
-    toggleCard,
-    handleConfigChange,
-    handlePlay,
-    handleMarriage,
-    handleNextTrick,
-    handleNextRound,
-    hint,
-    hintError,
-    hintLoading,
-    handleHint,
-  } = useGaigelGame();
+type GaigelGame = ReturnType<typeof useGaigelGame>;
 
-  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('gaigel');
-  const cliConfig: CliGameConfig<GaigelResponse, Parameters<typeof gaigelApi.exec>> = useMemo(
-    () => ({
-      gameName: 'gaigel',
-      parseCommand: parseGaigelCommand,
-      formatResponse: formatGaigelState,
-      helpText: GAIGEL_HELP,
-    }),
-    [],
-  );
-  const { handleCommand } = useCliGame(dispatch, cliConfig, state, { addInput, addOutput, addError, clearLog });
-
-  const {
-    hint: frontendHint,
-    hintEnabled: frontendHintEnabled,
-    setHintEnabled: setFrontendHintEnabled,
-  } = useGameHint('gaigel', state);
+function useGaigelView() {
   const { cardWidth, isMobile } = useCardDimensions();
   const isLargeDesktop = useBreakpoint() === 'largeDesktop';
-
   const phaseNames = usePhaseNames('gaigel', GAIGEL_PHASE_KEYS);
+  return { cardWidth, isMobile, isLargeDesktop, phaseNames };
+}
 
-  const handleManualReset = useCallback(() => {
-    hideActionLog();
-    void (
-      dispatch as unknown as (command: string, a1?: number, ci?: number, cfg?: typeof gaigelConfig) => Promise<void>
-    )('reset', undefined, undefined, gaigelConfig);
-  }, [dispatch, hideActionLog, gaigelConfig]);
+type GaigelView = ReturnType<typeof useGaigelView>;
+type GaigelContext = GamePageContext<GaigelResponse, GaigelGame, GaigelView>;
 
-  if (!state)
-    return <GameSkeleton gameKey="gaigel" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 5 }} />;
-
-  const messageBox = (
-    <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
-  );
-
-  const humanPlayer = state.players.find((p) => p.isHuman);
-  const isPlayPhase = state.phase === GaigelPhase.PLAY;
+function Board({ state, t, view, frontendHint }: GaigelContext) {
+  const { cardWidth, isMobile, isLargeDesktop } = view;
   const isTrickEnd = state.phase === GaigelPhase.TRICK_END;
   const isRoundEnd = state.phase === GaigelPhase.ROUND_END;
   const isGameEnd = state.phase === GaigelPhase.GAME_END || state.gameEndFlag;
-  const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
 
-  const selectedIdx = selectedCardIndices.length === 1 ? selectedCardIndices[0] : -1;
-  const canDeclareMarriage = isHumanTurn && selectedIdx >= 0 && state.marriageIndices.includes(selectedIdx);
+  return (
+    <>
+      {/* Round/Trick/Trump/Stock info */}
+      <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-ds-text-primary text-center mb-2">
+        <span className="whitespace-nowrap">{t('round', { n: state.roundNumber })}</span>
+        <span className="whitespace-nowrap">{t('trick', { n: state.trickNumber })}</span>
+        <span className="whitespace-nowrap">
+          {state.trumpSuit > 0 ? t('trumpSuit', { suit: t(SUIT_LABEL_KEYS[state.trumpSuit]) }) : t('noTrump')}
+        </span>
+        <span className="whitespace-nowrap">{t('stock', { count: state.stockRemaining })}</span>
+      </div>
+
+      {/* **山が尽きた瞬間にマストフォローへ切り替わる。**残り 0 枚という数字は
+      出ていたが、そこで規則が変わることはどこにも書かれていなかった ──
+      姉妹の Bezique / Schnapsen は両方ともフェーズとして明示している
+      (#6482)。切り替わりは読み上げにも届ける。 */}
+      {state.isEndgame && (
+        <div
+          className="text-center text-sm text-ds-warning font-semibold mb-2"
+          role="status"
+          data-testid="ga-endgame-notice"
+        >
+          {t('endgameNotice')}
+        </div>
+      )}
+
+      {/* Face-up turn-up card that fixes the trump suit. It sits under the
+      stock and is drawn last, so it disappears once the stock is empty. */}
+      {state.trumpCard && (
+        <div className="flex items-center justify-center gap-2 mb-3" data-testid="gaigel-trump-card">
+          <span className="text-ds-text-muted text-sm">{t('turnUpCard')}</span>
+          <CardImage card={state.trumpCard} width={Math.round(cardWidth * 0.7)} />
+        </div>
+      )}
+
+      <div className={isLargeDesktop ? 'flex items-start gap-4 mb-3' : undefined} data-testid="gaigel-upper-layout">
+        {/* Player list */}
+        <div className={isLargeDesktop ? 'w-1/3 shrink-0' : 'mb-3'}>
+          {state.players
+            .filter((p) => p.isHuman)
+            .map((p) => (
+              <div
+                key={p.id}
+                data-testid={`gaigel-player-${p.id}`}
+                className="mb-1 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+              >
+                <span className="whitespace-nowrap">{playerName(p.id, p.isHuman)}</span>
+                {p.id === state.dealerIdx && (
+                  <span className="ml-1 text-ds-accent" data-testid="gaigel-dealer-badge">
+                    [{t('dealerBadge')}]
+                  </span>
+                )}
+                <span className="whitespace-nowrap">: {t('team', { n: p.team })}</span> |{' '}
+                <span className="whitespace-nowrap">{t('cards', { count: p.cardCount })}</span> |{' '}
+                <span className="whitespace-nowrap" data-testid="gaigel-player-tricks">
+                  {t('trickCount', { count: p.trickCount })}
+                </span>
+              </div>
+            ))}
+          <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
+            <div>
+              {state.players
+                .filter((p) => !p.isHuman)
+                .map((p) => (
+                  <div
+                    key={p.id}
+                    data-testid={`gaigel-player-${p.id}`}
+                    className="mb-1 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                  >
+                    <span className="whitespace-nowrap">{playerName(p.id, p.isHuman)}</span>
+                    {p.id === state.dealerIdx && (
+                      <span className="ml-1 text-ds-accent" data-testid="gaigel-dealer-badge">
+                        [{t('dealerBadge')}]
+                      </span>
+                    )}
+                    <span className="whitespace-nowrap">: {t('team', { n: p.team })}</span> |{' '}
+                    <span className="whitespace-nowrap">{t('cards', { count: p.cardCount })}</span> |{' '}
+                    <span className="whitespace-nowrap" data-testid="gaigel-player-tricks">
+                      {t('trickCount', { count: p.trickCount })}
+                    </span>
+                  </div>
+                ))}
+            </div>
+          </CpuAccordion>
+        </div>
+
+        {/* Current trick */}
+        <TrickDisplay
+          currentTrick={state.currentTrick}
+          players={state.players}
+          cardWidth={cardWidth}
+          label={t('currentTrick')}
+          winnerIdx={isTrickEnd && state.trickWinnerIdx >= 0 ? state.trickWinnerIdx : undefined}
+          winnerLabel={t('winnerBadge')}
+          dataTutorial="gg-trick-display"
+        />
+      </div>
+
+      {/* Team scores */}
+      <div className="my-3 p-2 rounded bg-black/30" data-tutorial="gg-score-table">
+        <div className="text-ds-text-muted text-sm mb-1">{t('teamScores')}</div>
+        <div className="text-ds-text-muted text-xs mb-1">{t('target', { points: state.config.targetScore })}</div>
+        <table className="w-full text-sm text-ds-text-muted">
+          <thead>
+            <tr>
+              <th scope="col" />
+              <th scope="col" className="text-left">
+                {t('team', { n: 0 })}
+              </th>
+              <th scope="col" className="text-center">
+                {t('team', { n: 1 })}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row" className="whitespace-nowrap text-left">
+                {t('scoreRows.cumulative')}
+              </th>
+              <td className="text-ds-accent">{state.teamScores[0]}</td>
+              <td className="text-center">{state.teamScores[1]}</td>
+            </tr>
+            <tr>
+              <th scope="row" className="whitespace-nowrap text-left text-xs">
+                {t('scoreRows.round')}
+              </th>
+              <td className="text-xs">{state.roundPoints[0]}</td>
+              <td className="text-center text-xs">{state.roundPoints[1]}</td>
+            </tr>
+            {(state.roundMarriage[0] > 0 || state.roundMarriage[1] > 0) && (
+              <tr>
+                <th scope="row" className="whitespace-nowrap text-left text-xs text-ds-warning">
+                  {t('scoreRows.marriage')}
+                </th>
+                <td className="text-xs text-ds-warning">{state.roundMarriage[0]}</td>
+                <td className="text-center text-xs text-ds-warning">{state.roundMarriage[1]}</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+        <div className="grid grid-cols-2 text-xs text-ds-text-muted">
+          {[0, 1].map((team) => (
+            <div key={team} className={team === 1 ? 'text-center' : undefined}>
+              {t('remainingTeam', {
+                n: team,
+                points: Math.max(0, state.config.targetScore - state.teamScores[team]),
+              })}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <RoundScoreAnnouncement
+        active={isRoundEnd || isGameEnd}
+        entries={[
+          {
+            name: t('team', { n: 0 }),
+            roundScore: state.roundPoints[0] + state.roundMarriage[0],
+            cumulativeScore: state.teamScores[0],
+          },
+          {
+            name: t('team', { n: 1 }),
+            roundScore: state.roundPoints[1] + state.roundMarriage[1],
+            cumulativeScore: state.teamScores[1],
+          },
+        ]}
+      />
+
+      <FrontendHintTooltip hint={frontendHint.hint} enabled={frontendHint.hintEnabled} t={t} />
+      {isMobile && (
+        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+      )}
+    </>
+  );
+}
+
+function FooterHand({ game, state, view, t }: GaigelContext) {
+  const humanPlayer = state.players.find((p) => p.isHuman);
+  if (!humanPlayer) return null;
+
+  const isPlayPhase = state.phase === GaigelPhase.PLAY;
+  const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
 
   // Badge hand cards that can start a marriage (King + Queen of the same suit,
   // both currently held) so the opportunity is visible without probing each
@@ -176,7 +289,7 @@ function GaigelPageContent() {
   // `GaigelRoyalMarriageBonus`、それ以外は `GaigelMarriageBonus`。
   const marriageBadgeFor = (idx: number): { glyph: string; title: string } | null => {
     if (!marriageIndices.includes(idx)) return null;
-    const design = humanPlayer?.cards[idx]?.design;
+    const design = humanPlayer.cards[idx]?.design;
     const isTrump = design !== undefined && DESIGN_TO_SUIT[design] === state.trumpSuit;
     return {
       glyph: isTrump ? '👑' : '💍',
@@ -185,307 +298,150 @@ function GaigelPageContent() {
   };
 
   return (
-    <GamePageShell
-      title={tc('nav.gaigel')}
-      gameThemeBg={gameTheme.gaigel.bg}
-      phaseName={phaseNames[state.phase]}
-      isHumanTurn={isHumanTurn}
-      gamePath="/gaigel"
-      gameEndFlag={!!state?.gameEndFlag}
-      loading={loading}
-      confirmOpen={confirmOpen}
-      confirmReset={confirmReset}
-      cancelReset={cancelReset}
-      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
-    >
-      {cliEnabled ? (
-        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
-      ) : (
-        <>
-          <SettingsPanel
-            title={t('settings.title')}
-            groups={[
-              {
-                items: [
-                  {
-                    type: 'select',
-                    id: 'cpuDifficulty',
-                    label: t('settings.cpuDifficulty'),
-                    value: gaigelConfig.cpuDifficulty,
-                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
-                      value: o.value,
-                      label: t(`settings.${o.label.toLowerCase()}`),
-                    })),
-                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
-                  },
-                  {
-                    type: 'select',
-                    id: 'targetScore',
-                    label: t('settings.targetScore'),
-                    value: gaigelConfig.targetScore,
-                    options: TARGET_SCORE_OPTIONS.map((v) => ({ value: v, label: String(v) })),
-                    onSelect: (v) => handleConfigChange('targetScore', v),
-                  },
-                  hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
-                ],
-              },
-            ]}
-          />
-
-          <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            {/* Round/Trick/Trump/Stock info */}
-            <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-ds-text-primary text-center mb-2">
-              <span className="whitespace-nowrap">{t('round', { n: state.roundNumber })}</span>
-              <span className="whitespace-nowrap">{t('trick', { n: state.trickNumber })}</span>
-              <span className="whitespace-nowrap">
-                {state.trumpSuit > 0 ? t('trumpSuit', { suit: t(SUIT_LABEL_KEYS[state.trumpSuit]) }) : t('noTrump')}
-              </span>
-              <span className="whitespace-nowrap">{t('stock', { count: state.stockRemaining })}</span>
-            </div>
-
-            {/* **山が尽きた瞬間にマストフォローへ切り替わる。**残り 0 枚という数字は
-            出ていたが、そこで規則が変わることはどこにも書かれていなかった ──
-            姉妹の Bezique / Schnapsen は両方ともフェーズとして明示している
-            (#6482)。切り替わりは読み上げにも届ける。 */}
-            {state.isEndgame && (
-              <div
-                className="text-center text-sm text-ds-warning font-semibold mb-2"
-                role="status"
-                data-testid="ga-endgame-notice"
-              >
-                {t('endgameNotice')}
-              </div>
-            )}
-
-            {/* Face-up turn-up card that fixes the trump suit. It sits under the
-            stock and is drawn last, so it disappears once the stock is empty. */}
-            {state.trumpCard && (
-              <div className="flex items-center justify-center gap-2 mb-3" data-testid="gaigel-trump-card">
-                <span className="text-ds-text-muted text-sm">{t('turnUpCard')}</span>
-                <CardImage card={state.trumpCard} width={Math.round(cardWidth * 0.7)} />
-              </div>
-            )}
-
-            <div
-              className={isLargeDesktop ? 'flex items-start gap-4 mb-3' : undefined}
-              data-testid="gaigel-upper-layout"
-            >
-              {/* Player list */}
-              <div className={isLargeDesktop ? 'w-1/3 shrink-0' : 'mb-3'}>
-                {state.players
-                  .filter((p) => p.isHuman)
-                  .map((p) => (
-                    <div
-                      key={p.id}
-                      data-testid={`gaigel-player-${p.id}`}
-                      className="mb-1 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
-                    >
-                      <span className="whitespace-nowrap">{playerName(p.id, p.isHuman)}</span>
-                      {p.id === state.dealerIdx && (
-                        <span className="ml-1 text-ds-accent" data-testid="gaigel-dealer-badge">
-                          [{t('dealerBadge')}]
-                        </span>
-                      )}
-                      <span className="whitespace-nowrap">: {t('team', { n: p.team })}</span> |{' '}
-                      <span className="whitespace-nowrap">{t('cards', { count: p.cardCount })}</span> |{' '}
-                      <span className="whitespace-nowrap" data-testid="gaigel-player-tricks">
-                        {t('trickCount', { count: p.trickCount })}
-                      </span>
-                    </div>
-                  ))}
-                <CpuAccordion playerCount={state.players.filter((p) => !p.isHuman).length}>
-                  <div>
-                    {state.players
-                      .filter((p) => !p.isHuman)
-                      .map((p) => (
-                        <div
-                          key={p.id}
-                          data-testid={`gaigel-player-${p.id}`}
-                          className="mb-1 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
-                        >
-                          <span className="whitespace-nowrap">{playerName(p.id, p.isHuman)}</span>
-                          {p.id === state.dealerIdx && (
-                            <span className="ml-1 text-ds-accent" data-testid="gaigel-dealer-badge">
-                              [{t('dealerBadge')}]
-                            </span>
-                          )}
-                          <span className="whitespace-nowrap">: {t('team', { n: p.team })}</span> |{' '}
-                          <span className="whitespace-nowrap">{t('cards', { count: p.cardCount })}</span> |{' '}
-                          <span className="whitespace-nowrap" data-testid="gaigel-player-tricks">
-                            {t('trickCount', { count: p.trickCount })}
-                          </span>
-                        </div>
-                      ))}
-                  </div>
-                </CpuAccordion>
-              </div>
-
-              {/* Current trick */}
-              <TrickDisplay
-                currentTrick={state.currentTrick}
-                players={state.players}
-                cardWidth={cardWidth}
-                label={t('currentTrick')}
-                winnerIdx={isTrickEnd && state.trickWinnerIdx >= 0 ? state.trickWinnerIdx : undefined}
-                winnerLabel={t('winnerBadge')}
-                dataTutorial="gg-trick-display"
-              />
-            </div>
-
-            {/* Team scores */}
-            <div className="my-3 p-2 rounded bg-black/30" data-tutorial="gg-score-table">
-              <div className="text-ds-text-muted text-sm mb-1">{t('teamScores')}</div>
-              <div className="text-ds-text-muted text-xs mb-1">{t('target', { points: state.config.targetScore })}</div>
-              <table className="w-full text-sm text-ds-text-muted">
-                <thead>
-                  <tr>
-                    <th scope="col" />
-                    <th scope="col" className="text-left">
-                      {t('team', { n: 0 })}
-                    </th>
-                    <th scope="col" className="text-center">
-                      {t('team', { n: 1 })}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <th scope="row" className="whitespace-nowrap text-left">
-                      {t('scoreRows.cumulative')}
-                    </th>
-                    <td className="text-ds-accent">{state.teamScores[0]}</td>
-                    <td className="text-center">{state.teamScores[1]}</td>
-                  </tr>
-                  <tr>
-                    <th scope="row" className="whitespace-nowrap text-left text-xs">
-                      {t('scoreRows.round')}
-                    </th>
-                    <td className="text-xs">{state.roundPoints[0]}</td>
-                    <td className="text-center text-xs">{state.roundPoints[1]}</td>
-                  </tr>
-                  {(state.roundMarriage[0] > 0 || state.roundMarriage[1] > 0) && (
-                    <tr>
-                      <th scope="row" className="whitespace-nowrap text-left text-xs text-ds-warning">
-                        {t('scoreRows.marriage')}
-                      </th>
-                      <td className="text-xs text-ds-warning">{state.roundMarriage[0]}</td>
-                      <td className="text-center text-xs text-ds-warning">{state.roundMarriage[1]}</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-              <div className="grid grid-cols-2 text-xs text-ds-text-muted">
-                {[0, 1].map((team) => (
-                  <div key={team} className={team === 1 ? 'text-center' : undefined}>
-                    {t('remainingTeam', {
-                      n: team,
-                      points: Math.max(0, state.config.targetScore - state.teamScores[team]),
-                    })}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <RoundScoreAnnouncement
-              active={isRoundEnd || isGameEnd}
-              entries={[
-                {
-                  name: t('team', { n: 0 }),
-                  roundScore: state.roundPoints[0] + state.roundMarriage[0],
-                  cumulativeScore: state.teamScores[0],
-                },
-                {
-                  name: t('team', { n: 1 }),
-                  roundScore: state.roundPoints[1] + state.roundMarriage[1],
-                  cumulativeScore: state.teamScores[1],
-                },
-              ]}
-            />
-
-            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-            {isMobile && messageBox}
-            <ActionLogSection
-              isEndPhase={isGameEnd}
-              actionLog={actionLog}
-              showActionLog={showActionLog}
-              hideActionLog={hideActionLog}
-            />
-          </div>
-
-          <GameFooter message={isMobile ? undefined : messageBox} className={`${gameTheme.gaigel.footer} px-4 py-2.5`}>
-            {humanPlayer && (
-              <PlayerHandSection
-                humanPlayer={humanPlayer}
-                selectedCardIndices={selectedCardIndices}
-                toggleCard={toggleCard}
-                cardWidth={cardWidth}
-                isMobile={isMobile}
-                dataTutorialPrefix="gg"
-                cardBadgeFor={marriageBadgeFor}
-              />
-            )}
-
-            <ErrorAlert message={error ?? hintError} onRetry={retry} />
-
-            {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
-            付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
-            読み上げられないことがある (#5955, #6663)。 */}
-            <div data-testid="gaigel-hint-live" role="status" aria-live="polite">
-              {hint && (
-                <div className="text-ds-warning text-sm mb-2">
-                  {`${t('hintPlay')}: [${hint.cardIndex ?? '-'}] (${t(`hintReason.${hint.reason}`, { defaultValue: hint.reason })})`}
-                </div>
-              )}
-            </div>
-
-            <div className="flex gap-2 items-center flex-wrap" data-tutorial="gg-play-button">
-              {isHumanTurn && (
-                <>
-                  <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
-                    {tc('button.hint')}
-                  </button>
-                  {canDeclareMarriage && (
-                    <button
-                      type="button"
-                      className={btnPrimary}
-                      onClick={() => handleMarriage(selectedIdx)}
-                      disabled={loading}
-                      title={t('declareMarriage')}
-                    >
-                      {t('marriageButton')}
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handlePlay}
-                    disabled={loading || selectedCardIndices.length !== 1}
-                  >
-                    {t('playButton')}
-                  </button>
-                </>
-              )}
-              {isTrickEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
-                  {t('nextTrick')}
-                </button>
-              )}
-              {isRoundEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
-                  {t('nextRound')}
-                </button>
-              )}
-              <GameResetButton
-                isGameEnd={!!isGameEnd}
-                onReset={handleManualReset}
-                requestConfirm={requestConfirm}
-                loading={loading}
-                dataTutorial="gg-reset-button"
-              />
-            </div>
-          </GameFooter>
-        </>
-      )}
-    </GamePageShell>
+    <PlayerHandSection
+      humanPlayer={humanPlayer}
+      selectedCardIndices={game.selectedCardIndices}
+      toggleCard={game.toggleCard}
+      cardWidth={view.cardWidth}
+      isMobile={view.isMobile}
+      dataTutorialPrefix="gg"
+      cardBadgeFor={marriageBadgeFor}
+    />
   );
 }
+
+function FooterStatus({ game, t }: GaigelContext) {
+  return (
+    /* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
+    付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
+    読み上げられないことがある (#5955, #6663)。 */
+    <div data-testid="gaigel-hint-live" role="status" aria-live="polite">
+      {game.hint && (
+        <div className="text-ds-warning text-sm mb-2">
+          {`${t('hintPlay')}: [${game.hint.cardIndex ?? '-'}] (${t(`hintReason.${game.hint.reason}`, { defaultValue: game.hint.reason })})`}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function FooterActions({ game, state, t, tc, busy }: GaigelContext) {
+  const isHumanTurn = state.phase === GaigelPhase.PLAY && state.players[state.currentPlayerIdx]?.isHuman === true;
+  const isTrickEnd = state.phase === GaigelPhase.TRICK_END;
+  const isRoundEnd = state.phase === GaigelPhase.ROUND_END;
+
+  const selectedIdx = game.selectedCardIndices.length === 1 ? game.selectedCardIndices[0] : -1;
+  const canDeclareMarriage = isHumanTurn && selectedIdx >= 0 && state.marriageIndices.includes(selectedIdx);
+
+  return (
+    <>
+      {isHumanTurn && (
+        <>
+          <button type="button" className={btnSuccess} onClick={game.handleHint} disabled={busy || game.hintLoading}>
+            {tc('button.hint')}
+          </button>
+          {canDeclareMarriage && (
+            <button
+              type="button"
+              className={btnPrimary}
+              onClick={() => game.handleMarriage(selectedIdx)}
+              disabled={busy}
+              title={t('declareMarriage')}
+            >
+              {t('marriageButton')}
+            </button>
+          )}
+          <button
+            type="button"
+            className={btnPrimary}
+            onClick={game.handlePlay}
+            disabled={busy || game.selectedCardIndices.length !== 1}
+          >
+            {t('playButton')}
+          </button>
+        </>
+      )}
+      {isTrickEnd && (
+        <button type="button" className={btnSuccess} onClick={game.handleNextTrick} disabled={busy}>
+          {t('nextTrick')}
+        </button>
+      )}
+      {isRoundEnd && (
+        <button type="button" className={btnSuccess} onClick={game.handleNextRound} disabled={busy}>
+          {t('nextRound')}
+        </button>
+      )}
+    </>
+  );
+}
+
+const gaigelDefinition: GameDefinition<GaigelResponse, GaigelGame, Parameters<typeof gaigelApi.exec>, GaigelView> = {
+  key: 'gaigel',
+  useGame: useGaigelGame,
+  useView: useGaigelView,
+  tutorial: GAIGEL_TUTORIAL_STEPS,
+  skeleton: { kind: 'trick-taking', trickArea: true, footerHandSize: 5 },
+  cli: () => ({
+    parseCommand: parseGaigelCommand,
+    formatResponse: formatGaigelState,
+    helpText: GAIGEL_HELP,
+  }),
+  phase: ({ state, view }) => ({
+    name: view.phaseNames[state.phase],
+    ended: state.phase === GaigelPhase.GAME_END || state.gameEndFlag,
+  }),
+  shell: ({ state }) => ({
+    isHumanTurn: state.phase === GaigelPhase.PLAY && state.players[state.currentPlayerIdx]?.isHuman === true,
+  }),
+  reset: ({ game }) => {
+    void (
+      game.exec as unknown as (
+        command: string,
+        a1?: number,
+        ci?: number,
+        cfg?: typeof game.gaigelConfig,
+      ) => Promise<void>
+    )('reset', undefined, undefined, game.gaigelConfig);
+  },
+  settings: ({ game, t, tc, frontendHint }) => [
+    {
+      items: [
+        {
+          type: 'select',
+          id: 'cpuDifficulty',
+          label: t('settings.cpuDifficulty'),
+          value: game.gaigelConfig.cpuDifficulty,
+          options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
+            value: o.value,
+            label: t(`settings.${o.label.toLowerCase()}`),
+          })),
+          onSelect: (v) => game.handleConfigChange('cpuDifficulty', v),
+        },
+        {
+          type: 'select',
+          id: 'targetScore',
+          label: t('settings.targetScore'),
+          value: game.gaigelConfig.targetScore,
+          options: TARGET_SCORE_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+          onSelect: (v) => game.handleConfigChange('targetScore', v),
+        },
+        hintCheckboxItem(tc, frontendHint.hintEnabled, frontendHint.setHintEnabled),
+      ],
+    },
+  ],
+  settingsPlacement: 'top',
+  contentClassName: `pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`,
+  message: ({ state, view }) =>
+    !view.isMobile ? (
+      <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+    ) : null,
+  resetTutorialId: 'gg-reset-button',
+  actionsTutorialId: 'gg-play-button',
+  Board,
+  FooterHand,
+  FooterStatus,
+  FooterActions,
+};
+
+/** Renders the Gaigel game page (4-player / 2-team Schnapsen-family point-trick game, 48-card deck). */
+export const GaigelPage = createGamePage(gaigelDefinition);
