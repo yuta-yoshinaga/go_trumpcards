@@ -5,7 +5,7 @@ import type { CliParseResult } from '../types';
 /** Args accepted by putApi.exec. */
 export type PutCliArgs = Parameters<typeof putApi.exec>;
 
-const VALID_COMMANDS = ['p', 'play', 'put', 'accept', 'decline', 'n', 'next', 'h', 'hint', 'l', 'log', 'r', 'reset'];
+const VALID_COMMANDS = ['p', 'play', 'put', 'accept', 'decline', 'n', 'next', 'h', 'hint', 'r', 'reset'];
 
 /** Parse a Put CLI command into putApi.exec arguments. */
 export function parsePutCommand(input: string): CliParseResult<PutCliArgs> {
@@ -29,9 +29,6 @@ export function parsePutCommand(input: string): CliParseResult<PutCliArgs> {
     case 'h':
     case 'hint':
       return { args: ['hint'] };
-    case 'l':
-    case 'log':
-      return { args: ['log'] };
     case 'r':
     case 'reset':
       return { args: ['reset'] };
@@ -48,6 +45,5 @@ export const PUT_HELP = [
   'decline          - Decline a Put call',
   'n / next         - Advance to the next trick or hand',
   'h / hint         - Show a hint',
-  'l / log          - Show the action log',
   'r / reset        - Reset the game',
 ];

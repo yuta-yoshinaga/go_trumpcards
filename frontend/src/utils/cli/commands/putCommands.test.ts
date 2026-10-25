@@ -12,8 +12,6 @@ describe('parsePutCommand', () => {
     expect(parsePutCommand('next')).toEqual({ args: ['next'] });
     expect(parsePutCommand('h')).toEqual({ args: ['hint'] });
     expect(parsePutCommand('hint')).toEqual({ args: ['hint'] });
-    expect(parsePutCommand('l')).toEqual({ args: ['log'] });
-    expect(parsePutCommand('log')).toEqual({ args: ['log'] });
     expect(parsePutCommand('r')).toEqual({ args: ['reset'] });
     expect(parsePutCommand('reset')).toEqual({ args: ['reset'] });
   });
@@ -26,5 +24,6 @@ describe('parsePutCommand', () => {
 
   it('rejects commands not supported by Put', () => {
     expect(parsePutCommand('bid 2')).toEqual({ error: 'Unknown command: bid' });
+    expect(parsePutCommand('log')).toEqual({ error: 'Unknown command: log' });
   });
 });
