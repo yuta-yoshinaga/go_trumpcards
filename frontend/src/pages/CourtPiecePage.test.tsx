@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { courtPieceApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeCourtPieceState } from '../test/stateFactories';
 import { CourtPiecePage } from './CourtPiecePage';
@@ -92,6 +93,13 @@ beforeEach(() => {
 });
 
 describe('CourtPiecePage', () => {
+  it('resets exactly once on mount', async () => {
+    renderWithProviders(<CourtPiecePage />);
+    await screen.findByText('トランプ宣言', { selector: 'strong' });
+    await flushPendingDispatch();
+    expect(mockExec.mock.calls.filter(([command]) => command === 'reset')).toHaveLength(1);
+  });
+
   it('shows the translated phase name, not the raw phase key', async () => {
     renderWithProviders(<CourtPiecePage />);
     expect(await screen.findByText('トランプ宣言', { selector: 'strong' })).toBeInTheDocument();

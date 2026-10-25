@@ -78,11 +78,6 @@ function useCourtPieceView({ game }: { game: CourtPieceGame }) {
   useEffect(() => {
     game.reset();
   }, []);
-  // Fetch a fresh game on mount.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: reset is stable per render of the hook; run once on mount.
-  useEffect(() => {
-    game.reset();
-  }, []);
   const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('courtpiece', COURT_PIECE_PHASE_KEYS);
   return { cardWidth, isMobile, phaseNames };
@@ -106,8 +101,10 @@ function Board({ state, t, tc, view }: CourtPieceContext) {
   const isRoundEnd = state.phase === CourtPiecePhase.ROUND_END;
   const isGameEnd = state.phase === CourtPiecePhase.GAME_END || state.gameEndFlag;
   const leadSuitKey = state.currentTrick[0] ? SUIT_I18N_KEYS[state.currentTrick[0].card.design] : undefined;
+  /** Sums the tricks won by all seats on one team (team 0 = seats 0&2, team 1 = seats 1&3). */
   const teamTricks = (team: number) =>
     state.players.filter((p) => p.team === team).reduce((sum, p) => sum + p.trickCount, 0);
+  /** Renders the per-player rows for one team (seats with that team index). */
   const renderTeamPlayers = (team: number) =>
     state.players
       .filter((p) => p.team === team)
@@ -397,7 +394,6 @@ const def: GameDefinition<CourtPieceResponse, CourtPieceGame, Parameters<typeof 
       (state.phase === CourtPiecePhase.TRUMP_DECLARATION && state.callerIdx === humanIdx);
     return { isHumanTurn: humanTurn && !(state.phase === CourtPiecePhase.GAME_END || state.gameEndFlag) };
   },
-  actionLogEndPhase: ({ state }) => state.phase === CourtPiecePhase.GAME_END || state.gameEndFlag,
   settingsPlacement: 'top',
   contentClassName: `pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`,
   settings: ({ game, t, tc, frontendHint }) => [
@@ -434,8 +430,7 @@ const def: GameDefinition<CourtPieceResponse, CourtPieceGame, Parameters<typeof 
   actionsClassName: 'flex flex-wrap gap-2 items-center',
   actionsTutorialId: 'courtpiece-action-buttons',
   resetTutorialId: 'courtpiece-reset-button',
-  reset: ({ game, hideActionLog }) => {
-    hideActionLog();
+  reset: ({ game }) => {
     game.reset();
   },
 };
