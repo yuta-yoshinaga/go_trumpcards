@@ -188,7 +188,6 @@ MatrimonyPage.tsx
 MemoryPage.tsx
 MendikotPage.tsx
 MightyPage.tsx
-MinchiatePage.tsx
 MinibridgePage.tsx
 MissMilliganPage.tsx
 MississippiStudPage.tsx
