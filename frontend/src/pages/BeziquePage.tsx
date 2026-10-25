@@ -455,6 +455,8 @@ const beziqueDefinition: GameDefinition<
     const isMeldPhase = state.phase === BeziquePhase.MELD;
     const isGameEnd = state.phase === BeziquePhase.GAME_END || state.gameEndFlag;
     const humanIdx = state.players.findIndex((p) => p.isHuman);
+    // The web contract carries no explicit turn flags, so derive them from the
+    // current seat: it is the human's turn whenever currentPlayerIdx is the human.
     const isHumanCurrent = state.currentPlayerIdx === humanIdx;
     const isHumanPlayTurn = isPlayPhase && isHumanCurrent;
     const isHumanMeldTurn = isMeldPhase && isHumanCurrent;
