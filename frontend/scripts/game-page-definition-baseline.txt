@@ -49,7 +49,6 @@ BriscolaPage.tsx
 BristolPage.tsx
 BrusquembillePage.tsx
 BuraPage.tsx
-BurracoPage.tsx
 CalabresellaPage.tsx
 CalculationPage.tsx
 CanastaPage.tsx
