@@ -280,7 +280,6 @@ ThreeThirteenPage.tsx
 TichuPage.tsx
 TienLenPage.tsx
 TonkPage.tsx
-TrappolaPage.tsx
 TrashPage.tsx
 TrenteEtQuarantePage.tsx
 TressettePage.tsx
