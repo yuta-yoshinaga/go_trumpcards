@@ -295,6 +295,12 @@ describe('SuecaPage', () => {
     renderWithProviders(<SuecaPage />);
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<SuecaPage />);
+    expect(await screen.findByText('プレイ', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('play', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });
 
 // **通算が 1・2・4 のどれ増えたのか理由が出ていなかった。**カード点だけでは

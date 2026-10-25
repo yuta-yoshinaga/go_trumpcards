@@ -6,7 +6,6 @@
     "gameEnd": "Game End"
   },
   "settings": {
-    "title": "Settings",
     "cpuDifficulty": "CPU Difficulty",
     "targetGamePoints": "Target Game Points",
     "easy": "Easy",
