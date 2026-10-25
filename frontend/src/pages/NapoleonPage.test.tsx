@@ -1465,4 +1465,38 @@ describe('NapoleonPage point limit', () => {
       innerWidthSpy.mockRestore();
     }
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<NapoleonPage />);
+    expect(await screen.findByText('プレイ', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('play', { selector: 'strong' })).not.toBeInTheDocument();
+  });
+
+  it('places reset button and shortcuts inside game-footer-content', async () => {
+    renderWithProviders(<NapoleonPage />);
+    const footerContent = await screen.findByTestId('game-footer-content');
+    const resetBtn = screen.getByRole('button', { name: 'リセット' });
+    const shortcuts = screen.getByTestId('napoleon-kbd-shortcuts');
+    expect(footerContent).toContainElement(resetBtn);
+    expect(footerContent).toContainElement(shortcuts);
+  });
+
+  it('handles trump suit select change during trump declaration', async () => {
+    mockExec.mockResolvedValue(trumpDeclarationState);
+    renderWithProviders(<NapoleonPage />);
+    const select = await screen.findByLabelText('切り札スート');
+    fireEvent.change(select, { target: { value: '2' } });
+    expect(select).toHaveValue('2');
+  });
+
+  it('shows the partner reveal flash only in the GUI, as the hand-wired page did', async () => {
+    localStorage.clear();
+    mockExec.mockResolvedValue({ ...playPhaseState, adjutantRevealed: true, adjutantIdx: 1 });
+    renderWithProviders(<NapoleonPage />);
+    expect(await screen.findByTestId('partner-reveal-flash')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /CLI/i }));
+    await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument());
+    expect(screen.queryByTestId('partner-reveal-flash')).not.toBeInTheDocument();
+    localStorage.clear();
+  });
 });
