@@ -1,6 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { montecarloApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -12,6 +14,8 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useBreakpoint, useCardDimensions } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { isRejectedAction, useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
@@ -26,6 +30,9 @@ import type { MonteCarloResponse } from '../types/card';
 import { MonteCarloPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { MONTECARLO_HELP, parseMonteCarloCommand } from '../utils/cli/commands/montecarloCommands';
+import { formatMonteCarloState } from '../utils/cli/formatters/montecarloFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const SIZE = 5;
@@ -109,6 +116,17 @@ function MonteCarloPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('montecarlo', state);
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('montecarlo');
+  const cliConfig: CliGameConfig<MonteCarloResponse, Parameters<typeof montecarloApi.exec>> = useMemo(
+    () => ({
+      gameName: 'montecarlo',
+      parseCommand: parseMonteCarloCommand,
+      formatResponse: formatMonteCarloState,
+      helpText: MONTECARLO_HELP,
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   useMountReset(execApi);
   const phaseNames = usePhaseNames('montecarlo', MC_PHASE_KEYS);
@@ -229,12 +247,15 @@ function MonteCarloPageContent() {
       confirmGiveUp={confirmGiveUp}
       cancelGiveUp={cancelGiveUp}
       headerExtra={
-        state && (
-          <span className="font-mono text-xs">
-            {t('label.stockCount')}: {state.stockCount} | {t('label.removedCount')}: {state.removedCount}/52 |{' '}
-            {t('label.dealCount')}: {state.dealCount}
-          </span>
-        )
+        <>
+          {state && (
+            <span className="font-mono text-xs">
+              {t('label.stockCount')}: {state.stockCount} | {t('label.removedCount')}: {state.removedCount}/52 |{' '}
+              {t('label.dealCount')}: {state.dealCount}
+            </span>
+          )}
+          <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
+        </>
       }
     >
       <div role="status" aria-live="polite" data-testid="mc-pair-announcement" className="sr-only">
@@ -252,6 +273,8 @@ function MonteCarloPageContent() {
             </div>
           )}
         </>
+      ) : cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
           <SettingsPanel

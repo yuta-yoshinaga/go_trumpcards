@@ -1,5 +1,5 @@
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { montecarloApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -69,7 +69,19 @@ beforeEach(() => {
   mockExec.mockResolvedValue(playingState);
 });
 
+afterEach(() => {
+  localStorage.removeItem('cli-mode-montecarlo');
+});
+
 describe('MonteCarloPage', () => {
+  it('shows the terminal when CLI mode is enabled', async () => {
+    renderWithProviders(<MonteCarloPage />);
+    await screen.findByTestId('mc-cell-0-0');
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    expect(await screen.findByRole('textbox', { name: 'コマンドを入力...' })).toBeInTheDocument();
+    expect(screen.queryByTestId('mc-board')).not.toBeInTheDocument();
+  });
+
   it('matches the large desktop placeholder height to the rendered cards', async () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });
