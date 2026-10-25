@@ -596,4 +596,21 @@ describe('RistikontraPage', () => {
     fireEvent.click(toggle);
     expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
   });
+
+  it('shows the hint tooltip above the hand, as the hand-wired page did', async () => {
+    localStorage.clear();
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<RistikontraPage />);
+    fireEvent.click(await screen.findByRole('checkbox', { name: 'ヒント表示' }));
+    const tooltip = await screen.findByTestId('hint-tooltip');
+    const hand = document.querySelector('[data-tutorial="ristikontra-hand"]') as Element;
+    expect(tooltip.compareDocumentPosition(hand) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    localStorage.clear();
+  });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<RistikontraPage />);
+    expect(await screen.findByText('プレイ', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('play', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });

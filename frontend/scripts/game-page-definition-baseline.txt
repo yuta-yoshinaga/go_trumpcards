@@ -222,7 +222,6 @@ RazzPage.tsx
 RedDogPage.tsx
 ReversisPage.tsx
 RikkenPage.tsx
-RistikontraPage.tsx
 RollingStonePage.tsx
 RookPage.tsx
 RoyalCotillionPage.tsx

@@ -19,7 +19,6 @@
   "nextGame": "Next game",
   "finalScoresTitle": "Final scores",
   "settings": {
-    "title": "Settings",
     "cpuDifficulty": "CPU difficulty",
     "easy": "Easy",
     "normal": "Normal",

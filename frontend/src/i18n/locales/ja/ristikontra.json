@@ -18,7 +18,6 @@
   "nextGame": "次のゲームへ",
   "finalScoresTitle": "最終得点",
   "settings": {
-    "title": "設定",
     "cpuDifficulty": "CPU難易度",
     "easy": "やさしい",
     "normal": "ふつう",
