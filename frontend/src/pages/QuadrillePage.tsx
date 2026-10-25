@@ -540,6 +540,8 @@ const quadrilleDefinition: GameDefinition<
       <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
     ),
   resetTutorialId: 'quadrille-reset-button',
+  // The old reset button had no wrapper; a class-less div lays out the same, unlike the default flex row.
+  actionsClassName: '',
   Board,
   FooterHand,
   FooterStatus,
