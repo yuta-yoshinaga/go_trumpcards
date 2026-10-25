@@ -176,7 +176,6 @@ LetItRidePage.tsx
 LingerLongerPage.tsx
 LiteraturePage.tsx
 LobaPage.tsx
-LooPage.tsx
 MacauPage.tsx
 MachiavelliPage.tsx
 MadrassoPage.tsx
