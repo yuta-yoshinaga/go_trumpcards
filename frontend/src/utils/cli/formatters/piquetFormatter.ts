@@ -1,6 +1,13 @@
 import type { PiquetResponse } from '../../../types/card';
 import { PiquetDeclarationKind, PiquetExchangeTurn, PiquetPhase } from '../../../types/phases';
-import { formatCard, formatHeader, formatIndexedCards, formatPlayerName, formatSeparator } from '../formatterBase';
+import {
+  formatCard,
+  formatHeader,
+  formatIndexedCards,
+  formatPlayerName,
+  formatSeparator,
+  isRequestedHint,
+} from '../formatterBase';
 
 const PHASE_NAMES: Record<number, string> = {
   [PiquetPhase.EXCHANGE]: 'Exchange',
@@ -69,6 +76,18 @@ export function formatPiquetState(state: PiquetResponse): string {
       lines.push('Partie ended in a draw');
     } else {
       lines.push(`★ Partie winner: player ${state.winnerIdx}`);
+    }
+  }
+
+  if (state.hint && isRequestedHint(state)) {
+    if (state.hint.cardIndex !== undefined) {
+      const card = state.players.find((player) => player.isHuman)?.cards[state.hint?.cardIndex];
+      const cardText = card ? ` ${formatCard(card)}` : '';
+      lines.push(`HINT: play card [${state.hint.cardIndex}]${cardText} (${state.hint.reason})`);
+    } else if (state.hint.discardIndices) {
+      lines.push(`HINT: discard cards [${state.hint.discardIndices.join(', ')}] (${state.hint.reason})`);
+    } else {
+      lines.push(`HINT: ${state.hint.reason}`);
     }
   }
 

@@ -1,7 +1,10 @@
 import type { TFunction } from 'i18next';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { piquetApi } from '../api/games/piquet';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
@@ -11,6 +14,8 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePiquetGame } from '../hooks/usePiquetGame';
@@ -22,6 +27,9 @@ import { PiquetDeclarationKind, PiquetExchangeTurn, PiquetPhase } from '../types
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { valueName } from '../utils/cardUtils';
+import { PIQUET_HELP, parsePiquetCommand } from '../utils/cli/commands/piquetCommands';
+import { formatPiquetState } from '../utils/cli/formatters/piquetFormatter';
+import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
 import { type DeclarationHighlight, declarationHighlight } from '../utils/piquetDeclarationHighlight';
 
@@ -70,10 +78,22 @@ function PiquetPageContent() {
     useGamePageSetup('piquet');
   const game = usePiquetGame();
   const { state, loading, error, retry } = game;
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('piquet');
   const { cardWidth } = useCardDimensions();
   const [selectedDiscards, setSelectedDiscards] = useState<number[]>([]);
   const [activeHighlight, setActiveHighlight] = useState<DeclarationHighlight | null>(null);
   const prevDeclLenRef = useRef(0);
+
+  const cliConfig: CliGameConfig<PiquetResponse, Parameters<typeof piquetApi.exec>> = useMemo(
+    () => ({
+      gameName: 'piquet',
+      parseCommand: parsePiquetCommand,
+      formatResponse: formatPiquetState,
+      helpText: PIQUET_HELP,
+    }),
+    [],
+  );
+  const { handleCommand } = useCliGame(game.exec, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   // **フックは早期 return より上。**`if (!state) return <GameSkeleton>` の
   // 下に置くと、初回レンダーだけフック数が変わってページが骨組みのまま固まる (#4561)。
@@ -158,185 +178,196 @@ function PiquetPageContent() {
       confirmOpen={confirmOpen}
       confirmReset={confirmReset}
       cancelReset={cancelReset}
+      headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
-      <ErrorAlert message={error} onRetry={retry} />
-      <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <ErrorAlert message={error} onRetry={retry} />
+          <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
 
-      {/* Scrollable state display. Piquet fits a 375x667 viewport today with
+          {/* Scrollable state display. Piquet fits a 375x667 viewport today with
           room to spare, but it had no play area at all, so any growth would have
           gone straight into the document height. See issue #4373. */}
-      <div className="flex-1 overflow-y-auto min-h-0">
-        <div className="text-sm opacity-80 px-2">
-          {t('dealHeader', { deal: state.dealNumber, total: state.dealsPerPartie })}
-        </div>
+          <div className="flex-1 overflow-y-auto min-h-0">
+            <div className="text-sm opacity-80 px-2">
+              {t('dealHeader', { deal: state.dealNumber, total: state.dealsPerPartie })}
+            </div>
 
-        <PlayerCard
-          label={t('roleElder')}
-          player={state.players[elderIdx]}
-          carteBlanche={state.carteBlanche[elderIdx]}
-        />
-        <PlayerCard
-          label={t('roleYounger')}
-          player={state.players[state.youngerIdx]}
-          carteBlanche={state.carteBlanche[state.youngerIdx]}
-        />
+            <PlayerCard
+              label={t('roleElder')}
+              player={state.players[elderIdx]}
+              carteBlanche={state.carteBlanche[elderIdx]}
+            />
+            <PlayerCard
+              label={t('roleYounger')}
+              player={state.players[state.youngerIdx]}
+              carteBlanche={state.carteBlanche[state.youngerIdx]}
+            />
 
-        {human ? (
-          <div data-tutorial="piquet-hand" className="rounded border border-white/20 p-2 mx-2">
-            <div className="mb-1 flex items-center justify-between text-xs">
-              <span className="opacity-70">{t('yourHand')}</span>
-              {activeHighlight ? (
-                <span
-                  data-testid="piquet-meld-badge"
-                  className={`rounded px-2 py-0.5 text-xs font-bold ${
-                    activeHighlight.won ? badgeSuccessColors : badgeErrorColors
-                  }`}
-                >
-                  {t(activeHighlight.won ? 'meldWonBadge' : 'meldLostBadge', {
-                    label: t(activeHighlight.labelKey, { count: activeHighlight.count }),
+            {human ? (
+              <div data-tutorial="piquet-hand" className="rounded border border-white/20 p-2 mx-2">
+                <div className="mb-1 flex items-center justify-between text-xs">
+                  <span className="opacity-70">{t('yourHand')}</span>
+                  {activeHighlight ? (
+                    <span
+                      data-testid="piquet-meld-badge"
+                      className={`rounded px-2 py-0.5 text-xs font-bold ${
+                        activeHighlight.won ? badgeSuccessColors : badgeErrorColors
+                      }`}
+                    >
+                      {t(activeHighlight.won ? 'meldWonBadge' : 'meldLostBadge', {
+                        label: t(activeHighlight.labelKey, { count: activeHighlight.count }),
+                      })}
+                    </span>
+                  ) : null}
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {human.cards.map((c, i) => {
+                    const selected = selectedDiscards.includes(i);
+                    const highlighted = activeHighlight?.cardIndices.includes(i) ?? false;
+                    // Highlight ring lives on the AnimatedCard wrapper so it tracks the lift; the
+                    // selection lift/glow is driven by AnimatedCard's isSelected (Framer Motion).
+                    const ringClass = highlighted
+                      ? activeHighlight?.won
+                        ? 'ring-2 ring-ds-success'
+                        : 'ring-2 ring-ds-error'
+                      : '';
+                    const handlePlay = () => game.handlePlay(i);
+                    const handleClick = humanCanExchange
+                      ? () => toggleDiscard(i)
+                      : humanCanPlay
+                        ? handlePlay
+                        : undefined;
+                    // 出せない札は PlayerHandSection と同じ扱い ── `aria-disabled` で
+                    // フォーカスは残したまま押しても何も起きない形にする。HTML の
+                    // `disabled` にすると読み上げ側から札そのものが消える (#5603)。
+                    const restricted = humanCanPlay && !isPlayable(i);
+                    return (
+                      <button
+                        key={`hand-${i}-${c.design}-${c.value}`}
+                        type="button"
+                        aria-pressed={humanCanExchange ? selected : undefined}
+                        aria-label={
+                          humanCanPlay
+                            ? t(isPlayable(i) ? 'playableAria' : 'notPlayableAria', { card: cardAlt(c) })
+                            : undefined
+                        }
+                        data-hint-action={humanCanExchange ? 'discard' : 'play'}
+                        className={`rounded ${restricted ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        onClick={restricted ? undefined : handleClick}
+                        aria-disabled={restricted || undefined}
+                        disabled={handleClick == null}
+                      >
+                        <AnimatedCard card={c} width={cardWidth} isSelected={selected} wrapperClassName={ringClass} />
+                      </button>
+                    );
                   })}
-                </span>
+                </div>
+              </div>
+            ) : null}
+          </div>
+
+          <div data-tutorial="piquet-controls" className="flex flex-wrap gap-2 px-2">
+            <div data-testid="piquet-exchange-counts" aria-live="polite" aria-atomic="true">
+              {humanCanExchange && human ? (
+                <p className="w-full text-xs text-ds-text-muted">
+                  {t('exchangeCounts', {
+                    hand: human.cardCount,
+                    selected: selectedDiscards.length,
+                    // Piquet draws one talon card per discard, so the hand size stays the same.
+                    remaining: human.cardCount,
+                  })}
+                </p>
               ) : null}
             </div>
-            <div className="flex flex-wrap gap-1">
-              {human.cards.map((c, i) => {
-                const selected = selectedDiscards.includes(i);
-                const highlighted = activeHighlight?.cardIndices.includes(i) ?? false;
-                // Highlight ring lives on the AnimatedCard wrapper so it tracks the lift; the
-                // selection lift/glow is driven by AnimatedCard's isSelected (Framer Motion).
-                const ringClass = highlighted
-                  ? activeHighlight?.won
-                    ? 'ring-2 ring-ds-success'
-                    : 'ring-2 ring-ds-error'
-                  : '';
-                const handlePlay = () => game.handlePlay(i);
-                const handleClick = humanCanExchange ? () => toggleDiscard(i) : humanCanPlay ? handlePlay : undefined;
-                // 出せない札は PlayerHandSection と同じ扱い ── `aria-disabled` で
-                // フォーカスは残したまま押しても何も起きない形にする。HTML の
-                // `disabled` にすると読み上げ側から札そのものが消える (#5603)。
-                const restricted = humanCanPlay && !isPlayable(i);
-                return (
-                  <button
-                    key={`hand-${i}-${c.design}-${c.value}`}
-                    type="button"
-                    aria-pressed={humanCanExchange ? selected : undefined}
-                    aria-label={
-                      humanCanPlay
-                        ? t(isPlayable(i) ? 'playableAria' : 'notPlayableAria', { card: cardAlt(c) })
-                        : undefined
-                    }
-                    data-hint-action={humanCanExchange ? 'discard' : 'play'}
-                    className={`rounded ${restricted ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    onClick={restricted ? undefined : handleClick}
-                    aria-disabled={restricted || undefined}
-                    disabled={handleClick == null}
-                  >
-                    <AnimatedCard card={c} width={cardWidth} isSelected={selected} wrapperClassName={ringClass} />
-                  </button>
-                );
-              })}
-            </div>
+            {humanCanExchange && state.exchangeTurn === PiquetExchangeTurn.ELDER ? (
+              <button
+                type="button"
+                onClick={handleElderExchange}
+                data-hint-action="discard"
+                disabled={selectedDiscards.length < 1 || selectedDiscards.length > 5}
+                className={btnPrimary}
+              >
+                {t('exchangeElder', { count: selectedDiscards.length })}
+              </button>
+            ) : null}
+            {humanCanExchange && state.exchangeTurn === PiquetExchangeTurn.YOUNGER ? (
+              <button
+                type="button"
+                onClick={handleYoungerExchange}
+                data-hint-action="discard"
+                disabled={selectedDiscards.length > 3}
+                className={btnPrimary}
+              >
+                {t('exchangeYounger', { count: selectedDiscards.length })}
+              </button>
+            ) : null}
+            {inDeclarationPhase ? (
+              <button type="button" onClick={game.handleResolveDeclaration} className={btnPrimary}>
+                {t('advanceDeclaration', { kind: declKindLabel(state.declStage, t) })}
+              </button>
+            ) : null}
+            {inScorePhase ? (
+              <button type="button" onClick={game.handleNextDeal} className={btnSuccess}>
+                {t('nextDeal')}
+              </button>
+            ) : null}
+            {humanCanPlay || humanCanExchange ? (
+              <button type="button" onClick={game.handleHint} className={btnSuccess} disabled={loading}>
+                {t('hintButton')}
+              </button>
+            ) : null}
+            <GameResetButton
+              isGameEnd={inGameEndPhase}
+              onReset={game.handleReset}
+              requestConfirm={requestConfirm}
+              loading={loading}
+            />
           </div>
-        ) : null}
-      </div>
 
-      <div data-tutorial="piquet-controls" className="flex flex-wrap gap-2 px-2">
-        <div data-testid="piquet-exchange-counts" aria-live="polite" aria-atomic="true">
-          {humanCanExchange && human ? (
-            <p className="w-full text-xs text-ds-text-muted">
-              {t('exchangeCounts', {
-                hand: human.cardCount,
-                selected: selectedDiscards.length,
-                // Piquet draws one talon card per discard, so the hand size stays the same.
-                remaining: human.cardCount,
-              })}
+          <label className="flex items-center gap-1 text-ds-text-primary text-xs justify-center mt-2 cursor-pointer min-h-[44px]">
+            <input
+              type="checkbox"
+              checked={frontendHintEnabled}
+              onChange={(e) => setFrontendHintEnabled(e.target.checked)}
+            />
+            {tc('hint.toggle', { ns: 'tutorial' })}
+          </label>
+
+          <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+          {state.hint && isRequestedHint(state) ? (
+            <p className="mt-2 text-sm text-ds-accent" data-testid="piquet-hint">
+              {state.hint.cardIndex !== undefined
+                ? t('hintPlay', { index: state.hint.cardIndex })
+                : t('hintDiscard', { indices: (state.hint.discardIndices ?? []).join(', ') })}
             </p>
           ) : null}
-        </div>
-        {humanCanExchange && state.exchangeTurn === PiquetExchangeTurn.ELDER ? (
-          <button
-            type="button"
-            onClick={handleElderExchange}
-            data-hint-action="discard"
-            disabled={selectedDiscards.length < 1 || selectedDiscards.length > 5}
-            className={btnPrimary}
-          >
-            {t('exchangeElder', { count: selectedDiscards.length })}
-          </button>
-        ) : null}
-        {humanCanExchange && state.exchangeTurn === PiquetExchangeTurn.YOUNGER ? (
-          <button
-            type="button"
-            onClick={handleYoungerExchange}
-            data-hint-action="discard"
-            disabled={selectedDiscards.length > 3}
-            className={btnPrimary}
-          >
-            {t('exchangeYounger', { count: selectedDiscards.length })}
-          </button>
-        ) : null}
-        {inDeclarationPhase ? (
-          <button type="button" onClick={game.handleResolveDeclaration} className={btnPrimary}>
-            {t('advanceDeclaration', { kind: declKindLabel(state.declStage, t) })}
-          </button>
-        ) : null}
-        {inScorePhase ? (
-          <button type="button" onClick={game.handleNextDeal} className={btnSuccess}>
-            {t('nextDeal')}
-          </button>
-        ) : null}
-        {humanCanPlay || humanCanExchange ? (
-          <button type="button" onClick={game.handleHint} className={btnSuccess} disabled={loading}>
-            {t('hintButton')}
-          </button>
-        ) : null}
-        <GameResetButton
-          isGameEnd={inGameEndPhase}
-          onReset={game.handleReset}
-          requestConfirm={requestConfirm}
-          loading={loading}
-        />
-      </div>
 
-      <label className="flex items-center gap-1 text-ds-text-primary text-xs justify-center mt-2 cursor-pointer min-h-[44px]">
-        <input
-          type="checkbox"
-          checked={frontendHintEnabled}
-          onChange={(e) => setFrontendHintEnabled(e.target.checked)}
-        />
-        {tc('hint.toggle', { ns: 'tutorial' })}
-      </label>
+          {state.declResults.length > 0 ? (
+            <DeclarationList results={state.declResults} elderIdx={elderIdx} tc={tc} />
+          ) : null}
 
-      <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+          {inPlayPhase && state.currentTrick.length > 0 ? (
+            <TrickView trick={state.currentTrick} elderIdx={elderIdx} />
+          ) : null}
 
-      {state.hint && isRequestedHint(state) ? (
-        <p className="mt-2 text-sm text-ds-accent" data-testid="piquet-hint">
-          {state.hint.cardIndex !== undefined
-            ? t('hintPlay', { index: state.hint.cardIndex })
-            : t('hintDiscard', { indices: (state.hint.discardIndices ?? []).join(', ') })}
-        </p>
-      ) : null}
+          {inGameEndPhase ? (
+            <div className="text-lg font-bold px-2">
+              {state.winnerIdx === -1 ? t('partieDraw') : t('partieWinner', { idx: state.winnerIdx })}
+            </div>
+          ) : null}
 
-      {state.declResults.length > 0 ? (
-        <DeclarationList results={state.declResults} elderIdx={elderIdx} tc={tc} />
-      ) : null}
-
-      {inPlayPhase && state.currentTrick.length > 0 ? (
-        <TrickView trick={state.currentTrick} elderIdx={elderIdx} />
-      ) : null}
-
-      {inGameEndPhase ? (
-        <div className="text-lg font-bold px-2">
-          {state.winnerIdx === -1 ? t('partieDraw') : t('partieWinner', { idx: state.winnerIdx })}
-        </div>
-      ) : null}
-
-      <ActionLogSection
-        isEndPhase={inGameEndPhase}
-        actionLog={actionLog}
-        showActionLog={showActionLog}
-        hideActionLog={hideActionLog}
-      />
+          <ActionLogSection
+            isEndPhase={inGameEndPhase}
+            actionLog={actionLog}
+            showActionLog={showActionLog}
+            hideActionLog={hideActionLog}
+          />
+        </>
+      )}
     </GamePageShell>
   );
 }
