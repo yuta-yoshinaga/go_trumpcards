@@ -394,33 +394,40 @@ function FooterHand({ game, state, t, view }: CallBreakContext) {
   ) : null;
 }
 
+// Rendered before the error alert, as on the hand-wired page: the spades-broken line and bid progress
+// sat between the action log and ErrorAlert, which FooterStatus (after ErrorAlert) cannot reproduce.
+function FooterLead({ state, t }: CallBreakContext) {
+  const humanPlayer = state.players.find((p) => p.isHuman);
+  if (!humanPlayer) return null;
+
+  return (
+    <>
+      <div className="mb-1 text-ds-text-muted text-xs" role="status" data-testid="cb-spades-break-footer">
+        {state.spadesBroken ? t('spadesBroken') : t('spadesNotBroken')}
+      </div>
+      {humanPlayer.bid >= 0 && (
+        <div className="mb-1 text-ds-text-muted text-xs">
+          <div>
+            {t('bid', { n: humanPlayer.bid })} / {t('tricksWon', { n: humanPlayer.trickCount })}
+          </div>
+          <BidProgressBar
+            bid={humanPlayer.bid}
+            tricksWon={humanPlayer.trickCount}
+            ariaLabel={t('bidProgressAria', { name: playerName(humanPlayer.id, true) })}
+            testId={`bid-progress-${humanPlayer.id.toString()}`}
+          />
+        </div>
+      )}
+    </>
+  );
+}
+
 function FooterStatus({ game, state, t, frontendHint }: CallBreakContext) {
   const humanPlayer = state.players.find((p) => p.isHuman);
   const hint = game.hint;
 
   return (
     <>
-      {humanPlayer && (
-        <>
-          <div className="mb-1 text-ds-text-muted text-xs" role="status" data-testid="cb-spades-break-footer">
-            {state.spadesBroken ? t('spadesBroken') : t('spadesNotBroken')}
-          </div>
-          {humanPlayer.bid >= 0 && (
-            <div className="mb-1 text-ds-text-muted text-xs">
-              <div>
-                {t('bid', { n: humanPlayer.bid })} / {t('tricksWon', { n: humanPlayer.trickCount })}
-              </div>
-              <BidProgressBar
-                bid={humanPlayer.bid}
-                tricksWon={humanPlayer.trickCount}
-                ariaLabel={t('bidProgressAria', { name: playerName(humanPlayer.id, true) })}
-                testId={`bid-progress-${humanPlayer.id.toString()}`}
-              />
-            </div>
-          )}
-        </>
-      )}
-
       {/* ライブ領域は**常設**。hint がある間だけ現れる内側の要素に role/aria-live を
           付けると、領域と中身が同じコミットで DOM に入るので変化として扱われず、
           読み上げられないことがある (#5955, #6663)。 */}
@@ -579,6 +586,7 @@ const callBreakDefinition: GameDefinition<
   actionsClassName: 'flex gap-2 items-center',
   Board,
   FooterHand,
+  FooterLead,
   FooterStatus,
   FooterActions,
 };
