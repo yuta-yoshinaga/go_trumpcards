@@ -78,6 +78,16 @@ function MariasMessageBox({ state }: Pick<MariasContext, 'state'>) {
   return <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />;
 }
 
+/** Lists a player's declared marriages this round as "<suit>: <points>", comma-separated. */
+function formatMarriageDetails(state: MariasResponse, t: MariasContext['t'], playerIdx: number): string {
+  return (state.roundMarriageSuits[playerIdx] ?? [])
+    .map(
+      (marriage) =>
+        `${t(`suitName.${['', 'spade', 'club', 'heart', 'diamond'][marriage.suit] ?? ''}`)}: ${marriage.points}`,
+    )
+    .join(', ');
+}
+
 function Board({ state, t, view }: MariasContext) {
   const { cardWidth, isMobile } = view;
   const humanPlayer = state.players.find((p) => p.isHuman);
@@ -88,13 +98,7 @@ function Board({ state, t, view }: MariasContext) {
   const isGameEnd = state.phase === MariasPhase.GAME_END || state.gameEndFlag;
 
   const trumpSymbol = suitSymbolAt(state.trumpSuit, '');
-  const marriageDetails = (playerIdx: number) =>
-    (state.roundMarriageSuits[playerIdx] ?? [])
-      .map(
-        (marriage) =>
-          `${t(`suitName.${['', 'spade', 'club', 'heart', 'diamond'][marriage.suit] ?? ''}`)}: ${marriage.points}`,
-      )
-      .join(', ');
+  const marriageDetails = (playerIdx: number) => formatMarriageDetails(state, t, playerIdx);
   const playerRoleLabel = (isSoloist: boolean) => t(isSoloist ? 'role.soloist' : 'role.defender');
 
   const sideTotal = (soloist: boolean) =>
@@ -271,13 +275,7 @@ function FooterHand({ game, state, t, view }: MariasContext) {
       }, [])
     : [];
 
-  const marriageDetails = (playerIdx: number) =>
-    (state.roundMarriageSuits[playerIdx] ?? [])
-      .map(
-        (marriage) =>
-          `${t(`suitName.${['', 'spade', 'club', 'heart', 'diamond'][marriage.suit] ?? ''}`)}: ${marriage.points}`,
-      )
-      .join(', ');
+  const marriageDetails = (playerIdx: number) => formatMarriageDetails(state, t, playerIdx);
 
   // **結婚ボーナスは配った時点で確定している。**`detectMarriages` はラウンド
   // 開始時に一度だけ走って `roundMarriage` に加点し、以後 K・Q を場に出しても
