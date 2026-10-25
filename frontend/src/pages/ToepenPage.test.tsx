@@ -319,6 +319,12 @@ describe('ToepenPage', () => {
     expect(blocked.getAttribute('aria-label')).toMatch(/スート/);
     expect(allowed).not.toHaveAttribute('title');
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<ToepenPage />);
+    expect(await screen.findByText('進行中', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('play', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });
 
 describe('ToepenPage redeal', () => {
