@@ -316,6 +316,12 @@ describe('BuraPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.getByText('切札 ハート（指示カードは引かれた）')).toBeInTheDocument();
   });
+
+  it('shows the translated phase name, not the raw phase key', async () => {
+    renderWithProviders(<BuraPage />);
+    expect(await screen.findByText('プレイ', { selector: 'strong' })).toBeInTheDocument();
+    expect(screen.queryByText('play', { selector: 'strong' })).not.toBeInTheDocument();
+  });
 });
 
 describe('BuraPage action log during play', () => {
@@ -403,5 +409,15 @@ describe('BuraPage opponent card backs by viewport', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.queryByTestId('card-back-fan')).not.toBeInTheDocument();
     expect(screen.getAllByAltText('カード裏面')).toHaveLength(3);
+  });
+
+  it('keeps the settings panel in CLI mode, as the hand-wired page did', async () => {
+    localStorage.clear();
+    renderWithProviders(<BuraPage />);
+    expect(await screen.findByRole('checkbox', { name: 'ヒント表示' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /CLI/i }));
+    await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument());
+    expect(screen.getByRole('checkbox', { name: 'ヒント表示' })).toBeInTheDocument();
+    localStorage.clear();
   });
 });
