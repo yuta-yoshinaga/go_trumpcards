@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { mississippiStudApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
+import { CliTerminal } from '../components/cli/CliTerminal';
+import { CliToggle } from '../components/cli/CliToggle';
 import { ChipBetInput } from '../components/common/ChipBetInput';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -16,6 +18,8 @@ import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCliGame } from '../hooks/useCliGame';
+import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
@@ -24,10 +28,14 @@ import { badgeSuccessColors } from '../styles/badgeStyles';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { Card } from '../types/card';
+import type { Card, MississippiStudResponse } from '../types/card';
 import { isMaskedCard } from '../types/card';
 import { MississippiStudPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { MISSISSIPPISTUD_HELP, parseMississippiStudCommand } from '../utils/cli/commands/mississippistudCommands';
+import { formatMississippiStudState } from '../utils/cli/formatters/mississippistudFormatter';
+import { hintLocalCommand } from '../utils/cli/hintText';
+import type { CliGameConfig } from '../utils/cli/types';
 import { formatSignedDelta } from '../utils/formatSignedDelta';
 import { evaluateMississippiStudMadeHand } from '../utils/mississippiStudMadeHand';
 
@@ -86,11 +94,23 @@ function MississippiStudPageContent() {
 
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec: execApi, retry } = useGameApi(mississippiStudApi.exec);
+  const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('mississippistud');
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('mississippistud', state);
+  const cliConfig: CliGameConfig<MississippiStudResponse, Parameters<typeof mississippiStudApi.exec>> = useMemo(
+    () => ({
+      gameName: 'mississippistud',
+      parseCommand: parseMississippiStudCommand,
+      formatResponse: formatMississippiStudState,
+      helpText: MISSISSIPPISTUD_HELP,
+      localCommand: hintLocalCommand(frontendHint),
+    }),
+    [frontendHint],
+  );
+  const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
   useMountReset(execApi);
 
@@ -199,233 +219,248 @@ function MississippiStudPageContent() {
       confirmReset={confirmReset}
       cancelReset={cancelReset}
       headerExtra={
-        <span>
-          {t('label.chips')}: {state.chips}
-        </span>
+        <>
+          <span>
+            {t('label.chips')}: {state.chips}
+          </span>
+          <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
+        </>
       }
     >
-      <div className="sr-only" role="status" aria-live="polite" aria-atomic="true" data-testid="ms-chips-live">
-        {chipsAnnouncement}
-      </div>
-      <div
-        data-testid="card-area"
-        className={[`overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`, !isAntePhase && 'flex-1']
-          .filter(Boolean)
-          .join(' ')}
-      >
-        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
-
-        <label className="flex items-center gap-1 text-ds-text-primary text-xs justify-center mb-2 cursor-pointer min-h-[44px]">
-          <input
-            type="checkbox"
-            checked={frontendHintEnabled}
-            onChange={(e) => setFrontendHintEnabled(e.target.checked)}
-          />
-          {tc('hint.toggle', { ns: 'tutorial' })}
-        </label>
-
-        <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-
-        {isAntePhase && (
-          <div className="flex flex-col items-center justify-center py-4 gap-4">
-            <p className="text-ds-text-muted text-lg">{t('betGuide')}</p>
-            {paytable}
+      {cliEnabled ? (
+        <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
+      ) : (
+        <>
+          <div className="sr-only" role="status" aria-live="polite" aria-atomic="true" data-testid="ms-chips-live">
+            {chipsAnnouncement}
           </div>
-        )}
+          <div
+            data-testid="card-area"
+            className={[`overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`, !isAntePhase && 'flex-1']
+              .filter(Boolean)
+              .join(' ')}
+          >
+            <GameMessageBox
+              message={state.message}
+              messageCode={state.messageCode}
+              messageParams={state.messageParams}
+            />
 
-        {state.playerHand.length > 0 && (
-          <div className="mb-4" data-tutorial="ms-results">
-            <div className="text-ds-warning font-bold text-center mb-1">
-              <span aria-hidden="true">🟡</span> {t('player')}
-              {isEndPhase && (
-                <span className="ml-2 text-sm">
-                  ({t(HAND_RANK_KEYS[state.handRank] ?? 'handRank.0')}
-                  {/* **配当がどの倍率から来たのかを説明していなかった** (#5591)。
+            <label className="flex items-center gap-1 text-ds-text-primary text-xs justify-center mb-2 cursor-pointer min-h-[44px]">
+              <input
+                type="checkbox"
+                checked={frontendHintEnabled}
+                onChange={(e) => setFrontendHintEnabled(e.target.checked)}
+              />
+              {tc('hint.toggle', { ns: 'tutorial' })}
+            </label>
+
+            <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+
+            {isAntePhase && (
+              <div className="flex flex-col items-center justify-center py-4 gap-4">
+                <p className="text-ds-text-muted text-lg">{t('betGuide')}</p>
+                {paytable}
+              </div>
+            )}
+
+            {state.playerHand.length > 0 && (
+              <div className="mb-4" data-tutorial="ms-results">
+                <div className="text-ds-warning font-bold text-center mb-1">
+                  <span aria-hidden="true">🟡</span> {t('player')}
+                  {isEndPhase && (
+                    <span className="ml-2 text-sm">
+                      ({t(HAND_RANK_KEYS[state.handRank] ?? 'handRank.0')}
+                      {/* **配当がどの倍率から来たのかを説明していなかった** (#5591)。
                       サーバは既に送っているのに、画面が読んでいなかった。
                       プッシュ (-1) とロス (0) は倍率でないので、数字を出すと
                       「x-1」「x0」という存在しないオッズに読める。 */}
-                  {state.payoutMultiplier > 0 && (
-                    <span data-testid="ms-payout-multiplier">
-                      {', '}
-                      {t('payoutMultiplier', { multiplier: state.payoutMultiplier })}
+                      {state.payoutMultiplier > 0 && (
+                        <span data-testid="ms-payout-multiplier">
+                          {', '}
+                          {t('payoutMultiplier', { multiplier: state.payoutMultiplier })}
+                        </span>
+                      )}
+                      )
                     </span>
                   )}
-                  )
-                </span>
-              )}
-            </div>
-            <div className="flex justify-center gap-2 flex-wrap">
-              {state.playerHand.map((card, i) => (
-                <AnimatedCard key={`p-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
-              ))}
-            </div>
-            {isStreetPhase && madeHand && (
-              <div className="text-center mt-2" data-testid="ms-made-hand" aria-live="polite" aria-atomic="true">
-                <span className="text-ds-text-muted text-xs mr-1">{t('madeHand.label')}:</span>
-                {madeHand.paytableEligible ? (
-                  <span className={`${badgeSuccessColors} rounded px-2 py-0.5 text-sm font-bold`}>
-                    {t(HAND_RANK_KEYS[madeHand.rank] ?? 'handRank.0')} ({t('madeHand.eligible')})
-                  </span>
-                ) : (
-                  <span className="text-ds-text-muted text-sm">{t(HAND_RANK_KEYS[madeHand.rank] ?? 'handRank.0')}</span>
+                </div>
+                <div className="flex justify-center gap-2 flex-wrap">
+                  {state.playerHand.map((card, i) => (
+                    <AnimatedCard key={`p-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
+                  ))}
+                </div>
+                {isStreetPhase && madeHand && (
+                  <div className="text-center mt-2" data-testid="ms-made-hand" aria-live="polite" aria-atomic="true">
+                    <span className="text-ds-text-muted text-xs mr-1">{t('madeHand.label')}:</span>
+                    {madeHand.paytableEligible ? (
+                      <span className={`${badgeSuccessColors} rounded px-2 py-0.5 text-sm font-bold`}>
+                        {t(HAND_RANK_KEYS[madeHand.rank] ?? 'handRank.0')} ({t('madeHand.eligible')})
+                      </span>
+                    ) : (
+                      <span className="text-ds-text-muted text-sm">
+                        {t(HAND_RANK_KEYS[madeHand.rank] ?? 'handRank.0')}
+                      </span>
+                    )}
+                  </div>
                 )}
               </div>
             )}
+
+            {state.communityCards.length > 0 && (
+              <div className="mb-4">
+                <div className="text-ds-info font-bold text-center mb-1">
+                  <span aria-hidden="true">🔵</span> {t('label.community')}
+                </div>
+                <div className="flex justify-center gap-2 flex-wrap">
+                  {state.communityCards.map((card, i) =>
+                    isMaskedCard(card) ? (
+                      <AnimatedCardBack key={`c-back-${i}`} width={cardWidth} />
+                    ) : (
+                      <AnimatedCard key={`c-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
+                    ),
+                  )}
+                </div>
+                <div
+                  className="text-ds-text-muted text-xs text-center mt-1"
+                  data-testid="community-status"
+                  aria-live="polite"
+                  aria-atomic="true"
+                >
+                  {t('label.communityStatus', {
+                    revealed: state.communityRevealed.filter(Boolean).length,
+                    total: state.communityRevealed.length,
+                  })}
+                </div>
+              </div>
+            )}
+
+            {!isAntePhase && (
+              <div className="flex justify-center gap-4 text-ds-text-primary text-sm mb-2" data-testid="bet-status">
+                <span>
+                  {t('label.street3')}: {state.streetMultipliers[0] ?? 0}x
+                </span>
+                <span>
+                  {t('label.street4')}: {state.streetMultipliers[1] ?? 0}x
+                </span>
+                <span>
+                  {t('label.street5')}: {state.streetMultipliers[2] ?? 0}x
+                </span>
+                <span>
+                  {t('label.totalBet')}: {state.totalBet}
+                </span>
+              </div>
+            )}
+
+            {!isAntePhase && <div className="flex justify-center mb-2">{paytable}</div>}
+
+            {isEndPhase && (
+              <div className="text-ds-text-primary text-center text-sm mb-2" data-testid="payout-breakdown">
+                <div>
+                  {t('label.antePayout')}: {state.antePayout}
+                </div>
+                <div>
+                  {t('label.street3Payout')}: {state.streetPayouts[0]}
+                </div>
+                <div>
+                  {t('label.street4Payout')}: {state.streetPayouts[1]}
+                </div>
+                <div>
+                  {t('label.street5Payout')}: {state.streetPayouts[2]}
+                </div>
+                <div className="font-bold mt-1">
+                  {t('label.totalPayout')}: {state.totalPayout}
+                </div>
+                <div className="font-bold mt-1">
+                  {t('label.netProfit')}: {formatSignedDelta(state.netChange)}
+                </div>
+              </div>
+            )}
+
+            {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
           </div>
-        )}
 
-        {state.communityCards.length > 0 && (
-          <div className="mb-4">
-            <div className="text-ds-info font-bold text-center mb-1">
-              <span aria-hidden="true">🔵</span> {t('label.community')}
-            </div>
-            <div className="flex justify-center gap-2 flex-wrap">
-              {state.communityCards.map((card, i) =>
-                isMaskedCard(card) ? (
-                  <AnimatedCardBack key={`c-back-${i}`} width={cardWidth} />
-                ) : (
-                  <AnimatedCard key={`c-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
-                ),
-              )}
-            </div>
-            <div
-              className="text-ds-text-muted text-xs text-center mt-1"
-              data-testid="community-status"
-              aria-live="polite"
-              aria-atomic="true"
-            >
-              {t('label.communityStatus', {
-                revealed: state.communityRevealed.filter(Boolean).length,
-                total: state.communityRevealed.length,
-              })}
-            </div>
-          </div>
-        )}
-
-        {!isAntePhase && (
-          <div className="flex justify-center gap-4 text-ds-text-primary text-sm mb-2" data-testid="bet-status">
-            <span>
-              {t('label.street3')}: {state.streetMultipliers[0] ?? 0}x
-            </span>
-            <span>
-              {t('label.street4')}: {state.streetMultipliers[1] ?? 0}x
-            </span>
-            <span>
-              {t('label.street5')}: {state.streetMultipliers[2] ?? 0}x
-            </span>
-            <span>
-              {t('label.totalBet')}: {state.totalBet}
-            </span>
-          </div>
-        )}
-
-        {!isAntePhase && <div className="flex justify-center mb-2">{paytable}</div>}
-
-        {isEndPhase && (
-          <div className="text-ds-text-primary text-center text-sm mb-2" data-testid="payout-breakdown">
-            <div>
-              {t('label.antePayout')}: {state.antePayout}
-            </div>
-            <div>
-              {t('label.street3Payout')}: {state.streetPayouts[0]}
-            </div>
-            <div>
-              {t('label.street4Payout')}: {state.streetPayouts[1]}
-            </div>
-            <div>
-              {t('label.street5Payout')}: {state.streetPayouts[2]}
-            </div>
-            <div className="font-bold mt-1">
-              {t('label.totalPayout')}: {state.totalPayout}
-            </div>
-            <div className="font-bold mt-1">
-              {t('label.netProfit')}: {formatSignedDelta(state.netChange)}
-            </div>
-          </div>
-        )}
-
-        {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
-      </div>
-
-      <GameFooter className={`${gameTheme.mississippistud.footer} px-4 pt-3`}>
-        <ErrorAlert message={error} onRetry={retry} />
-        <SettingsPanel title={t('settings.title')} groups={[]} />
-        {isAntePhase && (
-          <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="ms-bet-controls">
-            <ChipBetInput
-              id="mississippistud-ante-amount"
-              label={t('label.ante')}
-              value={anteAmount}
-              onChange={setAnteAmount}
-              max={Math.floor(state.chips / 4)}
-            />
-            <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
-              {t('button.bet')}
-            </button>
-          </div>
-        )}
-        {isStreetPhase && (
-          <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="ms-street-buttons">
-            <div className="text-ds-text-primary text-sm text-center" data-testid="ms-street-betting-summary">
-              <span>{phaseName}</span>
-              <span className="ml-3">
-                {t('label.totalBet')}: {state.totalBet}
-              </span>
-            </div>
-            <div className="flex justify-center gap-2 flex-wrap">
-              {(
-                [
-                  { m: 1, cls: btnSecondary },
-                  { m: 2, cls: btnPrimary },
-                  { m: 3, cls: btnSuccess },
-                ] as const
-              ).map(({ m, cls }) => {
-                const insufficient = state.anteAmount * m > state.chips;
-                const disabled = loading || insufficient;
-                const reasonId = `ms-play-disabled-reason-${m}`;
-                return (
-                  <button
-                    key={m}
-                    type="button"
-                    className={`${cls} min-h-[44px] ${disabled ? 'aria-disabled:opacity-50 aria-disabled:cursor-not-allowed' : ''}`}
-                    onClick={() => handlePlay(m)}
-                    aria-disabled={disabled || undefined}
-                    aria-describedby={disabled ? reasonId : undefined}
-                    data-testid={`ms-play-${m}x`}
-                  >
-                    {t('button.playMult', { mult: m, amount: state.anteAmount * m })}
-                    <span className="block text-xs font-normal">
-                      {t('label.totalAfterBet')}: {state.totalBet + state.anteAmount * m}
-                    </span>
-                    {disabled && (
-                      <span id={reasonId} className={insufficient ? 'block text-xs font-normal' : 'sr-only'}>
-                        {t(insufficient ? 'button.insufficientChips' : 'button.processing')}
-                      </span>
-                    )}
+          <GameFooter className={`${gameTheme.mississippistud.footer} px-4 pt-3`}>
+            <ErrorAlert message={error} onRetry={retry} />
+            <SettingsPanel title={t('settings.title')} groups={[]} />
+            {isAntePhase && (
+              <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="ms-bet-controls">
+                <ChipBetInput
+                  id="mississippistud-ante-amount"
+                  label={t('label.ante')}
+                  value={anteAmount}
+                  onChange={setAnteAmount}
+                  max={Math.floor(state.chips / 4)}
+                />
+                <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
+                  {t('button.bet')}
+                </button>
+              </div>
+            )}
+            {isStreetPhase && (
+              <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="ms-street-buttons">
+                <div className="text-ds-text-primary text-sm text-center" data-testid="ms-street-betting-summary">
+                  <span>{phaseName}</span>
+                  <span className="ml-3">
+                    {t('label.totalBet')}: {state.totalBet}
+                  </span>
+                </div>
+                <div className="flex justify-center gap-2 flex-wrap">
+                  {(
+                    [
+                      { m: 1, cls: btnSecondary },
+                      { m: 2, cls: btnPrimary },
+                      { m: 3, cls: btnSuccess },
+                    ] as const
+                  ).map(({ m, cls }) => {
+                    const insufficient = state.anteAmount * m > state.chips;
+                    const disabled = loading || insufficient;
+                    const reasonId = `ms-play-disabled-reason-${m}`;
+                    return (
+                      <button
+                        key={m}
+                        type="button"
+                        className={`${cls} min-h-[44px] ${disabled ? 'aria-disabled:opacity-50 aria-disabled:cursor-not-allowed' : ''}`}
+                        onClick={() => handlePlay(m)}
+                        aria-disabled={disabled || undefined}
+                        aria-describedby={disabled ? reasonId : undefined}
+                        data-testid={`ms-play-${m}x`}
+                      >
+                        {t('button.playMult', { mult: m, amount: state.anteAmount * m })}
+                        <span className="block text-xs font-normal">
+                          {t('label.totalAfterBet')}: {state.totalBet + state.anteAmount * m}
+                        </span>
+                        {disabled && (
+                          <span id={reasonId} className={insufficient ? 'block text-xs font-normal' : 'sr-only'}>
+                            {t(insufficient ? 'button.insufficientChips' : 'button.processing')}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                  <button type="button" className={`${btnDanger} min-h-[44px]`} onClick={handleFold} disabled={loading}>
+                    {t('button.fold')}
                   </button>
-                );
-              })}
-              <button type="button" className={`${btnDanger} min-h-[44px]`} onClick={handleFold} disabled={loading}>
-                {t('button.fold')}
-              </button>
-            </div>
-          </div>
-        )}
-        {isEndPhase && (
-          <div className="flex justify-center gap-2 pb-2">
-            <GameResetButton
-              isGameEnd={isEndPhase}
-              onReset={handleReset}
-              requestConfirm={requestConfirm}
-              loading={loading}
-            />
-            <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
-              {tc('actionLog.view')}
-            </button>
-          </div>
-        )}
-        <ActionShortcutsPanel bindings={actionBindings} data-testid="mississippi-stud-kbd-shortcuts" />
-      </GameFooter>
+                </div>
+              </div>
+            )}
+            {isEndPhase && (
+              <div className="flex justify-center gap-2 pb-2">
+                <GameResetButton
+                  isGameEnd={isEndPhase}
+                  onReset={handleReset}
+                  requestConfirm={requestConfirm}
+                  loading={loading}
+                />
+                <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
+                  {tc('actionLog.view')}
+                </button>
+              </div>
+            )}
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="mississippi-stud-kbd-shortcuts" />
+          </GameFooter>
+        </>
+      )}
     </GamePageShell>
   );
 }

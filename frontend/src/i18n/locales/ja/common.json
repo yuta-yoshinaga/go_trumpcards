@@ -2917,6 +2917,8 @@
     "mississippistud.result.playerLoses": "プレイヤーの負け",
     "mississippistud.result.playerWins": "プレイヤーの勝ち！",
     "mississippistud.result.push": "プッシュ",
+    "mississippistud.hintRequested": "ヒントがあります",
+    "mississippistud.noHint": "ヒントはありません",
     "missmilligan.errAlreadyWaived": "すでに取り置いています",
     "missmilligan.errBadCardIndex": "カードの指定が不正です",
     "missmilligan.errBadColumn": "列の指定が不正です",

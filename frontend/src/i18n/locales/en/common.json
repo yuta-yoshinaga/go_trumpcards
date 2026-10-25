@@ -2917,6 +2917,8 @@
     "mississippistud.result.playerLoses": "Player loses.",
     "mississippistud.result.playerWins": "Player wins!",
     "mississippistud.result.push": "Push.",
+    "mississippistud.hintRequested": "A hint is available",
+    "mississippistud.noHint": "No hint available",
     "missmilligan.errAlreadyWaived": "Cards are already waived",
     "missmilligan.errBadCardIndex": "That card does not exist",
     "missmilligan.errBadColumn": "That column does not exist",

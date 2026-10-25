@@ -122,6 +122,19 @@ afterEach(() => {
 });
 
 describe('MississippiStudPage', () => {
+  it('toggles the GUI to the CLI terminal and back', async () => {
+    mockApi.mockResolvedValue(antePhaseState);
+    renderWithProviders(<MississippiStudPage />);
+    expect(await screen.findByTestId('card-area')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    expect(await screen.findByRole('textbox', { name: 'コマンドを入力...' })).toBeInTheDocument();
+    expect(screen.queryByTestId('card-area')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'GUIモードに切り替え' }));
+    expect(await screen.findByTestId('card-area')).toBeInTheDocument();
+  });
+
   it('renders skeleton before state loads', () => {
     mockApi.mockReturnValue(new Promise(() => {}));
     renderWithProviders(<MississippiStudPage />);
