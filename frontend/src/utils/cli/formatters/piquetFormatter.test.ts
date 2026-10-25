@@ -177,6 +177,33 @@ describe('formatPiquetState', () => {
     expect(out).toContain('HINT: discard cards [1, 3] (improve the hand)');
   });
 
+  it('shows a requested hint with its play card', () => {
+    const out = formatPiquetState(
+      baseState({
+        messageCode: 'piquet.hintAvailable',
+        players: baseState().players.map((player, index) =>
+          index === 0 ? { ...player, cards: [{ design: 'SPADE', value: 13 }] } : player,
+        ),
+        hint: { cardIndex: 0, reason: 'play the king' },
+      }),
+    );
+    expect(out.split('\n')).toContain('HINT: play card [0] ♠K (play the king)');
+  });
+
+  it('shows a requested hint with only its reason when it has no card indices', () => {
+    const out = formatPiquetState(
+      baseState({ messageCode: 'piquet.hintAvailable', hint: { reason: 'wait for a better lead' } }),
+    );
+    expect(out.split('\n')).toContain('HINT: wait for a better lead');
+  });
+
+  it('omits the card name when the hinted card index is outside the hand', () => {
+    const out = formatPiquetState(
+      baseState({ messageCode: 'piquet.hintAvailable', hint: { cardIndex: 8, reason: 'play safely' } }),
+    );
+    expect(out.split('\n')).toContain('HINT: play card [8] (play safely)');
+  });
+
   it('does not show a hint when no hint message code is present', () => {
     const out = formatPiquetState(baseState({ hint: { discardIndices: [1], reason: 'improve the hand' } }));
     expect(out).not.toContain('HINT:');

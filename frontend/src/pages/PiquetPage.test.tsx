@@ -100,6 +100,20 @@ describe('PiquetPage', () => {
     await waitFor(() => expect(screen.getAllByText(/Elder|Younger/).length).toBeGreaterThan(0));
   });
 
+  it('toggles between the GUI board and CLI terminal', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<PiquetPage />);
+
+    expect(await screen.findByAltText('♠ K')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    expect(await screen.findByRole('textbox', { name: 'コマンドを入力...' })).toBeInTheDocument();
+    expect(screen.queryByAltText('♠ K')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'GUIモードに切り替え' }));
+    expect(await screen.findByAltText('♠ K')).toBeInTheDocument();
+    expect(screen.queryByRole('textbox', { name: 'コマンドを入力...' })).not.toBeInTheDocument();
+  });
+
   it('shows the human hand cards', async () => {
     mockExec.mockResolvedValue(makeState());
     renderWithProviders(<PiquetPage />);
